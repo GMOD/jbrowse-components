@@ -15,14 +15,15 @@
       "views": [
         {
           "type": "LinearSyntenyView",
-          "mcscan": true,
           "headerHeight": 44,
+          "datasetName": "grape_vs_peach_dataset",
           "width": 1850,
           "height": 400,
           "displayName": "Grape vs Peach",
           "configuration": {
-            "type": "LinearSyntenyView",
-            "mcscan": true
+            "simpleAnchors": "test_data/grape.peach.anchors.simple",
+            "paf": "test_data/Vvinifera_145_Genoscope.12X.vs.Ppersica_298_v2.0.paf",
+            "type": "LinearSyntenyView"
           },
           "trackSelectorType": "hierarchical",
           "views": [
@@ -105,7 +106,7 @@
   ],
   "datasets": [
     {
-      "name": "Grape vs Peach synteny",
+      "name": "grape_vs_peach_dataset",
       "tracks": [
         {
           "trackId": "mcscan_anchors_grape",

@@ -1,4 +1,4 @@
-import { SyntenyViewModel } from '../model'
+import { PafRecord, LinearSyntenyViewModel } from '../model'
 import { yPos, getPxFromCoordinate, cheight } from '../util'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
@@ -17,46 +17,86 @@ export default (pluginManager: any) => {
       height,
       syntenyGroup,
     }: {
-      model: SyntenyViewModel
+      model: LinearSyntenyViewModel
       height: number
       syntenyGroup: string
     }) => {
       const { views, showIntraviewLinks } = model
       const [initialized, setInitialized] = useState(false)
-      const mcscan = getConf(model, 'mcscan')
-      if (mcscan)
-        useEffect(() => {
-          ;(async () => {
-            if (getConf(model, 'mcscan')) {
-              const data = await fetch('test_data/grape.peach.anchors.simple')
-              const text = await data.text()
-              const m: any = {}
-              const r: any = {}
-              text.split('\n').forEach((line: string, index: number) => {
-                if (line.length) {
-                  const [name1, name2, name3, name4, score] = line.split('\t')
-                  m[name1] = index
-                  m[name2] = index
-                  m[name3] = index
-                  m[name4] = index
-                  r[index] = { name1, name2, name3, name4, score: +score }
+      const simpleAnchors = getConf(model, 'simpleAnchors')
+      const pafData = getConf(model, 'paf')
+      useEffect(() => {
+        ;(async () => {
+          if (simpleAnchors) {
+            const data = await fetch(simpleAnchors)
+            const text = await data.text()
+            const m: any = {}
+            const r: any = {}
+            text.split('\n').forEach((line: string, index: number) => {
+              if (line.length) {
+                const [name1, name2, name3, name4, score] = line.split('\t')
+                m[name1] = index
+                m[name2] = index
+                m[name3] = index
+                m[name4] = index
+                r[index] = { name1, name2, name3, name4, score: +score }
+              }
+            })
+
+            model.setSimpleAnchorsData(m, r)
+            setInitialized(true)
+          }
+          if (pafData) {
+            console.log('herere', pafData)
+            const data = await fetch(pafData)
+            const text = await data.text()
+            const m: PafRecord[] = []
+            text.split('\n').forEach((line: string, index: number) => {
+              if (line.length) {
+                const [
+                  chr1,
+                  ,
+                  start1,
+                  end1,
+                  strand1,
+                  chr2,
+                  ,
+                  start2,
+                  end2,
+                ] = line.split('\t')
+                m[index] = {
+                  chr1,
+                  start1: +start1,
+                  end1: +end1,
+                  strand1,
+                  chr2,
+                  start2: +start2,
+                  end2: +end2,
                 }
-              })
+              }
+            })
 
-              model.setMCScanData(m, r)
-              setInitialized(true)
-            }
-          })()
-        }, [model])
+            model.setMinimap2Data(m)
+            setInitialized(true)
+          }
+        })()
+      }, [model, pafData, simpleAnchors])
 
-      if (mcscan && !initialized) return null
+      if (!initialized) return null
 
-      const layoutMatches = mcscan
-        ? model.getMCScanFeatures(syntenyGroup)
-        : model.getMatchedFeaturesInLayout(
-            syntenyGroup,
-            model.allMatchedSyntenyFeatures[syntenyGroup],
-          )
+      let layoutMatches
+      if (simpleAnchors) {
+        layoutMatches = model.allMatchedMCScanFeatures[syntenyGroup]
+      }
+      if (pafData) {
+        layoutMatches = model.minimap2Features
+      } else {
+        layoutMatches = model.getMatchedFeaturesInLayout(
+          syntenyGroup,
+          model.allMatchedSyntenyFeatures[syntenyGroup],
+        )
+      }
+
       return (
         <g
           stroke="#333"

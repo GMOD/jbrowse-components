@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { getSession } from '@gmod/jbrowse-core/util'
+import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 import { types, Instance } from 'mobx-state-tree'
@@ -9,6 +10,15 @@ import { getConf } from '@gmod/jbrowse-core/configuration'
 
 export type LayoutRecord = [number, number, number, number]
 
+export interface PafRecord {
+  chr1: string
+  start1: number
+  end1: number
+  strand1: string
+  chr2: string
+  start2: number
+  end2: number
+}
 type LGV = Instance<LinearGenomeViewStateModel>
 type ConfigRelationship = { type: string; target: string }
 // Get the syntenyGroup type from the tracks configRelationships
@@ -32,9 +42,13 @@ export default function stateModelFactory(pluginManager: any) {
   const configSchema = ConfigurationSchema(
     'LinearSyntenyView',
     {
-      mcscan: {
-        type: 'boolean',
-        defaultValue: false,
+      simpleAnchors: {
+        type: 'string',
+        defaultValue: '',
+      },
+      paf: {
+        type: 'string',
+        defaultValue: '',
       },
     },
     { explicitlyTyped: true },
@@ -66,7 +80,8 @@ export default function stateModelFactory(pluginManager: any) {
         .stateModel as LinearGenomeViewStateModel),
     })
     .volatile(self => ({
-      mcscanData: undefined as any,
+      simpleAnchors: undefined as any,
+      minimap2Data: undefined as PafRecord[] | undefined,
       mcscanLookupData: undefined as any,
     }))
     .views(self => ({
@@ -129,6 +144,119 @@ export default function stateModelFactory(pluginManager: any) {
         return r
       },
 
+      get allMatchedMinimap2Features() {
+        const r: { [key: string]: string[] } = {}
+        this.syntenyGroups.forEach(group => {
+          // @ts-ignore
+          r[group] = this.getMinimap2Features(group)
+        })
+        return r
+      },
+
+      getFeaturesOverlappingBlock(assembly: number, block: any) {
+        return (self.minimap2Data || []).filter(row => {
+          if (assembly === 0) {
+            if (block.refName === row.chr1) {
+              return doesIntersect2(
+                block.start,
+                block.end,
+                row.start1,
+                row.end1,
+              )
+            }
+          } else if (assembly === 1) {
+            if (block.refName === row.chr2) {
+              return doesIntersect2(
+                block.start,
+                block.end,
+                row.start2,
+                row.end2,
+              )
+            }
+          }
+          return false
+        })
+      },
+
+      // This finds candidate syntenic connections
+      get minimap2Features() {
+        const alreadySeen = new Set<string>()
+        const featNameMap: any = {}
+
+        const blocks = Array.from(alreadySeen)
+        const ret = []
+
+        const r1 = self.views[0].staticBlocks
+          .map(block => {
+            return this.getFeaturesOverlappingBlock(0, block)
+          })
+          .flat()
+          .map((row, i) => {
+            return [
+              {
+                layout: [row.start1, 0, row.end1, 10],
+                feature: new SimpleFeature({
+                  data: {
+                    uniqueId: `${i}-1-1`,
+                    start: row.start1,
+                    end: row.end1,
+                  },
+                }),
+                level: 0,
+                block: { refName: row.chr1 },
+              },
+              {
+                layout: [row.start2, 0, row.end2, 10],
+                feature: new SimpleFeature({
+                  data: {
+                    uniqueId: `${i}-1-2`,
+                    start: row.start2,
+                    end: row.end2,
+                  },
+                }),
+                level: 1,
+                block: { refName: row.chr2 },
+              },
+            ]
+          })
+
+        const r2 = self.views[1].staticBlocks
+          .map(block => {
+            return this.getFeaturesOverlappingBlock(1, block)
+          })
+          .flat()
+          .map((row, i) => {
+            return [
+              {
+                layout: [row.start1, 0, row.end1, 10],
+                feature: new SimpleFeature({
+                  data: {
+                    uniqueId: `${i}-2-1`,
+                    start: row.start1,
+                    end: row.end1,
+                  },
+                }),
+                level: 1,
+                block: { refName: row.chr1 },
+              },
+              {
+                layout: [row.start2, 0, row.end2, 10],
+                feature: new SimpleFeature({
+                  data: {
+                    uniqueId: `${i}-2-2`,
+                    start: row.start2,
+                    end: row.end2,
+                  },
+                }),
+                level: 0,
+                block: { refName: row.chr2 },
+              },
+            ]
+          })
+
+        return r1.concat(r2)
+      },
+
       // This finds candidate syntenic connections
       getMCScanFeatures(syntenyGroup: string) {
         const features = this.getTrackFeatures(syntenyGroup)
@@ -137,7 +265,7 @@ export default function stateModelFactory(pluginManager: any) {
 
         // this finds candidate features that share the same name
         for (const feature of features.values()) {
-          const n = self.mcscanData[feature.get('name')]
+          const n = self.simpleAnchors[feature.get('name')]
           featNameMap[feature.get('name')] = feature
 
           if (n) {
@@ -154,7 +282,11 @@ export default function stateModelFactory(pluginManager: any) {
             const r2 = featNameMap[r.name2]
             const r3 = featNameMap[r.name3]
             const r4 = featNameMap[r.name4]
-            if (!(r1 && r2) || !(r3 && r4)) continue
+            if (!r1 || !r2 || !r3 || !r4) {
+              // alt logic (r1 && r2) || !(r3 && r4)
+              // eslint-disable-next-line no-continue
+              continue
+            }
             const s1 = Math.min(r1.get('start'), r2.get('start'))
             const e1 = Math.max(r1.get('end'), r2.get('end'))
             const s2 = Math.min(r3.get('start'), r4.get('start'))
@@ -276,9 +408,13 @@ export default function stateModelFactory(pluginManager: any) {
         self.views.remove(view)
       },
 
-      setMCScanData(mcscanData: any, mcscanLookupData: any) {
-        self.mcscanData = mcscanData
+      setSimpleAnchorsData(simpleAnchors: any, mcscanLookupData: any) {
+        self.simpleAnchors = simpleAnchors
         self.mcscanLookupData = mcscanLookupData
+      },
+
+      setMinimap2Data(minimap2Data: PafRecord[]) {
+        self.minimap2Data = minimap2Data
       },
 
       closeView() {
