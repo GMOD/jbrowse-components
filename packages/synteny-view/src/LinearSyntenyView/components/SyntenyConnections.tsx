@@ -47,7 +47,6 @@ export default (pluginManager: any) => {
             setInitialized(true)
           }
           if (pafData) {
-            console.log('herere', pafData)
             const data = await fetch(pafData)
             const text = await data.text()
             const m: PafRecord[] = []
@@ -90,7 +89,8 @@ export default (pluginManager: any) => {
       }
       if (pafData) {
         layoutMatches = model.minimap2Features
-      } else {
+      }
+      if (!layoutMatches) {
         layoutMatches = model.getMatchedFeaturesInLayout(
           syntenyGroup,
           model.allMatchedSyntenyFeatures[syntenyGroup],
@@ -140,6 +140,8 @@ export default (pluginManager: any) => {
               //   // eslint-disable-next-line no-continue
               //   continue
               // }
+              if (!model.refNames[level1].includes(r1)) continue
+              if (!model.refNames[level2].includes(r2)) continue
 
               const x11 = getPxFromCoordinate(views[level1], r1, c1[LEFT])
               const x12 = getPxFromCoordinate(views[level1], r1, c1[RIGHT])

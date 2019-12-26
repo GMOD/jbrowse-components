@@ -19,7 +19,7 @@ import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/styles'
 
 import { observer } from 'mobx-react'
-import { onSnapshot } from 'mobx-state-tree'
+import { onSnapshot, getSnapshot, resolveIdentifier } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
 import 'typeface-roboto'
@@ -178,6 +178,10 @@ function useJBrowseWeb(config, initialState) {
     if (loaded) {
       window.MODEL = rootModel.session
       window.ROOTMODEL = rootModel
+
+      // poke some things for testing (this stuff will eventually be removed)
+      window.getSnapshot = getSnapshot
+      window.resolveIdentifier = resolveIdentifier
     }
   }, [loaded, rootModel])
 

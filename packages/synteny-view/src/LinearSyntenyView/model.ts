@@ -89,6 +89,12 @@ export default function stateModelFactory(pluginManager: any) {
         return self.views.length ? self.views[0].controlsWidth : 0
       },
 
+      get refNames() {
+        return (self.views || []).map(v => [
+          ...new Set(v.staticBlocks.map(m => m.refName)),
+        ])
+      },
+
       // Looks at the syntenyGroup type in the configRelationships and determines
       // all the unique ones
       get syntenyGroups(): string[] {
@@ -186,73 +192,70 @@ export default function stateModelFactory(pluginManager: any) {
         const blocks = Array.from(alreadySeen)
         const ret = []
 
-        const r1 = self.views[0].staticBlocks
-          .map(block => {
-            return this.getFeaturesOverlappingBlock(0, block)
-          })
-          .flat()
-          .map((row, i) => {
-            return [
-              {
-                layout: [row.start1, 0, row.end1, 10],
-                feature: new SimpleFeature({
-                  data: {
-                    uniqueId: `${i}-1-1`,
-                    start: row.start1,
-                    end: row.end1,
-                  },
-                }),
-                level: 0,
-                block: { refName: row.chr1 },
-              },
-              {
-                layout: [row.start2, 0, row.end2, 10],
-                feature: new SimpleFeature({
-                  data: {
-                    uniqueId: `${i}-1-2`,
-                    start: row.start2,
-                    end: row.end2,
-                  },
-                }),
-                level: 1,
-                block: { refName: row.chr2 },
-              },
-            ]
-          })
+        const r1t = self.views[0].staticBlocks.map(block => {
+          return this.getFeaturesOverlappingBlock(0, block)
+        })
+        const r1 = r1t.flat().map((row, i) => {
+          return [
+            {
+              layout: [row.start1, 0, row.end1, 10],
+              feature: new SimpleFeature({
+                data: {
+                  uniqueId: `${i}-1-1`,
+                  start: row.start1,
+                  end: row.end1,
+                },
+              }),
+              level: 0,
+              block: { refName: row.chr1 },
+            },
+            {
+              layout: [row.start2, 0, row.end2, 10],
+              feature: new SimpleFeature({
+                data: {
+                  uniqueId: `${i}-1-2`,
+                  start: row.start2,
+                  end: row.end2,
+                },
+              }),
+              level: 1,
+              block: { refName: row.chr2 },
+            },
+          ]
+        })
 
-        const r2 = self.views[1].staticBlocks
-          .map(block => {
-            return this.getFeaturesOverlappingBlock(1, block)
-          })
-          .flat()
-          .map((row, i) => {
-            return [
-              {
-                layout: [row.start1, 0, row.end1, 10],
-                feature: new SimpleFeature({
-                  data: {
-                    uniqueId: `${i}-2-1`,
-                    start: row.start1,
-                    end: row.end1,
-                  },
-                }),
-                level: 1,
-                block: { refName: row.chr1 },
-              },
-              {
-                layout: [row.start2, 0, row.end2, 10],
-                feature: new SimpleFeature({
-                  data: {
-                    uniqueId: `${i}-2-2`,
-                    start: row.start2,
-                    end: row.end2,
-                  },
-                }),
-                level: 0,
-                block: { refName: row.chr2 },
-              },
-            ]
-          })
+        const r2t = self.views[1].staticBlocks.map(block => {
+          return this.getFeaturesOverlappingBlock(1, block)
+        })
+
+        const r2 = r2t.flat().map((row, i) => {
+          return [
+            {
+              layout: [row.start1, 0, row.end1, 10],
+              feature: new SimpleFeature({
+                data: {
+                  uniqueId: `${i}-2-1`,
+                  start: row.start1,
+                  end: row.end1,
+                },
+              }),
+              level: 0,
+              block: { refName: row.chr1 },
+            },
+            {
+              layout: [row.start2, 0, row.end2, 10],
+              feature: new SimpleFeature({
+                data: {
+                  uniqueId: `${i}-2-2`,
+                  start: row.start2,
+                  end: row.end2,
+                },
+              }),
+              level: 1,
+              block: { refName: row.chr2 },
+            },
+          ]
+        })
 
         return r1.concat(r2)
       },

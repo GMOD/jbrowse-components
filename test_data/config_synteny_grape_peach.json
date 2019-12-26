@@ -22,7 +22,6 @@
           "displayName": "Grape vs Peach",
           "configuration": {
             "simpleAnchors": "test_data/grape.peach.anchors.simple",
-            "paf": "test_data/Vvinifera_145_Genoscope.12X.vs.Ppersica_298_v2.0.paf",
             "type": "LinearSyntenyView"
           },
           "trackSelectorType": "hierarchical",
@@ -174,6 +173,27 @@
           "renderer": {
             "type": "PileupRenderer"
           }
+        },
+        {
+          "trackId": "grape_genes2",
+          "type": "BasicTrack",
+          "name": "mcscan2",
+          "configRelationships": [
+            {
+              "type": "syntenyGroup",
+              "target": "group3"
+            }
+          ],
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
         }
       ]
     },
@@ -215,6 +235,27 @@
           },
           "renderer": {
             "type": "PileupRenderer"
+          }
+        },
+        {
+          "trackId": "peach_genes2",
+          "type": "BasicTrack",
+          "name": "mcscan2",
+          "configRelationships": [
+            {
+              "type": "syntenyGroup",
+              "target": "group3"
+            }
+          ],
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
           }
         }
       ]
