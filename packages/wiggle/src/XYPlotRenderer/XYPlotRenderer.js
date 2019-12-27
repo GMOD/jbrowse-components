@@ -16,7 +16,8 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
       horizontallyFlipped,
     } = props
 
-    console.log(props)
+    console.log('drawing:', region)
+
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')

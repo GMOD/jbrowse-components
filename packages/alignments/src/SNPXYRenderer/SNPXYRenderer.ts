@@ -171,6 +171,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
         }
       }
     }
+
     //console.log(coverageBins)
     return coverageBins
   }
@@ -187,7 +188,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     } = props
 
     scaleOpts.domain = [0, 50]
-    console.log('drawing')
+    console.log('drawing snp', region)
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')
@@ -200,9 +201,6 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const [niceMin, niceMax] = viewScale.domain()
     const toY = (rawscore: number) => height - viewScale(rawscore)
     const toHeight = (rawscore: number) => toY(originY) - toY(rawscore)
-    let colorCallback = readConfObject(config, 'color', [features])
-    // console.log('Props in SNPXYRend', props)
-    // console.log('Feature in SNPXYRend', features)
 
     //const coverageBins = this.generateCoverageBins(props)
 
@@ -210,6 +208,8 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     // go to next bin, start next rect at leftbase + binWidth * 1, then * 2 etc
 
     //37 displays the score, feature.get('score') is probably wrong
+
+    //PROBABLY IS track isnt rendering enough times, only does the last range when other tracks do all the ranges up to the last range
 
     const leftBase = region.start
     const rightBase = region.end
@@ -228,12 +228,11 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
 
     //ctx.fillStyle = 'darkgrey'
 
+    let count = 0
     coverageBins.forEach( function(currentBin: NestedFrequencyTable, index: number){
-      //console.log(currentBin, index)
+      count++
       const offset = binWidth * index
       const score = currentBin.total()
-      // console.log(base)
-      //console.log(leftBase + offset, toY(score), binWidth, toHeight(score))
 
       ctx.fillStyle = colorForBase['total']
       ctx.fillRect(leftBase + offset, toY(score), binWidth, toHeight(score))
