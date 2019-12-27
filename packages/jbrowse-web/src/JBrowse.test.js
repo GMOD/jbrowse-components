@@ -66,7 +66,7 @@ jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
 
 describe('<JBrowse />', () => {
   it('renders with an empty config', async () => {
-    const { getByText } = render(<JBrowse config={{}} />)
+    const { getByText } = render(<JBrowse configSnapshot={{}} />)
     expect(await waitForElement(() => getByText('Help'))).toBeTruthy()
   })
   it('renders with an initialState', async () => {
@@ -98,7 +98,7 @@ describe('<JBrowse />', () => {
 
 describe('valid file tests', () => {
   it('access about menu', async () => {
-    const { getByText } = render(<JBrowse config={config} />)
+    const { getByText } = render(<JBrowse configSnapshot={config} />)
     await waitForElement(() => getByText('ctgA'))
     await waitForElement(() => getByText('Help'))
     fireEvent.click(getByText('Help'))
@@ -495,7 +495,9 @@ describe('breakpoint split view', () => {
 
 test('cause an exception in the jbrowse module loading', async () => {
   const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-  const { getByText } = render(<JBrowse config={{ configuration: [] }} />)
+  const { getByText } = render(
+    <JBrowse configSnapshot={{ configuration: [] }} />,
+  )
   expect(await getByText('Fatal error')).toBeTruthy()
   expect(spy).toHaveBeenCalled()
   spy.mockRestore()
