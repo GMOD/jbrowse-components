@@ -43,11 +43,9 @@ async function parseConfig(configLoc) {
 
 function useJBrowseWeb(config, initialState) {
   const [loaded, setLoaded] = useState(false)
-  const [rootModel, setRootModel] = useState(
-    initialState ? JBrowseRootModel.create(initialState) : undefined,
-  )
+  const [rootModel, setRootModel] = useState(initialState || {})
   const [urlSnapshot, setUrlSnapshot] = useState()
-  const [configSnapshot, setConfigSnapshot] = useState()
+  const [configSnapshot, setConfigSnapshot] = useState(config || {})
   const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
 
   const { session, jbrowse } = rootModel || {}
@@ -80,17 +78,26 @@ function useJBrowseWeb(config, initialState) {
     }
   }, [debouncedUrlSnapshot, rootModel])
   useEffect(() => {
-    if (configSnapshot) {
+    try {
+      setRootModel(JBrowseRootModel.create({ jbrowse: configSnapshot }))
+    } catch (error) {
+      // if it failed to load, it's probably a problem with the saved sessions,
+      // so just delete them and try again
       try {
-        setRootModel(JBrowseRootModel.create({ jbrowse: configSnapshot }))
-      } catch (error) {
-        // if it failed to load, it's probably a problem with the saved sessions,
-        // so just delete them and try again
+        console.error(error)
+        console.warn(
+          'deleting saved sessions and re-trying after receiving the above error',
+        )
         setRootModel(
           JBrowseRootModel.create({
             jbrowse: { ...configSnapshot, savedSessions: [] },
           }),
         )
+      } catch (e) {
+        console.error(e)
+        const additionalMsg =
+          e.message.length > 10000 ? '... see console for more' : ''
+        throw new Error(e.message.slice(0, 10000) + additionalMsg)
       }
     }
   }, [configSnapshot])
@@ -100,17 +107,16 @@ function useJBrowseWeb(config, initialState) {
     ;(async () => {
       try {
         if (initialState) {
-          setRootModel(JBrowseRootModel.create(initialState))
+          setRootModel(initialState)
         } else {
           const localStorageConfig =
             useLocalStorage && localStorage.getItem('jbrowse-web-data')
 
           if (localStorageConfig) {
             setConfigSnapshot(JSON.parse(localStorageConfig))
-          } else if (config.uri || config.localPath) {
+          }
+          if (configSnapshot.uri || configSnapshot.localPath) {
             setConfigSnapshot(await parseConfig(config))
-          } else {
-            setConfigSnapshot(config)
           }
         }
       } catch (e) {
@@ -120,43 +126,56 @@ function useJBrowseWeb(config, initialState) {
         })
       }
     })()
-  }, [config, initialState, useLocalStorage])
+  }, [
+    config,
+    configSnapshot.localPath,
+    configSnapshot.uri,
+    initialState,
+    useLocalStorage,
+  ])
 
   // finalize rootModel and setLoaded
   useEffect(() => {
-    const params = new URL(document.location).searchParams
-    const urlSession = params.get('session')
-    if (rootModel && rootModel.jbrowse) {
-      if (urlSession) {
-        const savedSessionIndex = rootModel.jbrowse.savedSessionNames.indexOf(
-          urlSession,
-        )
-        if (savedSessionIndex !== -1) {
-          rootModel.setSession(
-            rootModel.jbrowse.savedSessions[savedSessionIndex],
+    try {
+      const params = new URL(document.location).searchParams
+      const urlSession = params.get('session')
+      if (rootModel && rootModel.jbrowse) {
+        if (urlSession) {
+          const savedSessionIndex = rootModel.jbrowse.savedSessionNames.indexOf(
+            urlSession,
           )
+          if (savedSessionIndex !== -1) {
+            rootModel.setSession(
+              rootModel.jbrowse.savedSessions[savedSessionIndex],
+            )
+          } else {
+            rootModel.setSession(JSON.parse(fromUrlSafeB64(urlSession)))
+          }
         } else {
-          rootModel.setSession(JSON.parse(fromUrlSafeB64(urlSession)))
+          const localStorageSession = localStorage.getItem(
+            'jbrowse-web-session',
+          )
+          if (localStorageSession) {
+            rootModel.setSession(JSON.parse(localStorageSession))
+          }
         }
-      } else {
-        const localStorageSession = localStorage.getItem('jbrowse-web-session')
-        if (localStorageSession) {
-          rootModel.setSession(JSON.parse(localStorageSession))
+        if (!rootModel.session) {
+          if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
+            const { name } = rootModel.jbrowse.savedSessions[0]
+            rootModel.activateSession(name)
+          } else {
+            rootModel.setDefaultSession()
+          }
         }
-      }
-      if (!rootModel.session) {
-        if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
-          const { name } = rootModel.jbrowse.savedSessions[0]
-          rootModel.activateSession(name)
-        } else {
-          rootModel.setDefaultSession()
-        }
-      }
 
-      rootModel.setHistory(
-        UndoManager.create({}, { targetStore: rootModel.session }),
-      )
-      setLoaded(true)
+        rootModel.setHistory(
+          UndoManager.create({}, { targetStore: rootModel.session }),
+        )
+        setLoaded(true)
+      }
+    } catch (e) {
+      console.error(e)
+      throw new Error(e.message.slice(0, 10000))
     }
   }, [rootModel])
 
