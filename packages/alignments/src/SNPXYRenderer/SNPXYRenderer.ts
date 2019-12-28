@@ -188,7 +188,6 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     } = props
 
     scaleOpts.domain = [0, 50]
-    console.log('drawing snp', region)
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')
@@ -223,86 +222,26 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       C: '#4747ff',
       G: '#ffa500',
       T: '#f00',
-      total: 'darkgrey',
+      '*': 'darkgrey',
+      total: 'lightgrey',
     }
 
-    //ctx.fillStyle = 'darkgrey'
-
+    console.log(scale)
     let count = 0
     coverageBins.forEach( function(currentBin: NestedFrequencyTable, index: number){
       count++
-      const offset = binWidth * index
+      const xposition = binWidth * index * scale
       const score = currentBin.total()
 
       ctx.fillStyle = colorForBase['total']
-      ctx.fillRect(leftBase + offset, toY(score), binWidth, toHeight(score))
+      ctx.fillRect(xposition, toY(score), scale, toHeight(score))
 
       const baseArray = currentBin.totalBaseList()
+      // could be drawing half the size it should be
       baseArray.forEach(function iterate(mismatch, index){
         ctx.fillStyle = colorForBase[mismatch.base]
-        ctx.fillRect(leftBase + offset, toY(mismatch.total), binWidth, toHeight(mismatch.total))
+        ctx.fillRect(xposition, toY(mismatch.total), scale, toHeight(mismatch.total))
       })
     })
-    // for (const feature of features.values()) {
-    //   console.log(feature)
-    //   ctx.fillRect(0, 100, 100, 100)
-    // }
-
-    //   const [leftPx, rightPx] = featureSpanPx(
-    //     feature,
-    //     region,
-    //     bpPerPx,
-    //     horizontallyFlipped,
-    //   )
-    //   let score = feature.get('score')
-    //   const maxr = feature.get('maxScore')
-    //   const minr = feature.get('minScore')
-    //   const lowClipping = score < niceMin
-    //   const highClipping = score > niceMax
-    //   const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
-    //   const c = colorCallback(feature)
-    //   if (summaryScoreMode === 'max') {
-    //     score = maxr === undefined ? score : maxr
-    //     ctx.fillStyle = c
-    //     ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
-    //   } else if (summaryScoreMode === 'min') {
-    //     score = minr === undefined ? score : minr
-    //     ctx.fillStyle = c
-    //     ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
-    //   } else if (summaryScoreMode === 'whiskers') {
-    //     // max
-    //     if (maxr !== undefined) {
-    //       ctx.fillStyle = Color(c)
-    //         .lighten(0.6)
-    //         .toString()
-    //       ctx.fillRect(leftPx, toY(maxr), w, filled ? toHeight(maxr) : 1)
-    //     }
-    //     // normal
-    //     ctx.fillStyle = c
-    //     ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
-    //     // min
-    //     if (minr !== undefined) {
-    //       ctx.fillStyle = Color(c)
-    //         .darken(0.6)
-    //         .toString()
-    //       ctx.fillRect(leftPx, toY(minr), w, filled ? toHeight(minr) : 1)
-    //     }
-    //   } else {
-    //     ctx.fillStyle = c
-    //     ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
-    //   }
-    //   if (highClipping) {
-    //     ctx.fillStyle = clipColor
-    //     ctx.fillRect(leftPx, 0, w, 4)
-    //   } else if (lowClipping && scaleOpts.scaleType !== 'log') {
-    //     ctx.fillStyle = clipColor
-    //     ctx.fillRect(leftPx, height - 4, w, height)
-    //   }
-    //   if (feature.get('highlighted')) {
-    //     ctx.fillStyle = highlightColor
-    //     ctx.fillRect(leftPx, 0, w, height)
-    //   }
-    // }
-    // }
   }
 }

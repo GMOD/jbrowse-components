@@ -20,7 +20,7 @@ export default class NestedFrequencyTable {
 
   totalBaseList() {
     const totalBaseList = []
-    const base = 'A' || 'T' || 'C' || 'G' // need to account for deletion * and insertion 1
+    const base = 'A' || 'T' || 'C' || 'G' || '*' // need to account for deletion * and insertion 1 // MAKE DARK GREY
     // only go into categories with mismatch, reference unneeded
     if (Object.keys(this.categories).includes(base)) {
       delete this.categories.reference

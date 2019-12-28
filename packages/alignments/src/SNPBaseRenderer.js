@@ -7,7 +7,6 @@ import React from 'react'
 
 export default class extends ServerSideRendererType {
   async makeImageData(props) {
-    console.log('make snp data')
     const { height, region, bpPerPx, highResolutionScaling = 1 } = props
     const width = (region.end - region.start) / bpPerPx // width here sets the canvas viewing length, but only the first 1000 are rendered
     if (!(width > 0) || !(height > 0)) {
