@@ -49,8 +49,14 @@ interface SubfeatureLayOutArgs extends BaseLayOutArgs {
   subfeatures: Feature[]
 }
 
-export function layOut(args: FeatureLayOutArgs): SceneGraph {
-  const { layout, feature, bpPerPx, horizontallyFlipped, config } = args
+export function layOut({
+  layout,
+  feature,
+  bpPerPx,
+  horizontallyFlipped,
+  config,
+}: FeatureLayOutArgs): SceneGraph {
+  const displayMode = readConfObject(config, 'displayMode')
   const subLayout = layOutFeature({
     layout,
     feature,
@@ -58,26 +64,29 @@ export function layOut(args: FeatureLayOutArgs): SceneGraph {
     horizontallyFlipped,
     config,
   })
-  layOutSubfeatures({
-    layout: subLayout,
-    subfeatures: feature.get('subfeatures') || [],
-    bpPerPx,
-    horizontallyFlipped,
-    config,
-  })
+  if (displayMode !== 'squish') {
+    layOutSubfeatures({
+      layout: subLayout,
+      subfeatures: feature.get('subfeatures') || [],
+      bpPerPx,
+      horizontallyFlipped,
+      config,
+    })
+  }
   return subLayout
 }
 
 export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
   const { layout, feature, bpPerPx, horizontallyFlipped, config } = args
-  const GlyphComponent = chooseGlyphComponent(feature)
+  const displayMode = readConfObject(config, 'displayMode')
+  const GlyphComponent =
+    displayMode === 'squish' ? Chevron : chooseGlyphComponent(feature)
   const parentFeature = feature.parent()
   let x = 0
   if (parentFeature)
     x = horizontallyFlipped
       ? (parentFeature.get('end') - feature.get('end')) / bpPerPx
       : (feature.get('start') - parentFeature.get('start')) / bpPerPx
-  const displayMode = readConfObject(config, 'displayMode')
   const height = readConfObject(config, 'height', [feature])
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const layoutParent = layout.parent

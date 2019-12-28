@@ -54,21 +54,24 @@ Subfeatures.layOut = ({
     horizontallyFlipped,
     config,
   })
-  const subfeatures = feature.get('subfeatures') || []
-  let topOffset = 0
-  subfeatures.forEach(subfeature => {
-    const SubfeatureGlyphComponent = chooseGlyphComponent(subfeature)
-    const subfeatureHeight = readConfObject(config, 'height', [subfeature])
-    const subSubLayout = (SubfeatureGlyphComponent.layOut || layOut)({
-      layout: subLayout,
-      feature: subfeature,
-      bpPerPx,
-      horizontallyFlipped,
-      config,
+  const displayMode = readConfObject(config, 'displayMode')
+  if (displayMode !== 'squish') {
+    const subfeatures = feature.get('subfeatures') || []
+    let topOffset = 0
+    subfeatures.forEach(subfeature => {
+      const SubfeatureGlyphComponent = chooseGlyphComponent(subfeature)
+      const subfeatureHeight = readConfObject(config, 'height', [subfeature])
+      const subSubLayout = (SubfeatureGlyphComponent.layOut || layOut)({
+        layout: subLayout,
+        feature: subfeature,
+        bpPerPx,
+        horizontallyFlipped,
+        config,
+      })
+      subSubLayout.move(0, topOffset)
+      topOffset += subfeatureHeight + 2
     })
-    subSubLayout.move(0, topOffset)
-    topOffset += subfeatureHeight + 2
-  })
+  }
   return subLayout
 }
 
