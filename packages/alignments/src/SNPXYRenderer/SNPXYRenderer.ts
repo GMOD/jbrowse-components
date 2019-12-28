@@ -68,8 +68,6 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(bpPerPx)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
 
-    console.log('running')
-
     // maybe unused below
     // function binNumber(bp: number) {
     //   return Math.floor((bp - leftBase) / binWidth)
@@ -201,6 +199,8 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const toY = (rawscore: number) => height - viewScale(rawscore)
     const toHeight = (rawscore: number) => toY(originY) - toY(rawscore)
 
+    console.log(props)
+
     //const coverageBins = this.generateCoverageBins(props)
 
     //start with leftbase, for each bin, draw rect ctx.fillREct with binWidth width, height depending on total coverage (maybe coverageBin[bin].total)
@@ -225,16 +225,14 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       '*': 'darkgrey',
       total: 'lightgrey',
     }
-
-    console.log(scale)
-    let count = 0
     coverageBins.forEach( function(currentBin: NestedFrequencyTable, index: number){
-      count++
-      const xposition = binWidth * index * scale
+      const xposition = bpPerPx > 10 ? binWidth * index : scale * index
+      const snpWidth = bpPerPx > 10 ? binWidth : scale
       const score = currentBin.total()
 
       ctx.fillStyle = colorForBase['total']
-      ctx.fillRect(xposition, toY(score), scale, toHeight(score))
+      ctx.fillRect(xposition, toY(score), snpWidth, toHeight(score))
+
 
       const baseArray = currentBin.totalBaseList()
       // could be drawing half the size it should be
