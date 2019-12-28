@@ -8,8 +8,16 @@ import {
   parseLocString,
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { transaction } from 'mobx'
-import { getParent, getSnapshot, types, cast } from 'mobx-state-tree'
+import { transaction, autorun } from 'mobx'
+import {
+  getParent,
+  getSnapshot,
+  types,
+  cast,
+  isAlive,
+  addDisposer,
+} from 'mobx-state-tree'
+
 import { BlockSet } from '../BasicTrack/util/blockTypes'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
@@ -237,11 +245,48 @@ export function stateModelFactory(pluginManager: any) {
       },
     }))
     .actions(self => ({
+      afterCreate() {
+        // views with have displayRegionsFromAssemblyName will have their
+        // displayed regions set to the refs in an assembly
+        addDisposer(
+          self,
+          autorun(() => {
+            const assemblyName = self.displayRegionsFromAssemblyName
+            const p = getParent(self, 4)
+            console.log(p)
+            if (
+              assemblyName &&
+              p.assemblyData.get(assemblyName) &&
+              p.assemblyData.get(assemblyName).sequence
+            ) {
+              p.getRegionsForAssembly(assemblyName, p.assemblyData)
+                .then((displayedRegions: any) => {
+                  // remember nothing inside here is tracked by the autorun
+                  if (isAlive(self)) {
+                    if (
+                      JSON.stringify(self.displayedRegions) !==
+                      JSON.stringify(displayedRegions)
+                    )
+                      this.setDisplayedRegions(displayedRegions, true)
+                    this.setError(undefined)
+                  }
+                })
+                .catch((error: Error) => {
+                  console.error(error)
+                  if (isAlive(self)) {
+                    this.setError(error)
+                  }
+                })
+            }
+          }),
+        )
+      },
+
       setWidth(newWidth: number) {
         self.width = newWidth
       },
 
-      setError(error: Error) {
+      setError(error: Error | undefined) {
         self.error = error
       },
 

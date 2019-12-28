@@ -1,9 +1,6 @@
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
-import {
-  AdapterClass as MCScanAnchorsAdapterClass,
-  configSchema as mcScanAnchorsAdapterConfigSchema,
-} from './MCScanAnchorsAdapter'
+
 import {
   stateModelFactory as linearSyntenyTrackModelFactory,
   configSchemaFactory as linearSyntenyTrackConfigSchema,
@@ -14,14 +11,7 @@ export default class LinearSyntenyViewPlugin {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(require('./LinearSyntenyView')),
     )
-    pluginManager.addAdapterType(
-      () =>
-        new AdapterType({
-          name: 'MCScanAnchorsAdapter',
-          configSchema: mcScanAnchorsAdapterConfigSchema,
-          AdapterClass: MCScanAnchorsAdapterClass,
-        }),
-    )
+
     pluginManager.addTrackType(() => {
       const configSchema = linearSyntenyTrackConfigSchema(
         pluginManager,

@@ -30,14 +30,7 @@
               "type": "LinearGenomeView",
               "offsetPx": 0,
               "bpPerPx": 1000,
-              "displayedRegions": [
-                {
-                  "refName": "Pp01",
-                  "start": 0,
-                  "end": 50022430,
-                  "assemblyName": "peach"
-                }
-              ],
+              "displayRegionsFromAssemblyName": "peach",
               "reversed": false,
               "tracks": [
                 {
@@ -59,14 +52,7 @@
               "type": "LinearGenomeView",
               "offsetPx": 0,
               "bpPerPx": 1000,
-              "displayedRegions": [
-                {
-                  "refName": "chr5",
-                  "start": 0,
-                  "end": 25000000,
-                  "assemblyName": "grape"
-                }
-              ],
+              "displayRegionsFromAssemblyName": "grape",
               "reversed": false,
               "tracks": [
                 {
@@ -104,36 +90,6 @@
     }
   ],
   "datasets": [
-    {
-      "name": "grape_vs_peach_dataset",
-      "tracks": [
-        {
-          "trackId": "mcscan_anchors_grape",
-          "type": "LinearSyntenyTrack",
-          "name": "mcscan_anchors",
-          "configRelationships": [
-            {
-              "type": "mcscanGeneTrack",
-              "target": "grape_genes"
-            },
-            {
-              "type": "mcscanGeneTrack",
-              "target": "peach_genes"
-            }
-          ],
-          "category": [
-            "Annotation"
-          ],
-          "adapter": {
-            "type": "MCScanAnchorsAdapter",
-            "urlTemplate": "test_data/grape.peach.anchors.simple"
-          },
-          "renderer": {
-            "type": "PileupRenderer"
-          }
-        }
-      ]
-    },
     {
       "name": "Grape",
       "assembly": {
