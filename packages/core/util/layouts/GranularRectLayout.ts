@@ -306,12 +306,15 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private maxHeight: number
 
+  private displayMode: string
+
   private pTotalHeight: number
 
   constructor(args: {
     pitchX: number | undefined
     pitchY: number | undefined
     maxHeight: number | undefined
+    displayMode: string | undefined
   }) {
     this.pitchX = args.pitchX || 10
     this.pitchY = args.pitchY || 10
@@ -321,6 +324,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     this.bitmap = []
     this.rectangles = new Map()
     this.maxHeight = Math.ceil((args.maxHeight || 10000) / this.pitchY)
+    this.displayMode = args.displayMode || 'normal'
     this.pTotalHeight = 0 // total height, in units of bitmap squares (px/pitchY)
   }
 
@@ -364,15 +368,17 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
     const maxTop = this.maxHeight - pHeight
     let top = 0
-    for (; top <= maxTop; top += 1) {
-      if (!this.collides(rectangle, top)) break
-    }
+    if (this.displayMode !== 'collapse') {
+      for (; top <= maxTop; top += 1) {
+        if (!this.collides(rectangle, top)) break
+      }
 
-    if (top > maxTop) {
-      rectangle.top = null
-      this.rectangles.set(id, rectangle)
-      this.maxHeightReached = true
-      return null
+      if (top > maxTop) {
+        rectangle.top = null
+        this.rectangles.set(id, rectangle)
+        this.maxHeightReached = true
+        return null
+      }
     }
     rectangle.top = top
     this.addRectToBitmap(rectangle)

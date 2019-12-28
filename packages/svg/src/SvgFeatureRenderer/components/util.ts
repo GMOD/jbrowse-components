@@ -77,6 +77,7 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
     x = horizontallyFlipped
       ? (parentFeature.get('end') - feature.get('end')) / bpPerPx
       : (feature.get('start') - parentFeature.get('start')) / bpPerPx
+  const displayMode = readConfObject(config, 'displayMode')
   const height = readConfObject(config, 'height', [feature])
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const layoutParent = layout.parent
@@ -84,9 +85,9 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
   const subLayout = layout.addChild(
     String(feature.id()),
     x,
-    top,
+    displayMode === 'collapse' ? 0 : top,
     width,
-    height,
+    displayMode === 'compact' ? height / 3 : height,
     { GlyphComponent },
   )
   return subLayout
