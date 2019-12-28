@@ -102,21 +102,13 @@ function RenderedFeatureGlyph(props) {
     bpPerPx,
     region,
     config,
+    displayMode,
     layout,
   } = props
   const start = feature.get(horizontallyFlipped ? 'end' : 'start')
   const startPx = bpToPx(start, region, bpPerPx, horizontallyFlipped)
+  const labelsAllowed = displayMode !== 'compact' && displayMode !== 'collapsed'
 
-  const name = readConfObject(config, ['labels', 'name'], [feature]) || ''
-  const shouldShowName = /\S/.test(name)
-
-  const description =
-    readConfObject(config, ['labels', 'description'], [feature]) || ''
-  const shouldShowDescription = /\S/.test(description)
-
-  const expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
-
-  const fontHeight = readConfObject(config, ['labels', 'fontSize'], ['feature'])
   const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
   const GlyphComponent = chooseGlyphComponent(feature)
   const featureLayout = (GlyphComponent.layOut || layOut)({
@@ -126,39 +118,54 @@ function RenderedFeatureGlyph(props) {
     horizontallyFlipped,
     config,
   })
+  let shouldShowName
+  let shouldShowDescription
+  let name
+  let description
+  let fontHeight
+  let expansion
+  if (labelsAllowed) {
+    fontHeight = readConfObject(config, ['labels', 'fontSize'], ['feature'])
+    expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
+    name = readConfObject(config, ['labels', 'name'], [feature]) || ''
+    shouldShowName = /\S/.test(name)
 
-  const fontWidth = fontHeight * fontWidthScaleFactor
-  const textVerticalPadding = 2
+    description =
+      readConfObject(config, ['labels', 'description'], [feature]) || ''
+    shouldShowDescription = /\S/.test(description)
+    const fontWidth = fontHeight * fontWidthScaleFactor
+    const textVerticalPadding = 2
 
-  let nameWidth = 0
-  if (shouldShowName) {
-    nameWidth = Math.round(
-      Math.min(name.length * fontWidth, rootLayout.width + expansion),
-    )
-    rootLayout.addChild(
-      'nameLabel',
-      0,
-      featureLayout.bottom + textVerticalPadding,
-      nameWidth,
-      fontHeight,
-    )
-  }
+    let nameWidth = 0
+    if (shouldShowName) {
+      nameWidth = Math.round(
+        Math.min(name.length * fontWidth, rootLayout.width + expansion),
+      )
+      rootLayout.addChild(
+        'nameLabel',
+        0,
+        featureLayout.bottom + textVerticalPadding,
+        nameWidth,
+        fontHeight,
+      )
+    }
 
-  let descriptionWidth = 0
-  if (shouldShowDescription) {
-    const aboveLayout = shouldShowName
-      ? rootLayout.getSubRecord('nameLabel')
-      : featureLayout
-    descriptionWidth = Math.round(
-      Math.min(description.length * fontWidth, rootLayout.width + expansion),
-    )
-    rootLayout.addChild(
-      'descriptionLabel',
-      0,
-      aboveLayout.bottom + textVerticalPadding,
-      descriptionWidth,
-      fontHeight,
-    )
+    let descriptionWidth = 0
+    if (shouldShowDescription) {
+      const aboveLayout = shouldShowName
+        ? rootLayout.getSubRecord('nameLabel')
+        : featureLayout
+      descriptionWidth = Math.round(
+        Math.min(description.length * fontWidth, rootLayout.width + expansion),
+      )
+      rootLayout.addChild(
+        'descriptionLabel',
+        0,
+        aboveLayout.bottom + textVerticalPadding,
+        descriptionWidth,
+        fontHeight,
+      )
+    }
   }
 
   const topPx = layout.addRect(
@@ -245,9 +252,11 @@ function SvgFeatureRendering(props) {
     horizontallyFlipped,
     features,
     trackModel,
+    config,
   } = props
   const { configuration } = trackModel
   const width = (region.end - region.start) / bpPerPx
+  const displayMode = readConfObject(config, 'displayMode')
 
   const ref = useRef()
   const [mouseIsDown, setMouseIsDown] = useState(false)
@@ -400,6 +409,7 @@ function SvgFeatureRendering(props) {
         <RenderedFeatures
           features={features}
           setHeight={setHeight}
+          displayMode={displayMode}
           {...props}
         />
         <SvgSelected {...props} />

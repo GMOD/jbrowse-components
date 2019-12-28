@@ -13,6 +13,7 @@ export class LayoutSession {
   makeLayout() {
     return new MultiLayout(GranularRectLayout, {
       maxHeight: readConfObject(this.config, 'maxHeight'),
+      displayMode: readConfObject(this.config, 'displayMode'),
       pitchX: this.bpPerPx,
       pitchY: 3,
     })
