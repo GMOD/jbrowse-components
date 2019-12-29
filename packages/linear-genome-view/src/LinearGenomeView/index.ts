@@ -253,7 +253,6 @@ export function stateModelFactory(pluginManager: any) {
           autorun(() => {
             const assemblyName = self.displayRegionsFromAssemblyName
             const p = getParent(self, 4)
-            console.log(p)
             if (
               assemblyName &&
               p.assemblyData.get(assemblyName) &&

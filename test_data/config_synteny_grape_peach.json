@@ -22,7 +22,8 @@
           "displayName": "Grape vs Peach",
           "configuration": {
             "simpleAnchors": "test_data/grape.peach.anchors.simple",
-            "type": "LinearSyntenyView"
+            "type": "LinearSyntenyView",
+            "middle": true
           },
           "trackSelectorType": "hierarchical",
           "views": [

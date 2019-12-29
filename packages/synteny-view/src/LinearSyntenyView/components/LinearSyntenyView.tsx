@@ -5,11 +5,12 @@ export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
+  const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { makeStyles: jbrequiredMakeStyles } = jbrequire(
     '@material-ui/core/styles',
   )
 
-  const SyntenyConnections = jbrequire(require('./SyntenyConnections'))
+  const SyntenyConnections = jbrequire(require('./LinearSyntenyConnections'))
 
   const Header = jbrequire(require('./Header'))
   const { grey } = jbrequire('@material-ui/core/colors')
@@ -56,7 +57,44 @@ export default (pluginManager: any) => {
     },
   )
 
-  const SyntenyView = observer(
+  // The synteny is in the middle of the views
+  const MiddleSyntenyView = observer(
+    ({ model }: { model: LinearSyntenyViewModel }) => {
+      const classes = useStyles()
+      const { views, controlsWidth } = model
+      const { ReactComponent } = pluginManager.getViewType(views[0].type)
+      return (
+        <div>
+          <Header model={model} />
+          <div className={classes.container}>
+            <div className={classes.content}>
+              <div style={{ position: 'relative' }}>
+                <div className={classes.viewContainer}>
+                  <ReactComponent model={views[1]} />
+                </div>
+                <div style={{ display: 'flex' }}>
+                  <div style={{ width: controlsWidth, flexShrink: 0 }} />
+                  <svg
+                    style={{
+                      width: '100%',
+                    }}
+                  >
+                    {model.syntenyGroups.map(id => (
+                      <Overlay key={id} model={model} syntenyGroup={id} />
+                    ))}
+                  </svg>
+                </div>
+                <div className={classes.viewContainer}>
+                  <ReactComponent model={views[0]} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+  )
+  const OverlaySyntenyView = observer(
     ({ model }: { model: LinearSyntenyViewModel }) => {
       const classes = useStyles()
       const { views, controlsWidth } = model
@@ -97,8 +135,27 @@ export default (pluginManager: any) => {
       )
     },
   )
-  SyntenyView.propTypes = {
+
+  const LinearSyntenyView = observer(
+    ({ model }: { model: LinearSyntenyViewModel }) => {
+      return getConf(model, 'middle') ? (
+        <MiddleSyntenyView model={model} />
+      ) : (
+        <OverlaySyntenyView model={model} />
+      )
+    },
+  )
+
+  MiddleSyntenyView.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
-  return SyntenyView
+
+  OverlaySyntenyView.propTypes = {
+    model: PropTypes.objectOrObservableObject.isRequired,
+  }
+
+  LinearSyntenyView.propTypes = {
+    model: PropTypes.objectOrObservableObject.isRequired,
+  }
+  return LinearSyntenyView
 }

@@ -50,6 +50,10 @@ export default function stateModelFactory(pluginManager: any) {
         type: 'string',
         defaultValue: '',
       },
+      middle: {
+        type: 'boolean',
+        defaultValue: false,
+      },
     },
     { explicitlyTyped: true },
   )

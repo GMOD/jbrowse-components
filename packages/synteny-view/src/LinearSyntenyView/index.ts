@@ -11,11 +11,4 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
     configSchema,
     ReactComponent: jbrequire(require('./components/LinearSyntenyView')),
   })
-
-  return new ViewType({
-    name: 'LinearSplitSyntenyView',
-    stateModel,
-    configSchema,
-    ReactComponent: jbrequire(require('./components/LinearSplitSyntenyView')),
-  })
 }
