@@ -2039,6 +2039,81 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               class="makeStyles-paperContent"
             >
               <div
+                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+              >
+                <label
+                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+                  data-shrink="true"
+                >
+                  displayMode
+                </label>
+                <div
+                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+                >
+                  <div
+                    aria-haspopup="listbox"
+                    aria-labelledby=" "
+                    class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+                    role="button"
+                    tabindex="0"
+                  >
+                    normal
+                  </div>
+                  <input
+                    type="hidden"
+                    value="normal"
+                  />
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSelect-icon"
+                    focusable="false"
+                    role="presentation"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M7 10l5 5 5-5z"
+                    />
+                  </svg>
+                </div>
+                <p
+                  class="MuiFormHelperText-root MuiFormHelperText-filled"
+                >
+                  Alternative display modes
+                </p>
+              </div>
+            </div>
+            <div
+              class="makeStyles-slotModeSwitch"
+            >
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                tabindex="0"
+                title="convert to callback"
+                type="button"
+              >
+                <span
+                  class="MuiIconButton-label"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root"
+                  >
+                    radio_button_unchecked
+                  </span>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
+            </div>
+          </div>
+          <div
+            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+          >
+            <div
+              class="makeStyles-paperContent"
+            >
+              <div
                 class="MuiFormControl-root MuiTextField-root"
               >
                 <label
@@ -2159,7 +2234,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
                   data-shrink="true"
                 >
-                  alignmentHeight
+                  height
                 </label>
                 <div
                   class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
@@ -3035,6 +3110,81 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+          <div
+            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+          >
+            <div
+              class="makeStyles-paperContent"
+            >
+              <div
+                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+              >
+                <label
+                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+                  data-shrink="true"
+                >
+                  displayMode
+                </label>
+                <div
+                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+                >
+                  <div
+                    aria-haspopup="listbox"
+                    aria-labelledby=" "
+                    class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+                    role="button"
+                    tabindex="0"
+                  >
+                    normal
+                  </div>
+                  <input
+                    type="hidden"
+                    value="normal"
+                  />
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSelect-icon"
+                    focusable="false"
+                    role="presentation"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M7 10l5 5 5-5z"
+                    />
+                  </svg>
+                </div>
+                <p
+                  class="MuiFormHelperText-root MuiFormHelperText-filled"
+                >
+                  Alternative display modes
+                </p>
+              </div>
+            </div>
+            <div
+              class="makeStyles-slotModeSwitch"
+            >
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                tabindex="0"
+                title="convert to callback"
+                type="button"
+              >
+                <span
+                  class="MuiIconButton-label"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root"
+                  >
+                    radio_button_unchecked
+                  </span>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
             </div>
           </div>
           <div
