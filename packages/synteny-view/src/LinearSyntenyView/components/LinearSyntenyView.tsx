@@ -60,41 +60,73 @@ export default (pluginManager: any) => {
     ({ model }: { model: LinearSyntenyViewModel }) => {
       const classes = useStyles()
       const { views, controlsWidth } = model
+      const { ReactComponent } = pluginManager.getViewType(views[0].type)
       return (
         <div>
           <Header model={model} />
           <div className={classes.container}>
             <div className={classes.content}>
               <div style={{ position: 'relative' }}>
-                {views.map(view => {
-                  const { ReactComponent } = pluginManager.getViewType(
-                    view.type,
-                  )
-                  return (
-                    <div key={view.id} className={classes.viewContainer}>
-                      <ReactComponent model={view} />
-                    </div>
-                  )
-                })}
+                <div className={classes.viewContainer}>
+                  <ReactComponent model={views[1]} />
+                </div>
+                <div style={{ display: 'flex' }}>
+                  <div style={{ width: controlsWidth, flexShrink: 0 }} />
+                  <svg
+                    style={{
+                      width: '100%',
+                      zIndex: 10,
+                      pointerEvents: model.interactToggled ? undefined : 'none',
+                    }}
+                  >
+                    {model.syntenyGroups.map(id => (
+                      <Overlay key={id} model={model} syntenyGroup={id} />
+                    ))}
+                  </svg>
+                </div>
+                <div className={classes.viewContainer}>
+                  <ReactComponent model={views[0]} />
+                </div>
               </div>
-            </div>
-            <div className={classes.overlay}>
-              <div style={{ width: controlsWidth, flexShrink: 0 }} />
-              <svg
-                style={{
-                  width: '100%',
-                  zIndex: 10,
-                  pointerEvents: model.interactToggled ? undefined : 'none',
-                }}
-              >
-                {model.syntenyGroups.map(id => (
-                  <Overlay key={id} model={model} syntenyGroup={id} />
-                ))}
-              </svg>
             </div>
           </div>
         </div>
       )
+      // return (
+      //   <div>
+      //     <Header model={model} />
+      //     <div className={classes.container}>
+      //       <div className={classes.content}>
+      //         <div style={{ position: 'relative' }}>
+      //           {views.map(view => {
+      //             const { ReactComponent } = pluginManager.getViewType(
+      //               view.type,
+      //             )
+      //             return (
+      //               <div key={view.id} className={classes.viewContainer}>
+      //                 <ReactComponent model={view} />
+      //               </div>
+      //             )
+      //           })}
+      //         </div>
+      //       </div>
+      //       <div className={classes.overlay}>
+      //         <div style={{ width: controlsWidth, flexShrink: 0 }} />
+      //         <svg
+      //           style={{
+      //             width: '100%',
+      //             zIndex: 10,
+      //             pointerEvents: model.interactToggled ? undefined : 'none',
+      //           }}
+      //         >
+      //           {model.syntenyGroups.map(id => (
+      //             <Overlay key={id} model={model} syntenyGroup={id} />
+      //           ))}
+      //         </svg>
+      //       </div>
+      //     </div>
+      //   </div>
+      // )
     },
   )
   SyntenyView.propTypes = {

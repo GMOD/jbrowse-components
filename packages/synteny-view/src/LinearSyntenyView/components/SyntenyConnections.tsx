@@ -156,12 +156,12 @@ export default (pluginManager: any) => {
               const nt = tracks.map(v => v.track)
               const nc = tracks.filter(f => !!f.track)
 
-              const y1 =
-                yPos(getConf(nc[0].track, 'trackId'), level1, nv, nt, c1) +
-                (level1 < level2 ? cheight(c1) : 0)
-              const y2 =
-                yPos(getConf(nc[1].track, 'trackId'), level2, nv, nt, c2) +
-                (level2 < level1 ? cheight(c2) : 0)
+              const y1 = 0
+              // yPos(getConf(nc[0].track, 'trackId'), level1, nv, nt, c1) +
+              // (level1 < level2 ? cheight(c1) : 0)
+              const y2 = 150
+              // yPos(getConf(nc[1].track, 'trackId'), level2, nv, nt, c2) +
+              // (level2 < level1 ? cheight(c2) : 0)
 
               ret.push(
                 <polygon
