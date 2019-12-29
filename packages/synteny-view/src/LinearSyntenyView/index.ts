@@ -3,13 +3,19 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
     '@gmod/jbrowse-core/pluggableElementTypes/ViewType',
   )
 
-  const ReactComponent = jbrequire(require('./components/LinearSyntenyView'))
   const { stateModel, configSchema } = jbrequire(require('./model'))
 
   return new ViewType({
     name: 'LinearSyntenyView',
     stateModel,
     configSchema,
-    ReactComponent,
+    ReactComponent: jbrequire(require('./components/LinearSyntenyView')),
+  })
+
+  return new ViewType({
+    name: 'LinearSplitSyntenyView',
+    stateModel,
+    configSchema,
+    ReactComponent: jbrequire(require('./components/LinearSplitSyntenyView')),
   })
 }
