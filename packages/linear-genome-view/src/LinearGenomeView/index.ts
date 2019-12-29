@@ -245,14 +245,14 @@ export function stateModelFactory(pluginManager: any) {
       },
     }))
     .actions(self => ({
-      afterCreate() {
+      afterAttach() {
         // views with have displayRegionsFromAssemblyName will have their
         // displayed regions set to the refs in an assembly
         addDisposer(
           self,
           autorun(() => {
             const assemblyName = self.displayRegionsFromAssemblyName
-            const p = getParent(self, 4)
+            const p = getSession(self) as any
             if (
               assemblyName &&
               p.assemblyData.get(assemblyName) &&
