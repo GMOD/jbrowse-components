@@ -19,6 +19,7 @@ export interface PafRecord {
   start2: number
   end2: number
 }
+
 type LGV = Instance<LinearGenomeViewStateModel>
 type ConfigRelationship = { type: string; target: string }
 // Get the syntenyGroup type from the tracks configRelationships
@@ -138,29 +139,21 @@ export default function stateModelFactory(pluginManager: any) {
       },
 
       get allMatchedSyntenyFeatures() {
-        const r: { [key: string]: Feature[][] } = {}
-        this.syntenyGroups.forEach(group => {
-          r[group] = this.getMatchedSyntenyFeatures(group)
-        })
-        return r
+        return Object.fromEntries(
+          this.syntenyGroups.map(group => [
+            group,
+            this.getMatchedSyntenyFeatures(group),
+          ]),
+        )
       },
 
       get allMatchedMCScanFeatures() {
-        const r: { [key: string]: string[] } = {}
-        this.syntenyGroups.forEach(group => {
-          // @ts-ignore
-          r[group] = this.getMCScanFeatures(group)
-        })
-        return r
-      },
-
-      get allMatchedMinimap2Features() {
-        const r: { [key: string]: string[] } = {}
-        this.syntenyGroups.forEach(group => {
-          // @ts-ignore
-          r[group] = this.getMinimap2Features(group)
-        })
-        return r
+        return Object.fromEntries(
+          this.syntenyGroups.map(group => [
+            group,
+            this.getMCScanFeatures(group),
+          ]),
+        )
       },
 
       getFeaturesOverlappingBlock(assembly: number, block: any) {
@@ -190,19 +183,13 @@ export default function stateModelFactory(pluginManager: any) {
 
       // This finds candidate syntenic connections
       get minimap2Features() {
-        const alreadySeen = new Set<string>()
-        const featNameMap: any = {}
-
-        const blocks = Array.from(alreadySeen)
-        const ret = []
-
         const r1t = self.views[0].staticBlocks.map(block => {
           return this.getFeaturesOverlappingBlock(0, block)
         })
         const r1 = r1t.flat().map((row, i) => {
           return [
             {
-              layout: [row.start1, 0, row.end1, 10],
+              layout: [row.start1, 0, row.end1, 10] as LayoutRecord,
               feature: new SimpleFeature({
                 data: {
                   uniqueId: `${i}-1-1`,
@@ -214,7 +201,7 @@ export default function stateModelFactory(pluginManager: any) {
               block: { refName: row.chr1 },
             },
             {
-              layout: [row.start2, 0, row.end2, 10],
+              layout: [row.start2, 0, row.end2, 10] as LayoutRecord,
               feature: new SimpleFeature({
                 data: {
                   uniqueId: `${i}-1-2`,
@@ -235,7 +222,7 @@ export default function stateModelFactory(pluginManager: any) {
         const r2 = r2t.flat().map((row, i) => {
           return [
             {
-              layout: [row.start1, 0, row.end1, 10],
+              layout: [row.start1, 0, row.end1, 10] as LayoutRecord,
               feature: new SimpleFeature({
                 data: {
                   uniqueId: `${i}-2-1`,
@@ -247,7 +234,7 @@ export default function stateModelFactory(pluginManager: any) {
               block: { refName: row.chr1 },
             },
             {
-              layout: [row.start2, 0, row.end2, 10],
+              layout: [row.start2, 0, row.end2, 10] as LayoutRecord,
               feature: new SimpleFeature({
                 data: {
                   uniqueId: `${i}-2-2`,
@@ -301,7 +288,7 @@ export default function stateModelFactory(pluginManager: any) {
 
             ret.push([
               {
-                layout: [s1, 0, e1, 10],
+                layout: [s1, 0, e1, 10] as LayoutRecord,
                 feature: new SimpleFeature({
                   data: { uniqueId: `${block}-1`, start: s1, end: e1 },
                 }),
@@ -309,7 +296,7 @@ export default function stateModelFactory(pluginManager: any) {
                 block: { refName: r1.get('refName') },
               },
               {
-                layout: [s2, 0, e2, 10],
+                layout: [s2, 0, e2, 10] as LayoutRecord,
                 feature: new SimpleFeature({
                   data: { uniqueId: `${block}-2`, start: s2, end: e2 },
                 }),

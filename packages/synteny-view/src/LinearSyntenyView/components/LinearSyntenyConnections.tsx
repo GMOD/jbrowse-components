@@ -83,19 +83,15 @@ export default (pluginManager: any) => {
 
       if (!initialized) return null
 
-      let layoutMatches
-      if (simpleAnchors) {
-        layoutMatches = model.allMatchedMCScanFeatures[syntenyGroup]
-      }
-      if (pafData) {
-        layoutMatches = model.minimap2Features
-      }
-      if (!layoutMatches) {
-        layoutMatches = model.getMatchedFeaturesInLayout(
-          syntenyGroup,
-          model.allMatchedSyntenyFeatures[syntenyGroup],
-        )
-      }
+      // eslint-disable-next-line  no-nested-ternary
+      const layoutMatches = simpleAnchors
+        ? model.allMatchedMCScanFeatures[syntenyGroup]
+        : pafData
+        ? model.minimap2Features
+        : model.getMatchedFeaturesInLayout(
+            syntenyGroup,
+            model.allMatchedSyntenyFeatures[syntenyGroup],
+          )
 
       return (
         <g
