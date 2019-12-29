@@ -1,4 +1,3 @@
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 
 import {

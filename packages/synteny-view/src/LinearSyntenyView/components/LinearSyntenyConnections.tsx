@@ -30,7 +30,9 @@ export default (pluginManager: any) => {
           if (simpleAnchors) {
             const data = await fetch(simpleAnchors)
             const text = await data.text()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const m: any = {}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const r: any = {}
             text.split('\n').forEach((line: string, index: number) => {
               if (line.length) {
@@ -93,6 +95,9 @@ export default (pluginManager: any) => {
             model.allMatchedSyntenyFeatures[syntenyGroup],
           )
 
+      const middle = getConf(model, 'middle')
+      const hideTiny = getConf(model, 'hideTiny')
+
       return (
         <g
           stroke="#333"
@@ -132,11 +137,17 @@ export default (pluginManager: any) => {
               const r2 = block2.refName
               const l1 = f1.get('end') - f1.get('start')
               const l2 = f2.get('end') - f2.get('start')
-              // if (l1 < views[level1].bpPerPx || l2 < views[level2].bpPerPx) {
-              //   // eslint-disable-next-line no-continue
-              //   continue
-              // }
+
+              if (
+                (hideTiny && l1 < views[level1].bpPerPx) ||
+                l2 < views[level2].bpPerPx
+              ) {
+                // eslint-disable-next-line no-continue
+                continue
+              }
+              //  eslint-disable-next-line no-continue
               if (!model.refNames[level1].includes(r1)) continue
+              //   eslint-disable-next-line no-continue
               if (!model.refNames[level2].includes(r2)) continue
 
               const x11 = getPxFromCoordinate(views[level1], r1, c1[LEFT])
@@ -152,12 +163,14 @@ export default (pluginManager: any) => {
               const nt = tracks.map(v => v.track)
               const nc = tracks.filter(f => !!f.track)
 
-              const y1 = 0
-              // yPos(getConf(nc[0].track, 'trackId'), level1, nv, nt, c1) +
-              // (level1 < level2 ? cheight(c1) : 0)
-              const y2 = 150
-              // yPos(getConf(nc[1].track, 'trackId'), level2, nv, nt, c2) +
-              // (level2 < level1 ? cheight(c2) : 0)
+              const y1 = middle
+                ? 0
+                : yPos(getConf(nc[0].track, 'trackId'), level1, nv, nt, c1) +
+                  (level1 < level2 ? cheight(c1) : 0)
+              const y2 = middle
+                ? 150
+                : yPos(getConf(nc[1].track, 'trackId'), level2, nv, nt, c2) +
+                  (level2 < level1 ? cheight(c2) : 0)
 
               ret.push(
                 <polygon

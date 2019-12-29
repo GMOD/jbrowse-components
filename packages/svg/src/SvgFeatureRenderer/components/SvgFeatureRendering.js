@@ -205,6 +205,7 @@ RenderedFeatureGlyph.propTypes = {
   }).isRequired,
 
   region: CommonPropTypes.Region.isRequired,
+  displayMode: ReactPropTypes.string.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
   horizontallyFlipped: ReactPropTypes.bool,
   feature: ReactPropTypes.shape({

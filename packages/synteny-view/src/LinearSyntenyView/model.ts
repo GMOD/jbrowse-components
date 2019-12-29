@@ -55,6 +55,10 @@ export default function stateModelFactory(pluginManager: any) {
         type: 'boolean',
         defaultValue: false,
       },
+      hideTiny: {
+        type: 'boolean',
+        defaultValue: true,
+      },
     },
     { explicitlyTyped: true },
   )

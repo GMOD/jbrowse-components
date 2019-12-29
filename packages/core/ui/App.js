@@ -74,9 +74,6 @@ ViewContainer.propTypes = {
 
 function App({ contentRect, measureRef, session }) {
   const classes = useStyles()
-  if (!session) {
-    debugger
-  }
   const { pluginManager } = session
   useEffect(() => {
     if (contentRect.bounds.width) {
