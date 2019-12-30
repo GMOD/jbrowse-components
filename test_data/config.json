@@ -176,13 +176,13 @@
           "adapter": {
             "type": "BgzipFastaAdapter",
             "fastaLocation": {
-              "uri": "http://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+              "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
             },
             "faiLocation": {
-              "uri": "http://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+              "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
             },
             "gziLocation": {
-              "uri": "http://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+              "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
             }
           },
           "rendering": {
