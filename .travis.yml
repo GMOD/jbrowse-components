@@ -16,14 +16,11 @@ after_success:
 deploy:
   provider: s3
   skip_cleanup: true
-  access_key_id: AKIAV7MGHX5ZQA5FHIE2
-  secret_access_key:
-    secure: $SECRET_ACCESS_KEY
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET
   bucket: "jbrowse.org"
-  region: us-east-1
   local-dir: packages/jbrowse-web/build
   upload-dir: code/jb2/alpha/$TRAVIS_COMMIT
-  acl: public_read
   on:
     repo: GMOD/jbrowse-components
     all_branches: true
