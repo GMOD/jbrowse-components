@@ -158,8 +158,8 @@ FeatureGlyph.propTypes = {
   shouldShowName: PropTypes.bool,
   description: PropTypes.string,
   shouldShowDescription: PropTypes.bool,
-  fontHeight: PropTypes.number.isRequired,
-  allowedWidthExpansion: PropTypes.number.isRequired,
+  fontHeight: PropTypes.number,
+  allowedWidthExpansion: PropTypes.number,
 
   onFeatureMouseDown: PropTypes.func,
   onFeatureMouseEnter: PropTypes.func,
@@ -190,6 +190,8 @@ FeatureGlyph.defaultProps = {
   onFeatureMouseMove: undefined,
 
   onFeatureClick: undefined,
+  fontHeight: undefined,
+  allowedWidthExpansion: undefined,
 }
 
 export default observer(FeatureGlyph)
