@@ -9,7 +9,22 @@ import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 
 export type LayoutRecord = [number, number, number, number]
-
+export interface SimpleAnchorsData {
+  [key: number]: {
+    name1: string
+    name2: string
+    name3: string
+    name4: string
+    score: number
+  }
+}
+export interface AnchorsData {
+  [key: number]: {
+    name1: string
+    name2: string
+    score: number
+  }
+}
 export interface PafRecord {
   chr1: string
   start1: number
@@ -22,6 +37,7 @@ export interface PafRecord {
 
 type LGV = Instance<LinearGenomeViewStateModel>
 type ConfigRelationship = { type: string; target: string }
+
 // Get the syntenyGroup type from the tracks configRelationships
 function getSyntenyGroup(track: Instance<BaseTrackStateModel>) {
   const rels: ConfigRelationship[] = getConf(track, 'configRelationships')
@@ -43,6 +59,10 @@ export default function stateModelFactory(pluginManager: any) {
   const configSchema = ConfigurationSchema(
     'LinearSyntenyView',
     {
+      anchors: {
+        type: 'string',
+        defaultValue: '',
+      },
       simpleAnchors: {
         type: 'string',
         defaultValue: '',
@@ -89,9 +109,11 @@ export default function stateModelFactory(pluginManager: any) {
         .stateModel as LinearGenomeViewStateModel),
     })
     .volatile(self => ({
-      simpleAnchors: undefined as any,
+      anchors: undefined as { [key: string]: number } | undefined,
+      simpleAnchors: undefined as { [key: string]: number } | undefined,
       minimap2Data: undefined as PafRecord[] | undefined,
-      mcscanLookupData: undefined as any,
+      simpleAnchorsData: undefined as SimpleAnchorsData | undefined,
+      anchorsData: undefined as AnchorsData | undefined,
     }))
     .views(self => ({
       get controlsWidth() {
@@ -151,11 +173,20 @@ export default function stateModelFactory(pluginManager: any) {
         )
       },
 
-      get allMatchedMCScanFeatures() {
+      get allMatchedAnchorFeatures() {
         return Object.fromEntries(
           this.syntenyGroups.map(group => [
             group,
-            this.getMCScanFeatures(group),
+            this.getAnchorFeatures(group),
+          ]),
+        )
+      },
+
+      get allMatchedSimpleAnchorFeatures() {
+        return Object.fromEntries(
+          this.syntenyGroups.map(group => [
+            group,
+            this.getSimpleAnchorFeatures(group),
           ]),
         )
       },
@@ -255,26 +286,92 @@ export default function stateModelFactory(pluginManager: any) {
         return r1.concat(r2)
       },
 
-      // This finds candidate syntenic connections
-      getMCScanFeatures(syntenyGroup: string) {
+      // This finds candidate syntenic connections from MCSCan x.y.anchors file
+      getAnchorFeatures(syntenyGroup: string) {
         const features = this.getTrackFeatures(syntenyGroup)
-        const alreadySeen = new Set<string>()
+        const alreadySeen = new Set<number>()
         const featNameMap: any = {}
+
+        if (!self.anchorsData || !self.anchors) {
+          return []
+        }
 
         // this finds candidate features that share the same name
         for (const feature of features.values()) {
-          const n = self.simpleAnchors[feature.get('name')]
+          const n = self.anchors[feature.get('name')]
           featNameMap[feature.get('name')] = feature
 
-          if (n) {
+          if (n !== undefined) {
             alreadySeen.add(n)
           }
         }
 
         const blocks = Array.from(alreadySeen)
         const ret = []
+
         for (const block of blocks) {
-          const r = self.mcscanLookupData[block]
+          const r = self.anchorsData[block]
+          if (r) {
+            const r1 = featNameMap[r.name1]
+            const r2 = featNameMap[r.name2]
+            if (!r1 || !r2) {
+              // alt logic (r1 && r2) || !(r3 && r4)
+              // eslint-disable-next-line no-continue
+              continue
+            }
+            const s1 = r1.get('start')
+            const e1 = r1.get('end')
+            const s2 = r2.get('start')
+            const e2 = r2.get('end')
+
+            ret.push([
+              {
+                layout: [s1, 0, e1, 10] as LayoutRecord,
+                feature: new SimpleFeature({
+                  data: { uniqueId: `${block}-1`, start: s1, end: e1 },
+                }),
+                level: 1,
+                block: { refName: r1.get('refName') },
+              },
+              {
+                layout: [s2, 0, e2, 10] as LayoutRecord,
+                feature: new SimpleFeature({
+                  data: { uniqueId: `${block}-2`, start: s2, end: e2 },
+                }),
+                level: 0,
+                block: { refName: r2.get('refName') },
+              },
+            ])
+          }
+        }
+        return ret
+      },
+
+      // This finds candidate syntenic connections from MCSCan x.y.anchors.simple file
+      getSimpleAnchorFeatures(syntenyGroup: string) {
+        const features = this.getTrackFeatures(syntenyGroup)
+        const alreadySeen = new Set<number>()
+        const featNameMap: any = {}
+
+        if (!self.simpleAnchorsData || !self.simpleAnchors) {
+          return []
+        }
+
+        // this finds candidate features that share the same name
+        for (const feature of features.values()) {
+          const n = self.simpleAnchors[feature.get('name')]
+          featNameMap[feature.get('name')] = feature
+
+          if (n !== undefined) {
+            alreadySeen.add(n)
+          }
+        }
+
+        const blocks = Array.from(alreadySeen)
+        const ret = []
+
+        for (const block of blocks) {
+          const r = self.simpleAnchorsData[block]
           if (r) {
             const r1 = featNameMap[r.name1]
             const r2 = featNameMap[r.name2]
@@ -406,9 +503,20 @@ export default function stateModelFactory(pluginManager: any) {
         self.views.remove(view)
       },
 
-      setSimpleAnchorsData(simpleAnchors: any, mcscanLookupData: any) {
+      setSimpleAnchorsData(
+        simpleAnchors: { [key: string]: number },
+        simpleAnchorsData: SimpleAnchorsData,
+      ) {
         self.simpleAnchors = simpleAnchors
-        self.mcscanLookupData = mcscanLookupData
+        self.simpleAnchorsData = simpleAnchorsData
+      },
+
+      setAnchorsData(
+        anchors: { [key: string]: number },
+        anchorsData: AnchorsData,
+      ) {
+        self.anchors = anchors
+        self.anchorsData = anchorsData
       },
 
       setMinimap2Data(minimap2Data: PafRecord[]) {

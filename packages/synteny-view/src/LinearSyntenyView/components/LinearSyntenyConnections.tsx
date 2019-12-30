@@ -1,4 +1,10 @@
-import { PafRecord, LinearSyntenyViewModel } from '../model'
+/* eslint-disable  no-nested-ternary */
+import {
+  PafRecord,
+  LinearSyntenyViewModel,
+  AnchorsData,
+  SimpleAnchorsData,
+} from '../model'
 import { yPos, getPxFromCoordinate, cheight } from '../util'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
@@ -24,28 +30,47 @@ export default (pluginManager: any) => {
       const { views, showIntraviewLinks } = model
       const [initialized, setInitialized] = useState(false)
       const simpleAnchors = getConf(model, 'simpleAnchors')
+      const anchors = getConf(model, 'anchors')
       const pafData = getConf(model, 'paf')
       useEffect(() => {
         ;(async () => {
           if (simpleAnchors) {
             const data = await fetch(simpleAnchors)
             const text = await data.text()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const m: any = {}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const r: any = {}
+            const m: { [key: string]: number } = {}
+            const r: SimpleAnchorsData = {}
             text.split('\n').forEach((line: string, index: number) => {
               if (line.length) {
-                const [name1, name2, name3, name4, score] = line.split('\t')
-                m[name1] = index
-                m[name2] = index
-                m[name3] = index
-                m[name4] = index
-                r[index] = { name1, name2, name3, name4, score: +score }
+                if (line !== '###') {
+                  const [name1, name2, name3, name4, score] = line.split('\t')
+                  m[name1] = index
+                  m[name2] = index
+                  m[name3] = index
+                  m[name4] = index
+                  r[index] = { name1, name2, name3, name4, score: +score }
+                }
               }
             })
 
             model.setSimpleAnchorsData(m, r)
+            setInitialized(true)
+          }
+          if (anchors) {
+            const data = await fetch(anchors)
+            const text = await data.text()
+            const m: { [key: string]: number } = {}
+            const r: AnchorsData = {}
+
+            text.split('\n').forEach((line: string, index: number) => {
+              if (line.length) {
+                const [name1, name2, score] = line.split('\t')
+                m[name1] = index
+                m[name2] = index
+                r[index] = { name1, name2, score: +score }
+              }
+            })
+
+            model.setAnchorsData(m, r)
             setInitialized(true)
           }
           if (pafData) {
@@ -81,13 +106,14 @@ export default (pluginManager: any) => {
             setInitialized(true)
           }
         })()
-      }, [model, pafData, simpleAnchors])
+      }, [anchors, model, pafData, simpleAnchors])
 
       if (!initialized) return null
 
-      // eslint-disable-next-line  no-nested-ternary
-      const layoutMatches = simpleAnchors
-        ? model.allMatchedMCScanFeatures[syntenyGroup]
+      const layoutMatches = anchors
+        ? model.allMatchedAnchorFeatures[syntenyGroup]
+        : simpleAnchors
+        ? model.allMatchedSimpleAnchorFeatures[syntenyGroup]
         : pafData
         ? model.minimap2Features
         : model.getMatchedFeaturesInLayout(
@@ -97,6 +123,9 @@ export default (pluginManager: any) => {
 
       const middle = getConf(model, 'middle')
       const hideTiny = getConf(model, 'hideTiny')
+      if (!layoutMatches) {
+        return null
+      }
 
       return (
         <g

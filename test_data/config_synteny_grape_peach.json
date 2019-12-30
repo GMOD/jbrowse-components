@@ -22,6 +22,7 @@
           "displayName": "Grape vs Peach",
           "configuration": {
             "simpleAnchors": "test_data/grape.peach.anchors.simple",
+            "anchors": "test_data/grape.peach.anchors",
             "type": "LinearSyntenyView",
             "middle": true
           },
