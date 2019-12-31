@@ -16,6 +16,7 @@ export default pluginManager => {
       id: ElementId,
       type: types.literal('SpreadsheetView'),
       offsetPx: 0,
+      width: 400,
       height: types.optional(
         types.refinement(
           'SpreadsheetViewHeight',
