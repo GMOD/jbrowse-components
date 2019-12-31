@@ -144,13 +144,13 @@ export default (pluginManager: any) => {
                 layout: c1,
                 feature: f1,
                 level: level1,
-                block: block1,
+                refName: refName1,
               } = chunk[i]
               const {
                 layout: c2,
                 feature: f2,
                 level: level2,
-                block: block2,
+                refName: refName2,
               } = chunk[i + 1]
 
               if (!c1 || !c2) {
@@ -162,8 +162,8 @@ export default (pluginManager: any) => {
               if (!showIntraviewLinks && level1 === level2) {
                 return null
               }
-              const r1 = block1.refName
-              const r2 = block2.refName
+              const r1 = refName1
+              const r2 = refName2
               const l1 = f1.get('end') - f1.get('start')
               const l2 = f2.get('end') - f2.get('start')
 

@@ -236,7 +236,7 @@ export default function stateModelFactory(pluginManager: any) {
                 },
               }),
               level: 0,
-              block: { refName: row.chr1 },
+              refName: row.chr1,
             },
             {
               layout: [row.start2, 0, row.end2, 10] as LayoutRecord,
@@ -248,7 +248,7 @@ export default function stateModelFactory(pluginManager: any) {
                 },
               }),
               level: 1,
-              block: { refName: row.chr2 },
+              refName: row.chr2,
             },
           ]
         })
@@ -269,7 +269,7 @@ export default function stateModelFactory(pluginManager: any) {
                 },
               }),
               level: 0,
-              block: { refName: row.chr1 },
+              refName: row.chr1,
             },
             {
               layout: [row.start2, 0, row.end2, 10] as LayoutRecord,
@@ -281,7 +281,7 @@ export default function stateModelFactory(pluginManager: any) {
                 },
               }),
               level: 1,
-              block: { refName: row.chr2 },
+              refName: row.chr2,
             },
           ]
         })
@@ -334,7 +334,7 @@ export default function stateModelFactory(pluginManager: any) {
                   data: { uniqueId: `${block}-1`, start: s1, end: e1 },
                 }),
                 level: 1,
-                block: { refName: r1.get('refName') },
+                refName: r1.get('refName') as string,
               },
               {
                 layout: [s2, 0, e2, 10] as LayoutRecord,
@@ -342,7 +342,7 @@ export default function stateModelFactory(pluginManager: any) {
                   data: { uniqueId: `${block}-2`, start: s2, end: e2 },
                 }),
                 level: 0,
-                block: { refName: r2.get('refName') },
+                refName: r2.get('refName') as string,
               },
             ])
           }
@@ -397,7 +397,7 @@ export default function stateModelFactory(pluginManager: any) {
                   data: { uniqueId: `${block}-1`, start: s1, end: e1 },
                 }),
                 level: 1,
-                block: { refName: r1.get('refName') },
+                refName: r1.get('refName') as string,
               },
               {
                 layout: [s2, 0, e2, 10] as LayoutRecord,
@@ -405,7 +405,7 @@ export default function stateModelFactory(pluginManager: any) {
                   data: { uniqueId: `${block}-2`, start: s2, end: e2 },
                 }),
                 level: 0,
-                block: { refName: r3.get('refName') },
+                refName: r3.get('refName') as string,
               },
             ])
           }
@@ -439,20 +439,18 @@ export default function stateModelFactory(pluginManager: any) {
         return features.map(c =>
           c.map((feature: Feature) => {
             let layout: LayoutRecord | undefined
-            let block:
-              | { start: number; end: number; refName: string }
-              | undefined
+            let refName = ''
             const level = tracks.findIndex(track => {
               if (track) {
                 layout = track.layoutFeatures.get(feature.id())
-                block = track.featToBlock[feature.id()]
+                refName = track.featToBlock[feature.id()].refName
                 return layout
               }
               return undefined
             })
             return {
               feature,
-              block,
+              refName,
               layout,
               level,
             }
