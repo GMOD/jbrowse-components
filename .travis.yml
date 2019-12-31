@@ -20,7 +20,7 @@ deploy:
   secret_access_key: $AWS_SECRET
   bucket: "jbrowse.org"
   local-dir: packages/jbrowse-web/build
-  upload-dir: code/jb2/alpha/$TRAVIS_COMMIT
+  upload-dir: code/jb2/alpha/$TRAVIS_BRANCH
   on:
     repo: GMOD/jbrowse-components
     all_branches: true
