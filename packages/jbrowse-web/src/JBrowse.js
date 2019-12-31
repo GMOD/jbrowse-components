@@ -41,11 +41,11 @@ async function parseConfig(configLoc) {
   return config
 }
 
-function useJBrowseWeb(config, initialState) {
+function useJBrowseWeb(config, initialState, initialConfigSnapshot) {
   const [loaded, setLoaded] = useState(false)
   const [rootModel, setRootModel] = useState(initialState || {})
   const [urlSnapshot, setUrlSnapshot] = useState()
-  const [configSnapshot, setConfigSnapshot] = useState(config || {})
+  const [configSnapshot, setConfigSnapshot] = useState(initialConfigSnapshot)
   const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
 
   const { session, jbrowse } = rootModel || {}
@@ -79,7 +79,9 @@ function useJBrowseWeb(config, initialState) {
   }, [debouncedUrlSnapshot, rootModel])
   useEffect(() => {
     try {
-      setRootModel(JBrowseRootModel.create({ jbrowse: configSnapshot }))
+      if (configSnapshot) {
+        setRootModel(JBrowseRootModel.create({ jbrowse: configSnapshot }))
+      }
     } catch (error) {
       // if it failed to load, it's probably a problem with the saved sessions,
       // so just delete them and try again
@@ -115,7 +117,7 @@ function useJBrowseWeb(config, initialState) {
           if (localStorageConfig) {
             setConfigSnapshot(JSON.parse(localStorageConfig))
           }
-          if (configSnapshot.uri || configSnapshot.localPath) {
+          if (config) {
             setConfigSnapshot(await parseConfig(config))
           }
         }
@@ -126,13 +128,7 @@ function useJBrowseWeb(config, initialState) {
         })
       }
     })()
-  }, [
-    config,
-    configSnapshot.localPath,
-    configSnapshot.uri,
-    initialState,
-    useLocalStorage,
-  ])
+  }, [config, initialState, useLocalStorage])
 
   // finalize rootModel and setLoaded
   useEffect(() => {
@@ -226,8 +222,8 @@ function useJBrowseWeb(config, initialState) {
   return [loaded, rootModel]
 }
 
-const JBrowse = observer(({ config, initialState }) => {
-  const [loaded, root] = useJBrowseWeb(config, initialState)
+const JBrowse = observer(({ config, initialState, configSnapshot }) => {
+  const [loaded, root] = useJBrowseWeb(config, initialState, configSnapshot)
   const debouncedLoaded = useDebounce(loaded, 400)
   // Use a debounce loaded here to let the circle spinner give a tiny more turn
   // which looks better
