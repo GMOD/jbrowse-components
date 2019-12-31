@@ -77,7 +77,7 @@ export default function stateModelFactory(pluginManager: any) {
       },
       hideTiny: {
         type: 'boolean',
-        defaultValue: true,
+        defaultValue: false,
       },
     },
     { explicitlyTyped: true },
@@ -191,7 +191,10 @@ export default function stateModelFactory(pluginManager: any) {
         )
       },
 
-      getFeaturesOverlappingBlock(assembly: number, block: any) {
+      getFeaturesOverlappingBlock(
+        assembly: number,
+        block: { start: number; end: number; refName: string },
+      ) {
         return (self.minimap2Data || []).filter(row => {
           if (assembly === 0) {
             if (block.refName === row.chr1) {
@@ -290,7 +293,7 @@ export default function stateModelFactory(pluginManager: any) {
       getAnchorFeatures(syntenyGroup: string) {
         const features = this.getTrackFeatures(syntenyGroup)
         const alreadySeen = new Set<number>()
-        const featNameMap: any = {}
+        const featNameMap: { [key: string]: Feature } = {}
 
         if (!self.anchorsData || !self.anchors) {
           return []
@@ -351,7 +354,7 @@ export default function stateModelFactory(pluginManager: any) {
       getSimpleAnchorFeatures(syntenyGroup: string) {
         const features = this.getTrackFeatures(syntenyGroup)
         const alreadySeen = new Set<number>()
-        const featNameMap: any = {}
+        const featNameMap: { [key: string]: Feature } = {}
 
         if (!self.simpleAnchorsData || !self.simpleAnchors) {
           return []
@@ -436,7 +439,9 @@ export default function stateModelFactory(pluginManager: any) {
         return features.map(c =>
           c.map((feature: Feature) => {
             let layout: LayoutRecord | undefined
-            let block: any
+            let block:
+              | { start: number; end: number; refName: string }
+              | undefined
             const level = tracks.findIndex(track => {
               if (track) {
                 layout = track.layoutFeatures.get(feature.id())
