@@ -16,7 +16,6 @@ export default pluginManager => {
       id: ElementId,
       type: types.literal('SpreadsheetView'),
       offsetPx: 0,
-      width: 800,
       height: types.optional(
         types.refinement(
           'SpreadsheetViewHeight',
@@ -31,7 +30,7 @@ export default pluginManager => {
       hideFilterControls: false,
 
       filterControls: types.optional(FilterControlsModel, () =>
-        FilterControlsModel.create({ filters: [{ type: 'Text' }] }),
+        FilterControlsModel.create({}),
       ),
 
       // switch specifying whether we are showing the import wizard or the spreadsheet in our viewing area

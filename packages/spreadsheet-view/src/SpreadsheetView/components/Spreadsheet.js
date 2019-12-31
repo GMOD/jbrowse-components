@@ -21,17 +21,18 @@ export default pluginManager => {
   const React = jbrequire('react')
   const { useState, useRef } = React
   const ReactPropTypes = jbrequire('prop-types')
+  const { getParent } = jbrequire('mobx-state-tree')
+
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { grey, indigo } = jbrequire('@material-ui/core/colors')
   const Checkbox = jbrequire('@material-ui/core/Checkbox')
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const Icon = jbrequire('@material-ui/core/Icon')
-  const Menu = jbrequire('@material-ui/core/Menu')
-  const MenuItem = jbrequire('@material-ui/core/MenuItem')
-  const ListItemIcon = jbrequire('@material-ui/core/ListItemIcon')
-  const ListItemText = jbrequire('@material-ui/core/ListItemText')
+
   const Tooltip = jbrequire('@material-ui/core/Tooltip')
   const FormControlLabel = jbrequire('@material-ui/core/FormControlLabel')
+
+  const ColumnMenu = jbrequire(require('./ColumnMenu'))
 
   const useStyles = makeStyles(theme => {
     return {
@@ -201,142 +202,6 @@ export default pluginManager => {
     return null
   }
 
-  const ColumnMenu = observer(({ model, currentColumnMenu, setColumnMenu }) => {
-    const columnMenuClose = () => {
-      setDataTypeMenuOpen(false)
-      setColumnMenu(null)
-    }
-
-    const columnNumber = currentColumnMenu && currentColumnMenu.colNumber
-
-    const sortMenuClick = descending => {
-      columnMenuClose()
-      model.setSortColumns([
-        {
-          columnNumber,
-          descending,
-        },
-      ])
-    }
-
-    const [dataTypeMenuOpen, setDataTypeMenuOpen] = useState(false)
-    const drawerMenuItemRef = useRef(null)
-
-    const { dataTypeChoices } = model
-
-    const dataTypeName =
-      (currentColumnMenu && model.columns[columnNumber].dataType.type) || ''
-    const dataTypeDisplayName =
-      (currentColumnMenu && model.columns[columnNumber].dataType.displayName) ||
-      ''
-
-    const isSorting = Boolean(
-      model.sortColumns.length &&
-        currentColumnMenu &&
-        model.sortColumns.find(
-          col => col.columnNumber === currentColumnMenu.colNumber,
-        ),
-    )
-    function stopSortingClick() {
-      columnMenuClose()
-      model.setSortColumns([])
-    }
-
-    return (
-      <>
-        <Menu
-          anchorEl={currentColumnMenu && currentColumnMenu.anchorEl}
-          keepMounted
-          open={Boolean(currentColumnMenu)}
-          onClose={columnMenuClose}
-          elevation={8}
-          getContentAnchorEl={null}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-        >
-          {!isSorting ? null : (
-            <MenuItem onClick={stopSortingClick}>
-              <ListItemIcon>
-                <Icon fontSize="small">clear</Icon>
-              </ListItemIcon>
-              <ListItemText primary="Stop sorting" />
-            </MenuItem>
-          )}
-          <MenuItem onClick={sortMenuClick.bind(null, false)}>
-            <ListItemIcon>
-              <Icon style={{ transform: 'scale(1,-1)' }} fontSize="small">
-                sort
-              </Icon>
-            </ListItemIcon>
-            <ListItemText primary="Sort ascending" />
-          </MenuItem>
-          <MenuItem onClick={sortMenuClick.bind(null, true)}>
-            <ListItemIcon>
-              <Icon fontSize="small">sort</Icon>
-            </ListItemIcon>
-            <ListItemText primary="Sort descending" />
-          </MenuItem>
-          <MenuItem
-            ref={drawerMenuItemRef}
-            onClick={() => {
-              setDataTypeMenuOpen(true)
-            }}
-          >
-            <ListItemIcon>
-              <Icon fontSize="small">perm_data_setting</Icon>
-            </ListItemIcon>
-            <ListItemText primary={`Type: ${dataTypeDisplayName}`} />
-            <ListItemIcon>
-              <Icon fontSize="small">arrow_right</Icon>
-            </ListItemIcon>
-          </MenuItem>
-        </Menu>
-        <Menu
-          anchorEl={
-            currentColumnMenu && drawerMenuItemRef && drawerMenuItemRef.current
-          }
-          open={Boolean(currentColumnMenu && dataTypeMenuOpen)}
-          onClose={columnMenuClose}
-          elevation={10}
-          getContentAnchorEl={null}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'left',
-          }}
-        >
-          {dataTypeChoices.map(({ typeName, displayName }) => {
-            return (
-              <MenuItem
-                key={typeName}
-                onClick={() => {
-                  model.setColumnType(columnNumber, typeName)
-                  columnMenuClose()
-                }}
-              >
-                <ListItemIcon>
-                  <Icon fontSize="small">
-                    {dataTypeName === typeName ? 'check' : 'blank'}
-                  </Icon>
-                </ListItemIcon>
-                <ListItemText primary={displayName || typeName} />
-              </MenuItem>
-            )
-          })}
-        </Menu>
-      </>
-    )
-  })
-
   const DataTable = observer(({ model }) => {
     const { columnDisplayOrder, columns, hasColumnNames, rowSet } = model
     const classes = useStyles()
@@ -365,7 +230,8 @@ export default pluginManager => {
     return (
       <>
         <ColumnMenu
-          model={model}
+          viewModel={getParent(model)}
+          spreadsheetModel={model}
           currentColumnMenu={currentColumnMenu}
           setColumnMenu={setColumnMenu}
         />

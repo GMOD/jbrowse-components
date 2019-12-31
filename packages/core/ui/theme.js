@@ -1,11 +1,17 @@
 import { createMuiTheme } from '@material-ui/core/styles'
 import { grey } from '@material-ui/core/colors'
 
+const midnight = '#0D233F'
+const grape = '#721E63'
+const forest = '#135560'
+const mandarin = '#FFB11D'
+
 export default createMuiTheme({
   palette: {
     // type: 'dark',
-    primary: { main: '#0D233F' },
-    secondary: { main: '#721E63' },
+    primary: { main: midnight },
+    secondary: { main: grape },
+    tertiary: { main: forest },
     background: {
       mainApp: grey[700],
     },
@@ -13,22 +19,22 @@ export default createMuiTheme({
   overrides: {
     MuiIconButton: {
       colorSecondary: {
-        color: '#135560',
+        color: forest,
       },
     },
     MuiButton: {
       textSecondary: {
-        color: '#135560',
+        color: forest,
       },
     },
     MuiFab: {
       secondary: {
-        backgroundColor: '#FFB11D',
+        backgroundColor: mandarin,
       },
     },
     MuiExpansionPanelSummary: {
       root: {
-        background: '#135560',
+        background: forest,
         '&$expanded': {
           // overrides the subclass e.g. .MuiExpansionPanelSummary-root-311.MuiExpansionPanelSummary-expanded-312
           minHeight: 0,
