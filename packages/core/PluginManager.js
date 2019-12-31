@@ -87,6 +87,8 @@ export default class PluginManager {
     })
   }
 
+  jbrequireCache = new Map()
+
   /**
    * Get the re-exported version of the given package name.
    * Throws an error if the package is not re-exported by the plugin manager.
@@ -103,9 +105,12 @@ export default class PluginManager {
         )
       return pack
     }
+
     if (typeof lib === 'function') {
-      return lib(this)
+      if (!this.jbrequireCache.has(lib)) this.jbrequireCache.set(lib, lib(this))
+      return this.jbrequireCache.get(lib)
     }
+
     if (lib.default) return this.jbrequire(lib.default)
 
     throw new TypeError(
