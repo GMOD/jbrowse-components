@@ -144,13 +144,13 @@ export default (pluginManager: any) => {
                 layout: c1,
                 feature: f1,
                 level: level1,
-                refName: refName1,
+                refName: ref1,
               } = chunk[i]
               const {
                 layout: c2,
                 feature: f2,
                 level: level2,
-                refName: refName2,
+                refName: ref2,
               } = chunk[i + 1]
 
               if (!c1 || !c2) {
@@ -162,27 +162,25 @@ export default (pluginManager: any) => {
               if (!showIntraviewLinks && level1 === level2) {
                 return null
               }
-              const r1 = refName1
-              const r2 = refName2
               const l1 = f1.get('end') - f1.get('start')
               const l2 = f2.get('end') - f2.get('start')
 
               if (
-                (hideTiny && l1 < views[level1].bpPerPx) ||
-                l2 < views[level2].bpPerPx
+                hideTiny &&
+                (l1 < views[level1].bpPerPx || l2 < views[level2].bpPerPx)
               ) {
                 // eslint-disable-next-line no-continue
                 continue
               }
               //  eslint-disable-next-line no-continue
-              if (!model.refNames[level1].includes(r1)) continue
+              if (!model.refNames[level1].includes(ref1)) continue
               //   eslint-disable-next-line no-continue
-              if (!model.refNames[level2].includes(r2)) continue
+              if (!model.refNames[level2].includes(ref2)) continue
 
-              const x11 = getPxFromCoordinate(views[level1], r1, c1[LEFT])
-              const x12 = getPxFromCoordinate(views[level1], r1, c1[RIGHT])
-              const x21 = getPxFromCoordinate(views[level2], r2, c2[LEFT])
-              const x22 = getPxFromCoordinate(views[level2], r2, c2[RIGHT])
+              const x11 = getPxFromCoordinate(views[level1], ref1, c1[LEFT])
+              const x12 = getPxFromCoordinate(views[level1], ref1, c1[RIGHT])
+              const x21 = getPxFromCoordinate(views[level2], ref2, c2[LEFT])
+              const x22 = getPxFromCoordinate(views[level2], ref2, c2[RIGHT])
 
               const tracks = views.map(view => ({
                 view,
@@ -191,15 +189,28 @@ export default (pluginManager: any) => {
               const nv = tracks.map(v => v.view)
               const nt = tracks.map(v => v.track)
               const nc = tracks.filter(f => !!f.track)
+              const t = Math.abs(level1 - level2)
 
               const y1 = middle
-                ? 0
+                ? t > 0
+                  ? 150
+                  : 0
                 : yPos(getConf(nc[0].track, 'trackId'), level1, nv, nt, c1) +
                   (level1 < level2 ? cheight(c1) : 0)
               const y2 = middle
-                ? 150
+                ? t > 0
+                  ? 0
+                  : 150
                 : yPos(getConf(nc[1].track, 'trackId'), level2, nv, nt, c2) +
                   (level2 < level1 ? cheight(c2) : 0)
+
+              // if (views[level1].horizontallyFlipped) {
+              //   console.log('test')
+              //   ;[x11, x12] = [x12, x11]
+              // }
+              // if (views[level2].horizontallyFlipped) {
+              //   ;[x21, x22] = [x22, x21]
+              // }
 
               ret.push(
                 <polygon

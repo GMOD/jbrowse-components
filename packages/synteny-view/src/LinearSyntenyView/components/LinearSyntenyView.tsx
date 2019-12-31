@@ -70,7 +70,7 @@ export default (pluginManager: any) => {
             <div className={classes.content}>
               <div style={{ position: 'relative' }}>
                 <div className={classes.viewContainer}>
-                  <ReactComponent model={views[1]} />
+                  <ReactComponent model={views[0]} />
                 </div>
                 <div style={{ display: 'flex' }}>
                   <div style={{ width: controlsWidth, flexShrink: 0 }} />
@@ -85,7 +85,7 @@ export default (pluginManager: any) => {
                   </svg>
                 </div>
                 <div className={classes.viewContainer}>
-                  <ReactComponent model={views[0]} />
+                  <ReactComponent model={views[1]} />
                 </div>
               </div>
             </div>
