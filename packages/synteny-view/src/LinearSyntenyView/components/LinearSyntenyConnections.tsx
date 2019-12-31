@@ -172,10 +172,14 @@ export default (pluginManager: any) => {
                 // eslint-disable-next-line no-continue
                 continue
               }
-              //  eslint-disable-next-line no-continue
-              if (!model.refNames[level1].includes(ref1)) continue
-              //   eslint-disable-next-line no-continue
-              if (!model.refNames[level2].includes(ref2)) continue
+              if (!model.refNames[level1].includes(ref1)) {
+                //  eslint-disable-next-line no-continue
+                continue
+              }
+              if (!model.refNames[level2].includes(ref2)) {
+                //   eslint-disable-next-line no-continue
+                continue
+              }
 
               const x11 = getPxFromCoordinate(views[level1], ref1, c1[LEFT])
               const x12 = getPxFromCoordinate(views[level1], ref1, c1[RIGHT])
@@ -189,28 +193,19 @@ export default (pluginManager: any) => {
               const nv = tracks.map(v => v.view)
               const nt = tracks.map(v => v.track)
               const nc = tracks.filter(f => !!f.track)
-              const t = Math.abs(level1 - level2)
 
               const y1 = middle
-                ? t > 0
-                  ? 150
-                  : 0
+                ? level1 < level2
+                  ? 0
+                  : 150
                 : yPos(getConf(nc[0].track, 'trackId'), level1, nv, nt, c1) +
                   (level1 < level2 ? cheight(c1) : 0)
               const y2 = middle
-                ? t > 0
+                ? level2 < level1
                   ? 0
                   : 150
                 : yPos(getConf(nc[1].track, 'trackId'), level2, nv, nt, c2) +
                   (level2 < level1 ? cheight(c2) : 0)
-
-              // if (views[level1].horizontallyFlipped) {
-              //   console.log('test')
-              //   ;[x11, x12] = [x12, x11]
-              // }
-              // if (views[level2].horizontallyFlipped) {
-              //   ;[x21, x22] = [x22, x21]
-              // }
 
               ret.push(
                 <polygon

@@ -177,9 +177,10 @@ export function stateModelFactory(pluginManager: any) {
 
       bpToPx({ refName, coord }: { refName: string; coord: number }) {
         let offsetBp = 0
+
         const index = this.displayedRegionsInOrder.findIndex(r => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
-            offsetBp += coord - r.start
+            offsetBp += self.reversed ? r.end - coord : coord - r.start
             return true
           }
           offsetBp += r.end - r.start
