@@ -199,7 +199,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const toY = (rawscore: number) => height - viewScale(rawscore)
     const toHeight = (rawscore: number) => toY(originY) - toY(rawscore)
 
-    console.log(props)
+    // console.log(props)
 
     //const coverageBins = this.generateCoverageBins(props)
 
@@ -217,6 +217,8 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const widthPx = widthBp * scale
     const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(bpPerPx)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
+    const insRegex = /ins *(\d)/
+    // A: green, C: blue, g: orange, t: red, deletion: dark grey, total: light grey
     const colorForBase: { [key: string]: string } = {
       A: '#00bf00',
       C: '#4747ff',
@@ -237,7 +239,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       const baseArray = currentBin.totalBaseList()
       // could be drawing half the size it should be
       baseArray.forEach(function iterate(mismatch, index){
-        ctx.fillStyle = colorForBase[mismatch.base]
+        ctx.fillStyle = mismatch.base.match(insRegex)  ? 'darkgrey' : colorForBase[mismatch.base]
         ctx.fillRect(xposition, toY(mismatch.total), scale, toHeight(mismatch.total))
       })
     })

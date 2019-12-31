@@ -20,18 +20,31 @@ export default class NestedFrequencyTable {
 
   totalBaseList() {
     const totalBaseList = []
-    const base = 'A' || 'T' || 'C' || 'G' || '*' // need to account for deletion * and insertion 1 // MAKE DARK GREY
+    const base = 'A' || 'T' || 'C' || 'G'
+    const deletion = '*'
+    const insRegex = /ins (\d)/
+    const insRegexCheck = mismatch => insRegex.test(mismatch) === true
     // only go into categories with mismatch, reference unneeded
-    if (Object.keys(this.categories).includes(base)) {
+    if (
+      Object.keys(this.categories).includes(base) ||
+      Object.keys(this.categories).includes(deletion) ||
+      Object.keys(this.categories).some(insRegexCheck)
+    ) {
       delete this.categories.reference
       // looping thru all mismatch bases
       for (const key of Object.keys(this.categories)) {
         const v = this.categories[key].categories
         const totalInBase = Object.values(v).reduce((a, b) => a + b, 0)
-        totalBaseList.push({
-          base: key,
-          total: totalInBase,
-        })
+        // add insertion/deletion first so that base color painted after
+        key === deletion || key.match(insRegex)
+          ? totalBaseList.unshift({
+              base: key,
+              total: totalInBase,
+            })
+          : totalBaseList.push({
+              base: key,
+              total: totalInBase,
+            })
       }
     }
     return totalBaseList
