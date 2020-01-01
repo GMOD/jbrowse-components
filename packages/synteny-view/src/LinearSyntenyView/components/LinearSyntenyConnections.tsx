@@ -63,10 +63,12 @@ export default (pluginManager: any) => {
 
             text.split('\n').forEach((line: string, index: number) => {
               if (line.length) {
-                const [name1, name2, score] = line.split('\t')
-                m[name1] = index
-                m[name2] = index
-                r[index] = { name1, name2, score: +score }
+                if (line !== '###') {
+                  const [name1, name2, score] = line.split('\t')
+                  m[name1] = index
+                  m[name2] = index
+                  r[index] = { name1, name2, score: +score }
+                }
               }
             })
 
@@ -164,13 +166,14 @@ export default (pluginManager: any) => {
               }
               const l1 = f1.get('end') - f1.get('start')
               const l2 = f2.get('end') - f2.get('start')
+              let tiny = false
 
-              if (
-                hideTiny &&
-                (l1 < views[level1].bpPerPx || l2 < views[level2].bpPerPx)
-              ) {
-                // eslint-disable-next-line no-continue
-                continue
+              if (l1 < views[level1].bpPerPx || l2 < views[level2].bpPerPx) {
+                tiny = true
+                if (hideTiny) {
+                  // eslint-disable-next-line no-continue
+                  continue
+                }
               }
               if (!model.refNames[level1].includes(ref1)) {
                 //  eslint-disable-next-line no-continue
@@ -211,7 +214,10 @@ export default (pluginManager: any) => {
                 <polygon
                   key={`${f1.id()}-${f2.id()}`}
                   points={`${x11},${y1} ${x12},${y1} ${x22},${y2}, ${x21},${y2}`}
-                  style={{ fill: 'rgba(255,100,100,0.3)' }}
+                  style={{
+                    fill: 'rgba(255,100,100,0.3)',
+                    stroke: tiny ? 'rgba(50,50,50,0.1)' : undefined,
+                  }}
                 />,
               )
             }

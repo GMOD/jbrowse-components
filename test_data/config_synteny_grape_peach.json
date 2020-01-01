@@ -15,6 +15,7 @@
       "views": [
         {
           "type": "LinearSyntenyView",
+          "id": "test1",
           "headerHeight": 44,
           "datasetName": "grape_vs_peach_dataset",
           "width": 1850,
@@ -30,6 +31,7 @@
           "views": [
             {
               "type": "LinearGenomeView",
+              "id": "test1_1",
               "offsetPx": 0,
               "bpPerPx": 1000,
               "displayRegionsFromAssemblyName": "peach",
@@ -52,6 +54,7 @@
             },
             {
               "type": "LinearGenomeView",
+              "id": "test1_2",
               "offsetPx": 0,
               "bpPerPx": 1000,
               "displayRegionsFromAssemblyName": "grape",

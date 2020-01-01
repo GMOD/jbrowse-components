@@ -170,6 +170,17 @@ export default ({ jbrequire }: { jbrequire: any }) => {
           <Sync model={model} />
 
           <IconButton
+            type="button"
+            title="configure track"
+            size="small"
+            className={classes.toggleButton}
+            value="configure"
+            onClick={model.activateConfigurationUI}
+          >
+            <Icon fontSize="small">settings</Icon>
+          </IconButton>
+
+          <IconButton
             onClick={model.activateTrackSelector}
             title="select tracks"
             value="track_select"

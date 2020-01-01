@@ -80,7 +80,7 @@ export default function stateModelFactory(pluginManager: any) {
         defaultValue: false,
       },
     },
-    { explicitlyTyped: true },
+    { explicitlyTyped: true, implicitIdentifier: true },
   )
 
   const minHeight = 40
@@ -535,7 +535,8 @@ export default function stateModelFactory(pluginManager: any) {
       },
 
       activateConfigurationUI() {
-        getRoot(self).editConfiguration(self.configuration)
+        // @ts-ignore
+        getSession(self).editConfiguration(self.configuration)
       },
 
       toggleInteract() {
