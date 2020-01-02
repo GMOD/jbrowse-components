@@ -56,7 +56,6 @@ export default (pluginManager: any) => {
       return <SyntenyConnections {...props} />
     },
   )
-
   // The synteny is in the middle of the views
   const MiddleSyntenyView = observer(
     ({ model }: { model: LinearSyntenyViewModel }) => {
@@ -79,9 +78,25 @@ export default (pluginManager: any) => {
                       width: '100%',
                     }}
                   >
-                    {model.syntenyGroups.map(id => (
-                      <Overlay key={id} model={model} syntenyGroup={id} />
-                    ))}
+                    {model.syntenyGroups.map(syntenyGroup => {
+                      return [
+                        model.allMatchedAnchorFeatures[syntenyGroup],
+                        model.allMatchedSimpleAnchorFeatures[syntenyGroup],
+                        model.minimap2Features,
+                        model.getMatchedFeaturesInLayout(
+                          syntenyGroup,
+                          model.allMatchedSyntenyFeatures[syntenyGroup],
+                        ),
+                      ].map(layoutMatches =>
+                        layoutMatches ? (
+                          <Overlay
+                            key={syntenyGroup}
+                            layoutMatches={layoutMatches}
+                            model={model}
+                          />
+                        ) : null,
+                      )
+                    })}
                   </svg>
                 </div>
                 <div className={classes.viewContainer}>

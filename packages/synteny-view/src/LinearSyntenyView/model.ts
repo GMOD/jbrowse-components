@@ -5,6 +5,7 @@ import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 import { types, Instance } from 'mobx-state-tree'
+import { autorun } from 'mobx'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 
@@ -144,7 +145,7 @@ export default function stateModelFactory(pluginManager: any) {
       },
 
       // Get tracks with a given syntenyGroup across multiple views
-      getMatchedTracks(syntenyGroup: string) {
+      getSyntenyGroupTracks(syntenyGroup: string) {
         return self.views.map(view =>
           view.tracks.find(track => getSyntenyGroup(track) === syntenyGroup),
         )
@@ -160,7 +161,7 @@ export default function stateModelFactory(pluginManager: any) {
       // Get a composite map of featureId->feature map for a track
       // across multiple views
       getTrackFeatures(syntenyGroup: string) {
-        const tracks = this.getMatchedTracks(syntenyGroup).filter(f => !!f)
+        const tracks = this.getSyntenyGroupTracks(syntenyGroup).filter(f => !!f)
         return new CompositeMap<string, Feature>(tracks.map(t => t.features))
       },
 
@@ -435,7 +436,7 @@ export default function stateModelFactory(pluginManager: any) {
       },
 
       getMatchedFeaturesInLayout(syntenyGroup: string, features: Feature[][]) {
-        const tracks = this.getMatchedTracks(syntenyGroup)
+        const tracks = this.getSyntenyGroupTracks(syntenyGroup)
         return features.map(c =>
           c.map((feature: Feature) => {
             let layout: LayoutRecord | undefined
@@ -479,6 +480,95 @@ export default function stateModelFactory(pluginManager: any) {
                 }
               }
             },
+          ),
+        )
+
+        addDisposer(
+          self,
+          autorun(
+            async () => {
+              try {
+                const simpleAnchors = getConf(self, 'simpleAnchors')
+                const anchors = getConf(self, 'anchors')
+                const pafData = getConf(self, 'paf')
+                if (simpleAnchors) {
+                  const data = await fetch(simpleAnchors)
+                  const text = await data.text()
+                  const m: { [key: string]: number } = {}
+                  const r: SimpleAnchorsData = {}
+                  text.split('\n').forEach((line: string, index: number) => {
+                    if (line.length) {
+                      if (line !== '###') {
+                        const [name1, name2, name3, name4, score] = line.split(
+                          '\t',
+                        )
+                        m[name1] = index
+                        m[name2] = index
+                        m[name3] = index
+                        m[name4] = index
+                        r[index] = { name1, name2, name3, name4, score: +score }
+                      }
+                    }
+                  })
+
+                  this.setSimpleAnchorsData(m, r)
+                }
+                if (anchors) {
+                  const data = await fetch(anchors)
+                  const text = await data.text()
+                  const m: { [key: string]: number } = {}
+                  const r: AnchorsData = {}
+
+                  text.split('\n').forEach((line: string, index: number) => {
+                    if (line.length) {
+                      if (line !== '###') {
+                        const [name1, name2, score] = line.split('\t')
+                        m[name1] = index
+                        m[name2] = index
+                        r[index] = { name1, name2, score: +score }
+                      }
+                    }
+                  })
+
+                  this.setAnchorsData(m, r)
+                }
+                if (pafData) {
+                  const data = await fetch(pafData)
+                  const text = await data.text()
+                  const m: PafRecord[] = []
+                  text.split('\n').forEach((line: string, index: number) => {
+                    if (line.length) {
+                      const [
+                        chr1,
+                        ,
+                        start1,
+                        end1,
+                        strand1,
+                        chr2,
+                        ,
+                        start2,
+                        end2,
+                      ] = line.split('\t')
+                      m[index] = {
+                        chr1,
+                        start1: +start1,
+                        end1: +end1,
+                        strand1,
+                        chr2,
+                        start2: +start2,
+                        end2: +end2,
+                      }
+                    }
+                  })
+
+                  this.setMinimap2Data(m)
+                }
+              } catch (e) {
+                console.error(e)
+                throw e
+              }
+            },
+            { delay: 1000 },
           ),
         )
       },

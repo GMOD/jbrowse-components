@@ -1,9 +1,11 @@
 /* eslint-disable  no-nested-ternary */
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import {
   PafRecord,
   LinearSyntenyViewModel,
   AnchorsData,
   SimpleAnchorsData,
+  LayoutRecord,
 } from '../model'
 import { yPos, getPxFromCoordinate, cheight } from '../util'
 
@@ -22,106 +24,19 @@ export default (pluginManager: any) => {
       model,
       height,
       syntenyGroup,
+      layoutMatches,
     }: {
       model: LinearSyntenyViewModel
       height: number
       syntenyGroup: string
+      layoutMatches: {
+        layout: LayoutRecord
+        feature: Feature
+        level: number
+        refName: string
+      }[][]
     }) => {
       const { views, showIntraviewLinks } = model
-      const [initialized, setInitialized] = useState(false)
-      const simpleAnchors = getConf(model, 'simpleAnchors')
-      const anchors = getConf(model, 'anchors')
-      const pafData = getConf(model, 'paf')
-      useEffect(() => {
-        ;(async () => {
-          if (simpleAnchors) {
-            const data = await fetch(simpleAnchors)
-            const text = await data.text()
-            const m: { [key: string]: number } = {}
-            const r: SimpleAnchorsData = {}
-            text.split('\n').forEach((line: string, index: number) => {
-              if (line.length) {
-                if (line !== '###') {
-                  const [name1, name2, name3, name4, score] = line.split('\t')
-                  m[name1] = index
-                  m[name2] = index
-                  m[name3] = index
-                  m[name4] = index
-                  r[index] = { name1, name2, name3, name4, score: +score }
-                }
-              }
-            })
-
-            model.setSimpleAnchorsData(m, r)
-            setInitialized(true)
-          }
-          if (anchors) {
-            const data = await fetch(anchors)
-            const text = await data.text()
-            const m: { [key: string]: number } = {}
-            const r: AnchorsData = {}
-
-            text.split('\n').forEach((line: string, index: number) => {
-              if (line.length) {
-                if (line !== '###') {
-                  const [name1, name2, score] = line.split('\t')
-                  m[name1] = index
-                  m[name2] = index
-                  r[index] = { name1, name2, score: +score }
-                }
-              }
-            })
-
-            model.setAnchorsData(m, r)
-            setInitialized(true)
-          }
-          if (pafData) {
-            const data = await fetch(pafData)
-            const text = await data.text()
-            const m: PafRecord[] = []
-            text.split('\n').forEach((line: string, index: number) => {
-              if (line.length) {
-                const [
-                  chr1,
-                  ,
-                  start1,
-                  end1,
-                  strand1,
-                  chr2,
-                  ,
-                  start2,
-                  end2,
-                ] = line.split('\t')
-                m[index] = {
-                  chr1,
-                  start1: +start1,
-                  end1: +end1,
-                  strand1,
-                  chr2,
-                  start2: +start2,
-                  end2: +end2,
-                }
-              }
-            })
-
-            model.setMinimap2Data(m)
-            setInitialized(true)
-          }
-        })()
-      }, [anchors, model, pafData, simpleAnchors])
-
-      if (!initialized) return null
-
-      const layoutMatches = anchors
-        ? model.allMatchedAnchorFeatures[syntenyGroup]
-        : simpleAnchors
-        ? model.allMatchedSimpleAnchorFeatures[syntenyGroup]
-        : pafData
-        ? model.minimap2Features
-        : model.getMatchedFeaturesInLayout(
-            syntenyGroup,
-            model.allMatchedSyntenyFeatures[syntenyGroup],
-          )
 
       const middle = getConf(model, 'middle')
       const hideTiny = getConf(model, 'hideTiny')
