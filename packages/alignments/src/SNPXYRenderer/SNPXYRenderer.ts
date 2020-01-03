@@ -203,12 +203,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
 
     //const coverageBins = this.generateCoverageBins(props)
 
-    //start with leftbase, for each bin, draw rect ctx.fillREct with binWidth width, height depending on total coverage (maybe coverageBin[bin].total)
-    // go to next bin, start next rect at leftbase + binWidth * 1, then * 2 etc
-
     //37 displays the score, feature.get('score') is probably wrong
-
-    //PROBABLY IS track isnt rendering enough times, only does the last range when other tracks do all the ranges up to the last range
 
     const leftBase = region.start
     const rightBase = region.end
@@ -235,13 +230,23 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       ctx.fillStyle = colorForBase['total']
       ctx.fillRect(xposition, toY(score), snpWidth, toHeight(score))
 
-
-      const baseArray = currentBin.totalBaseList()
+      const infoArray = currentBin.totalInfoList()
+      let toolTip = "Tooltip \n ----- \n"
       // could be drawing half the size it should be
-      baseArray.forEach(function iterate(mismatch, index){
+      infoArray.forEach(function iterate(mismatch, index){
+        const ratio = Math.floor((mismatch.total/score) * 100)
+        toolTip += mismatch.base.toUpperCase() + " " + mismatch.total + " " + (mismatch.base === 'total' ? "" : ratio + "% " + JSON.stringify(mismatch.strands) + "\n")
+        if(mismatch.base === 'reference' || mismatch.base === 'total') return
         ctx.fillStyle = mismatch.base.match(insRegex)  ? 'darkgrey' : colorForBase[mismatch.base]
         ctx.fillRect(xposition, toY(mismatch.total), scale, toHeight(mismatch.total))
       })
+
+      console.log(toolTip)
+
+      //building tooltip below
+      // const refTooltip = currentBin.getNested('reference').categories
+      // const refValue = baseArray.length === 0 ? score : baseArray[0].total
+      // console.log("Tooltip\n------- \nLocation: " + index + "\nRef: " + refValue + " " + JSON.stringify(refTooltip))
     })
   }
 }

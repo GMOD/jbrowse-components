@@ -18,36 +18,45 @@ export default class NestedFrequencyTable {
     return t
   }
 
-  totalBaseList() {
-    const totalBaseList = []
+  totalInfoList() {
+    const totalInfoList = []
     const base = 'A' || 'T' || 'C' || 'G'
     const deletion = '*'
     const insRegex = /ins (\d)/
     const insRegexCheck = mismatch => insRegex.test(mismatch) === true
+    const overallScore = this.total()
+
     // only go into categories with mismatch, reference unneeded
-    if (
-      Object.keys(this.categories).includes(base) ||
-      Object.keys(this.categories).includes(deletion) ||
-      Object.keys(this.categories).some(insRegexCheck)
-    ) {
-      delete this.categories.reference
-      // looping thru all mismatch bases
-      for (const key of Object.keys(this.categories)) {
-        const v = this.categories[key].categories
-        const totalInBase = Object.values(v).reduce((a, b) => a + b, 0)
-        // add insertion/deletion first so that base color painted after
-        key === deletion || key.match(insRegex)
-          ? totalBaseList.unshift({
-              base: key,
-              total: totalInBase,
-            })
-          : totalBaseList.push({
-              base: key,
-              total: totalInBase,
-            })
-      }
+    // if (
+    //   Object.keys(this.categories).includes(base) ||
+    //   Object.keys(this.categories).includes(deletion) ||
+    //   Object.keys(this.categories).some(insRegexCheck)
+    // ) {
+    // looping thru all mismatch bases
+    for (const key of Object.keys(this.categories)) {
+      const v = this.categories[key].categories
+      const totalInBase = Object.values(v).reduce((a, b) => a + b, 0)
+      // add insertion/deletion first so that base color painted after
+      key === deletion || key.match(insRegex)
+        ? totalInfoList.unshift({
+            base: key,
+            total: totalInBase,
+            strands: v,
+          })
+        : totalInfoList.push({
+            base: key,
+            total: totalInBase,
+            strands: v,
+          })
     }
-    return totalBaseList
+
+    // add overall total to end
+    totalInfoList.push({
+      base: 'total',
+      total: overallScore,
+    })
+    // }
+    return totalInfoList
   }
 
   // decrement the count for the given category
