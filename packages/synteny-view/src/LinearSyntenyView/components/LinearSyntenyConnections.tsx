@@ -17,7 +17,6 @@ export default (pluginManager: any) => {
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useState, useEffect } = jbrequire('react')
 
   return observer(
     ({

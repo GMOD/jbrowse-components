@@ -50,7 +50,6 @@ export default function stateModelFactory(pluginManager: any) {
   const {
     types: jbrequiredTypes,
     getParent,
-    getRoot,
     onAction,
     addDisposer,
     getPath,
@@ -79,6 +78,18 @@ export default function stateModelFactory(pluginManager: any) {
       hideTiny: {
         type: 'boolean',
         defaultValue: false,
+      },
+      showAnchors: {
+        type: 'boolean',
+        defaultValue: true,
+      },
+      showSimpleAnchors: {
+        type: 'boolean',
+        defaultValue: true,
+      },
+      showPaf: {
+        type: 'boolean',
+        defaultValue: true,
       },
     },
     { explicitlyTyped: true, implicitIdentifier: true },

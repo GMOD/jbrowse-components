@@ -56,6 +56,36 @@ export default (pluginManager: any) => {
       return <SyntenyConnections {...props} />
     },
   )
+
+  const Overlays = observer(
+    ({ model }: { model: LinearSyntenyViewModel; syntenyGroup: string }) => (
+      <>
+        {model.syntenyGroups.map(syntenyGroup => {
+          return [
+            getConf(model, 'showAnchors') &&
+              model.allMatchedAnchorFeatures[syntenyGroup],
+            getConf(model, 'showSimpleAnchors') &&
+              model.allMatchedSimpleAnchorFeatures[syntenyGroup],
+            getConf(model, 'showPaf') && model.minimap2Features,
+            model.getMatchedFeaturesInLayout(
+              syntenyGroup,
+              model.allMatchedSyntenyFeatures[syntenyGroup],
+            ),
+          ].map((layoutMatches, index) =>
+            layoutMatches ? (
+              <Overlay
+                key={`${syntenyGroup}_${index}`}
+                syntenyGroup={syntenyGroup}
+                layoutMatches={layoutMatches}
+                model={model}
+              />
+            ) : null,
+          )
+        })}
+      </>
+    ),
+  )
+
   // The synteny is in the middle of the views
   const MiddleSyntenyView = observer(
     ({ model }: { model: LinearSyntenyViewModel }) => {
@@ -78,25 +108,7 @@ export default (pluginManager: any) => {
                       width: '100%',
                     }}
                   >
-                    {model.syntenyGroups.map(syntenyGroup => {
-                      return [
-                        model.allMatchedAnchorFeatures[syntenyGroup],
-                        model.allMatchedSimpleAnchorFeatures[syntenyGroup],
-                        model.minimap2Features,
-                        model.getMatchedFeaturesInLayout(
-                          syntenyGroup,
-                          model.allMatchedSyntenyFeatures[syntenyGroup],
-                        ),
-                      ].map(layoutMatches =>
-                        layoutMatches ? (
-                          <Overlay
-                            key={syntenyGroup}
-                            layoutMatches={layoutMatches}
-                            model={model}
-                          />
-                        ) : null,
-                      )
-                    })}
+                    <Overlays model={model} />
                   </svg>
                 </div>
                 <div className={classes.viewContainer}>
@@ -140,9 +152,7 @@ export default (pluginManager: any) => {
                   pointerEvents: model.interactToggled ? undefined : 'none',
                 }}
               >
-                {model.syntenyGroups.map(id => (
-                  <Overlay key={id} model={model} syntenyGroup={id} />
-                ))}
+                <Overlays model={model} />
               </svg>
             </div>
           </div>
