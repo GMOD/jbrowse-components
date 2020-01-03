@@ -29,7 +29,12 @@ function Tooltip({ offsetX, feature, featureList }) {
                 ? '---'
                 : `${Math.floor((mismatch.total / score) * 100)}%`}
             </td>
-            <td>{base === 'total' ? '---' : JSON.stringify(strands)}</td>
+            <td>
+              {base === 'total'
+                ? '---'
+                : (strands['+'] ? `+:${strands['+']}  ` : ``) +
+                  (strands['-'] ? `-:${strands['-']}` : ``)}
+            </td>
           </tr>
         )
       })
