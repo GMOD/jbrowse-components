@@ -7,25 +7,56 @@ import './SNPRendering.scss'
 
 const toP = s => parseFloat(s.toPrecision(6))
 
-function Tooltip({ offsetX, feature }) {
+function Tooltip({ offsetX, feature, featureList }) {
+  let targetObj = {}
+  const indexOfMatch = featureList
+    .map(e => e.start)
+    .indexOf(feature.get('start'))
+  if (indexOfMatch > -1) {
+    targetObj = featureList[indexOfMatch]
+  }
+  const { info } = targetObj
+  const score = info ? info[info.length - 1].total : 0
+  const renderTableData = info
+    ? info.map(mismatch => {
+        const { base, total, strands } = mismatch
+        return (
+          <tr key={base}>
+            <td>{base.toUpperCase()}</td>
+            <td>{total}</td>
+            <td>
+              {base === 'total'
+                ? '---'
+                : `${Math.floor((mismatch.total / score) * 100)}%`}
+            </td>
+            <td>{base === 'total' ? '---' : JSON.stringify(strands)}</td>
+          </tr>
+        )
+      })
+    : null
+
   return (
     <>
       <div
         className="hoverLabel"
         style={{ left: `${offsetX}px`, zIndex: 10000 }}
       >
-        {feature.get('maxScore') !== undefined ? (
+        {info ? (
           <div>
-            Summary
-            <br />
-            Max: {toP(feature.get('maxScore'))}
-            <br />
-            Avg: {toP(feature.get('score'))}
-            <br />
-            Min: {toP(feature.get('minScore'))}
+            <table id="info">
+              <thead>
+                <tr>
+                  <th>Base</th>
+                  <th>Total </th>
+                  <th>% of Total</th>
+                  <th>Strands</th>
+                </tr>
+              </thead>
+              <tbody>{renderTableData}</tbody>
+            </table>
           </div>
         ) : (
-          toP(feature.get('score'))
+          toP(37)
         )}
       </div>
       <div className="hoverVertical" style={{ left: `${offsetX}px` }} />
@@ -36,6 +67,7 @@ function Tooltip({ offsetX, feature }) {
 Tooltip.propTypes = {
   offsetX: ReactPropTypes.number.isRequired,
   feature: ReactPropTypes.shape({ get: ReactPropTypes.func }).isRequired,
+  featureList: ReactPropTypes.array.isRequired,
 }
 
 class SNPRendering extends Component {
@@ -50,11 +82,13 @@ class SNPRendering extends Component {
       /** id of the currently selected feature, if any */
       selectedFeatureId: ReactPropTypes.string,
     }),
+    featureList: ReactPropTypes.array,
   }
 
   static defaultProps = {
     horizontallyFlipped: false,
     trackModel: {},
+    featureList: [],
   }
 
   constructor(props) {
@@ -106,7 +140,7 @@ class SNPRendering extends Component {
 
   render() {
     const { featureUnderMouse, clientX } = this.state
-    const { height } = this.props
+    const { height, featureList } = this.props
     let offset = 0
     if (this.ref.current) {
       offset = this.ref.current.getBoundingClientRect().left
@@ -128,7 +162,12 @@ class SNPRendering extends Component {
       >
         <PrerenderedCanvas {...this.props} />
         {featureUnderMouse ? (
-          <Tooltip feature={featureUnderMouse} offsetX={clientX - offset} />
+          <Tooltip
+            feature={featureUnderMouse}
+            offsetX={clientX - offset}
+            featureList={featureList}
+            renderTableData={this.renderTableData}
+          />
         ) : null}
       </div>
     )

@@ -18,12 +18,12 @@ export default class NestedFrequencyTable {
     return t
   }
 
-  totalInfoList() {
-    const totalInfoList = []
-    const base = 'A' || 'T' || 'C' || 'G'
+  generateInfoList() {
+    const infoList = []
+    // const base = 'A' || 'T' || 'C' || 'G'
     const deletion = '*'
-    const insRegex = /ins (\d)/
-    const insRegexCheck = mismatch => insRegex.test(mismatch) === true
+    const insRegex = /^ins.(\d)/
+    // const insRegexCheck = mismatch => insRegex.test(mismatch) === true
     const overallScore = this.total()
 
     // only go into categories with mismatch, reference unneeded
@@ -38,12 +38,12 @@ export default class NestedFrequencyTable {
       const totalInBase = Object.values(v).reduce((a, b) => a + b, 0)
       // add insertion/deletion first so that base color painted after
       key === deletion || key.match(insRegex)
-        ? totalInfoList.unshift({
+        ? infoList.unshift({
             base: key,
             total: totalInBase,
             strands: v,
           })
-        : totalInfoList.push({
+        : infoList.push({
             base: key,
             total: totalInBase,
             strands: v,
@@ -51,12 +51,12 @@ export default class NestedFrequencyTable {
     }
 
     // add overall total to end
-    totalInfoList.push({
+    infoList.push({
       base: 'total',
       total: overallScore,
     })
     // }
-    return totalInfoList
+    return infoList
   }
 
   // decrement the count for the given category

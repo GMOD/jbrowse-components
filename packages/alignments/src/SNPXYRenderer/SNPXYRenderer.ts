@@ -199,7 +199,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const toY = (rawscore: number) => height - viewScale(rawscore)
     const toHeight = (rawscore: number) => toY(originY) - toY(rawscore)
 
-    // console.log(props)
+    //console.log(coverageBins)
 
     //const coverageBins = this.generateCoverageBins(props)
 
@@ -212,7 +212,8 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const widthPx = widthBp * scale
     const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(bpPerPx)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
-    const insRegex = /ins *(\d)/
+    const insRegex = /^ins.(\d)/
+    let featureList = new Array
     // A: green, C: blue, g: orange, t: red, deletion: dark grey, total: light grey
     const colorForBase: { [key: string]: string } = {
       A: '#00bf00',
@@ -222,6 +223,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       '*': 'darkgrey',
       total: 'lightgrey',
     }
+
     coverageBins.forEach( function(currentBin: NestedFrequencyTable, index: number){
       const xposition = bpPerPx > 10 ? binWidth * index : scale * index
       const snpWidth = bpPerPx > 10 ? binWidth : scale
@@ -230,7 +232,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       ctx.fillStyle = colorForBase['total']
       ctx.fillRect(xposition, toY(score), snpWidth, toHeight(score))
 
-      const infoArray = currentBin.totalInfoList()
+      const infoArray = currentBin.generateInfoList()
       let toolTip = "Tooltip \n ----- \n"
       // could be drawing half the size it should be
       infoArray.forEach(function iterate(mismatch, index){
@@ -240,13 +242,16 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
         ctx.fillStyle = mismatch.base.match(insRegex)  ? 'darkgrey' : colorForBase[mismatch.base]
         ctx.fillRect(xposition, toY(mismatch.total), scale, toHeight(mismatch.total))
       })
+      
+      if(!featureList.map((e) => e.start).includes(leftBase+index))
+        featureList.push({
+          info: infoArray,
+          start: leftBase + index
+        })
 
-      console.log(toolTip)
-
-      //building tooltip below
-      // const refTooltip = currentBin.getNested('reference').categories
-      // const refValue = baseArray.length === 0 ? score : baseArray[0].total
-      // console.log("Tooltip\n------- \nLocation: " + index + "\nRef: " + refValue + " " + JSON.stringify(refTooltip))
+      //console.log(toolTip)
     })
+    //console.log(featureList)
+    return featureList
   }
 }
