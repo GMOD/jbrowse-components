@@ -17,6 +17,7 @@ export interface SimpleAnchorsData {
     name3: string
     name4: string
     score: number
+    strand: string
   }
 }
 export interface AnchorsData {
@@ -455,7 +456,7 @@ export default function stateModelFactory(pluginManager: any) {
             const level = tracks.findIndex(track => {
               if (track) {
                 layout = track.layoutFeatures.get(feature.id())
-                refName = track.featToBlock[feature.id()].refName
+                refName = (track.featToBlock[feature.id()] || {}).refName
                 return layout
               }
               return undefined
@@ -510,14 +511,26 @@ export default function stateModelFactory(pluginManager: any) {
                   text.split('\n').forEach((line: string, index: number) => {
                     if (line.length) {
                       if (line !== '###') {
-                        const [name1, name2, name3, name4, score] = line.split(
-                          '\t',
-                        )
+                        const [
+                          name1,
+                          name2,
+                          name3,
+                          name4,
+                          score,
+                          strand,
+                        ] = line.split('\t')
                         m[name1] = index
                         m[name2] = index
                         m[name3] = index
                         m[name4] = index
-                        r[index] = { name1, name2, name3, name4, score: +score }
+                        r[index] = {
+                          name1,
+                          name2,
+                          name3,
+                          name4,
+                          score: +score,
+                          strand,
+                        }
                       }
                     }
                   })

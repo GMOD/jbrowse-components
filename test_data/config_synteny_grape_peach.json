@@ -24,6 +24,7 @@
           "configuration": {
             "simpleAnchors": "test_data/grape.peach.anchors.simple",
             "anchors": "test_data/grape.peach.anchors",
+            "paf": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf",
             "type": "LinearSyntenyView",
             "middle": true
           },

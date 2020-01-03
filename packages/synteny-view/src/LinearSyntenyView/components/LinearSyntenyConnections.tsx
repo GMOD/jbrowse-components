@@ -1,12 +1,6 @@
 /* eslint-disable  no-nested-ternary */
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import {
-  PafRecord,
-  LinearSyntenyViewModel,
-  AnchorsData,
-  SimpleAnchorsData,
-  LayoutRecord,
-} from '../model'
+import { LinearSyntenyViewModel, LayoutRecord } from '../model'
 import { yPos, getPxFromCoordinate, cheight } from '../util'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
