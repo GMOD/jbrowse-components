@@ -8,6 +8,7 @@ import './SNPRendering.scss'
 const toP = s => parseFloat(s.toPrecision(6))
 
 function Tooltip({ offsetX, feature, featureList }) {
+  // match location of feature with info in featureList
   let targetObj = {}
   const indexOfMatch = featureList
     .map(e => e.start)
@@ -17,6 +18,8 @@ function Tooltip({ offsetX, feature, featureList }) {
   }
   const { info } = targetObj
   const score = info ? info[info.length - 1].total : 0
+
+  // construct a table with all relevant information
   const renderTableData = info
     ? info.map(mismatch => {
         const { base, total, strands } = mismatch

@@ -20,18 +20,10 @@ export default class NestedFrequencyTable {
 
   generateInfoList() {
     const infoList = []
-    // const base = 'A' || 'T' || 'C' || 'G'
     const deletion = '*'
     const insRegex = /^ins.(\d)/
-    // const insRegexCheck = mismatch => insRegex.test(mismatch) === true
     const overallScore = this.total()
 
-    // only go into categories with mismatch, reference unneeded
-    // if (
-    //   Object.keys(this.categories).includes(base) ||
-    //   Object.keys(this.categories).includes(deletion) ||
-    //   Object.keys(this.categories).some(insRegexCheck)
-    // ) {
     // looping thru all mismatch bases
     for (const key of Object.keys(this.categories)) {
       const v = this.categories[key].categories
@@ -55,7 +47,6 @@ export default class NestedFrequencyTable {
       base: 'total',
       total: overallScore,
     })
-    // }
     return infoList
   }
 

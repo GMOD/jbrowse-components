@@ -79,13 +79,6 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       coverageBins[i] = new NestedFrequencyTable()
       if (binWidth === 1) coverageBins[i].snpsCounted = true
     }
-    // coverageBins.forEach(function iterate(item, index) {
-    //   coverageBins[index] = new NestedFrequencyTable()
-    //   try below if nested doest work
-    //   const info = { mutationCount: 0, currentBp: '', snpsCounted: false }
-    //   coverageBins[index].push(info)
-    //   if (binWidth === 1) coverageBins[index].snpsCounted = true
-    // })
 
     const forEachBin = function forEachBin(start: number, end: number, callback: any) {
       let s = (start - leftBase) / binWidth
@@ -130,9 +123,6 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
           strand = 'unstranded'
           break;
       }
-      // const strand =
-      //   { '-1': '-', '1': '+' }[`${features.get('strand')}`] || 'unstranded'
-      // if (!this.filter(features)) return
       return strand
     }
 
@@ -169,8 +159,6 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
         }
       }
     }
-
-    //console.log(coverageBins)
     return coverageBins
   }
 
@@ -186,24 +174,11 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     } = props
 
     scaleOpts.domain = [0, 50]
-    const pivotValue = readConfObject(config, 'bicolorPivotValue')
-    const negColor = readConfObject(config, 'negColor')
-    const posColor = readConfObject(config, 'posColor')
-    const filled = readConfObject(config, 'filled')
-    const clipColor = readConfObject(config, 'clipColor')
-    const highlightColor = readConfObject(config, 'highlightColor')
-    const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
     const viewScale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = viewScale.domain()
     const toY = (rawscore: number) => height - viewScale(rawscore)
     const toHeight = (rawscore: number) => toY(originY) - toY(rawscore)
-
-    //console.log(coverageBins)
-
-    //const coverageBins = this.generateCoverageBins(props)
-
-    //37 displays the score, feature.get('score') is probably wrong
 
     const leftBase = region.start
     const rightBase = region.end
@@ -229,29 +204,25 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       const snpWidth = bpPerPx > 10 ? binWidth : scale
       const score = currentBin.total()
 
+      // draw total
       ctx.fillStyle = colorForBase['total']
       ctx.fillRect(xposition, toY(score), snpWidth, toHeight(score))
 
+      //generate array with nestedtable's info, draw mismatches
       const infoArray = currentBin.generateInfoList()
-      let toolTip = "Tooltip \n ----- \n"
-      // could be drawing half the size it should be
       infoArray.forEach(function iterate(mismatch, index){
-        const ratio = Math.floor((mismatch.total/score) * 100)
-        toolTip += mismatch.base.toUpperCase() + " " + mismatch.total + " " + (mismatch.base === 'total' ? "" : ratio + "% " + JSON.stringify(mismatch.strands) + "\n")
         if(mismatch.base === 'reference' || mismatch.base === 'total') return
         ctx.fillStyle = mismatch.base.match(insRegex)  ? 'darkgrey' : colorForBase[mismatch.base]
         ctx.fillRect(xposition, toY(mismatch.total), scale, toHeight(mismatch.total))
       })
       
+      //list to be sent to props
       if(!featureList.map((e) => e.start).includes(leftBase+index))
         featureList.push({
           info: infoArray,
           start: leftBase + index
         })
-
-      //console.log(toolTip)
     })
-    //console.log(featureList)
     return featureList
   }
 }
