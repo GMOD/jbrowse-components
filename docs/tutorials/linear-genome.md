@@ -57,3 +57,25 @@ function() {
 
 ![](images/AddRefSequenceConfigureZoom.png)
 
+## Add an alternate circular view
+
+We can add a circular view of the genome by selecting a new circular view from the file menu:
+
+![](images/NewCircularView.png)
+
+By selecting the PacBio track, you can see an alternate of this data:
+
+![](images/CircularViewRealized.png)
+
+Hovering over this data shows each breakpoint.
+
+By clicking on one you can view the pairwise data associated with that page.
+
+![](images/SelectPairWise.png)
+
+And the resultant view shows the linear pairwise breakpoint view which shows the split genome view with a link to the break points between BAM reads shown with a lines:
+
+![](images/ViewSelectedPairWiseInLinear.png)
+
+
+
