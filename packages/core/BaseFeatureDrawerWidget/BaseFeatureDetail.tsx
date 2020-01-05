@@ -159,7 +159,7 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
       {value.map((val, i) => (
         <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
           <SanitizedHTML
-            html={isObject(value) ? JSON.stringify(value) : String(value)}
+            html={isObject(val) ? JSON.stringify(val) : String(val)}
           />
         </div>
       ))}
