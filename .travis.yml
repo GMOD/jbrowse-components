@@ -1,26 +1,26 @@
 language: node_js
 node_js: 10
 sudo: false
-
 cache:
-  - node_modules
-  - yarn
-# before_install:
-#   - sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
-#   - sudo apt install -y wine-stable
+- node_modules
+- yarn
 script:
-  - set -e
-  - yarn lint
-  - yarn test-ci
-  - yarn tsc --noEmit
-  - |
-    if [[ $TRAVIS_BRANCH == "master" ]]; then
-      yarn build
-      BUILT_TESTS=1 yarn built-test-ci
-    fi
-  # - if .travis/build-condition.sh $TRAVIS_COMMIT_RANGE $PROJECT; then cd $PROJECT && . .travis.sh; else echo "$PROJECT is NOT being built"; fi
+- set -e
+- yarn lint
+- yarn test-ci
+- yarn tsc --noEmit
+- yarn build
+- BUILT_TESTS=1 yarn built-test-ci
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
-# addons:
-#   apt:
-#     update: true
+- bash <(curl -s https://codecov.io/bash)
+deploy:
+  provider: s3
+  skip_cleanup: true
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET
+  bucket: "jbrowse.org"
+  local-dir: packages/jbrowse-web/build
+  upload-dir: code/jb2/alpha/$TRAVIS_BRANCH
+  on:
+    repo: GMOD/jbrowse-components
+    all_branches: true
