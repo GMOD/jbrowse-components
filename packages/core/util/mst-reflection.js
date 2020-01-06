@@ -39,7 +39,7 @@ export function getUnionSubTypes(unionType) {
   // eslint-disable-next-line no-underscore-dangle
   const t = unionType._types || unionType.types
   if (!t) {
-    debugger
+    // debugger
     throw new Error('failed to extract subtypes from mst union')
   }
   return t

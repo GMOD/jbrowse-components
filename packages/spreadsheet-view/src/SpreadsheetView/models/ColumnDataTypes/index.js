@@ -6,6 +6,7 @@ export default pluginManager => {
     ColumnTypes: {
       Number: jbrequire(require('./Number')),
       Text: jbrequire(require('./Text')),
+      LocString: jbrequire(require('./LocString')),
     },
   }
 

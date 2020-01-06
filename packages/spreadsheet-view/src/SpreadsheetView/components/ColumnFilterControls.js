@@ -1,20 +1,15 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes: MobxPropTypes } = jbrequire('mobx-react')
-  const { getParent, getType } = jbrequire('mobx-state-tree')
+  const { getParent } = jbrequire('mobx-state-tree')
   const React = jbrequire('react')
-  const { useState, useRef } = React
 
   const { makeStyles } = jbrequire('@material-ui/core/styles')
 
-  const Container = jbrequire('@material-ui/core/Container')
   const Grid = jbrequire('@material-ui/core/Grid')
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const Icon = jbrequire('@material-ui/core/Icon')
   const Typography = jbrequire('@material-ui/core/Typography')
-  const MenuItem = jbrequire('@material-ui/core/MenuItem')
-  const ListItemText = jbrequire('@material-ui/core/ListItemText')
-  const Select = jbrequire('@material-ui/core/Select')
 
   const useStyles = makeStyles(theme => {
     return {
@@ -40,6 +35,9 @@ export default pluginManager => {
       return <filterModel.ReactComponent filterModel={filterModel} />
     }
     return null
+  }
+  FilterOperations.propTypes = {
+    filterModel: MobxPropTypes.observableObject.isRequired,
   }
 
   const ColumnFilterControls = observer(

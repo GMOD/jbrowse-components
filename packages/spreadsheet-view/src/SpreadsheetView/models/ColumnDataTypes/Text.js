@@ -1,6 +1,6 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { types, getParent, getType } = jbrequire('mobx-state-tree')
+  const { types, getType } = jbrequire('mobx-state-tree')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
 
@@ -13,8 +13,6 @@ export default pluginManager => {
   )
 
   const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const Container = jbrequire('@material-ui/core/Container')
-  const Grid = jbrequire('@material-ui/core/Grid')
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const Icon = jbrequire('@material-ui/core/Icon')
   const TextField = jbrequire('@material-ui/core/TextField')
@@ -106,15 +104,15 @@ export default pluginManager => {
     .views(self => ({
       // returns a function that tests the given row
       get predicate() {
-        let s = self.stringToFind // avoid closing over self
-        if (!s)
+        const { stringToFind, columnNumber } = self.stringToFind // avoid closing over self
+        if (!stringToFind)
           return function alwaysTrue() {
             return true
           }
-        s = s.toLowerCase()
+
+        const s = stringToFind.toLowerCase() // case insensitive match
         return function stringPredicate(sheet, row) {
           const { cells } = row
-          const { columnNumber } = self
           const cell = cells[columnNumber]
           // TODO: add support for derived cells
           // note: case insensitive

@@ -198,6 +198,33 @@ export function parseLocString(locstring: string): ParsedLocString {
   return { assemblyName, refName }
 }
 
+export function compareLocStrings(a: string, b: string) {
+  const locA = parseLocString(a)
+  const locB = parseLocString(b)
+
+  const assemblyComp =
+    locA.assemblyName || locB.assemblyName
+      ? (locA.assemblyName || '').localeCompare(locB.assemblyName || '')
+      : 0
+  if (assemblyComp) return assemblyComp
+
+  const refComp =
+    locA.refName || locB.refName
+      ? (locA.refName || '').localeCompare(locB.refName || '')
+      : 0
+  if (refComp) return refComp
+
+  if (locA.start !== undefined && locB.start !== undefined) {
+    const startComp = locA.start - locB.start
+    if (startComp) return startComp
+  }
+  if (locA.end !== undefined && locB.end !== undefined) {
+    const endComp = locA.end - locB.end
+    if (endComp) return endComp
+  }
+  return 0
+}
+
 /**
  * Ensure that a number is at least min and at most max.
  *
