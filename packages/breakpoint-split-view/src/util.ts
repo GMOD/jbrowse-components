@@ -26,16 +26,12 @@ function heightFromSpecificLevel(
   )
 }
 
-// TODO: this is only working because the breakpoint
-// split view is displaying a single refseq on the top region
-// need to update to use a proper bpToPx which is in dev
 export function getPxFromCoordinate(
   view: Instance<LinearGenomeViewStateModel>,
+  refName: string,
   coord: number,
 ) {
-  const region = { start: 0, end: view.totalBp }
-  const { bpPerPx, horizontallyFlipped, offsetPx } = view
-  return bpToPx(coord, region, bpPerPx, horizontallyFlipped) - offsetPx
+  return ((view.bpToPx({ refName, coord }) || {}).offsetPx || 0) - view.offsetPx
 }
 
 // get's the yposition of a layout record in a track
