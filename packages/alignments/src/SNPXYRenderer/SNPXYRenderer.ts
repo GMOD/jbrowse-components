@@ -217,11 +217,12 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       })
       
       //list to be sent to props
-      if(!featureList.map((e) => e.start).includes(leftBase+index))
+      //if(!featureList.map((e) => e.start).includes(leftBase+index)){      
         featureList.push({
           info: infoArray,
           start: leftBase + index
         })
+     // }
     })
     return featureList
   }

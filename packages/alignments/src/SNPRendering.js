@@ -10,9 +10,12 @@ const toP = s => parseFloat(s.toPrecision(6))
 function Tooltip({ offsetX, feature, featureList }) {
   // match location of feature with info in featureList
   let targetObj = {}
+  // console.log('in props', featureList)
   const indexOfMatch = featureList
     .map(e => e.start)
     .indexOf(feature.get('start'))
+
+  // if (indexOfMatch === -1) console.log(feature.get('start'), featureList.indexOf(20903))
   if (indexOfMatch > -1) {
     targetObj = featureList[indexOfMatch]
   }
@@ -107,6 +110,7 @@ class SNPRendering extends Component {
 
   onMouseMove(evt) {
     const { region, features, bpPerPx, horizontallyFlipped, width } = this.props
+
     const { clientX } = evt
     let offset = 0
     if (this.ref.current) {
@@ -174,7 +178,6 @@ class SNPRendering extends Component {
             feature={featureUnderMouse}
             offsetX={clientX - offset}
             featureList={featureList}
-            renderTableData={this.renderTableData}
           />
         ) : null}
       </div>

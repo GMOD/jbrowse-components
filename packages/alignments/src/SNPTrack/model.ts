@@ -39,6 +39,7 @@ import {
             ReactComponent: (SNPTrackComponent as unknown) as React.FC,
             ready: true, //false,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            fullFeatureList: [] as any,
             stats: undefined as undefined | any,
             statsFetchInProgress: undefined as undefined | AbortController,
           })),
@@ -59,6 +60,11 @@ import {
             }
             self.statsFetchInProgress = aborter
           },
+
+          updateFeatureList(featureList: Array<any>){
+            if(!JSON.stringify(self.fullFeatureList).includes(JSON.stringify(featureList)))
+              self.fullFeatureList = [...self.fullFeatureList, ...featureList]
+          }
         }
       })
       .views(self => ({
@@ -96,6 +102,7 @@ import {
               inverted: getConf(self, 'inverted'),
             },
             height: self.height,
+            fullFeatureList: self.fullFeatureList,
           }
         },
       }))
