@@ -10,12 +10,8 @@ const toP = s => parseFloat(s.toPrecision(6))
 function Tooltip({ offsetX, feature, featureList }) {
   // match location of feature with info in featureList
   let targetObj = {}
-  // console.log('in props', featureList)
-  const indexOfMatch = featureList
-    .map(e => e.start)
-    .indexOf(feature.get('start'))
+  const indexOfMatch = featureList.map(e => e.start).indexOf(feature.get('end'))
 
-  // if (indexOfMatch === -1) console.log(feature.get('start'), featureList.indexOf(20903))
   if (indexOfMatch > -1) {
     targetObj = featureList[indexOfMatch]
   }

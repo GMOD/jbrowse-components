@@ -22,8 +22,7 @@ export default class extends ServerSideRendererType {
     ctx.scale(highResolutionScaling, highResolutionScaling)
     const coverageBins = this.generateCoverageBins(props)
     const featureList = this.draw(ctx, props, coverageBins)
-    
-    console.log(props)
+
     const imageData = await createImageBitmap(canvas)
     return { imageData, height, width, featureList }
   }
