@@ -107,6 +107,51 @@ export default class extends BaseAdapter {
     )
   }
 
+  public getMultiRegionStats(){
+    const scoreMin = 0
+    const scoreMax = 50
+    return { scoreMin, scoreMax }
+  }
+  
+
+  // public async getMultiRegionStats(
+  //   regions: INoAssemblyRegion[] = [],
+  //   opts: BaseOptions = {},
+  // ) {
+  //   if (!regions.length) {
+  //     return blankStats()
+  //   }
+  //   const feats = await Promise.all(
+  //     regions.map(r => this.getRegionStats(r, opts)),
+  //   )
+
+  //   const scoreMax = feats
+  //     .map(s => s.scoreMax)
+  //     .reduce((acc, curr) => Math.max(acc, curr))
+  //   const scoreMin = feats
+  //     .map(s => s.scoreMin)
+  //     .reduce((acc, curr) => Math.min(acc, curr))
+  //   const scoreSum = feats.map(s => s.scoreSum).reduce((a, b) => a + b, 0)
+  //   const scoreSumSquares = feats
+  //     .map(s => s.scoreSumSquares)
+  //     .reduce((a, b) => a + b, 0)
+  //   const featureCount = feats
+  //     .map(s => s.featureCount)
+  //     .reduce((a, b) => a + b, 0)
+  //   const basesCovered = feats
+  //     .map(s => s.basesCovered)
+  //     .reduce((a, b) => a + b, 0)
+
+  //   return rectifyStats({
+  //     scoreMin,
+  //     scoreMax,
+  //     featureCount,
+  //     basesCovered,
+  //     scoreSumSquares,
+  //     scoreSum,
+  //   })
+  // }
+
   /**
    * called to provide a hint that data tied to a certain region
    * will not be needed for the forseeable future and can be purged

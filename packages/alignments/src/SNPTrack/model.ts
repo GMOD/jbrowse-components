@@ -60,11 +60,6 @@ import {
             }
             self.statsFetchInProgress = aborter
           },
-
-          updateFeatureList(featureList: Array<any>){
-            if(!JSON.stringify(self.fullFeatureList).includes(JSON.stringify(featureList)))
-              self.fullFeatureList = [...self.fullFeatureList, ...featureList]
-          }
         }
       })
       .views(self => ({
@@ -83,7 +78,7 @@ import {
                 scaleType: getConf(self, 'scaleType'),
                 bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
               })
-            : undefined
+            : [0, 50]
         },
         get renderProps() {
           const config = self.rendererType.configSchema.create(
@@ -102,44 +97,38 @@ import {
               inverted: getConf(self, 'inverted'),
             },
             height: self.height,
-            fullFeatureList: self.fullFeatureList,
           }
         },
       }))
       .actions(self => {
-        function getStats(signal: AbortSignal) { // main source of problem, look here, not getting stats
+        async function getStats(signal: AbortSignal) { // main source of problem, look here, not getting stats
           const { rpcManager } = getSession(self) as {
             rpcManager: { call: Function }
           }
           const autoscaleType = getConf(self, 'autoscale', {})
-          // if (autoscaleType === 'global') {
-          //   return rpcManager.call('statsGathering', 'getGlobalStats', {
-          //     adapterConfig: getSnapshot(self.configuration.adapter),
-          //     adapterType: self.configuration.adapter.type,
-          //     signal,
-          //   })
-          // } // most likely removed, not needed for bam/cram
-          // if (autoscaleType === 'local') {
-          //   const { dynamicBlocks, bpPerPx } = getContainingView(self)
-          //   return rpcManager.call('statsGathering', 'getMultiRegionStats', {
-          //     adapterConfig: getSnapshot(self.configuration.adapter),
-          //     adapterType: self.configuration.adapter.type,
-          //     assemblyName: getTrackAssemblyName(self),
-          //     regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
-          //     signal,
-          //     bpPerPx,
-          //   })
-          // }
-          // if (autoscaleType === 'zscale') {
-          //   return rpcManager.call('statsGathering', 'getGlobalStats', {
-          //     adapterConfig: getSnapshot(self.configuration.adapter),
-          //     adapterType: self.configuration.adapter.type,
-          //     signal,
-          //   })
-        
-          // most likely removed, not needed for bam/cram
-          return {scoreMin: 0, scoreMax: 50}// return a constant, min: 0 max: 50 and fill out rest too
+          if (autoscaleType === 'local') {
+            const { dynamicBlocks, bpPerPx } = getContainingView(self)
+            return rpcManager.call('statsGathering', 'getMultiRegionStats', {
+              adapterConfig: getSnapshot(self.configuration.adapter),
+              adapterType: self.configuration.adapter.type,
+              assemblyName: getTrackAssemblyName(self),
+              regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
+              signal,
+              bpPerPx,
+            })
+          }
+            // autoscaleType === 'local'
+            //   ? {
+            //       ...r,
+            //       // avoid unnecessary scoreMin<0 if the scoreMin is never less than 0
+            //       // helps with most bigwigs just being >0
+            //       scoreMin:
+            //         r.scoreMin >= 0 ? 0 : r.scoreMean - nd * r.scoreStdDev,
+            //       scoreMax: r.scoreMean + nd * r.scoreStdDev,
+            //     }
+            //   : r
         }
+          // return {scoreMin: 0, scoreMax: 50}
         return {
           afterAttach() {
             addDisposer(
