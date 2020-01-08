@@ -106,17 +106,18 @@ import {
             rpcManager: { call: Function }
           }
           const autoscaleType = getConf(self, 'autoscale', {})
-          if (autoscaleType === 'local') {
-            const { dynamicBlocks, bpPerPx } = getContainingView(self)
-            return rpcManager.call('statsGathering', 'getMultiRegionStats', {
-              adapterConfig: getSnapshot(self.configuration.adapter),
-              adapterType: self.configuration.adapter.type,
-              assemblyName: getTrackAssemblyName(self),
-              regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
-              signal,
-              bpPerPx,
-            })
-          }
+          // if (autoscaleType === 'local') {
+          //   const { dynamicBlocks, bpPerPx } = getContainingView(self)
+          //   return rpcManager.call('statsGathering', 'getMultiRegionStats', {
+          //     adapterConfig: getSnapshot(self.configuration.adapter),
+          //     adapterType: self.configuration.adapter.type,
+          //     assemblyName: getTrackAssemblyName(self),
+          //     regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
+          //     signal,
+          //     bpPerPx,
+          //   })
+          // }
+          return {scoreMin: 50, scoreMax: 50}
             // autoscaleType === 'local'
             //   ? {
             //       ...r,

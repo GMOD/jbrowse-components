@@ -29,27 +29,6 @@ interface SNPXYRendererProps{
 }
 
 export default class SNPXYRenderer extends SNPBaseRenderer {
-  // Uncomment Below if extra time, make code cleaner by not redeclaring the consts
-  // scale(props: SNPXYRendererProps){
-  //   return 1 / props.bpPerPx
-  // }
-
-  // widthBp(leftBase: number, rightBase: number){
-  //   return leftBase - rightBase
-  // }
-
-  // widthPx(widthBp: number, scale: number){
-  //   return widthBp * scale
-  // }
-
-  // binWidth(bpPerPx: number){
-  //   return Math.ceil(bpPerPx)
-  // }
-
-  // binMax(leftBase: number, rightBase: number, binWidth: number){
-  //   return Math.ceil((rightBase - leftBase) / binWidth)
-  // }
-
   generateCoverageBins(props: SNPXYRendererProps){
     const {
       features,
@@ -67,11 +46,6 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const widthPx = widthBp * scale
     const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(bpPerPx)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
-
-    // maybe unused below
-    // function binNumber(bp: number) {
-    //   return Math.floor((bp - leftBase) / binWidth)
-    // }
 
     const coverageBins = new Array(binMax).fill(0)
 
@@ -126,7 +100,6 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       return strand
     }
 
-    // move to stats potentially!!!!
     for(const feature of features.values()){ 
       const strand = getStrand(feature)
       // increment start and end partial-overlap bins by proportion of overlap
@@ -162,6 +135,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     return coverageBins
   }
 
+  //use coverage bins generated above to draw
   draw(ctx: CanvasRenderingContext2D, props: SNPXYRendererProps, coverageBins: Array<NestedFrequencyTable>) {
     const {
       features,
@@ -173,6 +147,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       horizontallyFlipped,
     } = props
 
+    scaleOpts.domain = [0, 50]
     const viewScale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = viewScale.domain()
@@ -207,21 +182,24 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       ctx.fillStyle = colorForBase['total']
       ctx.fillRect(xposition, toY(score), snpWidth, toHeight(score))
 
+
       //generate array with nestedtable's info, draw mismatches
       const infoArray = currentBin.generateInfoList()
-      infoArray.forEach(function iterate(mismatch, index){
+      infoArray.forEach(function iterate(mismatch, mismatchindex){
         if(mismatch.base === 'reference' || mismatch.base === 'total') return
+
+        if(mismatch.base.includes('ins')) console.log(leftBase + index)
         ctx.fillStyle = mismatch.base.match(insRegex)  ? 'darkgrey' : colorForBase[mismatch.base]
         ctx.fillRect(xposition, toY(mismatch.total), scale, toHeight(mismatch.total))
       })
       
       //list to be sent to props
-      //if(!featureList.map((e) => e.start).includes(leftBase+index)){      
+      if(!featureList.map((e) => e.position).includes(leftBase+index)){      
         featureList.push({
           info: infoArray,
-          start: leftBase + index
+          position: leftBase + index
         })
-     // }
+     }
     })
     return featureList
   }

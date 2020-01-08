@@ -7,10 +7,13 @@ import './SNPRendering.scss'
 
 const toP = s => parseFloat(s.toPrecision(6))
 
-function Tooltip({ offsetX, feature, featureList }) {
+// TODO: remove all regular feature generation if determined to not need
+function Tooltip({ offsetX, clientBp, feature, featureList }) {
   // match location of feature with info in featureList
   let targetObj = {}
-  const indexOfMatch = featureList.map(e => e.start).indexOf(feature.get('end'))
+  const indexOfMatch = featureList
+    .map(e => e.position)
+    .indexOf(Math.floor(clientBp))
 
   if (indexOfMatch > -1) {
     targetObj = featureList[indexOfMatch]
@@ -118,7 +121,7 @@ class SNPRendering extends Component {
 
     for (const feature of features.values()) {
       if (clientBp <= feature.get('end') && clientBp >= feature.get('start')) {
-        this.setState({ clientX, featureUnderMouse: feature })
+        this.setState({ clientX, clientBp, featureUnderMouse: feature })
         return
       }
     }
@@ -147,7 +150,7 @@ class SNPRendering extends Component {
   }
 
   render() {
-    const { featureUnderMouse, clientX } = this.state
+    const { featureUnderMouse, clientX, clientBp } = this.state
     const { height, featureList } = this.props
     let offset = 0
     if (this.ref.current) {
@@ -173,6 +176,7 @@ class SNPRendering extends Component {
           <Tooltip
             feature={featureUnderMouse}
             offsetX={clientX - offset}
+            clientBp={clientBp}
             featureList={featureList}
           />
         ) : null}

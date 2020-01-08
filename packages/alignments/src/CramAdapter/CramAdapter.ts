@@ -201,6 +201,12 @@ export default class CramAdapter extends BaseAdapter {
     })
   }
 
+  public async getMultiRegionStats(){
+    const scoreMin = 0
+    const scoreMax = 50
+    return { scoreMin, scoreMax }
+  }
+  
   /**
    * called to provide a hint that data tied to a certain region
    * will not be needed for the forseeable future and can be purged

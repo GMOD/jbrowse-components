@@ -107,7 +107,7 @@ export default class extends BaseAdapter {
     )
   }
 
-  public getMultiRegionStats(){
+  public async getMultiRegionStats(){
     const scoreMin = 0
     const scoreMax = 50
     return { scoreMin, scoreMax }

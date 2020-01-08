@@ -44,7 +44,6 @@ export default class extends ServerSideRendererType {
       { ...renderProps, height, width, imageData, featureList },
       null,
     )
-    // console.log('before props', featureList)
     return { element, imageData, height, width, featureList }
   }
 }
