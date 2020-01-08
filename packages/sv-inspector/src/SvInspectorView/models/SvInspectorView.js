@@ -5,7 +5,7 @@ export default pluginManager => {
     'mobx-state-tree',
   )
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { getSession, parseLocString } = jbrequire('@gmod/jbrowse-core/util')
   const { getConf, readConfObject } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
@@ -17,6 +17,60 @@ export default pluginManager => {
   const defaultHeight = 500
   const headerHeight = 52
   const circularViewOptionsBarHeight = 52
+
+  function parseLocStringAndConvertToInterbase(locstring) {
+    const parsed = parseLocString(locstring)
+    if (typeof parsed.start === 'number') parsed.start -= 1
+    return parsed
+  }
+
+  // makes a feature data object (passed as `data` to a SimpleFeature constructor)
+  // out of table row if the row has 2 location columns. undefined if not
+  function makeAdHocSvFeature(sheet, rowNumber, row) {
+    const { columns, columnDisplayOrder } = sheet
+    const locationColumnNumbers = columnDisplayOrder.filter(columnNumber => {
+      const columnDefinition = columns[columnNumber]
+      return columnDefinition && columnDefinition.dataType.type === 'LocString'
+    })
+    // if we have 2 or more columns of type location, make a feature from them
+    if (locationColumnNumbers.length >= 2) {
+      // use the first two locations we found (first according to *displayed* order)
+      const loc1 = parseLocStringAndConvertToInterbase(
+        row.cells[locationColumnNumbers[0]].text,
+      )
+      const loc2 = parseLocStringAndConvertToInterbase(
+        row.cells[locationColumnNumbers[1]].text,
+      )
+
+      // load all the other data in the row into an `otherData` object
+      const otherData = {}
+      columns.forEach((column, columnNumber) => {
+        if (
+          columnNumber === locationColumnNumbers[0] ||
+          columnNumber === locationColumnNumbers[1]
+        )
+          return
+        let { text } = row.cells[columnNumber]
+        if (column.dataType.type === 'Number') text = parseFloat(text)
+        otherData[column.name] = text
+      })
+
+      // make the final feature data out of otherData + the parsed locations
+      return {
+        ...otherData,
+        uniqueId: `sv-inspector-adhoc-${rowNumber}`,
+        refName: loc1.refName,
+        start: loc1.start,
+        end: loc1.end,
+        mate: {
+          refName: loc2.refName,
+          start: loc2.start,
+          end: loc2.end,
+        },
+      }
+    }
+    return undefined
+  }
 
   const stateModel = types
     .model('SvInspectorView', {
@@ -89,12 +143,18 @@ export default pluginManager => {
 
       get featuresAdapterConfigSnapshot() {
         const features = (self.spreadsheetView.outputRows || [])
-          .map(row => {
+          .map((row, rowNumber) => {
             if (row.extendedData) {
               if (row.extendedData.vcfFeature)
                 return row.extendedData.vcfFeature
               if (row.extendedData.feature) return row.extendedData.feature
             }
+            const adhocFeature = makeAdHocSvFeature(
+              self.spreadsheetView.spreadsheet,
+              rowNumber,
+              row,
+            )
+            if (adhocFeature) return adhocFeature
             return undefined
           })
           .filter(f => Boolean(f))
