@@ -7,32 +7,22 @@ import './SNPRendering.scss'
 
 const toP = s => parseFloat(s.toPrecision(6))
 
-// TODO: remove all regular feature generation if determined to not need
-function Tooltip({ offsetX, clientBp, feature, featureList }) {
-  // match location of feature with info in featureList
-  let targetObj = {}
-  const indexOfMatch = featureList
-    .map(e => e.position)
-    .indexOf(Math.floor(clientBp))
-
-  if (indexOfMatch > -1) {
-    targetObj = featureList[indexOfMatch]
-  }
-  const { info } = targetObj
-  const score = info ? info[info.length - 1].total : 0
+function Tooltip({ offsetX, feature }) {
+  const { info } = feature
+  const total = info ? info[info.map(e => e.base).indexOf('total')].score : 0
 
   // construct a table with all relevant information
   const renderTableData = info
     ? info.map(mismatch => {
-        const { base, total, strands } = mismatch
+        const { base, score, strands } = mismatch
         return (
           <tr key={base}>
             <td>{base.toUpperCase()}</td>
-            <td>{total}</td>
+            <td>{score}</td>
             <td>
               {base === 'total'
                 ? '---'
-                : `${Math.floor((mismatch.total / score) * 100)}%`}
+                : `${Math.floor((score / total) * 100)}%`}
             </td>
             <td>
               {base === 'total'
@@ -76,8 +66,7 @@ function Tooltip({ offsetX, clientBp, feature, featureList }) {
 
 Tooltip.propTypes = {
   offsetX: ReactPropTypes.number.isRequired,
-  feature: ReactPropTypes.shape({ get: ReactPropTypes.func }).isRequired,
-  featureList: ReactPropTypes.array.isRequired,
+  feature: ReactPropTypes.object.isRequired,
 }
 
 class SNPRendering extends Component {
@@ -108,7 +97,13 @@ class SNPRendering extends Component {
   }
 
   onMouseMove(evt) {
-    const { region, features, bpPerPx, horizontallyFlipped, width } = this.props
+    const {
+      region,
+      bpPerPx,
+      horizontallyFlipped,
+      width,
+      featureList,
+    } = this.props
 
     const { clientX } = evt
     let offset = 0
@@ -119,10 +114,9 @@ class SNPRendering extends Component {
     const px = horizontallyFlipped ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
 
-    for (const feature of features.values()) {
-      if (clientBp <= feature.get('end') && clientBp >= feature.get('start')) {
-        this.setState({ clientX, clientBp, featureUnderMouse: feature })
-        return
+    for (const feature of featureList) {
+      if (Math.floor(clientBp) === feature.position) {
+        this.setState({ clientX, featureUnderMouse: feature })
       }
     }
   }
@@ -150,8 +144,8 @@ class SNPRendering extends Component {
   }
 
   render() {
-    const { featureUnderMouse, clientX, clientBp } = this.state
-    const { height, featureList } = this.props
+    const { featureUnderMouse, clientX } = this.state
+    const { height } = this.props
     let offset = 0
     if (this.ref.current) {
       offset = this.ref.current.getBoundingClientRect().left
@@ -173,12 +167,7 @@ class SNPRendering extends Component {
       >
         <PrerenderedCanvas {...this.props} />
         {featureUnderMouse ? (
-          <Tooltip
-            feature={featureUnderMouse}
-            offsetX={clientX - offset}
-            clientBp={clientBp}
-            featureList={featureList}
-          />
+          <Tooltip feature={featureUnderMouse} offsetX={clientX - offset} />
         ) : null}
       </div>
     )

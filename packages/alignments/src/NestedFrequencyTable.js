@@ -20,32 +20,28 @@ export default class NestedFrequencyTable {
 
   generateInfoList() {
     const infoList = []
-    const deletion = '*'
-    const insRegex = /^ins.(\d)/
     const overallScore = this.total()
 
-    // looping thru all mismatch bases
+    // log info w/ base name, total score, and strand breakdown
     for (const key of Object.keys(this.categories)) {
       const v = this.categories[key].categories
-      const totalInBase = Object.values(v).reduce((a, b) => a + b, 0)
-      // add insertion/deletion first so that base color painted after
-      key === deletion || key.match(insRegex)
-        ? infoList.unshift({
-            base: key,
-            total: totalInBase,
-            strands: v,
-          })
-        : infoList.push({
-            base: key,
-            total: totalInBase,
-            strands: v,
-          })
+      const scoreInBase = Object.values(v).reduce((a, b) => a + b, 0)
+      infoList.push({
+        base: key,
+        score: scoreInBase,
+        strands: v,
+      })
     }
+
+    // sort so higher scores get drawn last, reference always first
+    infoList.sort((a, b) =>
+      a.score < b.score || b.base === 'reference' ? 1 : -1,
+    )
 
     // add overall total to end
     infoList.push({
       base: 'total',
-      total: overallScore,
+      score: overallScore,
     })
     return infoList
   }

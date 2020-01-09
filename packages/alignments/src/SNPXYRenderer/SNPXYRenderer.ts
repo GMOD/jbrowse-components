@@ -187,10 +187,8 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       const infoArray = currentBin.generateInfoList()
       infoArray.forEach(function iterate(mismatch, mismatchindex){
         if(mismatch.base === 'reference' || mismatch.base === 'total') return
-
-        if(mismatch.base.includes('ins')) console.log(leftBase + index)
         ctx.fillStyle = mismatch.base.match(insRegex)  ? 'darkgrey' : colorForBase[mismatch.base]
-        ctx.fillRect(xposition, toY(mismatch.total), scale, toHeight(mismatch.total))
+        ctx.fillRect(xposition, toY(mismatch.score), scale, toHeight(mismatch.score))
       })
       
       //list to be sent to props
