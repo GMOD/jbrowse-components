@@ -10,6 +10,7 @@ const toP = s => parseFloat(s.toPrecision(6))
 function Tooltip({ offsetX, feature }) {
   const { info } = feature
   const total = info ? info[info.map(e => e.base).indexOf('total')].score : 0
+  const condId = info.length >= 5 ? 'smallInfo' : 'info' // readjust table size to fit all
 
   // construct a table with all relevant information
   const renderTableData = info
@@ -17,18 +18,19 @@ function Tooltip({ offsetX, feature }) {
         const { base, score, strands } = mismatch
         return (
           <tr key={base}>
-            <td>{base.toUpperCase()}</td>
-            <td>{score}</td>
-            <td>
+            <td id={condId}>{base.toUpperCase()}</td>
+            <td id={condId}>{score}</td>
+            <td id={condId}>
               {base === 'total'
                 ? '---'
                 : `${Math.floor((score / total) * 100)}%`}
             </td>
-            <td>
+            <td id={condId}>
               {base === 'total'
                 ? '---'
-                : (strands['+'] ? `+:${strands['+']}  ` : ``) +
-                  (strands['-'] ? `-:${strands['-']}` : ``)}
+                : (strands['+']
+                    ? `+:${strands['+']} ${strands['-'] ? `,\t` : `\t`} `
+                    : ``) + (strands['-'] ? `-:${strands['-']}` : ``)}
             </td>
           </tr>
         )
@@ -42,14 +44,14 @@ function Tooltip({ offsetX, feature }) {
         style={{ left: `${offsetX}px`, zIndex: 10000 }}
       >
         {info ? (
-          <div>
-            <table id="info">
+          <div id="info">
+            <table>
               <thead>
                 <tr>
-                  <th>Base</th>
-                  <th>Total </th>
-                  <th>% of Total</th>
-                  <th>Strands</th>
+                  <th id={condId}>Base</th>
+                  <th id={condId}>Total </th>
+                  <th id={condId}>% of Total</th>
+                  <th id={condId}>Strands</th>
                 </tr>
               </thead>
               <tbody>{renderTableData}</tbody>

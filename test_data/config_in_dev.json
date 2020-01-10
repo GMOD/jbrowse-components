@@ -930,7 +930,7 @@
         },
         {
           "type": "SNPTrack",
-          "trackId": "volvox-short-reads-snp",
+          "trackId": "volvox-short-reads-snp-bam",
           "name": "volvox-SNP (bam)",
           "category": [
             "Coverage"
@@ -944,6 +944,28 @@
               "location": {
                 "uri": "test_data/volvox-sorted.bam.bai"
               }
+            }
+          },
+          "renderers": {
+            "SNPXYRenderer": {
+              "type": "SNPXYPlotRenderer"
+            }
+          }
+        },
+        {
+          "type": "SNPTrack",
+          "trackId": "volvox-short-reads-snp-cram",
+          "name": "volvox-SNP (cram)",
+          "category": [
+            "Coverage"
+          ],
+          "adapter": {
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "test_data/volvox-sorted.cram"
+            },
+            "craiLocation": {
+              "uri": "test_data/volvox-sorted.cram.crai"
             }
           },
           "renderers": {
