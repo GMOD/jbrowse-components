@@ -1,6 +1,6 @@
 import { BamFile } from '@gmod/bam'
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
-import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
+import { IFileLocation, IRegion, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
@@ -107,10 +107,16 @@ export default class extends BaseAdapter {
     )
   }
 
-  public async getMultiRegionStats(){
-    const scoreMin = 0
-    const scoreMax = 50
-    return { scoreMin, scoreMax }
+  //TODO get domain
+  public async getMultiRegionStats(
+    regions: INoAssemblyRegion[] = [],
+    opts: BaseOptions = {},
+    ){
+      console.log(regions)
+      checkAbortSignal(opts.signal)
+      const scoreMin = 0
+      const scoreMax = 50
+      return { scoreMin, scoreMax }
   }
   
 

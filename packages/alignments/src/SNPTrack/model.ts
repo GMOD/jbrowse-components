@@ -39,7 +39,6 @@ import {
             ReactComponent: (SNPTrackComponent as unknown) as React.FC,
             ready: true, //false,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            fullFeatureList: [] as any,
             stats: observable({scoreMin: 0, scoreMax: 50} as any),//undefined as undefined | any,
             statsFetchInProgress: undefined as undefined | AbortController,
           })),
