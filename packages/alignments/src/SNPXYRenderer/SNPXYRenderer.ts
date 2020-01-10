@@ -161,7 +161,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const widthPx = widthBp * scale
     const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(bpPerPx)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
-    const insRegex = /^ins.(\d)/
+    const insRegex = /^ins.[A-Za-z0-9]/
     let featureList = new Array
     // A: green, C: blue, g: orange, t: red, deletion: dark grey, total: light grey
     const colorForBase: { [key: string]: string } = {
@@ -198,6 +198,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
           position: leftBase + index
         })
      }
+     if (infoArray.length >= 5) console.log(leftBase + index)
     })
     return featureList
   }
