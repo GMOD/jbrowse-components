@@ -198,7 +198,6 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
           position: leftBase + index
         })
      }
-     if (infoArray.length >= 5) console.log(leftBase + index)
     })
     return featureList
   }
