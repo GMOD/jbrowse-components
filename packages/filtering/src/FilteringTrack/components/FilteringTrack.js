@@ -9,11 +9,9 @@ const useStyles = makeStyles(theme => ({
   track: {
     background: 'white',
     height: '100%',
-    overflow: 'hidden',
   },
   innerTrack: {
     overflowY: 'auto',
-    overflowX: 'hidden',
   },
   filterControls: {
     background: theme.palette.background.default,

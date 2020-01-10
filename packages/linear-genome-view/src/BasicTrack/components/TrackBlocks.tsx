@@ -22,7 +22,6 @@ const useStyles = makeStyles({
     whiteSpace: 'nowrap',
     textAlign: 'left',
     background: '#404040',
-    position: 'absolute',
     display: 'flex',
     minHeight: '100%',
   },
@@ -100,16 +99,14 @@ function TrackBlocks({
 }) {
   const classes = useStyles()
   const { blockDefinitions } = model
+
+  console.log(blockDefinitions.offsetPx - viewModel.offsetPx)
   return (
-    <div
-      data-testid="Block"
-      className={classes.trackBlocks}
-      style={{
-        left: blockDefinitions.offsetPx - viewModel.offsetPx,
-      }}
-    >
-      <RenderedBlocks model={model} />
-    </div>
+    <>
+      <div data-testid="Block" className={classes.trackBlocks}>
+        <RenderedBlocks model={model} />
+      </div>
+    </>
   )
 }
 

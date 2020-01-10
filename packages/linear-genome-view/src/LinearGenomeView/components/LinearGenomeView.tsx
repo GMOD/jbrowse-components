@@ -54,7 +54,6 @@ const useStyles = makeStyles(theme => ({
   root: {
     position: 'relative',
     marginBottom: theme.spacing(1),
-    overflow: 'hidden',
   },
   linearGenomeView: {
     background: '#D9D9D9',
@@ -63,7 +62,6 @@ const useStyles = makeStyles(theme => ({
   },
   controls: {
     borderRight: '1px solid gray',
-    overflow: 'hidden',
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
   },
@@ -155,42 +153,22 @@ const TrackContainer = observer(
     // each other in a grid, we add `onDragEnter` to both of them so the user
     // can drag the track on to the controls or the track itself.
     return (
-      <>
-        <ControlsComponent
-          track={track}
-          view={model}
-          onConfigureClick={track.activateConfigurationUI}
-          className={clsx(classes.controls, classes.trackControls)}
-          style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
-          onDragEnter={debouncedOnDragEnter}
-        />
-        <TrackRenderingContainer
-          trackId={track.id}
-          trackHeight={track.height}
+      <TrackRenderingContainer
+        trackId={track.id}
+        trackHeight={track.height}
+        onHorizontalScroll={horizontalScroll}
+        setScrollTop={track.setScrollTop}
+        onDragEnter={debouncedOnDragEnter}
+        dimmed={draggingTrackId !== undefined && draggingTrackId !== track.id}
+      >
+        <RenderingComponent
+          model={track}
+          offsetPx={offsetPx}
+          bpPerPx={bpPerPx}
+          blockState={{}}
           onHorizontalScroll={horizontalScroll}
-          setScrollTop={track.setScrollTop}
-          onDragEnter={debouncedOnDragEnter}
-          dimmed={draggingTrackId !== undefined && draggingTrackId !== track.id}
-        >
-          <RenderingComponent
-            model={track}
-            offsetPx={offsetPx}
-            bpPerPx={bpPerPx}
-            blockState={{}}
-            onHorizontalScroll={horizontalScroll}
-          />
-        </TrackRenderingContainer>
-        <ResizeHandle
-          onDrag={track.resizeHeight}
-          style={{
-            gridRow: `resize-${track.id}`,
-            gridColumn: 'span 2',
-            background: '#ccc',
-            boxSizing: 'border-box',
-            borderTop: '1px solid #fafafa',
-          }}
         />
-      </>
+      </TrackRenderingContainer>
     )
   },
 )
@@ -509,29 +487,13 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
 
   const initialized =
     !!model.displayedRegions.length || !!model.displayRegionsFromAssemblyName
-  const style = (initialized
-    ? {
-        display: 'grid',
-        position: 'relative',
-        gridTemplateRows: `${!model.hideHeader ? '[header] auto ' : ''}${
-          error ? '[error] auto ' : ''
-        }[scale-bar] ${SCALE_BAR_HEIGHT}px ${tracks
-          .map(
-            t =>
-              `[track-${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,
-          )
-          .join(' ')}`,
-        gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
-      }
-    : {}) as React.CSSProperties
-
   return (
     <div className={classes.root}>
-      <div className={classes.linearGenomeView} style={style}>
+      <div className={classes.linearGenomeView}>
         {!initialized ? (
           <ImportForm model={model} />
         ) : (
-          <>
+          <div style={{ width: '100%' }}>
             {!model.hideHeader ? <Header model={model} /> : null}
             <div
               className={clsx(classes.controls, classes.viewControls)}
@@ -547,7 +509,11 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
             </Rubberband>
             {error ? (
               <div
-                style={{ gridRow: 'error', textAlign: 'center', color: 'red' }}
+                style={{
+                  gridRow: 'error',
+                  textAlign: 'center',
+                  color: 'red',
+                }}
               >
                 {error.message}
               </div>
@@ -572,17 +538,19 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
                     </Typography>
                   </Container>
                 ) : (
-                  tracks.map(track => (
-                    <TrackContainer
-                      key={track.id}
-                      model={model}
-                      track={track}
-                    />
-                  ))
+                  <>
+                    {tracks.map(track => (
+                      <TrackContainer
+                        key={track.id}
+                        model={model}
+                        track={track}
+                      />
+                    ))}
+                  </>
                 )}
               </>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>

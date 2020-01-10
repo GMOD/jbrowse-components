@@ -118,6 +118,7 @@ export function stateModelFactory(pluginManager: any) {
       get trackHeightsWithResizeHandles() {
         return this.trackHeights + self.tracks.length * 3
       },
+
       get height() {
         return (
           this.trackHeightsWithResizeHandles +
@@ -125,6 +126,7 @@ export function stateModelFactory(pluginManager: any) {
           this.scaleBarHeight
         )
       },
+
       get totalBp() {
         let totalbp = 0
         this.displayedRegionsInOrder.forEach(region => {

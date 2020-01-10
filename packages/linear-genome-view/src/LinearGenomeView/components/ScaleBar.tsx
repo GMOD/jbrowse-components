@@ -26,7 +26,6 @@ const useStyles = makeStyles((/* theme */) => ({
     whiteSpace: 'nowrap',
     textAlign: 'left',
     width: '100%',
-    position: 'absolute',
     display: 'flex',
     overflow: 'hidden',
   },

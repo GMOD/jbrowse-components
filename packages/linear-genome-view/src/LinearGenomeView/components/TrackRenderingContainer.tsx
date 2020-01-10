@@ -7,7 +7,6 @@ import React, { ReactNode, useEffect, useState } from 'react'
 const useStyles = makeStyles({
   trackRenderingContainer: {
     overflowY: 'auto',
-    overflowX: 'hidden',
     background: '#555',
     whiteSpace: 'nowrap',
   },
@@ -113,10 +112,6 @@ const TrackRenderingContainer: React.FC<{
             setDelta(0)
           }
         }}
-        style={{
-          gridRow: `track-${trackId}`,
-          gridColumn: 'blocks',
-        }}
         onScroll={event => {
           const target = event.target as HTMLDivElement
           setScrollTop(target.scrollTop, target.clientHeight)
@@ -132,8 +127,6 @@ const TrackRenderingContainer: React.FC<{
       {dimmed ? (
         <div
           style={{
-            gridRow: `track-${trackId}`,
-            gridColumn: 'blocks',
             height: trackHeight,
             background: 'rgba(0, 0, 0, 0.4)',
             zIndex: 2,
