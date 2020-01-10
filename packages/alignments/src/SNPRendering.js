@@ -49,7 +49,7 @@ function Tooltip({ offsetX, feature }) {
               <thead>
                 <tr>
                   <th id={condId}>Base</th>
-                  <th id={condId}>Total </th>
+                  <th id={condId}>Count</th>
                   <th id={condId}>% of Total</th>
                   <th id={condId}>Strands</th>
                 </tr>

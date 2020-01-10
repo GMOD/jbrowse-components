@@ -11,7 +11,7 @@ import {
   import blockBasedTrackModel, {
     BlockBasedTrackStateModel,
   } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
-  import { autorun } from 'mobx'
+  import { autorun, observable } from 'mobx'
   import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
   import React from 'react'
   import { getNiceDomain } from '../util'
@@ -40,14 +40,15 @@ import {
             ready: true, //false,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             fullFeatureList: [] as any,
-            stats: undefined as undefined | any,
+            stats: observable({scoreMin: 0, scoreMax: 50} as any),//undefined as undefined | any,
             statsFetchInProgress: undefined as undefined | AbortController,
           })),
       )
       .actions(self => {
         return {
           updateStats(stats: { scoreMin: number; scoreMax: number }) {
-            self.stats = stats
+            self.stats.scoreMin = stats.scoreMin
+            self.stats.scoreMax = stats.scoreMax
             self.ready = true
           },
   
@@ -101,23 +102,23 @@ import {
         },
       }))
       .actions(self => {
-        async function getStats(signal: AbortSignal) { // main source of problem, look here, not getting stats
+        function getStats(signal: AbortSignal) {
           const { rpcManager } = getSession(self) as {
             rpcManager: { call: Function }
           }
           const autoscaleType = getConf(self, 'autoscale', {})
-          // if (autoscaleType === 'local') {
-          //   const { dynamicBlocks, bpPerPx } = getContainingView(self)
-          //   return rpcManager.call('statsGathering', 'getMultiRegionStats', {
-          //     adapterConfig: getSnapshot(self.configuration.adapter),
-          //     adapterType: self.configuration.adapter.type,
-          //     assemblyName: getTrackAssemblyName(self),
-          //     regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
-          //     signal,
-          //     bpPerPx,
-          //   })
-          // }
-          return {scoreMin: 50, scoreMax: 50}
+          if (autoscaleType === 'local') {
+            const { dynamicBlocks, bpPerPx } = getContainingView(self)
+            return rpcManager.call('statsGathering', 'getMultiRegionStats', {
+              adapterConfig: getSnapshot(self.configuration.adapter),
+              adapterType: self.configuration.adapter.type,
+              assemblyName: getTrackAssemblyName(self),
+              regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
+              signal,
+              bpPerPx,
+            })
+          }
+         // return {scoreMin: 0, scoreMax: 50}
             // autoscaleType === 'local'
             //   ? {
             //       ...r,
@@ -141,7 +142,7 @@ import {
                     self.setLoading(aborter)
                     const stats = await getStats(aborter.signal)
                     if (isAlive(self)) {
-                      self.updateStats(stats) // will not work for alignment tracks, only works in wiggle folder
+                      self.updateStats(stats)
                     }
                   } catch (e) {
                     if (!isAbortException(e)) {
