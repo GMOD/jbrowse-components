@@ -10,6 +10,7 @@ export default pluginManager => {
       FilterModelType = null,
       compare,
       displayName = undefined,
+      categoryName = undefined,
     },
   ) {
     return types
@@ -20,6 +21,7 @@ export default pluginManager => {
         DataCellReactComponent,
         FilterModelType,
         displayName: displayName || name,
+        categoryName,
       }))
       .views(() => ({
         compare,

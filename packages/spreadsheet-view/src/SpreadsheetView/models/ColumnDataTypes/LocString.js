@@ -236,7 +236,8 @@ export default pluginManager => {
     .volatile(() => ({ ReactComponent: FilterReactComponent }))
 
   const LocStringColumnType = MakeSpreadsheetColumnType('LocString', {
-    displayName: 'Location',
+    categoryName: 'Location',
+    displayName: 'Full location',
     compare(cellA, cellB) {
       return compareLocStrings(cellA.text, cellB.text)
     },

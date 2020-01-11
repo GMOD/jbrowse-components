@@ -70,8 +70,8 @@ export default pluginManager => {
         const typeNames = Object.keys(ColumnTypes)
         return typeNames.map(typeName => {
           const dataType = ColumnTypes[typeName].create({ type: typeName })
-          const { displayName } = dataType
-          return { typeName, displayName }
+          const { displayName, categoryName } = dataType
+          return { typeName, displayName, categoryName }
         })
       },
 

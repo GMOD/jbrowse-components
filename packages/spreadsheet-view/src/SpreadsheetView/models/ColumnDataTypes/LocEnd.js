@@ -3,11 +3,13 @@ export default ({ jbrequire }) => {
     require('./MakeSpreadsheetColumnType'),
   )
 
-  const NumberColumn = MakeSpreadsheetColumnType('Number', {
+  const LocEnd = MakeSpreadsheetColumnType('LocEnd', {
+    categoryName: 'Location',
+    displayName: 'End',
     compare(cellA, cellB) {
       return parseFloat(cellA.text) - parseFloat(cellB.text)
     },
   })
 
-  return NumberColumn
+  return LocEnd
 }

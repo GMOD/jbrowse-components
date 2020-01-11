@@ -7,6 +7,9 @@ export default pluginManager => {
       Number: jbrequire(require('./Number')),
       Text: jbrequire(require('./Text')),
       LocString: jbrequire(require('./LocString')),
+      LocRef: jbrequire(require('./LocRef')),
+      LocStart: jbrequire(require('./LocStart')),
+      LocEnd: jbrequire(require('./LocEnd')),
     },
   }
 

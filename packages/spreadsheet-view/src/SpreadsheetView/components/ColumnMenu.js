@@ -10,6 +10,77 @@ export default pluginManager => {
   const ListItemIcon = jbrequire('@material-ui/core/ListItemIcon')
   const ListItemText = jbrequire('@material-ui/core/ListItemText')
 
+  const { iterMap } = jbrequire('@gmod/jbrowse-core/util')
+
+  const DataTypeSubMenu = observer(
+    ({
+      columnNumber,
+      spreadsheetModel,
+      currentTypeName,
+      displayName,
+      isChecked,
+      menuItems,
+      onClose = () => {},
+    }) => {
+      const [menuOpen, setMenuOpen] = useState(false)
+      const menuItemRef = useRef(null)
+
+      return (
+        <>
+          <MenuItem
+            ref={menuItemRef}
+            onClick={() => {
+              setMenuOpen(true)
+            }}
+          >
+            <ListItemIcon>
+              <Icon fontSize="small">{isChecked ? 'check' : 'blank'}</Icon>
+            </ListItemIcon>
+            <ListItemText primary={displayName} />
+            <ListItemIcon>
+              <Icon fontSize="small">arrow_right</Icon>
+            </ListItemIcon>
+          </MenuItem>
+          <Menu
+            anchorEl={menuOpen && menuItemRef.current}
+            keepMounted
+            open={Boolean(menuOpen)}
+            onClose={() => setMenuOpen(false)}
+            elevation={10}
+            getContentAnchorEl={null}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'left',
+            }}
+          >
+            {menuItems.map(({ typeName, displayName: name }) => {
+              return (
+                <MenuItem
+                  onClick={() => {
+                    spreadsheetModel.setColumnType(columnNumber, typeName)
+                    setMenuOpen(false)
+                    onClose()
+                  }}
+                >
+                  <ListItemIcon>
+                    <Icon fontSize="small">
+                      {typeName === currentTypeName ? 'check' : 'blank'}
+                    </Icon>
+                  </ListItemIcon>
+                  <ListItemText primary={name} />
+                </MenuItem>
+              )
+            })}
+          </Menu>
+        </>
+      )
+    },
+  )
+
   const ColumnMenu = observer(
     ({ viewModel, spreadsheetModel, currentColumnMenu, setColumnMenu }) => {
       const columnMenuClose = () => {
@@ -38,6 +109,25 @@ export default pluginManager => {
       const dataTypeMenuItemRef = useRef(null)
 
       const { dataTypeChoices } = spreadsheetModel
+
+      // make a Map of categoryName => [entry...]
+      const dataTypeTopLevelMenu = new Map()
+      dataTypeChoices.forEach(dataTypeRecord => {
+        const { displayName, categoryName } = dataTypeRecord
+        if (categoryName) {
+          if (!dataTypeTopLevelMenu.has(categoryName)) {
+            dataTypeTopLevelMenu.set(categoryName, {
+              isCategory: true,
+              subMenuItems: [],
+            })
+          }
+          dataTypeTopLevelMenu
+            .get(categoryName)
+            .subMenuItems.push(dataTypeRecord)
+        } else {
+          dataTypeTopLevelMenu.set(displayName, dataTypeRecord)
+        }
+      })
 
       const dataType =
         currentColumnMenu && spreadsheetModel.columns[columnNumber].dataType
@@ -145,25 +235,70 @@ export default pluginManager => {
               horizontal: 'left',
             }}
           >
-            {dataTypeChoices.map(({ typeName, displayName }) => {
-              return (
-                <MenuItem
-                  key={typeName}
-                  onClick={() => {
-                    spreadsheetModel.setColumnType(columnNumber, typeName)
-                    columnMenuClose()
-                  }}
-                >
-                  <ListItemIcon>
-                    <Icon fontSize="small">
-                      {dataTypeName === typeName ? 'check' : 'blank'}
-                    </Icon>
-                  </ListItemIcon>
-                  <ListItemText primary={displayName || typeName} />
-                </MenuItem>
-              )
-            })}
+            {iterMap(
+              dataTypeTopLevelMenu.entries(),
+              ([displayName, record]) => {
+                const { typeName, subMenuItems } = record
+                if (subMenuItems) {
+                  return (
+                    <DataTypeSubMenu
+                      key={`category-${displayName}`}
+                      columnNumber={columnNumber}
+                      spreadsheetModel={spreadsheetModel}
+                      currentTypeName={dataTypeName}
+                      isChecked={Boolean(
+                        subMenuItems.find(i => i.typeName === dataTypeName),
+                      )}
+                      onClose={columnMenuClose}
+                      displayName={displayName}
+                      menuItems={subMenuItems}
+                    />
+                  )
+                }
+                if (typeName) {
+                  return (
+                    <MenuItem
+                      key={typeName}
+                      onClick={() => {
+                        spreadsheetModel.setColumnType(columnNumber, typeName)
+                        columnMenuClose()
+                      }}
+                    >
+                      <ListItemIcon>
+                        <Icon fontSize="small">
+                          {dataTypeName === typeName ? 'check' : 'blank'}
+                        </Icon>
+                      </ListItemIcon>
+                      <ListItemText primary={displayName || typeName} />
+                    </MenuItem>
+                  )
+                }
+                return null
+              },
+            )}
           </Menu>
+          {iterMap(dataTypeTopLevelMenu.entries(), ([, { ref, types }]) => {
+            if (ref && types) {
+              return (
+                <Menu
+                  anchorEl={ref && ref.current}
+                  open={Boolean(currentColumnMenu && dataTypeMenuOpen)}
+                  onClose={columnMenuClose}
+                  elevation={10}
+                  getContentAnchorEl={null}
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'left',
+                  }}
+                ></Menu>
+              )
+            }
+            return null
+          })}
         </>
       )
     },
