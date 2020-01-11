@@ -10,7 +10,7 @@ export default pluginManager => {
   const FilterControlsModel = jbrequire(require('./FilterControls'))
 
   const minHeight = 40
-  const defaultHeight = 400
+  const defaultHeight = 440
   const stateModel = types
     .model('SpreadsheetView', {
       id: ElementId,

@@ -34,6 +34,7 @@ export default pluginManager => {
         // borderBottom: '1px solid #a2a2a2',
         paddingLeft: theme.spacing(1),
       },
+      contentArea: { overflow: 'auto' },
       columnFilter: {
         overflow: 'hidden',
         whiteSpace: 'nowrap',
@@ -170,24 +171,29 @@ export default pluginManager => {
               )
             })}
 
-        <span style={{ display: model.mode === 'import' ? undefined : 'none' }}>
-          <ImportWizard model={model.importWizard} />
-        </span>
         <div
-          style={{
-            position: 'relative',
-            top: model.mode === 'display' ? undefined : model.height,
-          }}
+          className={classes.contentArea}
+          style={{ height: model.height - headerHeight }}
         >
-          <Spreadsheet
-            model={spreadsheet}
-            height={
-              model.height -
-              headerHeight -
-              colFilterCount * colFilterHeight -
-              statusBarHeight
-            }
-          />
+          {model.mode !== 'import' ? null : (
+            <ImportWizard model={model.importWizard} />
+          )}
+          <div
+            style={{
+              position: 'relative',
+              display: model.mode === 'display' ? undefined : 'none',
+            }}
+          >
+            <Spreadsheet
+              model={spreadsheet}
+              height={
+                model.height -
+                headerHeight -
+                colFilterCount * colFilterHeight -
+                statusBarHeight
+              }
+            />
+          </div>
         </div>
 
         <div
