@@ -235,9 +235,18 @@ export default pluginManager => {
                 if (onlyDisplayRelevantRegionsInCircularView) {
                   if (tracks.length === 1) {
                     const adapter = getConf(tracks[0], 'adapter')
-                    const refNameMapP = getRoot(
-                      self,
-                    ).jbrowse.getRefNameMapForAdapter(adapter, assemblyName)
+
+                    // this is a map of canonical-name -> adapter-specific-name
+                    const refNameMapP = getRoot(self)
+                      .jbrowse.getRefNameMapForAdapter(adapter, assemblyName)
+                      .then(refNameMap => {
+                        // reverse the refname map so that it is adapter-specific-name -> canonical-name
+                        const reversed = new Map()
+                        for (const [canonicalName, adapterName] of refNameMap) {
+                          reversed.set(adapterName, canonicalName)
+                        }
+                        return reversed
+                      })
 
                     const regionsP = session.getRegionsForAssemblyName(
                       assemblyName,
