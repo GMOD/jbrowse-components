@@ -104,12 +104,12 @@ export default pluginManager => {
     .views(self => ({
       // returns a function that tests the given row
       get predicate() {
-        const { stringToFind, columnNumber } = self.stringToFind // avoid closing over self
-        if (!stringToFind)
+        const { stringToFind, columnNumber } = self // avoid closing over self
+        if (!stringToFind) {
           return function alwaysTrue() {
             return true
           }
-
+        }
         const s = stringToFind.toLowerCase() // case insensitive match
         return function stringPredicate(sheet, row) {
           const { cells } = row

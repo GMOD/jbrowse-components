@@ -98,6 +98,7 @@ export default pluginManager => {
 
       // load a new spreadsheet and set our mode to display it
       displaySpreadsheet(spreadsheet) {
+        self.filterControls.clearAllFilters()
         self.spreadsheet = spreadsheet
         self.mode = 'display'
       },

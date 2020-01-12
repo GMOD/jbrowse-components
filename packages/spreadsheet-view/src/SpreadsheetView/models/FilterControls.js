@@ -42,6 +42,9 @@ export default pluginManager => {
       setString(s) {
         self.stringToFind = s
       },
+      clear() {
+        self.stringToFind = ''
+      },
     }))
 
   return types
@@ -75,6 +78,10 @@ export default pluginManager => {
       },
       removeColumnFilter(filter) {
         return self.columnFilters.remove(filter)
+      },
+      clearAllFilters() {
+        self.columnFilters.clear()
+        self.rowFullText.clear()
       },
     }))
 }

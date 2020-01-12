@@ -50,7 +50,10 @@ export default pluginManager => {
       }
 
       const columnDefinition = viewModel.spreadsheet.columns[columnNumber]
-
+      if (!columnDefinition)
+        throw new Error(
+          'no column definition! filters are probably out of date',
+        )
       return (
         <Grid
           container
