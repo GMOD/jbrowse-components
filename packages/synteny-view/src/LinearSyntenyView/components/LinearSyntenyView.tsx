@@ -67,6 +67,7 @@ export default (pluginManager: any) => {
             getConf(model, 'showSimpleAnchors') &&
               model.allMatchedSimpleAnchorFeatures[syntenyGroup],
             getConf(model, 'showPaf') && model.minimap2Features,
+            getConf(model, 'showSam') && model.samFeatures,
             model.getMatchedFeaturesInLayout(
               syntenyGroup,
               model.allMatchedSyntenyFeatures[syntenyGroup],

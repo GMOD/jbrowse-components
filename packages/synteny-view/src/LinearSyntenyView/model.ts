@@ -42,10 +42,25 @@ type ConfigRelationship = { type: string; target: string }
 
 // Get the syntenyGroup type from the tracks configRelationships
 function getSyntenyGroup(track: Instance<BaseTrackStateModel>) {
-  const rels: ConfigRelationship[] = getConf(track, 'configRelationships')
+  const rels: ConfigRelationship[] = getConf(track, 'configRelationships') || []
   const t = rels.find(f => f.type === 'syntenyGroup')
   return t ? t.target : undefined
 }
+
+function getLength(cigar: string) {
+  const recs = cigar.split(/([MIDNSHPX=])/)
+  let lref = 0
+  for (let c = 0; c < recs.length; c += 2) {
+    const len = recs[c]
+    const op = recs[c + 1]
+
+    // soft clip, hard clip, and insertion don't count toward
+    // the length on the reference
+    if (op !== 'H' && op !== 'S' && op !== 'I') lref += +len
+  }
+  return lref
+}
+
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
   const {
@@ -72,6 +87,10 @@ export default function stateModelFactory(pluginManager: any) {
         type: 'string',
         defaultValue: '',
       },
+      sam: {
+        type: 'string',
+        defaultValue: '',
+      },
       middle: {
         type: 'boolean',
         defaultValue: false,
@@ -89,6 +108,10 @@ export default function stateModelFactory(pluginManager: any) {
         defaultValue: true,
       },
       showPaf: {
+        type: 'boolean',
+        defaultValue: true,
+      },
+      showSam: {
         type: 'boolean',
         defaultValue: true,
       },
@@ -125,6 +148,7 @@ export default function stateModelFactory(pluginManager: any) {
       anchors: undefined as { [key: string]: number } | undefined,
       simpleAnchors: undefined as { [key: string]: number } | undefined,
       minimap2Data: undefined as PafRecord[] | undefined,
+      samData: undefined as PafRecord[] | undefined,
       simpleAnchorsData: undefined as SimpleAnchorsData | undefined,
       anchorsData: undefined as AnchorsData | undefined,
     }))
@@ -205,10 +229,11 @@ export default function stateModelFactory(pluginManager: any) {
       },
 
       getFeaturesOverlappingBlock(
+        data: PafRecord[] | undefined,
         assembly: number,
         block: { start: number; end: number; refName: string },
       ) {
-        return (self.minimap2Data || []).filter(row => {
+        return (data || []).filter(row => {
           if (assembly === 0) {
             if (block.refName === row.chr1) {
               return doesIntersect2(
@@ -232,10 +257,9 @@ export default function stateModelFactory(pluginManager: any) {
         })
       },
 
-      // This finds candidate syntenic connections
-      get minimap2Features() {
+      getFeatures(data: any) {
         const r1t = self.views[0].staticBlocks.map(block => {
-          return this.getFeaturesOverlappingBlock(0, block)
+          return this.getFeaturesOverlappingBlock(data, 0, block)
         })
         const r1 = r1t.flat().map((row, i) => {
           return [
@@ -267,7 +291,7 @@ export default function stateModelFactory(pluginManager: any) {
         })
 
         const r2t = self.views[1].staticBlocks.map(block => {
-          return this.getFeaturesOverlappingBlock(1, block)
+          return this.getFeaturesOverlappingBlock(data, 1, block)
         })
 
         const r2 = r2t.flat().map((row, i) => {
@@ -300,6 +324,16 @@ export default function stateModelFactory(pluginManager: any) {
         })
 
         return r1.concat(r2)
+      },
+
+      // This finds candidate syntenic connections
+      get minimap2Features() {
+        return this.getFeatures(self.minimap2Data)
+      },
+
+      // This finds candidate syntenic connections
+      get samFeatures() {
+        return this.getFeatures(self.samData)
       },
 
       // This finds candidate syntenic connections from MCSCan x.y.anchors file
@@ -503,6 +537,7 @@ export default function stateModelFactory(pluginManager: any) {
                 const simpleAnchors = getConf(self, 'simpleAnchors')
                 const anchors = getConf(self, 'anchors')
                 const pafData = getConf(self, 'paf')
+                const samData = getConf(self, 'sam')
                 if (simpleAnchors) {
                   const data = await fetch(simpleAnchors)
                   const text = await data.text()
@@ -587,6 +622,67 @@ export default function stateModelFactory(pluginManager: any) {
 
                   this.setMinimap2Data(m)
                 }
+                if (samData) {
+                  const data = await fetch(samData)
+                  const text = await data.text()
+                  const m: PafRecord[] = []
+                  text.split('\n').forEach((line: string, index: number) => {
+                    if (line.length) {
+                      // eslint-disable-next-line prefer-const
+                      let [chr2, flag, chr1, start1, mapq, cigar] = line.split(
+                        '\t',
+                      )
+                      const start = +start1 + 17027008
+                      const start2 = 1458099
+                      const recs = cigar.split(/([MIDNSHPX=])/)
+                      let curR1 = start
+                      let curR2 = start2
+                      for (let i = 0; i < recs.length; i += 2) {
+                        const len = +recs[i]
+                        const op = recs[i + 1]
+                        if (op === 'H') {
+                          curR2 += len
+                        } else if (op === 'M') {
+                          m.push({
+                            chr1,
+                            start1: curR1,
+                            end1: curR1 + len,
+                            strand1: '+',
+                            chr2,
+                            start2: curR2,
+                            end2: curR2 + len,
+                          })
+                          curR1 += len
+                          curR2 += len
+                        } else if (op === 'D') {
+                          m.push({
+                            chr1,
+                            start1: curR1,
+                            end1: curR1 + len,
+                            strand1: '+',
+                            chr2,
+                            start2: curR2,
+                            end2: curR2,
+                          })
+                          curR1 += len
+                        } else if (op === 'I') {
+                          m.push({
+                            chr1,
+                            start1: curR1,
+                            end1: curR1,
+                            strand1: '+',
+                            chr2,
+                            start2: curR2,
+                            end2: curR2 + len,
+                          })
+                          curR2 += len
+                        }
+                      }
+                    }
+                  })
+
+                  this.setSamData(m)
+                }
               } catch (e) {
                 console.error(e)
                 throw e
@@ -640,6 +736,9 @@ export default function stateModelFactory(pluginManager: any) {
         self.minimap2Data = minimap2Data
       },
 
+      setSamData(samData: PafRecord[]) {
+        self.samData = samData
+      },
       closeView() {
         getParent(self, 2).removeView(self)
       },
