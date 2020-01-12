@@ -260,7 +260,7 @@
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"
     },
-    "updateUrl": false,
+    "updateUrl": true,
     "useLocalStorage": false
   }
 }

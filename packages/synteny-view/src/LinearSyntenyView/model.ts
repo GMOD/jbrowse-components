@@ -47,20 +47,6 @@ function getSyntenyGroup(track: Instance<BaseTrackStateModel>) {
   return t ? t.target : undefined
 }
 
-function getLength(cigar: string) {
-  const recs = cigar.split(/([MIDNSHPX=])/)
-  let lref = 0
-  for (let c = 0; c < recs.length; c += 2) {
-    const len = recs[c]
-    const op = recs[c + 1]
-
-    // soft clip, hard clip, and insertion don't count toward
-    // the length on the reference
-    if (op !== 'H' && op !== 'S' && op !== 'I') lref += +len
-  }
-  return lref
-}
-
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
   const {
@@ -628,15 +614,21 @@ export default function stateModelFactory(pluginManager: any) {
                   const m: PafRecord[] = []
                   text.split('\n').forEach((line: string, index: number) => {
                     if (line.length) {
-                      // eslint-disable-next-line prefer-const
-                      let [chr2, flag, chr1, start1, mapq, cigar] = line.split(
-                        '\t',
-                      )
-                      const start = +start1 + 17027008
-                      const start2 = 1458099
+                      const [
+                        chr2,
+                        ,
+                        chr1,
+                        start1,
+                        ,
+                        cigar,
+                        ...rest
+                      ] = line.split('\t')
+                      const r = rest.find(str => str.startsWith('ST:'))
+                      const start = +start1 + 17027006
+                      const start2 = +(r || '').replace('ST:', '')
                       const recs = cigar.split(/([MIDNSHPX=])/)
                       let curR1 = start
-                      let curR2 = start2
+                      let curR2 = start2 - 1
                       for (let i = 0; i < recs.length; i += 2) {
                         const len = +recs[i]
                         const op = recs[i + 1]
