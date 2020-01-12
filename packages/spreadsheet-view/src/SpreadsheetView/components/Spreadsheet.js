@@ -127,9 +127,14 @@ export default pluginManager => {
 
   const CellData = observer(({ cell, spreadsheetModel, columnNumber }) => {
     const { dataType } = spreadsheetModel.columns.get(columnNumber)
-    if (dataType.ReactComponent) {
+    if (dataType.DataCellReactComponent) {
       return (
-        <dataType.ReactComponent cell={cell} spreadsheet={spreadsheetModel} />
+        <dataType.DataCellReactComponent
+          cell={cell}
+          dataType={dataType}
+          columnNumber={columnNumber}
+          spreadsheet={spreadsheetModel}
+        />
       )
     }
 

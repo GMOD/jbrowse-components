@@ -237,16 +237,12 @@ export default pluginManager => {
                     const adapter = getConf(tracks[0], 'adapter')
 
                     // this is a map of canonical-name -> adapter-specific-name
-                    const refNameMapP = getRoot(self)
-                      .jbrowse.getRefNameMapForAdapter(adapter, assemblyName)
-                      .then(refNameMap => {
-                        // reverse the refname map so that it is adapter-specific-name -> canonical-name
-                        const reversed = new Map()
-                        for (const [canonicalName, adapterName] of refNameMap) {
-                          reversed.set(adapterName, canonicalName)
-                        }
-                        return reversed
-                      })
+                    const refNameMapP = getRoot(
+                      self,
+                    ).jbrowse.getReverseRefNameMapForAdapter(
+                      adapter,
+                      assemblyName,
+                    )
 
                     const regionsP = session.getRegionsForAssemblyName(
                       assemblyName,

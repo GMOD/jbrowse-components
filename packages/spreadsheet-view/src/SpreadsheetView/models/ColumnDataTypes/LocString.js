@@ -5,7 +5,7 @@ import {
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { types, getType } = jbrequire('mobx-state-tree')
+  const { types, getType, getParent, getRoot } = jbrequire('mobx-state-tree')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
 
@@ -13,15 +13,13 @@ export default pluginManager => {
     '@gmod/jbrowse-core/util/mst-reflection',
   )
 
-  const { parseLocString, compareLocStrings } = jbrequire(
-    '@gmod/jbrowse-core/util',
-  )
+  const {
+    compareLocStrings,
+    getSession,
+    parseLocStringAndConvertToInterbase,
+  } = jbrequire('@gmod/jbrowse-core/util')
 
-  function parseLocStringAndConvertToInterbase(locstring) {
-    const parsed = parseLocString(locstring)
-    if (typeof parsed.start === 'number') parsed.start -= 1
-    return parsed
-  }
+  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
 
   const MakeSpreadsheetColumnType = jbrequire(
     require('./MakeSpreadsheetColumnType'),
@@ -235,6 +233,45 @@ export default pluginManager => {
     }))
     .volatile(() => ({ ReactComponent: FilterReactComponent }))
 
+  // opens a new LGV at the location described in the locstring in the cell text
+  async function locationLinkClick(spreadsheet, columnNumber, cell) {
+    const loc = parseLocStringAndConvertToInterbase(cell.text)
+    if (loc) {
+      const session = getSession(spreadsheet)
+      const root = getRoot(session)
+      const { dataset } = getParent(spreadsheet)
+      loc.refName = await root.jbrowse.getCanonicalRefName(
+        loc.refName,
+        readConfObject(dataset.assembly, 'name'),
+      )
+      const initialState = { displayName: cell.text }
+      const view = session.addViewOfDataset(
+        'LinearGenomeView',
+        readConfObject(dataset, 'name'),
+        initialState,
+      )
+      view.afterDisplayedRegionsSet(() => view.navTo(loc))
+    }
+  }
+
+  const DataCellReactComponent = observer(
+    ({ cell, columnNumber, spreadsheet }) => {
+      function click(evt) {
+        evt.preventDefault()
+        locationLinkClick(spreadsheet, columnNumber, cell)
+      }
+      return (
+        <a
+          onClick={click}
+          title="open a new linear genome view here"
+          href="#link"
+        >
+          {cell.text}
+        </a>
+      )
+    },
+  )
+
   const LocStringColumnType = MakeSpreadsheetColumnType('LocString', {
     categoryName: 'Location',
     displayName: 'Full location',
@@ -242,6 +279,7 @@ export default pluginManager => {
       return compareLocStrings(cellA.text, cellB.text)
     },
     FilterModelType,
+    DataCellReactComponent,
   })
 
   return LocStringColumnType

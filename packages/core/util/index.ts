@@ -198,6 +198,12 @@ export function parseLocString(locstring: string): ParsedLocString {
   return { assemblyName, refName }
 }
 
+export function parseLocStringAndConvertToInterbase(locstring: string) {
+  const parsed = parseLocString(locstring)
+  if (typeof parsed.start === 'number') parsed.start -= 1
+  return parsed
+}
+
 export function compareLocStrings(a: string, b: string) {
   const locA = parseLocString(a)
   const locB = parseLocString(b)
