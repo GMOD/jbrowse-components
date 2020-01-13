@@ -37,15 +37,23 @@ export default self => ({
   },
   actions: {
     async getCanonicalRefName(refName, assemblyName) {
-      const refNameAliases = await self.getRefNameAliases(assemblyName)
-      const aliasesToCanonical = {}
+      const aliasesToCanonical = await self.getRefNameCanonicalizationMap(
+        assemblyName,
+      )
+      return aliasesToCanonical.get(refName)
+    },
+
+    // returns Map of alias-or-canonical -> canonical
+    async getRefNameCanonicalizationMap(assemblyName, opts = {}) {
+      const refNameAliases = await self.getRefNameAliases(assemblyName, opts)
+      const aliasesToCanonical = new Map()
       Object.entries(refNameAliases).forEach(([ref, aliases]) => {
         aliases.forEach(alias => {
-          aliasesToCanonical[alias] = ref
+          aliasesToCanonical.set(alias, ref)
         })
-        aliasesToCanonical[ref] = ref
+        aliasesToCanonical.set(ref, ref)
       })
-      return aliasesToCanonical[refName]
+      return aliasesToCanonical
     },
 
     async getRefNameAliases(assemblyName, opts = {}) {
@@ -133,7 +141,6 @@ export default self => ({
         assemblyName,
         opts,
       )
-
       const reversed = new Map()
       for (const [canonicalName, adapterName] of refNameMap) {
         reversed.set(adapterName, canonicalName)

@@ -6,9 +6,7 @@ export default pluginManager => {
   )
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const { getConf, readConfObject } = jbrequire(
-    '@gmod/jbrowse-core/configuration',
-  )
+  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
 
   const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
   const CircularViewType = pluginManager.getViewType('CircularView')
@@ -234,36 +232,42 @@ export default pluginManager => {
               if (assemblyName) {
                 if (onlyDisplayRelevantRegionsInCircularView) {
                   if (tracks.length === 1) {
-                    const adapter = getConf(tracks[0], 'adapter')
-
                     // this is a map of canonical-name -> adapter-specific-name
-                    const refNameMapP = getRoot(
+                    const refNameCanonicalizationMapP = getRoot(
                       self,
-                    ).jbrowse.getReverseRefNameMapForAdapter(
-                      adapter,
+                    ).jbrowse.getRefNameCanonicalizationMap(assemblyName)
+
+                    const assemblyRegionsP = session.getRegionsForAssemblyName(
                       assemblyName,
                     )
 
-                    const regionsP = session.getRegionsForAssemblyName(
-                      assemblyName,
-                    )
-
-                    Promise.all([refNameMapP, featuresRefNamesP, regionsP])
-                      .then(([refNameMap, refNames, assemblyRegions]) => {
-                        // console.log(refNameMap, refNames, assemblyRegions)
-                        // canonicalize the store's ref names if necessary
-                        const canonicalRefNames = new Set(
-                          refNames.map(
-                            refName => refNameMap.get(refName) || refName,
-                          ),
-                        )
-                        const displayedRegions = assemblyRegions.filter(r =>
-                          canonicalRefNames.has(r.refName),
-                        )
-                        circularView.setDisplayedRegions(
-                          JSON.parse(JSON.stringify(displayedRegions)),
-                        )
-                      })
+                    Promise.all([
+                      refNameCanonicalizationMapP,
+                      featuresRefNamesP,
+                      assemblyRegionsP,
+                    ])
+                      .then(
+                        ([
+                          refNameCanonicalizationMap,
+                          featureRefNames,
+                          assemblyRegions,
+                        ]) => {
+                          // canonicalize the store's ref names if necessary
+                          const canonicalFeatureRefNames = new Set(
+                            featureRefNames.map(
+                              refName =>
+                                refNameCanonicalizationMap.get(refName) ||
+                                refName,
+                            ),
+                          )
+                          const displayedRegions = assemblyRegions.filter(r =>
+                            canonicalFeatureRefNames.has(r.refName),
+                          )
+                          circularView.setDisplayedRegions(
+                            JSON.parse(JSON.stringify(displayedRegions)),
+                          )
+                        },
+                      )
                       .catch(e => console.error(e))
                   }
                 } else {
