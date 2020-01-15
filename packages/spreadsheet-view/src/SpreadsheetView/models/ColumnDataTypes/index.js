@@ -3,11 +3,12 @@ export default pluginManager => {
   const { types } = jbrequire('mobx-state-tree')
 
   const { NumberColumn: Number } = jbrequire(require('./Number'))
+  const { TextColumn: Text } = jbrequire(require('./Text'))
 
   const DataTypes = {
     ColumnTypes: {
       Number,
-      Text: jbrequire(require('./Text')),
+      Text,
       LocString: jbrequire(require('./LocString')),
       LocRef: jbrequire(require('./LocRef')),
       LocStart: jbrequire(require('./LocStart')),

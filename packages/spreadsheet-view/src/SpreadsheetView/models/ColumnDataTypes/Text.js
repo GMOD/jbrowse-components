@@ -12,6 +12,31 @@ export default pluginManager => {
     require('./MakeSpreadsheetColumnType'),
   )
 
+  const OPERATIONS = [
+    'contains',
+    'does not contain',
+    'starts with',
+    'ends with',
+  ]
+
+  // NOTE: assembly names, if present, are ignored in all of these predicates
+  const OPERATION_PREDICATES = {
+    contains: (textInCell, stringToFind) => {
+      return textInCell.toLowerCase().indexOf(stringToFind) !== -1
+    },
+    'starts with': (textInCell, stringToFind) => {
+      return textInCell.toLowerCase().indexOf(stringToFind) === 0
+    },
+    'ends with': (textInCell, stringToFind) => {
+      const index = textInCell.toLowerCase().indexOf(stringToFind)
+      if (index === -1) return false
+      return index === textInCell.length - stringToFind.length
+    },
+  }
+  OPERATION_PREDICATES['does not contain'] = (textInCell, stringToFind) => {
+    return !OPERATION_PREDICATES.contains(textInCell, stringToFind)
+  }
+
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const Icon = jbrequire('@material-ui/core/Icon')
@@ -91,20 +116,12 @@ export default pluginManager => {
       type: types.literal('Text'),
       columnNumber: types.integer,
       stringToFind: '',
-      operation: types.optional(
-        types.enumeration([
-          'contains',
-          'does not contain',
-          'starts with',
-          'ends with',
-        ]),
-        'contains',
-      ),
+      operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]),
     })
     .views(self => ({
       // returns a function that tests the given row
       get predicate() {
-        const { stringToFind, columnNumber } = self // avoid closing over self
+        const { stringToFind, columnNumber, operation } = self // avoid closing over self
         if (!stringToFind) {
           return function alwaysTrue() {
             return true
@@ -115,10 +132,11 @@ export default pluginManager => {
           const { cells } = row
           const cell = cells[columnNumber]
           // TODO: add support for derived cells
-          // note: case insensitive
-          if (cell && cell.text && cell.text.toLowerCase().indexOf(s) !== -1)
-            return true
-          return false
+          if (!cell || !cell.text) return false
+          const predicate = OPERATION_PREDICATES[operation]
+          if (!predicate)
+            throw new Error(`"${operation}" not implemented in location filter`)
+          return predicate(cell.text, s)
         }
       },
     }))
@@ -139,5 +157,5 @@ export default pluginManager => {
     FilterModelType: ColumnTextFilter,
   })
 
-  return TextColumnType
+  return { TextColumn: TextColumnType, FilterModelType: ColumnTextFilter }
 }
