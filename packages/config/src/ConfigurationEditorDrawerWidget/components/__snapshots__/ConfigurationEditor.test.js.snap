@@ -1944,7 +1944,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       '#8F8FD8'
                     </span>
                     <span
-                      class="token punctuation"
+                      class="token operator"
                     >
                       :
                     </span>
