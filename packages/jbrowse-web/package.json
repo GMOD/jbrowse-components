@@ -60,7 +60,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "start": "cross-env NODE_OPTIONS='--max-http-header-size=100000' rescripts start",
+    "start": "rescripts --max-http-header-size=100000 start",
     "build": "rescripts build",
     "test": "rescripts test",
     "eject": "rescripts eject",
