@@ -93,6 +93,7 @@
         "react": "^16.8.0",
         "react-dom": "^16.8.0",
         "react-scripts": "^3.3.0",
+        "requestidlecallback-polyfill": "^1.0.2",
         "rimraf": "^2.6.3",
         "rxjs": "^6.0.0",
         "sass-loader": "^7.1.0",

@@ -4,6 +4,7 @@ import { useQueryParam, StringParam } from 'use-query-params'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import JBrowse from './JBrowse'
 import * as serviceWorker from './serviceWorker'
+import 'requestidlecallback-polyfill'
 import 'core-js/stable'
 
 if (!window.TextEncoder) window.TextEncoder = TextEncoder
