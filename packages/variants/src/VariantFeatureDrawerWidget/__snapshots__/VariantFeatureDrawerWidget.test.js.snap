@@ -6,11 +6,11 @@ exports[`VariantTrack drawer widget renders with just the required model element
   data-testid="variant-side-drawer"
 >
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paperRoot MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paperRoot MuiPaper-elevation1 MuiPaper-rounded"
     data-testid="alignment-side-drawer"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation1 MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-rounded"
+      class="MuiPaper-root MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-elevation1 MuiPaper-rounded"
       style="margin-top: 4px;"
     >
       <div
@@ -93,7 +93,7 @@ exports[`VariantTrack drawer widget renders with just the required model element
       class="MuiDivider-root"
     />
     <div
-      class="MuiPaper-root MuiPaper-elevation1 MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-rounded"
+      class="MuiPaper-root MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-elevation1 MuiPaper-rounded"
       style="margin-top: 4px;"
     >
       <div

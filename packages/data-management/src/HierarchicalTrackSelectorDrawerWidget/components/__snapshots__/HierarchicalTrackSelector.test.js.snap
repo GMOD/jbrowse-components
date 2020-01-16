@@ -126,7 +126,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
     class="MuiFormGroup-root"
   />
   <div
-    class="MuiPaper-root MuiPaper-elevation1 MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-rounded"
+    class="MuiPaper-root MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-elevation1 MuiPaper-rounded"
     style="margin-top: 4px;"
   >
     <div
@@ -251,7 +251,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                 </div>
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation1 MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-rounded"
+                class="MuiPaper-root MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-elevation1 MuiPaper-rounded"
                 style="margin-top: 4px;"
               >
                 <div

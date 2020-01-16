@@ -2,7 +2,7 @@
 
 exports[`<SessionManager /> renders 1`] = `
 <div
-  class="MuiPaper-root MuiPaper-elevation1 makeStyles-root MuiPaper-rounded"
+  class="MuiPaper-root makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
 >
   <ul
     class="MuiList-root MuiList-padding MuiList-subheader"
