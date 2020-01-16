@@ -29,16 +29,15 @@ const Unsupported = () => (
   </div>
 )
 
-// TODO: get rid of user agent detection
-// https://developer.mozilla.org/en-US/docs/Web/HTTP/Browser_detection_using_the_user_agent
-//
+// If it has OffscreenCanvas, it probably has the other things we need
+const hasOffscreenCanvas = typeof OffscreenCanvas === 'function'
 
-if (window.chrome) {
+if (hasOffscreenCanvas) {
   // this is the main process, so start and register our service worker and web workers
   serviceWorker.register()
 }
 
 ReactDOM.render(
-  window.chrome ? <App /> : <Unsupported />,
+  hasOffscreenCanvas ? <App /> : <Unsupported />,
   document.getElementById('root'),
 )
