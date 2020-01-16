@@ -116,11 +116,11 @@ describe('<AddTrackDrawerWidget />', () => {
       target: { value: 'Test track name' },
     })
     const trackTypeSelect = getByTestId('trackTypeSelect')
-    fireEvent.click(trackTypeSelect)
+    fireEvent.mouseDown(trackTypeSelect)
     const basicTrack = await waitForElement(() => getByText('BasicTrack'))
     fireEvent.click(basicTrack)
     const datasetNameSelect = getByTestId('datasetNameSelect')
-    fireEvent.click(datasetNameSelect)
+    fireEvent.mouseDown(datasetNameSelect)
     const volvox = await waitForElement(() => getByText('volvox'))
     fireEvent.click(volvox)
     fireEvent.click(getByTestId('addTrackNextButton'))
