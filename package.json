@@ -66,7 +66,6 @@
         "eslint-config-xo": "^0.26.0",
         "eslint-loader": "^3.0.0",
         "eslint-plugin-flowtype": "^4.0.0",
-        "eslint-plugin-import": "^2.17.2",
         "eslint-plugin-jsx-a11y": "^6.2.1",
         "eslint-plugin-monorepo": "^0.2.1",
         "eslint-plugin-prettier": "^3.0.1",
