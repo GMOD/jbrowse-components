@@ -59,8 +59,4 @@ if (isElectron) {
     })
   }
   ImageBitmapType = Image
-} else {
-  throw new Error(
-    'no ponyfill available for OffscreenCanvas in this environment',
-  )
 }
