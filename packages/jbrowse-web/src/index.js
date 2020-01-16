@@ -32,6 +32,7 @@ if (window.chrome) {
   // this is the main process, so start and register our service worker and web workers
   serviceWorker.register()
 }
+console.log(window.chrome)
 
 ReactDOM.render(
   window.chrome ? <App /> : <Unsupported />,

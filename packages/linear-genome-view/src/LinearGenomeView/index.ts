@@ -460,20 +460,8 @@ export function stateModelFactory(pluginManager: any) {
         self.offsetPx = bpToStart / self.bpPerPx
       },
 
-      horizontalScroll(distance: number) {
-        const oldOffsetPx = self.offsetPx
-        // objectively determined to keep the linear genome on the main screen
-        const leftPadding = 10
-        const rightPadding = 30
-        const maxOffset = self.displayedRegionsTotalPx - leftPadding
-        const minOffset = -self.viewingRegionWidth + rightPadding
-        // the scroll is clamped to keep the linear genome on the main screen
-        const newOffsetPx = clamp(
-          self.offsetPx + distance,
-          minOffset,
-          maxOffset,
-        )
-        self.offsetPx = newOffsetPx
+      setOffsetPx(offsetPx: number) {
+        self.offsetPx = offsetPx
         return newOffsetPx - oldOffsetPx
       },
 

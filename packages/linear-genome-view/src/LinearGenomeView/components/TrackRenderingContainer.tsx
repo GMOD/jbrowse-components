@@ -16,22 +16,22 @@ const useStyles = makeStyles({
  * mostly does UI gestures: drag scrolling, etc
  */
 const TrackRenderingContainer: React.FC<{
-  onHorizontalScroll: Function
   setScrollTop: Function
   children?: ReactNode
   trackId: string
+  width: number
   trackHeight: number
   dimmed?: boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any
 }> = props => {
   const {
-    onHorizontalScroll,
     setScrollTop,
     trackId,
     trackHeight,
     children,
     dimmed,
+    width,
     ...other
   } = props
   const classes = useStyles()
@@ -51,7 +51,6 @@ const TrackRenderingContainer: React.FC<{
           // use rAF to make it so multiple event handlers aren't fired per-frame
           // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
           window.requestAnimationFrame(() => {
-            onHorizontalScroll(-distance)
             setScheduled(false)
             setPrevX(event.clientX)
           })
@@ -74,7 +73,7 @@ const TrackRenderingContainer: React.FC<{
       }
     }
     return cleanup
-  }, [delta, mouseDragging, onHorizontalScroll, prevX, scheduled])
+  }, [delta, mouseDragging, prevX, scheduled])
 
   function mouseDown(event: React.MouseEvent) {
     if (event.button === 0) {
@@ -98,24 +97,6 @@ const TrackRenderingContainer: React.FC<{
     <>
       <div
         className={classes.trackRenderingContainer}
-        onWheel={({ deltaX }) => {
-          if (scheduled) {
-            setDelta(delta + deltaX)
-          } else {
-            // use rAF to make it so multiple event handlers aren't fired per-frame
-            // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-            window.requestAnimationFrame(() => {
-              onHorizontalScroll(delta + deltaX)
-              setScheduled(false)
-            })
-            setScheduled(true)
-            setDelta(0)
-          }
-        }}
-        onScroll={event => {
-          const target = event.target as HTMLDivElement
-          setScrollTop(target.scrollTop, target.clientHeight)
-        }}
         onMouseDown={mouseDown}
         onMouseUp={mouseUp}
         onMouseLeave={mouseLeave}
@@ -142,7 +123,6 @@ TrackRenderingContainer.propTypes = {
   trackId: PropTypes.string.isRequired,
   children: PropTypes.node,
   setScrollTop: PropTypes.func.isRequired,
-  onHorizontalScroll: PropTypes.func.isRequired,
   trackHeight: PropTypes.number.isRequired,
   dimmed: PropTypes.bool.isRequired,
 }

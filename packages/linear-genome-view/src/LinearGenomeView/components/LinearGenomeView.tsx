@@ -5,6 +5,7 @@ import {
 } from '@gmod/jbrowse-core/util'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { useInView } from 'react-intersection-observer'
 
 // material ui things
 import { makeStyles } from '@material-ui/core/styles'
@@ -31,7 +32,7 @@ import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import { Instance, getRoot, isAlive } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
-import React, { useState } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 
 // locals
 import buttonStyles from './buttonStyles'
@@ -59,6 +60,7 @@ const useStyles = makeStyles(theme => ({
     background: '#D9D9D9',
     // background: theme.palette.background.paper,
     boxSizing: 'content-box',
+    width: '100%',
   },
   controls: {
     borderRight: '1px solid gray',
@@ -131,13 +133,7 @@ const TrackContainer = observer(
   (props: { model: LGV; track: Instance<BaseTrackStateModel> }) => {
     const { model, track } = props
     const classes = useStyles()
-    const {
-      bpPerPx,
-      offsetPx,
-      horizontalScroll,
-      draggingTrackId,
-      moveTrack,
-    } = model
+    const { bpPerPx, offsetPx, draggingTrackId, moveTrack } = model
     function onDragEnter() {
       if (
         draggingTrackId !== undefined &&
@@ -156,8 +152,8 @@ const TrackContainer = observer(
       <TrackRenderingContainer
         trackId={track.id}
         trackHeight={track.height}
-        onHorizontalScroll={horizontalScroll}
         setScrollTop={track.setScrollTop}
+        width={100000}
         onDragEnter={debouncedOnDragEnter}
         dimmed={draggingTrackId !== undefined && draggingTrackId !== track.id}
       >
@@ -166,7 +162,6 @@ const TrackContainer = observer(
           offsetPx={offsetPx}
           bpPerPx={bpPerPx}
           blockState={{}}
-          onHorizontalScroll={horizontalScroll}
         />
       </TrackRenderingContainer>
     )
@@ -482,9 +477,18 @@ const ImportForm = observer(({ model }) => {
 
 const LinearGenomeView = observer((props: { model: LGV }) => {
   const { model } = props
-  const { tracks, controlsWidth, error } = model
+  const { tracks, error } = model
   const classes = useStyles()
-
+  // useEffect(() => {
+  //   if (ref.current) {
+  //     model.setOffsetPx(ref.current.scrollLeft)
+  //   }
+  // }, [model, ref])
+  const [ref, inView, entry] = useInView({
+    /* Optional options */
+    threshold: 0,
+  })
+  console.log(inView, entry)
   const initialized =
     !!model.displayedRegions.length || !!model.displayRegionsFromAssemblyName
   return (
@@ -493,7 +497,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
         {!initialized ? (
           <ImportForm model={model} />
         ) : (
-          <div style={{ width: '100%' }}>
+          <div>
             {!model.hideHeader ? <Header model={model} /> : null}
             <div
               className={clsx(classes.controls, classes.viewControls)}
@@ -504,9 +508,6 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
               )}
             </div>
 
-            <Rubberband height={SCALE_BAR_HEIGHT} model={model}>
-              <ScaleBar model={model} height={SCALE_BAR_HEIGHT} />
-            </Rubberband>
             {error ? (
               <div
                 style={{
@@ -538,15 +539,23 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
                     </Typography>
                   </Container>
                 ) : (
-                  <>
-                    {tracks.map(track => (
-                      <TrackContainer
-                        key={track.id}
-                        model={model}
-                        track={track}
-                      />
-                    ))}
-                  </>
+                  <div style={{ width: '100%', overflowX: 'auto' }}>
+                    <div style={{ width: model.totalBp / model.bpPerPx }}>
+                      {tracks.map(track => (
+                        <>
+                          <TrackContainer
+                            key={track.id}
+                            model={model}
+                            track={track}
+                          />
+                          <div
+                            style={{ backgroundColor: 'red', width: '100%' }}
+                            ref={ref}
+                          />
+                        </>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </>
             )}
