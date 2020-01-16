@@ -1,9 +1,13 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { useQueryParam, StringParam } from 'use-query-params'
+import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import JBrowse from './JBrowse'
 import * as serviceWorker from './serviceWorker'
 import 'core-js/stable'
+
+if (!window.TextEncoder) window.TextEncoder = TextEncoder
+if (!window.TextDecoder) window.TextDecoder = TextDecoder
 
 const App = () => {
   const [config] = useQueryParam('config', StringParam)

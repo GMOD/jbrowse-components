@@ -12,7 +12,6 @@
     "@gmod/vcf": "^4.0.0",
     "classnames": "^2.2.6",
     "csvtojson": "^2.0.10",
-    "text-encoding-polyfill": "^0.6.7",
     "@gmod/jbrowse-plugin-variants": "^2.0.0"
   },
   "peerDependencies": {
