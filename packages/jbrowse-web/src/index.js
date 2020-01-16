@@ -22,9 +22,42 @@ const Unsupported = () => (
       yet. Browsers that do currently work include:
     </p>
     <ul>
-      <li>Chrome</li>
-      <li>Chromium</li>
-      <li>Opera</li>
+      <li>
+        <a
+          href="https://www.google.com/chrome/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Chrome
+        </a>
+      </li>
+      <li>
+        <a
+          href="https://www.chromium.org/Home"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Chromium
+        </a>
+      </li>
+      <li>
+        <a
+          href="https://www.opera.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Opera
+        </a>
+      </li>
+      <li>
+        <a
+          href="https://www.microsoft.com/en-us/edge"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          new Microsoft Edge
+        </a>
+      </li>
     </ul>
   </div>
 )
