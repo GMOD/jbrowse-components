@@ -479,16 +479,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   const { model } = props
   const { tracks, error } = model
   const classes = useStyles()
-  // useEffect(() => {
-  //   if (ref.current) {
-  //     model.setOffsetPx(ref.current.scrollLeft)
-  //   }
-  // }, [model, ref])
-  const [ref, inView, entry] = useInView({
-    /* Optional options */
-    threshold: 0,
-  })
-  console.log(inView, entry)
+  const ref = useRef()
   const initialized =
     !!model.displayedRegions.length || !!model.displayRegionsFromAssemblyName
   return (
@@ -539,7 +530,11 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
                     </Typography>
                   </Container>
                 ) : (
-                  <div style={{ width: '100%', overflowX: 'auto' }}>
+                  <div
+                    style={{ width: '100%', overflowX: 'auto' }}
+                    ref={ref}
+                    onScroll={evt => model.setOffsetPx(ref.current.scrollLeft)}
+                  >
                     <div style={{ width: model.totalBp / model.bpPerPx }}>
                       {tracks.map(track => (
                         <>

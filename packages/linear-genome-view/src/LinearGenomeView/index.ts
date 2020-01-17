@@ -462,7 +462,6 @@ export function stateModelFactory(pluginManager: any) {
 
       setOffsetPx(offsetPx: number) {
         self.offsetPx = offsetPx
-        return newOffsetPx - oldOffsetPx
       },
 
       /**
