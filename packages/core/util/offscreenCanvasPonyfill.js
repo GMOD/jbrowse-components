@@ -23,6 +23,7 @@ class PonyfillOffscreenContext {
     this.commands = []
   }
 
+  // setters (no getters working)
   set strokeStyle(style) {
     this.commands.push({ type: 'strokeStyle', style })
   }
@@ -31,17 +32,7 @@ class PonyfillOffscreenContext {
     this.commands.push({ type: 'fillStyle', style })
   }
 
-  stroke(...args) {
-    this.commands.push({ type: 'stroke', args })
-  }
-
-  moveTo(...args) {
-    this.commands.push({ type: 'moveTo', args })
-  }
-
-  lineTo(...args) {
-    this.commands.push({ type: 'lineTo', args })
-  }
+  // methods
 
   arc(...args) {
     this.commands.push({ type: 'arc', args })
@@ -103,32 +94,80 @@ class PonyfillOffscreenContext {
     this.commands.push({ type: 'fillText', args })
   }
 
-  scale(...args) {
-    this.commands.push({ type: 'scale', args })
+  lineTo(...args) {
+    this.commands.push({ type: 'lineTo', args })
   }
 
+  // needs proper method?
   measureText(...args) {
     this.commands.push({ type: 'measureText', args })
     return { height: 12 }
   }
 
+  moveTo(...args) {
+    this.commands.push({ type: 'moveTo', args })
+  }
+
+  quadraticCurveTo(...args) {
+    this.commands.push({ type: 'quadraticCurveTo', args })
+  }
+
+  rect(...args) {
+    this.commands.push({ type: 'rect', args })
+  }
+
+  restore(...args) {
+    this.commands.push({ type: 'restore', args })
+  }
+
+  rotate(...args) {
+    this.commands.push({ type: 'rotate', args })
+  }
+
+  save(...args) {
+    this.commands.push({ type: 'save', args })
+  }
+
+  setLineDash(...args) {
+    this.commands.push({ type: 'setLineDash', args })
+  }
+
+  setTransform(...args) {
+    this.commands.push({ type: 'setTransform', args })
+  }
+
+  scale(...args) {
+    this.commands.push({ type: 'scale', args })
+  }
+
+  stroke(...args) {
+    this.commands.push({ type: 'stroke', args })
+  }
+
+  strokeRect(...args) {
+    this.commands.push({ type: 'strokeRect', args })
+  }
+
+  strokeText(...args) {
+    this.commands.push({ type: 'strokeText', args })
+  }
+
+  transform(...args) {
+    this.commands.push({ type: 'transform', args })
+  }
+
+  translate(...args) {
+    this.commands.push({ type: 'translate', args })
+  }
+
   // unsupported
-  //   createImageData(...args) {
-  //     this.commands.push({ type: 'createImageData', args })
-  //   }
-
-  //   getImageData(...args) {
-  //     this.commands.push({ type: 'getImageData', args })
-  //   }
-
-  //   getLineDash(...args) {
-  //     this.commands.push({ type: 'getLineDash', args })
-  //   }
-
-  //   getTransform(...args) {
-  //     this.commands.push({ type: 'getTransform', args })
-  //   }
+  //   putImageData(...args)
+  //   createImageData(...args)
+  //   getImageData(...args)
+  //   getLineDash(...args)
+  //   getTransform(...args)
 }
+
 class PonyfillOffscreenCanvas {
   constructor(width, height) {
     this.width = width
