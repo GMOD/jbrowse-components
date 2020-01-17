@@ -4,7 +4,7 @@ import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 export { default as AdapterClass } from './Gff3TabixAdapter'
 
 export const configSchema = ConfigurationSchema(
-  'Gff3TabixTabixAdapter',
+  'Gff3TabixAdapter',
   {
     gffGzLocation: {
       type: 'fileLocation',

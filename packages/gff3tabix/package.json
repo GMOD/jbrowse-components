@@ -6,7 +6,7 @@
   "scripts": {
     "test": "cd ../..; jest packages/gff3tabix"
   },
-  "author": "Garrett Stevens",
+  "author": "Colin Diesh",
   "license": "MIT",
   "dependencies": {
     "@gmod/gff": "^1.1.2",
