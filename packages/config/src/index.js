@@ -48,9 +48,5 @@ export default class extends Plugin {
   }
 }
 
-export {
-  default as ConfigurationEditor,
-} from './ConfigurationEditorDrawerWidget/components/ConfigurationEditor'
-export {
-  default as JsonEditor,
-} from './ConfigurationEditorDrawerWidget/components/JsonEditor'
+export { default as ConfigurationEditor } from './ConfigurationEditorDrawerWidget/components/ConfigurationEditor'
+export { default as JsonEditor } from './ConfigurationEditorDrawerWidget/components/JsonEditor'

@@ -67,10 +67,6 @@ export {
   default as BaseTrack,
   BaseTrackConfig,
 } from './BasicTrack/baseTrackModel'
-export {
-  default as blockBasedTrackModel,
-} from './BasicTrack/blockBasedTrackModel'
-export {
-  default as BlockBasedTrack,
-} from './BasicTrack/components/BlockBasedTrack'
+export { default as blockBasedTrackModel } from './BasicTrack/blockBasedTrackModel'
+export { default as BlockBasedTrack } from './BasicTrack/components/BlockBasedTrack'
 export { basicTrackConfigSchemaFactory, basicTrackStateModelFactory }

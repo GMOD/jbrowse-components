@@ -10,20 +10,24 @@ function PrerenderedCanvas(props) {
     if (!imageData) return
     const canvas = featureCanvas.current
     const context = canvas.getContext('2d')
-    if (imageData instanceof ImageBitmapType) {
-      // console.log('got image data', imageData, imageData.constructor.name)
+    if (imageData.commands) {
+      imageData.commands.forEach(command => {
+        if (command.type === 'strokeStyle') {
+          context.strokeStyle = command.style
+        } else if (command.type === 'fillStyle') {
+          context.fillStyle = command.style
+        } else {
+          context[command.type](...command.args)
+        }
+      })
+    } else if (imageData instanceof ImageBitmapType) {
       context.drawImage(imageData, 0, 0)
     } else if (imageData.dataURL) {
       const img = new Image()
       img.onload = () => context.drawImage(img, 0, 0)
       img.src = imageData.dataURL
-    } else {
-      // TODO: add support for replay-based image data here
-      throw new Error(
-        'unsupported imageData type. do you need to add support for it?',
-      )
     }
-  })
+  }, [imageData])
 
   return (
     <canvas

@@ -168,7 +168,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                           <div
                             aria-haspopup="listbox"
                             aria-labelledby=" "
-                            class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+                            class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
                             role="button"
                             tabindex="0"
                           >
@@ -278,7 +278,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                           <div
                             aria-haspopup="listbox"
                             aria-labelledby=" "
-                            class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+                            class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
                             role="button"
                             tabindex="0"
                           >
