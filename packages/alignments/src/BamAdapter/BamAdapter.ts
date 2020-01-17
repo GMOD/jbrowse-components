@@ -107,63 +107,50 @@ export default class extends BaseAdapter {
     )
   }
 
-  //TODO get domain
   public async getMultiRegionStats(
     regions: INoAssemblyRegion[] = [],
     opts: BaseOptions = {},
-    ){
-      console.log(regions)
-      checkAbortSignal(opts.signal)
-      const scoreMin = 0
-      const scoreMax = 50
-      return { scoreMin, scoreMax }
+  ) {
+    const scoreMax = regions.length > 0 ? await this.calculateDensity(regions, opts, 100) : 50
+    console.log(scoreMax)
+    return { scoreMin: 0, scoreMax }
   }
-  
 
-  // public async getMultiRegionStats(
-  //   regions: INoAssemblyRegion[] = [],
-  //   opts: BaseOptions = {},
-  // ) {
-  //   if (!regions.length) {
-  //     return blankStats()
-  //   }
-  //   const feats = await Promise.all(
-  //     regions.map(r => this.getRegionStats(r, opts)),
-  //   )
+  async calculateDensity(
+    region: any,
+    opts: BaseOptions = {},
+    length: number,
+  ): Promise<number> {
+    let results = new Array
+    const { refName, start, end } = region[0]
+    const sampleCenter = start * 0.75 + end * 0.25
+    const sampleStart = Math.max(0, Math.round(sampleCenter - length / 2))
+    const sampleEnd = Math.max(Math.round(sampleCenter + length / 2), end)
 
-  //   const scoreMax = feats
-  //     .map(s => s.scoreMax)
-  //     .reduce((acc, curr) => Math.max(acc, curr))
-  //   const scoreMin = feats
-  //     .map(s => s.scoreMin)
-  //     .reduce((acc, curr) => Math.min(acc, curr))
-  //   const scoreSum = feats.map(s => s.scoreSum).reduce((a, b) => a + b, 0)
-  //   const scoreSumSquares = feats
-  //     .map(s => s.scoreSumSquares)
-  //     .reduce((a, b) => a + b, 0)
-  //   const featureCount = feats
-  //     .map(s => s.featureCount)
-  //     .reduce((a, b) => a + b, 0)
-  //   const basesCovered = feats
-  //     .map(s => s.basesCovered)
-  //     .reduce((a, b) => a + b, 0)
+    this.samHeader = await setup(this.bam)
+    const records = await this.bam.getRecordsForRange(refName, sampleStart, sampleEnd, opts)
+    checkAbortSignal(opts.signal)
 
-  //   return rectifyStats({
-  //     scoreMin,
-  //     scoreMax,
-  //     featureCount,
-  //     basesCovered,
-  //     scoreSumSquares,
-  //     scoreSum,
-  //   })
-  // }
+    records.forEach(function iterate(feature, index) {
+      if (feature.get('start') < sampleStart || feature.get('end') > sampleEnd) return
+      results.push({
+        featureDensity: feature.get('length_on_ref') / (length)
+      })
+    })
+
+    if (results.length >= 300 || length * 2 > region[0].parentRegion.end - region[0].parentRegion.start) {
+      const total = results.reduce((a, b) => a + (b['featureDensity'] || 0), 0)
+      return Math.ceil(total * 2)
+    }
+    else return this.calculateDensity(region, opts, length * 2)
+  }
 
   /**
    * called to provide a hint that data tied to a certain region
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    */
-  freeResources(/* { region } */): void {}
+  freeResources(/* { region } */): void { }
 
   // depends on setup being called before the BAM constructor
   refIdToName(refId: number): string | undefined {

@@ -146,8 +146,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       config,
       horizontallyFlipped,
     } = props
-
-    scaleOpts.domain = [0, 50]
+    
     const viewScale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = viewScale.domain()

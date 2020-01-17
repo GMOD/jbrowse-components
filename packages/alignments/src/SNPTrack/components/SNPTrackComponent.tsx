@@ -56,11 +56,12 @@ function SNPTrackComponent(props: { model: Instance<SNPTrackModel> }) {
 
   const needsScalebar =
     model.rendererTypeName === 'XYPlotRenderer' ||
-    model.rendererTypeName === 'LinePlotRenderer'
+    model.rendererTypeName === 'LinePlotRenderer' ||
+    model.rendererTypeName === 'SNPXYRenderer'
 
   return (
     <BlockBasedTrack {...props}>
-      {/* {ready && needsScalebar ? <YScaleBar model={model} /> : null} */}
+      {ready && needsScalebar ? <YScaleBar model={model} /> : null}
     </BlockBasedTrack>
   )
 }
