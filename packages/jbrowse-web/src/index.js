@@ -28,12 +28,9 @@ const Unsupported = () => (
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Browser_detection_using_the_user_agent
 //
 
-if (window.chrome) {
-  // this is the main process, so start and register our service worker and web workers
-  serviceWorker.register()
-}
+// if (window.chrome) {
+//   // this is the main process, so start and register our service worker and web workers
+//   serviceWorker.register()
+// }
 
-ReactDOM.render(
-  window.chrome ? <App /> : <Unsupported />,
-  document.getElementById('root'),
-)
+ReactDOM.render(<App />, document.getElementById('root'))

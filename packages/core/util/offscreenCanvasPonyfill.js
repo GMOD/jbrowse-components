@@ -18,6 +18,129 @@ const weHave = {
     typeof __webpack_require__ === 'undefined' && typeof process === 'object',
 }
 
+class PonyfillOffscreenContext {
+  constructor() {
+    this.commands = []
+  }
+
+  set strokeStyle(style) {
+    this.commands.push({ type: 'strokeStyle', style })
+  }
+
+  set fillStyle(style) {
+    this.commands.push({ type: 'fillStyle', style })
+  }
+
+  stroke(...args) {
+    this.commands.push({ type: 'stroke', args })
+  }
+
+  moveTo(...args) {
+    this.commands.push({ type: 'moveTo', args })
+  }
+
+  lineTo(...args) {
+    this.commands.push({ type: 'lineTo', args })
+  }
+
+  arc(...args) {
+    this.commands.push({ type: 'arc', args })
+  }
+
+  arcTo(...args) {
+    this.commands.push({ type: 'arcTo', args })
+  }
+
+  beginPath(...args) {
+    this.commands.push({ type: 'beginPath', args })
+  }
+
+  clearRect(...args) {
+    this.commands.push({ type: 'clearRect', args })
+  }
+
+  clip(...args) {
+    this.commands.push({ type: 'clip', args })
+  }
+
+  closePath(...args) {
+    this.commands.push({ type: 'closePath', args })
+  }
+
+  createLinearGradient(...args) {
+    this.commands.push({ type: 'createLinearGradient', args })
+  }
+
+  createPattern(...args) {
+    this.commands.push({ type: 'createPattern', args })
+  }
+
+  createRadialGradient(...args) {
+    this.commands.push({ type: 'createRadialGradient', args })
+  }
+
+  drawFocusIfNeeded(...args) {
+    this.commands.push({ type: 'drawFocusIfNeeded', args })
+  }
+
+  drawImage(...args) {
+    this.commands.push({ type: 'drawImage', args })
+  }
+
+  ellipse(...args) {
+    this.commands.push({ type: 'ellipse', args })
+  }
+
+  fill(...args) {
+    this.commands.push({ type: 'fill', args })
+  }
+
+  fillRect(...args) {
+    this.commands.push({ type: 'fillRect', args })
+  }
+
+  fillText(...args) {
+    this.commands.push({ type: 'fillText', args })
+  }
+
+  scale(...args) {
+    this.commands.push({ type: 'scale', args })
+  }
+
+  measureText(...args) {
+    this.commands.push({ type: 'measureText', args })
+    return { height: 12 }
+  }
+
+  // unsupported
+  //   createImageData(...args) {
+  //     this.commands.push({ type: 'createImageData', args })
+  //   }
+
+  //   getImageData(...args) {
+  //     this.commands.push({ type: 'getImageData', args })
+  //   }
+
+  //   getLineDash(...args) {
+  //     this.commands.push({ type: 'getLineDash', args })
+  //   }
+
+  //   getTransform(...args) {
+  //     this.commands.push({ type: 'getTransform', args })
+  //   }
+}
+class PonyfillOffscreenCanvas {
+  constructor(width, height) {
+    this.width = width
+    this.height = height
+  }
+
+  getContext(type) {
+    if (type !== '2d') throw new Error(`unknown type ${type}`)
+    this.context = new PonyfillOffscreenContext()
+    return this.context
+  }
+}
 // Electron serializes everything to JSON through the IPC boundary, so we just
 // send the dataURL
 if (isElectron) {
@@ -60,7 +183,11 @@ if (isElectron) {
   }
   ImageBitmapType = Image
 } else {
-  throw new Error(
-    'no ponyfill available for OffscreenCanvas in this environment',
-  )
+  createCanvas = (width, height) => {
+    return new PonyfillOffscreenCanvas(width, height)
+  }
+  createImageBitmap = canvas => {
+    return canvas.context
+  }
+  ImageBitmapType = typeof 'StringArray'
 }
