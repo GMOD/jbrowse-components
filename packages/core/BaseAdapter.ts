@@ -12,6 +12,33 @@ export interface BaseOptions {
   [key: string]: any
 }
 
+export interface SampleInfo {
+  refName: string,
+  sampleStart: number,
+  sampleEnd: number,
+}
+export interface Results{
+  scoreMin: number,
+  scoreMax: number,
+}
+export interface InnerRegion{
+  refName: string,
+  start: number,
+  end: number,
+  assemblyName: string,
+  key: string,
+  parentRegion: {
+    refName: string,
+    start: number,
+    end: number,
+    assemblyName: string
+  },
+  offsetPx: number,
+  isLeftEndOfDisplayedRegion: boolean,
+  isRightEndOfDisplayedRegion: boolean,
+  widthPx: number
+}
+
 /**
  * Base class for adapters to extend. Defines some methods that subclasses must
  * implement.
@@ -94,6 +121,64 @@ export default abstract class BaseAdapter {
           .subscribe(observer)
       }
     })
+  }
+
+  /**
+   * Gathers a sample start and end region so adapter can grab records
+   * By calculating a sample center using reference start and end
+   * Then generating a start and end depending on current length
+   * Used to get a general estimate of feature density,
+   * @param {InnerRegion} region entry of regions
+   * @param {Number} length range of features to sample
+   * @returns {SampleInfo} start and end range to gather records for
+   */
+  public async generateSample(
+    region: InnerRegion,
+    length: number,
+  ): Promise<SampleInfo>{
+    const { refName, start, end } = region
+    const sampleCenter = start * 0.75 + end * 0.25
+
+    return {
+      refName,
+      sampleStart: Math.max(0, Math.round(sampleCenter - length / 2)),
+      sampleEnd: Math.max(Math.round(sampleCenter + length / 2), end),
+    }
+  }
+
+  /**
+   * Calculates stats by summing feature density in each record
+   * Used in conjuction with generateSample()
+   * Return truthy value if enough records sampled for good estimate
+   * Else return 0 as a falsy value
+   * @param {Number} start sampleStart value from generateSample()
+   * @param {Number} end sampleEnd value from generateSample()
+   * @param {InnerRegion} region see generateSample()
+   * @param {Array<any>} records records receieved from start to end range
+   * @param {Number} length see generateSample()
+   * @returns {Results} stats from summing all feature densities
+   */
+  public async calculateDensity(
+    start: number,
+    end: number,
+    regions: InnerRegion,
+    records: Array<any>,
+    length: number,
+  ): Promise<Results> {
+    let results = new Array
+
+    records.forEach(function iterate(feature, index) {
+      if (feature.get('start') < start || feature.get('end') > end) return
+      results.push({
+        featureDensity: feature.get('length_on_ref') / length
+      })
+    })
+
+    if (results.length >= 300 || length * 2 > regions.parentRegion.end - regions.parentRegion.start) {
+      const total = results.reduce((a, b) => a + (b['featureDensity'] || 0), 0)
+      return {scoreMin: 0, scoreMax: Math.ceil(total * 2)}
+    }
+    else return {scoreMin: 0, scoreMax: 0}
   }
 
   /**

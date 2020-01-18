@@ -57,3 +57,39 @@ test('test usage of BamSlightlyLazyFeature toJSON (used in the drawer widget)', 
   expect(f.end).toBe(102)
   expect(f.mismatches).not.toBeTruthy()
 })
+
+test('test usage of getMultiRegion stats, adapter can generate a domain', async () => {
+  const adapter = new Adapter({
+    bamLocation: {
+      localPath: require.resolve('../../test_data/volvox-sorted.bam'),
+    },
+    index: {
+      location: {
+        localPath: require.resolve('../../test_data/volvox-sorted.bam.bai'),
+      },
+      indexType: 'BAI',
+    },
+  })
+
+  const stats = await adapter.getMultiRegionStats({
+    regions: {
+      refName: 'ctgA',
+      start: 0,
+      end: 100,
+      parentRegion: {
+        refName: 'ctgA',
+        start: 0,
+        end: 10000,
+      },
+    },
+    opts: {
+      signal: false,
+      bpPerPx: 0.2,
+    },
+    length: 100,
+  })
+  const statsArray = await stats.pipe(toArray()).toPromise()
+  const s = statsArray[0].toJSON()
+  expect(s.scoreMin).toBe(0)
+  expect(s.scoreMax).toBeTruthy()
+})

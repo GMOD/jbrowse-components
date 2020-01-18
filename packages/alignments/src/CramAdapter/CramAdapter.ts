@@ -13,6 +13,10 @@ interface HeaderLine {
   tag: string
   value: string
 }
+interface Stats{
+  scoreMin: number,
+  scoreMax: number
+}
 export default class CramAdapter extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private cram: any
@@ -201,10 +205,33 @@ export default class CramAdapter extends BaseAdapter {
     })
   }
 
-  public async getMultiRegionStats(){
-    const scoreMin = 0
-    const scoreMax = 50
-    return { scoreMin, scoreMax }
+  public async getMultiRegionStats(
+    regions: any,
+    opts: BaseOptions = {},
+    length: number
+  ):Promise<Stats>{
+    const defaultDomain = {scoreMin: 0, scoreMax: 0}
+
+    if(regions.length > 0){
+      const sample = await this.generateSample(regions[0], length)
+      await this.setup(opts)
+      const records = await this.cram.getRecordsForRange(
+        sample.refName, 
+        sample.sampleStart, 
+        sample.sampleEnd, 
+        opts
+      )
+      checkAbortSignal(opts.signal)
+      const results = await this.calculateDensity(
+        sample.sampleStart, 
+        sample.sampleEnd, 
+        regions[0], 
+        records, 
+        length
+      )
+      return results.scoreMax > 0 ? {scoreMin: 0, scoreMax: results.scoreMax} : this.getMultiRegionStats(regions, opts, length * 2)
+    }
+    else return defaultDomain
   }
   
   /**

@@ -18,6 +18,10 @@ interface Header {
   idToName: string[]
   nameToId: Record<string, number>
 }
+interface Stats{
+  scoreMin: number,
+  scoreMax: number
+}
 
 const setup = memoize(async (bam: BamFile) => {
   const samHeader = await bam.getHeader()
@@ -107,42 +111,44 @@ export default class extends BaseAdapter {
     )
   }
 
+  /**
+   * Fetch stats for a certain region. Uses BaseAdapter's generate sample
+   * to gather a range for getRecordsForRange to use, then calculates
+   * and sums feature density for each record and returns
+   * If calculate density returns a falsy value (0), recurse by doubling
+   * the interval/length which is initially 100
+   * @param {Any} regions set to any so BaseAdapter doesn't complain when accessing
+   * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
+   * @param {Number} length used to generate record range, doubles til condition hit
+   * @returns {Stats} Estimated stats of this region used for domain and rendering
+   */
   public async getMultiRegionStats(
-    regions: INoAssemblyRegion[] = [],
+    regions: any,
     opts: BaseOptions = {},
-  ) {
-    const scoreMax = regions.length > 0 ? await this.calculateDensity(regions, opts, 100) : 50
-    console.log(scoreMax)
-    return { scoreMin: 0, scoreMax }
-  }
+    length: number
+  ):Promise<Stats>{
+    const defaultDomain = {scoreMin: 0, scoreMax: 0}
 
-  async calculateDensity(
-    region: any,
-    opts: BaseOptions = {},
-    length: number,
-  ): Promise<number> {
-    let results = new Array
-    const { refName, start, end } = region[0]
-    const sampleCenter = start * 0.75 + end * 0.25
-    const sampleStart = Math.max(0, Math.round(sampleCenter - length / 2))
-    const sampleEnd = Math.max(Math.round(sampleCenter + length / 2), end)
-
-    this.samHeader = await setup(this.bam)
-    const records = await this.bam.getRecordsForRange(refName, sampleStart, sampleEnd, opts)
-    checkAbortSignal(opts.signal)
-
-    records.forEach(function iterate(feature, index) {
-      if (feature.get('start') < sampleStart || feature.get('end') > sampleEnd) return
-      results.push({
-        featureDensity: feature.get('length_on_ref') / (length)
-      })
-    })
-
-    if (results.length >= 300 || length * 2 > region[0].parentRegion.end - region[0].parentRegion.start) {
-      const total = results.reduce((a, b) => a + (b['featureDensity'] || 0), 0)
-      return Math.ceil(total * 2)
+    if(regions.length > 0){
+      const sample = await this.generateSample(regions[0], length)
+      this.samHeader = await setup(this.bam)
+      const records = await this.bam.getRecordsForRange(
+        sample.refName, 
+        sample.sampleStart, 
+        sample.sampleEnd, 
+        opts
+      )
+      checkAbortSignal(opts.signal)
+      const results = await this.calculateDensity(
+        sample.sampleStart, 
+        sample.sampleEnd, 
+        regions[0], 
+        records, 
+        length,
+      )
+      return results.scoreMax > 0 ? {scoreMin: 0, scoreMax: results.scoreMax} : this.getMultiRegionStats(regions, opts, length * 2)
     }
-    else return this.calculateDensity(region, opts, length * 2)
+    else return defaultDomain
   }
 
   /**

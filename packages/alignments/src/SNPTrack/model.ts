@@ -115,6 +115,7 @@ import {
               regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
               signal,
               bpPerPx,
+              startingLength: 100,
             })
           }
          // return {scoreMin: 0, scoreMax: 50}
