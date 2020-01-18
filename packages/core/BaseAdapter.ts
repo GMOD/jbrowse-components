@@ -181,6 +181,45 @@ export default abstract class BaseAdapter {
     else return {scoreMin: 0, scoreMax: 0}
   }
 
+  /** Unified of the two above, works but renders slower for some reason
+   * @param {InnerRegion} region see generateSample()
+   * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
+   * @param {Number} length see generateSample()
+   * @param {Any} setup setup to accompany file, any cause many types of setup
+   * @param {Any} file a file in which to grab records from
+   * @returns {Results} stats from summing all feature densities
+   */
+  public async estimateStats(
+    regions: InnerRegion,
+    opts: BaseOptions = {},
+    length: number,
+    setup: any,
+    file: any,
+  ): Promise<Results> {
+    const { refName, start, end } = regions
+    const sampleCenter = start * 0.75 + end * 0.25
+    const sampleStart = Math.max(0, Math.round(sampleCenter - length / 2))
+    const sampleEnd = Math.max(Math.round(sampleCenter + length / 2), end)
+    
+    let results = new Array
+    setup
+    const records = await file.getRecordsForRange(refName, sampleStart, sampleEnd, opts)
+    checkAbortSignal(opts.signal)
+
+    records.forEach(function iterate(feature: any, index: number) {
+      if (feature.get('start') < sampleStart || feature.get('end') > sampleEnd) return
+      results.push({
+        featureDensity: feature.get('length_on_ref') / length
+      })
+    })
+
+    if (results.length >= 300 || length * 2 > regions.parentRegion.end - regions.parentRegion.start) {
+      const total = results.reduce((a, b) => a + (b['featureDensity'] || 0), 0)
+      return {scoreMin: 0, scoreMax: Math.ceil(total * 2)}
+    }
+    else return this.estimateStats(regions, opts, length * 2, setup, file)
+  }
+
   /**
    * Checks if the store has data for the given assembly and reference
    * sequence, and then gets the features in the region if it does.

@@ -127,28 +127,41 @@ export default class extends BaseAdapter {
     opts: BaseOptions = {},
     length: number
   ):Promise<Stats>{
-    const defaultDomain = {scoreMin: 0, scoreMax: 0}
+    // const defaultDomain = {scoreMin: 0, scoreMax: 0}
 
-    if(regions.length > 0){
-      const sample = await this.generateSample(regions[0], length)
-      this.samHeader = await setup(this.bam)
-      const records = await this.bam.getRecordsForRange(
-        sample.refName, 
-        sample.sampleStart, 
-        sample.sampleEnd, 
-        opts
-      )
-      checkAbortSignal(opts.signal)
-      const results = await this.calculateDensity(
-        sample.sampleStart, 
-        sample.sampleEnd, 
-        regions[0], 
-        records, 
+    // if(regions.length > 0){
+    //   const sample = await this.generateSample(regions[0], length)
+    //   this.samHeader = await setup(this.bam)
+    //   const records = await this.bam.getRecordsForRange(
+    //     sample.refName, 
+    //     sample.sampleStart, 
+    //     sample.sampleEnd, 
+    //     opts
+    //   )
+    //   checkAbortSignal(opts.signal)
+    //   const results = await this.calculateDensity(
+    //     sample.sampleStart, 
+    //     sample.sampleEnd, 
+    //     regions[0], 
+    //     records, 
+    //     length,
+    //   )
+    //   return results.scoreMax > 0 ? {scoreMin: 0, scoreMax: results.scoreMax} : this.getMultiRegionStats(regions, opts, length * 2)
+    // }
+    // else return defaultDomain
+
+    // Below works and is cleaner but renders slower (can see hitch when rendering, scalebar starts at 0)
+    const stats = regions[0]
+    ? await this.estimateStats(
+        regions[0],
+        opts,
         length,
+        await setup(this.bam),
+        this.bam,
       )
-      return results.scoreMax > 0 ? {scoreMin: 0, scoreMax: results.scoreMax} : this.getMultiRegionStats(regions, opts, length * 2)
-    }
-    else return defaultDomain
+    : { scoreMin: 0, scoreMax: 0 }
+    checkAbortSignal(opts.signal)
+    return {scoreMin: stats.scoreMin, scoreMax: stats.scoreMax}
   }
 
   /**

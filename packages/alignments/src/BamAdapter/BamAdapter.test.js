@@ -83,7 +83,10 @@ test('test usage of getMultiRegion stats, adapter can generate a domain', async 
       },
     },
     opts: {
-      signal: false,
+      signal: {
+        aborted: false,
+        onabort: null,
+      },
       bpPerPx: 0.2,
     },
     length: 100,

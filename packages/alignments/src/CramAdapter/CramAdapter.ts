@@ -210,28 +210,54 @@ export default class CramAdapter extends BaseAdapter {
     opts: BaseOptions = {},
     length: number
   ):Promise<Stats>{
-    const defaultDomain = {scoreMin: 0, scoreMax: 0}
+    // const defaultDomain = {scoreMin: 0, scoreMax: 0}
 
-    if(regions.length > 0){
-      const sample = await this.generateSample(regions[0], length)
-      await this.setup(opts)
-      const records = await this.cram.getRecordsForRange(
-        sample.refName, 
-        sample.sampleStart, 
-        sample.sampleEnd, 
-        opts
-      )
-      checkAbortSignal(opts.signal)
-      const results = await this.calculateDensity(
-        sample.sampleStart, 
-        sample.sampleEnd, 
-        regions[0], 
-        records, 
-        length
-      )
-      return results.scoreMax > 0 ? {scoreMin: 0, scoreMax: results.scoreMax} : this.getMultiRegionStats(regions, opts, length * 2)
+    // if(regions.length > 0){
+    //   const sample = await this.generateSample(regions[0], length)
+    //   await this.setup(opts)
+    //   if (this.sequenceAdapter && !this.seqIdToRefName) {
+    //     this.seqIdToRefName = await this.sequenceAdapter.getRefNames(opts)
+    //   }
+    //   const refId = this.refNameToId(regions[0].refName)
+    //   this.seqIdToOriginalRefName[refId] =
+    //     (opts.originalRegion || {}).refName || regions[0].refName
+    //   const records = await this.cram.getRecordsForRange(
+    //     sample.refName, 
+    //     sample.sampleStart, 
+    //     sample.sampleEnd, 
+    //     opts
+    //   )
+    //   checkAbortSignal(opts.signal)
+    //   const results = await this.calculateDensity(
+    //     sample.sampleStart, 
+    //     sample.sampleEnd, 
+    //     regions[0], 
+    //     records, 
+    //     length
+    //   )
+    //   return results.scoreMax > 0 ? {scoreMin: 0, scoreMax: results.scoreMax} : this.getMultiRegionStats(regions, opts, length * 2)
+    // }
+    // else return defaultDomain
+
+    // working but renders slower (see BamAdapter.ts file)
+    if (this.sequenceAdapter && !this.seqIdToRefName) {
+      this.seqIdToRefName = await this.sequenceAdapter.getRefNames(opts)
     }
-    else return defaultDomain
+    const refId = this.refNameToId(regions[0].refName)
+    this.seqIdToOriginalRefName[refId] =
+      (opts.originalRegion || {}).refName || regions[0].refName
+    
+      const stats = regions[0]
+      ? await this.estimateStats(
+          regions[0],
+          opts,
+          length,
+          await this.setup(opts),
+          this.cram,
+        )
+      : { scoreMin: 0, scoreMax: 0 }
+      checkAbortSignal(opts.signal)
+      return {scoreMin: stats.scoreMin, scoreMax: stats.scoreMax}
   }
   
   /**
