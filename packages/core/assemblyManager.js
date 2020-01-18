@@ -1,6 +1,5 @@
 import jsonStableStringify from 'json-stable-stringify'
 import { observable, toJS } from 'mobx'
-import { getParent } from 'mobx-state-tree'
 import { readConfObject } from './configuration'
 
 export default self => ({
@@ -42,43 +41,6 @@ export default self => ({
             ...assemblyInfo,
             aliases: newAliases,
           })
-        })
-      }
-      for (const assemblyName of getParent(self).session.connections.keys()) {
-        const connectionConfs = getParent(self).session.connections.get(
-          assemblyName,
-        )
-        connectionConfs.forEach(connectionConf => {
-          if (!assemblyData.has(assemblyName)) {
-            const assemblyInfo = {}
-            assemblyInfo.sequence = connectionConf.sequence
-            assemblyInfo.refNameAliases = connectionConf.refNameAliases
-            assemblyData.set(assemblyName, assemblyInfo)
-          } else {
-            if (
-              !assemblyData.get(assemblyName).refNameAliases &&
-              connectionConf.refNameAliases
-            ) {
-              assemblyData.get(assemblyName).refNameAliases = readConfObject(
-                connectionConf.refNameAliases,
-              )
-              assemblyData.get(assemblyName).aliases.forEach(alias => {
-                assemblyData.get(alias).refNameAliases = readConfObject(
-                  connectionConf.refNameAliases,
-                )
-              })
-            }
-            if (
-              (!assemblyData.get(assemblyName).sequence &&
-                connectionConf.sequence) ||
-              connectionConf.defaultSequence
-            ) {
-              assemblyData.get(assemblyName).sequence = connectionConf.sequence
-              assemblyData.get(assemblyName).aliases.forEach(alias => {
-                assemblyData.get(alias).sequence = connectionConf.sequence
-              })
-            }
-          }
         })
       }
       return assemblyData

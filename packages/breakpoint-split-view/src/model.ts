@@ -47,8 +47,10 @@ export default function stateModelFactory(pluginManager: any) {
       showIntraviewLinks: true,
       linkViews: false,
       interactToggled: false,
-      views: types.array(pluginManager.getViewType('LinearGenomeView')
-        .stateModel as LinearGenomeViewStateModel),
+      views: types.array(
+        pluginManager.getViewType('LinearGenomeView')
+          .stateModel as LinearGenomeViewStateModel,
+      ),
     })
     .views(self => ({
       get controlsWidth() {

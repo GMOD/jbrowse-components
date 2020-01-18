@@ -58,7 +58,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
                 <div
                   aria-haspopup="listbox"
                   aria-labelledby=" "
-                  class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+                  class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
                   role="button"
                   tabindex="0"
                 >
@@ -195,7 +195,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         class="makeStyles-spacer"
       />
       <div
-        class="MuiPaper-root MuiPaper-elevation1 makeStyles-searchRoot MuiPaper-rounded"
+        class="MuiPaper-root makeStyles-searchRoot MuiPaper-elevation1 MuiPaper-rounded"
       >
         <form>
           <div
@@ -237,7 +237,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         <div
           aria-haspopup="listbox"
           aria-labelledby=" mui-component-select-refseq"
-          class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+          class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
           id="mui-component-select-refseq"
           role="button"
           tabindex="0"
@@ -752,7 +752,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
                 <div
                   aria-haspopup="listbox"
                   aria-labelledby=" "
-                  class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+                  class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
                   role="button"
                   tabindex="0"
                 >

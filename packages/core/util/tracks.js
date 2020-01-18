@@ -21,14 +21,23 @@ export function getTrackAssemblyName(track) {
   // otherwise use the assembly from the dataset that it is part of
   const trackConf = track.configuration
   let trackConfParent = trackConf
+  let isConnectionTrack = false
+  // If it's a normal track, go up the tree until you find the assembly
+  // If it's a connection track, go up the tree until you find the connection
   do {
     trackConfParent = getParent(trackConfParent)
+    isConnectionTrack = Boolean(
+      trackConfParent.configuration &&
+        trackConfParent.configuration.connectionId,
+    )
   } while (
-    !(trackConfParent.assembly || 'defaultSequence' in trackConfParent) &&
+    !(trackConfParent.assembly || isConnectionTrack) &&
     !isRoot(trackConfParent)
   )
 
-  if ('defaultSequence' in trackConfParent) {
+  // If a connection was found above, go up the tree from that connection's
+  // configuration until you find the assembly
+  if (isConnectionTrack) {
     trackConfParent = trackConfParent.configuration
     do {
       trackConfParent = getParent(trackConfParent)
@@ -97,15 +106,15 @@ export function guessAdapter(fileName, protocol) {
       type: UNSUPPORTED,
     }
 
-  if (/\.gff3?\.gz$/i.test(fileName))
+  if (/\.gff3?\.b?gz$/i.test(fileName))
     return {
       type: UNSUPPORTED,
     }
-  if (/\.gff3?\.gz.tbi$/i.test(fileName))
+  if (/\.gff3?\.b?gz.tbi$/i.test(fileName))
     return {
       type: UNSUPPORTED,
     }
-  if (/\.gff3?\.gz.csi$/i.test(fileName))
+  if (/\.gff3?\.b?gz.csi$/i.test(fileName))
     return {
       type: UNSUPPORTED,
     }
@@ -120,19 +129,19 @@ export function guessAdapter(fileName, protocol) {
       type: UNSUPPORTED,
     }
 
-  if (/\.vcf\.gz$/i.test(fileName))
+  if (/\.vcf\.b?gz$/i.test(fileName))
     return {
       type: 'VcfTabixAdapter',
       vcfGzLocation: { [protocol]: fileName },
       index: { location: { [protocol]: `${fileName}.tbi` }, indexType: 'TBI' },
     }
-  if (/\.vcf\.gz\.tbi$/i.test(fileName))
+  if (/\.vcf\.b?gz\.tbi$/i.test(fileName))
     return {
       type: 'VcfTabixAdapter',
       vcfGzLocation: { [protocol]: fileName.replace(/\.tbi$/i, '') },
       index: { location: { [protocol]: fileName }, indexType: 'TBI' },
     }
-  if (/\.vcf\.gz\.csi$/i.test(fileName))
+  if (/\.vcf\.b?gz\.csi$/i.test(fileName))
     return {
       type: 'VcfTabixAdapter',
       vcfGzLocation: { [protocol]: fileName.replace(/\.csi$/i, '') },
@@ -149,15 +158,15 @@ export function guessAdapter(fileName, protocol) {
       type: UNSUPPORTED,
     }
 
-  if (/\.bed\.gz$/i.test(fileName))
+  if (/\.bed\.b?gz$/i.test(fileName))
     return {
       type: UNSUPPORTED,
     }
-  if (/\.bed.gz.tbi$/i.test(fileName))
+  if (/\.bed.b?gz.tbi$/i.test(fileName))
     return {
       type: UNSUPPORTED,
     }
-  if (/\.bed.gz.csi/i.test(fileName))
+  if (/\.bed.b?gz.csi/i.test(fileName))
     return {
       type: UNSUPPORTED,
     }
@@ -192,21 +201,21 @@ export function guessAdapter(fileName, protocol) {
       faiLocation: { [protocol]: fileName },
     }
 
-  if (/\.(fa|fasta|fna|mfa)\.gz$/i.test(fileName))
+  if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(fileName))
     return {
       type: 'BgzipFastaAdapter',
       fastaLocation: { [protocol]: fileName },
       faiLocation: { [protocol]: `${fileName}.fai` },
       gziLocation: { [protocol]: `${fileName}.gzi` },
     }
-  if (/\.(fa|fasta|fna|mfa)\.gz\.fai$/i.test(fileName))
+  if (/\.(fa|fasta|fna|mfa)\.b?gz\.fai$/i.test(fileName))
     return {
       type: 'BgzipFastaAdapter',
       fastaLocation: { [protocol]: fileName.replace(/\.fai$/i, '') },
       faiLocation: { [protocol]: fileName },
       gziLocation: { [protocol]: `${fileName.replace(/\.fai$/i, '')}.gzi` },
     }
-  if (/\.(fa|fasta|fna|mfa)\.gz\.gzi$/i.test(fileName))
+  if (/\.(fa|fasta|fna|mfa)\.b?gz\.gzi$/i.test(fileName))
     return {
       type: 'BgzipFastaAdapter',
       fastaLocation: { [protocol]: fileName.replace(/\.gzi$/i, '') },

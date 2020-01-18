@@ -22,7 +22,10 @@ function Segments(props) {
     emphasizedColor2 = color2
   }
   const { left, top, width, height } = featureLayout.absolute
-  const points = [[left, top + height / 2], [left + width, top + height / 2]]
+  const points = [
+    [left, top + height / 2],
+    [left + width, top + height / 2],
+  ]
   const strand = feature.get('strand')
   if (strand)
     points.push(

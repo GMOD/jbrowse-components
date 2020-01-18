@@ -3,20 +3,6 @@ import React from 'react'
 import { cleanup, fireEvent, render } from '@testing-library/react'
 import DropDownMenu from './DropDownMenu'
 
-jest.mock('popper.js', () => {
-  const PopperJS = jest.requireActual('popper.js')
-  return class Popper {
-    static placements = PopperJS.placements
-
-    constructor() {
-      return {
-        destroy: () => {},
-        scheduleUpdate: () => {},
-      }
-    }
-  }
-})
-
 describe('<DropDownMenu />', () => {
   let session
 

@@ -16,6 +16,12 @@ interface ProtoTrack {
   storeClass?: string
   type?: string
   urlTemplate?: string
+  baiUrlTemplate?: string
+  craiUrlTemplate?: string
+  tbiUrlTemplate?: string
+  csiUrlTemplate?: string
+  faiUrlTemplate?: string
+  gziUrlTemplate?: string
   useAsRefSeqStore?: boolean
 }
 

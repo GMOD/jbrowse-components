@@ -67,9 +67,7 @@ export default observer(({ session }) => {
                 break
               }
               case 2: {
-                viewDetails = `2 views; ${openTrackCount[0]} and ${
-                  openTrackCount[1]
-                } open tracks`
+                viewDetails = `2 views; ${openTrackCount[0]} and ${openTrackCount[1]} open tracks`
                 break
               }
               default: {

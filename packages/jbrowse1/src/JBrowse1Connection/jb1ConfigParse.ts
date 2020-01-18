@@ -284,17 +284,19 @@ function guessStoreClass(
   if (/\.cram$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/CRAM'
   if (/\.gff3?$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/GFF3'
   if (/\.bed$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/BED'
-  if (/\.vcf.gz$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/VCFTabix'
-  if (/\.gff3?.gz$/i.test(urlTemplate))
+  if (/\.vcf.b?gz$/i.test(urlTemplate))
+    return 'JBrowse/Store/SeqFeature/VCFTabix'
+  if (/\.gff3?.b?gz$/i.test(urlTemplate))
     return 'JBrowse/Store/SeqFeature/GFF3Tabix'
-  if (/\.bed.gz$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/BEDTabix'
+  if (/\.bed.b?gz$/i.test(urlTemplate))
+    return 'JBrowse/Store/SeqFeature/BEDTabix'
   if (/\.(bw|bigwig)$/i.test(urlTemplate))
     return 'JBrowse/Store/SeqFeature/BigWig'
   if (/\.(bb|bigbed)$/i.test(urlTemplate))
     return 'JBrowse/Store/SeqFeature/BigBed'
   if (/\.(fa|fasta)$/i.test(urlTemplate))
     return 'JBrowse/Store/SeqFeature/IndexedFasta'
-  if (/\.(fa|fasta)\.gz$/i.test(urlTemplate))
+  if (/\.(fa|fasta)\.b?gz$/i.test(urlTemplate))
     return 'JBrowse/Store/SeqFeature/BgzipIndexedFasta'
   if (/\.2bit$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/TwoBit'
   if (trackConfig.type && /\/Sequence$/.test(trackConfig.type))
