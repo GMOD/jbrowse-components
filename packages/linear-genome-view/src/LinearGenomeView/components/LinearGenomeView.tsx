@@ -5,7 +5,6 @@ import {
 } from '@gmod/jbrowse-core/util'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { useInView } from 'react-intersection-observer'
 
 // material ui things
 import { makeStyles } from '@material-ui/core/styles'

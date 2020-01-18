@@ -43,8 +43,14 @@ const RenderedBlocks = observer(
     const { model } = props
     const classes = useStyles()
     const { blockDefinitions, blockState } = model
+    if (blockDefinitions.blocks.length > 0) {
+      console.log(blockDefinitions.blocks[0].offsetPx)
+    }
     return (
       <>
+        {blockDefinitions.blocks.length > 0 ? (
+          <div style={{ width: blockDefinitions.blocks[0].offsetPx }} />
+        ) : null}
         {blockDefinitions.map((block: BaseBlock) => {
           if (block instanceof ContentBlock) {
             const state = blockState.get(block.key)
@@ -100,7 +106,6 @@ function TrackBlocks({
   const classes = useStyles()
   const { blockDefinitions } = model
 
-  console.log(blockDefinitions.offsetPx - viewModel.offsetPx)
   return (
     <>
       <div data-testid="Block" className={classes.trackBlocks}>
