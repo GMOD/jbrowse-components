@@ -49,17 +49,8 @@ export default pluginManager =>
       trackConfigurations(assemblyName) {
         if (!self.view) return []
         const session = getSession(self)
-        const trackConfigurations = []
-        session.datasets.forEach(datasetConf => {
-          if (
-            readConfObject(datasetConf, ['assembly', 'name']) ===
-              assemblyName ||
-            readConfObject(datasetConf, ['assembly', 'aliases']).includes(
-              assemblyName,
-            )
-          )
-            trackConfigurations.push(...datasetConf.tracks)
-        })
+        const trackConfigurations = session.track
+        console.log(trackConfigurations)
 
         const relevantTrackConfigurations = trackConfigurations.filter(
           conf => conf.viewType === self.view.type,

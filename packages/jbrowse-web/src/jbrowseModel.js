@@ -74,6 +74,9 @@ const JBrowseWeb = types
       },
     }),
     datasets: types.array(DatasetConfigSchema),
+    // track configuration is an array of track config schemas. multiple
+    // instances of a track can exist that use the same configuration
+    tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
     defaultSession: types.optional(types.frozen(Session), {
       name: `New Session`,
       menuBars: [{ type: 'MainMenuBar' }],

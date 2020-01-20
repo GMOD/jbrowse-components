@@ -65,6 +65,9 @@ const JBrowseWeb = types
       menuBars: [{ type: 'MainMenuBar' }],
     }),
     datasets: types.array(DatasetConfigSchema),
+    // track configuration is an array of track config schemas. multiple
+    // instances of a track can exist that use the same configuration
+    // tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
     configuration: ConfigurationSchema('Root', {
       rpc: RpcManager.configSchema,
       // possibly consider this for global config editor
