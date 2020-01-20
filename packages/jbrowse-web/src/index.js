@@ -1,9 +1,14 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { useQueryParam, StringParam } from 'use-query-params'
+import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import JBrowse from './JBrowse'
 import * as serviceWorker from './serviceWorker'
+import 'requestidlecallback-polyfill'
 import 'core-js/stable'
+
+if (!window.TextEncoder) window.TextEncoder = TextEncoder
+if (!window.TextDecoder) window.TextDecoder = TextDecoder
 
 const App = () => {
   const [config] = useQueryParam('config', StringParam)
@@ -17,23 +22,55 @@ const Unsupported = () => (
       yet. Browsers that do currently work include:
     </p>
     <ul>
-      <li>Chrome</li>
-      <li>Chromium</li>
-      <li>Opera</li>
+      <li>
+        <a
+          href="https://www.google.com/chrome/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Chrome
+        </a>
+      </li>
+      <li>
+        <a
+          href="https://www.chromium.org/Home"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Chromium
+        </a>
+      </li>
+      <li>
+        <a
+          href="https://www.opera.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Opera
+        </a>
+      </li>
+      <li>
+        <a
+          href="https://www.microsoft.com/en-us/edge"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          new Microsoft Edge
+        </a>
+      </li>
     </ul>
   </div>
 )
 
-// TODO: get rid of user agent detection
-// https://developer.mozilla.org/en-US/docs/Web/HTTP/Browser_detection_using_the_user_agent
-//
+// If it has OffscreenCanvas, it probably has the other things we need
+const hasOffscreenCanvas = typeof OffscreenCanvas === 'function'
 
-if (window.chrome) {
+if (hasOffscreenCanvas) {
   // this is the main process, so start and register our service worker and web workers
   serviceWorker.register()
 }
 
 ReactDOM.render(
-  window.chrome ? <App /> : <Unsupported />,
+  hasOffscreenCanvas ? <App /> : <Unsupported />,
   document.getElementById('root'),
 )
