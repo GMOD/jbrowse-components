@@ -1,5 +1,10 @@
 import { createMuiTheme } from '@material-ui/core/styles'
 import { grey } from '@material-ui/core/colors'
+import {
+  lighten,
+  darken,
+  getContrastRatio,
+} from '@material-ui/core/styles/colorManipulator'
 
 const midnight = '#0D233F'
 const grape = '#721E63'
@@ -11,7 +16,13 @@ export default createMuiTheme({
     // type: 'dark',
     primary: { main: midnight },
     secondary: { main: grape },
-    tertiary: { main: forest },
+    tertiary: {
+      light: lighten(forest, 0.2),
+      main: forest,
+      dark: darken(forest, 0.3),
+      contrastText:
+        getContrastRatio(forest, '#fff') >= 3 ? '#fff' : 'rgba(0, 0, 0, 0.87)',
+    },
     background: {
       mainApp: grey[700],
     },
