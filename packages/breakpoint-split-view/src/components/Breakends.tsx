@@ -58,8 +58,16 @@ export default (pluginManager: any) => {
               )
               const relevantAlt = findMatchingAlt(f1, f2)
               if (!c1 || !c2) return null
-              const x1 = getPxFromCoordinate(views[level1], c1[LEFT])
-              const x2 = getPxFromCoordinate(views[level2], c2[LEFT])
+              const x1 = getPxFromCoordinate(
+                views[level1],
+                f1.get('refName'),
+                c1[LEFT],
+              )
+              const x2 = getPxFromCoordinate(
+                views[level2],
+                f2.get('refName'),
+                c2[LEFT],
+              )
 
               const tracks = views.map(v => v.getTrack(trackConfigId))
               const y1 = yPos(trackConfigId, level1, views, tracks, c1)

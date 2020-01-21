@@ -1,6 +1,10 @@
-import { promises as fsPromises } from 'fs'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
+import { promises as fsPromises } from 'fs'
 import { parseVcfBuffer, splitVcfFileHeaderAndBody } from './VcfImport'
+
+window.TextEncoder = TextEncoder
+window.TextDecoder = TextDecoder
 
 const pluginManager = new PluginManager()
 const SpreadsheetModel = pluginManager.jbrequire(

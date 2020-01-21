@@ -5,7 +5,7 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
   class="makeStyles-root"
 >
   <div
-    class="MuiPaper-root MuiPaper-elevation0 MuiStepper-root MuiStepper-vertical makeStyles-stepper"
+    class="MuiPaper-root MuiStepper-root MuiStepper-vertical makeStyles-stepper MuiPaper-elevation0"
   >
     <div
       class="MuiStep-root MuiStep-vertical"
@@ -80,7 +80,7 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                     <div
                       aria-haspopup="listbox"
                       aria-labelledby=" "
-                      class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+                      class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
                       role="button"
                       tabindex="0"
                     >
@@ -126,7 +126,7 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                     <div
                       aria-haspopup="listbox"
                       aria-labelledby=" "
-                      class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+                      class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
                       role="button"
                       tabindex="0"
                     >

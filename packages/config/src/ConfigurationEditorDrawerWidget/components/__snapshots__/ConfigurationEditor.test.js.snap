@@ -6,7 +6,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
   data-testid="configEditor"
 >
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       class="makeStyles-paperContent"
@@ -63,7 +63,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       class="makeStyles-paperContent"
@@ -127,7 +127,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
             class="MuiFormControl-root MuiTextField-root MuiFormControl-marginDense MuiFormControl-fullWidth"
           >
             <div
-              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl MuiInputBase-marginDense"
+              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl MuiInputBase-marginDense MuiInput-marginDense"
             >
               <input
                 aria-invalid="false"
@@ -171,7 +171,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       class="makeStyles-paperContent"
@@ -339,7 +339,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       class="makeStyles-paperContent"
@@ -350,7 +350,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         stringArrayMapTest
       </label>
       <div
-        class="MuiPaper-root MuiPaper-elevation8 MuiCard-root makeStyles-card MuiPaper-rounded"
+        class="MuiPaper-root MuiCard-root makeStyles-card MuiPaper-elevation8 MuiPaper-rounded"
       >
         <div
           class="MuiCardHeader-root"
@@ -525,7 +525,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         </div>
       </div>
       <div
-        class="MuiPaper-root MuiPaper-elevation8 MuiCard-root makeStyles-card MuiPaper-rounded"
+        class="MuiPaper-root MuiCard-root makeStyles-card MuiPaper-elevation8 MuiPaper-rounded"
       >
         <div
           class="MuiCardHeader-root"
@@ -604,7 +604,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       class="makeStyles-paperContent"
@@ -661,7 +661,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       class="makeStyles-paperContent"
@@ -718,7 +718,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       class="makeStyles-paperContent"
@@ -776,7 +776,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       class="makeStyles-paperContent"
@@ -864,7 +864,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
   data-testid="configEditor"
 >
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       class="makeStyles-paperContent"
@@ -921,7 +921,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       class="makeStyles-paperContent"
@@ -978,7 +978,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       class="makeStyles-paperContent"
@@ -1064,7 +1064,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       class="makeStyles-paperContent"
@@ -1238,7 +1238,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       class="makeStyles-paperContent"
@@ -1355,7 +1355,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     class="makeStyles-subSchemaContainer"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+      class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
     >
       <div
         class="makeStyles-paperContent"
@@ -1375,7 +1375,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             <div
               aria-haspopup="listbox"
               aria-labelledby=" "
-              class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+              class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
               role="button"
               tabindex="0"
             >
@@ -1409,7 +1409,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       class="MuiFormGroup-root"
     >
       <div
-        class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+        class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
       >
         <div
           class="makeStyles-paperContent"
@@ -1473,7 +1473,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 class="MuiFormControl-root MuiTextField-root MuiFormControl-marginDense MuiFormControl-fullWidth"
               >
                 <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl MuiInputBase-marginDense"
+                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl MuiInputBase-marginDense MuiInput-marginDense"
                 >
                   <input
                     aria-invalid="false"
@@ -1526,7 +1526,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           class="MuiFormGroup-root"
         >
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
           >
             <div
               class="makeStyles-paperContent"
@@ -1546,7 +1546,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   <div
                     aria-haspopup="listbox"
                     aria-labelledby=" "
-                    class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+                    class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
                     role="button"
                     tabindex="0"
                   >
@@ -1597,7 +1597,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
           >
             <div
               class="makeStyles-paperContent"
@@ -1661,7 +1661,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     class="MuiFormControl-root MuiTextField-root MuiFormControl-marginDense MuiFormControl-fullWidth"
                   >
                     <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl MuiInputBase-marginDense"
+                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl MuiInputBase-marginDense MuiInput-marginDense"
                     >
                       <input
                         aria-invalid="false"
@@ -1707,7 +1707,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       class="makeStyles-paperContent"
@@ -1727,7 +1727,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           <div
             aria-haspopup="listbox"
             aria-labelledby=" "
-            class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+            class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
             role="button"
             tabindex="0"
           >
@@ -1800,7 +1800,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           class="MuiFormGroup-root"
         >
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
           >
             <div
               class="makeStyles-paperContent"
@@ -1944,7 +1944,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       '#8F8FD8'
                     </span>
                     <span
-                      class="token punctuation"
+                      class="token operator"
                     >
                       :
                     </span>
@@ -2033,7 +2033,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
           >
             <div
               class="makeStyles-paperContent"
@@ -2165,7 +2165,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
           >
             <div
               class="makeStyles-paperContent"
@@ -2222,7 +2222,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
           >
             <div
               class="makeStyles-paperContent"
@@ -2292,7 +2292,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           class="MuiFormGroup-root"
         >
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
           >
             <div
               class="makeStyles-paperContent"
@@ -2350,7 +2350,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
           >
             <div
               class="makeStyles-paperContent"
@@ -2408,7 +2408,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
           >
             <div
               class="makeStyles-paperContent"
@@ -2466,7 +2466,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
           >
             <div
               class="makeStyles-paperContent"
@@ -2534,7 +2534,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               class="MuiFormGroup-root"
             >
               <div
-                class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+                class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
               >
                 <div
                   class="makeStyles-paperContent"
@@ -2736,7 +2736,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </div>
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+                class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
               >
                 <div
                   class="makeStyles-paperContent"
@@ -2794,7 +2794,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </div>
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+                class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
               >
                 <div
                   class="makeStyles-paperContent"
@@ -2996,7 +2996,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </div>
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+                class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
               >
                 <div
                   class="makeStyles-paperContent"
@@ -3054,7 +3054,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </div>
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+                class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
               >
                 <div
                   class="makeStyles-paperContent"
@@ -3113,7 +3113,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
           >
             <div
               class="makeStyles-paperContent"
@@ -3245,7 +3245,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
           >
             <div
               class="makeStyles-paperContent"
@@ -3314,7 +3314,7 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
   data-testid="configEditor"
 >
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       class="makeStyles-paperContent"

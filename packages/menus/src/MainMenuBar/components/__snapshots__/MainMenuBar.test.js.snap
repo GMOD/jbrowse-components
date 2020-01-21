@@ -2,7 +2,7 @@
 
 exports[`<MainMenuBar /> renders 1`] = `
 <header
-  class="MuiPaper-root MuiPaper-elevation4 MuiAppBar-root MuiAppBar-positionStatic makeStyles-root MuiAppBar-colorPrimary"
+  class="MuiPaper-root MuiAppBar-root MuiAppBar-positionStatic makeStyles-root MuiAppBar-colorPrimary MuiPaper-elevation4"
 >
   <div
     class="MuiToolbar-root MuiToolbar-dense MuiToolbar-gutters"
