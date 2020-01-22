@@ -1,0 +1,208 @@
+{
+  "defaultSession": {
+    "name": "New Session",
+    "menuBars": [
+      {
+        "type": "MainMenuBar"
+      }
+    ]
+  },
+  "savedSessions": [
+    {
+      "name": "Human Example (hg38)",
+      "width": 1850,
+      "drawerWidth": 384,
+      "views": [
+        {
+          "type": "LinearSyntenyView",
+          "headerHeight": 44,
+          "width": 1850,
+          "height": 400,
+          "displayName": "synteny detail",
+          "configuration": {
+            "type": "LinearSyntenyView"
+          },
+          "trackSelectorType": "hierarchical",
+          "views": [
+            {
+              "type": "LinearGenomeView",
+              "offsetPx": 0,
+              "bpPerPx": 100000,
+              "displayedRegions": [
+                {
+                  "refName": "chr1",
+                  "start": 0,
+                  "end": 10000,
+                  "assemblyName": "C24"
+                }
+              ],
+              "reversed": false,
+              "tracks": [
+                {
+                  "type": "BasicTrack",
+                  "height": 100,
+                  "configuration": "C24_genes",
+                  "configRelationships": [
+                    {
+                      "type": "syntenyGroup",
+                      "target": "group1"
+                    }
+                  ],
+                  "selectedRendering": ""
+                }
+              ],
+              "controlsWidth": 120,
+              "width": 800,
+              "hideControls": false,
+              "hideHeader": true,
+              "hideCloseButton": true,
+              "trackSelectorType": "hierarchical",
+              "minimumBlockWidth": 20
+            },
+            {
+              "type": "LinearGenomeView",
+              "offsetPx": 0,
+              "bpPerPx": 100000,
+              "displayedRegions": [
+                {
+                  "refName": "chr1",
+                  "start": 0,
+                  "end": 10000,
+                  "assemblyName": "Cvi"
+                }
+              ],
+              "reversed": false,
+              "tracks": [
+                {
+                  "type": "BasicTrack",
+                  "height": 100,
+                  "configuration": "Cvi_genes",
+                  "configRelationships": [
+                    {
+                      "type": "syntenyGroup",
+                      "target": "group1"
+                    }
+                  ],
+                  "selectedRendering": ""
+                }
+              ],
+              "controlsWidth": 120,
+              "width": 800,
+              "hideControls": false,
+              "hideHeader": true,
+              "hideCloseButton": true,
+              "trackSelectorType": "hierarchical",
+              "minimumBlockWidth": 20
+            }
+          ]
+        }
+      ],
+      "drawerWidgets": {
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "collapsed": {},
+          "filterText": ""
+        },
+        "sessionManager": {
+          "id": "sessionManager",
+          "type": "SessionManager"
+        }
+      },
+      "activeDrawerWidgets": {},
+      "connections": {}
+    }
+  ],
+  "datasets": [
+    {
+      "name": "C24",
+      "assembly": {
+        "name": "C24",
+        "sequence": {
+          "trackId": "C24_ref",
+          "type": "ReferenceSequenceTrack",
+          "adapter": {
+            "type": "BgzipFastaAdapter",
+            "fastaLocation": {
+              "uri": "test_data/C24.chr.all.v2.0.fasta.gz"
+            },
+            "faiLocation": {
+              "uri": "test_data/C24.chr.all.v2.0.fasta.gz.fai"
+            },
+            "gziLocation": {
+              "uri": "test_data/C24.chr.all.v2.0.fasta.gz.gzi"
+            }
+          },
+          "rendering": {
+            "type": "DivSequenceRenderer"
+          }
+        }
+      },
+      "tracks": [
+        {
+          "trackId": "C24_genes",
+          "type": "BasicTrack",
+          "name": "Genes",
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "test_data/arabidopsis/arabidopsis-C24.protein-coding.genes.v2.5.2019-10-09/tracks/C24.protein-coding.genes.v2.5.2019-10-09/{refseq}/trackData.json"
+          },
+          "renderer": {
+            "type": "PileupRenderer"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cvi",
+      "assembly": {
+        "name": "Cvi",
+        "sequence": {
+          "trackId": "Cvi_ref",
+          "type": "ReferenceSequenceTrack",
+          "adapter": {
+            "type": "BgzipFastaAdapter",
+            "fastaLocation": {
+              "uri": "test_data/Cvi.chr.all.v2.0.fasta.gz"
+            },
+            "faiLocation": {
+              "uri": "test_data/Cvi.chr.all.v2.0.fasta.gz.fai"
+            },
+            "gziLocation": {
+              "uri": "test_data/Cvi.chr.all.v2.0.fasta.gz.gzi"
+            }
+          },
+          "rendering": {
+            "type": "DivSequenceRenderer"
+          }
+        }
+      },
+      "tracks": [
+        {
+          "trackId": "Cvi_genes",
+          "type": "BasicTrack",
+          "name": "Genes",
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "test_data/arabidopsis/arabidopsis-Cvi.protein-coding.genes.v2.5.2019-10-09/tracks/Cvi.protein-coding.genes.v2.5.2019-10-09/{refseq}/trackData.json"
+          },
+          "renderer": {
+            "type": "PileupRenderer"
+          }
+        }
+      ]
+    }
+  ],
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    },
+    "updateUrl": true
+  }
+}

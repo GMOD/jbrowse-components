@@ -127,8 +127,10 @@ export default function stateModelFactory(pluginManager: any) {
       showIntraviewLinks: true,
       linkViews: false,
       interactToggled: false,
-      views: types.array(pluginManager.getViewType('LinearGenomeView')
-        .stateModel as LinearGenomeViewStateModel),
+      views: types.array(
+        pluginManager.getViewType('LinearGenomeView')
+          .stateModel as LinearGenomeViewStateModel,
+      ),
     })
     .volatile(self => ({
       anchors: undefined as { [key: string]: number } | undefined,
@@ -188,6 +190,7 @@ export default function stateModelFactory(pluginManager: any) {
       },
 
       get allMatchedSyntenyFeatures() {
+        console.log('here')
         return Object.fromEntries(
           this.syntenyGroups.map(group => [
             group,
@@ -334,8 +337,8 @@ export default function stateModelFactory(pluginManager: any) {
 
         // this finds candidate features that share the same name
         for (const feature of features.values()) {
-          const n = self.anchors[feature.get('name')]
-          featNameMap[feature.get('name')] = feature
+          const n = self.anchors[feature.get('id')]
+          featNameMap[feature.get('id')] = feature
 
           if (n !== undefined) {
             alreadySeen.add(n)
@@ -395,8 +398,8 @@ export default function stateModelFactory(pluginManager: any) {
 
         // this finds candidate features that share the same name
         for (const feature of features.values()) {
-          const n = self.simpleAnchors[feature.get('name')]
-          featNameMap[feature.get('name')] = feature
+          const n = self.simpleAnchors[feature.get('id')]
+          featNameMap[feature.get('id')] = feature
 
           if (n !== undefined) {
             alreadySeen.add(n)
@@ -451,11 +454,13 @@ export default function stateModelFactory(pluginManager: any) {
         const features = this.getTrackFeatures(syntenyGroup)
         const candidates: { [key: string]: Feature[] } = {}
         const alreadySeen = new Set<string>()
+        console.log('here', features)
 
         // this finds candidate features that share the same name
         for (const feature of features.values()) {
           if (!alreadySeen.has(feature.id())) {
-            const n = feature.get('name')
+            const n = feature.get('id')
+            console.log(n)
             if (!candidates[n]) {
               candidates[n] = []
             }

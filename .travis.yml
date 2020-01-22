@@ -24,3 +24,14 @@ deploy:
   on:
     repo: GMOD/jbrowse-components
     all_branches: true
+deploy:
+  provider: s3
+  skip_cleanup: true
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET
+  bucket: "jbrowse.org"
+  local-dir: packages/jbrowse-web/build
+  upload-dir: code/jb2/alpha/$TRAVIS_BRANCH
+  on:
+    repo: GMOD/jbrowse-components
+    all_branches: true
