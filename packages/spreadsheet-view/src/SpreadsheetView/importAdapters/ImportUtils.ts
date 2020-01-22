@@ -1,5 +1,4 @@
 import csv from 'csvtojson'
-import { TextDecoder } from 'text-encoding-polyfill'
 
 export function bufferToString(buffer: Buffer) {
   return new TextDecoder('utf-8', { fatal: true }).decode(buffer)

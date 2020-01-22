@@ -10,7 +10,6 @@ import '@testing-library/jest-dom/extend-expect'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
-import { TextEncoder, TextDecoder } from 'text-encoding-polyfill'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import JBrowse from './JBrowse'
 import config from '../test_data/config_integration_test.json'
@@ -23,8 +22,6 @@ window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
 window.requestAnimationFrame = cb => cb()
 window.cancelAnimationFrame = () => {}
-window.TextEncoder = TextEncoder
-window.TextDecoder = TextDecoder
 
 Storage.prototype.getItem = jest.fn(() => null)
 Storage.prototype.setItem = jest.fn()

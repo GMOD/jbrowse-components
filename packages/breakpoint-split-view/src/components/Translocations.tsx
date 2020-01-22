@@ -67,13 +67,16 @@ export default (pluginManager: any) => {
               const end2 = info.END[0]
               const [myDirection, mateDirection] = info.STRANDS[0].split('')
 
-              const r = views[level2].bpToPx({ refName: chr2, coord: end2 })
+              const r = getPxFromCoordinate(views[level2], chr2, end2)
               if (r) {
-                const left = r.offsetPx - views[level2].offsetPx
-                const c2: LayoutRecord = [left, 0, left + 1, 0]
+                const c2: LayoutRecord = [r, 0, r + 1, 0]
 
-                const x1 = getPxFromCoordinate(views[level1], c1[LEFT])
-                const x2 = left
+                const x1 = getPxFromCoordinate(
+                  views[level1],
+                  f1.get('refName'),
+                  c1[LEFT],
+                )
+                const x2 = r
 
                 const tracks = views.map(v => v.getTrack(trackConfigId))
                 const y1 = yPos(trackConfigId, level1, views, tracks, c1)
