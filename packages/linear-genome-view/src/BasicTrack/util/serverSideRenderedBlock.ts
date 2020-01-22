@@ -22,7 +22,7 @@ import {
 } from '@gmod/jbrowse-core/util'
 import {
   getContainingView,
-  getTrackAssemblyName,
+  getTrackAssemblyNames,
 } from '@gmod/jbrowse-core/util/tracks'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
@@ -167,19 +167,24 @@ export type BlockStateModel = typeof blockState
 function renderBlockData(self: Instance<BlockStateModel>) {
   const { assemblyData, rpcManager } = getSession(self) as any
   const track = getParent(self, 2)
-  const assemblyName = getTrackAssemblyName(track)
-  const trackAssemblyData =
-    (assemblyData && assemblyData.get(assemblyName)) || {}
-  const trackAssemblyAliases = trackAssemblyData.aliases || []
+  const assemblyNames = getTrackAssemblyNames(track)
   let cannotBeRenderedReason
-  if (
-    !(
-      assemblyName === self.region.assemblyName ||
-      trackAssemblyAliases.includes(self.region.assemblyName)
-    )
-  )
-    cannotBeRenderedReason = 'region assembly does not match track assembly'
-  else cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
+  if (!assemblyNames.includes(self.region.assemblyName)) {
+    let matchFound = false
+    assemblyNames.forEach((assemblyName: string) => {
+      const trackAssemblyData =
+        (assemblyData && assemblyData.get(assemblyName)) || {}
+      const trackAssemblyAliases = trackAssemblyData.aliases || []
+      if (trackAssemblyAliases.includes(self.region.assemblyName))
+        matchFound = true
+    })
+    if (!matchFound)
+      cannotBeRenderedReason = 'region assembly does not match track assembly'
+  }
+  if (!cannotBeRenderedReason)
+    cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
+  const trackAssemblyData =
+    assemblyData && assemblyData.get(self.region.assemblyName)
   const { renderProps } = track
   const { rendererType } = track
   const { config } = renderProps
@@ -199,7 +204,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     cannotBeRenderedReason,
     trackError: track.error,
     renderArgs: {
-      assemblyName,
+      assemblyName: self.region.assemblyName,
       region: self.region,
       adapterType: track.adapterType.name,
       adapterConfig: getConf(track, 'adapter'),

@@ -5,7 +5,7 @@ export default pluginManager => {
 
   const { makeAbortableReaction } = jbrequire(require('./util'))
 
-  const { getTrackAssemblyName } = jbrequire('@gmod/jbrowse-core/util/tracks')
+  const { getTrackAssemblyNames } = jbrequire('@gmod/jbrowse-core/util/tracks')
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
 
   const model = types
@@ -19,7 +19,7 @@ export default pluginManager => {
           self,
           'loadAssemblyRefNameMap',
           () => ({
-            assemblyName: getTrackAssemblyName(self),
+            assemblyName: getTrackAssemblyNames(self),
             adapter: getConf(self, 'adapter'),
           }),
           ({ assemblyName, adapter }, signal) => {

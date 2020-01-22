@@ -85,6 +85,9 @@ export default function sessionModelFactory(pluginManager: any) {
       get datasets() {
         return getParent(self).jbrowse.datasets
       },
+      get tracks() {
+        return getParent(self).jbrowse.tracks
+      },
       get savedSessions() {
         return getParent(self).jbrowse.savedSessions
       },

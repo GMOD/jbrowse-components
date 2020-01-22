@@ -17,8 +17,7 @@ export default self => ({
     },
     get assemblyData() {
       const assemblyData = observable.map({})
-      for (const datasetConfig of self.datasets) {
-        const assemblyConfig = datasetConfig.assembly
+      for (const assemblyConfig of self.assemblies) {
         const assemblyName = readConfObject(assemblyConfig, 'name')
         const assemblyInfo = {}
         if (assemblyConfig.sequence)
