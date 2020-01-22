@@ -12,7 +12,7 @@ export default pluginManager => {
 
   const useStyles = makeStyles((/* theme */) => {
     return {
-      textFilterControlAdornment: { marginRight: '-18px' },
+      textFilterControlEndAdornment: { marginRight: '-18px' },
     }
   })
 
@@ -37,9 +37,17 @@ export default pluginManager => {
           margin="dense"
           variant="outlined"
           InputProps={{
+            startAdornment: (
+              <InputAdornment
+                className={classes.textFilterControlStartAdornment}
+                position="start"
+              >
+                <Icon>filter_list</Icon>
+              </InputAdornment>
+            ),
             endAdornment: (
               <InputAdornment
-                className={classes.textFilterControlAdornment}
+                className={classes.textFilterControlEndAdornment}
                 position="end"
               >
                 <IconButton
