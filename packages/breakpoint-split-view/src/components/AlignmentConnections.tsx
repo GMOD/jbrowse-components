@@ -69,10 +69,12 @@ export default (pluginManager: any) => {
 
               const x1 = getPxFromCoordinate(
                 views[level1],
+                f1.get('refName'),
                 c1[f1.get('strand') === -1 ? LEFT : RIGHT],
               )
               const x2 = getPxFromCoordinate(
                 views[level2],
+                f2.get('refName'),
                 c2[f2.get('strand') === -1 ? RIGHT : LEFT],
               )
 
