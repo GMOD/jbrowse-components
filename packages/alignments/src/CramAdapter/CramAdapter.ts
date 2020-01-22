@@ -205,60 +205,53 @@ export default class CramAdapter extends BaseAdapter {
     })
   }
 
+  /**
+   * Fetch stats for a certain region. Uses BaseAdapter's generate sample
+   * to gather a range for getRecordsForRange to use, then calculates
+   * and sums feature density for each record and returns
+   * If calculate density returns a falsy value (0), recurse by doubling
+   * the interval/length which is initially 100
+   * @param {Any} regions set to any so BaseAdapter doesn't complain when accessing
+   * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
+   * @param {Number} length used to generate record range, doubles til condition hit
+   * @returns {Stats} Estimated stats of this region used for domain and rendering
+   */
   public async getMultiRegionStats(
     regions: any,
     opts: BaseOptions = {},
     length: number
   ):Promise<Stats>{
-    // const defaultDomain = {scoreMin: 0, scoreMax: 0}
 
-    // if(regions.length > 0){
-    //   const sample = await this.generateSample(regions[0], length)
-    //   await this.setup(opts)
-    //   if (this.sequenceAdapter && !this.seqIdToRefName) {
-    //     this.seqIdToRefName = await this.sequenceAdapter.getRefNames(opts)
-    //   }
-    //   const refId = this.refNameToId(regions[0].refName)
-    //   this.seqIdToOriginalRefName[refId] =
-    //     (opts.originalRegion || {}).refName || regions[0].refName
-    //   const records = await this.cram.getRecordsForRange(
-    //     sample.refName, 
-    //     sample.sampleStart, 
-    //     sample.sampleEnd, 
-    //     opts
-    //   )
-    //   checkAbortSignal(opts.signal)
-    //   const results = await this.calculateDensity(
-    //     sample.sampleStart, 
-    //     sample.sampleEnd, 
-    //     regions[0], 
-    //     records, 
-    //     length
-    //   )
-    //   return results.scoreMax > 0 ? {scoreMin: 0, scoreMax: results.scoreMax} : this.getMultiRegionStats(regions, opts, length * 2)
-    // }
-    // else return defaultDomain
+    if(regions.length === 0) return {scoreMin: 0, scoreMax: 0}
 
-    // working but renders slower (see BamAdapter.ts file)
+    const sample = await this.generateSample(regions[0], length)
+
+    await this.setup(opts)
     if (this.sequenceAdapter && !this.seqIdToRefName) {
       this.seqIdToRefName = await this.sequenceAdapter.getRefNames(opts)
     }
-    const refId = this.refNameToId(regions[0].refName)
+    const refId = this.refNameToId(sample.refName)
     this.seqIdToOriginalRefName[refId] =
-      (opts.originalRegion || {}).refName || regions[0].refName
-    
-      const stats = regions[0]
-      ? await this.estimateStats(
-          regions[0],
-          opts,
-          length,
-          await this.setup(opts),
-          this.cram,
-        )
-      : { scoreMin: 0, scoreMax: 0 }
-      checkAbortSignal(opts.signal)
-      return {scoreMin: stats.scoreMin, scoreMax: stats.scoreMax}
-  }
+      (opts.originalRegion || {}).refName || sample.refName
+    const records = await this.cram.getRecordsForRange(
+      refId, 
+      sample.sampleStart, 
+      sample.sampleEnd, 
+      opts
+    )
+    checkAbortSignal(opts.signal)
+
+    let calculateDensity = new Array
+    records.forEach(function iterate(feature: any, index: number) {
+      if (feature.alignmentStart < sample.sampleStart) return
+      calculateDensity.push({
+        featureDensity: feature.lengthOnRef / length
+      })
+    })
+    const results = await this.checkDensity(regions[0], calculateDensity, length)
+
+    return results.scoreMax > 0 ? {scoreMin: 0, scoreMax: results.scoreMax} : this.getMultiRegionStats(regions, opts, length * 2)
+}
   
   /**
    * called to provide a hint that data tied to a certain region

@@ -113,22 +113,25 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
           bpPerPx < 10
             ? feature.get('mismatches')
             : feature.get('skips_and_dels')
+
         // loops through mismatches and updates coverage variables accordingly.
-        for (let i = 0; i < mismatches.length; i++) {
-          const mismatch = mismatches[i]
-          forEachBin(
-            feature.get('start') + mismatch.start,
-            feature.get('start') + mismatch.start + mismatch.length,
-            function calcSNPCoverage(binNum: number, overlap: number) {
-              // Note: we decrement 'reference' so that total of the score is the total coverage
-              const bin = coverageBins[binNum]
-              bin.getNested('reference').decrement(strand, overlap)
-              let { base } = mismatch
-              if (mismatch.type === 'insertion') base = `ins ${base}`
-              else if (mismatch.type === 'skip') base = 'skip'
-              bin.getNested(base).increment(strand, overlap)
-            },
-          )
+        if(mismatches){
+          for (let i = 0; i < mismatches.length; i++) {
+            const mismatch = mismatches[i]
+            forEachBin(
+              feature.get('start') + mismatch.start,
+              feature.get('start') + mismatch.start + mismatch.length,
+              function calcSNPCoverage(binNum: number, overlap: number) {
+                // Note: we decrement 'reference' so that total of the score is the total coverage
+                const bin = coverageBins[binNum]
+                bin.getNested('reference').decrement(strand, overlap)
+                let { base } = mismatch
+                if (mismatch.type === 'insertion') base = `ins ${base}`
+                else if (mismatch.type === 'skip') base = 'skip'
+                bin.getNested(base).increment(strand, overlap)
+              },
+            )
+          }
         }
       }
     }

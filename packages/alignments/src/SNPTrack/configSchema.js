@@ -50,17 +50,11 @@ export default pluginManager => {
 
       defaultRendering: {
         type: 'stringEnum',
-        model: types.enumeration(
-          'Rendering',
-          ['snpxy'] /* ['density', 'xyplot', 'line'] */,
-        ),
+        model: types.enumeration('Rendering', ['snpxy']),
         defaultValue: 'snpxy',
       },
 
       renderers: ConfigurationSchema('RenderersConfiguration', {
-        // DensityRenderer: DensityRendererConfigSchema,
-        // XYPlotRenderer: XYPlotRendererConfigSchema,
-        // LinePlotRenderer: LinePlotRendererConfigSchema,
         SNPXYRenderer: SNPXYRendererConfigSchema,
       }),
     },

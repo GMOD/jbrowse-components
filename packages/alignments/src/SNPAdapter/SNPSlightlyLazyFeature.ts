@@ -228,7 +228,6 @@ export default class implements Feature {
     const { cigarAttributeName, mdAttributeName } = opts
     let mismatches: Mismatch[] = []
     let cigarOps: CigarOp[] = []
-
     // parse the CIGAR tag if it has one
     const cigarString = this.get(cigarAttributeName)
     if (cigarString) {

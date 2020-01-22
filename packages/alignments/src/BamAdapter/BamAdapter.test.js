@@ -71,28 +71,36 @@ test('test usage of getMultiRegion stats, adapter can generate a domain', async 
     },
   })
 
-  const stats = await adapter.getMultiRegionStats({
-    regions: {
-      refName: 'ctgA',
-      start: 0,
-      end: 100,
-      parentRegion: {
+  const stats = await adapter.getMultiRegionStats(
+    [
+      {
         refName: 'ctgA',
         start: 0,
-        end: 10000,
+        end: 100,
+        parentRegion: {
+          refName: 'ctgA',
+          start: 0,
+          end: 10000,
+        },
+      },
+    ],
+    {
+      opts: {
+        signal: {
+          aborted: false,
+          onabort: null,
+        },
+        bpPerPx: 0.2,
       },
     },
-    opts: {
-      signal: {
-        aborted: false,
-        onabort: null,
-      },
-      bpPerPx: 0.2,
-    },
-    length: 100,
-  })
-  const statsArray = await stats.pipe(toArray()).toPromise()
-  const s = statsArray[0].toJSON()
-  expect(s.scoreMin).toBe(0)
-  expect(s.scoreMax).toBeTruthy()
+    100,
+  )
+
+  expect(stats).toEqual(
+    expect.objectContaining({
+      scoreMin: 0,
+      scoreMax: expect.any(Number),
+    }),
+  )
+  expect(stats.scoreMax).toBeGreaterThan(0)
 })

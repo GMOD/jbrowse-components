@@ -128,3 +128,47 @@ test('test usage of cramSlightlyLazyFeature toJSON (used in the drawer widget)',
   // don't pass the mismatches to the frontend
   expect(f.mismatches).toEqual(undefined)
 })
+
+test('test usage of getMultiRegion stats, adapter can generate a domain', async () => {
+  const adapter = new Adapter({
+    cramLocation: {
+      localPath: require.resolve('../../test_data/volvox-sorted.cram'),
+    },
+    craiLocation: {
+      localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
+    },
+  })
+
+  const stats = await adapter.getMultiRegionStats(
+    [
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 100,
+        parentRegion: {
+          refName: 'ctgA',
+          start: 0,
+          end: 10000,
+        },
+      },
+    ],
+    {
+      opts: {
+        signal: {
+          aborted: false,
+          onabort: null,
+        },
+        bpPerPx: 0.2,
+      },
+    },
+    100,
+  )
+
+  expect(stats).toEqual(
+    expect.objectContaining({
+      scoreMin: 0,
+      scoreMax: expect.any(Number),
+    }),
+  )
+  expect(stats.scoreMax).toBeGreaterThan(0)
+})

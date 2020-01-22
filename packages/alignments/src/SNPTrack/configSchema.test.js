@@ -1,14 +1,9 @@
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import BoxRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
-import {
-  configSchema as svgFeatureRendererConfigSchema,
-  ReactComponent as SvgFeatureRendererReactComponent,
-} from '@gmod/jbrowse-plugin-svg/src/SvgFeatureRenderer'
-import PileupRenderer, {
-  configSchema as pileupRendererConfigSchema,
-  ReactComponent as PileupRendererReactComponent,
-} from '../PileupRenderer' // change renderer
+import SNPXYRenderer, {
+  configSchema as snpXYRendererConfigSchema,
+  ReactComponent as SNPXYRendererReactComponent,
+} from '../SNPXYRenderer' // change renderer
 import configSchemaFactory from './configSchema'
 
 // mock warnings to avoid unnecessary outputs
@@ -20,27 +15,14 @@ afterEach(() => {
   console.warn.mockRestore()
 })
 // change renderer
-class PileupRendererPlugin extends Plugin {
+class SNPXYRendererPlugin extends Plugin {
   install(pluginManager) {
     pluginManager.addRendererType(
       () =>
-        new PileupRenderer({
-          name: 'PileupRenderer',
-          ReactComponent: PileupRendererReactComponent,
-          configSchema: pileupRendererConfigSchema,
-        }),
-    )
-  }
-}
-// change renderer
-class SvgFeatureRendererPlugin extends Plugin {
-  install(pluginManager) {
-    pluginManager.addRendererType(
-      () =>
-        new BoxRendererType({
-          name: 'SvgFeatureRenderer',
-          ReactComponent: SvgFeatureRendererReactComponent,
-          configSchema: svgFeatureRendererConfigSchema,
+        new SNPXYRenderer({
+          name: 'SNPXYRenderer',
+          ReactComponent: SNPXYRendererReactComponent,
+          configSchema: snpXYRendererConfigSchema,
         }),
     )
   }
@@ -48,15 +30,12 @@ class SvgFeatureRendererPlugin extends Plugin {
 
 test('has a viewType attr', () => {
   const configSchema = configSchemaFactory(
-    new PluginManager([
-      new PileupRendererPlugin(),
-      new SvgFeatureRendererPlugin(),
-    ]).configure(),
+    new PluginManager([new SNPXYRendererPlugin()]).configure(),
   )
   const config = configSchema.create({
-    type: 'AlignmentsTrack',
-
-    name: 'Zonker Track',
+    type: 'SNPTrack',
+    trackId: 'track1',
+    name: 'SNPZonker Track',
   })
   expect(config.viewType).toEqual('LinearGenomeView')
 })

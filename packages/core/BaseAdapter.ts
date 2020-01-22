@@ -12,16 +12,18 @@ export interface BaseOptions {
   [key: string]: any
 }
 
-export interface SampleInfo {
+interface SampleInfo {
   refName: string,
   sampleStart: number,
   sampleEnd: number,
 }
-export interface Results{
+
+interface Results{
   scoreMin: number,
   scoreMax: number,
 }
-export interface InnerRegion{
+
+interface InnerRegion{
   refName: string,
   start: number,
   end: number,
@@ -38,6 +40,11 @@ export interface InnerRegion{
   isRightEndOfDisplayedRegion: boolean,
   widthPx: number
 }
+
+interface FeatureInfo{
+  featureDensity: number
+}
+
 
 /**
  * Base class for adapters to extend. Defines some methods that subclasses must
@@ -147,38 +154,26 @@ export default abstract class BaseAdapter {
   }
 
   /**
-   * Calculates stats by summing feature density in each record
-   * Used in conjuction with generateSample()
-   * Return truthy value if enough records sampled for good estimate
-   * Else return 0 as a falsy value
-   * @param {Number} start sampleStart value from generateSample()
-   * @param {Number} end sampleEnd value from generateSample()
+   * Checks the density and amount of results to see if adequate
+   * number of results are used to get a domain. If not will recurse
    * @param {InnerRegion} region see generateSample()
-   * @param {Array<any>} records records receieved from start to end range
+   * @param {Array<any>} results results of each feature's density
    * @param {Number} length see generateSample()
    * @returns {Results} stats from summing all feature densities
    */
-  public async calculateDensity(
-    start: number,
-    end: number,
+  public async checkDensity(
     regions: InnerRegion,
-    records: Array<any>,
+    results: Array<FeatureInfo>,
     length: number,
   ): Promise<Results> {
-    let results = new Array
-
-    records.forEach(function iterate(feature, index) {
-      if (feature.get('start') < start || feature.get('end') > end) return
-      results.push({
-        featureDensity: feature.get('length_on_ref') / length
-      })
-    })
-
-    if (results.length >= 300 || length * 2 > regions.parentRegion.end - regions.parentRegion.start) {
-      const total = results.reduce((a, b) => a + (b['featureDensity'] || 0), 0)
-      return {scoreMin: 0, scoreMax: Math.ceil(total * 2)}
+    if (
+      results.length >= 300 ||
+      length * 2 > regions.parentRegion.end - regions.parentRegion.start
+    ) {
+      const total = results.reduce((a, b) => a + (b.featureDensity || 0), 0)
+      return { scoreMin: 0, scoreMax: Math.ceil(total * 2) }
     }
-    else return {scoreMin: 0, scoreMax: 0}
+    else return { scoreMin: 0, scoreMax: 0} 
   }
 
   /** Unified of the two above, works but renders slower for some reason
@@ -213,9 +208,12 @@ export default abstract class BaseAdapter {
       })
     })
 
-    if (results.length >= 300 || length * 2 > regions.parentRegion.end - regions.parentRegion.start) {
-      const total = results.reduce((a, b) => a + (b['featureDensity'] || 0), 0)
-      return {scoreMin: 0, scoreMax: Math.ceil(total * 2)}
+    if (
+      results.length >= 300 ||
+      length * 2 > regions.parentRegion.end - regions.parentRegion.start
+    ) {
+      const total = results.reduce((a, b) => a + (b.featureDensity || 0), 0)
+      return { scoreMin: 0, scoreMax: Math.ceil(total * 2) }
     }
     else return this.estimateStats(regions, opts, length * 2, setup, file)
   }
