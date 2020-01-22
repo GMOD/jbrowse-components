@@ -936,13 +936,16 @@
             "Coverage"
           ],
           "adapter": {
-            "type": "BamAdapter",
-            "bamLocation": {
-              "uri": "test_data/volvox-sorted.bam"
-            },
-            "index": {
-              "location": {
-                "uri": "test_data/volvox-sorted.bam.bai"
+            "type": "SNPAdapter",
+            "subadapter": {
+              "type": "BamAdapter",
+              "bamLocation": {
+                "uri": "test_data/volvox-sorted.bam"
+              },
+              "index": {
+                "location": {
+                  "uri": "test_data/volvox-sorted.bam.bai"
+                }
               }
             }
           },

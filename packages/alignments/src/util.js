@@ -119,3 +119,4 @@ export function getNiceDomain({ scaleType, domain, bounds }) {
   scale.nice()
   return scale.domain()
 }
+

@@ -13,8 +13,8 @@ interface HeaderLine {
   tag: string
   value: string
 }
-interface Stats{
-  scoreMin: number,
+interface Stats {
+  scoreMin: number
   scoreMax: number
 }
 export default class CramAdapter extends BaseAdapter {
@@ -219,10 +219,9 @@ export default class CramAdapter extends BaseAdapter {
   public async getMultiRegionStats(
     regions: any,
     opts: BaseOptions = {},
-    length: number
-  ):Promise<Stats>{
-
-    if(regions.length === 0) return {scoreMin: 0, scoreMax: 0}
+    length: number,
+  ): Promise<Stats> {
+    if (regions.length === 0) return { scoreMin: 0, scoreMax: 0 }
 
     const sample = await this.generateSample(regions[0], length)
 
@@ -234,25 +233,31 @@ export default class CramAdapter extends BaseAdapter {
     this.seqIdToOriginalRefName[refId] =
       (opts.originalRegion || {}).refName || sample.refName
     const records = await this.cram.getRecordsForRange(
-      refId, 
-      sample.sampleStart, 
-      sample.sampleEnd, 
-      opts
+      refId,
+      sample.sampleStart,
+      sample.sampleEnd,
+      opts,
     )
     checkAbortSignal(opts.signal)
 
-    let calculateDensity = new Array
+    const calculateDensity = []
     records.forEach(function iterate(feature: any, index: number) {
       if (feature.alignmentStart < sample.sampleStart) return
       calculateDensity.push({
-        featureDensity: feature.lengthOnRef / length
+        featureDensity: feature.lengthOnRef / length,
       })
     })
-    const results = await this.checkDensity(regions[0], calculateDensity, length)
+    const results = await this.checkDensity(
+      regions[0],
+      calculateDensity,
+      length,
+    )
 
-    return results.scoreMax > 0 ? {scoreMin: 0, scoreMax: results.scoreMax} : this.getMultiRegionStats(regions, opts, length * 2)
-}
-  
+    return results.scoreMax > 0
+      ? { scoreMin: 0, scoreMax: results.scoreMax }
+      : this.getMultiRegionStats(regions, opts, length * 2)
+  }
+
   /**
    * called to provide a hint that data tied to a certain region
    * will not be needed for the forseeable future and can be purged

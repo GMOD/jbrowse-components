@@ -1,6 +1,10 @@
 import { BamFile } from '@gmod/bam'
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
-import { IFileLocation, IRegion, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import {
+  IFileLocation,
+  IRegion,
+  INoAssemblyRegion,
+} from '@gmod/jbrowse-core/mst-types'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
@@ -18,8 +22,8 @@ interface Header {
   idToName: string[]
   nameToId: Record<string, number>
 }
-interface Stats{
-  scoreMin: number,
+interface Stats {
+  scoreMin: number
   scoreMax: number
 }
 
@@ -125,31 +129,41 @@ export default class extends BaseAdapter {
   public async getMultiRegionStats(
     regions: any,
     opts: BaseOptions = {},
-    length: number
-  ):Promise<Stats>{
-    if(regions.length === 0) return {scoreMin: 0, scoreMax: 0}
+    length: number,
+  ): Promise<Stats> {
+    if (regions.length === 0) return { scoreMin: 0, scoreMax: 0 }
 
     const sample = await this.generateSample(regions[0], length)
 
     this.samHeader = await setup(this.bam)
     const records = await this.bam.getRecordsForRange(
-      sample.refName, 
-      sample.sampleStart, 
-      sample.sampleEnd, 
-      opts
+      sample.refName,
+      sample.sampleStart,
+      sample.sampleEnd,
+      opts,
     )
     checkAbortSignal(opts.signal)
 
-    let calculateDensity = new Array
+    const calculateDensity = []
     records.forEach(function iterate(feature, index) {
-      if (feature.get('start') < sample.sampleStart || feature.get('end') > sample.sampleEnd) return
+      if (
+        feature.get('start') < sample.sampleStart ||
+        feature.get('end') > sample.sampleEnd
+      )
+        return
       calculateDensity.push({
-        featureDensity: feature.get('length_on_ref') / length
+        featureDensity: feature.get('length_on_ref') / length,
       })
     })
 
-    const results = await this.checkDensity(regions[0], calculateDensity, length)
-    return results.scoreMax > 0 ? {scoreMin: 0, scoreMax: results.scoreMax} : this.getMultiRegionStats(regions, opts, length * 2)
+    const results = await this.checkDensity(
+      regions[0],
+      calculateDensity,
+      length,
+    )
+    return results.scoreMax > 0
+      ? { scoreMin: 0, scoreMax: results.scoreMax }
+      : this.getMultiRegionStats(regions, opts, length * 2)
   }
 
   /**
@@ -157,7 +171,7 @@ export default class extends BaseAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    */
-  freeResources(/* { region } */): void { }
+  freeResources(/* { region } */): void {}
 
   // depends on setup being called before the BAM constructor
   refIdToName(refId: number): string | undefined {

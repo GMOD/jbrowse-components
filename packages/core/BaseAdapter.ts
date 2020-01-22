@@ -13,38 +13,37 @@ export interface BaseOptions {
 }
 
 interface SampleInfo {
-  refName: string,
-  sampleStart: number,
-  sampleEnd: number,
+  refName: string
+  sampleStart: number
+  sampleEnd: number
 }
 
-interface Results{
-  scoreMin: number,
-  scoreMax: number,
+interface Results {
+  scoreMin: number
+  scoreMax: number
 }
 
-interface InnerRegion{
-  refName: string,
-  start: number,
-  end: number,
-  assemblyName: string,
-  key: string,
+interface InnerRegion {
+  refName: string
+  start: number
+  end: number
+  assemblyName: string
+  key: string
   parentRegion: {
-    refName: string,
-    start: number,
-    end: number,
+    refName: string
+    start: number
+    end: number
     assemblyName: string
-  },
-  offsetPx: number,
-  isLeftEndOfDisplayedRegion: boolean,
-  isRightEndOfDisplayedRegion: boolean,
+  }
+  offsetPx: number
+  isLeftEndOfDisplayedRegion: boolean
+  isRightEndOfDisplayedRegion: boolean
   widthPx: number
 }
 
-interface FeatureInfo{
+interface FeatureInfo {
   featureDensity: number
 }
-
 
 /**
  * Base class for adapters to extend. Defines some methods that subclasses must
@@ -142,7 +141,7 @@ export default abstract class BaseAdapter {
   public async generateSample(
     region: InnerRegion,
     length: number,
-  ): Promise<SampleInfo>{
+  ): Promise<SampleInfo> {
     const { refName, start, end } = region
     const sampleCenter = start * 0.75 + end * 0.25
 
@@ -173,7 +172,7 @@ export default abstract class BaseAdapter {
       const total = results.reduce((a, b) => a + (b.featureDensity || 0), 0)
       return { scoreMin: 0, scoreMax: Math.ceil(total * 2) }
     }
-    else return { scoreMin: 0, scoreMax: 0} 
+    return { scoreMin: 0, scoreMax: 0 }
   }
 
   /** Unified of the two above, works but renders slower for some reason
@@ -195,16 +194,22 @@ export default abstract class BaseAdapter {
     const sampleCenter = start * 0.75 + end * 0.25
     const sampleStart = Math.max(0, Math.round(sampleCenter - length / 2))
     const sampleEnd = Math.max(Math.round(sampleCenter + length / 2), end)
-    
-    let results = new Array
+
+    const results = []
     setup
-    const records = await file.getRecordsForRange(refName, sampleStart, sampleEnd, opts)
+    const records = await file.getRecordsForRange(
+      refName,
+      sampleStart,
+      sampleEnd,
+      opts,
+    )
     checkAbortSignal(opts.signal)
 
     records.forEach(function iterate(feature: any, index: number) {
-      if (feature.get('start') < sampleStart || feature.get('end') > sampleEnd) return
+      if (feature.get('start') < sampleStart || feature.get('end') > sampleEnd)
+        return
       results.push({
-        featureDensity: feature.get('length_on_ref') / length
+        featureDensity: feature.get('length_on_ref') / length,
       })
     })
 
@@ -215,7 +220,7 @@ export default abstract class BaseAdapter {
       const total = results.reduce((a, b) => a + (b.featureDensity || 0), 0)
       return { scoreMin: 0, scoreMax: Math.ceil(total * 2) }
     }
-    else return this.estimateStats(regions, opts, length * 2, setup, file)
+    return this.estimateStats(regions, opts, length * 2, setup, file)
   }
 
   /**

@@ -17,6 +17,10 @@ import {
   modelFactory as snpTrackModelFactory,
 } from './SNPTrack'
 import {
+  AdapterClass as SnpAdapterClass,
+  configSchema as snpAdapterConfigSchema,
+} from './SNPAdapter'
+import {
   AdapterClass as BamAdapterClass,
   configSchema as bamAdapterConfigSchema,
 } from './BamAdapter'
@@ -70,7 +74,14 @@ export default class extends Plugin {
           AdapterClass: BamAdapterClass,
         }),
     )
-
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'SNPAdapter',
+          configSchema: snpAdapterConfigSchema,
+          AdapterClass: SnpAdapterClass,
+        }),
+    )
     pluginManager.addAdapterType(
       () =>
         new AdapterType({

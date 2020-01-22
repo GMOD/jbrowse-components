@@ -38,7 +38,7 @@ interface LayoutRecord {
   heightPx: number
 }
 
-// will be changing to an XYPlot renderer, may not need it's own 
+// will be changing to an XYPlot renderer, may not need it's own
 export default class extends BoxRendererType {
   layoutFeature(
     feature: Feature,

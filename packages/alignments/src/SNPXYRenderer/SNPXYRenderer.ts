@@ -8,7 +8,7 @@ import NestedFrequencyTable from '../NestedFrequencyTable'
 import { Mismatch } from '../SNPAdapter/SNPSlightlyLazyFeature'
 import { getOrigin, getScale } from '../util'
 
-interface SNPXYRendererProps{
+interface SNPXYRendererProps {
   features: Map<string, Feature>
   layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
   config: any // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -29,7 +29,7 @@ interface SNPXYRendererProps{
 }
 
 export default class SNPXYRenderer extends SNPBaseRenderer {
-  generateCoverageBins(props: SNPXYRendererProps){
+  generateCoverageBins(props: SNPXYRendererProps) {
     const {
       features,
       region,
@@ -54,7 +54,11 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       if (binWidth === 1) coverageBins[i].snpsCounted = true
     }
 
-    const forEachBin = function forEachBin(start: number, end: number, callback: any) {
+    const forEachBin = function forEachBin(
+      start: number,
+      end: number,
+      callback: any,
+    ) {
       let s = (start - leftBase) / binWidth
       let e = (end - 1 - leftBase) / binWidth
       let sb = Math.floor(s)
@@ -84,26 +88,29 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     }
 
     function getStrand(feature: Feature) {
-      const result = feature.get('strand');
+      const result = feature.get('strand')
       let strand = ''
-      switch(result){
+      switch (result) {
         case -1:
           strand = '-'
-          break;
+          break
         case 1:
           strand = '+'
-          break;
+          break
         default:
           strand = 'unstranded'
-          break;
+          break
       }
       return strand
     }
 
-    for(const feature of features.values()){ 
+    for (const feature of features.values()) {
       const strand = getStrand(feature)
       // increment start and end partial-overlap bins by proportion of overlap
-      forEachBin(feature.get('start'), feature.get('end'), function(bin: number, overlap: number) {
+      forEachBin(feature.get('start'), feature.get('end'), function(
+        bin: number,
+        overlap: number,
+      ) {
         coverageBins[bin].getNested('reference').increment(strand, overlap)
       })
 
@@ -115,7 +122,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
             : feature.get('skips_and_dels')
 
         // loops through mismatches and updates coverage variables accordingly.
-        if(mismatches){
+        if (mismatches) {
           for (let i = 0; i < mismatches.length; i++) {
             const mismatch = mismatches[i]
             forEachBin(
@@ -138,8 +145,12 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     return coverageBins
   }
 
-  //use coverage bins generated above to draw
-  draw(ctx: CanvasRenderingContext2D, props: SNPXYRendererProps, coverageBins: Array<NestedFrequencyTable>) {
+  // use coverage bins generated above to draw
+  draw(
+    ctx: CanvasRenderingContext2D,
+    props: SNPXYRendererProps,
+    coverageBins: Array<NestedFrequencyTable>,
+  ) {
     const {
       features,
       region,
@@ -149,7 +160,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       config,
       horizontallyFlipped,
     } = props
-    
+
     const viewScale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = viewScale.domain()
@@ -164,7 +175,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(bpPerPx)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
     const insRegex = /^ins.[A-Za-z0-9]/
-    let featureList = new Array
+    const featureList = []
     // A: green, C: blue, g: orange, t: red, deletion: dark grey, total: light grey
     const colorForBase: { [key: string]: string } = {
       A: '#00bf00',
@@ -175,31 +186,40 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       total: 'lightgrey',
     }
 
-    coverageBins.forEach( function(currentBin: NestedFrequencyTable, index: number){
+    coverageBins.forEach(function(
+      currentBin: NestedFrequencyTable,
+      index: number,
+    ) {
       const xposition = bpPerPx > 10 ? binWidth * index : scale * index
       const snpWidth = bpPerPx > 10 ? binWidth : scale
       const score = currentBin.total()
 
       // draw total
-      ctx.fillStyle = colorForBase['total']
+      ctx.fillStyle = colorForBase.total
       ctx.fillRect(xposition, toY(score), snpWidth, toHeight(score))
 
-
-      //generate array with nestedtable's info, draw mismatches
+      // generate array with nestedtable's info, draw mismatches
       const infoArray = currentBin.generateInfoList()
-      infoArray.forEach(function iterate(mismatch, mismatchindex){
-        if(mismatch.base === 'reference' || mismatch.base === 'total') return
-        ctx.fillStyle = mismatch.base.match(insRegex)  ? 'darkgrey' : colorForBase[mismatch.base]
-        ctx.fillRect(xposition, toY(mismatch.score), scale, toHeight(mismatch.score))
+      infoArray.forEach(function iterate(mismatch, mismatchindex) {
+        if (mismatch.base === 'reference' || mismatch.base === 'total') return
+        ctx.fillStyle = mismatch.base.match(insRegex)
+          ? 'darkgrey'
+          : colorForBase[mismatch.base]
+        ctx.fillRect(
+          xposition,
+          toY(mismatch.score),
+          scale,
+          toHeight(mismatch.score),
+        )
       })
-      
-      //list to be sent to props
-      if(!featureList.map((e) => e.position).includes(leftBase+index)){      
+
+      // list to be sent to props
+      if (!featureList.map(e => e.position).includes(leftBase + index)) {
         featureList.push({
           info: infoArray,
-          position: leftBase + index
+          position: leftBase + index,
         })
-     }
+      }
     })
     return featureList
   }
