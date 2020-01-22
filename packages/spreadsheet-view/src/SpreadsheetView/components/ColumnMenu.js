@@ -4,6 +4,7 @@ export default pluginManager => {
   const React = jbrequire('react')
   const { useState, useRef } = React
 
+  const { makeStyles } = jbrequire('@material-ui/core/styles')
   const Icon = jbrequire('@material-ui/core/Icon')
   const Menu = jbrequire('@material-ui/core/Menu')
   const MenuItem = jbrequire('@material-ui/core/MenuItem')
@@ -11,6 +12,13 @@ export default pluginManager => {
   const ListItemText = jbrequire('@material-ui/core/ListItemText')
 
   const { iterMap } = jbrequire('@gmod/jbrowse-core/util')
+
+  const useStyles = makeStyles((/* theme */) => {
+    return {
+      sortIcon: { minWidth: 28 },
+      sortCheckmark: { minWidth: 28 },
+    }
+  })
 
   const DataTypeSubMenu = observer(
     ({
@@ -83,6 +91,8 @@ export default pluginManager => {
 
   const ColumnMenu = observer(
     ({ viewModel, spreadsheetModel, currentColumnMenu, setColumnMenu }) => {
+      const classes = useStyles()
+
       const columnMenuClose = () => {
         setDataTypeMenuOpen(false)
         setColumnMenu(null)
@@ -137,11 +147,22 @@ export default pluginManager => {
           spreadsheetModel.columns[columnNumber].dataType.displayName) ||
         ''
 
-      const isSorting = Boolean(
+      const isSortingAscending = Boolean(
         spreadsheetModel.sortColumns.length &&
           currentColumnMenu &&
           spreadsheetModel.sortColumns.find(
-            col => col.columnNumber === currentColumnMenu.colNumber,
+            col =>
+              col.columnNumber === currentColumnMenu.colNumber &&
+              !col.descending,
+          ),
+      )
+      const isSortingDescending = Boolean(
+        spreadsheetModel.sortColumns.length &&
+          currentColumnMenu &&
+          spreadsheetModel.sortColumns.find(
+            col =>
+              col.columnNumber === currentColumnMenu.colNumber &&
+              col.descending,
           ),
       )
       function stopSortingClick() {
@@ -168,25 +189,39 @@ export default pluginManager => {
               horizontal: 'right',
             }}
           >
-            {!isSorting ? null : (
-              <MenuItem onClick={stopSortingClick}>
-                <ListItemIcon>
-                  <Icon fontSize="small">clear</Icon>
-                </ListItemIcon>
-                <ListItemText primary="Stop sorting" />
-              </MenuItem>
-            )}
-            <MenuItem onClick={sortMenuClick.bind(null, false)}>
-              <ListItemIcon>
+            <MenuItem
+              onClick={
+                isSortingAscending
+                  ? stopSortingClick
+                  : sortMenuClick.bind(null, false)
+              }
+            >
+              <ListItemIcon className={classes.sortIcon}>
                 <Icon style={{ transform: 'scale(1,-1)' }} fontSize="small">
                   sort
                 </Icon>
               </ListItemIcon>
+              <ListItemIcon className={classes.sortCheckmark}>
+                <Icon fontSize="small">
+                  {isSortingAscending ? 'check' : 'blank'}
+                </Icon>
+              </ListItemIcon>{' '}
               <ListItemText primary="Sort ascending" />
             </MenuItem>
-            <MenuItem onClick={sortMenuClick.bind(null, true)}>
-              <ListItemIcon>
+            <MenuItem
+              onClick={
+                isSortingDescending
+                  ? stopSortingClick
+                  : sortMenuClick.bind(null, true)
+              }
+            >
+              <ListItemIcon className={classes.sortIcon}>
                 <Icon fontSize="small">sort</Icon>
+              </ListItemIcon>
+              <ListItemIcon className={classes.sortCheckmark}>
+                <Icon fontSize="small">
+                  {isSortingDescending ? 'check' : 'blank'}
+                </Icon>
               </ListItemIcon>
               <ListItemText primary="Sort descending" />
             </MenuItem>
@@ -210,7 +245,7 @@ export default pluginManager => {
                 <ListItemIcon>
                   <Icon fontSize="small">filter_list</Icon>
                 </ListItemIcon>
-                <ListItemText primary="Filter on this" />
+                <ListItemText primary="Create filter" />
               </MenuItem>
             )}
           </Menu>
