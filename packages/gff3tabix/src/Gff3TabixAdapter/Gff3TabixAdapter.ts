@@ -30,6 +30,8 @@ export default class extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected gff: any
 
+  protected dontRedispatch: string[]
+
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: {
@@ -38,12 +40,15 @@ export default class extends BaseAdapter {
       index: string
       location: IFileLocation
     }
+    dontRedispatch: string[]
   }) {
     super()
     const {
       gffGzLocation,
       index: { location: indexLocation, index: indexType },
+      dontRedispatch,
     } = config
+    console.log(config)
     const gffGzOpts: {
       filehandle: GenericFilehandle
       tbiFilehandle?: GenericFilehandle
@@ -60,6 +65,7 @@ export default class extends BaseAdapter {
     } else {
       gffGzOpts.tbiFilehandle = indexFile
     }
+    this.dontRedispatch = dontRedispatch
     this.gff = new TabixIndexedFile(gffGzOpts)
   }
 
@@ -108,8 +114,7 @@ export default class extends BaseAdapter {
         // only expand redispatch range if the feature is not in dontRedispatch,
         // and is a top-level feature
         if (
-          true
-          // !this.dontRedispatch.includes(featureType) &&
+          !this.dontRedispatch.includes(featureType)
           // this._isTopLevelFeatureType(featureType)
         ) {
           const start = line.start - 1 // gff is 1-based

@@ -21,6 +21,14 @@ export const configSchema = ConfigurationSchema(
         defaultValue: { uri: '/path/to/my.gff.gz.tbi' },
       },
     }),
+    dontRedispatch: {
+      type: 'stringArray',
+      defaultValue: ['chromosome', 'region'],
+    },
+    wtf: {
+      type: 'string',
+      defaultValue: 'wtf2',
+    },
   },
   { explicitlyTyped: true },
 )

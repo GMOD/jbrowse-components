@@ -196,7 +196,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
   if (trackAssemblyData.sequence) {
     sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
   }
-
+  console.log(getConf(track, 'adapter'))
   return {
     rendererType,
     rpcManager,
