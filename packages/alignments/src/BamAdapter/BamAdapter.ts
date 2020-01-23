@@ -1,10 +1,6 @@
 import { BamFile } from '@gmod/bam'
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
-import {
-  IFileLocation,
-  IRegion,
-  INoAssemblyRegion,
-} from '@gmod/jbrowse-core/mst-types'
+import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
@@ -25,6 +21,9 @@ interface Header {
 interface Stats {
   scoreMin: number
   scoreMax: number
+}
+interface Density {
+  featureDensity: number
 }
 
 const setup = memoize(async (bam: BamFile) => {
@@ -116,18 +115,14 @@ export default class extends BaseAdapter {
   }
 
   /**
-   * Fetch stats for a certain region. Uses BaseAdapter's generate sample
-   * to gather a range for getRecordsForRange to use, then calculates
-   * and sums feature density for each record and returns
-   * If calculate density returns a falsy value (0), recurse by doubling
-   * the interval/length which is initially 100
+   * Fetch estimates global stats for multiple regions. currently not in use
    * @param {Any} regions set to any so BaseAdapter doesn't complain when accessing
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @param {Number} length used to generate record range, doubles til condition hit
    * @returns {Stats} Estimated stats of this region used for domain and rendering
    */
   public async getMultiRegionStats(
-    regions: any,
+    regions: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     opts: BaseOptions = {},
     length: number,
   ): Promise<Stats> {
@@ -144,7 +139,7 @@ export default class extends BaseAdapter {
     )
     checkAbortSignal(opts.signal)
 
-    const calculateDensity = new Array
+    const calculateDensity: Array<Density> = []
     records.forEach(function iterate(feature, index) {
       if (
         feature.get('start') < sample.sampleStart ||

@@ -11,23 +11,39 @@ function SNPXYPlotRendererPlugin() {
 test('several features', async () => {
   const result = await SNPXYPlotRendererPlugin().makeImageData({
     features: [
-      new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
-      new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
+      new SimpleFeature({
+        id: 't1',
+        data: {
+          start: 1,
+          end: 100,
+          score: 1,
+          snpinfo: [
+            { base: 'reference', score: 2, strands: { '-': 1, '+': 1 } },
+            { base: 'total', score: 2 },
+          ],
+        },
+      }),
+      new SimpleFeature({
+        id: 't2',
+        data: {
+          start: 101,
+          end: 200,
+          score: 3,
+          snpinfo: [
+            { base: 'reference', score: 2, strands: { '-': 1, '+': 1 } },
+            { base: 'A', score: 1, strands: { '-': 1 } },
+            { base: 'total', score: 3 },
+          ],
+        },
+      }),
     ],
-    region: {
-      end: 100,
-      start: 1,
-    },
-    scaleOpts: {
-      domain: [0, 50],
-      scaleType: 'linear',
-    },
+    region: { end: 100, start: 1 },
+    scaleOpts: { domain: [0, 50], scaleType: 'linear' },
     config: {},
     bpPerPx: 3,
     highResolutionScaling: 1,
     horizontallyFlipped: false,
     height: 100,
-    featureList: [{ info: [], position: 100 }, { info: [], position: 200 }],
   })
 
   expect(result).toMatchSnapshot({

@@ -17,6 +17,10 @@ interface Stats {
   scoreMin: number
   scoreMax: number
 }
+interface Density {
+  featureDensity: number
+}
+
 export default class CramAdapter extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private cram: any
@@ -206,18 +210,14 @@ export default class CramAdapter extends BaseAdapter {
   }
 
   /**
-   * Fetch stats for a certain region. Uses BaseAdapter's generate sample
-   * to gather a range for getRecordsForRange to use, then calculates
-   * and sums feature density for each record and returns
-   * If calculate density returns a falsy value (0), recurse by doubling
-   * the interval/length which is initially 100
+   * Fetch estimates global stats for multiple regions. currently not in use
    * @param {Any} regions set to any so BaseAdapter doesn't complain when accessing
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @param {Number} length used to generate record range, doubles til condition hit
    * @returns {Stats} Estimated stats of this region used for domain and rendering
    */
   public async getMultiRegionStats(
-    regions: any,
+    regions: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     opts: BaseOptions = {},
     length: number,
   ): Promise<Stats> {
@@ -240,7 +240,8 @@ export default class CramAdapter extends BaseAdapter {
     )
     checkAbortSignal(opts.signal)
 
-    const calculateDensity = new Array
+    const calculateDensity: Array<Density> = []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     records.forEach(function iterate(feature: any, index: number) {
       if (feature.alignmentStart < sample.sampleStart) return
       calculateDensity.push({

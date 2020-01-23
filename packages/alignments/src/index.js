@@ -33,8 +33,8 @@ import PileupRenderer, {
   ReactComponent as PileupRendererReactComponent,
 } from './PileupRenderer'
 import SNPXYRenderer, {
-  configSchema as SNPRendererConfigSchema,
-  ReactComponent as SNPRendererReactComponent,
+  configSchema as SNPXYRendererConfigSchema,
+  ReactComponent as SNPXYRendererReactComponent,
 } from './SNPXYRenderer'
 
 export default class extends Plugin {
@@ -103,8 +103,8 @@ export default class extends Plugin {
       () =>
         new SNPXYRenderer({
           name: 'SNPXYRenderer',
-          ReactComponent: SNPRendererReactComponent,
-          configSchema: SNPRendererConfigSchema,
+          ReactComponent: SNPXYRendererReactComponent,
+          configSchema: SNPXYRendererConfigSchema,
         }),
     )
   }

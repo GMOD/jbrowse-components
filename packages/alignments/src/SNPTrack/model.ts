@@ -99,7 +99,7 @@ const stateModelFactory = (configSchema: any) =>
       },
     }))
     .actions(self => {
-      async function getStats(signal: AbortSignal) {
+      function getStats(signal: AbortSignal) {
         const { rpcManager } = getSession(self) as {
           rpcManager: { call: Function }
         }
@@ -116,6 +116,7 @@ const stateModelFactory = (configSchema: any) =>
             startingLength: 100,
           })
         }
+        return {}
       }
       return {
         afterAttach() {

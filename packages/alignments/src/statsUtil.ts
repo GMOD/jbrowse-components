@@ -14,6 +14,7 @@ export interface FeatureStats extends UnrectifiedFeatureStats {
   scoreStdDev: number
   featureDensity: number
 }
+
 /*
  * calculate standard deviation using the 'shortcut method' that accepts
  * the sum and the sum squares of the elements

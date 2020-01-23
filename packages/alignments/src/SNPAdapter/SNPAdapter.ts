@@ -1,9 +1,5 @@
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
-import {
-  IFileLocation,
-  IRegion,
-  INoAssemblyRegion,
-} from '@gmod/jbrowse-core/mst-types'
+import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { Observable, Observer } from 'rxjs'
@@ -17,7 +13,6 @@ import {
   FeatureStats,
   rectifyStats,
   scoresToStats,
-  UnrectifiedFeatureStats,
 } from '../statsUtil'
 
 interface StatsRegion {
@@ -39,11 +34,7 @@ export default class extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: {
-    snpLocation: IFileLocation
-    index: { location: IFileLocation; index: string }
-    subadapter: BaseAdapter
-  }) {
+  public constructor(config: { subadapter: BaseAdapter }) {
     super()
     const { subadapter } = config
     this.subadapter = subadapter
@@ -67,8 +58,15 @@ export default class extends BaseAdapter {
     })
   }
 
-  // todo: incorporate summary blocks
-  public getRegionStats(region: INoAssemblyRegion, opts: BaseOptions = {}) {
+  /**
+   * @param {INoAssemblyRegion} region
+   * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
+   * @returns {Promise<FeatureStats>} see statsUtil.ts
+   */
+  public getRegionStats(
+    region: INoAssemblyRegion,
+    opts: BaseOptions = {},
+  ): Promise<FeatureStats> {
     const { refName, start, end } = region
     const { bpPerPx, signal } = opts
     return this.statsCache.get(
@@ -78,18 +76,20 @@ export default class extends BaseAdapter {
     )
   }
 
-  async getRefNames() {
-    return this.subadapter.getRefNames()
-  }
-
-  // todo: add caching
+  /**
+   * Calculate region stats such as scoreMax and scoreMin to be used in domain
+   * @param {INoAssemblyRegion} regions
+   * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
+   * @returns {Promise<FeatureStats>} see statsUtil.ts
+   */
   public async getMultiRegionStats(
     regions: INoAssemblyRegion[] = [],
     opts: BaseOptions = {},
-  ) {
+  ): Promise<FeatureStats> {
     if (!regions.length) {
       return blankStats()
     }
+
     const feats = await Promise.all(
       regions.map(r => this.getRegionStats(r, opts)),
     )
@@ -122,15 +122,17 @@ export default class extends BaseAdapter {
   }
 
   /**
-   * Fetch features for a certain region. Use getFeaturesInRegion() if you also
-   * want to verify that the store has features for the given reference sequence
-   * before fetching.
+   * Fetch features for a certain region. Use coverage bins information to generate
+   * SimpleFeature with useful data to be used for stats and canvas drawing
+   * Use getFeaturesInRegion() if you also want to verify that the store has features
+   * for the given reference sequence before fetching.
    * @param {any} param
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
+
   getFeatures(
-    region: any,
+    region: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     opts: BaseOptions = {},
   ): Observable<Feature> {
     return ObservableCreate(
@@ -145,15 +147,16 @@ export default class extends BaseAdapter {
           region,
           opts.bpPerPx || 1,
         )
-        coverageBins.forEach((bin, index) => {
+        coverageBins.forEach((bin: NestedFrequencyTable, index: number) => {
           observer.next(
             new SimpleFeature({
               id: `pos_${region.start}${index}`,
               data: {
                 score: bin.total(),
-                snpinfo: bin.generateInfoList(),
+                snpinfo: bin.generateInfoList(), // info needed to draw snps
                 start: region.start + index,
                 end: region.start + index + 1,
+                refName: region.refName,
               },
             }),
           )
@@ -162,6 +165,10 @@ export default class extends BaseAdapter {
         observer.complete()
       },
     )
+  }
+
+  async getRefNames() {
+    return this.subadapter.getRefNames()
   }
 
   /**
@@ -177,12 +184,23 @@ export default class extends BaseAdapter {
     return this.subadapter.refIdToName(refId)
   }
 
-  generateCoverageBins(features: any, region: StatsRegion, bpPerPx: number) {
+  /**
+   * Generates coverage bins from features which details
+   * the reference, mismatches, strands, and coverage info
+   * @param {Observable<Feature>} features features of region to be passed in
+   * @param {StatsRegion} region
+   * @returns {Array<NestedFrequencyTable>}
+   */
+  generateCoverageBins(
+    features: Array<Feature>,
+    region: StatsRegion,
+    bpPerPx: number,
+  ): Array<NestedFrequencyTable> {
     const leftBase = region.start
     const rightBase = region.end
     const scale = 1 / bpPerPx
-    const widthBp = rightBase - leftBase
-    const widthPx = widthBp * scale
+    // const widthBp = rightBase - leftBase
+    // const widthPx = widthBp * scale
     const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(scale)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
 
@@ -196,7 +214,7 @@ export default class extends BaseAdapter {
     const forEachBin = function forEachBin(
       start: number,
       end: number,
-      callback: any,
+      callback: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     ) {
       let s = (start - leftBase) / binWidth
       let e = (end - 1 - leftBase) / binWidth
@@ -242,12 +260,11 @@ export default class extends BaseAdapter {
       }
       return strand
     }
-    const i = 0
 
     for (const feature of features.values()) {
       const strand = getStrand(feature)
       // increment start and end partial-overlap bins by proportion of overlap
-      forEachBin(feature.get('start'), feature.get('end'), function(
+      forEachBin(feature.get('start'), feature.get('end'), function iterate(
         bin: number,
         overlap: number,
       ) {

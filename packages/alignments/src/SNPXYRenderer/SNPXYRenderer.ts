@@ -1,17 +1,16 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import Color from 'color'
+import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import SNPBaseRenderer from '../SNPBaseRenderer'
 import NestedFrequencyTable from '../NestedFrequencyTable'
-import { Mismatch } from '../SNPAdapter/SNPSlightlyLazyFeature'
 import { getOrigin, getScale } from '../util'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 interface SNPXYRendererProps {
   features: Map<string, Feature>
-  layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  config: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  layout: any
+  config: any
   region: IRegion
   bpPerPx: number
   height: number
@@ -19,7 +18,7 @@ interface SNPXYRendererProps {
   horizontallyFlipped: boolean
   highResolutionScaling: number
   blockKey: string
-  dataAdapter: any
+  dataAdapter: BaseAdapter
   notReady: boolean
   originalRegion: IRegion
   scaleOpts: any
@@ -27,9 +26,17 @@ interface SNPXYRendererProps {
   signal: any
   trackModel: any
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+interface BaseInfo {
+  base: string
+  score: number
+  strands?: {
+    [key: string]: number
+  }
+}
 
 export default class SNPXYRenderer extends SNPBaseRenderer {
-  // use coverage bins generated above to draw
   draw(
     ctx: CanvasRenderingContext2D,
     props: SNPXYRendererProps,
@@ -41,13 +48,11 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       bpPerPx,
       scaleOpts,
       height,
-      config,
       horizontallyFlipped,
     } = props
 
     const viewScale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
-    const [niceMin, niceMax] = viewScale.domain()
     const toY = (rawscore: number) => height - viewScale(rawscore)
     const toHeight = (rawscore: number) => toY(originY) - toY(rawscore)
 
@@ -77,12 +82,12 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
 
       // generate array with nestedtable's info, draw mismatches
       const infoArray = feature.get('snpinfo')
-      infoArray.forEach(function iterate(mismatch: any, mismatchindex: number) {
-        if (mismatch.base === 'reference' || mismatch.base === 'total') return
-        ctx.fillStyle = mismatch.base.match(insRegex)
+      infoArray.forEach(function iterate(info: BaseInfo, index: number) {
+        if (info.base === 'reference' || info.base === 'total') return
+        ctx.fillStyle = info.base.match(insRegex)
           ? 'darkgrey'
-          : colorForBase[mismatch.base]
-        ctx.fillRect(leftPx, toY(mismatch.score), w, toHeight(mismatch.score))
+          : colorForBase[info.base]
+        ctx.fillRect(leftPx, toY(info.score), w, toHeight(info.score))
       })
     }
   }
