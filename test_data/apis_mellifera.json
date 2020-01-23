@@ -1,0 +1,71 @@
+{
+  "datasets": [
+    {
+      "name": "Apis mellifera",
+      "assembly": {
+        "name": "amel",
+        "sequence": {
+          "type": "ReferenceSequenceTrack",
+          "trackId": "amel_seq",
+          "adapter": {
+            "type": "ChromSizesAdapter",
+            "chromSizesLocation": {
+              "uri": "test_data/amel_hav3.1.chrom.sizes"
+            }
+          }
+        }
+      },
+      "tracks": [
+        {
+          "type": "BasicTrack",
+          "trackId": "gencode_nclist_hg38",
+          "name": "NCBI RefSeq 104 (NCList)",
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104/{refseq}/trackData.jsonz"
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
+          }
+        },
+        {
+          "type": "BasicTrack",
+          "trackId": "gencode_nclist_hg38_gfftabix",
+          "name": "NCBI RefSeq 104 (GFF3Tabix)",
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "Gff3TabixAdapter",
+            "gffGzLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104.gff.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104.gff.gz.tbi"
+              }
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    },
+    "updateUrl": true
+  }
+}
