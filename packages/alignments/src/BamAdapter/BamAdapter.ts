@@ -144,7 +144,7 @@ export default class extends BaseAdapter {
     )
     checkAbortSignal(opts.signal)
 
-    const calculateDensity = []
+    const calculateDensity = new Array
     records.forEach(function iterate(feature, index) {
       if (
         feature.get('start') < sample.sampleStart ||

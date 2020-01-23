@@ -45,8 +45,6 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       horizontallyFlipped,
     } = props
 
-    console.log(bpPerPx)
-
     const viewScale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = viewScale.domain()
@@ -79,7 +77,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
 
       // generate array with nestedtable's info, draw mismatches
       const infoArray = feature.get('snpinfo')
-      infoArray.forEach(function iterate(mismatch, mismatchindex) {
+      infoArray.forEach(function iterate(mismatch: any, mismatchindex: number) {
         if (mismatch.base === 'reference' || mismatch.base === 'total') return
         ctx.fillStyle = mismatch.base.match(insRegex)
           ? 'darkgrey'

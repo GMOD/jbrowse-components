@@ -26,11 +26,10 @@ export default class extends ServerSideRendererType {
     )
     const ctx = canvas.getContext('2d')
     ctx.scale(highResolutionScaling, highResolutionScaling)
-    // const coverageBins = this.generateCoverageBins(props)
-    const featureList = this.draw(ctx, props, features)
+    this.draw(ctx, props, features)
 
     const imageData = await createImageBitmap(canvas)
-    return { imageData, height, width, featureList }
+    return { imageData, height, width }
   }
 
   generateCoverageBins(props) {
@@ -42,14 +41,12 @@ export default class extends ServerSideRendererType {
   }
 
   async render(renderProps) {
-    const { height, width, imageData, featureList } = await this.makeImageData(
-      renderProps,
-    )
+    const { height, width, imageData } = await this.makeImageData(renderProps)
     const element = React.createElement(
       this.ReactComponent,
-      { ...renderProps, height, width, imageData, featureList },
+      { ...renderProps, height, width, imageData },
       null,
     )
-    return { element, imageData, height, width, featureList }
+    return { element, imageData, height, width }
   }
 }

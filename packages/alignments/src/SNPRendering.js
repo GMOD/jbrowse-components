@@ -83,13 +83,11 @@ class SNPRendering extends Component {
       /** id of the currently selected feature, if any */
       selectedFeatureId: ReactPropTypes.string,
     }),
-    featureList: ReactPropTypes.array,
   }
 
   static defaultProps = {
     horizontallyFlipped: false,
     trackModel: {},
-    featureList: [],
   }
 
   constructor(props) {

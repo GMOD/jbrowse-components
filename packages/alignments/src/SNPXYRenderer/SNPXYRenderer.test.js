@@ -27,10 +27,7 @@ test('several features', async () => {
     highResolutionScaling: 1,
     horizontallyFlipped: false,
     height: 100,
-    featureList: [
-      { info: [], position: 100 },
-      { info: [], position: 200 },
-    ],
+    featureList: [{ info: [], position: 100 }, { info: [], position: 200 }],
   })
 
   expect(result).toMatchSnapshot({

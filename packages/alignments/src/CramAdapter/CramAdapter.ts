@@ -240,7 +240,7 @@ export default class CramAdapter extends BaseAdapter {
     )
     checkAbortSignal(opts.signal)
 
-    const calculateDensity = []
+    const calculateDensity = new Array
     records.forEach(function iterate(feature: any, index: number) {
       if (feature.alignmentStart < sample.sampleStart) return
       calculateDensity.push({

@@ -195,7 +195,7 @@ export default abstract class BaseAdapter {
     const sampleStart = Math.max(0, Math.round(sampleCenter - length / 2))
     const sampleEnd = Math.max(Math.round(sampleCenter + length / 2), end)
 
-    const results = []
+    const results = new Array
     setup
     const records = await file.getRecordsForRange(
       refName,

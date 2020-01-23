@@ -125,12 +125,12 @@ export default class extends BaseAdapter {
    * Fetch features for a certain region. Use getFeaturesInRegion() if you also
    * want to verify that the store has features for the given reference sequence
    * before fetching.
-   * @param {IRegion} param
+   * @param {any} param
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   getFeatures(
-    region: INoAssemblyRegion,
+    region: any,
     opts: BaseOptions = {},
   ): Observable<Feature> {
     return ObservableCreate(
@@ -177,13 +177,12 @@ export default class extends BaseAdapter {
     return this.subadapter.refIdToName(refId)
   }
 
-  generateCoverageBins(features: any, region: any, bpPerPx: number) {
+  generateCoverageBins(features: any, region: StatsRegion, bpPerPx: number) {
     const leftBase = region.start
     const rightBase = region.end
     const scale = 1 / bpPerPx
     const widthBp = rightBase - leftBase
     const widthPx = widthBp * scale
-    console.log(bpPerPx)
     const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(scale)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
 
@@ -264,7 +263,6 @@ export default class extends BaseAdapter {
 
         // loops through mismatches and updates coverage variables accordingly.
         if (mismatches) {
-          console.log(mismatches, bpPerPx < 10)
           for (let i = 0; i < mismatches.length; i++) {
             const mismatch = mismatches[i]
             forEachBin(
@@ -277,10 +275,7 @@ export default class extends BaseAdapter {
                 let { base } = mismatch
                 if (mismatch.type === 'insertion') base = `ins ${base}`
                 else if (mismatch.type === 'skip') base = 'skip'
-                console.log(base, mismatch)
-                if (base) {
-                  bin.getNested(base).increment(strand, overlap)
-                }
+                if (base) bin.getNested(base).increment(strand, overlap)
               },
             )
           }

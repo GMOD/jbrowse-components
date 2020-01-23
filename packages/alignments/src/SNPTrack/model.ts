@@ -44,7 +44,7 @@ const stateModelFactory = (configSchema: any) =>
     .actions(self => {
       return {
         updateStats(stats: { scoreMin: number; scoreMax: number }) {
-          self.stats.scoreMin = stats.scoreMin
+          self.stats.scoreMin = stats.scoreMin > 0 ? stats.scoreMin : 0
           self.stats.scoreMax = stats.scoreMax
           self.ready = true
         },
@@ -99,7 +99,7 @@ const stateModelFactory = (configSchema: any) =>
       },
     }))
     .actions(self => {
-      function getStats(signal: AbortSignal) {
+      async function getStats(signal: AbortSignal) {
         const { rpcManager } = getSession(self) as {
           rpcManager: { call: Function }
         }
@@ -116,19 +116,7 @@ const stateModelFactory = (configSchema: any) =>
             startingLength: 100,
           })
         }
-        // return {scoreMin: 0, scoreMax: 50}
-        // autoscaleType === 'local'
-        //   ? {
-        //       ...r,
-        //       // avoid unnecessary scoreMin<0 if the scoreMin is never less than 0
-        //       // helps with most bigwigs just being >0
-        //       scoreMin:
-        //         r.scoreMin >= 0 ? 0 : r.scoreMean - nd * r.scoreStdDev,
-        //       scoreMax: r.scoreMean + nd * r.scoreStdDev,
-        //     }
-        //   : r
       }
-      // return {scoreMin: 0, scoreMax: 50}
       return {
         afterAttach() {
           addDisposer(
