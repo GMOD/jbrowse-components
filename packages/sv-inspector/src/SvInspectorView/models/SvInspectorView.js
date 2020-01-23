@@ -6,9 +6,7 @@ export default pluginManager => {
   )
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const { getConf, readConfObject } = jbrequire(
-    '@gmod/jbrowse-core/configuration',
-  )
+  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
 
   const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
   const CircularViewType = pluginManager.getViewType('CircularView')
@@ -17,6 +15,53 @@ export default pluginManager => {
   const defaultHeight = 500
   const headerHeight = 52
   const circularViewOptionsBarHeight = 52
+
+  const {
+    makeAdHocSvFeatureFromTwoLocations,
+    makeAdHocSvFeatureFromTwoRefStartEndSets,
+  } = jbrequire(require('./adhocFeatureUtils'))
+
+  // makes a feature data object (passed as `data` to a SimpleFeature constructor)
+  // out of table row if the row has 2 location columns. undefined if not
+  function makeAdHocSvFeature(sheet, rowNumber, row) {
+    const { columns, columnDisplayOrder } = sheet
+    const columnTypes = {}
+    columnDisplayOrder.forEach(columnNumber => {
+      const columnDefinition = columns[columnNumber]
+      if (!columnTypes[columnDefinition.dataType.type])
+        columnTypes[columnDefinition.dataType.type] = []
+      columnTypes[columnDefinition.dataType.type].push(columnNumber)
+    })
+    const locationColumnNumbers = columnTypes.LocString || []
+    const locStartColumnNumbers = columnTypes.LocStart || []
+    const locEndColumnNumbers = columnTypes.LocEnd || []
+    const locRefColumnNumbers = columnTypes.LocRef || []
+
+    // if we have 2 or more columns of type location, make a feature from them
+    if (locationColumnNumbers.length >= 2) {
+      return makeAdHocSvFeatureFromTwoLocations(
+        columns,
+        locationColumnNumbers,
+        row,
+        rowNumber,
+      )
+    }
+    if (
+      locRefColumnNumbers.length >= 2 &&
+      locStartColumnNumbers.length >= 2 &&
+      locEndColumnNumbers.length >= 2
+    ) {
+      return makeAdHocSvFeatureFromTwoRefStartEndSets(
+        columns,
+        locRefColumnNumbers,
+        locStartColumnNumbers,
+        locEndColumnNumbers,
+        row,
+        rowNumber,
+      )
+    }
+    return undefined
+  }
 
   const stateModel = types
     .model('SvInspectorView', {
@@ -89,12 +134,18 @@ export default pluginManager => {
 
       get featuresAdapterConfigSnapshot() {
         const features = (self.spreadsheetView.outputRows || [])
-          .map(row => {
+          .map((row, rowNumber) => {
             if (row.extendedData) {
               if (row.extendedData.vcfFeature)
                 return row.extendedData.vcfFeature
               if (row.extendedData.feature) return row.extendedData.feature
             }
+            const adhocFeature = makeAdHocSvFeature(
+              self.spreadsheetView.spreadsheet,
+              rowNumber,
+              row,
+            )
+            if (adhocFeature) return adhocFeature
             return undefined
           })
           .filter(f => Boolean(f))
@@ -181,31 +232,42 @@ export default pluginManager => {
               if (assemblyName) {
                 if (onlyDisplayRelevantRegionsInCircularView) {
                   if (tracks.length === 1) {
-                    const adapter = getConf(tracks[0], 'adapter')
-                    const refNameMapP = getRoot(
+                    // this is a map of canonical-name -> adapter-specific-name
+                    const refNameCanonicalizationMapP = getRoot(
                       self,
-                    ).jbrowse.getRefNameMapForAdapter(adapter, assemblyName)
+                    ).jbrowse.getRefNameCanonicalizationMap(assemblyName)
 
-                    const regionsP = session.getRegionsForAssemblyName(
+                    const assemblyRegionsP = session.getRegionsForAssemblyName(
                       assemblyName,
                     )
 
-                    Promise.all([refNameMapP, featuresRefNamesP, regionsP])
-                      .then(([refNameMap, refNames, assemblyRegions]) => {
-                        // console.log(refNameMap, refNames, assemblyRegions)
-                        // canonicalize the store's ref names if necessary
-                        const canonicalRefNames = new Set(
-                          refNames.map(
-                            refName => refNameMap.get(refName) || refName,
-                          ),
-                        )
-                        const displayedRegions = assemblyRegions.filter(r =>
-                          canonicalRefNames.has(r.refName),
-                        )
-                        circularView.setDisplayedRegions(
-                          JSON.parse(JSON.stringify(displayedRegions)),
-                        )
-                      })
+                    Promise.all([
+                      refNameCanonicalizationMapP,
+                      featuresRefNamesP,
+                      assemblyRegionsP,
+                    ])
+                      .then(
+                        ([
+                          refNameCanonicalizationMap,
+                          featureRefNames,
+                          assemblyRegions,
+                        ]) => {
+                          // canonicalize the store's ref names if necessary
+                          const canonicalFeatureRefNames = new Set(
+                            featureRefNames.map(
+                              refName =>
+                                refNameCanonicalizationMap.get(refName) ||
+                                refName,
+                            ),
+                          )
+                          const displayedRegions = assemblyRegions.filter(r =>
+                            canonicalFeatureRefNames.has(r.refName),
+                          )
+                          circularView.setDisplayedRegions(
+                            JSON.parse(JSON.stringify(displayedRegions)),
+                          )
+                        },
+                      )
                       .catch(e => console.error(e))
                   }
                 } else {

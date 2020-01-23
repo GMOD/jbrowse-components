@@ -16,6 +16,7 @@ import MUICard from '@material-ui/core/Card'
 import MUICardContent from '@material-ui/core/CardContent'
 import MUICheckbox from '@material-ui/core/Checkbox'
 import MUIContainer from '@material-ui/core/Container'
+import MUIDialog from '@material-ui/core/Dialog'
 import MUIFormLabel from '@material-ui/core/FormLabel'
 import MUIFormControl from '@material-ui/core/FormControl'
 import MUIFormControlLabel from '@material-ui/core/FormControlLabel'
@@ -55,6 +56,7 @@ import * as coreUi from './ui'
 import * as coreUtil from './util'
 import * as trackUtils from './util/tracks'
 import * as coreIo from './util/io'
+import * as coreMstReflection from './util/mst-reflection'
 
 import * as MUIColors from './ReExports/material-ui-colors'
 
@@ -79,6 +81,7 @@ export default {
   '@material-ui/core/CardContent': MUICardContent,
   '@material-ui/core/Container': MUIContainer,
   '@material-ui/core/Checkbox': MUICheckbox,
+  '@material-ui/core/Dialog': MUIDialog,
   '@material-ui/core/FormGroup': MUIFormGroup,
   '@material-ui/core/FormLabel': MUIFormLabel,
   '@material-ui/core/FormControl': MUIFormControl,
@@ -118,4 +121,5 @@ export default {
   '@gmod/jbrowse-core/util': coreUtil,
   '@gmod/jbrowse-core/util/tracks': trackUtils,
   '@gmod/jbrowse-core/util/io': coreIo,
+  '@gmod/jbrowse-core/util/mst-reflection': coreMstReflection,
 }

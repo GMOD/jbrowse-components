@@ -4,14 +4,14 @@ export default pluginManager => {
   const { jbrequire } = pluginManager
   const { types, getParent } = jbrequire('mobx-state-tree')
 
-  const DataTypes = jbrequire(require('./ColumnDataTypes'))
+  const { ColumnTypes, AnyColumnType } = jbrequire(require('./ColumnDataTypes'))
 
   const StaticRowSetModel = jbrequire(require('./StaticRowSet'))
 
   const ColumnDefinition = types
     .model('ColumnDefinition', {
       name: types.maybe(types.string),
-      dataType: types.optional(DataTypes.Any, () => ({
+      dataType: types.optional(AnyColumnType, () => ({
         type: 'Text',
       })),
       // set to true if column is derived from other columns
@@ -56,7 +56,7 @@ export default pluginManager => {
       datasetName: types.maybe(types.string),
     })
     .volatile(() => ({
-      defaultDataType: DataTypes.Text,
+      defaultDataType: ColumnTypes.Text,
     }))
     .views(self => ({
       get hideRowSelection() {
@@ -67,11 +67,11 @@ export default pluginManager => {
       // list of data type names to be made available in the column
       // dropdown menu
       get dataTypeChoices() {
-        const typeNames = Object.keys(DataTypes).filter(k => k !== 'Any')
+        const typeNames = Object.keys(ColumnTypes)
         return typeNames.map(typeName => {
-          const dataType = DataTypes[typeName].create({ type: typeName })
-          const { displayName } = dataType
-          return { typeName, displayName }
+          const dataType = ColumnTypes[typeName].create({ type: typeName })
+          const { displayName, categoryName } = dataType
+          return { typeName, displayName, categoryName }
         })
       },
 

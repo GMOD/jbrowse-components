@@ -2,20 +2,19 @@ export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useEffect, useState } = React
   const Icon = jbrequire('@material-ui/core/Icon')
   const IconButton = jbrequire('@material-ui/core/IconButton')
-  const InputAdornment = jbrequire('@material-ui/core/InputAdornment')
-  const { useDebounce } = jbrequire('@gmod/jbrowse-core/util')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const TextField = jbrequire('@material-ui/core/TextField')
   const Grid = jbrequire('@material-ui/core/Grid')
   const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
 
   const ImportWizard = jbrequire(require('./ImportWizard'))
   const Spreadsheet = jbrequire(require('./Spreadsheet'))
+  const GlobalFilterControls = jbrequire(require('./GlobalFilterControls'))
+  const ColumnFilterControls = jbrequire(require('./ColumnFilterControls'))
 
   const headerHeight = 52
+  const colFilterHeight = 46
   const statusBarHeight = 20
 
   const useStyles = makeStyles(theme => {
@@ -27,6 +26,16 @@ export default pluginManager => {
         overflow: 'hidden',
       },
       header: {
+        overflow: 'hidden',
+        whiteSpace: 'nowrap',
+        boxSizing: 'border-box',
+        height: headerHeight,
+        // background: '#eee',
+        // borderBottom: '1px solid #a2a2a2',
+        paddingLeft: theme.spacing(1),
+      },
+      contentArea: { overflow: 'auto' },
+      columnFilter: {
         overflow: 'hidden',
         whiteSpace: 'nowrap',
         boxSizing: 'border-box',
@@ -91,49 +100,6 @@ export default pluginManager => {
     )
   })
 
-  const FilterControls = observer(({ model }) => {
-    const classes = useStyles()
-    const textFilter = model.filterControls.filters[0] || {}
-
-    // this paragraph is silliness to debounce the text filter input
-    const [textFilterValue, setTextFilterValue] = useState(
-      textFilter.stringToFind,
-    )
-    const debouncedTextFilter = useDebounce(textFilterValue, 500)
-    useEffect(() => {
-      textFilter.setString(debouncedTextFilter)
-    }, [debouncedTextFilter, textFilter])
-
-    return (
-      <div className={classes.filterControls}>
-        <TextField
-          label="text filter"
-          value={textFilterValue}
-          onChange={evt => setTextFilterValue(evt.target.value)}
-          className={classes.textFilterControl}
-          margin="dense"
-          variant="outlined"
-          InputProps={{
-            endAdornment: (
-              <InputAdornment
-                className={classes.textFilterControlAdornment}
-                position="end"
-              >
-                <IconButton
-                  aria-label="clear filter"
-                  onClick={() => setTextFilterValue('')}
-                  color="secondary"
-                >
-                  <Icon>clear</Icon>
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-      </div>
-    )
-  })
-
   const RowCountMessage = observer(({ spreadsheet }) => {
     if (spreadsheet && spreadsheet.rowSet.isLoaded) {
       const {
@@ -168,7 +134,9 @@ export default pluginManager => {
   function SpreadsheetView({ model }) {
     const classes = useStyles()
 
-    const { spreadsheet } = model
+    const { spreadsheet, filterControls } = model
+
+    const colFilterCount = filterControls.columnFilters.length
 
     return (
       <div
@@ -184,24 +152,48 @@ export default pluginManager => {
           )}
           {model.mode !== 'display' || model.hideFilterControls ? null : (
             <Grid item>
-              <FilterControls model={model} />
+              <GlobalFilterControls model={model} />
             </Grid>
           )}
         </Grid>
 
-        <span style={{ display: model.mode === 'import' ? undefined : 'none' }}>
-          <ImportWizard model={model.importWizard} />
-        </span>
+        {model.mode !== 'display' || model.hideFilterControls
+          ? null
+          : model.filterControls.columnFilters.map((filter, filterNumber) => {
+              return (
+                <ColumnFilterControls
+                  key={`${filter.columnNumber}-${filterNumber}`}
+                  viewModel={model}
+                  filterModel={filter}
+                  columnNumber={filter.columnNumber}
+                  height={colFilterHeight}
+                />
+              )
+            })}
+
         <div
-          style={{
-            position: 'relative',
-            top: model.mode === 'display' ? undefined : model.height,
-          }}
+          className={classes.contentArea}
+          style={{ height: model.height - headerHeight }}
         >
-          <Spreadsheet
-            model={spreadsheet}
-            height={model.height - headerHeight - statusBarHeight}
-          />
+          {model.mode !== 'import' ? null : (
+            <ImportWizard model={model.importWizard} />
+          )}
+          <div
+            style={{
+              position: 'relative',
+              display: model.mode === 'display' ? undefined : 'none',
+            }}
+          >
+            <Spreadsheet
+              model={spreadsheet}
+              height={
+                model.height -
+                headerHeight -
+                colFilterCount * colFilterHeight -
+                statusBarHeight
+              }
+            />
+          </div>
         </div>
 
         <div
