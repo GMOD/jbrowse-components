@@ -963,12 +963,15 @@
             "Coverage"
           ],
           "adapter": {
-            "type": "CramAdapter",
-            "cramLocation": {
-              "uri": "test_data/volvox-sorted.cram"
-            },
-            "craiLocation": {
-              "uri": "test_data/volvox-sorted.cram.crai"
+            "type": "SNPAdapter",
+            "subadapter": {
+              "type": "CramAdapter",
+              "cramLocation": {
+                "uri": "test_data/volvox-sorted.cram"
+              },
+              "craiLocation": {
+                "uri": "test_data/volvox-sorted.cram.crai"
+              }
             }
           },
           "renderers": {

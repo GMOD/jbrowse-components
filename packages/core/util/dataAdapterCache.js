@@ -60,6 +60,8 @@ export function getAdapter(
         sessionId,
         adapterConfig.subadapter.type,
         adapterConfig.subadapter,
+        sequenceAdapterType,
+        sequenceAdapterConfig,
       ).dataAdapter
     }
 

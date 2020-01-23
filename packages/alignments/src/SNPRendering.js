@@ -8,7 +8,7 @@ import './SNPRendering.scss'
 const toP = s => parseFloat(s.toPrecision(6))
 
 function Tooltip({ offsetX, feature }) {
-  const { info } = feature
+  const info = feature.get('snpinfo')
   const total = info ? info[info.map(e => e.base).indexOf('total')].score : 0
   const condId = info.length >= 5 ? 'smallInfo' : 'info' // readjust table size to fit all
 
@@ -99,13 +99,7 @@ class SNPRendering extends Component {
   }
 
   onMouseMove(evt) {
-    const {
-      region,
-      bpPerPx,
-      horizontallyFlipped,
-      width,
-      featureList,
-    } = this.props
+    const { region, bpPerPx, horizontallyFlipped, width, features } = this.props
 
     const { clientX } = evt
     let offset = 0
@@ -116,9 +110,10 @@ class SNPRendering extends Component {
     const px = horizontallyFlipped ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
 
-    for (const feature of featureList) {
-      if (Math.floor(clientBp) === feature.position) {
+    for (const feature of features.values()) {
+      if (clientBp <= feature.get('end') && clientBp >= feature.get('start')) {
         this.setState({ clientX, featureUnderMouse: feature })
+        break
       }
     }
   }

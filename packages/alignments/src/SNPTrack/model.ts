@@ -112,7 +112,7 @@ const stateModelFactory = (configSchema: any) =>
             assemblyName: getTrackAssemblyName(self),
             regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
             signal,
-            bpPerPx,
+            bpPerPx: bpPerPx || 1,
             startingLength: 100,
           })
         }

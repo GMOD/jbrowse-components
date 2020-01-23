@@ -143,7 +143,7 @@ export default class extends BaseAdapter {
         const coverageBins = this.generateCoverageBins(
           features,
           region,
-          opts.bpPerPx || 0,
+          opts.bpPerPx || 1,
         )
         coverageBins.forEach((bin, index) => {
           observer.next(
@@ -151,6 +151,7 @@ export default class extends BaseAdapter {
               id: `pos_${region.start}${index}`,
               data: {
                 score: bin.total(),
+                snpinfo: bin.generateInfoList(),
                 start: region.start + index,
                 end: region.start + index + 1,
               },
@@ -158,16 +159,6 @@ export default class extends BaseAdapter {
           )
         })
 
-        // const records = await this.snp.getRecordsForRange(
-        //   refName,
-        //   start,
-        //   end,
-        //   opts,
-        // )
-        // checkAbortSignal(opts.signal)
-        // records.forEach(record => {
-        //   observer.next(new SNPSlightlyLazyFeature(record, this))
-        // })
         observer.complete()
       },
     )
@@ -192,7 +183,8 @@ export default class extends BaseAdapter {
     const scale = 1 / bpPerPx
     const widthBp = rightBase - leftBase
     const widthPx = widthBp * scale
-    const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(bpPerPx)
+    console.log(bpPerPx)
+    const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(scale)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
 
     const coverageBins = new Array(binMax).fill(0)
@@ -251,6 +243,7 @@ export default class extends BaseAdapter {
       }
       return strand
     }
+    const i = 0
 
     for (const feature of features.values()) {
       const strand = getStrand(feature)
@@ -271,6 +264,7 @@ export default class extends BaseAdapter {
 
         // loops through mismatches and updates coverage variables accordingly.
         if (mismatches) {
+          console.log(mismatches, bpPerPx < 10)
           for (let i = 0; i < mismatches.length; i++) {
             const mismatch = mismatches[i]
             forEachBin(
@@ -283,7 +277,10 @@ export default class extends BaseAdapter {
                 let { base } = mismatch
                 if (mismatch.type === 'insertion') base = `ins ${base}`
                 else if (mismatch.type === 'skip') base = 'skip'
-                bin.getNested(base).increment(strand, overlap)
+                console.log(base, mismatch)
+                if (base) {
+                  bin.getNested(base).increment(strand, overlap)
+                }
               },
             )
           }
