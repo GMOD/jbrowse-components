@@ -18,7 +18,7 @@ import {
   rectifyStats,
   scoresToStats,
   UnrectifiedFeatureStats,
-} from '../util'
+} from '../statsUtil'
 
 interface StatsRegion {
   refName: string
@@ -49,16 +49,20 @@ export default class extends BaseAdapter {
     this.subadapter = subadapter
     this.statsCache = new AbortablePromiseCache({
       cache: new QuickLRU({ maxSize: 1000 }),
-      async fill(
+      fill: async (
         args: { refName: string; start: number; end: number; bpPerPx: number },
         abortSignal: AbortSignal,
-      ): Promise<FeatureStats> {
+      ): Promise<FeatureStats> => {
         const { refName, start, end, bpPerPx } = args
-        const feats = await this.getFeatures(refName, start, end, {
-          signal: abortSignal,
-          basesPerSpan: bpPerPx,
-        })
-        return scoresToStats({ refName, start, end }, feats)
+        const feats = await this.getFeatures(
+          { refName, start, end },
+          {
+            signal: abortSignal,
+            basesPerSpan: bpPerPx,
+          },
+        )
+        const scoreFeatures = await feats.pipe(toArray()).toPromise()
+        return scoresToStats({ refName, start, end }, scoreFeatures)
       },
     })
   }
@@ -75,7 +79,6 @@ export default class extends BaseAdapter {
   }
 
   async getRefNames() {
-    console.log(this.subadapter)
     return this.subadapter.getRefNames()
   }
 
@@ -126,7 +129,10 @@ export default class extends BaseAdapter {
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures(region: IRegion, opts: BaseOptions = {}): Observable<Feature> {
+  getFeatures(
+    region: INoAssemblyRegion,
+    opts: BaseOptions = {},
+  ): Observable<Feature> {
     return ObservableCreate(
       async (observer: Observer<Feature>): Promise<void> => {
         const features = await this.subadapter
@@ -134,13 +140,11 @@ export default class extends BaseAdapter {
           .pipe(toArray())
           .toPromise()
 
-        console.log(features)
         const coverageBins = this.generateCoverageBins(
           features,
           region,
           opts.bpPerPx || 0,
         )
-        console.log(coverageBins)
         coverageBins.forEach((bin, index) => {
           observer.next(
             new SimpleFeature({

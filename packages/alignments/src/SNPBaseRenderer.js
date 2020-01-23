@@ -8,7 +8,13 @@ import React from 'react'
 
 export default class extends ServerSideRendererType {
   async makeImageData(props) {
-    const { height, region, bpPerPx, highResolutionScaling = 1 } = props
+    const {
+      height,
+      features,
+      region,
+      bpPerPx,
+      highResolutionScaling = 1,
+    } = props
     const width = (region.end - region.start) / bpPerPx // width here sets the canvas viewing length, but only the first 1000 are rendered
     if (!(width > 0) || !(height > 0)) {
       return { height: 0, width: 0 }
@@ -20,8 +26,8 @@ export default class extends ServerSideRendererType {
     )
     const ctx = canvas.getContext('2d')
     ctx.scale(highResolutionScaling, highResolutionScaling)
-    const coverageBins = this.generateCoverageBins(props)
-    const featureList = this.draw(ctx, props, coverageBins)
+    // const coverageBins = this.generateCoverageBins(props)
+    const featureList = this.draw(ctx, props, features)
 
     const imageData = await createImageBitmap(canvas)
     return { imageData, height, width, featureList }

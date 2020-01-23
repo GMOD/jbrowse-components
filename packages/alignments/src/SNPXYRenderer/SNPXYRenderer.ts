@@ -175,7 +175,6 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(bpPerPx)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
     const insRegex = /^ins.[A-Za-z0-9]/
-    const featureList = []
     // A: green, C: blue, g: orange, t: red, deletion: dark grey, total: light grey
     const colorForBase: { [key: string]: string } = {
       A: '#00bf00',
@@ -185,42 +184,47 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       '*': 'darkgrey',
       total: 'lightgrey',
     }
-
-    coverageBins.forEach(function(
-      currentBin: NestedFrequencyTable,
-      index: number,
-    ) {
-      const xposition = bpPerPx > 10 ? binWidth * index : scale * index
+    for (const feature of features.values()) {
+      const [leftPx, rightPx] = featureSpanPx(
+        feature,
+        region,
+        bpPerPx,
+        horizontallyFlipped,
+      )
       const snpWidth = bpPerPx > 10 ? binWidth : scale
-      const score = currentBin.total()
+      const score = feature.get('score')
+      console.log(score, scale, binWidth, bpPerPx)
 
       // draw total
       ctx.fillStyle = colorForBase.total
-      ctx.fillRect(xposition, toY(score), snpWidth, toHeight(score))
+      const w = rightPx - leftPx + 0.3
+      ctx.fillRect(leftPx, toY(score), w, toHeight(score))
 
       // generate array with nestedtable's info, draw mismatches
-      const infoArray = currentBin.generateInfoList()
-      infoArray.forEach(function iterate(mismatch, mismatchindex) {
-        if (mismatch.base === 'reference' || mismatch.base === 'total') return
-        ctx.fillStyle = mismatch.base.match(insRegex)
-          ? 'darkgrey'
-          : colorForBase[mismatch.base]
-        ctx.fillRect(
-          xposition,
-          toY(mismatch.score),
-          scale,
-          toHeight(mismatch.score),
-        )
-      })
+      // const infoArray = currentBin.generateInfoList()
+      // infoArray.forEach(function iterate(mismatch, mismatchindex) {
+      //   if (mismatch.base === 'reference' || mismatch.base === 'total') return
+      //   ctx.fillStyle = mismatch.base.match(insRegex)
+      //     ? 'darkgrey'
+      //     : colorForBase[mismatch.base]
+      //   ctx.fillRect(
+      //     xposition,
+      //     toY(mismatch.score),
+      //     scale,
+      //     toHeight(mismatch.score),
+      //   )
+      // })
 
       // list to be sent to props
-      if (!featureList.map(e => e.position).includes(leftBase + index)) {
-        featureList.push({
-          info: infoArray,
-          position: leftBase + index,
-        })
-      }
-    })
-    return featureList
+      // if (!featureList.map(e => e.position).includes(leftBase + index)) {
+      //   featureList.push({
+      //     info: infoArray,
+      //     position: leftBase + index,
+      //   })
+      // }
+      // featureList.push({
+
+      // })
+    }
   }
 }

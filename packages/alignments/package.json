@@ -12,6 +12,7 @@
     "@gmod/bam": "^1.0.32",
     "@gmod/cram": "^1.5.3",
     "@types/color": "^3.0.0",
+    "abortable-promise-cache": "^1.0.1",
     "color": "^3.1.2",
     "d3-scale": "^3.2.1",
     "generic-filehandle": "^2.0.0",
