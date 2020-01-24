@@ -99,14 +99,15 @@ const TrackRenderingContainer: React.FC<{
     <>
       <div
         className={classes.trackRenderingContainer}
-        onWheel={({ deltaX }) => {
+        onWheel={event => {
+          const { deltaX, deltaMode } = event
           if (scheduled) {
             setDelta(delta + deltaX)
           } else {
             // use rAF to make it so multiple event handlers aren't fired per-frame
             // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
             window.requestAnimationFrame(() => {
-              onHorizontalScroll(delta + deltaX)
+              onHorizontalScroll((delta + deltaX) * (1 + 50 * deltaMode))
               setScheduled(false)
             })
             setScheduled(true)
