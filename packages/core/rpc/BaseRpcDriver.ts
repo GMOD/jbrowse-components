@@ -91,7 +91,12 @@ export default abstract class BaseRpcDriver {
 
   createWorkerPool(): WorkerHandle[] {
     const hardwareConcurrency =
-      typeof window !== 'undefined' ? window.navigator.hardwareConcurrency : 2
+      // eslint-disable-next-line no-nested-ternary
+      typeof window !== 'undefined'
+        ? 'hardwareConcurrency' in window.navigator
+          ? window.navigator.hardwareConcurrency
+          : 2
+        : 2
     const workerCount =
       this.workerCount || Math.max(1, Math.ceil(hardwareConcurrency / 2))
 
