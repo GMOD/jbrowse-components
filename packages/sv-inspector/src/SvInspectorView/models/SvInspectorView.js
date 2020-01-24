@@ -69,17 +69,17 @@ export default pluginManager => {
       get displayRegionsFromAssemblyName() {
         if (self.onlyDisplayRelevantRegionsInCircularView) return undefined
 
-        // the assembly name comes from the selected dataset in the spreadsheet view
-        const { dataset } = self.spreadsheetView
-        if (dataset) {
-          return readConfObject(dataset, ['assembly', 'name'])
+        // the assembly name comes from the selected assembly in the spreadsheet view
+        const { assembly } = self.spreadsheetView
+        if (assembly) {
+          return readConfObject(assembly, 'name')
         }
         return undefined
       },
 
       get assemblyName() {
-        const { dataset } = self.spreadsheetView
-        if (dataset) return readConfObject(dataset, ['assembly', 'name'])
+        const { assembly } = self.spreadsheetView
+        if (assembly) return readConfObject(assembly, 'name')
         return undefined
       },
 
@@ -164,7 +164,7 @@ export default pluginManager => {
             { name: 'SvInspectorView height binding' },
           ),
         )
-        // bind circularview displayedRegions to spreadsheet dataset, mediated by
+        // bind circularview displayedRegions to spreadsheet assembly, mediated by
         // the onlyRelevantRegions toggle
         addDisposer(
           self,

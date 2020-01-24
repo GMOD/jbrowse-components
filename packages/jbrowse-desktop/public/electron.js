@@ -206,15 +206,9 @@ ipcMain.handle('getMainWindowId', async () => mainWindow.id)
 // limited functionality, difficult to use existing merge-deep/mixin-deep type
 // things for this
 function mergeConfigs(A, B) {
-  const X = {}
-  const Y = {}
-  A.datasets.forEach(a => {
-    X[a.assembly.name] = a
-  })
-  B.datasets.forEach(b => {
-    Y[b.assembly.name] = b
-  })
-  return Object.values(merge(X, Y))
+  A.assemblies.push(...(B.assemblies || []))
+  A.tracks.push(...(B.tracks || []))
+  return A
 }
 
 ipcMain.handle('loadConfig', async () => {
@@ -226,11 +220,11 @@ ipcMain.handle('loadConfig', async () => {
       const configTemplateLocation = isDev
         ? path.join(app.getAppPath(), 'public', 'test_data', 'config.json')
         : path.join(app.getAppPath(), 'build', 'test_data', 'config.json')
-      const config = JSON.parse(
+      let config = JSON.parse(
         await fsReadFile(configTemplateLocation, { encoding: 'utf8' }),
       )
       if (isDev) {
-        config.datasets = mergeConfigs(
+        config = mergeConfigs(
           config,
           JSON.parse(
             await fsReadFile('./test_data/config_in_dev.json', {

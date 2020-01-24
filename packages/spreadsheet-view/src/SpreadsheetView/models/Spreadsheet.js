@@ -53,7 +53,7 @@ export default pluginManager => {
           })),
       ),
 
-      datasetName: types.maybe(types.string),
+      assemblyName: types.maybe(types.string),
     })
     .volatile(() => ({
       defaultDataType: DataTypes.Text,

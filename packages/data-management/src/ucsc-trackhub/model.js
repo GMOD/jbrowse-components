@@ -44,7 +44,10 @@ export default function(pluginManager) {
               ])
             })
             .then(([hubFile, genomesFile]) => {
-              const assemblyName = readConfObject(self.assemblyConf, 'name')
+              const assemblyName = readConfObject(
+                self.configuration,
+                'assemblyName',
+              )
               if (!genomesFile.has(assemblyName))
                 throw new Error(
                   `Assembly "${assemblyName}" not in genomes file from connection "${connectionName}"`,

@@ -13,7 +13,7 @@ describe('Root MST model', () => {
     root.setDefaultSession()
     expect(root.session).toBeTruthy()
     expect(root.jbrowse.savedSessions.length).toBe(1)
-    expect(root.jbrowse.datasets.length).toBe(0)
+    expect(root.jbrowse.assemblies.length).toBe(0)
     expect(getSnapshot(root.jbrowse.configuration)).toMatchSnapshot()
   })
 
@@ -39,32 +39,27 @@ describe('Root MST model', () => {
     expect(root.session).toBeTruthy()
   })
 
-  it('adds track and connection configs to a dataset', () => {
+  it('adds track and connection configs to an assembly', () => {
     const root = rootModel.create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
-        datasets: [
-          {
-            name: 'dataset1',
-            assembly: { name: 'assembly1', aliases: ['assemblyA'] },
-          },
-        ],
+        assemblies: [{ name: 'assembly1', aliases: ['assemblyA'] }],
       },
     })
-    expect(root.jbrowse.datasets.length).toBe(1)
-    expect(getSnapshot(root.jbrowse.datasets[0])).toMatchSnapshot()
-    const newTrackConf = root.jbrowse.datasets[0].addTrackConf({
+    expect(root.jbrowse.assemblies.length).toBe(1)
+    expect(getSnapshot(root.jbrowse.assemblies[0])).toMatchSnapshot()
+    const newTrackConf = root.jbrowse.addTrackConf({
       type: 'BasicTrack',
       trackId: 'trackId0',
     })
     expect(getSnapshot(newTrackConf)).toMatchSnapshot()
-    expect(root.jbrowse.datasets[0].tracks.length).toBe(1)
-    const newConnectionConf = root.jbrowse.datasets[0].addConnectionConf({
+    expect(root.jbrowse.tracks.length).toBe(1)
+    const newConnectionConf = root.jbrowse.addConnectionConf({
       type: 'JBrowse1Connection',
       connectionId: 'connectionId0',
     })
     expect(getSnapshot(newConnectionConf)).toMatchSnapshot()
-    expect(root.jbrowse.datasets[0].connections.length).toBe(1)
+    expect(root.jbrowse.connections.length).toBe(1)
   })
 
   it('adds a session snapshot', () => {

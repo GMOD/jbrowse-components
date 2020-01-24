@@ -16,26 +16,23 @@ describe('<AddConnectionDrawerWidget />', () => {
 
   beforeEach(() => {
     session = createTestSession()
-    session.addDataset({
-      name: 'volvox',
-      assembly: {
-        name: 'volMyt1',
-        sequence: {
-          trackId: 'ref0',
-          type: 'ReferenceSequenceTrack',
-          adapter: {
-            type: 'FromConfigAdapter',
-            features: [
-              {
-                refName: 'ctgA',
-                uniqueId: 'firstId',
-                start: 0,
-                end: 1000,
-                seq:
-                  'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctgaattgagaactcgagcgggggctaggcaaattctgattcagcctgacttctcttggaaccctgcccataaatcaaagggttagtgcggccaaaacgttggacaacggtattagaagaccaacctgaccaccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctccttggtcgctccgttgtacccaggctactttgaaagagcgcagaatacttagacggtatcgatcatggtagcatagcattctgataacatgtatggagttcgaacatccgtctggggccggacggtccgtttgaggttggttgatctgggtgatagtcagcaagatagacgttagataacaaattaaaggattttaccttagattgcgactagtacaacggtacatcggtgattcgcgctctactagatcacgctatgggtaccataaacaaacggtggaccttctcaagctggttgacgcctcagcaacataggcttcctcctccacgcatctcagcataaaaggcttataaactgcttctttgtgccagagcaactcaattaagcccttggtaccgtgggcacgcattctgtcacggtgaccaactgttcatcctgaatcgccgaatgggactatttggtacaggaatcaagcggatggcactactgcagcttatttacgacggtattcttaaagtttttaagacaatgtatttcatgggtagttcggtttgttttattgctacacaggctcttgtagacgacctacttagcactacgg',
-              },
-            ],
-          },
+    session.addAssemblyConf({
+      name: 'volMyt1',
+      sequence: {
+        trackId: 'ref0',
+        type: 'ReferenceSequenceTrack',
+        adapter: {
+          type: 'FromConfigAdapter',
+          features: [
+            {
+              refName: 'ctgA',
+              uniqueId: 'firstId',
+              start: 0,
+              end: 1000,
+              seq:
+                'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctgaattgagaactcgagcgggggctaggcaaattctgattcagcctgacttctcttggaaccctgcccataaatcaaagggttagtgcggccaaaacgttggacaacggtattagaagaccaacctgaccaccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctccttggtcgctccgttgtacccaggctactttgaaagagcgcagaatacttagacggtatcgatcatggtagcatagcattctgataacatgtatggagttcgaacatccgtctggggccggacggtccgtttgaggttggttgatctgggtgatagtcagcaagatagacgttagataacaaattaaaggattttaccttagattgcgactagtacaacggtacatcggtgattcgcgctctactagatcacgctatgggtaccataaacaaacggtggaccttctcaagctggttgacgcctcagcaacataggcttcctcctccacgcatctcagcataaaaggcttataaactgcttctttgtgccagagcaactcaattaagcccttggtaccgtgggcacgcattctgtcacggtgaccaactgttcatcctgaatcgccgaatgggactatttggtacaggaatcaagcggatggcactactgcagcttatttacgacggtattcttaaagtttttaagacaatgtatttcatgggtagttcggtttgttttattgctacacaggctcttgtagacgacctacttagcactacgg',
+            },
+          ],
         },
       },
     })
@@ -87,15 +84,15 @@ type bigWig
       getByText,
       getAllByDisplayValue,
     } = render(<AddConnectionDrawerWidget model={model} />)
-    expect(session.datasets[0].connections.length).toBe(0)
+    expect(session.connections.length).toBe(0)
     fireEvent.mouseDown(getAllByRole('button')[0])
-    await waitForElement(() => getByText('volvox'), { container })
-    fireEvent.click(getByText('volvox'))
+    await waitForElement(() => getByText('volMyt1'), { container })
+    fireEvent.click(getByText('volMyt1'))
     fireEvent.mouseDown(getAllByRole('button')[1])
     await waitForElement(() => getByText('UCSC Track Hub'), { container })
     fireEvent.click(getByText('UCSC Track Hub'))
     fireEvent.click(getByTestId('addConnectionNext'))
-    fireEvent.change(getAllByDisplayValue('nameOfUCSCTrackHubConnection')[1], {
+    fireEvent.change(getAllByDisplayValue('nameOfConnection')[1], {
       target: { value: 'Test UCSC connection name' },
     })
     fireEvent.change(
@@ -105,7 +102,7 @@ type bigWig
       },
     )
     fireEvent.click(getAllByTestId('addConnectionNext')[1])
-    expect(session.datasets[0].connections.length).toBe(1)
+    expect(session.connections.length).toBe(1)
   })
 
   it('can handle a custom JBrowse 1 data directory URL', async () => {
@@ -125,15 +122,15 @@ type bigWig
       getByText,
       getAllByDisplayValue,
     } = render(<AddConnectionDrawerWidget model={model} />)
-    expect(session.datasets[0].connections.length).toBe(0)
+    expect(session.connections.length).toBe(0)
     fireEvent.mouseDown(getAllByRole('button')[0])
-    await waitForElement(() => getByText('volvox'), { container })
-    fireEvent.click(getByText('volvox'))
+    await waitForElement(() => getByText('volMyt1'), { container })
+    fireEvent.click(getByText('volMyt1'))
     fireEvent.mouseDown(getAllByRole('button')[1])
     await waitForElement(() => getByText('JBrowse 1 Data'), { container })
     fireEvent.click(getByText('JBrowse 1 Data'))
     fireEvent.click(getByTestId('addConnectionNext'))
-    fireEvent.change(getAllByDisplayValue('nameOfJBrowse1Connection')[1], {
+    fireEvent.change(getAllByDisplayValue('nameOfConnection')[1], {
       target: { value: 'Test JBrowse 1 connection name' },
     })
     fireEvent.change(
@@ -143,6 +140,6 @@ type bigWig
       },
     )
     fireEvent.click(getAllByTestId('addConnectionNext')[1])
-    expect(session.datasets[0].connections.length).toBe(1)
+    expect(session.connections.length).toBe(1)
   })
 })

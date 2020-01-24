@@ -17,40 +17,6 @@ const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
   pluginManager,
 )
 
-const DatasetConfigSchema = ConfigurationSchema(
-  'Dataset',
-  {
-    name: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Name of the dataset',
-    },
-    assembly: types.union({ dispatcher }, ...assemblyConfigSchemas),
-    // track configuration is an array of track config schemas. multiple
-    // instances of a track can exist that use the same configuration
-    tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
-    connections: types.array(
-      pluginManager.pluggableConfigSchemaType('connection'),
-    ),
-  },
-  {
-    actions: self => ({
-      addTrackConf(trackConf) {
-        const { type } = trackConf
-        if (!type) throw new Error(`unknown track type ${type}`)
-        const length = self.tracks.push(trackConf)
-        return self.tracks[length - 1]
-      },
-      addConnectionConf(connectionConf) {
-        const { type } = connectionConf
-        if (!type) throw new Error(`unknown connection type ${type}`)
-        const length = self.connections.push(connectionConf)
-        return self.connections[length - 1]
-      },
-    }),
-  },
-)
-
 // poke some things for testing (this stuff will eventually be removed)
 window.getSnapshot = getSnapshot
 window.resolveIdentifier = resolveIdentifier
@@ -73,10 +39,15 @@ const JBrowseWeb = types
         defaultValue: false,
       },
     }),
-    datasets: types.array(DatasetConfigSchema),
+    assemblies: types.array(
+      types.union({ dispatcher }, ...assemblyConfigSchemas),
+    ),
     // track configuration is an array of track config schemas. multiple
     // instances of a track can exist that use the same configuration
     tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+    connections: types.array(
+      pluginManager.pluggableConfigSchemaType('connection'),
+    ),
     defaultSession: types.optional(types.frozen(Session), {
       name: `New Session`,
       menuBars: [{ type: 'MainMenuBar' }],
@@ -104,9 +75,21 @@ const JBrowseWeb = types
       if (sessionIndex === -1) self.savedSessions.push(sessionSnapshot)
       else self.savedSessions[sessionIndex] = sessionSnapshot
     },
-    addDataset(datasetConf) {
-      const length = self.datasets.push(datasetConf)
-      return self.datasets[length - 1]
+    addAssemblyConf(assemblyConf) {
+      const length = self.assemblies.push(assemblyConf)
+      return self.assemblies[length - 1]
+    },
+    addTrackConf(trackConf) {
+      const { type } = trackConf
+      if (!type) throw new Error(`unknown track type ${type}`)
+      const length = self.tracks.push(trackConf)
+      return self.tracks[length - 1]
+    },
+    addConnectionConf(connectionConf) {
+      const { type } = connectionConf
+      if (!type) throw new Error(`unknown connection type ${type}`)
+      const length = self.connections.push(connectionConf)
+      return self.connections[length - 1]
     },
   }))
   .views(self => ({

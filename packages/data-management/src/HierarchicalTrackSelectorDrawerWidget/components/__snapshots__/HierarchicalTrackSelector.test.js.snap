@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`HierarchicalTrackSelector drawer widget renders nothing with no dataset 1`] = `null`;
+exports[`HierarchicalTrackSelector drawer widget renders nothing with no assembly 1`] = `null`;
 
 exports[`HierarchicalTrackSelector drawer widget renders with a couple of categorized tracks 1`] = `
 <div
@@ -60,7 +60,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
     >
       <label
         class="MuiFormControlLabel-root makeStyles-formControlLabel"
-        title="The reference sequence for volvox"
+        title="The reference sequence for volMyt1"
       >
         <span
           aria-disabled="false"
@@ -95,7 +95,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
         <span
           class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
         >
-          Reference Sequence (volvox)
+          Reference Sequence (volMyt1)
         </span>
       </label>
       <button

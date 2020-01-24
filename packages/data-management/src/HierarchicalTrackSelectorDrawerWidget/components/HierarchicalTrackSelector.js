@@ -134,9 +134,6 @@ function HierarchicalTrackSelector({ model }) {
   const filterError =
     model.trackConfigurations(assemblyName) > 0 &&
     model.trackConfigurations(assemblyName).filter(filter).length === 0
-  const dataset = session.datasets.find(
-    s => readConfObject(s, ['assembly', 'name']) === assemblyName,
-  )
 
   return (
     <div
@@ -180,33 +177,38 @@ function HierarchicalTrackSelector({ model }) {
         top
       />
       <FormGroup>
-        {dataset.connections.map(connectionConf => (
-          <FormControlLabel
-            key={readConfObject(connectionConf, 'name')}
-            control={
-              <Switch
-                checked={
-                  session.connections.has(assemblyName) &&
-                  !!session.connections
-                    .get(assemblyName)
-                    .find(
-                      connection =>
-                        connection.name ===
-                        readConfObject(connectionConf, 'name'),
-                    )
-                }
-                onChange={() => handleConnectionToggle(connectionConf)}
-                // value="checkedA"
-              />
-            }
-            label={readConfObject(connectionConf, 'name')}
-          />
-        ))}
+        {session.connections
+          .filter(
+            connectionConf =>
+              readConfObject(connectionConf, 'assemblyName') === assemblyName,
+          )
+          .map(connectionConf => (
+            <FormControlLabel
+              key={readConfObject(connectionConf, 'name')}
+              control={
+                <Switch
+                  checked={
+                    session.connectionInstances.has(assemblyName) &&
+                    !!session.connectionInstances
+                      .get(assemblyName)
+                      .find(
+                        connection =>
+                          connection.name ===
+                          readConfObject(connectionConf, 'name'),
+                      )
+                  }
+                  onChange={() => handleConnectionToggle(connectionConf)}
+                  // value="checkedA"
+                />
+              }
+              label={readConfObject(connectionConf, 'name')}
+            />
+          ))}
       </FormGroup>
-      {session.connections.has(assemblyName) ? (
+      {session.connectionInstances.has(assemblyName) ? (
         <>
           <Typography variant="h5">Connections</Typography>
-          {session.connections.get(assemblyName).map(connection => (
+          {session.connectionInstances.get(assemblyName).map(connection => (
             <Paper
               key={connection.name}
               className={classes.connectionsPaper}

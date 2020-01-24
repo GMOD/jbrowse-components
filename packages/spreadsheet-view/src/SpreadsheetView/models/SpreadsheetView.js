@@ -62,14 +62,15 @@ export default pluginManager => {
         return undefined
       },
 
-      get dataset() {
-        if (self.spreadsheet && self.spreadsheet.datasetName) {
-          const { datasets } = getRoot(self).jbrowse
-          const dataset = (datasets || []).find(
-            ds => readConfObject(ds, 'name') === self.spreadsheet.datasetName,
+      get assembly() {
+        if (self.spreadsheet && self.spreadsheet.assemblyName) {
+          const { assemblies } = getRoot(self).jbrowse
+          const assembly = (assemblies || []).find(
+            asm =>
+              readConfObject(asm, 'name') === self.spreadsheet.assemblyName,
           )
-          if (dataset) {
-            return dataset
+          if (assembly) {
+            return assembly
           }
         }
         return undefined

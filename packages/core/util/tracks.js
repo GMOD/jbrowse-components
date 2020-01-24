@@ -15,10 +15,6 @@ export function getContainingView(node) {
 }
 
 export function getTrackAssemblyNames(track) {
-  // if the track has an assemblyName for some reason, just use that
-  if (track.assemblyName) return track.assemblyName
-
-  // otherwise use the assembly from the dataset that it is part of
   const trackConf = track.configuration
   return readConfObject(trackConf, 'assemblyNames')
 }
