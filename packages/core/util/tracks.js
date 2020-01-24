@@ -16,7 +16,13 @@ export function getContainingView(node) {
 
 export function getTrackAssemblyNames(track) {
   const trackConf = track.configuration
-  return readConfObject(trackConf, 'assemblyNames')
+  const trackAssemblyNames = readConfObject(trackConf, 'assemblyNames')
+  if (!trackAssemblyNames) {
+    // Check if it's an assembly sequence track
+    const parent = getParent(track.configuration)
+    if (parent.sequence) return readConfObject(parent, 'name')
+  }
+  return trackAssemblyNames
 }
 
 /**

@@ -19,7 +19,8 @@ export default pluginManager => {
           self,
           'loadAssemblyRefNameMap',
           () => ({
-            assemblyName: getTrackAssemblyNames(self),
+            // TODO: Figure this out for multiple assembly names
+            assemblyName: getTrackAssemblyNames(self)[0],
             adapter: getConf(self, 'adapter'),
           }),
           ({ assemblyName, adapter }, signal) => {

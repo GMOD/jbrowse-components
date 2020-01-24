@@ -135,7 +135,8 @@ const stateModelFactory = (configSchema: any) =>
             {
               adapterConfig: getSnapshot(adapter),
               adapterType: adapter.type,
-              assemblyName: getTrackAssemblyNames(self),
+              // TODO: Figure this out for multiple assembly names
+              assemblyName: getTrackAssemblyNames(self)[0],
               regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
               signal,
               bpPerPx,

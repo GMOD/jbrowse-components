@@ -49,7 +49,7 @@ export default self => ({
     async getRefNameAliases(assemblyName, opts = {}) {
       const refNameAliases = {}
       const assemblyConfig = self.assemblyData.get(assemblyName)
-      if (assemblyConfig.refNameAliases) {
+      if (assemblyConfig && assemblyConfig.refNameAliases) {
         const adapterConfigId = jsonStableStringify(
           toJS(assemblyConfig.refNameAliases.adapter),
         )

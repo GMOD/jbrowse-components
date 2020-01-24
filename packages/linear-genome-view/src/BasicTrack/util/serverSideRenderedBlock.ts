@@ -179,12 +179,12 @@ function renderBlockData(self: Instance<BlockStateModel>) {
         matchFound = true
     })
     if (!matchFound)
-      cannotBeRenderedReason = 'region assembly does not match track assembly'
+      cannotBeRenderedReason = `region assembly (${self.region.assemblyName}) does not match track assemblies (${assemblyNames})`
   }
   if (!cannotBeRenderedReason)
     cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
   const trackAssemblyData =
-    assemblyData && assemblyData.get(self.region.assemblyName)
+    (assemblyData && assemblyData.get(self.region.assemblyName)) || {}
   const { renderProps } = track
   const { rendererType } = track
   const { config } = renderProps
