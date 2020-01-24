@@ -3,6 +3,7 @@
 **/coverage/
 yarn-error.log
 *.swp
+*.swo
 .DS_Store
 lint.log
 .eslintcache

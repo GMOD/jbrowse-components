@@ -21,6 +21,7 @@ const weHave = {
 class PonyfillOffscreenContext {
   constructor() {
     this.commands = []
+    this.currentFont = '12px Courier New, monospace'
   }
 
   // setters (no getters working)
@@ -32,8 +33,12 @@ class PonyfillOffscreenContext {
     this.commands.push({ type: 'fillStyle', style })
   }
 
-  // methods
+  set font(style) {
+    this.currentFont = style
+    this.commands.push({ type: 'font', style })
+  }
 
+  // methods
   arc(...args) {
     this.commands.push({ type: 'arc', args })
   }
@@ -98,10 +103,12 @@ class PonyfillOffscreenContext {
     this.commands.push({ type: 'lineTo', args })
   }
 
-  // needs proper method?
-  measureText(...args) {
-    this.commands.push({ type: 'measureText', args })
-    return { height: 12 }
+  measureText(text) {
+    const height = +this.currentFont.match(/\d+/)[0]
+    return {
+      width: (height / 2) * text.length,
+      height,
+    }
   }
 
   moveTo(...args) {

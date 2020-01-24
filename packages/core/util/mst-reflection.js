@@ -57,9 +57,20 @@ export function getPropertyType(type, propertyName) {
   return propertyType
 }
 
+/**
+ * get the base type from inside an MST optional type
+ * @param {*} type
+ */
 export function getDefaultValue(type) {
   if (!isOptionalType(type))
     throw new TypeError('type must be an optional type')
   // eslint-disable-next-line no-underscore-dangle
   return type._defaultValue || type.defaultValue
+}
+
+/** get the string values of an MST enumeration type */
+export function getEnumerationValues(type) {
+  const subtypes = getUnionSubTypes(type)
+  // the subtypes should all be literals with a value member
+  return subtypes.map(t => t.value)
 }
