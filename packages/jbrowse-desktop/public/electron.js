@@ -206,9 +206,10 @@ ipcMain.handle('getMainWindowId', async () => mainWindow.id)
 // limited functionality, difficult to use existing merge-deep/mixin-deep type
 // things for this
 function mergeConfigs(A, B) {
-  A.assemblies.push(...(B.assemblies || []))
-  A.tracks.push(...(B.tracks || []))
-  return A
+  const merged = merge(A, B)
+  if (B.defaultSession) merged.defaultSession = B.defaultSession
+  else if (A.defaultSession) merged.defaultSession = A.defaultSession
+  return merged
 }
 
 ipcMain.handle('loadConfig', async () => {

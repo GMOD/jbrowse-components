@@ -391,10 +391,12 @@ interface Config {
   savedSessions: unknown[]
   assemblies: Assembly[]
   tracks: Track[]
+  defaultSession?: {}
 }
 // similar to electron.js
 export function mergeConfigs(A: Config, B: Config) {
-  A.assemblies.push(...(B.assemblies || []))
-  A.tracks.push(...(B.tracks || []))
-  return A
+  const merged = merge(A, B)
+  if (B.defaultSession) merged.defaultSession = B.defaultSession
+  else if (A.defaultSession) merged.defaultSession = A.defaultSession
+  return merged
 }
