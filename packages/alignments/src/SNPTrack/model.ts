@@ -60,44 +60,55 @@ const stateModelFactory = (configSchema: any) =>
         },
       }
     })
-    .views(self => ({
-      get rendererTypeName() {
-        const viewName = getConf(self, 'defaultRendering')
-        const rendererType = rendererTypes.get(viewName)
-        if (!rendererType)
-          throw new Error(`unknown alignments view name ${viewName}`)
-        return rendererType
-      },
+    .views(self => {
+      let oldDomain: [number, number] = [0, 50]
+      return {
+        get rendererTypeName() {
+          const viewName = getConf(self, 'defaultRendering')
+          const rendererType = rendererTypes.get(viewName)
+          if (!rendererType)
+            throw new Error(`unknown alignments view name ${viewName}`)
+          return rendererType
+        },
 
-      get domain() {
-        return self.stats
-          ? getNiceDomain({
-              domain: [self.stats.scoreMin, self.stats.scoreMax],
+        get domain() {
+          const ret = self.stats
+            ? getNiceDomain({
+                domain: [self.stats.scoreMin, self.stats.scoreMax],
+                scaleType: getConf(self, 'scaleType'),
+                bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
+                snapVal: 1.5,
+              })
+            : [0, 50]
+
+          ret[1] = Math.ceil(ret[1] / 20) * 20
+          if (JSON.stringify(oldDomain) !== JSON.stringify(ret)) {
+            oldDomain = ret
+          }
+          return oldDomain
+        },
+
+        get renderProps() {
+          const config = self.rendererType.configSchema.create(
+            getConf(self, ['renderers', this.rendererTypeName]) || {},
+          )
+          return {
+            ...getParentRenderProps(self),
+            notReady: !self.ready,
+            trackModel: self,
+            config,
+            scaleOpts: {
+              domain: this.domain,
+              stats: self.stats,
+              autoscaleType: getConf(self, 'autoscale'),
               scaleType: getConf(self, 'scaleType'),
-              bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
-            })
-          : [0, 50]
-      },
-      get renderProps() {
-        const config = self.rendererType.configSchema.create(
-          getConf(self, ['renderers', this.rendererTypeName]) || {},
-        )
-        return {
-          ...getParentRenderProps(self),
-          notReady: !self.ready,
-          trackModel: self,
-          config,
-          scaleOpts: {
-            domain: this.domain,
-            stats: self.stats,
-            autoscaleType: getConf(self, 'autoscale'),
-            scaleType: getConf(self, 'scaleType'),
-            inverted: getConf(self, 'inverted'),
-          },
-          height: self.height,
-        }
-      },
-    }))
+              inverted: getConf(self, 'inverted'),
+            },
+            height: self.height,
+          }
+        },
+      }
+    })
     .actions(self => {
       function getStats(signal: AbortSignal) {
         const { rpcManager } = getSession(self) as {
