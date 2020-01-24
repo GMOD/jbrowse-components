@@ -62,8 +62,6 @@ export default class extends BaseAdapter {
               data: { refName, start, end: regionEnd, seq },
             }),
           )
-        } else {
-          console.log('HERE')
         }
         observer.complete()
       },
