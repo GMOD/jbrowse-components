@@ -235,6 +235,28 @@ describe('some error state', () => {
     expect(spy).toHaveBeenCalled()
     spy.mockRestore()
   })
+
+  it('SNP test that BAI with 404 file displays error', async () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const state = JBrowseRootModel.create({ jbrowse: config })
+    const { getByTestId, getAllByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    fireEvent.click(
+      await waitForElement(() =>
+        getByTestId('htsTrackEntry-volvox_alignments_bai_nonexist_SNP'),
+      ),
+    )
+    await expect(
+      waitForElement(() =>
+        getAllByText(
+          'HTTP 404 fetching test_data/volvox-sorted.bam.bai.nonexist',
+        ),
+      ),
+    ).resolves.toBeTruthy()
+    expect(spy).toHaveBeenCalled()
+    spy.mockRestore()
+  })
 })
 
 describe('test renamed refs', () => {
@@ -273,6 +295,46 @@ describe('test renamed refs', () => {
     )
     await expect(
       waitForElement(() => getAllByText('ctgA_110_638_0:0:0_3:0:0_15b')),
+    ).resolves.toBeTruthy()
+  })
+  it('open a snp w sub cram with alternate renamed ref', async () => {
+    jest.setTimeout(30000)
+    const state = JBrowseRootModel.create({ jbrowse: config })
+    const { getByTestId: byId, getAllByTestId, getByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    await waitForElement(() => getByText('Help'))
+    state.session.views[0].setNewView(0.05, 5000)
+    fireEvent.click(
+      await waitForElement(() => byId('htsTrackEntry-volvox_cram_SNP')),
+    )
+    const canvas = await waitForElement(() =>
+      getAllByTestId('prerendered_canvas'),
+    )
+
+    const img = canvas[0].toDataURL()
+    const data = img.replace(/^data:image\/\w+;base64,/, '')
+    const buf = Buffer.from(data, 'base64')
+    // this is needed to do a fuzzy image comparison because
+    // the travis-ci was 2 pixels different for some reason, see PR #710
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.001,
+      failureThresholdType: 'percent',
+    })
+  })
+  it('test that SNP with sub bam with contigA instead of ctgA displays', async () => {
+    jest.setTimeout(30000)
+    const state = JBrowseRootModel.create({ jbrowse: config })
+    const { getByTestId, getAllByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    fireEvent.click(
+      await waitForElement(() =>
+        getByTestId('htsTrackEntry-volvox_bam_altname_SNP'),
+      ),
+    )
+    await expect(
+      waitForElement(() => getAllByText('ctgA')), // need to find what display string is!!
     ).resolves.toBeTruthy()
   })
   it('open a bigwig with a renamed reference', async () => {

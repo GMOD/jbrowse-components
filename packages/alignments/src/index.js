@@ -79,6 +79,7 @@ export default class extends Plugin {
         new AdapterType({
           name: 'SNPAdapter',
           configSchema: snpAdapterConfigSchema,
+          // configSchema: snpAdapterConfigSchema(pluginManager),
           AdapterClass: SnpAdapterClass,
         }),
     )

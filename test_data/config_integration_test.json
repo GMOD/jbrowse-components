@@ -249,6 +249,119 @@
           }
         },
         {
+          "type": "SNPTrack",
+          "trackId": "volvox_cram_SNP",
+          "name": "volvox-sorted.cram (contigA) SNP",
+          "adapter": {
+            "type": "SNPAdapter",
+            "subadapter": {
+              "type": "CramAdapter",
+              "cramLocation": {
+                "uri": "test_data/volvox-sorted-altname.cram"
+              },
+              "craiLocation": {
+                "uri": "test_data/volvox-sorted-altname.cram.crai"
+              }
+            }
+          },
+          "renderers": {
+            "SNPXYRenderer": {
+              "type": "SNPXYPlotRenderer"
+            }
+          }
+        },
+        {
+          "type": "SNPTrack",
+          "trackId": "volvox_SNP",
+          "name": "volvox-sorted red/blue (ctgA) SNP",
+          "adapter": {
+            "type": "SNPAdapter",
+            "subadapter": {
+              "type": "BamAdapter",
+              "bamLocation": {
+                "uri": "test_data/volvox-sorted.bam"
+              },
+              "index": {
+                "location": {
+                  "uri": "test_data/volvox-sorted.bam.bai"
+                }
+              }
+            }
+          },
+          "renderers": {
+            "SNPXYRenderer": {
+              "type": "SNPXYPlotRenderer"
+            }
+          }
+        },
+        {
+          "type": "SNPTrack",
+          "trackId": "volvox_bam_altname_SNP",
+          "name": "volvox-sorted red/blue (contigA) SNP",
+          "adapter": {
+            "type": "SNPAdapter",
+            "subadapter": {
+              "type": "BamAdapter",
+              "bamLocation": {
+                "uri": "test_data/volvox-sorted-altname.bam"
+              },
+              "index": {
+                "location": {
+                  "uri": "test_data/volvox-sorted-altname.bam.bai"
+                }
+              }
+            }
+          },
+          "renderers": {
+            "SNPXYRenderer": {
+              "type": "SNPXYPlotRenderer"
+            }
+          }
+        },
+        {
+          "type": "SNPTrack",
+          "trackId": "volvox_alignments_bam_nonexist_SNP",
+          "name": "volvox-sorted red/blue (bam nonexist 404) SNP",
+          "adapter": {
+            "type": "SNPAdapter",
+            "subadapter": {
+              "type": "BamAdapter",
+              "bamLocation": {
+                "uri": "test_data/volvox-sorted.bam.nonexist"
+              },
+              "index": {
+                "location": {
+                  "uri": "test_data/volvox-sorted.bam.bai"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "SNPTrack",
+          "trackId": "volvox_alignments_bai_nonexist_SNP",
+          "name": "volvox-sorted red/blue (bai nonexist 404) SNP",
+          "adapter": {
+            "type": "SNPAdapter",
+            "subadapter": {
+              "type": "BamAdapter",
+              "bamLocation": {
+                "uri": "test_data/volvox-sorted.bam"
+              },
+              "index": {
+                "location": {
+                  "uri": "test_data/volvox-sorted.bam.bai.nonexist"
+                }
+              }
+            }
+          },
+          "renderers": {
+            "SNPXYRenderer": {
+              "type": "SNPXYPlotRenderer"
+            }
+          }
+        },
+        {
           "type": "WiggleTrack",
           "trackId": "volvox_bigwig_nonexist",
           "name": "wiggle_track nonexist",

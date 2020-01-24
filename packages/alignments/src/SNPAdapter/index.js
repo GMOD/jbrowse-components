@@ -6,7 +6,6 @@ export { default as AdapterClass } from './SNPAdapter'
 export const configSchema = ConfigurationSchema(
   'SNPAdapter',
   {
-    // verify extension names
     subadapter: {
       type: 'frozen',
       defaultValue: {},
@@ -14,3 +13,13 @@ export const configSchema = ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+// export function configSchema(pluginManager) {
+//   return ConfigurationSchema(
+//     'SNPAdapter',
+//     {
+//       subadapter: pluginManager.pluggableConfigSchemaType('adapter'),
+//     },
+//     { explicitlyTyped: true },
+//   )
+// }
