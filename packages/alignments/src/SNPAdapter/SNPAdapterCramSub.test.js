@@ -186,5 +186,5 @@ test('test usage of getMultiRegion stats, SNP adapter can generate a domain from
 
   expect(Object.keys(stats).length).toEqual(9)
   expect(stats.scoreMin).toEqual(0)
-  expect(stats.scoreMax).toBeGreaterThanOrEqual(0)
+  expect(stats.scoreMax).toEqual(13)
 })
