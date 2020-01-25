@@ -17,7 +17,7 @@ export default pluginManager => {
   ).configSchema
 
   return ConfigurationSchema(
-    'SNPTrack',
+    'SNPCoverageTrack',
     {
       autoscale: {
         type: 'stringEnum',

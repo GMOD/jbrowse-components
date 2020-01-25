@@ -15,7 +15,7 @@ import { autorun, observable } from 'mobx'
 import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
 import React from 'react'
 import { getNiceDomain } from '../util'
-import SNPTrackComponent from './components/SNPTrackComponent'
+import SNPCoverageTrackComponent from './components/SNPCoverageTrackComponent'
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpxy', 'SNPXYRenderer']])
@@ -24,17 +24,17 @@ const rendererTypes = new Map([['snpxy', 'SNPXYRenderer']])
 const stateModelFactory = (configSchema: any) =>
   types
     .compose(
-      'SNPTrack',
+      'SNPCoverageTrack',
       blockBasedTrackModel as BlockBasedTrackStateModel,
       types
         .model({
-          type: types.literal('SNPTrack'),
+          type: types.literal('SNPCoverageTrack'),
           configuration: ConfigurationReference(configSchema),
           selectedRendering: types.optional(types.string, ''),
         })
         .volatile(() => ({
-          // avoid circular reference since SNPTrackComponent receives this model
-          ReactComponent: (SNPTrackComponent as unknown) as React.FC,
+          // avoid circular reference since SNPCoverageTrackComponent receives this model
+          ReactComponent: (SNPCoverageTrackComponent as unknown) as React.FC,
           ready: true, // false,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           stats: observable({ scoreMin: 0, scoreMax: 50 } as any), // undefined as undefined | any,
@@ -155,6 +155,6 @@ const stateModelFactory = (configSchema: any) =>
       }
     })
 
-export type SNPTrackModel = ReturnType<typeof stateModelFactory>
+export type SNPCoverageTrackModel = ReturnType<typeof stateModelFactory>
 
 export default stateModelFactory

@@ -334,7 +334,7 @@ describe('test renamed refs', () => {
       ),
     )
     await expect(
-      waitForElement(() => getAllByText('ctgA')), // need to find what display string is!!
+      waitForElement(() => getAllByText('ctgA')), // need to find wwhat display string is!!
     ).resolves.toBeTruthy()
   })
   it('open a bigwig with a renamed reference', async () => {

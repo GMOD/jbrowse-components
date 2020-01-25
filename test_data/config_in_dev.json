@@ -141,7 +141,7 @@
           }
         },
         {
-          "type": "SNPTrack",
+          "type": "SNPCoverageTrack",
           "trackId": "ngmlr_splitters_snp",
           "name": "Breast cancer pacbio (NGMLR) splitters only (SNPCoverage)",
           "category": [
@@ -951,7 +951,7 @@
           }
         },
         {
-          "type": "SNPTrack",
+          "type": "SNPCoverageTrack",
           "trackId": "volvox-short-reads-snp-bam",
           "name": "volvox-SNP (bam)",
           "category": [
@@ -978,7 +978,7 @@
           }
         },
         {
-          "type": "SNPTrack",
+          "type": "SNPCoverageTrack",
           "trackId": "volvox-short-reads-snp-cram",
           "name": "volvox-SNP (cram)",
           "category": [

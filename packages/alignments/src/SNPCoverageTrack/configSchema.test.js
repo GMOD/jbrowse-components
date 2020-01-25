@@ -33,7 +33,7 @@ test('has a viewType attr', () => {
     new PluginManager([new SNPXYRendererPlugin()]).configure(),
   )
   const config = configSchema.create({
-    type: 'SNPTrack',
+    type: 'SNPCoverageTrack',
     trackId: 'track1',
     name: 'SNPZonker Track',
   })

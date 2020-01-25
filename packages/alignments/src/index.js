@@ -13,9 +13,9 @@ import {
   modelFactory as alignmentsTrackModelFactory,
 } from './AlignmentsTrack'
 import {
-  configSchemaFactory as snpTrackConfigSchemaFactory,
-  modelFactory as snpTrackModelFactory,
-} from './SNPTrack'
+  configSchemaFactory as snpCoverageTrackConfigSchemaFactory,
+  modelFactory as snpCoverageTrackModelFactory,
+} from './SNPCoverageTrack'
 import {
   AdapterClass as SnpAdapterClass,
   configSchema as snpAdapterConfigSchema,
@@ -59,11 +59,11 @@ export default class extends Plugin {
         }),
     )
     pluginManager.addTrackType(() => {
-      const configSchema = snpTrackConfigSchemaFactory(pluginManager)
+      const configSchema = snpCoverageTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
-        name: 'SNPTrack',
+        name: 'SNPCoverageTrack',
         configSchema,
-        stateModel: snpTrackModelFactory(configSchema),
+        stateModel: snpCoverageTrackModelFactory(configSchema),
       })
     })
     pluginManager.addAdapterType(
