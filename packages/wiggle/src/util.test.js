@@ -1,5 +1,5 @@
 import { getNiceDomain, getScale } from './util'
-
+// Note to be removed on abstraction completion - Peter
 test('linear scale', () => {
   const scaleType = 'linear'
   const domain = [0, 100]

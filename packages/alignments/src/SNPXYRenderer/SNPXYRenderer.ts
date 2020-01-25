@@ -2,9 +2,13 @@ import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import BaseRenderer from '@gmod/jbrowse-core/WiggleSNPAbstraction/BaseRenderer'
+import {
+  getOrigin,
+  getScale,
+} from '@gmod/jbrowse-core/WiggleSNPAbstraction/util'
 import SNPBaseRenderer from '../SNPBaseRenderer'
 import NestedFrequencyTable from '../NestedFrequencyTable'
-import { getOrigin, getScale } from '../util'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface SNPXYRendererProps {
@@ -36,12 +40,8 @@ interface BaseInfo {
   }
 }
 
-export default class SNPXYRenderer extends SNPBaseRenderer {
-  draw(
-    ctx: CanvasRenderingContext2D,
-    props: SNPXYRendererProps,
-    coverageBins: Array<NestedFrequencyTable>,
-  ) {
+export default class SNPXYRenderer extends BaseRenderer {
+  draw(ctx: CanvasRenderingContext2D, props: SNPXYRendererProps) {
     const {
       features,
       region,

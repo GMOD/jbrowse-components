@@ -3,14 +3,15 @@ import {
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
 import { featureSpanPx } from '@gmod/jbrowse-core/util'
-import { getScale } from '../util'
+import BaseRenderer from '@gmod/jbrowse-core/WiggleSNPAbstraction/BaseRenderer'
+import { getScale } from '@gmod/jbrowse-core/WiggleSNPAbstraction/util'
 
 import ConfigSchema from '../configSchema'
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
 
 export { default as ReactComponent } from '../WiggleRendering'
 
-export default class extends WiggleBaseRenderer {
+export default class extends BaseRenderer {
   draw(ctx, props) {
     const {
       features,

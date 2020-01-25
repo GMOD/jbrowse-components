@@ -1,5 +1,5 @@
 import { scaleLinear, scaleLog, scaleQuantize } from 'd3-scale'
-
+// Note to be removed on abstraction completion - Peter
 /**
  * produces a d3-scale from arguments. applies a "nice domain" adjustment
  *

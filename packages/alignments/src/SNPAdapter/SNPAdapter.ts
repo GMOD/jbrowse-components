@@ -6,14 +6,14 @@ import { Observable, Observer } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
-import { Mismatch } from './SNPSlightlyLazyFeature'
-import NestedFrequencyTable from '../NestedFrequencyTable'
 import {
   blankStats,
   FeatureStats,
   rectifyStats,
   scoresToStats,
-} from '../statsUtil'
+} from '@gmod/jbrowse-core/WiggleSNPAbstraction/statsUtil'
+import { Mismatch } from './SNPSlightlyLazyFeature'
+import NestedFrequencyTable from '../NestedFrequencyTable'
 
 interface StatsRegion {
   refName: string

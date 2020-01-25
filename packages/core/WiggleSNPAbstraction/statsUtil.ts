@@ -1,6 +1,6 @@
-import { Feature as BBIFeature } from '@gmod/bbi'
-import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
-// Note to be removed on abstraction completion - Peter
+import { INoAssemblyRegion } from '../mst-types'
+import { Feature } from '../util/simpleFeature'
+
 export interface UnrectifiedFeatureStats {
   scoreMin: number
   scoreMax: number
@@ -14,6 +14,7 @@ export interface FeatureStats extends UnrectifiedFeatureStats {
   scoreStdDev: number
   featureDensity: number
 }
+
 /*
  * calculate standard deviation using the 'shortcut method' that accepts
  * the sum and the sum squares of the elements
@@ -71,25 +72,27 @@ export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
  */
 export function calcPerBaseStats(
   region: INoAssemblyRegion,
-  features: BBIFeature[],
+  features: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   opts: { windowSize: number } = { windowSize: 1 },
 ): number[] {
   const { start, end } = region
   const scores = []
-  const feats = features.sort((a, b) => a.start - b.start)
+  const feats = features.sort(
+    (a: Feature, b: Feature) => a.get('start') - b.get('start'),
+  )
   let pos = start
   let currentFeat = 0
   let i = 0
   while (pos < end) {
-    while (currentFeat < feats.length && pos >= feats[currentFeat].end) {
+    while (currentFeat < feats.length && pos >= feats[currentFeat].get('end')) {
       currentFeat += 1
     }
     const f = feats[currentFeat]
     // console.log('currentPos', pos, currentFeat)
     if (!f) {
       scores[i] = 0
-    } else if (pos >= f.start && pos < f.end) {
-      scores[i] = f.score
+    } else if (pos >= f.get('start') && pos < f.get('end')) {
+      scores[i] = f.get('score')
     } else {
       scores[i] = 0
     }
@@ -107,7 +110,7 @@ export function calcPerBaseStats(
  */
 export function scoresToStats(
   region: INoAssemblyRegion,
-  feats: BBIFeature[],
+  feats: any, // eslint-disable-line @typescript-eslint/no-explicit-any
 ): FeatureStats {
   const { start, end } = region
   let scoreMax = Number.MIN_VALUE
@@ -117,12 +120,11 @@ export function scoresToStats(
 
   for (let i = 0; i < feats.length; i += 1) {
     const f = feats[i]
-    // @ts-ignore todo make "summary feature type" in bbi-js
-    scoreMax = Math.max(scoreMax, f.summary ? f.maxScore : f.score)
-    // @ts-ignore todo make "summary feature type" in bbi-js
-    scoreMin = Math.min(scoreMin, f.summary ? f.minScore : f.score)
-    scoreSum += f.score
-    scoreSumSquares += f.score * f.score
+    const score = f.score ? f.score : f.get('score')
+    scoreMax = Math.max(scoreMax, f.summary ? f.maxScore : score)
+    scoreMin = Math.min(scoreMin, f.summary ? f.maxScore : score)
+    scoreSum += score
+    scoreSumSquares += score * score
   }
 
   return rectifyStats({

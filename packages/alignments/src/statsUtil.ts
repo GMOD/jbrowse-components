@@ -106,6 +106,7 @@ export function calcPerBaseStats(
  * @param feats - array of features which are possibly summary features
  * @return - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
  */
+// Note to be removed on abstraction completion - Peter
 export function scoresToStats(
   region: INoAssemblyRegion,
   feats: Feature[],
