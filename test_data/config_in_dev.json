@@ -255,6 +255,53 @@
         },
         {
           "type": "AlignmentsTrack",
+          "trackId": "hg002_cram",
+          "name": "HG002 CRAM nanopore+whatshap",
+          "adapter": {
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram"
+            },
+            "craiLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.crai"
+            }
+          }
+        },
+        {
+          "type": "VariantTrack",
+          "trackId": "hg002_vcf_tbi",
+          "name": "HG002 VCF+TBI haplotype",
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/RTG.hg19.10x.trio-whatshap.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/RTG.hg19.10x.trio-whatshap.vcf.gz.tbi"
+              }
+            }
+          }
+        },
+        {
+          "type": "VariantTrack",
+          "trackId": "hg002_vcf_csi",
+          "name": "HG002 VCF+CSI haplotype",
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/RTG.hg19.10x.trio-whatshap.vcf.gz"
+            },
+            "index": {
+              "indexType": "CSI",
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/RTG.hg19.10x.trio-whatshap.vcf.gz.csi"
+              }
+            }
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
           "trackId": "illumina_hg002",
           "name": "HG002.hs37d5.2x250",
           "adapter": {
@@ -266,14 +313,6 @@
               "location": {
                 "uri": "https://jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam.bai"
               }
-            }
-          },
-          "renderers": {
-            "PileupRenderer": {
-              "type": "PileupRenderer"
-            },
-            "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer"
             }
           }
         },
@@ -1107,6 +1146,34 @@
             },
             "craiLocation": {
               "uri": "test_data/volvox-sorted.cram.crai"
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
+          "trackId": "volvox_bam_with_csi",
+          "name": "volvox-sorted red/blue (CSI)",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "test_data/volvox-sorted.bam"
+            },
+            "index": {
+              "indexType": "CSI",
+              "location": {
+                "uri": "test_data/volvox-sorted.bam.csi"
+              }
             }
           },
           "renderers": {
