@@ -3,6 +3,67 @@
   "datasets": [
     {
       "assembly": {
+        "name": "hg38"
+      },
+      "tracks": [
+        {
+          "type": "AlignmentsTrack",
+          "trackId": "skbr3_pacbio",
+          "name": "SKBR3 pacbio",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/SKBR3_Feb17_GRCh38.sorted.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/SKBR3_Feb17_GRCh38.sorted.bam.bai"
+              }
+            }
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
+          "trackId": "skbr3_10x",
+          "name": "SKBR3 10x",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.10x.sort.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.10x.sort.bam.bai"
+              }
+            }
+          },
+          "renderer": {
+            "type": "StructuralVariantChordRenderer"
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
+          "trackId": "skbr3_nanopore",
+          "name": "SKBR3 nanopore",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.bam.bai"
+              }
+            }
+          },
+          "renderer": {
+            "type": "StructuralVariantChordRenderer"
+          }
+        }
+      ]
+    },
+    {
+      "assembly": {
         "name": "hg19",
         "aliases": [
           "GRCh37"
