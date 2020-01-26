@@ -268,6 +268,22 @@
           }
         },
         {
+          "type": "AlignmentsTrack",
+          "trackId": "hg002_bai",
+          "name": "HG002 BAM nanopore+whatshap",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam.bai"
+              }
+            }
+          }
+        },
+        {
           "type": "VariantTrack",
           "trackId": "hg002_vcf_tbi",
           "name": "HG002 VCF+TBI haplotype",
