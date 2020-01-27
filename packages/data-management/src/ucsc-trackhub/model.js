@@ -71,7 +71,15 @@ export default function(pluginManager) {
               ])
             })
             .then(([trackDbFileLocation, trackDbFile]) => {
-              const tracks = generateTracks(trackDbFile, trackDbFileLocation)
+              const assemblyName = readConfObject(
+                self.configuration,
+                'assemblyName',
+              )
+              const tracks = generateTracks(
+                trackDbFile,
+                trackDbFileLocation,
+                assemblyName,
+              )
               self.setTrackConfs(tracks)
             })
             .catch(error => {

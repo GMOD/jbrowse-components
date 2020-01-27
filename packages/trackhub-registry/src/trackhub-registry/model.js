@@ -25,7 +25,11 @@ export default function(pluginManager) {
           )
             .then(rawResponse => rawResponse.json())
             .then(trackDb => {
-              self.setTrackConfs(generateTracks(trackDb))
+              const assemblyName = readConfObject(
+                self.configuration,
+                'assemblyName',
+              )
+              self.setTrackConfs(generateTracks(trackDb, assemblyName))
             })
             .catch(error => {
               console.error(error)

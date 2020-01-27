@@ -101,7 +101,7 @@ function HierarchicalTrackSelector({ model }) {
   }
 
   function handleConnectionToggle(connectionConf) {
-    const assemblyConnections = session.connections.get(assemblyName)
+    const assemblyConnections = session.connectionInstances.get(assemblyName)
     const existingConnection =
       assemblyConnections &&
       !!assemblyConnections.find(
