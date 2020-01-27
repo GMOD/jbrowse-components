@@ -11,8 +11,6 @@ import { scaleLinear, scaleLog, scaleQuantize } from 'd3-scale'
  *   - pivotValue (number)
  *   - inverted (boolean)
  */
-
-// Note to be removed on abstraction completion - Peter
 export function getScale({
   domain = [],
   range = [],

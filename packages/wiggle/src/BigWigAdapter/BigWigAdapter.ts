@@ -14,7 +14,7 @@ import {
   rectifyStats,
   scoresToStats,
   UnrectifiedFeatureStats,
-} from '@gmod/jbrowse-core/WiggleSNPAbstraction/statsUtil'
+} from '../statsUtil'
 
 interface StatsRegion {
   refName: string

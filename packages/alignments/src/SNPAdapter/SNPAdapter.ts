@@ -11,7 +11,7 @@ import {
   FeatureStats,
   rectifyStats,
   scoresToStats,
-} from '@gmod/jbrowse-core/WiggleSNPAbstraction/statsUtil'
+} from '@gmod/jbrowse-plugin-wiggle/src/statsUtil'
 import { Mismatch } from './SNPSlightlyLazyFeature'
 import NestedFrequencyTable from '../NestedFrequencyTable'
 

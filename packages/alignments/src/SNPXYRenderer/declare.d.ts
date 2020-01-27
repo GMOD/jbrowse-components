@@ -1,3 +1,2 @@
 declare module 'color'
-declare module '@gmod/jbrowse-core/WiggleSNPAbstraction/BaseRenderer'
-declare module '@gmod/jbrowse-core/WiggleSNPAbstraction/util'
+declare module '@gmod/jbrowse-plugin-wiggle/src/WiggleBaseRenderer'

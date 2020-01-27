@@ -1,5 +1,6 @@
-import { INoAssemblyRegion } from '../mst-types'
-import { Feature } from '../util/simpleFeature'
+import { Feature as BBIFeature } from '@gmod/bbi'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 
 export interface UnrectifiedFeatureStats {
   scoreMin: number

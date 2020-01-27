@@ -1,14 +1,10 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import Color from 'color'
-import BaseRenderer from '@gmod/jbrowse-core/WiggleSNPAbstraction/BaseRenderer'
-import {
-  getOrigin,
-  getScale,
-} from '@gmod/jbrowse-core/WiggleSNPAbstraction/util'
+import { getOrigin, getScale } from '../util'
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
 
-export default class XYPlotRenderer extends BaseRenderer {
+export default class XYPlotRenderer extends WiggleBaseRenderer {
   draw(ctx, props) {
     const {
       features,

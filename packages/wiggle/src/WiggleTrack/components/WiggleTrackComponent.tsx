@@ -4,7 +4,7 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
 import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
-import { getScale } from '@gmod/jbrowse-core/WiggleSNPAbstraction/util'
+import { getScale } from '../../util'
 import { WiggleTrackModel } from '../model'
 
 const powersOfTen: number[] = []

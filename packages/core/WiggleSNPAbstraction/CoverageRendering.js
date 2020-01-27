@@ -1,16 +1,17 @@
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
-import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
+/* eslint-disable no-nested-ternary */
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useState, useRef } from 'react'
-import './SNPRendering.scss'
+import { PropTypes as CommonPropTypes } from '../mst-types'
+import { PrerenderedCanvas } from '../ui'
+import './CoverageRendering.scss'
 
 const toP = s => parseFloat(s.toPrecision(6))
 
 function Tooltip({ offsetX, feature }) {
-  const info = feature.get('snpinfo')
+  const info = feature.get('snpinfo') ? feature.get('snpinfo') : null
   const total = info ? info[info.map(e => e.base).indexOf('total')].score : 0
-  const condId = info.length >= 5 ? 'smallInfo' : 'info' // readjust table size to fit all
+  const condId = info && info.length >= 5 ? 'smallInfo' : 'info' // readjust table size to fit all
 
   // construct a table with all relevant information
   const renderTableData = info
@@ -57,8 +58,18 @@ function Tooltip({ offsetX, feature }) {
               <tbody>{renderTableData}</tbody>
             </table>
           </div>
+        ) : feature.get('maxScore') !== undefined ? (
+          <div>
+            Summary
+            <br />
+            Max: {toP(feature.get('maxScore'))}
+            <br />
+            Avg: {toP(feature.get('score'))}
+            <br />
+            Min: {toP(feature.get('minScore'))}
+          </div>
         ) : (
-          toP(37)
+          toP(feature.get('score'))
         )}
       </div>
       <div className="hoverVertical" style={{ left: `${offsetX}px` }} />
@@ -71,7 +82,7 @@ Tooltip.propTypes = {
   feature: ReactPropTypes.object.isRequired,
 }
 
-function SNPRendering(props) {
+function CoverageRendering(props) {
   const {
     region,
     features,
@@ -112,7 +123,7 @@ function SNPRendering(props) {
       onMouseLeave={onMouseLeave}
       role="presentation"
       onFocus={() => {}}
-      className="SNPRendering"
+      className="Rendering"
       style={{
         overflow: 'visible',
         position: 'relative',
@@ -127,7 +138,7 @@ function SNPRendering(props) {
   )
 }
 
-SNPRendering.propTypes = {
+CoverageRendering.propTypes = {
   height: ReactPropTypes.number.isRequired,
   width: ReactPropTypes.number.isRequired,
   region: CommonPropTypes.Region.isRequired,
@@ -140,8 +151,9 @@ SNPRendering.propTypes = {
   }),
 }
 
-SNPRendering.defaultProps = {
+CoverageRendering.defaultProps = {
   horizontallyFlipped: false,
   trackModel: {},
 }
-export default observer(SNPRendering)
+
+export default observer(CoverageRendering)
