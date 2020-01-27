@@ -132,7 +132,6 @@ export default abstract class BaseAdapter {
     opts: BaseOptions = {},
   ): Promise<boolean> {
     const refNames = await this.getRefNames(opts)
-    // console.log(refNames)
     if (refNames.includes(refName)) return true
     return false
   }
