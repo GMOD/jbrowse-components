@@ -66,14 +66,14 @@ export default pluginManager => {
       model.fileType === 'CSV' || model.fileType === 'TSV'
 
     const {
-      selectedDatasetIdx,
-      setSelectedDatasetIdx,
+      selectedAssemblyIdx,
+      setSelectedAssemblyIdx,
       fileType,
       fileTypes,
       setFileType,
       hasColumnNameLine,
       toggleHasColumnNameLine,
-      datasetChoices,
+      assemblyChoices,
     } = model
 
     return (
@@ -146,13 +146,13 @@ export default pluginManager => {
           ) : null}
           <Grid item>
             <FormControl fullWidth>
-              <FormLabel component="legend">Associated with dataset</FormLabel>
+              <FormLabel component="legend">Associated with assembly</FormLabel>
               <Select
-                value={selectedDatasetIdx}
-                onChange={evt => setSelectedDatasetIdx(evt.target.value)}
+                value={selectedAssemblyIdx}
+                onChange={evt => setSelectedAssemblyIdx(evt.target.value)}
               >
-                {datasetChoices.map((dataset, idx) => {
-                  const name = readConfObject(dataset, 'name')
+                {assemblyChoices.map((assembly, idx) => {
+                  const name = readConfObject(assembly, 'name')
                   return (
                     <MenuItem key={name} value={idx}>
                       {name}

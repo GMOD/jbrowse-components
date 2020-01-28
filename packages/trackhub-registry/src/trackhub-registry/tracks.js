@@ -1,7 +1,7 @@
 import objectHash from 'object-hash'
 import { generateUnsupportedTrackConf } from '@gmod/jbrowse-core/util/tracks'
 
-export function generateTracks(trackDb) {
+export function generateTracks(trackDb, assemblyName) {
   // eslint-disable-next-line no-underscore-dangle
   const { configuration } = trackDb._source
   const subTracks = getSubtracks({ members: configuration })
@@ -9,6 +9,7 @@ export function generateTracks(trackDb) {
     // eslint-disable-next-line no-underscore-dangle
     const ret = makeTrackConfig(subTrack, trackDb._source.hub.url)
     ret.trackId = `trackhub-registry-${objectHash(ret)}`
+    ret.assemblyNames = [assemblyName]
     return ret
   })
 

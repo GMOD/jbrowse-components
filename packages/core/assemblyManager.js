@@ -6,8 +6,7 @@ export default self => ({
   views: {
     get assemblyData() {
       const assemblyData = observable.map({})
-      for (const datasetConfig of self.datasets) {
-        const assemblyConfig = datasetConfig.assembly
+      for (const assemblyConfig of self.assemblies) {
         const assemblyName = readConfObject(assemblyConfig, 'name')
         const assemblyInfo = {}
         if (assemblyConfig.sequence)
@@ -59,7 +58,7 @@ export default self => ({
     async getRefNameAliases(assemblyName, opts = {}) {
       const refNameAliases = {}
       const assemblyConfig = self.assemblyData.get(assemblyName)
-      if (assemblyConfig.refNameAliases) {
+      if (assemblyConfig && assemblyConfig.refNameAliases) {
         const adapterConfigId = jsonStableStringify(
           toJS(assemblyConfig.refNameAliases.adapter),
         )

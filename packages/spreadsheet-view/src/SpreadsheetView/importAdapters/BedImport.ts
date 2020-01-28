@@ -53,7 +53,7 @@ export function parseBedBuffer(buffer: Buffer, options: ParseOptions) {
         }
       })
       data.hasColumnNames = true
-      data.datasetName = options.selectedDatasetName
+      data.assemblyName = options.selectedAssemblyName
 
       return data
     })
@@ -137,7 +137,7 @@ export function parseBedPEBuffer(buffer: Buffer, options: ParseOptions) {
       }
     })
 
-    data.datasetName = options.selectedDatasetName
+    data.assemblyName = options.selectedAssemblyName
 
     return data
   })

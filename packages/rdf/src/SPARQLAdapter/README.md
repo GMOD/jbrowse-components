@@ -49,7 +49,7 @@ adapter. If not, choose "SPARQL adapter" in the resulting dialog. (You can use
 https://www.ebi.ac.uk/rdf/services/sparql as the endpoint to demonstrate the
 above example.)
 
-You will then be able to choose a track name and type as well as the dataset to
+You will then be able to choose a track name and type as well as the assembly to
 which the track should be added. BasicTrack is suggested for most
 configurations, and using other track types is covered below. Click the "Add"
 button to add the track.

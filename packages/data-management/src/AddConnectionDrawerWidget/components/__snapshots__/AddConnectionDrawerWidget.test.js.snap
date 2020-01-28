@@ -72,7 +72,7 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
                     data-shrink="false"
                   >
-                    datasetName
+                    assemblyName
                   </label>
                   <div
                     class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
@@ -89,7 +89,7 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                       </span>
                     </div>
                     <input
-                      data-testid="datasetNameSelect"
+                      data-testid="assemblyNameSelect"
                       type="hidden"
                       value=""
                     />
@@ -108,7 +108,7 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                   <p
                     class="MuiFormHelperText-root"
                   >
-                    Dataset to which the track will be added
+                    Assembly to which the track will be added
                   </p>
                 </div>
                 <div

@@ -44,7 +44,10 @@ export default function(pluginManager) {
               ])
             })
             .then(([hubFile, genomesFile]) => {
-              const assemblyName = readConfObject(self.assemblyConf, 'name')
+              const assemblyName = readConfObject(
+                self.configuration,
+                'assemblyName',
+              )
               if (!genomesFile.has(assemblyName))
                 throw new Error(
                   `Assembly "${assemblyName}" not in genomes file from connection "${connectionName}"`,
@@ -68,7 +71,15 @@ export default function(pluginManager) {
               ])
             })
             .then(([trackDbFileLocation, trackDbFile]) => {
-              const tracks = generateTracks(trackDbFile, trackDbFileLocation)
+              const assemblyName = readConfObject(
+                self.configuration,
+                'assemblyName',
+              )
+              const tracks = generateTracks(
+                trackDbFile,
+                trackDbFileLocation,
+                assemblyName,
+              )
               self.setTrackConfs(tracks)
             })
             .catch(error => {

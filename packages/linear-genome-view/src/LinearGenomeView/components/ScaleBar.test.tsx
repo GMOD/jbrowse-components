@@ -29,24 +29,21 @@ describe('ScaleBar genome view component', () => {
         },
       ],
     }) as any
-    session.addDataset({
-      name: 'volvox',
-      assembly: {
-        assemblyName: 'volMyt1',
-        sequence: {
-          trackId: 'ref0',
-          adapter: {
-            type: 'FromConfigAdapter',
-            features: [
-              {
-                refName: 'ctgA',
-                uniqueId: 'firstId',
-                start: 0,
-                end: 10,
-                seq: 'cattgttgcg',
-              },
-            ],
-          },
+    session.addAssemblyConf({
+      assemblyName: 'volMyt1',
+      sequence: {
+        trackId: 'ref0',
+        adapter: {
+          type: 'FromConfigAdapter',
+          features: [
+            {
+              refName: 'ctgA',
+              uniqueId: 'firstId',
+              start: 0,
+              end: 10,
+              seq: 'cattgttgcg',
+            },
+          ],
         },
       },
     })
@@ -74,24 +71,21 @@ describe('ScaleBar genome view component', () => {
         },
       ],
     }) as any
-    session.addDataset({
-      name: 'volvox',
-      assembly: {
-        assemblyName: 'volMyt1',
-        sequence: {
-          trackId: 'ref0',
-          adapter: {
-            type: 'FromConfigAdapter',
-            features: [
-              {
-                refName: 'ctgA',
-                uniqueId: 'firstId',
-                start: 0,
-                end: 10,
-                seq: 'cattgttgcg',
-              },
-            ],
-          },
+    session.addAssemblyConf({
+      name: 'volMyt1',
+      sequence: {
+        trackId: 'ref0',
+        adapter: {
+          type: 'FromConfigAdapter',
+          features: [
+            {
+              refName: 'ctgA',
+              uniqueId: 'firstId',
+              start: 0,
+              end: 10,
+              seq: 'cattgttgcg',
+            },
+          ],
         },
       },
     })
@@ -122,24 +116,21 @@ describe('ScaleBar genome view component', () => {
         },
       ],
     }) as any
-    session.addDataset({
-      name: 'volvox',
-      assembly: {
-        assemblyName: 'volMyt1',
-        sequence: {
-          trackId: 'ref0',
-          adapter: {
-            type: 'FromConfigAdapter',
-            features: [
-              {
-                refName: 'ctgA',
-                uniqueId: 'firstId',
-                start: 0,
-                end: 10,
-                seq: 'cattgttgcg',
-              },
-            ],
-          },
+    session.addAssemblyConf({
+      name: 'volMyt1',
+      sequence: {
+        trackId: 'ref0',
+        adapter: {
+          type: 'FromConfigAdapter',
+          features: [
+            {
+              refName: 'ctgA',
+              uniqueId: 'firstId',
+              start: 0,
+              end: 10,
+              seq: 'cattgttgcg',
+            },
+          ],
         },
       },
     })

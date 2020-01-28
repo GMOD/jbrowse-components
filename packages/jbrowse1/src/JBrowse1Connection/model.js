@@ -26,9 +26,15 @@ export default function(pluginManager) {
           )
           fetchJb1(dataDirLocation)
             .then(config => {
-              const jb2Tracks = config.tracks.map(track =>
-                convertTrackConfig(track, config.dataRoot),
+              const assemblyName = readConfObject(
+                self.configuration,
+                'assemblyName',
               )
+              const jb2Tracks = config.tracks.map(jb1Track => {
+                const jb2Track = convertTrackConfig(jb1Track, config.dataRoot)
+                jb2Track.assemblyNames = [assemblyName]
+                return jb2Track
+              })
               self.setTrackConfs(jb2Tracks)
             })
             .catch(error => {

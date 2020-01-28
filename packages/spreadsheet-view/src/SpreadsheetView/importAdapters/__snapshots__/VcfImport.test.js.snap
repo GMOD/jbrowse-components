@@ -2,6 +2,7 @@
 
 exports[`vcf file import 1`] = `
 Object {
+  "assemblyName": undefined,
   "columnDisplayOrder": Array [
     0,
     1,
@@ -76,7 +77,6 @@ Object {
       "name": "1801160099-N32519_26611_S51_56704",
     },
   ],
-  "datasetName": undefined,
   "hasColumnNames": true,
   "rowSet": Object {
     "isLoaded": true,

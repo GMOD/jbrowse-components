@@ -40,7 +40,6 @@
     "@material-ui/styles": "^4.8.2",
     "clsx": "^1.0.4",
     "core-js": "^3.2.1",
-    "deepmerge": "^4.2.2",
     "fastestsmallesttextencoderdecoder": "^1.0.14",
     "json-stable-stringify": "^1.0.1",
     "merge-deep": "^3.0.2",
