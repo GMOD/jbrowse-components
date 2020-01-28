@@ -95,7 +95,7 @@
       "connections": {}
     }
   ],
-  "datasets": [
+  "assemblies": [
     {
       "name": "Grape",
       "assembly": {
@@ -113,51 +113,7 @@
             "type": "DivSequenceRenderer"
           }
         }
-      },
-      "tracks": [
-        {
-          "trackId": "grape_genes",
-          "type": "BasicTrack",
-          "name": "mcscan",
-          "configRelationships": [
-            {
-              "type": "syntenyGroup",
-              "target": "group2"
-            }
-          ],
-          "category": [
-            "Annotation"
-          ],
-          "adapter": {
-            "type": "NCListAdapter",
-            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
-          },
-          "renderer": {
-            "type": "PileupRenderer"
-          }
-        },
-        {
-          "trackId": "grape_genes2",
-          "type": "BasicTrack",
-          "name": "mcscan2",
-          "configRelationships": [
-            {
-              "type": "syntenyGroup",
-              "target": "group3"
-            }
-          ],
-          "category": [
-            "Annotation"
-          ],
-          "adapter": {
-            "type": "NCListAdapter",
-            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
-          },
-          "renderer": {
-            "type": "SvgFeatureRenderer"
-          }
-        }
-      ]
+      }
     },
     {
       "name": "Peach",
@@ -176,51 +132,105 @@
             "type": "DivSequenceRenderer"
           }
         }
-      },
-      "tracks": [
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "trackId": "peach_genes",
+      "type": "BasicTrack",
+      "assemblyNames": [
+        "peach"
+      ],
+      "name": "mcscan",
+      "configRelationships": [
         {
-          "trackId": "peach_genes",
-          "type": "BasicTrack",
-          "name": "mcscan",
-          "configRelationships": [
-            {
-              "type": "syntenyGroup",
-              "target": "group2"
-            }
-          ],
-          "category": [
-            "Annotation"
-          ],
-          "adapter": {
-            "type": "NCListAdapter",
-            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
-          },
-          "renderer": {
-            "type": "PileupRenderer"
-          }
-        },
-        {
-          "trackId": "peach_genes2",
-          "type": "BasicTrack",
-          "name": "mcscan2",
-          "configRelationships": [
-            {
-              "type": "syntenyGroup",
-              "target": "group3"
-            }
-          ],
-          "category": [
-            "Annotation"
-          ],
-          "adapter": {
-            "type": "NCListAdapter",
-            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
-          },
-          "renderer": {
-            "type": "SvgFeatureRenderer"
-          }
+          "type": "syntenyGroup",
+          "target": "group2"
         }
-      ]
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+      },
+      "renderer": {
+        "type": "PileupRenderer"
+      }
+    },
+    {
+      "trackId": "peach_genes2",
+      "type": "BasicTrack",
+      "assemblyNames": [
+        "peach"
+      ],
+      "name": "mcscan2",
+      "configRelationships": [
+        {
+          "type": "syntenyGroup",
+          "target": "group3"
+        }
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "trackId": "grape_genes",
+      "type": "BasicTrack",
+      "name": "mcscan",
+      "assemblyNames": [
+        "grape"
+      ],
+      "configRelationships": [
+        {
+          "type": "syntenyGroup",
+          "target": "group2"
+        }
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+      },
+      "renderer": {
+        "type": "PileupRenderer"
+      }
+    },
+    {
+      "trackId": "grape_genes2",
+      "type": "BasicTrack",
+      "name": "mcscan2",
+      "configRelationships": [
+        {
+          "type": "syntenyGroup",
+          "target": "group3"
+        }
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "assemblyNames": [
+        "grape"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
     }
   ],
   "configuration": {
