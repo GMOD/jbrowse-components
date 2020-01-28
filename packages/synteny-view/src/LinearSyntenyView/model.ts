@@ -397,8 +397,8 @@ export default function stateModelFactory(pluginManager: any) {
 
         // this finds candidate features that share the same name
         for (const feature of features.values()) {
-          const n = self.simpleAnchors[feature.get('id')]
-          featNameMap[feature.get('id')] = feature
+          const n = self.simpleAnchors[feature.get('name')]
+          featNameMap[feature.get('name')] = feature
 
           if (n !== undefined) {
             alreadySeen.add(n)
