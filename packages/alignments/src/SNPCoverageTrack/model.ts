@@ -1,22 +1,6 @@
-import {
-  ConfigurationReference,
-  getConf,
-} from '@gmod/jbrowse-core/configuration'
-import { isAbortException, getSession } from '@gmod/jbrowse-core/util'
-import {
-  getContainingView,
-  getParentRenderProps,
-  getTrackAssemblyName,
-} from '@gmod/jbrowse-core/util/tracks'
-import blockBasedTrackModel, {
-  BlockBasedTrackStateModel,
-} from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
-import { autorun, observable } from 'mobx'
-import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
-import React from 'react'
-import { getNiceDomain } from '@gmod/jbrowse-plugin-wiggle/src/util'
+import { getConf } from '@gmod/jbrowse-core/configuration'
+import { types } from 'mobx-state-tree'
 import wiggleStateModelFactory from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/model'
-import SNPCoverageTrackComponent from './components/SNPCoverageTrackComponent'
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpxy', 'SNPXYRenderer']])
