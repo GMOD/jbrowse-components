@@ -7,7 +7,7 @@ import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
 import { Observable, Observer } from 'rxjs'
-import { map, mergeAll } from 'rxjs/operators'
+import { map, mergeAll, toArray } from 'rxjs/operators'
 import {
   blankStats,
   FeatureStats,
@@ -41,7 +41,6 @@ export default class extends BaseAdapter {
     this.bigwig = new BigWig({
       filehandle: openLocation(config.bigWigLocation),
     })
-    const bigwigRef = this.bigwig
     this.statsCache = new AbortablePromiseCache({
       cache: new QuickLRU({ maxSize: 1000 }),
       async fill(
@@ -49,11 +48,15 @@ export default class extends BaseAdapter {
         abortSignal: AbortSignal,
       ): Promise<FeatureStats> {
         const { refName, start, end, bpPerPx } = args
-        const feats = await bigwigRef.getFeatures(refName, start, end, {
-          signal: abortSignal,
-          basesPerSpan: bpPerPx,
-        })
-        return scoresToStats({ refName, start, end }, feats)
+        const feats = await this.getFeatures(
+          { refName, start, end },
+          {
+            signal: abortSignal,
+            basesPerSpan: bpPerPx,
+          },
+        )
+        const featsArray = feats.pipe(toArray()).toPromise()
+        return scoresToStats({ refName, start, end }, featsArray)
       },
     })
   }
@@ -65,8 +68,7 @@ export default class extends BaseAdapter {
 
   public async refIdToName(refId: number) {
     const h = await this.bigwig.getHeader()
-    // @ts-ignore
-    return (h.refsByNumber[refId] || { name: undefined }).name
+    return h.refsByNumber[refId].name
   }
 
   public async getGlobalStats(opts: BaseOptions = {}) {
