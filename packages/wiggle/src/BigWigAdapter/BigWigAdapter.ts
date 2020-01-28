@@ -68,7 +68,7 @@ export default class extends BaseAdapter {
 
   public async refIdToName(refId: number) {
     const h = await this.bigwig.getHeader()
-    return h.refsByNumber[refId].name
+    return (h.refsByNumber[refId] || { name: undefined }).name
   }
 
   public async getGlobalStats(opts: BaseOptions = {}) {

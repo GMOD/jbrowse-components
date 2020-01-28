@@ -261,7 +261,6 @@ describe('some error state', () => {
 
 describe('test renamed refs', () => {
   it('open a cram with alternate renamed ref', async () => {
-    jest.setTimeout(30000)
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId: byId, getAllByTestId, getByText } = render(
       <JBrowse initialState={state} />,
@@ -299,7 +298,6 @@ describe('test renamed refs', () => {
     ).resolves.toBeTruthy()
   })
   it('open a snp w sub cram with alternate renamed ref', async () => {
-    jest.setTimeout(30000)
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId: byId, getAllByTestId, getByText } = render(
       <JBrowse initialState={state} />,
