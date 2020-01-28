@@ -1,3 +1,4 @@
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import {
   getTypeNamesFromExplicitlyTypedUnion,
   isConfigurationSchemaType,
@@ -94,8 +95,9 @@ const useStyles = makeStyles(theme => ({
 
 function ConfigurationEditor({ model }) {
   const classes = useStyles()
+  const key = model.target && readConfObject(model.target, 'name')
   return (
-    <div className={classes.root} data-testid="configEditor">
+    <div className={classes.root} key={key} data-testid="configEditor">
       {!model.target ? 'no target set' : <Schema schema={model.target} />}
     </div>
   )
