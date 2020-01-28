@@ -16,6 +16,8 @@ function PrerenderedCanvas(props) {
           context.strokeStyle = command.style
         } else if (command.type === 'fillStyle') {
           context.fillStyle = command.style
+        } else if (command.type === 'font') {
+          context.font = command.style
         } else {
           context[command.type](...command.args)
         }
@@ -44,11 +46,8 @@ PrerenderedCanvas.propTypes = {
   height: ReactPropTypes.number.isRequired,
   width: ReactPropTypes.number.isRequired,
   highResolutionScaling: ReactPropTypes.number,
-  imageData: ReactPropTypes.oneOfType([
-    ReactPropTypes.instanceOf(ImageBitmapType),
-    ReactPropTypes.shape({ dataURL: ReactPropTypes.string }),
-  ]),
   style: ReactPropTypes.objectOf(ReactPropTypes.any),
+  imageData: ReactPropTypes.any,
 }
 PrerenderedCanvas.defaultProps = {
   imageData: undefined,

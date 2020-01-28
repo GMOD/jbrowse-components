@@ -4,17 +4,6 @@ import { readConfObject } from './configuration'
 
 export default self => ({
   views: {
-    async getCanonicalRefName(refName, assemblyName) {
-      const refNameAliases = await self.getRefNameAliases(assemblyName)
-      const aliasesToCanonical = {}
-      Object.entries(refNameAliases).forEach(([ref, aliases]) => {
-        aliases.forEach(alias => {
-          aliasesToCanonical[alias] = ref
-        })
-        aliasesToCanonical[ref] = ref
-      })
-      return aliasesToCanonical[refName]
-    },
     get assemblyData() {
       const assemblyData = observable.map({})
       for (const assemblyConfig of self.assemblies) {
@@ -46,6 +35,26 @@ export default self => ({
     },
   },
   actions: {
+    async getCanonicalRefName(refName, assemblyName) {
+      const aliasesToCanonical = await self.getRefNameCanonicalizationMap(
+        assemblyName,
+      )
+      return aliasesToCanonical.get(refName)
+    },
+
+    // returns Map of alias-or-canonical -> canonical
+    async getRefNameCanonicalizationMap(assemblyName, opts = {}) {
+      const refNameAliases = await self.getRefNameAliases(assemblyName, opts)
+      const aliasesToCanonical = new Map()
+      Object.entries(refNameAliases).forEach(([ref, aliases]) => {
+        aliases.forEach(alias => {
+          aliasesToCanonical.set(alias, ref)
+        })
+        aliasesToCanonical.set(ref, ref)
+      })
+      return aliasesToCanonical
+    },
+
     async getRefNameAliases(assemblyName, opts = {}) {
       const refNameAliases = {}
       const assemblyConfig = self.assemblyData.get(assemblyName)
@@ -111,12 +120,31 @@ export default self => ({
       return refNameMap
     },
 
+    /**
+     * get Map of canonical-name -> adapter-specific-name
+     */
     async getRefNameMapForAdapter(adapterConf, assemblyName, opts = {}) {
       const adapterConfigId = jsonStableStringify(adapterConf)
       if (!self.refNameMaps.has(adapterConfigId)) {
         return self.addRefNameMapForAdapter(adapterConf, assemblyName, opts)
       }
       return self.refNameMaps.get(adapterConfigId)
+    },
+
+    /**
+     * get Map of adapter-specific-name -> canonical-name
+     */
+    async getReverseRefNameMapForAdapter(adapterConf, assemblyName, opts) {
+      const refNameMap = await self.getRefNameMapForAdapter(
+        adapterConf,
+        assemblyName,
+        opts,
+      )
+      const reversed = new Map()
+      for (const [canonicalName, adapterName] of refNameMap) {
+        reversed.set(adapterName, canonicalName)
+      }
+      return reversed
     },
   },
 })

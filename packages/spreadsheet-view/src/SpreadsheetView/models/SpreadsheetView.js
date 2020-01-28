@@ -10,13 +10,13 @@ export default pluginManager => {
   const FilterControlsModel = jbrequire(require('./FilterControls'))
 
   const minHeight = 40
-  const defaultHeight = 400
+  const defaultHeight = 440
   const stateModel = types
     .model('SpreadsheetView', {
       id: ElementId,
       type: types.literal('SpreadsheetView'),
       offsetPx: 0,
-      width: 800,
+      width: 400,
       height: types.optional(
         types.refinement(
           'SpreadsheetViewHeight',
@@ -31,7 +31,7 @@ export default pluginManager => {
       hideFilterControls: false,
 
       filterControls: types.optional(FilterControlsModel, () =>
-        FilterControlsModel.create({ filters: [{ type: 'Text' }] }),
+        FilterControlsModel.create({}),
       ),
 
       // switch specifying whether we are showing the import wizard or the spreadsheet in our viewing area
@@ -99,6 +99,7 @@ export default pluginManager => {
 
       // load a new spreadsheet and set our mode to display it
       displaySpreadsheet(spreadsheet) {
+        self.filterControls.clearAllFilters()
         self.spreadsheet = spreadsheet
         self.mode = 'display'
       },

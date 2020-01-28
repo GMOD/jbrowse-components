@@ -25,15 +25,16 @@ export default class extends BaseAdapter {
   public constructor(config: {
     vcfGzLocation: IFileLocation
     index: {
-      index: string
+      indexType: string
       location: IFileLocation
     }
   }) {
     super()
     const {
       vcfGzLocation,
-      index: { location: indexLocation, index: indexType },
+      index: { location: indexLocation, indexType },
     } = config
+
     const vcfGzOpts: {
       filehandle: GenericFilehandle
       tbiFilehandle?: GenericFilehandle
