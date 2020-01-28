@@ -4,7 +4,7 @@ import {
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { types } from 'mobx-state-tree'
-import { BaseTrackConfig } from './baseTrackModel'
+import { BaseTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function configSchemaFactory(pluginManager: any) {
@@ -13,7 +13,6 @@ export function configSchemaFactory(pluginManager: any) {
     {
       viewType: 'LinearSyntenyView',
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
-      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
     },
     {
       baseConfiguration: BaseTrackConfig,

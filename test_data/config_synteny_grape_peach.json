@@ -131,6 +131,22 @@
   ],
   "tracks": [
     {
+      "trackId": "grape_peach_synteny_mcscan",
+      "type": "LinearSyntenyTrack",
+      "assemblyNames": [
+        "peach",
+        "grape"
+      ],
+      "name": "Grape peach synteny (MCScan)",
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+      }
+    },
+    {
       "trackId": "peach_genes",
       "type": "BasicTrack",
       "assemblyNames": [

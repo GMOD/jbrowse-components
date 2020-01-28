@@ -5,9 +5,9 @@ import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 import { types, Instance } from 'mobx-state-tree'
-import { autorun } from 'mobx'
+import { autorun, transaction } from 'mobx'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { getConf } from '@gmod/jbrowse-core/configuration'
+import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 
 export type LayoutRecord = [number, number, number, number]
 export interface SimpleAnchorsData {
@@ -127,6 +127,9 @@ export default function stateModelFactory(pluginManager: any) {
       showIntraviewLinks: true,
       linkViews: false,
       interactToggled: false,
+      tracks: types.array(
+        pluginManager.pluggableMstType('track', 'stateModel') as any,
+      ),
       views: types.array(
         pluginManager.getViewType('LinearGenomeView')
           .stateModel as LinearGenomeViewStateModel,
@@ -768,6 +771,36 @@ export default function stateModelFactory(pluginManager: any) {
           return selector
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
+      },
+
+      toggleTrack(configuration: any) {
+        // if we have any tracks with that configuration, turn them off
+        const hiddenCount = this.hideTrack(configuration)
+        // if none had that configuration, turn one on
+        if (!hiddenCount) this.showTrack(configuration)
+      },
+      showTrack(configuration: any, initialSnapshot = {}) {
+        const { type } = configuration
+        if (!type) throw new Error('track configuration has no `type` listed')
+        const name = readConfObject(configuration, 'name')
+        const trackType = pluginManager.getTrackType(type)
+        if (!trackType) throw new Error(`unknown track type ${type}`)
+        const track = trackType.stateModel.create({
+          ...initialSnapshot,
+          name,
+          type,
+          configuration,
+        })
+        self.tracks.push(track)
+      },
+
+      hideTrack(configuration: any) {
+        // if we have any tracks with that configuration, turn them off
+        const shownTracks = self.tracks.filter(
+          t => t.configuration === configuration,
+        )
+        transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
+        return shownTracks.length
       },
     }))
 
