@@ -5,6 +5,7 @@ import {
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { types } from 'mobx-state-tree'
 import { BaseTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
+import LinearSyntenyTrackComponent from './components/LinearSyntenyTrack'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function configSchemaFactory(pluginManager: any) {
@@ -29,6 +30,9 @@ export function stateModelFactory(configSchema: any) {
       configuration: ConfigurationReference(configSchema),
       height: 100,
     })
+    .volatile(self => ({
+      ReactComponent: (LinearSyntenyTrackComponent as unknown) as React.FC,
+    }))
 
     .views(self => ({
       get renderProps() {
