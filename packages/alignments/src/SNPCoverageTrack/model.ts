@@ -14,7 +14,7 @@ import blockBasedTrackModel, {
 import { autorun, observable } from 'mobx'
 import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
 import React from 'react'
-import { getNiceDomain } from '../util'
+import { getNiceDomain } from '@gmod/jbrowse-plugin-wiggle/src/util'
 import SNPCoverageTrackComponent from './components/SNPCoverageTrackComponent'
 
 // using a map because it preserves order

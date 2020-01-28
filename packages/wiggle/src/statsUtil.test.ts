@@ -52,32 +52,32 @@ test('scores to stats', () => {
 })
 
 // peter TODO: fix this test
-// test('calc per base stats', () => {
-//   // one score at start
-//   expect(
-//     calcPerBaseStats({ refName: 'ctgA', start: 0, end: 9 }, [
-//       { start: 0, end: 1, score: 10 },
-//     ]),
-//   ).toEqual([10, 0, 0, 0, 0, 0, 0, 0, 0])
-//   // multiple features
-//   expect(
-//     calcPerBaseStats({ refName: 'ctgA', start: 0, end: 9 }, [
-//       { start: 0, end: 1, score: 10 },
-//       { start: 8, end: 9, score: 10 },
-//     ]),
-//   ).toEqual([10, 0, 0, 0, 0, 0, 0, 0, 10])
-//   // multiple features
-//   expect(
-//     calcPerBaseStats({ refName: 'ctgA', start: 15, end: 30 }, [
-//       { start: 10, end: 20, score: 10 },
-//       { start: 25, end: 26, score: 10 },
-//     ]),
-//   ).toEqual([10, 10, 10, 10, 10, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0])
-//   // feature starts before region
-//   expect(
-//     calcPerBaseStats({ refName: 'ctgA', start: 10, end: 19 }, [
-//       { start: 5, end: 15, score: 10 },
-//       { start: 18, end: 26, score: 10 },
-//     ]),
-//   ).toEqual([10, 10, 10, 10, 10, 0, 0, 0, 10])
-// })
+test('calc per base stats', () => {
+  // one score at start
+  expect(
+    calcPerBaseStats({ refName: 'ctgA', start: 0, end: 9 }, [
+      { start: 0, end: 1, score: 10 },
+    ]),
+  ).toEqual([10, 0, 0, 0, 0, 0, 0, 0, 0])
+  // multiple features
+  expect(
+    calcPerBaseStats({ refName: 'ctgA', start: 0, end: 9 }, [
+      { start: 0, end: 1, score: 10 },
+      { start: 8, end: 9, score: 10 },
+    ]),
+  ).toEqual([10, 0, 0, 0, 0, 0, 0, 0, 10])
+  // multiple features
+  expect(
+    calcPerBaseStats({ refName: 'ctgA', start: 15, end: 30 }, [
+      { start: 10, end: 20, score: 10 },
+      { start: 25, end: 26, score: 10 },
+    ]),
+  ).toEqual([10, 10, 10, 10, 10, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0])
+  // feature starts before region
+  expect(
+    calcPerBaseStats({ refName: 'ctgA', start: 10, end: 19 }, [
+      { start: 5, end: 15, score: 10 },
+      { start: 18, end: 26, score: 10 },
+    ]),
+  ).toEqual([10, 10, 10, 10, 10, 0, 0, 0, 10])
+})

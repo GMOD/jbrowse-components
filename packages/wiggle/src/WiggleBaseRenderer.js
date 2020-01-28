@@ -4,7 +4,7 @@ import {
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import React from 'react'
-// Note to be removed on abstraction completion - Peter
+
 export default class extends ServerSideRendererType {
   async makeImageData(props) {
     const { height, region, bpPerPx, highResolutionScaling = 1 } = props

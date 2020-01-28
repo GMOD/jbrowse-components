@@ -82,7 +82,7 @@ Tooltip.propTypes = {
   feature: ReactPropTypes.object.isRequired,
 }
 
-function CoverageRendering(props) {
+function WiggleRendering(props) {
   const {
     region,
     features,
@@ -123,7 +123,7 @@ function CoverageRendering(props) {
       onMouseLeave={onMouseLeave}
       role="presentation"
       onFocus={() => {}}
-      className="Rendering"
+      className="WiggleRendering"
       style={{
         overflow: 'visible',
         position: 'relative',
@@ -138,7 +138,7 @@ function CoverageRendering(props) {
   )
 }
 
-CoverageRendering.propTypes = {
+WiggleRendering.propTypes = {
   height: ReactPropTypes.number.isRequired,
   width: ReactPropTypes.number.isRequired,
   region: CommonPropTypes.Region.isRequired,
@@ -151,9 +151,9 @@ CoverageRendering.propTypes = {
   }),
 }
 
-CoverageRendering.defaultProps = {
+WiggleRendering.defaultProps = {
   horizontallyFlipped: false,
   trackModel: {},
 }
 
-export default observer(CoverageRendering)
+export default observer(WiggleRendering)

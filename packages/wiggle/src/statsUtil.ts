@@ -78,9 +78,9 @@ export function calcPerBaseStats(
 ): number[] {
   const { start, end } = region
   const scores = []
-  const feats = features.sort(
-    (a: Feature, b: Feature) => a.get('start') - b.get('start'),
-  )
+  const feats = !isNaN(features[0].start)
+    ? features.sort((a: BBIFeature, b: BBIFeature) => a.start - b.start)
+    : features.sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
   let pos = start
   let currentFeat = 0
   let i = 0
@@ -88,21 +88,22 @@ export function calcPerBaseStats(
   while (pos < end) {
     while (
       currentFeat < feats.length &&
-      (feats[currentFeat].get('end')
-        ? pos >= feats[currentFeat].get('end')
-        : pos >= feats[currentFeat].end)
+      pos >=
+        (!isNaN(feats[currentFeat].end)
+          ? feats[currentFeat].end
+          : feats[currentFeat].get('end'))
     ) {
       currentFeat += 1
     }
     const f = feats[currentFeat]
-    const fstart = f.start ? f.start : f.get('start')
-    const fend = f.end ? f.end : f.get('end')
-    const fscore = f.score ? f.score : f.get('score')
     // console.log('currentPos', pos, currentFeat)
     if (!f) {
       scores[i] = 0
-    } else if (pos >= fstart && pos < fend) {
-      scores[i] = fscore
+    } else if (
+      pos >= (!isNaN(f.start) ? f.start : f.get('start')) &&
+      pos < (!isNaN(f.end) ? f.end : f.get('end'))
+    ) {
+      scores[i] = !isNaN(f.score) ? f.score : f.get('score')
     } else {
       scores[i] = 0
     }
