@@ -109,6 +109,10 @@ export function stateModelFactory(pluginManager: any) {
     .volatile(() => ({
       draggingTrackId: undefined as undefined | string,
       error: undefined as undefined | Error,
+
+      // array of callbacks to run after the next set of the displayedRegions,
+      // which is basically like an onLoad
+      afterDisplayedRegionsSetCallbacks: [] as Function[],
     }))
     .views(self => ({
       get viewingRegionWidth() {
@@ -366,6 +370,11 @@ export function stateModelFactory(pluginManager: any) {
           self.displayedRegions = cast(regions)
           if (!isFromAssemblyName)
             this.setDisplayedRegionsFromAssemblyName(undefined)
+
+          self.afterDisplayedRegionsSetCallbacks.forEach(cb => {
+            cb(self)
+          })
+          self.afterDisplayedRegionsSetCallbacks = []
         } catch (error) {
           console.error(error)
         }
@@ -458,6 +467,11 @@ export function stateModelFactory(pluginManager: any) {
           return true
         }
         return false
+      },
+
+      // schedule something to be run after the next time displayedRegions is set
+      afterDisplayedRegionsSet(cb: Function) {
+        self.afterDisplayedRegionsSetCallbacks.push(cb)
       },
 
       /**

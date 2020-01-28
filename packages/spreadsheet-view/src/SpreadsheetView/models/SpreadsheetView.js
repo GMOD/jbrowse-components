@@ -10,13 +10,13 @@ export default pluginManager => {
   const FilterControlsModel = jbrequire(require('./FilterControls'))
 
   const minHeight = 40
-  const defaultHeight = 400
+  const defaultHeight = 440
   const stateModel = types
     .model('SpreadsheetView', {
       id: ElementId,
       type: types.literal('SpreadsheetView'),
       offsetPx: 0,
-      width: 800,
+      width: 400,
       height: types.optional(
         types.refinement(
           'SpreadsheetViewHeight',
@@ -31,7 +31,7 @@ export default pluginManager => {
       hideFilterControls: false,
 
       filterControls: types.optional(FilterControlsModel, () =>
-        FilterControlsModel.create({ filters: [{ type: 'Text' }] }),
+        FilterControlsModel.create({}),
       ),
 
       // switch specifying whether we are showing the import wizard or the spreadsheet in our viewing area
@@ -62,14 +62,15 @@ export default pluginManager => {
         return undefined
       },
 
-      get dataset() {
-        if (self.spreadsheet && self.spreadsheet.datasetName) {
-          const { datasets } = getRoot(self).jbrowse
-          const dataset = (datasets || []).find(
-            ds => readConfObject(ds, 'name') === self.spreadsheet.datasetName,
+      get assembly() {
+        if (self.spreadsheet && self.spreadsheet.assemblyName) {
+          const { assemblies } = getRoot(self).jbrowse
+          const assembly = (assemblies || []).find(
+            asm =>
+              readConfObject(asm, 'name') === self.spreadsheet.assemblyName,
           )
-          if (dataset) {
-            return dataset
+          if (assembly) {
+            return assembly
           }
         }
         return undefined
@@ -98,6 +99,7 @@ export default pluginManager => {
 
       // load a new spreadsheet and set our mode to display it
       displaySpreadsheet(spreadsheet) {
+        self.filterControls.clearAllFilters()
         self.spreadsheet = spreadsheet
         self.mode = 'display'
       },

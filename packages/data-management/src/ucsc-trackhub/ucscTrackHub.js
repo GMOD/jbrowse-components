@@ -25,7 +25,7 @@ export async function fetchTrackDbFile(trackDbFileLocation) {
   return new TrackDbFile(trackDbFileText)
 }
 
-export function generateTracks(trackDb, trackDbFileLocation) {
+export function generateTracks(trackDb, trackDbFileLocation, assemblyName) {
   const tracks = []
 
   trackDb.forEach((track, trackName) => {
@@ -52,6 +52,7 @@ export function generateTracks(trackDb, trackDbFileLocation) {
     )
     const res = makeTrackConfig(track, categories, trackDbFileLocation, trackDb)
     res.trackId = `ucsc-trackhub-${objectHash(res)}`
+    res.assemblyNames = [assemblyName]
     tracks.push(res)
   })
 

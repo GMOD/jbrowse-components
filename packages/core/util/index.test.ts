@@ -1,4 +1,4 @@
-import { parseLocString, ParsedLocString } from './index'
+import { parseLocString, ParsedLocString, compareLocStrings } from './index'
 
 describe('parseLocString', () => {
   const cases: [string, ParsedLocString][] = [
@@ -40,6 +40,20 @@ describe('parseLocString', () => {
   cases.forEach(([input, output]) => {
     test(`${input}`, () => {
       expect(parseLocString(input)).toEqual(output)
+    })
+  })
+})
+
+describe('compareLocStrings', () => {
+  const cases: [string, string, number][] = [
+    ['chr1:1..200', 'chr1:1-200', 0],
+    ['chr1:1-200', 'hg19:chr1:1-200', -1],
+    ['hg19:chr1:1-200', 'chr1:1-200', 1],
+    ['hg19:chr1:1-200', 'hg19:chr1:2-200', -1],
+  ]
+  cases.forEach(([input1, input2, output]) => {
+    test(`${input1} ${input2} = ${output}`, () => {
+      expect(compareLocStrings(input1, input2)).toEqual(output)
     })
   })
 })

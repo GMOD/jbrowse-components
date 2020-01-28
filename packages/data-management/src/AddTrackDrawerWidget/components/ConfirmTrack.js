@@ -28,8 +28,8 @@ function ConfirmTrack({
   trackType,
   setTrackType,
   trackAdapter,
-  datasetName,
-  setDatasetName,
+  assemblyName,
+  setAssemblyName,
   session,
 }) {
   const classes = useStyles()
@@ -179,21 +179,21 @@ function ConfirmTrack({
             ))}
         </TextField>
         <TextField
-          value={datasetName}
-          label="datasetName"
-          helperText="Dataset to which the track will be added"
+          value={assemblyName}
+          label="assemblyName"
+          helperText="Assembly to which the track will be added"
           select
           fullWidth
-          onChange={event => setDatasetName(event.target.value)}
+          onChange={event => setAssemblyName(event.target.value)}
           SelectProps={{
-            SelectDisplayProps: { 'data-testid': 'datasetNameSelect' },
+            SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
           }}
         >
-          {session.datasets.map(dataset => {
-            const newDatasetName = readConfObject(dataset, 'name')
+          {session.assemblies.map(assembly => {
+            const newAssemblyName = readConfObject(assembly, 'name')
             return (
-              <MenuItem key={newDatasetName} value={newDatasetName}>
-                {newDatasetName}
+              <MenuItem key={newAssemblyName} value={newAssemblyName}>
+                {newAssemblyName}
               </MenuItem>
             )
           })}
@@ -205,8 +205,8 @@ function ConfirmTrack({
 }
 
 ConfirmTrack.propTypes = {
-  datasetName: PropTypes.string.isRequired,
-  setDatasetName: PropTypes.func.isRequired,
+  assemblyName: PropTypes.string.isRequired,
+  setAssemblyName: PropTypes.func.isRequired,
   trackData: PropTypes.shape({
     uri: PropTypes.string,
     localPath: PropTypes.string,

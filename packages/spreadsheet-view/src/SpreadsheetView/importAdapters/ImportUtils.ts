@@ -1,5 +1,7 @@
 import csv from 'csvtojson'
 
+import { parseLocString } from '@gmod/jbrowse-core/util'
+
 export function bufferToString(buffer: Buffer) {
   return new TextDecoder('utf-8', { fatal: true }).decode(buffer)
 }
@@ -27,13 +29,31 @@ export interface RowSet {
 export interface ParseOptions {
   hasColumnNameLine: boolean
   columnNameLineNumber: number
-  selectedDatasetName?: string
+  selectedAssemblyName?: string
 }
 
 export interface Column {
   name: string
   dataType: { type: string }
   isDerived?: boolean
+}
+
+function guessColumnType(rowSet: RowSet, columnNumber: number) {
+  const text = rowSet.rows[0].cells[columnNumber].text || ''
+
+  let guessedType = 'Text'
+
+  const parsedLoc = parseLocString(text)
+  if (parsedLoc.refName && typeof parsedLoc.start === 'number') {
+    guessedType = 'LocString'
+  } else if (/^\d+(\.\d+)?$/.test(text)) {
+    guessedType = 'Number'
+  }
+
+  // MAYBE TODO: iterate over the rest of the rows to confirm
+  // the type for all the rows
+
+  return guessedType
 }
 
 async function dataToSpreadsheetSnapshot(
@@ -74,11 +94,15 @@ async function dataToSpreadsheetSnapshot(
     }
   }
 
+  // make our column definitions
   const columns: Column[] = []
   const columnDisplayOrder = []
-  for (let i = 0; i < maxCols; i += 1) {
-    columnDisplayOrder.push(i)
-    columns[i] = { name: columnNames[i], dataType: { type: 'Text' } }
+  for (let columnNumber = 0; columnNumber < maxCols; columnNumber += 1) {
+    columnDisplayOrder.push(columnNumber)
+    columns[columnNumber] = {
+      name: columnNames[columnNumber],
+      dataType: { type: guessColumnType(rowSet, columnNumber) },
+    }
   }
 
   return {
@@ -86,7 +110,7 @@ async function dataToSpreadsheetSnapshot(
     columnDisplayOrder,
     hasColumnNames: !!options.hasColumnNameLine,
     columns,
-    datasetName: options.selectedDatasetName,
+    assemblyName: options.selectedAssemblyName,
   }
 }
 

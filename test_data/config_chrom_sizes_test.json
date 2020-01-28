@@ -1,38 +1,30 @@
 {
-  "datasets": [
+  "assemblies": [
     {
-      "name": "Grape",
-      "assembly": {
-        "name": "grape",
-        "sequence": {
-          "type": "ReferenceSequenceTrack",
-          "trackId": "grape_ref_seq",
-          "adapter": {
-            "type": "ChromSizesAdapter",
-            "chromSizesLocation": {
-              "uri": "test_data/grape.chrom.sizes.nonexist"
-            }
+      "name": "grape",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "grape_ref_seq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/grape.chrom.sizes.nonexist"
           }
         }
-      },
-      "tracks": []
+      }
     },
     {
-      "name": "Grape2",
-      "assembly": {
-        "name": "grape2",
-        "sequence": {
-          "type": "ReferenceSequenceTrack",
-          "trackId": "grape2_ref_seq",
-          "adapter": {
-            "type": "ChromSizesAdapter",
-            "chromSizesLocation": {
-              "uri": "test_data/grape.chrom.sizes"
-            }
+      "name": "grape2",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "grape2_ref_seq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/grape.chrom.sizes"
           }
         }
-      },
-      "tracks": []
+      }
     }
   ],
   "savedSessions": [

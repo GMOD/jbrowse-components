@@ -2,6 +2,7 @@
 
 exports[`csv to spreadsheet snapshot 1`] = `
 Object {
+  "assemblyName": undefined,
   "columnDisplayOrder": Array [
     0,
     1,
@@ -38,192 +39,191 @@ Object {
   "columns": Array [
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "one",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "two",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "three",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "four",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "six",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "seven",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "eight",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "nine",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "ten",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "eleven",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "twelve",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "thirteen",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "fourteen",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "fifteen",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "sixteen",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "seventeen",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "eighteen",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "nineteen",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "twenty",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "twentyone",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "twentytwo",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "twentythree",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "twentyfour",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "twentyfive",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "twentysix",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "twentyseven",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "twentyeight",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "twentynine",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": "thirty",
     },
     Object {
       "dataType": Object {
-        "type": "Text",
+        "type": "Number",
       },
       "name": undefined,
     },
   ],
-  "datasetName": undefined,
   "hasColumnNames": true,
   "rowSet": Object {
     "isLoaded": true,

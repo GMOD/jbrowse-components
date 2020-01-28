@@ -36,6 +36,7 @@ const useStyles = makeStyles(theme => ({
     overflowY: 'auto',
     gridRow: 'components',
   },
+  viewContainer: { marginTop: 8 },
 }))
 
 function ViewContainer({ session, view }) {

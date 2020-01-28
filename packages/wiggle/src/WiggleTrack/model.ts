@@ -6,7 +6,7 @@ import { isAbortException, getSession } from '@gmod/jbrowse-core/util'
 import {
   getContainingView,
   getParentRenderProps,
-  getTrackAssemblyName,
+  getTrackAssemblyNames,
 } from '@gmod/jbrowse-core/util/tracks'
 import blockBasedTrackModel, {
   BlockBasedTrackStateModel,
@@ -135,7 +135,8 @@ const stateModelFactory = (configSchema: any) =>
             {
               adapterConfig: getSnapshot(adapter),
               adapterType: adapter.type,
-              assemblyName: getTrackAssemblyName(self),
+              // TODO: Figure this out for multiple assembly names
+              assemblyName: getTrackAssemblyNames(self)[0],
               regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
               signal,
               bpPerPx,

@@ -104,7 +104,7 @@ export default pluginManager => {
           </text>
         )
       }
-      if (maxWidthPx > 12) {
+      if (maxWidthPx > 4) {
         // text is rotated perpendicular to the ruler arc
         const overallRotation = radToDeg(
           radians + view.offsetRadians - Math.PI / 2,
@@ -140,6 +140,7 @@ export default pluginManager => {
         )
       }
 
+      // if you get here there is no room for the text at all
       return null
     },
   )

@@ -10,7 +10,6 @@ test('adapter can fetch features from volvox.bam', async () => {
       location: {
         localPath: require.resolve('../../test_data/volvox-sorted.bam.bai'),
       },
-      indexType: 'BAI',
     },
   })
 
@@ -30,6 +29,27 @@ test('adapter can fetch features from volvox.bam', async () => {
   expect(await adapter.refIdToName(1)).toBe(undefined)
 
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
+
+  const adapterCSI = new Adapter({
+    bamLocation: {
+      localPath: require.resolve('../../test_data/volvox-sorted.bam'),
+    },
+    index: {
+      indexType: 'CSI',
+      location: {
+        localPath: require.resolve('../../test_data/volvox-sorted.bam.csi'),
+      },
+    },
+  })
+
+  const featuresCSI = await adapterCSI.getFeatures({
+    refName: 'ctgA',
+    start: 0,
+    end: 20000,
+  })
+  const featuresArrayCSI = await featuresCSI.pipe(toArray()).toPromise()
+  const featuresJsonArrayCSI = featuresArrayCSI.map(f => f.toJSON())
+  expect(featuresJsonArrayCSI).toEqual(featuresJsonArray)
 })
 
 test('test usage of BamSlightlyLazyFeature toJSON (used in the drawer widget)', async () => {

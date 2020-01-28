@@ -35,7 +35,7 @@ export default pluginManager => {
       hasColumnNameLine: true,
       columnNameLineNumber: 1,
 
-      selectedDatasetIdx: 0,
+      selectedAssemblyIdx: 0,
       error: types.maybe(types.model({ message: '', stackTrace: '' })),
     })
     .volatile(() => ({
@@ -54,13 +54,13 @@ export default pluginManager => {
       get canCancel() {
         return getParent(self).readyToDisplay
       },
-      get datasetChoices() {
-        return getRoot(self).jbrowse.datasets
+      get assemblyChoices() {
+        return getRoot(self).jbrowse.assemblies
       },
-      get selectedDatasetName() {
-        const ds = getRoot(self).jbrowse.datasets[self.selectedDatasetIdx]
-        if (ds) {
-          return readConfObject(ds, 'name')
+      get selectedAssemblyName() {
+        const asm = getRoot(self).jbrowse.assemblies[self.selectedAssemblyIdx]
+        if (asm) {
+          return readConfObject(asm, 'name')
         }
         return undefined
       },
@@ -86,8 +86,8 @@ export default pluginManager => {
         }
       },
 
-      setSelectedDatasetIdx(idx) {
-        self.selectedDatasetIdx = idx
+      setSelectedAssemblyIdx(idx) {
+        self.selectedAssemblyIdx = idx
       },
 
       toggleHasColumnNameLine() {

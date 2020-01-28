@@ -47,7 +47,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
             <legend
               class="MuiFormLabel-root"
             >
-              Select dataset to view
+              Select assembly to view
             </legend>
             <div
               class="MuiFormGroup-root"
@@ -558,13 +558,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           <div
             class="makeStyles-block"
             style="width: 100px;"
-          >
-            <div
-              class="makeStyles-blockMessage"
-            >
-              region assembly does not match track assembly
-            </div>
-          </div>
+          />
           <div
             class="makeStyles-interRegionPaddingBlock"
             style="width: 2px;"
@@ -671,13 +665,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           <div
             class="makeStyles-block"
             style="width: 100px;"
-          >
-            <div
-              class="makeStyles-blockMessage"
-            >
-              region assembly does not match track assembly
-            </div>
-          </div>
+          />
           <div
             class="makeStyles-interRegionPaddingBlock"
             style="width: 2px;"
@@ -741,7 +729,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
             <legend
               class="MuiFormLabel-root"
             >
-              Select dataset to view
+              Select assembly to view
             </legend>
             <div
               class="MuiFormGroup-root"

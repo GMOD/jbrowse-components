@@ -28,12 +28,12 @@ function ViewMenu({ session }) {
         session.views[session.views.length - 1],
       )
     } else {
-      // otherwise use the first define dataset
-      if (!session.datasets.length)
-        throw new Error(`Must add a dataset before adding a view`)
-      session.addViewOfDataset(
+      // otherwise use the first defined assembly
+      if (!session.assemblies.length)
+        throw new Error(`Must add an assembly before adding a view`)
+      session.addViewOfAssembly(
         type,
-        readConfObject(session.datasets[0], 'name'),
+        readConfObject(session.assemblies[0], 'name'),
       )
     }
 

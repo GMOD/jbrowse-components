@@ -51,7 +51,7 @@ export default function sessionModelFactory(pluginManager: any) {
       menuBars: types.array(
         pluginManager.pluggableMstType('menu bar', 'stateModel'),
       ),
-      connections: types.map(
+      connectionInstances: types.map(
         types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
       ),
     })
@@ -82,8 +82,14 @@ export default function sessionModelFactory(pluginManager: any) {
       get configuration() {
         return getParent(self).jbrowse.configuration
       },
-      get datasets() {
-        return getParent(self).jbrowse.datasets
+      get assemblies() {
+        return getParent(self).jbrowse.assemblies
+      },
+      get tracks() {
+        return getParent(self).jbrowse.tracks
+      },
+      get connections() {
+        return getParent(self).jbrowse.connections
       },
       get savedSessions() {
         return getParent(self).jbrowse.savedSessions
@@ -245,15 +251,11 @@ export default function sessionModelFactory(pluginManager: any) {
         const name = readConfObject(configuration, 'name')
         const connectionType = pluginManager.getConnectionType(type)
         if (!connectionType) throw new Error(`unknown connection type ${type}`)
-        let confParent = configuration
-        do {
-          confParent = getParent(confParent)
-        } while (!confParent.assembly)
-        const assemblyName = readConfObject(confParent.assembly, 'name')
+        const assemblyName = readConfObject(configuration, 'assemblyName')
         const connectionData = { ...initialSnapshot, name, type, configuration }
-        if (!self.connections.has(assemblyName))
-          self.connections.set(assemblyName, [])
-        const assemblyConnections = self.connections.get(assemblyName)
+        if (!self.connectionInstances.has(assemblyName))
+          self.connectionInstances.set(assemblyName, [])
+        const assemblyConnections = self.connectionInstances.get(assemblyName)
         if (!assemblyConnections)
           throw new Error(`assembly ${assemblyName} not found`)
         const length = assemblyConnections.push(connectionData)
@@ -262,12 +264,9 @@ export default function sessionModelFactory(pluginManager: any) {
 
       prepareToBreakConnection(configuration: any) {
         const name = readConfObject(configuration, 'name')
-        let confParent = configuration
-        do {
-          confParent = getParent(confParent)
-        } while (!confParent.assembly)
-        const assemblyName = readConfObject(confParent.assembly, 'name')
-        const assemblyConnections = self.connections.get(assemblyName) || []
+        const assemblyName = readConfObject(configuration, 'assemblyName')
+        const assemblyConnections =
+          self.connectionInstances.get(assemblyName) || []
         const connection = assemblyConnections.find(c => c.name === name)
         const callbacksToDereferenceTrack: Function[] = []
         const dereferenceTypeCount: Record<string, number> = {}
@@ -320,11 +319,11 @@ export default function sessionModelFactory(pluginManager: any) {
           confParent = getParent(confParent)
         } while (!confParent.assembly)
         const assemblyName = readConfObject(confParent.assembly, 'name')
-        const connections = self.connections.get(assemblyName)
-        if (!connections)
+        const connectionInstances = self.connectionInstances.get(assemblyName)
+        if (!connectionInstances)
           throw new Error(`connections for ${assemblyName} not found`)
-        const connection = connections.find(c => c.name === name)
-        connections.remove(connection)
+        const connection = connectionInstances.find(c => c.name === name)
+        connectionInstances.remove(connection)
       },
 
       updateWidth(width: number) {
@@ -376,32 +375,40 @@ export default function sessionModelFactory(pluginManager: any) {
         self.views.remove(view)
       },
 
-      addDataset(datasetConf: any) {
-        return getParent(self).jbrowse.addDataset(datasetConf)
+      addAssemblyConf(assemblyConf: any) {
+        return getParent(self).jbrowse.addAssemblyConf(assemblyConf)
       },
 
-      addLinearGenomeViewOfDataset(datasetName: string, initialState = {}) {
-        return this.addViewOfDataset(
+      addTrackConf(trackConf: any) {
+        return getParent(self).jbrowse.addTrackConf(trackConf)
+      },
+
+      addConnectionConf(connectionConf: any) {
+        return getParent(self).jbrowse.addConnectionConf(connectionConf)
+      },
+
+      addLinearGenomeViewOfAssembly(assemblyName: string, initialState = {}) {
+        return this.addViewOfAssembly(
           'LinearGenomeView',
-          datasetName,
+          assemblyName,
           initialState,
         )
       },
 
-      addViewOfDataset(
+      addViewOfAssembly(
         viewType: any,
-        datasetName: string,
+        assemblyName: string,
         initialState: any = {},
       ) {
-        const dataset = self.datasets.find(
-          (s: { name: string }) => readConfObject(s.name) === datasetName,
+        const assembly = self.assemblies.find(
+          (s: { name: string }) => readConfObject(s, 'name') === assemblyName,
         )
-        if (!dataset)
+        if (!assembly)
           throw new Error(
-            `Could not add view of dataset "${datasetName}", dataset name not found`,
+            `Could not add view of assembly "${assemblyName}", assembly name not found`,
           )
         initialState.displayRegionsFromAssemblyName = readConfObject(
-          dataset.assembly,
+          assembly,
           'name',
         )
         return this.addView(viewType, initialState)
@@ -517,7 +524,7 @@ export default function sessionModelFactory(pluginManager: any) {
       },
 
       clearConnections() {
-        self.connections.clear()
+        self.connectionInstances.clear()
       },
 
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
@@ -548,5 +555,5 @@ export default function sessionModelFactory(pluginManager: any) {
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
 
-// a track is a combination of a dataset and a renderer, along with some conditions
+// a track is a combination of an assembly and a renderer, along with some conditions
 // specifying in which contexts it is available (which assemblies, which views, etc)

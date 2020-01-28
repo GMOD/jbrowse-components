@@ -170,7 +170,7 @@ export default class extends BoxRendererType {
               ] || '#888'
             ctx.fillRect(mismatchStartPx, topPx, widthPx, heightPx)
 
-            if (widthPx >= charSize.width && heightPx >= charSize.height - 2) {
+            if (widthPx >= charSize.width && heightPx >= charSize.height - 5) {
               ctx.fillStyle = mismatch.type === 'deletion' ? 'white' : 'black'
               ctx.fillText(
                 mismatch.base,
