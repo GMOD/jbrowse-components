@@ -43,10 +43,10 @@ export default class extends BaseAdapter {
     })
     this.statsCache = new AbortablePromiseCache({
       cache: new QuickLRU({ maxSize: 1000 }),
-      async fill(
+      fill: async (
         args: { refName: string; start: number; end: number; bpPerPx: number },
         abortSignal: AbortSignal,
-      ): Promise<FeatureStats> {
+      ): Promise<FeatureStats> => {
         const { refName, start, end, bpPerPx } = args
         const feats = await this.getFeatures(
           { refName, start, end },
@@ -55,7 +55,7 @@ export default class extends BaseAdapter {
             basesPerSpan: bpPerPx,
           },
         )
-        const featsArray = feats.pipe(toArray()).toPromise()
+        const featsArray = await feats.pipe(toArray()).toPromise()
         return scoresToStats({ refName, start, end }, featsArray)
       },
     })

@@ -11,7 +11,7 @@ import {
 import blockBasedTrackModel, {
   BlockBasedTrackStateModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
-import { autorun } from 'mobx'
+import { autorun, observable } from 'mobx'
 import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
 import React from 'react'
 import { getNiceDomain } from '../util'
@@ -40,9 +40,7 @@ const stateModelFactory = (configSchema: any) =>
           // avoid circular reference since WiggleTrackComponent receives this model
           ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
           ready: false,
-          stats: undefined as
-            | undefined
-            | { scoreMin: number; scoreMax: number; [key: string]: number },
+          stats: observable({ scoreMin: 0, scoreMax: 50 }),
           statsFetchInProgress: undefined as undefined | AbortController,
         })),
     )
@@ -64,44 +62,56 @@ const stateModelFactory = (configSchema: any) =>
         },
       }
     })
-    .views(self => ({
-      get rendererTypeName() {
-        const viewName = getConf(self, 'defaultRendering')
-        const rendererType = rendererTypes.get(viewName)
-        if (!rendererType)
-          throw new Error(`unknown alignments view name ${viewName}`)
-        return rendererType
-      },
+    .views(self => {
+      let oldDomain: [number, number] = [0, 0]
+      return {
+        get rendererTypeName() {
+          const viewName = getConf(self, 'defaultRendering')
+          const rendererType = rendererTypes.get(viewName)
+          if (!rendererType)
+            throw new Error(`unknown alignments view name ${viewName}`)
+          return rendererType
+        },
 
-      get domain() {
-        return self.stats
-          ? getNiceDomain({
-              domain: [self.stats.scoreMin, self.stats.scoreMax],
+        get domain() {
+          const ret = self.stats
+            ? getNiceDomain({
+                domain: [self.stats.scoreMin, self.stats.scoreMax],
+                scaleType: getConf(self, 'scaleType'),
+                bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
+              })
+            : undefined
+
+          const headroom = getConf(self, 'headroom')
+          if (headroom) {
+            ret[1] = Math.ceil(ret[1] / headroom) * headroom
+          }
+          if (JSON.stringify(oldDomain) !== JSON.stringify(ret)) {
+            oldDomain = ret
+          }
+          return oldDomain
+        },
+        get renderProps() {
+          const config = self.rendererType.configSchema.create(
+            getConf(self, ['renderers', this.rendererTypeName]) || {},
+          )
+          return {
+            ...getParentRenderProps(self),
+            notReady: !self.ready,
+            trackModel: self,
+            config,
+            scaleOpts: {
+              domain: this.domain,
+              stats: self.stats,
+              autoscaleType: getConf(self, 'autoscale'),
               scaleType: getConf(self, 'scaleType'),
-              bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
-            })
-          : undefined
-      },
-      get renderProps() {
-        const config = self.rendererType.configSchema.create(
-          getConf(self, ['renderers', this.rendererTypeName]) || {},
-        )
-        return {
-          ...getParentRenderProps(self),
-          notReady: !self.ready,
-          trackModel: self,
-          config,
-          scaleOpts: {
-            domain: this.domain,
-            stats: self.stats,
-            autoscaleType: getConf(self, 'autoscale'),
-            scaleType: getConf(self, 'scaleType'),
-            inverted: getConf(self, 'inverted'),
-          },
-          height: self.height,
-        }
-      },
-    }))
+              inverted: getConf(self, 'inverted'),
+            },
+            height: self.height,
+          }
+        },
+      }
+    })
     .actions(self => {
       async function getStats(signal: AbortSignal) {
         const { rpcManager } = getSession(self) as {
