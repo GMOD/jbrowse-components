@@ -12,8 +12,17 @@ import {
   rectifyStats,
   scoresToStats,
 } from '@gmod/jbrowse-plugin-wiggle/src/statsUtil'
-import { Mismatch } from './SNPSlightlyLazyFeature'
 import NestedFrequencyTable from '../NestedFrequencyTable'
+
+export interface Mismatch {
+  start: number
+  length: number
+  type: string
+  base: string
+  altbase?: string
+  seq?: string
+  cliplen?: number
+}
 
 interface StatsRegion {
   refName: string
@@ -21,6 +30,7 @@ interface StatsRegion {
   end: number
   bpPerPx?: number
 }
+
 export default class extends BaseAdapter {
   private subadapter: BaseAdapter
 
@@ -124,8 +134,6 @@ export default class extends BaseAdapter {
   /**
    * Fetch features for a certain region. Use coverage bins information to generate
    * SimpleFeature with useful data to be used for stats and canvas drawing
-   * Use getFeaturesInRegion() if you also want to verify that the store has features
-   * for the given reference sequence before fetching.
    * @param {any} param
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
@@ -189,6 +197,7 @@ export default class extends BaseAdapter {
    * the reference, mismatches, strands, and coverage info
    * @param {Observable<Feature>} features features of region to be passed in
    * @param {StatsRegion} region
+   * @param {Number} bpPerPx base pairs per pixel
    * @returns {Array<NestedFrequencyTable>}
    */
   generateCoverageBins(

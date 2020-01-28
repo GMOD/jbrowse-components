@@ -52,7 +52,6 @@ export default class SNPXYRenderer extends WiggleBaseRenderer {
     const toHeight = (rawscore: number) => toY(originY) - toY(rawscore)
 
     const insRegex = /^ins.[A-Za-z0-9]/
-    // A: green, C: blue, g: orange, t: red, deletion: dark grey, total: light grey
     const colorForBase: { [key: string]: string } = {
       A: '#00bf00',
       C: '#4747ff',
@@ -75,7 +74,7 @@ export default class SNPXYRenderer extends WiggleBaseRenderer {
       const w = rightPx - leftPx + 0.3
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
 
-      // generate array with nestedtable's info, draw mismatches
+      // grab array with nestedtable's info, draw mismatches
       const infoArray = feature.get('snpinfo')
       infoArray.forEach(function iterate(info: BaseInfo, index: number) {
         if (info.base === 'reference' || info.base === 'total') return
