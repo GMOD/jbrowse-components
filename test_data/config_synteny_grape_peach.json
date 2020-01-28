@@ -97,40 +97,34 @@
   ],
   "assemblies": [
     {
-      "name": "Grape",
-      "assembly": {
-        "name": "grape",
-        "sequence": {
-          "trackId": "grape_seq",
-          "type": "ReferenceSequenceTrack",
-          "adapter": {
-            "type": "ChromSizesAdapter",
-            "chromSizesLocation": {
-              "uri": "test_data/grape.chrom.sizes"
-            }
-          },
-          "rendering": {
-            "type": "DivSequenceRenderer"
+      "name": "grape",
+      "sequence": {
+        "trackId": "grape_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/grape.chrom.sizes"
           }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
         }
       }
     },
     {
-      "name": "Peach",
-      "assembly": {
-        "name": "peach",
-        "sequence": {
-          "trackId": "peach_seq",
-          "type": "ReferenceSequenceTrack",
-          "adapter": {
-            "type": "ChromSizesAdapter",
-            "chromSizesLocation": {
-              "uri": "test_data/peach.chrom.sizes"
-            }
-          },
-          "rendering": {
-            "type": "DivSequenceRenderer"
+      "name": "peach",
+      "sequence": {
+        "trackId": "peach_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/peach.chrom.sizes"
           }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
         }
       }
     }

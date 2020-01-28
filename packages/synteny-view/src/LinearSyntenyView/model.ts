@@ -190,7 +190,6 @@ export default function stateModelFactory(pluginManager: any) {
       },
 
       get allMatchedSyntenyFeatures() {
-        console.log('here')
         return Object.fromEntries(
           this.syntenyGroups.map(group => [
             group,
@@ -454,13 +453,11 @@ export default function stateModelFactory(pluginManager: any) {
         const features = this.getTrackFeatures(syntenyGroup)
         const candidates: { [key: string]: Feature[] } = {}
         const alreadySeen = new Set<string>()
-        console.log('here', features)
 
         // this finds candidate features that share the same name
         for (const feature of features.values()) {
           if (!alreadySeen.has(feature.id())) {
             const n = feature.get('id')
-            console.log(n)
             if (!candidates[n]) {
               candidates[n] = []
             }
