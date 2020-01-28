@@ -56,12 +56,14 @@ export default class extends BaseAdapter {
 
   public constructor(config: {
     bamLocation: IFileLocation
-    index: { location: IFileLocation; index: string }
+    index: { location: IFileLocation; indexType: string }
   }) {
     super()
-    const { bamLocation } = config
+    const {
+      bamLocation,
+      index: { location: indexLocation, indexType },
+    } = config
 
-    const { location: indexLocation, index: indexType } = config.index
     const bamOpts: {
       bamFilehandle: GenericFilehandle
       baiFilehandle?: GenericFilehandle

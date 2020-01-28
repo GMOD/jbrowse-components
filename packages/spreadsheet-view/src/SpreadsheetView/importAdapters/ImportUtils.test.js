@@ -1,10 +1,9 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
+import { TextDecoder } from 'fastestsmallesttextencoderdecoder'
 import { promises as fsPromises } from 'fs'
 import { parseCsvBuffer } from './ImportUtils'
 
-window.TextEncoder = TextEncoder
-window.TextDecoder = TextDecoder
+if (!window.TextDecoder) window.TextDecoder = TextDecoder
 
 const pluginManager = new PluginManager()
 const SpreadsheetModel = pluginManager.jbrequire(

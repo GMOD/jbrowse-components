@@ -46,8 +46,8 @@ PrerenderedCanvas.propTypes = {
   height: ReactPropTypes.number.isRequired,
   width: ReactPropTypes.number.isRequired,
   highResolutionScaling: ReactPropTypes.number,
-  imageData: ReactPropTypes.any.isRequired,
   style: ReactPropTypes.objectOf(ReactPropTypes.any),
+  imageData: ReactPropTypes.any,
 }
 PrerenderedCanvas.defaultProps = {
   imageData: undefined,

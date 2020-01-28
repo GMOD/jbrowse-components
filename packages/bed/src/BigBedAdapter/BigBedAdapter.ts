@@ -30,7 +30,7 @@ interface Parser {
 }
 
 export default class extends BaseAdapter {
-  private bigbed: any
+  private bigbed: BigBed
 
   private parser: Promise<Parser>
 
@@ -48,8 +48,7 @@ export default class extends BaseAdapter {
   }
 
   public async getRefNames() {
-    const header = await this.bigbed.getHeader()
-    return Object.keys(header.refsByName)
+    return Object.keys((await this.bigbed.getHeader()).refsByName)
   }
 
   public async refIdToName(refId: number) {
@@ -81,14 +80,13 @@ export default class extends BaseAdapter {
             (r: {
               start: number
               end: number
-              rest: string
-              refName: string
-              uniqueId: number
+              rest?: string
+              uniqueId?: string
             }) => {
               const data = parser.parseLine(
                 `${refName}\t${r.start}\t${r.end}\t${r.rest}`,
                 {
-                  uniqueId: r.uniqueId,
+                  uniqueId: r.uniqueId as string,
                 },
               )
 
@@ -139,7 +137,9 @@ function ucscProcessedTranscript(feature: Feature) {
   const thickStart = feature.get('thickStart')
   const thickEnd = feature.get('thickEnd')
 
-  if (!thickStart && !thickEnd) return feature
+  if (!thickStart && !thickEnd) {
+    return feature
+  }
 
   const blocks: Feature[] = children
     ? children

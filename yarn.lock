@@ -1423,10 +1423,10 @@
     unique-filename "^1.1.1"
     which "^1.3.1"
 
-"@gmod/bam@^1.0.32":
-  version "1.0.32"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.32.tgz#81d88ed2682536cee3b1af0bdcd61ca27caf9a03"
-  integrity sha512-xAj44ZTOg0eAZ076ZomQADQQSl4Hs6HHM3Rdhyr8qRaBUhAjcjI1Vi5HMWg9iXa2AAALP4vii6BZMAo9bJ3mHQ==
+"@gmod/bam@^1.0.34":
+  version "1.0.34"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.34.tgz#6c9ba8f6d083c45a0ee82ef0f81534a5af0bba03"
+  integrity sha512-b59eqjPAN3/ZlfclfQIOKBlI2S23yVANEIIBnObM4/iPmE4JlWJqwyJpu8K+b7gpQQYqHmpRAxEyKiSvn6NTaA==
   dependencies:
     "@babel/runtime-corejs2" "^7.5.5"
     "@gmod/bgzf-filehandle" "^1.3.0"
@@ -1440,10 +1440,10 @@
     object.entries-ponyfill "^1.0.1"
     quick-lru "^2.0.0"
 
-"@gmod/bbi@^1.0.26":
-  version "1.0.27"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-1.0.27.tgz#87aedcb986b4e63907636a5f63bfe97ae64a5aac"
-  integrity sha512-41d/rUiQ7Ae4MvOFspk/IRyYCpCBum+4AMF90/seE9gUjf7vn7EcehU+nMwTh87KxPM5mm4upLPTMUwwvnJN/A==
+"@gmod/bbi@^1.0.29":
+  version "1.0.29"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-1.0.29.tgz#621ad48a3d1c87b9558aa2e95941b3f477297b51"
+  integrity sha512-d6k7f8u9N6NqtheFbiDwHy5r6AW37vWjw/ErjJNpWfVQ6Lbu8jQKPCYkRL4lE+1jyeelrZinTgaMbE1ynqqJQw==
   dependencies:
     "@babel/runtime" "^7.4.4"
     "@gmod/binary-parser" "^1.3.5"
