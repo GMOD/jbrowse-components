@@ -1,5 +1,30 @@
 import { makeStyles } from '@material-ui/core/styles'
 import { LinearSyntenyViewModel } from '../model'
+
+// return !syntenyGroup
+//   ? null
+//   : [
+//       getConf(model, 'showAnchors') &&
+//         model.allMatchedAnchorFeatures[syntenyGroup],
+//       getConf(model, 'showSimpleAnchors') &&
+//         model.allMatchedSimpleAnchorFeatures[syntenyGroup],
+//       getConf(model, 'showPaf') && model.minimap2Features,
+//       getConf(model, 'showSam') && model.samFeatures,
+//       model.getMatchedFeaturesInLayout(
+//         syntenyGroup,
+//         model.allMatchedSyntenyFeatures[syntenyGroup],
+//       ),
+//     ].map((layoutMatches, index) =>
+//       layoutMatches ? (
+//         <Overlay
+//           key={`${syntenyGroup}_${index}`}
+//           syntenyGroup={syntenyGroup}
+//           layoutMatches={layoutMatches}
+//           model={model}
+//         />
+//       ) : null,
+//
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
@@ -9,8 +34,6 @@ export default (pluginManager: any) => {
   const { makeStyles: jbrequiredMakeStyles } = jbrequire(
     '@material-ui/core/styles',
   )
-
-  const SyntenyConnections = jbrequire(require('./LinearSyntenyConnections'))
 
   const Header = jbrequire(require('./Header'))
   const { grey } = jbrequire('@material-ui/core/colors')
@@ -51,40 +74,20 @@ export default (pluginManager: any) => {
     }
   })
 
-  const Overlay = observer(
-    (props: { model: LinearSyntenyViewModel; syntenyGroup: string }) => {
-      return <SyntenyConnections {...props} />
-    },
-  )
-
   const Overlays = observer(
     ({ model }: { model: LinearSyntenyViewModel; syntenyGroup: string }) => (
       <>
         {model.tracks.map(track => {
-          const syntenyGroup = model.getSyntenyGroup(track)
-          return !syntenyGroup
-            ? null
-            : [
-                getConf(model, 'showAnchors') &&
-                  model.allMatchedAnchorFeatures[syntenyGroup],
-                getConf(model, 'showSimpleAnchors') &&
-                  model.allMatchedSimpleAnchorFeatures[syntenyGroup],
-                getConf(model, 'showPaf') && model.minimap2Features,
-                getConf(model, 'showSam') && model.samFeatures,
-                model.getMatchedFeaturesInLayout(
-                  syntenyGroup,
-                  model.allMatchedSyntenyFeatures[syntenyGroup],
-                ),
-              ].map((layoutMatches, index) =>
-                layoutMatches ? (
-                  <Overlay
-                    key={`${syntenyGroup}_${index}`}
-                    syntenyGroup={syntenyGroup}
-                    layoutMatches={layoutMatches}
-                    model={model}
-                  />
-                ) : null,
-              )
+          const syntenyGroup = model.getSyntenyGroup(track) || ''
+          return (
+            <track.ReactComponent
+              key={getConf(track, 'trackId')}
+              syntenyGroup={model.getSyntenyGroup(track)}
+              layoutMatches={model.allMatchedSimpleAnchorFeatures[syntenyGroup]}
+              model={model}
+              track={track}
+            />
+          )
         })}
       </>
     ),
