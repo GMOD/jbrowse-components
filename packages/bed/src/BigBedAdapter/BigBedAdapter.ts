@@ -75,20 +75,18 @@ export default class extends BaseAdapter {
           basesPerSpan: end - start,
         })
         ob.pipe(
-          // @ts-ignore
           mergeAll(),
           map(
             (r: {
               start: number
               end: number
-              rest: string
-              refName: string
-              uniqueId: number
+              rest?: string
+              uniqueId?: string
             }) => {
               const data = parser.parseLine(
                 `${refName}\t${r.start}\t${r.end}\t${r.rest}`,
                 {
-                  uniqueId: r.uniqueId,
+                  uniqueId: r.uniqueId as string,
                 },
               )
 
