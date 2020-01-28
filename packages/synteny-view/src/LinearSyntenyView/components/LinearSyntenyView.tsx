@@ -60,28 +60,31 @@ export default (pluginManager: any) => {
   const Overlays = observer(
     ({ model }: { model: LinearSyntenyViewModel; syntenyGroup: string }) => (
       <>
-        {model.syntenyGroups.map(syntenyGroup => {
-          return [
-            getConf(model, 'showAnchors') &&
-              model.allMatchedAnchorFeatures[syntenyGroup],
-            getConf(model, 'showSimpleAnchors') &&
-              model.allMatchedSimpleAnchorFeatures[syntenyGroup],
-            getConf(model, 'showPaf') && model.minimap2Features,
-            getConf(model, 'showSam') && model.samFeatures,
-            model.getMatchedFeaturesInLayout(
-              syntenyGroup,
-              model.allMatchedSyntenyFeatures[syntenyGroup],
-            ),
-          ].map((layoutMatches, index) =>
-            layoutMatches ? (
-              <Overlay
-                key={`${syntenyGroup}_${index}`}
-                syntenyGroup={syntenyGroup}
-                layoutMatches={layoutMatches}
-                model={model}
-              />
-            ) : null,
-          )
+        {model.tracks.map(track => {
+          const syntenyGroup = model.getSyntenyGroup(track)
+          return !syntenyGroup
+            ? null
+            : [
+                getConf(model, 'showAnchors') &&
+                  model.allMatchedAnchorFeatures[syntenyGroup],
+                getConf(model, 'showSimpleAnchors') &&
+                  model.allMatchedSimpleAnchorFeatures[syntenyGroup],
+                getConf(model, 'showPaf') && model.minimap2Features,
+                getConf(model, 'showSam') && model.samFeatures,
+                model.getMatchedFeaturesInLayout(
+                  syntenyGroup,
+                  model.allMatchedSyntenyFeatures[syntenyGroup],
+                ),
+              ].map((layoutMatches, index) =>
+                layoutMatches ? (
+                  <Overlay
+                    key={`${syntenyGroup}_${index}`}
+                    syntenyGroup={syntenyGroup}
+                    layoutMatches={layoutMatches}
+                    model={model}
+                  />
+                ) : null,
+              )
         })}
       </>
     ),

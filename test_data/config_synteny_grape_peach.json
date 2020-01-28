@@ -137,6 +137,12 @@
         "peach",
         "grape"
       ],
+      "configRelationships": [
+        {
+          "type": "syntenyGroup",
+          "target": "group2"
+        }
+      ],
       "name": "Grape peach synteny (MCScan)",
       "category": [
         "Annotation"

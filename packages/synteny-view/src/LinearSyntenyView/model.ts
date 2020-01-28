@@ -40,13 +40,6 @@ export interface PafRecord {
 type LGV = Instance<LinearGenomeViewStateModel>
 type ConfigRelationship = { type: string; target: string }
 
-// Get the syntenyGroup type from the tracks configRelationships
-function getSyntenyGroup(track: Instance<BaseTrackStateModel>) {
-  const rels: ConfigRelationship[] = getConf(track, 'configRelationships') || []
-  const t = rels.find(f => f.type === 'syntenyGroup')
-  return t ? t.target : undefined
-}
-
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
   const {
@@ -144,6 +137,13 @@ export default function stateModelFactory(pluginManager: any) {
       anchorsData: undefined as AnchorsData | undefined,
     }))
     .views(self => ({
+      // Get the syntenyGroup type from the tracks configRelationships
+      getSyntenyGroup(track: Instance<BaseTrackStateModel>) {
+        const rels: ConfigRelationship[] =
+          getConf(track, 'configRelationships') || []
+        const t = rels.find(f => f.type === 'syntenyGroup')
+        return t ? t.target : undefined
+      },
       get controlsWidth() {
         return self.views.length ? self.views[0].controlsWidth : 0
       },
@@ -160,7 +160,7 @@ export default function stateModelFactory(pluginManager: any) {
         const groups = new Set<string>()
         self.views.forEach(view => {
           view.tracks.forEach(track => {
-            const g = getSyntenyGroup(track)
+            const g = this.getSyntenyGroup(track)
             if (g) groups.add(g)
           })
         })
@@ -174,14 +174,16 @@ export default function stateModelFactory(pluginManager: any) {
       // Get tracks with a given syntenyGroup across multiple views
       getSyntenyGroupTracks(syntenyGroup: string) {
         return self.views.map(view =>
-          view.tracks.find(track => getSyntenyGroup(track) === syntenyGroup),
+          view.tracks.find(
+            track => this.getSyntenyGroup(track) === syntenyGroup,
+          ),
         )
       },
 
       // Get tracks with a given syntenyGroup across multiple views
       getSyntenyTrackFromView(view: LGV, syntenyGroup: string) {
         return view.tracks.find(
-          track => getSyntenyGroup(track) === syntenyGroup,
+          track => this.getSyntenyGroup(track) === syntenyGroup,
         )
       },
 
@@ -779,19 +781,25 @@ export default function stateModelFactory(pluginManager: any) {
         // if none had that configuration, turn one on
         if (!hiddenCount) this.showTrack(configuration)
       },
+
       showTrack(configuration: any, initialSnapshot = {}) {
         const { type } = configuration
-        if (!type) throw new Error('track configuration has no `type` listed')
+        if (!type) {
+          throw new Error('track configuration has no `type` listed')
+        }
+
         const name = readConfObject(configuration, 'name')
         const trackType = pluginManager.getTrackType(type)
-        if (!trackType) throw new Error(`unknown track type ${type}`)
-        const track = trackType.stateModel.create({
+
+        if (!trackType) {
+          throw new Error(`unknown track type ${type}`)
+        }
+        self.tracks.push({
           ...initialSnapshot,
           name,
           type,
           configuration,
         })
-        self.tracks.push(track)
       },
 
       hideTrack(configuration: any) {

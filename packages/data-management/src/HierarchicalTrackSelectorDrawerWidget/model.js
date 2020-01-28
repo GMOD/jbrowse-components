@@ -52,7 +52,6 @@ export default pluginManager =>
         const trackConfigurations = session.tracks
 
         const relevantTrackConfigurations = trackConfigurations.filter(conf => {
-          console.log(conf, readConfObject(conf, 'assemblyNames'))
           return (
             conf.viewType === self.view.type &&
             readConfObject(conf, 'assemblyNames').includes(assemblyName)
