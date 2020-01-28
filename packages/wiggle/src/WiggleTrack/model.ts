@@ -47,7 +47,8 @@ const stateModelFactory = (configSchema: any) =>
     .actions(self => {
       return {
         updateStats(stats: { scoreMin: number; scoreMax: number }) {
-          self.stats = stats
+          self.stats.scoreMin = stats.scoreMin
+          self.stats.scoreMax = stats.scoreMax
           self.ready = true
         },
 
@@ -91,6 +92,14 @@ const stateModelFactory = (configSchema: any) =>
           }
           return oldDomain
         },
+
+        get needsScalebar() {
+          return (
+            self.rendererTypeName === 'XYPlotRenderer' ||
+            self.rendererTypeName === 'LinePlotRenderer'
+          )
+        },
+
         get renderProps() {
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', this.rendererTypeName]) || {},

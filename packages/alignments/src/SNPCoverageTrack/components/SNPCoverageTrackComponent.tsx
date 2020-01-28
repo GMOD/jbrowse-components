@@ -55,15 +55,9 @@ function SNPCoverageTrackComponent(props: {
 }) {
   const { model } = props
   const { ready } = model
-
-  const needsScalebar =
-    model.rendererTypeName === 'XYPlotRenderer' ||
-    model.rendererTypeName === 'LinePlotRenderer' ||
-    model.rendererTypeName === 'SNPXYRenderer'
-
   return (
     <BlockBasedTrack {...props}>
-      {ready && needsScalebar ? <YScaleBar model={model} /> : null}
+      {ready && model.needsScalebar ? <YScaleBar model={model} /> : null}
     </BlockBasedTrack>
   )
 }
