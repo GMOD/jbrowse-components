@@ -95,6 +95,7 @@ const useStyles = makeStyles(theme => ({
 
 function ConfigurationEditor({ model }) {
   const classes = useStyles()
+  // key is so that React can distinguish between similar configs
   const key = model.target && readConfObject(model.target, 'trackId')
   return (
     <div className={classes.root} key={key} data-testid="configEditor">
