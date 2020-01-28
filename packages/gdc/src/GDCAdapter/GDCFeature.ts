@@ -1,4 +1,5 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { type } from 'os'
 
 /* eslint-disable no-underscore-dangle, @typescript-eslint/camelcase */
 
@@ -21,11 +22,19 @@ export default class GDCFeature implements Feature {
 
   private _id: string
 
+  private featureType: string
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(args: { gdcObject: any; parser: any; id: string }) {
+  constructor(args: {
+    gdcObject: any
+    parser: any
+    id: string
+    featureType: string
+  }) {
     this.gdcObject = args.gdcObject
     this.parser = args.parser
-    this.data = this.dataFromGDCObject(this.gdcObject)
+    this.featureType = args.featureType ? args.featureType : 'ssm'
+    this.data = this.dataFromGDCObject(this.gdcObject, this.featureType)
     this._id = args.id
   }
 
@@ -55,12 +64,22 @@ export default class GDCFeature implements Feature {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dataFromGDCObject(gdcObject: any): FeatureData {
+  dataFromGDCObject(gdcObject: any, featureType: string): FeatureData {
     const featureData: FeatureData = {
       refName: gdcObject.chromosome,
+      type: gdcObject.type,
       start: gdcObject.start_position,
       end: gdcObject.end_position,
-      type: gdcObject.type,
+    }
+
+    switch (featureType) {
+      case 'gene': {
+        featureData.start = gdcObject.gene_start
+        featureData.end = gdcObject.gene_end
+        featureData.refName = gdcObject.gene_chromosome
+        featureData.type = gdcObject.biotype
+        break
+      }
     }
 
     return featureData

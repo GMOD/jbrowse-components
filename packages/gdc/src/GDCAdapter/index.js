@@ -9,6 +9,10 @@ export const configSchema = ConfigurationSchema(
       type: 'string',
       defaultValue: '{}',
     },
+    featureType: {
+      type: 'string',
+      defaultValue: 'ssm',
+    },
     case: {
       type: 'string',
       defaultValue: '',
