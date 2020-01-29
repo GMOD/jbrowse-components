@@ -42,7 +42,7 @@ export default function(pluginManager) {
             .catch(error => {
               console.error(error)
               session.setSnackbarMessage(
-                `There was a problem connecting to this JBrowse 1 data directory. Please make sure you have entered a valid location. The error that was thrown is: "${error}"`,
+                `There was a problem connecting to the JBrowse 1 data directory "${self.name}. Please make sure you have entered a valid location. The error that was thrown is: "${error}"`,
               )
               session.breakConnection(self.configuration)
             })
