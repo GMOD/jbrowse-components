@@ -302,9 +302,16 @@ export default class extends BaseAdapter {
                 const bin = coverageBins[binNum]
                 bin.getNested('reference').decrement(strand, overlap)
                 let { base } = mismatch
-                if (mismatch.type === 'insertion') base = `ins ${base}`
-                else if (mismatch.type === 'skip') base = 'skip'
-                if (base) bin.getNested(base).increment(strand, overlap)
+
+                if (mismatch.type === 'insertion') {
+                  base = `ins ${base}`
+                } else if (mismatch.type === 'skip') {
+                  base = 'skip'
+                }
+
+                if (base && base !== '*') {
+                  bin.getNested(base).increment(strand, overlap)
+                }
               },
             )
           }
