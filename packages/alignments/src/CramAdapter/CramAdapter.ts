@@ -13,14 +13,6 @@ interface HeaderLine {
   tag: string
   value: string
 }
-interface Stats {
-  scoreMin: number
-  scoreMax: number
-}
-interface Density {
-  featureDensity: number
-}
-
 export default class CramAdapter extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private cram: any
@@ -207,56 +199,6 @@ export default class CramAdapter extends BaseAdapter {
       })
       observer.complete()
     })
-  }
-
-  /**
-   * Fetch estimates global stats for multiple regions. currently not in use
-   * @param {Any} regions set to any so BaseAdapter doesn't complain when accessing
-   * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
-   * @param {Number} length used to generate record range, doubles til condition hit
-   * @returns {Stats} Estimated stats of this region used for domain and rendering
-   */
-  public async getMultiRegionStats(
-    regions: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-    opts: BaseOptions = {},
-    length: number,
-  ): Promise<Stats> {
-    if (regions.length === 0) return { scoreMin: 0, scoreMax: 0 }
-
-    const sample = await this.generateSample(regions[0], length)
-
-    await this.setup(opts)
-    if (this.sequenceAdapter && !this.seqIdToRefName) {
-      this.seqIdToRefName = await this.sequenceAdapter.getRefNames(opts)
-    }
-    const refId = this.refNameToId(sample.refName)
-    this.seqIdToOriginalRefName[refId] =
-      (opts.originalRegion || {}).refName || sample.refName
-    const records = await this.cram.getRecordsForRange(
-      refId,
-      sample.sampleStart,
-      sample.sampleEnd,
-      opts,
-    )
-    checkAbortSignal(opts.signal)
-
-    const calculateDensity: Array<Density> = []
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    records.forEach(function iterate(feature: any, index: number) {
-      if (feature.alignmentStart < sample.sampleStart) return
-      calculateDensity.push({
-        featureDensity: feature.lengthOnRef / length,
-      })
-    })
-    const results = await this.checkDensity(
-      regions[0],
-      calculateDensity,
-      length,
-    )
-
-    return results.scoreMax > 0
-      ? { scoreMin: 0, scoreMax: results.scoreMax }
-      : this.getMultiRegionStats(regions, opts, length * 2)
   }
 
   /**

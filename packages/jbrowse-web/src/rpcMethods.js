@@ -44,15 +44,7 @@ export async function getRegionStats(
 
 export async function getMultiRegionStats(
   pluginManager,
-  {
-    regions,
-    adapterType,
-    adapterConfig,
-    signal,
-    bpPerPx,
-    sessionId,
-    startingLength,
-  },
+  { regions, adapterType, adapterConfig, signal, bpPerPx, sessionId },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
@@ -64,11 +56,7 @@ export async function getMultiRegionStats(
     adapterType,
     adapterConfig,
   )
-  return dataAdapter.getMultiRegionStats(
-    regions,
-    { signal, bpPerPx },
-    startingLength,
-  )
+  return dataAdapter.getMultiRegionStats(regions, { signal, bpPerPx })
 }
 
 export async function getRegions(

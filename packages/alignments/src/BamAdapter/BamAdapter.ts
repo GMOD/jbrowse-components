@@ -18,13 +18,6 @@ interface Header {
   idToName: string[]
   nameToId: Record<string, number>
 }
-interface Stats {
-  scoreMin: number
-  scoreMax: number
-}
-interface Density {
-  featureDensity: number
-}
 
 const setup = memoize(async (bam: BamFile) => {
   const samHeader = await bam.getHeader()
@@ -114,53 +107,6 @@ export default class extends BaseAdapter {
         observer.complete()
       },
     )
-  }
-
-  /**
-   * Fetch estimates global stats for multiple regions. currently not in use
-   * @param {Any} regions set to any so BaseAdapter doesn't complain when accessing
-   * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
-   * @param {Number} length used to generate record range, doubles til condition hit
-   * @returns {Stats} Estimated stats of this region used for domain and rendering
-   */
-  public async getMultiRegionStats(
-    regions: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-    opts: BaseOptions = {},
-    length: number,
-  ): Promise<Stats> {
-    if (regions.length === 0) return { scoreMin: 0, scoreMax: 0 }
-
-    const sample = await this.generateSample(regions[0], length)
-
-    this.samHeader = await setup(this.bam)
-    const records = await this.bam.getRecordsForRange(
-      sample.refName,
-      sample.sampleStart,
-      sample.sampleEnd,
-      opts,
-    )
-    checkAbortSignal(opts.signal)
-
-    const calculateDensity: Array<Density> = []
-    records.forEach(function iterate(feature, index) {
-      if (
-        feature.get('start') < sample.sampleStart ||
-        feature.get('end') > sample.sampleEnd
-      )
-        return
-      calculateDensity.push({
-        featureDensity: feature.get('length_on_ref') / length,
-      })
-    })
-
-    const results = await this.checkDensity(
-      regions[0],
-      calculateDensity,
-      length,
-    )
-    return results.scoreMax > 0
-      ? { scoreMin: 0, scoreMax: results.scoreMax }
-      : this.getMultiRegionStats(regions, opts, length * 2)
   }
 
   /**
