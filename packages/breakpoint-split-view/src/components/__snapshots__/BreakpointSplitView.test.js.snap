@@ -157,7 +157,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                       <legend
                         class="MuiFormLabel-root"
                       >
-                        Select dataset to view
+                        Select assembly to view
                       </legend>
                       <div
                         class="MuiFormGroup-root"
@@ -267,7 +267,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                       <legend
                         class="MuiFormLabel-root"
                       >
-                        Select dataset to view
+                        Select assembly to view
                       </legend>
                       <div
                         class="MuiFormGroup-root"

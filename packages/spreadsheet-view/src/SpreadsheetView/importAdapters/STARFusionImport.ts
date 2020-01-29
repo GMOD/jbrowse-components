@@ -20,7 +20,7 @@ export function parseSTARFusionBuffer(buffer: Buffer, options: ParseOptions) {
   return parseTsvBuffer(buffer, {
     hasColumnNameLine: true,
     columnNameLineNumber: 1,
-    selectedDatasetName: options.selectedDatasetName,
+    selectedAssemblyName: options.selectedAssemblyName,
   }).then(data => {
     // remove the # in #FusionName
     data.columns[0].name = data.columns[0].name.replace('#', '')

@@ -449,7 +449,7 @@ describe('circular views', () => {
     // wait for the UI to be loaded
     await waitForElement(() => getByText('Help'))
 
-    // open a new circular view on the same dataset as the test linear view
+    // open a new circular view on the same assembly as the test linear view
     state.session.addViewFromAnotherView('CircularView', state.session.views[0])
 
     // open a track selector for the circular view

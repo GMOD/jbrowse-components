@@ -19,17 +19,17 @@ function ConnectionTypeSelect(props: {
   connectionTypeChoices: ConnectionType[]
   connectionType: ConnectionType
   setConnectionType: Function
-  datasetNameChoices: string[]
-  datasetName: string
-  setDatasetName: Function
+  assemblyNameChoices: string[]
+  assemblyName: string
+  setAssemblyName: Function
 }): JSX.Element {
   const {
     connectionTypeChoices,
     connectionType,
     setConnectionType,
-    datasetNameChoices,
-    datasetName,
-    setDatasetName,
+    assemblyNameChoices,
+    assemblyName,
+    setAssemblyName,
   } = props
 
   function handleChange(
@@ -46,17 +46,17 @@ function ConnectionTypeSelect(props: {
   return (
     <form autoComplete="off">
       <TextField
-        value={datasetName}
-        label="datasetName"
-        helperText="Dataset to which the track will be added"
+        value={assemblyName}
+        label="assemblyName"
+        helperText="Assembly to which the track will be added"
         select
         fullWidth
-        onChange={(event): void => setDatasetName(event.target.value)}
-        inputProps={{ 'data-testid': 'datasetNameSelect' }}
+        onChange={(event): void => setAssemblyName(event.target.value)}
+        inputProps={{ 'data-testid': 'assemblyNameSelect' }}
       >
-        {datasetNameChoices.map(datasetNameChoice => (
-          <MenuItem key={datasetNameChoice} value={datasetNameChoice}>
-            {datasetNameChoice}
+        {assemblyNameChoices.map(assemblyNameChoice => (
+          <MenuItem key={assemblyNameChoice} value={assemblyNameChoice}>
+            {assemblyNameChoice}
           </MenuItem>
         ))}
       </TextField>

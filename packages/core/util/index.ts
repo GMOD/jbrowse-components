@@ -410,27 +410,26 @@ export function isAbortException(exception: AbortError): boolean {
     !!exception.message.match(/\b(aborted|AbortError)\b/i)
   )
 }
-interface Dataset {
-  assembly: {
-    name: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any
-  }
+interface Assembly {
+  name: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
+}
+interface Track {
+  trackId: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
 }
 interface Config {
   savedSessions: unknown[]
-  datasets: Dataset[]
+  assemblies: Assembly[]
+  tracks: Track[]
+  defaultSession?: {}
 }
 // similar to electron.js
 export function mergeConfigs(A: Config, B: Config) {
-  const X: { [key: string]: Dataset } = {}
-  const Y: { [key: string]: Dataset } = {}
-  A.datasets.forEach(a => {
-    X[a.assembly.name] = a
-  })
-  B.datasets.forEach(b => {
-    Y[b.assembly.name] = b
-  })
-  A.savedSessions = (A.savedSessions || []).concat(B.savedSessions)
-  return Object.values(merge(X, Y))
+  const merged = merge(A, B)
+  if (B.defaultSession) merged.defaultSession = B.defaultSession
+  else if (A.defaultSession) merged.defaultSession = A.defaultSession
+  return merged
 }
