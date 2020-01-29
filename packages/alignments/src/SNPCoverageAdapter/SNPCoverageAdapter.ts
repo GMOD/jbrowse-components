@@ -1,5 +1,5 @@
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
-import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { Observable, Observer } from 'rxjs'
@@ -51,12 +51,18 @@ export default class extends BaseAdapter {
     this.statsCache = new AbortablePromiseCache({
       cache: new QuickLRU({ maxSize: 1000 }),
       fill: async (
-        args: { refName: string; start: number; end: number; bpPerPx: number },
+        args: {
+          refName: string
+          assemblyName: string
+          start: number
+          end: number
+          bpPerPx: number
+        },
         abortSignal: AbortSignal,
       ): Promise<FeatureStats> => {
-        const { refName, start, end, bpPerPx } = args
+        const { refName, start, end, assemblyName, bpPerPx } = args
         const feats = await this.getFeatures(
-          { refName, start, end },
+          { refName, start, end, assemblyName },
           {
             signal: abortSignal,
             basesPerSpan: bpPerPx,
@@ -139,10 +145,7 @@ export default class extends BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
 
-  getFeatures(
-    region: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-    opts: BaseOptions = {},
-  ): Observable<Feature> {
+  getFeatures(region: IRegion, opts: BaseOptions = {}): Observable<Feature> {
     return ObservableCreate(
       async (observer: Observer<Feature>): Promise<void> => {
         const features = await this.subadapter
