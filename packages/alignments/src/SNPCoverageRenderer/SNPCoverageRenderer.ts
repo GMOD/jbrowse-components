@@ -59,7 +59,6 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       C: '#4747ff',
       G: '#ffa500',
       T: '#f00',
-      '*': 'darkgrey',
       total: 'lightgrey',
     }
     for (const feature of features.values()) {
