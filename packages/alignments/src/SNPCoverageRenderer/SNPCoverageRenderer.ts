@@ -61,6 +61,11 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       T: '#f00',
       total: 'lightgrey',
     }
+
+    // Use two pass rendering, which helps in visualizing the SNPs are high zoom levels
+    // First pass: draw the gray background
+    // Second pass: draw the SNP data, and add a minimum feature width of 1px which can be wider than the actual bpPerPx
+    // This reduces overdrawing of the grey background over the SNPs
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(
         feature,
