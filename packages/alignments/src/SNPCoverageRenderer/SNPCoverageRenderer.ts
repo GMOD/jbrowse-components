@@ -2,14 +2,17 @@ import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
-import { getOrigin, getScale } from '@gmod/jbrowse-plugin-wiggle/src/util'
+import {
+  getOrigin,
+  getScale,
+  ScaleOpts,
+} from '@gmod/jbrowse-plugin-wiggle/src/util'
 import WiggleBaseRenderer from '@gmod/jbrowse-plugin-wiggle/src/WiggleBaseRenderer'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface SNPCoverageRendererProps {
   features: Map<string, Feature>
-  layout: any
-  config: any
+  layout: any // eslint-disable @typescript-eslint/no-explicit-any
+  config: any // eslint-disable @typescript-eslint/no-explicit-any
   region: IRegion
   bpPerPx: number
   height: number
@@ -20,12 +23,11 @@ interface SNPCoverageRendererProps {
   dataAdapter: BaseAdapter
   notReady: boolean
   originalRegion: IRegion
-  scaleOpts: any
+  scaleOpts: ScaleOpts
   sessionId: string
-  signal: any
-  trackModel: any
+  signal: AbortSignal
+  trackModel: unknown
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 interface BaseInfo {
   base: string

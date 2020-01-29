@@ -1,5 +1,12 @@
 import { scaleLinear, scaleLog, scaleQuantize } from 'd3-scale'
 
+export interface ScaleOpts {
+  domain: number[]
+  range: number[]
+  scaleType: string
+  pivotValue: number
+  inverted: boolean
+}
 /**
  * produces a d3-scale from arguments. applies a "nice domain" adjustment
  *
@@ -17,7 +24,7 @@ export function getScale({
   scaleType,
   pivotValue,
   inverted,
-}) {
+}: ScaleOpts) {
   let scale
   const [min, max] = domain
   if (min === undefined || max === undefined) throw new Error('invalid domain')
@@ -45,7 +52,7 @@ export function getScale({
  *
  * @param {object} scaleType
  */
-export function getOrigin(scaleType /* , pivot, stats */) {
+export function getOrigin(scaleType: string /* , pivot, stats */) {
   // if (pivot) {
   //   if (pivot === 'mean') {
   //     return stats.scoreMean || 0
@@ -75,7 +82,15 @@ export function getOrigin(scaleType /* , pivot, stats */) {
  *   - stddev
  *   - scaleType (linear or log)
  */
-export function getNiceDomain({ scaleType, domain, bounds }) {
+export function getNiceDomain({
+  scaleType,
+  domain,
+  bounds,
+}: {
+  scaleType: string
+  domain: number[]
+  bounds: number[]
+}) {
   const [minScore, maxScore] = bounds
   let [min, max] = domain
 
@@ -101,7 +116,7 @@ export function getNiceDomain({ scaleType, domain, bounds }) {
   if (maxScore !== undefined && maxScore !== Number.MAX_VALUE) {
     max = maxScore
   }
-  const getScaleType = type => {
+  const getScaleType = (type: string) => {
     if (type === 'linear') {
       return scaleLinear()
     }
