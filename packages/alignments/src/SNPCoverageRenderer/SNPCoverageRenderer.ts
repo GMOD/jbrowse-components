@@ -11,8 +11,8 @@ import WiggleBaseRenderer from '@gmod/jbrowse-plugin-wiggle/src/WiggleBaseRender
 
 interface SNPCoverageRendererProps {
   features: Map<string, Feature>
-  layout: any // eslint-disable @typescript-eslint/no-explicit-any
-  config: any // eslint-disable @typescript-eslint/no-explicit-any
+  layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  config: any // eslint-disable-line @typescript-eslint/no-explicit-any
   region: IRegion
   bpPerPx: number
   height: number

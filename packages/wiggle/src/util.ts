@@ -4,7 +4,7 @@ export interface ScaleOpts {
   domain: number[]
   range: number[]
   scaleType: string
-  pivotValue: number
+  pivotValue?: number
   inverted: boolean
 }
 /**
@@ -132,5 +132,5 @@ export function getNiceDomain({
 
   scale.domain([min, max])
   scale.nice()
-  return scale.domain()
+  return scale.domain() as [number, number]
 }

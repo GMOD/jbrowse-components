@@ -75,13 +75,11 @@ const stateModelFactory = (configSchema: any) =>
         },
 
         get domain() {
-          const ret = self.stats
-            ? getNiceDomain({
-                domain: [self.stats.scoreMin, self.stats.scoreMax],
-                scaleType: getConf(self, 'scaleType'),
-                bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
-              })
-            : undefined
+          const ret = getNiceDomain({
+            domain: [self.stats.scoreMin, self.stats.scoreMax],
+            scaleType: getConf(self, 'scaleType'),
+            bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
+          })
 
           const headroom = getConf(self, 'headroom')
           if (headroom) {

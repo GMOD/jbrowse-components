@@ -20,10 +20,6 @@ const YScaleBar = observer(
       domain,
       range: [height, 0],
       inverted: getConf(model, 'inverted'),
-      bounds: {
-        min: getConf(model, 'minScore'),
-        max: getConf(model, 'maxScore'),
-      },
     })
     const axisProps = axisPropsFromTickScale(scale, 4)
     const values =
