@@ -1,15 +1,15 @@
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
-import SNPXYRenderer, { configSchema, ReactComponent } from '.'
+import SNPCoverageRenderer, { configSchema, ReactComponent } from '.'
 
-function SNPXYPlotRendererPlugin() {
-  return new SNPXYRenderer({
-    name: 'SNPXYRenderer',
+function SNPCoverageRendererPlugin() {
+  return new SNPCoverageRenderer({
+    name: 'SNPCoverageRenderer',
     ReactComponent,
     configSchema,
   })
 }
 test('several features', async () => {
-  const result = await SNPXYPlotRendererPlugin().makeImageData({
+  const result = await SNPCoverageRendererPlugin().makeImageData({
     features: [
       new SimpleFeature({
         id: 't1',

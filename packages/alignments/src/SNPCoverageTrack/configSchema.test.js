@@ -1,9 +1,9 @@
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import SNPXYRenderer, {
-  configSchema as snpXYRendererConfigSchema,
-  ReactComponent as SNPXYRendererReactComponent,
-} from '../SNPXYRenderer' // change renderer
+import SNPCoverageRenderer, {
+  configSchema as snpCoverageRendererConfigSchema,
+  ReactComponent as SNPCoverageRendererReactComponent,
+} from '../SNPCoverageRenderer' // change renderer
 import configSchemaFactory from './configSchema'
 
 // mock warnings to avoid unnecessary outputs
@@ -15,14 +15,14 @@ afterEach(() => {
   console.warn.mockRestore()
 })
 // change renderer
-class SNPXYRendererPlugin extends Plugin {
+class SNPCoverageRendererPlugin extends Plugin {
   install(pluginManager) {
     pluginManager.addRendererType(
       () =>
-        new SNPXYRenderer({
-          name: 'SNPXYRenderer',
-          ReactComponent: SNPXYRendererReactComponent,
-          configSchema: snpXYRendererConfigSchema,
+        new SNPCoverageRenderer({
+          name: 'SNPCoverageRenderer',
+          ReactComponent: SNPCoverageRendererReactComponent,
+          configSchema: snpCoverageRendererConfigSchema,
         }),
     )
   }
@@ -30,7 +30,7 @@ class SNPXYRendererPlugin extends Plugin {
 
 test('has a viewType attr', () => {
   const configSchema = configSchemaFactory(
-    new PluginManager([new SNPXYRendererPlugin()]).configure(),
+    new PluginManager([new SNPCoverageRendererPlugin()]).configure(),
   )
   const config = configSchema.create({
     type: 'SNPCoverageTrack',

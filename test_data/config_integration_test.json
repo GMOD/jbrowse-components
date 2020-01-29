@@ -453,7 +453,7 @@
         "volvox"
       ],
       "adapter": {
-        "type": "SNPAdapter",
+        "type": "SNPCoverageAdapter",
         "subadapter": {
           "type": "CramAdapter",
           "cramLocation": {
@@ -462,11 +462,6 @@
           "craiLocation": {
             "uri": "test_data/volvox-sorted-altname.cram.crai"
           }
-        }
-      },
-      "renderers": {
-        "SNPXYRenderer": {
-          "type": "SNPXYPlotRenderer"
         }
       }
     },
@@ -478,7 +473,7 @@
         "volvox"
       ],
       "adapter": {
-        "type": "SNPAdapter",
+        "type": "SNPCoverageAdapter",
         "subadapter": {
           "type": "BamAdapter",
           "bamLocation": {
@@ -490,11 +485,6 @@
             }
           }
         }
-      },
-      "renderers": {
-        "SNPXYRenderer": {
-          "type": "SNPXYPlotRenderer"
-        }
       }
     },
     {
@@ -505,7 +495,7 @@
         "volvox"
       ],
       "adapter": {
-        "type": "SNPAdapter",
+        "type": "SNPCoverageAdapter",
         "subadapter": {
           "type": "BamAdapter",
           "bamLocation": {
@@ -517,11 +507,6 @@
             }
           }
         }
-      },
-      "renderers": {
-        "SNPXYRenderer": {
-          "type": "SNPXYPlotRenderer"
-        }
       }
     },
     {
@@ -532,7 +517,7 @@
         "volvox"
       ],
       "adapter": {
-        "type": "SNPAdapter",
+        "type": "SNPCoverageAdapter",
         "subadapter": {
           "type": "BamAdapter",
           "bamLocation": {
@@ -554,7 +539,7 @@
         "volvox"
       ],
       "adapter": {
-        "type": "SNPAdapter",
+        "type": "SNPCoverageAdapter",
         "subadapter": {
           "type": "BamAdapter",
           "bamLocation": {
@@ -565,11 +550,6 @@
               "uri": "test_data/volvox-sorted.bam.bai.nonexist"
             }
           }
-        }
-      },
-      "renderers": {
-        "SNPXYRenderer": {
-          "type": "SNPXYPlotRenderer"
         }
       }
     }

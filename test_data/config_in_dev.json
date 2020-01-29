@@ -129,14 +129,6 @@
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.bai"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
@@ -180,7 +172,7 @@
         "SKBR3"
       ],
       "adapter": {
-        "type": "SNPAdapter",
+        "type": "SNPCoverageAdapter",
         "subadapter": {
           "type": "BamAdapter",
           "bamLocation": {
@@ -1729,7 +1721,7 @@
         "Coverage"
       ],
       "adapter": {
-        "type": "SNPAdapter",
+        "type": "SNPCoverageAdapter",
         "subadapter": {
           "type": "BamAdapter",
           "bamLocation": {
@@ -1740,11 +1732,6 @@
               "uri": "test_data/volvox-sorted.bam.bai"
             }
           }
-        }
-      },
-      "renderers": {
-        "SNPXYRenderer": {
-          "type": "SNPXYPlotRenderer"
         }
       }
     },
@@ -1759,7 +1746,7 @@
         "Coverage"
       ],
       "adapter": {
-        "type": "SNPAdapter",
+        "type": "SNPCoverageAdapter",
         "subadapter": {
           "type": "CramAdapter",
           "cramLocation": {
@@ -1768,11 +1755,6 @@
           "craiLocation": {
             "uri": "test_data/volvox-sorted.cram.crai"
           }
-        }
-      },
-      "renderers": {
-        "SNPXYRenderer": {
-          "type": "SNPXYPlotRenderer"
         }
       }
     }

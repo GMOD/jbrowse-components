@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import { types } from 'mobx-state-tree'
 
 export default ConfigurationSchema(
-  'SNPXYRenderer',
+  'SNPCoverageRenderer',
   {
     color: {
       type: 'color',

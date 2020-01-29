@@ -12,8 +12,8 @@ export default pluginManager => {
   // const LinePlotRendererConfigSchema = pluginManager.getRendererType(
   //   'LinePlotRenderer',
   // ).configSchema
-  const SNPXYRendererConfigSchema = pluginManager.getRendererType(
-    'SNPXYRenderer',
+  const SNPCoverageRendererConfigSchema = pluginManager.getRendererType(
+    'SNPCoverageRenderer',
   ).configSchema
 
   return ConfigurationSchema(
@@ -55,7 +55,7 @@ export default pluginManager => {
       },
 
       renderers: ConfigurationSchema('RenderersConfiguration', {
-        SNPXYRenderer: SNPXYRendererConfigSchema,
+        SNPCoverageRenderer: SNPCoverageRendererConfigSchema,
       }),
     },
     {

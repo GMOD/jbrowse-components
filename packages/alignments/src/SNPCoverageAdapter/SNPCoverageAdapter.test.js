@@ -1,6 +1,10 @@
 import { toArray } from 'rxjs/operators'
-import Adapter from './SNPAdapter'
+import { LocalFile } from 'generic-filehandle'
+import { Observable } from 'rxjs'
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import Adapter from './SNPCoverageAdapter'
 import SubadapterBam from '../BamAdapter/BamAdapter'
+import SubadapterCram from '../CramAdapter/CramAdapter'
 
 test('SNP adapter can fetch features from volvox.bam using bam subadapter', async () => {
   const adapter = new Adapter({

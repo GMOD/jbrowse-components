@@ -17,9 +17,9 @@ import {
   modelFactory as snpCoverageTrackModelFactory,
 } from './SNPCoverageTrack'
 import {
-  AdapterClass as SnpAdapterClass,
-  configSchema as snpAdapterConfigSchema,
-} from './SNPAdapter'
+  AdapterClass as SNPCoverageAdapterClass,
+  configSchema as snpCoverageAdapterConfigSchema,
+} from './SNPCoverageAdapter'
 import {
   AdapterClass as BamAdapterClass,
   configSchema as bamAdapterConfigSchema,
@@ -32,10 +32,10 @@ import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
   ReactComponent as PileupRendererReactComponent,
 } from './PileupRenderer'
-import SNPXYRenderer, {
-  configSchema as SNPXYRendererConfigSchema,
-  ReactComponent as SNPXYRendererReactComponent,
-} from './SNPXYRenderer'
+import SNPCoverageRenderer, {
+  configSchema as SNPCoverageRendererConfigSchema,
+  ReactComponent as SNPCoverageRendererReactComponent,
+} from './SNPCoverageRenderer'
 
 export default class extends Plugin {
   install(pluginManager) {
@@ -77,10 +77,9 @@ export default class extends Plugin {
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
-          name: 'SNPAdapter',
-          configSchema: snpAdapterConfigSchema,
-          // configSchema: snpAdapterConfigSchema(pluginManager),
-          AdapterClass: SnpAdapterClass,
+          name: 'SNPCoverageAdapter',
+          configSchema: snpCoverageAdapterConfigSchema,
+          AdapterClass: SNPCoverageAdapterClass,
         }),
     )
     pluginManager.addAdapterType(
@@ -102,10 +101,10 @@ export default class extends Plugin {
     )
     pluginManager.addRendererType(
       () =>
-        new SNPXYRenderer({
-          name: 'SNPXYRenderer',
-          ReactComponent: SNPXYRendererReactComponent,
-          configSchema: SNPXYRendererConfigSchema,
+        new SNPCoverageRenderer({
+          name: 'SNPCoverageRenderer',
+          ReactComponent: SNPCoverageRendererReactComponent,
+          configSchema: SNPCoverageRendererConfigSchema,
         }),
     )
   }

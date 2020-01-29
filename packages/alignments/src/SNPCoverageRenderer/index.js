@@ -5,7 +5,7 @@ export { default as ReactComponent } from '@gmod/jbrowse-plugin-wiggle/src/Wiggl
 export { default } from './SNPCoverageRenderer'
 
 export const configSchema = ConfigurationSchema(
-  'SNPCoveragePlotRenderer',
+  'SNPCoverageRenderer',
   {},
   { baseConfiguration: ConfigSchema, explicitlyTyped: true },
 )
