@@ -324,10 +324,7 @@
             "Annotation"
           ],
           "adapter": {
-            "type": "BigBedAdapter",
-            "bigBedLocation": {
-              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/gdcCancer/gdcCancer.bb"
-            }
+            "type": "GDCAdapter"
           },
           "renderer": {
             "type": "SvgFeatureRenderer"

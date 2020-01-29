@@ -195,7 +195,7 @@ export default class extends BaseAdapter {
    * @param end end position
    */
   private getLocationFilters(chr: string, start: number, end: number) {
-    const locationFilter = {
+    const locationFilter: any = {
       op: 'and',
       content: [
         { op: '>=', content: { field: 'ssms.start_position', value: start } },
@@ -205,6 +205,14 @@ export default class extends BaseAdapter {
           content: { field: 'ssms.chromosome', value: [`chr${chr}`] },
         },
       ],
+    }
+
+    if (this.case) {
+      const caseFilter = {
+        op: 'in',
+        content: { field: 'cases.case_id', value: this.case },
+      }
+      locationFilter.content.push(caseFilter)
     }
     return locationFilter
   }
