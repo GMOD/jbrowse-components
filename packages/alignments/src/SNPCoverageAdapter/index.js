@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 
-export { default as AdapterClass } from './SNPAdapter'
+export { default as AdapterClass } from './SNPCoverageAdapter'
 
 export const configSchema = ConfigurationSchema(
   'SNPAdapter',
