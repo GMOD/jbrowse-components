@@ -386,13 +386,8 @@ const SlotEditor = observer(({ slot, slotSchema }) => {
   }
   if (!(type in valueComponents))
     console.warn(`SlotEditor needs to implement ${type}`)
-  const key = `${slot.name}-${
-    typeof slot.value === 'object'
-      ? JSON.stringify(slot.value)
-      : String(slot.value)
-  }`
   return (
-    <Paper key={key} className={classes.paper}>
+    <Paper className={classes.paper}>
       <div className={classes.paperContent}>
         <ValueComponent slot={slot} slotSchema={slotSchema} />
       </div>
