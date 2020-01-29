@@ -563,12 +563,12 @@ describe('snpcoverage adapter tests', () => {
   it('SNPCoverage test that BAI with 404 file displays error', async () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
     const state = JBrowseRootModel.create({ jbrowse: config })
-    const { getByTestId, getAllByText } = render(
+    const { getByTestId: byId, getAllByText } = render(
       <JBrowse initialState={state} />,
     )
     fireEvent.click(
       await waitForElement(() =>
-        getByTestId('htsTrackEntry-volvox_alignments_bai_nonexist_SNP'),
+        byId('htsTrackEntry-volvox_alignments_bai_nonexist_SNP'),
       ),
     )
     await expect(

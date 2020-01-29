@@ -528,6 +528,9 @@
       "type": "SNPCoverageTrack",
       "trackId": "volvox_alignments_bam_nonexist_SNP",
       "name": "volvox-sorted red/blue (bam nonexist 404) SNP",
+      "assemblyNames": [
+        "volvox"
+      ],
       "adapter": {
         "type": "SNPAdapter",
         "subadapter": {
@@ -547,6 +550,9 @@
       "type": "SNPCoverageTrack",
       "trackId": "volvox_alignments_bai_nonexist_SNP",
       "name": "volvox-sorted red/blue (bai nonexist 404) SNP",
+      "assemblyNames": [
+        "volvox"
+      ],
       "adapter": {
         "type": "SNPAdapter",
         "subadapter": {
