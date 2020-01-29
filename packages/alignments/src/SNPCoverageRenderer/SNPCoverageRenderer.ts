@@ -6,7 +6,7 @@ import { getOrigin, getScale } from '@gmod/jbrowse-plugin-wiggle/src/util'
 import WiggleBaseRenderer from '@gmod/jbrowse-plugin-wiggle/src/WiggleBaseRenderer'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface SNPXYRendererProps {
+interface SNPCoverageRendererProps {
   features: Map<string, Feature>
   layout: any
   config: any
@@ -35,8 +35,8 @@ interface BaseInfo {
   }
 }
 
-export default class SNPXYRenderer extends WiggleBaseRenderer {
-  draw(ctx: CanvasRenderingContext2D, props: SNPXYRendererProps) {
+export default class SNPCoverageRenderer extends WiggleBaseRenderer {
+  draw(ctx: CanvasRenderingContext2D, props: SNPCoverageRendererProps) {
     const {
       features,
       region,
