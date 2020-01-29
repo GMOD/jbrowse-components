@@ -532,7 +532,7 @@ describe('snpcoverage adapter tests', () => {
     // this is needed to do a fuzzy image comparison because
     // the travis-ci was 2 pixels different for some reason, see PR #710
     expect(buf).toMatchImageSnapshot({
-      failureThreshold: 0.001,
+      failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
   })
@@ -556,7 +556,7 @@ describe('snpcoverage adapter tests', () => {
     // this is needed to do a fuzzy image comparison because
     // the travis-ci was 2 pixels different for some reason, see PR #710
     expect(buf).toMatchImageSnapshot({
-      failureThreshold: 0.001,
+      failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
   })
