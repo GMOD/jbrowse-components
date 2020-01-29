@@ -74,7 +74,15 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       ctx.fillStyle = colorForBase.total
       const w = rightPx - leftPx + 0.3
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
-
+    }
+    for (const feature of features.values()) {
+      const [leftPx, rightPx] = featureSpanPx(
+        feature,
+        region,
+        bpPerPx,
+        horizontallyFlipped,
+      )
+      const w = Math.max(rightPx - leftPx + 0.3, 1)
       // grab array with nestedtable's info, draw mismatches
       const infoArray = feature.get('snpinfo')
       infoArray.forEach(function iterate(info: BaseInfo, index: number) {
