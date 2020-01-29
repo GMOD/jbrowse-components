@@ -285,10 +285,8 @@ export default class extends BaseAdapter {
 
       // Calculate SNP coverage
       if (binWidth === 1) {
-        const mismatches: Mismatch[] =
-          bpPerPx < 10
-            ? feature.get('mismatches')
-            : feature.get('skips_and_dels')
+        const mismatches: Mismatch[] = feature.get('mismatches')
+        // bpPerPx < 10 ? feature.get('mismatches') : feature.get('skips_and_dels')
 
         // loops through mismatches and updates coverage variables accordingly.
         if (mismatches) {

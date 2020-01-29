@@ -22,8 +22,9 @@ export default pluginManager => {
       autoscale: {
         type: 'stringEnum',
         defaultValue: 'local',
-        model: types.enumeration('Autoscale type', ['global', 'local']),
-        description: 'performs local or global autoscaling',
+        model: types.enumeration('Autoscale type', ['local']),
+        description:
+          'performs local autoscaling (no other options for SNP Coverage available)',
       },
       minScore: {
         type: 'number',
