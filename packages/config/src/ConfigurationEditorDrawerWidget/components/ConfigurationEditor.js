@@ -95,7 +95,9 @@ const useStyles = makeStyles(theme => ({
 
 function ConfigurationEditor({ model }) {
   const classes = useStyles()
-  // key is so that React can distinguish between similar configs
+  // key forces a re-render, otherwise the same field can end up being used
+  // for different tracks since only the backing model changes for example
+  // see pr #804
   const key = model.target && readConfObject(model.target, 'trackId')
   return (
     <div className={classes.root} key={key} data-testid="configEditor">
