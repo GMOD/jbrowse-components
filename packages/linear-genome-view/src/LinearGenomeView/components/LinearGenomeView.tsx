@@ -1,5 +1,4 @@
-import { ResizeHandle } from '@gmod/jbrowse-core/ui'
-import { getSession, useDebouncedCallback } from '@gmod/jbrowse-core/util'
+import { getSession } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
 // material ui things
@@ -21,7 +20,7 @@ import Typography from '@material-ui/core/Typography'
 // misc
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
-import { Instance, isAlive } from 'mobx-state-tree'
+import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useState } from 'react'
 
@@ -29,15 +28,14 @@ import React, { useState } from 'react'
 import buttonStyles from './buttonStyles'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import Rubberband from './Rubberband'
+import TrackContainer from './TrackContainer'
 import ScaleBar from './ScaleBar'
-import TrackRenderingContainer from './TrackRenderingContainer'
 import ZoomControls from './ZoomControls'
 import {
   LinearGenomeViewStateModel,
   HEADER_BAR_HEIGHT,
   SCALE_BAR_HEIGHT,
 } from '..'
-import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
 
 const dragHandleHeight = 3
 
@@ -66,9 +64,6 @@ const useStyles = makeStyles(theme => ({
     background: '#D9D9D9',
     borderBottom: '1px solid #9e9e9e',
     boxSizing: 'border-box',
-  },
-  trackControls: {
-    whiteSpace: 'normal',
   },
   headerBar: {
     gridArea: '1/1/auto/span 2',
@@ -129,72 +124,6 @@ const useStyles = makeStyles(theme => ({
   },
   ...buttonStyles(theme),
 }))
-
-const TrackContainer = observer(
-  (props: { model: LGV; track: Instance<BaseTrackStateModel> }) => {
-    const { model, track } = props
-    const classes = useStyles()
-    const {
-      bpPerPx,
-      offsetPx,
-      horizontalScroll,
-      draggingTrackId,
-      moveTrack,
-    } = model
-    function onDragEnter() {
-      if (
-        draggingTrackId !== undefined &&
-        isAlive(track) &&
-        draggingTrackId !== track.id
-      ) {
-        moveTrack(draggingTrackId, track.id)
-      }
-    }
-    const debouncedOnDragEnter = useDebouncedCallback(onDragEnter, 100)
-    const { RenderingComponent, ControlsComponent } = track
-    // Since the ControlsComponent and the TrackRenderingContainer are next to
-    // each other in a grid, we add `onDragEnter` to both of them so the user
-    // can drag the track on to the controls or the track itself.
-    return (
-      <>
-        <ControlsComponent
-          track={track}
-          view={model}
-          onConfigureClick={track.activateConfigurationUI}
-          className={clsx(classes.controls, classes.trackControls)}
-          style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
-          onDragEnter={debouncedOnDragEnter}
-        />
-        <TrackRenderingContainer
-          trackId={track.id}
-          trackHeight={track.height}
-          onHorizontalScroll={horizontalScroll}
-          setScrollTop={track.setScrollTop}
-          onDragEnter={debouncedOnDragEnter}
-          dimmed={draggingTrackId !== undefined && draggingTrackId !== track.id}
-        >
-          <RenderingComponent
-            model={track}
-            offsetPx={offsetPx}
-            bpPerPx={bpPerPx}
-            blockState={{}}
-            onHorizontalScroll={horizontalScroll}
-          />
-        </TrackRenderingContainer>
-        <ResizeHandle
-          onDrag={track.resizeHeight}
-          style={{
-            gridRow: `resize-${track.id}`,
-            gridColumn: 'span 2',
-            background: '#ccc',
-            boxSizing: 'border-box',
-            borderTop: '1px solid #fafafa',
-          }}
-        />
-      </>
-    )
-  },
-)
 
 const LongMenu = observer(
   ({ model, className }: { model: LGV; className: string }) => {
