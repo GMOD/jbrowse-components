@@ -6,6 +6,8 @@ export default pluginManager =>
     .model('ConfigurationEditorDrawerWidget', {
       id: ElementId,
       type: types.literal('ConfigurationEditorDrawerWidget'),
+      // If you add different types of targets, don't forget to account for that
+      // in the key of ./components/ConfigurationEditor.js
       target: types.safeReference(
         types.union(
           pluginManager.pluggableConfigSchemaType('track'),
