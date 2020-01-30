@@ -7,11 +7,12 @@ import { Instance, isAlive } from 'mobx-state-tree'
 import React from 'react'
 import { LinearGenomeViewStateModel } from '..'
 import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
+import TrackControls from './TrackControls'
 import TrackRenderingContainer from './TrackRenderingContainer'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles({
   controls: {
     borderRight: '1px solid gray',
     overflow: 'hidden',
@@ -21,7 +22,7 @@ const useStyles = makeStyles(theme => ({
   trackControls: {
     whiteSpace: 'normal',
   },
-}))
+})
 
 function TrackContainer(props: {
   model: LGV
@@ -68,6 +69,7 @@ function TrackContainer(props: {
         onDragEnter={debouncedOnDragEnter}
         dimmed={draggingTrackId !== undefined && draggingTrackId !== track.id}
       >
+        <TrackControls track={track} />
         <RenderingComponent
           model={track}
           offsetPx={offsetPx}

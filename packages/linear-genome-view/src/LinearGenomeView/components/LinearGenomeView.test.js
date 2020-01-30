@@ -66,8 +66,10 @@ describe('<LinearGenomeView />', () => {
       configuration: {},
     })
     const model = session.views[0]
-    const { container, findByText } = render(<LinearGenomeView model={model} />)
-    await findByText('Foo Track')
+    const { container, findAllByText } = render(
+      <LinearGenomeView model={model} />,
+    )
+    await findAllByText('Foo Track')
     expect(container.firstChild).toMatchSnapshot()
   })
   it('renders two tracks, two regions', async () => {
@@ -118,8 +120,10 @@ describe('<LinearGenomeView />', () => {
       configuration: {},
     })
     const model = session.views[0]
-    const { container, findByText } = render(<LinearGenomeView model={model} />)
-    await findByText('Foo Track')
+    const { container, findAllByText } = render(
+      <LinearGenomeView model={model} />,
+    )
+    await findAllByText('Foo Track')
     expect(container.firstChild).toMatchSnapshot()
   })
 })

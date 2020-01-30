@@ -78,6 +78,7 @@ const TrackRenderingContainer: React.FC<{
   }, [delta, mouseDragging, onHorizontalScroll, prevX, scheduled])
 
   function mouseDown(event: React.MouseEvent) {
+    if ((event.target as HTMLElement).draggable) return
     if (event.button === 0) {
       event.preventDefault()
       setPrevX(event.clientX)

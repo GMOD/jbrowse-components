@@ -473,6 +473,64 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       style="grid-row: track-foo; grid-column: blocks;"
     >
       <div
+        class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
+        style="position: fixed; z-index: 2;"
+      >
+        <span
+          aria-hidden="true"
+          class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
+          draggable="true"
+        >
+          drag_indicator
+        </span>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          tabindex="0"
+          title="close this track"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            >
+              close
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+        <span
+          class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+        >
+          Foo Track
+        </span>
+        <button
+          aria-controls="simple-menu"
+          aria-haspopup="true"
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            >
+              more_vert
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+      </div>
+      <div
         class="makeStyles-track"
         data-testid="track-testConfig"
         role="presentation"
@@ -1210,6 +1268,64 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       style="grid-row: track-foo; grid-column: blocks;"
     >
       <div
+        class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
+        style="position: fixed; z-index: 2;"
+      >
+        <span
+          aria-hidden="true"
+          class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
+          draggable="true"
+        >
+          drag_indicator
+        </span>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          tabindex="0"
+          title="close this track"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            >
+              close
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+        <span
+          class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+        >
+          Foo Track
+        </span>
+        <button
+          aria-controls="simple-menu"
+          aria-haspopup="true"
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            >
+              more_vert
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+      </div>
+      <div
         class="makeStyles-track"
         data-testid="track-testConfig"
         role="presentation"
@@ -1343,6 +1459,64 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       role="presentation"
       style="grid-row: track-bar; grid-column: blocks;"
     >
+      <div
+        class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
+        style="position: fixed; z-index: 2;"
+      >
+        <span
+          aria-hidden="true"
+          class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
+          draggable="true"
+        >
+          drag_indicator
+        </span>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          tabindex="0"
+          title="close this track"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            >
+              close
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+        <span
+          class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+        >
+          Bar Track
+        </span>
+        <button
+          aria-controls="simple-menu"
+          aria-haspopup="true"
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            >
+              more_vert
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+      </div>
       <div
         class="makeStyles-track"
         data-testid="track-testConfig2"
