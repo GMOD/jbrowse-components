@@ -1,7 +1,5 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
-/* eslint-disable no-underscore-dangle, @typescript-eslint/camelcase */
-
 interface FeatureData {
   [key: string]: unknown
   refName: string
@@ -23,9 +21,10 @@ export default class GDCFeature implements Feature {
 
   private featureType: string
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(args: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     gdcObject: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     parser: any
     id: string
     featureType: string
@@ -64,9 +63,10 @@ export default class GDCFeature implements Feature {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dataFromGDCObject(gdcObject: any, featureType: string): FeatureData {
+    // Defaults to SSM values
     const featureData: FeatureData = {
       refName: gdcObject.chromosome,
-      type: gdcObject.type,
+      type: gdcObject.mutation_type,
       start: gdcObject.start_position,
       end: gdcObject.end_position,
     }
