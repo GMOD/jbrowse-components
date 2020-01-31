@@ -6,9 +6,7 @@ import ReactPropTypes from 'prop-types'
 import React, { useEffect, useRef } from 'react'
 import { withContentRect } from 'react-measure'
 
-import { inDevelopment } from '../util'
 import DrawerWidget from './DrawerWidget'
-import DevTools from './DevTools'
 import Snackbar from './Snackbar'
 
 const useStyles = makeStyles(theme => ({
@@ -120,7 +118,6 @@ function App({ contentRect, measureRef, session }) {
               view={view}
             />
           ))}
-          {inDevelopment ? <DevTools session={session} /> : null}
           <div style={{ height: 300 }} />
         </div>
       </div>
