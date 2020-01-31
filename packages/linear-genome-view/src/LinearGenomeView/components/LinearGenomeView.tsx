@@ -37,8 +37,6 @@ import {
   SCALE_BAR_HEIGHT,
 } from '..'
 
-const dragHandleHeight = 3
-
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles(theme => ({
@@ -46,8 +44,6 @@ const useStyles = makeStyles(theme => ({
     position: 'relative',
     marginBottom: theme.spacing(1),
     overflow: 'hidden',
-  },
-  linearGenomeView: {
     background: '#D9D9D9',
     // background: theme.palette.background.paper,
     boxSizing: 'content-box',
@@ -66,7 +62,6 @@ const useStyles = makeStyles(theme => ({
     boxSizing: 'border-box',
   },
   headerBar: {
-    gridArea: '1/1/auto/span 2',
     height: HEADER_BAR_HEIGHT,
     display: 'flex',
     background: '#F2F2F2',
@@ -116,7 +111,6 @@ const useStyles = makeStyles(theme => ({
     background: theme.palette.background.default,
   },
   noTracksMessage: {
-    gridArea: 'auto/1/auto/3',
     background: theme.palette.background.default,
     textAlign: 'center',
     paddingTop: theme.spacing(1),
@@ -282,7 +276,7 @@ const Header = observer(({ model }: { model: LGV }) => {
 
   return (
     <div className={classes.headerBar}>
-      {model.hideControls ? null : <Controls model={model} />}
+      <Controls model={model} />
       <TextFieldOrTypography model={model} />
       <div className={classes.spacer} />
 
@@ -439,87 +433,44 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
 
 const LinearGenomeView = observer((props: { model: LGV }) => {
   const { model } = props
-  const { tracks, controlsWidth, error } = model
+  const { tracks, error } = model
   const classes = useStyles()
 
   const initialized = !!model.displayedRegions.length
-  const style = (initialized
-    ? {
-        display: 'grid',
-        position: 'relative',
-        gridTemplateRows: `${!model.hideHeader ? '[header] auto ' : ''}${
-          error ? '[error] auto ' : ''
-        }[scale-bar] ${SCALE_BAR_HEIGHT}px ${tracks
-          .map(
-            t =>
-              `[track-${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,
-          )
-          .join(' ')}`,
-        gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
-      }
-    : {}) as React.CSSProperties
-
   return (
     <div className={classes.root}>
-      <div className={classes.linearGenomeView} style={style}>
-        {!initialized ? (
-          <ImportForm model={model} />
-        ) : (
-          <>
-            {!model.hideHeader ? <Header model={model} /> : null}
-            <div
-              className={clsx(classes.controls, classes.viewControls)}
-              style={{ gridRow: 'scale-bar' }}
-            >
-              {model.hideControls || !model.hideHeader ? null : (
-                <Controls model={model} />
-              )}
+      {!initialized ? (
+        <ImportForm model={model} />
+      ) : (
+        <>
+          {!model.hideHeader ? <Header model={model} /> : null}
+          {error ? (
+            <div style={{ textAlign: 'center', color: 'red' }}>
+              {error.message}
             </div>
-
-            <Rubberband height={SCALE_BAR_HEIGHT} model={model}>
-              <ScaleBar model={model} height={SCALE_BAR_HEIGHT} />
-            </Rubberband>
-            {error ? (
-              <div
-                style={{ gridRow: 'error', textAlign: 'center', color: 'red' }}
-              >
-                {`${error}`}
-              </div>
-            ) : (
-              <>
-                {model.hideHeader ? (
-                  <div
-                    className={classes.zoomControls}
-                    style={{
-                      right: 4,
-                      zIndex: 1000,
-                    }}
-                  >
-                    <ZoomControls model={model} />
-                  </div>
-                ) : null}
-                {!tracks.length ? (
-                  <Container className={classes.noTracksMessage}>
-                    <Typography>
-                      No tracks active, click the "select tracks" button to
-                      choose some.
-                    </Typography>
-                  </Container>
-                ) : (
-                  tracks.map(track => (
-                    <TrackContainer
-                      key={track.id}
-                      model={model}
-                      track={track}
-                    />
-                  ))
-                )}
-              </>
-            )}
-          </>
-        )}
-      </div>
+          ) : (
+            <>
+              <Rubberband height={SCALE_BAR_HEIGHT} model={model}>
+                <ScaleBar model={model} height={SCALE_BAR_HEIGHT} />
+              </Rubberband>
+              {!tracks.length ? (
+                <Container className={classes.noTracksMessage}>
+                  <Typography>
+                    No tracks active, click the "select tracks" button to choose
+                    some.
+                  </Typography>
+                </Container>
+              ) : (
+                tracks.map(track => (
+                  <TrackContainer key={track.id} model={model} track={track} />
+                ))
+              )}
+            </>
+          )}
+        </>
+      )}
     </div>
   )
 })
+
 export default LinearGenomeView

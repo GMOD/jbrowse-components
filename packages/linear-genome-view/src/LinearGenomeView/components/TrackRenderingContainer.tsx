@@ -22,7 +22,6 @@ const TrackRenderingContainer: React.FC<{
   children?: ReactNode
   trackId: string
   trackHeight: number
-  dimmed?: boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any
 }> = props => {
@@ -32,7 +31,6 @@ const TrackRenderingContainer: React.FC<{
     trackId,
     trackHeight,
     children,
-    dimmed,
     ...other
   } = props
   const classes = useStyles()
@@ -115,10 +113,7 @@ const TrackRenderingContainer: React.FC<{
             setDelta(0)
           }
         }}
-        style={{
-          gridRow: `track-${trackId}`,
-          gridColumn: 'blocks',
-        }}
+        style={{ height: trackHeight }}
         onScroll={event => {
           const target = event.target as HTMLDivElement
           setScrollTop(target.scrollTop, target.clientHeight)
@@ -131,18 +126,6 @@ const TrackRenderingContainer: React.FC<{
       >
         {children}
       </div>
-      {dimmed ? (
-        <div
-          style={{
-            gridRow: `track-${trackId}`,
-            gridColumn: 'blocks',
-            height: trackHeight,
-            background: 'rgba(0, 0, 0, 0.4)',
-            zIndex: 2,
-          }}
-          {...other}
-        />
-      ) : null}
     </>
   )
 }
@@ -153,7 +136,6 @@ TrackRenderingContainer.propTypes = {
   setScrollTop: PropTypes.func.isRequired,
   onHorizontalScroll: PropTypes.func.isRequired,
   trackHeight: PropTypes.number.isRequired,
-  dimmed: PropTypes.bool.isRequired,
 }
 
 export default observer(TrackRenderingContainer)

@@ -31,7 +31,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function TrackControls(props: { track: Instance<BaseTrackStateModel> }) {
+function TrackLabel(props: { track: Instance<BaseTrackStateModel> }) {
   const classes = useStyles()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const { track } = props
@@ -75,13 +75,14 @@ function TrackControls(props: { track: Instance<BaseTrackStateModel> }) {
   }
   return (
     <>
-      <Paper style={{ position: 'fixed', zIndex: 2 }}>
+      <Paper style={{ position: 'absolute', zIndex: 2 }}>
         <Icon
           draggable
           className={classes.dragHandle}
           fontSize="small"
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
+          data-testid={`dragHandle-${view.id}-${getConf(track, 'trackId')}`}
         >
           drag_indicator
         </Icon>
@@ -128,8 +129,8 @@ function TrackControls(props: { track: Instance<BaseTrackStateModel> }) {
   )
 }
 
-TrackControls.propTypes = {
+TrackLabel.propTypes = {
   track: MobxPropTypes.observableObject.isRequired,
 }
 
-export default observer(TrackControls)
+export default observer(TrackLabel)

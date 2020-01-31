@@ -160,8 +160,10 @@ describe('valid file tests', () => {
     const dragHandle0 = await waitForElement(() =>
       getByTestId('dragHandle-integration_test-volvox_alignments'),
     )
-    const trackControls1 = await waitForElement(() =>
-      getByTestId('trackControls-integration_test-volvox_filtered_vcf'),
+    const trackRenderingContainer1 = await waitForElement(() =>
+      getByTestId(
+        'trackRenderingContainer-integration_test-volvox_filtered_vcf',
+      ),
     )
     const dragStartEvent = createEvent.dragStart(dragHandle0)
     // Have to mock 'dataTransfer' because it's not supported in jsdom
@@ -171,7 +173,7 @@ describe('valid file tests', () => {
     fireEvent.mouseDown(dragHandle0, { clientX: 10, clientY: 100 })
     fireEvent(dragHandle0, dragStartEvent)
     fireEvent.mouseMove(dragHandle0, { clientX: 10, clientY: 220 })
-    fireEvent.dragEnter(trackControls1)
+    fireEvent.dragEnter(trackRenderingContainer1)
     fireEvent.dragEnd(dragHandle0, { clientX: 10, clientY: 220 })
     fireEvent.mouseUp(dragHandle0, { clientX: 10, clientY: 220 })
     await wait(() => expect(state.session.views[0].tracks[0].id).toBe(trackId1))
@@ -367,18 +369,15 @@ describe('nclist track test with long name', () => {
 describe('test configuration editor', () => {
   it('change color on track', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
-    const {
-      getByTestId: byId,
-      getByText,
-      getByTitle,
-      getByDisplayValue,
-    } = render(<JBrowse initialState={state} />)
+    const { getByTestId: byId, getByText, getByDisplayValue } = render(
+      <JBrowse initialState={state} />,
+    )
     await waitForElement(() => getByText('Help'))
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_filtered_vcf')),
     )
-    fireEvent.click(await waitForElement(() => getByTitle('configure track')))
+    fireEvent.click(byId('htsTrackEntryConfigure-volvox_filtered_vcf'))
     await expect(
       waitForElement(() => byId('configEditor')),
     ).resolves.toBeTruthy()

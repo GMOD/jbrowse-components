@@ -145,298 +145,289 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
             class="makeStyles-root"
           >
             <div
-              class="makeStyles-linearGenomeView"
-              style="display: grid; position: relative; grid-template-rows: [header] auto [scale-bar] 40px; grid-template-columns: [controls] 120px [blocks] auto;"
+              class="makeStyles-headerBar"
             >
-              <div
-                class="makeStyles-headerBar"
+              <button
+                class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+                tabindex="0"
+                title="close this view"
+                type="button"
               >
-                <button
-                  class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-                  tabindex="0"
-                  title="close this view"
-                  type="button"
+                <span
+                  class="MuiIconButton-label"
                 >
                   <span
-                    class="MuiIconButton-label"
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                   >
-                    <span
-                      aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                    >
-                      close
-                    </span>
+                    close
                   </span>
-                  <span
-                    class="MuiTouchRipple-root"
-                  />
-                </button>
-                <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                  tabindex="0"
-                  title="select tracks"
-                  type="button"
-                  value="track_select"
-                >
-                  <span
-                    class="MuiIconButton-label"
-                  >
-                    <span
-                      aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                    >
-                      line_style
-                    </span>
-                  </span>
-                  <span
-                    class="MuiTouchRipple-root"
-                  />
-                </button>
-                <button
-                  aria-controls="long-menu"
-                  aria-haspopup="true"
-                  aria-label="more"
-                  class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-                  tabindex="0"
-                  type="button"
-                >
-                  <span
-                    class="MuiIconButton-label"
-                  >
-                    <span
-                      aria-hidden="true"
-                      class="material-icons MuiIcon-root"
-                    >
-                      more_vert
-                    </span>
-                  </span>
-                  <span
-                    class="MuiTouchRipple-root"
-                  />
-                </button>
-                <div
-                  class="makeStyles-emphasis"
-                >
-                  <p
-                    class="MuiTypography-root makeStyles-viewName MuiTypography-body1"
-                    style="color: rgb(255, 255, 255);"
-                  />
-                </div>
-                <div
-                  class="makeStyles-spacer"
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
                 />
-                <div
-                  class="MuiPaper-root makeStyles-searchRoot MuiPaper-elevation1 MuiPaper-rounded"
-                >
-                  <form>
-                    <div
-                      class="MuiInputBase-root makeStyles-input"
-                    >
-                      <input
-                        aria-invalid="false"
-                        class="MuiInputBase-input"
-                        placeholder="Enter location (e.g. chr1:1000..5000)"
-                        type="text"
-                        value=""
-                      />
-                    </div>
-                    <button
-                      aria-label="search"
-                      class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-                      tabindex="0"
-                      type="button"
-                    >
-                      <span
-                        class="MuiIconButton-label"
-                      >
-                        <span
-                          aria-hidden="true"
-                          class="material-icons MuiIcon-root"
-                        >
-                          search
-                        </span>
-                      </span>
-                      <span
-                        class="MuiTouchRipple-root"
-                      />
-                    </button>
-                  </form>
-                </div>
-                <div
-                  aria-expanded="false"
-                  class="MuiAutocomplete-root"
-                  role="combobox"
-                >
-                  <div
-                    class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName"
-                  >
-                    <div
-                      class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
-                      style="padding-top: 2px; padding-bottom: 2px;"
-                    >
-                      <input
-                        aria-autocomplete="list"
-                        aria-invalid="false"
-                        autocapitalize="none"
-                        autocomplete="off"
-                        class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
-                        id="refNameAutocomplete-lgv1"
-                        spellcheck="false"
-                        type="text"
-                        value="ctgA"
-                      />
-                      <div
-                        class="MuiAutocomplete-endAdornment"
-                      >
-                        <button
-                          aria-label="Open"
-                          class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
-                          tabindex="-1"
-                          title="Open"
-                          type="button"
-                        >
-                          <span
-                            class="MuiIconButton-label"
-                          >
-                            <svg
-                              aria-hidden="true"
-                              class="MuiSvgIcon-root"
-                              focusable="false"
-                              role="presentation"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                d="M7 10l5 5 5-5z"
-                              />
-                            </svg>
-                          </span>
-                          <span
-                            class="MuiTouchRipple-root"
-                          />
-                        </button>
-                      </div>
-                      <fieldset
-                        aria-hidden="true"
-                        class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-                        style="padding-left: 8px;"
-                      >
-                        <legend
-                          class="PrivateNotchedOutline-legend"
-                          style="width: 0px;"
-                        >
-                          <span>
-                            ​
-                          </span>
-                        </legend>
-                      </fieldset>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-container"
-                >
-                  <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                    data-testid="zoom_out"
-                    tabindex="0"
-                    type="button"
-                  >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <span
-                        aria-hidden="true"
-                        class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                      >
-                        zoom_out
-                      </span>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
-                    />
-                  </button>
-                  <span
-                    class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
-                  >
-                    <span
-                      class="MuiSlider-rail"
-                    />
-                    <span
-                      class="MuiSlider-track"
-                    />
-                    <input
-                      type="hidden"
-                      value="5.643856189774724"
-                    />
-                    <span
-                      aria-orientation="horizontal"
-                      aria-valuemax="5.643856189774724"
-                      aria-valuemin="5.643856189774724"
-                      aria-valuenow="5.643856189774724"
-                      class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
-                      data-index="0"
-                      role="slider"
-                      tabindex="0"
-                    />
-                  </span>
-                  <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                    data-testid="zoom_in"
-                    tabindex="0"
-                    type="button"
-                  >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <span
-                        aria-hidden="true"
-                        class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                      >
-                        zoom_in
-                      </span>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
-                    />
-                  </button>
-                </div>
-                <div
-                  class="makeStyles-spacer"
-                />
-              </div>
-              <div
-                class="makeStyles-controls makeStyles-viewControls"
-                style="grid-row: scale-bar;"
-              />
-              <div
-                class="makeStyles-rubberBandContainer"
-                data-testid="rubberband_container"
-                role="presentation"
-                style="height: 40px;"
+              </button>
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                tabindex="0"
+                title="select tracks"
+                type="button"
+                value="track_select"
               >
-                <div
-                  class="makeStyles-scaleBarContainer"
+                <span
+                  class="MuiIconButton-label"
                 >
-                  <div
-                    class="makeStyles-scaleBar"
-                    style="left: 0px; width: 5px; height: 40px;"
+                  <span
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                   >
-                    <div
-                      class="makeStyles-elidedBlock"
-                      style="width: 5px;"
-                    />
-                  </div>
-                </div>
-              </div>
+                    line_style
+                  </span>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
+              <button
+                aria-controls="long-menu"
+                aria-haspopup="true"
+                aria-label="more"
+                class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+                tabindex="0"
+                type="button"
+              >
+                <span
+                  class="MuiIconButton-label"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root"
+                  >
+                    more_vert
+                  </span>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
               <div
-                class="MuiContainer-root makeStyles-noTracksMessage MuiContainer-maxWidthLg"
+                class="makeStyles-emphasis"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body1"
-                >
-                  No tracks active, click the "select tracks" button to choose some.
-                </p>
+                  class="MuiTypography-root makeStyles-viewName MuiTypography-body1"
+                  style="color: rgb(255, 255, 255);"
+                />
               </div>
+              <div
+                class="makeStyles-spacer"
+              />
+              <div
+                class="MuiPaper-root makeStyles-searchRoot MuiPaper-elevation1 MuiPaper-rounded"
+              >
+                <form>
+                  <div
+                    class="MuiInputBase-root makeStyles-input"
+                  >
+                    <input
+                      aria-invalid="false"
+                      class="MuiInputBase-input"
+                      placeholder="Enter location (e.g. chr1:1000..5000)"
+                      type="text"
+                      value=""
+                    />
+                  </div>
+                  <button
+                    aria-label="search"
+                    class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <span
+                        aria-hidden="true"
+                        class="material-icons MuiIcon-root"
+                      >
+                        search
+                      </span>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
+                </form>
+              </div>
+              <div
+                aria-expanded="false"
+                class="MuiAutocomplete-root"
+                role="combobox"
+              >
+                <div
+                  class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName"
+                >
+                  <div
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+                    style="padding-top: 2px; padding-bottom: 2px;"
+                  >
+                    <input
+                      aria-autocomplete="list"
+                      aria-invalid="false"
+                      autocapitalize="none"
+                      autocomplete="off"
+                      class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
+                      id="refNameAutocomplete-lgv1"
+                      spellcheck="false"
+                      type="text"
+                      value="ctgA"
+                    />
+                    <div
+                      class="MuiAutocomplete-endAdornment"
+                    >
+                      <button
+                        aria-label="Open"
+                        class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
+                        tabindex="-1"
+                        title="Open"
+                        type="button"
+                      >
+                        <span
+                          class="MuiIconButton-label"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root"
+                            focusable="false"
+                            role="presentation"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M7 10l5 5 5-5z"
+                            />
+                          </svg>
+                        </span>
+                        <span
+                          class="MuiTouchRipple-root"
+                        />
+                      </button>
+                    </div>
+                    <fieldset
+                      aria-hidden="true"
+                      class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                      style="padding-left: 8px;"
+                    >
+                      <legend
+                        class="PrivateNotchedOutline-legend"
+                        style="width: 0px;"
+                      >
+                        <span>
+                          ​
+                        </span>
+                      </legend>
+                    </fieldset>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="makeStyles-container"
+              >
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                  data-testid="zoom_out"
+                  tabindex="0"
+                  type="button"
+                >
+                  <span
+                    class="MuiIconButton-label"
+                  >
+                    <span
+                      aria-hidden="true"
+                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                    >
+                      zoom_out
+                    </span>
+                  </span>
+                  <span
+                    class="MuiTouchRipple-root"
+                  />
+                </button>
+                <span
+                  class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
+                >
+                  <span
+                    class="MuiSlider-rail"
+                  />
+                  <span
+                    class="MuiSlider-track"
+                  />
+                  <input
+                    type="hidden"
+                    value="5.643856189774724"
+                  />
+                  <span
+                    aria-orientation="horizontal"
+                    aria-valuemax="5.643856189774724"
+                    aria-valuemin="5.643856189774724"
+                    aria-valuenow="5.643856189774724"
+                    class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
+                    data-index="0"
+                    role="slider"
+                    tabindex="0"
+                  />
+                </span>
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                  data-testid="zoom_in"
+                  tabindex="0"
+                  type="button"
+                >
+                  <span
+                    class="MuiIconButton-label"
+                  >
+                    <span
+                      aria-hidden="true"
+                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                    >
+                      zoom_in
+                    </span>
+                  </span>
+                  <span
+                    class="MuiTouchRipple-root"
+                  />
+                </button>
+              </div>
+              <div
+                class="makeStyles-spacer"
+              />
+            </div>
+            <div
+              class="makeStyles-rubberBandContainer"
+              data-testid="rubberband_container"
+              role="presentation"
+              style="height: 40px;"
+            >
+              <div
+                class="makeStyles-scaleBarContainer"
+              >
+                <div
+                  class="makeStyles-scaleBar"
+                  style="left: 0px; width: 5px; height: 40px;"
+                >
+                  <div
+                    class="makeStyles-elidedBlock"
+                    style="width: 5px;"
+                  />
+                </div>
+              </div>
+            </div>
+            <div
+              class="MuiContainer-root makeStyles-noTracksMessage MuiContainer-maxWidthLg"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1"
+              >
+                No tracks active, click the "select tracks" button to choose some.
+              </p>
             </div>
           </div>
         </div>
@@ -447,298 +438,289 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
             class="makeStyles-root"
           >
             <div
-              class="makeStyles-linearGenomeView"
-              style="display: grid; position: relative; grid-template-rows: [header] auto [scale-bar] 40px; grid-template-columns: [controls] 120px [blocks] auto;"
+              class="makeStyles-headerBar"
             >
-              <div
-                class="makeStyles-headerBar"
+              <button
+                class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+                tabindex="0"
+                title="close this view"
+                type="button"
               >
-                <button
-                  class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-                  tabindex="0"
-                  title="close this view"
-                  type="button"
+                <span
+                  class="MuiIconButton-label"
                 >
                   <span
-                    class="MuiIconButton-label"
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                   >
-                    <span
-                      aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                    >
-                      close
-                    </span>
+                    close
                   </span>
-                  <span
-                    class="MuiTouchRipple-root"
-                  />
-                </button>
-                <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                  tabindex="0"
-                  title="select tracks"
-                  type="button"
-                  value="track_select"
-                >
-                  <span
-                    class="MuiIconButton-label"
-                  >
-                    <span
-                      aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                    >
-                      line_style
-                    </span>
-                  </span>
-                  <span
-                    class="MuiTouchRipple-root"
-                  />
-                </button>
-                <button
-                  aria-controls="long-menu"
-                  aria-haspopup="true"
-                  aria-label="more"
-                  class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-                  tabindex="0"
-                  type="button"
-                >
-                  <span
-                    class="MuiIconButton-label"
-                  >
-                    <span
-                      aria-hidden="true"
-                      class="material-icons MuiIcon-root"
-                    >
-                      more_vert
-                    </span>
-                  </span>
-                  <span
-                    class="MuiTouchRipple-root"
-                  />
-                </button>
-                <div
-                  class="makeStyles-emphasis"
-                >
-                  <p
-                    class="MuiTypography-root makeStyles-viewName MuiTypography-body1"
-                    style="color: rgb(255, 255, 255);"
-                  />
-                </div>
-                <div
-                  class="makeStyles-spacer"
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
                 />
-                <div
-                  class="MuiPaper-root makeStyles-searchRoot MuiPaper-elevation1 MuiPaper-rounded"
-                >
-                  <form>
-                    <div
-                      class="MuiInputBase-root makeStyles-input"
-                    >
-                      <input
-                        aria-invalid="false"
-                        class="MuiInputBase-input"
-                        placeholder="Enter location (e.g. chr1:1000..5000)"
-                        type="text"
-                        value=""
-                      />
-                    </div>
-                    <button
-                      aria-label="search"
-                      class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-                      tabindex="0"
-                      type="button"
-                    >
-                      <span
-                        class="MuiIconButton-label"
-                      >
-                        <span
-                          aria-hidden="true"
-                          class="material-icons MuiIcon-root"
-                        >
-                          search
-                        </span>
-                      </span>
-                      <span
-                        class="MuiTouchRipple-root"
-                      />
-                    </button>
-                  </form>
-                </div>
-                <div
-                  aria-expanded="false"
-                  class="MuiAutocomplete-root"
-                  role="combobox"
-                >
-                  <div
-                    class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName"
-                  >
-                    <div
-                      class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
-                      style="padding-top: 2px; padding-bottom: 2px;"
-                    >
-                      <input
-                        aria-autocomplete="list"
-                        aria-invalid="false"
-                        autocapitalize="none"
-                        autocomplete="off"
-                        class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
-                        id="refNameAutocomplete-lgv2"
-                        spellcheck="false"
-                        type="text"
-                        value="ctgA"
-                      />
-                      <div
-                        class="MuiAutocomplete-endAdornment"
-                      >
-                        <button
-                          aria-label="Open"
-                          class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
-                          tabindex="-1"
-                          title="Open"
-                          type="button"
-                        >
-                          <span
-                            class="MuiIconButton-label"
-                          >
-                            <svg
-                              aria-hidden="true"
-                              class="MuiSvgIcon-root"
-                              focusable="false"
-                              role="presentation"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                d="M7 10l5 5 5-5z"
-                              />
-                            </svg>
-                          </span>
-                          <span
-                            class="MuiTouchRipple-root"
-                          />
-                        </button>
-                      </div>
-                      <fieldset
-                        aria-hidden="true"
-                        class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-                        style="padding-left: 8px;"
-                      >
-                        <legend
-                          class="PrivateNotchedOutline-legend"
-                          style="width: 0px;"
-                        >
-                          <span>
-                            ​
-                          </span>
-                        </legend>
-                      </fieldset>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-container"
-                >
-                  <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                    data-testid="zoom_out"
-                    tabindex="0"
-                    type="button"
-                  >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <span
-                        aria-hidden="true"
-                        class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                      >
-                        zoom_out
-                      </span>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
-                    />
-                  </button>
-                  <span
-                    class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
-                  >
-                    <span
-                      class="MuiSlider-rail"
-                    />
-                    <span
-                      class="MuiSlider-track"
-                    />
-                    <input
-                      type="hidden"
-                      value="5.643856189774724"
-                    />
-                    <span
-                      aria-orientation="horizontal"
-                      aria-valuemax="5.643856189774724"
-                      aria-valuemin="5.643856189774724"
-                      aria-valuenow="5.643856189774724"
-                      class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
-                      data-index="0"
-                      role="slider"
-                      tabindex="0"
-                    />
-                  </span>
-                  <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                    data-testid="zoom_in"
-                    tabindex="0"
-                    type="button"
-                  >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <span
-                        aria-hidden="true"
-                        class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                      >
-                        zoom_in
-                      </span>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
-                    />
-                  </button>
-                </div>
-                <div
-                  class="makeStyles-spacer"
-                />
-              </div>
-              <div
-                class="makeStyles-controls makeStyles-viewControls"
-                style="grid-row: scale-bar;"
-              />
-              <div
-                class="makeStyles-rubberBandContainer"
-                data-testid="rubberband_container"
-                role="presentation"
-                style="height: 40px;"
+              </button>
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                tabindex="0"
+                title="select tracks"
+                type="button"
+                value="track_select"
               >
-                <div
-                  class="makeStyles-scaleBarContainer"
+                <span
+                  class="MuiIconButton-label"
                 >
-                  <div
-                    class="makeStyles-scaleBar"
-                    style="left: 0px; width: 5px; height: 40px;"
+                  <span
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                   >
-                    <div
-                      class="makeStyles-elidedBlock"
-                      style="width: 5px;"
-                    />
-                  </div>
-                </div>
-              </div>
+                    line_style
+                  </span>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
+              <button
+                aria-controls="long-menu"
+                aria-haspopup="true"
+                aria-label="more"
+                class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+                tabindex="0"
+                type="button"
+              >
+                <span
+                  class="MuiIconButton-label"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root"
+                  >
+                    more_vert
+                  </span>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
               <div
-                class="MuiContainer-root makeStyles-noTracksMessage MuiContainer-maxWidthLg"
+                class="makeStyles-emphasis"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body1"
-                >
-                  No tracks active, click the "select tracks" button to choose some.
-                </p>
+                  class="MuiTypography-root makeStyles-viewName MuiTypography-body1"
+                  style="color: rgb(255, 255, 255);"
+                />
               </div>
+              <div
+                class="makeStyles-spacer"
+              />
+              <div
+                class="MuiPaper-root makeStyles-searchRoot MuiPaper-elevation1 MuiPaper-rounded"
+              >
+                <form>
+                  <div
+                    class="MuiInputBase-root makeStyles-input"
+                  >
+                    <input
+                      aria-invalid="false"
+                      class="MuiInputBase-input"
+                      placeholder="Enter location (e.g. chr1:1000..5000)"
+                      type="text"
+                      value=""
+                    />
+                  </div>
+                  <button
+                    aria-label="search"
+                    class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <span
+                        aria-hidden="true"
+                        class="material-icons MuiIcon-root"
+                      >
+                        search
+                      </span>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
+                </form>
+              </div>
+              <div
+                aria-expanded="false"
+                class="MuiAutocomplete-root"
+                role="combobox"
+              >
+                <div
+                  class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName"
+                >
+                  <div
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+                    style="padding-top: 2px; padding-bottom: 2px;"
+                  >
+                    <input
+                      aria-autocomplete="list"
+                      aria-invalid="false"
+                      autocapitalize="none"
+                      autocomplete="off"
+                      class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
+                      id="refNameAutocomplete-lgv2"
+                      spellcheck="false"
+                      type="text"
+                      value="ctgA"
+                    />
+                    <div
+                      class="MuiAutocomplete-endAdornment"
+                    >
+                      <button
+                        aria-label="Open"
+                        class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
+                        tabindex="-1"
+                        title="Open"
+                        type="button"
+                      >
+                        <span
+                          class="MuiIconButton-label"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root"
+                            focusable="false"
+                            role="presentation"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M7 10l5 5 5-5z"
+                            />
+                          </svg>
+                        </span>
+                        <span
+                          class="MuiTouchRipple-root"
+                        />
+                      </button>
+                    </div>
+                    <fieldset
+                      aria-hidden="true"
+                      class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                      style="padding-left: 8px;"
+                    >
+                      <legend
+                        class="PrivateNotchedOutline-legend"
+                        style="width: 0px;"
+                      >
+                        <span>
+                          ​
+                        </span>
+                      </legend>
+                    </fieldset>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="makeStyles-container"
+              >
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                  data-testid="zoom_out"
+                  tabindex="0"
+                  type="button"
+                >
+                  <span
+                    class="MuiIconButton-label"
+                  >
+                    <span
+                      aria-hidden="true"
+                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                    >
+                      zoom_out
+                    </span>
+                  </span>
+                  <span
+                    class="MuiTouchRipple-root"
+                  />
+                </button>
+                <span
+                  class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
+                >
+                  <span
+                    class="MuiSlider-rail"
+                  />
+                  <span
+                    class="MuiSlider-track"
+                  />
+                  <input
+                    type="hidden"
+                    value="5.643856189774724"
+                  />
+                  <span
+                    aria-orientation="horizontal"
+                    aria-valuemax="5.643856189774724"
+                    aria-valuemin="5.643856189774724"
+                    aria-valuenow="5.643856189774724"
+                    class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
+                    data-index="0"
+                    role="slider"
+                    tabindex="0"
+                  />
+                </span>
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                  data-testid="zoom_in"
+                  tabindex="0"
+                  type="button"
+                >
+                  <span
+                    class="MuiIconButton-label"
+                  >
+                    <span
+                      aria-hidden="true"
+                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                    >
+                      zoom_in
+                    </span>
+                  </span>
+                  <span
+                    class="MuiTouchRipple-root"
+                  />
+                </button>
+              </div>
+              <div
+                class="makeStyles-spacer"
+              />
+            </div>
+            <div
+              class="makeStyles-rubberBandContainer"
+              data-testid="rubberband_container"
+              role="presentation"
+              style="height: 40px;"
+            >
+              <div
+                class="makeStyles-scaleBarContainer"
+              >
+                <div
+                  class="makeStyles-scaleBar"
+                  style="left: 0px; width: 5px; height: 40px;"
+                >
+                  <div
+                    class="makeStyles-elidedBlock"
+                    style="width: 5px;"
+                  />
+                </div>
+              </div>
+            </div>
+            <div
+              class="MuiContainer-root makeStyles-noTracksMessage MuiContainer-maxWidthLg"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1"
+              >
+                No tracks active, click the "select tracks" button to choose some.
+              </p>
             </div>
           </div>
         </div>

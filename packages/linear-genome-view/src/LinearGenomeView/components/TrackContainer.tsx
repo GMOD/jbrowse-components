@@ -1,35 +1,23 @@
+import { getConf } from '@gmod/jbrowse-core/configuration'
 import { ResizeHandle } from '@gmod/jbrowse-core/ui'
 import { useDebouncedCallback } from '@gmod/jbrowse-core/util'
-import { makeStyles } from '@material-ui/core/styles'
-import clsx from 'clsx'
+import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 import { observer } from 'mobx-react'
 import { Instance, isAlive } from 'mobx-state-tree'
 import React from 'react'
 import { LinearGenomeViewStateModel } from '..'
 import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
-import TrackControls from './TrackControls'
+import TrackLabel from './TrackLabel'
 import TrackRenderingContainer from './TrackRenderingContainer'
 
+const dragHandleHeight = 3
 type LGV = Instance<LinearGenomeViewStateModel>
-
-const useStyles = makeStyles({
-  controls: {
-    borderRight: '1px solid gray',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    textOverflow: 'ellipsis',
-  },
-  trackControls: {
-    whiteSpace: 'normal',
-  },
-})
 
 function TrackContainer(props: {
   model: LGV
   track: Instance<BaseTrackStateModel>
 }) {
   const { model, track } = props
-  const classes = useStyles()
   const {
     bpPerPx,
     offsetPx,
@@ -47,29 +35,23 @@ function TrackContainer(props: {
     }
   }
   const debouncedOnDragEnter = useDebouncedCallback(onDragEnter, 100)
-  const { RenderingComponent, ControlsComponent } = track
-  // Since the ControlsComponent and the TrackRenderingContainer are next to
-  // each other in a grid, we add `onDragEnter` to both of them so the user
-  // can drag the track on to the controls or the track itself.
+  const { RenderingComponent } = track
+  const view = getContainingView(track)
+  const dimmed = draggingTrackId !== undefined && draggingTrackId !== track.id
   return (
-    <>
-      <ControlsComponent
-        track={track}
-        view={model}
-        onConfigureClick={track.activateConfigurationUI}
-        className={clsx(classes.controls, classes.trackControls)}
-        style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
-        onDragEnter={debouncedOnDragEnter}
-      />
+    <div style={{ position: 'relative' }}>
       <TrackRenderingContainer
         trackId={track.id}
         trackHeight={track.height}
         onHorizontalScroll={horizontalScroll}
         setScrollTop={track.setScrollTop}
         onDragEnter={debouncedOnDragEnter}
-        dimmed={draggingTrackId !== undefined && draggingTrackId !== track.id}
+        data-testid={`trackRenderingContainer-${view.id}-${getConf(
+          track,
+          'trackId',
+        )}`}
       >
-        <TrackControls track={track} />
+        <TrackLabel track={track} />
         <RenderingComponent
           model={track}
           offsetPx={offsetPx}
@@ -78,17 +60,31 @@ function TrackContainer(props: {
           onHorizontalScroll={horizontalScroll}
         />
       </TrackRenderingContainer>
+      {dimmed ? (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            height: track.height,
+            width: '100%',
+            background: 'rgba(0, 0, 0, 0.4)',
+            zIndex: 10000,
+          }}
+          onDragEnter={debouncedOnDragEnter}
+          // {...other}
+        />
+      ) : null}
       <ResizeHandle
         onDrag={track.resizeHeight}
         style={{
-          gridRow: `resize-${track.id}`,
-          gridColumn: 'span 2',
+          height: dragHandleHeight,
           background: '#ccc',
           boxSizing: 'border-box',
           borderTop: '1px solid #fafafa',
         }}
       />
-    </>
+    </div>
   )
 }
 
