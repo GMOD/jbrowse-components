@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import { types } from 'mobx-state-tree'
 
 export default ConfigurationSchema(
   'SvgFeatureRenderer',
@@ -66,6 +67,17 @@ export default ConfigurationSchema(
         functionSignature: ['feature'],
       },
     }),
+    displayMode: {
+      type: 'stringEnum',
+      model: types.enumeration('displayMode', [
+        'normal',
+        'compact',
+        'reducedRepresentation',
+        'collapse',
+      ]),
+      description: 'Alternative display modes',
+      defaultValue: 'normal',
+    },
     maxFeatureGlyphExpansion: {
       type: 'number',
       description:

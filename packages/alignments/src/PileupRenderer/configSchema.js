@@ -1,9 +1,10 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import { types } from 'mobx-state-tree'
 
 export default ConfigurationSchema(
   'PileupRenderer',
   {
-    alignmentColor: {
+    color: {
       type: 'color',
       description: 'the color of each feature in a pileup alignment',
       defaultValue: `function(feature) {
@@ -11,6 +12,16 @@ export default ConfigurationSchema(
   return s === -1 ? '#8F8FD8': '#EC8B8B'
 }`,
       functionSignature: ['feature'],
+    },
+    displayMode: {
+      type: 'stringEnum',
+      model: types.enumeration('displayMode', [
+        'normal',
+        'compact',
+        'collapse',
+      ]),
+      description: 'Alternative display modes',
+      defaultValue: 'normal',
     },
     minSubfeatureWidth: {
       type: 'number',
@@ -23,7 +34,7 @@ export default ConfigurationSchema(
       description: 'the maximum height to be used in a pileup rendering',
       defaultValue: 600,
     },
-    alignmentHeight: {
+    height: {
       type: 'integer',
       description: 'the height of each feature in a pileup alignment',
       defaultValue: 7,
