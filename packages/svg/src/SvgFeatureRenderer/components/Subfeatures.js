@@ -61,6 +61,7 @@ Subfeatures.layOut = ({
     subfeatures.forEach(subfeature => {
       const SubfeatureGlyphComponent = chooseGlyphComponent(subfeature)
       const subfeatureHeight = readConfObject(config, 'height', [subfeature])
+
       const subSubLayout = (SubfeatureGlyphComponent.layOut || layOut)({
         layout: subLayout,
         feature: subfeature,
@@ -69,7 +70,9 @@ Subfeatures.layOut = ({
         config,
       })
       subSubLayout.move(0, topOffset)
-      topOffset += subfeatureHeight + 2
+      topOffset +=
+        (displayMode === 'compact' ? subfeatureHeight / 3 : subfeatureHeight) +
+        2
     })
   }
   return subLayout
