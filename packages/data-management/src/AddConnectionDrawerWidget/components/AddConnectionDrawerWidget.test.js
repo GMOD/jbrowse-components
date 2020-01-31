@@ -62,7 +62,7 @@ email genome@test.com
 descriptionUrl test.html
 `
       else if (urlText.endsWith('genomes.txt'))
-        responseText = `genome testAssembly
+        responseText = `genome volMyt1
 trackDb hg19/trackDb.txt
 `
       else if (urlText.endsWith('trackDb.txt'))
