@@ -90,6 +90,16 @@ export default ConfigurationSchema(
       description: 'the maximum height to be used in a svg rendering',
       defaultValue: 600,
     },
+    subParts: {
+      type: 'string',
+      description: 'subparts for a glyph',
+      defaultValue: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
+    },
+    impliedUTRs: {
+      type: 'boolean',
+      description: 'imply UTR from the exon and CDS differences',
+      defaultValue: false,
+    },
   },
   { explicitlyTyped: true },
 )
