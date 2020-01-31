@@ -55,7 +55,7 @@ Subfeatures.layOut = ({
     config,
   })
   const displayMode = readConfObject(config, 'displayMode')
-  if (displayMode !== 'squish') {
+  if (displayMode !== 'reducedRepresentation') {
     const subfeatures = feature.get('subfeatures') || []
     let topOffset = 0
     subfeatures.forEach(subfeature => {
