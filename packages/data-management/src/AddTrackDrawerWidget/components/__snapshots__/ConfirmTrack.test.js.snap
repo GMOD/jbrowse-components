@@ -1,5 +1,27 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`<ConfirmTrack /> SNPCoverageTrack mounts with uri 1`] = `
+<p
+  class="MuiTypography-root makeStyles-spacing MuiTypography-body1"
+>
+  Selected 
+  <code>
+    SNPCoverageTrack
+  </code>
+  . Using adapter
+   
+  <code>
+    SNPCoverageAdapter
+  </code>
+   with subadapter
+   
+  <code>
+    BamAdapter
+  </code>
+  . Please enter a track name and, if necessary, update the track type.
+</p>
+`;
+
 exports[`<ConfirmTrack /> mounts with config 1`] = `
 <p
   class="MuiTypography-root makeStyles-spacing MuiTypography-body1"
@@ -8,8 +30,7 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
   <code>
     FromConfigAdapter
   </code>
-   and guessing track type
-   
+   and guessing track type 
   <code>
     AlignmentsTrack
   </code>
@@ -25,8 +46,7 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
   <code>
     BamAdapter
   </code>
-   and guessing track type
-   
+   and guessing track type 
   <code>
     AlignmentsTrack
   </code>
@@ -42,8 +62,7 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
   <code>
     BamAdapter
   </code>
-   and guessing track type
-   
+   and guessing track type 
   <code>
     AlignmentsTrack
   </code>
@@ -59,10 +78,31 @@ exports[`<ConfirmTrack /> renders 1`] = `
   <code>
     BamAdapter
   </code>
-   and guessing track type
-   
+   and guessing track type 
   <code>
     AlignmentsTrack
+  </code>
+  . Please enter a track name and, if necessary, update the track type.
+</p>
+`;
+
+exports[`<ConfirmTrack /> renders SNPCoverageTrack with a subadapter 1`] = `
+<p
+  class="MuiTypography-root makeStyles-spacing MuiTypography-body1"
+>
+  Selected 
+  <code>
+    SNPCoverageTrack
+  </code>
+  . Using adapter
+   
+  <code>
+    SNPCoverageAdapter
+  </code>
+   with subadapter
+   
+  <code>
+    BamAdapter
   </code>
   . Please enter a track name and, if necessary, update the track type.
 </p>
