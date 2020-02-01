@@ -30,6 +30,7 @@
         "@testing-library/jest-dom": "^4.0.0",
         "@testing-library/react": "^9.0.0",
         "@types/base64-js": "^1.2.5",
+        "@types/color": "^3.0.1",
         "@types/get-value": "^3.0.1",
         "@types/is-object": "^1.0.0",
         "@types/jest": "^24.0.9",
