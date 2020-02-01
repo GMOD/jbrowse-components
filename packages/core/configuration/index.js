@@ -52,13 +52,9 @@ function getModelConfig(tree) {
  * @param {any} args extra arguments e.g. for a feature callback,
  *  will be sent to each of the slotNames
  */
-function readConfObject(confObject, slotPath, args = []) {
-  if (!confObject) {
-    throw new TypeError('must provide conf object to read')
-  }
-  if (!slotPath) {
-    return getConfSnapshot(confObject, args)
-  }
+function readConfObject(confObject, slotPath, args) {
+  if (!confObject) throw new TypeError('must provide conf object to read')
+  if (!slotPath) return getSnapshot(confObject)
   if (typeof slotPath === 'string') {
     let slot = confObject[slotPath]
     // check for the subconf being a map if we don't find it immediately
@@ -84,14 +80,10 @@ function readConfObject(confObject, slotPath, args = []) {
     }
     if (slot.func) {
       const appliedFunc = slot.func.apply(null, args)
-      if (isStateTreeNode(appliedFunc)) {
-        return getConfSnapshot(appliedFunc, args)
-      }
+      if (isStateTreeNode(appliedFunc)) return getSnapshot(appliedFunc)
       return appliedFunc
     }
-    if (isStateTreeNode(slot)) {
-      return getConfSnapshot(slot, args)
-    }
+    if (isStateTreeNode(slot)) return getSnapshot(slot)
     return slot
   }
 
@@ -115,17 +107,6 @@ function readConfObject(confObject, slotPath, args = []) {
   return readConfObject(confObject, slotName, args)
 }
 
-// recursively call readConfObject instead of getSnapshot
-// in order to get defaultValue entries
-function getConfSnapshot(slot, args = []) {
-  return slot.length
-    ? getSnapshot(slot)
-    : Object.fromEntries(
-        Object.keys(getPropertyMembers(slot).properties).map(r => {
-          return [r, readConfObject(slot, r, args)]
-        }),
-      )
-}
 /**
  * helper method, applies readConfObject to an array of slotNames
  *

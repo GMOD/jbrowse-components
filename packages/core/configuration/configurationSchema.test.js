@@ -176,7 +176,6 @@ describe('configuration schemas', () => {
             defaultValue: 4.3,
           },
         }),
-
         myArrayOfSubConfigurations: types.array(
           ConfigurationSchema('SubObject2', {
             someNumber: {
@@ -186,15 +185,6 @@ describe('configuration schemas', () => {
             },
           }),
         ),
-        mySubSubConfiguration: ConfigurationSchema('SubObject3', {
-          someNumber: ConfigurationSchema('SubSubObject1', {
-            someVariable: {
-              description: 'some number in a subconfiguration',
-              type: 'number',
-              defaultValue: 4.3,
-            },
-          }),
-        }),
       }),
     })
 
@@ -214,15 +204,5 @@ describe('configuration schemas', () => {
     })
 
     expect(getConf(model, ['mySubConfiguration', 'someNumber'])).toEqual(12)
-
-    const model2 = container.create({
-      type: 'Foo',
-      configuration: {},
-    })
-    console.log(getConf(model2, 'mySubSubConfiguration'))
-    expect(getConf(model2, 'mySubSubConfiguration')).toEqual({
-      someNumber: { someVariable: 4.3 },
-    })
-    expect(getSnapshot(model2)).toEqual({ configuration: {} })
   })
 })
