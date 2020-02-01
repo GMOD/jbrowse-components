@@ -49,8 +49,14 @@ interface SubfeatureLayOutArgs extends BaseLayOutArgs {
   subfeatures: Feature[]
 }
 
-export function layOut(args: FeatureLayOutArgs): SceneGraph {
-  const { layout, feature, bpPerPx, horizontallyFlipped, config } = args
+export function layOut({
+  layout,
+  feature,
+  bpPerPx,
+  horizontallyFlipped,
+  config,
+}: FeatureLayOutArgs): SceneGraph {
+  const displayMode = readConfObject(config, 'displayMode')
   const subLayout = layOutFeature({
     layout,
     feature,
@@ -58,19 +64,25 @@ export function layOut(args: FeatureLayOutArgs): SceneGraph {
     horizontallyFlipped,
     config,
   })
-  layOutSubfeatures({
-    layout: subLayout,
-    subfeatures: feature.get('subfeatures') || [],
-    bpPerPx,
-    horizontallyFlipped,
-    config,
-  })
+  if (displayMode !== 'reducedRepresentation') {
+    layOutSubfeatures({
+      layout: subLayout,
+      subfeatures: feature.get('subfeatures') || [],
+      bpPerPx,
+      horizontallyFlipped,
+      config,
+    })
+  }
   return subLayout
 }
 
 export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
   const { layout, feature, bpPerPx, horizontallyFlipped, config } = args
-  const GlyphComponent = chooseGlyphComponent(feature)
+  const displayMode = readConfObject(config, 'displayMode')
+  const GlyphComponent =
+    displayMode === 'reducedRepresentation'
+      ? Chevron
+      : chooseGlyphComponent(feature)
   const parentFeature = feature.parent()
   let x = 0
   if (parentFeature)
@@ -84,9 +96,9 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
   const subLayout = layout.addChild(
     String(feature.id()),
     x,
-    top,
+    displayMode === 'collapse' ? 0 : top,
     width,
-    height,
+    displayMode === 'compact' ? height / 3 : height,
     { GlyphComponent },
   )
   return subLayout

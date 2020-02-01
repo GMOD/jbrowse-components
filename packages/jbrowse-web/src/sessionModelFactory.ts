@@ -314,11 +314,7 @@ export default function sessionModelFactory(pluginManager: any) {
 
       breakConnection(configuration: any) {
         const name = readConfObject(configuration, 'name')
-        let confParent = configuration
-        do {
-          confParent = getParent(confParent)
-        } while (!confParent.assembly)
-        const assemblyName = readConfObject(confParent.assembly, 'name')
+        const assemblyName = readConfObject(configuration, 'assemblyName')
         const connectionInstances = self.connectionInstances.get(assemblyName)
         if (!connectionInstances)
           throw new Error(`connections for ${assemblyName} not found`)

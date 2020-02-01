@@ -7,8 +7,12 @@ import ucscAssemblies from './ucscAssemblies'
 export { ucscAssemblies }
 
 export async function fetchHubFile(hubFileLocation) {
-  const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
-  return new HubFile(hubFileText)
+  try {
+    const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
+    return new HubFile(hubFileText)
+  } catch (error) {
+    throw new Error(`Not a valid hub.txt file, got error: '${error}'`)
+  }
 }
 
 export async function fetchGenomesFile(genomesFileLocation) {

@@ -58,7 +58,9 @@ export default class extends BoxRendererType {
       horizontallyFlipped,
     )
 
-    const heightPx = readConfObject(config, 'alignmentHeight', [feature])
+    let heightPx = readConfObject(config, 'height', [feature])
+    const displayMode = readConfObject(config, 'displayMode', [feature])
+    if (displayMode === 'compact') heightPx /= 3
     if (feature.get('refName') !== region.refName) {
       throw new Error(
         `feature ${feature.id()} is not on the current region's reference sequence ${
@@ -81,7 +83,7 @@ export default class extends BoxRendererType {
       feature,
       startPx,
       endPx,
-      topPx,
+      topPx: displayMode === 'collapse' ? 0 : topPx,
       heightPx,
     }
   }
@@ -138,7 +140,7 @@ export default class extends BoxRendererType {
         return
       }
       const { feature, startPx, endPx, topPx, heightPx } = feat
-      ctx.fillStyle = readConfObject(config, 'alignmentColor', [feature])
+      ctx.fillStyle = readConfObject(config, 'color', [feature])
       ctx.fillRect(startPx, topPx, Math.max(endPx - startPx, 1.5), heightPx)
       const mismatches: Mismatch[] =
         bpPerPx < 10 ? feature.get('mismatches') : feature.get('skips_and_dels')
