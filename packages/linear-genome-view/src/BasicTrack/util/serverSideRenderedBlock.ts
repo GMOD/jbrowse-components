@@ -250,9 +250,7 @@ async function renderBlockEffect(
     cannotBeRenderedReason,
     renderArgs,
   } = props as RenderProps
-  // console.log(getContainingView(self).rendererType)
   if (!isAlive(self)) return
-  console.log(props)
 
   if (trackError) {
     self.setError(trackError)

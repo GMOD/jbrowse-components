@@ -26,47 +26,35 @@ interface LineFeature {
   lineHash: number
   fields: string[]
 }
+
+interface Config {
+  gffGzLocation: IFileLocation
+  index: {
+    index: string
+    location: IFileLocation
+  }
+  dontRedispatch: string[]
+}
 export default class extends BaseAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected gff: any
+  protected gff: TabixIndexedFile
 
   protected dontRedispatch: string[]
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: {
-    gffGzLocation: IFileLocation
-    index: {
-      index: string
-      location: IFileLocation
-    }
-    dontRedispatch: string[]
-  }) {
+  public constructor(config: Config) {
     super()
-    const {
-      gffGzLocation,
-      index: { location: indexLocation, index: indexType },
-      dontRedispatch,
-    } = config
-    console.log(config)
-    const gffGzOpts: {
-      filehandle: GenericFilehandle
-      tbiFilehandle?: GenericFilehandle
-      csiFilehandle?: GenericFilehandle
-      chunkCacheSize?: number
-    } = {
-      filehandle: openLocation(gffGzLocation),
-      chunkCacheSize: 50 * 2 ** 20,
-    }
+    const { gffGzLocation, index, dontRedispatch } = config
+    const { location, index: indexType } = index
 
-    const indexFile = openLocation(indexLocation)
-    if (indexType === 'CSI') {
-      gffGzOpts.csiFilehandle = indexFile
-    } else {
-      gffGzOpts.tbiFilehandle = indexFile
-    }
-    this.dontRedispatch = dontRedispatch
-    this.gff = new TabixIndexedFile(gffGzOpts)
+    this.dontRedispatch = dontRedispatch || 'chromosome,region'
+    this.gff = new TabixIndexedFile({
+      filehandle: openLocation(gffGzLocation),
+      csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
+      tbiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
+      chunkCacheSize: 50 * 2 ** 20,
+      renameRefSeqs: (n: string) => n,
+    })
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
@@ -111,37 +99,35 @@ export default class extends BaseAdapter {
       let maxEnd = -Infinity
       lines.forEach(line => {
         const featureType = line.fields[2]
-        // only expand redispatch range if the feature is not in dontRedispatch,
-        // and is a top-level feature
-        if (
-          !this.dontRedispatch.includes(featureType)
-          // this._isTopLevelFeatureType(featureType)
-        ) {
+        // only expand redispatch range if feature is not a "dontRedispatch" type
+        // skips large regions like chromosome,region
+        if (!this.dontRedispatch.includes(featureType)) {
           const start = line.start - 1 // gff is 1-based
-          if (start < minStart) minStart = start
-          if (line.end > maxEnd) maxEnd = line.end
+          if (start < minStart) {
+            minStart = start
+          }
+          if (line.end > maxEnd) {
+            maxEnd = line.end
+          }
         }
       })
       if (maxEnd > query.end || minStart < query.start) {
         // console.log(`redispatching ${query.start}-${query.end} => ${minStart}-${maxEnd}`)
-        const newQuery = { ...query, start: minStart, end: maxEnd }
         // make a new feature callback to only return top-level features
         // in the original query range
-        const newFeatureCallback = (feature: any) => {
-          if (
-            feature.get('start') < query.end &&
-            feature.get('end') > query.start
-          ) {
-            observer.next(feature)
+        const newFeatureCallback = (f: Feature) => {
+          if (f.get('start') < query.end && f.get('end') > query.start) {
+            observer.next(f)
           }
         }
         await this.getFeaturesHelper(
-          newQuery,
+          { ...query, start: minStart, end: maxEnd },
           opts,
           metadata,
           observer,
           newFeatureCallback,
         )
+        return
       }
     }
 
@@ -187,21 +173,14 @@ export default class extends BaseAdapter {
   }
 
   private formatFeatures(featureLocs: FeatureLoc[]) {
-    const features: Feature[] = []
-    featureLocs.forEach((featureLoc, locIndex) => {
-      const ids = featureLoc.attributes.ID || [
-        // eslint-disable-next-line no-underscore-dangle
-        `offset-${featureLoc.attributes._lineHash[0]}`,
-      ]
-      ids.forEach((id: string, idIndex: number) => {
-        const f = new SimpleFeature({
+    return featureLocs.map(
+      (featureLoc, locIndex) =>
+        new SimpleFeature({
           data: this.featureData(featureLoc),
-          id: idIndex === 0 ? id : `${id}-${idIndex + 1}`,
-        })
-        features.push(f)
-      })
-    })
-    return features
+          // eslint-disable-next-line no-underscore-dangle
+          id: `offset-${featureLoc.attributes._lineHash[0]}`,
+        }),
+    )
   }
 
   private featureData(data: FeatureLoc) {
