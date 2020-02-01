@@ -229,6 +229,58 @@ export function guessAdapter(fileName, protocol) {
   }
 }
 
+export function guessSNPCoverageSubadapter(fileName, protocol) {
+  if (/\.bam$/i.test(fileName))
+    return {
+      type: 'SNPCoverageAdapter',
+      subadapter: {
+        type: 'BamAdapter',
+        bamLocation: { [protocol]: fileName },
+        index: { location: { [protocol]: `${fileName}.bai` } },
+      },
+    }
+  if (/\.bai$/i.test(fileName))
+    return {
+      type: 'SNPCoverageAdapter',
+      subadapter: {
+        type: 'BamAdapter',
+        bamLocation: { [protocol]: fileName.replace(/\.bai$/i, '') },
+        index: { location: { [protocol]: fileName } },
+      },
+    }
+  if (/\.bam.csi$/i.test(fileName))
+    return {
+      type: 'SNPCoverageAdapter',
+      subadapter: {
+        type: 'BamAdapter',
+        bamLocation: { [protocol]: fileName.replace(/\.csi$/i, '') },
+        index: { location: { [protocol]: fileName }, indexType: 'CSI' },
+      },
+    }
+
+  if (/\.cram$/i.test(fileName))
+    return {
+      type: 'SNPCoverageAdapter',
+      subadapter: {
+        type: 'CramAdapter',
+        cramLocation: { [protocol]: fileName },
+        craiLocation: { [protocol]: `${fileName}.crai` },
+      },
+    }
+  if (/\.crai$/i.test(fileName))
+    return {
+      type: 'SNPCoverageAdapter',
+      subadapter: {
+        type: 'CramAdapter',
+        cramLocation: { [protocol]: fileName.replace(/\.crai$/i, '') },
+        craiLocation: { [protocol]: fileName },
+      },
+    }
+  return {
+    type: UNSUPPORTED,
+  }
+}
+
 export function guessTrackType(adapterType) {
   return (
     {

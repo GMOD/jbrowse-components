@@ -13,6 +13,14 @@ import {
   modelFactory as alignmentsTrackModelFactory,
 } from './AlignmentsTrack'
 import {
+  configSchemaFactory as snpCoverageTrackConfigSchemaFactory,
+  modelFactory as snpCoverageTrackModelFactory,
+} from './SNPCoverageTrack'
+import {
+  AdapterClass as SNPCoverageAdapterClass,
+  configSchema as snpCoverageAdapterConfigSchema,
+} from './SNPCoverageAdapter'
+import {
   AdapterClass as BamAdapterClass,
   configSchema as bamAdapterConfigSchema,
 } from './BamAdapter'
@@ -24,6 +32,10 @@ import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
   ReactComponent as PileupRendererReactComponent,
 } from './PileupRenderer'
+import SNPCoverageRenderer, {
+  configSchema as SNPCoverageRendererConfigSchema,
+  ReactComponent as SNPCoverageRendererReactComponent,
+} from './SNPCoverageRenderer'
 
 export default class extends Plugin {
   install(pluginManager) {
@@ -46,7 +58,14 @@ export default class extends Plugin {
           LazyReactComponent: lazy(() => AlignmentsFeatureDetailReactComponent),
         }),
     )
-
+    pluginManager.addTrackType(() => {
+      const configSchema = snpCoverageTrackConfigSchemaFactory(pluginManager)
+      return new TrackType({
+        name: 'SNPCoverageTrack',
+        configSchema,
+        stateModel: snpCoverageTrackModelFactory(configSchema),
+      })
+    })
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
@@ -55,7 +74,14 @@ export default class extends Plugin {
           AdapterClass: BamAdapterClass,
         }),
     )
-
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'SNPCoverageAdapter',
+          configSchema: snpCoverageAdapterConfigSchema,
+          AdapterClass: SNPCoverageAdapterClass,
+        }),
+    )
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
@@ -71,6 +97,14 @@ export default class extends Plugin {
           name: 'PileupRenderer',
           ReactComponent: PileupRendererReactComponent,
           configSchema: pileupRendererConfigSchema,
+        }),
+    )
+    pluginManager.addRendererType(
+      () =>
+        new SNPCoverageRenderer({
+          name: 'SNPCoverageRenderer',
+          ReactComponent: SNPCoverageRendererReactComponent,
+          configSchema: SNPCoverageRendererConfigSchema,
         }),
     )
   }

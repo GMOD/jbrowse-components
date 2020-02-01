@@ -175,14 +175,6 @@
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.bai"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
@@ -212,6 +204,31 @@
         },
         "SvgFeatureRenderer": {
           "type": "SvgFeatureRenderer"
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "ngmlr_splitters_snp",
+      "name": "Breast cancer pacbio (NGMLR) splitters only (SNPCoverage)",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "SKBR3"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "BamAdapter",
+          "bamLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.splitters.bam"
+          },
+          "index": {
+            "location": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.splitters.bam.bai"
+            }
+          }
         }
       }
     },
@@ -1736,6 +1753,54 @@
         },
         "LinePlotRenderer": {
           "type": "LinePlotRenderer"
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "volvox-short-reads-snp-bam",
+      "name": "volvox-SNP (bam)",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "category": [
+        "Coverage"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "BamAdapter",
+          "bamLocation": {
+            "uri": "test_data/volvox-sorted.bam"
+          },
+          "index": {
+            "location": {
+              "uri": "test_data/volvox-sorted.bam.bai"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "volvox-short-reads-snp-cram",
+      "name": "volvox-SNP (cram)",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "category": [
+        "Coverage"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "CramAdapter",
+          "cramLocation": {
+            "uri": "test_data/volvox-sorted.cram"
+          },
+          "craiLocation": {
+            "uri": "test_data/volvox-sorted.cram.crai"
+          }
         }
       }
     }
