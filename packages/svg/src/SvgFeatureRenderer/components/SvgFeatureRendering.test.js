@@ -415,7 +415,7 @@ test('svg selected', () => {
 })
 
 test('svg broken rendering', () => {
-  const feats = [
+  const features = [
     {
       source: 'RefSeq',
       type: 'region',
@@ -486,6 +486,38 @@ test('svg broken rendering', () => {
       gene_biotype: 'protein_coding',
       uniqueId: 'offset-1451231',
     },
+    {
+      source: 'Gnomon',
+      type: 'gene',
+      start: 10791,
+      end: 17180,
+      strand: 1,
+      phase: 0,
+      refName: 'NC_037638.1',
+      id: 'gene15',
+      dbxref: ['BEEBASE:GB42138', 'GeneID:551555'],
+      name: 'LOC551555',
+      gbkey: 'Gene',
+      gene: 'LOC551555',
+      gene_biotype: 'protein_coding',
+      uniqueId: 'offset-1455172',
+    },
+    {
+      source: 'Gnomon',
+      type: 'gene',
+      start: 17089,
+      end: 23457,
+      strand: -1,
+      phase: 0,
+      refName: 'NC_037638.1',
+      id: 'gene16',
+      dbxref: ['BEEBASE:GB42194', 'GeneID:726347'],
+      name: 'LOC726347',
+      gbkey: 'Gene',
+      gene: 'LOC726347',
+      gene_biotype: 'protein_coding',
+      uniqueId: 'offset-1471560',
+    },
   ]
   const region = {
     refName: 'NC_037638.1',
@@ -493,13 +525,17 @@ test('svg broken rendering', () => {
     end: 140000,
     assemblyName: 'amel',
   }
+  const feats = features.map(f => new SimpleFeature({ data: f }))
+  const featMap = new Map(feats.map(f => [f.id(), f]))
   const bpPerPx = 100
   const { container } = render(
     <Rendering
       width={500}
       height={500}
       region={region}
-      layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
+      features={featMap}
+      // if pitchX changed to lower value, e.g. 3 this test passes and svg looks ok
+      layout={new GranularRectLayout({ pitchX: 100, pitchY: 3 })}
       config={SvgRendererConfigSchema.create({})}
       bpPerPx={bpPerPx}
     />,
