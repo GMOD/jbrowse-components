@@ -178,7 +178,6 @@ function RenderedFeatureGlyph(props) {
     return null
   }
   rootLayout.move(startPx, topPx)
-  console.log('rendering featureglyph', feature.id())
 
   return (
     <FeatureGlyph
@@ -225,11 +224,7 @@ const RenderedFeatures = observer(props => {
   const featuresRendered = []
   for (const feature of features.values()) {
     featuresRendered.push(
-      <RenderedFeatureGlyph
-        key={`rendered-feature-glyph-${feature.id()}`}
-        feature={feature}
-        {...props}
-      />,
+      <RenderedFeatureGlyph key={feature.id()} feature={feature} {...props} />,
     )
   }
   setHeight(layout.getTotalHeight())
@@ -259,9 +254,7 @@ function SvgFeatureRendering(props) {
     features,
     trackModel,
     config,
-    layout,
   } = props
-  console.log(features, layout)
   const { configuration } = trackModel
   const width = (region.end - region.start) / bpPerPx
   const displayMode = readConfObject(config, 'displayMode')

@@ -118,7 +118,22 @@ function FeatureGlyph(props) {
     )
   }
 
-  return <>{glyphComponents}</>
+  return (
+    <g
+      onMouseDown={onFeatureMouseDown}
+      onMouseEnter={onFeatureMouseEnter}
+      onMouseOut={onFeatureMouseOut}
+      onMouseOver={onFeatureMouseOver}
+      onMouseUp={onFeatureMouseUp}
+      onMouseLeave={onFeatureMouseLeave}
+      onMouseMove={onFeatureMouseMove}
+      onClick={onFeatureClick}
+      onFocus={onFeatureMouseOver}
+      onBlur={onFeatureMouseOut}
+    >
+      {glyphComponents}
+    </g>
+  )
 }
 
 FeatureGlyph.propTypes = {

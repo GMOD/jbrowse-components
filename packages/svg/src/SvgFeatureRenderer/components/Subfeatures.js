@@ -1,21 +1,11 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { chooseGlyphComponent, layOut, layOutFeature } from './util'
 
 function Subfeatures(props) {
-  const { feature, region, featureLayout, selected } = props
-  if (
-    !doesIntersect2(
-      feature.get('start'),
-      feature.get('end'),
-      region.start,
-      region.end,
-    )
-  )
-    return null
+  const { feature, featureLayout, selected } = props
 
   return (
     <>
