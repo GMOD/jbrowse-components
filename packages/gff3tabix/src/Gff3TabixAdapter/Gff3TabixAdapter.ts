@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
@@ -5,7 +6,6 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
 import gff from '@gmod/gff'
-import { GenericFilehandle } from 'generic-filehandle'
 import { Observer } from 'rxjs'
 
 type Strand = '+' | '-' | '.' | '?'
@@ -47,7 +47,7 @@ export default class extends BaseAdapter {
     const { gffGzLocation, index, dontRedispatch } = config
     const { location, index: indexType } = index
 
-    this.dontRedispatch = dontRedispatch || 'chromosome,region'
+    this.dontRedispatch = dontRedispatch || ['chromosome', 'region']
     this.gff = new TabixIndexedFile({
       filehandle: openLocation(gffGzLocation),
       csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
@@ -69,22 +69,15 @@ export default class extends BaseAdapter {
   public getFeatures(query: INoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       const metadata = await this.gff.getMetadata()
-      await this.getFeaturesHelper(
-        query,
-        opts,
-        metadata,
-        observer,
-        (f: Feature) => observer.next(f),
-      )
+      this.getFeaturesHelper(query, opts, metadata, observer)
     })
   }
 
   private async getFeaturesHelper(
     query: INoAssemblyRegion,
     opts: BaseOptions = {},
-    metadata: any,
-    observer: any,
-    callback: Function,
+    metadata: { columnNumbers: { start: number; end: number } },
+    observer: Observer<Feature>,
   ) {
     const lines: LineFeature[] = []
 
@@ -115,17 +108,12 @@ export default class extends BaseAdapter {
         // console.log(`redispatching ${query.start}-${query.end} => ${minStart}-${maxEnd}`)
         // make a new feature callback to only return top-level features
         // in the original query range
-        const newFeatureCallback = (f: Feature) => {
-          if (f.get('start') < query.end && f.get('end') > query.start) {
-            observer.next(f)
-          }
-        }
-        await this.getFeaturesHelper(
+
+        this.getFeaturesHelper(
           { ...query, start: minStart, end: maxEnd },
           opts,
           metadata,
           observer,
-          newFeatureCallback,
         )
         return
       }
@@ -151,7 +139,9 @@ export default class extends BaseAdapter {
     })
 
     features.forEach((featureLocs: any) =>
-      this.formatFeatures(featureLocs).forEach(f => callback(f)),
+      this.formatFeatures(featureLocs).forEach(f => {
+        observer.next(f)
+      }),
     )
     observer.complete()
   }
@@ -177,7 +167,6 @@ export default class extends BaseAdapter {
       (featureLoc, locIndex) =>
         new SimpleFeature({
           data: this.featureData(featureLoc),
-          // eslint-disable-next-line no-underscore-dangle
           id: `offset-${featureLoc.attributes._lineHash[0]}`,
         }),
     )
@@ -185,11 +174,17 @@ export default class extends BaseAdapter {
 
   private featureData(data: FeatureLoc) {
     const f = { ...data } as any
-    delete f.child_features
-    delete f.data
-    delete f.derived_features
+
     f.start -= 1 // convert to interbase
     f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[f.strand as Strand] // convert strand
+    f.phase = +f.phase
+    f.refName = f.seq_id
+    if (f.score === null) {
+      delete f.score
+    }
+    if (f.phase === null) {
+      delete f.score
+    }
     const defaultFields = [
       'start',
       'end',
@@ -202,19 +197,21 @@ export default class extends BaseAdapter {
     ]
     Object.keys(data.attributes).forEach(a => {
       let b = a.toLowerCase()
-      if (defaultFields.includes(b)) b += '2' // reproduce behavior of NCList
-      f[b] = data.attributes[a]
-      if (f[b].length == 1) {
-        // eslint-disable-next-line prefer-destructuring
-        f[b] = f[b][0]
+      if (defaultFields.includes(b)) {
+        // add "suffix" to tag name if it already exists
+        // reproduces behavior of NCList
+        b += '2'
+      }
+      if (data.attributes[a] !== null) {
+        f[b] = data.attributes[a]
+        if (f[b].length == 1) {
+          // eslint-disable-next-line prefer-destructuring
+          f[b] = f[b][0]
+        }
       }
     })
-    // eslint-disable-next-line no-underscore-dangle
-    f.uniqueID = `offset-${f._linehash}`
     f.refName = f.seq_id
-    // eslint-disable-next-line no-underscore-dangle
-    delete f._linehash
-    delete f.attributes
+
     // the SimpleFeature constructor takes care of recursively inflating subfeatures
     if (data.child_features && data.child_features.length) {
       f.subfeatures = data.child_features
@@ -224,6 +221,12 @@ export default class extends BaseAdapter {
         .flat()
     }
 
+    delete f.child_features
+    delete f.data
+    delete f.derived_features
+    delete f._linehash
+    delete f.attributes
+    delete f.seq_id
     return f
   }
 
@@ -233,4 +236,5 @@ export default class extends BaseAdapter {
    * from caches, etc
    */
   public freeResources(/* { region } */): void {}
+
 }
