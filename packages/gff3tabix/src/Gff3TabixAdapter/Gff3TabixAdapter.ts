@@ -70,7 +70,7 @@ export default class extends BaseAdapter {
   public getFeatures(query: INoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       const metadata = await this.gff.getMetadata()
-      this.getFeaturesHelper(query, opts, metadata, observer, true)
+      this.getFeaturesHelper(query, opts, metadata, observer, true, query)
     })
   }
 
@@ -79,7 +79,8 @@ export default class extends BaseAdapter {
     opts: BaseOptions = {},
     metadata: { columnNumbers: { start: number; end: number } },
     observer: Observer<Feature>,
-    allowRedispatch = false,
+    allowRedispatch,
+    originalQuery,
   ) {
     const lines: LineFeature[] = []
 
@@ -119,6 +120,7 @@ export default class extends BaseAdapter {
           metadata,
           observer,
           false,
+          query,
         )
         return
       }
@@ -146,7 +148,12 @@ export default class extends BaseAdapter {
     features.forEach((featureLocs: any) =>
       this.formatFeatures(featureLocs).forEach(f => {
         if (
-          doesIntersect2(f.get('start'), f.get('end'), query.start, query.end)
+          doesIntersect2(
+            f.get('start'),
+            f.get('end'),
+            originalQuery.start,
+            originalQuery.end,
+          )
         ) {
           observer.next(f)
         }
