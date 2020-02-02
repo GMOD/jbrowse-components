@@ -68,6 +68,7 @@ function FeatureGlyph(props) {
     event.stopPropagation()
     return handler(event, feature.id())
   }
+  console.log('wtf', feature.id())
 
   const featureLayout = rootLayout.getSubRecord(String(feature.id()))
   const { GlyphComponent } = featureLayout.data
@@ -118,22 +119,7 @@ function FeatureGlyph(props) {
     )
   }
 
-  return (
-    <g
-      onMouseDown={onFeatureMouseDown}
-      onMouseEnter={onFeatureMouseEnter}
-      onMouseOut={onFeatureMouseOut}
-      onMouseOver={onFeatureMouseOver}
-      onMouseUp={onFeatureMouseUp}
-      onMouseLeave={onFeatureMouseLeave}
-      onMouseMove={onFeatureMouseMove}
-      onClick={onFeatureClick}
-      onFocus={onFeatureMouseOver}
-      onBlur={onFeatureMouseOut}
-    >
-      {glyphComponents}
-    </g>
-  )
+  return <>{glyphComponents}</>
 }
 
 FeatureGlyph.propTypes = {

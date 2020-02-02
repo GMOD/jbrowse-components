@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
+import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
@@ -106,7 +107,9 @@ export default class extends BaseAdapter {
         }
       })
       if (maxEnd > query.end || minStart < query.start) {
-        // console.log(`redispatching ${query.start}-${query.end} => ${minStart}-${maxEnd}`)
+        console.log(
+          `redispatching ${query.start}-${query.end} => ${minStart}-${maxEnd}`,
+        )
         // make a new feature callback to only return top-level features
         // in the original query range
 
@@ -142,7 +145,9 @@ export default class extends BaseAdapter {
 
     features.forEach((featureLocs: any) =>
       this.formatFeatures(featureLocs).forEach(f => {
-        if (f.get('start') < query.end && f.get('end') > query.start) {
+        if (
+          doesIntersect2(f.get('start'), f.get('end'), query.start, query.end)
+        ) {
           observer.next(f)
         }
       }),

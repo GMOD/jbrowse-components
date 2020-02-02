@@ -124,49 +124,49 @@ function RenderedFeatureGlyph(props) {
   let description
   let fontHeight
   let expansion
-  // if (labelsAllowed) {
-  //   fontHeight = readConfObject(config, ['labels', 'fontSize'], ['feature'])
-  //   expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
-  //   name = readConfObject(config, ['labels', 'name'], [feature]) || ''
-  //   shouldShowName = /\S/.test(name)
+  if (labelsAllowed) {
+    fontHeight = readConfObject(config, ['labels', 'fontSize'], ['feature'])
+    expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
+    name = readConfObject(config, ['labels', 'name'], [feature]) || ''
+    shouldShowName = /\S/.test(name)
 
-  //   description =
-  //     readConfObject(config, ['labels', 'description'], [feature]) || ''
-  //   shouldShowDescription = /\S/.test(description)
-  //   const fontWidth = fontHeight * fontWidthScaleFactor
-  //   const textVerticalPadding = 2
+    description =
+      readConfObject(config, ['labels', 'description'], [feature]) || ''
+    shouldShowDescription = /\S/.test(description)
+    const fontWidth = fontHeight * fontWidthScaleFactor
+    const textVerticalPadding = 2
 
-  //   let nameWidth = 0
-  //   if (shouldShowName) {
-  //     nameWidth = Math.round(
-  //       Math.min(name.length * fontWidth, rootLayout.width + expansion),
-  //     )
-  //     rootLayout.addChild(
-  //       'nameLabel',
-  //       0,
-  //       featureLayout.bottom + textVerticalPadding,
-  //       nameWidth,
-  //       fontHeight,
-  //     )
-  //   }
+    let nameWidth = 0
+    if (shouldShowName) {
+      nameWidth = Math.round(
+        Math.min(name.length * fontWidth, rootLayout.width + expansion),
+      )
+      rootLayout.addChild(
+        'nameLabel',
+        0,
+        featureLayout.bottom + textVerticalPadding,
+        nameWidth,
+        fontHeight,
+      )
+    }
 
-  //   let descriptionWidth = 0
-  //   if (shouldShowDescription) {
-  //     const aboveLayout = shouldShowName
-  //       ? rootLayout.getSubRecord('nameLabel')
-  //       : featureLayout
-  //     descriptionWidth = Math.round(
-  //       Math.min(description.length * fontWidth, rootLayout.width + expansion),
-  //     )
-  //     rootLayout.addChild(
-  //       'descriptionLabel',
-  //       0,
-  //       aboveLayout.bottom + textVerticalPadding,
-  //       descriptionWidth,
-  //       fontHeight,
-  //     )
-  //   }
-  // }
+    let descriptionWidth = 0
+    if (shouldShowDescription) {
+      const aboveLayout = shouldShowName
+        ? rootLayout.getSubRecord('nameLabel')
+        : featureLayout
+      descriptionWidth = Math.round(
+        Math.min(description.length * fontWidth, rootLayout.width + expansion),
+      )
+      rootLayout.addChild(
+        'descriptionLabel',
+        0,
+        aboveLayout.bottom + textVerticalPadding,
+        descriptionWidth,
+        fontHeight,
+      )
+    }
+  }
 
   const topPx = layout.addRect(
     feature.id(),
@@ -178,6 +178,7 @@ function RenderedFeatureGlyph(props) {
     return null
   }
   rootLayout.move(startPx, topPx)
+  console.log('rendering featureglyph', feature.id())
 
   return (
     <FeatureGlyph
@@ -224,7 +225,11 @@ const RenderedFeatures = observer(props => {
   const featuresRendered = []
   for (const feature of features.values()) {
     featuresRendered.push(
-      <RenderedFeatureGlyph key={feature.id()} feature={feature} {...props} />,
+      <RenderedFeatureGlyph
+        key={`rendered-feature-glyph-${feature.id()}`}
+        feature={feature}
+        {...props}
+      />,
     )
   }
   setHeight(layout.getTotalHeight())
