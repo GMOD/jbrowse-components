@@ -8,6 +8,7 @@ import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
 import gff from '@gmod/gff'
 import { Observer } from 'rxjs'
+import crc32 from 'buffer-crc32'
 
 type Strand = '+' | '-' | '.' | '?'
 interface FeatureLoc {
@@ -82,84 +83,94 @@ export default class extends BaseAdapter {
     allowRedispatch: boolean,
     originalQuery: INoAssemblyRegion,
   ) {
-    const lines: LineFeature[] = []
+    try {
+      const lines: LineFeature[] = []
 
-    await this.gff.getLines(query.refName, query.start, query.end, {
-      lineCallback: (line: string, fileOffset: number) => {
-        lines.push(this.parseLine(metadata.columnNumbers, line, fileOffset))
-      },
-      signal: opts.signal,
-    })
-    if (allowRedispatch && lines.length) {
-      let minStart = Infinity
-      let maxEnd = -Infinity
-      lines.forEach(line => {
-        const featureType = line.fields[2]
-        // only expand redispatch range if feature is not a "dontRedispatch" type
-        // skips large regions like chromosome,region
-        if (!this.dontRedispatch.includes(featureType)) {
-          const start = line.start - 1 // gff is 1-based
-          if (start < minStart) {
-            minStart = start
+      await this.gff.getLines(
+        query.refName,
+        query.start,
+        query.end,
+        (line: string, fileOffset: number) => {
+          lines.push(this.parseLine(metadata.columnNumbers, line, fileOffset))
+        },
+      )
+      console.log(query, allowRedispatch, originalQuery, lines)
+      if (allowRedispatch && lines.length) {
+        let minStart = Infinity
+        let maxEnd = -Infinity
+        lines.forEach(line => {
+          const featureType = line.fields[2]
+          // only expand redispatch range if feature is not a "dontRedispatch" type
+          // skips large regions like chromosome,region
+          if (!this.dontRedispatch.includes(featureType)) {
+            const start = line.start - 1 // gff is 1-based
+            if (start < minStart) {
+              minStart = start
+            }
+            if (line.end > maxEnd) {
+              maxEnd = line.end
+            }
           }
-          if (line.end > maxEnd) {
-            maxEnd = line.end
-          }
-        }
-      })
-      if (maxEnd > query.end || minStart < query.start) {
-        console.log(
-          `redispatching ${query.start}-${query.end} => ${minStart}-${maxEnd}`,
-        )
-        // make a new feature callback to only return top-level features
-        // in the original query range
-
-        this.getFeaturesHelper(
-          { ...query, start: minStart, end: maxEnd },
-          opts,
-          metadata,
-          observer,
-          false,
-          query,
-        )
-        return
-      }
-    }
-
-    const gff3 = lines
-      .map((lineRecord: LineFeature) => {
-        if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
-          if (!lineRecord.fields[8].includes('_lineHash'))
-            lineRecord.fields[8] += `;_lineHash=${lineRecord.lineHash}`
-        } else {
-          lineRecord.fields[8] = `_lineHash=${lineRecord.lineHash}`
-        }
-        return lineRecord.fields.join('\t')
-      })
-      .join('\n')
-
-    const features = gff.parseStringSync(gff3, {
-      parseFeatures: true,
-      parseComments: false,
-      parseDirectives: false,
-      parseSequences: false,
-    })
-
-    features.forEach((featureLocs: any) =>
-      this.formatFeatures(featureLocs).forEach(f => {
-        if (
-          doesIntersect2(
-            f.get('start'),
-            f.get('end'),
-            originalQuery.start,
-            originalQuery.end,
+        })
+        if (maxEnd > query.end || minStart < query.start) {
+          console.log(
+            `redispatching ${query.start}-${query.end} => ${minStart}-${maxEnd}`,
           )
-        ) {
-          observer.next(f)
+          // make a new feature callback to only return top-level features
+          // in the original query range
+
+          this.getFeaturesHelper(
+            { ...query, start: minStart, end: maxEnd },
+            opts,
+            metadata,
+            observer,
+            false,
+            query,
+          )
+          return
         }
-      }),
-    )
-    observer.complete()
+      }
+
+      const gff3 = lines
+        .map((lineRecord: LineFeature) => {
+          if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
+            if (!lineRecord.fields[8].includes('_lineHash'))
+              lineRecord.fields[8] += `;_lineHash=${lineRecord.lineHash}`
+          } else {
+            lineRecord.fields[8] = `_lineHash=${lineRecord.lineHash}`
+          }
+          return lineRecord.fields.join('\t')
+        })
+        .join('\n')
+
+      const features = gff.parseStringSync(gff3, {
+        parseFeatures: true,
+        parseComments: false,
+        parseDirectives: false,
+        parseSequences: false,
+      })
+
+      features.forEach((featureLocs: any) =>
+        this.formatFeatures(featureLocs).forEach(f => {
+          if (
+            doesIntersect2(
+              f.get('start'),
+              f.get('end'),
+              originalQuery.start,
+              originalQuery.end,
+            )
+          ) {
+            if (f.get('name') === 'LOC551893') {
+              console.log(query, allowRedispatch, originalQuery, f)
+            }
+            observer.next(f)
+          }
+        }),
+      )
+      observer.complete()
+    } catch (e) {
+      observer.error(e)
+    }
   }
 
   private parseLine(
