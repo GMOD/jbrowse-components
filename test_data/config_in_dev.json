@@ -1,9 +1,5 @@
 {
-  "configuration": {
-    "rpc": {
-      "defaultDriver": "MainThreadRpcDriver"
-    }
-  },
+  "configuration": {},
   "assemblies": [
     {
       "name": "volvox",
@@ -1327,31 +1323,6 @@
         "index": {
           "location": {
             "uri": "test_data/volvox.sort.gff3.gz.tbi"
-          }
-        }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
-      }
-    },
-    {
-      "type": "BasicTrack",
-      "trackId": "gff3tabix_genes2",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "name": "GFF3Tabix genes2",
-      "category": [
-        "Miscellaneous"
-      ],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "test_data/test.gff.gz"
-        },
-        "index": {
-          "location": {
-            "uri": "test_data/test.gff.gz.tbi"
           }
         }
       },
