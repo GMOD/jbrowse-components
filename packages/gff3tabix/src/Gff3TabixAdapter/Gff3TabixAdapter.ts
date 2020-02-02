@@ -48,7 +48,7 @@ export default class extends BaseAdapter {
     const { gffGzLocation, index, dontRedispatch } = config
     const { location, index: indexType } = index
 
-    this.dontRedispatch = dontRedispatch || ['chromosome', 'region']
+    this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
     this.gff = new TabixIndexedFile({
       filehandle: openLocation(gffGzLocation),
       csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
@@ -79,8 +79,8 @@ export default class extends BaseAdapter {
     opts: BaseOptions = {},
     metadata: { columnNumbers: { start: number; end: number } },
     observer: Observer<Feature>,
-    allowRedispatch,
-    originalQuery,
+    allowRedispatch: boolean,
+    originalQuery: INoAssemblyRegion,
   ) {
     const lines: LineFeature[] = []
 
