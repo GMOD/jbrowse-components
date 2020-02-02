@@ -68,7 +68,6 @@ function FeatureGlyph(props) {
     event.stopPropagation()
     return handler(event, feature.id())
   }
-  console.log('wtf', feature.id())
 
   const featureLayout = rootLayout.getSubRecord(String(feature.id()))
   const { GlyphComponent } = featureLayout.data

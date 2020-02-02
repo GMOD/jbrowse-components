@@ -1,4 +1,5 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 import { emphasize } from '@gmod/jbrowse-core/util/color'
 import { observer } from 'mobx-react'
@@ -8,6 +9,7 @@ import React from 'react'
 function Segments(props) {
   const {
     feature,
+    region,
     featureLayout,
     selected,
     config,
@@ -33,7 +35,15 @@ function Segments(props) {
       [left + width - height / 4, top + 3 * (height / 4)],
       [left + width, top + height / 2],
     )
-
+  if (
+    !doesIntersect2(
+      feature.get('start'),
+      feature.get('end'),
+      region.start,
+      region.end,
+    )
+  )
+    return null
   return (
     <>
       <polyline

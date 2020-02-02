@@ -1,3 +1,4 @@
+import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 import { emphasize } from '@gmod/jbrowse-core/util/color'
@@ -12,6 +13,7 @@ function Chevron(props) {
   const {
     feature,
     config,
+    region,
     featureLayout,
     selected,
     horizontallyFlipped,
@@ -49,6 +51,15 @@ function Chevron(props) {
 
   // To restore indents on back of Chevron: un-comment the last point in the
   // first polygon and replace the second polygon with the commented-out polyline
+  if (
+    !doesIntersect2(
+      feature.get('start'),
+      feature.get('end'),
+      region.start,
+      region.end,
+    )
+  )
+    return null
   return width > height / 2 ? (
     <polygon
       {...shapeProps}
