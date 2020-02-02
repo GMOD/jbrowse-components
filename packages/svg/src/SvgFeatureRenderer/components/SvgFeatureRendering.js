@@ -124,49 +124,49 @@ function RenderedFeatureGlyph(props) {
   let description
   let fontHeight
   let expansion
-  if (labelsAllowed) {
-    fontHeight = readConfObject(config, ['labels', 'fontSize'], ['feature'])
-    expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
-    name = readConfObject(config, ['labels', 'name'], [feature]) || ''
-    shouldShowName = /\S/.test(name)
+  // if (labelsAllowed) {
+  //   fontHeight = readConfObject(config, ['labels', 'fontSize'], ['feature'])
+  //   expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
+  //   name = readConfObject(config, ['labels', 'name'], [feature]) || ''
+  //   shouldShowName = /\S/.test(name)
 
-    description =
-      readConfObject(config, ['labels', 'description'], [feature]) || ''
-    shouldShowDescription = /\S/.test(description)
-    const fontWidth = fontHeight * fontWidthScaleFactor
-    const textVerticalPadding = 2
+  //   description =
+  //     readConfObject(config, ['labels', 'description'], [feature]) || ''
+  //   shouldShowDescription = /\S/.test(description)
+  //   const fontWidth = fontHeight * fontWidthScaleFactor
+  //   const textVerticalPadding = 2
 
-    let nameWidth = 0
-    if (shouldShowName) {
-      nameWidth = Math.round(
-        Math.min(name.length * fontWidth, rootLayout.width + expansion),
-      )
-      rootLayout.addChild(
-        'nameLabel',
-        0,
-        featureLayout.bottom + textVerticalPadding,
-        nameWidth,
-        fontHeight,
-      )
-    }
+  //   let nameWidth = 0
+  //   if (shouldShowName) {
+  //     nameWidth = Math.round(
+  //       Math.min(name.length * fontWidth, rootLayout.width + expansion),
+  //     )
+  //     rootLayout.addChild(
+  //       'nameLabel',
+  //       0,
+  //       featureLayout.bottom + textVerticalPadding,
+  //       nameWidth,
+  //       fontHeight,
+  //     )
+  //   }
 
-    let descriptionWidth = 0
-    if (shouldShowDescription) {
-      const aboveLayout = shouldShowName
-        ? rootLayout.getSubRecord('nameLabel')
-        : featureLayout
-      descriptionWidth = Math.round(
-        Math.min(description.length * fontWidth, rootLayout.width + expansion),
-      )
-      rootLayout.addChild(
-        'descriptionLabel',
-        0,
-        aboveLayout.bottom + textVerticalPadding,
-        descriptionWidth,
-        fontHeight,
-      )
-    }
-  }
+  //   let descriptionWidth = 0
+  //   if (shouldShowDescription) {
+  //     const aboveLayout = shouldShowName
+  //       ? rootLayout.getSubRecord('nameLabel')
+  //       : featureLayout
+  //     descriptionWidth = Math.round(
+  //       Math.min(description.length * fontWidth, rootLayout.width + expansion),
+  //     )
+  //     rootLayout.addChild(
+  //       'descriptionLabel',
+  //       0,
+  //       aboveLayout.bottom + textVerticalPadding,
+  //       descriptionWidth,
+  //       fontHeight,
+  //     )
+  //   }
+  // }
 
   const topPx = layout.addRect(
     feature.id(),
@@ -254,7 +254,9 @@ function SvgFeatureRendering(props) {
     features,
     trackModel,
     config,
+    layout,
   } = props
+  console.log(features, layout)
   const { configuration } = trackModel
   const width = (region.end - region.start) / bpPerPx
   const displayMode = readConfObject(config, 'displayMode')
