@@ -4,38 +4,27 @@ import { IRegion } from '@gmod/jbrowse-core/mst-types'
 // material ui things
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
-import Checkbox from '@material-ui/core/Checkbox'
 import Container from '@material-ui/core/Container'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Grid from '@material-ui/core/Grid'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
-import InputBase from '@material-ui/core/InputBase'
-import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
-import Paper from '@material-ui/core/Paper'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 
 // misc
-import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import ReactPropTypes from 'prop-types'
 import React, { useState } from 'react'
 
 // locals
 import buttonStyles from './buttonStyles'
 import RefNameAutocomplete from './RefNameAutocomplete'
+import Header from './Header'
 import Rubberband from './Rubberband'
 import TrackContainer from './TrackContainer'
 import ScaleBar from './ScaleBar'
-import ZoomControls from './ZoomControls'
-import {
-  LinearGenomeViewStateModel,
-  HEADER_BAR_HEIGHT,
-  SCALE_BAR_HEIGHT,
-} from '..'
+import { LinearGenomeViewStateModel, SCALE_BAR_HEIGHT } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -48,67 +37,11 @@ const useStyles = makeStyles(theme => ({
     // background: theme.palette.background.paper,
     boxSizing: 'content-box',
   },
-  controls: {
-    borderRight: '1px solid gray',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    textOverflow: 'ellipsis',
-  },
-  viewControls: {
-    height: '100%',
-    zIndex: 10,
-    background: '#D9D9D9',
-    borderBottom: '1px solid #9e9e9e',
-    boxSizing: 'border-box',
-  },
-  headerBar: {
-    height: HEADER_BAR_HEIGHT,
-    display: 'flex',
-    background: '#F2F2F2',
-    borderTop: '1px solid #9D9D9D',
-    borderBottom: '1px solid #9D9D9D',
-  },
-  spacer: {
-    flexGrow: 1,
-  },
-  navbox: {
-    margin: theme.spacing(1),
-  },
-  emphasis: {
-    background: theme.palette.secondary.main,
-    padding: theme.spacing(1),
-  },
-  searchRoot: {
-    margin: theme.spacing(1),
-    alignItems: 'center',
-  },
-  viewName: {
-    margin: theme.spacing(0.25),
-  },
-  zoomControls: {
-    position: 'absolute',
-    top: 0,
-  },
-  hovered: {
-    background: theme.palette.secondary.light,
-  },
-  input: {
-    width: 300,
-    error: {
-      backgroundColor: 'red',
-    },
-    padding: theme.spacing(0, 1),
-  },
   importFormContainer: {
     marginBottom: theme.spacing(4),
   },
   importFormEntry: {
     minWidth: 180,
-  },
-  headerRefName: {
-    minWidth: 140,
-    margin: theme.spacing(0.5),
-    background: theme.palette.background.default,
   },
   noTracksMessage: {
     background: theme.palette.background.default,
@@ -119,219 +52,7 @@ const useStyles = makeStyles(theme => ({
   ...buttonStyles(theme),
 }))
 
-const LongMenu = observer(
-  ({ model, className }: { model: LGV; className: string }) => {
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-    const open = Boolean(anchorEl)
-
-    function handleClick(event: React.MouseEvent<HTMLElement>) {
-      setAnchorEl(event.currentTarget)
-    }
-
-    function handleClose() {
-      setAnchorEl(null)
-    }
-
-    return (
-      <>
-        <IconButton
-          aria-label="more"
-          aria-controls="long-menu"
-          aria-haspopup="true"
-          className={className}
-          onClick={handleClick}
-          color="secondary"
-        >
-          <Icon>more_vert</Icon>
-        </IconButton>
-        <Menu
-          id="long-menu"
-          anchorEl={anchorEl}
-          keepMounted
-          open={open}
-          onClose={handleClose}
-        >
-          {model.menuOptions.map(option => {
-            return option.isCheckbox ? (
-              <MenuItem key={option.key}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={option.checked}
-                      onChange={() => {
-                        option.callback()
-                        handleClose()
-                      }}
-                    />
-                  }
-                  label={option.title}
-                />
-              </MenuItem>
-            ) : (
-              <MenuItem
-                key={option.key}
-                onClick={() => {
-                  option.callback()
-                  handleClose()
-                }}
-              >
-                {option.title}
-              </MenuItem>
-            )
-          })}
-        </Menu>
-      </>
-    )
-  },
-)
-
-const TextFieldOrTypography = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
-  const name = model.displayName
-  const [edit, setEdit] = useState(false)
-  const [hover, setHover] = useState(false)
-  return edit ? (
-    <form
-      onSubmit={event => {
-        setEdit(false)
-        event.preventDefault()
-      }}
-    >
-      <TextField
-        value={name}
-        onChange={event => {
-          model.setDisplayName(event.target.value)
-        }}
-        onBlur={() => {
-          setEdit(false)
-          model.setDisplayName(name || '')
-        }}
-      />
-    </form>
-  ) : (
-    <div className={clsx(classes.emphasis, hover ? classes.hovered : null)}>
-      <Typography
-        className={classes.viewName}
-        onClick={() => setEdit(true)}
-        onMouseOver={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-        style={{ color: '#FFFFFF' }}
-      >
-        {name}
-      </Typography>
-    </div>
-  )
-})
-
-function Search({
-  onSubmit,
-  error,
-}: {
-  onSubmit: Function
-  error: string | undefined
-}) {
-  const [value, setValue] = useState<string | undefined>()
-  const classes = useStyles()
-  const placeholder = 'Enter location (e.g. chr1:1000..5000)'
-
-  return (
-    <Paper className={classes.searchRoot}>
-      <form
-        onSubmit={event => {
-          onSubmit(value)
-          event.preventDefault()
-        }}
-      >
-        <InputBase
-          className={classes.input}
-          error={!!error}
-          onChange={event => setValue(event.target.value)}
-          placeholder={placeholder}
-        />
-        <IconButton
-          onClick={() => onSubmit(value)}
-          className={classes.iconButton}
-          aria-label="search"
-          color="secondary"
-        >
-          <Icon>search</Icon>
-        </IconButton>
-      </form>
-    </Paper>
-  )
-}
-Search.propTypes = {
-  onSubmit: ReactPropTypes.func.isRequired,
-  error: ReactPropTypes.string, // eslint-disable-line react/require-default-props
-}
-
-const Header = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
-
-  function setDisplayedRegions(region: IRegion | undefined) {
-    if (region) {
-      model.setDisplayedRegions([region])
-    }
-  }
-
-  return (
-    <div className={classes.headerBar}>
-      <Controls model={model} />
-      <TextFieldOrTypography model={model} />
-      <div className={classes.spacer} />
-
-      <Search onSubmit={model.navToLocstring} error={''} />
-      <RefNameAutocomplete
-        model={model}
-        onSelect={setDisplayedRegions}
-        assemblyName={model.displayedRegions[0].assemblyName}
-        defaultRegionName={model.displayedRegions[0].refName}
-        TextFieldProps={{
-          variant: 'outlined',
-          margin: 'none',
-          className: classes.headerRefName,
-          InputProps: {
-            style: {
-              paddingTop: 2,
-              paddingBottom: 2,
-            },
-          },
-        }}
-      />
-
-      <ZoomControls model={model} />
-      <div className={classes.spacer} />
-    </div>
-  )
-})
-
-const Controls = observer(({ model }) => {
-  const classes = useStyles()
-  return (
-    <>
-      <IconButton
-        onClick={model.closeView}
-        className={classes.iconButton}
-        title="close this view"
-        color="secondary"
-      >
-        <Icon fontSize="small">close</Icon>
-      </IconButton>
-
-      <IconButton
-        onClick={model.activateTrackSelector}
-        title="select tracks"
-        value="track_select"
-        color="secondary"
-      >
-        <Icon fontSize="small">line_style</Icon>
-      </IconButton>
-      <LongMenu className={classes.iconButton} model={model} />
-    </>
-  )
-})
-
-const ImportForm = observer(({ model }: { model: LGV }) => {
+const ImportForm = observer(({ model }) => {
   const classes = useStyles()
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<IRegion | undefined>()
