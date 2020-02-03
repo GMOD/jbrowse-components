@@ -75,7 +75,13 @@ function TrackLabel(props: { track: Instance<BaseTrackStateModel> }) {
   }
   return (
     <>
-      <Paper style={{ position: 'absolute', zIndex: 2 }}>
+      <Paper
+        style={{
+          position: 'absolute',
+          zIndex: 2,
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        }}
+      >
         <Icon
           draggable
           className={classes.dragHandle}

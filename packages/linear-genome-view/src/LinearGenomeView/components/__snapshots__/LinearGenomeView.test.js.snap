@@ -394,7 +394,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
     >
       <div
         class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
-        style="position: absolute; z-index: 2;"
+        style="position: absolute; z-index: 2; background-color: rgba(255, 255, 255, 0.8);"
       >
         <span
           aria-hidden="true"
@@ -1106,7 +1106,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
     >
       <div
         class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
-        style="position: absolute; z-index: 2;"
+        style="position: absolute; z-index: 2; background-color: rgba(255, 255, 255, 0.8);"
       >
         <span
           aria-hidden="true"
@@ -1228,7 +1228,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
     >
       <div
         class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
-        style="position: absolute; z-index: 2;"
+        style="position: absolute; z-index: 2; background-color: rgba(255, 255, 255, 0.8);"
       >
         <span
           aria-hidden="true"
