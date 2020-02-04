@@ -11,7 +11,7 @@ export default class extends BaseAdapter {
 
   private filters: string
 
-  private case: string
+  private cases: Array<string>
 
   private size: number
 
@@ -21,13 +21,13 @@ export default class extends BaseAdapter {
 
   public constructor(config: {
     filters: string
-    case: string
+    cases: Array<string>
     size: number
     featureType: string
   }) {
     super()
     this.filters = config.filters ? config.filters : '{}'
-    this.case = config.case ? config.case : ''
+    this.cases = config.cases ? config.cases : []
     this.size = config.size ? config.size : 100
     this.featureType = config.featureType ? config.featureType : 'ssm'
   }
@@ -207,10 +207,10 @@ export default class extends BaseAdapter {
       ],
     }
 
-    if (this.case) {
+    if (this.cases && this.cases.length > 0) {
       const caseFilter = {
         op: 'in',
-        content: { field: 'cases.case_id', value: this.case },
+        content: { field: 'cases.case_id', value: this.cases },
       }
       locationFilter.content.push(caseFilter)
     }

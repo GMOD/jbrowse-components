@@ -17,10 +17,10 @@ export const configSchema = ConfigurationSchema(
       defaultValue: 'ssm',
       description: 'The type of track to add',
     },
-    case: {
-      type: 'string',
-      defaultValue: '',
-      description: 'The GDC case UUID',
+    cases: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: 'GDC case UUIDs',
     },
     size: {
       type: 'integer',
