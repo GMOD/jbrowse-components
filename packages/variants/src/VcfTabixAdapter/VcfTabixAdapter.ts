@@ -8,50 +8,42 @@ import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
-import VcfParser from '@gmod/vcf'
 import { GenericFilehandle } from 'generic-filehandle'
+import VcfParser from '@gmod/vcf'
 import { Observer } from 'rxjs'
 import VcfFeature from './VcfFeature'
 
+interface Config {
+  vcfGzLocation: IFileLocation
+  index: {
+    indexType: string
+    location: IFileLocation
+  }
+}
 export default class extends BaseAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected vcf: any
+  protected vcf: TabixIndexedFile
+
+  protected filehandle: GenericFilehandle
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected parser: any
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: {
-    vcfGzLocation: IFileLocation
-    index: {
-      indexType: string
-      location: IFileLocation
-    }
-  }) {
+  public constructor(config: Config) {
     super()
-    const {
-      vcfGzLocation,
-      index: { location: indexLocation, indexType },
-    } = config
+    const { vcfGzLocation, index } = config
+    const { location, indexType } = index
 
-    const vcfGzOpts: {
-      filehandle: GenericFilehandle
-      tbiFilehandle?: GenericFilehandle
-      csiFilehandle?: GenericFilehandle
-      chunkCacheSize?: number
-    } = {
-      filehandle: openLocation(vcfGzLocation),
+    this.filehandle = openLocation(vcfGzLocation)
+    this.vcf = new TabixIndexedFile({
+      filehandle: this.filehandle,
+      csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
+      tbiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
-    }
+      renameRefSeqs: (n: string) => n,
+    })
 
-    const indexFile = openLocation(indexLocation)
-    if (indexType === 'CSI') {
-      vcfGzOpts.csiFilehandle = indexFile
-    } else {
-      vcfGzOpts.tbiFilehandle = indexFile
-    }
-    this.vcf = new TabixIndexedFile(vcfGzOpts)
     this.parser = this.vcf
       .getHeader()
       .then((header: string) => new VcfParser({ header }))
@@ -104,9 +96,12 @@ export default class extends BaseAdapter {
   ) {
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       const bytes = await this.bytesForRegions(regions)
-      const stat = await this.vcf.filehandle.stat()
+      const stat = await this.filehandle.stat()
       let pct = Math.round((bytes / stat.size) * 100)
-      if (pct > 100) pct = 100 // 💩
+      if (pct > 100) {
+        // this is just a bad estimate, make 100% if it goes over
+        pct = 100
+      }
       if (pct > 60) {
         console.warn(
           `getFeaturesInMultipleRegions fetching ${pct}% of VCF file, but whole-file streaming not yet implemented`,
@@ -124,6 +119,7 @@ export default class extends BaseAdapter {
   private async bytesForRegions(regions: IRegion[]) {
     const blockResults = await Promise.all(
       regions.map(region =>
+        // @ts-ignore
         this.vcf.index.blocksForRange(region.refName, region.start, region.end),
       ),
     )

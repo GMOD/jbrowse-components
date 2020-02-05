@@ -1,8 +1,8 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import Color from 'color'
-import WiggleBaseRenderer from '../WiggleBaseRenderer'
 import { getOrigin, getScale } from '../util'
+import WiggleBaseRenderer from '../WiggleBaseRenderer'
 
 export default class XYPlotRenderer extends WiggleBaseRenderer {
   draw(ctx, props) {
@@ -15,6 +15,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
       config,
       horizontallyFlipped,
     } = props
+
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')

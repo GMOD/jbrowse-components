@@ -23,3 +23,9 @@ Object {
   "type": "AlignmentsTrack",
 }
 `;
+
+exports[`plugin in a stock JBrowse 1`] = `
+Object {
+  "type": "BamAdapter",
+}
+`;

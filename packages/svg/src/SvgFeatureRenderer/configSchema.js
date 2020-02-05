@@ -72,7 +72,7 @@ export default ConfigurationSchema(
       model: types.enumeration('displayMode', [
         'normal',
         'compact',
-        'squish',
+        'reducedRepresentation',
         'collapse',
       ]),
       description: 'Alternative display modes',

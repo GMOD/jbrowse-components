@@ -321,6 +321,14 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     this.hardRowLimit = 3000
     this.maxHeightReached = false
 
+    this.displayMode = args.displayMode || 'normal'
+
+    // reduce the pitchY to try and pack the features tighter
+    if (this.displayMode === 'compact') {
+      this.pitchY = Math.round(this.pitchY / 4) || 1
+      this.pitchX = Math.round(this.pitchX / 4) || 1
+    }
+
     this.bitmap = []
     this.rectangles = new Map()
     this.maxHeight = Math.ceil((args.maxHeight || 10000) / this.pitchY)

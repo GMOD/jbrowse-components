@@ -159,4 +159,56 @@ describe('<ConfirmTrack />', () => {
     const adapter = guessAdapter(fileName, 'uri')
     expect(adapter.type).not.toBeUndefined()
   })
+
+  it('renders SNPCoverageTrack with a subadapter', () => {
+    const mockFunction = () => {}
+    const { container } = render(
+      <ConfirmTrack
+        session={session}
+        trackData={{ uri: 'test.bam' }}
+        trackName=""
+        setTrackName={mockFunction}
+        trackType="SNPCoverageTrack"
+        setTrackType={mockFunction}
+        trackAdapter={{
+          type: 'SNPCoverageAdapter',
+          subadapter: {
+            type: 'BamAdapter',
+            bamLocation: { uri: 'test.bam' },
+            index: { location: { uri: 'test.bam.bai' } },
+          },
+        }}
+        setTrackAdapter={mockFunction}
+        assemblyName=""
+        setAssemblyName={mockFunction}
+      />,
+    )
+    expect(container.firstChild).toMatchSnapshot()
+  })
+  it('SNPCoverageTrack mounts with uri', () => {
+    const mockFunction = jest.fn(() => {})
+    const { container } = render(
+      <ConfirmTrack
+        session={session}
+        trackData={{ uri: 'test.bam' }}
+        trackName=""
+        setTrackName={mockFunction}
+        trackType="SNPCoverageTrack"
+        setTrackType={mockFunction}
+        trackAdapter={{
+          type: 'SNPCoverageAdapter',
+          subadapter: {
+            type: 'BamAdapter',
+            bamLocation: { uri: 'test.bam' },
+            index: { location: { uri: 'test.bam.bai' } },
+          },
+        }}
+        setTrackAdapter={mockFunction}
+        assemblyName=""
+        setAssemblyName={mockFunction}
+      />,
+    )
+    expect(container.firstChild).toMatchSnapshot()
+    expect(mockFunction.mock.calls.length).toBe(2)
+  })
 })

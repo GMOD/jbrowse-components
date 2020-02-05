@@ -1,5 +1,6 @@
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import { getSnapshot, types } from 'mobx-state-tree'
+import MyPlugin from '.'
 
 const createMockTrackStateModel = track =>
   types
@@ -70,4 +71,15 @@ test('test selection in alignments track model with mock session', async () => {
 
   sessionModel.track.clearFeatureSelection()
   expect(sessionModel.selection).not.toBeTruthy()
+})
+
+test('plugin in a stock JBrowse', () => {
+  const { pluginManager } = createTestSession()
+  expect(() => pluginManager.addPlugin(new MyPlugin())).toThrow(
+    /JBrowse already configured, cannot add plugins/,
+  )
+
+  const BamAdapter = pluginManager.getAdapterType('BamAdapter')
+  const config = BamAdapter.configSchema.create({ type: 'BamAdapter' })
+  expect(getSnapshot(config)).toMatchSnapshot()
 })

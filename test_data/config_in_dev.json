@@ -46,6 +46,52 @@
   ],
   "tracks": [
     {
+      "type": "BasicTrack",
+      "trackId": "ncbi_refseq_analysis_set",
+      "name": "NCBI RefSeq analysis set",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Miscellaneous"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq_analysis_set/{refseq}/trackData.jsonz",
+        "refNames": [
+          "chr1",
+          "chr2",
+          "chr3",
+          "chr4",
+          "chr5",
+          "chr6",
+          "chr7",
+          "chr8",
+          "chr9",
+          "chr10",
+          "chr11",
+          "chr12",
+          "chr13",
+          "chr14",
+          "chr15",
+          "chr16",
+          "chr17",
+          "chr18",
+          "chr19",
+          "chr20",
+          "chr21",
+          "chr22",
+          "chr23",
+          "chrX",
+          "chrY",
+          "chrMT"
+        ]
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
       "type": "StructuralVariantChordTrack",
       "trackId": "human_chord_test",
       "name": "HG002 PacBio PBSV BND",
@@ -129,14 +175,6 @@
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.bai"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
@@ -166,6 +204,31 @@
         },
         "SvgFeatureRenderer": {
           "type": "SvgFeatureRenderer"
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "ngmlr_splitters_snp",
+      "name": "Breast cancer pacbio (NGMLR) splitters only (SNPCoverage)",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "SKBR3"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "BamAdapter",
+          "bamLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.splitters.bam"
+          },
+          "index": {
+            "location": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.splitters.bam.bai"
+            }
+          }
         }
       }
     },
@@ -429,6 +492,31 @@
         },
         "SvgFeatureRenderer": {
           "type": "SvgFeatureRenderer"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "nanopore_ultralong_snpcoverage",
+      "name": "HG002 Nanopore ultralong (BAM SNPCoverage)",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "GIAB"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "BamAdapter",
+          "bamLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam"
+          },
+          "index": {
+            "location": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.bai"
+            }
+          }
         }
       }
     },
@@ -827,6 +915,28 @@
         "index": {
           "location": {
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam.bai"
+          }
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "hg002_bai_whatshap_snpcoverage",
+      "name": "HG002 BAM nanopore+whatshap (SNPCoverage)",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "BamAdapter",
+          "bamLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam"
+          },
+          "index": {
+            "location": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam.bai"
+            }
           }
         }
       }
@@ -1240,6 +1350,31 @@
         "SvgFeatureRenderer": {
           "type": "SvgFeatureRenderer"
         }
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "gff3tabix_genes",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "name": "GFF3Tabix genes",
+      "category": [
+        "Miscellaneous"
+      ],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "test_data/volvox.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/volvox.sort.gff3.gz.tbi"
+          }
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
       }
     },
     {
@@ -1690,6 +1825,54 @@
         },
         "LinePlotRenderer": {
           "type": "LinePlotRenderer"
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "volvox-short-reads-snp-bam",
+      "name": "volvox-SNP (bam)",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "category": [
+        "Coverage"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "BamAdapter",
+          "bamLocation": {
+            "uri": "test_data/volvox-sorted.bam"
+          },
+          "index": {
+            "location": {
+              "uri": "test_data/volvox-sorted.bam.bai"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "volvox-short-reads-snp-cram",
+      "name": "volvox-SNP (cram)",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "category": [
+        "Coverage"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "CramAdapter",
+          "cramLocation": {
+            "uri": "test_data/volvox-sorted.cram"
+          },
+          "craiLocation": {
+            "uri": "test_data/volvox-sorted.cram.crai"
+          }
         }
       }
     }

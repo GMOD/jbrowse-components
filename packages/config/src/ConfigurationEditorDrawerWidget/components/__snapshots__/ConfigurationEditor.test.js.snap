@@ -1940,7 +1940,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   data-shrink="true"
                   for="callback-editor"
                 >
-                  alignmentColor
+                  color
                 </label>
                 <div
                   class="makeStyles-callbackEditor"

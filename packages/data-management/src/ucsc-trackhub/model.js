@@ -3,6 +3,7 @@ import {
   ConfigurationReference,
   readConfObject,
 } from '@gmod/jbrowse-core/configuration'
+import { getSession } from '@gmod/jbrowse-core/util'
 import { types } from 'mobx-state-tree'
 import configSchema from './configSchema'
 import {
@@ -28,6 +29,7 @@ export default function(pluginManager) {
             self.configuration,
             'hubTxtLocation',
           )
+          const session = getSession(self)
           fetchHubFile(hubFileLocation)
             .then(hubFile => {
               let genomesFileLocation
@@ -84,6 +86,10 @@ export default function(pluginManager) {
             })
             .catch(error => {
               console.error(error)
+              session.setSnackbarMessage(
+                `There was a problem connecting to the UCSC Track Hub "${self.name}". Please make sure you have entered a valid hub.txt file. The error that was thrown is: "${error}"`,
+              )
+              session.breakConnection(self.configuration)
             })
         },
       })),

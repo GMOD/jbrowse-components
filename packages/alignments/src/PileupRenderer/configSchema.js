@@ -4,7 +4,7 @@ import { types } from 'mobx-state-tree'
 export default ConfigurationSchema(
   'PileupRenderer',
   {
-    alignmentColor: {
+    color: {
       type: 'color',
       description: 'the color of each feature in a pileup alignment',
       defaultValue: `function(feature) {

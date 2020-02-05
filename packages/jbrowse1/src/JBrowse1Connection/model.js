@@ -2,6 +2,7 @@ import {
   ConfigurationReference,
   readConfObject,
 } from '@gmod/jbrowse-core/configuration'
+import { getSession } from '@gmod/jbrowse-core/util'
 import connectionModelFactory from '@gmod/jbrowse-core/BaseConnectionModel'
 import { types } from 'mobx-state-tree'
 import configSchema from './configSchema'
@@ -24,6 +25,7 @@ export default function(pluginManager) {
             self.configuration,
             'dataDirLocation',
           )
+          const session = getSession(self)
           fetchJb1(dataDirLocation)
             .then(config => {
               const assemblyName = readConfObject(
@@ -39,6 +41,10 @@ export default function(pluginManager) {
             })
             .catch(error => {
               console.error(error)
+              session.setSnackbarMessage(
+                `There was a problem connecting to the JBrowse 1 data directory "${self.name}. Please make sure you have entered a valid location. The error that was thrown is: "${error}"`,
+              )
+              session.breakConnection(self.configuration)
             })
         },
       })),

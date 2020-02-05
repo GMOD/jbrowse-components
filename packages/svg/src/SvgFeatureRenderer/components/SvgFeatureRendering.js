@@ -203,7 +203,6 @@ RenderedFeatureGlyph.propTypes = {
     addRect: ReactPropTypes.func.isRequired,
     getTotalHeight: ReactPropTypes.func.isRequired,
   }).isRequired,
-
   region: CommonPropTypes.Region.isRequired,
   displayMode: ReactPropTypes.string.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,

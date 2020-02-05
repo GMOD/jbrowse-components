@@ -64,7 +64,7 @@ export function layOut({
     horizontallyFlipped,
     config,
   })
-  if (displayMode !== 'squish') {
+  if (displayMode !== 'reducedRepresentation') {
     layOutSubfeatures({
       layout: subLayout,
       subfeatures: feature.get('subfeatures') || [],
@@ -80,7 +80,9 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
   const { layout, feature, bpPerPx, horizontallyFlipped, config } = args
   const displayMode = readConfObject(config, 'displayMode')
   const GlyphComponent =
-    displayMode === 'squish' ? Chevron : chooseGlyphComponent(feature)
+    displayMode === 'reducedRepresentation'
+      ? Chevron
+      : chooseGlyphComponent(feature)
   const parentFeature = feature.parent()
   let x = 0
   if (parentFeature)

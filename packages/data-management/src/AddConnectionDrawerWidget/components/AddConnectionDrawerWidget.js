@@ -93,7 +93,8 @@ function AddConnectionDrawerWidget({ model }) {
   }
 
   function handleFinish() {
-    session.addConnectionConf(configModel)
+    const connectionConf = session.addConnectionConf(configModel)
+    session.makeConnection(connectionConf)
     session.hideDrawerWidget(model)
   }
 

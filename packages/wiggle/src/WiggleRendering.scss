@@ -19,4 +19,14 @@
     top: 0px;
     position: absolute;
   }
+
+  table, th, td {
+    font-size: 10px;
+    border: 1px solid black;
+    border-collapse: collapse
+  }
+
+  #smallInfo {
+    font-size: 8px;  
+  }
 }
