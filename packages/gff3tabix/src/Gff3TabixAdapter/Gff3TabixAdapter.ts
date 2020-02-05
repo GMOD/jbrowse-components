@@ -8,7 +8,6 @@ import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
 import gff from '@gmod/gff'
 import { Observer } from 'rxjs'
-import crc32 from 'buffer-crc32'
 
 type Strand = '+' | '-' | '.' | '?'
 interface FeatureLoc {
@@ -94,7 +93,6 @@ export default class extends BaseAdapter {
           lines.push(this.parseLine(metadata.columnNumbers, line, fileOffset))
         },
       )
-      console.log(query, allowRedispatch, originalQuery, lines)
       if (allowRedispatch && lines.length) {
         let minStart = Infinity
         let maxEnd = -Infinity
@@ -113,9 +111,9 @@ export default class extends BaseAdapter {
           }
         })
         if (maxEnd > query.end || minStart < query.start) {
-          console.log(
-            `redispatching ${query.start}-${query.end} => ${minStart}-${maxEnd}`,
-          )
+          // console.log(
+          //   `redispatching ${query.start}-${query.end} => ${minStart}-${maxEnd}`,
+          // )
           // make a new feature callback to only return top-level features
           // in the original query range
 
@@ -160,9 +158,6 @@ export default class extends BaseAdapter {
               originalQuery.end,
             )
           ) {
-            if (f.get('name') === 'LOC551893') {
-              console.log(query, allowRedispatch, originalQuery, f)
-            }
             observer.next(f)
           }
         }),
