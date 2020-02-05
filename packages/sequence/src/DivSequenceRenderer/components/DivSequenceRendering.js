@@ -44,7 +44,13 @@ function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
     const seqString = seq.get('seq')
     if (!seqString || seqString.length !== seq.get('end') - seq.get('start'))
       throw new Error(
-        `feature ${seq.id()} did not contain a valid \`seq\` attribute`,
+        `feature ${seq.id()} did not contain a valid \`seq\` attribute ${
+          seqString
+            ? `seq length ${seq.get('end') - seq.get('start')} did not match ${
+                seqString.length
+              }`
+            : 'seq did not exist'
+        }`,
       )
     if (seqString) s += seq.get('seq')
   }
