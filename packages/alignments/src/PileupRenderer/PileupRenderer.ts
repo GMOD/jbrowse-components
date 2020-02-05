@@ -1,7 +1,7 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import BoxRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { bpToPx, iterMap } from '@gmod/jbrowse-core/util'
+import { bpSpanPx, iterMap } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import {
   createCanvas,
@@ -30,8 +30,8 @@ interface PileupImageData {
 }
 interface LayoutRecord {
   feature: Feature
-  startPx: number
-  endPx: number
+  leftPx: number
+  rightPx: number
   topPx: number
   heightPx: number
 }
@@ -45,13 +45,8 @@ export default class extends BoxRendererType {
     region: IRegion,
     horizontallyFlipped = false,
   ): LayoutRecord | null {
-    const startPx = bpToPx(
+    const [leftPx, rightPx] = bpSpanPx(
       feature.get('start'),
-      region,
-      bpPerPx,
-      horizontallyFlipped,
-    )
-    const endPx = bpToPx(
       feature.get('end'),
       region,
       bpPerPx,
@@ -81,8 +76,8 @@ export default class extends BoxRendererType {
 
     return {
       feature,
-      startPx,
-      endPx,
+      leftPx,
+      rightPx,
       topPx: displayMode === 'collapse' ? 0 : topPx,
       heightPx,
     }
@@ -100,8 +95,6 @@ export default class extends BoxRendererType {
     } = props
     if (!layout) throw new Error(`layout required`)
     if (!layout.addRect) throw new Error('invalid layout object')
-    const getCoord = (coord: number): number =>
-      bpToPx(coord, region, bpPerPx, horizontallyFlipped)
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const w = Math.max(minFeatWidth, pxPerBp)
@@ -139,9 +132,9 @@ export default class extends BoxRendererType {
       if (feat === null) {
         return
       }
-      const { feature, startPx, endPx, topPx, heightPx } = feat
+      const { feature, leftPx, rightPx, topPx, heightPx } = feat
       ctx.fillStyle = readConfObject(config, 'color', [feature])
-      ctx.fillRect(startPx, topPx, Math.max(endPx - startPx, 1.5), heightPx)
+      ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
       const mismatches: Mismatch[] =
         bpPerPx < 10 ? feature.get('mismatches') : feature.get('skips_and_dels')
       if (mismatches) {
