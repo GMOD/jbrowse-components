@@ -149,13 +149,16 @@ export default class extends BoxRendererType {
         }
         for (let i = 0; i < mismatches.length; i += 1) {
           const mismatch = mismatches[i]
-          const start = feature.get('start') + mismatch.start
-          const end = start + mismatch.length
-          const mismatchStartPx = getCoord(start)
-          const mismatchEndPx = getCoord(end)
-          const widthPx = Math.max(
+          const [mismatchLeftPx, mismatchRightPx] = bpSpanPx(
+            feature.get('start') + mismatch.start,
+            feature.get('start') + mismatch.start + mismatch.length,
+            region,
+            bpPerPx,
+            horizontallyFlipped,
+          )
+          const mismatchWidthPx = Math.max(
             minFeatWidth,
-            Math.abs(mismatchStartPx - mismatchEndPx),
+            Math.abs(mismatchLeftPx - mismatchRightPx),
           )
 
           if (mismatch.type === 'mismatch' || mismatch.type === 'deletion') {
@@ -163,26 +166,32 @@ export default class extends BoxRendererType {
               colorForBase[
                 mismatch.type === 'deletion' ? 'deletion' : mismatch.base
               ] || '#888'
-            ctx.fillRect(mismatchStartPx, topPx, widthPx, heightPx)
+            ctx.fillRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
 
-            if (widthPx >= charSize.width && heightPx >= charSize.height - 5) {
+            if (
+              mismatchWidthPx >= charSize.width &&
+              heightPx >= charSize.height - 5
+            ) {
               ctx.fillStyle = mismatch.type === 'deletion' ? 'white' : 'black'
               ctx.fillText(
                 mismatch.base,
-                mismatchStartPx + (widthPx - charSize.width) / 2 + 1,
+                mismatchLeftPx + (mismatchWidthPx - charSize.width) / 2 + 1,
                 topPx + heightPx,
               )
             }
           } else if (mismatch.type === 'insertion') {
             ctx.fillStyle = 'purple'
-            const pos = mismatchStartPx - 1
+            const pos = mismatchLeftPx - 1
             ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
             ctx.fillRect(pos - w, topPx, w * 3, 1)
             ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-            if (widthPx >= charSize.width && heightPx >= charSize.height - 2) {
+            if (
+              mismatchWidthPx >= charSize.width &&
+              heightPx >= charSize.height - 2
+            ) {
               ctx.fillText(
                 `(${mismatch.base})`,
-                mismatchStartPx + 2,
+                mismatchLeftPx + 2,
                 topPx + heightPx,
               )
             }
@@ -191,21 +200,29 @@ export default class extends BoxRendererType {
             mismatch.type === 'softclip'
           ) {
             ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
-            const pos = mismatchStartPx - 1
+            const pos = mismatchLeftPx - 1
             ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
             ctx.fillRect(pos - w, topPx, w * 3, 1)
             ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-            if (widthPx >= charSize.width && heightPx >= charSize.height - 2) {
+            if (
+              mismatchWidthPx >= charSize.width &&
+              heightPx >= charSize.height - 2
+            ) {
               ctx.fillText(
                 `(${mismatch.base})`,
-                mismatchStartPx + 2,
+                mismatchLeftPx + 2,
                 topPx + heightPx,
               )
             }
           } else if (mismatch.type === 'skip') {
-            ctx.clearRect(mismatchStartPx, topPx, widthPx, heightPx)
+            ctx.clearRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
             ctx.fillStyle = '#333'
-            ctx.fillRect(mismatchStartPx, topPx + heightPx / 2, widthPx, 2)
+            ctx.fillRect(
+              mismatchLeftPx,
+              topPx + heightPx / 2,
+              mismatchWidthPx,
+              2,
+            )
           }
         }
       }
