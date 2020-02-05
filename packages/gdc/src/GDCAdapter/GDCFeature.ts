@@ -17,7 +17,7 @@ export default class GDCFeature implements Feature {
 
   private data: FeatureData
 
-  private _id: string
+  private uniqueId: string
 
   private featureType: string
 
@@ -33,7 +33,7 @@ export default class GDCFeature implements Feature {
     this.parser = args.parser
     this.featureType = args.featureType ? args.featureType : 'ssm'
     this.data = this.dataFromGDCObject(this.gdcObject, this.featureType)
-    this._id = args.id
+    this.uniqueId = args.id
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,7 +58,7 @@ export default class GDCFeature implements Feature {
   }
 
   id(): string {
-    return this._id
+    return this.uniqueId
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -87,7 +87,7 @@ export default class GDCFeature implements Feature {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   toJSON(): any {
     return {
-      uniqueId: this._id,
+      uniqueId: this.uniqueId,
       ...this.data,
       ...this.gdcObject,
     }
