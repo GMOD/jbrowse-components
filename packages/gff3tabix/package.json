@@ -1,21 +1,20 @@
 {
-  "name": "@gmod/jbrowse-plugin-variants",
+  "name": "@gmod/jbrowse-plugin-gff3tabix",
   "version": "2.0.0",
-  "description": "JBrowse 2 variant adapters, tracks, etc.",
+  "description": "JBrowse 2 gff3tabix.",
   "main": "src/index.js",
   "scripts": {
-    "test": "cd ../..; jest packages/variants"
+    "test": "cd ../..; jest packages/gff3tabix"
   },
-  "author": "Garrett Stevens",
+  "author": "Colin Diesh",
   "license": "MIT",
   "dependencies": {
+    "@gmod/gff": "^1.1.2",
     "@gmod/tabix": "^1.4.3",
-    "@gmod/vcf": "^4.0.1",
     "generic-filehandle": "^2.0.0"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",
-    "@gmod/jbrowse-plugin-alignments": "^2.0.0",
     "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
     "@material-ui/core": "^4.0.0",
     "mobx-react": "^6.0.0",

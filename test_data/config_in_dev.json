@@ -497,6 +497,31 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "nanopore_ultralong_snpcoverage",
+      "name": "HG002 Nanopore ultralong (BAM SNPCoverage)",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "GIAB"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "BamAdapter",
+          "bamLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam"
+          },
+          "index": {
+            "location": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.bai"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "nanopore_ultralong",
       "name": "HG002 Nanopore ultralong (BAM)",
       "assemblyNames": [
@@ -890,6 +915,28 @@
         "index": {
           "location": {
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam.bai"
+          }
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "hg002_bai_whatshap_snpcoverage",
+      "name": "HG002 BAM nanopore+whatshap (SNPCoverage)",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "BamAdapter",
+          "bamLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam"
+          },
+          "index": {
+            "location": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam.bai"
+            }
           }
         }
       }
@@ -1303,6 +1350,31 @@
         "SvgFeatureRenderer": {
           "type": "SvgFeatureRenderer"
         }
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "gff3tabix_genes",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "name": "GFF3Tabix genes",
+      "category": [
+        "Miscellaneous"
+      ],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "test_data/volvox.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/volvox.sort.gff3.gz.tbi"
+          }
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
       }
     },
     {

@@ -4,6 +4,7 @@ import CircularView from '@gmod/jbrowse-plugin-circular-view'
 import Config from '@gmod/jbrowse-plugin-config'
 import DataManagement from '@gmod/jbrowse-plugin-data-management'
 import Filtering from '@gmod/jbrowse-plugin-filtering'
+import Gff3Tabix from '@gmod/jbrowse-plugin-gff3tabix'
 import JBrowse1 from '@gmod/jbrowse-plugin-jbrowse1'
 import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 import Lollipop from '@gmod/jbrowse-plugin-lollipop'
@@ -25,6 +26,7 @@ export default [
   Config,
   DataManagement,
   Filtering,
+  Gff3Tabix,
   JBrowse1,
   LinearGenomeView,
   Lollipop,

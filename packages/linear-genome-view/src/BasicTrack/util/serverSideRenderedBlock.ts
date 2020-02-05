@@ -41,7 +41,7 @@ const blockState = types
     filled: false,
     data: undefined as any,
     html: '',
-    error: undefined as string | undefined,
+    error: undefined as Error | undefined,
     message: undefined as string | undefined,
     maxHeightReached: false,
     ReactComponent: ServerSideRenderedBlockContent,
@@ -111,7 +111,7 @@ const blockState = types
         self.renderProps = renderProps
         renderInProgress = undefined
       },
-      setError(error: string) {
+      setError(error: Error) {
         console.error(error)
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
@@ -165,62 +165,67 @@ export type BlockStateModel = typeof blockState
 // not using a flow for this, because the flow doesn't
 // work with autorun
 function renderBlockData(self: Instance<BlockStateModel>) {
-  const { assemblyData, rpcManager } = getSession(self) as any
-  const track = getParent(self, 2)
-  const assemblyNames = getTrackAssemblyNames(track)
-  let cannotBeRenderedReason
-  if (!assemblyNames.includes(self.region.assemblyName)) {
-    let matchFound = false
-    assemblyNames.forEach((assemblyName: string) => {
-      const trackAssemblyData =
-        (assemblyData && assemblyData.get(assemblyName)) || {}
-      const trackAssemblyAliases = trackAssemblyData.aliases || []
-      if (trackAssemblyAliases.includes(self.region.assemblyName))
-        matchFound = true
-    })
-    if (!matchFound)
-      cannotBeRenderedReason = `region assembly (${self.region.assemblyName}) does not match track assemblies (${assemblyNames})`
-  }
-  if (!cannotBeRenderedReason)
-    cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
-  const trackAssemblyData =
-    (assemblyData && assemblyData.get(self.region.assemblyName)) || {}
-  const { renderProps } = track
-  const { rendererType } = track
-  const { config } = renderProps
-  // This line is to trigger the mobx reaction when the config changes
-  // It won't trigger the reaction if it doesn't think we're accessing it
-  readConfObject(config)
+  try {
+    const { assemblyData, rpcManager } = getSession(self) as any
+    const track = getParent(self, 2)
+    const assemblyNames = getTrackAssemblyNames(track)
+    let cannotBeRenderedReason
+    if (!assemblyNames.includes(self.region.assemblyName)) {
+      let matchFound = false
+      assemblyNames.forEach((assemblyName: string) => {
+        const trackAssemblyData =
+          (assemblyData && assemblyData.get(assemblyName)) || {}
+        const trackAssemblyAliases = trackAssemblyData.aliases || []
+        if (trackAssemblyAliases.includes(self.region.assemblyName))
+          matchFound = true
+      })
+      if (!matchFound)
+        cannotBeRenderedReason = `region assembly (${self.region.assemblyName}) does not match track assemblies (${assemblyNames})`
+    }
+    if (!cannotBeRenderedReason)
+      cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
+    const trackAssemblyData =
+      (assemblyData && assemblyData.get(self.region.assemblyName)) || {}
+    const { renderProps } = track
+    const { rendererType } = track
+    const { config } = renderProps
+    // This line is to trigger the mobx reaction when the config changes
+    // It won't trigger the reaction if it doesn't think we're accessing it
+    readConfObject(config)
 
-  let sequenceConfig: { type?: string } = {}
-  if (trackAssemblyData.sequence) {
-    sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
-  }
-
-  return {
-    rendererType,
-    rpcManager,
-    renderProps,
-    cannotBeRenderedReason,
-    trackError: track.error,
-    renderArgs: {
-      assemblyName: self.region.assemblyName,
-      region: self.region,
-      adapterType: track.adapterType.name,
-      adapterConfig: getConf(track, 'adapter'),
-      sequenceAdapterType: sequenceConfig.type,
-      sequenceAdapterConfig: sequenceConfig,
-      rendererType: rendererType.name,
+    let sequenceConfig: { type?: string } = {}
+    if (trackAssemblyData.sequence) {
+      sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
+    }
+    return {
+      rendererType,
+      rpcManager,
       renderProps,
-      sessionId: track.id,
-      blockKey: self.key,
-      timeout: 1000000, // 10000,
-    },
+      cannotBeRenderedReason,
+      trackError: track.error,
+      renderArgs: {
+        assemblyName: self.region.assemblyName,
+        region: self.region,
+        adapterType: track.adapterType.name,
+        adapterConfig: getConf(track, 'adapter'),
+        sequenceAdapterType: sequenceConfig.type,
+        sequenceAdapterConfig: sequenceConfig,
+        rendererType: rendererType.name,
+        renderProps,
+        sessionId: track.id,
+        blockKey: self.key,
+        timeout: 1000000, // 10000,
+      },
+    }
+  } catch (error) {
+    return {
+      trackError: error,
+    }
   }
 }
 
 interface RenderProps {
-  trackError: string
+  trackError: Error
   rendererType: any
   renderProps: { [key: string]: any }
   rpcManager: { call: Function }
@@ -228,9 +233,13 @@ interface RenderProps {
   renderArgs: { [key: string]: any }
 }
 
+interface ErrorProps {
+  trackError: string
+}
+
 async function renderBlockEffect(
   self: Instance<BlockStateModel>,
-  props: RenderProps,
+  props: RenderProps | ErrorProps,
   allowRefetch = true,
 ) {
   const {
@@ -240,8 +249,7 @@ async function renderBlockEffect(
     rpcManager,
     cannotBeRenderedReason,
     renderArgs,
-  } = props
-  // console.log(getContainingView(self).rendererType)
+  } = props as RenderProps
   if (!isAlive(self)) return
 
   if (trackError) {
