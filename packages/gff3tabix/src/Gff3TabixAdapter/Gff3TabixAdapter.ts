@@ -1,4 +1,4 @@
-/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-underscore-dangle,@typescript-eslint/no-explicit-any */
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
@@ -226,7 +226,7 @@ export default class extends BaseAdapter {
       }
       if (data.attributes[a] !== null) {
         f[b] = data.attributes[a]
-        if (f[b].length == 1) {
+        if (f[b].length === 1) {
           // eslint-disable-next-line prefer-destructuring
           f[b] = f[b][0]
         }
