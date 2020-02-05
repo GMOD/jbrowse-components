@@ -1,7 +1,7 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import BoxRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { bpToPx, bpSpanPx, iterMap } from '@gmod/jbrowse-core/util'
+import { bpSpanPx, iterMap } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import {
   createCanvas,
@@ -95,8 +95,6 @@ export default class extends BoxRendererType {
     } = props
     if (!layout) throw new Error(`layout required`)
     if (!layout.addRect) throw new Error('invalid layout object')
-    const getCoord = (coord: number): number =>
-      bpToPx(coord, region, bpPerPx, horizontallyFlipped)
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const w = Math.max(minFeatWidth, pxPerBp)
