@@ -76,7 +76,11 @@ export default class extends BaseAdapter {
 
         switch (this.featureType) {
           case 'ssm': {
-            query = this.createSSMQuery(refName.replace(/chr/, ''), start, end)
+            query = this.createMutationQuery(
+              refName.replace(/chr/, ''),
+              start,
+              end,
+            )
             idField = 'ssm_id'
             break
           }
@@ -126,7 +130,7 @@ export default class extends BaseAdapter {
    * @param start start position
    * @param end end position
    */
-  private createSSMQuery(ref: string, start: number, end: number) {
+  private createMutationQuery(ref: string, start: number, end: number) {
     const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { features: ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { start_position end_position mutation_type cosmic_id reference_allele ncbi_build score genomic_dna_change mutation_subtype ssm_id chromosome } } } } } } }`
     // const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { start_position end_position mutation_type cosmic_id reference_allele ncbi_build score genomic_dna_change mutation_subtype ssm_id chromosome consequence { hits { edges { node { transcript { is_canonical annotation { vep_impact polyphen_impact polyphen_score sift_score sift_impact hgvsc } consequence_type gene { gene_id symbol gene_strand } aa_change transcript_id } id } } } } } } } } } } }`
     const combinedFilters = this.getFilterQuery(ref, start, end)
@@ -195,16 +199,40 @@ export default class extends BaseAdapter {
    * @param end end position
    */
   private getLocationFilters(chr: string, start: number, end: number) {
-    const locationFilter: any = {
-      op: 'and',
-      content: [
-        { op: '>=', content: { field: 'ssms.start_position', value: start } },
-        { op: '<=', content: { field: 'ssms.end_position', value: end } },
-        {
-          op: '=',
-          content: { field: 'ssms.chromosome', value: [`chr${chr}`] },
-        },
-      ],
+    let locationFilter: any
+
+    switch (this.featureType) {
+      case 'ssm': {
+        locationFilter = {
+          op: 'and',
+          content: [
+            {
+              op: '>=',
+              content: { field: 'ssms.start_position', value: start },
+            },
+            { op: '<=', content: { field: 'ssms.end_position', value: end } },
+            {
+              op: '=',
+              content: { field: 'ssms.chromosome', value: [`chr${chr}`] },
+            },
+          ],
+        }
+        break
+      }
+      case 'gene': {
+        locationFilter = {
+          op: 'and',
+          content: [
+            { op: '>=', content: { field: 'genes.gene_start', value: start } },
+            { op: '<=', content: { field: 'genes.gene_end', value: end } },
+            {
+              op: '=',
+              content: { field: 'genes.gene_chromosome', value: [chr] },
+            },
+          ],
+        }
+        break
+      }
     }
 
     if (this.cases && this.cases.length > 0) {
