@@ -158,7 +158,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "ngmlr",
-      "name": "Breast cancer pacbio (NGMLR)",
+      "name": "SKBR3 pacbio (NGMLR)",
       "assemblyNames": [
         "hg19"
       ],
@@ -180,7 +180,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "ngmlr_splitters",
-      "name": "Breast cancer pacbio (NGMLR) splitters only",
+      "name": "SKBR3 pacbio (NGMLR) splitters only",
       "assemblyNames": [
         "hg19"
       ],
@@ -210,7 +210,7 @@
     {
       "type": "SNPCoverageTrack",
       "trackId": "ngmlr_splitters_snp",
-      "name": "Breast cancer pacbio (NGMLR) splitters only (SNPCoverage)",
+      "name": "SKBR3 pacbio (NGMLR) splitters only (SNPCoverage)",
       "assemblyNames": [
         "hg19"
       ],
@@ -235,7 +235,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "ngmlr_downsample",
-      "name": "Breast cancer pacbio (NGMLR) 0.3 downsample",
+      "name": "SKBR3 pacbio (NGMLR) 0.3 downsample",
       "assemblyNames": [
         "hg19"
       ],
@@ -265,7 +265,7 @@
     {
       "type": "WiggleTrack",
       "trackId": "ngmlr_cov",
-      "name": "Breast cancer pacbio coverage (NGMLR)",
+      "name": "SKBR3 pacbio coverage (NGMLR)",
       "assemblyNames": [
         "hg19"
       ],
@@ -293,7 +293,10 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "illumina_hg002",
-      "name": "HG002.hs37d5.2x250",
+      "name": "HG002 Illumina hs37d5.2x250",
+      "category": [
+        "GIAB"
+      ],
       "assemblyNames": [
         "hg19"
       ],
@@ -320,13 +323,12 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "pacbio_hg002",
-      "name": "HG002.hs37d5.11kb",
+      "name": "HG002 Pacbio hs37d5.11kb",
+      "category": [
+        "GIAB"
+      ],
       "assemblyNames": [
         "hg19"
-      ],
-      "category": [
-        "PacBio",
-        "BAM"
       ],
       "adapter": {
         "type": "BamAdapter",
@@ -386,8 +388,7 @@
         "hg19"
       ],
       "category": [
-        "PacBio",
-        "BAM"
+        "1000 genomes"
       ],
       "adapter": {
         "type": "BamAdapter",
@@ -660,7 +661,7 @@
     {
       "type": "VariantTrack",
       "trackId": "breast_cancer_sniffles_hg19",
-      "name": "Breast cancer pacbio (sniffles VCF)",
+      "name": "SKBR3 pacbio (sniffles VCF)",
       "assemblyNames": [
         "hg19"
       ],
@@ -720,13 +721,12 @@
     {
       "type": "VariantTrack",
       "trackId": "pacbio_sv_vcf",
-      "name": "hs37d5.HG002-SequelII-CCS",
+      "name": "HG002 Pacbio SV (VCF)",
       "assemblyNames": [
         "hg19"
       ],
       "category": [
-        "PacBio",
-        "VCF"
+        "GIAB"
       ],
       "adapter": {
         "type": "VcfTabixAdapter",
@@ -751,13 +751,12 @@
     {
       "type": "VariantTrack",
       "trackId": "chm_variants",
-      "name": "chm.full.37d5.vcf.gz",
+      "name": "CHM Pacbio SV (VCF)",
       "assemblyNames": [
         "hg19"
       ],
       "category": [
-        "PacBio",
-        "VCF"
+        "GIAB"
       ],
       "adapter": {
         "type": "VcfTabixAdapter",
@@ -890,6 +889,9 @@
       "assemblyNames": [
         "hg19"
       ],
+      "category": [
+        "GIAB"
+      ],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -902,10 +904,36 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "hg002_cram_snpcoverage",
+      "name": "HG002 CRAM nanopore+whatshap",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "GIAB"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "CramAdapter",
+          "cramLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram"
+          },
+          "craiLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.crai"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "hg002_bai",
       "name": "HG002 BAM nanopore+whatshap",
       "assemblyNames": [
         "hg19"
+      ],
+      "category": [
+        "GIAB"
       ],
       "adapter": {
         "type": "BamAdapter",
@@ -926,6 +954,9 @@
       "assemblyNames": [
         "hg19"
       ],
+      "category": [
+        "GIAB"
+      ],
       "adapter": {
         "type": "SNPCoverageAdapter",
         "subadapter": {
@@ -944,9 +975,12 @@
     {
       "type": "VariantTrack",
       "trackId": "hg002_vcf_tbi",
-      "name": "HG002 VCF+TBI haplotype",
+      "name": "HG002 trio whatshap VCF+TBI haplotype",
       "assemblyNames": [
         "hg19"
+      ],
+      "category": [
+        "GIAB"
       ],
       "adapter": {
         "type": "VcfTabixAdapter",
@@ -963,9 +997,12 @@
     {
       "type": "VariantTrack",
       "trackId": "hg002_vcf_csi",
-      "name": "HG002 VCF+CSI haplotype",
+      "name": "HG002 trio whatshap VCF+CSI haplotype",
       "assemblyNames": [
         "hg19"
+      ],
+      "category": [
+        "GIAB"
       ],
       "adapter": {
         "type": "VcfTabixAdapter",
