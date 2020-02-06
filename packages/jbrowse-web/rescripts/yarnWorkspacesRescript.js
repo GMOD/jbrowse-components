@@ -8,7 +8,7 @@ const spawn = require('cross-spawn')
 // eslint-disable-next-line import/no-extraneous-dependencies
 const root = require('find-yarn-workspace-root')()
 
-const pgks = spawn.sync('yarn', ['workspaces', 'info', '--json'])
+const pgks = spawn.sync('yarn', ['--json', 'workspaces', 'info'])
 const output = JSON.parse(pgks.output[1].toString())
 const packages = JSON.parse(output.data)
 
