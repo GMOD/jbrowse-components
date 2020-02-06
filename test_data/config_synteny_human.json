@@ -117,7 +117,7 @@
         "type": "ReferenceSequenceTrack",
         "trackId": "long_read_seq",
         "adapter": {
-          "type": "FromConfigAdapter",
+          "type": "FromConfigSequence",
           "features": [
             {
               "refName": "m141225_111357_00118_c100750772550000001823151707081511_s1_p0/77245/0_16406",
