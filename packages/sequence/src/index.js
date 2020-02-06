@@ -15,6 +15,10 @@ import {
   configSchema as indexedFastaAdapterConfigSchema,
 } from './IndexedFastaAdapter'
 import {
+  AdapterClass as FromConfigSequenceAdapterClass,
+  configSchema as fromConfigSequenceAdapterConfigSchema,
+} from './FromConfigSequence'
+import {
   AdapterClass as ChromSizesAdapterClass,
   configSchema as chromSizesAdapterConfigSchema,
 } from './ChromSizesAdapter'
@@ -48,6 +52,15 @@ export default class extends Plugin {
           name: 'ChromSizesAdapter',
           configSchema: chromSizesAdapterConfigSchema,
           AdapterClass: ChromSizesAdapterClass,
+        }),
+    )
+
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'FromConfigSequence',
+          configSchema: fromConfigSequenceAdapterConfigSchema,
+          AdapterClass: FromConfigSequenceAdapterClass,
         }),
     )
 
