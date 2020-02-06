@@ -176,19 +176,14 @@ export default class extends BaseAdapter {
 
       rawData.forEach((rd, idx) => {
         const { uniqueId } = rd
-        if (idx < rawData.length - 1) {
-          rawData[idx + 1].parentUniqueId = uniqueId
-        }
-        let start = parseInt(rd.start, 10)
-        let end = parseInt(rd.end, 10)
-        if (start > end) [start, end] = [end, start]
+        if (idx < rawData.length - 1) rawData[idx + 1].parentUniqueId = uniqueId
         seenFeatures[uniqueId] = {
           data: {
             ...rd,
             uniqueId,
             refName,
-            start,
-            end,
+            start: parseInt(rd.start, 10),
+            end: parseInt(rd.end, 10),
             strand: parseInt(rd.strand, 10) || 0,
           },
         }
