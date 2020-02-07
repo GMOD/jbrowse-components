@@ -63,8 +63,8 @@ function makeUTRs(parent, subparts) {
     } else if (/exon/i.test(type)) {
       exons.push(subparts[i])
     } else if (isUTR(subparts[i])) {
-      haveLeftUTR = subparts[i].get('start') == parent.get('start')
-      haveRightUTR = subparts[i].get('end') == parent.get('end')
+      haveLeftUTR = subparts[i].get('start') === parent.get('start')
+      haveRightUTR = subparts[i].get('end') === parent.get('end')
     }
   }
 
