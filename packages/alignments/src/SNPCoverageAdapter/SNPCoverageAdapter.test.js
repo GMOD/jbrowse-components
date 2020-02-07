@@ -44,9 +44,6 @@ test('SNP adapter can fetch features from volvox.bam using bam subadapter', asyn
   expect(featuresJsonArray.length).toEqual(20000)
   expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
 
-  expect(await adapter.refIdToName(0)).toBe('ctgA')
-  expect(await adapter.refIdToName(1)).toBe(undefined)
-
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
 })
 
@@ -226,10 +223,6 @@ test('SNP adapter can fetch features from volvox.cram using cram subadapter', as
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
   expect(featuresJsonArray.length).toEqual(20000)
   expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
-
-  expect(await adapter.refIdToName(0)).toBe('ctgA')
-  expect(await adapter.refIdToName(1)).toBe(undefined)
-
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
 })
 

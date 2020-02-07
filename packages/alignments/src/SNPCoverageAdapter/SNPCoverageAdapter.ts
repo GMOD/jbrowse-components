@@ -2,7 +2,6 @@ import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { IRegion, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { Observable, Observer } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
@@ -29,6 +28,37 @@ interface StatsRegion {
   start: number
   end: number
   bpPerPx?: number
+}
+
+function generateInfoList(table: NestedFrequencyTable) {
+  const infoList = []
+  const overallScore = table.total()
+
+  // log info w/ base name, total score, and strand breakdown
+  // eslint-disable-next-line guard-for-in
+  for (const base in table.categories) {
+    const strands = table.categories[base].categories as {
+      [key: string]: number
+    }
+    const score = Object.values(strands).reduce((a, b) => a + b, 0)
+    infoList.push({
+      base,
+      score,
+      strands,
+    })
+  }
+
+  // sort so higher scores get drawn last, reference always first
+  infoList.sort((a, b) =>
+    a.score < b.score || b.base === 'reference' ? 1 : -1,
+  )
+
+  // add overall total to end
+  infoList.push({
+    base: 'total',
+    score: overallScore,
+  })
+  return infoList
 }
 
 export default class extends BaseAdapter {
@@ -79,10 +109,7 @@ export default class extends BaseAdapter {
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Promise<FeatureStats>} see statsUtil.ts
    */
-  public getRegionStats(
-    region: INoAssemblyRegion,
-    opts: BaseOptions = {},
-  ): Promise<FeatureStats> {
+  public getRegionStats(region: INoAssemblyRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
     const { bpPerPx, signal } = opts
     return this.statsCache.get(
@@ -101,7 +128,7 @@ export default class extends BaseAdapter {
   public async getMultiRegionStats(
     regions: INoAssemblyRegion[] = [],
     opts: BaseOptions = {},
-  ): Promise<FeatureStats> {
+  ) {
     if (!regions.length) {
       return blankStats()
     }
@@ -145,37 +172,35 @@ export default class extends BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
 
-  getFeatures(region: IRegion, opts: BaseOptions = {}): Observable<Feature> {
-    return ObservableCreate(
-      async (observer: Observer<Feature>): Promise<void> => {
-        const features = await this.subadapter
-          .getFeatures(region, opts)
-          .pipe(toArray())
-          .toPromise()
+  getFeatures(region: IRegion, opts: BaseOptions = {}) {
+    return ObservableCreate<Feature>(async observer => {
+      const features = await this.subadapter
+        .getFeatures(region, opts)
+        .pipe(toArray())
+        .toPromise()
 
-        const coverageBins = this.generateCoverageBins(
-          features,
-          region,
-          opts.bpPerPx || 1,
+      const coverageBins = this.generateCoverageBins(
+        features,
+        region,
+        opts.bpPerPx || 1,
+      )
+      coverageBins.forEach((bin: NestedFrequencyTable, index: number) => {
+        observer.next(
+          new SimpleFeature({
+            id: `pos_${region.start}${index}`,
+            data: {
+              score: bin.total(),
+              snpinfo: generateInfoList(bin), // info needed to draw snps
+              start: region.start + index,
+              end: region.start + index + 1,
+              refName: region.refName,
+            },
+          }),
         )
-        coverageBins.forEach((bin: NestedFrequencyTable, index: number) => {
-          observer.next(
-            new SimpleFeature({
-              id: `pos_${region.start}${index}`,
-              data: {
-                score: bin.total(),
-                snpinfo: bin.generateInfoList(), // info needed to draw snps
-                start: region.start + index,
-                end: region.start + index + 1,
-                refName: region.refName,
-              },
-            }),
-          )
-        })
+      })
 
-        observer.complete()
-      },
-    )
+      observer.complete()
+    })
   }
 
   async getRefNames() {
@@ -189,12 +214,6 @@ export default class extends BaseAdapter {
    */
   freeResources(/* { region } */): void {}
 
-  // depends on setup being called before the BAM constructor
-  refIdToName(refId: number): string | undefined {
-    // @ts-ignore
-    return this.subadapter.refIdToName(refId)
-  }
-
   /**
    * Generates coverage bins from features which details
    * the reference, mismatches, strands, and coverage info
@@ -204,15 +223,13 @@ export default class extends BaseAdapter {
    * @returns {Array<NestedFrequencyTable>}
    */
   generateCoverageBins(
-    features: Array<Feature>,
+    features: Feature[],
     region: StatsRegion,
     bpPerPx: number,
-  ): Array<NestedFrequencyTable> {
+  ): NestedFrequencyTable[] {
     const leftBase = region.start
     const rightBase = region.end
     const scale = 1 / bpPerPx
-    // const widthBp = rightBase - leftBase
-    // const widthPx = widthBp * scale
     const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(scale)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
 
@@ -220,13 +237,15 @@ export default class extends BaseAdapter {
 
     for (let i = 0; i < binMax; i++) {
       coverageBins[i] = new NestedFrequencyTable()
-      if (binWidth === 1) coverageBins[i].snpsCounted = true
+      if (binWidth === 1) {
+        coverageBins[i].snpsCounted = true
+      }
     }
 
     const forEachBin = function forEachBin(
       start: number,
       end: number,
-      callback: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      callback: (bin: number, overlap: number) => void,
     ) {
       let s = (start - leftBase) / binWidth
       let e = (end - 1 - leftBase) / binWidth
@@ -251,7 +270,9 @@ export default class extends BaseAdapter {
       } else {
         // if in different bins, two or more calls
         callback(sb, sb + 1 - s)
-        for (let i = sb + 1; i < eb; i++) callback(i, 1)
+        for (let i = sb + 1; i < eb; i++) {
+          callback(i, 1)
+        }
         callback(eb, e - eb)
       }
     }
@@ -275,11 +296,10 @@ export default class extends BaseAdapter {
 
     for (const feature of features.values()) {
       const strand = getStrand(feature)
+      const start = feature.get('start')
+      const end = feature.get('end')
       // increment start and end partial-overlap bins by proportion of overlap
-      forEachBin(feature.get('start'), feature.get('end'), function iterate(
-        bin: number,
-        overlap: number,
-      ) {
+      forEachBin(start, end, (bin, overlap) => {
         coverageBins[bin].getNested('reference').increment(strand, overlap)
       })
 
@@ -293,9 +313,9 @@ export default class extends BaseAdapter {
           for (let i = 0; i < mismatches.length; i++) {
             const mismatch = mismatches[i]
             forEachBin(
-              feature.get('start') + mismatch.start,
-              feature.get('start') + mismatch.start + mismatch.length,
-              function calcSNPCoverage(binNum: number, overlap: number) {
+              start + mismatch.start,
+              start + mismatch.start + mismatch.length,
+              (binNum, overlap) => {
                 // Note: we decrement 'reference' so that total of the score is the total coverage
                 const bin = coverageBins[binNum]
                 bin.getNested('reference').decrement(strand, overlap)
