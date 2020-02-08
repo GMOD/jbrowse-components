@@ -6,7 +6,6 @@ import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { GenericFilehandle } from 'generic-filehandle'
-import { Observable, Observer } from 'rxjs'
 import memoize from 'memoize-one'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
@@ -87,26 +86,23 @@ export default class extends BaseAdapter {
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures(
-    { refName, start, end }: IRegion,
-    opts: BaseOptions = {},
-  ): Observable<Feature> {
-    return ObservableCreate(
-      async (observer: Observer<Feature>): Promise<void> => {
-        this.samHeader = await setup(this.bam)
-        const records = await this.bam.getRecordsForRange(
-          refName,
-          start,
-          end,
-          opts,
-        )
-        checkAbortSignal(opts.signal)
-        records.forEach(record => {
-          observer.next(new BamSlightlyLazyFeature(record, this))
-        })
-        observer.complete()
-      },
-    )
+  getFeatures(region: IRegion, opts: BaseOptions = {}) {
+    return ObservableCreate<Feature>(async observer => {
+      const { refName, start, end } = region
+      this.samHeader = await setup(this.bam)
+      const records = await this.bam.getRecordsForRange(
+        refName,
+        start,
+        end,
+        opts,
+      )
+      checkAbortSignal(opts.signal)
+
+      records.forEach(record => {
+        observer.next(new BamSlightlyLazyFeature(record, this))
+      })
+      observer.complete()
+    })
   }
 
   /**
