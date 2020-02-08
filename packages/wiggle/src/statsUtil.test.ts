@@ -1,4 +1,5 @@
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import { from } from 'rxjs'
 import {
   calcStdFromSums,
   rectifyStats,
@@ -39,12 +40,15 @@ test('test rectify', () => {
   ).toEqual(1) // calculated from a webapp about sample standard deviations
 })
 
-test('scores to stats', () => {
-  const ret = scoresToStats({ refName: 'ctgA', start: 0, end: 2 }, [
-    new SimpleFeature({ id: 1, data: { start: 0, end: 1, score: 1 } }),
-    new SimpleFeature({ id: 2, data: { start: 1, end: 2, score: 2 } }),
-    new SimpleFeature({ id: 3, data: { start: 2, end: 3, score: 3 } }),
-  ])
+test('scores to stats', async () => {
+  const ret = await scoresToStats(
+    { refName: 'ctgA', start: 0, end: 2 },
+    from([
+      new SimpleFeature({ id: 1, data: { start: 0, end: 1, score: 1 } }),
+      new SimpleFeature({ id: 2, data: { start: 1, end: 2, score: 2 } }),
+      new SimpleFeature({ id: 3, data: { start: 2, end: 3, score: 3 } }),
+    ]),
+  )
   expect(ret.scoreMean).toEqual(2)
   expect(ret.featureDensity).toEqual(1)
   expect(ret.scoreMax).toEqual(3)

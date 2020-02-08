@@ -7,7 +7,7 @@ import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
 import { Observable, Observer } from 'rxjs'
-import { map, mergeAll, toArray } from 'rxjs/operators'
+import { map, mergeAll } from 'rxjs/operators'
 import {
   blankStats,
   FeatureStats,
@@ -55,8 +55,7 @@ export default class extends BaseAdapter {
             basesPerSpan: bpPerPx,
           },
         )
-        const featsArray = await feats.pipe(toArray()).toPromise()
-        return scoresToStats({ refName, start, end }, featsArray)
+        return scoresToStats({ refName, start, end }, feats)
       },
     })
   }

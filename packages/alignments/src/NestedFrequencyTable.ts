@@ -1,8 +1,11 @@
-/* eslint-disable guard-for-in */
+/* eslint-disable guard-for-in,@typescript-eslint/no-explicit-any */
+// see perf results on object.keys vs for-in loop
+// https://jsperf.com/object-keys-vs-hasownproperty/55
 export default class NestedFrequencyTable {
-  constructor(initialData) {
-    this.categories = {}
-    if (initialData) Object.assign(this.categories, initialData)
+  public categories: { [key: string]: any }
+
+  constructor(initialData = {}) {
+    this.categories = { ...initialData }
   }
 
   // get the sum of all the category counts
@@ -18,40 +21,17 @@ export default class NestedFrequencyTable {
     return t
   }
 
-  generateInfoList() {
-    const infoList = []
-    const overallScore = this.total()
-
-    // log info w/ base name, total score, and strand breakdown
-    for (const key of Object.keys(this.categories)) {
-      const v = this.categories[key].categories
-      const scoreInBase = Object.values(v).reduce((a, b) => a + b, 0)
-      infoList.push({
-        base: key,
-        score: scoreInBase,
-        strands: v,
-      })
+  // decrement the count for the given category
+  decrement(slotName: string, amount: number) {
+    if (!amount) {
+      amount = 1
     }
 
-    // sort so higher scores get drawn last, reference always first
-    infoList.sort((a, b) =>
-      a.score < b.score || b.base === 'reference' ? 1 : -1,
-    )
-
-    // add overall total to end
-    infoList.push({
-      base: 'total',
-      score: overallScore,
-    })
-    return infoList
-  }
-
-  // decrement the count for the given category
-  decrement(slotName, amount) {
-    if (!amount) amount = 1
-
-    if (!slotName) slotName = 'default'
-    else slotName = slotName.toString()
+    if (!slotName) {
+      slotName = 'default'
+    } else {
+      slotName = slotName.toString()
+    }
 
     if (this.categories[slotName]) {
       this.categories[slotName] = Math.max(
@@ -64,11 +44,16 @@ export default class NestedFrequencyTable {
   }
 
   // increment the count for the given category
-  increment(slotName, amount) {
-    if (!amount) amount = 1
+  increment(slotName: string, amount: number) {
+    if (!amount) {
+      amount = 1
+    }
 
-    if (!slotName) slotName = 'default'
-    else slotName = slotName.toString()
+    if (!slotName) {
+      slotName = 'default'
+    } else {
+      slotName = slotName.toString()
+    }
 
     this.categories[slotName] = (this.categories[slotName] || 0) + amount
     return this.categories[slotName]
@@ -76,33 +61,33 @@ export default class NestedFrequencyTable {
 
   // get the value of the given category.  may be a number or a
   // frequency table.
-  get(slotName) {
+  get(slotName: string) {
     return this.categories[slotName] || 0
   }
 
   // get a given category as a frequency table
-  getNested(path) {
-    if (typeof path == 'string') path = path.split('/')
+  getNested(path: string | string[]) {
+    if (typeof path == 'string') {
+      path = path.split('/')
+    }
 
-    if (!path.length) return this
+    if (!path.length) {
+      return this
+    }
 
     const slotName = path[0].toString()
     let slot = this.categories[slotName]
-    if (!slot || !slot.categories)
+    if (!slot || !slot.categories) {
       this.categories[slotName] = new NestedFrequencyTable(
         slot ? { default: slot + 0 } : {},
       )
+    }
     slot = this.categories[slotName]
 
     if (path.length > 1) {
       return slot.getNested(path.slice(1))
     }
     return slot
-  }
-
-  // returns array of category names that are present
-  categories() {
-    return Object.keys(this.categories)
   }
 
   toString() {
@@ -122,7 +107,7 @@ export default class NestedFrequencyTable {
   //      // do something
   //   }, this );
   //
-  forEach(func, ctx) {
+  forEach(func: Function, ctx: any) {
     if (ctx) {
       for (const slotName in this.categories) {
         func.call(ctx, this.categories[slotName], slotName)
