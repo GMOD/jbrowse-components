@@ -182,6 +182,55 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "amplicon_alignments",
+      "name": "Amplicon alignments (chr3:178,916,000-178,918,000)",
+      "description": "Source https://github.com/umich-brcf-bioinf/Connor/tree/master/examples",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Amplicon sequencing"
+      ],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam.bai"
+          }
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "amplicon_snpcoverage",
+      "name": "Amplicon SNPCoverage (chr3:178,916,000-178,918,000)",
+      "description": "Source https://github.com/umich-brcf-bioinf/Connor/tree/master/examples",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Amplicon sequencing"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "BamAdapter",
+          "bamLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam"
+          },
+          "index": {
+            "location": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam.bai"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "ngmlr",
       "name": "SKBR3 pacbio (NGMLR)",
       "assemblyNames": [
