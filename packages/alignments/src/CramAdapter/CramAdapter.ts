@@ -53,7 +53,7 @@ export default class CramAdapter extends BaseAdapter {
       index: new CraiIndex({ filehandle: openLocation(craiLocation) }),
       seqFetch: this.seqFetch.bind(this),
       checkSequenceMD5: false,
-      fetchSizeLimit: config.fetchSizeLimit || 60000000,
+      fetchSizeLimit: config.fetchSizeLimit || 600000000,
     })
     this.sequenceAdapter = sequenceAdapter
   }
