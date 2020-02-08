@@ -10,6 +10,7 @@ import {
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
 import { getParent, getSnapshot, types, cast } from 'mobx-state-tree'
+
 import { BlockSet } from '../BasicTrack/util/blockTypes'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
@@ -172,21 +173,21 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       bpToPx({ refName, coord }: { refName: string; coord: number }) {
-        let offsetPx = 0
+        let offsetBp = 0
+
         const index = this.displayedRegionsInOrder.findIndex(r => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
-            offsetPx += (coord - r.start) / self.bpPerPx
+            offsetBp += self.reversed ? r.end - coord : coord - r.start
             return true
           }
-          offsetPx += (r.end - r.start) / self.bpPerPx
+          offsetBp += r.end - r.start
           return false
         })
         const foundRegion = self.displayedRegions[index]
-        offsetPx = Math.round(offsetPx)
         if (foundRegion) {
           return {
             index,
-            offsetPx,
+            offsetPx: Math.round(offsetBp / self.bpPerPx),
           }
         }
         return undefined
@@ -240,21 +241,13 @@ export function stateModelFactory(pluginManager: any) {
         }
         return accum
       },
-      get assemblyNames() {
-        const assemblyNames: string[] = []
-        self.displayedRegions.forEach(displayedRegion => {
-          if (!assemblyNames.includes(displayedRegion.assemblyName))
-            assemblyNames.push(displayedRegion.assemblyName)
-        })
-        return assemblyNames
-      },
     }))
     .actions(self => ({
       setWidth(newWidth: number) {
         self.width = newWidth
       },
 
-      setError(error: Error) {
+      setError(error: Error | undefined) {
         self.error = error
       },
 
@@ -565,6 +558,15 @@ export function stateModelFactory(pluginManager: any) {
 
         get dynamicBlocks() {
           return calculateDynamicBlocks(cast(self), self.horizontallyFlipped)
+        },
+
+        get assemblyNames() {
+          const assemblyNames: string[] = []
+          self.displayedRegions.forEach(displayedRegion => {
+            if (!assemblyNames.includes(displayedRegion.assemblyName))
+              assemblyNames.push(displayedRegion.assemblyName)
+          })
+          return assemblyNames
         },
       }
     })

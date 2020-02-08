@@ -23,25 +23,24 @@ stubManager.addTrackType(
 )
 stubManager.configure()
 const LinearGenomeModel = stateModelFactory(stubManager)
+const Session = types
+  .model({
+    name: 'testSession',
+    pluginManager: 'pluginManagerExists',
+    view: types.maybe(LinearGenomeModel),
+    configuration: types.map(types.string),
+  })
+  .actions(self => ({
+    setView(view: Instance<LinearGenomeViewStateModel>) {
+      self.view = view
+      return view
+    },
+  }))
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
-  const name = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.string),
-    })
-    .actions(self => ({
-      setView(view: Instance<LinearGenomeViewStateModel>) {
-        self.view = view
-        return view
-      },
-    }))
-    .create({
-      configuration: {},
-    })
-
-  const model = name.setView(
+  const model = Session.create({
+    configuration: {},
+  }).setView(
     LinearGenomeModel.create({
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
@@ -53,24 +52,12 @@ test('can instantiate a mostly empty model and read a default configuration valu
 })
 
 test('can instantiate a model that lets you navigate', () => {
-  const name = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.string),
-    })
-    .actions(self => ({
-      setView(view: Instance<LinearGenomeViewStateModel>) {
-        self.view = view
-        return view
-      },
-    }))
-    .create({
-      configuration: {},
-    })
-
-  const model = name.setView(
+  const session = Session.create({
+    configuration: {},
+  })
+  const model = session.setView(
     LinearGenomeModel.create({
+      id: 'test1',
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
       controlsWidth: 0,
@@ -110,24 +97,12 @@ test('can instantiate a model that lets you navigate', () => {
 })
 
 test('can instantiate a model that has multiple displayed regions', () => {
-  const name = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.string),
-    })
-    .actions(self => ({
-      setView(view: Instance<LinearGenomeViewStateModel>) {
-        self.view = view
-        return view
-      },
-    }))
-    .create({
-      configuration: {},
-    })
-
-  const model = name.setView(
+  const session = Session.create({
+    configuration: {},
+  })
+  const model = session.setView(
     LinearGenomeModel.create({
+      id: 'test2',
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
       controlsWidth: 0,
@@ -149,24 +124,12 @@ test('can instantiate a model that has multiple displayed regions', () => {
 })
 
 test('can instantiate a model that tests navTo/moveTo', () => {
-  const name = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.string),
-    })
-    .actions(self => ({
-      setView(view: Instance<LinearGenomeViewStateModel>) {
-        self.view = view
-        return view
-      },
-    }))
-    .create({
-      configuration: {},
-    })
-
-  const model = name.setView(
+  const session = Session.create({
+    configuration: {},
+  })
+  const model = session.setView(
     LinearGenomeModel.create({
+      id: 'test3',
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
       controlsWidth: 0,
@@ -188,24 +151,12 @@ test('can instantiate a model that tests navTo/moveTo', () => {
 })
 
 test('can instantiate a model that >2 regions', () => {
-  const name = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.string),
-    })
-    .actions(self => ({
-      setView(view: Instance<LinearGenomeViewStateModel>) {
-        self.view = view
-        return view
-      },
-    }))
-    .create({
-      configuration: {},
-    })
-
-  const model = name.setView(
+  const session = Session.create({
+    configuration: {},
+  })
+  const model = session.setView(
     LinearGenomeModel.create({
+      id: 'test4',
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
       controlsWidth: 0,
