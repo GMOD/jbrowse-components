@@ -3,29 +3,35 @@ import { renderToString } from 'react-dom/server'
 import { filter, ignoreElements, tap } from 'rxjs/operators'
 import BaseAdapter from '../../BaseAdapter'
 import { IRegion } from '../../mst-types'
-// @ts-ignore
 import { readConfObject } from '../../configuration'
 import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature, { Feature } from '../../util/simpleFeature'
-// @ts-ignore
 import RendererType from './RendererType'
-// @ts-ignore
 import SerializableFilterChain from './util/serializableFilterChain'
 
-interface RenderArgs {
+interface BaseRenderArgs {
   blockKey: string
   sessionId: string
   signal?: AbortSignal
-  regions?: any
   filters?: any
   dataAdapter: BaseAdapter
-  region?: any
   bpPerPx: number
   config: Record<string, any>
   renderProps: { trackModel: any }
-  originalRegion?: any
-  originalRegions?: any[]
 }
+
+interface MultiRegionRenderArgs extends BaseRenderArgs {
+  regions: IRegion[]
+  originalRegions: IRegion[]
+}
+
+interface SingleRegionRenderArgs extends BaseRenderArgs {
+  region: IRegion
+  originalRegion: IRegion
+}
+
+type RenderArgs = MultiRegionRenderArgs | SingleRegionRenderArgs
+
 export default class ServerSideRenderer extends RendererType {
   /**
    * directly modifies the render arguments to prepare
@@ -53,11 +59,13 @@ export default class ServerSideRenderer extends RendererType {
         },
       }
     }
-    if (args.regions) {
-      args.regions = [...args.regions]
+    if ('regions' in args) {
+      const r = args as MultiRegionRenderArgs
+      return { ...args, regions: [...r.regions] }
     }
-    if (args.region) args.region = { ...args.region }
-    return args
+
+    const r = args as SingleRegionRenderArgs
+    return { ...args, region: { ...args.region } }
   }
 
   deserializeResultsInClient(result: { features: any }, args: RenderArgs) {
@@ -124,7 +132,6 @@ export default class ServerSideRenderer extends RendererType {
   getExpandedGlyphRegion(region: IRegion, renderArgs: RenderArgs) {
     if (!region) return region
     const { bpPerPx, config } = renderArgs
-    // @ts-ignore
     const maxFeatureGlyphExpansion = readConfObject(
       config,
       'maxFeatureGlyphExpansion',
@@ -146,46 +153,53 @@ export default class ServerSideRenderer extends RendererType {
    */
   async getFeatures(renderArgs: RenderArgs) {
     const { dataAdapter, signal, bpPerPx } = renderArgs
-    let { regions } = renderArgs
-    const { region, originalRegion, originalRegions } = renderArgs
     const features = new Map()
-    let featureObservable
 
-    if (!regions && region) {
-      regions = [renderArgs.region]
+    let regions
+    let originalRegions
+
+    if ((renderArgs as SingleRegionRenderArgs).region) {
+      const r = renderArgs as SingleRegionRenderArgs
+      regions = [r.region]
+      originalRegions = [r.originalRegion]
+    } else {
+      const r = renderArgs as MultiRegionRenderArgs
+      regions = r.regions
+      originalRegions = r.originalRegions
     }
 
-    if (!regions || regions.length === 0) return features
+    if (!regions || regions.length === 0) {
+      return features
+    }
 
     const requestRegions = regions.map((r: IRegion) => {
       // make sure the requested region's start and end are integers, if
       // there is a region specification.
       const requestRegion = { ...r }
-      if (requestRegion.start)
+      if (requestRegion.start) {
         requestRegion.start = Math.floor(requestRegion.start)
-      if (requestRegion.end) requestRegion.end = Math.floor(requestRegion.end)
+      }
+      if (requestRegion.end) {
+        requestRegion.end = Math.floor(requestRegion.end)
+      }
       return requestRegion
     })
 
-    if (requestRegions.length === 1) {
-      featureObservable = dataAdapter.getFeaturesInRegion(
-        this.getExpandedGlyphRegion(requestRegions[0], renderArgs),
-        {
-          signal,
-          bpPerPx,
-          originalRegion,
-          originalRegions,
-        },
-      )
-    } else {
-      featureObservable = dataAdapter.getFeaturesInMultipleRegions(
-        requestRegions,
-        {
-          signal,
-          bpPerPx,
-        },
-      )
-    }
+    const featureObservable =
+      requestRegions.length === 1
+        ? dataAdapter.getFeaturesInRegion(
+            this.getExpandedGlyphRegion(requestRegions[0], renderArgs),
+            {
+              signal,
+              bpPerPx,
+              originalRegion: originalRegions[0],
+            },
+          )
+        : dataAdapter.getFeaturesInMultipleRegions(requestRegions, {
+            signal,
+            bpPerPx,
+            originalRegions,
+          })
 
     await featureObservable
       .pipe(
