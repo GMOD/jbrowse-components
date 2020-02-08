@@ -59,13 +59,13 @@ export default class ServerSideRenderer extends RendererType {
         },
       }
     }
-    if ('regions' in args) {
+    if ((args as MultiRegionRenderArgs).regions) {
       const r = args as MultiRegionRenderArgs
-      return { ...args, regions: [...r.regions] }
+      return { ...r, regions: [...r.regions] }
     }
 
     const r = args as SingleRegionRenderArgs
-    return { ...args, region: { ...args.region } }
+    return { ...r, region: { ...r.region } }
   }
 
   deserializeResultsInClient(result: { features: any }, args: RenderArgs) {
