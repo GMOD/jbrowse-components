@@ -203,8 +203,8 @@
     },
     {
       "type": "SNPCoverageTrack",
-      "trackId": "nanopore_targetted_snpcoverage",
-      "name": "Nanopore amplicon SNPCoverage (chr7:55,000,000-56,000,000)",
+      "trackId": "nanopore_targetted_snpcoverage_0.1",
+      "name": "Nanopore amplicon SNPCoverage 0.1x (chr7:55,000,000-56,000,000)",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
       "assemblyNames": [
         "hg38"
