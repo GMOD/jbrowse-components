@@ -6,6 +6,7 @@ import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
+import wiggleStateModelFactory from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/model'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -17,6 +18,7 @@ export default (pluginManager, configSchema) =>
   types.compose(
     'AlignmentsTrack',
     blockBasedTrackModel,
+    // wiggleStateModelFactory(configSchema),
     types
       .model({
         type: types.literal('AlignmentsTrack'),
