@@ -6,6 +6,7 @@ import {
 } from '@gmod/jbrowse-core/util/tracks'
 import { autorun } from 'mobx'
 import { getSession } from '@gmod/jbrowse-core/util'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { addDisposer, types, Instance } from 'mobx-state-tree'
 import RBush from 'rbush'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -73,8 +74,20 @@ const blockBasedTrack = types
             layoutMaps.set(block.key, block.data.layout.rectangles)
           }
         }
-        stale = true // make rtree refresh
+        stale = true
         return layoutMaps
+      },
+
+      get featToBlock() {
+        const m: { [key: string]: IRegion } = {}
+        for (const block of self.blockState.values()) {
+          if (block.data && block.data.features) {
+            for (const [featId] of block.data.features) {
+              m[featId] = block.region
+            }
+          }
+        }
+        return m
       },
 
       /**
