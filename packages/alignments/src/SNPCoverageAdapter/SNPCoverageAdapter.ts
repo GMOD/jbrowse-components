@@ -98,8 +98,7 @@ export default class extends BaseAdapter {
             basesPerSpan: bpPerPx,
           },
         )
-        const scoreFeatures = await feats.pipe(toArray()).toPromise()
-        return scoresToStats({ refName, start, end }, scoreFeatures)
+        return scoresToStats({ refName, start, end }, feats)
       },
     })
   }
