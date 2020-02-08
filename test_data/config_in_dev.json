@@ -182,6 +182,51 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "nanopore_targetted_alignments_0.1",
+      "name": "Nanopore amplicon alignments 0.1x (chr7:55,000,000-56,000,000)",
+      "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Amplicon sequencing"
+      ],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram"
+        },
+        "craiLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram.crai"
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "nanopore_targetted_snpcoverage",
+      "name": "Nanopore amplicon SNPCoverage (chr7:55,000,000-56,000,000)",
+      "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Amplicon sequencing"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "CramAdapter",
+          "cramLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram"
+          },
+          "craiLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram.crai"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "nanopore_targetted_alignments",
       "name": "Nanopore amplicon alignments (chr7:55,000,000-56,000,000)",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
