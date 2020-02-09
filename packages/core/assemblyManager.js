@@ -10,13 +10,16 @@ export default self => ({
       for (const assemblyConfig of self.assemblies) {
         const assemblyName = readConfObject(assemblyConfig, 'name')
         const assemblyInfo = {}
-        if (assemblyConfig.sequence)
+        if (assemblyConfig.sequence) {
           assemblyInfo.sequence = assemblyConfig.sequence
+        }
         const refNameAliasesConf = readConfObject(
           assemblyConfig,
           'refNameAliases',
         )
-        if (refNameAliasesConf) assemblyInfo.refNameAliases = refNameAliasesConf
+        if (refNameAliasesConf) {
+          assemblyInfo.refNameAliases = refNameAliasesConf
+        }
         const aliases = readConfObject(assemblyConfig, 'aliases')
         assemblyInfo.aliases = aliases
         assemblyData.set(assemblyName, assemblyInfo)
@@ -87,7 +90,9 @@ export default self => ({
      */
     async addRefNameMapForAdapter(adapterConf, assemblyName, opts = {}) {
       const assemblyConfig = self.assemblyData.get(assemblyName)
-      const sequenceConfig = getSnapshot(assemblyConfig.sequence.adapter)
+      const sequenceConfig = assemblyConfig.sequence
+        ? getSnapshot(assemblyConfig.sequence.adapter)
+        : {}
       const refNameAliases = await self.getRefNameAliases(assemblyName, opts)
       const adapterConfigId = jsonStableStringify(adapterConf)
       const refNameMap = observable.map({})
