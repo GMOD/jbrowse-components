@@ -11,7 +11,7 @@ import {
 import { Component } from 'react'
 import { reaction } from 'mobx'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-
+import jsonStableStringify from 'json-stable-stringify'
 import { Region } from '@gmod/jbrowse-core/mst-types'
 
 import {
@@ -197,6 +197,8 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     if (trackAssemblyData.sequence) {
       sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
     }
+    const adapterConfig = getConf(track, 'adapter')
+    const adapterConfigId = jsonStableStringify(adapterConfig)
     return {
       rendererType,
       rpcManager,
@@ -207,12 +209,12 @@ function renderBlockData(self: Instance<BlockStateModel>) {
         assemblyName: self.region.assemblyName,
         region: self.region,
         adapterType: track.adapterType.name,
-        adapterConfig: getConf(track, 'adapter'),
+        adapterConfig,
         sequenceAdapterType: sequenceConfig.type,
         sequenceAdapterConfig: sequenceConfig,
         rendererType: rendererType.name,
         renderProps,
-        sessionId: track.id,
+        sessionId: adapterConfigId,
         blockKey: self.key,
         timeout: 1000000, // 10000,
       },
