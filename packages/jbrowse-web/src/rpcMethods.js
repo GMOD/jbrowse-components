@@ -78,7 +78,14 @@ export async function getRegions(
 
 export async function getRefNames(
   pluginManager,
-  { sessionId, adapterType, signal, adapterConfig },
+  {
+    sessionId,
+    signal,
+    adapterType,
+    adapterConfig,
+    sequenceAdapterType,
+    sequenceAdapterConfig,
+  },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
@@ -89,6 +96,8 @@ export async function getRefNames(
     sessionId,
     adapterType,
     adapterConfig,
+    sequenceAdapterType,
+    sequenceAdapterConfig,
   )
   return dataAdapter.getRefNames({ signal })
 }

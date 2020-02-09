@@ -29,7 +29,9 @@ export function getAdapter(
   sequenceAdapterConfig,
 ) {
   // cache the adapter object
-  const cacheKey = adapterConfigCacheKey(adapterType, adapterConfig)
+  const cacheKey =
+    adapterConfigCacheKey(adapterType, adapterConfig) +
+    adapterConfigCacheKey(sequenceAdapterType, sequenceAdapterConfig)
   if (!adapterCache[cacheKey]) {
     const dataAdapterType = pluginManager.getAdapterType(adapterType)
     if (!dataAdapterType) {
