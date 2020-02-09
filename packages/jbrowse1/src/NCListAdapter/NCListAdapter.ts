@@ -1,6 +1,5 @@
 import NCListStore from '@gmod/nclist'
 import { openUrl } from '@gmod/jbrowse-core/util/io'
-import { Observer } from 'rxjs'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -42,7 +41,7 @@ export default class extends BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   getFeatures(region: IRegion, opts: BaseOptions = {}) {
-    return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
+    return ObservableCreate<Feature>(async observer => {
       const { signal } = opts
       for await (const feature of this.nclist.getFeatures(region, opts)) {
         checkAbortSignal(signal)

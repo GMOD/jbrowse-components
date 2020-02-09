@@ -3,7 +3,6 @@ import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { Observable, Observer } from 'rxjs'
 import { GenericFilehandle } from 'generic-filehandle'
 
 export default class extends BaseAdapter {
@@ -61,17 +60,11 @@ export default class extends BaseAdapter {
    * @param {IRegion} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures({
-    refName,
-    start,
-    end,
-  }: INoAssemblyRegion): Observable<Feature> {
-    return ObservableCreate<Feature>(
-      async (observer: Observer<Feature>): Promise<void> => {
-        // provides no sequence
-        observer.complete()
-      },
-    )
+  public getFeatures({ refName, start, end }: INoAssemblyRegion) {
+    return ObservableCreate<Feature>(async observer => {
+      // provides no sequence
+      observer.complete()
+    })
   }
 
   /**

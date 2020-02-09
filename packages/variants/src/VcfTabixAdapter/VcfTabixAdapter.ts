@@ -59,7 +59,7 @@ export default class extends BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   public getFeatures(query: INoAssemblyRegion, opts: BaseOptions = {}) {
-    return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
+    return ObservableCreate<Feature>(async observer => {
       const parser = await this.parser
       await this.vcf.getLines(query.refName, query.start, query.end, {
         lineCallback(line: string, fileOffset: number) {
