@@ -23,11 +23,11 @@ export const configSchema = ConfigurationSchema(
     }),
     chunkSizeLimit: {
       type: 'number',
-      defaultValue: 3000000,
+      defaultValue: 100000000,
     },
     fetchSizeLimit: {
       type: 'number',
-      defaultValue: 5000000,
+      defaultValue: 500000000,
     },
   },
   { explicitlyTyped: true },

@@ -1853,7 +1853,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 aria-invalid="false"
                 class="MuiInputBase-input MuiInput-input"
                 type="number"
-                value="3000000"
+                value="100000000"
               />
             </div>
             
@@ -1906,7 +1906,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 aria-invalid="false"
                 class="MuiInputBase-input MuiInput-input"
                 type="number"
-                value="5000000"
+                value="500000000"
               />
             </div>
             
