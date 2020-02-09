@@ -41,7 +41,6 @@ export default class extends BaseAdapter {
       csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
       tbiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
-      renameRefSeqs: (n: string) => n,
     })
 
     this.parser = this.vcf

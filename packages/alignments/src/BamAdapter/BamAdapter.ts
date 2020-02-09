@@ -5,7 +5,6 @@ import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { GenericFilehandle } from 'generic-filehandle'
 import memoize from 'memoize-one'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
@@ -53,25 +52,14 @@ export default class extends BaseAdapter {
     super()
     const {
       bamLocation,
-      index: { location: indexLocation, indexType },
+      index: { location, indexType },
     } = config
 
-    const bamOpts: {
-      bamFilehandle: GenericFilehandle
-      baiFilehandle?: GenericFilehandle
-      csiFilehandle?: GenericFilehandle
-    } = {
+    this.bam = new BamFile({
       bamFilehandle: openLocation(bamLocation),
-    }
-
-    const indexFile = openLocation(indexLocation)
-    if (indexType === 'CSI') {
-      bamOpts.csiFilehandle = indexFile
-    } else {
-      bamOpts.baiFilehandle = indexFile
-    }
-
-    this.bam = new BamFile(bamOpts)
+      csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
+      baiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
+    })
   }
 
   async getRefNames() {
