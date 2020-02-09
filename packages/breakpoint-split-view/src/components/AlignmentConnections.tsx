@@ -100,6 +100,7 @@ export default (pluginManager: any) => {
                 <path
                   d={path}
                   key={id}
+                  data-testid="r1"
                   strokeWidth={mouseoverElt === id ? 5 : 1}
                   onClick={evt => {
                     const featureWidget = session.addDrawerWidget(
