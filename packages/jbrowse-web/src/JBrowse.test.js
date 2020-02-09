@@ -480,7 +480,7 @@ describe('breakpoint split view', () => {
   it('open a split view', async () => {
     const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const state = JBrowseRootModel.create({ jbrowse: breakpointConfig })
-    const { container, findByTestId, queryAllByTestId } = render(
+    const { findByTestId, queryAllByTestId } = render(
       <JBrowse initialState={state} />,
     )
     await wait(() => {
