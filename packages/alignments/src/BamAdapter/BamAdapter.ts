@@ -27,17 +27,23 @@ export default class extends BaseAdapter {
   public constructor(config: {
     bamLocation: IFileLocation
     index: { location: IFileLocation; indexType: string }
+    chunkSizeLimit: number
+    fetchSizeLimit: number
   }) {
     super()
     const {
       bamLocation,
       index: { location, indexType },
+      chunkSizeLimit,
+      fetchSizeLimit,
     } = config
 
     this.bam = new BamFile({
       bamFilehandle: openLocation(bamLocation),
       csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
       baiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
+      chunkSizeLimit,
+      fetchSizeLimit,
     })
   }
 

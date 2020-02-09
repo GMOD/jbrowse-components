@@ -1891,6 +1891,28 @@
       }
     },
     {
+      "type": "AlignmentsTrack",
+      "trackId": "deep_hg19_bam",
+      "name": "Deep hg19 BAM (bam)",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Coverage"
+      ],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://idea-cdn.s3.eu-west-2.amazonaws.com/out.marked.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://idea-cdn.s3.eu-west-2.amazonaws.com/out.marked.bam.bai"
+          }
+        }
+      }
+    },
+    {
       "type": "SNPCoverageTrack",
       "trackId": "volvox-short-reads-snp-bam",
       "name": "volvox-SNP (bam)",
