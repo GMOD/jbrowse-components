@@ -13,14 +13,14 @@ interface HeaderLine {
   value: string
 }
 interface Header {
-  idToName: string[]
-  nameToId: Record<string, number>
+  idToName?: string[]
+  nameToId?: Record<string, number>
 }
 
 export default class extends BaseAdapter {
   private bam: BamFile
 
-  private samHeader: Header = { idToName: [], nameToId: {} }
+  private samHeader: Header = {}
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -68,7 +68,10 @@ export default class extends BaseAdapter {
 
   async getRefNames(opts?: BaseOptions) {
     await this.setup(opts)
-    return this.samHeader.idToName
+    if (this.samHeader.idToName) {
+      return this.samHeader.idToName
+    }
+    throw new Error('unable to get refnames')
   }
 
   /**
@@ -107,6 +110,9 @@ export default class extends BaseAdapter {
 
   // depends on setup being called before the BAM constructor
   refIdToName(refId: number): string | undefined {
-    return this.samHeader.idToName[refId]
+    if (this.samHeader.idToName) {
+      return this.samHeader.idToName[refId]
+    }
+    return undefined
   }
 }

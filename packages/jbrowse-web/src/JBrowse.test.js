@@ -16,10 +16,6 @@ import config from '../test_data/config_integration_test.json'
 import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
 import JBrowseRootModel from './rootModel'
 
-const memoize = require('memoize-one')
-
-console.log(memoize)
-
 expect.extend({ toMatchImageSnapshot })
 
 window.requestIdleCallback = cb => cb()
@@ -265,8 +261,7 @@ describe('test renamed refs', () => {
       failureThresholdType: 'percent',
     })
   })
-  it('test that bam with contigA instead of ctgA displays (and check memoization)', async () => {
-    const spy = jest.spyOn(memoize, 'defaultt status')
+  it('test that bam with contigA instead of ctgA displays', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
       <JBrowse initialState={state} />,
@@ -279,7 +274,6 @@ describe('test renamed refs', () => {
     await expect(
       waitForElement(() => getAllByText('ctgA_110_638_0:0:0_3:0:0_15b')),
     ).resolves.toBeTruthy()
-    expect(spy).toHaveBeeCalledTimes(1)
   })
 
   it('open a bigwig with a renamed reference', async () => {
