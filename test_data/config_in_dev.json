@@ -272,6 +272,53 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "deep_hg19_bam",
+      "name": "Deep sequence chr17:41195312..41276764 (SNPCoverage)",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Coverage"
+      ],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam.bai"
+          }
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "deep_hg19_bam_snpcoverage",
+      "name": "Deep sequence chr17:41195312..41276764 (SNPCoverage)",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Coverage"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "BamAdapter",
+          "bamLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam"
+          },
+          "index": {
+            "location": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam.bai"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "amplicon_alignments",
       "name": "Amplicon alignments (chr3:178,916,000-178,918,000)",
       "description": "Source https://github.com/umich-brcf-bioinf/Connor/tree/master/examples",
