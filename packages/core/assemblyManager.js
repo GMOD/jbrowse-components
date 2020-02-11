@@ -90,9 +90,10 @@ export default self => ({
      */
     async addRefNameMapForAdapter(adapterConf, assemblyName, opts = {}) {
       const assemblyConfig = self.assemblyData.get(assemblyName)
-      const sequenceConfig = assemblyConfig.sequence
-        ? getSnapshot(assemblyConfig.sequence.adapter)
-        : {}
+      let sequenceConfig = {}
+      if (assemblyConfig && assemblyConfig.sequence) {
+        sequenceConfig = getSnapshot(assemblyConfig.sequence.adapter)
+      }
       const refNameAliases = await self.getRefNameAliases(assemblyName, opts)
       const adapterConfigId = jsonStableStringify(adapterConf)
       const refNameMap = observable.map({})
