@@ -10,12 +10,6 @@ export default pluginManager => {
   const SvgFeatureRendererConfigSchema = pluginManager.getRendererType(
     'SvgFeatureRenderer',
   ).configSchema
-  const SNPCoverageRendererConfigSchema = pluginManager.getRendererType(
-    'SNPCoverageRenderer',
-  ).configSchema
-  // const SNPCoverageTrackConfigSchema = pluginManager.getTrackType(
-  //   'SNPCoverageTrack',
-  // ).configSchema
 
   // modify config schema to take in a sub coverage track
   return ConfigurationSchema(
@@ -27,15 +21,17 @@ export default pluginManager => {
         model: types.enumeration('Rendering', ['pileup', 'svg', 'snpcoverage']),
         defaultValue: 'pileup',
       },
-
       renderers: ConfigurationSchema('RenderersConfiguration', {
         PileupRenderer: PileupRendererConfigSchema,
         SvgFeatureRenderer: SvgFeatureRendererConfigSchema,
-        SNPCoverageRenderer: SNPCoverageRendererConfigSchema,
       }),
-      coverageTrack: ConfigurationSchema('CoverageTrackConfiguration', {
-        SNPCoverageTrack: SNPCoverageTrackConfigSchema(pluginManager),
-      }),
+      // coverageTrack: ConfigurationSchema(
+      //   'SNPCoverageTrack',
+      //   {
+      //     SNPCoverageTrack: SNPCoverageTrackConfigSchema(pluginManager),
+      //   },
+      //   { baseConfiguration: LinearGenomeTrackConfig, explicitlyTyped: true },
+      // ),
     },
     { baseConfiguration: LinearGenomeTrackConfig, explicitlyTyped: true },
   )
