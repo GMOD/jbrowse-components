@@ -18,7 +18,6 @@ export default (pluginManager, configSchema) =>
   types.compose(
     'AlignmentsTrack',
     blockBasedTrackModel,
-    // wiggleStateModelFactory(configSchema),
     types
       .model({
         type: types.literal('AlignmentsTrack'),
@@ -66,4 +65,23 @@ export default (pluginManager, configSchema) =>
           }
         },
       })),
+  )
+
+export const coverageStateModelFactory = configSchema =>
+  types.compose(
+    'SNPCoverageTrack',
+    wiggleStateModelFactory(configSchema),
+    types.model({ type: types.literal('SNPCoverageTrack') }).views(self => ({
+      get rendererTypeName() {
+        const viewName = getConf(self, 'defaultRendering')
+        const rendererType = rendererTypes.get(viewName)
+        if (!rendererType)
+          throw new Error(`unknown wiggle renderer type ${viewName}`)
+        return rendererType
+      },
+
+      get needsScalebar() {
+        return true
+      },
+    })),
   )

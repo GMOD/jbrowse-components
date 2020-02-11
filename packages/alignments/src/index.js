@@ -45,6 +45,7 @@ export default class extends Plugin {
         name: 'AlignmentsTrack',
         configSchema,
         stateModel: alignmentsTrackModelFactory(pluginManager, configSchema),
+        coverageStateModel: snpCoverageTrackModelFactory(configSchema),
       })
     })
 

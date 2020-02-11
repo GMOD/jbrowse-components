@@ -1495,6 +1495,25 @@
         "SvgFeatureRenderer": {
           "type": "SvgFeatureRenderer"
         }
+      },
+      "coverageTrack":{
+        "SNPCoverageTrack": {
+          "type": "SNPCoverageTrack",
+          "adapter": {
+            "type": "SNPCoverageAdapter",
+            "subadapter": {
+              "type": "BamAdapter",
+              "bamLocation": {
+                "uri": "test_data/volvox-sorted.bam"
+              },
+              "index": {
+                "location": {
+                  "uri": "test_data/volvox-sorted.bam.bai"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
