@@ -78,7 +78,7 @@
         "hg38"
       ],
       "category": [
-        "Miscellaneous"
+        "Annotation"
       ],
       "adapter": {
         "type": "NCListAdapter",
@@ -178,6 +178,192 @@
       },
       "renderer": {
         "type": "StructuralVariantChordRenderer"
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "nanopore_targetted_alignments_0.1",
+      "name": "Nanopore amplicon alignments 0.1x (chr7:55,000,000-56,000,000)",
+      "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Deep coverage"
+      ],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram"
+        },
+        "craiLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram.crai"
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "nanopore_targetted_snpcoverage_0.1",
+      "name": "Nanopore amplicon SNPCoverage 0.1x (chr7:55,000,000-56,000,000)",
+      "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Deep coverage"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "CramAdapter",
+          "cramLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram"
+          },
+          "craiLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram.crai"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "nanopore_targetted_alignments",
+      "name": "Nanopore amplicon (chr7:55,000,000-56,000,000) [causes out-of-memory]",
+      "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Deep coverage"
+      ],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.cram"
+        },
+        "craiLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.cram.crai"
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "nanopore_targetted_snpcoverage",
+      "name": "Nanopore amplicon SNPCoverage (chr7:55,000,000-56,000,000) [causes out-of-memory]",
+      "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Deep coverage"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "CramAdapter",
+          "cramLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.cram"
+          },
+          "craiLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.cram.crai"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "deep_hg19_bam",
+      "name": "Deep sequence chr17:41195312..41276764",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Deep coverage"
+      ],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam.bai"
+          }
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "deep_hg19_bam_snpcoverage",
+      "name": "Deep sequence chr17:41195312..41276764 (SNPCoverage)",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Deep coverage"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "BamAdapter",
+          "bamLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam"
+          },
+          "index": {
+            "location": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam.bai"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "amplicon_alignments",
+      "name": "Amplicon alignments (chr3:178,916,000-178,918,000)",
+      "description": "Source https://github.com/umich-brcf-bioinf/Connor/tree/master/examples",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Deep coverage"
+      ],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam.bai"
+          }
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "amplicon_snpcoverage",
+      "name": "Amplicon SNPCoverage (chr3:178,916,000-178,918,000)",
+      "description": "Source https://github.com/umich-brcf-bioinf/Connor/tree/master/examples",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Deep coverage"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "BamAdapter",
+          "bamLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam"
+          },
+          "index": {
+            "location": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam.bai"
+            }
+          }
+        }
       }
     },
     {
@@ -1891,28 +2077,6 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
-      "trackId": "deep_hg19_bam",
-      "name": "Deep hg19 BAM (bam)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Coverage"
-      ],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "https://idea-cdn.s3.eu-west-2.amazonaws.com/out.marked.bam"
-        },
-        "index": {
-          "location": {
-            "uri": "https://idea-cdn.s3.eu-west-2.amazonaws.com/out.marked.bam.bai"
-          }
-        }
-      }
-    },
-    {
       "type": "SNPCoverageTrack",
       "trackId": "volvox-short-reads-snp-bam",
       "name": "volvox-SNP (bam)",
@@ -1920,7 +2084,7 @@
         "volvox"
       ],
       "category": [
-        "Coverage"
+        "Deep coverage"
       ],
       "adapter": {
         "type": "SNPCoverageAdapter",
@@ -1945,7 +2109,7 @@
         "volvox"
       ],
       "category": [
-        "Coverage"
+        "Deep coverage"
       ],
       "adapter": {
         "type": "SNPCoverageAdapter",
