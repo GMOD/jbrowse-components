@@ -78,7 +78,7 @@
         "hg38"
       ],
       "category": [
-        "Miscellaneous"
+        "Annotation"
       ],
       "adapter": {
         "type": "NCListAdapter",
@@ -189,7 +189,7 @@
         "hg38"
       ],
       "category": [
-        "Amplicon sequencing"
+        "Deep coverage"
       ],
       "adapter": {
         "type": "CramAdapter",
@@ -210,7 +210,7 @@
         "hg38"
       ],
       "category": [
-        "Amplicon sequencing"
+        "Deep coverage"
       ],
       "adapter": {
         "type": "SNPCoverageAdapter",
@@ -228,13 +228,13 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "nanopore_targetted_alignments",
-      "name": "Nanopore amplicon alignments (chr7:55,000,000-56,000,000)",
+      "name": "Nanopore amplicon (chr7:55,000,000-56,000,000) [causes out-of-memory]",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
       "assemblyNames": [
         "hg38"
       ],
       "category": [
-        "Amplicon sequencing"
+        "Deep coverage"
       ],
       "adapter": {
         "type": "CramAdapter",
@@ -249,13 +249,13 @@
     {
       "type": "SNPCoverageTrack",
       "trackId": "nanopore_targetted_snpcoverage",
-      "name": "Nanopore amplicon SNPCoverage (chr7:55,000,000-56,000,000)",
+      "name": "Nanopore amplicon SNPCoverage (chr7:55,000,000-56,000,000) [causes out-of-memory]",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
       "assemblyNames": [
         "hg38"
       ],
       "category": [
-        "Amplicon sequencing"
+        "Deep coverage"
       ],
       "adapter": {
         "type": "SNPCoverageAdapter",
@@ -273,12 +273,12 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "deep_hg19_bam",
-      "name": "Deep sequence chr17:41195312..41276764 (SNPCoverage)",
+      "name": "Deep sequence chr17:41195312..41276764",
       "assemblyNames": [
         "hg19"
       ],
       "category": [
-        "Coverage"
+        "Deep coverage"
       ],
       "adapter": {
         "type": "BamAdapter",
@@ -300,7 +300,7 @@
         "hg19"
       ],
       "category": [
-        "Coverage"
+        "Deep coverage"
       ],
       "adapter": {
         "type": "SNPCoverageAdapter",
@@ -326,7 +326,7 @@
         "hg19"
       ],
       "category": [
-        "Amplicon sequencing"
+        "Deep coverage"
       ],
       "adapter": {
         "type": "BamAdapter",
@@ -349,7 +349,7 @@
         "hg19"
       ],
       "category": [
-        "Amplicon sequencing"
+        "Deep coverage"
       ],
       "adapter": {
         "type": "SNPCoverageAdapter",
@@ -2077,28 +2077,6 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
-      "trackId": "deep_hg19_bam",
-      "name": "Deep hg19 BAM (bam)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Coverage"
-      ],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "https://idea-cdn.s3.eu-west-2.amazonaws.com/out.marked.bam"
-        },
-        "index": {
-          "location": {
-            "uri": "https://idea-cdn.s3.eu-west-2.amazonaws.com/out.marked.bam.bai"
-          }
-        }
-      }
-    },
-    {
       "type": "SNPCoverageTrack",
       "trackId": "volvox-short-reads-snp-bam",
       "name": "volvox-SNP (bam)",
@@ -2106,7 +2084,7 @@
         "volvox"
       ],
       "category": [
-        "Coverage"
+        "Deep coverage"
       ],
       "adapter": {
         "type": "SNPCoverageAdapter",
@@ -2131,7 +2109,7 @@
         "volvox"
       ],
       "category": [
-        "Coverage"
+        "Deep coverage"
       ],
       "adapter": {
         "type": "SNPCoverageAdapter",
