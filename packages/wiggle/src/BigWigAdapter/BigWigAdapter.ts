@@ -6,8 +6,7 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
-import { Observable, Observer } from 'rxjs'
-import { map, mergeAll, toArray } from 'rxjs/operators'
+import { map, mergeAll } from 'rxjs/operators'
 import {
   blankStats,
   FeatureStats,
@@ -46,7 +45,7 @@ export default class extends BaseAdapter {
       fill: async (
         args: { refName: string; start: number; end: number; bpPerPx: number },
         abortSignal: AbortSignal,
-      ): Promise<FeatureStats> => {
+      ) => {
         const { refName, start, end, bpPerPx } = args
         const feats = await this.getFeatures(
           { refName, start, end },
@@ -55,8 +54,7 @@ export default class extends BaseAdapter {
             basesPerSpan: bpPerPx,
           },
         )
-        const featsArray = await feats.pipe(toArray()).toPromise()
-        return scoresToStats({ refName, start, end }, featsArray)
+        return scoresToStats({ refName, start, end }, feats)
       },
     })
   }
@@ -131,13 +129,10 @@ export default class extends BaseAdapter {
    * @param {IRegion} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures(
-    region: INoAssemblyRegion,
-    opts: BaseOptions = {},
-  ): Observable<Feature> {
+  public getFeatures(region: INoAssemblyRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
     const { signal, bpPerPx } = opts
-    return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
+    return ObservableCreate<Feature>(async observer => {
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
         signal,
         basesPerSpan: bpPerPx,

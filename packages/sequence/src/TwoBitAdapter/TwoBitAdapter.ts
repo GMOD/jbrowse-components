@@ -4,7 +4,6 @@ import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { TwoBitFile } from '@gmod/twobit'
-import { Observable, Observer } from 'rxjs'
 
 export default class extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,31 +40,25 @@ export default class extends BaseAdapter {
    * @param {INoAssemblyRegion} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures({
-    refName,
-    start,
-    end,
-  }: INoAssemblyRegion): Observable<Feature> {
-    return ObservableCreate<Feature>(
-      async (observer: Observer<Feature>): Promise<void> => {
-        const size = await this.twobit.getSequenceSize(refName)
-        const regionEnd = size !== undefined ? Math.min(size, end) : end
-        const seq: string = await this.twobit.getSequence(
-          refName,
-          start,
-          regionEnd,
+  public getFeatures({ refName, start, end }: INoAssemblyRegion) {
+    return ObservableCreate<Feature>(async observer => {
+      const size = await this.twobit.getSequenceSize(refName)
+      const regionEnd = size !== undefined ? Math.min(size, end) : end
+      const seq: string = await this.twobit.getSequence(
+        refName,
+        start,
+        regionEnd,
+      )
+      if (seq) {
+        observer.next(
+          new SimpleFeature({
+            id: `${refName} ${start}-${regionEnd}`,
+            data: { refName, start, end: regionEnd, seq },
+          }),
         )
-        if (seq) {
-          observer.next(
-            new SimpleFeature({
-              id: `${refName} ${start}-${regionEnd}`,
-              data: { refName, start, end: regionEnd, seq },
-            }),
-          )
-        }
-        observer.complete()
-      },
-    )
+      }
+      observer.complete()
+    })
   }
 
   /**

@@ -7,6 +7,7 @@ exports[`no features 1`] = `
   <svg
     class="SvgFeatureRendering"
     height="20px"
+    style="display: block;"
     width="100px"
   />
 </div>
@@ -19,6 +20,7 @@ exports[`one feature (compact mode) 1`] = `
   <svg
     class="SvgFeatureRendering"
     height="0px"
+    style="display: block;"
     width="333.3333333333333px"
   >
     <g>
@@ -109,6 +111,7 @@ exports[`one feature 1`] = `
   <svg
     class="SvgFeatureRendering"
     height="0px"
+    style="display: block;"
     width="333.3333333333333px"
   >
     <g>
@@ -140,6 +143,7 @@ exports[`processed transcript (reducedRepresentation mode) 1`] = `
   <svg
     class="SvgFeatureRendering"
     height="0px"
+    style="display: block;"
     width="333.3333333333333px"
   >
     <g>
@@ -169,6 +173,7 @@ exports[`processed transcript 1`] = `
   <svg
     class="SvgFeatureRendering"
     height="0px"
+    style="display: block;"
     width="333.3333333333333px"
   >
     <g>

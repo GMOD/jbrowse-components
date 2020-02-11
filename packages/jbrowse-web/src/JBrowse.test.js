@@ -480,10 +480,15 @@ describe('breakpoint split view', () => {
   it('open a split view', async () => {
     const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const state = JBrowseRootModel.create({ jbrowse: breakpointConfig })
-    const { findByTestId } = render(<JBrowse initialState={state} />)
-
+    const { findByTestId, queryAllByTestId } = render(
+      <JBrowse initialState={state} />,
+    )
+    await wait(() => {
+      const r = queryAllByTestId('r1')
+      expect(r.length).toBe(2)
+    }) // the breakpoint could be partially loaded so explicitly wait for two items
     expect(
-      await findByTestId('pacbio_hg002_breakpoints-loaded', { timeout: 8000 }),
+      await findByTestId('pacbio_hg002_breakpoints-loaded'),
     ).toMatchSnapshot()
 
     expect(await findByTestId('pacbio_vcf-loaded')).toMatchSnapshot()

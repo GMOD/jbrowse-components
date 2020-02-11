@@ -1,5 +1,7 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { Observable } from 'rxjs'
+import { reduce } from 'rxjs/operators'
 
 export interface UnrectifiedFeatureStats {
   scoreMin: number
@@ -106,31 +108,63 @@ export function calcPerBaseStats(
  * @param feats - array of features which are possibly summary features
  * @return - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
  */
-export function scoresToStats(
+export async function scoresToStats(
   region: INoAssemblyRegion,
-  feats: Feature[],
-): FeatureStats {
+  features: Observable<Feature>,
+): Promise<FeatureStats> {
   const { start, end } = region
-  let scoreMax = Number.MIN_VALUE
-  let scoreMin = Number.MAX_VALUE
-  let scoreSum = 0
-  let scoreSumSquares = 0
 
-  for (let i = 0; i < feats.length; i += 1) {
-    const f = feats[i]
-    const score = f.get('score')
-    scoreMax = Math.max(scoreMax, f.get('summary') ? f.get('maxScore') : score)
-    scoreMin = Math.min(scoreMin, f.get('summary') ? f.get('minScore') : score)
-    scoreSum += score
-    scoreSumSquares += score * score
-  }
+  const {
+    scoreMin,
+    scoreMax,
+    scoreSum,
+    scoreSumSquares,
+    featureCount,
+  } = await features
+    .pipe(
+      reduce(
+        (
+          seed: {
+            scoreMin: number
+            scoreMax: number
+            scoreSum: number
+            scoreSumSquares: number
+            featureCount: number
+          },
+          f: Feature,
+        ) => {
+          const score = f.get('score')
+          seed.scoreMax = Math.max(
+            seed.scoreMax,
+            f.get('summary') ? f.get('maxScore') : score,
+          )
+          seed.scoreMin = Math.min(
+            seed.scoreMin,
+            f.get('summary') ? f.get('minScore') : score,
+          )
+          seed.scoreSum += score
+          seed.scoreSumSquares += score * score
+          seed.featureCount += 1
+
+          return seed
+        },
+        {
+          scoreMin: Number.MAX_VALUE,
+          scoreMax: Number.MIN_VALUE,
+          scoreSum: 0,
+          scoreSumSquares: 0,
+          featureCount: 0,
+        },
+      ),
+    )
+    .toPromise()
 
   return rectifyStats({
     scoreMax,
     scoreMin,
     scoreSum,
     scoreSumSquares,
-    featureCount: feats.length,
+    featureCount,
     basesCovered: end - start + 1,
   })
 }

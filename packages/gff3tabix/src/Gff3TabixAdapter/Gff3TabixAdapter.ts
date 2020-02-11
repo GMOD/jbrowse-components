@@ -68,9 +68,9 @@ export default class extends BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   public getFeatures(query: INoAssemblyRegion, opts: BaseOptions = {}) {
-    return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
+    return ObservableCreate<Feature>(async observer => {
       const metadata = await this.gff.getMetadata()
-      this.getFeaturesHelper(query, opts, metadata, observer, true, query)
+      this.getFeaturesHelper(query, opts, metadata, observer, true)
     })
   }
 
@@ -80,7 +80,7 @@ export default class extends BaseAdapter {
     metadata: { columnNumbers: { start: number; end: number } },
     observer: Observer<Feature>,
     allowRedispatch: boolean,
-    originalQuery: INoAssemblyRegion,
+    originalQuery = query,
   ) {
     try {
       const lines: LineFeature[] = []

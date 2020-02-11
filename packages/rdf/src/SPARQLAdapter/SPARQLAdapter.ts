@@ -2,7 +2,6 @@ import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { Observable, Observer } from 'rxjs'
 import format from 'string-template'
 
 interface SPARQLEntry {
@@ -100,23 +99,18 @@ export default class extends BaseAdapter {
    * @param {IRegion} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures(
-    query: INoAssemblyRegion,
-    opts: BaseOptions = {},
-  ): Observable<Feature> {
-    return ObservableCreate<Feature>(
-      async (observer: Observer<Feature>): Promise<void> => {
-        const filledTemplate = encodeURIComponent(
-          format(this.queryTemplate, query),
-        )
-        const { refName } = query
-        const results = await this.querySparql(filledTemplate, opts)
-        this.resultsToFeatures(results, refName).forEach(feature => {
-          observer.next(feature)
-        })
-        observer.complete()
-      },
-    )
+  public getFeatures(query: INoAssemblyRegion, opts: BaseOptions = {}) {
+    return ObservableCreate<Feature>(async observer => {
+      const filledTemplate = encodeURIComponent(
+        format(this.queryTemplate, query),
+      )
+      const { refName } = query
+      const results = await this.querySparql(filledTemplate, opts)
+      this.resultsToFeatures(results, refName).forEach(feature => {
+        observer.next(feature)
+      })
+      observer.complete()
+    })
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

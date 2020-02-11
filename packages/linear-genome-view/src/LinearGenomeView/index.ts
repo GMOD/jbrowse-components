@@ -9,7 +9,8 @@ import {
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
-import { getParent, getSnapshot, types, cast } from 'mobx-state-tree'
+import { getParent, getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
+
 import { BlockSet } from '../BasicTrack/util/blockTypes'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
@@ -170,23 +171,31 @@ export function stateModelFactory(pluginManager: any) {
           horizontallyFlipped: this.horizontallyFlipped,
         }
       },
+      get assemblyNames() {
+        const assemblyNames: string[] = []
+        self.displayedRegions.forEach(displayedRegion => {
+          if (!assemblyNames.includes(displayedRegion.assemblyName))
+            assemblyNames.push(displayedRegion.assemblyName)
+        })
+        return assemblyNames
+      },
 
       bpToPx({ refName, coord }: { refName: string; coord: number }) {
-        let offsetPx = 0
+        let offsetBp = 0
+
         const index = this.displayedRegionsInOrder.findIndex(r => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
-            offsetPx += (coord - r.start) / self.bpPerPx
+            offsetBp += self.reversed ? r.end - coord : coord - r.start
             return true
           }
-          offsetPx += (r.end - r.start) / self.bpPerPx
+          offsetBp += r.end - r.start
           return false
         })
         const foundRegion = self.displayedRegions[index]
-        offsetPx = Math.round(offsetPx)
         if (foundRegion) {
           return {
             index,
-            offsetPx,
+            offsetPx: Math.round(offsetBp / self.bpPerPx),
           }
         }
         return undefined
@@ -246,7 +255,7 @@ export function stateModelFactory(pluginManager: any) {
         self.width = newWidth
       },
 
-      setError(error: Error) {
+      setError(error: Error | undefined) {
         self.error = error
       },
 
@@ -370,8 +379,7 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       navToLocstring(locstring: string) {
-        const parsed = parseLocString(locstring) as IRegion
-        return this.navTo(parsed)
+        return this.navTo(parseLocString(locstring))
       },
 
       /*
@@ -379,50 +387,60 @@ export function stateModelFactory(pluginManager: any) {
        * can handle if there are multiple displayedRegions from same chr
        * only navigates to a locstring if it is entirely within a displayedRegion
        *
-       * @param {refName,start,end} is a proposed location to navigate to
+       * @param {refName,start,end,assemblyName?} is a proposed location to navigate to
        * returns true if navigation was successful, false if not
        */
-      navTo({
-        refName = '',
-        start,
-        end,
-      }: {
-        assemblyName?: string
+      async navTo(query: {
+        refName?: string
         start?: number
         end?: number
-        refName?: string
+        assemblyName?: string
       }) {
-        let s = start
-        let e = end
-        const index = self.displayedRegionsInOrder.findIndex(r => {
-          if (refName === r.refName) {
-            if (s === undefined) {
-              s = r.start
+        try {
+          // eslint-disable-next-line prefer-const
+          let { refName = '', start, end, assemblyName } = query
+          if (refName) {
+            const root = getRoot(self)
+            refName = await root.jbrowse.getCanonicalRefName(
+              refName,
+              assemblyName || self.assemblyNames[0],
+            )
+          }
+
+          // get the proper displayedRegion that is relevant for the nav command
+          // assumes that a single displayedRegion will satisfy the query
+          // TODO: may not necessarily be true?
+          const index = self.displayedRegionsInOrder.findIndex(region => {
+            if (refName === region.refName) {
+              if (start === undefined) {
+                start = region.start
+              }
+              if (end === undefined) {
+                end = region.end
+              }
+              if (start >= region.start && end <= region.end) {
+                return true
+              }
             }
-            if (e === undefined) {
-              e = r.end
-            }
-            if (s >= r.start && e <= r.end) {
-              return true
-            }
+            return false
+          })
+
+          if (start === undefined || end === undefined) {
+            return false
+          }
+          if (index !== -1) {
+            const result = self.displayedRegionsInOrder[index]
+            this.moveTo(
+              { index, offset: start - result.start },
+              { index, offset: end - result.start },
+            )
+            return true
           }
           return false
-        })
-        if (s === undefined) {
+        } catch (e) {
+          this.setError(e)
           return false
         }
-        if (e === undefined) {
-          return false
-        }
-        const f = self.displayedRegionsInOrder[index]
-        if (index !== -1) {
-          this.moveTo(
-            { index, offset: s - f.start },
-            { index, offset: e - f.start },
-          )
-          return true
-        }
-        return false
       },
 
       // schedule something to be run after the next time displayedRegions is set

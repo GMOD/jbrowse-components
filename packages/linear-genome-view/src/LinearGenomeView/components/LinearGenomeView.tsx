@@ -367,22 +367,14 @@ const RefSeqDropdown = observer(({ model, onSubmit }) => {
 
 const Header = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
-  const [error, setError] = useState<string | undefined>()
-  const navTo = (locstring: string) => {
-    if (!model.navToLocstring(locstring)) {
-      setError(`Unable to navigate to ${locstring}`)
-    } else {
-      setError(undefined)
-    }
-  }
   return (
     <div className={classes.headerBar}>
       {model.hideControls ? null : <Controls model={model} />}
       <TextFieldOrTypography model={model} />
       <div className={classes.spacer} />
 
-      <Search onSubmit={navTo} error={error} />
-      <RefSeqDropdown onSubmit={navTo} model={model} />
+      <Search onSubmit={model.navToLocstring} error={''} />
+      <RefSeqDropdown onSubmit={model.navToLocstring} model={model} />
 
       <ZoomControls model={model} />
       <div className={classes.spacer} />
@@ -546,7 +538,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
               <div
                 style={{ gridRow: 'error', textAlign: 'center', color: 'red' }}
               >
-                {error.message}
+                {`${error}`}
               </div>
             ) : (
               <>

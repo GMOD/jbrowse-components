@@ -6,7 +6,6 @@ import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { Observable, Observer } from 'rxjs'
 import { map, mergeAll } from 'rxjs/operators'
 
 interface BEDFeature {
@@ -61,13 +60,10 @@ export default class extends BaseAdapter {
    * @param abortSignal an abortSignal
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures(
-    region: IRegion,
-    opts: BaseOptions = {},
-  ): Observable<Feature> {
+  public getFeatures(region: IRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
     const { signal } = opts
-    return ObservableCreate(async (observer: Observer<Feature>) => {
+    return ObservableCreate<Feature>(async observer => {
       try {
         const parser = await this.parser
         const ob = await this.bigbed.getFeatureStream(refName, start, end, {

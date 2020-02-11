@@ -263,13 +263,15 @@ export default class implements Feature {
 
   private cigarToMismatches(ops: CigarOp[]): Mismatch[] {
     let currOffset = 0
+    let seqOffset = 0
+    const seq = this.get('seq')
     const mismatches: Mismatch[] = []
     ops.forEach(oprec => {
       const op = oprec[0]
       const len = oprec[1]
-      // if( op == 'M' || op == '=' || op == 'E' ) {
-      //     // nothing
-      // }
+      if (op === 'M' || op === '=' || op === 'E') {
+        seqOffset += len
+      }
       if (op === 'I') {
         // GAH: shouldn't length of insertion really by 0, since JBrowse internally uses zero-interbase coordinates?
         mismatches.push({
@@ -278,6 +280,7 @@ export default class implements Feature {
           base: `${len}`,
           length: 1,
         })
+        seqOffset += len
       } else if (op === 'D') {
         mismatches.push({
           start: currOffset,
@@ -293,12 +296,16 @@ export default class implements Feature {
           length: len,
         })
       } else if (op === 'X') {
-        mismatches.push({
-          start: currOffset,
-          type: 'mismatch',
-          base: 'X',
-          length: len,
-        })
+        const r = seq.slice(seqOffset, seqOffset + len)
+        for (let i = 0; i < len; i++) {
+          mismatches.push({
+            start: currOffset + i,
+            type: 'mismatch',
+            base: r[i],
+            length: 1,
+          })
+        }
+        seqOffset += len
       } else if (op === 'H') {
         mismatches.push({
           start: currOffset,
@@ -315,9 +322,12 @@ export default class implements Feature {
           cliplen: len,
           length: 1,
         })
+        seqOffset += len
       }
 
-      if (op !== 'I' && op !== 'S' && op !== 'H') currOffset += len
+      if (op !== 'I' && op !== 'S' && op !== 'H') {
+        currOffset += len
+      }
     })
     return mismatches
   }

@@ -2,7 +2,6 @@ import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
-import { Observable, Observer } from 'rxjs'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration
@@ -127,10 +126,10 @@ export default class FromConfigAdapter extends BaseAdapter {
    * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures(region: INoAssemblyRegion): Observable<Feature> {
+  getFeatures(region: INoAssemblyRegion) {
     const { refName, start, end } = region
 
-    return ObservableCreate(async (observer: Observer<Feature>) => {
+    return ObservableCreate<Feature>(async observer => {
       const features = this.features.get(refName) || []
       for (let i = 0; i < features.length; i += 1) {
         const f = features[i]
