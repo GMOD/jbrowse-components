@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import { BaseTrackConfig as LinearGenomeTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { BaseTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
 export default pluginManager => {
@@ -19,6 +19,6 @@ export default pluginManager => {
         SNPCoverageRenderer: SNPCoverageRendererConfigSchema,
       }),
     },
-    { baseConfiguration: LinearGenomeTrackConfig, explicitlyTyped: true },
+    { baseConfiguration: BaseTrackConfig, explicitlyTyped: true },
   )
 }

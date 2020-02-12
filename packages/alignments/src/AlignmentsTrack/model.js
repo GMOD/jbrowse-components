@@ -5,7 +5,7 @@ import {
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { types } from 'mobx-state-tree'
+import { types, getSnapshot } from 'mobx-state-tree'
 import wiggleStateModelFactory from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/model'
 
 // using a map because it preserves order
@@ -44,6 +44,7 @@ export default (pluginManager, configSchema) =>
          */
         get rendererTypeName() {
           const viewName = getConf(self, 'defaultRendering')
+          console.log('Am I getting here?', viewName, getSnapshot(self))
           const rendererType = rendererTypes.get(viewName)
           if (!rendererType)
             throw new Error(`unknown alignments view name ${viewName}`)
