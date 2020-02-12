@@ -12,6 +12,8 @@ import wiggleStateModelFactory from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack
 const rendererTypes = new Map([
   ['pileup', 'PileupRenderer'],
   ['svg', 'SvgFeatureRenderer'],
+  ['snpcoverage', 'SNPCoverageRenderer'],
+  ['pileupsnpcoverage', 'PileupSNPCoverageRenderer'],
 ])
 
 export default (pluginManager, configSchema) =>

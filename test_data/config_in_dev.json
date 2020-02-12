@@ -1680,6 +1680,12 @@
         },
         "SvgFeatureRenderer": {
           "type": "SvgFeatureRenderer"
+        },
+        "SNPCoverageRenderer": {
+          "type": "SNPCoverageRenderer"
+        },
+        "PileupSNPCoverageRenderer": {
+          "type": "PileupSNPCoverageRenderer"
         }
       },
       "coverageTrack":{
