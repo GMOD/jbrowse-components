@@ -1683,28 +1683,36 @@
         },
         "SNPCoverageRenderer": {
           "type": "SNPCoverageRenderer"
+        }
+      }
+    },
+    {
+      "type": "ComboTrack",
+      "trackId": "volvox_bam combo",
+      "name": "volvox test combo track",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "category": [
+        "Combo"
+      ],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "test_data/volvox-sorted.bam"
         },
-        "PileupSNPCoverageRenderer": {
-          "type": "PileupSNPCoverageRenderer"
+        "index": {
+          "location": {
+            "uri": "test_data/volvox-sorted.bam.bai"
+          }
         }
       },
-      "coverageTrack":{
-        "SNPCoverageTrack": {
-          "type": "SNPCoverageTrack",
-          "adapter": {
-            "type": "SNPCoverageAdapter",
-            "subadapter": {
-              "type": "BamAdapter",
-              "bamLocation": {
-                "uri": "test_data/volvox-sorted.bam"
-              },
-              "index": {
-                "location": {
-                  "uri": "test_data/volvox-sorted.bam.bai"
-                }
-              }
-            }
-          }
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SNPCoverageRenderer": {
+          "type": "SNPCoverageRenderer"
         }
       }
     },
