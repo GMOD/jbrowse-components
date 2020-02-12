@@ -5,11 +5,10 @@ import React from 'react'
 
 function ComboTrackComponent(props) {
   const { model } = props
-  const { AlignmentsTrack, SNPCoverageTrack } = model
+  const { AlignmentsTrack } = model
   return (
     <>
       <BlockBasedTrack model={model} {...AlignmentsTrack}></BlockBasedTrack>
-      <BlockBasedTrack model={model} {...SNPCoverageTrack}></BlockBasedTrack>
     </>
   )
 }
