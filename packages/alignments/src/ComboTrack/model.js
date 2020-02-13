@@ -2,7 +2,10 @@ import {
   ConfigurationReference,
   getConf,
 } from '@gmod/jbrowse-core/configuration'
-import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
+import {
+  blockBasedTrackModel,
+  BaseTrack,
+} from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types, getSnapshot } from 'mobx-state-tree'
 import { modelFactory as snpcoverageStateModelFactory } from '../SNPCoverageTrack'
 import {
@@ -17,6 +20,7 @@ export default (pluginManager, configSchema) => {
   )
   return types.compose(
     'ComboTrack',
+    BaseTrack,
     types
       .model({
         AlignmentsTrack: alignmentsTrackStateModelFactory(
@@ -46,7 +50,7 @@ export default (pluginManager, configSchema) => {
           },
         }
         // console.log('AFTER')
-        console.log(JSON.stringify(ret, 0, 2))
+        // console.log(JSON.stringify(ret, 0, 2))
         return ret
       }),
   )

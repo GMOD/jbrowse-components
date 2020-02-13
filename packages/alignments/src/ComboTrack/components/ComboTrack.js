@@ -6,11 +6,7 @@ import React from 'react'
 function ComboTrackComponent(props) {
   const { model } = props
   const { AlignmentsTrack } = model
-  return (
-    <>
-      <BlockBasedTrack model={model} {...AlignmentsTrack}></BlockBasedTrack>
-    </>
-  )
+  return <BlockBasedTrack {...props} {...AlignmentsTrack}></BlockBasedTrack>
 }
 
 ComboTrackComponent.propTypes = {
