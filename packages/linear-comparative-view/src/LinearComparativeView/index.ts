@@ -3,12 +3,11 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
     '@gmod/jbrowse-core/pluggableElementTypes/ViewType',
   )
 
-  const { stateModel, configSchema } = jbrequire(require('./model'))
+  const stateModel = jbrequire(require('./model'))
 
   return new ViewType({
     name: 'LinearComparativeView',
     stateModel,
-    configSchema,
     ReactComponent: jbrequire(require('./components/LinearComparativeView')),
   })
 }

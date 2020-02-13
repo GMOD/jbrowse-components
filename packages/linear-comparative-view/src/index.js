@@ -12,17 +12,16 @@ export default class LinearComparativeViewPlugin {
     )
 
     pluginManager.addTrackType(() => {
-      const configSchema = linearComparativeTrackConfigSchema(
+      const configSchema = linearComparativeTrackConfigSchema(pluginManager)
+      const stateModel = linearComparativeTrackModelFactory(
         pluginManager,
-        'LinearComparativeTrack',
+        configSchema,
       )
+      console.log(configSchema, stateModel)
       return new TrackType({
         name: 'LinearComparativeTrack',
         configSchema,
-        stateModel: linearComparativeTrackModelFactory(
-          configSchema,
-          'LinearComparativeTrack',
-        ),
+        stateModel,
       })
     })
   }

@@ -18,7 +18,7 @@ import Wiggle from '@gmod/jbrowse-plugin-wiggle'
 import SpreadsheetViewPlugin from '@gmod/jbrowse-plugin-spreadsheet-view'
 import BreakpointSplitView from '@gmod/jbrowse-plugin-breakpoint-split-view'
 import SvInspectorPlugin from '@gmod/jbrowse-plugin-sv-inspector'
-import SyntenyView from '@gmod/jbrowse-plugin-synteny-view'
+import LinearComparativeView from '@gmod/jbrowse-plugin-linear-comparative-view'
 
 export default [
   Alignments,
@@ -41,5 +41,5 @@ export default [
   SpreadsheetViewPlugin,
   BreakpointSplitView,
   SvInspectorPlugin,
-  SyntenyView,
+  LinearComparativeView,
 ]

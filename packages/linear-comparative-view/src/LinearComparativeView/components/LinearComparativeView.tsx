@@ -148,11 +148,7 @@ export default (pluginManager: any) => {
 
   const LinearComparativeView = observer(
     ({ model }: { model: LinearComparativeViewModel }) => {
-      return getConf(model, 'middle') ? (
-        <MiddleComparativeView model={model} />
-      ) : (
-        <OverlayComparativeView model={model} />
-      )
+      return <OverlayComparativeView model={model} />
     },
   )
 
