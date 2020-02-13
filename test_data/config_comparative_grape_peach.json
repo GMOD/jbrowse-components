@@ -1,0 +1,222 @@
+{
+  "defaultSession": {
+    "name": "New Session",
+    "menuBars": [
+      {
+        "type": "MainMenuBar"
+      }
+    ]
+  },
+  "savedSessions": [
+    {
+      "name": "Grape vs Peach Demo",
+      "width": 1850,
+      "drawerWidth": 384,
+      "views": [
+        {
+          "type": "LinearComparativeView",
+          "id": "test1",
+          "headerHeight": 44,
+          "datasetName": "grape_vs_peach_dataset",
+          "width": 1850,
+          "height": 400,
+          "displayName": "Grape vs Peach",
+          "trackSelectorType": "hierarchical",
+          "views": [
+            {
+              "type": "LinearGenomeView",
+              "id": "test1_1",
+              "offsetPx": 0,
+              "bpPerPx": 1000,
+              "displayRegionsFromAssemblyName": "peach",
+              "reversed": false,
+              "tracks": [
+                {
+                  "type": "BasicTrack",
+                  "height": 100,
+                  "configuration": "peach_genes",
+                  "selectedRendering": ""
+                }
+              ],
+              "controlsWidth": 120,
+              "width": 800,
+              "hideControls": false,
+              "hideHeader": true,
+              "hideCloseButton": true,
+              "trackSelectorType": "hierarchical",
+              "minimumBlockWidth": 20
+            },
+            {
+              "type": "LinearGenomeView",
+              "id": "test1_2",
+              "offsetPx": 0,
+              "bpPerPx": 1000,
+              "displayRegionsFromAssemblyName": "grape",
+              "reversed": false,
+              "tracks": [
+                {
+                  "type": "BasicTrack",
+                  "height": 100,
+                  "configuration": "grape_genes",
+                  "selectedRendering": ""
+                }
+              ],
+              "controlsWidth": 120,
+              "width": 800,
+              "hideControls": false,
+              "hideHeader": true,
+              "hideCloseButton": true,
+              "trackSelectorType": "hierarchical",
+              "minimumBlockWidth": 20
+            }
+          ]
+        }
+      ],
+      "drawerWidgets": {
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "collapsed": {},
+          "filterText": ""
+        },
+        "sessionManager": {
+          "id": "sessionManager",
+          "type": "SessionManager"
+        }
+      },
+      "activeDrawerWidgets": {},
+      "connections": {}
+    }
+  ],
+  "assemblies": [
+    {
+      "name": "grape",
+      "sequence": {
+        "trackId": "grape_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/grape.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
+    },
+    {
+      "name": "peach",
+      "sequence": {
+        "trackId": "peach_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/peach.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "trackId": "grape_peach_comparative_mcscan",
+      "type": "LinearComparativeTrack",
+      "assemblyNames": [
+        "peach",
+        "grape"
+      ],
+      "name": "Grape peach comparative (MCScan)",
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/comparative/peach_gene/{refseq}/trackData.json"
+      }
+    },
+    {
+      "trackId": "peach_genes",
+      "type": "BasicTrack",
+      "assemblyNames": [
+        "peach"
+      ],
+      "name": "mcscan",
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/comparative/peach_gene/{refseq}/trackData.json"
+      },
+      "renderer": {
+        "type": "PileupRenderer"
+      }
+    },
+    {
+      "trackId": "peach_genes2",
+      "type": "BasicTrack",
+      "assemblyNames": [
+        "peach"
+      ],
+      "name": "mcscan2",
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/comparative/peach_gene/{refseq}/trackData.json"
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "trackId": "grape_genes",
+      "type": "BasicTrack",
+      "name": "mcscan",
+      "assemblyNames": [
+        "grape"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/comparative/grape_gene/{refseq}/trackData.json"
+      },
+      "renderer": {
+        "type": "PileupRenderer"
+      }
+    },
+    {
+      "trackId": "grape_genes2",
+      "type": "BasicTrack",
+      "name": "mcscan2",
+      "category": [
+        "Annotation"
+      ],
+      "assemblyNames": [
+        "grape"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/comparative/grape_gene/{refseq}/trackData.json"
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    }
+  ],
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    },
+    "updateUrl": true,
+    "useLocalStorage": false
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "@gmod/jbrowse-plugin-linear-comparative-view",
+  "version": "2.0.0",
+  "description": "JBrowse 2 linear comparative view",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "cd ../..; jest packages/linear-comparative-view"
+  },
+  "author": "Robert Buels",
+  "license": "MIT",
+  "dependencies": {
+    "@material-ui/icons": "^4.5.1",
+    "array-intersection": "^0.1.2",
+    "clsx": "^1.0.4",
+    "is-object": "^1.0.1",
+    "react-sizeme": "^2.6.7",
+    "svg-path-generator": "^1.1.0"
+  },
+  "peerDependencies": {
+    "@gmod/jbrowse-core": "^2.0.0",
+    "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
+    "@material-ui/core": "^4.0.0",
+    "generic-filehandle": "^2.0.1",
+    "mobx": "^5.0.0",
+    "mobx-state-tree": "^2.0.0",
+    "mobx-react": "^6.0.0",
+    "prop-types": "^15.0.0",
+    "react": "^16.9.0",
+    "rxjs": "^6.0.0"
+  }
+}
