@@ -1,29 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles'
-import { LinearSyntenyViewModel } from '../model'
-
-// return !syntenyGroup
-//   ? null
-//   : [
-//       getConf(model, 'showAnchors') &&
-//         model.allMatchedAnchorFeatures[syntenyGroup],
-//       getConf(model, 'showSimpleAnchors') &&
-//         model.allMatchedSimpleAnchorFeatures[syntenyGroup],
-//       getConf(model, 'showPaf') && model.minimap2Features,
-//       getConf(model, 'showSam') && model.samFeatures,
-//       model.getMatchedFeaturesInLayout(
-//         syntenyGroup,
-//         model.allMatchedSyntenyFeatures[syntenyGroup],
-//       ),
-//     ].map((layoutMatches, index) =>
-//       layoutMatches ? (
-//         <Overlay
-//           key={`${syntenyGroup}_${index}`}
-//           syntenyGroup={syntenyGroup}
-//           layoutMatches={layoutMatches}
-//           model={model}
-//         />
-//       ) : null,
-//
+import { LinearComparativeViewModel } from '../model'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
@@ -75,15 +51,17 @@ export default (pluginManager: any) => {
   })
 
   const Overlays = observer(
-    ({ model }: { model: LinearSyntenyViewModel; syntenyGroup: string }) => (
+    ({
+      model,
+    }: {
+      model: LinearComparativeViewModel
+      comparativeGroup: string
+    }) => (
       <>
         {model.tracks.map(track => {
-          const syntenyGroup = model.getSyntenyGroup(track) || ''
           return (
             <track.ReactComponent
               key={getConf(track, 'trackId')}
-              syntenyGroup={model.getSyntenyGroup(track)}
-              layoutMatches={model.allMatchedSimpleAnchorFeatures[syntenyGroup]}
               model={model}
               track={track}
             />
@@ -93,9 +71,9 @@ export default (pluginManager: any) => {
     ),
   )
 
-  // The synteny is in the middle of the views
-  const MiddleSyntenyView = observer(
-    ({ model }: { model: LinearSyntenyViewModel }) => {
+  // The comparative is in the middle of the views
+  const MiddleComparativeView = observer(
+    ({ model }: { model: LinearComparativeViewModel }) => {
       const classes = useStyles()
       const { views, controlsWidth } = model
       const { ReactComponent } = pluginManager.getViewType(views[0].type)
@@ -128,8 +106,8 @@ export default (pluginManager: any) => {
       )
     },
   )
-  const OverlaySyntenyView = observer(
-    ({ model }: { model: LinearSyntenyViewModel }) => {
+  const OverlayComparativeView = observer(
+    ({ model }: { model: LinearComparativeViewModel }) => {
       const classes = useStyles()
       const { views, controlsWidth } = model
       return (
@@ -168,26 +146,26 @@ export default (pluginManager: any) => {
     },
   )
 
-  const LinearSyntenyView = observer(
-    ({ model }: { model: LinearSyntenyViewModel }) => {
+  const LinearComparativeView = observer(
+    ({ model }: { model: LinearComparativeViewModel }) => {
       return getConf(model, 'middle') ? (
-        <MiddleSyntenyView model={model} />
+        <MiddleComparativeView model={model} />
       ) : (
-        <OverlaySyntenyView model={model} />
+        <OverlayComparativeView model={model} />
       )
     },
   )
 
-  MiddleSyntenyView.propTypes = {
+  MiddleComparativeView.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
 
-  OverlaySyntenyView.propTypes = {
+  OverlayComparativeView.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
 
-  LinearSyntenyView.propTypes = {
+  LinearComparativeView.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
-  return LinearSyntenyView
+  return LinearComparativeView
 }
