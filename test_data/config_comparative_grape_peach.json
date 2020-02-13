@@ -137,7 +137,14 @@
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/comparative/peach_gene/{refseq}/trackData.json"
-      }
+      },
+      "renderer": {
+        "type": "PileupRenderer"
+      },
+      "trackIds": [
+        "peach_genes",
+        "grape_genes"
+      ]
     },
     {
       "trackId": "peach_genes",

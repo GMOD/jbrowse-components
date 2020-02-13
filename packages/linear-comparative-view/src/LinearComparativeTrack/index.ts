@@ -25,6 +25,8 @@ export function configSchemaFactory(pluginManager: any) {
         type: 'boolean',
         defaultValue: true,
       },
+      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
+      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
     },
     {
       baseConfiguration: BaseTrackConfig,
