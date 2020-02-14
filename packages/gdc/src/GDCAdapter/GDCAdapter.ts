@@ -29,7 +29,7 @@ export default class extends BaseAdapter {
     this.filters = config.filters ? config.filters : '{}'
     this.cases = config.cases ? config.cases : []
     this.size = config.size ? config.size : 100
-    this.featureType = config.featureType ? config.featureType : 'ssm'
+    this.featureType = config.featureType ? config.featureType : 'mutation'
   }
 
   public async getRefNames() {
@@ -72,10 +72,10 @@ export default class extends BaseAdapter {
       try {
         const parser = await this.parser
         let query = {}
-        let idField = 'ssm'
+        let idField = 'mutation'
 
         switch (this.featureType) {
-          case 'ssm': {
+          case 'mutation': {
             query = this.createMutationQuery(
               refName.replace(/chr/, ''),
               start,
@@ -131,7 +131,7 @@ export default class extends BaseAdapter {
    * @param end end position
    */
   private createMutationQuery(ref: string, start: number, end: number) {
-    const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { features: ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { start_position end_position mutation_type cosmic_id reference_allele ncbi_build score genomic_dna_change mutation_subtype ssm_id chromosome } } } } } } }`
+    const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { features: ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { start_position end_position mutation_type cosmic_id reference_allele ncbi_build genomic_dna_change mutation_subtype ssm_id chromosome } } } } } } }`
     // const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { start_position end_position mutation_type cosmic_id reference_allele ncbi_build score genomic_dna_change mutation_subtype ssm_id chromosome consequence { hits { edges { node { transcript { is_canonical annotation { vep_impact polyphen_impact polyphen_score sift_score sift_impact hgvsc } consequence_type gene { gene_id symbol gene_strand } aa_change transcript_id } id } } } } } } } } } } }`
     const combinedFilters = this.getFilterQuery(ref, start, end)
     const body = {
@@ -202,7 +202,7 @@ export default class extends BaseAdapter {
     let locationFilter: any
 
     switch (this.featureType) {
-      case 'ssm': {
+      case 'mutation': {
         locationFilter = {
           op: 'and',
           content: [

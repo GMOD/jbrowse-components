@@ -13,8 +13,8 @@ export const configSchema = ConfigurationSchema(
     },
     featureType: {
       type: 'stringEnum',
-      model: types.enumeration('Feature Type', ['ssm', 'gene']),
-      defaultValue: 'ssm',
+      model: types.enumeration('Feature Type', ['mutation', 'gene']),
+      defaultValue: 'mutation',
       description: 'The type of track to add',
     },
     cases: {
