@@ -241,6 +241,6 @@ describe('configuration schemas', () => {
     expect(readConfObject(tester, 'thisShouldGetInstantiated')).toBe(
       'Not instantiated',
     )
-    expect(readConfObject(tester, 'index').indexType).toBe('TBI')
+    expect(readConfObject(tester, ['index', 'indexType'])).toBe('TBI')
   })
 })
