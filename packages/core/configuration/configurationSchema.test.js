@@ -4,7 +4,7 @@ import {
   isConfigurationModel,
 } from './configurationSchema'
 
-import { getConf } from '.'
+import { getConf, readConfObject } from '.'
 
 describe('configuration schemas', () => {
   test('can make a schema with a color', () => {
@@ -204,5 +204,42 @@ describe('configuration schemas', () => {
     })
 
     expect(getConf(model, ['mySubConfiguration', 'someNumber'])).toEqual(12)
+  })
+
+  test('re-check instantiation of slots (issue #797)', () => {
+    const configSchema = ConfigurationSchema(
+      'Gff3TabixAdapter',
+      {
+        gffGzLocation: {
+          type: 'fileLocation',
+          defaultValue: { uri: '/path/to/my.gff.gz' },
+        },
+        index: ConfigurationSchema('Gff3TabixIndex', {
+          indexType: {
+            model: types.enumeration('IndexType', ['TBI', 'CSI']),
+            type: 'stringEnum',
+            defaultValue: 'TBI',
+          },
+          location: {
+            type: 'fileLocation',
+            defaultValue: { uri: '/path/to/my.gff.gz.tbi' },
+          },
+        }),
+        dontRedispatch: {
+          type: 'stringArray',
+          defaultValue: ['chromosome', 'region'],
+        },
+        thisShouldGetInstantiated: {
+          type: 'string',
+          defaultValue: 'Not instantiated',
+        },
+      },
+      { explicitlyTyped: true },
+    )
+    const tester = configSchema.create()
+    expect(readConfObject(tester, 'dontRedispatch')[0]).toBe('chromosome')
+    expect(readConfObject(tester, 'thisShouldGetInstantiated')).toBe(
+      'Not instantiated',
+    )
   })
 })
