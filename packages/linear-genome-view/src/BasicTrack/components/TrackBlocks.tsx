@@ -17,6 +17,12 @@ import {
   InterRegionPaddingBlockMarker,
 } from './MarkerBlocks'
 
+interface ComboBlockBasedTrackStateModel
+  extends Instance<BlockBasedTrackStateModel> {
+  AlignmentsTrack?: Instance<BlockBasedTrackStateModel>
+  SNPCoverageTrack?: Instance<BlockBasedTrackStateModel>
+}
+
 const useStyles = makeStyles({
   trackBlocks: {
     whiteSpace: 'nowrap',
@@ -43,7 +49,9 @@ const RenderedBlocks = observer(
   (props: { model: Instance<BlockBasedTrackStateModel> }) => {
     const { model } = props
     const classes = useStyles()
-    const { blockDefinitions, blockState } = model
+    const { blockDefinitions, blockState } = model.blockDefinitions
+      ? model
+      : (model as any).AlignmentsTrack // eslint-disable-line @typescript-eslint/no-explicit-any
     return (
       <>
         {blockDefinitions.map((block: BaseBlock) => {
@@ -99,7 +107,12 @@ function TrackBlocks({
   viewModel: Instance<LinearGenomeViewStateModel>
 }) {
   const classes = useStyles()
-  const { blockDefinitions } = model
+  // const blockDefinitions = model.blockDefinitions
+  //   ? model.blockDefinitions
+  //   : model.AlignmentsTrack.blockDefinitions
+  const { blockDefinitions } = model.blockDefinitions
+    ? model
+    : (model as any).AlignmentsTrack // eslint-disable-line @typescript-eslint/no-explicit-any
   return (
     <div
       data-testid="Block"

@@ -16,6 +16,7 @@ export function getContainingView(node) {
 
 export function getTrackAssemblyNames(track) {
   const trackConf = track.configuration
+  console.log('config', trackConf)
   const trackAssemblyNames = readConfObject(trackConf, 'assemblyNames')
   if (!trackAssemblyNames) {
     // Check if it's an assembly sequence track

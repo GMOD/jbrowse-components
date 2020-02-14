@@ -1,4 +1,4 @@
-import { getConf } from '@gmod/jbrowse-core/configuration'
+// import { getConf } from '@gmod/jbrowse-core/configuration'
 import BlockBasedTrack from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/BlockBasedTrack'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React from 'react'

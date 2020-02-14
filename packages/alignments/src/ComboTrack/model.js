@@ -1,13 +1,13 @@
 import {
   ConfigurationReference,
-  getConf,
+  // getConf,
 } from '@gmod/jbrowse-core/configuration'
 import {
-  blockBasedTrackModel,
+  // blockBasedTrackModel,
   BaseTrack,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { types, getSnapshot } from 'mobx-state-tree'
-import { modelFactory as snpcoverageStateModelFactory } from '../SNPCoverageTrack'
+import { types } from 'mobx-state-tree'
+// import { modelFactory as snpcoverageStateModelFactory } from '../SNPCoverageTrack'
 import {
   modelFactory as alignmentsTrackStateModelFactory,
   configSchemaFactory as alignmentsTrackConfigSchemaFactory,
