@@ -514,8 +514,6 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
       }
     : {}) as React.CSSProperties
 
-  console.log(error, window.getSnapshot(tracks))
-
   return (
     <div className={classes.root}>
       <div className={classes.linearGenomeView} style={style}>
