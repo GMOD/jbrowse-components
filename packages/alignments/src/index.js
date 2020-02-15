@@ -40,10 +40,6 @@ import SNPCoverageRenderer, {
   configSchema as SNPCoverageRendererConfigSchema,
   ReactComponent as SNPCoverageRendererReactComponent,
 } from './SNPCoverageRenderer'
-import PileupSNPCoverageRenderer, {
-  configSchema as PileupSNPCoverageRendererConfigSchema,
-  ReactComponent as PileupSNPCoverageRendererReactComponent,
-} from './PileupSNPCoverageRenderer'
 
 export default class extends Plugin {
   install(pluginManager) {
@@ -121,14 +117,6 @@ export default class extends Plugin {
           name: 'SNPCoverageRenderer',
           ReactComponent: SNPCoverageRendererReactComponent,
           configSchema: SNPCoverageRendererConfigSchema,
-        }),
-    )
-    pluginManager.addRendererType(
-      () =>
-        new PileupSNPCoverageRenderer({
-          name: 'PileupSNPCoverageRenderer',
-          ReactComponent: PileupSNPCoverageRendererReactComponent,
-          configSchema: PileupSNPCoverageRendererConfigSchema,
         }),
     )
   }

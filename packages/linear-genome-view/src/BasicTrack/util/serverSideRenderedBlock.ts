@@ -169,7 +169,6 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     const { assemblyData, rpcManager } = getSession(self) as any
     const track = getParent(self, 2)
     const assemblyNames = getTrackAssemblyNames(track)
-    console.log('track', JSON.stringify(track.assemblyNames))
     let cannotBeRenderedReason
     if (!assemblyNames.includes(self.region.assemblyName)) {
       let matchFound = false

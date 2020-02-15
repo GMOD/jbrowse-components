@@ -6,7 +6,6 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
-import BoxRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
 import React from 'react'
 import { ScaleOpts } from './util'
 
@@ -30,8 +29,7 @@ interface WiggleBaseRendererProps {
   trackModel: unknown
 }
 
-// TODO: Change back to severside instead of box if solution is found or different path chosen
-export default class extends BoxRendererType {
+export default class extends ServerSideRendererType {
   async makeImageData(props: WiggleBaseRendererProps) {
     const { height, region, bpPerPx, highResolutionScaling = 1 } = props
     const width = (region.end - region.start) / bpPerPx

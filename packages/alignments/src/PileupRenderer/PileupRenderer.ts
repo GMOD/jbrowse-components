@@ -36,8 +36,8 @@ interface LayoutRecord {
   heightPx: number
 }
 
-export default class PileupRenderer extends BoxRendererType {
-  static layoutFeature(
+export default class extends BoxRendererType {
+  layoutFeature(
     feature: Feature,
     subLayout: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     config: any, // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -83,7 +83,7 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  static async makeImageData(props: PileupRenderProps) {
+  async makeImageData(props: PileupRenderProps) {
     const {
       features,
       layout,
@@ -93,6 +93,7 @@ export default class PileupRenderer extends BoxRendererType {
       horizontallyFlipped,
       highResolutionScaling = 1,
     } = props
+
     if (!layout) throw new Error(`layout required`)
     if (!layout.addRect) throw new Error('invalid layout object')
     const pxPerBp = Math.min(1 / bpPerPx, 2)
@@ -102,7 +103,7 @@ export default class PileupRenderer extends BoxRendererType {
     const layoutRecords = iterMap(
       features.values(),
       feature =>
-        PileupRenderer.layoutFeature(
+        this.layoutFeature(
           feature,
           layout,
           config,
@@ -241,7 +242,7 @@ export default class PileupRenderer extends BoxRendererType {
       width,
       imageData,
       maxHeightReached,
-    } = await PileupRenderer.makeImageData(renderProps)
+    } = await this.makeImageData(renderProps)
     const element = React.createElement(
       this.ReactComponent,
       { ...renderProps, height, width, imageData },

@@ -12,10 +12,17 @@ import {
   modelFactory as alignmentsTrackStateModelFactory,
   configSchemaFactory as alignmentsTrackConfigSchemaFactory,
 } from '../AlignmentsTrack'
+import {
+  modelFactory as snpCoverageTrackStateModelFactory,
+  configSchemaFactory as snpCoverageTrackConfigSchemaFactory,
+} from '../SNPCoverageTrack'
 import ComboTrackComponent from './components/ComboTrack'
 
 export default (pluginManager, configSchema) => {
   const alignmentConfigSchema = alignmentsTrackConfigSchemaFactory(
+    pluginManager,
+  )
+  const snpCoverageConfigSchema = snpCoverageTrackConfigSchemaFactory(
     pluginManager,
   )
   return types.compose(
@@ -26,6 +33,9 @@ export default (pluginManager, configSchema) => {
         AlignmentsTrack: alignmentsTrackStateModelFactory(
           pluginManager,
           alignmentConfigSchema,
+        ),
+        SNPCoverageTrack: snpCoverageTrackStateModelFactory(
+          snpCoverageConfigSchema,
         ),
         type: types.literal('ComboTrack'),
         configuration: ConfigurationReference(configSchema),
@@ -47,6 +57,16 @@ export default (pluginManager, configSchema) => {
               type: 'AlignmentsTrack',
             },
             type: 'AlignmentsTrack',
+          },
+          SNPCoverageTrack: {
+            ...snapshot,
+            configuration: {
+              ...snapshot.configuration,
+              trackId: `${snapshot.configuration.trackId}_snpcoverage`,
+              defaultRendering: 'snpcoverage',
+              type: `SNPCoverageTrack`,
+            },
+            type: 'SNPCoverageTrack',
           },
         }
         // console.log('AFTER')

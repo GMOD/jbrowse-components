@@ -5,8 +5,15 @@ import React from 'react'
 
 function ComboTrackComponent(props) {
   const { model } = props
-  const { AlignmentsTrack } = model
-  return <BlockBasedTrack {...props} {...AlignmentsTrack}></BlockBasedTrack>
+  const { AlignmentsTrack, SNPCoverageTrack } = model
+  console.log(AlignmentsTrack)
+  return (
+    <BlockBasedTrack
+      {...props}
+      {...AlignmentsTrack}
+      // {...SNPCoverageTrack} // Still need to write function to wrap adapter in a sub adapter
+    ></BlockBasedTrack>
+  )
 }
 
 ComboTrackComponent.propTypes = {

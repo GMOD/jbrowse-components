@@ -12,9 +12,6 @@ export default pluginManager => {
   const SNPCoverageRendererConfigSchema = pluginManager.getRendererType(
     'SNPCoverageRenderer',
   ).configSchema
-  const PileupSNPCoverageRendererConfigSchema = pluginManager.getRendererType(
-    'PileupSNPCoverageRenderer',
-  ).configSchema
 
   // modify config schema to take in a sub coverage track
   return ConfigurationSchema(
@@ -34,10 +31,7 @@ export default pluginManager => {
       renderers: ConfigurationSchema('RenderersConfiguration', {
         PileupRenderer: PileupRendererConfigSchema,
         SvgFeatureRenderer: SvgFeatureRendererConfigSchema,
-        // if SNP Coverage is selected, need some way to wrap adapter as subadapter
-        // and adapter selection immediately becomes SNPCoverageAdapter
         SNPCoverageRenderer: SNPCoverageRendererConfigSchema,
-        PileupSNPCoverageRenderer: PileupSNPCoverageRendererConfigSchema,
       }),
       // coverageTrack: ConfigurationSchema(
       //   'SNPCoverageTrack',
