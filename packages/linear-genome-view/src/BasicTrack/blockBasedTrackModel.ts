@@ -30,6 +30,9 @@ const blockBasedTrack = types
       })),
   )
   .views(self => {
+    let stale = false // used to make rtree refresh, the mobx reactivity fails for some reason
+    let rbush: { [key: string]: typeof RBush | undefined } = {}
+
     return {
       get blockType() {
         return 'staticBlocks'
@@ -53,6 +56,7 @@ const blockBasedTrack = types
           if (block.data && block.data.features)
             featureMaps.push(block.data.features)
         }
+        stale = true
         return new CompositeMap<string, Feature>(featureMaps)
       },
 
@@ -70,6 +74,7 @@ const blockBasedTrack = types
             layoutMaps.set(block.key, block.data.layout.rectangles)
           }
         }
+        stale = true
         return layoutMaps
       },
 
@@ -101,23 +106,27 @@ const blockBasedTrack = types
             layoutMaps.push(block.data.layout.rectangles)
           }
         }
+        stale = true // make rtree refresh
         return new CompositeMap<string, LayoutRecord>(layoutMaps)
       },
 
       get rtree() {
-        const rbush: { [key: string]: typeof RBush | undefined } = {}
-        for (const [blockKey, layoutFeatures] of this.blockLayoutFeatures) {
-          rbush[blockKey] = new RBush()
-          const r = rbush[blockKey]
-          for (const [key, layout] of layoutFeatures) {
-            r.insert({
-              minX: layout[0],
-              minY: layout[1],
-              maxX: layout[2],
-              maxY: layout[3],
-              name: key,
-            })
+        if (stale) {
+          rbush = {}
+          for (const [blockKey, layoutFeatures] of this.blockLayoutFeatures) {
+            rbush[blockKey] = new RBush()
+            const r = rbush[blockKey]
+            for (const [key, layout] of layoutFeatures) {
+              r.insert({
+                minX: layout[0],
+                minY: layout[1],
+                maxX: layout[2],
+                maxY: layout[3],
+                name: key,
+              })
+            }
           }
+          stale = false
         }
         return rbush
       },

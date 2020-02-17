@@ -15,7 +15,6 @@
     "color": "^3.1.2",
     "d3-scale": "^3.2.1",
     "generic-filehandle": "^2.0.0",
-    "memoize-one": "^5.1.1",
     "mobx": "^5.15.2",
     "mobx-run-in-reactive-context": "^1.0.1",
     "react-d3-axis": "^0.1.2"

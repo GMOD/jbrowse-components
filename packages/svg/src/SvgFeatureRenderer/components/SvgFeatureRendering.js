@@ -405,6 +405,7 @@ function SvgFeatureRendering(props) {
         onFocus={mouseEnter}
         onBlur={mouseLeave}
         onClick={click}
+        style={{ display: 'block' }}
       >
         <RenderedFeatures
           features={features}

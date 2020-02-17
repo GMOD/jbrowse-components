@@ -5,9 +5,7 @@ import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { GenericFilehandle } from 'generic-filehandle'
-import { Observable, Observer } from 'rxjs'
-import memoize from 'memoize-one'
+
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
 interface HeaderLine {
@@ -15,68 +13,71 @@ interface HeaderLine {
   value: string
 }
 interface Header {
-  idToName: string[]
-  nameToId: Record<string, number>
+  idToName?: string[]
+  nameToId?: Record<string, number>
 }
-
-const setup = memoize(async (bam: BamFile) => {
-  const samHeader = await bam.getHeader()
-
-  // use the @SQ lines in the header to figure out the
-  // mapping between ref ref ID numbers and names
-  const idToName: string[] = []
-  const nameToId: Record<string, number> = {}
-  const sqLines = samHeader.filter((l: { tag: string }) => l.tag === 'SQ')
-  sqLines.forEach((sqLine: { data: HeaderLine[] }, refId: number) => {
-    sqLine.data.forEach((item: HeaderLine) => {
-      if (item.tag === 'SN') {
-        // this is the ref name
-        const refName = item.value
-        nameToId[refName] = refId
-        idToName[refId] = refName
-      }
-    })
-  })
-  return { idToName, nameToId }
-})
 
 export default class extends BaseAdapter {
   private bam: BamFile
 
-  private samHeader: Header = { idToName: [], nameToId: {} }
+  private samHeader: Header = {}
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: {
     bamLocation: IFileLocation
     index: { location: IFileLocation; indexType: string }
+    chunkSizeLimit: number
+    fetchSizeLimit: number
   }) {
     super()
     const {
       bamLocation,
-      index: { location: indexLocation, indexType },
+      index: { location, indexType },
+      chunkSizeLimit,
+      fetchSizeLimit,
     } = config
 
-    const bamOpts: {
-      bamFilehandle: GenericFilehandle
-      baiFilehandle?: GenericFilehandle
-      csiFilehandle?: GenericFilehandle
-    } = {
+    this.bam = new BamFile({
       bamFilehandle: openLocation(bamLocation),
-    }
-
-    const indexFile = openLocation(indexLocation)
-    if (indexType === 'CSI') {
-      bamOpts.csiFilehandle = indexFile
-    } else {
-      bamOpts.baiFilehandle = indexFile
-    }
-
-    this.bam = new BamFile(bamOpts)
+      csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
+      baiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
+      chunkSizeLimit,
+      fetchSizeLimit,
+    })
   }
 
-  async getRefNames() {
-    return (await setup(this.bam)).idToName
+  async setup(opts?: BaseOptions) {
+    if (Object.keys(this.samHeader).length === 0) {
+      const samHeader = await this.bam.getHeader()
+
+      // use the @SQ lines in the header to figure out the
+      // mapping between ref ref ID numbers and names
+      const idToName: string[] = []
+      const nameToId: Record<string, number> = {}
+      const sqLines = samHeader.filter((l: { tag: string }) => l.tag === 'SQ')
+      sqLines.forEach((sqLine: { data: HeaderLine[] }, refId: number) => {
+        sqLine.data.forEach((item: HeaderLine) => {
+          if (item.tag === 'SN') {
+            // this is the ref name
+            const refName = item.value
+            nameToId[refName] = refId
+            idToName[refId] = refName
+          }
+        })
+      })
+      if (idToName.length) {
+        this.samHeader = { idToName, nameToId }
+      }
+    }
+  }
+
+  async getRefNames(opts?: BaseOptions) {
+    await this.setup(opts)
+    if (this.samHeader.idToName) {
+      return this.samHeader.idToName
+    }
+    throw new Error('unable to get refnames')
   }
 
   /**
@@ -87,26 +88,23 @@ export default class extends BaseAdapter {
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures(
-    { refName, start, end }: IRegion,
-    opts: BaseOptions = {},
-  ): Observable<Feature> {
-    return ObservableCreate(
-      async (observer: Observer<Feature>): Promise<void> => {
-        this.samHeader = await setup(this.bam)
-        const records = await this.bam.getRecordsForRange(
-          refName,
-          start,
-          end,
-          opts,
-        )
-        checkAbortSignal(opts.signal)
-        records.forEach(record => {
-          observer.next(new BamSlightlyLazyFeature(record, this))
-        })
-        observer.complete()
-      },
-    )
+  getFeatures(region: IRegion, opts: BaseOptions = {}) {
+    return ObservableCreate<Feature>(async observer => {
+      const { refName, start, end } = region
+      await this.setup(opts)
+      const records = await this.bam.getRecordsForRange(
+        refName,
+        start,
+        end,
+        opts,
+      )
+      checkAbortSignal(opts.signal)
+
+      records.forEach(record => {
+        observer.next(new BamSlightlyLazyFeature(record, this))
+      })
+      observer.complete()
+    })
   }
 
   /**
@@ -118,6 +116,9 @@ export default class extends BaseAdapter {
 
   // depends on setup being called before the BAM constructor
   refIdToName(refId: number): string | undefined {
-    return this.samHeader.idToName[refId]
+    if (this.samHeader.idToName) {
+      return this.samHeader.idToName[refId]
+    }
+    return undefined
   }
 }
