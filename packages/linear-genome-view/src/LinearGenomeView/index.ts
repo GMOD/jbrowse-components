@@ -8,8 +8,16 @@ import {
   parseLocString,
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { transaction } from 'mobx'
-import { getParent, getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
+import { autorun, transaction } from 'mobx'
+import {
+  addDisposer,
+  getParent,
+  getSnapshot,
+  getRoot,
+  isAlive,
+  types,
+  cast,
+} from 'mobx-state-tree'
 
 import { BlockSet } from '../BasicTrack/util/blockTypes'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
