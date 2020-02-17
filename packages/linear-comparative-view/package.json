@@ -20,5 +20,9 @@
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
+  },
+  "dependencies": {
+    "clsx": "^1.1.0",
+    "react-sizeme": "^2.6.12"
   }
 }

@@ -95,6 +95,7 @@ export default function sessionModelFactory(pluginManager: any) {
         return getParent(self).jbrowse.connections
       },
       get savedSessions() {
+        console.log(getParent(self).jbrowse.savedSessions)
         return getParent(self).jbrowse.savedSessions
       },
       get savedSessionNames() {
