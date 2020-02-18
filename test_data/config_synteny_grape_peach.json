@@ -126,15 +126,9 @@
     {
       "trackId": "grape_peach_synteny_mcscan",
       "type": "LinearSyntenyTrack",
-      "assemblyNames": [
-        "peach",
-        "grape"
-      ],
-      "configRelationships": [
-        {
-          "type": "syntenyGroup",
-          "target": "group2"
-        }
+      "trackIds": [
+        "grape_genes",
+        "peach_genes"
       ],
       "name": "Grape peach synteny (MCScan)",
       "category": [
