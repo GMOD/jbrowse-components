@@ -132,7 +132,7 @@ export default class extends BaseAdapter {
    */
   private createMutationQuery(ref: string, start: number, end: number) {
     const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { features: ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { start_position end_position mutation_type cosmic_id reference_allele ncbi_build genomic_dna_change mutation_subtype ssm_id chromosome } } } } } } }`
-    // const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { start_position end_position mutation_type cosmic_id reference_allele ncbi_build score genomic_dna_change mutation_subtype ssm_id chromosome consequence { hits { edges { node { transcript { is_canonical annotation { vep_impact polyphen_impact polyphen_score sift_score sift_impact hgvsc } consequence_type gene { gene_id symbol gene_strand } aa_change transcript_id } id } } } } } } } } } } }`
+    // const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { features: ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { start_position end_position mutation_type cosmic_id reference_allele ncbi_build score genomic_dna_change mutation_subtype ssm_id chromosome consequence { hits { edges { node { transcript { is_canonical annotation { vep_impact polyphen_impact polyphen_score sift_score sift_impact hgvsc } consequence_type gene { gene_id symbol gene_strand } aa_change transcript_id } id } } } } } } } } } } }`
     const combinedFilters = this.getFilterQuery(ref, start, end)
     const body = {
       query: ssmQuery,
@@ -157,7 +157,7 @@ export default class extends BaseAdapter {
    * @param end end position
    */
   private createGeneQuery(ref: string, start: number, end: number) {
-    const geneQuery = `query genesQuery( $filters: FiltersArgument $size: Int $offset: Int $score: String ) { viewer { explore { features: genes { hits(first: $size, offset: $offset, filters: $filters, score: $score) { total edges { node { gene_id id gene_strand synonyms symbol name gene_start gene_end gene_chromosome description canonical_transcript_id external_db_ids { hgnc omim_gene uniprotkb_swissprot entrez_gene } biotype numCases: score is_cancer_gene_census } } } } } } }`
+    const geneQuery = `query genesQuery( $filters: FiltersArgument $size: Int $offset: Int $score: String ) { viewer { explore { features: genes { hits(first: $size, offset: $offset, filters: $filters, score: $score) { total edges { node { gene_id id gene_strand synonyms symbol name gene_start gene_end gene_chromosome description canonical_transcript_id external_db_ids { hgnc omim_gene uniprotkb_swissprot entrez_gene } biotype num_cases_with_mutations_in_gene: score is_cancer_gene_census } } } } } } }`
     const combinedFilters = this.getFilterQuery(ref, start, end)
     const body = {
       query: geneQuery,
