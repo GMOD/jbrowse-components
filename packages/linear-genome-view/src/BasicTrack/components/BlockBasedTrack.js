@@ -10,7 +10,6 @@ import ComboTrackBlocks from './ComboTrackBlocks'
 
 function BlockBasedTrack(props) {
   const { model, children } = props
-  console.log(getConf(model, 'trackId'))
   return (
     <Track {...props} trackId={getConf(model, 'trackId')}>
       {model.trackMessageComponent ? (

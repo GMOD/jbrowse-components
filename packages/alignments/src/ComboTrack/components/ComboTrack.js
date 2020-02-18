@@ -6,7 +6,6 @@ import React from 'react'
 function ComboTrackComponent(props) {
   const { model } = props
   const { AlignmentsTrack, SNPCoverageTrack } = model
-  console.log(AlignmentsTrack)
   return (
     <BlockBasedTrack
       {...props}

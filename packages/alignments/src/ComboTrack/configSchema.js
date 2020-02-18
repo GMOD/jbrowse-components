@@ -9,6 +9,10 @@ export default pluginManager => {
   const SNPCoverageRendererConfigSchema = pluginManager.getRendererType(
     'SNPCoverageRenderer',
   ).configSchema
+  const AlignmentsTrackConfigSchema = pluginManager.getTrackType(
+    'AlignmentsTrack',
+  ).configSchema
+
   // modify config schema to take in a sub coverage track
   return ConfigurationSchema(
     'ComboTrack',
@@ -18,6 +22,7 @@ export default pluginManager => {
         PileupRenderer: PileupRendererConfigSchema,
         SNPCoverageRenderer: SNPCoverageRendererConfigSchema,
       }),
+      alignmentsTrack: AlignmentsTrackConfigSchema,
     },
     { baseConfiguration: BaseTrackConfig, explicitlyTyped: true },
   )

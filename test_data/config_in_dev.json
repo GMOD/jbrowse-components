@@ -1714,6 +1714,36 @@
         "SNPCoverageRenderer": {
           "type": "SNPCoverageRenderer"
         }
+      },
+      "alignmentsTrack": {
+        "type": "AlignmentsTrack",
+        "trackId": "volvox_bam combo_pileup",
+        "name": "volvox test combo-alignments track",
+        "assemblyNames": [
+          "volvox"
+        ],
+        "category": [
+          "Combo"
+        ],
+        "adapter": {
+          "type": "BamAdapter",
+          "bamLocation": {
+            "uri": "test_data/volvox-sorted.bam"
+          },
+          "index": {
+            "location": {
+              "uri": "test_data/volvox-sorted.bam.bai"
+            }
+          }
+        },
+        "renderers": {
+          "PileupRenderer": {
+            "type": "PileupRenderer"
+          },
+          "SNPCoverageRenderer": {
+            "type": "SNPCoverageRenderer"
+          }
+        }
       }
     },
     {

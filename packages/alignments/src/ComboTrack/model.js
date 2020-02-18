@@ -19,24 +19,33 @@ import {
 import ComboTrackComponent from './components/ComboTrack'
 
 export default (pluginManager, configSchema) => {
-  const alignmentConfigSchema = alignmentsTrackConfigSchemaFactory(
-    pluginManager,
-  )
-  const snpCoverageConfigSchema = snpCoverageTrackConfigSchemaFactory(
-    pluginManager,
-  )
+  // const alignmentConfigSchema = alignmentsTrackConfigSchemaFactory(
+  //   pluginManager,
+  // )
+  const alignmentConfigSchema = pluginManager.getTrackType('AlignmentsTrack')
+    .configSchema
+  // const snpCoverageConfigSchema = snpCoverageTrackConfigSchemaFactory(
+  //   pluginManager,
+  // )
+  const snpCoverageConfigSchema = pluginManager.getTrackType('SNPCoverageTrack')
+    .configSchema
+
   return types.compose(
     'ComboTrack',
     BaseTrack,
     types
       .model({
-        AlignmentsTrack: alignmentsTrackStateModelFactory(
-          pluginManager,
-          alignmentConfigSchema,
-        ),
-        SNPCoverageTrack: snpCoverageTrackStateModelFactory(
-          snpCoverageConfigSchema,
-        ),
+        AlignmentsTrack: pluginManager.getTrackType('AlignmentsTrack')
+          .stateModel,
+        // AlignmentsTrack: alignmentsTrackStateModelFactory(
+        //   pluginManager,
+        //   alignmentConfigSchema,
+        // ),
+        SNPCoverageTrack: pluginManager.getTrackType('SNPCoverageTrack')
+          .stateModel,
+        // SNPCoverageTrack: snpCoverageTrackStateModelFactory(
+        //   snpCoverageConfigSchema,
+        // ),
         type: types.literal('ComboTrack'),
         configuration: ConfigurationReference(configSchema),
       })
@@ -65,6 +74,7 @@ export default (pluginManager, configSchema) => {
               trackId: `${snapshot.configuration.trackId}_snpcoverage`,
               defaultRendering: 'snpcoverage',
               type: `SNPCoverageTrack`,
+              // adapter: modify here
             },
             type: 'SNPCoverageTrack',
           },
