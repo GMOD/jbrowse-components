@@ -1,7 +1,9 @@
 /* eslint-disable  no-nested-ternary */
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { getSession } from '@gmod/jbrowse-core/util'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { observer } from 'mobx-react'
+import { resolveIdentifier } from 'mobx-state-tree'
 
 import React from 'react'
 import { yPos, getPxFromCoordinate, cheight } from '../util'
@@ -12,33 +14,36 @@ import {
 import { LinearComparativeTrackModel } from '..'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
+type LayoutMatches = {
+  layout: LayoutRecord
+  feature: Feature
+  level: number
+  refName: string
+}[][]
 
 export default observer(
   ({
     track,
     model,
-    tracks,
-    height,
-    syntenyGroup,
-    layoutMatches,
   }: {
     track: LinearComparativeTrackModel
     model: LinearComparativeViewModel
-    tracks: any[]
-    height: number
-    syntenyGroup: string
-    layoutMatches: {
-      layout: LayoutRecord
-      feature: Feature
-      level: number
-      refName: string
-    }[][]
   }) => {
     const { views } = model
+    const trackIds = getConf(track, 'trackIds') as string[]
+    const session = getSession(model) as any
+    const type = session.pluginManager.pluggableConfigSchemaType('track')
+    const subtracks = trackIds.map(trackId =>
+      resolveIdentifier(type, session, trackId),
+    )
+    console.log(subtracks)
+
     const showIntraviewLinks = false
     const middle = false
     const hideTiny = false
-    if (!layoutMatches) {
+    const layoutMatches: LayoutMatches = []
+
+    if (!layoutMatches.length) {
       return null
     }
 
@@ -102,9 +107,9 @@ export default observer(
             const x21 = getPxFromCoordinate(views[level2], ref2, c2[LEFT])
             const x22 = getPxFromCoordinate(views[level2], ref2, c2[RIGHT])
 
-            const nv = tracks.map(v => v.view)
-            const nt = tracks.map(v => v.track)
-            const nc = tracks.filter(f => !!f.track)
+            const nv = subtracks.map(v => v.view)
+            const nt = subtracks.map(v => v.track)
+            const nc = subtracks.filter(f => !!f.track)
 
             const y1 = middle
               ? level1 < level2
