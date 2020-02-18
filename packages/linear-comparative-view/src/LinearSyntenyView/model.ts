@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree'
+import { types,Instance } from 'mobx-state-tree'
 import baseModel from '../LinearComparativeView/model'
 
 export default function stateModelFactory(pluginManager: any) {
@@ -9,3 +9,5 @@ export default function stateModelFactory(pluginManager: any) {
     }),
   )
 }
+export type LinearSyntenyView = ReturnType<typeof stateModelFactory>
+export type LinearSyntenyViewModel = Instance<LinearSyntenyView>

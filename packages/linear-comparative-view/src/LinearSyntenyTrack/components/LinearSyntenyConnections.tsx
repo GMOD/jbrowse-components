@@ -1,17 +1,13 @@
 /* eslint-disable  no-nested-ternary */
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { getSession } from '@gmod/jbrowse-core/util'
-import { getConf } from '@gmod/jbrowse-core/configuration'
+
 import { observer } from 'mobx-react'
-import { resolveIdentifier } from 'mobx-state-tree'
 
 import React from 'react'
-import { yPos, getPxFromCoordinate, cheight } from '../util'
-import {
-  LinearComparativeViewModel,
-  LayoutRecord,
-} from '../../LinearComparativeView/model'
-import { LinearComparativeTrackModel } from '..'
+import { yPos, getPxFromCoordinate, cheight } from '../../util'
+import { LayoutRecord } from '../../LinearComparativeView/model'
+import { LinearSyntenyTrackModel } from '..'
+import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 type LayoutMatches = {
@@ -26,17 +22,11 @@ export default observer(
     track,
     model,
   }: {
-    track: LinearComparativeTrackModel
-    model: LinearComparativeViewModel
+    track: LinearSyntenyTrackModel
+    model: LinearSyntenyViewModel
   }) => {
     const { views } = model
-    const trackIds = getConf(track, 'trackIds') as string[]
-    const session = getSession(model) as any
-    const type = session.pluginManager.pluggableConfigSchemaType('track')
-    const subtracks = trackIds.map(trackId =>
-      resolveIdentifier(type, session, trackId),
-    )
-    console.log(subtracks)
+    const { subtracks } = track
 
     const showIntraviewLinks = false
     const middle = false
@@ -115,13 +105,13 @@ export default observer(
               ? level1 < level2
                 ? 0
                 : 150
-              : yPos(getConf(nc[0].track, 'trackId'), level1, nv, nt, c1) +
+              : yPos(track.trackIds[0], level1, nv, nt, c1) +
                 (level1 < level2 ? cheight(c1) : 0)
             const y2 = middle
               ? level2 < level1
                 ? 0
                 : 150
-              : yPos(getConf(nc[1].track, 'trackId'), level2, nv, nt, c2) +
+              : yPos(track.trackIds[1], level2, nv, nt, c2) +
                 (level2 < level1 ? cheight(c2) : 0)
 
             ret.push(

@@ -5,7 +5,6 @@ import {
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { types, Instance } from 'mobx-state-tree'
 import { BaseTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
-import LinearComparativeTrackComponent from './components/LinearComparativeTrack'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function configSchemaFactory(pluginManager: any) {
@@ -42,9 +41,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       type: types.literal('LinearComparativeTrack'),
       configuration: ConfigurationReference(configSchema),
     })
-    .volatile(self => ({
-      ReactComponent: (LinearComparativeTrackComponent as unknown) as React.FC,
-    }))
 
     .views(self => ({
       get renderProps() {
