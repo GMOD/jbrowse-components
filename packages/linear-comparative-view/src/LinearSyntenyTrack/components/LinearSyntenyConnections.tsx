@@ -10,12 +10,12 @@ import { LinearSyntenyTrackModel } from '..'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
-type LayoutMatches = {
-  layout: LayoutRecord
-  feature: Feature
-  level: number
-  refName: string
-}[][]
+// type LayoutMatches = {
+//   layout: LayoutRecord
+//   feature: Feature
+//   level: number
+//   refName: string
+// }[][]
 
 export default observer(
   ({
@@ -26,16 +26,11 @@ export default observer(
     model: LinearSyntenyViewModel
   }) => {
     const { views } = model
-    const { subtracks } = track
+    const { subtracks, layoutMatches } = track
 
     const showIntraviewLinks = false
     const middle = false
     const hideTiny = false
-    const layoutMatches: LayoutMatches = []
-
-    if (!layoutMatches.length) {
-      return null
-    }
 
     return (
       <g
