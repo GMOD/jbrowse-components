@@ -62,7 +62,7 @@ import * as MUIColors from './ReExports/material-ui-colors'
 
 import * as mstTypes from './mst-types'
 
-export default {
+const libs: { [libname: string]: any } = {
   mobx,
   'mobx-state-tree': mst,
   react: React,
@@ -123,3 +123,5 @@ export default {
   '@gmod/jbrowse-core/util/io': coreIo,
   '@gmod/jbrowse-core/util/mst-reflection': coreMstReflection,
 }
+
+export default libs

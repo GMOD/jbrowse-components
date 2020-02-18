@@ -1,20 +1,29 @@
 export const functionRegexp = /^\s*function\s*\(([^)]*)\)\s*{([\w\W]*)/
 
-const compilationCache = {}
+const compilationCache: Record<string, Function> = {}
+
 /**
  * compile a function to a string
  *
  * @param {string} str string of code like "function() { ... }"
  * @param {object} options
- * @param {object} options.verifyFunctionSignature if true, the
+ * @param {string[]?} options.verifyFunctionSignature if passed, the
  *  compiled function will check at runtime that the proper number
  *  of arguments were passed to it
+ * @param {any[]} options.bind if passed, the
+ *  compiled function will be bound (by calling bind on it) with
+ *  the given context and arguments
  */
-export function stringToFunction(str, options = {}) {
+export function stringToFunction(
+  str: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  options: { verifyFunctionSignature?: string[]; bind?: any[] } = {},
+) {
   const { verifyFunctionSignature } = options
 
-  const cacheKey = `${verifyFunctionSignature &&
-    verifyFunctionSignature.join(',')}|${str}`
+  const cacheKey = `${
+    verifyFunctionSignature ? verifyFunctionSignature.join(',') : 'nosig'
+  }|${str}`
   if (!compilationCache[cacheKey]) {
     const match = functionRegexp.exec(str)
     if (!match) {
@@ -39,7 +48,8 @@ export function stringToFunction(str, options = {}) {
 
   let func = compilationCache[cacheKey]
   if (options.bind) {
-    func = func.bind(...options.bind)
+    const [thisArg, ...rest] = options.bind
+    func = func.bind(thisArg, ...rest)
   }
   return func
 }

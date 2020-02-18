@@ -18,56 +18,37 @@ const adapterCache = {}
  * @param {string} sessionId session ID of the associated worker session.
  *   used for reference counting
  * @param {string} adapterType type name of the adapter to instantiate
- * @param {object} adapterConfig plain-JS configuration snapshot for the adapter
+ * @param {object} adapterConfigSnapshot plain-JS configuration snapshot for the adapter
  */
 export function getAdapter(
   pluginManager,
   sessionId,
   adapterType,
-  adapterConfig,
-  sequenceAdapterType,
-  sequenceAdapterConfig,
+  adapterConfigSnapshot,
 ) {
   // cache the adapter object
-  const cacheKey =
-    adapterConfigCacheKey(adapterType, adapterConfig) +
-    adapterConfigCacheKey(sequenceAdapterType, sequenceAdapterConfig)
+  const cacheKey = adapterConfigCacheKey(adapterType, adapterConfigSnapshot)
   if (!adapterCache[cacheKey]) {
     const dataAdapterType = pluginManager.getAdapterType(adapterType)
     if (!dataAdapterType) {
       throw new Error(`unknown data adapter type ${adapterType}`)
     }
 
-    // Some adapters use the special sequence store
-    // specifically CRAM
-    if (
-      dataAdapterType.requiresSequenceAdapter &&
-      sequenceAdapterType &&
-      sequenceAdapterConfig
-    ) {
-      adapterConfig.sequenceAdapter = getAdapter(
-        pluginManager,
-        sessionId,
-        sequenceAdapterType,
-        sequenceAdapterConfig,
-      ).dataAdapter
-    }
+    // instantiate the data adapter's config schema so it gets its defaults,
+    // callbacks, etc
+    const adapterConfig = dataAdapterType.configSchema.create(
+      adapterConfigSnapshot,
+    )
 
-    // Some adapters initialize a subadapter
-    if (adapterConfig.subadapter) {
-      adapterConfig.subadapter = getAdapter(
-        pluginManager,
-        sessionId,
-        adapterConfig.subadapter.type,
-        adapterConfig.subadapter,
-        sequenceAdapterType,
-        sequenceAdapterConfig,
-      ).dataAdapter
-    }
+    // instantiate the adapter itself with its config schema, and a bound
+    // func that it can use to get any inner adapters
+    // (such as sequence adapters or wrapped subadapters) that it needs
+    const dataAdapter = new dataAdapterType.AdapterClass(
+      adapterConfig,
+      getAdapter.bind(this, pluginManager, sessionId),
+    )
 
-    // console.log('new adapter', cacheKey)
-    const dataAdapter = new dataAdapterType.AdapterClass(adapterConfig)
-
+    // store it in our cache
     adapterCache[cacheKey] = {
       dataAdapter,
       sessionIds: new Set([sessionId]),

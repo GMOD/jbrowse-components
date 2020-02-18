@@ -4,6 +4,7 @@ import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { TwoBitFile } from '@gmod/twobit'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 export default class extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -14,7 +15,7 @@ export default class extends BaseAdapter {
   public constructor(config: { twoBitLocation: IFileLocation }) {
     super()
     const twoBitOpts = {
-      filehandle: openLocation(config.twoBitLocation),
+      filehandle: openLocation(readConfObject(config, 'twoBitLocation')),
     }
 
     this.twobit = new TwoBitFile(twoBitOpts)

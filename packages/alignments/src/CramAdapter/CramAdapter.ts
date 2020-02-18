@@ -3,6 +3,7 @@ import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
@@ -34,14 +35,18 @@ export default class CramAdapter extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: {
-    cramLocation: IFileLocation
-    craiLocation: IFileLocation
-    sequenceAdapter: BaseAdapter
-    fetchSizeLimit?: number
-  }) {
+  public constructor(
+    config: {
+      cramLocation: IFileLocation
+      craiLocation: IFileLocation
+      fetchSizeLimit?: number
+    },
+    sequenceAdapter: BaseAdapter,
+  ) {
     super()
-    const { cramLocation, craiLocation, sequenceAdapter } = config
+
+    const cramLocation = readConfObject(config, 'cramLocation')
+    const craiLocation = readConfObject(config, 'craiLocation')
     if (!cramLocation) {
       throw new Error('missing cramLocation argument')
     }

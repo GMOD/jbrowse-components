@@ -75,17 +75,19 @@ class SequenceAdapter {
 }
 
 test('adapter can fetch features from volvox-sorted.cram', async () => {
-  const adapter = new Adapter({
-    cramLocation: {
-      localPath: require.resolve('../../test_data/volvox-sorted.cram'),
+  const adapter = new Adapter(
+    {
+      cramLocation: {
+        localPath: require.resolve('../../test_data/volvox-sorted.cram'),
+      },
+      craiLocation: {
+        localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
+      },
     },
-    craiLocation: {
-      localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
-    },
-    sequenceAdapter: new SequenceAdapter(
+    new SequenceAdapter(
       new LocalFile(require.resolve('../../test_data/volvox.fa')),
     ),
-  })
+  )
 
   const features = await adapter.getFeatures({
     refName: 'ctgA',

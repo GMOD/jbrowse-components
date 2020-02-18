@@ -44,5 +44,6 @@ export function openLocation(location: IFileLocation): GenericFilehandle {
     if (isLocalPathLocation(location)) return new LocalFile(location.localPath)
   }
   if (isBlobLocation(location)) return new BlobFile(location.blob)
+  debugger
   throw new Error('invalid fileLocation')
 }

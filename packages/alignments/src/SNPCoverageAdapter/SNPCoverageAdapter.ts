@@ -74,9 +74,16 @@ export default class extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: { subadapter: BaseAdapter }) {
+  public constructor(config, sequenceAdapter, getSubAdapter) {
     super()
-    const { subadapter } = config
+
+    const subadapter = getSubAdapter(
+      config.subadapter.type,
+      config.subadapter,
+      sequenceAdapterType,
+      sequenceAdapterConfig,
+    ).dataAdapter
+
     this.subadapter = subadapter
     this.statsCache = new AbortablePromiseCache({
       cache: new QuickLRU({ maxSize: 1000 }),

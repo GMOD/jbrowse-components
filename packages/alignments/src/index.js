@@ -86,9 +86,7 @@ export default class extends Plugin {
       () =>
         new AdapterType({
           name: 'CramAdapter',
-          requiresSequenceAdapter: true,
-          configSchema: cramAdapterConfigSchema,
-          AdapterClass: CramAdapterClass,
+          ...pluginManager.jbrequire(require('./CramAdapter')),
         }),
     )
     pluginManager.addRendererType(

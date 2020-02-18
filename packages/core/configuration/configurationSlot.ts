@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { types } from 'mobx-state-tree'
 import { stringToFunction, functionRegexp } from '../util/functionStrings'
 import { inDevelopment } from '../util'
@@ -7,7 +8,7 @@ function isValidColorString(/* str */) {
   // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string
   return true
 }
-const typeModels = {
+const typeModels: { [typeName: string]: any } = {
   stringArray: types.array(types.string),
   stringArrayMap: types.map(types.array(types.string)),
   numberMap: types.map(types.number),
@@ -22,7 +23,7 @@ const typeModels = {
 }
 
 // default values we use if the defaultValue is malformed or does not work
-const fallbackDefaults = {
+const fallbackDefaults: { [typeName: string]: any } = {
   stringArray: [],
   stringArrayMap: {},
   numberMap: {},
@@ -36,7 +37,7 @@ const fallbackDefaults = {
   frozen: {},
 }
 
-const literalJSON = self => ({
+const literalJSON = (self: { value: any }) => ({
   views: {
     get valueJSON() {
       return self.value
@@ -44,7 +45,7 @@ const literalJSON = self => ({
   },
 })
 
-const objectJSON = self => ({
+const objectJSON = (self: { value: any }) => ({
   views: {
     get valueJSON() {
       return JSON.stringify(self.value)
@@ -53,66 +54,72 @@ const objectJSON = self => ({
 })
 
 // custom actions for modifying the value models
-const typeModelExtensions = {
+const typeModelExtensions: { [typeName: string]: (self: any) => any } = {
   fileLocation: objectJSON,
   number: literalJSON,
   integer: literalJSON,
   boolean: literalJSON,
   frozen: objectJSON,
   // special actions for working with stringArray slots
-  stringArray: self => ({
+  stringArray: (self: { value: string[] }) => ({
     views: {
       get valueJSON() {
         return JSON.stringify(self.value)
       },
     },
     actions: {
-      add(val) {
+      add(val: string) {
         self.value.push(val)
       },
-      removeAtIndex(idx) {
+      removeAtIndex(idx: number) {
         self.value.splice(idx, 1)
       },
-      setAtIndex(idx, val) {
+      setAtIndex(idx: number, val: string) {
         self.value[idx] = val
       },
     },
   }),
-  stringArrayMap: self => ({
+  stringArrayMap: (self: { value: Map<string, string[]> }) => ({
     views: {
       get valueJSON() {
         return JSON.stringify(self.value)
       },
     },
     actions: {
-      add(key, val) {
+      add(key: string, val: any) {
         self.value.set(key, val)
       },
-      remove(key) {
+      remove(key: string) {
         self.value.delete(key)
       },
-      addToKey(key, val) {
-        self.value.get(key).push(val)
+      addToKey(key: string, val: string) {
+        const ar = self.value.get(key)
+        if (!ar) throw new Error(`${key} not found`)
+        ar.push(val)
       },
-      removeAtKeyIndex(key, idx) {
-        self.value.get(key).splice(idx, 1)
+      removeAtKeyIndex(key: string, idx: number) {
+        const ar = self.value.get(key)
+        if (!ar) throw new Error(`${key} not found`)
+        ar.splice(idx, 1)
       },
-      setAtKeyIndex(key, idx, val) {
-        self.value.get(key)[idx] = val
+      setAtKeyIndex(key: string, idx: number, val: string) {
+        const ar = self.value.get(key)
+        if (!ar) throw new Error(`${key} not found`)
+        ar[idx] = val
       },
     },
   }),
-  numberMap: self => ({
+  numberMap: (self: { value: Map<string, number> }) => ({
     views: {
       get valueJSON() {
         return JSON.stringify(self.value)
       },
     },
     actions: {
-      add(key, val) {
+      add(key: string, val: number) {
         self.value.set(key, val)
       },
-      remove(key) {
+      remove(key: string, val: number) {
         self.value.delete(key)
       },
     },
@@ -138,8 +145,20 @@ const FunctionStringType = types.refinement(
  *  of the function callback, default []
  */
 export default function ConfigSlot(
-  slotName,
-  { description = '', model, type, defaultValue, functionSignature = [] },
+  slotName: string,
+  {
+    description = '',
+    model,
+    type,
+    defaultValue,
+    functionSignature = [],
+  }: {
+    description: string
+    model: any
+    type: string
+    defaultValue: any
+    functionSignature?: string[]
+  },
 ) {
   if (!type) throw new Error('type name required')
   if (!model) model = typeModels[type]
@@ -170,6 +189,11 @@ export default function ConfigSlot(
       functionSignature,
     }))
     .views(self => ({
+      get isCallback() {
+        return /^\s*function\s*\(/.test(String(self.value))
+      },
+    }))
+    .views(self => ({
       get func() {
         if (self.isCallback) {
           // compile this as a function
@@ -181,18 +205,19 @@ export default function ConfigSlot(
         }
         return () => self.value
       },
-      get isCallback() {
-        return /^\s*function\s*\(/.test(self.value)
-      },
 
       // JS representation of the value of this slot, suitable
       // for embedding in either JSON or a JS function string.
       // many of the data types override this in typeModelExtensions
-      get valueJSON() {
+      get valueJSON(): any[] | Record<string, any> | string | undefined {
         if (self.isCallback) return undefined
-        return self.value && self.value.toJSON
-          ? self.value.toJSON()
-          : `'${self.value}'`
+        function json(value: { toJSON: Function } | any) {
+          if (value && value.toJSON) {
+            return value.toJSON()
+          }
+          return `'${value}'`
+        }
+        return json(self.value)
       },
     }))
     .preProcessSnapshot(
@@ -220,7 +245,7 @@ export default function ConfigSlot(
       return snap.value !== defaultValue ? snap.value : undefined
     })
     .actions(self => ({
-      set(newVal) {
+      set(newVal: any) {
         self.value = newVal
       },
       reset() {
@@ -269,6 +294,11 @@ export default function ConfigSlot(
     description,
     value: defaultValue,
   })
-  completeModel.isJBrowseConfigurationSlot = true
-  return completeModel
+  type GeneratedConfigSlot = typeof completeModel
+  interface ConfigurationSlot extends GeneratedConfigSlot {
+    isJBrowseConfigurationSlot?: boolean
+  }
+  const m: ConfigurationSlot = completeModel
+  m.isJBrowseConfigurationSlot = true
+  return m
 }

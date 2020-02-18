@@ -1,10 +1,21 @@
 import React from 'react'
 import { getDefaultValue } from '../../util/mst-reflection'
-import PluggableElementType from '../PluggableElementBase'
+import PluggableElementBase from '../PluggableElementBase'
 
-export default class RendererType extends PluggableElementType {
-  constructor(stuff) {
+export default class RendererType extends PluggableElementBase {
+  ReactComponent: React.ComponentType
+
+  configSchema: any
+
+  constructor(stuff: {
+    name: string
+    ReactComponent: React.ComponentType
+    configSchema: any
+  }) {
     super(stuff)
+    this.ReactComponent = stuff.ReactComponent
+    this.configSchema = stuff.configSchema
+
     if (!this.ReactComponent) {
       throw new Error(`no ReactComponent defined for renderer ${this.name}`)
     }
@@ -15,7 +26,7 @@ export default class RendererType extends PluggableElementType {
     }
   }
 
-  render(props) {
+  render(props: any) {
     return { element: React.createElement(this.ReactComponent, props, null) }
   }
 
