@@ -63,6 +63,11 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       anchorsData: undefined as AnchorsData | undefined,
     }))
     .views(self => ({
+      get subtrackViews() {
+        return this.subtracks.map(subtrack =>
+          getContainingView(subtrack),
+        ) as any[]
+      },
       get subtracks(): any[] {
         const subtracks: any[] = []
         const parentView = getParent(self, 2)
@@ -78,7 +83,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       },
 
       get trackFeatures() {
-        console.log(this.subtracks)
         return new CompositeMap<string, Feature>(
           this.subtracks.map(t => t.features),
         )
@@ -88,7 +92,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         const features = this.trackFeatures
         const alreadySeen = new Set<number>()
         const featNameMap: { [key: string]: Feature } = {}
-        console.log('layoutMatches', self.anchors)
 
         if (!self.anchorsData || !self.anchors) {
           return []
@@ -141,7 +144,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
             ])
           }
         }
-        console.log(ret)
         return ret
       },
 

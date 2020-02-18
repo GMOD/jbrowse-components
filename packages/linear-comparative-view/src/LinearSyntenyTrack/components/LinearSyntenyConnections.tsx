@@ -1,21 +1,13 @@
 /* eslint-disable  no-nested-ternary */
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-
+import { getContainingView } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
-
 import React from 'react'
+
 import { yPos, getPxFromCoordinate, cheight } from '../../util'
-import { LayoutRecord } from '../../LinearComparativeView/model'
 import { LinearSyntenyTrackModel } from '..'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
-// type LayoutMatches = {
-//   layout: LayoutRecord
-//   feature: Feature
-//   level: number
-//   refName: string
-// }[][]
 
 export default observer(
   ({
@@ -26,7 +18,7 @@ export default observer(
     model: LinearSyntenyViewModel
   }) => {
     const { views } = model
-    const { subtracks, layoutMatches } = track
+    const { subtracks, subtrackViews, layoutMatches } = track
 
     const showIntraviewLinks = false
     const middle = false
@@ -92,21 +84,17 @@ export default observer(
             const x21 = getPxFromCoordinate(views[level2], ref2, c2[LEFT])
             const x22 = getPxFromCoordinate(views[level2], ref2, c2[RIGHT])
 
-            const nv = subtracks.map(v => v.view)
-            const nt = subtracks.map(v => v.track)
-            const nc = subtracks.filter(f => !!f.track)
-
             const y1 = middle
               ? level1 < level2
                 ? 0
                 : 150
-              : yPos(track.trackIds[0], level1, nv, nt, c1) +
+              : yPos(track.trackIds[0], level1, subtrackViews, subtracks, c1) +
                 (level1 < level2 ? cheight(c1) : 0)
             const y2 = middle
               ? level2 < level1
                 ? 0
                 : 150
-              : yPos(track.trackIds[1], level2, nv, nt, c2) +
+              : yPos(track.trackIds[1], level2, subtrackViews, subtracks, c2) +
                 (level2 < level1 ? cheight(c2) : 0)
 
             ret.push(
