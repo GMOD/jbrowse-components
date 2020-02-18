@@ -173,20 +173,6 @@ export default ({ jbrequire }: { jbrequire: any }) => {
         <div className={classes.headerBar}>
           <Controls model={model} />
           <TextFieldOrTypography model={model} />
-          <LinkViews model={model} />
-          <InteractWithSquiggles model={model} />
-          <Sync model={model} />
-
-          <IconButton
-            type="button"
-            title="configure track"
-            size="small"
-            className={classes.toggleButton}
-            value="configure"
-            onClick={model.activateConfigurationUI}
-          >
-            <Icon fontSize="small">settings</Icon>
-          </IconButton>
 
           <IconButton
             onClick={model.activateTrackSelector}

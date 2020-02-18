@@ -11,7 +11,13 @@ import {
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
     'LinearSyntenyTrack',
-    {},
+    {
+      viewType: 'LinearSyntenyView',
+      mcscanAnchors: {
+        type: 'fileLocation',
+        defaultValue: { uri: '/path/to/mcscan.anchors' },
+      },
+    },
     {
       baseConfiguration: baseConfig(pluginManager),
       explicitlyTyped: true,

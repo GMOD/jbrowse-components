@@ -126,10 +126,17 @@
     {
       "trackId": "grape_peach_synteny_mcscan",
       "type": "LinearSyntenyTrack",
+      "assemblyNames": [
+        "peach",
+        "grape"
+      ],
       "trackIds": [
         "grape_genes",
         "peach_genes"
       ],
+      "mcscanAnchors": {
+        "uri": "test_data/grape.peach.anchors"
+      },
       "name": "Grape peach synteny (MCScan)",
       "category": [
         "Annotation"

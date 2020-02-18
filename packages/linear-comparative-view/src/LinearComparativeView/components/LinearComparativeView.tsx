@@ -10,7 +10,6 @@ export default (pluginManager: any) => {
   const { makeStyles: jbrequiredMakeStyles } = jbrequire(
     '@material-ui/core/styles',
   )
-  console.log('here')
 
   const Header = jbrequire(require('./Header'))
   const { grey } = jbrequire('@material-ui/core/colors')
