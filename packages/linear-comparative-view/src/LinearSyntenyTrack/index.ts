@@ -1,14 +1,9 @@
-import {
-  types,
-  getSnapshot,
-  getParent,
-  addDisposer,
-  Instance,
-} from 'mobx-state-tree'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { types, getParent, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
+import { getContainingView } from '@gmod/jbrowse-core/util'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import {
   getConf,

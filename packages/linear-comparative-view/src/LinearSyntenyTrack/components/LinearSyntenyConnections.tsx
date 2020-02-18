@@ -1,5 +1,4 @@
 /* eslint-disable  no-nested-ternary */
-import { getContainingView } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import React from 'react'
 
