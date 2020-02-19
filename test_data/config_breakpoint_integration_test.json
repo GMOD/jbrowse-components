@@ -141,7 +141,7 @@
                   "assemblyName": "hg19"
                 }
               ],
-              "reversed": false,
+              "horizontallyFlipped": false,
               "tracks": [
                 {
                   "type": "AlignmentsTrack",
@@ -183,7 +183,7 @@
                   "assemblyName": "hg19"
                 }
               ],
-              "reversed": false,
+              "horizontallyFlipped": false,
               "tracks": [
                 {
                   "type": "AlignmentsTrack",
