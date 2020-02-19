@@ -14,6 +14,7 @@ export default class AdapterType extends PluggableElementBase {
   ) {
     super(stuff)
     this.AdapterClass = stuff.AdapterClass
+    this.configSchema = stuff.configSchema
     if (!this.AdapterClass) {
       throw new Error(`no AdapterClass defined for adapter type ${this.name}`)
     }

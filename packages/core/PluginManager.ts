@@ -1,8 +1,5 @@
 import { types } from 'mobx-state-tree'
 
-import { Renderer } from 'react-dom'
-import { type } from 'os'
-import { element } from 'prop-types'
 import PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
 import RendererType from './pluggableElementTypes/renderers/RendererType'
 import AdapterType from './pluggableElementTypes/AdapterType'
@@ -215,22 +212,16 @@ export default class PluginManager {
     return typeRecord.all()
   }
 
-  getElementTypeMembers(
-    groupName: PluggableElementTypeGroup,
-    memberName: string,
-  ) {
-    return this.getElementTypesInGroup(groupName)
-      .map(t => t[memberName])
-      .filter(m => !!m)
-  }
-
   /** get a MST type for the union of all specified pluggable MST types */
   pluggableMstType(
     typeGroup: PluggableElementTypeGroup,
     fieldName: PluggableElementMember,
     fallback = types.maybe(types.null),
   ) {
-    const pluggableTypes = this.getElementTypeMembers(typeGroup, fieldName)
+    const pluggableTypes = this.getElementTypeRecord(typeGroup)
+      .all()
+      .map(t => t[fieldName])
+      .filter(m => Boolean(m))
     // try to smooth over the case when no types are registered, mostly encountered in tests
     if (pluggableTypes.length === 0) {
       console.warn(
