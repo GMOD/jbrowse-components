@@ -1,4 +1,7 @@
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import {
+  ConfigurationSchema,
+  readConfObject,
+} from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { getSnapshot, resolveIdentifier, types } from 'mobx-state-tree'
@@ -55,6 +58,21 @@ const JBrowseWeb = types
     savedSessions: types.array(types.frozen(Session)),
   })
   .actions(self => ({
+    afterCreate() {
+      const seen = []
+      self.assemblyNames.forEach(assemblyName => {
+        if (!assemblyName) {
+          throw new Error('Encountered an assembly with no "name" defined')
+        }
+        if (seen.includes(assemblyName)) {
+          throw new Error(
+            `Found two assemblies with the same name: ${assemblyName}`,
+          )
+        } else {
+          seen.push(assemblyName)
+        }
+      })
+    },
     addSavedSession(sessionSnapshot) {
       const length = self.savedSessions.push(sessionSnapshot)
       return self.savedSessions[length - 1]
@@ -76,6 +94,12 @@ const JBrowseWeb = types
       else self.savedSessions[sessionIndex] = sessionSnapshot
     },
     addAssemblyConf(assemblyConf) {
+      const { name } = assemblyConf
+      if (!name) throw new Error('Can\'t add assembly with no "name"')
+      if (self.assemblyNames.includes(name))
+        throw new Error(
+          `Can't add assembly with name "${name}", an assembly with that name already exists`,
+        )
       const length = self.assemblies.push(assemblyConf)
       return self.assemblies[length - 1]
     },
@@ -95,6 +119,9 @@ const JBrowseWeb = types
   .views(self => ({
     get savedSessionNames() {
       return self.savedSessions.map(sessionSnap => sessionSnap.name)
+    },
+    get assemblyNames() {
+      return self.assemblies.map(assembly => readConfObject(assembly, 'name'))
     },
   }))
   // Grouping the "assembly manager" stuff under an `extend` just for
