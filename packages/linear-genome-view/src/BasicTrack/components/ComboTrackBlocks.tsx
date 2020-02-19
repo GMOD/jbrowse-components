@@ -30,7 +30,7 @@ const useStyles = makeStyles({
     background: '#404040',
     position: 'absolute',
     display: 'flex',
-    minHeight: '100%',
+    // minHeight: '100%',
   },
   heightOverflowed: {
     position: 'absolute',
@@ -104,26 +104,30 @@ function ComboTrackBlocks({
   viewModel: Instance<LinearGenomeViewStateModel>
 }) {
   const classes = useStyles()
-  console.log(model)
-  const { blockDefinitions } = model.AlignmentsTrack
-    ? model.AlignmentsTrack
-    : model.SNPCoverageTrack
+  const { AlignmentsTrack, SNPCoverageTrack } = model
   // make two track blocks (copy the div code)
   return (
-    <div
-      data-testid="Block"
-      className={classes.trackBlocks}
-      style={{
-        left: blockDefinitions.offsetPx - viewModel.offsetPx,
-      }}
-    >
-      {model.AlignmentsTrack && (
-        <RenderedBlocks model={model.AlignmentsTrack} />
-      )}
-      {model.SNPCoverageTrack && (
-        <RenderedBlocks model={model.SNPCoverageTrack} />
-      )}
-    </div>
+    <>
+      <div
+        data-testid="Blockset"
+        className={classes.trackBlocks}
+        style={{
+          left: SNPCoverageTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
+        }}
+      >
+        {SNPCoverageTrack && <RenderedBlocks model={SNPCoverageTrack} />}
+      </div>
+      <div
+        data-testid="Blockset"
+        className={classes.trackBlocks}
+        style={{
+          left: AlignmentsTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
+          top: 100,
+        }}
+      >
+        {AlignmentsTrack && <RenderedBlocks model={AlignmentsTrack} />}
+      </div>
+    </>
   )
 }
 

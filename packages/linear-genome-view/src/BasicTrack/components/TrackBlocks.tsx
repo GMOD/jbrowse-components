@@ -102,13 +102,13 @@ function TrackBlocks({
   const { blockDefinitions } = model
   return (
     <div
-      data-testid="Block"
+      data-testid="Blockset"
       className={classes.trackBlocks}
       style={{
         left: blockDefinitions.offsetPx - viewModel.offsetPx,
       }}
     >
-      <RenderedBlocks model={model.AlignmentsTrack} />
+      <RenderedBlocks model={model} />
     </div>
   )
 }

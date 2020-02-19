@@ -17,6 +17,7 @@ export default (pluginManager, configSchema) => {
         ),
         type: types.literal('ComboTrack'),
         configuration: ConfigurationReference(configSchema),
+        height: 250,
       })
       .volatile(() => ({
         ReactComponent: ComboTrackComponent,

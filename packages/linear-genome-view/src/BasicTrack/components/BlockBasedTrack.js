@@ -15,7 +15,7 @@ function BlockBasedTrack(props) {
       {model.trackMessageComponent ? (
         <model.trackMessageComponent model={model} />
       ) : getConf(model, 'type') === 'ComboTrack' ? (
-        <ComboTrackBlocks {...props} viewModel={getParent(getParent(model))} /> // track id is ambiguous, need to add trackname to it
+        <ComboTrackBlocks {...props} viewModel={getParent(getParent(model))} />
       ) : (
         <TrackBlocks {...props} viewModel={getParent(getParent(model))} />
       )}
