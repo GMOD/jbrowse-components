@@ -1,25 +1,27 @@
-import { Component as ReactComponent } from 'react'
+import { ComponentType as ReactComponentType } from 'react'
 import PluggableElementBase from './PluggableElementBase'
 
 export default class MenuBarType extends PluggableElementBase {
-  LazyReactComponent = undefined
+  LazyReactComponent: ReactComponentType
 
-  stateModel = undefined
+  stateModel: any
 
   constructor(stuff: {
     name: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     stateModel: any
-    LazyReactComponent: ReactComponent
+    LazyReactComponent: ReactComponentType
   }) {
     super(stuff)
+    this.LazyReactComponent = stuff.LazyReactComponent
+    this.stateModel = stuff.stateModel
     if (!this.LazyReactComponent) {
       throw new Error(
-        `no LazyReactComponent defined for drawer widget ${this.name}`,
+        `no LazyReactComponent defined for menu bar type ${this.name}`,
       )
     }
     if (!this.stateModel) {
-      throw new Error(`no stateModel defined for drawer widget ${this.name}`)
+      throw new Error(`no stateModel defined for menu bar type ${this.name}`)
     }
   }
 }

@@ -8,6 +8,8 @@ export default class ConnectionType extends PluggableElementBase {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(stuff: { name: string; stateModel: any; configSchema: any }) {
     super(stuff)
+    this.stateModel = stuff.stateModel
+    this.configSchema = stuff.configSchema
     if (!this.stateModel)
       throw new Error(`no stateModel defined for connection ${this.name}`)
     if (!this.configSchema)

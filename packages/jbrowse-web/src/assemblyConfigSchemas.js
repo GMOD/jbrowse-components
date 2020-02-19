@@ -17,8 +17,8 @@ export default function(pluginManager) {
   const SequenceAssemblyConfigSchema = ConfigurationSchema(
     'SequenceAssembly',
     {
-      sequence:
-        pluginManager.elementTypes.track.ReferenceSequenceTrack.configSchema,
+      sequence: pluginManager.getTrackType('ReferenceSequenceTrack')
+        .configSchema,
     },
     { baseConfiguration: BaseAssemblyConfigSchema },
   )
@@ -36,8 +36,8 @@ export default function(pluginManager) {
   const AssemblyConfigSchema = ConfigurationSchema(
     'Assembly',
     {
-      sequence:
-        pluginManager.elementTypes.track.ReferenceSequenceTrack.configSchema,
+      sequence: pluginManager.getTrackType('ReferenceSequenceTrack')
+        .configSchema,
       refNameAliases: ConfigurationSchema('RefNameAliases', {
         adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       }),

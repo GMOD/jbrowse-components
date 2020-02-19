@@ -1,18 +1,20 @@
-import { Component as ReactComponent } from 'react'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ComponentType as ReactComponentType } from 'react'
 import PluggableElementBase from './PluggableElementBase'
 
 export default class DrawerWidgetType extends PluggableElementBase {
-  LazyReactComponent = undefined
+  LazyReactComponent: ReactComponentType
 
-  stateModel = undefined
+  stateModel: any
 
   constructor(stuff: {
     name: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     stateModel: any
-    LazyReactComponent: ReactComponent
+    LazyReactComponent: ReactComponentType
   }) {
     super(stuff)
+    this.stateModel = stuff.stateModel
+    this.LazyReactComponent = stuff.LazyReactComponent
     if (!this.LazyReactComponent) {
       throw new Error(
         `no LazyReactComponent defined for drawer widget ${this.name}`,
