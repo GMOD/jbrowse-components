@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import {
   isOptionalType,
   isUnionType,
@@ -14,10 +15,8 @@ import {
 export function getSubType(type) {
   let t
   if (isOptionalType(type)) {
-    // eslint-disable-next-line no-underscore-dangle
     t = type._subtype || type.type
   } else if (isArrayType(type) || isMapType(type)) {
-    // eslint-disable-next-line no-underscore-dangle
     t = type._subtype || type._subType || type.subType
   } else {
     throw new TypeError('unsupported mst type')
@@ -36,7 +35,6 @@ export function getSubType(type) {
  */
 export function getUnionSubTypes(unionType) {
   if (!isUnionType(unionType)) throw new TypeError('not an MST union type')
-  // eslint-disable-next-line no-underscore-dangle
   const t = unionType._types || unionType.types
   if (!t) {
     // debugger
@@ -64,7 +62,6 @@ export function getPropertyType(type, propertyName) {
 export function getDefaultValue(type) {
   if (!isOptionalType(type))
     throw new TypeError('type must be an optional type')
-  // eslint-disable-next-line no-underscore-dangle
   return type._defaultValue || type.defaultValue
 }
 

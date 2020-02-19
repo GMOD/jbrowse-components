@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree'
+import { types, IAnyType } from 'mobx-state-tree'
 
 import PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
 import RendererType from './pluggableElementTypes/renderers/RendererType'
@@ -216,7 +216,7 @@ export default class PluginManager {
   pluggableMstType(
     typeGroup: PluggableElementTypeGroup,
     fieldName: PluggableElementMember,
-    fallback = types.maybe(types.null),
+    fallback: IAnyType = types.maybe(types.null),
   ) {
     const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
