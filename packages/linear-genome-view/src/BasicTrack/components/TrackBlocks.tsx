@@ -108,7 +108,7 @@ function TrackBlocks({
         left: blockDefinitions.offsetPx - viewModel.offsetPx,
       }}
     >
-      <RenderedBlocks model={model} />
+      <RenderedBlocks model={model.AlignmentsTrack} />
     </div>
   )
 }

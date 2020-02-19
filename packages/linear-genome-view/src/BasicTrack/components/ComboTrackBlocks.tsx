@@ -49,9 +49,7 @@ const useStyles = makeStyles({
 const RenderedBlocks = observer((props: { model: any }) => {
   const { model } = props
   const classes = useStyles()
-  const { blockDefinitions, blockState } = model.AlignmentsTrack
-    ? model.AlignmentsTrack
-    : model.SNPCoverageTrack
+  const { blockDefinitions, blockState } = model
   return (
     <>
       {blockDefinitions.map((block: BaseBlock) => {
@@ -106,6 +104,7 @@ function ComboTrackBlocks({
   viewModel: Instance<LinearGenomeViewStateModel>
 }) {
   const classes = useStyles()
+  console.log(model)
   const { blockDefinitions } = model.AlignmentsTrack
     ? model.AlignmentsTrack
     : model.SNPCoverageTrack
@@ -118,7 +117,12 @@ function ComboTrackBlocks({
         left: blockDefinitions.offsetPx - viewModel.offsetPx,
       }}
     >
-      <RenderedBlocks model={model} />
+      {model.AlignmentsTrack && (
+        <RenderedBlocks model={model.AlignmentsTrack} />
+      )}
+      {model.SNPCoverageTrack && (
+        <RenderedBlocks model={model.SNPCoverageTrack} />
+      )}
     </div>
   )
 }

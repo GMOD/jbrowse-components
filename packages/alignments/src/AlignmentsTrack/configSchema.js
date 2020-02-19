@@ -9,9 +9,6 @@ export default pluginManager => {
   const SvgFeatureRendererConfigSchema = pluginManager.getRendererType(
     'SvgFeatureRenderer',
   ).configSchema
-  const SNPCoverageRendererConfigSchema = pluginManager.getRendererType(
-    'SNPCoverageRenderer',
-  ).configSchema
 
   // modify config schema to take in a sub coverage track
   return ConfigurationSchema(
@@ -20,26 +17,13 @@ export default pluginManager => {
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       defaultRendering: {
         type: 'stringEnum',
-        model: types.enumeration('Rendering', [
-          'pileup',
-          'svg',
-          'snpcoverage',
-          'pileupsnpcoverage',
-        ]),
+        model: types.enumeration('Rendering', ['pileup', 'svg']),
         defaultValue: 'pileup',
       },
       renderers: ConfigurationSchema('RenderersConfiguration', {
         PileupRenderer: PileupRendererConfigSchema,
         SvgFeatureRenderer: SvgFeatureRendererConfigSchema,
-        SNPCoverageRenderer: SNPCoverageRendererConfigSchema,
       }),
-      // coverageTrack: ConfigurationSchema(
-      //   'SNPCoverageTrack',
-      //   {
-      //     SNPCoverageTrack: SNPCoverageTrackConfigSchema(pluginManager),
-      //   },
-      //   { baseConfiguration: LinearGenomeTrackConfig, explicitlyTyped: true },
-      // ),
     },
     { baseConfiguration: LinearGenomeTrackConfig, explicitlyTyped: true },
   )

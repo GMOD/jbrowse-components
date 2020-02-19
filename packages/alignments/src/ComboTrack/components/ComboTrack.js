@@ -10,7 +10,7 @@ function ComboTrackComponent(props) {
     <BlockBasedTrack
       {...props}
       {...AlignmentsTrack}
-      // {...SNPCoverageTrack} // Still need to write function to wrap adapter in a sub adapter
+      {...SNPCoverageTrack}
     ></BlockBasedTrack>
   )
 }
