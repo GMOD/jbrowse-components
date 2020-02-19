@@ -1696,25 +1696,6 @@
       "category": [
         "Combo"
       ],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "test_data/volvox-sorted.bam"
-        },
-        "index": {
-          "location": {
-            "uri": "test_data/volvox-sorted.bam.bai"
-          }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SNPCoverageRenderer": {
-          "type": "SNPCoverageRenderer"
-        }
-      },
       "alignmentsTrack": {
         "type": "AlignmentsTrack",
         "trackId": "volvox_bam combo_pileup",
@@ -1740,6 +1721,39 @@
           "PileupRenderer": {
             "type": "PileupRenderer"
           },
+          "SvgFeatureRenderer": {
+            "type": "SvgFeatureRenderer"
+          },
+          "SNPCoverageRenderer": {
+            "type": "SNPCoverageRenderer"
+          }
+        }
+      },
+      "snpCoverageTrack": {
+        "type": "SNPCoverageTrack",
+        "trackId": "volvox-short-reads-snp-bam combo_snpCoverage",
+        "name": "volvox-SNP (bam)",
+        "assemblyNames": [
+          "volvox"
+        ],
+        "category": [
+          "Deep coverage"
+        ],
+        "adapter": {
+          "type": "SNPCoverageAdapter",
+          "subadapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "test_data/volvox-sorted.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/volvox-sorted.bam.bai"
+              }
+            }
+          }
+        },
+        "renderers": {
           "SNPCoverageRenderer": {
             "type": "SNPCoverageRenderer"
           }
