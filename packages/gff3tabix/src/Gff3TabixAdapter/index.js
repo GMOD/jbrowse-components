@@ -25,10 +25,6 @@ export const configSchema = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: ['chromosome', 'region'],
     },
-    wtf: {
-      type: 'string',
-      defaultValue: 'wtf2',
-    },
   },
   { explicitlyTyped: true },
 )
