@@ -30,7 +30,7 @@ const useStyles = makeStyles({
     background: '#404040',
     position: 'absolute',
     display: 'flex',
-    // minHeight: '100%',
+    minHeight: '100%',
   },
   heightOverflowed: {
     position: 'absolute',
@@ -105,28 +105,33 @@ function ComboTrackBlocks({
 }) {
   const classes = useStyles()
   const { AlignmentsTrack, SNPCoverageTrack } = model
-  // make two track blocks (copy the div code)
   return (
     <>
-      <div
-        data-testid="Blockset"
-        className={classes.trackBlocks}
-        style={{
-          left: SNPCoverageTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
-        }}
-      >
-        {SNPCoverageTrack && <RenderedBlocks model={SNPCoverageTrack} />}
-      </div>
-      <div
-        data-testid="Blockset"
-        className={classes.trackBlocks}
-        style={{
-          left: AlignmentsTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
-          top: 100,
-        }}
-      >
-        {AlignmentsTrack && <RenderedBlocks model={AlignmentsTrack} />}
-      </div>
+      {SNPCoverageTrack && (
+        <div
+          data-testid="Blockset"
+          className={classes.trackBlocks}
+          style={{
+            left:
+              SNPCoverageTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
+          }}
+        >
+          <RenderedBlocks model={SNPCoverageTrack} />
+        </div>
+      )}
+      {AlignmentsTrack && (
+        <div
+          data-testid="Blockset"
+          className={classes.trackBlocks}
+          style={{
+            left:
+              AlignmentsTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
+            top: SNPCoverageTrack ? SNPCoverageTrack.height : 0,
+          }}
+        >
+          <RenderedBlocks model={AlignmentsTrack} />
+        </div>
+      )}
     </>
   )
 }

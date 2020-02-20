@@ -11,7 +11,7 @@ const powersOfTen: number[] = []
 for (let i = -20; i < 20; i += 1) {
   powersOfTen.push(10 ** i)
 }
-const YScaleBar = observer(
+export const YScaleBar = observer(
   ({ model }: { model: Instance<WiggleTrackModel> }) => {
     const { domain, height } = model
     const scaleType = getConf(model, 'scaleType')

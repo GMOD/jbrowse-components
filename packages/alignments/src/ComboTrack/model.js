@@ -28,10 +28,12 @@ export default (pluginManager, configSchema) => {
             type: 'AlignmentsTrack',
             configuration: self.configuration.alignmentsTrack,
           }
-          self.SNPCoverageTrack = {
-            type: 'SNPCoverageTrack',
-            configuration: self.configuration.snpCoverageTrack,
-          }
+          self.configuration.hasCoverage.value
+            ? (self.SNPCoverageTrack = {
+                type: 'SNPCoverageTrack',
+                configuration: self.configuration.snpCoverageTrack,
+              })
+            : delete self.SNPCoverageTrack
         },
       })),
   )

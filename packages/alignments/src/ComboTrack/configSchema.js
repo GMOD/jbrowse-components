@@ -14,6 +14,11 @@ export default pluginManager => {
     {
       alignmentsTrack: alignmentsTrackConfigSchema,
       snpCoverageTrack: snpCoverageTrackConfigSchema,
+      hasCoverage: {
+        type: 'boolean',
+        description: 'needs to show coverage or not',
+        defaultValue: false,
+      },
     },
     { baseConfiguration: BaseTrackConfig, explicitlyTyped: true },
   )

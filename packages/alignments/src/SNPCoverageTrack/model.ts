@@ -1,5 +1,5 @@
 import { getConf } from '@gmod/jbrowse-core/configuration'
-import { types, getSnapshot } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import wiggleStateModelFactory from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/model'
 
 // using a map because it preserves order
@@ -13,7 +13,6 @@ const stateModelFactory = (configSchema: any) =>
     types.model({ type: types.literal('SNPCoverageTrack') }).views(self => ({
       get rendererTypeName() {
         const viewName = getConf(self, 'defaultRendering')
-        console.log('Am I getting here?', viewName, getSnapshot(self))
         const rendererType = rendererTypes.get(viewName)
         if (!rendererType)
           throw new Error(`unknown wiggle renderer type ${viewName}`)
