@@ -18,14 +18,6 @@ import {
 } from '../LinearComparativeTrack'
 import LinearSyntenyTrackComponent from './components/LinearSyntenyTrack'
 
-export interface AnchorsData {
-  [key: number]: {
-    name1: string
-    name2: string
-    score: number
-  }
-}
-
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
     'LinearSyntenyTrack',
@@ -54,8 +46,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
     )
     .volatile(self => ({
       ReactComponent: (LinearSyntenyTrackComponent as unknown) as React.FC,
-      anchors: undefined as { [key: string]: number } | undefined,
-      anchorsData: undefined as AnchorsData | undefined,
     }))
     .views(self => ({
       get subtrackViews() {
