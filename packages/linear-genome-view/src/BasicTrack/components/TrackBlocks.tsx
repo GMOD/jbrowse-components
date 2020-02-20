@@ -118,4 +118,5 @@ TrackBlocks.propTypes = {
   viewModel: PropTypes.observableObject.isRequired,
 }
 
+export { RenderedBlocks, useStyles }
 export default observer(TrackBlocks)
