@@ -18,6 +18,7 @@ export default observer(
   }) => {
     const { views } = model
     const { subtracks, subtrackViews, layoutMatches } = track
+    if (!layoutMatches) return null
 
     const showIntraviewLinks = false
     const middle = false

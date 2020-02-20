@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, getParent, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
+import { toArray } from 'rxjs/operators'
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { getAdapter } from '@gmod/jbrowse-core/util/dataAdapterCache'
 import { getContainingView } from '@gmod/jbrowse-core/util'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import {
   getConf,
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
-import { LayoutRecord } from '../LinearComparativeView/model'
 
 import {
   configSchemaFactory as baseConfig,
@@ -27,6 +27,8 @@ export function configSchemaFactory(pluginManager: any) {
         type: 'fileLocation',
         defaultValue: { uri: '/path/to/mcscan.anchors' },
       },
+      geneAdapter1: pluginManager.pluggableConfigSchemaType('adapter'),
+      geneAdapter2: pluginManager.pluggableConfigSchemaType('adapter'),
     },
     {
       baseConfiguration: baseConfig(pluginManager),
@@ -73,64 +75,73 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         )
       },
 
-      get layoutMatches() {
-        const features = this.trackFeatures
-        const alreadySeen = new Set<number>()
-        const featNameMap: { [key: string]: Feature } = {}
-
-        if (!self.anchorsData || !self.anchors) {
-          return []
-        } // this finds candidate features that share the same name
-
-        for (const feature of features.values()) {
-          const n = self.anchors[feature.get('name')]
-          featNameMap[feature.get('name')] = feature
-
-          if (n !== undefined) {
-            alreadySeen.add(n)
-          }
+      get adapterConfig() {
+        return {
+          type: 'MCScanAnchorsAdapter',
+          mcscanAnchorsLocation: getConf(self, 'mcscanAnchors'),
+          geneAdapter1: getConf(self, 'geneAdapter1'),
+          geneAdapter2: getConf(self, 'geneAdapter2'),
         }
-
-        const blocks = Array.from(alreadySeen)
-        const ret = []
-
-        for (const block of blocks) {
-          const r = self.anchorsData[block]
-          if (r) {
-            const r1 = featNameMap[r.name1]
-            const r2 = featNameMap[r.name2]
-            if (!r1 || !r2) {
-              // alt logic (r1 && r2) || !(r3 && r4)
-              // eslint-disable-next-line no-continue
-              continue
-            }
-            const s1 = r1.get('start')
-            const e1 = r1.get('end')
-            const s2 = r2.get('start')
-            const e2 = r2.get('end')
-
-            ret.push([
-              {
-                layout: [s1, 0, e1, 10] as LayoutRecord,
-                feature: new SimpleFeature({
-                  data: { uniqueId: `${block}-1`, start: s1, end: e1 },
-                }),
-                level: 1,
-                refName: r1.get('refName') as string,
-              },
-              {
-                layout: [s2, 0, e2, 10] as LayoutRecord,
-                feature: new SimpleFeature({
-                  data: { uniqueId: `${block}-2`, start: s2, end: e2 },
-                }),
-                level: 0,
-                refName: r2.get('refName') as string,
-              },
-            ])
-          }
-        }
-        return ret
       },
+
+      //       get layoutMatches() {
+      //         const features = this.trackFeatures
+      //         const alreadySeen = new Set<number>()
+      //         const featNameMap: { [key: string]: Feature } = {}
+
+      //         if (!self.anchorsData || !self.anchors) {
+      //           return []
+      //         } // this finds candidate features that share the same name
+
+      //         for (const feature of features.values()) {
+      //           const n = self.anchors[feature.get('name')]
+      //           featNameMap[feature.get('name')] = feature
+
+      //           if (n !== undefined) {
+      //             alreadySeen.add(n)
+      //           }
+      //         }
+
+      //         const blocks = Array.from(alreadySeen)
+      //         const ret = []
+
+      //         for (const block of blocks) {
+      //           const r = self.anchorsData[block]
+      //           if (r) {
+      //             const r1 = featNameMap[r.name1]
+      //             const r2 = featNameMap[r.name2]
+      //             if (!r1 || !r2) {
+      //               // alt logic (r1 && r2) || !(r3 && r4)
+      //               // eslint-disable-next-line no-continue
+      //               continue
+      //             }
+      //             const s1 = r1.get('start')
+      //             const e1 = r1.get('end')
+      //             const s2 = r2.get('start')
+      //             const e2 = r2.get('end')
+
+      //             ret.push([
+      //               {
+      //                 layout: [s1, 0, e1, 10] as LayoutRecord,
+      //                 feature: new SimpleFeature({
+      //                   data: { uniqueId: `${block}-1`, start: s1, end: e1 },
+      //                 }),
+      //                 level: 1,
+      //                 refName: r1.get('refName') as string,
+      //               },
+      //               {
+      //                 layout: [s2, 0, e2, 10] as LayoutRecord,
+      //                 feature: new SimpleFeature({
+      //                   data: { uniqueId: `${block}-2`, start: s2, end: e2 },
+      //                 }),
+      //                 level: 0,
+      //                 refName: r2.get('refName') as string,
+      //               },
+      //             ])
+      //           }
+      //         }
+      //         return ret
+      //       },
 
       get trackIds() {
         return getConf(self, 'trackIds') as string[]
@@ -140,54 +151,37 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(
-            async () => {
-              try {
-                const aborter = new AbortController()
-                this.downloadAnchors({ signal: aborter.signal })
-                // self.setLoading(aborter)
-                // const stats = await getStats(aborter.signal)
-                // if (isAlive(self)) {
-                //   self.updateStats(stats)
-                // }
-              } catch (e) {
-                console.error(e)
-                // if (!isAbortException(e) && isAlive(self)) {
-                //   self.setError(e)
-                // }
-              }
-            },
-            { delay: 1000 },
-          ),
+          autorun(async () => {
+            const adapter = getAdapter(
+              pluginManager,
+              getConf(self, 'trackId'),
+              self.adapterConfig.type,
+              self.adapterConfig,
+              null,
+              null,
+            ).dataAdapter
+            const r = getParent(self, 2)
+            const blockFeats = r.views.forEach(async subview => {
+              const blocks = subview.staticBlocks
+              console.log(blocks)
+              const features = await Promise.all(
+                blocks.map(async block => {
+                  if (block.refName !== undefined) {
+                    const { refName, start, end, assemblyName } = block
+                    const observable = adapter.getFeatures({
+                      refName,
+                      start,
+                      end,
+                      assemblyName,
+                    })
+                    return observable.pipe(toArray()).toPromise()
+                  }
+                  return []
+                }),
+              )
+            })
+          }),
         )
-      },
-      async downloadAnchors(opts: { signal: AbortSignal }) {
-        const anchors = getConf(self, 'mcscanAnchors')
-
-        const text = (await openLocation(anchors).readFile('utf8')) as string
-        const m: { [key: string]: number } = {}
-        const r: AnchorsData = {}
-
-        text.split('\n').forEach((line: string, index: number) => {
-          if (line.length) {
-            if (line !== '###') {
-              const [name1, name2, score] = line.split('\t')
-              m[name1] = index
-              m[name2] = index
-              r[index] = { name1, name2, score: +score }
-            }
-          }
-        })
-
-        this.setAnchorsData(m, r)
-      },
-
-      setAnchorsData(
-        anchors: { [key: string]: number },
-        anchorsData: AnchorsData,
-      ) {
-        self.anchors = anchors
-        self.anchorsData = anchorsData
       },
     }))
 }

@@ -137,6 +137,14 @@
       "mcscanAnchors": {
         "uri": "test_data/grape.peach.anchors"
       },
+      "geneAdapter1": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+      },
+      "geneAdapter2": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+      },
       "name": "Grape peach synteny (MCScan)",
       "category": [
         "Annotation"

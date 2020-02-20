@@ -1,4 +1,5 @@
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
+import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 
 import {
@@ -10,6 +11,10 @@ import {
   configSchemaFactory as syntenyTrackConfigSchemaFactory,
   stateModelFactory as syntenyTrackStateModelFactory,
 } from './LinearSyntenyTrack'
+import {
+  configSchema as MCScanAnchorsConfigSchema,
+  AdapterClass as MCScanAnchorsAdapter,
+} from './MCScanAnchorsAdapter'
 
 export default class extends Plugin {
   install(pluginManager) {
@@ -38,5 +43,13 @@ export default class extends Plugin {
         stateModel: syntenyTrackStateModelFactory(pluginManager, configSchema),
       })
     })
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'MCScanAnchorsAdapter',
+          configSchema: MCScanAnchorsConfigSchema,
+          AdapterClass: MCScanAnchorsAdapter,
+        }),
+    )
   }
 }

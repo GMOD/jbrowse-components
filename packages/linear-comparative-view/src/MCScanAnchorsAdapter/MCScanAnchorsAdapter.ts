@@ -1,18 +1,18 @@
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { GenericFilehandle } from 'generic-filehandle'
+import { toArray } from 'rxjs/operators'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { AdapterClass as NCListAdapter } from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
 
-interface RowToGeneNames {
-  [key: number]: {
-    name1: string
-    name2: string
-    score: number
-  }
-}
+type RowToGeneNames = {
+  name1: string
+  name2: string
+  score: number
+}[]
 
 interface GeneNameToRow {
   [key: string]: number
@@ -20,6 +20,10 @@ interface GeneNameToRow {
 
 export default class extends BaseAdapter {
   private initialized = false
+
+  private geneAdapter1: any
+
+  private geneAdapter2: any
 
   private mcscanAnchors: any
 
@@ -31,12 +35,18 @@ export default class extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: { mcscanAnchorsLocation: IFileLocation }) {
+  public constructor(config: {
+    mcscanAnchorsLocation: IFileLocation
+    geneAdapter1: any
+    geneAdapter2: any
+  }) {
     super()
-    const { mcscanAnchorsLocation } = config
+    const { mcscanAnchorsLocation, geneAdapter1, geneAdapter2 } = config
     this.mcscanAnchorsLocation = openLocation(mcscanAnchorsLocation)
     this.geneNameToRow = {}
     this.rowToGeneName = []
+    this.geneAdapter1 = new NCListAdapter(geneAdapter1)
+    this.geneAdapter2 = new NCListAdapter(geneAdapter2)
   }
 
   async setup(opts?: BaseOptions) {
@@ -72,6 +82,22 @@ export default class extends BaseAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { refName, start, end } = region
       await this.setup(opts)
+      let feats
+      if (region.assemblyName == 'peach') {
+        feats = this.geneAdapter1.getFeatures(region)
+      } else {
+        feats = this.geneAdapter2.getFeatures(region)
+      }
+      const geneFeatures = await feats.pipe(toArray()).toPromise()
+      // should do type inference here?
+      geneFeatures.forEach((f: Feature) => {
+        const row = this.geneNameToRow[f.get('name')]
+        if (row !== undefined) {
+          observer.next(
+            new SimpleFeature({ data: { ...f.toJSON(), syntenyId: row } }),
+          )
+        }
+      })
 
       observer.complete()
     })
