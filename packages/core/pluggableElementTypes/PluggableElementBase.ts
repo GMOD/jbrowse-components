@@ -1,4 +1,5 @@
 export default class PluggableElementBase {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [memberName: string]: any
 
   name = ''

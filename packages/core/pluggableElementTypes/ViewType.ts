@@ -1,16 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ComponentType as ReactComponent } from 'react'
+import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
 
 export default class ViewType extends PluggableElementBase {
   ReactComponent: ReactComponent
 
-  stateModel: any
+  stateModel: IAnyModelType
 
   constructor(stuff: {
     name: string
     ReactComponent: ReactComponent
-    stateModel: any
+    stateModel: IAnyModelType
   }) {
     super(stuff)
     this.ReactComponent = stuff.ReactComponent

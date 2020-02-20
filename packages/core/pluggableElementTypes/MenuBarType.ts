@@ -1,15 +1,15 @@
 import { ComponentType as ReactComponentType } from 'react'
+import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
 
 export default class MenuBarType extends PluggableElementBase {
   LazyReactComponent: ReactComponentType
 
-  stateModel: any
+  stateModel: IAnyModelType
 
   constructor(stuff: {
     name: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    stateModel: any
+    stateModel: IAnyModelType
     LazyReactComponent: ReactComponentType
   }) {
     super(stuff)

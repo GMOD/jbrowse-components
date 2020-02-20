@@ -1,17 +1,17 @@
 import PluggableElementBase from './PluggableElementBase'
 import BaseAdapter from '../BaseAdapter'
+import { ConfigurationSchemaType } from '../configuration/configurationSchema'
 
 export default class AdapterType extends PluggableElementBase {
   AdapterClass: typeof BaseAdapter
 
-  constructor(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    stuff: {
-      name: string
-      AdapterClass: typeof BaseAdapter
-      configSchema: any
-    },
-  ) {
+  configSchema: ConfigurationSchemaType
+
+  constructor(stuff: {
+    name: string
+    AdapterClass: typeof BaseAdapter
+    configSchema: ConfigurationSchemaType
+  }) {
     super(stuff)
     this.AdapterClass = stuff.AdapterClass
     this.configSchema = stuff.configSchema

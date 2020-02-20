@@ -1,18 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
 import { getDefaultValue } from '../util/mst-reflection'
+import { ConfigurationSchemaType } from '../configuration/configurationSchema'
 
 export default class TrackType extends PluggableElementBase {
   compatibleView = 'LinearGenomeView'
 
-  stateModel: any
+  stateModel: IAnyModelType
 
-  configSchema: any
+  configSchema: ConfigurationSchemaType
 
   constructor(stuff: {
     name: string
-    stateModel: any
-    configSchema: any
+    stateModel: IAnyModelType
+    configSchema: ConfigurationSchemaType
     compatibleView: string
   }) {
     super(stuff)

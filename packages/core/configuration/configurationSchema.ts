@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   types,
   isModelType,
@@ -7,7 +8,6 @@ import {
   isOptionalType,
   isStateTreeNode,
   getType,
-  ITypeUnion,
 } from 'mobx-state-tree'
 
 import { ElementId } from '../mst-types'
@@ -274,7 +274,7 @@ function makeConfigurationSchemaModel(
   return schemaType
 }
 
-interface ConfigurationSchemaType
+export interface ConfigurationSchemaType
   extends ReturnType<typeof makeConfigurationSchemaModel> {
   isJBrowseConfigurationSchema: boolean
   jbrowseSchemaDefinition: ConfigurationSchemaDefinition

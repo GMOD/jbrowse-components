@@ -65,8 +65,10 @@ type PluggableElementTypeGroup =
 class TypeRecord<ElementClass extends PluggableElementBase> {
   registeredTypes: { [name: string]: ElementClass } = {}
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   baseClass: { new (...args: any[]): ElementClass }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(elementType: { new (...args: any[]): ElementClass }) {
     this.baseClass = elementType
   }
@@ -251,6 +253,7 @@ export default class PluginManager {
    */
   jbrequire = (
     lib: string | Function | { default: Function },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): { [exportName: string]: any } => {
     if (typeof lib === 'string') {
       const pack = ReExports[lib]
