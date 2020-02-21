@@ -33,8 +33,6 @@ export default class extends BaseAdapter {
     ) => Promise<FeatureStats>
   }
 
-  public static capabilities = ['getFeatures', 'getRefNames']
-
   public constructor(config: { bigWigLocation: IFileLocation }) {
     super()
     this.bigwig = new BigWig({

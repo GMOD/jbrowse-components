@@ -9,8 +9,6 @@ export default class extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected fasta: any
 
-  public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
-
   public constructor(config: {
     fastaLocation: IFileLocation
     faiLocation: IFileLocation

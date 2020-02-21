@@ -1,8 +1,8 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 
-export default (pluginManager: PluginManager) => {
-  const configSchema = ConfigurationSchema(
+export default (pluginManager: PluginManager) =>
+  ConfigurationSchema(
     'CramAdapter',
     {
       cramLocation: {
@@ -17,5 +17,3 @@ export default (pluginManager: PluginManager) => {
     },
     { explicitlyTyped: true },
   )
-  return configSchema
-}

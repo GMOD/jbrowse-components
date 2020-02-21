@@ -8,11 +8,12 @@ import {
   isOptionalType,
   isStateTreeNode,
   getType,
+  Instance,
 } from 'mobx-state-tree'
 
 import { ElementId } from '../mst-types'
 
-import ConfigSlot from './configurationSlot'
+import ConfigSlot, { ConfigSlotDefinition } from './configurationSlot'
 import {
   getUnionSubTypes,
   getSubType,
@@ -31,6 +32,19 @@ function isEmptyArray(thing: any) {
   return Array.isArray(thing) && thing.length === 0
 }
 
+export function isBareConfigurationSchemaType(
+  thing: any,
+): thing is ConfigurationSchemaType {
+  if (
+    isModelType(thing) &&
+    ('isJBrowseConfigurationSchema' in thing ||
+      thing.name.includes('ConfigurationSchema'))
+  ) {
+    return true
+  }
+  return false
+}
+
 export function isConfigurationSchemaType(thing: any): boolean {
   if (!thing) return false
 
@@ -40,13 +54,7 @@ export function isConfigurationSchemaType(thing: any): boolean {
   // also, note that the order of these statements matters, because
   // for example some union types are also optional types
 
-  if (
-    isModelType(thing) &&
-    ('isJBrowseConfigurationSchema' in thing ||
-      thing.name.includes('ConfigurationSchema'))
-  ) {
-    return true
-  }
+  if (isBareConfigurationSchemaType(thing)) return true
 
   if (isUnionType(thing)) {
     return getUnionSubTypes(thing).every(
@@ -101,8 +109,12 @@ export function isConfigurationSlotType(thing: any) {
   return thing && Boolean(thing.isJBrowseConfigurationSlot)
 }
 
-interface ConfigurationSchemaDefinition {
-  [n: string]: any
+export interface ConfigurationSchemaDefinition {
+  [n: string]:
+    | ConfigSlotDefinition
+    | ConfigurationSchemaDefinition
+    | string
+    | number
 }
 
 interface ConfigurationSchemaOptions {
@@ -147,11 +159,10 @@ function preprocessConfigurationSchemaArguments(
   return { schemaDefinition, options }
 }
 
-function makeConfigurationSchemaModel(
-  modelName: string,
-  schemaDefinition: ConfigurationSchemaDefinition,
-  options: ConfigurationSchemaOptions,
-) {
+function makeConfigurationSchemaModel<
+  DEFINITION extends ConfigurationSchemaDefinition,
+  OPTIONS extends ConfigurationSchemaOptions
+>(modelName: string, schemaDefinition: DEFINITION, options: OPTIONS) {
   // now assemble the MST model of the configuration schema
   const modelDefinition: { [n: string]: any } = {}
   let identifier
@@ -191,26 +202,29 @@ function makeConfigurationSchemaModel(
     },
   }
   Object.entries(schemaDefinition).forEach(([slotName, slotDefinition]) => {
-    if (isConfigurationSchemaType(slotDefinition)) {
+    if (isBareConfigurationSchemaType(slotDefinition)) {
       // this is a sub-configuration
       modelDefinition[slotName] = slotDefinition
+    } else if (
+      typeof slotDefinition === 'string' ||
+      typeof slotDefinition === 'number'
+    ) {
+      volatileConstants[slotName] = slotDefinition
     } else if (typeof slotDefinition === 'object') {
       // this is a slot definition
       if (!slotDefinition.type) {
         throw new Error(`no type set for config slot ${modelName}.${slotName}`)
       }
       try {
-        modelDefinition[slotName] = ConfigSlot(slotName, slotDefinition)
+        modelDefinition[slotName] = ConfigSlot(
+          slotName,
+          slotDefinition as ConfigSlotDefinition,
+        )
       } catch (e) {
         throw new Error(
           `invalid config slot definition for ${modelName}.${slotName}: ${e.message}`,
         )
       }
-    } else if (
-      typeof slotDefinition === 'string' ||
-      typeof slotDefinition === 'number'
-    ) {
-      volatileConstants[slotName] = slotDefinition
     } else {
       throw new Error(
         `invalid configuration schema definition, "${slotName}" must be either a valid configuration slot definition, a constant, or a nested configuration schema`,
@@ -280,6 +294,8 @@ export interface ConfigurationSchemaType
   jbrowseSchemaDefinition: ConfigurationSchemaDefinition
   jbrowseSchemaOptions: ConfigurationSchemaOptions
 }
+
+export type ConfigurationModel = Instance<ConfigurationSchemaType>
 
 export function ConfigurationSchema(
   modelName: string,

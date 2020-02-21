@@ -17,16 +17,6 @@ export interface BaseOptions {
  * implement.
  */
 export default abstract class BaseAdapter {
-  // List of all possible capabilities. Don't un-comment them here.
-  // Example:
-  // const capabilities = [
-  // 'getFeatures',
-  // 'getRefNames',
-  // 'getRegions',
-  // 'getRefNameAliases',
-  // ]
-  public static capabilities: string[]
-
   /**
    * Subclasses should override this method. Method signature here for reference.
    * @returns {Promise<string[]>} Array of reference sequence names used by the
@@ -69,7 +59,7 @@ export default abstract class BaseAdapter {
    * from caches, etc
    * @param {Region} region
    */
-  public abstract freeResources(region: Region): void
+  public freeResources(region: Region): void {}
 
   /**
    * Checks if the store has data for the given assembly and reference

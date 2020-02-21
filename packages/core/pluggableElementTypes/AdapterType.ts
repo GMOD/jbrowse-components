@@ -1,15 +1,18 @@
 import PluggableElementBase from './PluggableElementBase'
-import BaseAdapter from '../BaseAdapter'
 import { ConfigurationSchemaType } from '../configuration/configurationSchema'
+import BaseAdapter from '../BaseAdapter'
 
+interface AdapterImplementation extends BaseAdapter {
+  new (...args: any[]): this
+}
 export default class AdapterType extends PluggableElementBase {
-  AdapterClass: typeof BaseAdapter
+  AdapterClass: AdapterImplementation
 
   configSchema: ConfigurationSchemaType
 
   constructor(stuff: {
     name: string
-    AdapterClass: typeof BaseAdapter
+    AdapterClass: AdapterImplementation
     configSchema: ConfigurationSchemaType
   }) {
     super(stuff)
@@ -17,12 +20,6 @@ export default class AdapterType extends PluggableElementBase {
     this.configSchema = stuff.configSchema
     if (!this.AdapterClass) {
       throw new Error(`no AdapterClass defined for adapter type ${this.name}`)
-    }
-
-    if (!this.AdapterClass.capabilities.length) {
-      throw new Error(
-        `Adapter class ${this.AdapterClass.name} must provide a static property "capabilities" that has at least one entry. See BaseAdapter for an example.`,
-      )
     }
   }
 }

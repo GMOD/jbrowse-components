@@ -167,14 +167,6 @@ export default class PluginManager {
 
     this.elementCreationSchedule.add(groupName, () => {
       const element = creationCallback(this)
-      if (
-        groupName === 'adapter' &&
-        !element.AdapterClass.capabilities.length
-      ) {
-        throw new Error(
-          `Adapter ${element.AdapterClass.name} must provide a static property "capabilities" that has at least one entry. See BaseAdapter for an example.`,
-        )
-      }
       if (this.elementTypes[groupName][element.name]) {
         throw new Error(
           `${groupName} ${element.name} already registered, cannot register it again`,

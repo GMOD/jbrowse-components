@@ -12,13 +12,6 @@ import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 export default class FromConfigAdapter extends BaseAdapter {
   private features: Map<string, SimpleFeature[]>
 
-  public static capabilities = [
-    'getFeatures',
-    'getRefNames',
-    'getRegions',
-    'getRefNameAliases',
-  ]
-
   constructor(config: { features: Feature[]; refNameAliases?: [] }) {
     super()
     const { features } = config

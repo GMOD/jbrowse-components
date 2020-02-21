@@ -54,8 +54,6 @@ export default class extends BaseAdapter {
 
   private refNames: string[] | undefined
 
-  public static capabilities = ['getFeatures', 'getRefNames']
-
   public constructor(config: {
     endpoint: IFileLocation
     queryTemplate: string

@@ -4,8 +4,6 @@ import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { GenericFilehandle } from 'generic-filehandle'
 
 export default class RefNameAliasAdapter extends BaseRefNameAliasAdapter {
-  public static capabilities = ['getRefNameAliases']
-
   private location: GenericFilehandle
 
   private promise: Promise<Alias[]>

@@ -28,8 +28,6 @@ export default class extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected parser: any
 
-  public static capabilities = ['getFeatures', 'getRefNames']
-
   public constructor(config: Config) {
     super()
     const { vcfGzLocation, index } = config

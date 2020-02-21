@@ -72,8 +72,6 @@ export default class extends BaseAdapter {
     ) => Promise<FeatureStats>
   }
 
-  public static capabilities = ['getFeatures', 'getRefNames']
-
   public constructor(config, sequenceAdapter, getSubAdapter) {
     super()
 

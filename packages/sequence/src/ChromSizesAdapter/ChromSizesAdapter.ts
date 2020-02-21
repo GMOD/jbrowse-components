@@ -14,8 +14,6 @@ export default class extends BaseAdapter {
 
   protected source: string
 
-  public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
-
   public constructor(config: { chromSizesLocation: IFileLocation }) {
     super()
     const { chromSizesLocation } = config

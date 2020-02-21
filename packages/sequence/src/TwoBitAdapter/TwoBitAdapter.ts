@@ -10,8 +10,6 @@ export default class extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private twobit: any
 
-  public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
-
   public constructor(config: { twoBitLocation: IFileLocation }) {
     super()
     const twoBitOpts = {

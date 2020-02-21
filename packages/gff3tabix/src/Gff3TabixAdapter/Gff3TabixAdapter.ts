@@ -41,8 +41,6 @@ export default class extends BaseAdapter {
 
   protected dontRedispatch: string[]
 
-  public static capabilities = ['getFeatures', 'getRefNames']
-
   public constructor(config: Config) {
     super()
     const { gffGzLocation, index, dontRedispatch } = config

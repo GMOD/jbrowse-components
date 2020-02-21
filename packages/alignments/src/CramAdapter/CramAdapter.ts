@@ -1,6 +1,6 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
-import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -8,6 +8,11 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import {
+  ConfigurationSchemaType,
+  ConfigurationModel,
+} from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { getSubAdapterType } from '@gmod/jbrowse-core/util/dataAdapterCache'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 
 interface HeaderLine {
@@ -35,15 +40,9 @@ export default (pluginManager: PluginManager) => {
     // maps a seqId to original refname, passed specially to render args, to a seqid
     private seqIdToOriginalRefName: string[] = []
 
-    public static capabilities = ['getFeatures', 'getRefNames']
-
     public constructor(
-      config: {
-        cramLocation: IFileLocation
-        craiLocation: IFileLocation
-        fetchSizeLimit?: number
-      },
-      sequenceAdapter: BaseAdapter,
+      config: ConfigurationModel,
+      getSubAdapter: getSubAdapterType,
     ) {
       super()
 
@@ -62,7 +61,16 @@ export default (pluginManager: PluginManager) => {
         checkSequenceMD5: false,
         fetchSizeLimit: config.fetchSizeLimit || 600000000,
       })
-      this.sequenceAdapter = sequenceAdapter
+
+      const sequenceAdapterType = readConfObject(config, [
+        'sequenceAdapter',
+        'type',
+      ])
+      const sequenceAdapterConfig = readConfObject(config, 'sequenceAdapter')
+      this.sequenceAdapter = getSubAdapter(
+        sequenceAdapterType,
+        sequenceAdapterConfig,
+      ).dataAdapter
     }
 
     async seqFetch(seqId: number, start: number, end: number) {

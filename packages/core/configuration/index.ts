@@ -5,43 +5,43 @@ import {
   getType,
   isMapType,
 } from 'mobx-state-tree'
-import { isObservableArray, isObservableObject, isObservableMap } from 'mobx'
 
 import {
   ConfigurationSchema,
   ConfigurationReference,
+  ConfigurationModel,
 } from './configurationSchema'
 
-function getModelConfig(tree) {
-  // if this is a node
-  if (isStateTreeNode(tree)) {
-    let config
-    if (isObservableObject(tree)) {
-      let keys
-      //   if it has a 'configuration' view, use that as the node instead
-      //   otherwise, just recurse through it normally
-      if (tree.configuration) {
-        tree = tree.configuration
-        keys = Object.keys(tree)
-      } else {
-        keys = Object.keys(getPropertyMembers(tree).properties)
-      }
-      config = {}
-      keys.forEach(key => {
-        config[key] = getModelConfig(tree[key])
-      })
-    } else if (isObservableArray(tree)) config = tree.map(getModelConfig)
-    else if (isObservableMap(tree)) {
-      config = {}
-      tree.forEach((value, key) => {
-        config[key] = getModelConfig(value)
-      })
-    }
+// function getModelConfig(tree) {
+//   // if this is a node
+//   if (isStateTreeNode(tree)) {
+//     let config
+//     if (isObservableObject(tree)) {
+//       let keys
+//       //   if it has a 'configuration' view, use that as the node instead
+//       //   otherwise, just recurse through it normally
+//       if (tree.configuration) {
+//         tree = tree.configuration
+//         keys = Object.keys(tree)
+//       } else {
+//         keys = Object.keys(getPropertyMembers(tree).properties)
+//       }
+//       config = {}
+//       keys.forEach(key => {
+//         config[key] = getModelConfig(tree[key])
+//       })
+//     } else if (isObservableArray(tree)) config = tree.map(getModelConfig)
+//     else if (isObservableMap(tree)) {
+//       config = {}
+//       tree.forEach((value, key) => {
+//         config[key] = getModelConfig(value)
+//       })
+//     }
 
-    return config
-  }
-  return tree
-}
+//     return config
+//   }
+//   return tree
+// }
 
 /**
  * given a configuration model (an instance of a ConfigurationSchema),
@@ -52,7 +52,11 @@ function getModelConfig(tree) {
  * @param {any} args extra arguments e.g. for a feature callback,
  *  will be sent to each of the slotNames
  */
-function readConfObject(confObject, slotPath, args = []) {
+function readConfObject(
+  confObject: ConfigurationModel,
+  slotPath: string[] | string,
+  args: any[] = [],
+): any {
   if (!confObject) throw new TypeError('must provide conf object to read')
   if (!slotPath) return getSnapshot(confObject)
   if (typeof slotPath === 'string') {
@@ -108,18 +112,6 @@ function readConfObject(confObject, slotPath, args = []) {
 }
 
 /**
- * helper method, applies readConfObject to an array of slotNames
- *
- * @param {object} model instance of mst model with a configuration object
- * @param {array} slotNames array of config paths to read
- * @param {any} args extra arguments e.g. for a feature callback, will
- *  be sent to each of the slotNames
- */
-function readConfObjects(confObject, slotNames, args = []) {
-  return slotNames.map(slotName => readConfObject(confObject, slotName, args))
-}
-
-/**
  * helper method for readConfObject, reads the config from a mst model
  *
  * @param {object} model instance of ConfigurationSchema
@@ -135,24 +127,4 @@ function getConf(model, slotName, args = []) {
   return readConfObject(model.configuration, slotName, args)
 }
 
-/**
- * helper method, applies getConf to an array of slotNames
- *
- * @param {object} model instance of ConfigurationSchema
- * @param {array} slotNames array of config paths to read
- * @param {any} args extra arguments e.g. for a feature callback,
- *  will be sent to each of the slotNames
- */
-function getConfs(model, slotNames, args) {
-  return slotNames.map(slotName => getConf(model, slotName, args))
-}
-
-export {
-  ConfigurationSchema,
-  ConfigurationReference,
-  getModelConfig,
-  getConf,
-  getConfs,
-  readConfObject,
-  readConfObjects,
-}
+export { ConfigurationSchema, ConfigurationReference, getConf, readConfObject }

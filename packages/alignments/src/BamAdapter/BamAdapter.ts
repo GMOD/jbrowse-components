@@ -22,8 +22,6 @@ export default class extends BaseAdapter {
 
   private samHeader: Header = {}
 
-  public static capabilities = ['getFeatures', 'getRefNames']
-
   public constructor(config: {
     bamLocation: IFileLocation
     index: { location: IFileLocation; indexType: string }

@@ -8,6 +8,7 @@ import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature, { Feature } from '../../util/simpleFeature'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
+import { ConfigurationModel } from '../../configuration/configurationSchema'
 
 interface BaseRenderArgs {
   blockKey: string
@@ -16,7 +17,7 @@ interface BaseRenderArgs {
   filters?: any
   dataAdapter: BaseAdapter
   bpPerPx: number
-  config: Record<string, any>
+  config: ConfigurationModel
   renderProps: { trackModel: any }
 }
 

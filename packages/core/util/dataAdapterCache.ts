@@ -1,14 +1,22 @@
-/**
- *
- */
-
 import jsonStableStringify from 'json-stable-stringify'
+import PluginManager from '../PluginManager'
+import { ConfigurationSchemaDefinition } from '../configuration/configurationSchema'
+import BaseAdapter from '../BaseAdapter'
+import { IRegion } from '../mst-types'
 
-function adapterConfigCacheKey(adapterType, adapterConfig) {
+function adapterConfigCacheKey(
+  adapterType: string,
+  adapterConfig: ConfigurationSchemaDefinition,
+) {
   return `${adapterType}|${jsonStableStringify(adapterConfig)}`
 }
 
-const adapterCache = {}
+interface AdapterCacheEntry {
+  dataAdapter: BaseAdapter
+  sessionIds: Set<string>
+}
+
+const adapterCache: Record<string, AdapterCacheEntry> = {}
 
 /**
  * instantiate a data adapter, or return an already-instantiated one if we have one with the same
@@ -21,10 +29,10 @@ const adapterCache = {}
  * @param {object} adapterConfigSnapshot plain-JS configuration snapshot for the adapter
  */
 export function getAdapter(
-  pluginManager,
-  sessionId,
-  adapterType,
-  adapterConfigSnapshot,
+  pluginManager: PluginManager,
+  sessionId: string,
+  adapterType: string,
+  adapterConfigSnapshot: ConfigurationSchemaDefinition,
 ) {
   // cache the adapter object
   const cacheKey = adapterConfigCacheKey(adapterType, adapterConfigSnapshot)
@@ -40,12 +48,17 @@ export function getAdapter(
       adapterConfigSnapshot,
     )
 
+    const getSubAdapter: getSubAdapterType = getAdapter.bind(
+      null,
+      pluginManager,
+      sessionId,
+    )
     // instantiate the adapter itself with its config schema, and a bound
     // func that it can use to get any inner adapters
     // (such as sequence adapters or wrapped subadapters) that it needs
     const dataAdapter = new dataAdapterType.AdapterClass(
       adapterConfig,
-      getAdapter.bind(this, pluginManager, sessionId),
+      getSubAdapter,
     )
 
     // store it in our cache
@@ -61,7 +74,13 @@ export function getAdapter(
   return cacheEntry
 }
 
-export function freeAdapterResources(specification) {
+export type getSubAdapterType = (
+  adapterType: string,
+  adapterConfigSnapshot: ConfigurationSchemaDefinition,
+) => ReturnType<typeof getAdapter>
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function freeAdapterResources(specification: Record<string, any>) {
   let deleteCount = 0
 
   const specKeys = Object.keys(specification)
@@ -82,8 +101,8 @@ export function freeAdapterResources(specification) {
     Object.values(adapterCache).forEach(cacheEntry => {
       if (!cacheEntry.dataAdapter.freeResources) {
         console.warn(cacheEntry.dataAdapter, 'does not implement freeResources')
-      } else {
-        cacheEntry.dataAdapter.freeResources(specification)
+      } else if ((specification.region as IRegion).refName !== undefined) {
+        cacheEntry.dataAdapter.freeResources(specification.region)
       }
     })
   }

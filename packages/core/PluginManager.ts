@@ -1,4 +1,10 @@
-import { types, IAnyType } from 'mobx-state-tree'
+import {
+  types,
+  IAnyType,
+  IAnyModelType,
+  IAnyComplexType,
+  isModelType,
+} from 'mobx-state-tree'
 
 import PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
 import RendererType from './pluggableElementTypes/renderers/RendererType'
@@ -68,7 +74,6 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   baseClass: { new (...args: any[]): ElementClass }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(elementType: { new (...args: any[]): ElementClass }) {
     this.baseClass = elementType
   }
@@ -220,10 +225,10 @@ export default class PluginManager {
     fieldName: PluggableElementMember,
     fallback: IAnyType = types.maybe(types.null),
   ) {
-    const pluggableTypes = this.getElementTypeRecord(typeGroup)
+    const pluggableTypes: IAnyModelType[] = this.getElementTypeRecord(typeGroup)
       .all()
-      .map(t => t[fieldName])
-      .filter(m => Boolean(m))
+      .map((t: Record<string, any>) => t[fieldName])
+      .filter(m => isModelType(m))
     // try to smooth over the case when no types are registered, mostly encountered in tests
     if (pluggableTypes.length === 0) {
       console.warn(
@@ -251,10 +256,7 @@ export default class PluginManager {
    *
    * @returns {any} the library's default export
    */
-  jbrequire = (
-    lib: string | Function | { default: Function },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): { [exportName: string]: any } => {
+  jbrequire = (lib: string | Function | { default: Function }): any => {
     if (typeof lib === 'string') {
       const pack = ReExports[lib]
       if (!pack)

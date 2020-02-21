@@ -33,8 +33,6 @@ export default class extends BaseAdapter {
 
   private parser: Promise<Parser>
 
-  public static capabilities = ['getFeatures', 'getRefNames']
-
   public constructor(config: { bigBedLocation: IFileLocation }) {
     super()
     this.bigbed = new BigBed({

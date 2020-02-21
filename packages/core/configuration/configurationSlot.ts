@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { types } from 'mobx-state-tree'
+import { types, IAnyModelType } from 'mobx-state-tree'
 import { stringToFunction, functionRegexp } from '../util/functionStrings'
 import { inDevelopment } from '../util'
 import { FileLocation } from '../mst-types'
@@ -132,6 +132,14 @@ const FunctionStringType = types.refinement(
   str => functionRegexp.test(str),
 )
 
+export interface ConfigSlotDefinition {
+  description?: string
+  model?: IAnyModelType
+  type: string
+  defaultValue: any
+  functionSignature?: string[]
+}
+
 /**
  * builds a MST model for a configuration slot
  *
@@ -152,13 +160,7 @@ export default function ConfigSlot(
     type,
     defaultValue,
     functionSignature = [],
-  }: {
-    description: string
-    model: any
-    type: string
-    defaultValue: any
-    functionSignature?: string[]
-  },
+  }: ConfigSlotDefinition,
 ) {
   if (!type) throw new Error('type name required')
   if (!model) model = typeModels[type]

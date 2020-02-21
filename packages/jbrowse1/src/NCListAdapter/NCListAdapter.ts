@@ -15,8 +15,6 @@ export default class extends BaseAdapter {
 
   private configRefNames?: string[]
 
-  static capabilities = ['getFeatures']
-
   private id: string
 
   constructor(args: { refNames?: string[]; rootUrlTemplate: string }) {
