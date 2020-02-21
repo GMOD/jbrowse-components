@@ -24,16 +24,33 @@ export default (pluginManager, configSchema) => {
       }))
       .actions(self => ({
         afterAttach() {
+          console.log(self.configuration)
+          const pileupConfig = self.configuration.alignmentsTrack
           self.AlignmentsTrack = {
             type: 'AlignmentsTrack',
-            configuration: self.configuration.alignmentsTrack,
+            configuration: pileupConfig,
           }
+          // pileupConfig.adapter.type === 'BamAdapter' ||
+          // pileupConfig.adapter.type === 'CramAdapter'
+          //   ? (self.SNPCoverageTrack = {
+          //       type: 'SNPCoverageTrack',
+          //       configuration: {
+          //         ...self.configuration.snpCoverageTrack,
+          //         trackId: `${self.configuration.trackId}_snpcoverage`,
+          //         // adapter: {
+          //         //   type: 'SNPCoverageAdapter',
+          //         //   subadapter: { ...pileupConfig.adapter },
+          //         // },
+          //       },
+          //     })
+          //   : delete self.SNPCoverageTrack
           self.configuration.hasCoverage.value
             ? (self.SNPCoverageTrack = {
                 type: 'SNPCoverageTrack',
                 configuration: self.configuration.snpCoverageTrack,
               })
             : delete self.SNPCoverageTrack
+          console.log(self.AlignmentsTrack, self.SNPCoverageTrack)
         },
       })),
   )
