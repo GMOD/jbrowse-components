@@ -12,13 +12,8 @@ export default pluginManager => {
   return ConfigurationSchema(
     'ComboTrack',
     {
-      alignmentsTrack: alignmentsTrackConfigSchema,
-      snpCoverageTrack: snpCoverageTrackConfigSchema,
-      hasCoverage: {
-        type: 'boolean',
-        description: 'needs to show coverage or not',
-        defaultValue: false,
-      },
+      alignmentsTrackConfig: alignmentsTrackConfigSchema,
+      snpCoverageTrackConfig: snpCoverageTrackConfigSchema,
     },
     { baseConfiguration: BaseTrackConfig, explicitlyTyped: true },
   )

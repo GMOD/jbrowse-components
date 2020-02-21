@@ -1696,7 +1696,7 @@
       "category": [
         "Combo"
       ],
-      "alignmentsTrack": {
+      "alignmentsTrackConfig": {
         "type": "AlignmentsTrack",
         "trackId": "volvox_bam combo_pileup",
         "name": "volvox-combo alignments track",
@@ -1726,8 +1726,7 @@
           }
         }
       },
-      "hasCoverage": true,
-      "snpCoverageTrack": {
+      "snpCoverageTrackConfig": {
         "type": "SNPCoverageTrack",
         "trackId": "volvox_bam combo_snpCoverage",
         "name": "volvox-bam combo snp coverage",
@@ -1757,17 +1756,17 @@
     },
     {
       "type": "ComboTrack",
-      "trackId": "volvox_bam combo no cov",
-      "name": "volvox-combo no coverage",
+      "trackId": "combo_no_cov",
+      "name": "volvox-combo no coverage info",
       "assemblyNames": [
         "volvox"
       ],
       "category": [
         "Combo"
       ],
-      "alignmentsTrack": {
+      "alignmentsTrackConfig": {
         "type": "AlignmentsTrack",
-        "trackId": "volvox_bam combo_no_cov_pileup",
+        "trackId": "combo_no_cov_pileup",
         "name": "volvox-combo alignments track no cov",
         "assemblyNames": [
           "volvox"

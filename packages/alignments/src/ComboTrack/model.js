@@ -1,4 +1,7 @@
-import { ConfigurationReference } from '@gmod/jbrowse-core/configuration'
+import {
+  getConf,
+  ConfigurationReference,
+} from '@gmod/jbrowse-core/configuration'
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 import ComboTrackComponent from './components/ComboTrack'
@@ -24,33 +27,46 @@ export default (pluginManager, configSchema) => {
       }))
       .actions(self => ({
         afterAttach() {
-          console.log(self.configuration)
-          const pileupConfig = self.configuration.alignmentsTrack
+          const {
+            alignmentsTrackConfig,
+            snpCoverageTrackConfig,
+          } = self.configuration
+
           self.AlignmentsTrack = {
             type: 'AlignmentsTrack',
-            configuration: pileupConfig,
+            configuration: alignmentsTrackConfig,
           }
-          // pileupConfig.adapter.type === 'BamAdapter' ||
-          // pileupConfig.adapter.type === 'CramAdapter'
-          //   ? (self.SNPCoverageTrack = {
-          //       type: 'SNPCoverageTrack',
-          //       configuration: {
-          //         ...self.configuration.snpCoverageTrack,
-          //         trackId: `${self.configuration.trackId}_snpcoverage`,
-          //         // adapter: {
-          //         //   type: 'SNPCoverageAdapter',
-          //         //   subadapter: { ...pileupConfig.adapter },
-          //         // },
-          //       },
-          //     })
-          //   : delete self.SNPCoverageTrack
-          self.configuration.hasCoverage.value
+          snpCoverageTrackConfig.trackId !== 'placeholderId' // temp conditional while adding snpcoverage to config is necessary
             ? (self.SNPCoverageTrack = {
                 type: 'SNPCoverageTrack',
-                configuration: self.configuration.snpCoverageTrack,
+                configuration: snpCoverageTrackConfig,
               })
             : delete self.SNPCoverageTrack
-          console.log(self.AlignmentsTrack, self.SNPCoverageTrack)
+
+          /* Below is a theoretical version if the configSchema only required generic track info rather
+             than specific alignments/snp coverage track info. Issue is config editor options must all be top level */
+          // self.AlignmentsTrack = {
+          //   type: 'AlignmentsTrack',
+          //   configuration: {
+          //     ...getConf(self, 'alignmentsTrackConfig'),
+          //     type: 'AlignmentsTrack',
+          //     name: `${getConf(self, 'name')} pileup`,
+          //     trackId: `${self.configuration.trackId}_pileup`,
+          //   },
+          // }
+          // self.SNPCoverageTrack = {
+          //   type: 'SNPCoverageTrack',
+          //   configuration: {
+          //     ...getConf(self, 'alignmentsTrackConfig'),
+          //     type: 'SNPCoverageTrack',
+          //     name: `${getConf(self, 'name')} snpcoverage`,
+          //     trackId: `${self.configuration.trackId}_snpcoverage`,
+          //     adapter: {
+          //       type: 'SNPCoverageAdapter',
+          //       subadapter: getConf(self, 'alignmentsTrackConfig').adapter,
+          //     },
+          //   },
+          // }
         },
       })),
   )
