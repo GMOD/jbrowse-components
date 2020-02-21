@@ -199,6 +199,7 @@ export default function sessionModelFactory(pluginManager: any) {
         opts: { signal?: AbortSignal } = {},
       ) {
         const assembly = assemblyData.get(assemblyName)
+        debugger
         if (assembly) {
           const adapterConfig = readConfObject(assembly.sequence, 'adapter')
           const adapterConfigId = jsonStableStringify(adapterConfig)
@@ -215,6 +216,7 @@ export default function sessionModelFactory(pluginManager: any) {
               { timeout: 1000000 },
             )
             .then((adapterRegions: IRegion[]) => {
+              debugger
               const adapterRegionsWithAssembly = adapterRegions.map(
                 adapterRegion => ({
                   ...adapterRegion,

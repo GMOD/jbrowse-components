@@ -8,10 +8,7 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import {
-  ConfigurationSchemaType,
-  ConfigurationModel,
-} from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { ConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { getSubAdapterType } from '@gmod/jbrowse-core/util/dataAdapterCache'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 

@@ -2,6 +2,8 @@ import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { ConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration
@@ -12,9 +14,9 @@ import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 export default class FromConfigAdapter extends BaseAdapter {
   private features: Map<string, SimpleFeature[]>
 
-  constructor(config: { features: Feature[]; refNameAliases?: [] }) {
+  constructor(config: ConfigurationModel) {
     super()
-    const { features } = config
+    const features = readConfObject(config, 'features')
     this.features = this.makeFeatures(features || [])
   }
 

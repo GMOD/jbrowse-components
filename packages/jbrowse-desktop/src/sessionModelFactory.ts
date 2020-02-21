@@ -158,6 +158,7 @@ export default function sessionModelFactory(pluginManager: any) {
           autorun(() => {
             self.views.forEach(view => {
               const assemblyName = view.displayRegionsFromAssemblyName
+              debugger
               if (
                 assemblyName &&
                 self.assemblyData.get(assemblyName) &&
