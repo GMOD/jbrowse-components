@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   createEvent,
   fireEvent,
@@ -450,7 +451,11 @@ describe('circular views', () => {
     await waitForElement(() => getByText('Help'))
 
     // open a new circular view on the same assembly as the test linear view
-    state.session.addViewFromAnotherView('CircularView', state.session.views[0])
+    const regions = await state.session.getRegionsForAssemblyName('volvox')
+    act(() => {
+      const circularView = state.session.addView('CircularView')
+      circularView.setDisplayedRegions(regions)
+    })
 
     // open a track selector for the circular view
     const trackSelectButtons = await waitForElement(() =>
@@ -526,10 +531,10 @@ describe('Fatal error', () => {
 
 test('404 sequence file', async () => {
   const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-  const { findByText } = render(
+  const { findAllByText } = render(
     <JBrowse config={{ uri: 'test_data/config_chrom_sizes_test.json' }} />,
   )
-  await findByText(/HTTP 404/)
+  await findAllByText(/HTTP 404/)
   expect(spy).toHaveBeenCalled()
   spy.mockRestore()
 })

@@ -116,9 +116,10 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           >
             <div
               class="makeStyles-linearGenomeView"
+              style="display: grid; position: relative; grid-template-rows: [header] auto [scale-bar] 40px; grid-template-columns: [controls] 120px [blocks] auto;"
             >
               <div
-                style="height: 40px;"
+                class="makeStyles-headerBar"
               >
                 <button
                   class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
@@ -131,7 +132,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   >
                     <span
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root"
+                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                     >
                       close
                     </span>
@@ -140,80 +141,233 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                     class="MuiTouchRipple-root"
                   />
                 </button>
-              </div>
-              <div
-                class="MuiContainer-root makeStyles-importFormContainer MuiContainer-maxWidthLg"
-              >
-                <div
-                  class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-flex-start"
-                  style="width: 25rem; margin: 0px auto;"
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                  tabindex="0"
+                  title="select tracks"
+                  type="button"
+                  value="track_select"
                 >
-                  <div
-                    class="MuiGrid-root MuiGrid-item"
+                  <span
+                    class="MuiIconButton-label"
                   >
-                    <fieldset
-                      class="MuiFormControl-root"
+                    <span
+                      aria-hidden="true"
+                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                     >
-                      <legend
-                        class="MuiFormLabel-root"
-                      >
-                        Select assembly to view
-                      </legend>
-                      <div
-                        class="MuiFormGroup-root"
-                      >
-                        <div
-                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
-                        >
-                          <div
-                            aria-haspopup="listbox"
-                            aria-labelledby=" "
-                            class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
-                            role="button"
-                            tabindex="0"
-                          >
-                            <span>
-                              ​
-                            </span>
-                          </div>
-                          <input
-                            type="hidden"
-                            value=""
-                          />
-                          <svg
-                            aria-hidden="true"
-                            class="MuiSvgIcon-root MuiSelect-icon"
-                            focusable="false"
-                            role="presentation"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M7 10l5 5 5-5z"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                    </fieldset>
-                  </div>
-                  <div
-                    class="MuiGrid-root MuiGrid-item"
+                      line_style
+                    </span>
+                  </span>
+                  <span
+                    class="MuiTouchRipple-root"
+                  />
+                </button>
+                <button
+                  aria-controls="long-menu"
+                  aria-haspopup="true"
+                  aria-label="more"
+                  class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+                  tabindex="0"
+                  type="button"
+                >
+                  <span
+                    class="MuiIconButton-label"
                   >
+                    <span
+                      aria-hidden="true"
+                      class="material-icons MuiIcon-root"
+                    >
+                      more_vert
+                    </span>
+                  </span>
+                  <span
+                    class="MuiTouchRipple-root"
+                  />
+                </button>
+                <div
+                  class="makeStyles-emphasis"
+                >
+                  <p
+                    class="MuiTypography-root makeStyles-viewName MuiTypography-body1"
+                    style="color: rgb(255, 255, 255);"
+                  />
+                </div>
+                <div
+                  class="makeStyles-spacer"
+                />
+                <div
+                  class="MuiPaper-root makeStyles-searchRoot MuiPaper-elevation1 MuiPaper-rounded"
+                >
+                  <form>
+                    <div
+                      class="MuiInputBase-root makeStyles-input"
+                    >
+                      <input
+                        aria-invalid="false"
+                        class="MuiInputBase-input"
+                        placeholder="Enter location (e.g. chr1:1000..5000)"
+                        type="text"
+                        value=""
+                      />
+                    </div>
                     <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+                      aria-label="search"
+                      class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
                       tabindex="0"
                       type="button"
                     >
                       <span
-                        class="MuiButton-label"
+                        class="MuiIconButton-label"
                       >
-                        Open
+                        <span
+                          aria-hidden="true"
+                          class="material-icons MuiIcon-root"
+                        >
+                          search
+                        </span>
                       </span>
                       <span
                         class="MuiTouchRipple-root"
                       />
                     </button>
+                  </form>
+                </div>
+                <div
+                  class="MuiInputBase-root MuiInput-root MuiInput-underline"
+                >
+                  <div
+                    aria-haspopup="listbox"
+                    aria-labelledby=" mui-component-select-refseq"
+                    class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
+                    id="mui-component-select-refseq"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <span>
+                      ​
+                    </span>
+                  </div>
+                  <input
+                    name="refseq"
+                    type="hidden"
+                    value=""
+                  />
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSelect-icon"
+                    focusable="false"
+                    role="presentation"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M7 10l5 5 5-5z"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="makeStyles-container"
+                >
+                  <button
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                    data-testid="zoom_out"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <span
+                        aria-hidden="true"
+                        class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                      >
+                        zoom_out
+                      </span>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
+                  <span
+                    class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
+                  >
+                    <span
+                      class="MuiSlider-rail"
+                    />
+                    <span
+                      class="MuiSlider-track"
+                    />
+                    <input
+                      type="hidden"
+                      value="5.643856189774724"
+                    />
+                    <span
+                      aria-orientation="horizontal"
+                      aria-valuemax="5.643856189774724"
+                      aria-valuemin="5.643856189774724"
+                      aria-valuenow="5.643856189774724"
+                      class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
+                      data-index="0"
+                      role="slider"
+                      tabindex="0"
+                    />
+                  </span>
+                  <button
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                    data-testid="zoom_in"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <span
+                        aria-hidden="true"
+                        class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                      >
+                        zoom_in
+                      </span>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
+                </div>
+                <div
+                  class="makeStyles-spacer"
+                />
+              </div>
+              <div
+                class="makeStyles-controls makeStyles-viewControls"
+                style="grid-row: scale-bar;"
+              />
+              <div
+                class="makeStyles-rubberBandContainer"
+                data-testid="rubberband_container"
+                role="presentation"
+                style="height: 40px;"
+              >
+                <div
+                  class="makeStyles-scaleBarContainer"
+                >
+                  <div
+                    class="makeStyles-scaleBar"
+                    style="left: 0px; width: 5px; height: 40px;"
+                  >
+                    <div
+                      class="makeStyles-elidedBlock"
+                      style="width: 5px;"
+                    />
                   </div>
                 </div>
+              </div>
+              <div
+                class="MuiContainer-root makeStyles-noTracksMessage MuiContainer-maxWidthLg"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1"
+                >
+                  No tracks active, click the "select tracks" button to choose some.
+                </p>
               </div>
             </div>
           </div>
@@ -226,9 +380,10 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           >
             <div
               class="makeStyles-linearGenomeView"
+              style="display: grid; position: relative; grid-template-rows: [header] auto [scale-bar] 40px; grid-template-columns: [controls] 120px [blocks] auto;"
             >
               <div
-                style="height: 40px;"
+                class="makeStyles-headerBar"
               >
                 <button
                   class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
@@ -241,7 +396,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   >
                     <span
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root"
+                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                     >
                       close
                     </span>
@@ -250,80 +405,233 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                     class="MuiTouchRipple-root"
                   />
                 </button>
-              </div>
-              <div
-                class="MuiContainer-root makeStyles-importFormContainer MuiContainer-maxWidthLg"
-              >
-                <div
-                  class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-flex-start"
-                  style="width: 25rem; margin: 0px auto;"
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                  tabindex="0"
+                  title="select tracks"
+                  type="button"
+                  value="track_select"
                 >
-                  <div
-                    class="MuiGrid-root MuiGrid-item"
+                  <span
+                    class="MuiIconButton-label"
                   >
-                    <fieldset
-                      class="MuiFormControl-root"
+                    <span
+                      aria-hidden="true"
+                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                     >
-                      <legend
-                        class="MuiFormLabel-root"
-                      >
-                        Select assembly to view
-                      </legend>
-                      <div
-                        class="MuiFormGroup-root"
-                      >
-                        <div
-                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
-                        >
-                          <div
-                            aria-haspopup="listbox"
-                            aria-labelledby=" "
-                            class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
-                            role="button"
-                            tabindex="0"
-                          >
-                            <span>
-                              ​
-                            </span>
-                          </div>
-                          <input
-                            type="hidden"
-                            value=""
-                          />
-                          <svg
-                            aria-hidden="true"
-                            class="MuiSvgIcon-root MuiSelect-icon"
-                            focusable="false"
-                            role="presentation"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M7 10l5 5 5-5z"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                    </fieldset>
-                  </div>
-                  <div
-                    class="MuiGrid-root MuiGrid-item"
+                      line_style
+                    </span>
+                  </span>
+                  <span
+                    class="MuiTouchRipple-root"
+                  />
+                </button>
+                <button
+                  aria-controls="long-menu"
+                  aria-haspopup="true"
+                  aria-label="more"
+                  class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+                  tabindex="0"
+                  type="button"
+                >
+                  <span
+                    class="MuiIconButton-label"
                   >
+                    <span
+                      aria-hidden="true"
+                      class="material-icons MuiIcon-root"
+                    >
+                      more_vert
+                    </span>
+                  </span>
+                  <span
+                    class="MuiTouchRipple-root"
+                  />
+                </button>
+                <div
+                  class="makeStyles-emphasis"
+                >
+                  <p
+                    class="MuiTypography-root makeStyles-viewName MuiTypography-body1"
+                    style="color: rgb(255, 255, 255);"
+                  />
+                </div>
+                <div
+                  class="makeStyles-spacer"
+                />
+                <div
+                  class="MuiPaper-root makeStyles-searchRoot MuiPaper-elevation1 MuiPaper-rounded"
+                >
+                  <form>
+                    <div
+                      class="MuiInputBase-root makeStyles-input"
+                    >
+                      <input
+                        aria-invalid="false"
+                        class="MuiInputBase-input"
+                        placeholder="Enter location (e.g. chr1:1000..5000)"
+                        type="text"
+                        value=""
+                      />
+                    </div>
                     <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+                      aria-label="search"
+                      class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
                       tabindex="0"
                       type="button"
                     >
                       <span
-                        class="MuiButton-label"
+                        class="MuiIconButton-label"
                       >
-                        Open
+                        <span
+                          aria-hidden="true"
+                          class="material-icons MuiIcon-root"
+                        >
+                          search
+                        </span>
                       </span>
                       <span
                         class="MuiTouchRipple-root"
                       />
                     </button>
+                  </form>
+                </div>
+                <div
+                  class="MuiInputBase-root MuiInput-root MuiInput-underline"
+                >
+                  <div
+                    aria-haspopup="listbox"
+                    aria-labelledby=" mui-component-select-refseq"
+                    class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
+                    id="mui-component-select-refseq"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <span>
+                      ​
+                    </span>
+                  </div>
+                  <input
+                    name="refseq"
+                    type="hidden"
+                    value=""
+                  />
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSelect-icon"
+                    focusable="false"
+                    role="presentation"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M7 10l5 5 5-5z"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="makeStyles-container"
+                >
+                  <button
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                    data-testid="zoom_out"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <span
+                        aria-hidden="true"
+                        class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                      >
+                        zoom_out
+                      </span>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
+                  <span
+                    class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
+                  >
+                    <span
+                      class="MuiSlider-rail"
+                    />
+                    <span
+                      class="MuiSlider-track"
+                    />
+                    <input
+                      type="hidden"
+                      value="5.643856189774724"
+                    />
+                    <span
+                      aria-orientation="horizontal"
+                      aria-valuemax="5.643856189774724"
+                      aria-valuemin="5.643856189774724"
+                      aria-valuenow="5.643856189774724"
+                      class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
+                      data-index="0"
+                      role="slider"
+                      tabindex="0"
+                    />
+                  </span>
+                  <button
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                    data-testid="zoom_in"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <span
+                        aria-hidden="true"
+                        class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                      >
+                        zoom_in
+                      </span>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
+                </div>
+                <div
+                  class="makeStyles-spacer"
+                />
+              </div>
+              <div
+                class="makeStyles-controls makeStyles-viewControls"
+                style="grid-row: scale-bar;"
+              />
+              <div
+                class="makeStyles-rubberBandContainer"
+                data-testid="rubberband_container"
+                role="presentation"
+                style="height: 40px;"
+              >
+                <div
+                  class="makeStyles-scaleBarContainer"
+                >
+                  <div
+                    class="makeStyles-scaleBar"
+                    style="left: 0px; width: 5px; height: 40px;"
+                  >
+                    <div
+                      class="makeStyles-elidedBlock"
+                      style="width: 5px;"
+                    />
                   </div>
                 </div>
+              </div>
+              <div
+                class="MuiContainer-root makeStyles-noTracksMessage MuiContainer-maxWidthLg"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1"
+                >
+                  No tracks active, click the "select tracks" button to choose some.
+                </p>
               </div>
             </div>
           </div>

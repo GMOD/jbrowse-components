@@ -79,7 +79,6 @@ export function stateModelFactory(pluginManager: any) {
       offsetPx: 0,
       bpPerPx: 1,
       displayedRegions: types.array(Region),
-      displayRegionsFromAssemblyName: types.maybe(types.string),
       displayName: types.maybe(types.string),
       horizontallyFlipped: false,
       // we use an array for the tracks because the tracks are displayed in a specific
@@ -319,23 +318,8 @@ export function stateModelFactory(pluginManager: any) {
         if (!hiddenCount) this.showTrack(configuration)
       },
 
-      setDisplayedRegions(regions: IRegion[], isFromAssemblyName = false) {
-        try {
-          self.displayedRegions = cast(regions)
-          if (!isFromAssemblyName)
-            this.setDisplayedRegionsFromAssemblyName(undefined)
-
-          self.afterDisplayedRegionsSetCallbacks.forEach(cb => {
-            cb(self)
-          })
-          self.afterDisplayedRegionsSetCallbacks = []
-        } catch (error) {
-          console.error(error)
-        }
-      },
-
-      setDisplayedRegionsFromAssemblyName(assemblyName: string | undefined) {
-        self.displayRegionsFromAssemblyName = assemblyName
+      setDisplayedRegions(regions: IRegion[]) {
+        self.displayedRegions = cast(regions)
       },
 
       activateTrackSelector() {
@@ -565,13 +549,6 @@ export function stateModelFactory(pluginManager: any) {
           return calculateDynamicBlocks(cast(self), self.horizontallyFlipped)
         },
       }
-    })
-    .postProcessSnapshot(self => {
-      if (self.displayRegionsFromAssemblyName) {
-        const { displayedRegions, ...rest } = self
-        return rest
-      }
-      return self
     })
 }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
