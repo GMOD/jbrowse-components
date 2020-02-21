@@ -62,6 +62,7 @@
         "electron-mock-ipc": "^0.3.1",
         "eslint-config-airbnb": "^18.0.0",
         "eslint-config-airbnb-base": "^14.0.0",
+        "eslint-config-airbnb-typescript": "^7.0.0",
         "eslint-config-prettier": "^6.0.0",
         "eslint-config-react-app": "^5.0.0",
         "eslint-config-xo": "^0.26.0",

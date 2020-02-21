@@ -96,7 +96,6 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     const response = await doPost(
       'https://www.trackhubregistry.org/api/search',
       { assembly: selectedAssembly },
-      // eslint-disable-next-line @typescript-eslint/camelcase
       { page, entries_per_page: entriesPerPage },
     )
     if (response) {

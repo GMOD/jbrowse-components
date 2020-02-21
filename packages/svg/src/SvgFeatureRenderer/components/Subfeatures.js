@@ -37,7 +37,6 @@ Subfeatures.propTypes = {
 
 Subfeatures.defaultProps = {
   selected: false,
-  horizontallyFlipped: false,
 }
 
 Subfeatures.layOut = ({
