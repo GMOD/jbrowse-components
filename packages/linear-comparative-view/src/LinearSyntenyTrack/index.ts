@@ -160,12 +160,10 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
               null,
               null,
             ).dataAdapter
-            const r = getParent(self, 2)
-            const blockFeats = r.views.forEach(async subview => {
-              const blocks = subview.staticBlocks
-              console.log(blocks)
-              const features = await Promise.all(
-                blocks.map(async block => {
+            const r = getParent(self, 2) as any
+            const blockFeats = r.views.map(subview => {
+              return Promise.all(
+                subview.staticBlocks.map(async block => {
                   if (block.refName !== undefined) {
                     const { refName, start, end, assemblyName } = block
                     const observable = adapter.getFeatures({
@@ -176,10 +174,12 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
                     })
                     return observable.pipe(toArray()).toPromise()
                   }
+                  // might be an interregion padding block, return empty
                   return []
                 }),
               )
             })
+            console.log(Promise.all(blockFeats))
           }),
         )
       },
