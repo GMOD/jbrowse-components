@@ -50,7 +50,7 @@ const readBuffer = async (url, args) => {
       }
     }
     const body = await file.readFile()
-    return { status: 200, text: () => body, buffer: () => body }
+    return { status: 200, text: () => body.toString(), buffer: () => body }
   } catch (e) {
     console.error(e)
     return { status: 404, buffer: () => {} }
