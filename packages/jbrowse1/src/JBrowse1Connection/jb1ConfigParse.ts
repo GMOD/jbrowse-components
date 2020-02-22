@@ -196,7 +196,7 @@ export function regularizeConf(conf: Config, url: string): Config {
   if (conf.sourceUrl.startsWith('/'))
     conf.sourceUrl = new URL(conf.sourceUrl, window.location.href).href
   conf.baseUrl = conf.baseUrl || new URL('.', conf.sourceUrl).href
-  if (conf.baseUrl.length && !/\/$/.test(conf.baseUrl)) conf.baseUrl += '/'
+  if (conf.baseUrl.length && !conf.baseUrl.endsWith('/')) conf.baseUrl += '/'
 
   if (conf.sourceUrl) {
     // set a default baseUrl in each of the track and store confs, and the names
@@ -262,7 +262,7 @@ export function regularizeConf(conf: Config, url: string): Config {
  */
 function regularizeClass(root: string, className: string | undefined): string {
   if (!className) return ''
-  if (!/\//.test(className)) className = `${root}/${className}`
+  if (!className.includes('/')) className = `${root}/${className}`
   className = className.replace(/^\//, '')
   return className
 }
@@ -272,7 +272,7 @@ function guessStoreClass(
   urlTemplate: string,
 ): string {
   if (!trackConfig) return ''
-  if (trackConfig.type && /\/FixedImage/.test(trackConfig.type))
+  if (trackConfig.type && trackConfig.type.includes('/FixedImage'))
     return `JBrowse/Store/TiledImage/Fixed${
       trackConfig.backendVersion === 0 ? '_v0' : ''
     }`
@@ -299,7 +299,7 @@ function guessStoreClass(
   if (/\.(fa|fasta)\.b?gz$/i.test(urlTemplate))
     return 'JBrowse/Store/SeqFeature/BgzipIndexedFasta'
   if (/\.2bit$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/TwoBit'
-  if (trackConfig.type && /\/Sequence$/.test(trackConfig.type))
+  if (trackConfig.type && trackConfig.type.endsWith('/Sequence'))
     return 'JBrowse/Store/Sequence/StaticChunked'
   return ''
 }

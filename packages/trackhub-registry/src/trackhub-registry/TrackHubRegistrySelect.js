@@ -133,7 +133,7 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     setAllHubsRetrieved(false)
   }
 
-  async function handleSelectHub(event) {
+  function handleSelectHub(event) {
     const newHub = event.target.value
     setSelectedHub(newHub)
     model.target.name.set(hubs.get(newHub).hub.shortLabel)

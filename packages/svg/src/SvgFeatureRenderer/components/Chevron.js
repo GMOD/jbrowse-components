@@ -4,6 +4,7 @@ import { emphasize } from '@gmod/jbrowse-core/util/color'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
+// eslint-disable-next-line import/no-cycle
 import { isUTR } from './util'
 
 const utrHeightFraction = 0.65

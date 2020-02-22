@@ -10,7 +10,7 @@ function bytesAreFoundAt(position: number, buffer: Buffer, bytes: number[]) {
   }
   return true
 }
-export async function removeBedHeaders(buffer: Buffer) {
+export function removeBedHeaders(buffer: Buffer) {
   // slice off the first lines of the buffer if it starts with one or more header lines
   let i = 0
   for (; i < buffer.length; i += 1) {
@@ -34,29 +34,27 @@ export async function removeBedHeaders(buffer: Buffer) {
 }
 
 export function parseBedBuffer(buffer: Buffer, options: ParseOptions) {
-  return removeBedHeaders(buffer)
-    .then(b => parseTsvBuffer(b))
-    .then(data => {
-      const bedColumns = [
-        { name: 'chrom', dataType: { type: 'Text' } },
-        { name: 'chromStart', dataType: { type: 'Number' } },
-        { name: 'chromEnd', dataType: { type: 'Number' } },
-        { name: 'name', dataType: { type: 'Text' } },
-        { name: 'score', dataType: { type: 'Number' } },
-        { name: 'strand', dataType: { type: 'Text' } },
-      ]
-      data.columns.forEach((col, colNumber) => {
-        const bedColumn = bedColumns[colNumber]
-        if (bedColumn) {
-          col.name = bedColumn.name
-          col.dataType = bedColumn.dataType
-        }
-      })
-      data.hasColumnNames = true
-      data.assemblyName = options.selectedAssemblyName
+  const b = removeBedHeaders(buffer)
+  const data = parseTsvBuffer(b)
+  const bedColumns = [
+    { name: 'chrom', dataType: { type: 'Text' } },
+    { name: 'chromStart', dataType: { type: 'Number' } },
+    { name: 'chromEnd', dataType: { type: 'Number' } },
+    { name: 'name', dataType: { type: 'Text' } },
+    { name: 'score', dataType: { type: 'Number' } },
+    { name: 'strand', dataType: { type: 'Text' } },
+  ]
+  data.columns.forEach((col, colNumber) => {
+    const bedColumn = bedColumns[colNumber]
+    if (bedColumn) {
+      col.name = bedColumn.name
+      col.dataType = bedColumn.dataType
+    }
+  })
+  data.hasColumnNames = true
+  data.assemblyName = options.selectedAssemblyName
 
-      return data
-    })
+  return data
 }
 
 export function parseBedPEBuffer(buffer: Buffer, options: ParseOptions) {

@@ -223,7 +223,7 @@ function regularizeIncludes(
 
       // set defaults for format and version
       if (!('format' in include)) {
-        include.format = /\.conf$/.test(include.url) ? 'conf' : 'JB_json'
+        include.format = include.url.endsWith('.conf') ? 'conf' : 'JB_json'
       }
       if (include.format === 'JB_json' && !('version' in include)) {
         include.version = 1

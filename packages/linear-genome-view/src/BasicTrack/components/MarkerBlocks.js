@@ -32,7 +32,7 @@ export const InterRegionPaddingBlockMarker = ({ width }) => {
         width: `${width}px`,
       }}
       className={classes.interRegionPaddingBlock}
-    ></div>
+    />
   )
 }
 InterRegionPaddingBlockMarker.propTypes = {

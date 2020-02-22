@@ -130,7 +130,7 @@ export default class VCFFeature implements Feature {
     if (descriptions.size > 1) {
       const prefixes: Set<string> = new Set()
       descriptions.forEach(desc => {
-        const prefix = desc.match(/(\w+? \w+? -> )(?:<)\w+(?:>)/)
+        const prefix = /(\w+? \w+? -> )(?:<)\w+(?:>)/.exec(desc)
         if (prefix && prefix[1]) prefixes.add(prefix[1])
         else prefixes.add(desc)
       })
@@ -170,14 +170,14 @@ export default class VCFFeature implements Feature {
     alt: string,
   ): [string, string] | [undefined, undefined] {
     // not a symbolic ALT if doesn't begin with '<', so we'll have no definition
-    if (alt[0] !== '<') {
+    if (!alt.startsWith('<')) {
       return [undefined, undefined]
     }
 
     alt = alt.replace(/^<|>$/g, '') // trim off < and >
 
     // look for a definition with an SO type for this
-    let soTerm = VCFFeature._altTypeToSO[alt] as string | undefined
+    let soTerm = VCFFeature._altTypeToSO[alt]
     // if no SO term but ALT is in metadata, assume sequence_variant
     if (!soTerm && this.parser.getMetadata('ALT', alt))
       soTerm = 'sequence_variant'

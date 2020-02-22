@@ -373,7 +373,7 @@ const Header = observer(({ model }: { model: LGV }) => {
       <TextFieldOrTypography model={model} />
       <div className={classes.spacer} />
 
-      <Search onSubmit={model.navToLocstring} error={''} />
+      <Search onSubmit={model.navToLocstring} error="" />
       <RefSeqDropdown onSubmit={model.navToLocstring} model={model} />
 
       <ZoomControls model={model} />

@@ -58,8 +58,12 @@ describe('<DivSequenceRendering />', () => {
   beforeAll(() => {
     console.error = (...args) => {
       if (
-        /feature one did not contain a valid `seq` attribute/.test(args[0]) ||
-        /The above error occurred in the <SequenceDivs> component/.test(args[0])
+        args[0].includes(
+          'feature one did not contain a valid `seq` attribute',
+        ) ||
+        args[0].includes(
+          'The above error occurred in the <SequenceDivs> component',
+        )
       )
         return
       originalError.call(console, ...args)

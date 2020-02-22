@@ -179,7 +179,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     return properties
       .filter(
         prop =>
-          /^_get_/.test(prop) &&
+          prop.startsWith('_get_') &&
           prop !== '_get_mismatches' &&
           prop !== '_get_skips_and_dels' &&
           prop !== '_get_cram_read_features',
