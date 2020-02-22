@@ -1,15 +1,29 @@
 import { Observable, merge } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
-import { IRegion as Region } from './mst-types'
-import { ObservableCreate } from './util/rxjs'
-import { checkAbortSignal, observeAbortSignal } from './util'
-import { Feature } from './util/simpleFeature'
+import { IRegion as Region } from '../mst-types'
+import { ObservableCreate } from '../util/rxjs'
+import { checkAbortSignal, observeAbortSignal } from '../util'
+import { Feature } from '../util/simpleFeature'
+import { ConfigurationModel } from '../configuration'
+import { getSubAdapterType } from './dataAdapterCache'
 
 export interface BaseOptions {
   signal?: AbortSignal
   bpPerPx?: number
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
+}
+
+/**
+ * this is a callback that is passed to adapters that
+ * allows them to get any sub-adapters that they need
+ * internally, staying with the same worker session ID
+ */
+export interface AdapterConstructor {
+  new (
+    config: ConfigurationModel,
+    getSubAdapter: getSubAdapterType,
+  ): BaseAdapter
 }
 
 /**

@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import {
+  readConfObject,
+  isConfigurationModel,
+  ConfigurationModel,
+} from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 import jsonStableStringify from 'json-stable-stringify'
@@ -199,7 +202,6 @@ export default function sessionModelFactory(pluginManager: any) {
         opts: { signal?: AbortSignal } = {},
       ) {
         const assembly = assemblyData.get(assemblyName)
-        debugger
         if (assembly) {
           const adapterConfig = readConfObject(assembly.sequence, 'adapter')
           const adapterConfigId = jsonStableStringify(adapterConfig)
@@ -216,7 +218,6 @@ export default function sessionModelFactory(pluginManager: any) {
               { timeout: 1000000 },
             )
             .then((adapterRegions: IRegion[]) => {
-              debugger
               const adapterRegionsWithAssembly = adapterRegions.map(
                 adapterRegion => ({
                   ...adapterRegion,
@@ -399,7 +400,7 @@ export default function sessionModelFactory(pluginManager: any) {
         initialState: any = {},
       ) {
         const assembly = self.assemblies.find(
-          (s: { name: string }) => readConfObject(s, 'name') === assemblyName,
+          (s: ConfigurationModel) => readConfObject(s, 'name') === assemblyName,
         )
         if (!assembly)
           throw new Error(

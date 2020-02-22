@@ -1,7 +1,7 @@
 import NCListStore from '@gmod/nclist'
 import { openUrl } from '@gmod/jbrowse-core/util/io'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
+import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'

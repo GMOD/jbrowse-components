@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle,@typescript-eslint/no-explicit-any */
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
+import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'

@@ -1,6 +1,7 @@
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { lazy } from 'react'
 import {
   configSchema as ConfigurationEditorConfigSchema,
@@ -18,7 +19,7 @@ import {
 } from './RefNameAliasAdapter'
 
 export default class extends Plugin {
-  install(pluginManager) {
+  install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>
         new AdapterType({

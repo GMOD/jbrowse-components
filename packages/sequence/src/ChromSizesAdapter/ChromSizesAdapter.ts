@@ -1,4 +1,4 @@
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import BaseAdapter from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'

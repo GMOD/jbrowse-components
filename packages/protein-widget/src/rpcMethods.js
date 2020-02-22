@@ -1,5 +1,5 @@
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
-import { getAdapter } from '@gmod/jbrowse-core/util/dataAdapterCache'
+import { getAdapter } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import {
   deserializeAbortSignal,
   isRemoteAbortSignal,

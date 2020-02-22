@@ -1,6 +1,6 @@
 import { toArray } from 'rxjs/operators'
 import BaseAdapter from './BaseAdapter'
-import { ObservableCreate } from './util/rxjs'
+import { ObservableCreate } from '../util/rxjs'
 
 describe('base data adapter', () => {
   it('properly propagates errors in feature fetching', async () => {
