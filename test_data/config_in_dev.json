@@ -2,6 +2,19 @@
   "configuration": {},
   "assemblies": [
     {
+      "name": "large",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "large_ref_seq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/large.chrom.sizes"
+          }
+        }
+      }
+    },
+    {
       "name": "volvox",
       "aliases": [
         "vvx"

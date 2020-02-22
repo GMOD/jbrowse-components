@@ -34,7 +34,7 @@ afterEach(() => {
   console.warn.mockRestore()
 })
 describe('BreakpointSplitView genome view component', () => {
-  it('renders with an empty model', () => {
+  it('renders with an empty model', async () => {
     const session = createTestSession()
     session.addAssemblyConf(assemblyConf)
     session.addView('BreakpointSplitView', {
@@ -61,7 +61,10 @@ describe('BreakpointSplitView genome view component', () => {
     })
     const model = session.views[0]
     const SplitView = new BreakpointSplitView(session.pluginManager)
-    const { container } = render(<SplitView model={model} />)
+    const { container, findAllByText } = render(<SplitView model={model} />)
+    await findAllByText(
+      'No tracks active, click the "select tracks" button to choose some.',
+    )
     expect(container.firstChild).toMatchSnapshot()
   })
 })

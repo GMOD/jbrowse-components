@@ -1,10 +1,5 @@
 import { ResizeHandle } from '@gmod/jbrowse-core/ui'
-import {
-  generateLocString,
-  getSession,
-  isAbortException,
-  useDebouncedCallback,
-} from '@gmod/jbrowse-core/util'
+import { getSession, useDebouncedCallback } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
 // material ui things
@@ -20,7 +15,6 @@ import InputBase from '@material-ui/core/InputBase'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
-import Select from '@material-ui/core/Select'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 
@@ -29,10 +23,11 @@ import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import { Instance, isAlive } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 
 // locals
 import buttonStyles from './buttonStyles'
+import RefNameAutocomplete from './RefNameAutocomplete'
 import Rubberband from './Rubberband'
 import ScaleBar from './ScaleBar'
 import TrackRenderingContainer from './TrackRenderingContainer'
@@ -116,6 +111,13 @@ const useStyles = makeStyles(theme => ({
   },
   importFormContainer: {
     marginBottom: theme.spacing(4),
+  },
+  importFormEntry: {
+    minWidth: 180,
+  },
+  headerRefName: {
+    margin: theme.spacing(0.5),
+    background: theme.palette.background.default,
   },
   noTracksMessage: {
     gridArea: 'auto/1/auto/3',
@@ -339,31 +341,15 @@ Search.propTypes = {
   error: ReactPropTypes.string, // eslint-disable-line react/require-default-props
 }
 
-const RefSeqDropdown = observer(({ model, onSubmit }) => {
-  return (
-    <Select
-      name="refseq"
-      value=""
-      onChange={event => {
-        if (event.target.value !== '') {
-          onSubmit(event.target.value)
-        }
-      }}
-    >
-      {model.displayedRegions.map((r: IRegion) => {
-        const l = generateLocString(r)
-        return (
-          <MenuItem key={l} value={l}>
-            {l}
-          </MenuItem>
-        )
-      })}
-    </Select>
-  )
-})
-
 const Header = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
+
+  function setDisplayedRegions(region: IRegion | undefined) {
+    if (region) {
+      model.setDisplayedRegions([region])
+    }
+  }
+
   return (
     <div className={classes.headerBar}>
       {model.hideControls ? null : <Controls model={model} />}
@@ -371,7 +357,23 @@ const Header = observer(({ model }: { model: LGV }) => {
       <div className={classes.spacer} />
 
       <Search onSubmit={model.navToLocstring} error={''} />
-      <RefSeqDropdown onSubmit={model.navToLocstring} model={model} />
+      <RefNameAutocomplete
+        model={model}
+        onSelect={setDisplayedRegions}
+        assemblyName={model.displayedRegions[0].assemblyName}
+        defaultRegionName={model.displayedRegions[0].refName}
+        TextFieldProps={{
+          variant: 'outlined',
+          margin: 'none',
+          className: classes.headerRefName,
+          InputProps: {
+            style: {
+              paddingTop: 2,
+              paddingBottom: 2,
+            },
+          },
+        }}
+      />
 
       <ZoomControls model={model} />
       <div className={classes.spacer} />
@@ -408,79 +410,26 @@ const Controls = observer(({ model }) => {
 const ImportForm = observer(({ model }) => {
   const classes = useStyles()
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-  const [regions, setRegions] = useState<IRegion[]>([])
-  const [selectedRegionIdx, setSelectedRegionIdx] = useState(0)
+  const [selectedRegion, setSelectedRegion] = useState<IRegion | undefined>()
+  const [error, setError] = useState('')
   const {
     assemblyNames,
-    getRegionsForAssemblyName,
   }: {
     assemblyNames: string[]
-    getRegionsForAssemblyName: (
-      assemblyName: string,
-      { signal }: { signal?: AbortSignal },
-    ) => Promise<IRegion[]>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } = getSession(model) as any
-  const [assemblyError, setAssemblyError] = useState('')
-  const [regionsError, setRegionsError] = useState('')
-  if (!assemblyError && !assemblyNames.length) {
-    setAssemblyError('No configured assemblies')
+  if (!error && !assemblyNames.length) {
+    setError('No configured assemblies')
   }
-  useEffect(() => {
-    let aborter: AbortController
-    let mounted = true
-    async function fetchRegions() {
-      if (mounted) {
-        if (assemblyError) {
-          setRegions([])
-        } else {
-          try {
-            aborter = new AbortController()
-            const fetchedRegions = await getRegionsForAssemblyName(
-              assemblyNames[selectedAssemblyIdx],
-              { signal: aborter.signal },
-            )
-            if (mounted) {
-              setRegions(fetchedRegions)
-            }
-          } catch (e) {
-            if (!isAbortException(e) && mounted) {
-              setRegionsError(String(e))
-            }
-          }
-        }
-      }
-    }
-    fetchRegions()
-
-    return () => {
-      mounted = false
-      aborter && aborter.abort()
-    }
-  }, [
-    assemblyError,
-    assemblyNames,
-    getRegionsForAssemblyName,
-    selectedAssemblyIdx,
-  ])
 
   function onAssemblyChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) {
     setSelectedAssemblyIdx(Number(event.target.value))
-    setRegions([])
-    setSelectedRegionIdx(0)
-    setRegionsError('')
-  }
-
-  function onRegionChange(
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) {
-    setSelectedRegionIdx(Number(event.target.value))
   }
 
   function onOpenClick() {
-    model.setDisplayedRegions([regions[selectedRegionIdx]])
+    model.setDisplayedRegions([selectedRegion])
   }
 
   return (
@@ -502,16 +451,19 @@ const ImportForm = observer(({ model }) => {
           <Grid item>
             <TextField
               select
+              variant="outlined"
               value={
-                assemblyNames[selectedAssemblyIdx] && !assemblyError
+                assemblyNames[selectedAssemblyIdx] && !error
                   ? selectedAssemblyIdx
                   : ''
               }
               onChange={onAssemblyChange}
-              helperText={assemblyError || 'Select assembly to view'}
-              error={!!assemblyError}
-              disabled={!!assemblyError}
+              label="Assembly"
+              helperText={error || 'Select assembly to view'}
+              error={!!error}
+              disabled={!!error}
               margin="normal"
+              className={classes.importFormEntry}
             >
               {assemblyNames.map((name, idx) => (
                 <MenuItem key={name} value={idx}>
@@ -521,25 +473,24 @@ const ImportForm = observer(({ model }) => {
             </TextField>
           </Grid>
           <Grid item>
-            <TextField
-              select
-              value={regions[selectedRegionIdx] ? selectedRegionIdx : ''}
-              onChange={onRegionChange}
-              helperText={regionsError || 'Select sequence to view'}
-              error={!!regionsError}
-              disabled={!(!regionsError && regions[selectedRegionIdx])}
-              margin="normal"
-            >
-              {regions.map((region, idx: number) => (
-                <MenuItem key={regions[idx].refName} value={idx}>
-                  {regions[idx].refName}
-                </MenuItem>
-              ))}
-            </TextField>
+            <RefNameAutocomplete
+              model={model}
+              assemblyName={
+                error ? undefined : assemblyNames[selectedAssemblyIdx]
+              }
+              onSelect={setSelectedRegion}
+              TextFieldProps={{
+                margin: 'normal',
+                variant: 'outlined',
+                label: 'Sequence',
+                className: classes.importFormEntry,
+                helperText: 'Select sequence to view',
+              }}
+            />
           </Grid>
           <Grid item>
             <Button
-              disabled={!regions[selectedRegionIdx]}
+              disabled={!selectedRegion}
               onClick={onOpenClick}
               variant="contained"
               color="primary"

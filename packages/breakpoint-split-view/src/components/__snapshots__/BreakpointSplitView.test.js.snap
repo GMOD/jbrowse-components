@@ -98,6 +98,36 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
     <div
       class="makeStyles-spacer"
     />
+    <div
+      class="erd_scroll_detection_container erd_scroll_detection_container_animation_active"
+      style="visibility: hidden; display: inline; width: 0px; height: 0px; z-index: -1; overflow: hidden; margin: 0px; padding: 0px;"
+    >
+      <div
+        class="erd_scroll_detection_container"
+        dir="ltr"
+        style="position: absolute; flex: 0 0 auto; overflow: hidden; z-index: -1; visibility: hidden; width: 100%; height: 100%; left: 0px; top: 0px;"
+      >
+        <div
+          class="erd_scroll_detection_container"
+          style="position: absolute; flex: 0 0 auto; overflow: hidden; z-index: -1; visibility: hidden; left: -501px; top: -501px; right: -500px; bottom: -500px;"
+        >
+          <div
+            style="position: absolute; flex: 0 0 auto; overflow: scroll; z-index: -1; visibility: hidden; width: 100%; height: 100%;"
+          >
+            <div
+              style="position: absolute; left: 0px; top: 0px; width: 1011px; height: 1011px;"
+            />
+          </div>
+          <div
+            style="position: absolute; flex: 0 0 auto; overflow: scroll; z-index: -1; visibility: hidden; width: 100%; height: 100%;"
+          >
+            <div
+              style="position: absolute; width: 200%; height: 200%;"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   <div
     class="makeStyles-container"
@@ -233,36 +263,74 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   </form>
                 </div>
                 <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline"
+                  aria-expanded="false"
+                  class="MuiAutocomplete-root"
+                  role="combobox"
                 >
                   <div
-                    aria-haspopup="listbox"
-                    aria-labelledby=" mui-component-select-refseq"
-                    class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
-                    id="mui-component-select-refseq"
-                    role="button"
-                    tabindex="0"
+                    class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName"
                   >
-                    <span>
-                      ​
-                    </span>
+                    <div
+                      class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+                      style="padding-top: 2px; padding-bottom: 2px;"
+                    >
+                      <input
+                        aria-autocomplete="list"
+                        aria-invalid="false"
+                        autocapitalize="none"
+                        autocomplete="off"
+                        class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
+                        id="refNameAutocomplete"
+                        spellcheck="false"
+                        type="text"
+                        value="ctgA"
+                      />
+                      <div
+                        class="MuiAutocomplete-endAdornment"
+                      >
+                        <button
+                          aria-label="Open"
+                          class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
+                          tabindex="-1"
+                          title="Open"
+                          type="button"
+                        >
+                          <span
+                            class="MuiIconButton-label"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              class="MuiSvgIcon-root"
+                              focusable="false"
+                              role="presentation"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="M7 10l5 5 5-5z"
+                              />
+                            </svg>
+                          </span>
+                          <span
+                            class="MuiTouchRipple-root"
+                          />
+                        </button>
+                      </div>
+                      <fieldset
+                        aria-hidden="true"
+                        class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                        style="padding-left: 8px;"
+                      >
+                        <legend
+                          class="PrivateNotchedOutline-legend"
+                          style="width: 0px;"
+                        >
+                          <span>
+                            ​
+                          </span>
+                        </legend>
+                      </fieldset>
+                    </div>
                   </div>
-                  <input
-                    name="refseq"
-                    type="hidden"
-                    value=""
-                  />
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSelect-icon"
-                    focusable="false"
-                    role="presentation"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M7 10l5 5 5-5z"
-                    />
-                  </svg>
                 </div>
                 <div
                   class="makeStyles-container"
@@ -497,36 +565,74 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   </form>
                 </div>
                 <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline"
+                  aria-expanded="false"
+                  class="MuiAutocomplete-root"
+                  role="combobox"
                 >
                   <div
-                    aria-haspopup="listbox"
-                    aria-labelledby=" mui-component-select-refseq"
-                    class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
-                    id="mui-component-select-refseq"
-                    role="button"
-                    tabindex="0"
+                    class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName"
                   >
-                    <span>
-                      ​
-                    </span>
+                    <div
+                      class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+                      style="padding-top: 2px; padding-bottom: 2px;"
+                    >
+                      <input
+                        aria-autocomplete="list"
+                        aria-invalid="false"
+                        autocapitalize="none"
+                        autocomplete="off"
+                        class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
+                        id="refNameAutocomplete"
+                        spellcheck="false"
+                        type="text"
+                        value="ctgA"
+                      />
+                      <div
+                        class="MuiAutocomplete-endAdornment"
+                      >
+                        <button
+                          aria-label="Open"
+                          class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
+                          tabindex="-1"
+                          title="Open"
+                          type="button"
+                        >
+                          <span
+                            class="MuiIconButton-label"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              class="MuiSvgIcon-root"
+                              focusable="false"
+                              role="presentation"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="M7 10l5 5 5-5z"
+                              />
+                            </svg>
+                          </span>
+                          <span
+                            class="MuiTouchRipple-root"
+                          />
+                        </button>
+                      </div>
+                      <fieldset
+                        aria-hidden="true"
+                        class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                        style="padding-left: 8px;"
+                      >
+                        <legend
+                          class="PrivateNotchedOutline-legend"
+                          style="width: 0px;"
+                        >
+                          <span>
+                            ​
+                          </span>
+                        </legend>
+                      </fieldset>
+                    </div>
                   </div>
-                  <input
-                    name="refseq"
-                    type="hidden"
-                    value=""
-                  />
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSelect-icon"
-                    focusable="false"
-                    role="presentation"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M7 10l5 5 5-5z"
-                    />
-                  </svg>
                 </div>
                 <div
                   class="makeStyles-container"
