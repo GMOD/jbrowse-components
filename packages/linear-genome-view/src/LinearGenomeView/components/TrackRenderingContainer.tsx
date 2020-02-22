@@ -39,25 +39,29 @@ const TrackRenderingContainer: React.FC<{
   const [scheduled, setScheduled] = useState(false)
   const [delta, setDelta] = useState(0)
   const [mouseDragging, setMouseDragging] = useState(false)
-  const [prevX, setPrevX] = useState()
+  const [prevX, setPrevX] = useState<number | undefined>()
 
   useEffect(() => {
     let cleanup = () => {}
 
     function globalMouseMove(event: MouseEvent) {
       event.preventDefault()
-      const distance = event.clientX - prevX
-      if (distance) {
-        if (!scheduled) {
-          // use rAF to make it so multiple event handlers aren't fired per-frame
-          // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-          window.requestAnimationFrame(() => {
-            onHorizontalScroll(-distance)
-            setScheduled(false)
-            setPrevX(event.clientX)
-          })
-          setScheduled(true)
+      if (prevX !== undefined) {
+        const distance = event.clientX - prevX
+        if (distance) {
+          if (!scheduled) {
+            // use rAF to make it so multiple event handlers aren't fired per-frame
+            // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
+            window.requestAnimationFrame(() => {
+              onHorizontalScroll(-distance)
+              setScheduled(false)
+              setPrevX(event.clientX)
+            })
+            setScheduled(true)
+          }
         }
+      } else {
+        setPrevX(event.clientX)
       }
     }
 

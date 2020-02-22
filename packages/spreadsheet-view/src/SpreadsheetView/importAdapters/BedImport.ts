@@ -33,9 +33,9 @@ export function removeBedHeaders(buffer: Buffer) {
   return buffer
 }
 
-export function parseBedBuffer(buffer: Buffer, options: ParseOptions) {
+export async function parseBedBuffer(buffer: Buffer, options: ParseOptions) {
   const b = removeBedHeaders(buffer)
-  const data = parseTsvBuffer(b)
+  const data = await parseTsvBuffer(b)
   const bedColumns = [
     { name: 'chrom', dataType: { type: 'Text' } },
     { name: 'chromStart', dataType: { type: 'Number' } },

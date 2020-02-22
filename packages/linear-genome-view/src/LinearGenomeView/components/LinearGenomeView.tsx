@@ -303,7 +303,7 @@ function Search({
   onSubmit,
   error,
 }: {
-  onSubmit: Function
+  onSubmit: (arg: string) => void
   error: string | undefined
 }) {
   const [value, setValue] = useState<string | undefined>()
@@ -314,7 +314,9 @@ function Search({
     <Paper className={classes.searchRoot}>
       <form
         onSubmit={event => {
-          onSubmit(value)
+          if (value !== undefined) {
+            onSubmit(value)
+          }
           event.preventDefault()
         }}
       >
@@ -325,7 +327,11 @@ function Search({
           placeholder={placeholder}
         />
         <IconButton
-          onClick={() => onSubmit(value)}
+          onClick={() => {
+            if (value !== undefined) {
+              onSubmit(value)
+            }
+          }}
           className={classes.iconButton}
           aria-label="search"
           color="secondary"
@@ -341,29 +347,31 @@ Search.propTypes = {
   error: ReactPropTypes.string, // eslint-disable-line react/require-default-props
 }
 
-const RefSeqDropdown = observer(({ model, onSubmit }) => {
-  const tied = !!model.displayRegionsFromAssemblyName
-  return (
-    <Select
-      name="refseq"
-      value=""
-      onChange={event => {
-        if (event.target.value !== '') {
-          onSubmit(event.target.value)
-        }
-      }}
-    >
-      {model.displayedRegions.map((r: IRegion) => {
-        const l = generateLocString(r, tied)
-        return (
-          <MenuItem key={l} value={l}>
-            {l}
-          </MenuItem>
-        )
-      })}
-    </Select>
-  )
-})
+const RefSeqDropdown = observer(
+  ({ model, onSubmit }: { model: LGV; onSubmit: (arg: string) => void }) => {
+    const tied = !!model.displayRegionsFromAssemblyName
+    return (
+      <Select
+        name="refseq"
+        value=""
+        onChange={event => {
+          if (event.target.value !== '') {
+            onSubmit(event.target.value as string)
+          }
+        }}
+      >
+        {model.displayedRegions.map((r: IRegion) => {
+          const l = generateLocString(r, tied)
+          return (
+            <MenuItem key={l} value={l}>
+              {l}
+            </MenuItem>
+          )
+        })}
+      </Select>
+    )
+  },
+)
 
 const Header = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
@@ -373,8 +381,11 @@ const Header = observer(({ model }: { model: LGV }) => {
       <TextFieldOrTypography model={model} />
       <div className={classes.spacer} />
 
-      <Search onSubmit={model.navToLocstring} error="" />
-      <RefSeqDropdown onSubmit={model.navToLocstring} model={model} />
+      <Search onSubmit={value => model.navToLocstring(value)} error="" />
+      <RefSeqDropdown
+        onSubmit={value => model.navToLocstring(value)}
+        model={model}
+      />
 
       <ZoomControls model={model} />
       <div className={classes.spacer} />
@@ -382,12 +393,12 @@ const Header = observer(({ model }: { model: LGV }) => {
   )
 })
 
-const Controls = observer(({ model }) => {
+const Controls = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   return (
     <>
       <IconButton
-        onClick={model.closeView}
+        onClick={() => model.closeView()}
         className={classes.iconButton}
         title="close this view"
         color="secondary"
@@ -396,7 +407,7 @@ const Controls = observer(({ model }) => {
       </IconButton>
 
       <IconButton
-        onClick={model.activateTrackSelector}
+        onClick={() => model.activateTrackSelector()}
         title="select tracks"
         value="track_select"
         color="secondary"
@@ -411,7 +422,7 @@ const Controls = observer(({ model }) => {
 // note: as of writing, this is identifical (except with typescript) to circularview's copy
 // if modified, consider refactoring or updating circularview's copy
 // not extracted to a separate component just yet...
-const ImportForm = observer(({ model }) => {
+const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState('')
   const { assemblies } = getRoot(model).jbrowse
@@ -439,7 +450,7 @@ const ImportForm = observer(({ model }) => {
       {model.hideCloseButton ? null : (
         <div style={{ height: 40 }}>
           <IconButton
-            onClick={model.closeView}
+            onClick={() => model.closeView()}
             className={classes.iconButton}
             title="close this view"
             color="secondary"
@@ -491,8 +502,7 @@ const ImportForm = observer(({ model }) => {
   )
 })
 
-const LinearGenomeView = observer((props: { model: LGV }) => {
-  const { model } = props
+const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { tracks, controlsWidth, error } = model
   const classes = useStyles()
 

@@ -540,20 +540,20 @@ export function stateModelFactory(pluginManager: any) {
             {
               title: 'Horizontally flip',
               key: 'flip',
-              callback: self.horizontallyFlip,
+              callback: () => self.horizontallyFlip(),
               checked: self.horizontallyFlipped,
               isCheckbox: true,
             },
             {
               title: 'Show all regions',
               key: 'showall',
-              callback: self.showAllRegions,
+              callback: () => self.showAllRegions(),
               isCheckbox: false,
             },
             {
               title: self.hideHeader ? 'Show header' : 'Hide header',
               key: 'hide_header',
-              callback: self.toggleHeader,
+              callback: () => self.toggleHeader(),
               isCheckbox: false,
             },
           ]

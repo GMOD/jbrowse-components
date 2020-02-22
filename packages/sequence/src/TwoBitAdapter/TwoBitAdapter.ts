@@ -20,7 +20,7 @@ export default class extends BaseAdapter {
     this.twobit = new TwoBitFile(twoBitOpts)
   }
 
-  public async getRefNames(): Promise<string[]> {
+  public getRefNames() {
     return this.twobit.getSequenceNames()
   }
 

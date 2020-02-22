@@ -31,7 +31,7 @@ export default class extends BaseAdapter {
     this.fasta = new IndexedFasta(fastaOpts)
   }
 
-  public async getRefNames(): Promise<string[]> {
+  public getRefNames() {
     return this.fasta.getSequenceList()
   }
 

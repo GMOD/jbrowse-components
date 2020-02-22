@@ -40,7 +40,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   expect(refNames.length).toBe(17)
   expect(refNames[0]).toBe('NC_004353.4')
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     refName: 'chr1',
     start: 0,
     end: 20000,
@@ -55,7 +55,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     },
   )
 
-  const featuresNonExist = await adapter.getFeatures({
+  const featuresNonExist = adapter.getFeatures({
     refName: 'chr80',
     start: 0,
     end: 20000,

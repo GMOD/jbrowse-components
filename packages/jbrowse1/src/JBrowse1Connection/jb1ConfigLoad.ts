@@ -274,7 +274,6 @@ const configDefaults = {
   show_overview: true,
   show_fullviewlink: true,
   update_browser_title: true,
-  /* eslint-enable @typescript-eslint/camelcase */
   updateBrowserURL: true,
 
   refSeqs: '{dataRoot}/seq/refSeqs.json',

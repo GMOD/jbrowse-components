@@ -14,7 +14,7 @@ test('can use a indexed fasta with gzi', async () => {
     },
   })
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -23,7 +23,7 @@ test('can use a indexed fasta with gzi', async () => {
   const featuresArray = await features.pipe(toArray()).toPromise()
   expect(featuresArray).toMatchSnapshot()
 
-  const features2 = await adapter.getFeatures({
+  const features2 = adapter.getFeatures({
     refName: 'ctgC',
     start: 0,
     end: 20000,

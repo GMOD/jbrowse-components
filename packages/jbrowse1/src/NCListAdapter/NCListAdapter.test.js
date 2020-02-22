@@ -25,7 +25,7 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
   const hash = objectHash(args)
   const adapter = new Adapter(args)
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     refName: '21',
     start: 34960388,
     end: 35960388,

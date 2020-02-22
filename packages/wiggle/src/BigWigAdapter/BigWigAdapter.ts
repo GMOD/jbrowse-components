@@ -47,7 +47,7 @@ export default class extends BaseAdapter {
         abortSignal: AbortSignal,
       ) => {
         const { refName, start, end, bpPerPx } = args
-        const feats = await this.getFeatures(
+        const feats = this.getFeatures(
           { refName, start, end },
           {
             signal: abortSignal,

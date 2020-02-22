@@ -29,7 +29,7 @@ class RpcManager {
     pluginManager,
     mainConfiguration,
     backendConfigurations = {},
-    getRefNameMapForAdapter = () => {},
+    getRefNameMapForAdapter = async () => {},
   ) {
     if (!mainConfiguration) {
       throw new Error('RpcManager requires at least a main configuration')
