@@ -116,6 +116,7 @@ const useStyles = makeStyles(theme => ({
     minWidth: 180,
   },
   headerRefName: {
+    minWidth: 140,
     margin: theme.spacing(0.5),
     background: theme.palette.background.default,
   },
@@ -407,7 +408,7 @@ const Controls = observer(({ model }) => {
   )
 })
 
-const ImportForm = observer(({ model }) => {
+const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<IRegion | undefined>()
@@ -429,7 +430,10 @@ const ImportForm = observer(({ model }) => {
   }
 
   function onOpenClick() {
-    model.setDisplayedRegions([selectedRegion])
+    if (selectedRegion) {
+      model.setDisplayedRegions([selectedRegion])
+      model.setDisplayName(selectedRegion.assemblyName)
+    }
   }
 
   return (

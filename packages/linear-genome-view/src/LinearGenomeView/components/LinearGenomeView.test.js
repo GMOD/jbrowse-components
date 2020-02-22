@@ -30,7 +30,7 @@ describe('<LinearGenomeView />', () => {
   it('renders setup wizard', async () => {
     const session = createTestSession()
     session.addAssemblyConf(assemblyConf)
-    session.addView('LinearGenomeView')
+    session.addView('LinearGenomeView', { id: 'lgv' })
     const model = session.views[0]
     const { container, findByText } = render(<LinearGenomeView model={model} />)
     await findByText('Open')

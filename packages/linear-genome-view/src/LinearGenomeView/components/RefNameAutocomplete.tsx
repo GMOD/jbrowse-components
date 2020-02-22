@@ -172,7 +172,7 @@ export default function RefNameAutocomplete({
 
   return (
     <Autocomplete
-      id="refNameAutocomplete"
+      id={`refNameAutocomplete-${model.id}`}
       disableListWrap
       disableClearable
       classes={classes}

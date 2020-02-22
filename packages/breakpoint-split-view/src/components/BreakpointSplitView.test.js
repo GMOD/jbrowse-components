@@ -41,6 +41,7 @@ describe('BreakpointSplitView genome view component', () => {
       views: [
         {
           type: 'LinearGenomeView',
+          id: 'lgv1',
           offsetPx: 0,
           bpPerPx: 1,
           tracks: [],
@@ -50,6 +51,7 @@ describe('BreakpointSplitView genome view component', () => {
         },
         {
           type: 'LinearGenomeView',
+          id: 'lgv2',
           tracks: [],
           displayedRegions: [
             { assemblyName: 'volMyt1', refName: 'ctgA', start: 5, end: 10 },

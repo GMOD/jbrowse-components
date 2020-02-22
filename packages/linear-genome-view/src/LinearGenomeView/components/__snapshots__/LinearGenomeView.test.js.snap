@@ -140,7 +140,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               autocapitalize="none"
               autocomplete="off"
               class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
-              id="refNameAutocomplete"
+              id="refNameAutocomplete-lgv"
               spellcheck="false"
               type="text"
               value="ctgA"
@@ -637,8 +637,8 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
               <label
                 class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled"
                 data-shrink="true"
-                for="refNameAutocomplete"
-                id="refNameAutocomplete-label"
+                for="refNameAutocomplete-lgv"
+                id="refNameAutocomplete-lgv-label"
               >
                 Sequence
               </label>
@@ -647,12 +647,12 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
               >
                 <input
                   aria-autocomplete="list"
-                  aria-describedby="refNameAutocomplete-helper-text"
+                  aria-describedby="refNameAutocomplete-lgv-helper-text"
                   aria-invalid="false"
                   autocapitalize="none"
                   autocomplete="off"
                   class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
-                  id="refNameAutocomplete"
+                  id="refNameAutocomplete-lgv"
                   spellcheck="false"
                   type="text"
                   value="ctgA"
@@ -704,7 +704,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
               </div>
               <p
                 class="MuiFormHelperText-root MuiFormHelperText-contained MuiFormHelperText-filled"
-                id="refNameAutocomplete-helper-text"
+                id="refNameAutocomplete-lgv-helper-text"
               >
                 Select sequence to view
               </p>
@@ -875,7 +875,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               autocapitalize="none"
               autocomplete="off"
               class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
-              id="refNameAutocomplete"
+              id="refNameAutocomplete-lgv"
               spellcheck="false"
               type="text"
               value="ctgA"
