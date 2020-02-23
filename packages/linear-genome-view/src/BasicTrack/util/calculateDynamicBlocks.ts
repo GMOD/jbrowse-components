@@ -7,6 +7,7 @@ import {
   ElidedBlock,
   InterRegionPaddingBlock,
 } from './blockTypes'
+// eslint-disable-next-line import/no-cycle
 import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
 
 const interRegionPaddingWidth = 2

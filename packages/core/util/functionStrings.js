@@ -33,7 +33,9 @@ export function stringToFunction(str, options = {}) {
         ', ',
       )}) but "+arguments.length+" arguments were passed");\n${code}`
     }
-    const compiled = new Function(...paramList, `"use strict"; ${code}`) // eslint-disable-line no-new-func
+
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+    const compiled = new Function(...paramList, `"use strict"; ${code}`)
     compilationCache[cacheKey] = compiled
   }
 

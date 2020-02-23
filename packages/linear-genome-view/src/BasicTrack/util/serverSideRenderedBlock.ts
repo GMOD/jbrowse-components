@@ -55,7 +55,7 @@ const blockState = types
         const track = getParent(self, 2)
         const renderDisposer = reaction(
           () => renderBlockData(self as any),
-          data => renderBlockEffect(cast(self), data),
+          data => (renderBlockEffect(cast(self), data) as unknown) as void, // reaction doesn't expect async here
           {
             name: `${track.id}/${assembleLocString(self.region)} rendering`,
             delay: track.renderDelay,

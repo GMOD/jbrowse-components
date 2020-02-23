@@ -11,8 +11,7 @@
     "prettier/@typescript-eslint"
   ],
   "plugins": [
-    "@typescript-eslint",
-    "prettier"
+    "@typescript-eslint"
   ],
   "parserOptions": {
     "ecmaFeatures": {
@@ -51,14 +50,6 @@
     "no-restricted-syntax": "off",
     "no-underscore-dangle": "warn",
     "no-use-before-define": "off",
-    "prettier/prettier": [
-      "error",
-      {
-        "singleQuote": true,
-        "semi": false,
-        "trailingComma": "all"
-      }
-    ],
     "react/destructuring-assignment": "warn",
     "react/jsx-filename-extension": "off",
     "react/no-unused-prop-types": "warn",
@@ -83,7 +74,23 @@
     "@typescript-eslint/camelcase": "warn",
     "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/no-empty-function": "off",
-    "@typescript-eslint/no-var-requires": "off"
+    "@typescript-eslint/no-var-requires": "off",
+    "react/jsx-no-bind": "off",
+    "jsx-a11y/mouse-events-have-key-events": "off",
+    "react/no-array-index-key": "off",
+    "@typescript-eslint/await-thenable": "off",
+    "@typescript-eslint/unbound-method": "off",
+    "@typescript-eslint/require-await": "off",
+    "@typescript-eslint/no-misused-promises": "off",
+    "@typescript-eslint/prefer-regexp-exec": "off",
+    "prettier/prettier": [
+      "error",
+      {
+        "singleQuote": true,
+        "semi": false,
+        "trailingComma": "all"
+      }
+    ]
   },
   "settings": {
     "import/resolver": {

@@ -26,8 +26,6 @@ test('features to sequence function', () => {
 })
 
 class ErrorCatcher extends React.Component {
-  static propTypes = { children: ReactPropTypes.node.isRequired }
-
   constructor(props) {
     super(props)
     this.state = { hasError: false, errorText: '' }
@@ -48,6 +46,7 @@ class ErrorCatcher extends React.Component {
     return children
   }
 }
+ErrorCatcher.propTypes = { children: ReactPropTypes.node.isRequired }
 
 describe('<DivSequenceRendering />', () => {
   // This just keeps our testing logs clean by not displaying `console.error`s

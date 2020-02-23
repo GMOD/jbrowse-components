@@ -17,6 +17,10 @@ declare global {
 }
 const { electron } = window
 
+class ElectronRemoteFileError extends Error {
+  public status: number | undefined
+}
+
 interface SerializedResponse {
   buffer: Buffer
   url: string
@@ -207,15 +211,18 @@ export default class ElectronRemoteFile implements GenericFilehandle {
     }
     const response = await this.getFetch(opts)
     if (response.status !== 200) {
-      throw Object.assign(
-        new Error(`HTTP ${response.status} fetching ${this.url}`),
-        {
-          status: response.status,
-        },
+      const err = new ElectronRemoteFileError(
+        `HTTP ${response.status} fetching ${this.url}`,
       )
+      err.status = response.status
+      throw err
     }
-    if (encoding === 'utf8') return response.text()
-    if (encoding) throw new Error(`unsupported encoding: ${encoding}`)
+    if (encoding === 'utf8') {
+      return response.text()
+    }
+    if (encoding) {
+      throw new Error(`unsupported encoding: ${encoding}`)
+    }
     return this.getBufferFromResponse(response)
   }
 

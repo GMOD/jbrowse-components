@@ -61,7 +61,7 @@ export default class extends BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   public getFeatures({ refName, start, end }: INoAssemblyRegion) {
-    return ObservableCreate<Feature>(async observer => {
+    return ObservableCreate<Feature>(observer => {
       // provides no sequence
       observer.complete()
     })

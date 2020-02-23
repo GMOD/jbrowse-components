@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react'
 import React from 'react'
 import Segments from './Segments'
+// eslint-disable-next-line import/no-cycle
 import { layOutFeature, layOutSubfeatures } from './util'
 
 function ProcessedTranscript(props) {

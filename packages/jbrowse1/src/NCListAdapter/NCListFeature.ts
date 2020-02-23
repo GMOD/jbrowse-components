@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
 const jb2ToJb1 = { refName: 'seq_id' }

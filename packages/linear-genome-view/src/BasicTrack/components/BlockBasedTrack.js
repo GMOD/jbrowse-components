@@ -4,6 +4,7 @@ import { getParent } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React from 'react'
 import Track from './Track'
+// eslint-disable-next-line import/no-cycle
 import TrackBlocks from './TrackBlocks'
 
 function BlockBasedTrack(props) {

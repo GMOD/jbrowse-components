@@ -566,8 +566,8 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
                 {!tracks.length ? (
                   <Container className={classes.noTracksMessage}>
                     <Typography>
-                      No tracks active, click the "select tracks" button to
-                      choose some.
+                      No tracks active, click the &quot;select tracks&quot;
+                      button to choose some.
                     </Typography>
                   </Container>
                 ) : (

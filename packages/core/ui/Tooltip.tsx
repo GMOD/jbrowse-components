@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import React, { useEffect, useState } from 'react'
 import ReactPropTypes from 'prop-types'
-import Feature from '../util/simpleFeature'
+import { Feature } from '../util/simpleFeature'
 import { readConfObject } from '../configuration'
 
 const useStyles = makeStyles({

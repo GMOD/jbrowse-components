@@ -13,6 +13,7 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import BlockState, { BlockStateModel } from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
 import { BaseBlock, ContentBlock } from './util/blockTypes'
+// eslint-disable-next-line import/no-cycle
 import BlockBasedTrack from './components/BlockBasedTrack'
 
 type LayoutRecord = [number, number, number, number]

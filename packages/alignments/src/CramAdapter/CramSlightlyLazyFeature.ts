@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase,no-underscore-dangle */
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+// eslint-disable-next-line import/no-cycle
 import CramAdapter from './CramAdapter'
 
 export interface Mismatch {

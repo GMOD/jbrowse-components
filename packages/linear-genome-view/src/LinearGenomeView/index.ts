@@ -12,10 +12,14 @@ import { transaction } from 'mobx'
 import { getParent, getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
 
 import { BlockSet } from '../BasicTrack/util/blockTypes'
-import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
-import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
 
+// eslint-disable-next-line import/no-cycle
+import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
+// eslint-disable-next-line import/no-cycle
+import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
+// eslint-disable-next-line import/no-cycle
 export { default as ReactComponent } from './components/LinearGenomeView'
+
 export interface LGVMenuOption {
   title: string
   key: string

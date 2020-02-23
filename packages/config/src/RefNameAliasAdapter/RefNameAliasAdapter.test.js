@@ -1,4 +1,4 @@
-import Adapter from './RefNameAliasAdapter.ts'
+import Adapter from './RefNameAliasAdapter'
 
 test('adapter can fetch a simple alias file', async () => {
   const adapter = new Adapter({

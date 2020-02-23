@@ -5,6 +5,7 @@ import { Instance } from 'mobx-state-tree'
 import React from 'react'
 import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
 import { getScale } from '../../util'
+// eslint-disable-next-line import/no-cycle
 import { WiggleTrackModel } from '../model'
 
 const powersOfTen: number[] = []

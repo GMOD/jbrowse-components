@@ -267,7 +267,6 @@ const configDefaults = {
 
   containerID: 'GenomeBrowser',
   dataRoot: 'data',
-  /* eslint-disable @typescript-eslint/camelcase */
   show_tracklist: true,
   show_nav: true,
   show_menu: true,

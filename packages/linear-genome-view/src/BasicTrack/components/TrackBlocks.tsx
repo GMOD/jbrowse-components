@@ -2,6 +2,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
+// eslint-disable-next-line import/no-cycle
 import { BlockBasedTrackStateModel } from '../blockBasedTrackModel'
 import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
 import {
