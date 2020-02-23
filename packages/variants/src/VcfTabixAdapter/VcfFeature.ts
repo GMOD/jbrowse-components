@@ -167,10 +167,17 @@ export default class VCFFeature implements Feature {
 
   _getSOAndDescFromAltDefs(
     ref: string,
-    alt: string,
+    alt: string | Breakend,
   ): [string, string] | [undefined, undefined] {
     // not a symbolic ALT if doesn't begin with '<', so we'll have no definition
-    if (!alt.startsWith('<')) {
+    if (typeof alt === 'object') {
+      return [
+        'breakend',
+        'A VCF breakend defines one end of a point of structural variation',
+      ]
+    }
+
+    if (typeof alt === 'string' && !alt.startsWith('<')) {
       return [undefined, undefined]
     }
 
