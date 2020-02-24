@@ -155,7 +155,7 @@ export default class ServerSideRenderer extends RendererType {
     const { dataAdapter, signal, bpPerPx } = renderArgs
     const features = new Map()
 
-    let regions
+    let regions = [] as IRegion[]
     let originalRegions
 
     if ((renderArgs as SingleRegionRenderArgs).region) {
@@ -185,6 +185,7 @@ export default class ServerSideRenderer extends RendererType {
       return requestRegion
     })
 
+    // note that getFeaturesInMultipleRegions does not do glyph expansion
     const featureObservable =
       requestRegions.length === 1
         ? dataAdapter.getFeaturesInRegion(
