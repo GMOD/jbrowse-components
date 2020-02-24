@@ -6,7 +6,7 @@ import { YScaleBar } from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/component
 
 function ComboTrackComponent(props) {
   const { model } = props
-  const { AlignmentsTrack, SNPCoverageTrack } = model
+  const { PileupTrack, SNPCoverageTrack } = model
 
   let showScalebar = false
   if (SNPCoverageTrack) {
@@ -15,7 +15,7 @@ function ComboTrackComponent(props) {
   }
 
   return (
-    <BlockBasedTrack {...props} {...AlignmentsTrack} {...SNPCoverageTrack}>
+    <BlockBasedTrack {...props} {...PileupTrack} {...SNPCoverageTrack}>
       {showScalebar ? <YScaleBar model={SNPCoverageTrack} /> : null}
     </BlockBasedTrack>
   )

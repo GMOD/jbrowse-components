@@ -12,7 +12,7 @@ export default pluginManager => {
 
   // modify config schema to take in a sub coverage track
   return ConfigurationSchema(
-    'AlignmentsTrack',
+    'PileupTrack',
     {
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       defaultRendering: {

@@ -16,11 +16,11 @@ const rendererTypes = new Map([
 
 export default (pluginManager, configSchema) =>
   types.compose(
-    'AlignmentsTrack',
+    'PileupTrack',
     blockBasedTrackModel,
     types
       .model({
-        type: types.literal('AlignmentsTrack'),
+        type: types.literal('PileupTrack'),
         configuration: ConfigurationReference(configSchema),
       })
       .actions(self => ({

@@ -73,7 +73,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox_cram_alignments",
       "name": "volvox-sorted.cram (contigA)",
       "assemblyNames": [
@@ -98,7 +98,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox_alignments",
       "name": "volvox-sorted red/blue (ctgA)",
       "assemblyNames": [
@@ -126,7 +126,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox_bam_altname",
       "name": "volvox-sorted red/blue (contigA)",
       "assemblyNames": [
@@ -154,7 +154,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox_bam_small_max_height",
       "name": "volvox-sorted red/blue (small max height)",
       "assemblyNames": [
@@ -229,7 +229,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox_alignments_bam_nonexist",
       "name": "volvox-sorted red/blue (bam nonexist 404)",
       "assemblyNames": [
@@ -248,7 +248,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox_alignments_bai_nonexist",
       "name": "volvox-sorted red/blue (bai nonexist 404)",
       "assemblyNames": [

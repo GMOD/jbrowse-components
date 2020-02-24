@@ -54,7 +54,7 @@ test('has a viewType attr', () => {
     ]).configure(),
   )
   const config = configSchema.create({
-    type: 'AlignmentsTrack',
+    type: 'PileupTrack',
     trackId: 'track0',
     name: 'Zonker Track',
   })

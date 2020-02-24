@@ -12,8 +12,8 @@ export default (pluginManager, configSchema) => {
     BaseTrack,
     types
       .model({
-        AlignmentsTrack: types.maybe(
-          pluginManager.getTrackType('AlignmentsTrack').stateModel,
+        PileupTrack: types.maybe(
+          pluginManager.getTrackType('PileupTrack').stateModel,
         ),
         SNPCoverageTrack: types.maybe(
           pluginManager.getTrackType('SNPCoverageTrack').stateModel,
@@ -28,13 +28,13 @@ export default (pluginManager, configSchema) => {
       .actions(self => ({
         afterAttach() {
           const {
-            alignmentsTrackConfig,
+            pileupTrackConfig,
             snpCoverageTrackConfig,
           } = self.configuration
 
-          self.AlignmentsTrack = {
-            type: 'AlignmentsTrack',
-            configuration: alignmentsTrackConfig,
+          self.PileupTrack = {
+            type: 'PileupTrack',
+            configuration: pileupTrackConfig,
           }
           snpCoverageTrackConfig.trackId !== 'placeholderId' // temp conditional while adding snpcoverage to config is necessary
             ? (self.SNPCoverageTrack = {
@@ -45,11 +45,11 @@ export default (pluginManager, configSchema) => {
 
           /* Below is a theoretical version if the configSchema only required generic track info rather
              than specific alignments/snp coverage track info. Issue is config editor options must all be top level */
-          // self.AlignmentsTrack = {
-          //   type: 'AlignmentsTrack',
+          // self.PileupTrack = {
+          //   type: 'PileupTrack',
           //   configuration: {
-          //     ...getConf(self, 'alignmentsTrackConfig'),
-          //     type: 'AlignmentsTrack',
+          //     ...getConf(self, 'pileupTrackConfig'),
+          //     type: 'PileupTrack',
           //     name: `${getConf(self, 'name')} pileup`,
           //     trackId: `${self.configuration.trackId}_pileup`,
           //   },
@@ -57,13 +57,13 @@ export default (pluginManager, configSchema) => {
           // self.SNPCoverageTrack = {
           //   type: 'SNPCoverageTrack',
           //   configuration: {
-          //     ...getConf(self, 'alignmentsTrackConfig'),
+          //     ...getConf(self, 'pileupTrackConfig'),
           //     type: 'SNPCoverageTrack',
           //     name: `${getConf(self, 'name')} snpcoverage`,
           //     trackId: `${self.configuration.trackId}_snpcoverage`,
           //     adapter: {
           //       type: 'SNPCoverageAdapter',
-          //       subadapter: getConf(self, 'alignmentsTrackConfig').adapter,
+          //       subadapter: getConf(self, 'pileupTrackConfig').adapter,
           //     },
           //   },
           // }

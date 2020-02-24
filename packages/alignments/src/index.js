@@ -13,9 +13,9 @@ import {
   stateModel as alignmentsFeatureDetailStateModel,
 } from './AlignmentsFeatureDetail'
 import {
-  configSchemaFactory as alignmentsTrackConfigSchemaFactory,
-  modelFactory as alignmentsTrackModelFactory,
-} from './AlignmentsTrack'
+  configSchemaFactory as pileupTrackConfigSchemaFactory,
+  modelFactory as pileupTrackModelFactory,
+} from './PileupTrack'
 import {
   configSchemaFactory as snpCoverageTrackConfigSchemaFactory,
   modelFactory as snpCoverageTrackModelFactory,
@@ -44,11 +44,11 @@ import SNPCoverageRenderer, {
 export default class extends Plugin {
   install(pluginManager) {
     pluginManager.addTrackType(() => {
-      const configSchema = alignmentsTrackConfigSchemaFactory(pluginManager)
+      const configSchema = pileupTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
-        name: 'AlignmentsTrack',
+        name: 'PileupTrack',
         configSchema,
-        stateModel: alignmentsTrackModelFactory(pluginManager, configSchema),
+        stateModel: pileupTrackModelFactory(pluginManager, configSchema),
       })
     })
 

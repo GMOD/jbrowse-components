@@ -181,7 +181,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "nanopore_targetted_alignments_0.1",
       "name": "Nanopore amplicon alignments 0.1x (chr7:55,000,000-56,000,000)",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
@@ -226,7 +226,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "nanopore_targetted_alignments",
       "name": "Nanopore amplicon (chr7:55,000,000-56,000,000) [causes out-of-memory]",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
@@ -271,7 +271,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "deep_hg19_bam",
       "name": "Deep sequence chr17:41195312..41276764",
       "assemblyNames": [
@@ -318,7 +318,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "amplicon_alignments",
       "name": "Amplicon alignments (chr3:178,916,000-178,918,000)",
       "description": "Source https://github.com/umich-brcf-bioinf/Connor/tree/master/examples",
@@ -367,7 +367,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "ngmlr",
       "name": "SKBR3 pacbio (NGMLR)",
       "assemblyNames": [
@@ -389,7 +389,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "ngmlr_splitters",
       "name": "SKBR3 pacbio (NGMLR) splitters only",
       "assemblyNames": [
@@ -444,7 +444,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "ngmlr_downsample",
       "name": "SKBR3 pacbio (NGMLR) 0.3 downsample",
       "assemblyNames": [
@@ -502,7 +502,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "illumina_hg002",
       "name": "HG002 Illumina hs37d5.2x250",
       "category": [
@@ -532,7 +532,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "pacbio_hg002",
       "name": "HG002 Pacbio hs37d5.11kb",
       "category": [
@@ -562,7 +562,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "na12878_exome",
       "name": "NA12878 Exome",
       "assemblyNames": [
@@ -592,7 +592,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "chm1_pacbio",
       "name": "CHM1 pacbio",
       "assemblyNames": [
@@ -622,7 +622,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "hg00096_highcov",
       "name": "HG00096 Illumina high coverage",
       "assemblyNames": [
@@ -680,7 +680,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "nanopore_ultralong_cram",
       "name": "HG002 Nanopore ultralong (CRAM)",
       "assemblyNames": [
@@ -708,7 +708,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "nanopore_ultralong_snpcoverage",
       "name": "HG002 Nanopore ultralong (BAM SNPCoverage)",
       "assemblyNames": [
@@ -733,7 +733,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "nanopore_ultralong",
       "name": "HG002 Nanopore ultralong (BAM)",
       "assemblyNames": [
@@ -763,7 +763,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "rJxR1X2T0yu",
       "name": "HG00096 Illumina low coverage",
       "assemblyNames": [
@@ -1094,7 +1094,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "hg002_cram",
       "name": "HG002 CRAM nanopore+whatshap",
       "assemblyNames": [
@@ -1114,7 +1114,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "hg002_cram_snpcoverage",
       "name": "HG002 CRAM nanopore+whatshap",
       "assemblyNames": [
@@ -1137,7 +1137,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "hg002_bai",
       "name": "HG002 BAM nanopore+whatshap",
       "assemblyNames": [
@@ -1229,7 +1229,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "skbr3_pacbio",
       "name": "SKBR3 pacbio",
       "assemblyNames": [
@@ -1248,7 +1248,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "skbr3_10x",
       "name": "SKBR3 10x",
       "assemblyNames": [
@@ -1270,7 +1270,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "skbr3_nanopore",
       "name": "SKBR3 nanopore",
       "assemblyNames": [
@@ -1369,7 +1369,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox-long-reads-sv-bam",
       "name": "volvox-long reads with SV",
       "assemblyNames": [
@@ -1399,7 +1399,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox-long-reads-sv-cram",
       "name": "volvox-long reads with SV (cram)",
       "assemblyNames": [
@@ -1427,7 +1427,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox-long-reads-cram",
       "name": "volvox-long reads (cram)",
       "assemblyNames": [
@@ -1455,7 +1455,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox-long-reads-bam",
       "name": "volvox-long reads",
       "assemblyNames": [
@@ -1485,7 +1485,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox_samspec_cram",
       "name": "volvox-samspec (cram)",
       "assemblyNames": [
@@ -1513,7 +1513,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox_samspec",
       "name": "volvox-samspec",
       "assemblyNames": [
@@ -1543,7 +1543,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox_sv_cram",
       "name": "volvox-sv (cram)",
       "assemblyNames": [
@@ -1571,7 +1571,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox_sv",
       "name": "volvox-sv",
       "assemblyNames": [
@@ -1626,7 +1626,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox_cram",
       "name": "volvox-sorted red/blue (CRAM)",
       "assemblyNames": [
@@ -1654,7 +1654,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "volvox_bam",
       "name": "volvox-sorted red/blue",
       "assemblyNames": [
@@ -1696,8 +1696,8 @@
       "category": [
         "Combo"
       ],
-      "alignmentsTrackConfig": {
-        "type": "AlignmentsTrack",
+      "pileupTrackConfig": {
+        "type": "PileupTrack",
         "trackId": "volvox_bam combo_pileup",
         "name": "volvox-combo alignments track",
         "assemblyNames": [
@@ -1764,8 +1764,8 @@
       "category": [
         "Combo"
       ],
-      "alignmentsTrackConfig": {
-        "type": "AlignmentsTrack",
+      "pileupTrackConfig": {
+        "type": "PileupTrack",
         "trackId": "combo_no_cov_pileup",
         "name": "volvox-combo alignments track no cov",
         "assemblyNames": [

@@ -28,10 +28,10 @@ const createMockTrack = track =>
     staticBlocks: [],
     track: {
       configuration: track.configSchema.create({
-        type: 'AlignmentsTrack',
+        type: 'PileupTrack',
         trackId: 'track0',
       }),
-      type: 'AlignmentsTrack',
+      type: 'PileupTrack',
     },
   })
 
@@ -45,9 +45,9 @@ test('create bam adapter config', () => {
 test('create track config', async () => {
   const { pluginManager } = createTestSession()
 
-  const AlignmentsTrack = pluginManager.getTrackType('AlignmentsTrack')
-  const config2 = AlignmentsTrack.configSchema.create({
-    type: 'AlignmentsTrack',
+  const PileupTrack = pluginManager.getTrackType('PileupTrack')
+  const config2 = PileupTrack.configSchema.create({
+    type: 'PileupTrack',
     trackId: 'track0',
   })
   expect(getSnapshot(config2)).toMatchSnapshot()
@@ -58,7 +58,7 @@ test('test selection in alignments track model with mock session', async () => {
   const { pluginManager } = session
 
   const sessionModel = createMockTrack(
-    pluginManager.getTrackType('AlignmentsTrack'),
+    pluginManager.getTrackType('PileupTrack'),
   )
 
   // TODO: requires having actual session.addDrawerWidget

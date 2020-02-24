@@ -21,7 +21,7 @@ describe('<ConfirmTrack />', () => {
         trackData={{ uri: 'test.bam' }}
         trackName=""
         setTrackName={mockFunction}
-        trackType="AlignmentsTrack"
+        trackType="PileupTrack"
         setTrackType={mockFunction}
         trackAdapter={{
           type: 'BamAdapter',
@@ -44,7 +44,7 @@ describe('<ConfirmTrack />', () => {
         trackData={{ uri: 'test.bam' }}
         trackName=""
         setTrackName={mockFunction}
-        trackType="AlignmentsTrack"
+        trackType="PileupTrack"
         setTrackType={mockFunction}
         trackAdapter={{
           type: 'BamAdapter',
@@ -68,7 +68,7 @@ describe('<ConfirmTrack />', () => {
         trackData={{ localPath: 'test.bam' }}
         trackName=""
         setTrackName={mockFunction}
-        trackType="AlignmentsTrack"
+        trackType="PileupTrack"
         setTrackType={mockFunction}
         trackAdapter={{
           type: 'BamAdapter',
@@ -92,7 +92,7 @@ describe('<ConfirmTrack />', () => {
         trackData={{ uri: 'test.bam', config: [] }}
         trackName=""
         setTrackName={mockFunction}
-        trackType="AlignmentsTrack"
+        trackType="PileupTrack"
         setTrackType={mockFunction}
         trackAdapter={{
           type: 'FromConfigAdapter',

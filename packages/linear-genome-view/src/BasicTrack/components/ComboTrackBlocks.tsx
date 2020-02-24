@@ -8,7 +8,7 @@ import { RenderedBlocks, useStyles } from './TrackBlocks'
 
 interface ComboBlockBasedTrackStateModel
   extends Instance<BlockBasedTrackStateModel> {
-  AlignmentsTrack?: Instance<BlockBasedTrackStateModel>
+  PileupTrack?: Instance<BlockBasedTrackStateModel>
   SNPCoverageTrack?: Instance<BlockBasedTrackStateModel>
 }
 
@@ -20,7 +20,7 @@ function ComboTrackBlocks({
   viewModel: Instance<LinearGenomeViewStateModel>
 }) {
   const classes = useStyles()
-  const { AlignmentsTrack, SNPCoverageTrack } = model
+  const { PileupTrack, SNPCoverageTrack } = model
   return (
     <>
       {SNPCoverageTrack && (
@@ -35,17 +35,16 @@ function ComboTrackBlocks({
           <RenderedBlocks model={SNPCoverageTrack} />
         </div>
       )}
-      {AlignmentsTrack && (
+      {PileupTrack && (
         <div
           data-testid="Blockset"
           className={classes.trackBlocks}
           style={{
-            left:
-              AlignmentsTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
+            left: PileupTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
             top: SNPCoverageTrack ? SNPCoverageTrack.height : 0,
           }}
         >
-          <RenderedBlocks model={AlignmentsTrack} />
+          <RenderedBlocks model={PileupTrack} />
         </div>
       )}
     </>
