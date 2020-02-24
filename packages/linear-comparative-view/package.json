@@ -23,6 +23,7 @@
     "rxjs": "^6.0.0"
   },
   "dependencies": {
+    "abortable-promise-cache": "^1.0.1",
     "clsx": "^1.1.0",
     "react-sizeme": "^2.6.12"
   }

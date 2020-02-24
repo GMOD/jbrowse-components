@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any,no-plusplus */
 import { types, getParent, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import { toArray } from 'rxjs/operators'
@@ -48,6 +48,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
     )
     .volatile(self => ({
       ReactComponent: (LinearSyntenyTrackComponent as unknown) as React.FC,
+      loadedBlocks: [] as Feature[][],
     }))
     .views(self => ({
       get subtrackViews() {
@@ -84,65 +85,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         }
       },
 
-      //       get layoutMatches() {
-      //         const features = this.trackFeatures
-      //         const alreadySeen = new Set<number>()
-      //         const featNameMap: { [key: string]: Feature } = {}
-
-      //         if (!self.anchorsData || !self.anchors) {
-      //           return []
-      //         } // this finds candidate features that share the same name
-
-      //         for (const feature of features.values()) {
-      //           const n = self.anchors[feature.get('name')]
-      //           featNameMap[feature.get('name')] = feature
-
-      //           if (n !== undefined) {
-      //             alreadySeen.add(n)
-      //           }
-      //         }
-
-      //         const blocks = Array.from(alreadySeen)
-      //         const ret = []
-
-      //         for (const block of blocks) {
-      //           const r = self.anchorsData[block]
-      //           if (r) {
-      //             const r1 = featNameMap[r.name1]
-      //             const r2 = featNameMap[r.name2]
-      //             if (!r1 || !r2) {
-      //               // alt logic (r1 && r2) || !(r3 && r4)
-      //               // eslint-disable-next-line no-continue
-      //               continue
-      //             }
-      //             const s1 = r1.get('start')
-      //             const e1 = r1.get('end')
-      //             const s2 = r2.get('start')
-      //             const e2 = r2.get('end')
-
-      //             ret.push([
-      //               {
-      //                 layout: [s1, 0, e1, 10] as LayoutRecord,
-      //                 feature: new SimpleFeature({
-      //                   data: { uniqueId: `${block}-1`, start: s1, end: e1 },
-      //                 }),
-      //                 level: 1,
-      //                 refName: r1.get('refName') as string,
-      //               },
-      //               {
-      //                 layout: [s2, 0, e2, 10] as LayoutRecord,
-      //                 feature: new SimpleFeature({
-      //                   data: { uniqueId: `${block}-2`, start: s2, end: e2 },
-      //                 }),
-      //                 level: 0,
-      //                 refName: r2.get('refName') as string,
-      //               },
-      //             ])
-      //           }
-      //         }
-      //         return ret
-      //       },
-
       get trackIds() {
         return getConf(self, 'trackIds') as string[]
       },
@@ -151,36 +93,74 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(async () => {
-            const adapter = getAdapter(
-              pluginManager,
-              getConf(self, 'trackId'),
-              self.adapterConfig.type,
-              self.adapterConfig,
-              null,
-              null,
-            ).dataAdapter
-            const r = getParent(self, 2) as any
-            const blockFeats = r.views.map(subview => {
-              return Promise.all(
-                subview.staticBlocks.map(async block => {
-                  if (block.refName !== undefined) {
-                    const { refName, start, end, assemblyName } = block
-                    const observable = adapter.getFeatures({
-                      refName,
-                      start,
-                      end,
-                      assemblyName,
-                    })
-                    return observable.pipe(toArray()).toPromise()
-                  }
-                  // might be an interregion padding block, return empty
-                  return []
-                }),
+          autorun(
+            async () => {
+              const adapter = getAdapter(
+                pluginManager,
+                getConf(self, 'trackId'),
+                self.adapterConfig.type,
+                self.adapterConfig,
+                null,
+                null,
+              ).dataAdapter
+              const r = getParent(self, 2) as any
+              const blockFeats = (
+                await Promise.all(
+                  r.views.map((subview: any) => {
+                    return Promise.all(
+                      subview.staticBlocks.map(async (block: any) => {
+                        if (block.refName !== undefined) {
+                          const { refName, start, end, assemblyName } = block
+                          const observable = adapter.getFeatures({
+                            refName,
+                            start,
+                            end,
+                            assemblyName,
+                          })
+                          return observable.pipe(toArray()).toPromise()
+                        }
+                        // might be an interregion padding block, return empty
+                        return []
+                      }),
+                    )
+                  }),
+                )
+              ).map(f =>
+                f
+                  .flat()
+                  .sort(
+                    (a: Feature, b: Feature) =>
+                      a.get('syntenyId') - b.get('syntenyId'),
+                  ),
               )
-            })
-            console.log(Promise.all(blockFeats))
-          }),
+
+              function getMatches(l1: Feature[], l2: Feature[]) {
+                let i = 0
+                let j = 0
+                const res = []
+                while (i < l1.length && j < l2.length) {
+                  const x = l1[i]
+                  const y = l2[j]
+                  const a = x.get('syntenyId')
+                  const b = y.get('syntenyId')
+                  if (a == b) {
+                    res.push([x, y])
+                    i++
+                    j++
+                  } else if (a < b) {
+                    i++
+                  } else {
+                    j++
+                  }
+                }
+                return res
+              }
+              console.log(getMatches(blockFeats[0], blockFeats[1]))
+
+              console.log(blockFeats)
+            },
+            { delay: 1000 },
+          ),
         )
       },
     }))
