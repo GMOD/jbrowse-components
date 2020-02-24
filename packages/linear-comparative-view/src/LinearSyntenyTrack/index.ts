@@ -108,17 +108,17 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       //   })
       // },
 
-      // get syntenyTrackFeatures() {
-      //   const parentView = getParent(self, 2) as any
-      //   parentView.views.map((subview: any, index: number) => {
-      //     return new CompositeMap<string, Promise<Feature>>(
-      //       subview.staticBlocks.map((block: any) => {
-      //         self.blockFeatureCache.get(block.key)
-      //       }),
-      //     )
-      //   })
-      //   return 0
-      // },
+      get syntenyTrackFeatures() {
+        const parentView = getParent(self, 2) as any
+        parentView.views.map((subview: any, index: number) => {
+          return new CompositeMap<string, Feature>(
+            subview.staticBlocks.map((block: any) => {
+              self.blockFeatures.get(block.key)
+            }),
+          )
+        })
+        return 0
+      },
 
       get subtrackFeatures() {
         return new CompositeMap<string, Feature>(
