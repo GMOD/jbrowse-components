@@ -75,7 +75,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           )
         },
       }),
-      // map of block.key -> map of feature id to eature
+      // map of block.key -> map of feature id to feature
       blockFeatures: new Map() as Map<string, Map<string, Feature>>,
     }))
     .views(self => ({
@@ -98,23 +98,17 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         return subtracks
       },
 
-      // get realizedBlockFeatures() {
-      //   return self.blockFeatures.map(viewBlocks => {
-      //     const temp = []
-      //     for (const viewBlock of viewBlocks.values()) {
-      //       temp.push(viewBlock)
-      //     }
-      //     return temp.flat()
-      //   })
-      // },
-
+      // returns array of maps of feature id->feature
+      // each element of the array corresponds to the subview of the linear comparative view
+      // these are built from the currently realized features from the store
+      // e.g. self.blockFeatures is updated asynchronously so what is available is then "realized" here
       get syntenyTrackFeatures() {
         const parentView = getParent(self, 2) as any
         parentView.views.map((subview: any, index: number) => {
           return new CompositeMap<string, Feature>(
-            subview.staticBlocks.map((block: any) => {
-              self.blockFeatures.get(block.key)
-            }),
+            subview.staticBlocks
+              .filter((block: Block) => 'refName' in block)
+              .map((block: Block) => self.blockFeatures.get(block.key)),
           )
         })
         return 0
@@ -146,24 +140,18 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
 
       renderSynteny(arg: any) {},
 
-      async getBlockFeatures({
-        block,
-        signal,
-        dataAdapter,
-      }: {
+      async fillBlockFeatures(param: {
         block: Block
         signal: AbortSignal
         dataAdapter: BaseAdapter
       }) {
-        if (block.refName === undefined) {
-          return []
-        }
+        const { block, signal, dataAdapter } = param
+        const features = new Map<string, Feature>()
         const featureObservable = self.blockFeatureCache.get(block.key, {
           dataAdapter,
           block,
         })
-        const features = new Map<string, Feature>()
-        return featureObservable
+        featureObservable
           .pipe(
             tap(() => checkAbortSignal(signal)),
             filter((feature: Feature) => this.featurePassesFilters(feature)),
@@ -199,9 +187,13 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
               const parentView = getParent(self, 2) as any
 
               parentView.views.forEach((subview: any, index: number) => {
-                subview.staticBlocks.forEach(async (block: any) => {
-                  this.getBlockFeatures({ block, dataAdapter, signal })
-                })
+                subview.staticBlocks
+                  .filter((block: Block) => 'refName' in block)
+                  .forEach((block: Block) => {
+                    if (!self.blockFeatureCache.has(block.key)) {
+                      this.fillBlockFeatures({ block, dataAdapter, signal })
+                    }
+                  })
               })
             },
             { delay: 1000 },
