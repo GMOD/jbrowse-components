@@ -4,9 +4,9 @@ import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import { lazy } from 'react'
 import {
-  configSchemaFactory as comboTrackConfigSchemaFactory,
-  modelFactory as comboTrackModelFactory,
-} from './ComboTrack'
+  configSchemaFactory as alignmentsTrackConfigSchemaFactory,
+  modelFactory as alignmentsTrackModelFactory,
+} from './AlignmentsTrack'
 import {
   configSchema as alignmentsFeatureDetailConfigSchema,
   ReactComponent as AlignmentsFeatureDetailReactComponent,
@@ -71,11 +71,11 @@ export default class extends Plugin {
       })
     })
     pluginManager.addTrackType(() => {
-      const configSchema = comboTrackConfigSchemaFactory(pluginManager)
+      const configSchema = alignmentsTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
-        name: 'ComboTrack',
+        name: 'AlignmentsTrack',
         configSchema,
-        stateModel: comboTrackModelFactory(pluginManager, configSchema),
+        stateModel: alignmentsTrackModelFactory(pluginManager, configSchema),
       })
     })
     pluginManager.addAdapterType(

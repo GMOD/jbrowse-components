@@ -1369,7 +1369,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox-long-reads-sv-bam",
       "name": "volvox-long reads with SV",
       "assemblyNames": [
@@ -1687,7 +1687,7 @@
       }
     },
     {
-      "type": "ComboTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox_bam combo",
       "name": "volvox-combo w coverage",
       "assemblyNames": [
@@ -1755,7 +1755,7 @@
       }
     },
     {
-      "type": "ComboTrack",
+      "type": "AlignmentsTrack",
       "trackId": "combo_no_cov",
       "name": "volvox-combo no coverage info",
       "assemblyNames": [

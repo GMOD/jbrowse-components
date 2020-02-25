@@ -4,7 +4,7 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React from 'react'
 import { YScaleBar } from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
 
-function ComboTrackComponent(props) {
+function AlignmentsTrackComponent(props) {
   const { model } = props
   const { PileupTrack, SNPCoverageTrack } = model
 
@@ -21,8 +21,8 @@ function ComboTrackComponent(props) {
   )
 }
 
-ComboTrackComponent.propTypes = {
+AlignmentsTrackComponent.propTypes = {
   model: MobxPropTypes.observableObject.isRequired,
 }
 
-export default observer(ComboTrackComponent)
+export default observer(AlignmentsTrackComponent)

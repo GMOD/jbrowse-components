@@ -12,7 +12,7 @@ interface ComboBlockBasedTrackStateModel
   SNPCoverageTrack?: Instance<BlockBasedTrackStateModel>
 }
 
-function ComboTrackBlocks({
+function AlignmentsTrackBlocks({
   model,
   viewModel,
 }: {
@@ -51,9 +51,9 @@ function ComboTrackBlocks({
   )
 }
 
-ComboTrackBlocks.propTypes = {
+AlignmentsTrackBlocks.propTypes = {
   model: PropTypes.observableObject.isRequired,
   viewModel: PropTypes.observableObject.isRequired,
 }
 
-export default observer(ComboTrackBlocks)
+export default observer(AlignmentsTrackBlocks)

@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import Track from './Track'
 import TrackBlocks from './TrackBlocks'
-import ComboTrackBlocks from './ComboTrackBlocks'
+import AlignmentsTrackBlocks from './AlignmentsTrackBlocks'
 
 function BlockBasedTrack(props) {
   const { model, children } = props
@@ -14,8 +14,11 @@ function BlockBasedTrack(props) {
     <Track {...props} trackId={getConf(model, 'trackId')}>
       {model.trackMessageComponent ? (
         <model.trackMessageComponent model={model} />
-      ) : getConf(model, 'type') === 'ComboTrack' ? (
-        <ComboTrackBlocks {...props} viewModel={getParent(getParent(model))} />
+      ) : getConf(model, 'type') === 'AlignmentsTrack' ? (
+        <AlignmentsTrackBlocks
+          {...props}
+          viewModel={getParent(getParent(model))}
+        />
       ) : (
         <TrackBlocks {...props} viewModel={getParent(getParent(model))} />
       )}
