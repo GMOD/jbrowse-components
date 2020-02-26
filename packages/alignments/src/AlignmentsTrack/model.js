@@ -3,7 +3,8 @@ import {
   ConfigurationReference,
 } from '@gmod/jbrowse-core/configuration'
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { types } from 'mobx-state-tree'
+import { types, addDisposer } from 'mobx-state-tree'
+import { autorun } from 'mobx'
 import AlignmentsTrackComponent from './components/AlignmentsTrack'
 
 export default (pluginManager, configSchema) => {
@@ -25,6 +26,29 @@ export default (pluginManager, configSchema) => {
       .volatile(() => ({
         ReactComponent: AlignmentsTrackComponent,
       }))
+      .views(self => ({
+        get pileupTrackConfig() {
+          return {
+            ...getConf(self),
+            type: 'PileupTrack',
+            name: `${getConf(self, 'name')} pileup`,
+            trackId: `${self.configuration.trackId}_pileup`,
+          }
+        },
+
+        get snpCoverageTrackConfig() {
+          return {
+            ...getConf(self),
+            type: 'SNPCoverageTrack',
+            name: `${getConf(self, 'name')} snpcoverage`,
+            trackId: `${self.configuration.trackId}_snpcoverage`,
+            adapter: {
+              type: 'SNPCoverageAdapter',
+              subadapter: getConf(self, 'adapter'),
+            },
+          }
+        },
+      }))
       .actions(self => ({
         afterAttach() {
           // const {
@@ -45,27 +69,18 @@ export default (pluginManager, configSchema) => {
 
           /* Below is a theoretical version if the configSchema only required generic track info rather
              than specific alignments/snp coverage track info. Issue is config editor options must all be top level */
-          self.PileupTrack = {
-            type: 'PileupTrack',
-            configuration: {
-              ...getConf(self),
-              type: 'PileupTrack',
-              name: `${getConf(self, 'name')} pileup`,
-              trackId: `${self.configuration.trackId}_pileup`,
-            },
-          }
-          self.SNPCoverageTrack = {
-            type: 'SNPCoverageTrack',
-            configuration: {
-              ...getConf(self),
-              type: 'SNPCoverageTrack',
-              name: `${getConf(self, 'name')} snpcoverage`,
-              trackId: `${self.configuration.trackId}_snpcoverage`,
-              adapter: {
-                type: 'SNPCoverageAdapter',
-                subadapter: getConf(self, 'adapter'),
-              },
-            },
+          addDisposer(
+            self,
+            autorun(() => {
+              self.setTrack('PileupTrack', self.pileupTrackConfig)
+              self.setTrack('SNPCoverageTrack', self.snpCoverageTrackConfig)
+            }),
+          )
+        },
+        setTrack(trackType, trackConfig) {
+          self[trackType] = {
+            type: `${trackType}`,
+            configuration: trackConfig,
           }
         },
       })),

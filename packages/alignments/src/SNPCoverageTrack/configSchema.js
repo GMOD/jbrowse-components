@@ -58,7 +58,7 @@ export default pluginManager => {
 
       defaultRendering: {
         type: 'stringEnum',
-        model: types.enumeration('Rendering', ['snpcoverage']),
+        model: types.enumeration('Rendering', ['snpcoverage', 'svg']),
         defaultValue: 'snpcoverage',
       },
 

@@ -1826,6 +1826,39 @@
       }
     },
     {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_bam_new_config",
+      "name": "volvox-combo new config",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "category": [
+        "Combo"
+      ],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "test_data/volvox-sorted.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/volvox-sorted.bam.bai"
+          }
+        }
+      },
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer"
+        },
+        "SNPCoverageRenderer": {
+          "type": "SNPCoverageRenderer"
+        }
+      }
+    },
+    {
       "type": "BasicTrack",
       "trackId": "bigbed_genes",
       "name": "BigBed genes",
