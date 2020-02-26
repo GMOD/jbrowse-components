@@ -1,4 +1,3 @@
-import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
@@ -6,17 +5,18 @@ import { BlockBasedTrackStateModel } from '../blockBasedTrackModel'
 import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
 import { RenderedBlocks, useStyles } from './TrackBlocks'
 
-interface ComboBlockBasedTrackStateModel
+interface AlignmentsBlockBasedTrackStateModel
   extends Instance<BlockBasedTrackStateModel> {
   PileupTrack?: Instance<BlockBasedTrackStateModel>
   SNPCoverageTrack?: Instance<BlockBasedTrackStateModel>
 }
 
+// possibly make this code inside alignments folder instead of basic track folder
 function AlignmentsTrackBlocks({
   model,
   viewModel,
 }: {
-  model: ComboBlockBasedTrackStateModel
+  model: AlignmentsBlockBasedTrackStateModel
   viewModel: Instance<LinearGenomeViewStateModel>
 }) {
   const classes = useStyles()

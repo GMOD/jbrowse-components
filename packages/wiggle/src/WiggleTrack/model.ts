@@ -80,7 +80,6 @@ const stateModelFactory = (configSchema: any) =>
             scaleType: getConf(self, 'scaleType'),
             bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
           })
-
           const headroom = getConf(self, 'headroom')
           if (headroom) {
             ret[1] = Math.ceil(ret[1] / headroom) * headroom

@@ -51,24 +51,6 @@ export default (pluginManager, configSchema) => {
       }))
       .actions(self => ({
         afterAttach() {
-          // const {
-          //   pileupTrackConfig,
-          //   snpCoverageTrackConfig,
-          // } = self.configuration
-
-          // self.PileupTrack = {
-          //   type: 'PileupTrack',
-          //   configuration: pileupTrackConfig,
-          // }
-          // snpCoverageTrackConfig.trackId !== 'placeholderId' // temp conditional while adding snpcoverage to config is necessary
-          //   ? (self.SNPCoverageTrack = {
-          //       type: 'SNPCoverageTrack',
-          //       configuration: snpCoverageTrackConfig,
-          //     })
-          //   : delete self.SNPCoverageTrack
-
-          /* Below is a theoretical version if the configSchema only required generic track info rather
-             than specific alignments/snp coverage track info. Issue is config editor options must all be top level */
           addDisposer(
             self,
             autorun(() => {
