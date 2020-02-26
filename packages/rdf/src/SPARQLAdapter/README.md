@@ -70,8 +70,8 @@ the feature with a matching `?uniqueId`.
 The second way is useful if a single query response line contains information
 for more than one feature, e.g. gene, transcript, and exon information on a
 single line. For this type of data prefix all variables for the subfeature with
-"sub*", which will allow you to define multiple features from the same line. It
-also works for deeper nested features, too, by using "sub_sub*", etc. Parent
+`sub_`, which will allow you to define multiple features from the same line. It
+also works for deeper nested features, too, by using `sub_sub_`, etc. Parent
 features that are duplicated across lines will be resolved into a single
 feature. For example, take the following SPARQL query result lines:
 
