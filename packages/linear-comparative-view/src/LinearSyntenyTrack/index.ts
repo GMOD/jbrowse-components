@@ -84,6 +84,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           getContainingView(subtrack),
         ) as any[]
       },
+
       get subtracks(): any[] {
         const subtracks: any[] = []
         const parentView = getParent(self, 2)
@@ -98,10 +99,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         return subtracks
       },
 
-      // returns array of maps of feature id->feature
-      // each element of the array corresponds to the subview of the linear comparative view
-      // these are built from the currently realized features from the store
-      // e.g. self.blockFeatures is updated asynchronously so what is available is then "realized" here
+      // returns a restructuring of the self.blockFeatures stratified by view
       get syntenyTrackFeatures() {
         const parentView = getParent(self, 2) as any
         parentView.views.map((subview: any, index: number) => {
