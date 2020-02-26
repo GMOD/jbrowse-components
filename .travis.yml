@@ -7,6 +7,7 @@ cache:
 script:
 - set -e
 - yarn lint
+- yarn prettier
 - yarn test-ci
 - yarn tsc --noEmit
 - yarn build
