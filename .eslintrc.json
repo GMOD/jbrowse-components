@@ -82,14 +82,7 @@
     "no-undef": "error",
     "no-underscore-dangle": "warn",
     "no-use-before-define": "off",
-    "prettier/prettier": [
-      "error",
-      {
-        "semi": false,
-        "singleQuote": true,
-        "trailingComma": "all"
-      }
-    ],
+    "prettier/prettier": "error",
     "react/destructuring-assignment": "warn",
     "react/forbid-prop-types": "off",
     "react/jsx-filename-extension": "off",
@@ -102,8 +95,8 @@
     "react/prop-types": "warn",
     "react/require-default-props": "warn",
     "spaced-comment": [
-      "always",
       "error",
+      "always",
       {
         "markers": [
           "/"
