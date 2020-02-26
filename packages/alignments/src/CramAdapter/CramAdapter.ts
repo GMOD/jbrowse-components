@@ -1,5 +1,7 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import BaseAdapter, {
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
@@ -9,7 +11,7 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { ConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { getSubAdapterType } from '@gmod/jbrowse-core/util/dataAdapterCache'
+import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 
 interface HeaderLine {

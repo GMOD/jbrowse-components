@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderToString } from 'react-dom/server'
 import { filter, ignoreElements, tap } from 'rxjs/operators'
-import BaseAdapter from '../../BaseAdapter'
+import BaseAdapter from '../../data_adapters/BaseAdapter'
 import { IRegion } from '../../mst-types'
 import { readConfObject } from '../../configuration'
 import { checkAbortSignal, iterMap } from '../../util'

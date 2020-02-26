@@ -1,5 +1,7 @@
 import { BigWig, Feature as BBIFeature } from '@gmod/bbi'
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import BaseAdapter, {
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'

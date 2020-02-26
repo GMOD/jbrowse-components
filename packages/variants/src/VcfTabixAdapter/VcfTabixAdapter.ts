@@ -1,4 +1,6 @@
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import BaseAdapter, {
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import {
   IFileLocation,
   INoAssemblyRegion,
