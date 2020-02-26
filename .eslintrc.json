@@ -1,45 +1,76 @@
 {
-  "parser": "@typescript-eslint/parser",
+  "env": {
+    "browser": true
+  },
   "extends": [
     "airbnb-typescript",
-    "react-app",
-    "plugin:monorepo/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "plugin:monorepo/recommended",
     "plugin:prettier/recommended",
+    "prettier/@typescript-eslint",
     "prettier/react",
-    "prettier/@typescript-eslint"
+    "react-app"
   ],
-  "plugins": [
-    "@typescript-eslint"
+  "overrides": [
+    {
+      "env": {
+        "jest": true
+      },
+      "files": [
+        "**/*.test.[t,j]s"
+      ],
+      "globals": {
+        "describe": true,
+        "document": true,
+        "it": true,
+        "test": true
+      },
+      "rules": {
+        "import/no-extraneous-dependencies": "off"
+      }
+    }
   ],
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
     },
     "project": "./tsconfig.json"
   },
-  "env": {
-    "browser": true
-  },
+  "plugins": [
+    "@typescript-eslint"
+  ],
   "rules": {
+    "@typescript-eslint/await-thenable": "off",
+    "@typescript-eslint/ban-ts-ignore": "off",
+    "@typescript-eslint/camelcase": "warn",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-member-accessibility": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-misused-promises": "off",
+    "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/no-var-requires": "off",
+    "@typescript-eslint/prefer-regexp-exec": "off",
+    "@typescript-eslint/require-await": "off",
+    "@typescript-eslint/unbound-method": "off",
     "class-methods-use-this": "off",
     "global-require": "off",
     "import/no-cycle": "warn",
     "import/prefer-default-export": "off",
+    "jsx-a11y/mouse-events-have-key-events": "off",
     "max-classes-per-file": "off",
     "monorepo/no-internal-import": "off",
     "no-console": [
       "warn",
       {
         "allow": [
-          "warn",
-          "error"
+          "error",
+          "warn"
         ]
       }
     ],
     "no-debugger": "warn",
-    "no-undef": "error",
     "no-param-reassign": "off",
     "no-plusplus": [
       "error",
@@ -48,47 +79,35 @@
       }
     ],
     "no-restricted-syntax": "off",
+    "no-undef": "error",
     "no-underscore-dangle": "warn",
     "no-use-before-define": "off",
+    "prettier/prettier": [
+      "error",
+      {
+        "semi": false,
+        "singleQuote": true,
+        "trailingComma": "all"
+      }
+    ],
     "react/destructuring-assignment": "warn",
-    "react/jsx-filename-extension": "off",
-    "react/no-unused-prop-types": "warn",
     "react/forbid-prop-types": "off",
+    "react/jsx-filename-extension": "off",
+    "react/jsx-no-bind": "off",
     "react/jsx-props-no-spreading": "off",
+    "react/no-array-index-key": "off",
+    "react/no-unused-prop-types": "warn",
     "react/no-unused-state": "warn",
     "react/prefer-stateless-function": "warn",
     "react/prop-types": "warn",
     "react/require-default-props": "warn",
     "spaced-comment": [
-      "error",
       "always",
+      "error",
       {
         "markers": [
           "/"
         ]
-      }
-    ],
-    "@typescript-eslint/ban-ts-ignore": "off",
-    "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/explicit-member-accessibility": "off",
-    "@typescript-eslint/camelcase": "warn",
-    "@typescript-eslint/no-use-before-define": "off",
-    "@typescript-eslint/no-empty-function": "off",
-    "@typescript-eslint/no-var-requires": "off",
-    "react/jsx-no-bind": "off",
-    "jsx-a11y/mouse-events-have-key-events": "off",
-    "react/no-array-index-key": "off",
-    "@typescript-eslint/await-thenable": "off",
-    "@typescript-eslint/unbound-method": "off",
-    "@typescript-eslint/require-await": "off",
-    "@typescript-eslint/no-misused-promises": "off",
-    "@typescript-eslint/prefer-regexp-exec": "off",
-    "prettier/prettier": [
-      "error",
-      {
-        "singleQuote": true,
-        "semi": false,
-        "trailingComma": "all"
       }
     ]
   },
@@ -103,24 +122,5 @@
         ]
       }
     }
-  },
-  "overrides": [
-    {
-      "files": [
-        "**/*.test.[t,j]s"
-      ],
-      "env": {
-        "jest": true
-      },
-      "globals": {
-        "document": true,
-        "it": true,
-        "describe": true,
-        "test": true
-      },
-      "rules": {
-        "import/no-extraneous-dependencies": "off"
-      }
-    }
-  ]
+  }
 }
