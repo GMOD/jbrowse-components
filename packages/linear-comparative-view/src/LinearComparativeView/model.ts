@@ -7,6 +7,8 @@ import { transaction } from 'mobx'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
+import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
+
 export type LayoutRecord = [number, number, number, number]
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -46,7 +48,10 @@ export default function stateModelFactory(pluginManager: any) {
       linkViews: false,
       interactToggled: false,
       tracks: types.array(
-        pluginManager.pluggableMstType('track', 'stateModel') as any,
+        pluginManager.pluggableMstType(
+          'track',
+          'stateModel',
+        ) as BaseTrackStateModel,
       ),
       views: types.array(
         pluginManager.getViewType('LinearGenomeView')

@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { GenericFilehandle } from 'generic-filehandle'
 import { toArray } from 'rxjs/operators'
-import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+// eslint-disable import/no-extraneous-dependencies
 import { AdapterClass as NCListAdapter } from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
 
 type RowToGeneNames = {
@@ -21,11 +22,9 @@ interface GeneNameToRow {
 export default class extends BaseAdapter {
   private initialized = false
 
-  private geneAdapter1: any
+  private geneAdapter1: BaseAdapter
 
-  private geneAdapter2: any
-
-  private mcscanAnchors: any
+  private geneAdapter2: BaseAdapter
 
   private mcscanAnchorsLocation: GenericFilehandle
 
@@ -80,13 +79,12 @@ export default class extends BaseAdapter {
    */
   getFeatures(region: IRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { refName, start, end } = region
       await this.setup(opts)
       let feats
-      if (region.assemblyName == 'peach') {
-        feats = this.geneAdapter1.getFeatures(region)
+      if (region.assemblyName === 'peach') {
+        feats = this.geneAdapter1.getFeatures(region, {})
       } else {
-        feats = this.geneAdapter2.getFeatures(region)
+        feats = this.geneAdapter2.getFeatures(region, {})
       }
       const geneFeatures = await feats.pipe(toArray()).toPromise()
       // should do type inference here?

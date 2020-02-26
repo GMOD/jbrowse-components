@@ -1,8 +1,6 @@
-/* eslint-disable  no-nested-ternary */
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+/* eslint-disable  no-nested-ternary, no-continue */
 import ComparativeRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { bpSpanPx, iterMap } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import {
   createCanvas,
@@ -10,8 +8,6 @@ import {
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
 import { yPos, getPxFromCoordinate, cheight } from '../util'
-import { LinearSyntenyTrackModel } from '../LinearSyntenyTrack'
-import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
@@ -49,6 +45,10 @@ interface LinearSyntenyRenderProps {
   layoutMatches: LayoutMatch[][]
 }
 
+interface LinearSyntenyRenderingProps extends LinearSyntenyRenderProps {
+  imageData: any // eslint-disable-line @typescript-eslint/no-explicit-any
+}
+
 interface LinearSyntenyImageData {
   imageData?: ImageBitmap
   height: number
@@ -66,7 +66,8 @@ interface LayoutRecord {
 type LayoutTuple = [number, number, number, number]
 
 export default class LinearSyntenyRenderer extends ComparativeRendererType {
-  private ReactComponent: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private ReactComponent: React.FC<any>
 
   constructor(stuff: any) {
     super(stuff)
@@ -119,12 +120,9 @@ export default class LinearSyntenyRenderer extends ComparativeRendererType {
         }
         const l1 = f1.get('end') - f1.get('start')
         const l2 = f2.get('end') - f2.get('start')
-        let tiny = false
 
         if (l1 < v1.bpPerPx || l2 < v2.bpPerPx) {
-          tiny = true
           if (hideTiny) {
-            // eslint-disable-next-line no-continue
             continue
           }
         }
@@ -132,7 +130,6 @@ export default class LinearSyntenyRenderer extends ComparativeRendererType {
           !v1.staticBlocks.find(region => region.refName === ref1) ||
           !v2.staticBlocks.find(region => region.refName === ref2)
         ) {
-          //  eslint-disable-next-line no-continue
           continue
         }
 
@@ -180,7 +177,7 @@ export default class LinearSyntenyRenderer extends ComparativeRendererType {
       this.ReactComponent,
       { ...renderProps, height, width, imageData },
       null,
-    )
+    ) as any
     return {
       element,
       imageData,

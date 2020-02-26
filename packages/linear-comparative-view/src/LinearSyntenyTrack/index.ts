@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,no-plusplus */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, getParent, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import { ignoreElements, tap, filter } from 'rxjs/operators'

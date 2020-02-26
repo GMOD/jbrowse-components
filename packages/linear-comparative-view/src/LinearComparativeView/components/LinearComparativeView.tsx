@@ -1,5 +1,6 @@
+import { Instance } from 'mobx-state-tree'
 import { makeStyles } from '@material-ui/core/styles'
-import { LinearComparativeViewModel } from '../model'
+import { LinearComparativeViewStateModel } from '../model'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
@@ -54,18 +55,16 @@ export default (pluginManager: any) => {
     ({
       model,
     }: {
-      model: LinearComparativeViewModel
+      model: Instance<LinearComparativeViewStateModel>
       comparativeGroup: string
     }) => (
       <>
         {model.tracks.map(track => {
-          return (
-            <track.ReactComponent
-              key={getConf(track, 'trackId')}
-              model={model}
-              track={track}
-            />
-          )
+          const { ReactComponent } = track
+
+          return ReactComponent ? (
+            <ReactComponent key={getConf(track, 'trackId')} model={track} />
+          ) : null
         })}
       </>
     ),
@@ -73,7 +72,7 @@ export default (pluginManager: any) => {
 
   // The comparative is in the middle of the views
   const MiddleComparativeView = observer(
-    ({ model }: { model: LinearComparativeViewModel }) => {
+    ({ model }: { model: Instance<LinearComparativeViewStateModel> }) => {
       const classes = useStyles()
       const { views, controlsWidth } = model
       const { ReactComponent } = pluginManager.getViewType(views[0].type)
@@ -107,7 +106,7 @@ export default (pluginManager: any) => {
     },
   )
   const OverlayComparativeView = observer(
-    ({ model }: { model: LinearComparativeViewModel }) => {
+    ({ model }: { model: Instance<LinearComparativeViewStateModel> }) => {
       const classes = useStyles()
       const { views, controlsWidth } = model
       return (
@@ -147,7 +146,7 @@ export default (pluginManager: any) => {
   )
 
   const LinearComparativeView = observer(
-    ({ model }: { model: LinearComparativeViewModel }) => {
+    ({ model }: { model: Instance<LinearComparativeViewStateModel> }) => {
       return <OverlayComparativeView model={model} />
     },
   )

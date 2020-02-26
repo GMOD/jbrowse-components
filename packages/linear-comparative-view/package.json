@@ -25,6 +25,8 @@
   "dependencies": {
     "abortable-promise-cache": "^1.0.1",
     "clsx": "^1.1.0",
+    "generic-filehandle": "^2.0.1",
+    "mobx-run-in-reactive-context": "^1.0.1",
     "react-sizeme": "^2.6.12"
   }
 }

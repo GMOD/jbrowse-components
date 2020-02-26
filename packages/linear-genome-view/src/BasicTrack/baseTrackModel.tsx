@@ -78,8 +78,16 @@ const BaseTrack = types
       defaultTrackHeight,
     ),
   })
-  .volatile(() => ({
-    ReactComponent: undefined,
+  .volatile(self => ({
+    ReactComponent: undefined as
+      | React.FC<{
+          model: typeof self
+          offsetPx: number
+          bpPerPx: number
+          onHorizontalScroll: Function
+          blockState: Record<string, any>
+        }>
+      | undefined,
     rendererTypeName: undefined,
     ready: false,
     scrollTop: 0,
@@ -91,23 +99,6 @@ const BaseTrack = types
     },
     get ControlsComponent() {
       return TrackControls
-    },
-
-    get RenderingComponent(): React.FC<{
-      model: typeof self
-      offsetPx: number
-      bpPerPx: number
-      onHorizontalScroll: Function
-      blockState: Record<string, any>
-    }> {
-      return (
-        self.ReactComponent ||
-        (() => (
-          <div className="TrackRenderingNotImplemented">
-            Rendering not implemented for {self.type} tracks
-          </div>
-        ))
-      )
     },
 
     /**
@@ -212,6 +203,29 @@ const BaseTrackWithReferences = types
     activateConfigurationUI() {
       const session: any = getSession(self)
       session.editConfiguration(self.configuration)
+    },
+  }))
+  .volatile(self => ({
+    ReactComponent: undefined as
+      | React.FC<{
+          model: unknown
+          offsetPx?: number
+          bpPerPx?: number
+          onHorizontalScroll?: Function
+          blockState?: Record<string, any>
+        }>
+      | undefined,
+  }))
+  .views(self => ({
+    get RenderingComponent() {
+      return (
+        self.ReactComponent ||
+        (() => (
+          <div className="TrackRenderingNotImplemented">
+            Rendering not implemented for {self.type} tracks
+          </div>
+        ))
+      )
     },
   }))
 
