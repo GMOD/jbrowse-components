@@ -1,5 +1,3 @@
-import { Instance } from 'mobx-state-tree'
-import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { clamp } from '@gmod/jbrowse-core/util'
 import { LayoutRecord } from './LinearComparativeView/model'
 import { ReducedLinearGenomeViewModel } from './LinearSyntenyRenderer/LinearSyntenyRenderer'
@@ -39,6 +37,8 @@ export function getTrackPos(
   return accum
 }
 
+// uses bpToPx to get the screen pixel coordinates but ignores some error conditions
+// where bpToPx could return undefined
 export function getPxFromCoordinate(
   view: ReducedLinearGenomeViewModel,
   refName: string,
@@ -50,30 +50,33 @@ export function getPxFromCoordinate(
 }
 
 // get's the yposition of a layout record in a track
+// if track not found returns 0
 export function yPos(
   trackConfigId: string,
   level: number,
-  views: Instance<LinearGenomeViewStateModel>[],
-  tracks: { height: number; scrollTop: number }[], // basic track requirements
+  views: ReducedLinearGenomeViewModel[],
   c: LayoutRecord,
 ) {
-  const min = 0
-  const max = tracks[level].height
-  return (
-    clamp(c[TOP] - tracks[level].scrollTop, min, max) +
-    heightFromSpecificLevel(views, trackConfigId, level)
-  )
+  const view = views[level]
+  const track = view.tracks.find(t => t.trackId === trackConfigId)
+  return track
+    ? clamp(c[TOP] - track.scrollTop, 0, track.height) +
+        heightFromSpecificLevel(views, trackConfigId, level)
+    : 0
 }
 
+// returns the pixel screen position of a refName:coord input or undefined if
+// the input could not be located. uses the view.staticBlocks as a representation
+// of what is on the screen
+//
+// note: does not consider that this refName:coord input could multi-match
 function bpToPx(
   view: ReducedLinearGenomeViewModel,
   { refName, coord }: { refName: string; coord: number },
 ) {
   let offsetBp = 0
-  const displayedRegionsInOrder = view.reversed
-    ? view.displayedRegions.reverse()
-    : view.displayedRegions
-  const index = displayedRegionsInOrder.findIndex(r => {
+
+  const index = view.staticBlocks.findIndex(r => {
     if (refName === r.refName && coord >= r.start && coord <= r.end) {
       offsetBp += view.reversed ? r.end - coord : coord - r.start
       return true
@@ -81,7 +84,7 @@ function bpToPx(
     offsetBp += r.end - r.start
     return false
   })
-  const foundRegion = view.displayedRegions[index]
+  const foundRegion = view.staticBlocks[index]
   if (foundRegion) {
     return {
       index,
