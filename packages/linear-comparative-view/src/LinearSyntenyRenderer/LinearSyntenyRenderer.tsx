@@ -9,26 +9,30 @@ import {
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
-
-import { observer } from 'mobx-react'
-
-import { yPos, getPxFromCoordinate, cheight } from '../util'
 import { LinearSyntenyTrackModel } from '../LinearSyntenyTrack'
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
-type ViewRegions = IRegion[]
 interface LinearSyntenyRenderProps {
   features: Map<string, Feature>
-  layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
   config: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  allViewRegions: ViewRegions[]
-  bpPerPx: number
   height: number
   width: number
   horizontallyFlipped: boolean
   highResolutionScaling: number
+  views: {
+    bpPerPx: number
+    offsetPx: number
+    displayRegions: IRegion[]
+    headerHeight: number
+    scaleBarHeight: number
+    tracks: {
+      scrollTop: number
+      height: number
+      trackId: string
+    }
+  }
 }
 
 interface LinearSyntenyImageData {
@@ -46,12 +50,15 @@ interface LayoutRecord {
 }
 
 export default class LinearSyntenyRenderer extends ComparativeRendererType {
-  async makeImageData(props: LinearSyntenyRenderProps) {
-    const { config, bpPerPx, highResolutionScaling = 1 } = props
+  private ReactComponent: any
 
-    const pxPerBp = Math.min(1 / bpPerPx, 2)
-    const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
-    const w = Math.max(minFeatWidth, pxPerBp)
+  constructor(stuff: any) {
+    super(stuff)
+    this.ReactComponent = stuff.ReactComponent
+  }
+
+  async makeImageData(props: LinearSyntenyRenderProps) {
+    const { highResolutionScaling = 1, views } = props
 
     const width = 0
     const height = 0
@@ -76,7 +83,6 @@ export default class LinearSyntenyRenderer extends ComparativeRendererType {
 
   async render(renderProps: LinearSyntenyRenderProps) {
     const { height, width, imageData } = await this.makeImageData(renderProps)
-    console.log(this.ReactComponent)
     const element = React.createElement(
       this.ReactComponent,
       { ...renderProps, height, width, imageData },
@@ -91,7 +97,7 @@ export default class LinearSyntenyRenderer extends ComparativeRendererType {
   }
 }
 
-function func(model: any, track: any) {
+const func = observer((model: any, track: any) => {
   const { views } = model
   const { subtracks, subtrackViews } = track
 
@@ -182,4 +188,4 @@ function func(model: any, track: any) {
       })}
     </g>
   )
-}
+})

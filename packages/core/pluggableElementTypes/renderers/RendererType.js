@@ -15,7 +15,7 @@ export default class RendererType extends PluggableElementType {
     }
   }
 
-  render(props) {
+  async render(props) {
     return { element: React.createElement(this.ReactComponent, props, null) }
   }
 
