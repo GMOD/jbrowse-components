@@ -94,7 +94,6 @@ export default class extends BoxRendererType {
       highResolutionScaling = 1,
     } = props
 
-    // console.log(config)
     if (!layout) throw new Error(`layout required`)
     if (!layout.addRect) throw new Error('invalid layout object')
     const pxPerBp = Math.min(1 / bpPerPx, 2)
