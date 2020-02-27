@@ -7,7 +7,8 @@
     "scripts": {
         "build": "cross-env NODE_ENV=production lerna run build",
         "lint": "eslint --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
-        "prettier": "prettier --write \"packages/**/*.{js,jsx,ts,tsx,css,scss,md}\"",
+        "runprettier": "prettier --write \"packages/**/*.{css,scss,md}\"",
+        "checkprettier": "prettier --check \"packages/**/*.{css,scss,md}\"",
         "typecheck": "tsc --noEmit",
         "test-ci": "jest --ci --coverage",
         "built-test-ci": "jest --ci packages/integration-tests",
