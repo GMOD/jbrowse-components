@@ -157,7 +157,7 @@ export default class extends BaseAdapter {
    * @param end end position
    */
   private createGeneQuery(ref: string, start: number, end: number) {
-    const geneQuery = `query genesQuery( $filters: FiltersArgument $size: Int $offset: Int $score: String ) { viewer { explore { features: genes { hits(first: $size, offset: $offset, filters: $filters, score: $score) { total edges { node { gene_id id gene_strand synonyms symbol name gene_start gene_end gene_chromosome description canonical_transcript_id external_db_ids { hgnc omim_gene uniprotkb_swissprot entrez_gene } biotype num_cases_with_mutations_in_gene: score is_cancer_gene_census } } } } } } }`
+    const geneQuery = `query genesQuery( $filters: FiltersArgument $size: Int $offset: Int $score: String ) { viewer { explore { features: genes { hits(first: $size, offset: $offset, filters: $filters, score: $score) { total edges { node { gene_id id gene_strand synonyms symbol name gene_start gene_end gene_chromosome description canonical_transcript_id external_db_ids { hgnc omim_gene uniprotkb_swissprot entrez_gene } biotype is_cancer_gene_census } } } } } } }`
     const combinedFilters = this.getFilterQuery(ref, start, end)
     const body = {
       query: geneQuery,
