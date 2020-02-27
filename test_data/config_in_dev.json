@@ -1688,110 +1688,34 @@
     },
     {
       "type": "AlignmentsTrack",
-      "trackId": "volvox_bam combo",
-      "name": "volvox-combo w coverage",
+      "trackId": "volvox_bam_new_config",
+      "name": "volvox-combo new config",
       "assemblyNames": [
         "volvox"
       ],
       "category": [
         "Combo"
       ],
-      "pileupTrackConfig": {
-        "type": "PileupTrack",
-        "trackId": "volvox_bam combo_pileup",
-        "name": "volvox-combo alignments track",
-        "assemblyNames": [
-          "volvox"
-        ],
-        "adapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "test_data/volvox-sorted.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "test_data/volvox-sorted.bam.bai"
-            }
-          }
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "test_data/volvox-sorted.bam"
         },
-        "renderers": {
-          "PileupRenderer": {
-            "type": "PileupRenderer"
-          },
-          "SvgFeatureRenderer": {
-            "type": "SvgFeatureRenderer"
-          },
-          "SNPCoverageRenderer": {
-            "type": "SNPCoverageRenderer"
+        "index": {
+          "location": {
+            "uri": "test_data/volvox-sorted.bam.bai"
           }
         }
       },
-      "snpCoverageTrackConfig": {
-        "type": "SNPCoverageTrack",
-        "trackId": "volvox_bam combo_snpCoverage",
-        "name": "volvox-bam combo snp coverage",
-        "assemblyNames": [
-          "volvox"
-        ],
-        "adapter": {
-          "type": "SNPCoverageAdapter",
-          "subadapter": {
-            "type": "BamAdapter",
-            "bamLocation": {
-              "uri": "test_data/volvox-sorted.bam"
-            },
-            "index": {
-              "location": {
-                "uri": "test_data/volvox-sorted.bam.bai"
-              }
-            }
-          }
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
         },
-        "renderers": {
-          "SNPCoverageRenderer": {
-            "type": "SNPCoverageRenderer"
-          }
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "combo_no_cov",
-      "name": "volvox-combo no coverage info",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Combo"
-      ],
-      "pileupTrackConfig": {
-        "type": "PileupTrack",
-        "trackId": "combo_no_cov_pileup",
-        "name": "volvox-combo alignments track no cov",
-        "assemblyNames": [
-          "volvox"
-        ],
-        "adapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "test_data/volvox-sorted.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "test_data/volvox-sorted.bam.bai"
-            }
-          }
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer"
         },
-        "renderers": {
-          "PileupRenderer": {
-            "type": "PileupRenderer"
-          },
-          "SvgFeatureRenderer": {
-            "type": "SvgFeatureRenderer"
-          },
-          "SNPCoverageRenderer": {
-            "type": "SNPCoverageRenderer"
-          }
+        "SNPCoverageRenderer": {
+          "type": "SNPCoverageRenderer"
         }
       }
     },
@@ -1822,39 +1746,6 @@
         },
         "SvgFeatureRenderer": {
           "type": "SvgFeatureRenderer"
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "volvox_bam_new_config",
-      "name": "volvox-combo new config",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Combo"
-      ],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "test_data/volvox-sorted.bam"
-        },
-        "index": {
-          "location": {
-            "uri": "test_data/volvox-sorted.bam.bai"
-          }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        },
-        "SNPCoverageRenderer": {
-          "type": "SNPCoverageRenderer"
         }
       }
     },
