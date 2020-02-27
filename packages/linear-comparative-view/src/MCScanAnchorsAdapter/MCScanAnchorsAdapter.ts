@@ -45,8 +45,8 @@ export default class extends BaseAdapter {
     this.mcscanAnchorsLocation = openLocation(mcscanAnchorsLocation)
     this.geneNameToRow = {}
     this.rowToGeneName = []
-    this.geneAdapter1 = new NCListAdapter(geneAdapter1)
-    this.geneAdapter2 = new NCListAdapter(geneAdapter2)
+    this.geneAdapter1 = geneAdapter1
+    this.geneAdapter2 = geneAdapter2
   }
 
   async setup(opts?: BaseOptions) {
