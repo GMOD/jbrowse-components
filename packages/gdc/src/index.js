@@ -1,5 +1,11 @@
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
+import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
+import {
+  configSchemaFactory as gdcTrackConfigSchemaFactory,
+  modelFactory as gdcTrackModelFactory,
+} from './GDCTrack'
+
 import {
   AdapterClass as GDCAdapterClass,
   configSchema as GDCAdapterConfigSchema,
@@ -15,5 +21,14 @@ export default class extends Plugin {
           AdapterClass: GDCAdapterClass,
         }),
     )
+
+    pluginManager.addTrackType(() => {
+      const configSchema = gdcTrackConfigSchemaFactory(pluginManager)
+      return new TrackType({
+        name: 'GDCTrack',
+        configSchema,
+        stateModel: gdcTrackModelFactory(configSchema),
+      })
+    })
   }
 }
