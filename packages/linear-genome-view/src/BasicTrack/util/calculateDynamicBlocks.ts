@@ -111,9 +111,9 @@ export default function calculateDynamicBlocks(
             offsetPx: blockData.offsetPx + blockData.widthPx,
           }),
         )
-        displayedRegionLeftPx += interRegionPaddingWidth
       }
     }
+    displayedRegionLeftPx += interRegionPaddingWidth
     displayedRegionLeftPx += (end - start) / bpPerPx
   }
   return blocks
