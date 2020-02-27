@@ -1,8 +1,15 @@
 import { intersection2 } from '@gmod/jbrowse-core/util/range'
 import { assembleLocString } from '@gmod/jbrowse-core/util'
 import { Instance } from 'mobx-state-tree'
-import { ContentBlock, ElidedBlock, BlockSet } from './blockTypes'
+import {
+  BlockSet,
+  ContentBlock,
+  ElidedBlock,
+  InterRegionPaddingBlock,
+} from './blockTypes'
 import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
+
+const interRegionPaddingWidth = 2
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -17,9 +24,6 @@ type LGV = Instance<LinearGenomeViewStateModel>
  * startBp is always less than endBp, but if horizontallyFlipped is true, startBp will be on the
  * right side of the visible region.
  * offsetPx is the number of pixels from the left edge of the view to the left edge of the region
- *
- * do not assume that the regions are contiguous in pixel space, the view might decide to put decorations
- * or padding in between them
  *
  * NOTE: startBp, endBp, and offsetPx may all be fractional!
  *
@@ -43,6 +47,7 @@ export default function calculateDynamicBlocks(
   for (let i = 0; i < displayedRegions.length; i += 1) {
     const parentRegion = displayedRegions[i]
     const { assemblyName, start, end, refName } = parentRegion
+    const parentRegionWidthPx = (end - start) / bpPerPx
     const displayedRegionRightPx =
       displayedRegionLeftPx + (end - start) / bpPerPx
     if (
@@ -89,12 +94,27 @@ export default function calculateDynamicBlocks(
         key: '',
       }
       blockData.key = assembleLocString(blockData)
-      if (widthPx < minimumBlockWidth) {
+      if (parentRegionWidthPx < minimumBlockWidth) {
         blocks.push(new ElidedBlock(blockData))
       } else {
         blocks.push(new ContentBlock(blockData))
       }
+      // insert a inter-region padding block if we are crossing a displayed region
+      if (
+        parentRegionWidthPx >= minimumBlockWidth &&
+        blockData.isRightEndOfDisplayedRegion &&
+        i < displayedRegionsInOrder.length - 1
+      ) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${blockData.key}-rightpad`,
+            widthPx: interRegionPaddingWidth,
+            offsetPx: blockData.offsetPx + blockData.widthPx,
+          }),
+        )
+      }
     }
+    displayedRegionLeftPx += interRegionPaddingWidth
     displayedRegionLeftPx += (end - start) / bpPerPx
   }
   return blocks

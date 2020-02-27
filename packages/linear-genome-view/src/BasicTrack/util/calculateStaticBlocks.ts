@@ -116,10 +116,10 @@ export function calculateBlocksForward(self: LGV, extra = 0) {
             offsetPx: blockData.offsetPx + blockData.widthPx,
           }),
         )
-        regionBpOffset += interRegionPaddingWidth * bpPerPx
       }
     }
 
+    regionBpOffset += interRegionPaddingWidth * bpPerPx
     regionBpOffset += region.end - region.start
   })
 
