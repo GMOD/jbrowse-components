@@ -47,6 +47,7 @@ export default function calculateDynamicBlocks(
   for (let i = 0; i < displayedRegionsInOrder.length; i += 1) {
     const parentRegion = displayedRegionsInOrder[i]
     const { assemblyName, start, end, refName } = parentRegion
+    const parentRegionWidthPx = (end - start) / bpPerPx
     const displayedRegionRightPx =
       displayedRegionLeftPx + (end - start) / bpPerPx
     if (
@@ -93,14 +94,14 @@ export default function calculateDynamicBlocks(
         key: '',
       }
       blockData.key = assembleLocString(blockData)
-      if (widthPx < minimumBlockWidth) {
+      if (parentRegionWidthPx < minimumBlockWidth) {
         blocks.push(new ElidedBlock(blockData))
       } else {
         blocks.push(new ContentBlock(blockData))
       }
       // insert a inter-region padding block if we are crossing a displayed region
       if (
-        widthPx >= minimumBlockWidth &&
+        parentRegionWidthPx >= minimumBlockWidth &&
         blockData.isRightEndOfDisplayedRegion &&
         i < displayedRegionsInOrder.length - 1
       ) {
