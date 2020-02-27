@@ -2,7 +2,7 @@
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { GenericFilehandle } from 'generic-filehandle'
-import { toArray } from 'rxjs/operators'
+import { tap, toArray } from 'rxjs/operators'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -87,15 +87,21 @@ export default class extends BaseAdapter {
       let feats
       const index = this.assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
-        feats = this.geneAdapters[index].getFeatures(region, {})
-        const geneFeatures = await feats.pipe(toArray()).toPromise()
-        geneFeatures.forEach(f => {
-          ;(this.geneNameToRows[f.get('name')] || []).forEach(row => {
-            observer.next(
-              new SimpleFeature({ data: { ...f.toJSON(), syntenyId: row } }),
-            )
-          })
-        })
+        const features = this.geneAdapters[index].getFeatures(region, {})
+        await features
+          .pipe(
+            tap(feature => {
+              const rows = this.geneNameToRows[feature.get('name')] || []
+              rows.forEach(row => {
+                observer.next(
+                  new SimpleFeature({
+                    data: { ...feature.toJSON(), syntenyId: row },
+                  }),
+                )
+              })
+            }),
+          )
+          .toPromise()
       }
 
       observer.complete()
