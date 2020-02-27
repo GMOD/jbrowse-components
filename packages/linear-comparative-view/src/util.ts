@@ -51,18 +51,20 @@ export function getPxFromCoordinate(
 
 // get's the yposition of a layout record in a track
 // if track not found returns 0
-export function yPos(
+export function overlayYPos(
   trackConfigId: string,
   level: number,
   views: ReducedLinearGenomeViewModel[],
   c: LayoutRecord,
+  cond: boolean,
 ) {
   const view = views[level]
   const track = view.tracks.find(t => t.trackId === trackConfigId)
-  return track
+  const ypos = track
     ? clamp(c[TOP] - track.scrollTop, 0, track.height) +
-        heightFromSpecificLevel(views, trackConfigId, level)
+      heightFromSpecificLevel(views, trackConfigId, level)
     : 0
+  return ypos + (cond ? cheight(c) : 0)
 }
 
 // returns the pixel screen position of a refName:coord input or undefined if
@@ -92,4 +94,8 @@ function bpToPx(
     }
   }
   return undefined
+}
+
+export function interstitialYPos(cond: boolean, height: number) {
+  return cond ? 0 : height
 }

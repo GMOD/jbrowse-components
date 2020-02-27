@@ -1,4 +1,4 @@
-/* eslint-disable  no-nested-ternary, no-continue */
+/* eslint-disable  no-continue */
 import ComparativeRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
@@ -7,7 +7,7 @@ import {
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
-import { yPos, getPxFromCoordinate, cheight } from '../util'
+import { overlayYPos, interstitialYPos, getPxFromCoordinate } from '../util'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
@@ -64,14 +64,19 @@ interface LayoutRecord {
 }
 
 type LayoutTuple = [number, number, number, number]
+type RC = React.FC<{
+  [key: string]: unknown
+  width: number
+  height: number
+  imageData: unknown
+}>
 
 export default class LinearSyntenyRenderer extends ComparativeRendererType {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private ReactComponent: React.FC<any>
+  private ReactComponent: RC
 
-  constructor(stuff: any) {
-    super(stuff)
-    this.ReactComponent = stuff.ReactComponent
+  constructor(args: { ReactComponent: RC }) {
+    super(args)
+    this.ReactComponent = args.ReactComponent
   }
 
   async makeImageData(props: LinearSyntenyRenderProps) {
@@ -89,9 +94,7 @@ export default class LinearSyntenyRenderer extends ComparativeRendererType {
       height * highResolutionScaling,
     )
     const ctx = canvas.getContext('2d')
-    // const ctx = canvas.getContext('2d')
-    // ctx.scale(highResolutionScaling, highResolutionScaling)
-    // ctx.font = 'bold 10px Courier New,monospace'
+    ctx.scale(highResolutionScaling, highResolutionScaling)
     const showIntraviewLinks = false
     const middle = false
     const hideTiny = false
@@ -118,10 +121,10 @@ export default class LinearSyntenyRenderer extends ComparativeRendererType {
         if (!showIntraviewLinks && level1 === level2) {
           return
         }
-        const l1 = f1.get('end') - f1.get('start')
-        const l2 = f2.get('end') - f2.get('start')
+        const length1 = f1.get('end') - f1.get('start')
+        const length2 = f2.get('end') - f2.get('start')
 
-        if (l1 < v1.bpPerPx || l2 < v2.bpPerPx) {
+        if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
           if (hideTiny) {
             continue
           }
@@ -139,17 +142,12 @@ export default class LinearSyntenyRenderer extends ComparativeRendererType {
         const x22 = getPxFromCoordinate(v2, ref2, c2[RIGHT])
 
         const y1 = middle
-          ? level1 < level2
-            ? 0
-            : 150
-          : yPos(trackIds[0], level1, views, c1) +
-            (level1 < level2 ? cheight(c1) : 0)
+          ? interstitialYPos(level1 < level2, height)
+          : overlayYPos(trackIds[0], level1, views, c1, level1 < level2)
         const y2 = middle
-          ? level2 < level1
-            ? 0
-            : 150
-          : yPos(trackIds[1], level2, views, c2) +
-            (level2 < level1 ? cheight(c2) : 0)
+          ? interstitialYPos(level2 < level1, height)
+          : overlayYPos(trackIds[1], level2, views, c2, level2 < level1)
+
         ctx.fillStyle = 'rgba(255,100,100,0.3)'
         ctx.strokeStyle = 'rgba(50,50,50,0.1)'
 
@@ -166,18 +164,20 @@ export default class LinearSyntenyRenderer extends ComparativeRendererType {
     const imageData = await createImageBitmap(canvas)
     return {
       imageData,
-      height: 0,
-      width: 0,
+      height,
+      width,
     }
   }
 
   async render(renderProps: LinearSyntenyRenderProps) {
     const { height, width, imageData } = await this.makeImageData(renderProps)
+
     const element = React.createElement(
       this.ReactComponent,
       { ...renderProps, height, width, imageData },
       null,
-    ) as any
+    ) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+
     return {
       element,
       imageData,

@@ -6,7 +6,8 @@ import { toArray } from 'rxjs/operators'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-// eslint-disable import/no-extraneous-dependencies
+
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { AdapterClass as NCListAdapter } from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
 
 type RowToGeneNames = {

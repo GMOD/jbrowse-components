@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { types, getParent, addDisposer, Instance } from 'mobx-state-tree'
+import { types, getParent, addDisposer } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import { ignoreElements, tap, filter } from 'rxjs/operators'
 import AbortablePromiseCache from 'abortable-promise-cache'
@@ -145,7 +145,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       }) {
         const { block, signal, dataAdapter } = param
         const features = new Map<string, Feature>()
-        const featureObservable = self.blockFeatureCache.get(block.key, {
+        const featureObservable = await self.blockFeatureCache.get(block.key, {
           dataAdapter,
           block,
         })
@@ -185,12 +185,10 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
               const parentView = getParent(self, 2) as any
 
               parentView.views.forEach((subview: any, index: number) => {
-                subview.staticBlocks
+                subview.staticBlocks.blocks
                   .filter((block: Block) => 'refName' in block)
                   .forEach((block: Block) => {
-                    if (!self.blockFeatureCache.has(block.key)) {
-                      this.fillBlockFeatures({ block, dataAdapter, signal })
-                    }
+                    this.fillBlockFeatures({ block, dataAdapter, signal })
                   })
               })
             },
@@ -213,39 +211,4 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
     }))
 }
 
-export type LinearSyntenyTrack = ReturnType<typeof stateModelFactory>
-export type LinearSyntenyTrackModel = Instance<LinearSyntenyTrack>
-
-// ).map(f =>
-//   f
-//     .flat()
-//     .sort(
-//       (a: Feature, b: Feature) =>
-//         a.get('syntenyId') - b.get('syntenyId'),
-//     ),
-// )
-
-// function getMatches(l1: Feature[], l2: Feature[]) {
-//   let i = 0
-//   let j = 0
-//   const res = []
-//   while (i < l1.length && j < l2.length) {
-//     const x = l1[i]
-//     const y = l2[j]
-//     const a = x.get('syntenyId')
-//     const b = y.get('syntenyId')
-//     if (a == b) {
-//       res.push([x, y])
-//       i++
-//       j++
-//     } else if (a < b) {
-//       i++
-//     } else {
-//       j++
-//     }
-//   }
-//   return res
-// }
-// console.log(getMatches(blockFeats[0], blockFeats[1]))
-
-// console.log(blockFeats)
+export type LinearSyntenyTrackStateModel = ReturnType<typeof stateModelFactory>

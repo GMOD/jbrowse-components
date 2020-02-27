@@ -1,16 +1,19 @@
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
-import LinearSyntenyConnections from './LinearSyntenyConnections'
+
+function LinearSyntenyTrackRendering() {
+  return null
+}
 
 function LinearSyntenyTrack(props) {
-  const { track, children } = props
+  const { model, children } = props
   return (
     <>
-      {track.trackMessageComponent ? (
-        <track.trackMessageComponent model={track} />
+      {model.modelMessageComponent ? (
+        <model.modelMessageComponent model={model} />
       ) : (
-        <LinearSyntenyConnections {...props} />
+        <LinearSyntenyTrackRendering {...props} />
       )}
       {children}
     </>
@@ -18,7 +21,6 @@ function LinearSyntenyTrack(props) {
 }
 LinearSyntenyTrack.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
-  track: MobxPropTypes.objectOrObservableObject.isRequired,
   children: PropTypes.node,
 }
 
