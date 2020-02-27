@@ -23,7 +23,7 @@ class CustomAdapter extends BaseAdapter {
               end: 100,
               refName: 'peach_chr1',
               syntenyId: 1,
-              name: 'GSVIVT01012255001',
+              name: 'GSVIVT01012253001',
             },
           }),
         )
@@ -37,7 +37,7 @@ class CustomAdapter extends BaseAdapter {
               end: 100,
               refName: 'grape_chr1',
               syntenyId: 1,
-              name: 'Prupe.1G290900.1',
+              name: 'Prupe.1G290800.1',
             },
           }),
         )
@@ -52,8 +52,8 @@ test('adapter can fetch features from volvox.bam', async () => {
     mcscanAnchorsLocation: {
       localPath: require.resolve('./test_data/grape.peach.anchors'),
     },
-    geneAdapter1: new CustomAdapter(),
-    geneAdapter2: new CustomAdapter(),
+    geneAdapters: [new CustomAdapter(), new CustomAdapter()],
+    assemblyNames: ['grape', 'peach'],
   })
 
   const features1 = await adapter.getFeatures({
@@ -72,8 +72,9 @@ test('adapter can fetch features from volvox.bam', async () => {
 
   const fa1 = await features1.pipe(toArray()).toPromise()
   const fa2 = await features2.pipe(toArray()).toPromise()
-  expect(fa1.length).toBeGreaterThan(0)
-  expect(fa2.length).toBeGreaterThan(0)
+  expect(fa1.length).toBe(2)
+  expect(fa2.length).toBe(1)
   expect(fa1[0].get('refName')).toBe('peach_chr1')
   expect(fa2[0].get('refName')).toBe('grape_chr1')
+  expect(fa1[0].get('syntenyId')).toEqual(fa2[0].get('syntenyId'))
 })

@@ -7,29 +7,26 @@ import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { AdapterClass as NCListAdapter } from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
-
 type RowToGeneNames = {
   name1: string
   name2: string
   score: number
 }[]
 
-interface GeneNameToRow {
-  [key: string]: number
+interface GeneNameToRows {
+  [key: string]: number[]
 }
 
 export default class extends BaseAdapter {
   private initialized = false
 
-  private geneAdapter1: BaseAdapter
+  private geneAdapters: BaseAdapter[]
 
-  private geneAdapter2: BaseAdapter
+  private assemblyNames: string[]
 
   private mcscanAnchorsLocation: GenericFilehandle
 
-  private geneNameToRow: GeneNameToRow
+  private geneNameToRows: GeneNameToRows
 
   private rowToGeneName: RowToGeneNames
 
@@ -37,16 +34,16 @@ export default class extends BaseAdapter {
 
   public constructor(config: {
     mcscanAnchorsLocation: IFileLocation
-    geneAdapter1: any
-    geneAdapter2: any
+    geneAdapters: any
+    assemblyNames: string[]
   }) {
     super()
-    const { mcscanAnchorsLocation, geneAdapter1, geneAdapter2 } = config
+    const { mcscanAnchorsLocation, geneAdapters, assemblyNames } = config
     this.mcscanAnchorsLocation = openLocation(mcscanAnchorsLocation)
-    this.geneNameToRow = {}
+    this.geneNameToRows = {}
     this.rowToGeneName = []
-    this.geneAdapter1 = geneAdapter1
-    this.geneAdapter2 = geneAdapter2
+    this.geneAdapters = geneAdapters
+    this.assemblyNames = assemblyNames
   }
 
   async setup(opts?: BaseOptions) {
@@ -56,8 +53,14 @@ export default class extends BaseAdapter {
         if (line.length) {
           if (line !== '###') {
             const [name1, name2, score] = line.split('\t')
-            this.geneNameToRow[name1] = index
-            this.geneNameToRow[name2] = index
+            if (this.geneNameToRows[name1] === undefined) {
+              this.geneNameToRows[name1] = []
+            }
+            if (this.geneNameToRows[name2] === undefined) {
+              this.geneNameToRows[name2] = []
+            }
+            this.geneNameToRows[name1].push(index)
+            this.geneNameToRows[name2].push(index)
             this.rowToGeneName[index] = { name1, name2, score: +score }
           }
         }
@@ -82,21 +85,18 @@ export default class extends BaseAdapter {
     return ObservableCreate<Feature>(async observer => {
       await this.setup(opts)
       let feats
-      if (region.assemblyName === 'peach') {
-        feats = this.geneAdapter1.getFeatures(region, {})
-      } else {
-        feats = this.geneAdapter2.getFeatures(region, {})
+      const index = this.assemblyNames.indexOf(region.assemblyName)
+      if (index !== -1) {
+        feats = this.geneAdapters[index].getFeatures(region, {})
+        const geneFeatures = await feats.pipe(toArray()).toPromise()
+        geneFeatures.forEach(f => {
+          ;(this.geneNameToRows[f.get('name')] || []).forEach(row => {
+            observer.next(
+              new SimpleFeature({ data: { ...f.toJSON(), syntenyId: row } }),
+            )
+          })
+        })
       }
-      const geneFeatures = await feats.pipe(toArray()).toPromise()
-      // should do type inference here?
-      geneFeatures.forEach((f: Feature) => {
-        const row = this.geneNameToRow[f.get('name')]
-        if (row !== undefined) {
-          observer.next(
-            new SimpleFeature({ data: { ...f.toJSON(), syntenyId: row } }),
-          )
-        }
-      })
 
       observer.complete()
     })
