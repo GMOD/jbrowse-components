@@ -1,11 +1,13 @@
 ---
-
 name: Feature request
 about: Suggest an idea for this project
 title: ''
 labels: enhancement
 assignees: ''
----**Is your feature request related to a problem? Please describe.**
+---
+
+<!-- prettier-ignore -->
+**Is your feature request related to a problem? Please describe.**
 
 <!--
 Put here a clear and concise description of what the problem is. e.g. I'm always

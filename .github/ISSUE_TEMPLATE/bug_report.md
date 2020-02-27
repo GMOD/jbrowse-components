@@ -1,11 +1,13 @@
 ---
-
 name: Bug report
 about: Create a report to help us improve
 title: ''
 labels: bug
 assignees: ''
----<!-- Please fill out as much of the template as you can. -->
+---
+
+<!-- prettier-ignore -->
+<!-- Please fill out as much of the template as you can. -->
 
 **Describe the bug**
 
