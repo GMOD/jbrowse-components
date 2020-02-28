@@ -20,6 +20,11 @@ import MenuItem from '@material-ui/core/MenuItem'
 import FormHelperText from '@material-ui/core/FormHelperText'
 import FormControl from '@material-ui/core/FormControl'
 import Select from '@material-ui/core/Select'
+import Input from '@material-ui/core/Input';
+import Checkbox from '@material-ui/core/Checkbox';
+import ListItemText from '@material-ui/core/ListItemText';
+
+const appliedFilters = []
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -69,8 +74,101 @@ const TrackType = observer(props => {
   )
 })
 
+const Filter = observer(props => {
+  const classes = useStyles()
+  const { allFilters } = props
+  const [categoryValue, setCategoryValue] = React.useState(allFilters[0])
+  const [filterValue, setFilterValue] = React.useState([])
+
+  const handleChangeFilter = event => {
+    setFilterValue(event.target.value)
+    console.log(event.target.value)
+    props.adapter.filters.set(
+      JSON.stringify({
+        op: 'in',
+        content: {
+          field: `cases.${categoryValue.name}`,
+          value: event.target.value,
+        },
+      }),
+    )
+  }
+
+  const handleChangeCategory = event => {
+    setCategoryValue(event.target.value)
+    setFilterValue([])
+  }
+
+  return (
+    <>
+      <Card>
+        <CardContent>
+          <FormControl className={classes.formControl}>
+            <InputLabel id="category-select-label">Category</InputLabel>
+            <Select
+              labelId="category-select-label"
+              id="category-select"
+              value={categoryValue}
+              onChange={handleChangeCategory}
+            >
+              {allFilters.map(filterOption => {
+                return (
+                  <MenuItem value={filterOption} key={filterOption.name}>
+                    {filterOption.name}
+                  </MenuItem>
+                )
+              })}
+            </Select>
+          </FormControl>
+          <FormControl className={classes.formControl}>
+            <InputLabel id="demo-mutiple-checkbox-label">Filter</InputLabel>
+            <Select
+              labelId="demo-mutiple-checkbox-label"
+              id="demo-mutiple-checkbox"
+              multiple
+              value={filterValue}
+              onChange={handleChangeFilter}
+              input={<Input />}
+              renderValue={selected => selected.join(', ')}
+            >
+              {categoryValue.values.map(name => (
+                <MenuItem key={name} value={name}>
+                  <Checkbox checked={filterValue.indexOf(name) > -1} />
+                  <ListItemText primary={name} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormHelperText>{categoryValue.description}</FormHelperText>
+        </CardContent>
+      </Card>
+    </>
+  )
+})
+
 const GDCQueryBuilder = observer(({ schema }) => {
-  return <>{<TrackType {...schema} />}</>
+  const allFilters = [
+    {
+      name: 'primary_site',
+      description: 'The primary site of the cancer',
+      values: ['brain', 'breast', 'kidney', 'ovary'],
+    },
+    {
+      name: 'project.project_id',
+      description: 'The project the case belongs to',
+      values: ['TCGA-BRCA', 'TCGA-GBM', 'TCGA-OV'],
+    },
+  ]
+
+  return (
+    <>
+      {<TrackType {...schema} />}
+      <Typography variant="h6" gutterBottom>
+        Case Filters
+      </Typography>
+      {<Filter {...schema} {...{ allFilters }} />}
+    </>
+  )
 })
 
 function ConfigurationEditor({ model }) {
