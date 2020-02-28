@@ -1,10 +1,11 @@
 import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import React from 'react'
 import { render } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 // @ts-ignore
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-import LinearSyntenyRenderer from './LinearSyntenyRenderer'
+import LinearSyntenyRenderer, { LayoutTuple } from './LinearSyntenyRenderer'
 import configSchema from './configSchema'
 
 const fs = require('fs')
@@ -39,7 +40,9 @@ test('test rendering a simple synteny from fake data', async () => {
       {
         offsetPx: 0,
         bpPerPx: 1,
-        staticBlocks: [],
+        staticBlocks: [
+          { assemblyName: 'hg38', refName: 'chr1', start: 0, end: 999 },
+        ],
         dynamicBlocks: [],
         height: 100,
         reversed: false,
@@ -48,9 +51,11 @@ test('test rendering a simple synteny from fake data', async () => {
         scaleBarHeight: 32,
       },
       {
-        offsetPx: 100,
+        offsetPx: 0,
         bpPerPx: 1,
-        staticBlocks: [],
+        staticBlocks: [
+          { assemblyName: 'mm10', refName: 'chr1', start: 0, end: 999 },
+        ],
         dynamicBlocks: [],
         height: 100,
         tracks: [],
@@ -59,7 +64,28 @@ test('test rendering a simple synteny from fake data', async () => {
         scaleBarHeight: 32,
       },
     ],
-    layoutMatches: [],
+    layoutMatches: [
+      [
+        {
+          level: 0,
+          refName: 'chr1',
+          layout: [0, 0, 100, 10] as LayoutTuple,
+          feature: new SimpleFeature({
+            id: 1,
+            data: { start: 100, end: 200, refName: 'chr1' },
+          }),
+        },
+        {
+          level: 1,
+          refName: 'chr1',
+          layout: [0, 0, 100, 10] as LayoutTuple,
+          feature: new SimpleFeature({
+            id: 2,
+            data: { start: 100, end: 200, refName: 'chr1' },
+          }),
+        },
+      ],
+    ],
   })
   const r = await result.imageData
 

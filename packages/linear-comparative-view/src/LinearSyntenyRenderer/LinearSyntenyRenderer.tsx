@@ -62,7 +62,7 @@ interface LayoutRecord {
   heightPx: number
 }
 
-type LayoutTuple = [number, number, number, number]
+export type LayoutTuple = [number, number, number, number]
 type RC = React.FC<{
   [key: string]: unknown
   width: number
