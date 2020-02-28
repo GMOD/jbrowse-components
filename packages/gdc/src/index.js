@@ -1,6 +1,14 @@
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
+import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
+import { lazy } from 'react'
+import {
+  configSchema as ConfigurationEditorConfigSchema,
+  HeadingComponent as ConfigurationEditorHeadingComponent,
+  ReactComponent as ConfigurationEditorReactComponent,
+  stateModelFactory as ConfigurationEditorStateModelFactory,
+} from './GDCFilterConfigurationEditorDrawerWidget'
 import {
   configSchemaFactory as gdcTrackConfigSchemaFactory,
   modelFactory as gdcTrackModelFactory,
@@ -28,6 +36,16 @@ export default class extends Plugin {
         name: 'GDCTrack',
         configSchema,
         stateModel: gdcTrackModelFactory(configSchema),
+      })
+    })
+
+    pluginManager.addDrawerWidgetType(() => {
+      return new DrawerWidgetType({
+        name: 'GDCFilterConfigurationEditorDrawerWidget',
+        HeadingComponent: ConfigurationEditorHeadingComponent,
+        configSchema: ConfigurationEditorConfigSchema,
+        stateModel: ConfigurationEditorStateModelFactory(pluginManager),
+        LazyReactComponent: lazy(() => ConfigurationEditorReactComponent),
       })
     })
   }

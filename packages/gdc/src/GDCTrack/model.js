@@ -23,6 +23,19 @@ export default function stateModelFactory(configSchema) {
       }),
     )
 
+    .actions(self => ({
+      openFilterConfig() {
+        console.log('Opening filter config')
+        const session = getSession(self)
+        const editor = session.addDrawerWidget(
+          'GDCFilterConfigurationEditorDrawerWidget',
+          'configEditor',
+          { target: self.configuration },
+        )
+        session.showDrawerWidget(editor)
+      },
+    }))
+
     .views(self => ({
       get ControlsComponent() {
         return TrackControls
