@@ -34,7 +34,6 @@ interface LayoutMatch {
   refName: string
 }
 interface LinearSyntenyRenderProps {
-  features: Map<string, Feature>
   config: any // eslint-disable-line @typescript-eslint/no-explicit-any
   height: number
   width: number
@@ -72,20 +71,13 @@ type RC = React.FC<{
 }>
 
 export default class LinearSyntenyRenderer extends ComparativeRendererType {
-  private ReactComponent: RC
-
-  constructor(args: { ReactComponent: RC }) {
-    super(args)
-    this.ReactComponent = args.ReactComponent
-  }
-
   async makeImageData(props: LinearSyntenyRenderProps) {
     const {
       highResolutionScaling = 1,
       width,
       height,
       views,
-      layoutMatches,
+      layoutMatches = [],
       trackIds,
     } = props
 
@@ -95,6 +87,7 @@ export default class LinearSyntenyRenderer extends ComparativeRendererType {
     )
     const ctx = canvas.getContext('2d')
     ctx.scale(highResolutionScaling, highResolutionScaling)
+    ctx.fillStyle = 'red'
     const showIntraviewLinks = false
     const middle = false
     const hideTiny = false
@@ -173,6 +166,7 @@ export default class LinearSyntenyRenderer extends ComparativeRendererType {
     const { height, width, imageData } = await this.makeImageData(renderProps)
 
     const element = React.createElement(
+      // @ts-ignore
       this.ReactComponent,
       { ...renderProps, height, width, imageData },
       null,
