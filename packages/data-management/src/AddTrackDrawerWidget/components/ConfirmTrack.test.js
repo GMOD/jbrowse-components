@@ -4,6 +4,7 @@ import { guessAdapter } from '@gmod/jbrowse-core/util/tracks'
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import ConfirmTrack from './ConfirmTrack'
 
+// note work on this tomorrow, fix confirm track to work with alignments tracks
 describe('<ConfirmTrack />', () => {
   let session
 
@@ -21,7 +22,7 @@ describe('<ConfirmTrack />', () => {
         trackData={{ uri: 'test.bam' }}
         trackName=""
         setTrackName={mockFunction}
-        trackType="PileupTrack"
+        trackType="AlignmentsTrack"
         setTrackType={mockFunction}
         trackAdapter={{
           type: 'BamAdapter',
@@ -44,7 +45,7 @@ describe('<ConfirmTrack />', () => {
         trackData={{ uri: 'test.bam' }}
         trackName=""
         setTrackName={mockFunction}
-        trackType="PileupTrack"
+        trackType="AlignmentsTrack"
         setTrackType={mockFunction}
         trackAdapter={{
           type: 'BamAdapter',
@@ -68,7 +69,7 @@ describe('<ConfirmTrack />', () => {
         trackData={{ localPath: 'test.bam' }}
         trackName=""
         setTrackName={mockFunction}
-        trackType="PileupTrack"
+        trackType="AlignmentsTrack"
         setTrackType={mockFunction}
         trackAdapter={{
           type: 'BamAdapter',

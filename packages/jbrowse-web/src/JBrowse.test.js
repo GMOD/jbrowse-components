@@ -391,7 +391,32 @@ describe('test configuration editor', () => {
     })
   }, 10000)
 })
+describe('alignments track', () => {
+  it('opens an alignments track', async () => {
+    const state = JBrowseRootModel.create({ jbrowse: config })
+    const { getByTestId: byId, getAllByTestId, getByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    await waitForElement(() => getByText('Help'))
+    state.session.views[0].setNewView(5, 100)
+    fireEvent.click(
+      await waitForElement(() => byId('htsTrackEntry-volvox_alignments')),
+    )
+    const canvas = await waitForElement(() =>
+      getAllByTestId('prerendered_canvas'),
+    )
 
+    const img = canvas[0].toDataURL()
+    const data = img.replace(/^data:image\/\w+;base64,/, '')
+    const buf = Buffer.from(data, 'base64')
+    // this is needed to do a fuzzy image comparison because
+    // the travis-ci was 2 pixels different for some reason, see PR #710
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
+  })
+})
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
@@ -514,76 +539,4 @@ test('404 sequence file', async () => {
   await findByText(/HTTP 404/)
   expect(spy).toHaveBeenCalled()
   spy.mockRestore()
-})
-
-describe('snpcoverage adapter tests', () => {
-  it('test that SNPCoverage with CRAM displays (uses contigA instead of ctgA)', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { getByTestId: byId, getAllByTestId, getByText } = render(
-      <JBrowse initialState={state} />,
-    )
-    await waitForElement(() => getByText('Help'))
-    state.session.views[0].setNewView(5, 100)
-    fireEvent.click(
-      await waitForElement(() => byId('htsTrackEntry-volvox_cram_SNP')),
-    )
-    const canvas = await waitForElement(() =>
-      getAllByTestId('prerendered_canvas'),
-    )
-
-    const img = canvas[0].toDataURL()
-    const data = img.replace(/^data:image\/\w+;base64,/, '')
-    const buf = Buffer.from(data, 'base64')
-    // this is needed to do a fuzzy image comparison because
-    // the travis-ci was 2 pixels different for some reason, see PR #710
-    expect(buf).toMatchImageSnapshot({
-      failureThreshold: 0.5,
-      failureThresholdType: 'percent',
-    })
-  })
-  it('test that SNPCoverage with BAM displays (uses contigA instead of ctgA)', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { getByTestId: byId, getAllByTestId, getByText } = render(
-      <JBrowse initialState={state} />,
-    )
-    await waitForElement(() => getByText('Help'))
-    state.session.views[0].setNewView(5, 100)
-    fireEvent.click(
-      await waitForElement(() => byId('htsTrackEntry-volvox_bam_altname_SNP')),
-    )
-    const canvas = await waitForElement(() =>
-      getAllByTestId('prerendered_canvas'),
-    )
-
-    const img = canvas[0].toDataURL()
-    const data = img.replace(/^data:image\/\w+;base64,/, '')
-    const buf = Buffer.from(data, 'base64')
-    // this is needed to do a fuzzy image comparison because
-    // the travis-ci was 2 pixels different for some reason, see PR #710
-    expect(buf).toMatchImageSnapshot({
-      failureThreshold: 0.5,
-      failureThresholdType: 'percent',
-    })
-  })
-  it('SNPCoverage test that BAI with 404 file displays error', async () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { getByTestId: byId, getAllByText } = render(
-      <JBrowse initialState={state} />,
-    )
-    fireEvent.click(
-      await waitForElement(() =>
-        byId('htsTrackEntry-volvox_alignments_bai_nonexist_SNP'),
-      ),
-    )
-    await expect(
-      waitForElement(() =>
-        getAllByText(
-          'HTTP 404 fetching test_data/volvox-sorted.bam.bai.nonexist',
-        ),
-      ),
-    ).resolves.toBeTruthy()
-    expect(spy).toHaveBeenCalled()
-    spy.mockRestore()
-  })
 })

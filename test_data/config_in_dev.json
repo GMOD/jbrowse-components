@@ -181,7 +181,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "nanopore_targetted_alignments_0.1",
       "name": "Nanopore amplicon alignments 0.1x (chr7:55,000,000-56,000,000)",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
@@ -202,31 +202,7 @@
       }
     },
     {
-      "type": "SNPCoverageTrack",
-      "trackId": "nanopore_targetted_snpcoverage_0.1",
-      "name": "Nanopore amplicon SNPCoverage 0.1x (chr7:55,000,000-56,000,000)",
-      "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "CramAdapter",
-          "cramLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram"
-          },
-          "craiLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram.crai"
-          }
-        }
-      }
-    },
-    {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "nanopore_targetted_alignments",
       "name": "Nanopore amplicon (chr7:55,000,000-56,000,000) [causes out-of-memory]",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
@@ -247,31 +223,7 @@
       }
     },
     {
-      "type": "SNPCoverageTrack",
-      "trackId": "nanopore_targetted_snpcoverage",
-      "name": "Nanopore amplicon SNPCoverage (chr7:55,000,000-56,000,000) [causes out-of-memory]",
-      "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "CramAdapter",
-          "cramLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.cram"
-          },
-          "craiLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.cram.crai"
-          }
-        }
-      }
-    },
-    {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "deep_hg19_bam",
       "name": "Deep sequence chr17:41195312..41276764",
       "assemblyNames": [
@@ -293,32 +245,7 @@
       }
     },
     {
-      "type": "SNPCoverageTrack",
-      "trackId": "deep_hg19_bam_snpcoverage",
-      "name": "Deep sequence chr17:41195312..41276764 (SNPCoverage)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam.bai"
-            }
-          }
-        }
-      }
-    },
-    {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "amplicon_alignments",
       "name": "Amplicon alignments (chr3:178,916,000-178,918,000)",
       "description": "Source https://github.com/umich-brcf-bioinf/Connor/tree/master/examples",
@@ -341,33 +268,7 @@
       }
     },
     {
-      "type": "SNPCoverageTrack",
-      "trackId": "amplicon_snpcoverage",
-      "name": "Amplicon SNPCoverage (chr3:178,916,000-178,918,000)",
-      "description": "Source https://github.com/umich-brcf-bioinf/Connor/tree/master/examples",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam.bai"
-            }
-          }
-        }
-      }
-    },
-    {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "ngmlr",
       "name": "SKBR3 pacbio (NGMLR)",
       "assemblyNames": [
@@ -389,7 +290,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "ngmlr_splitters",
       "name": "SKBR3 pacbio (NGMLR) splitters only",
       "assemblyNames": [
@@ -419,32 +320,7 @@
       }
     },
     {
-      "type": "SNPCoverageTrack",
-      "trackId": "ngmlr_splitters_snp",
-      "name": "SKBR3 pacbio (NGMLR) splitters only (SNPCoverage)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "SKBR3"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.splitters.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.splitters.bam.bai"
-            }
-          }
-        }
-      }
-    },
-    {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "ngmlr_downsample",
       "name": "SKBR3 pacbio (NGMLR) 0.3 downsample",
       "assemblyNames": [
@@ -502,7 +378,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "illumina_hg002",
       "name": "HG002 Illumina hs37d5.2x250",
       "category": [
@@ -532,7 +408,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "pacbio_hg002",
       "name": "HG002 Pacbio hs37d5.11kb",
       "category": [
@@ -562,7 +438,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "na12878_exome",
       "name": "NA12878 Exome",
       "assemblyNames": [
@@ -592,7 +468,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "chm1_pacbio",
       "name": "CHM1 pacbio",
       "assemblyNames": [
@@ -622,7 +498,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "hg00096_highcov",
       "name": "HG00096 Illumina high coverage",
       "assemblyNames": [
@@ -680,7 +556,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "nanopore_ultralong_cram",
       "name": "HG002 Nanopore ultralong (CRAM)",
       "assemblyNames": [
@@ -708,7 +584,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "nanopore_ultralong_snpcoverage",
       "name": "HG002 Nanopore ultralong (BAM SNPCoverage)",
       "assemblyNames": [
@@ -733,7 +609,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "nanopore_ultralong",
       "name": "HG002 Nanopore ultralong (BAM)",
       "assemblyNames": [
@@ -763,7 +639,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "rJxR1X2T0yu",
       "name": "HG00096 Illumina low coverage",
       "assemblyNames": [
@@ -1094,7 +970,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "hg002_cram",
       "name": "HG002 CRAM nanopore+whatshap",
       "assemblyNames": [
@@ -1114,7 +990,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "hg002_cram_snpcoverage",
       "name": "HG002 CRAM nanopore+whatshap",
       "assemblyNames": [
@@ -1137,7 +1013,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "hg002_bai",
       "name": "HG002 BAM nanopore+whatshap",
       "assemblyNames": [
@@ -1154,31 +1030,6 @@
         "index": {
           "location": {
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam.bai"
-          }
-        }
-      }
-    },
-    {
-      "type": "SNPCoverageTrack",
-      "trackId": "hg002_bai_whatshap_snpcoverage",
-      "name": "HG002 BAM nanopore+whatshap (SNPCoverage)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam.bai"
-            }
           }
         }
       }
@@ -1229,7 +1080,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "skbr3_pacbio",
       "name": "SKBR3 pacbio",
       "assemblyNames": [
@@ -1248,7 +1099,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "skbr3_10x",
       "name": "SKBR3 10x",
       "assemblyNames": [
@@ -1270,7 +1121,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "skbr3_nanopore",
       "name": "SKBR3 nanopore",
       "assemblyNames": [
@@ -1399,7 +1250,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox-long-reads-sv-cram",
       "name": "volvox-long reads with SV (cram)",
       "assemblyNames": [
@@ -1427,7 +1278,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox-long-reads-cram",
       "name": "volvox-long reads (cram)",
       "assemblyNames": [
@@ -1455,7 +1306,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox-long-reads-bam",
       "name": "volvox-long reads",
       "assemblyNames": [
@@ -1485,7 +1336,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox_samspec_cram",
       "name": "volvox-samspec (cram)",
       "assemblyNames": [
@@ -1513,7 +1364,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox_samspec",
       "name": "volvox-samspec",
       "assemblyNames": [
@@ -1543,7 +1394,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox_sv_cram",
       "name": "volvox-sv (cram)",
       "assemblyNames": [
@@ -1571,7 +1422,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox_sv",
       "name": "volvox-sv",
       "assemblyNames": [
@@ -1626,7 +1477,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox_cram",
       "name": "volvox-sorted red/blue (CRAM)",
       "assemblyNames": [
@@ -1654,7 +1505,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox_bam",
       "name": "volvox-sorted red/blue",
       "assemblyNames": [
@@ -2109,54 +1960,6 @@
         },
         "LinePlotRenderer": {
           "type": "LinePlotRenderer"
-        }
-      }
-    },
-    {
-      "type": "SNPCoverageTrack",
-      "trackId": "volvox-short-reads-snp-bam",
-      "name": "volvox-SNP (bam)",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "test_data/volvox-sorted.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "test_data/volvox-sorted.bam.bai"
-            }
-          }
-        }
-      }
-    },
-    {
-      "type": "SNPCoverageTrack",
-      "trackId": "volvox-short-reads-snp-cram",
-      "name": "volvox-SNP (cram)",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "CramAdapter",
-          "cramLocation": {
-            "uri": "test_data/volvox-sorted.cram"
-          },
-          "craiLocation": {
-            "uri": "test_data/volvox-sorted.cram.crai"
-          }
         }
       }
     }

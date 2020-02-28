@@ -73,7 +73,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox_cram_alignments",
       "name": "volvox-sorted.cram (contigA)",
       "assemblyNames": [
@@ -98,7 +98,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox_alignments",
       "name": "volvox-sorted red/blue (ctgA)",
       "assemblyNames": [
@@ -126,7 +126,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox_bam_altname",
       "name": "volvox-sorted red/blue (contigA)",
       "assemblyNames": [
@@ -154,7 +154,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox_bam_small_max_height",
       "name": "volvox-sorted red/blue (small max height)",
       "assemblyNames": [
@@ -229,7 +229,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox_alignments_bam_nonexist",
       "name": "volvox-sorted red/blue (bam nonexist 404)",
       "assemblyNames": [
@@ -248,7 +248,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox_alignments_bai_nonexist",
       "name": "volvox-sorted red/blue (bai nonexist 404)",
       "assemblyNames": [
@@ -443,114 +443,6 @@
       },
       "renderer": {
         "type": "LollipopRenderer"
-      }
-    },
-    {
-      "type": "SNPCoverageTrack",
-      "trackId": "volvox_cram_SNP",
-      "name": "volvox-sorted.cram (contigA) SNP",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "CramAdapter",
-          "cramLocation": {
-            "uri": "test_data/volvox-sorted-altname.cram"
-          },
-          "craiLocation": {
-            "uri": "test_data/volvox-sorted-altname.cram.crai"
-          }
-        }
-      }
-    },
-    {
-      "type": "SNPCoverageTrack",
-      "trackId": "volvox_SNP",
-      "name": "volvox-sorted red/blue (ctgA) SNP",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "test_data/volvox-sorted.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "test_data/volvox-sorted.bam.bai"
-            }
-          }
-        }
-      }
-    },
-    {
-      "type": "SNPCoverageTrack",
-      "trackId": "volvox_bam_altname_SNP",
-      "name": "volvox-sorted red/blue (contigA) SNP",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "test_data/volvox-sorted-altname.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "test_data/volvox-sorted-altname.bam.bai"
-            }
-          }
-        }
-      }
-    },
-    {
-      "type": "SNPCoverageTrack",
-      "trackId": "volvox_alignments_bam_nonexist_SNP",
-      "name": "volvox-sorted red/blue (bam nonexist 404) SNP",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "test_data/volvox-sorted.bam.nonexist"
-          },
-          "index": {
-            "location": {
-              "uri": "test_data/volvox-sorted.bam.bai"
-            }
-          }
-        }
-      }
-    },
-    {
-      "type": "SNPCoverageTrack",
-      "trackId": "volvox_alignments_bai_nonexist_SNP",
-      "name": "volvox-sorted red/blue (bai nonexist 404) SNP",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "test_data/volvox-sorted.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "test_data/volvox-sorted.bam.bai.nonexist"
-            }
-          }
-        }
       }
     }
   ],

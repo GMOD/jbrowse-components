@@ -284,8 +284,8 @@ export function guessSNPCoverageSubadapter(fileName, protocol) {
 export function guessTrackType(adapterType) {
   return (
     {
-      BamAdapter: 'PileupTrack',
-      CramAdapter: 'PileupTrack',
+      BamAdapter: 'AlignmentsTrack',
+      CramAdapter: 'AlignmentsTrack',
       BgzipFastaAdapter: 'SequenceTrack',
       BigWigAdapter: 'WiggleTrack',
       IndexedFastaAdapter: 'SequenceTrack',
