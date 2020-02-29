@@ -139,10 +139,6 @@ function ConfirmTrack({
               <code>{trackAdapter.type}</code> with subadapter{' '}
               <code>{trackAdapter.subadapter.type}</code>. Please enter a track
               name and, if necessary, update the track type.
-              {/* Using adapter <code>{trackAdapter.type}</code> with subadapter{' '}
-              <code>{trackAdapter.subadapter.type}</code> and guessing track
-              type <code>{trackType}</code>. Please enter a track name and, if
-              necessary, update the track type. */}
             </Typography>
           ))
         : (message = (

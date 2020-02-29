@@ -161,6 +161,7 @@ describe('<ConfirmTrack />', () => {
     expect(adapter.type).not.toBeUndefined()
   })
 
+  // tests cause Coverage track mounts differently
   it('renders SNPCoverageTrack with a subadapter', () => {
     const mockFunction = () => {}
     const { container } = render(

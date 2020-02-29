@@ -9,7 +9,6 @@ const createMockTrackStateModel = (track, trackTwo, trackThree) =>
       selectedFeature: types.frozen(),
       bpPerPx: 0.05,
       staticBlocks: types.frozen(),
-      configuration: types.frozen(),
       PileupTrack: types.maybe(trackTwo.stateModel),
       SNPCoverageTrack: types.maybe(trackThree.stateModel),
       track: track.stateModel,

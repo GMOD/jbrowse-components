@@ -585,31 +585,6 @@
     },
     {
       "type": "AlignmentsTrack",
-      "trackId": "nanopore_ultralong_snpcoverage",
-      "name": "HG002 Nanopore ultralong (BAM SNPCoverage)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.bai"
-            }
-          }
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
       "trackId": "nanopore_ultralong",
       "name": "HG002 Nanopore ultralong (BAM)",
       "assemblyNames": [
@@ -986,29 +961,6 @@
         },
         "craiLocation": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.crai"
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "hg002_cram_snpcoverage",
-      "name": "HG002 CRAM nanopore+whatshap",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "CramAdapter",
-          "cramLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram"
-          },
-          "craiLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.crai"
-          }
         }
       }
     },

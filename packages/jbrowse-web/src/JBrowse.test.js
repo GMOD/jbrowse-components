@@ -400,12 +400,17 @@ describe('alignments track', () => {
     await waitForElement(() => getByText('Help'))
     state.session.views[0].setNewView(5, 100)
     fireEvent.click(
-      await waitForElement(() => byId('htsTrackEntry-volvox_alignments')),
+      await waitForElement(() =>
+        byId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+      ),
     )
     const canvas = await waitForElement(() =>
       getAllByTestId('prerendered_canvas'),
     )
 
+    // expect(canvas).toHaveLength(2)
+
+    // pileup image
     const img = canvas[0].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
@@ -415,6 +420,16 @@ describe('alignments track', () => {
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
+
+    // snp coverage image
+    // const img2 = canvas[1].toDataURL()
+    // const data2 = img2.replace(/^data:image\/\w+;base64,/, '')
+    // const buf2 = Buffer.from(data2, 'base64')
+
+    // expect(buf2).toMatchImageSnapshot({
+    //   failureThreshold: 0.5,
+    //   failureThresholdType: 'percent',
+    // })
   })
 })
 describe('bigwig', () => {
