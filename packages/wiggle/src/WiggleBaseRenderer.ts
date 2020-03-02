@@ -31,6 +31,7 @@ interface WiggleBaseRendererProps {
 
 export default class extends ServerSideRendererType {
   async makeImageData(props: WiggleBaseRendererProps) {
+    console.log('here')
     const { height, region, bpPerPx, highResolutionScaling = 1 } = props
     const width = (region.end - region.start) / bpPerPx
     if (!(width > 0) || !(height > 0)) {
