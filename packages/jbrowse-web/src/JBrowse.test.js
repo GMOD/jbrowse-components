@@ -5,6 +5,7 @@ import {
   render,
   wait,
   waitForElement,
+  waitForElementToBeRemoved,
 } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 import React from 'react'
@@ -420,6 +421,12 @@ describe('alignments track', () => {
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
+
+    const canvas2 = await waitForElementToBeRemoved(() =>
+      getAllByTestId('prerendered_canvas_SNPCoverageTrack'),
+    )
+
+    expect(canvas2).toBeTruthy()
 
     // snp coverage image
     // const img2 = canvas[1].toDataURL()

@@ -6,6 +6,11 @@ function PrerenderedCanvas(props) {
   const { width, height, highResolutionScaling, style, imageData } = props
   const featureCanvas = useRef()
 
+  const test =
+    props.trackModel.type === 'SNPCoverageTrack'
+      ? `_${props.trackModel.type}`
+      : ''
+
   useEffect(() => {
     if (!imageData) return
     const canvas = featureCanvas.current
@@ -33,7 +38,7 @@ function PrerenderedCanvas(props) {
 
   return (
     <canvas
-      data-testid="prerendered_canvas"
+      data-testid={`prerendered_canvas${test}`}
       ref={featureCanvas}
       width={width * highResolutionScaling}
       height={height * highResolutionScaling}
