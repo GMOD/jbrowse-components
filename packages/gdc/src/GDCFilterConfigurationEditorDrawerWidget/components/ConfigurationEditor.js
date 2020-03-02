@@ -20,11 +20,12 @@ import MenuItem from '@material-ui/core/MenuItem'
 import FormHelperText from '@material-ui/core/FormHelperText'
 import FormControl from '@material-ui/core/FormControl'
 import Select from '@material-ui/core/Select'
-import Input from '@material-ui/core/Input';
-import Checkbox from '@material-ui/core/Checkbox';
-import ListItemText from '@material-ui/core/ListItemText';
-
-const appliedFilters = []
+import Input from '@material-ui/core/Input'
+import Checkbox from '@material-ui/core/Checkbox'
+import ListItemText from '@material-ui/core/ListItemText'
+import Fab from '@material-ui/core/Fab'
+import AddIcon from '@material-ui/icons/Add'
+import DeleteIcon from '@material-ui/icons/Delete'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -35,6 +36,9 @@ const useStyles = makeStyles(theme => ({
   formControl: {
     margin: theme.spacing(1),
     minWidth: 120,
+  },
+  filterCard: {
+    margin: theme.spacing(1),
   },
 }))
 
@@ -76,13 +80,12 @@ const TrackType = observer(props => {
 
 const Filter = observer(props => {
   const classes = useStyles()
-  const { allFilters } = props
+  const { allFilters, filterObject } = props
   const [categoryValue, setCategoryValue] = React.useState(allFilters[0])
   const [filterValue, setFilterValue] = React.useState([])
 
   const handleChangeFilter = event => {
     setFilterValue(event.target.value)
-    console.log(event.target.value)
     props.adapter.filters.set(
       JSON.stringify({
         op: 'in',
@@ -101,7 +104,7 @@ const Filter = observer(props => {
 
   return (
     <>
-      <Card>
+      <Card className={classes.filterCard}>
         <CardContent>
           <FormControl className={classes.formControl}>
             <InputLabel id="category-select-label">Category</InputLabel>
@@ -160,25 +163,51 @@ const GDCQueryBuilder = observer(({ schema }) => {
     },
   ]
 
+  const handleClick = event => {
+    console.log(`adding id ${schema.caseFilterCount}`)
+    schema.addFilter(schema.caseFilterCount, allFilters[0].name, 'case', '')
+    schema.updateCaseFilterCount()
+  }
+
+  const handleClickClear = event => {
+    schema.clearFilters()
+    schema.clearCaseFilterCount()
+  }
+
   return (
     <>
-      {<TrackType {...schema} />}
+      {<TrackType {...schema.target} />}
       <Typography variant="h6" gutterBottom>
         Case Filters
       </Typography>
-      {<Filter {...schema} {...{ allFilters }} />}
+      {schema.filters.map(filterObject => {
+        return (
+          <Filter
+            {...schema.target}
+            {...{ allFilters, filterObject }}
+            key={schema.caseFilterCount}
+          />
+        )
+      })}
+      <Fab color="primary" aria-label="add" onClick={handleClick}>
+        <AddIcon />
+      </Fab>
+      <Fab color="primary" aria-label="add" onClick={handleClickClear}>
+        <DeleteIcon />
+      </Fab>
     </>
   )
 })
 
 function ConfigurationEditor({ model }) {
+  // console.log(model)
   const classes = useStyles()
   return (
     <div className={classes.root} data-testid="configEditor">
       {!model.target ? (
         'no target set'
       ) : (
-        <GDCQueryBuilder schema={model.target} />
+        <GDCQueryBuilder schema={model} key="configEditor" />
       )}
     </div>
   )
