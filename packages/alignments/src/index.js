@@ -51,7 +51,6 @@ export default class extends Plugin {
         stateModel: pileupTrackModelFactory(pluginManager, configSchema),
       })
     })
-
     pluginManager.addDrawerWidgetType(
       () =>
         new DrawerWidgetType({
