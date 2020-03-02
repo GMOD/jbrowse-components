@@ -1,8 +1,9 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 
-export default (pluginManager: PluginManager) =>
-  ConfigurationSchema(
+export default (pluginManager: PluginManager) => {
+  const { types } = pluginManager.lib['mobx-state-tree']
+  return ConfigurationSchema(
     'CramAdapter',
     {
       cramLocation: {
@@ -13,7 +14,10 @@ export default (pluginManager: PluginManager) =>
         type: 'fileLocation',
         defaultValue: { uri: '/path/to/my.cram.crai' },
       },
-      sequenceAdapter: pluginManager.pluggableConfigSchemaType('adapter'),
+      sequenceAdapter: types.late(() =>
+        pluginManager.pluggableConfigSchemaType('adapter'),
+      ),
     },
     { explicitlyTyped: true },
   )
+}

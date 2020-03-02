@@ -1,5 +1,6 @@
 import { BigWig, Feature as BBIFeature } from '@gmod/bbi'
-import BaseAdapter, {
+import {
+  BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
@@ -24,7 +25,7 @@ interface StatsRegion {
   bpPerPx?: number
 }
 
-export default class extends BaseAdapter {
+export default class extends BaseFeatureDataAdapter {
   private bigwig: BigWig
 
   private statsCache: {

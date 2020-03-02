@@ -1,5 +1,6 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
-import BaseAdapter, {
+import {
+  BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
@@ -10,7 +11,7 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { ConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 
@@ -25,11 +26,11 @@ interface Header {
 }
 
 export default (pluginManager: PluginManager) => {
-  class CramAdapter extends BaseAdapter {
+  class CramAdapter extends BaseFeatureDataAdapter {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private cram: any
 
-    private sequenceAdapter: BaseAdapter
+    private sequenceAdapter: BaseFeatureDataAdapter
 
     private samHeader: Header = {}
 
@@ -40,7 +41,7 @@ export default (pluginManager: PluginManager) => {
     private seqIdToOriginalRefName: string[] = []
 
     public constructor(
-      config: ConfigurationModel,
+      config: AnyConfigurationModel,
       getSubAdapter: getSubAdapterType,
     ) {
       super()
@@ -61,15 +62,23 @@ export default (pluginManager: PluginManager) => {
         fetchSizeLimit: config.fetchSizeLimit || 600000000,
       })
 
+      // instantiate the sequence adapter
       const sequenceAdapterType = readConfObject(config, [
         'sequenceAdapter',
         'type',
       ])
       const sequenceAdapterConfig = readConfObject(config, 'sequenceAdapter')
-      this.sequenceAdapter = getSubAdapter(
+      const sequenceAdapter = getSubAdapter(
         sequenceAdapterType,
         sequenceAdapterConfig,
       ).dataAdapter
+      if (sequenceAdapter instanceof BaseFeatureDataAdapter) {
+        this.sequenceAdapter = sequenceAdapter
+      } else {
+        throw new Error(
+          `CRAM feature adapters cannot use sequence adapters of type '${sequenceAdapterType}'`,
+        )
+      }
     }
 
     async seqFetch(seqId: number, start: number, end: number) {

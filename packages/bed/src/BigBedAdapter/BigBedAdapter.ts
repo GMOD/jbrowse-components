@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BigBed } from '@gmod/bbi'
 import BED from '@gmod/bed'
-import BaseAdapter, {
+import {
+  BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
@@ -30,7 +31,7 @@ interface Parser {
   parseLine: (line: string, opts: { uniqueId: string | number }) => BEDFeature
 }
 
-export default class extends BaseAdapter {
+export default class extends BaseFeatureDataAdapter {
   private bigbed: BigBed
 
   private parser: Promise<Parser>

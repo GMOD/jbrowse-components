@@ -1,11 +1,11 @@
 import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
-import { ConfigurationSchemaType } from '../configuration/configurationSchema'
+import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
 
 export default class ConnectionType extends PluggableElementBase {
   stateModel: IAnyModelType
 
-  configSchema: ConfigurationSchemaType
+  configSchema: AnyConfigurationSchemaType
 
   displayName: string
 
@@ -17,7 +17,7 @@ export default class ConnectionType extends PluggableElementBase {
   constructor(stuff: {
     name: string
     stateModel: IAnyModelType
-    configSchema: ConfigurationSchemaType
+    configSchema: AnyConfigurationSchemaType
     displayName: string
     description: string
     url: string

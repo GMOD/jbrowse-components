@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   readConfObject,
-  ConfigurationModel,
+  AnyConfigurationModel,
   isConfigurationModel,
 } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
@@ -161,7 +161,6 @@ export default function sessionModelFactory(pluginManager: any) {
           autorun(() => {
             self.views.forEach(view => {
               const assemblyName = view.displayRegionsFromAssemblyName
-              debugger
               if (
                 assemblyName &&
                 self.assemblyData.get(assemblyName) &&
@@ -249,7 +248,10 @@ export default function sessionModelFactory(pluginManager: any) {
         return Promise.resolve(undefined)
       },
 
-      makeConnection(configuration: any, initialSnapshot = {}) {
+      makeConnection(
+        configuration: AnyConfigurationModel,
+        initialSnapshot = {},
+      ) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')
         const name = readConfObject(configuration, 'name')
@@ -316,7 +318,7 @@ export default function sessionModelFactory(pluginManager: any) {
         return [safelyBreakConnection, dereferenceTypeCount]
       },
 
-      breakConnection(configuration: any) {
+      breakConnection(configuration: AnyConfigurationModel) {
         const name = readConfObject(configuration, 'name')
         const assemblyName = readConfObject(configuration, 'assemblyName')
         const connectionInstances = self.connectionInstances.get(assemblyName)
@@ -401,7 +403,8 @@ export default function sessionModelFactory(pluginManager: any) {
         initialState: any = {},
       ) {
         const assembly = self.assemblies.find(
-          (s: ConfigurationModel) => readConfObject(s, 'name') === assemblyName,
+          (s: AnyConfigurationModel) =>
+            readConfObject(s, 'name') === assemblyName,
         )
         if (!assembly)
           throw new Error(
@@ -509,7 +512,7 @@ export default function sessionModelFactory(pluginManager: any) {
        * and sets the current task to be configuring it
        * @param {*} configuration
        */
-      editConfiguration(configuration: any) {
+      editConfiguration(configuration: AnyConfigurationModel) {
         if (!isConfigurationModel(configuration)) {
           throw new Error(
             'must pass a configuration model to editConfiguration',

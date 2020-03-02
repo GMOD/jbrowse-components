@@ -36,7 +36,7 @@ interface LayoutRecord {
   heightPx: number
 }
 
-export default class extends BoxRendererType {
+export default class PileupRenderer extends BoxRendererType {
   layoutFeature(
     feature: Feature,
     subLayout: any, // eslint-disable-line @typescript-eslint/no-explicit-any

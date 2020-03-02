@@ -1,7 +1,7 @@
 import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import BaseAdapter from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import {
   getOrigin,
   getScale,
@@ -20,7 +20,7 @@ interface SNPCoverageRendererProps {
   horizontallyFlipped: boolean
   highResolutionScaling: number
   blockKey: string
-  dataAdapter: BaseAdapter
+  dataAdapter: BaseFeatureDataAdapter
   notReady: boolean
   originalRegion: IRegion
   scaleOpts: ScaleOpts

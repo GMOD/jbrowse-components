@@ -1,10 +1,4 @@
-import {
-  types,
-  IAnyType,
-  IAnyModelType,
-  IAnyComplexType,
-  isModelType,
-} from 'mobx-state-tree'
+import { types, IAnyType, IAnyModelType, isModelType } from 'mobx-state-tree'
 
 import PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
 import RendererType from './pluggableElementTypes/renderers/RendererType'
@@ -15,7 +9,11 @@ import DrawerWidgetType from './pluggableElementTypes/DrawerWidgetType'
 import MenuBarType from './pluggableElementTypes/MenuBarType'
 import ConnectionType from './pluggableElementTypes/ConnectionType'
 
-import { ConfigurationSchema } from './configuration'
+import {
+  ConfigurationSchema,
+  AnyConfigurationSchemaType,
+  isBareConfigurationSchemaType,
+} from './configuration'
 
 import Plugin from './Plugin'
 import ReExports from './ReExports'
@@ -94,6 +92,8 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
     return Object.values(this.registeredTypes)
   }
 }
+
+type AnyFunction = (...args: any) => any
 
 export default class PluginManager {
   plugins: Plugin[] = []
@@ -225,10 +225,15 @@ export default class PluginManager {
     fieldName: PluggableElementMember,
     fallback: IAnyType = types.maybe(types.null),
   ) {
-    const pluggableTypes: IAnyModelType[] = this.getElementTypeRecord(typeGroup)
+    const pluggableTypes: IAnyModelType[] = []
+    this.getElementTypeRecord(typeGroup)
       .all()
-      .map((t: Record<string, any>) => t[fieldName])
-      .filter(m => isModelType(m))
+      .forEach((t: Record<string, any>) => {
+        const thing = t[fieldName]
+        if (isModelType(thing)) {
+          pluggableTypes.push(thing)
+        }
+      })
     // try to smooth over the case when no types are registered, mostly encountered in tests
     if (pluggableTypes.length === 0) {
       console.warn(
@@ -243,12 +248,29 @@ export default class PluginManager {
   pluggableConfigSchemaType(
     typeGroup: PluggableElementTypeGroup,
     fieldName: PluggableElementMember = 'configSchema',
-    fallback = ConfigurationSchema('Null', {}),
   ) {
-    return this.pluggableMstType(typeGroup, fieldName, fallback)
+    const pluggableTypes: AnyConfigurationSchemaType[] = []
+    this.getElementTypeRecord(typeGroup)
+      .all()
+      .forEach((t: Record<string, any>) => {
+        const thing = t[fieldName]
+        if (isBareConfigurationSchemaType(thing)) {
+          pluggableTypes.push(thing)
+        }
+      })
+    if (pluggableTypes.length === 0)
+      pluggableTypes.push(ConfigurationSchema('Null', {}))
+    return types.union(...pluggableTypes)
   }
 
   jbrequireCache = new Map()
+
+  lib = ReExports
+
+  load = <FTYPE extends AnyFunction>(lib: FTYPE): ReturnType<FTYPE> => {
+    if (!this.jbrequireCache.has(lib)) this.jbrequireCache.set(lib, lib(this))
+    return this.jbrequireCache.get(lib)
+  }
 
   /**
    * Get the re-exported version of the given package name.
@@ -256,9 +278,11 @@ export default class PluginManager {
    *
    * @returns {any} the library's default export
    */
-  jbrequire = (lib: string | Function | { default: Function }): any => {
+  jbrequire = (
+    lib: keyof typeof ReExports | AnyFunction | { default: AnyFunction },
+  ): any => {
     if (typeof lib === 'string') {
-      const pack = ReExports[lib]
+      const pack = this.lib[lib]
       if (!pack)
         throw new Error(
           `No jbrequire re-export defined for package '${lib}'. If this package must be shared between plugins, add it to ReExports.js. If it does not need to be shared, just import it normally.`,
@@ -267,8 +291,7 @@ export default class PluginManager {
     }
 
     if (typeof lib === 'function') {
-      if (!this.jbrequireCache.has(lib)) this.jbrequireCache.set(lib, lib(this))
-      return this.jbrequireCache.get(lib)
+      return this.load(lib)
     }
 
     if (lib.default) return this.jbrequire(lib.default)

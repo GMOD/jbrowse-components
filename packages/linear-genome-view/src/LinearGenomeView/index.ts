@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
+import {
+  getConf,
+  readConfObject,
+  AnyConfigurationModel,
+} from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
 import {
   clamp,
@@ -272,7 +276,7 @@ export function stateModelFactory(pluginManager: any) {
         self.offsetPx = self.totalBp / self.bpPerPx - self.offsetPx - self.width
       },
 
-      showTrack(configuration: any, initialSnapshot = {}) {
+      showTrack(configuration: AnyConfigurationModel, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')
         const name = readConfObject(configuration, 'name')
@@ -287,7 +291,7 @@ export function stateModelFactory(pluginManager: any) {
         self.tracks.push(track)
       },
 
-      hideTrack(configuration: any) {
+      hideTrack(configuration: AnyConfigurationModel) {
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(
           t => t.configuration === configuration,
@@ -323,7 +327,7 @@ export function stateModelFactory(pluginManager: any) {
         }
       },
 
-      toggleTrack(configuration: any) {
+      toggleTrack(configuration: AnyConfigurationModel) {
         // if we have any tracks with that configuration, turn them off
         const hiddenCount = this.hideTrack(configuration)
         // if none had that configuration, turn one on

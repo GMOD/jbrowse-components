@@ -1,16 +1,16 @@
 import PluggableElementBase from './PluggableElementBase'
-import { ConfigurationSchemaType } from '../configuration/configurationSchema'
+import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
 import { AdapterConstructor } from '../data_adapters/BaseAdapter'
 
 export default class AdapterType extends PluggableElementBase {
   AdapterClass: AdapterConstructor
 
-  configSchema: ConfigurationSchemaType
+  configSchema: AnyConfigurationSchemaType
 
   constructor(stuff: {
     name: string
     AdapterClass: AdapterConstructor
-    configSchema: ConfigurationSchemaType
+    configSchema: AnyConfigurationSchemaType
   }) {
     super(stuff)
     this.AdapterClass = stuff.AdapterClass

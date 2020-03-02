@@ -1,4 +1,5 @@
-import BaseAdapter, {
+import {
+  BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import {
@@ -22,7 +23,7 @@ interface Config {
     location: IFileLocation
   }
 }
-export default class extends BaseAdapter {
+export default class extends BaseFeatureDataAdapter {
   protected vcf: TabixIndexedFile
 
   protected filehandle: GenericFilehandle

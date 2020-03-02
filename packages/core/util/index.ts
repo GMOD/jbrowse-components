@@ -1,5 +1,11 @@
 import { toByteArray, fromByteArray } from 'base64-js'
-import { getParent, isAlive, IAnyStateTreeNode, getType } from 'mobx-state-tree'
+import {
+  getParent,
+  isAlive,
+  IAnyStateTreeNode,
+  getType,
+  isStateTreeNode,
+} from 'mobx-state-tree'
 import { inflate, deflate } from 'pako'
 import { Observable, fromEvent } from 'rxjs'
 import fromEntries from 'object.fromentries'
@@ -7,6 +13,8 @@ import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
+import PluginManager from '../PluginManager'
+import { AnyConfigurationModel } from '../configuration'
 
 if (!Object.fromEntries) {
   fromEntries.shim()
@@ -121,12 +129,24 @@ export function useDebouncedCallback<A extends any[]>(
   }
 }
 
-export function getSession(node: IAnyStateTreeNode): IAnyStateTreeNode {
+export interface SessionModel {
+  configuration: AnyConfigurationModel
+  pluginManager: PluginManager
+}
+export function isSessionModel(thing: unknown): thing is SessionModel {
+  return (
+    isStateTreeNode(thing) &&
+    'pluginManager' in thing &&
+    'configuration' in thing
+  )
+}
+
+export function getSession(node: IAnyStateTreeNode): SessionModel {
   let currentNode = node
-  // @ts-ignore
-  while (isAlive(currentNode) && currentNode.pluginManager === undefined)
+  while (isAlive(currentNode) && !isSessionModel(currentNode))
     currentNode = getParent(currentNode)
-  return currentNode
+  if (isAlive(currentNode) && isSessionModel(currentNode)) return currentNode
+  throw new Error('no session model found!')
 }
 
 export function getContainingView(

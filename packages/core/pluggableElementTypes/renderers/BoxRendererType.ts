@@ -44,9 +44,10 @@ export class LayoutSession {
   }
 }
 
-export default class extends ServerSideRendererType {
+export default class BoxRendererType extends ServerSideRendererType {
   constructor(args) {
-    super({ ...args, sessions: {} })
+    super(args)
+    this.sessions = {}
   }
 
   getWorkerSession(props) {

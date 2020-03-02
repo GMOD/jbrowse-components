@@ -1,5 +1,6 @@
 import { BamFile } from '@gmod/bam'
-import BaseAdapter, {
+import {
+  BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
@@ -19,7 +20,7 @@ interface Header {
   nameToId?: Record<string, number>
 }
 
-export default class extends BaseAdapter {
+export default class extends BaseFeatureDataAdapter {
   private bam: BamFile
 
   private samHeader: Header = {}

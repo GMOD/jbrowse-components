@@ -1,19 +1,19 @@
 import jsonStableStringify from 'json-stable-stringify'
 import { SnapshotIn } from 'mobx-state-tree'
 import PluginManager from '../PluginManager'
-import { ConfigurationSchemaType } from '../configuration'
-import BaseAdapter from './BaseAdapter'
+import { AnyConfigurationSchemaType } from '../configuration'
+import { AnyDataAdapter } from './BaseAdapter'
 import { IRegion } from '../mst-types'
 
 function adapterConfigCacheKey(
   adapterType: string,
-  adapterConfig: SnapshotIn<ConfigurationSchemaType>,
+  adapterConfig: SnapshotIn<AnyConfigurationSchemaType>,
 ) {
   return `${adapterType}|${jsonStableStringify(adapterConfig)}`
 }
 
 interface AdapterCacheEntry {
-  dataAdapter: BaseAdapter
+  dataAdapter: AnyDataAdapter
   sessionIds: Set<string>
 }
 
@@ -33,7 +33,7 @@ export function getAdapter(
   pluginManager: PluginManager,
   sessionId: string,
   adapterType: string,
-  adapterConfigSnapshot: SnapshotIn<ConfigurationSchemaType>,
+  adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
 ) {
   // cache the adapter object
   const cacheKey = adapterConfigCacheKey(adapterType, adapterConfigSnapshot)
@@ -77,7 +77,7 @@ export function getAdapter(
 
 export type getSubAdapterType = (
   adapterType: string,
-  adapterConfigSnapshot: SnapshotIn<ConfigurationSchemaType>,
+  adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
 ) => ReturnType<typeof getAdapter>
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

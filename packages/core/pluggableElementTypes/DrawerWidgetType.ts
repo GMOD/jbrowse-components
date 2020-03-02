@@ -1,12 +1,12 @@
 import { ComponentType, Component } from 'react'
 import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
-import { ConfigurationSchemaType } from '../configuration/configurationSchema'
+import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
 
 export default class DrawerWidgetType extends PluggableElementBase {
   heading?: string
 
-  configSchema: ConfigurationSchemaType
+  configSchema: AnyConfigurationSchemaType
 
   HeadingComponent?: ComponentType
 
@@ -18,7 +18,7 @@ export default class DrawerWidgetType extends PluggableElementBase {
     name: string
     heading?: string
     HeadingComponent?: ComponentType
-    configSchema: ConfigurationSchemaType
+    configSchema: AnyConfigurationSchemaType
     stateModel: IAnyModelType
     LazyReactComponent: any
   }) {

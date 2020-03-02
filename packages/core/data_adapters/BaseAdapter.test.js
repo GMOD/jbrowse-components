@@ -1,10 +1,10 @@
 import { toArray } from 'rxjs/operators'
-import BaseAdapter from './BaseAdapter'
+import BaseFeatureDataAdapter from './BaseAdapter'
 import { ObservableCreate } from '../util/rxjs'
 
 describe('base data adapter', () => {
   it('properly propagates errors in feature fetching', async () => {
-    class Adapter extends BaseAdapter {
+    class Adapter extends BaseFeatureDataAdapter {
       async getRefNames() {
         return ['ctgA', 'ctgB']
       }
@@ -26,7 +26,7 @@ describe('base data adapter', () => {
   })
 
   it('retrieves features', async () => {
-    class Adapter extends BaseAdapter {
+    class Adapter extends BaseFeatureDataAdapter {
       async getRefNames() {
         return ['ctgA', 'ctgB']
       }

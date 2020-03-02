@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 import React, { useEffect, useState } from 'react'
 import ReactPropTypes from 'prop-types'
 import Feature from '../util/simpleFeature'
-import { readConfObject } from '../configuration'
+import { readConfObject, AnyConfigurationModel } from '../configuration'
 
 const useStyles = makeStyles({
   hoverLabel: {
@@ -25,8 +25,7 @@ const Tooltip = ({
 }: {
   offsetX: number
   offsetY: number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  configuration: any
+  configuration: AnyConfigurationModel
   feature?: Feature
   timeout: number
 }) => {

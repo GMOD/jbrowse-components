@@ -3,6 +3,7 @@ import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWid
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import { lazy } from 'react'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
   configSchema as alignmentsFeatureDetailConfigSchema,
   ReactComponent as AlignmentsFeatureDetailReactComponent,
@@ -17,17 +18,9 @@ import {
   modelFactory as snpCoverageTrackModelFactory,
 } from './SNPCoverageTrack'
 import {
-  AdapterClass as SNPCoverageAdapterClass,
-  configSchema as snpCoverageAdapterConfigSchema,
-} from './SNPCoverageAdapter'
-import {
   AdapterClass as BamAdapterClass,
   configSchema as bamAdapterConfigSchema,
 } from './BamAdapter'
-import {
-  AdapterClass as CramAdapterClass,
-  configSchema as cramAdapterConfigSchema,
-} from './CramAdapter'
 import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
   ReactComponent as PileupRendererReactComponent,
@@ -37,12 +30,15 @@ import SNPCoverageRenderer, {
   ReactComponent as SNPCoverageRendererReactComponent,
 } from './SNPCoverageRenderer'
 
+import CramAdapterF from './CramAdapter'
+
 export default class extends Plugin {
-  install(pluginManager) {
+  install(pluginManager: PluginManager) {
     pluginManager.addTrackType(() => {
       const configSchema = alignmentsTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
         name: 'AlignmentsTrack',
+        compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: alignmentsTrackModelFactory(pluginManager, configSchema),
       })
@@ -62,6 +58,7 @@ export default class extends Plugin {
       const configSchema = snpCoverageTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
         name: 'SNPCoverageTrack',
+        compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: snpCoverageTrackModelFactory(configSchema),
       })
@@ -78,15 +75,14 @@ export default class extends Plugin {
       () =>
         new AdapterType({
           name: 'SNPCoverageAdapter',
-          configSchema: snpCoverageAdapterConfigSchema,
-          AdapterClass: SNPCoverageAdapterClass,
+          ...pluginManager.jbrequire(require('./SNPCoverageAdapter')),
         }),
     )
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
           name: 'CramAdapter',
-          ...pluginManager.jbrequire(require('./CramAdapter')),
+          ...pluginManager.load(CramAdapterF),
         }),
     )
     pluginManager.addRendererType(

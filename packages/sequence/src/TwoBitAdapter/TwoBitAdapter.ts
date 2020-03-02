@@ -1,4 +1,4 @@
-import BaseAdapter from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
@@ -6,7 +6,7 @@ import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { TwoBitFile } from '@gmod/twobit'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
-export default class extends BaseAdapter {
+export default class extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private twobit: any
 

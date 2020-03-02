@@ -1,7 +1,8 @@
 import NCListStore from '@gmod/nclist'
 import { openUrl } from '@gmod/jbrowse-core/util/io'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import BaseAdapter, {
+import {
+  BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -11,7 +12,7 @@ import objectHash from 'object-hash'
 
 import NCListFeature from './NCListFeature'
 
-export default class extends BaseAdapter {
+export default class extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private nclist: any
 

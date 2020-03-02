@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle,@typescript-eslint/no-explicit-any */
-import BaseAdapter, {
+import {
+  BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
@@ -38,7 +39,7 @@ interface Config {
   }
   dontRedispatch: string[]
 }
-export default class extends BaseAdapter {
+export default class extends BaseFeatureDataAdapter {
   protected gff: TabixIndexedFile
 
   protected dontRedispatch: string[]

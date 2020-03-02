@@ -5,7 +5,7 @@ import {
   isMapType,
 } from 'mobx-state-tree'
 
-import { ConfigurationModel } from './configurationSchema'
+import { AnyConfigurationModel } from './configurationSchema'
 
 /**
  * given a configuration model (an instance of a ConfigurationSchema),
@@ -17,7 +17,7 @@ import { ConfigurationModel } from './configurationSchema'
  *  will be sent to each of the slotNames
  */
 export function readConfObject(
-  confObject: ConfigurationModel,
+  confObject: AnyConfigurationModel,
   slotPath: string[] | string,
   args: any[] = [],
 ): any {
@@ -84,7 +84,7 @@ export function readConfObject(
  *   will be sent to each of the slotNames
  */
 export function getConf(
-  model: { configuration: ConfigurationModel },
+  model: { configuration: AnyConfigurationModel },
   slotName: string | string[],
   args: any[] = [],
 ) {

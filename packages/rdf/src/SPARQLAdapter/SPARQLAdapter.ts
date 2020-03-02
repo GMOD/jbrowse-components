@@ -1,4 +1,5 @@
-import BaseAdapter, {
+import {
+  BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
@@ -43,7 +44,7 @@ interface SPARQLFeature {
   data: SPARQLFeatureData
 }
 
-export default class extends BaseAdapter {
+export default class extends BaseFeatureDataAdapter {
   private endpoint: string
 
   private queryTemplate: string

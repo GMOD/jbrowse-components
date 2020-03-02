@@ -9,6 +9,7 @@ import {
   isStateTreeNode,
   getType,
   Instance,
+  IAnyType,
 } from 'mobx-state-tree'
 
 import { ElementId } from '../mst-types'
@@ -34,7 +35,7 @@ function isEmptyArray(thing: any) {
 
 export function isBareConfigurationSchemaType(
   thing: any,
-): thing is ConfigurationSchemaType {
+): thing is AnyConfigurationSchemaType {
   if (
     isModelType(thing) &&
     ('isJBrowseConfigurationSchema' in thing ||
@@ -115,13 +116,14 @@ export interface ConfigurationSchemaDefinition {
     | ConfigurationSchemaDefinition
     | string
     | number
+    | IAnyType
 }
 
 interface ConfigurationSchemaOptions {
   explicitlyTyped?: boolean
   explicitIdentifier?: string
   implicitIdentifier?: string
-  baseConfiguration?: ConfigurationSchemaType
+  baseConfiguration?: AnyConfigurationSchemaType
   actions?: (self: any) => Record<string, Function>
   views?: (self: any) => Record<string, Function>
   extend?: (self: any) => Record<string, Function>
@@ -202,7 +204,7 @@ function makeConfigurationSchemaModel<
     },
   }
   Object.entries(schemaDefinition).forEach(([slotName, slotDefinition]) => {
-    if (isBareConfigurationSchemaType(slotDefinition)) {
+    if (isConfigurationSchemaType(slotDefinition)) {
       // this is a sub-configuration
       modelDefinition[slotName] = slotDefinition
     } else if (
@@ -212,7 +214,7 @@ function makeConfigurationSchemaModel<
       volatileConstants[slotName] = slotDefinition
     } else if (typeof slotDefinition === 'object') {
       // this is a slot definition
-      if (!slotDefinition.type) {
+      if (!('type' in slotDefinition) || !slotDefinition.type) {
         throw new Error(`no type set for config slot ${modelName}.${slotName}`)
       }
       try {
@@ -237,7 +239,7 @@ function makeConfigurationSchemaModel<
     .actions(self => ({
       setSubschema(
         slotName: string,
-        data: Record<string, any> | ConfigurationSchemaType,
+        data: Record<string, any> | AnyConfigurationSchemaType,
       ) {
         if (!isConfigurationSchemaType(modelDefinition[slotName])) {
           throw new Error(`${slotName} is not a subschema, cannot replace`)
@@ -288,20 +290,32 @@ function makeConfigurationSchemaModel<
   return schemaType
 }
 
-export interface ConfigurationSchemaType
+export interface AnyConfigurationSchemaType
   extends ReturnType<typeof makeConfigurationSchemaModel> {
   isJBrowseConfigurationSchema: boolean
   jbrowseSchemaDefinition: ConfigurationSchemaDefinition
   jbrowseSchemaOptions: ConfigurationSchemaOptions
 }
 
-export type ConfigurationModel = Instance<ConfigurationSchemaType>
+export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
 
-export function ConfigurationSchema(
+export type ConfigurationSchemaType<
+  DEFINITION extends ConfigurationSchemaDefinition,
+  OPTIONS extends ConfigurationSchemaOptions
+> = AnyConfigurationSchemaType
+
+export type ConfigurationModel<
+  SCHEMA extends AnyConfigurationSchemaType
+> = Instance<SCHEMA>
+
+export function ConfigurationSchema<
+  DEFINITION extends ConfigurationSchemaDefinition,
+  OPTIONS extends ConfigurationSchemaOptions
+>(
   modelName: string,
-  inputSchemaDefinition: ConfigurationSchemaDefinition,
-  inputOptions: ConfigurationSchemaOptions = {},
-): ConfigurationSchemaType {
+  inputSchemaDefinition: DEFINITION,
+  inputOptions?: OPTIONS,
+): ConfigurationSchemaType<DEFINITION, OPTIONS> {
   const { schemaDefinition, options } = preprocessConfigurationSchemaArguments(
     modelName,
     inputSchemaDefinition,
@@ -311,7 +325,7 @@ export function ConfigurationSchema(
     modelName,
     schemaDefinition,
     options,
-  ) as ConfigurationSchemaType
+  ) as ConfigurationSchemaType<DEFINITION, OPTIONS>
   // saving a couple of jbrowse-specific things in the type object. hope nobody gets mad.
   schemaType.isJBrowseConfigurationSchema = true
   schemaType.jbrowseSchemaDefinition = schemaDefinition
@@ -319,6 +333,6 @@ export function ConfigurationSchema(
   return schemaType
 }
 
-export function ConfigurationReference(schemaType: ConfigurationSchemaType) {
+export function ConfigurationReference(schemaType: AnyConfigurationSchemaType) {
   return types.union(types.reference(schemaType), schemaType)
 }

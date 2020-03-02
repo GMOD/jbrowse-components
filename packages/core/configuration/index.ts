@@ -1,8 +1,9 @@
 export {
   ConfigurationSchema,
-  ConfigurationSchemaType,
-  ConfigurationSchemaDefinition,
   ConfigurationModel,
+  AnyConfigurationSchemaType,
+  ConfigurationSchemaDefinition,
+  AnyConfigurationModel,
   ConfigurationReference,
   isConfigurationModel,
   isConfigurationSchemaType,

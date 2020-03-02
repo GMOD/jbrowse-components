@@ -1,23 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderToString } from 'react-dom/server'
 import { filter, ignoreElements, tap } from 'rxjs/operators'
-import BaseAdapter from '../../data_adapters/BaseAdapter'
+import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import { IRegion } from '../../mst-types'
 import { readConfObject } from '../../configuration'
 import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature, { Feature } from '../../util/simpleFeature'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
-import { ConfigurationModel } from '../../configuration/configurationSchema'
+import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
 interface BaseRenderArgs {
   blockKey: string
   sessionId: string
   signal?: AbortSignal
   filters?: any
-  dataAdapter: BaseAdapter
+  dataAdapter: BaseFeatureDataAdapter
   bpPerPx: number
-  config: ConfigurationModel
+  config: AnyConfigurationModel
   renderProps: { trackModel: any }
 }
 

@@ -4,7 +4,7 @@ import { IRegion as Region } from '../mst-types'
 import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
-import { ConfigurationModel } from '../configuration'
+import { AnyConfigurationModel } from '../configuration'
 import { getSubAdapterType } from './dataAdapterCache'
 
 export interface BaseOptions {
@@ -21,16 +21,18 @@ export interface BaseOptions {
  */
 export interface AdapterConstructor {
   new (
-    config: ConfigurationModel,
+    config: AnyConfigurationModel,
     getSubAdapter: getSubAdapterType,
-  ): BaseAdapter
+  ): AnyDataAdapter
 }
 
+export type AnyDataAdapter = BaseFeatureDataAdapter | BaseRefNameAliasAdapter
+
 /**
- * Base class for adapters to extend. Defines some methods that subclasses must
+ * Base class for feature adapters to extend. Defines some methods that subclasses must
  * implement.
  */
-export default abstract class BaseAdapter {
+export abstract class BaseFeatureDataAdapter {
   /**
    * Subclasses should override this method. Method signature here for reference.
    * @returns {Promise<string[]>} Array of reference sequence names used by the
@@ -141,8 +143,6 @@ export interface Alias {
   aliases: string[]
 }
 export abstract class BaseRefNameAliasAdapter {
-  public static capabilities: string[]
-
   public abstract async getRefNameAliases(): Promise<Alias[]>
 
   public abstract async freeResources(): Promise<void>

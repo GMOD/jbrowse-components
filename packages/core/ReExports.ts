@@ -62,7 +62,7 @@ import * as MUIColors from './ReExports/material-ui-colors'
 
 import * as mstTypes from './mst-types'
 
-const libs: { [libname: string]: any } = {
+const libs = {
   mobx,
   'mobx-state-tree': mst,
   react: React,
