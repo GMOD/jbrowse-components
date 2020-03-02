@@ -26,7 +26,21 @@ import ListItemText from '@material-ui/core/ListItemText'
 import Fab from '@material-ui/core/Fab'
 import AddIcon from '@material-ui/icons/Add'
 import DeleteIcon from '@material-ui/icons/Delete'
+import IconButton from '@material-ui/core/IconButton'
+import { v4 as uuidv4 } from 'uuid'
 
+const facets = [
+  {
+    name: 'primary_site',
+    description: 'The primary site of the cancer',
+    values: ['brain', 'breast', 'kidney', 'ovary'],
+  },
+  {
+    name: 'project.project_id',
+    description: 'The project the case belongs to',
+    values: ['TCGA-BRCA', 'TCGA-GBM', 'TCGA-OV'],
+  },
+]
 const useStyles = makeStyles(theme => ({
   root: {
     padding: theme.spacing(1, 3, 1, 1),
@@ -80,26 +94,41 @@ const TrackType = observer(props => {
 
 const Filter = observer(props => {
   const classes = useStyles()
-  const { allFilters, filterObject } = props
-  const [categoryValue, setCategoryValue] = React.useState(allFilters[0])
+  const { schema, filterObject } = props
+  const [categoryValue, setCategoryValue] = React.useState(facets[0])
   const [filterValue, setFilterValue] = React.useState([])
 
   const handleChangeFilter = event => {
     setFilterValue(event.target.value)
-    props.adapter.filters.set(
-      JSON.stringify({
-        op: 'in',
-        content: {
-          field: `cases.${categoryValue.name}`,
-          value: event.target.value,
-        },
-      }),
-    )
+    filterObject.setFilter(event.target.value.join(','))
+    updateTrack(schema.filters, schema.target)
+  }
+
+  function updateTrack(filters, target) {
+    const gdcFilters = { op: 'and', content: [] }
+    for (const filter of filters) {
+      if (filter.filter !== '') {
+        gdcFilters.content.push({
+          op: 'in',
+          content: {
+            field: `cases.${filter.category}`,
+            value: filter.filter.split(','),
+          },
+        })
+      }
+    }
+    target.adapter.filters.set(JSON.stringify(gdcFilters))
+    console.log(gdcFilters)
   }
 
   const handleChangeCategory = event => {
     setCategoryValue(event.target.value)
     setFilterValue([])
+    filterObject.setCategory(event.target.value.name)
+  }
+
+  const handleFilterDelete = event => {
+    schema.deleteFilter(filterObject.id)
   }
 
   return (
@@ -114,7 +143,7 @@ const Filter = observer(props => {
               value={categoryValue}
               onChange={handleChangeCategory}
             >
-              {allFilters.map(filterOption => {
+              {facets.map(filterOption => {
                 return (
                   <MenuItem value={filterOption} key={filterOption.name}>
                     {filterOption.name}
@@ -144,34 +173,23 @@ const Filter = observer(props => {
           </FormControl>
           <FormHelperText>{categoryValue.description}</FormHelperText>
         </CardContent>
+        <CardActions disableSpacing>
+          <IconButton aria-label="delete filter" onClick={handleFilterDelete}>
+            <DeleteIcon />
+          </IconButton>
+        </CardActions>
       </Card>
     </>
   )
 })
 
 const GDCQueryBuilder = observer(({ schema }) => {
-  const allFilters = [
-    {
-      name: 'primary_site',
-      description: 'The primary site of the cancer',
-      values: ['brain', 'breast', 'kidney', 'ovary'],
-    },
-    {
-      name: 'project.project_id',
-      description: 'The project the case belongs to',
-      values: ['TCGA-BRCA', 'TCGA-GBM', 'TCGA-OV'],
-    },
-  ]
-
   const handleClick = event => {
-    console.log(`adding id ${schema.caseFilterCount}`)
-    schema.addFilter(schema.caseFilterCount, allFilters[0].name, 'case', '')
-    schema.updateCaseFilterCount()
+    schema.addFilter(uuidv4(), facets[0].name, 'case', '')
   }
 
   const handleClickClear = event => {
     schema.clearFilters()
-    schema.clearCaseFilterCount()
   }
 
   return (
@@ -182,11 +200,7 @@ const GDCQueryBuilder = observer(({ schema }) => {
       </Typography>
       {schema.filters.map(filterObject => {
         return (
-          <Filter
-            {...schema.target}
-            {...{ allFilters, filterObject }}
-            key={schema.caseFilterCount}
-          />
+          <Filter schema={schema} {...{ filterObject }} key={filterObject.id} />
         )
       })}
       <Fab color="primary" aria-label="add" onClick={handleClick}>
@@ -200,8 +214,8 @@ const GDCQueryBuilder = observer(({ schema }) => {
 })
 
 function ConfigurationEditor({ model }) {
-  // console.log(model)
   const classes = useStyles()
+  // updateTrack(model.filters, model.target)
   return (
     <div className={classes.root} data-testid="configEditor">
       {!model.target ? (

@@ -9,7 +9,8 @@
   "author": "Andrew Duncan",
   "license": "MIT",
   "dependencies": {
-    "rxjs": "^6.0.0"
+    "rxjs": "^6.0.0",
+    "uuid": "^7.0.1"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",

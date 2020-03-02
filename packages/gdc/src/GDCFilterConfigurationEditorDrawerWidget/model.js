@@ -3,6 +3,7 @@ import { ElementId } from '@gmod/jbrowse-core/mst-types'
 
 const Filter = types
   .model({
+    id: types.identifier,
     category: types.string,
     type: types.string,
     filter: types.string,
@@ -26,22 +27,19 @@ export default pluginManager =>
         pluginManager.pluggableConfigSchemaType('track'),
       ),
       filters: types.array(Filter),
-      caseFilterCount: 0,
     })
     .actions(self => ({
       setTarget(newTarget) {
         self.target = newTarget
       },
       addFilter(id, category, type, filter) {
-        self.filters.set(id, Filter.create({ category, type, filter }))
+        self.filters.push(Filter.create({ id, category, type, filter }))
+      },
+      deleteFilter(id) {
+        const pos = self.filters.findIndex(filter => filter.id === id)
+        self.filters.splice(pos, 1)
       },
       clearFilters() {
         self.filters.clear()
-      },
-      updateCaseFilterCount() {
-        self.caseFilterCount += 1
-      },
-      clearCaseFilterCount() {
-        self.caseFilterCount = 0
       },
     }))
