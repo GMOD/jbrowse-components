@@ -14,7 +14,7 @@ import {
   stateModelFactory as baseModelFactory,
 } from '../LinearComparativeTrack'
 import LinearSyntenyTrackComponent from './components/LinearSyntenyTrack'
-import ServerSideRenderedSyntenyContent from './components/ServerSideRenderedSyntenyContent'
+import ServerSideRenderedBlockContent from './components/ServerSideRenderedBlockContent'
 
 interface Block {
   start: number
@@ -34,11 +34,11 @@ const syntenyBlockState = types
     filled: false,
     data: undefined as any,
     html: '',
-    error: undefined as Error|undefined,
-    message: undefined as string|undefined,
-    ReactComponent: ServerSideRenderedSyntenyContent,
+    error: undefined as Error | undefined,
+    message: undefined as string | undefined,
+    ReactComponent: ServerSideRenderedBlockContent,
     renderingComponent: undefined as any,
-    renderProps: undefined as any
+    renderProps: undefined as any,
   }))
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
@@ -49,7 +49,10 @@ export function configSchemaFactory(pluginManager: any) {
         type: 'fileLocation',
         defaultValue: { uri: '/path/to/mcscan.anchors' },
       },
-      trackIds: types.maybe(types.array(types.string)),
+      trackIds: {
+        type: 'stringArray',
+        defaultValue: [],
+      },
       geneAdapter1: pluginManager.pluggableConfigSchemaType('adapter'),
       geneAdapter2: pluginManager.pluggableConfigSchemaType('adapter'),
     },
@@ -68,6 +71,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         type: types.literal('LinearSyntenyTrack'),
         renderDelay: types.number,
         configuration: ConfigurationReference(configSchema),
+        syntenyBlocks: syntenyBlockState,
       }),
     )
     .volatile(self => ({

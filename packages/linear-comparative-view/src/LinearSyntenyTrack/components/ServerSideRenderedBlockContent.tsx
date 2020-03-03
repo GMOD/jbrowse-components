@@ -3,8 +3,8 @@ import LinearProgress from '@material-ui/core/LinearProgress'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
-import ServerSideRenderedContent from '../../LinearGenomeView/components/ServerSideRenderedContent'
-import BlockError from '../../LinearGenomeView/components/BlockError'
+import BlockError from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView/components/BlockError'
+import ServerSideRenderedContent from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView/components/ServerSideRenderedContent'
 
 const useStyles = makeStyles({
   loading: {

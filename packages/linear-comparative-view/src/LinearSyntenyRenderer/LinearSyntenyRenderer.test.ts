@@ -1,7 +1,4 @@
-import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
-import React from 'react'
-import { render } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 // @ts-ignore
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
@@ -19,16 +16,7 @@ test('test rendering a simple synteny from fake data', async () => {
     name: 'LinearSyntenyRenderer',
     configSchema,
   })
-  // const { container } = render(
-  //   <LinearSyntenyRenderer
-  //     width={500}
-  //     height={500}
-  //     region={{ refName: 'zonk', start: 1, end: 3 }}
-  //     layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
-  //     bpPerPx={3}
-  //   />,
-  // )
-  //
+
   const result = await renderer.render({
     width: 800,
     height: 600,
@@ -91,7 +79,6 @@ test('test rendering a simple synteny from fake data', async () => {
 
   const data = r.src.replace(/^data:image\/\w+;base64,/, '')
   const buf = Buffer.from(data, 'base64')
-  fs.writeFileSync('/home/cdiesh/out.png', buf)
   // this is needed to do a fuzzy image comparison because
   // the travis-ci was 2 pixels different for some reason, see PR #710
   // @ts-ignore

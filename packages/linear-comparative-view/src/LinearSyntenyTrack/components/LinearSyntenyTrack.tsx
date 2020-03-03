@@ -2,19 +2,13 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
 
-function LinearSyntenyTrackRendering() {
-  return null
-}
 
 function LinearSyntenyTrack(props) {
   const { model, children } = props
+  const {syntenyBlocks} = model
   return (
     <>
-      {model.modelMessageComponent ? (
-        <model.modelMessageComponent model={model} />
-      ) : (
-        <LinearSyntenyTrackRendering {...props} />
-      )}
+        <syntenyBlocks.ReactComponent {...props} />
       {children}
     </>
   )

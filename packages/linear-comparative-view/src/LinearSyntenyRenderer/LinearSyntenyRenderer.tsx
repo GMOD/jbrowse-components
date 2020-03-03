@@ -143,7 +143,6 @@ export default class LinearSyntenyRenderer extends ComparativeRendererType {
 
         ctx.fillStyle = 'rgba(255,100,100,0.3)'
         ctx.strokeStyle = 'rgba(50,50,50,0.1)'
-        console.log(y1, y2, x11, x12, x21, x22)
 
         ctx.beginPath()
         ctx.moveTo(x11, y1)
