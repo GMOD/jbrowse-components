@@ -1,12 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { types, getParent, addDisposer } from 'mobx-state-tree'
-import { autorun } from 'mobx'
-import { ignoreElements, tap, filter } from 'rxjs/operators'
-import AbortablePromiseCache from 'abortable-promise-cache'
-import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
+import { types, cast, Instance, getParent, addDisposer } from 'mobx-state-tree'
+import { reaction } from 'mobx'
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
-import { getAdapter } from '@gmod/jbrowse-core/util/dataAdapterCache'
 import { getContainingView, checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import {
@@ -19,6 +14,7 @@ import {
   stateModelFactory as baseModelFactory,
 } from '../LinearComparativeTrack'
 import LinearSyntenyTrackComponent from './components/LinearSyntenyTrack'
+import ServerSideRenderedSyntenyContent from './components/ServerSideRenderedSyntenyContent'
 
 interface Block {
   start: number
@@ -28,6 +24,22 @@ interface Block {
   key: string
 }
 
+const syntenyBlockState = types
+  .model('SyntenyBlock', {
+    key: types.string,
+    displayedRegions: types.frozen(),
+  })
+  .volatile(self => ({
+    renderInProgress: undefined as AbortController | undefined,
+    filled: false,
+    data: undefined as any,
+    html: '',
+    error: undefined as Error|undefined,
+    message: undefined as string|undefined,
+    ReactComponent: ServerSideRenderedSyntenyContent,
+    renderingComponent: undefined as any,
+    renderProps: undefined as any
+  }))
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
     'LinearSyntenyTrack',
@@ -37,6 +49,7 @@ export function configSchemaFactory(pluginManager: any) {
         type: 'fileLocation',
         defaultValue: { uri: '/path/to/mcscan.anchors' },
       },
+      trackIds: types.maybe(types.array(types.string)),
       geneAdapter1: pluginManager.pluggableConfigSchemaType('adapter'),
       geneAdapter2: pluginManager.pluggableConfigSchemaType('adapter'),
     },
@@ -53,38 +66,14 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       baseModelFactory(pluginManager, configSchema),
       types.model('LinearSyntenyTrack', {
         type: types.literal('LinearSyntenyTrack'),
+        renderDelay: types.number,
         configuration: ConfigurationReference(configSchema),
       }),
     )
     .volatile(self => ({
       ReactComponent: (LinearSyntenyTrackComponent as unknown) as React.FC,
-      blockFeatureCache: new AbortablePromiseCache({
-        cache: new QuickLRU({ maxSize: 1000 }),
-        fill: async (
-          args: {
-            dataAdapter: BaseAdapter
-            block: Block
-          },
-          abortSignal: AbortSignal,
-        ) => {
-          const { block, dataAdapter } = args
-          const { refName, start, end, assemblyName } = block
-          return dataAdapter.getFeatures(
-            { refName, start, end, assemblyName },
-            { signal: abortSignal },
-          )
-        },
-      }),
-      // map of block.key -> map of feature id to feature
-      blockFeatures: new Map() as Map<string, Map<string, Feature>>,
     }))
     .views(self => ({
-      get subtrackViews() {
-        return this.subtracks.map(subtrack =>
-          getContainingView(subtrack),
-        ) as any[]
-      },
-
       get subtracks(): any[] {
         const subtracks: any[] = []
         const parentView = getParent(self, 2)
@@ -97,19 +86,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           })
         })
         return subtracks
-      },
-
-      // returns a restructuring of the self.blockFeatures stratified by view
-      get syntenyTrackFeatures() {
-        const parentView = getParent(self, 2) as any
-        parentView.views.map((subview: any, index: number) => {
-          return new CompositeMap<string, Feature>(
-            subview.staticBlocks
-              .filter((block: Block) => 'refName' in block)
-              .map((block: Block) => self.blockFeatures.get(block.key)),
-          )
-        })
-        return 0
       },
 
       get subtrackFeatures() {
@@ -136,79 +112,32 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         return true
       },
 
-      renderSynteny(arg: any) {},
-
-      async fillBlockFeatures(param: {
-        block: Block
-        signal: AbortSignal
-        dataAdapter: BaseAdapter
-      }) {
-        const { block, signal, dataAdapter } = param
-        const features = new Map<string, Feature>()
-        const featureObservable = await self.blockFeatureCache.get(block.key, {
-          dataAdapter,
-          block,
-        })
-        featureObservable
-          .pipe(
-            tap(() => checkAbortSignal(signal)),
-            filter((feature: Feature) => this.featurePassesFilters(feature)),
-            tap((feature: Feature) => {
-              const id = feature.id()
-              if (!id) {
-                throw new Error(`invalid feature id "${id}"`)
-              }
-              features.set(id, feature)
-            }),
-            ignoreElements(),
-          )
-          .toPromise()
-          .then(() => this.setBlockFeatures(block.key, features))
-      },
-
       afterAttach() {
         addDisposer(
           self,
-          autorun(
-            async () => {
-              const abortController = new AbortController()
-              const { signal } = abortController
-              const { dataAdapter } = getAdapter(
-                pluginManager,
-                getConf(self, 'trackId'),
-                self.adapterConfig.type,
-                self.adapterConfig,
-                null,
-                null,
-              )
-
-              const parentView = getParent(self, 2) as any
-
-              parentView.views.forEach((subview: any, index: number) => {
-                subview.staticBlocks.blocks
-                  .filter((block: Block) => 'refName' in block)
-                  .forEach((block: Block) => {
-                    this.fillBlockFeatures({ block, dataAdapter, signal })
-                  })
-              })
+          reaction(
+            () => renderBlockData(cast(self)),
+            data => renderBlockEffect(cast(self), data),
+            {
+              name: `{track.id} rendering`,
+              delay: self.renderDelay,
+              fireImmediately: true,
             },
-            { delay: 1000 },
           ),
         )
-        addDisposer(
-          self,
-          autorun(
-            async () => {
-              this.renderSynteny(self.blockFeatures)
-            },
-            { delay: 1000 },
-          ),
-        )
-      },
-      setBlockFeatures(blockKey: string, features: Map<string, Feature>) {
-        self.blockFeatures.set(blockKey, features)
       },
     }))
 }
+
+type SyntenyTrack = ReturnType<typeof stateModelFactory>
+
+function renderBlockData(self: Instance<SyntenyTrack>) {
+  return {}
+}
+
+function renderBlockEffect(
+  self: Instance<SyntenyTrack>,
+  data: ReturnType<typeof renderBlockData>,
+) {}
 
 export type LinearSyntenyTrackStateModel = ReturnType<typeof stateModelFactory>

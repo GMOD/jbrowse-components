@@ -54,7 +54,7 @@ const blockState = types
       afterAttach() {
         const track = getParent(self, 2)
         const renderDisposer = reaction(
-          () => renderBlockData(self as any),
+          () => renderBlockData(cast(self)),
           data => renderBlockEffect(cast(self), data),
           {
             name: `${track.id}/${assembleLocString(self.region)} rendering`,
