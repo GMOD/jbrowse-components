@@ -39,7 +39,9 @@ export default pluginManager =>
         const pos = self.filters.findIndex(filter => filter.id === id)
         self.filters.splice(pos, 1)
       },
-      clearFilters() {
-        self.filters.clear()
+      getFiltersByType(type) {
+        return self.filters.filter(filter => {
+          return filter.type === type
+        })
       },
     }))

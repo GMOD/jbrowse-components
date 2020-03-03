@@ -25,11 +25,120 @@ import Checkbox from '@material-ui/core/Checkbox'
 import ListItemText from '@material-ui/core/ListItemText'
 import Fab from '@material-ui/core/Fab'
 import AddIcon from '@material-ui/icons/Add'
-import DeleteIcon from '@material-ui/icons/Delete'
+import ClearIcon from '@material-ui/icons/Clear'
 import IconButton from '@material-ui/core/IconButton'
 import { v4 as uuidv4 } from 'uuid'
+import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
 
-const facets = [
+const ssmFacets = [
+  {
+    name: 'consequence.transcript.annotation.polyphen_impact',
+    prettyName: 'polyphen impact',
+    values: ['', 'benign', 'probably_damaging', 'possibly_damaging', 'unknown'],
+  },
+  {
+    name: 'consequence.transcript.annotation.sift_impact',
+    prettyName: 'sift impact',
+    values: [
+      '',
+      'deleterious',
+      'tolerated',
+      'deleterious_low_confidence',
+      'tolerated_low_confidence',
+    ],
+  },
+  {
+    name: 'consequence.transcript.annotation.vep_impact',
+    prettyName: 'vep impact',
+    values: ['modifier', 'moderate', 'low', 'high'],
+  },
+  {
+    name: 'consequence.transcript.consequence_type',
+    prettyName: 'consequence type',
+    values: [
+      'missense_variant',
+      'downstream_gene_variant',
+      'non_coding_transcript_exon_variant',
+      'synonymous_variant',
+      'intron_variant',
+      'upstream_gene_variant',
+      '3_prime_UTR_variant',
+      'stop_gained',
+      'frameshift_variant',
+      '5_prime_UTR_variant',
+      'splice_region_variant',
+      'splice_acceptor_variant',
+      'splice_donor_variant',
+      'inframe_deletion',
+      'inframe_insertion',
+      'start_lost',
+      'protein_altering_variant',
+      'stop_lost',
+      'stop_retained_variant',
+      'coding_sequence_variant',
+      'incomplete_terminal_codon_variant',
+      'mature_miRNA_variant',
+    ],
+  },
+  {
+    name: 'mutation_subtype',
+    prettyName: 'mutation subtype',
+    values: ['single base substitution', 'small deletion', 'small insertion'],
+  },
+  {
+    name: 'occurrence.case.observation.variant_calling.variant_caller',
+    prettyName: 'variant caller',
+    values: ['mutect2', 'varscan', 'muse', 'somaticsniper'],
+  },
+]
+const geneFacets = [
+  {
+    name: 'biotype',
+    prettyName: 'biotype',
+    values: [
+      'protein_coding',
+      'lincRNA',
+      'miRNA',
+      'transcribed_unprocessed_pseudogene',
+      'processed_pseudogene',
+      'antisense',
+      'unprocessed_pseudogene',
+      'snoRNA',
+      'IG_V_gene',
+      'processed_transcript',
+      'transcribed_processed_pseudogene',
+      'TR_V_gene',
+      'TR_J_gene',
+      'unitary_pseudogene',
+      'misc_RNA',
+      'snRNA',
+      'IG_V_pseudogene',
+      'polymorphic_pseudogene',
+      'IG_D_gene',
+      'sense_overlapping',
+      'sense_intronic',
+      'IG_C_gene',
+      'TEC',
+      'IG_J_gene',
+      'rRNA',
+      'TR_C_gene',
+      'TR_D_gene',
+      'TR_V_pseudogene',
+      'macro_lncRNA',
+      'transcribed_unitary_pseudogene',
+      'translated_unprocessed_pseudogene',
+      'vaultRNA',
+    ],
+  },
+  {
+    name: 'is_cancer_gene_census',
+    prettyName: 'is cancer gene census',
+    values: ['1'],
+  },
+]
+const caseFacets = [
   {
     name: 'demographic.ethnicity',
     prettyName: 'ethnicity',
@@ -375,8 +484,8 @@ const TrackType = observer(props => {
       <Typography variant="h6" gutterBottom>
         Track Settings
       </Typography>
-      <Card>
-        <CardContent>
+      <List>
+        <ListItem>
           <FormControl className={classes.formControl}>
             <InputLabel id="track-type-select-label">Track Type</InputLabel>
             <Select
@@ -390,15 +499,18 @@ const TrackType = observer(props => {
             </Select>
             <FormHelperText>The type of track to display</FormHelperText>
           </FormControl>
-        </CardContent>
-      </Card>
+        </ListItem>
+      </List>
     </>
   )
 })
 
+/**
+ * A card representing an individual filter with a category and set of applied values
+ */
 const Filter = observer(props => {
   const classes = useStyles()
-  const { schema, filterObject } = props
+  const { schema, filterObject, type, facets } = props
   const [categoryValue, setCategoryValue] = React.useState(facets[0])
   const [filterValue, setFilterValue] = React.useState([])
 
@@ -436,8 +548,8 @@ const Filter = observer(props => {
 
   return (
     <>
-      <Card className={classes.filterCard}>
-        <CardContent>
+      <List>
+        <ListItem>
           <FormControl className={classes.formControl}>
             <InputLabel id="category-select-label">Category</InputLabel>
             <Select
@@ -474,21 +586,51 @@ const Filter = observer(props => {
               ))}
             </Select>
           </FormControl>
-          <FormHelperText>The type of track to display</FormHelperText>
-        </CardContent>
-        <CardActions disableSpacing>
           <IconButton aria-label="delete filter" onClick={handleFilterDelete}>
-            <DeleteIcon />
+            <ClearIcon />
           </IconButton>
-        </CardActions>
-      </Card>
+        </ListItem>
+      </List>
+    </>
+  )
+})
+
+const FilterList = observer(({ schema, type, facets }) => {
+  const initialSelection = facets[0].name
+
+  const handleClick = event => {
+    schema.addFilter(uuidv4(), initialSelection, type, '')
+  }
+
+  return (
+    <>
+      <Typography variant="h6" gutterBottom>
+        {type} filters
+      </Typography>
+      {schema.filters.map(filterObject => {
+        if (filterObject.type === type) {
+          return (
+            <Filter
+              schema={schema}
+              {...{ filterObject }}
+              key={filterObject.id}
+              type={type}
+              facets={facets}
+            />
+          )
+        }
+        return null
+      })}
+      <IconButton aria-label="add" onClick={handleClick}>
+        <AddIcon />
+      </IconButton>
     </>
   )
 })
 
 const GDCQueryBuilder = observer(({ schema }) => {
   const handleClick = event => {
-    schema.addFilter(uuidv4(), facets[0].name, 'case', '')
+    schema.addFilter(uuidv4(), caseFacets[0].name, 'case', '')
   }
 
   const handleClickClear = event => {
@@ -498,20 +640,24 @@ const GDCQueryBuilder = observer(({ schema }) => {
   return (
     <>
       {<TrackType {...schema.target} />}
-      <Typography variant="h6" gutterBottom>
-        Case Filters
-      </Typography>
-      {schema.filters.map(filterObject => {
-        return (
-          <Filter schema={schema} {...{ filterObject }} key={filterObject.id} />
-        )
-      })}
-      <Fab color="primary" aria-label="add" onClick={handleClick}>
-        <AddIcon />
-      </Fab>
-      <Fab color="primary" aria-label="add" onClick={handleClickClear}>
-        <DeleteIcon />
-      </Fab>
+      <FilterList
+        schema={schema}
+        key="case"
+        type="case"
+        facets={caseFacets}
+      ></FilterList>
+      <FilterList
+        schema={schema}
+        key="gene"
+        type="gene"
+        facets={geneFacets}
+      ></FilterList>
+      <FilterList
+        schema={schema}
+        key="ssm"
+        type="ssm"
+        facets={ssmFacets}
+      ></FilterList>
     </>
   )
 })
