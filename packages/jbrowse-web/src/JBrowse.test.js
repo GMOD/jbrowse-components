@@ -239,7 +239,6 @@ describe('some error state', () => {
 
 describe('test renamed refs', () => {
   it('open a cram with alternate renamed ref', async () => {
-    jest.setTimeout(6000) // needs an extra second
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId: byId, getAllByTestId, getByText } = render(
       <JBrowse initialState={state} />,
@@ -263,7 +262,7 @@ describe('test renamed refs', () => {
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
-  })
+  }, 10000 /* this test needs more time to run */)
   it('test that bam with contigA instead of ctgA displays', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
