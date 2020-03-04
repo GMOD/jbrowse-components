@@ -858,7 +858,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
 </div>
 `;
 
-exports[`ConfigurationEditor drawer widget renders with defaults of the AlignmentsTrack schema 1`] = `
+exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTrack schema 1`] = `
 <div
   class="makeStyles-root"
   data-testid="configEditor"

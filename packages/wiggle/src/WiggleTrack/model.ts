@@ -153,7 +153,7 @@ const stateModelFactory = (configSchema: any) =>
               adapterType: adapter.type,
               // TODO: Figure this out for multiple assembly names
               assemblyName: getTrackAssemblyNames(self)[0],
-              regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
+              regions: JSON.parse(JSON.stringify(dynamicBlocks.contentBlocks)),
               signal,
               bpPerPx,
             },

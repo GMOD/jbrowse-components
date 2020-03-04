@@ -2,13 +2,15 @@ import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import { getSnapshot, types } from 'mobx-state-tree'
 import MyPlugin from '.'
 
-const createMockTrackStateModel = track =>
+const createMockTrackStateModel = (track, trackTwo, trackThree) =>
   types
     .model({
       name: 'testSession',
       selectedFeature: types.frozen(),
       bpPerPx: 0.05,
       staticBlocks: types.frozen(),
+      PileupTrack: types.maybe(trackTwo.stateModel),
+      SNPCoverageTrack: types.maybe(trackThree.stateModel),
       track: track.stateModel,
       pluginManager: 'mockPluginManager',
     })
@@ -23,34 +25,64 @@ const createMockTrackStateModel = track =>
       }
     })
 
-const createMockTrack = track =>
-  createMockTrackStateModel(track).create({
+const createMockTrack = (track, pileup, snpcoverage) =>
+  createMockTrackStateModel(track, pileup, snpcoverage).create({
     staticBlocks: [],
     track: {
       configuration: track.configSchema.create({
-        type: 'PileupTrack',
+        type: 'AlignmentsTrack',
         trackId: 'track0',
       }),
+      type: 'AlignmentsTrack',
+    },
+    PileupTrack: {
+      configuration: pileup.configSchema.create({
+        type: 'PileupTrack',
+        name: 'track0_pileup',
+        trackId: 'track0_pileup',
+      }),
       type: 'PileupTrack',
+    },
+    SNPCoverageTrack: {
+      configuration: snpcoverage.configSchema.create({
+        type: 'SNPCoverageTrack',
+        name: 'track0_snpcoverage',
+        trackId: 'track0_snpcoverage',
+      }),
+      type: 'SNPCoverageTrack',
     },
   })
 
 test('create bam adapter config', () => {
   const { pluginManager } = createTestSession()
-
   const BamAdapter = pluginManager.getAdapterType('BamAdapter')
   const config = BamAdapter.configSchema.create({ type: 'BamAdapter' })
   expect(getSnapshot(config)).toMatchSnapshot()
 })
+
 test('create track config', async () => {
   const { pluginManager } = createTestSession()
 
-  const PileupTrack = pluginManager.getTrackType('PileupTrack')
-  const config2 = PileupTrack.configSchema.create({
-    type: 'PileupTrack',
+  const AlignmentsTrack = pluginManager.getTrackType('AlignmentsTrack')
+  const config2 = AlignmentsTrack.configSchema.create({
+    type: 'AlignmentsTrack',
     trackId: 'track0',
   })
   expect(getSnapshot(config2)).toMatchSnapshot()
+})
+
+test('has pileup and alignment tracks', async () => {
+  const session = createTestSession()
+  const { pluginManager } = session
+
+  const sessionModel = createMockTrack(
+    pluginManager.getTrackType('AlignmentsTrack'),
+    pluginManager.getTrackType('PileupTrack'),
+    pluginManager.getTrackType('SNPCoverageTrack'),
+  )
+
+  expect(sessionModel.PileupTrack).toBeTruthy()
+  expect(sessionModel.SNPCoverageTrack).toBeTruthy()
 })
 
 test('test selection in alignments track model with mock session', async () => {
@@ -58,7 +90,9 @@ test('test selection in alignments track model with mock session', async () => {
   const { pluginManager } = session
 
   const sessionModel = createMockTrack(
+    pluginManager.getTrackType('AlignmentsTrack'),
     pluginManager.getTrackType('PileupTrack'),
+    pluginManager.getTrackType('SNPCoverageTrack'),
   )
 
   // TODO: requires having actual session.addDrawerWidget
@@ -69,7 +103,6 @@ test('test selection in alignments track model with mock session', async () => {
   // })
   // expect(sessionModel.selection.id()).toBe(1234)
 
-  sessionModel.track.clearFeatureSelection()
   expect(sessionModel.selection).not.toBeTruthy()
 })
 

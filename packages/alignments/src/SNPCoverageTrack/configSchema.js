@@ -3,15 +3,6 @@ import { BaseTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
 export default pluginManager => {
-  // const XYPlotRendererConfigSchema = pluginManager.getRendererType(
-  //   'XYPlotRenderer',
-  // ).configSchema
-  // const DensityRendererConfigSchema = pluginManager.getRendererType(
-  //   'DensityRenderer',
-  // ).configSchema
-  // const LinePlotRendererConfigSchema = pluginManager.getRendererType(
-  //   'LinePlotRenderer',
-  // ).configSchema
   const SNPCoverageRendererConfigSchema = pluginManager.getRendererType(
     'SNPCoverageRenderer',
   ).configSchema
