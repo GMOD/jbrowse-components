@@ -4,33 +4,29 @@ import {
   isConfigurationSlotType,
 } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { iterMap } from '@gmod/jbrowse-core/util'
-import FormGroup from '@material-ui/core/FormGroup'
-import FormLabel from '@material-ui/core/FormLabel'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getMembers } from 'mobx-state-tree'
 import React, { Fragment } from 'react'
-import Card from '@material-ui/core/Card'
-import CardActions from '@material-ui/core/CardActions'
-import CardContent from '@material-ui/core/CardContent'
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import InputLabel from '@material-ui/core/InputLabel'
 import MenuItem from '@material-ui/core/MenuItem'
 import FormHelperText from '@material-ui/core/FormHelperText'
 import FormControl from '@material-ui/core/FormControl'
+import FormLabel from '@material-ui/core/FormLabel'
 import Select from '@material-ui/core/Select'
 import Input from '@material-ui/core/Input'
 import Checkbox from '@material-ui/core/Checkbox'
 import ListItemText from '@material-ui/core/ListItemText'
-import Fab from '@material-ui/core/Fab'
 import AddIcon from '@material-ui/icons/Add'
 import ClearIcon from '@material-ui/icons/Clear'
 import IconButton from '@material-ui/core/IconButton'
 import { v4 as uuidv4 } from 'uuid'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
+import HelpIcon from '@material-ui/icons/Help'
+import Tooltip from '@material-ui/core/Tooltip'
 
 const ssmFacets = [
   {
@@ -454,6 +450,7 @@ const caseFacets = [
     ],
   },
 ]
+
 const useStyles = makeStyles(theme => ({
   root: {
     padding: theme.spacing(1, 3, 1, 1),
@@ -462,13 +459,20 @@ const useStyles = makeStyles(theme => ({
   },
   formControl: {
     margin: theme.spacing(1),
-    minWidth: 120,
+    minWidth: 150,
   },
   filterCard: {
     margin: theme.spacing(1),
   },
+  text: {
+    display: 'flex',
+    alignItems: 'center',
+  },
 }))
 
+/**
+ * A component for changing the track type
+ */
 const TrackType = observer(props => {
   const classes = useStyles()
   const [trackType, setTrackType] = React.useState(
@@ -481,23 +485,33 @@ const TrackType = observer(props => {
   }
   return (
     <>
-      <Typography variant="h6" gutterBottom>
-        Track Settings
+      <Typography variant="h6" className={classes.text}>
+        Track Type
+        <Tooltip
+          title="Set the type of features to grab from the GDC portal"
+          aria-label="help"
+        >
+          <HelpIcon color="disabled" />
+        </Tooltip>
       </Typography>
       <List>
         <ListItem>
           <FormControl className={classes.formControl}>
-            <InputLabel id="track-type-select-label">Track Type</InputLabel>
+            {/* <InputLabel id="track-type-select-label">Track Type</InputLabel> */}
             <Select
               labelId="track-type-select-label"
               id="track-type-select"
               value={trackType}
               onChange={handleChange}
+              displayEmpty
             >
+              <MenuItem disabled value="">
+                <em>Track type</em>
+              </MenuItem>
               <MenuItem value={'mutation'}>Mutation</MenuItem>
               <MenuItem value={'gene'}>Gene</MenuItem>
             </Select>
-            <FormHelperText>The type of track to display</FormHelperText>
+            {/* <FormHelperText>The type of track to display</FormHelperText> */}
           </FormControl>
         </ListItem>
       </List>
@@ -510,7 +524,7 @@ const TrackType = observer(props => {
  */
 const Filter = observer(props => {
   const classes = useStyles()
-  const { schema, filterObject, type, facets } = props
+  const { schema, filterObject, facets } = props
   const [categoryValue, setCategoryValue] = React.useState(facets[0])
   const [filterValue, setFilterValue] = React.useState([])
 
@@ -521,17 +535,21 @@ const Filter = observer(props => {
   }
 
   function updateTrack(filters, target) {
-    const gdcFilters = { op: 'and', content: [] }
-    for (const filter of filters) {
-      if (filter.filter !== '') {
-        gdcFilters.content.push({
-          op: 'in',
-          content: {
-            field: `${filter.type}s.${filter.category}`,
-            value: filter.filter.split(','),
-          },
-        })
+    let gdcFilters = { op: 'and', content: [] }
+    if (filters.length > 0) {
+      for (const filter of filters) {
+        if (filter.filter !== '') {
+          gdcFilters.content.push({
+            op: 'in',
+            content: {
+              field: `${filter.type}s.${filter.category}`,
+              value: filter.filter.split(','),
+            },
+          })
+        }
       }
+    } else {
+      gdcFilters = {}
     }
     target.adapter.filters.set(JSON.stringify(gdcFilters))
   }
@@ -544,6 +562,7 @@ const Filter = observer(props => {
 
   const handleFilterDelete = event => {
     schema.deleteFilter(filterObject.id)
+    updateTrack(schema.filters, schema.target)
   }
 
   return (
@@ -551,13 +570,17 @@ const Filter = observer(props => {
       <List>
         <ListItem>
           <FormControl className={classes.formControl}>
-            <InputLabel id="category-select-label">Category</InputLabel>
+            {/* <InputLabel id="category-select-label">Category</InputLabel> */}
             <Select
               labelId="category-select-label"
               id="category-select"
               value={categoryValue}
               onChange={handleChangeCategory}
+              displayEmpty
             >
+              <MenuItem disabled value="">
+                <em>Category</em>
+              </MenuItem>
               {facets.map(filterOption => {
                 return (
                   <MenuItem value={filterOption} key={filterOption.name}>
@@ -568,7 +591,6 @@ const Filter = observer(props => {
             </Select>
           </FormControl>
           <FormControl className={classes.formControl}>
-            <InputLabel id="demo-mutiple-checkbox-label">Filter</InputLabel>
             <Select
               labelId="demo-mutiple-checkbox-label"
               id="demo-mutiple-checkbox"
@@ -576,8 +598,18 @@ const Filter = observer(props => {
               value={filterValue}
               onChange={handleChangeFilter}
               input={<Input />}
-              renderValue={selected => selected.join(', ')}
+              displayEmpty
+              renderValue={selected => {
+                if (selected.length === 0) {
+                  return <em>Filters</em>
+                }
+
+                return selected.join(', ')
+              }}
             >
+              <MenuItem disabled value="">
+                <em>Filters</em>
+              </MenuItem>
               {categoryValue.values.map(name => (
                 <MenuItem key={name} value={name}>
                   <Checkbox checked={filterValue.indexOf(name) > -1} />
@@ -604,9 +636,10 @@ const FilterList = observer(({ schema, type, facets }) => {
 
   return (
     <>
-      <Typography variant="h6" gutterBottom>
-        {type} filters
-      </Typography>
+      <div>
+        <FormLabel>{type} filters</FormLabel>
+      </div>
+
       {schema.filters.map(filterObject => {
         if (filterObject.type === type) {
           return (
@@ -614,7 +647,6 @@ const FilterList = observer(({ schema, type, facets }) => {
               schema={schema}
               {...{ filterObject }}
               key={filterObject.id}
-              type={type}
               facets={facets}
             />
           )
@@ -629,17 +661,16 @@ const FilterList = observer(({ schema, type, facets }) => {
 })
 
 const GDCQueryBuilder = observer(({ schema }) => {
-  const handleClick = event => {
-    schema.addFilter(uuidv4(), caseFacets[0].name, 'case', '')
-  }
-
-  const handleClickClear = event => {
-    schema.clearFilters()
-  }
-
+  const classes = useStyles()
   return (
     <>
-      {<TrackType {...schema.target} />}
+      <TrackType {...schema.target} />
+      <Typography variant="h6" className={classes.text}>
+        Filters
+        <Tooltip title="Apply filters to the current track" aria-label="help">
+          <HelpIcon color="disabled" />
+        </Tooltip>
+      </Typography>
       <FilterList
         schema={schema}
         key="case"
