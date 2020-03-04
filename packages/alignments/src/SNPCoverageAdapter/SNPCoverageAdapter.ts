@@ -174,7 +174,6 @@ export default class extends BaseAdapter {
    */
 
   getFeatures(region: IRegion, opts: BaseOptions = {}) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       const features = await this.subadapter
         .getFeatures(region, opts)
