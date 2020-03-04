@@ -5,7 +5,6 @@ import {
   render,
   wait,
   waitForElement,
-  waitForElementToBeRemoved,
 } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 import React from 'react'
@@ -240,6 +239,7 @@ describe('some error state', () => {
 
 describe('test renamed refs', () => {
   it('open a cram with alternate renamed ref', async () => {
+    jest.setTimeout(6000) // needs an extra second
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId: byId, getAllByTestId, getByText } = render(
       <JBrowse initialState={state} />,
@@ -249,9 +249,11 @@ describe('test renamed refs', () => {
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_cram_alignments')),
     )
+
     const canvas = await waitForElement(() =>
-      getAllByTestId('prerendered_canvas'),
+      getAllByTestId('prerendered_canvas_PileupRenderer'),
     )
+
     const img = canvas[0].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
@@ -290,7 +292,7 @@ describe('test renamed refs', () => {
       ),
     )
     await expect(
-      waitForElement(() => getAllByTestId('prerendered_canvas')),
+      waitForElement(() => getAllByTestId('prerendered_canvas_XYPlotRenderer')),
     ).resolves.toBeTruthy()
   })
 })
@@ -407,17 +409,29 @@ describe('alignments track', () => {
         byId('htsTrackEntry-volvox_alignments_pileup_coverage'),
       ),
     )
-    const canvas = await waitForElement(() =>
-      getAllByTestId('prerendered_canvas'),
-    )
 
-    // pileup image
-    const img = canvas[0].toDataURL()
-    const data = img.replace(/^data:image\/\w+;base64,/, '')
-    const buf = Buffer.from(data, 'base64')
-    // this is needed to do a fuzzy image comparison because
-    // the travis-ci was 2 pixels different for some reason, see PR #710
-    expect(buf).toMatchImageSnapshot({
+    /* Since alignments track has subtracks, need to look for both
+    prerendered canvases. PrerenderedCanvas data-test id now appends 
+    rendererType so both can be found and not stopped prematurely */
+    const pileupCanvas = await waitForElement(() =>
+      getAllByTestId('prerendered_canvas_PileupRenderer'),
+    )
+    const pileupImg = pileupCanvas[0].toDataURL()
+    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
+    const pileupBuf = Buffer.from(pileupData, 'base64')
+    expect(pileupBuf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
+
+    const snpCovCanvas = await waitForElement(() =>
+      getAllByTestId('prerendered_canvas_SNPCoverageRenderer'),
+    )
+    // snpCov image
+    const snpCovImg = snpCovCanvas[0].toDataURL()
+    const snpCovData = snpCovImg.replace(/^data:image\/\w+;base64,/, '')
+    const snpCovBuf = Buffer.from(snpCovData, 'base64')
+    expect(snpCovBuf).toMatchImageSnapshot({
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
@@ -435,7 +449,7 @@ describe('bigwig', () => {
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray')),
     )
     await expect(
-      waitForElement(() => getAllByTestId('prerendered_canvas')),
+      waitForElement(() => getAllByTestId('prerendered_canvas_XYPlotRenderer')),
     ).resolves.toBeTruthy()
   })
   it('open a bigwig line track', async () => {
@@ -449,7 +463,9 @@ describe('bigwig', () => {
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray_line')),
     )
     await expect(
-      waitForElement(() => getAllByTestId('prerendered_canvas')),
+      waitForElement(() =>
+        getAllByTestId('prerendered_canvas_LinePlotRenderer'),
+      ),
     ).resolves.toBeTruthy()
   })
   it('open a bigwig density track', async () => {
@@ -465,7 +481,9 @@ describe('bigwig', () => {
       ),
     )
     await expect(
-      waitForElement(() => getAllByTestId('prerendered_canvas')),
+      waitForElement(() =>
+        getAllByTestId('prerendered_canvas_DensityRenderer'),
+      ),
     ).resolves.toBeTruthy()
   })
 })

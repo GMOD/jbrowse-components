@@ -93,7 +93,7 @@ describe('<ConfirmTrack />', () => {
         trackData={{ uri: 'test.bam', config: [] }}
         trackName=""
         setTrackName={mockFunction}
-        trackType="PileupTrack"
+        trackType="AlignmentsTrack"
         setTrackType={mockFunction}
         trackAdapter={{
           type: 'FromConfigAdapter',

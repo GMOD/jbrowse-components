@@ -71,7 +71,6 @@ test('create track config', async () => {
   expect(getSnapshot(config2)).toMatchSnapshot()
 })
 
-// test could use work, doesn't go into config
 test('has pileup and alignment tracks', async () => {
   const session = createTestSession()
   const { pluginManager } = session

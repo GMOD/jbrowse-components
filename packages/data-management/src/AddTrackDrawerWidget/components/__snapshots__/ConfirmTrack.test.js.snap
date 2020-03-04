@@ -32,7 +32,7 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
   </code>
    and guessing track type 
   <code>
-    PileupTrack
+    AlignmentsTrack
   </code>
   . Please enter a track name and, if necessary, update the track type.
 </p>
