@@ -618,9 +618,12 @@ const Filter = observer(props => {
               ))}
             </Select>
           </FormControl>
-          <IconButton aria-label="delete filter" onClick={handleFilterDelete}>
-            <ClearIcon />
-          </IconButton>
+
+          <Tooltip title="Clear filter" aria-label="clear">
+            <IconButton aria-label="clear filter" onClick={handleFilterDelete}>
+              <ClearIcon />
+            </IconButton>
+          </Tooltip>
         </ListItem>
       </List>
     </>
@@ -653,9 +656,11 @@ const FilterList = observer(({ schema, type, facets }) => {
         }
         return null
       })}
-      <IconButton aria-label="add" onClick={handleClick}>
-        <AddIcon />
-      </IconButton>
+      <Tooltip title="Add a new filter" aria-label="add">
+        <IconButton aria-label="add" onClick={handleClick}>
+          <AddIcon />
+        </IconButton>
+      </Tooltip>
     </>
   )
 })
