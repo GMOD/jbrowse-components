@@ -15,7 +15,6 @@ import { autorun, observable } from 'mobx'
 import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
 import React from 'react'
 import { getNiceDomain } from '../util'
-import { blankStats } from '../statsUtil'
 import WiggleTrackComponent from './components/WiggleTrackComponent'
 
 // using a map because it preserves order
@@ -189,7 +188,10 @@ const stateModelFactory = (configSchema: any) =>
                   const aborter = new AbortController()
                   self.setLoading(aborter)
                   const stats = await getStats(aborter.signal)
-                  if (isAlive(self) && stats !== blankStats()) {
+                  if (
+                    isAlive(self) &&
+                    Object.values(stats).some(stat => stat !== 0) // check if stats called from blankStats
+                  ) {
                     self.updateStats(stats)
                   }
                 } catch (e) {
