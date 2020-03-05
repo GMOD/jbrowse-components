@@ -14,8 +14,10 @@ const initialState = {
 
 function AlignmentsTrackComponent(props) {
   const [state, setState] = React.useState(initialState)
-  const [coverage, setCoverage] = React.useState(true)
-  const [pileup, setPileup] = React.useState(true)
+  const [trackState, setTrackState] = React.useState({
+    showCoverage: true,
+    showPileup: true,
+  })
 
   const { model } = props
   const { PileupTrack, SNPCoverageTrack } = model
@@ -28,11 +30,9 @@ function AlignmentsTrackComponent(props) {
 
   const handleClick = e => {
     e.preventDefault()
-    setState(prevState => ({
+    setState(() => ({
       mouseX: e.clientX - 2,
       mouseY: e.clientY - 4,
-      showCoverage: prevState.showCoverage || true,
-      showPileup: prevState.showPileup || true,
     }))
   }
 
@@ -40,15 +40,14 @@ function AlignmentsTrackComponent(props) {
     setState(initialState)
   }
 
-  const handleCoverage = e => {
+  const handleTrackToggle = e => {
     e.preventDefault()
-    setCoverage(!coverage)
-    handleClose()
-  }
-
-  const handlePileup = e => {
-    e.preventDefault()
-    setPileup(!pileup)
+    setTrackState(prevState => ({
+      ...trackState,
+      [e.target.getAttribute('name')]: !prevState[
+        e.target.getAttribute('name')
+      ],
+    }))
     handleClose()
   }
 
@@ -73,14 +72,20 @@ function AlignmentsTrackComponent(props) {
           }
         >
           <MenuItem
-            id="showCoverage"
-            onClick={handleCoverage}
-            disabled={!pileup}
+            name="showCoverage"
+            onClick={handleTrackToggle}
+            disabled={!trackState.showPileup}
           >
-            {coverage ? 'Hide Coverage Track' : 'Show Coverage Track'}
+            {trackState.showCoverage
+              ? 'Hide Coverage Track'
+              : 'Show Coverage Track'}
           </MenuItem>
-          <MenuItem id="showPileup" onClick={handlePileup} disabled={!coverage}>
-            {pileup ? 'Hide Pileup Track' : 'Show Pileup Track'}
+          <MenuItem
+            name="showPileup"
+            onClick={handleTrackToggle}
+            disabled={!trackState.showCoverage}
+          >
+            {trackState.showPileup ? 'Hide Pileup Track' : 'Show Pileup Track'}
           </MenuItem>
           <MenuItem onClick={handleClose}>Sort</MenuItem>
           <MenuItem onClick={handleClose}>Copy</MenuItem>
