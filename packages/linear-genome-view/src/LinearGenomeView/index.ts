@@ -483,7 +483,7 @@ export function stateModelFactory(pluginManager: any) {
           }
         }
         self.bpPerPx = clamp(
-          bpSoFar / self.width,
+          bpSoFar / self.viewingRegionWidth,
           self.minBpPerPx,
           self.maxBpPerPx,
         )

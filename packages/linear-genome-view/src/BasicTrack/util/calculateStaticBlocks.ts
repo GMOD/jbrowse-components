@@ -49,7 +49,7 @@ export function calculateBlocksForward(self: LGV, extra = 0) {
   const {
     offsetPx,
     bpPerPx,
-    width,
+    viewingRegionWidth: width,
     displayedRegionsInOrder,
     minimumBlockWidth,
   } = self
