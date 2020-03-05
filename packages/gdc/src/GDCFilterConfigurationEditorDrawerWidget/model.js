@@ -44,4 +44,7 @@ export default pluginManager =>
           return filter.type === type
         })
       },
+      clearFilters() {
+        self.filters.clear()
+      },
     }))

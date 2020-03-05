@@ -6,13 +6,9 @@ import {
 import { iterMap } from '@gmod/jbrowse-core/util'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { getMembers } from 'mobx-state-tree'
-import React, { Fragment } from 'react'
-import Button from '@material-ui/core/Button'
+import React from 'react'
 import Typography from '@material-ui/core/Typography'
-import InputLabel from '@material-ui/core/InputLabel'
 import MenuItem from '@material-ui/core/MenuItem'
-import FormHelperText from '@material-ui/core/FormHelperText'
 import FormControl from '@material-ui/core/FormControl'
 import FormLabel from '@material-ui/core/FormLabel'
 import Select from '@material-ui/core/Select'
@@ -490,6 +486,7 @@ const TrackType = observer(props => {
         <Tooltip
           title="Set the type of features to grab from the GDC portal"
           aria-label="help"
+          placement="right"
         >
           <HelpIcon color="disabled" />
         </Tooltip>
@@ -497,7 +494,6 @@ const TrackType = observer(props => {
       <List>
         <ListItem>
           <FormControl className={classes.formControl}>
-            {/* <InputLabel id="track-type-select-label">Track Type</InputLabel> */}
             <Select
               labelId="track-type-select-label"
               id="track-type-select"
@@ -511,7 +507,6 @@ const TrackType = observer(props => {
               <MenuItem value={'mutation'}>Mutation</MenuItem>
               <MenuItem value={'gene'}>Gene</MenuItem>
             </Select>
-            {/* <FormHelperText>The type of track to display</FormHelperText> */}
           </FormControl>
         </ListItem>
       </List>
@@ -526,7 +521,15 @@ const Filter = observer(props => {
   const classes = useStyles()
   const { schema, filterObject, facets } = props
   const [categoryValue, setCategoryValue] = React.useState(facets[0])
-  const [filterValue, setFilterValue] = React.useState([])
+  const [filterValue, setFilterValue] = React.useState(
+    filterObject.filter ? filterObject.filter.split(',') : [],
+  )
+
+  const handleChangeCategory = event => {
+    setCategoryValue(event.target.value)
+    setFilterValue([])
+    filterObject.setCategory(event.target.value.name)
+  }
 
   const handleChangeFilter = event => {
     setFilterValue(event.target.value)
@@ -554,12 +557,6 @@ const Filter = observer(props => {
     target.adapter.filters.set(JSON.stringify(gdcFilters))
   }
 
-  const handleChangeCategory = event => {
-    setCategoryValue(event.target.value)
-    setFilterValue([])
-    filterObject.setCategory(event.target.value.name)
-  }
-
   const handleFilterDelete = event => {
     schema.deleteFilter(filterObject.id)
     updateTrack(schema.filters, schema.target)
@@ -570,7 +567,6 @@ const Filter = observer(props => {
       <List>
         <ListItem>
           <FormControl className={classes.formControl}>
-            {/* <InputLabel id="category-select-label">Category</InputLabel> */}
             <Select
               labelId="category-select-label"
               id="category-select"
@@ -619,7 +615,7 @@ const Filter = observer(props => {
             </Select>
           </FormControl>
 
-          <Tooltip title="Clear filter" aria-label="clear">
+          <Tooltip title="Clear filter" aria-label="clear" placement="bottom">
             <IconButton aria-label="clear filter" onClick={handleFilterDelete}>
               <ClearIcon />
             </IconButton>
@@ -656,7 +652,7 @@ const FilterList = observer(({ schema, type, facets }) => {
         }
         return null
       })}
-      <Tooltip title="Add a new filter" aria-label="add">
+      <Tooltip title="Add a new filter" aria-label="add" placement="right">
         <IconButton aria-label="add" onClick={handleClick}>
           <AddIcon />
         </IconButton>
@@ -665,14 +661,41 @@ const FilterList = observer(({ schema, type, facets }) => {
   )
 })
 
+function loadFilters(schema) {
+  const filters = JSON.parse(schema.target.adapter.filters.value)
+  if (filters.content && filters.content.length > 0) {
+    for (const filter of filters.content) {
+      let type
+      let name = filter.content.field
+      if (filter.content.field.startsWith('cases.')) {
+        type = 'case'
+        name = name.replace('cases.', '')
+      } else if (filter.content.field.startsWith('ssms.')) {
+        type = 'ssm'
+        name = name.replace('ssms.', '')
+      } else if (filter.content.field.startsWith('genes.')) {
+        type = 'gene'
+        name = name.replace('v.', '')
+      }
+      schema.addFilter(uuidv4(), name, type, filter.content.value.join(','))
+    }
+  }
+}
+
 const GDCQueryBuilder = observer(({ schema }) => {
+  schema.clearFilters()
+  loadFilters(schema)
   const classes = useStyles()
   return (
     <>
       <TrackType {...schema.target} />
       <Typography variant="h6" className={classes.text}>
         Filters
-        <Tooltip title="Apply filters to the current track" aria-label="help">
+        <Tooltip
+          title="Apply filters to the current track"
+          aria-label="help"
+          placement="right"
+        >
           <HelpIcon color="disabled" />
         </Tooltip>
       </Typography>
