@@ -188,7 +188,10 @@ const stateModelFactory = (configSchema: any) =>
                   const aborter = new AbortController()
                   self.setLoading(aborter)
                   const stats = await getStats(aborter.signal)
-                  if (isAlive(self)) {
+                  if (
+                    isAlive(self) &&
+                    Object.values(stats).some(stat => stat !== 0) // check if stats called from blankStats
+                  ) {
                     self.updateStats(stats)
                   }
                 } catch (e) {
