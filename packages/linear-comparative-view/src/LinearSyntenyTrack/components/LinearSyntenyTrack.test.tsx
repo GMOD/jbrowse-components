@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies,@typescript-eslint/no-explicit-any */
 import { render } from '@testing-library/react'
-import { types } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import ViewType from '@gmod/jbrowse-core/pluggableElementTypes/ViewType'
 import React from 'react'
 import Plugin from '@gmod/jbrowse-core/Plugin'
@@ -16,6 +16,13 @@ import {
   configSchema as mcscanAdapterConfigSchema,
 } from '../../MCScanAnchorsAdapter'
 import { stateModelFactory, configSchemaFactory } from '..'
+
+/* This test does a lot of mocking to setup a realistic environment that an actual
+ * linear synteny track can be rendered in
+ *
+ * This involves: creating stub plugin manager, adding adapter and view types
+ * mocking out a full view concept, and importing renderers
+ */
 
 class MCScanAdapterPlugin extends Plugin {
   // @ts-ignore
@@ -139,6 +146,23 @@ const createSyntenyTrack = () =>
 // }
 test('test rendering synteny data', async () => {
   const view = createSyntenyTrack()
+  const viewModel = getView()
+  const session = types
+    .model({
+      name: 'testSession',
+      view: types.maybe(viewModel),
+      configuration: types.frozen(),
+    })
+    .actions(self => ({
+      setView(v: Instance<typeof viewModel>) {
+        self.view = v
+        return v
+      },
+    }))
+    .create({
+      configuration: {},
+    })
+  session.setView(view)
 
   const { findByTestId, container } = render(
     <LinearSyntenyTrack model={view.tracks[0]} />,

@@ -1,12 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, cast, Instance, getParent, addDisposer } from 'mobx-state-tree'
-import { reaction } from 'mobx'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import jsonStableStringify from 'json-stable-stringify'
+import { getSession } from '@gmod/jbrowse-core/util'
 import {
+  readConfObject,
   getConf,
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
+import { reaction } from 'mobx'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 
 import {
@@ -74,32 +78,33 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         type: types.literal('LinearSyntenyTrack'),
         renderDelay: types.number,
         configuration: ConfigurationReference(configSchema),
-        syntenyBlocks: syntenyBlockState,
+        syntenyBlock: syntenyBlockState,
       }),
     )
     .volatile(self => ({
+      // avoid circular typescript reference by casting to generic functional component
       ReactComponent: (LinearSyntenyTrackComponent as unknown) as React.FC,
     }))
     .views(self => ({
-      get subtracks(): any[] {
-        const subtracks: any[] = []
-        const parentView = getParent(self, 2)
-        parentView.views.forEach((subview: any) => {
-          subview.tracks.forEach((subviewTrack: any) => {
-            const subtrackId = getConf(subviewTrack, 'trackId')
-            if (this.trackIds.includes(subtrackId)) {
-              subtracks.push(subviewTrack)
-            }
-          })
-        })
-        return subtracks
-      },
+      // get subtracks(): any[] {
+      //   const subtracks: any[] = []
+      //   const parentView = getParent(self, 2)
+      //   parentView.views.forEach((subview: any) => {
+      //     subview.tracks.forEach((subviewTrack: any) => {
+      //       const subtrackId = getConf(subviewTrack, 'trackId')
+      //       if (this.trackIds.includes(subtrackId)) {
+      //         subtracks.push(subviewTrack)
+      //       }
+      //     })
+      //   })
+      //   return subtracks
+      // },
 
-      get subtrackFeatures() {
-        return new CompositeMap<string, Feature>(
-          this.subtracks.map(t => t.features),
-        )
-      },
+      // get subtrackFeatures() {
+      //   return new CompositeMap<string, Feature>(
+      //     this.subtracks.map(t => t.features),
+      //   )
+      // },
 
       get adapterConfig() {
         // TODO possibly enriches with the adapters from associated trackIds
@@ -128,10 +133,47 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
     }))
 }
 
-type SyntenyTrack = ReturnType<typeof stateModelFactory>
+type SyntenyTrackModel = ReturnType<typeof stateModelFactory>
+type SyntenyTrack = Instance<SyntenyTrackModel>
 
-function renderBlockData(self: Instance<SyntenyTrack>) {
-  return {}
+function renderBlockData(self: SyntenyTrack) {
+  try {
+    const { rpcManager } = getSession(self) as any
+    const track = self
+
+    // @ts-ignore
+    const { renderProps, rendererType } = track
+    const { config } = renderProps
+    // This line is to trigger the mobx reaction when the config changes
+    // It won't trigger the reaction if it doesn't think we're accessing it
+    readConfObject(config)
+
+    const sequenceConfig: { type?: string } = {}
+
+    const { adapterConfig } = self
+    const adapterConfigId = jsonStableStringify(adapterConfig)
+    return {
+      rendererType,
+      rpcManager,
+      renderProps,
+      trackError: '', // track.error,
+      renderArgs: {
+        adapterType: adapterConfig.name,
+        adapterConfig,
+        sequenceAdapterType: sequenceConfig.type,
+        sequenceAdapterConfig: sequenceConfig,
+        rendererType: rendererType.name,
+        renderProps,
+        sessionId: adapterConfigId,
+        timeout: 1000000, // 10000,
+      },
+    }
+  } catch (error) {
+    console.error(error)
+    return {
+      trackError: error,
+    }
+  }
 }
 
 function renderBlockEffect(

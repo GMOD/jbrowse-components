@@ -6,6 +6,7 @@ import React from 'react'
 
 function LinearSyntenyRendering(props) {
   const { width, height } = props
+  console.log('i have been called')
 
   const canvasWidth = Math.ceil(width)
   // need to call this in render so we get the right observer behavior
