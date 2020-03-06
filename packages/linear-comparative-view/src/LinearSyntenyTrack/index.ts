@@ -27,7 +27,6 @@ interface Block {
 const syntenyBlockState = types
   .model('SyntenyBlock', {
     key: types.string,
-    displayedRegions: types.frozen(),
   })
   .volatile(self => ({
     renderInProgress: undefined as AbortController | undefined,
