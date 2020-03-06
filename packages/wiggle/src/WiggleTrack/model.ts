@@ -190,7 +190,7 @@ const stateModelFactory = (configSchema: any) =>
                   const stats = await getStats(aborter.signal)
                   if (
                     isAlive(self) &&
-                    Object.values(stats).some(stat => stat !== 0) // check if stats called from blankStats
+                    !stats.emptyRegion // check if stats returned from empty region
                   ) {
                     self.updateStats(stats)
                   }
