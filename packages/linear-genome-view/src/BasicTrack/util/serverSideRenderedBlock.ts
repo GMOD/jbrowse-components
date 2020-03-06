@@ -204,7 +204,13 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
     }
     const adapterConfig = getConf(track, 'adapter')
-    const adapterConfigId = jsonStableStringify(adapterConfig)
+    // Only subtracks will have parent tracks with configs
+    // They use parent's adapter config for matching sessionId
+    const parentTrack = getParent(track)
+    const adapterConfigId = parentTrack.configuration
+      ? jsonStableStringify(getConf(parentTrack, 'adapter'))
+      : jsonStableStringify(adapterConfig)
+
     return {
       rendererType,
       rpcManager,
