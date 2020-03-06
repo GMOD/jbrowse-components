@@ -1,6 +1,5 @@
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import RendererType from '@gmod/jbrowse-core/pluggableElementTypes/RendererType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 
 import {

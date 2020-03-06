@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any,import/no-extraneous-dependencies */
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { GenericFilehandle } from 'generic-filehandle'
@@ -85,7 +85,6 @@ export default class extends BaseAdapter {
   getFeatures(region: IRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       await this.setup(opts)
-      let feats
       const index = this.assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
         const features = this.subadapters[index].getFeatures(region, {})

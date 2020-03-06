@@ -1,12 +1,11 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+/* eslint-disable import/no-extraneous-dependencies,@typescript-eslint/no-explicit-any */
 import { render } from '@testing-library/react'
-import { types, getSnapshot } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import ViewType from '@gmod/jbrowse-core/pluggableElementTypes/ViewType'
 import React from 'react'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-// eslint-disable-next-line import/no-extraneous-dependencies
 import {
   AdapterClass as NCListAdapter,
   configSchema as nclistAdapterConfigSchema,

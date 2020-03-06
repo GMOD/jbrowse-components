@@ -1,11 +1,8 @@
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import '@testing-library/jest-dom/extend-expect'
-// @ts-ignore
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import LinearSyntenyRenderer, { LayoutTuple } from './LinearSyntenyRenderer'
 import configSchema from './configSchema'
-
-const fs = require('fs')
 
 expect.extend({ toMatchImageSnapshot })
 
