@@ -165,9 +165,14 @@ export default function RefNameAutocomplete({
 
   const regionNames = regions.map(region => region.refName)
 
-  function onChange(event: React.ChangeEvent<{}>, newRegionName: string) {
-    setSelectedRegionName(newRegionName)
-    onSelect(regions.find(region => region.refName === newRegionName))
+  function onChange(
+    event: React.ChangeEvent<{}>,
+    newRegionName: string | null,
+  ) {
+    if (newRegionName) {
+      setSelectedRegionName(newRegionName)
+      onSelect(regions.find(region => region.refName === newRegionName))
+    }
   }
 
   return (
