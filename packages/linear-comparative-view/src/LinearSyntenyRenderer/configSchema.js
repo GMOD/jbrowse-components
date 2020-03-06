@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import { types } from 'mobx-state-tree'
 
 export default ConfigurationSchema(
   'LinearSyntenyRenderer',
@@ -12,7 +11,7 @@ export default ConfigurationSchema(
   return s === -1 ? '#8F8FD8': '#EC8B8B'
 }`,
       functionSignature: ['feature'],
-    }
+    },
   },
   { explicitlyTyped: true },
 )
