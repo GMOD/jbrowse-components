@@ -260,14 +260,14 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               </div>
               <div
                 aria-expanded="false"
-                class="MuiAutocomplete-root"
+                class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
                 role="combobox"
               >
                 <div
-                  class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName"
+                  class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
                 >
                   <div
-                    class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
                     style="padding-top: 2px; padding-bottom: 2px;"
                   >
                     <input
@@ -318,7 +318,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                     >
                       <legend
                         class="PrivateNotchedOutline-legend"
-                        style="width: 0px;"
+                        style="width: 0.01px;"
                       >
                         <span>
                           ​
@@ -553,14 +553,14 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               </div>
               <div
                 aria-expanded="false"
-                class="MuiAutocomplete-root"
+                class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
                 role="combobox"
               >
                 <div
-                  class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName"
+                  class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
                 >
                   <div
-                    class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
                     style="padding-top: 2px; padding-bottom: 2px;"
                   >
                     <input
@@ -611,7 +611,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                     >
                       <legend
                         class="PrivateNotchedOutline-legend"
-                        style="width: 0px;"
+                        style="width: 0.01px;"
                       >
                         <span>
                           ​

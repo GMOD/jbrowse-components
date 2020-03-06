@@ -1,4 +1,4 @@
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles, useTheme } from '@material-ui/core/styles'
 
 import { observer, PropTypes } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'

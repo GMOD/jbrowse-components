@@ -26,6 +26,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
               checked=""
               class="PrivateSwitchBase-input"
               data-testid="addTrackFromFileRadio"
+              name="TrackSourceSelectRadioGroup"
               type="radio"
               value="fromFile"
             />
@@ -79,6 +80,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
             <input
               class="PrivateSwitchBase-input"
               data-testid="addTrackFromConfigRadio"
+              name="TrackSourceSelectRadioGroup"
               type="radio"
               value="fromConfig"
             />

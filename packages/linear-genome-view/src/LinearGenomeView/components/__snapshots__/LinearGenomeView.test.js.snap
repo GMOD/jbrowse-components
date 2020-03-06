@@ -120,14 +120,14 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
     </div>
     <div
       aria-expanded="false"
-      class="MuiAutocomplete-root"
+      class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
       role="combobox"
     >
       <div
-        class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName"
+        class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
       >
         <div
-          class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+          class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
           style="padding-top: 2px; padding-bottom: 2px;"
         >
           <input
@@ -178,7 +178,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           >
             <legend
               class="PrivateNotchedOutline-legend"
-              style="width: 0px;"
+              style="width: 0.01px;"
             >
               <span>
                 ​
@@ -580,14 +580,12 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
             <fieldset
               aria-hidden="true"
               class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-              style="padding-left: 8px;"
             >
               <legend
-                class="PrivateNotchedOutline-legend"
-                style="width: 0px;"
+                class="PrivateNotchedOutline-legendLabelled PrivateNotchedOutline-legendNotched"
               >
                 <span>
-                  ​
+                  Assembly
                 </span>
               </legend>
             </fieldset>
@@ -604,11 +602,11 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
       >
         <div
           aria-expanded="false"
-          class="MuiAutocomplete-root"
+          class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
           role="combobox"
         >
           <div
-            class="MuiFormControl-root MuiTextField-root makeStyles-importFormEntry MuiFormControl-marginNormal"
+            class="MuiFormControl-root MuiTextField-root makeStyles-importFormEntry MuiFormControl-marginNormal MuiFormControl-fullWidth"
           >
             <label
               class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled"
@@ -619,7 +617,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
               Sequence
             </label>
             <div
-              class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+              class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
             >
               <input
                 aria-autocomplete="list"
@@ -666,14 +664,12 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
               <fieldset
                 aria-hidden="true"
                 class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-                style="padding-left: 8px;"
               >
                 <legend
-                  class="PrivateNotchedOutline-legend"
-                  style="width: 0px;"
+                  class="PrivateNotchedOutline-legendLabelled PrivateNotchedOutline-legendNotched"
                 >
                   <span>
-                    ​
+                    Sequence
                   </span>
                 </legend>
               </fieldset>
@@ -830,14 +826,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
     </div>
     <div
       aria-expanded="false"
-      class="MuiAutocomplete-root"
+      class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
       role="combobox"
     >
       <div
-        class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName"
+        class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
       >
         <div
-          class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+          class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
           style="padding-top: 2px; padding-bottom: 2px;"
         >
           <input
@@ -888,7 +884,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           >
             <legend
               class="PrivateNotchedOutline-legend"
-              style="width: 0px;"
+              style="width: 0.01px;"
             >
               <span>
                 ​
