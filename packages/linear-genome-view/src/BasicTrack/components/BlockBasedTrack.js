@@ -9,7 +9,7 @@ import TrackBlocks from './TrackBlocks'
 import AlignmentsTrackBlocks from './AlignmentsTrackBlocks'
 
 function BlockBasedTrack(props) {
-  const { model, children } = props
+  const { model, children, showPileup, showSNPCoverage } = props
   return (
     <Track {...props} trackId={getConf(model, 'trackId')}>
       {model.trackMessageComponent ? (
@@ -18,6 +18,8 @@ function BlockBasedTrack(props) {
         <AlignmentsTrackBlocks
           {...props}
           viewModel={getParent(getParent(model))}
+          showPileup={showPileup}
+          showSNPCoverage={showSNPCoverage}
         />
       ) : (
         <TrackBlocks {...props} viewModel={getParent(getParent(model))} />
@@ -30,6 +32,8 @@ function BlockBasedTrack(props) {
 BlockBasedTrack.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
   children: PropTypes.node,
+  showPileup: PropTypes.bool.isRequired,
+  showSNPCoverage: PropTypes.bool.isRequired,
 }
 
 BlockBasedTrack.defaultProps = {

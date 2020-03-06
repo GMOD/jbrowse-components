@@ -58,8 +58,16 @@ function AlignmentsTrackComponent(props) {
     //   {showScalebar ? <YScaleBar model={SNPCoverageTrack} /> : null}
     // </BlockBasedTrack>
     <div onContextMenu={handleClick} style={{ position: 'relative', height }}>
-      <BlockBasedTrack {...props} {...PileupTrack} {...SNPCoverageTrack}>
-        {showScalebar ? <YScaleBar model={SNPCoverageTrack} /> : null}
+      <BlockBasedTrack
+        {...props}
+        {...PileupTrack}
+        {...SNPCoverageTrack}
+        showPileup={trackState.showPileup}
+        showSNPCoverage={trackState.showCoverage}
+      >
+        {showScalebar && trackState.showCoverage ? (
+          <YScaleBar model={SNPCoverageTrack} />
+        ) : null}
       </BlockBasedTrack>
       <Menu
         keepMounted

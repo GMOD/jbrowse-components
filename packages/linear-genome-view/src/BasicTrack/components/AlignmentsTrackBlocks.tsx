@@ -15,15 +15,19 @@ interface AlignmentsBlockBasedTrackStateModel
 function AlignmentsTrackBlocks({
   model,
   viewModel,
+  showPileup,
+  showSNPCoverage,
 }: {
   model: AlignmentsBlockBasedTrackStateModel
   viewModel: Instance<LinearGenomeViewStateModel>
+  showPileup: boolean
+  showSNPCoverage: boolean
 }) {
   const classes = useStyles()
   const { PileupTrack, SNPCoverageTrack } = model
   return (
     <>
-      {SNPCoverageTrack && (
+      {SNPCoverageTrack && showSNPCoverage && (
         <div
           data-testid="Blockset"
           className={classes.trackBlocks}
@@ -35,7 +39,7 @@ function AlignmentsTrackBlocks({
           <RenderedBlocks model={SNPCoverageTrack} />
         </div>
       )}
-      {PileupTrack && (
+      {PileupTrack && showPileup && (
         <div
           data-testid="Blockset"
           className={classes.trackBlocks}
