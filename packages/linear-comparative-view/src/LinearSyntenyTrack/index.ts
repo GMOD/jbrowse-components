@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, cast, Instance, getParent, addDisposer } from 'mobx-state-tree'
 import { reaction } from 'mobx'
-import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
-import { getContainingView, checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import {
   getConf,
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
+import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
+
 import {
   configSchemaFactory as baseConfigFactory,
   stateModelFactory as baseModelFactory,
