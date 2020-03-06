@@ -57,6 +57,7 @@ export function configSchemaFactory(pluginManager: any) {
         defaultValue: [],
       },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
+      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
     },
     {
       baseConfiguration: baseConfigFactory(pluginManager),

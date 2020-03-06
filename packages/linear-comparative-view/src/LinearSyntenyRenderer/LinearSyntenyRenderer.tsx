@@ -63,12 +63,6 @@ interface LayoutRecord {
 }
 
 export type LayoutTuple = [number, number, number, number]
-type RC = React.FC<{
-  [key: string]: unknown
-  width: number
-  height: number
-  imageData: unknown
-}>
 
 export default class LinearSyntenyRenderer extends ComparativeRendererType {
   async makeImageData(props: LinearSyntenyRenderProps) {
@@ -170,7 +164,7 @@ export default class LinearSyntenyRenderer extends ComparativeRendererType {
       this.ReactComponent,
       { ...renderProps, height, width, imageData },
       null,
-    ) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    )
 
     return {
       element,
