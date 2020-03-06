@@ -1,16 +1,17 @@
 import React from 'react'
 import { getDefaultValue } from '../../util/mst-reflection'
 import PluggableElementBase from '../PluggableElementBase'
+import { AnyConfigurationSchemaType } from '../../configuration'
 
 export default class RendererType extends PluggableElementBase {
   ReactComponent: React.ComponentType
 
-  configSchema: any
+  configSchema: AnyConfigurationSchemaType
 
   constructor(stuff: {
     name: string
     ReactComponent: React.ComponentType
-    configSchema: any
+    configSchema: AnyConfigurationSchemaType
   }) {
     super(stuff)
     this.ReactComponent = stuff.ReactComponent
@@ -26,7 +27,7 @@ export default class RendererType extends PluggableElementBase {
     }
   }
 
-  render(props: any) {
+  render(props: Record<string, any>) {
     return { element: React.createElement(this.ReactComponent, props, null) }
   }
 

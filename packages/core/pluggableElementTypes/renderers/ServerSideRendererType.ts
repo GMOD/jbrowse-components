@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderToString } from 'react-dom/server'
 import { filter, ignoreElements, tap } from 'rxjs/operators'
+import { SnapshotOrInstance } from 'mobx-state-tree'
 import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import { IRegion } from '../../mst-types'
 import { readConfObject } from '../../configuration'
 import { checkAbortSignal, iterMap } from '../../util'
-import SimpleFeature, { Feature } from '../../util/simpleFeature'
+import SimpleFeature, {
+  Feature,
+  SimpleFeatureSerialized,
+} from '../../util/simpleFeature'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
@@ -17,8 +21,8 @@ interface BaseRenderArgs {
   filters?: any
   dataAdapter: BaseFeatureDataAdapter
   bpPerPx: number
-  config: AnyConfigurationModel
-  renderProps: { trackModel: any }
+  config: SnapshotOrInstance<AnyConfigurationModel>
+  renderProps: { trackModel: any; blockKey: string }
 }
 
 interface MultiRegionRenderArgs extends BaseRenderArgs {
@@ -31,8 +35,43 @@ interface SingleRegionRenderArgs extends BaseRenderArgs {
   originalRegion: IRegion
 }
 
-type RenderArgs = MultiRegionRenderArgs | SingleRegionRenderArgs
+export type RenderArgs = MultiRegionRenderArgs | SingleRegionRenderArgs
 
+export type RenderArgsSerialized = RenderArgs
+export type RenderArgsDeserialized = RenderArgs & {
+  config: AnyConfigurationModel
+}
+
+export interface RenderResults {
+  html: string
+}
+export interface ResultsSerialized extends RenderResults {
+  features: SimpleFeatureSerialized[]
+}
+
+export interface ResultsDeserialized {
+  html: string
+  blockKey: string
+  features: Map<string, Feature>
+}
+
+export function isSingleRegionRenderArgs(
+  args: RenderArgs,
+): args is SingleRegionRenderArgs {
+  return (
+    (args as SingleRegionRenderArgs).region &&
+    !(args as MultiRegionRenderArgs).regions
+  )
+}
+
+export function isMultiRegionRenderArgs(
+  args: RenderArgs,
+): args is MultiRegionRenderArgs {
+  return (
+    !(args as SingleRegionRenderArgs).region &&
+    (args as MultiRegionRenderArgs).regions
+  )
+}
 export default class ServerSideRenderer extends RendererType {
   /**
    * directly modifies the render arguments to prepare
@@ -47,11 +86,10 @@ export default class ServerSideRenderer extends RendererType {
    * @param {object} args the arguments passed to render
    * @returns {object} the same object
    */
-  serializeArgsInClient(args: RenderArgs) {
+  serializeArgsInClient(args: RenderArgs): RenderArgsSerialized {
     const { trackModel } = args.renderProps
     if (trackModel) {
       args.renderProps = {
-        // @ts-ignore
         blockKey: args.blockKey,
         ...args.renderProps,
         trackModel: {
@@ -60,40 +98,44 @@ export default class ServerSideRenderer extends RendererType {
         },
       }
     }
-    if ((args as MultiRegionRenderArgs).regions) {
-      const r = args as MultiRegionRenderArgs
-      return { ...r, regions: [...r.regions] }
+    if (isMultiRegionRenderArgs(args)) {
+      return {
+        ...args,
+        regions: [...args.regions],
+      }
     }
-
-    const r = args as SingleRegionRenderArgs
-    return { ...r, region: { ...r.region } }
+    if (isSingleRegionRenderArgs(args)) {
+      return { ...args, region: { ...args.region } }
+    }
+    throw new Error('invalid renderer args')
   }
 
-  deserializeResultsInClient(result: { features: any }, args: RenderArgs) {
+  deserializeResultsInClient(
+    result: ResultsSerialized,
+    args: RenderArgs,
+  ): ResultsDeserialized {
     // deserialize some of the results that came back from the worker
-    const featuresMap = new Map<string, Feature>()
+    const deserialized = ({ ...result } as unknown) as ResultsDeserialized
+    const featuresMap = new Map<string, SimpleFeature>()
     result.features.forEach((j: any) => {
-      const f = SimpleFeature.fromJSON({ data: j })
+      const f = SimpleFeature.fromJSON(j)
       featuresMap.set(String(f.id()), f)
     })
-    result.features = featuresMap
-    // @ts-ignore
-    result.blockKey = args.blockKey
-    return result
+    deserialized.features = featuresMap
+    deserialized.blockKey = args.blockKey
+    return deserialized
   }
 
   /**
-   * directly modifies the passed arguments object to
+   * modifies the passed arguments object to
    * inflate arguments as necessary. called in the worker process.
    * @param {object} args the converted arguments to modify
    */
-  deserializeArgsInWorker(args: Record<string, any>) {
-    // @ts-ignore
-    if (this.configSchema) {
-      // @ts-ignore
-      const config = this.configSchema.create(args.config || {})
-      args.config = config
-    }
+  deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
+    const deserialized = ({ ...args } as unknown) as RenderArgsDeserialized
+    const config = this.configSchema.create(args.config || {})
+    deserialized.config = config
+    return deserialized
   }
 
   /**
@@ -102,13 +144,13 @@ export default class ServerSideRenderer extends RendererType {
    * @param {Map} features Map of feature.id() -> feature
    */
   serializeResultsInWorker(
-    result: Record<string, any>,
+    result: { html: string },
     features: Map<string, Feature>,
-    args: RenderArgs,
-  ) {
-    result.features = iterMap(features.values(), f =>
-      f.toJSON ? f.toJSON() : f,
-    )
+    args: RenderArgsDeserialized,
+  ): ResultsSerialized {
+    const serialized = ({ ...result } as unknown) as ResultsSerialized
+    serialized.features = iterMap(features.values(), f => f.toJSON())
+    return serialized
   }
 
   /**
@@ -130,7 +172,7 @@ export default class ServerSideRenderer extends RendererType {
     return result
   }
 
-  getExpandedGlyphRegion(region: IRegion, renderArgs: RenderArgs) {
+  getExpandedGlyphRegion(region: IRegion, renderArgs: RenderArgsDeserialized) {
     if (!region) return region
     const { bpPerPx, config } = renderArgs
     const maxFeatureGlyphExpansion = readConfObject(
@@ -152,21 +194,21 @@ export default class ServerSideRenderer extends RendererType {
    * @param {object} renderArgs
    * @returns {Map} of features as { id => feature, ... }
    */
-  async getFeatures(renderArgs: RenderArgs) {
+  async getFeatures(renderArgs: RenderArgsDeserialized) {
     const { dataAdapter, signal, bpPerPx } = renderArgs
     const features = new Map()
 
     let regions
     let originalRegions
 
-    if ((renderArgs as SingleRegionRenderArgs).region) {
-      const r = renderArgs as SingleRegionRenderArgs
-      regions = [r.region]
-      originalRegions = [r.originalRegion]
+    if (isSingleRegionRenderArgs(renderArgs)) {
+      regions = [renderArgs.region]
+      originalRegions = [renderArgs.originalRegion]
+    } else if (isMultiRegionRenderArgs(renderArgs)) {
+      regions = renderArgs.regions
+      originalRegions = renderArgs.originalRegions
     } else {
-      const r = renderArgs as MultiRegionRenderArgs
-      regions = r.regions
-      originalRegions = r.originalRegions
+      throw new Error('invalid render args type')
     }
 
     if (!regions || regions.length === 0) {
@@ -223,7 +265,7 @@ export default class ServerSideRenderer extends RendererType {
    * @param {FeatureI} feature
    * @returns {boolean} true if this feature passes all configured filters
    */
-  featurePassesFilters(renderArgs: RenderArgs, feature: Feature) {
+  featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
     const filterChain = new SerializableFilterChain({
       filters: renderArgs.filters,
     })
@@ -231,7 +273,9 @@ export default class ServerSideRenderer extends RendererType {
   }
 
   // render method called on the worker
-  async renderInWorker(args: RenderArgs) {
+  async renderInWorker(
+    args: RenderArgsDeserialized,
+  ): Promise<ResultsSerialized> {
     checkAbortSignal(args.signal)
     this.deserializeArgsInWorker(args)
 
@@ -240,15 +284,13 @@ export default class ServerSideRenderer extends RendererType {
 
     const results = await this.render({ ...args, features })
     checkAbortSignal(args.signal)
-    // @ts-ignore
-    results.html = renderToString(results.element)
+    const html = renderToString(results.element)
     delete results.element
 
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out
     // as the result of renderRegionWithWorker.
-    this.serializeResultsInWorker(results, features, args)
-    return results
+    return this.serializeResultsInWorker({ ...results, html }, features, args)
   }
 
   freeResourcesInClient(rpcManager: any, args: RenderArgs) {
@@ -258,7 +300,7 @@ export default class ServerSideRenderer extends RendererType {
     return rpcManager.call(stateGroupName, 'freeResources', serializedArgs)
   }
 
-  freeResourcesInWorker(args: RenderArgs) {
+  freeResourcesInWorker(args: Record<string, any>) {
     /* stub method */
   }
 }

@@ -18,7 +18,7 @@ import { AnyConfigurationModel } from './configurationSchema'
  */
 export function readConfObject(
   confObject: AnyConfigurationModel,
-  slotPath: string[] | string,
+  slotPath: string[] | string | undefined = undefined,
   args: any[] = [],
 ): any {
   if (!confObject) throw new TypeError('must provide conf object to read')

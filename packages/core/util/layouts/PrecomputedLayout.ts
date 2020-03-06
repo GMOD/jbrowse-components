@@ -1,12 +1,17 @@
 import { objectFromEntries } from '..'
-import { RectTuple } from './BaseLayout'
+import {
+  RectTuple,
+  SerializedLayout,
+  BaseLayout,
+  Rectangle,
+} from './BaseLayout'
 
-export default class PrecomputedLayout {
+export default class PrecomputedLayout<T> implements BaseLayout<T> {
   private rectangles: Map<string, RectTuple>
 
   private totalHeight: number
 
-  constructor({ rectangles = {}, totalHeight = 0 }) {
+  constructor({ rectangles = {}, totalHeight = 0 }: SerializedLayout) {
     this.rectangles = new Map(Object.entries(rectangles))
     // rectangles is of the form "featureId": [leftPx, topPx, rightPx, bottomPx]
     this.totalHeight = totalHeight
@@ -32,11 +37,28 @@ export default class PrecomputedLayout {
     return this.totalHeight
   }
 
+  collides(rect: Rectangle<T>, top: number): boolean {
+    throw new Error('Method not implemented.')
+  }
+
+  addRectToBitmap(rect: Rectangle<T>, data: Record<string, T>): void {
+    throw new Error('Method not implemented.')
+  }
+
+  discardRange(left: number, right: number): void {
+    throw new Error('Method not implemented.')
+  }
+
+  serializeRegion(region: { start: number; end: number }): SerializedLayout {
+    throw new Error('Method not implemented.')
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  toJSON(): { rectangles: Record<string, any>; totalHeight: number } {
+  toJSON(): SerializedLayout {
     return {
       rectangles: objectFromEntries(this.rectangles),
       totalHeight: this.totalHeight,
+      maxHeightReached: false,
     }
   }
 }
