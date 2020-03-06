@@ -684,10 +684,8 @@ function loadFilters(schema) {
         name = name.replace('ssms.', '')
       } else if (filter.content.field.startsWith('genes.')) {
         type = 'gene'
-        name = name.replace('v.', '')
+        name = name.replace('genes.', '')
       }
-      const filterByName = caseFacets.find(f => f.name === name)
-      console.log(filterByName)
       schema.addFilter(uuidv4(), name, type, filter.content.value.join(','))
     }
   }

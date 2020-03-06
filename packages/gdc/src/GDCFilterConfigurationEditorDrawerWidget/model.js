@@ -45,6 +45,9 @@ export default pluginManager =>
         })
       },
       clearFilters() {
-        self.filters.clear()
+        // Keep filters that have been added but not set
+        self.filters = self.filters.filter(f => {
+          return f.filter.length === 0
+        })
       },
     }))
