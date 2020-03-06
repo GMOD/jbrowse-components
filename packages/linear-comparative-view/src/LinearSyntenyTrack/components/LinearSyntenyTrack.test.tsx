@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { render } from '@testing-library/react'
-import { types } from 'mobx-state-tree'
+import { types, getSnapshot } from 'mobx-state-tree'
 import ViewType from '@gmod/jbrowse-core/pluggableElementTypes/ViewType'
 import React from 'react'
 import Plugin from '@gmod/jbrowse-core/Plugin'
@@ -95,38 +95,36 @@ const getView = () => {
 
   pluginManager.configure()
   const configSchema = configSchemaFactory(pluginManager)
-  const stateModel = stateModelFactory(pluginManager, configSchema)
-  return { stateModel, configSchema }
+  return stateModelFactory(pluginManager, configSchema)
 }
 
 test('test', () => {
-  const { stateModel, configSchema } = getView()
-  const configuration = configSchema.create({
-    trackId: 'trackId0',
-    name: 'synteny',
-    type: 'LinearSyntenyTrack',
-    adapter: {
-      type: 'MCScanAnchorsAdapter',
-      assemblyNames: ['peach', 'grape'],
-      mcscanAnchorsLocation: {
-        uri: 'test_data/grape.peach.anchors',
-      },
-      subadapters: [
-        {
-          rootUrlTemplate:
-            'https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json',
-        },
-        {
-          rootUrlTemplate:
-            'https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json',
-        },
-      ],
-    },
-  })
+  const view = getView()
 
   // @ts-ignore
-  const model = stateModel.create({
-    configuration,
+  const model = view.create({
+    configuration: {
+      trackId: 'trackId0',
+      name: 'synteny',
+      type: 'LinearSyntenyTrack',
+      adapter: {
+        type: 'MCScanAnchorsAdapter',
+        assemblyNames: ['peach', 'grape'],
+        mcscanAnchorsLocation: {
+          uri: 'test_data/grape.peach.anchors',
+        },
+        subadapters: [
+          {
+            rootUrlTemplate:
+              'https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json',
+          },
+          {
+            rootUrlTemplate:
+              'https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json',
+          },
+        ],
+      },
+    },
     renderDelay: 100,
     syntenyBlocks: { key: 'test' },
     type: 'LinearSyntenyTrack',

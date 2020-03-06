@@ -93,12 +93,8 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       },
 
       get adapterConfig() {
-        return {
-          type: 'MCScanAnchorsAdapter',
-          mcscanAnchorsLocation: getConf(self, 'mcscanAnchors'),
-          geneAdapter1: getConf(self, 'geneAdapter1'),
-          geneAdapter2: getConf(self, 'geneAdapter2'),
-        }
+        console.log(getConf(self, 'trackIds'))
+        return getConf(self, 'adapter')
       },
 
       get trackIds() {
@@ -111,6 +107,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       },
 
       afterAttach() {
+        console.log(self.adapterConfig)
         addDisposer(
           self,
           reaction(
