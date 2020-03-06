@@ -39,7 +39,7 @@ function LoadingMessage() {
   })
 
   return shown ? (
-    <div className={classes.loading}>
+    <div data-testid="loading-synteny" className={classes.loading}>
       Loading &hellip;
       <LinearProgress />
     </div>

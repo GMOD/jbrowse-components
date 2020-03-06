@@ -95,41 +95,57 @@ const getView = () => {
 
   pluginManager.configure()
   const configSchema = configSchemaFactory(pluginManager)
-  return stateModelFactory(pluginManager, configSchema)
-}
-
-test('test', () => {
-  const view = getView()
-
-  // @ts-ignore
-  const model = view.create({
-    configuration: {
-      trackId: 'trackId0',
-      name: 'synteny',
-      type: 'LinearSyntenyTrack',
-      adapter: {
-        type: 'MCScanAnchorsAdapter',
-        assemblyNames: ['peach', 'grape'],
-        mcscanAnchorsLocation: {
-          uri: 'test_data/grape.peach.anchors',
-        },
-        subadapters: [
-          {
-            rootUrlTemplate:
-              'https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json',
-          },
-          {
-            rootUrlTemplate:
-              'https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json',
-          },
-        ],
-      },
-    },
-    renderDelay: 100,
-    syntenyBlocks: { key: 'test' },
-    type: 'LinearSyntenyTrack',
+  return types.model('LinearSyntenyView', {
+    type: 'LinearSyntenyView',
+    views: types.array(types.frozen()),
+    tracks: types.array(stateModelFactory(pluginManager, configSchema)),
   })
-  const { container } = render(<LinearSyntenyTrack model={model} />)
+}
+const createSyntenyTrack = () =>
+  // @ts-ignore
+  getView().create({
+    tracks: [
+      {
+        configuration: {
+          trackId: 'trackId0',
+          name: 'synteny',
+          type: 'LinearSyntenyTrack',
+          adapter: {
+            type: 'MCScanAnchorsAdapter',
+            assemblyNames: ['peach', 'grape'],
+            mcscanAnchorsLocation: {
+              uri: 'test_data/grape.peach.anchors',
+            },
+            subadapters: [
+              {
+                rootUrlTemplate:
+                  'https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json',
+              },
+              {
+                rootUrlTemplate:
+                  'https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json',
+              },
+            ],
+          },
+        },
+        renderDelay: 100,
+        syntenyBlocks: { key: 'test' },
+        type: 'LinearSyntenyTrack',
+      },
+    ],
+  })
+
+// function timeout(ms) {
+//   return new Promise(resolve => setTimeout(resolve, ms))
+// }
+test('test rendering synteny data', async () => {
+  const view = createSyntenyTrack()
+
+  const { findByTestId, container } = render(
+    <LinearSyntenyTrack model={view.tracks[0]} />,
+  )
+  await findByTestId('loading-synteny')
+
   expect(container).toMatchSnapshot()
   expect(1).toBe(1)
 })

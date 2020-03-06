@@ -39,6 +39,14 @@ const syntenyBlockState = types
     renderingComponent: undefined as any,
     renderProps: undefined as any,
   }))
+  .actions(self => ({
+    afterAttach() {
+      this.setFilled()
+    },
+    setFilled() {
+      self.filled = true
+    },
+  }))
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
     'LinearSyntenyTrack',
@@ -93,7 +101,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       },
 
       get adapterConfig() {
-        console.log(getConf(self, 'trackIds'))
+        // TODO possibly enriches with the adapters from associated trackIds
         return getConf(self, 'adapter')
       },
 
@@ -102,12 +110,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       },
     }))
     .actions(self => ({
-      featurePassesFilters(feature: Feature) {
-        return true
-      },
-
       afterAttach() {
-        console.log(self.adapterConfig)
         addDisposer(
           self,
           reaction(
