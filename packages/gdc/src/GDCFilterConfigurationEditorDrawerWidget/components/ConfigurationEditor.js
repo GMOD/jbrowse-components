@@ -17,11 +17,11 @@ import Checkbox from '@material-ui/core/Checkbox'
 import ListItemText from '@material-ui/core/ListItemText'
 import AddIcon from '@material-ui/icons/Add'
 import ClearIcon from '@material-ui/icons/Clear'
+import HelpIcon from '@material-ui/icons/Help'
 import IconButton from '@material-ui/core/IconButton'
 import { v4 as uuidv4 } from 'uuid'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
-import HelpIcon from '@material-ui/icons/Help'
 import Tooltip from '@material-ui/core/Tooltip'
 
 const ssmFacets = [
@@ -520,7 +520,11 @@ const TrackType = observer(props => {
 const Filter = observer(props => {
   const classes = useStyles()
   const { schema, filterObject, facets } = props
-  const [categoryValue, setCategoryValue] = React.useState(facets[0])
+  const [categoryValue, setCategoryValue] = React.useState(
+    filterObject.category
+      ? facets.find(f => f.name === filterObject.category)
+      : facets[0],
+  )
   const [filterValue, setFilterValue] = React.useState(
     filterObject.filter ? filterObject.filter.split(',') : [],
   )
@@ -615,8 +619,8 @@ const Filter = observer(props => {
             </Select>
           </FormControl>
 
-          <Tooltip title="Clear filter" aria-label="clear" placement="bottom">
-            <IconButton aria-label="clear filter" onClick={handleFilterDelete}>
+          <Tooltip title="Remove filter" aria-label="remove" placement="bottom">
+            <IconButton aria-label="remove filter" onClick={handleFilterDelete}>
               <ClearIcon />
             </IconButton>
           </Tooltip>
@@ -627,10 +631,10 @@ const Filter = observer(props => {
 })
 
 const FilterList = observer(({ schema, type, facets }) => {
-  const initialSelection = facets[0].name
+  const initialFilterSelection = facets[0].name
 
   const handleClick = event => {
-    schema.addFilter(uuidv4(), initialSelection, type, '')
+    schema.addFilter(uuidv4(), initialFilterSelection, type, '')
   }
 
   return (
@@ -661,6 +665,11 @@ const FilterList = observer(({ schema, type, facets }) => {
   )
 })
 
+/**
+ * Creates a corresponding filter model for existing filters from track
+ * Assumes that the track filters are in a specific format
+ * @param {*} schema schema
+ */
 function loadFilters(schema) {
   const filters = JSON.parse(schema.target.adapter.filters.value)
   if (filters.content && filters.content.length > 0) {
@@ -677,6 +686,8 @@ function loadFilters(schema) {
         type = 'gene'
         name = name.replace('v.', '')
       }
+      const filterByName = caseFacets.find(f => f.name === name)
+      console.log(filterByName)
       schema.addFilter(uuidv4(), name, type, filter.content.value.join(','))
     }
   }
@@ -685,6 +696,7 @@ function loadFilters(schema) {
 const GDCQueryBuilder = observer(({ schema }) => {
   schema.clearFilters()
   loadFilters(schema)
+
   const classes = useStyles()
   return (
     <>
