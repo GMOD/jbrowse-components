@@ -52,7 +52,7 @@ test('adapter can fetch features from volvox.bam', async () => {
     mcscanAnchorsLocation: {
       localPath: require.resolve('./test_data/grape.peach.anchors'),
     },
-    geneAdapters: [new CustomAdapter(), new CustomAdapter()],
+    subadapters: [new CustomAdapter(), new CustomAdapter()],
     assemblyNames: ['grape', 'peach'],
   })
 

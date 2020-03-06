@@ -6,6 +6,11 @@ import React from 'react'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
+// eslint-disable-next-line import/no-extraneous-dependencies
+import {
+  AdapterClass as NCListAdapter,
+  configSchema as nclistAdapterConfigSchema,
+} from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
 import LinearSyntenyTrack from './LinearSyntenyTrack'
 import {
   AdapterClass as MCScanAnchorsAdapter,
@@ -22,6 +27,20 @@ class MCScanAdapterPlugin extends Plugin {
           name: 'MCScanAnchorsAdapter',
           AdapterClass: MCScanAnchorsAdapter,
           configSchema: mcscanAdapterConfigSchema,
+        }),
+    )
+  }
+}
+
+class NCListAdapterPlugin extends Plugin {
+  // @ts-ignore
+  install(pluginManager: any) {
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'NCListAdapter',
+          AdapterClass: NCListAdapter,
+          configSchema: nclistAdapterConfigSchema,
         }),
     )
   }
@@ -70,6 +89,7 @@ const ReactComponent = () => <p>Hello World</p>
 const getView = () => {
   const pluginManager = new PluginManager([
     new MCScanAdapterPlugin(),
+    new NCListAdapterPlugin(),
     new FakeTrackAndViewPlugin(),
   ])
 
@@ -85,7 +105,23 @@ test('test', () => {
     trackId: 'trackId0',
     name: 'synteny',
     type: 'LinearSyntenyTrack',
-    adapter: { type: 'MCScanAdapter' },
+    adapter: {
+      type: 'MCScanAnchorsAdapter',
+      assemblyNames: ['peach', 'grape'],
+      mcscanAnchorsLocation: {
+        uri: 'test_data/grape.peach.anchors',
+      },
+      subadapters: [
+        {
+          rootUrlTemplate:
+            'https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json',
+        },
+        {
+          rootUrlTemplate:
+            'https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json',
+        },
+      ],
+    },
   })
 
   // @ts-ignore

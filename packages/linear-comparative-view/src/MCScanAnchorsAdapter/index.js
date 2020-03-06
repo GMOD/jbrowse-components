@@ -9,6 +9,10 @@ export const configSchema = ConfigurationSchema(
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/mcscan.anchors' },
     },
+    subadapters: {
+      type: 'frozen',
+      defaultValue: [],
+    },
   },
   { explicitlyTyped: true },
 )

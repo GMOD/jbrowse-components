@@ -2,10 +2,11 @@
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { GenericFilehandle } from 'generic-filehandle'
-import { tap, toArray } from 'rxjs/operators'
+import { tap } from 'rxjs/operators'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { AdapterClass as NCListAdapter } from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
 
 type RowToGeneNames = {
   name1: string
@@ -20,29 +21,29 @@ interface GeneNameToRows {
 export default class extends BaseAdapter {
   private initialized = false
 
-  private geneAdapters: BaseAdapter[]
+  private geneNameToRows: GeneNameToRows = {}
+
+  private rowToGeneName: RowToGeneNames = []
+
+  private subadapters: BaseAdapter[]
 
   private assemblyNames: string[]
 
   private mcscanAnchorsLocation: GenericFilehandle
 
-  private geneNameToRows: GeneNameToRows
-
-  private rowToGeneName: RowToGeneNames
-
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: {
     mcscanAnchorsLocation: IFileLocation
-    geneAdapters: any
+    subadapters: BaseAdapter[] | any // todo remove any
     assemblyNames: string[]
   }) {
     super()
-    const { mcscanAnchorsLocation, geneAdapters, assemblyNames } = config
+    const { mcscanAnchorsLocation, subadapters, assemblyNames } = config
     this.mcscanAnchorsLocation = openLocation(mcscanAnchorsLocation)
-    this.geneNameToRows = {}
-    this.rowToGeneName = []
-    this.geneAdapters = geneAdapters
+    this.subadapters = !subadapters[0].getFeatures
+      ? subadapters.map((s: any) => new NCListAdapter(s))
+      : subadapters
     this.assemblyNames = assemblyNames
   }
 
@@ -87,7 +88,7 @@ export default class extends BaseAdapter {
       let feats
       const index = this.assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
-        const features = this.geneAdapters[index].getFeatures(region, {})
+        const features = this.subadapters[index].getFeatures(region, {})
         await features
           .pipe(
             tap(feature => {

@@ -44,16 +44,11 @@ export function configSchemaFactory(pluginManager: any) {
     'LinearSyntenyTrack',
     {
       viewType: 'LinearSyntenyView',
-      mcscanAnchors: {
-        type: 'fileLocation',
-        defaultValue: { uri: '/path/to/mcscan.anchors' },
-      },
       trackIds: {
         type: 'stringArray',
         defaultValue: [],
       },
-      geneAdapter1: pluginManager.pluggableConfigSchemaType('adapter'),
-      geneAdapter2: pluginManager.pluggableConfigSchemaType('adapter'),
+      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
     },
     {
       baseConfiguration: baseConfigFactory(pluginManager),
