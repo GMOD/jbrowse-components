@@ -184,6 +184,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
       // @ts-ignore
       return this.getFeatures({ ...args, regions: view.regions })
     })
+    console.log(await Promise.all(viewFeatures))
     checkAbortSignal(args.signal)
 
     const results = await this.render({ ...args, viewFeatures })

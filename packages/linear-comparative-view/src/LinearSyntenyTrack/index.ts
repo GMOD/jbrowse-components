@@ -231,7 +231,6 @@ function renderBlockData(self: SyntenyTrack) {
 
     const { adapterConfig } = self
     const adapterConfigId = jsonStableStringify(adapterConfig)
-    console.log(adapterConfig, self.adapterType.name)
     return {
       rendererType,
       rpcManager,
