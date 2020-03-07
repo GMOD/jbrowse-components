@@ -130,29 +130,20 @@
         "peach",
         "grape"
       ],
-      "trackIds": [
-        "grape_genes",
-        "peach_genes"
-      ],
-      "mcscanAnchors": {
-        "uri": "test_data/grape.peach.anchors"
+      "renderDelay": 100,
+      "adapter": {
+        "mcscanAnchorsLocation": {
+          "uri": "test_data/grape.peach.anchors"
+        },
+        "type": "MCScanAnchorsAdapter"
       },
-      "geneAdapter1": {
-        "type": "NCListAdapter",
-        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
-      },
-      "geneAdapter2": {
-        "type": "NCListAdapter",
-        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+      "renderer": {
+        "type": "LinearSyntenyRenderer"
       },
       "name": "Grape peach synteny (MCScan)",
       "category": [
         "Annotation"
-      ],
-      "adapter": {
-        "type": "NCListAdapter",
-        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
-      }
+      ]
     },
     {
       "trackId": "peach_genes",

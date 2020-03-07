@@ -1,7 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { types, cast, Instance, getParent, addDisposer } from 'mobx-state-tree'
+/* eslint-disable @typescript-eslint/no-explicit-any,import/no-extraneous-dependencies */
+import {
+  types,
+  cast,
+  Instance,
+  getParent,
+  addDisposer,
+  isAlive,
+} from 'mobx-state-tree'
 import jsonStableStringify from 'json-stable-stringify'
-import { getSession } from '@gmod/jbrowse-core/util'
+import {
+  getSession,
+  checkAbortSignal,
+  isAbortException,
+} from '@gmod/jbrowse-core/util'
 import {
   readConfObject,
   getConf,
@@ -9,9 +20,6 @@ import {
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
 import { reaction } from 'mobx'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-
-import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 
 import {
   configSchemaFactory as baseConfigFactory,
@@ -28,38 +36,15 @@ interface Block {
   key: string
 }
 
-const syntenyBlockState = types
-  .model('SyntenyBlock', {
-    key: types.string,
-  })
-  .volatile(self => ({
-    renderInProgress: undefined as AbortController | undefined,
-    filled: false,
-    data: undefined as any,
-    html: '',
-    error: undefined as Error | undefined,
-    message: undefined as string | undefined,
-    ReactComponent: ServerSideRenderedBlockContent,
-    renderingComponent: undefined as any,
-    renderProps: undefined as any,
-  }))
-  .actions(self => ({
-    afterAttach() {
-      this.setFilled()
-    },
-    setFilled() {
-      self.filled = true
-    },
-  }))
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
     'LinearSyntenyTrack',
     {
       viewType: 'LinearSyntenyView',
-      trackIds: {
-        type: 'stringArray',
-        defaultValue: [],
-      },
+      // trackIds: {
+      //   type: 'stringArray',
+      //   defaultValue: [],
+      // },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
     },
@@ -71,20 +56,30 @@ export function configSchemaFactory(pluginManager: any) {
 }
 
 export function stateModelFactory(pluginManager: any, configSchema: any) {
+  console.log('wtffff', LinearSyntenyTrackComponent)
   return types
     .compose(
+      'LinearSyntenyTrack',
       baseModelFactory(pluginManager, configSchema),
-      types.model('LinearSyntenyTrack', {
-        type: types.literal('LinearSyntenyTrack'),
-        renderDelay: types.number,
-        configuration: ConfigurationReference(configSchema),
-        syntenyBlock: syntenyBlockState,
-      }),
+      types
+        .model('LinearSyntenyTrack', {
+          type: types.literal('LinearSyntenyTrack'),
+          configuration: ConfigurationReference(configSchema),
+        })
+        .volatile(self => ({
+          // avoid circular typescript reference by casting to generic functional component
+          renderInProgress: undefined as AbortController | undefined,
+          filled: false,
+          data: undefined as any,
+          html: '',
+          error: undefined as Error | undefined,
+          message: undefined as string | undefined,
+          renderingComponent: undefined as any,
+          ReactComponent: (LinearSyntenyTrackComponent as unknown) as React.FC,
+          ReactComponent2: (ServerSideRenderedBlockContent as unknown) as React.FC,
+        })),
     )
-    .volatile(self => ({
-      // avoid circular typescript reference by casting to generic functional component
-      ReactComponent: (LinearSyntenyTrackComponent as unknown) as React.FC,
-    }))
+
     .views(self => ({
       // get subtracks(): any[] {
       //   const subtracks: any[] = []
@@ -105,7 +100,19 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       //     this.subtracks.map(t => t.features),
       //   )
       // },
-
+      //
+      get renderProps() {
+        const config = getConf(self, 'renderer')
+        return {
+          notReady: !self.ready,
+          trackModel: self,
+          config,
+          height: self.height,
+        }
+      },
+      get rendererTypeName() {
+        return self.configuration.renderer.type
+      },
       get adapterConfig() {
         // TODO possibly enriches with the adapters from associated trackIds
         return getConf(self, 'adapter')
@@ -115,22 +122,94 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         return getConf(self, 'trackIds') as string[]
       },
     }))
-    .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          reaction(
-            () => renderBlockData(cast(self)),
-            data => renderBlockEffect(cast(self), data),
-            {
-              name: `{track.id} rendering`,
-              delay: self.renderDelay,
-              fireImmediately: true,
-            },
-          ),
-        )
-      },
-    }))
+    .actions(self => {
+      let renderInProgress: undefined | AbortController
+      return {
+        afterAttach() {
+          console.log('afterAttach')
+          addDisposer(
+            self,
+            reaction(
+              () => renderBlockData(cast(self)),
+              data => renderBlockEffect(cast(self), data),
+              {
+                name: `{track.id} rendering`,
+                delay: 100,
+                fireImmediately: true,
+              },
+            ),
+          )
+        },
+
+        setLoading(abortController: AbortController) {
+          if (renderInProgress !== undefined) {
+            if (!renderInProgress.signal.aborted) {
+              renderInProgress.abort()
+            }
+          }
+          self.filled = false
+          self.message = undefined
+          self.html = ''
+          self.data = undefined
+          self.error = undefined
+          self.renderingComponent = undefined
+          renderInProgress = abortController
+        },
+        setMessage(messageText: string) {
+          if (renderInProgress && !renderInProgress.signal.aborted) {
+            renderInProgress.abort()
+          }
+          self.filled = false
+          self.message = messageText
+          self.html = ''
+          self.data = undefined
+          self.error = undefined
+          self.renderingComponent = undefined
+          renderInProgress = undefined
+        },
+        setRendered(
+          data: any,
+          html: any,
+          renderingComponent: React.Component,
+          renderProps: any,
+        ) {
+          self.filled = true
+          self.message = undefined
+          self.html = html
+          self.data = data
+          self.error = undefined
+          self.renderingComponent = renderingComponent
+          renderInProgress = undefined
+        },
+        setError(error: Error) {
+          console.error(error)
+          if (renderInProgress && !renderInProgress.signal.aborted) {
+            renderInProgress.abort()
+          }
+          // the rendering failed for some reason
+          self.filled = false
+          self.message = undefined
+          self.html = ''
+          self.data = undefined
+          self.error = error
+          self.renderingComponent = undefined
+          renderInProgress = undefined
+        },
+        reload() {
+          self.renderInProgress = undefined
+          self.filled = false
+          self.data = undefined
+          self.html = ''
+          self.error = undefined
+          self.message = undefined
+          console.log('here')
+          self.ReactComponent = ServerSideRenderedBlockContent
+          self.renderingComponent = undefined
+          const data = renderBlockData(self as any)
+          renderBlockEffect(cast(self), data)
+        },
+      }
+    })
 }
 
 type SyntenyTrackModel = ReturnType<typeof stateModelFactory>
@@ -141,7 +220,6 @@ function renderBlockData(self: SyntenyTrack) {
     const { rpcManager } = getSession(self) as any
     const track = self
 
-    // @ts-ignore
     const { renderProps, rendererType } = track
     const { config } = renderProps
     // This line is to trigger the mobx reaction when the config changes
@@ -176,9 +254,68 @@ function renderBlockData(self: SyntenyTrack) {
   }
 }
 
-function renderBlockEffect(
+async function renderBlockEffect(
   self: Instance<SyntenyTrack>,
-  data: ReturnType<typeof renderBlockData>,
-) {}
+  props: ReturnType<typeof renderBlockData>,
+  allowRefetch = false,
+) {
+  console.log('testing', self)
+  const {
+    trackError,
+    rendererType,
+    renderProps,
+    rpcManager,
+    renderArgs,
+  } = props
+
+  // note: cannotBeRenderedReason removed during hacking
+  //
+  //
+  if (!isAlive(self)) {
+    return
+  }
+
+  if (trackError) {
+    self.setError(trackError)
+    return
+  }
+
+  const aborter = new AbortController()
+  self.setLoading(aborter)
+  if (renderProps.notReady) return
+
+  try {
+    // @ts-ignore
+    renderArgs.signal = aborter.signal
+    // const callId = [
+    //   assembleLocString(renderArgs.region),
+    //   renderArgs.rendererType,
+    // ]
+    const { html, ...data } = await rendererType.renderInClient(
+      rpcManager,
+      renderArgs,
+    )
+    // if (aborter.signal.aborted) {
+    //   console.log(...callId, 'request to abort render was ignored', html, data)
+    // checkAbortSignal(aborter.signal)
+    self.setRendered(data, html, rendererType.ReactComponent, renderProps)
+  } catch (error) {
+    if (isAbortException(error) && !aborter.signal.aborted) {
+      // there is a bug in the underlying code and something is caching aborts. try to refetch once
+      const track = getParent(self, 2)
+      if (allowRefetch) {
+        console.warn(`cached abort detected, refetching "${track.name}"`)
+        renderBlockEffect(self, props, false)
+        return
+      }
+      console.warn(`cached abort detected, failed to recover "${track.name}"`)
+    }
+    if (isAlive(self) && !isAbortException(error)) {
+      // setting the aborted exception as an error will draw the "aborted" error, and we
+      // have not found how to create a re-render if this occurs
+      self.setError(error)
+    }
+  }
+}
 
 export type LinearSyntenyTrackStateModel = ReturnType<typeof stateModelFactory>

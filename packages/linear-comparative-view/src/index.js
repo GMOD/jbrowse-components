@@ -27,17 +27,7 @@ export default class extends Plugin {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(require('./LinearSyntenyView')),
     )
-    pluginManager.addComparativeRenderer(() => {
-      const configSchema = comparativeTrackConfigSchemaFactory(pluginManager)
-      return new TrackType({
-        name: 'LinearComparativeTrack',
-        configSchema,
-        stateModel: comparativeTrackStateModelFactory(
-          pluginManager,
-          configSchema,
-        ),
-      })
-    })
+
     pluginManager.addTrackType(() => {
       const configSchema = comparativeTrackConfigSchemaFactory(pluginManager)
       return new TrackType({

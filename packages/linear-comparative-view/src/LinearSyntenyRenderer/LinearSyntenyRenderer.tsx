@@ -1,5 +1,5 @@
 /* eslint-disable  no-continue */
-import ComparativeRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeRendererType'
+import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import {
@@ -64,7 +64,7 @@ interface LayoutRecord {
 
 export type LayoutTuple = [number, number, number, number]
 
-export default class LinearSyntenyRenderer extends ComparativeRendererType {
+export default class LinearSyntenyRenderer extends ComparativeServerSideRendererType {
   async makeImageData(props: LinearSyntenyRenderProps) {
     const {
       highResolutionScaling = 1,

@@ -8,9 +8,7 @@ import {
   getParentRenderProps,
   getTrackAssemblyNames,
 } from '@gmod/jbrowse-core/util/tracks'
-import blockBasedTrackModel, {
-  BlockBasedTrackStateModel,
-} from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
+import blockBasedTrackModel from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
 import { autorun, observable } from 'mobx'
 import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
 import React from 'react'
@@ -29,7 +27,7 @@ const stateModelFactory = (configSchema: any) =>
   types
     .compose(
       'WiggleTrack',
-      blockBasedTrackModel as BlockBasedTrackStateModel,
+      blockBasedTrackModel,
       types
         .model({
           type: types.literal('WiggleTrack'),

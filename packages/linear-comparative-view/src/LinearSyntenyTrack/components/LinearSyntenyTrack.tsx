@@ -9,10 +9,9 @@ const LinearSyntenyTrack: React.FC<{
   children?: React.ReactNode
 }> = props => {
   const { model, children } = props
-  const { syntenyBlocks } = model
   return (
     <>
-      <syntenyBlocks.ReactComponent {...props} />
+      <model.ReactComponent2 {...props} />
       {children}
     </>
   )
