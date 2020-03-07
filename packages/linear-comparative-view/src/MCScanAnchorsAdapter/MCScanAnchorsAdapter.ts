@@ -70,6 +70,11 @@ export default class extends BaseAdapter {
     }
   }
 
+  // we have to lie
+  async hasDataForRefName() {
+    return true
+  }
+
   async getRefNames(opts?: BaseOptions) {
     return []
   }
@@ -85,6 +90,9 @@ export default class extends BaseAdapter {
   getFeatures(region: IRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       await this.setup(opts)
+
+      // the index of the assembly name in the region list corresponds to
+      // the adapter in the subadapters list
       const index = this.assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
         const features = this.subadapters[index].getFeatures(region, {})

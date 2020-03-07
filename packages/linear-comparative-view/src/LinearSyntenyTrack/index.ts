@@ -6,6 +6,7 @@ import {
   getParent,
   addDisposer,
   isAlive,
+  getSnapshot,
 } from 'mobx-state-tree'
 import jsonStableStringify from 'json-stable-stringify'
 import {
@@ -116,6 +117,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         // TODO possibly enriches with the adapters from associated trackIds
         return {
           name: self.configuration.adapter.type,
+          assemblyNames: ['peach', 'grape'],
           ...getConf(self, 'adapter'),
         }
       },
@@ -241,7 +243,14 @@ function renderBlockData(self: SyntenyTrack) {
         sequenceAdapterType: sequenceConfig.type,
         sequenceAdapterConfig: sequenceConfig,
         rendererType: rendererType.name,
-        views: [],
+        views: getParent(self, 2).views.map((view: any) => {
+          return {
+            ...(getSnapshot(view) as any),
+            regions: JSON.parse(
+              JSON.stringify(view.dynamicBlocks.getRegions()),
+            ),
+          }
+        }),
         width: 100,
         height: 100,
         renderProps,
@@ -284,7 +293,6 @@ async function renderBlockEffect(
 
   const aborter = new AbortController()
   self.setLoading(aborter)
-  console.log(renderProps)
 
   try {
     // @ts-ignore
@@ -293,7 +301,6 @@ async function renderBlockEffect(
     //   assembleLocString(renderArgs.region),
     //   renderArgs.rendererType,
     // ]
-    console.log('here calling renderInClient')
     const { html, ...data } = await rendererType.renderInClient(
       rpcManager,
       renderArgs,
@@ -303,7 +310,6 @@ async function renderBlockEffect(
     // checkAbortSignal(aborter.signal)
     self.setRendered(data, html, rendererType.ReactComponent, renderProps)
   } catch (error) {
-    console.log('wtf', error)
     if (isAbortException(error) && !aborter.signal.aborted) {
       // there is a bug in the underlying code and something is caching aborts. try to refetch once
       const track = getParent(self, 2)
@@ -315,6 +321,7 @@ async function renderBlockEffect(
       console.warn(`cached abort detected, failed to recover "${track.name}"`)
     }
     if (isAlive(self) && !isAbortException(error)) {
+      console.error(error)
       // setting the aborted exception as an error will draw the "aborted" error, and we
       // have not found how to create a re-render if this occurs
       self.setError(error)

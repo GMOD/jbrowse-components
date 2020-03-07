@@ -91,7 +91,6 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * calls `render` with the RPC manager.
    */
   async renderInClient(rpcManager: any, args: RenderArgs) {
-    console.log('wtf')
     const serializedArgs = this.serializeArgsInClient(args)
 
     const stateGroupName = args.sessionId
@@ -100,7 +99,6 @@ export default class ComparativeServerSideRenderer extends RendererType {
       'comparativeRender',
       serializedArgs,
     )
-    console.log(result)
     // const result = await renderRegionWithWorker(session, serializedArgs)
 
     this.deserializeResultsInClient(result, args)
@@ -182,11 +180,10 @@ export default class ComparativeServerSideRenderer extends RendererType {
     checkAbortSignal(args.signal)
     this.deserializeArgsInWorker(args)
 
-    // TODO getFeatures from each view's regions
-    const viewFeatures = args.views.map(view =>
+    const viewFeatures = args.views.map(view => {
       // @ts-ignore
-      this.getFeatures({ ...args, regions: view.dynamicBlocks }),
-    )
+      return this.getFeatures({ ...args, regions: view.regions })
+    })
     checkAbortSignal(args.signal)
 
     const results = await this.render({ ...args, viewFeatures })
