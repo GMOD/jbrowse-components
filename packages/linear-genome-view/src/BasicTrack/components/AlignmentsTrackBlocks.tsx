@@ -7,8 +7,8 @@ import { RenderedBlocks, useStyles } from './TrackBlocks'
 
 interface AlignmentsBlockBasedTrackStateModel
   extends Instance<BlockBasedTrackStateModel> {
-  PileupTrack?: Instance<BlockBasedTrackStateModel>
-  SNPCoverageTrack?: Instance<BlockBasedTrackStateModel>
+  PileupTrack: Instance<BlockBasedTrackStateModel>
+  SNPCoverageTrack: Instance<BlockBasedTrackStateModel>
 }
 
 // possibly make this code inside alignments folder instead of basic track folder
@@ -25,27 +25,33 @@ function AlignmentsTrackBlocks({
 }) {
   const classes = useStyles()
   const { PileupTrack, SNPCoverageTrack } = model
+
   return (
     <>
-      {SNPCoverageTrack && showSNPCoverage && (
+      {/* {SNPCoverageTrack && showSNPCoverage && ( */}
+      {SNPCoverageTrack && (
         <div
           data-testid="Blockset"
           className={classes.trackBlocks}
           style={{
             left:
               SNPCoverageTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
+            display: showSNPCoverage ? 'flex' : 'none',
           }}
         >
           <RenderedBlocks model={SNPCoverageTrack} />
         </div>
       )}
-      {PileupTrack && showPileup && (
+      {/* {PileupTrack && showPileup && ( */}
+      {PileupTrack && (
         <div
           data-testid="Blockset"
           className={classes.trackBlocks}
           style={{
             left: PileupTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
-            top: SNPCoverageTrack ? SNPCoverageTrack.height : 0,
+            top:
+              SNPCoverageTrack && showSNPCoverage ? SNPCoverageTrack.height : 0,
+            display: showPileup ? 'flex' : 'none',
           }}
         >
           <RenderedBlocks model={PileupTrack} />

@@ -1,11 +1,12 @@
 // import { getConf } from '@gmod/jbrowse-core/configuration'
 import BlockBasedTrack from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/BlockBasedTrack'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { YScaleBar } from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
 import ContextMenu from '@gmod/jbrowse-core/ui/ContextMenu'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
+import SNPCoverageRenderer from '../../SNPCoverageRenderer'
 
 const initialState = {
   mouseX: null,
@@ -52,6 +53,14 @@ function AlignmentsTrackComponent(props) {
     }, 300) // short delay so text changes/disable after menu close
     handleClose()
   }
+
+  // very experimental way to set height when hiding
+  useEffect(() => {
+    const newHeight =
+      SNPCoverageTrack.height +
+      (!trackState.showPileup ? 0 : PileupTrack.height)
+    model.setHeight(newHeight)
+  })
 
   return (
     // <BlockBasedTrack {...props} {...PileupTrack} {...SNPCoverageTrack}>
