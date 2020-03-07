@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderToString } from 'react-dom/server'
-import { filter, ignoreElements, tap } from 'rxjs/operators'
+import { filter, toArray, tap } from 'rxjs/operators'
 import BaseAdapter from '../../BaseAdapter'
 import { IRegion } from '../../mst-types'
-import { readConfObject } from '../../configuration'
-import { checkAbortSignal, iterMap } from '../../util'
-import SimpleFeature, { Feature } from '../../util/simpleFeature'
+import { checkAbortSignal } from '../../util'
+import { Feature } from '../../util/simpleFeature'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
 
@@ -16,6 +15,7 @@ interface RenderArgs {
   filters?: any
   dataAdapter: BaseAdapter
   bpPerPx: number
+  regions?: any
   config: Record<string, any>
   renderProps: { trackModel: any }
   views: any[]
@@ -78,11 +78,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * @param {object} result object containing the results of calling the `render` method
    * @param {Map} features Map of feature.id() -> feature
    */
-  serializeResultsInWorker(
-    result: Record<string, any>,
-    viewFeatures: Map<string, Feature>[],
-    args: RenderArgs,
-  ) {
+  serializeResultsInWorker(result: Record<string, any>, args: RenderArgs) {
     // does nothing currently
   }
 
@@ -159,20 +155,13 @@ export default class ComparativeServerSideRenderer extends RendererType {
       },
     )
 
-    await featureObservable
+    return featureObservable
       .pipe(
         tap(() => checkAbortSignal(signal)),
         filter(feature => this.featurePassesFilters(renderArgs, feature)),
-        tap(feature => {
-          const id = feature.id()
-          if (!id) throw new Error(`invalid feature id "${id}"`)
-          features.set(id, feature)
-        }),
-        ignoreElements(),
+        toArray(),
       )
       .toPromise()
-
-    return features
   }
 
   // render method called on the worker
@@ -180,14 +169,18 @@ export default class ComparativeServerSideRenderer extends RendererType {
     checkAbortSignal(args.signal)
     this.deserializeArgsInWorker(args)
 
-    const viewFeatures = args.views.map(view => {
-      // @ts-ignore
-      return this.getFeatures({ ...args, regions: view.regions })
-    })
-    console.log(await Promise.all(viewFeatures))
+    await Promise.all(
+      args.views.map(async view => {
+        view.features = await this.getFeatures({
+          ...args,
+          regions: view.regions,
+        })
+      }),
+    )
+    console.log(args.views)
     checkAbortSignal(args.signal)
 
-    const results = await this.render({ ...args, viewFeatures })
+    const results = await this.render({ ...args })
     checkAbortSignal(args.signal)
     // @ts-ignore
     results.html = renderToString(results.element)
@@ -196,7 +189,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out
     // as the result of renderRegionWithWorker.
-    this.serializeResultsInWorker(results, viewFeatures, args)
+    this.serializeResultsInWorker(results, args)
     return results
   }
 

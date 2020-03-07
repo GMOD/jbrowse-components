@@ -1,4 +1,4 @@
-/* eslint-disable  no-continue */
+/* eslint-disable  no-continue, no-plusplus */
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
@@ -20,6 +20,7 @@ export interface ReducedLinearGenomeViewModel {
   scaleBarHeight: number
   height: number
   reversed: boolean
+  features: Feature[]
   tracks: {
     scrollTop: number
     height: number
@@ -41,7 +42,6 @@ interface LinearSyntenyRenderProps {
   highResolutionScaling: number
   trackIds: string[]
   views: ReducedLinearGenomeViewModel[]
-  layoutMatches: LayoutMatch[][]
 }
 
 interface LinearSyntenyRenderingProps extends LinearSyntenyRenderProps {
@@ -64,16 +64,57 @@ interface LayoutRecord {
 
 export type LayoutTuple = [number, number, number, number]
 
+function* generateMatches(l1: Feature[], l2: Feature[]) {
+  let i = 0
+  let j = 0
+  console.log('here')
+  while (i < l1.length && j < l2.length) {
+    const a = l1[i].get('syntenyId')
+    const b = l2[j].get('syntenyId')
+    if (a < b) {
+      i++
+    } else if (b < a) {
+      j++
+    } else {
+      console.log(l1, l2)
+      yield [l1[i], l2[j]]
+      i++
+      j++
+    }
+  }
+}
+
 export default class LinearSyntenyRenderer extends ComparativeServerSideRendererType {
   async makeImageData(props: LinearSyntenyRenderProps) {
-    const {
-      highResolutionScaling = 1,
-      width,
-      height,
-      views,
-      layoutMatches = [],
-      trackIds,
-    } = props
+    const { highResolutionScaling = 1, width, height, views, trackIds } = props
+
+    views.forEach(view => {
+      view.features.sort((a, b) => a.get('syntenyId') - b.get('syntenyId'))
+    })
+
+    //     const viewMaps = views.map(view =>
+    //       Object.fromEntries(
+    //         view.features.map(feature => [feature.get('syntenyId'), feature]),
+    //       ),
+    //     )
+    //
+    //console.log(views.map(view => view.features))
+
+    const pairs = []
+    for (let i = 0; i < views.length; i++) {
+      for (let j = 0; j < views.length; j++) {
+        if (i != j) {
+          // NOTE: we might need intra-view "synteny" e.g. ortholog?
+          // similar to breakpoint squiggles in a single LGV
+          for (const match of generateMatches(
+            views[i].features,
+            views[j].features,
+          )) {
+            pairs.push(match)
+          }
+        }
+      }
+    }
 
     const canvas = createCanvas(
       Math.ceil(width * highResolutionScaling),
