@@ -91,6 +91,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * calls `render` with the RPC manager.
    */
   async renderInClient(rpcManager: any, args: RenderArgs) {
+    console.log('wtf')
     const serializedArgs = this.serializeArgsInClient(args)
 
     const stateGroupName = args.sessionId
@@ -99,6 +100,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
       'comparativeRender',
       serializedArgs,
     )
+    console.log(result)
     // const result = await renderRegionWithWorker(session, serializedArgs)
 
     this.deserializeResultsInClient(result, args)

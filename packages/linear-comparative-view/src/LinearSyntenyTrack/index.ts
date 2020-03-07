@@ -56,7 +56,6 @@ export function configSchemaFactory(pluginManager: any) {
 }
 
 export function stateModelFactory(pluginManager: any, configSchema: any) {
-  console.log('wtffff', LinearSyntenyTrackComponent)
   return types
     .compose(
       'LinearSyntenyTrack',
@@ -104,10 +103,10 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       get renderProps() {
         const config = getConf(self, 'renderer')
         return {
-          notReady: !self.ready,
           trackModel: self,
           config,
-          height: self.height,
+          height: 100,
+          width: 100,
         }
       },
       get rendererTypeName() {
@@ -115,7 +114,10 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       },
       get adapterConfig() {
         // TODO possibly enriches with the adapters from associated trackIds
-        return getConf(self, 'adapter')
+        return {
+          name: self.configuration.adapter.type,
+          ...getConf(self, 'adapter'),
+        }
       },
 
       get trackIds() {
@@ -126,7 +128,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       let renderInProgress: undefined | AbortController
       return {
         afterAttach() {
-          console.log('afterAttach')
           addDisposer(
             self,
             reaction(
@@ -202,7 +203,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           self.html = ''
           self.error = undefined
           self.message = undefined
-          console.log('here')
           self.ReactComponent = ServerSideRenderedBlockContent
           self.renderingComponent = undefined
           const data = renderBlockData(self as any)
@@ -224,23 +224,26 @@ function renderBlockData(self: SyntenyTrack) {
     const { config } = renderProps
     // This line is to trigger the mobx reaction when the config changes
     // It won't trigger the reaction if it doesn't think we're accessing it
-    readConfObject(config)
 
     const sequenceConfig: { type?: string } = {}
 
     const { adapterConfig } = self
     const adapterConfigId = jsonStableStringify(adapterConfig)
+    console.log(adapterConfig, self.adapterType.name)
     return {
       rendererType,
       rpcManager,
       renderProps,
       trackError: '', // track.error,
       renderArgs: {
-        adapterType: adapterConfig.name,
+        adapterType: self.adapterType.name,
         adapterConfig,
         sequenceAdapterType: sequenceConfig.type,
         sequenceAdapterConfig: sequenceConfig,
         rendererType: rendererType.name,
+        views: [],
+        width: 100,
+        height: 100,
         renderProps,
         sessionId: adapterConfigId,
         timeout: 1000000, // 10000,
@@ -259,7 +262,6 @@ async function renderBlockEffect(
   props: ReturnType<typeof renderBlockData>,
   allowRefetch = false,
 ) {
-  console.log('testing', self)
   const {
     trackError,
     rendererType,
@@ -282,7 +284,7 @@ async function renderBlockEffect(
 
   const aborter = new AbortController()
   self.setLoading(aborter)
-  if (renderProps.notReady) return
+  console.log(renderProps)
 
   try {
     // @ts-ignore
@@ -291,6 +293,7 @@ async function renderBlockEffect(
     //   assembleLocString(renderArgs.region),
     //   renderArgs.rendererType,
     // ]
+    console.log('here calling renderInClient')
     const { html, ...data } = await rendererType.renderInClient(
       rpcManager,
       renderArgs,
@@ -300,6 +303,7 @@ async function renderBlockEffect(
     // checkAbortSignal(aborter.signal)
     self.setRendered(data, html, rendererType.ReactComponent, renderProps)
   } catch (error) {
+    console.log('wtf', error)
     if (isAbortException(error) && !aborter.signal.aborted) {
       // there is a bug in the underlying code and something is caching aborts. try to refetch once
       const track = getParent(self, 2)

@@ -6,7 +6,6 @@ import React from 'react'
 
 function LinearSyntenyRendering(props) {
   const { width, height } = props
-  console.log('i have been called')
 
   const canvasWidth = Math.ceil(width)
   // need to call this in render so we get the right observer behavior
@@ -24,25 +23,25 @@ function LinearSyntenyRendering(props) {
 }
 
 LinearSyntenyRendering.propTypes = {
-  layout: ReactPropTypes.shape({
-    getRectangles: ReactPropTypes.func.isRequired,
-  }).isRequired,
-  height: ReactPropTypes.number.isRequired,
-  width: ReactPropTypes.number.isRequired,
-  region: CommonPropTypes.Region.isRequired,
-  bpPerPx: ReactPropTypes.number.isRequired,
-  horizontallyFlipped: ReactPropTypes.bool,
-  blockKey: ReactPropTypes.string,
+  // layout: ReactPropTypes.shape({
+  //   getRectangles: ReactPropTypes.func.isRequired,
+  // }).isRequired,
+  // height: ReactPropTypes.number.isRequired,
+  // width: ReactPropTypes.number.isRequired,
+  // region: CommonPropTypes.Region.isRequired,
+  // bpPerPx: ReactPropTypes.number.isRequired,
+  // horizontallyFlipped: ReactPropTypes.bool,
+  // blockKey: ReactPropTypes.string,
 
-  trackModel: ReactPropTypes.shape({
-    configuration: ReactPropTypes.shape({}),
-    selectedFeatureId: ReactPropTypes.string,
-    featureIdUnderMouse: ReactPropTypes.string,
-    getFeatureOverlapping: ReactPropTypes.func,
-    features: ReactPropTypes.shape({ get: ReactPropTypes.func }),
-    blockLayoutFeatures: ReactPropTypes.shape({ get: ReactPropTypes.func }),
-    setFeatureIdUnderMouse: ReactPropTypes.func,
-  }),
+  // trackModel: ReactPropTypes.shape({
+  //   configuration: ReactPropTypes.shape({}),
+  //   selectedFeatureId: ReactPropTypes.string,
+  //   featureIdUnderMouse: ReactPropTypes.string,
+  //   getFeatureOverlapping: ReactPropTypes.func,
+  //   features: ReactPropTypes.shape({ get: ReactPropTypes.func }),
+  //   blockLayoutFeatures: ReactPropTypes.shape({ get: ReactPropTypes.func }),
+  //   setFeatureIdUnderMouse: ReactPropTypes.func,
+  // }),
 
   onFeatureMouseDown: ReactPropTypes.func,
   onFeatureMouseEnter: ReactPropTypes.func,
@@ -65,12 +64,12 @@ LinearSyntenyRendering.propTypes = {
 }
 
 LinearSyntenyRendering.defaultProps = {
-  blockKey: undefined,
-  horizontallyFlipped: false,
-  trackModel: {
-    configuration: {},
-    setFeatureIdUnderMouse: () => {},
-  },
+  // blockKey: undefined,
+  // horizontallyFlipped: false,
+  // trackModel: {
+  //   configuration: {},
+  //   setFeatureIdUnderMouse: () => {},
+  // },
   onFeatureMouseDown: undefined,
   onFeatureMouseEnter: undefined,
   onFeatureMouseOut: undefined,

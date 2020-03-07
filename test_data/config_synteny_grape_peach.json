@@ -135,6 +135,16 @@
         "mcscanAnchorsLocation": {
           "uri": "test_data/grape.peach.anchors"
         },
+        "subadapters": [
+          {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+          },
+          {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+          }
+        ],
         "type": "MCScanAnchorsAdapter"
       },
       "renderer": {

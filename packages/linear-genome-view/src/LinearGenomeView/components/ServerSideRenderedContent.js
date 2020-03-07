@@ -82,7 +82,9 @@ class ServerSideRenderedContent extends Component {
       // so
       requestIdleCallback(
         () => {
-          if (!isAlive(model) || !isAlive(region)) return
+          if (!isAlive(model) || (region && !isAlive(region))) {
+            return
+          }
           const serializedRegion = isStateTreeNode(region)
             ? getSnapshot(region)
             : region
