@@ -1,4 +1,3 @@
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
@@ -26,8 +25,8 @@ LinearSyntenyRendering.propTypes = {
   // layout: ReactPropTypes.shape({
   //   getRectangles: ReactPropTypes.func.isRequired,
   // }).isRequired,
-  // height: ReactPropTypes.number.isRequired,
-  // width: ReactPropTypes.number.isRequired,
+  height: ReactPropTypes.number.isRequired,
+  width: ReactPropTypes.number.isRequired,
   // region: CommonPropTypes.Region.isRequired,
   // bpPerPx: ReactPropTypes.number.isRequired,
   // horizontallyFlipped: ReactPropTypes.bool,

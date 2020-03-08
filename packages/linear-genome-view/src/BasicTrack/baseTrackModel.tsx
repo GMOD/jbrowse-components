@@ -3,10 +3,7 @@ import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
 import { TrackControls } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
-import {
-  getContainingView,
-  getParentRenderProps,
-} from '@gmod/jbrowse-core/util/tracks'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { types } from 'mobx-state-tree'
 import React from 'react'
 

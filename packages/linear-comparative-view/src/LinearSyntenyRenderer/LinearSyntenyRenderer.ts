@@ -67,7 +67,6 @@ export type LayoutTuple = [number, number, number, number]
 function* generateMatches(l1: Feature[], l2: Feature[]) {
   let i = 0
   let j = 0
-  console.log('here')
   while (i < l1.length && j < l2.length) {
     const a = l1[i].get('syntenyId')
     const b = l2[j].get('syntenyId')
@@ -76,7 +75,6 @@ function* generateMatches(l1: Feature[], l2: Feature[]) {
     } else if (b < a) {
       j++
     } else {
-      console.log(l1, l2)
       yield [l1[i], l2[j]]
       i++
       j++
@@ -92,25 +90,32 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
       view.features.sort((a, b) => a.get('syntenyId') - b.get('syntenyId'))
     })
 
-    //     const viewMaps = views.map(view =>
-    //       Object.fromEntries(
-    //         view.features.map(feature => [feature.get('syntenyId'), feature]),
-    //       ),
-    //     )
-    //
-    //console.log(views.map(view => view.features))
-
-    const pairs = []
+    const layoutMatches = []
     for (let i = 0; i < views.length; i++) {
-      for (let j = 0; j < views.length; j++) {
-        if (i != j) {
+      for (let j = i; j < views.length; j++) {
+        if (i !== j) {
           // NOTE: we might need intra-view "synteny" e.g. ortholog?
-          // similar to breakpoint squiggles in a single LGV
+          // similar to breakpoint squiggles in a single LGV, so may not want
+          // the check for i != j
           for (const match of generateMatches(
             views[i].features,
             views[j].features,
           )) {
-            pairs.push(match)
+            const [l1, l2] = match
+            layoutMatches.push([
+              {
+                feature: l1,
+                level: i,
+                refName: l1.get('refName'),
+                layout: [l1.get('start'), 0, l1.get('end'), 10] as LayoutTuple,
+              },
+              {
+                feature: l2,
+                level: j,
+                refName: l2.get('refName'),
+                layout: [l2.get('start'), 0, l2.get('end'), 10] as LayoutTuple,
+              },
+            ])
           }
         }
       }

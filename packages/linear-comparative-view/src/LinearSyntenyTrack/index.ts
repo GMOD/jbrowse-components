@@ -9,13 +9,8 @@ import {
   getSnapshot,
 } from 'mobx-state-tree'
 import jsonStableStringify from 'json-stable-stringify'
+import { getSession, isAbortException } from '@gmod/jbrowse-core/util'
 import {
-  getSession,
-  checkAbortSignal,
-  isAbortException,
-} from '@gmod/jbrowse-core/util'
-import {
-  readConfObject,
   getConf,
   ConfigurationReference,
   ConfigurationSchema,
@@ -223,9 +218,8 @@ function renderBlockData(self: SyntenyTrack) {
     const track = self
 
     const { renderProps, rendererType } = track
-    const { config } = renderProps
-    // This line is to trigger the mobx reaction when the config changes
-    // It won't trigger the reaction if it doesn't think we're accessing it
+    // NOTE the readConfObject(config) was removed because it was not a true
+    // config the way this is setup, may need to reconsider
 
     const sequenceConfig: { type?: string } = {}
 

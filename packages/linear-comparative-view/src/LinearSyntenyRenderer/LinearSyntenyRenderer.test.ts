@@ -1,7 +1,7 @@
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import '@testing-library/jest-dom/extend-expect'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-import LinearSyntenyRenderer, { LayoutTuple } from './LinearSyntenyRenderer'
+import LinearSyntenyRenderer from './LinearSyntenyRenderer'
 import configSchema from './configSchema'
 
 expect.extend({ toMatchImageSnapshot })
@@ -28,7 +28,7 @@ test('test rendering a simple synteny from fake data', async () => {
         features: [
           new SimpleFeature({
             id: 1,
-            data: { start: 100, end: 200, refName: 'chr1' },
+            data: { start: 0, end: 100, refName: 'chr1' },
           }),
         ],
         staticBlocks: [
@@ -47,7 +47,7 @@ test('test rendering a simple synteny from fake data', async () => {
         features: [
           new SimpleFeature({
             id: 1,
-            data: { start: 100, end: 200, refName: 'chr1' },
+            data: { start: 900, end: 999, refName: 'chr1' },
           }),
         ],
         staticBlocks: [
