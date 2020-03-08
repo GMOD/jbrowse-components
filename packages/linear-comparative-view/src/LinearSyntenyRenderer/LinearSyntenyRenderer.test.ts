@@ -25,6 +25,12 @@ test('test rendering a simple synteny from fake data', async () => {
       {
         offsetPx: 0,
         bpPerPx: 1,
+        features: [
+          new SimpleFeature({
+            id: 1,
+            data: { start: 100, end: 200, refName: 'chr1' },
+          }),
+        ],
         staticBlocks: [
           { assemblyName: 'hg38', refName: 'chr1', start: 0, end: 999 },
         ],
@@ -38,6 +44,12 @@ test('test rendering a simple synteny from fake data', async () => {
       {
         offsetPx: 0,
         bpPerPx: 1,
+        features: [
+          new SimpleFeature({
+            id: 1,
+            data: { start: 100, end: 200, refName: 'chr1' },
+          }),
+        ],
         staticBlocks: [
           { assemblyName: 'mm10', refName: 'chr1', start: 0, end: 999 },
         ],
@@ -48,28 +60,6 @@ test('test rendering a simple synteny from fake data', async () => {
         headerHeight: 10,
         scaleBarHeight: 32,
       },
-    ],
-    layoutMatches: [
-      [
-        {
-          level: 0,
-          refName: 'chr1',
-          layout: [0, 0, 100, 10] as LayoutTuple,
-          feature: new SimpleFeature({
-            id: 1,
-            data: { start: 100, end: 200, refName: 'chr1' },
-          }),
-        },
-        {
-          level: 1,
-          refName: 'chr1',
-          layout: [900, 0, 999, 10] as LayoutTuple,
-          feature: new SimpleFeature({
-            id: 2,
-            data: { start: 900, end: 1000, refName: 'chr1' },
-          }),
-        },
-      ],
     ],
   })
   const r = await result.imageData

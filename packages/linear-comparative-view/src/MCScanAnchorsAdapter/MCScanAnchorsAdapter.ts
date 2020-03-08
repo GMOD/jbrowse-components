@@ -41,9 +41,12 @@ export default class extends BaseAdapter {
     super()
     const { mcscanAnchorsLocation, subadapters, assemblyNames } = config
     this.mcscanAnchorsLocation = openLocation(mcscanAnchorsLocation)
+
+    // TODO remove this logic once subadapter is updated by Rob
     this.subadapters = !subadapters[0].getFeatures
       ? subadapters.map((s: any) => new NCListAdapter(s))
       : subadapters
+
     this.assemblyNames = assemblyNames
   }
 
@@ -70,12 +73,15 @@ export default class extends BaseAdapter {
     }
   }
 
-  // we have to lie
   async hasDataForRefName() {
+    // determining this properly is basically a call to getFeatures
+    // so is not really that important, and has to be true or else
+    // getFeatures is never called (BaseAdapter filters it out)
     return true
   }
 
   async getRefNames(opts?: BaseOptions) {
+    // we cannot determine this accurately
     return []
   }
 
@@ -91,14 +97,17 @@ export default class extends BaseAdapter {
     return ObservableCreate<Feature>(async observer => {
       await this.setup(opts)
 
-      // the index of the assembly name in the region list corresponds to
+      // The index of the assembly name in the region list corresponds to
       // the adapter in the subadapters list
       const index = this.assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
-        const features = this.subadapters[index].getFeatures(region, {})
+        const features = this.subadapters[index].getFeatures(region)
         await features
           .pipe(
             tap(feature => {
+              // We first fetch from the NCList and connect each result
+              // with the anchor file via geneNameToRows. Note that each
+              // gene name can correspond to multiple rows
               const rows = this.geneNameToRows[feature.get('name')] || []
               rows.forEach(row => {
                 observer.next(

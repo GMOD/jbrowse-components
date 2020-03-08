@@ -58,7 +58,7 @@ export default abstract class BaseAdapter {
    */
   public abstract getFeatures(
     region: Region,
-    opts: BaseOptions,
+    opts?: BaseOptions,
   ): Observable<Feature>
 
   /**
