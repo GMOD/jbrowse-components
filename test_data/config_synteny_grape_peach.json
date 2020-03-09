@@ -138,11 +138,11 @@
         "subadapters": [
           {
             "type": "NCListAdapter",
-            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+            "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
           },
           {
             "type": "NCListAdapter",
-            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+            "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
           }
         ],
         "type": "MCScanAnchorsAdapter"
@@ -173,7 +173,7 @@
       ],
       "adapter": {
         "type": "NCListAdapter",
-        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+        "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
       },
       "renderer": {
         "type": "PileupRenderer"
@@ -197,7 +197,7 @@
       ],
       "adapter": {
         "type": "NCListAdapter",
-        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+        "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
       },
       "renderer": {
         "type": "SvgFeatureRenderer"
@@ -221,7 +221,7 @@
       ],
       "adapter": {
         "type": "NCListAdapter",
-        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+        "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
       },
       "renderer": {
         "type": "PileupRenderer"
@@ -245,7 +245,7 @@
       ],
       "adapter": {
         "type": "NCListAdapter",
-        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+        "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
       },
       "renderer": {
         "type": "SvgFeatureRenderer"
@@ -253,9 +253,6 @@
     }
   ],
   "configuration": {
-    "rpc": {
-      "defaultDriver": "MainThreadRpcDriver"
-    },
     "updateUrl": true,
     "useLocalStorage": false
   }

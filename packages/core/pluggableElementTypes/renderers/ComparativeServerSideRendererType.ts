@@ -121,7 +121,6 @@ export default class ComparativeServerSideRenderer extends RendererType {
    */
   async getFeatures(renderArgs: RenderArgs) {
     const { dataAdapter, signal, bpPerPx } = renderArgs
-    const features = new Map()
 
     let regions = [] as IRegion[]
 
@@ -130,7 +129,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
 
     if (!regions || regions.length === 0) {
       console.warn('no regions supplied to comparative renderer')
-      return features
+      return []
     }
 
     const requestRegions = regions.map((r: IRegion) => {
