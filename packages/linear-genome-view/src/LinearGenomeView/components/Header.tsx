@@ -1,4 +1,5 @@
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { EditableTypography } from '@gmod/jbrowse-core/ui'
 import Checkbox from '@material-ui/core/Checkbox'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Icon from '@material-ui/core/Icon'
@@ -8,9 +9,6 @@ import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
-import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
@@ -58,6 +56,24 @@ const useStyles = makeStyles(theme => ({
     minWidth: 140,
     margin: theme.spacing(0.5),
     background: theme.palette.background.default,
+  },
+  displayName: {
+    background: theme.palette.secondary.main,
+    paddingTop: 6,
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
+  },
+  inputBase: {
+    color: theme.palette.secondary.contrastText,
+  },
+  inputRoot: {
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.light,
+    },
+  },
+  inputFocused: {
+    borderColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.secondary.light,
   },
   ...buttonStyles(theme),
 }))
@@ -154,44 +170,6 @@ const Controls = observer(({ model }) => {
   )
 })
 
-const TextFieldOrTypography = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
-  const name = model.displayName
-  const [edit, setEdit] = useState(false)
-  const [hover, setHover] = useState(false)
-  return edit ? (
-    <form
-      onSubmit={event => {
-        setEdit(false)
-        event.preventDefault()
-      }}
-    >
-      <TextField
-        value={name}
-        onChange={event => {
-          model.setDisplayName(event.target.value)
-        }}
-        onBlur={() => {
-          setEdit(false)
-          model.setDisplayName(name || '')
-        }}
-      />
-    </form>
-  ) : (
-    <div className={clsx(classes.emphasis, hover ? classes.hovered : null)}>
-      <Typography
-        className={classes.viewName}
-        onClick={() => setEdit(true)}
-        onMouseOver={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-        style={{ color: '#FFFFFF' }}
-      >
-        {name}
-      </Typography>
-    </div>
-  )
-})
-
 function Search({
   onSubmit,
   error,
@@ -246,7 +224,18 @@ export default observer(({ model }: { model: LGV }) => {
   return (
     <div className={classes.headerBar}>
       <Controls model={model} />
-      <TextFieldOrTypography model={model} />
+      <div className={classes.displayName}>
+        <EditableTypography
+          value={model.displayName || ''}
+          setValue={model.setDisplayName}
+          variant="body2"
+          classes={{
+            inputBase: classes.inputBase,
+            inputRoot: classes.inputRoot,
+            inputFocused: classes.inputFocused,
+          }}
+        />
+      </div>
       <div className={classes.spacer} />
 
       <Search onSubmit={model.navToLocstring} error={''} />

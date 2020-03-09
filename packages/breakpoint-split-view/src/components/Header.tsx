@@ -1,4 +1,3 @@
-import clsx from 'clsx'
 import { withSize } from 'react-sizeme'
 import { BreakpointViewModel } from '../model'
 
@@ -6,11 +5,9 @@ import { BreakpointViewModel } from '../model'
 export default ({ jbrequire }: { jbrequire: any }) => {
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useState } = React
+  const { EditableTypography } = jbrequire('@gmod/jbrowse-core/ui')
   const Icon = jbrequire('@material-ui/core/Icon')
   const IconButton = jbrequire('@material-ui/core/IconButton')
-  const TextField = jbrequire('@material-ui/core/TextField')
-  const Typography = jbrequire('@material-ui/core/Typography')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,6 +29,24 @@ export default ({ jbrequire }: { jbrequire: any }) => {
     hovered: {
       background: theme.palette.secondary.light,
     },
+    displayName: {
+      background: theme.palette.secondary.main,
+      paddingTop: 3,
+      paddingLeft: theme.spacing(1),
+      paddingRight: theme.spacing(1),
+    },
+    inputBase: {
+      color: theme.palette.secondary.contrastText,
+    },
+    inputRoot: {
+      '&:hover': {
+        backgroundColor: theme.palette.secondary.light,
+      },
+    },
+    inputFocused: {
+      borderColor: theme.palette.primary.main,
+      backgroundColor: theme.palette.secondary.light,
+    },
   }))
 
   const Controls = observer(({ model }: { model: BreakpointViewModel }) => {
@@ -50,48 +65,6 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   })
 
   Controls.propTypes = {
-    model: PropTypes.objectOrObservableObject.isRequired,
-  }
-
-  function TextFieldOrTypography({ model }: { model: BreakpointViewModel }) {
-    const classes = useStyles()
-    const [name, setName] = useState(model.displayName)
-    const [edit, setEdit] = useState(false)
-    const [hover, setHover] = useState(false)
-    return edit ? (
-      <form
-        onSubmit={(event: React.FormEvent) => {
-          setEdit(false)
-          model.setDisplayName(name)
-          event.preventDefault()
-        }}
-      >
-        <TextField
-          value={name}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            setName(event.target.value)
-          }}
-          onBlur={() => {
-            setEdit(false)
-            model.setDisplayName(name)
-          }}
-        />
-      </form>
-    ) : (
-      <div className={clsx(classes.emphasis, hover ? classes.hovered : null)}>
-        <Typography
-          className={classes.viewName}
-          onClick={() => setEdit(true)}
-          onMouseOver={() => setHover(true)}
-          onMouseLeave={() => setHover(false)}
-          style={{ color: '#FFFFFF' }}
-        >
-          {name}
-        </Typography>
-      </div>
-    )
-  }
-  TextFieldOrTypography.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
 
@@ -164,7 +137,18 @@ export default ({ jbrequire }: { jbrequire: any }) => {
       return (
         <div className={classes.headerBar}>
           <Controls model={model} />
-          <TextFieldOrTypography model={model} />
+          <div className={classes.displayName}>
+            <EditableTypography
+              value={model.displayName || ''}
+              setValue={model.setDisplayName}
+              variant="body2"
+              classes={{
+                inputBase: classes.inputBase,
+                inputRoot: classes.inputRoot,
+                inputFocused: classes.inputFocused,
+              }}
+            />
+          </div>
           <LinkViews model={model} />
           <InteractWithSquiggles model={model} />
           <Sync model={model} />
