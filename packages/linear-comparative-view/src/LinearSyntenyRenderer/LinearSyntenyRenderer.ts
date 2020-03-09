@@ -2,6 +2,7 @@
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import {
   createCanvas,
   createImageBitmap,
@@ -82,45 +83,54 @@ function* generateMatches(l1: Feature[], l2: Feature[]) {
     }
   }
 }
-
+function layoutMatchesFromViews(views: ReducedLinearGenomeViewModel[]) {
+  const layoutMatches = []
+  for (let i = 0; i < views.length; i++) {
+    for (let j = i; j < views.length; j++) {
+      if (i !== j) {
+        // NOTE: we might need intra-view "synteny" e.g. ortholog?
+        // similar to breakpoint squiggles in a single LGV, so may not want
+        // the check for i != j
+        for (const match of generateMatches(
+          views[i].features,
+          views[j].features,
+        )) {
+          const [l1, l2] = match
+          layoutMatches.push([
+            {
+              feature: l1,
+              level: i,
+              refName: l1.get('refName'),
+              layout: [l1.get('start'), 0, l1.get('end'), 10] as LayoutTuple,
+            },
+            {
+              feature: l2,
+              level: j,
+              refName: l2.get('refName'),
+              layout: [l2.get('start'), 0, l2.get('end'), 10] as LayoutTuple,
+            },
+          ])
+        }
+      }
+    }
+  }
+  return layoutMatches
+}
 export default class LinearSyntenyRenderer extends ComparativeServerSideRendererType {
   async makeImageData(props: LinearSyntenyRenderProps) {
-    const { highResolutionScaling = 1, width, height, views, trackIds } = props
+    const {
+      highResolutionScaling = 1,
+      width,
+      height,
+      views,
+      trackIds,
+      config,
+    } = props
 
     views.forEach(view => {
       view.features.sort((a, b) => a.get('syntenyId') - b.get('syntenyId'))
     })
-
-    const layoutMatches = []
-    for (let i = 0; i < views.length; i++) {
-      for (let j = i; j < views.length; j++) {
-        if (i !== j) {
-          // NOTE: we might need intra-view "synteny" e.g. ortholog?
-          // similar to breakpoint squiggles in a single LGV, so may not want
-          // the check for i != j
-          for (const match of generateMatches(
-            views[i].features,
-            views[j].features,
-          )) {
-            const [l1, l2] = match
-            layoutMatches.push([
-              {
-                feature: l1,
-                level: i,
-                refName: l1.get('refName'),
-                layout: [l1.get('start'), 0, l1.get('end'), 10] as LayoutTuple,
-              },
-              {
-                feature: l2,
-                level: j,
-                refName: l2.get('refName'),
-                layout: [l2.get('start'), 0, l2.get('end'), 10] as LayoutTuple,
-              },
-            ])
-          }
-        }
-      }
-    }
+    const layoutMatches = layoutMatchesFromViews(views)
 
     const canvas = createCanvas(
       Math.ceil(width * highResolutionScaling),
@@ -128,7 +138,7 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
     )
     const ctx = canvas.getContext('2d')
     ctx.scale(highResolutionScaling, highResolutionScaling)
-    ctx.fillStyle = 'red'
+    ctx.fillStyle = readConfObject(config, 'color')
     const showIntraviewLinks = false
     const middle = true
     const hideTiny = false
@@ -181,9 +191,6 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
         const y2 = middle
           ? interstitialYPos(level2 < level1, height)
           : overlayYPos(trackIds[1], level2, views, c2, level2 < level1)
-
-        ctx.fillStyle = 'rgba(255,100,100,0.3)'
-        ctx.strokeStyle = 'rgba(50,50,50,0.1)'
 
         ctx.beginPath()
         ctx.moveTo(x11, y1)
