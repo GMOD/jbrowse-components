@@ -241,7 +241,7 @@ function renderBlockData(self: SyntenyTrack) {
         views: getParent(self, 2).views.map((view: any) => {
           return {
             ...(getSnapshot(view) as any),
-            regions: view.dynamicBlocks.getRegions(),
+            regions: view.staticBlocks.getRegions(),
             staticBlocks: view.staticBlocks.getRegions(),
             dynamicBlocks: view.dynamicBlocks.getRegions(),
             displayedRegions: view.displayedRegions,

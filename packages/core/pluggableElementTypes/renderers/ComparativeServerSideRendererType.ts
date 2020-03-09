@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderToString } from 'react-dom/server'
-import { filter, toArray, tap } from 'rxjs/operators'
+import { filter, distinct, toArray, tap } from 'rxjs/operators'
 import BaseAdapter from '../../BaseAdapter'
 import { IRegion } from '../../mst-types'
 import { checkAbortSignal } from '../../util'
@@ -159,6 +159,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
       .pipe(
         tap(() => checkAbortSignal(signal)),
         filter(feature => this.featurePassesFilters(renderArgs, feature)),
+        distinct(feature => feature.id()),
         toArray(),
       )
       .toPromise()
