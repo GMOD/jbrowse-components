@@ -1,7 +1,7 @@
 // import { getConf } from '@gmod/jbrowse-core/configuration'
 import BlockBasedTrack from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/BlockBasedTrack'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { YScaleBar } from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
 import ContextMenu from '@gmod/jbrowse-core/ui/ContextMenu'
 import Menu from '@material-ui/core/Menu'
@@ -28,8 +28,8 @@ function AlignmentsTrackComponent(props) {
   }
 
   // Set up context menu
-  const [state, setState] = React.useState(initialState)
-  const [trackState, setTrackState] = React.useState({
+  const [state, setState] = useState(initialState)
+  const [trackState, setTrackState] = useState({
     showCoverage: true,
     showPileup: true,
   })
@@ -120,6 +120,7 @@ function AlignmentsTrackComponent(props) {
           {trackState.showPileup ? 'Hide Pileup Track' : 'Show Pileup Track'}
         </MenuItem>
         <NestedMenuItem
+          {...props}
           label="Sort"
           parentMenuOpen={!!state}
           rightIcon={<ChevronRight />}
