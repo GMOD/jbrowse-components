@@ -134,7 +134,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
               data => renderBlockEffect(cast(self), data),
               {
                 name: `{track.id} rendering`,
-                delay: 100,
+                delay: 1000,
                 fireImmediately: true,
               },
             ),
