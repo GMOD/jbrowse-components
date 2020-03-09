@@ -34,6 +34,9 @@ test('test rendering a simple synteny from fake data', async () => {
         staticBlocks: [
           { assemblyName: 'hg38', refName: 'chr1', start: 0, end: 999 },
         ],
+        displayedRegions: [
+          { assemblyName: 'hg38', refName: 'chr1', start: 0, end: 999 },
+        ],
         dynamicBlocks: [],
         height: 100,
         reversed: false,
@@ -51,6 +54,9 @@ test('test rendering a simple synteny from fake data', async () => {
           }),
         ],
         staticBlocks: [
+          { assemblyName: 'mm10', refName: 'chr1', start: 0, end: 999 },
+        ],
+        displayedRegions: [
           { assemblyName: 'mm10', refName: 'chr1', start: 0, end: 999 },
         ],
         dynamicBlocks: [],

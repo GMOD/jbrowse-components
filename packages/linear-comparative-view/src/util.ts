@@ -78,7 +78,7 @@ function bpToPx(
 ) {
   let offsetBp = 0
 
-  const index = view.staticBlocks.findIndex(r => {
+  const index = view.displayedRegions.findIndex(r => {
     if (refName === r.refName && coord >= r.start && coord <= r.end) {
       offsetBp += view.reversed ? r.end - coord : coord - r.start
       return true
@@ -86,7 +86,7 @@ function bpToPx(
     offsetBp += r.end - r.start
     return false
   })
-  const foundRegion = view.staticBlocks[index]
+  const foundRegion = view.displayedRegions[index]
   if (foundRegion) {
     return {
       index,

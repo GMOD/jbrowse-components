@@ -87,13 +87,7 @@ export default (pluginManager: any) => {
                 </div>
                 <div style={{ display: 'flex' }}>
                   <div style={{ width: controlsWidth, flexShrink: 0 }} />
-                  <svg
-                    style={{
-                      width: '100%',
-                    }}
-                  >
-                    <Overlays model={model} />
-                  </svg>
+                  <Overlays model={model} />
                 </div>
                 <div className={classes.viewContainer}>
                   <ReactComponent model={views[1]} />
@@ -129,15 +123,7 @@ export default (pluginManager: any) => {
             </div>
             <div className={classes.overlay}>
               <div style={{ width: controlsWidth, flexShrink: 0 }} />
-              <svg
-                style={{
-                  width: '100%',
-                  zIndex: 10,
-                  pointerEvents: model.interactToggled ? undefined : 'none',
-                }}
-              >
-                <Overlays model={model} />
-              </svg>
+              <Overlays model={model} />
             </div>
           </div>
         </div>
@@ -147,7 +133,7 @@ export default (pluginManager: any) => {
 
   const LinearComparativeView = observer(
     ({ model }: { model: Instance<LinearComparativeViewStateModel> }) => {
-      return <OverlayComparativeView model={model} />
+      return <MiddleComparativeView model={model} />
     },
   )
 

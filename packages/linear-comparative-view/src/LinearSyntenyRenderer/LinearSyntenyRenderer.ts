@@ -16,6 +16,7 @@ export interface ReducedLinearGenomeViewModel {
   offsetPx: number
   staticBlocks: IRegion[]
   dynamicBlocks: IRegion[]
+  displayedRegions: IRegion[]
   headerHeight: number
   scaleBarHeight: number
   height: number
@@ -162,12 +163,12 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
             continue
           }
         }
-        if (
-          !v1.staticBlocks.find(region => region.refName === ref1) ||
-          !v2.staticBlocks.find(region => region.refName === ref2)
-        ) {
-          continue
-        }
+        // if (
+        //   !v1.staticBlocks.find(region => region.refName === ref1) ||
+        //   !v2.staticBlocks.find(region => region.refName === ref2)
+        // ) {
+        //   continue
+        // }
 
         const x11 = getPxFromCoordinate(v1, ref1, c1[LEFT])
         const x12 = getPxFromCoordinate(v1, ref1, c1[RIGHT])

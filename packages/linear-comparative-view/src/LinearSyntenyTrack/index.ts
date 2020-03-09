@@ -98,11 +98,13 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       //
       get renderProps() {
         const config = getConf(self, 'renderer')
+        const width = getParent(self, 2).views[0].viewingRegionWidth
+
         return {
           trackModel: self,
           config,
           height: 100,
-          width: 100,
+          width,
         }
       },
       get rendererTypeName() {
@@ -239,9 +241,10 @@ function renderBlockData(self: SyntenyTrack) {
         views: getParent(self, 2).views.map((view: any) => {
           return {
             ...(getSnapshot(view) as any),
-            regions: JSON.parse(
-              JSON.stringify(view.dynamicBlocks.getRegions()),
-            ),
+            regions: view.dynamicBlocks.getRegions(),
+            staticBlocks: view.staticBlocks.getRegions(),
+            dynamicBlocks: view.dynamicBlocks.getRegions(),
+            displayedRegions: view.displayedRegions,
           }
         }),
         width: 100,
