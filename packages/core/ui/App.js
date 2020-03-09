@@ -127,7 +127,7 @@ function App({ contentRect, measureRef, session }) {
       </div>
 
       {visibleDrawerWidget ? <DrawerWidget session={session} /> : null}
-      {session.snackbarMessage ? <Snackbar session={session} /> : null}
+      <Snackbar session={session} />
     </div>
   )
 }

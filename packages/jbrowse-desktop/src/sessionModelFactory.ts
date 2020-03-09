@@ -4,7 +4,7 @@ import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configura
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 import jsonStableStringify from 'json-stable-stringify'
-import { autorun } from 'mobx'
+import { autorun, observable } from 'mobx'
 import {
   addDisposer,
   getMembers,
@@ -69,8 +69,6 @@ export default function sessionModelFactory(pluginManager: any) {
        * { taskName: "configure", target: thing_being_configured }
        */
       task: undefined,
-
-      snackbarMessage: undefined as string | undefined,
     }))
     .views(self => ({
       get rpcManager() {
@@ -153,10 +151,6 @@ export default function sessionModelFactory(pluginManager: any) {
             })
           }),
         )
-      },
-
-      setSnackbarMessage(str: string | undefined) {
-        self.snackbarMessage = str
       },
 
       getRegionsForAssemblyName(
@@ -459,6 +453,26 @@ export default function sessionModelFactory(pluginManager: any) {
         return getParent(self).setDefaultSession()
       },
     }))
+    .extend(() => {
+      const snackbarMessages = observable.array()
+
+      return {
+        views: {
+          get snackbarMessages() {
+            return snackbarMessages
+          },
+        },
+        actions: {
+          pushSnackbarMessage(message: string) {
+            return snackbarMessages.push(message)
+          },
+
+          popSnackbarMessage() {
+            return snackbarMessages.pop()
+          },
+        },
+      }
+    })
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
