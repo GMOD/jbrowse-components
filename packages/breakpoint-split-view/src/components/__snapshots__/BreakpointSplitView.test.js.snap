@@ -332,9 +332,10 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 class="makeStyles-container"
               >
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
                   data-testid="zoom_out"
-                  tabindex="0"
+                  disabled=""
+                  tabindex="-1"
                   type="button"
                 >
                   <span
@@ -347,9 +348,6 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                       zoom_out
                     </span>
                   </span>
-                  <span
-                    class="MuiTouchRipple-root"
-                  />
                 </button>
                 <span
                   class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
@@ -363,6 +361,13 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   <input
                     type="hidden"
                     value="5.643856189774724"
+                  />
+                  <span
+                    class="MuiSlider-mark MuiSlider-markActive"
+                  />
+                  <span
+                    aria-hidden="true"
+                    class="MuiSlider-markLabel MuiSlider-markLabelActive"
                   />
                   <span
                     aria-orientation="horizontal"
@@ -625,9 +630,10 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 class="makeStyles-container"
               >
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
                   data-testid="zoom_out"
-                  tabindex="0"
+                  disabled=""
+                  tabindex="-1"
                   type="button"
                 >
                   <span
@@ -640,9 +646,6 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                       zoom_out
                     </span>
                   </span>
-                  <span
-                    class="MuiTouchRipple-root"
-                  />
                 </button>
                 <span
                   class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
@@ -656,6 +659,13 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   <input
                     type="hidden"
                     value="5.643856189774724"
+                  />
+                  <span
+                    class="MuiSlider-mark MuiSlider-markActive"
+                  />
+                  <span
+                    aria-hidden="true"
+                    class="MuiSlider-markLabel MuiSlider-markLabelActive"
                   />
                   <span
                     aria-orientation="horizontal"

@@ -192,9 +192,10 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       class="makeStyles-container"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
         data-testid="zoom_out"
-        tabindex="0"
+        disabled=""
+        tabindex="-1"
         type="button"
       >
         <span
@@ -207,9 +208,6 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             zoom_out
           </span>
         </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
       </button>
       <span
         class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
@@ -224,6 +222,33 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         <input
           type="hidden"
           value="3.321928094887362"
+        />
+        <span
+          class="MuiSlider-mark MuiSlider-markActive"
+          style="left: 0%;"
+        />
+        <span
+          aria-hidden="true"
+          class="MuiSlider-markLabel MuiSlider-markLabelActive"
+          style="left: 0%;"
+        />
+        <span
+          class="MuiSlider-mark"
+          style="left: 43.06765580733933%;"
+        />
+        <span
+          aria-hidden="true"
+          class="MuiSlider-markLabel"
+          style="left: 43.06765580733933%;"
+        />
+        <span
+          class="MuiSlider-mark"
+          style="left: 100%;"
+        />
+        <span
+          aria-hidden="true"
+          class="MuiSlider-markLabel"
+          style="left: 100%;"
         />
         <span
           aria-orientation="horizontal"
@@ -898,9 +923,10 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       class="makeStyles-container"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
         data-testid="zoom_out"
-        tabindex="0"
+        disabled=""
+        tabindex="-1"
         type="button"
       >
         <span
@@ -913,9 +939,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             zoom_out
           </span>
         </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
       </button>
       <span
         class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
@@ -930,6 +953,60 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         <input
           type="hidden"
           value="0"
+        />
+        <span
+          class="MuiSlider-mark MuiSlider-markActive"
+          style="left: 0%;"
+        />
+        <span
+          aria-hidden="true"
+          class="MuiSlider-markLabel MuiSlider-markLabelActive"
+          style="left: 0%;"
+        />
+        <span
+          class="MuiSlider-mark"
+          style="left: 17.718382013555793%;"
+        />
+        <span
+          aria-hidden="true"
+          class="MuiSlider-markLabel"
+          style="left: 17.718382013555793%;"
+        />
+        <span
+          class="MuiSlider-mark"
+          style="left: 41.14080899322211%;"
+        />
+        <span
+          aria-hidden="true"
+          class="MuiSlider-markLabel"
+          style="left: 41.14080899322211%;"
+        />
+        <span
+          class="MuiSlider-mark"
+          style="left: 58.85919100677789%;"
+        />
+        <span
+          aria-hidden="true"
+          class="MuiSlider-markLabel"
+          style="left: 58.85919100677789%;"
+        />
+        <span
+          class="MuiSlider-mark"
+          style="left: 76.5775730203337%;"
+        />
+        <span
+          aria-hidden="true"
+          class="MuiSlider-markLabel"
+          style="left: 76.5775730203337%;"
+        />
+        <span
+          class="MuiSlider-mark"
+          style="left: 100%;"
+        />
+        <span
+          aria-hidden="true"
+          class="MuiSlider-markLabel"
+          style="left: 100%;"
         />
         <span
           aria-orientation="horizontal"

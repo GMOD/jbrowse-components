@@ -58,18 +58,10 @@ const validBpPerPx = [
   2000000,
   5000000,
   10000000,
-]
+].sort((a, b) => a - b)
 
 export const HEADER_BAR_HEIGHT = 50
 export const SCALE_BAR_HEIGHT = 40
-
-function constrainBpPerPx(newBpPerPx: number): number {
-  // find the closest valid zoom level and return it
-  // might consider reimplementing this later using a more efficient algorithm
-  return validBpPerPx.sort(
-    (a, b) => Math.abs(a - newBpPerPx) - Math.abs(b - newBpPerPx),
-  )[0]
-}
 
 export function stateModelFactory(pluginManager: any) {
   return types
@@ -137,12 +129,32 @@ export function stateModelFactory(pluginManager: any) {
         return totalbp
       },
 
+      get zoomLevels() {
+        const zoomLevels = validBpPerPx.filter(
+          val => val <= this.totalBp / this.viewingRegionWidth && val >= 0,
+        )
+        if (!zoomLevels.length) {
+          zoomLevels.push(validBpPerPx[0])
+        }
+        return zoomLevels
+      },
+
       get maxBpPerPx() {
-        return constrainBpPerPx(this.totalBp / this.viewingRegionWidth)
+        return this.zoomLevels[this.zoomLevels.length - 1]
       },
 
       get minBpPerPx() {
-        return constrainBpPerPx(0)
+        return this.zoomLevels[0]
+      },
+
+      constrainBpPerPx(newBpPerPx: number): number {
+        // find the closest valid zoom level and return it
+        // might consider reimplementing this later using a more efficient algorithm
+        return this.zoomLevels
+          .slice()
+          .sort(
+            (a, b) => Math.abs(a - newBpPerPx) - Math.abs(b - newBpPerPx),
+          )[0]
       },
 
       get displayedRegionsTotalPx() {
@@ -336,9 +348,35 @@ export function stateModelFactory(pluginManager: any) {
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
-      zoomTo(newBpPerPx: number) {
-        let bpPerPx = clamp(newBpPerPx, self.minBpPerPx, self.maxBpPerPx)
-        bpPerPx = constrainBpPerPx(newBpPerPx)
+      zoom(levels: number) {
+        this.zoomTo(self.bpPerPx)
+        if (
+          // no zoom
+          levels === 0 ||
+          // already zoomed all the way in
+          (levels > 0 && self.bpPerPx === self.minBpPerPx) ||
+          // already zoomed all the way out
+          (levels < 0 && self.bpPerPx === self.maxBpPerPx)
+        ) {
+          return
+        }
+        const currentIndex = self.zoomLevels.findIndex(
+          zoomLevel => zoomLevel === self.bpPerPx,
+        )
+        const targetIndex = clamp(
+          currentIndex - levels,
+          0,
+          self.zoomLevels.length - 1,
+        )
+        const targetBpPerPx = self.zoomLevels[targetIndex]
+        this.zoomTo(targetBpPerPx)
+      },
+
+      zoomTo(newBpPerPx: number, constrain = true) {
+        let bpPerPx = newBpPerPx
+        if (constrain) {
+          bpPerPx = self.constrainBpPerPx(newBpPerPx)
+        }
         if (bpPerPx === self.bpPerPx) return
         const oldBpPerPx = self.bpPerPx
         self.bpPerPx = bpPerPx
@@ -454,11 +492,7 @@ export function stateModelFactory(pluginManager: any) {
             bpToStart += region.end - region.start
           }
         }
-        self.bpPerPx = clamp(
-          bpSoFar / self.width,
-          self.minBpPerPx,
-          self.maxBpPerPx,
-        )
+        self.bpPerPx = self.constrainBpPerPx(bpSoFar / self.width)
         self.offsetPx = bpToStart / self.bpPerPx
       },
 
@@ -495,7 +529,9 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       showAllRegions() {
-        self.bpPerPx = self.totalBp / self.viewingRegionWidth
+        self.bpPerPx = self.constrainBpPerPx(
+          self.totalBp / self.viewingRegionWidth,
+        )
         self.offsetPx = 0
       },
 
