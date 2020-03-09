@@ -97,7 +97,7 @@ describe('<LinearGenomeView />', () => {
           assemblyName: 'volMyt1',
           refName: 'ctgB',
           start: 1000,
-          end: 200,
+          end: 2000,
         },
       ],
       tracks: [
