@@ -315,8 +315,12 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
     >
       <div
         class="makeStyles-scaleBar"
-        style="left: 0px; width: 100px; height: 40px;"
+        style="left: -1024px; width: 2148px; height: 40px;"
       >
+        <div
+          class="makeStyles-interRegionPaddingBlock"
+          style="width: 1024px;"
+        />
         <div
           class="makeStyles-block"
           style="width: 100px;"
@@ -415,11 +419,15 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             </text>
           </svg>
         </div>
+        <div
+          class="makeStyles-interRegionPaddingBlock"
+          style="width: 1024px;"
+        />
       </div>
       <div
         class="makeStyles-refLabel"
         data-testid="refLabel-ctgA"
-        style="left: 0px; z-index: 0;"
+        style="left: 0px; z-index: 1;"
       >
         ctgA
       </div>
@@ -501,8 +509,12 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         <div
           class="makeStyles-trackBlocks"
           data-testid="Block"
-          style="left: 0px;"
+          style="left: -1024px;"
         >
+          <div
+            class="makeStyles-interRegionPaddingBlock"
+            style="width: 1024px;"
+          />
           <div
             class="makeStyles-block"
             style="width: 100px;"
@@ -534,6 +546,10 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               </div>
             </div>
           </div>
+          <div
+            class="makeStyles-interRegionPaddingBlock"
+            style="width: 1024px;"
+          />
         </div>
       </div>
     </div>
@@ -1090,8 +1106,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
     >
       <div
         class="makeStyles-scaleBar"
-        style="left: 0px; width: 1102px; height: 40px;"
+        style="left: -1024px; width: 3150px; height: 40px;"
       >
+        <div
+          class="makeStyles-interRegionPaddingBlock"
+          style="width: 1024px;"
+        />
         <div
           class="makeStyles-block"
           style="width: 100px;"
@@ -1823,18 +1843,22 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             </text>
           </svg>
         </div>
+        <div
+          class="makeStyles-interRegionPaddingBlock"
+          style="width: 1024px;"
+        />
       </div>
       <div
         class="makeStyles-refLabel"
         data-testid="refLabel-ctgA"
-        style="left: 0px; z-index: 0;"
+        style="left: 0px; z-index: 1;"
       >
         ctgA
       </div>
       <div
         class="makeStyles-refLabel"
         data-testid="refLabel-ctgB"
-        style="left: 102px; z-index: 2;"
+        style="left: 102px; z-index: 3;"
       >
         ctgB
       </div>
@@ -1916,8 +1940,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         <div
           class="makeStyles-trackBlocks"
           data-testid="Block"
-          style="left: 0px;"
+          style="left: -1024px;"
         >
+          <div
+            class="makeStyles-interRegionPaddingBlock"
+            style="width: 1024px;"
+          />
           <div
             class="makeStyles-block"
             style="width: 100px;"
@@ -1984,6 +2012,10 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               </div>
             </div>
           </div>
+          <div
+            class="makeStyles-interRegionPaddingBlock"
+            style="width: 1024px;"
+          />
         </div>
       </div>
     </div>
@@ -2069,8 +2101,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         <div
           class="makeStyles-trackBlocks"
           data-testid="Block"
-          style="left: 0px;"
+          style="left: -1024px;"
         >
+          <div
+            class="makeStyles-interRegionPaddingBlock"
+            style="width: 1024px;"
+          />
           <div
             class="makeStyles-block"
             style="width: 100px;"
@@ -2137,6 +2173,10 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               </div>
             </div>
           </div>
+          <div
+            class="makeStyles-interRegionPaddingBlock"
+            style="width: 1024px;"
+          />
         </div>
       </div>
     </div>

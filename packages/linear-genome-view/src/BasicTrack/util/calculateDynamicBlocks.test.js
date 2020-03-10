@@ -13,19 +13,7 @@ test('one', () => {
       },
       false,
     ).getBlocks(),
-  ).toEqual([
-    {
-      end: 200,
-      offsetPx: 0,
-      refName: 'ctgA',
-      start: 0,
-      parentRegion: ctgA,
-      isLeftEndOfDisplayedRegion: true,
-      isRightEndOfDisplayedRegion: false,
-      key: 'ctgA:1-200',
-      widthPx: 200,
-    },
-  ])
+  ).toMatchSnapshot()
 })
 test('two', () => {
   expect(
@@ -38,19 +26,7 @@ test('two', () => {
       },
       true,
     ).getBlocks(),
-  ).toEqual([
-    {
-      end: 50000,
-      offsetPx: 0,
-      refName: 'ctgA',
-      start: 49800,
-      parentRegion: ctgA,
-      isLeftEndOfDisplayedRegion: true,
-      isRightEndOfDisplayedRegion: false,
-      key: 'ctgA:49801-50000',
-      widthPx: 200,
-    },
-  ])
+  ).toMatchSnapshot()
 })
 test('three', () => {
   expect(
@@ -63,19 +39,7 @@ test('three', () => {
       },
       true,
     ).getBlocks(),
-  ).toEqual([
-    {
-      end: 50000,
-      offsetPx: 0,
-      refName: 'ctgA',
-      start: 49900,
-      parentRegion: ctgA,
-      isLeftEndOfDisplayedRegion: true,
-      isRightEndOfDisplayedRegion: false,
-      key: 'ctgA:49901-50000',
-      widthPx: 100,
-    },
-  ])
+  ).toMatchSnapshot()
 })
 test('four', () => {
   expect(
@@ -88,19 +52,7 @@ test('four', () => {
       },
       false,
     ).getBlocks(),
-  ).toEqual([
-    {
-      end: 250,
-      offsetPx: 0,
-      refName: 'ctgA',
-      start: 0,
-      parentRegion: ctgA,
-      isLeftEndOfDisplayedRegion: true,
-      isRightEndOfDisplayedRegion: false,
-      key: 'ctgA:1-250',
-      widthPx: 250,
-    },
-  ])
+  ).toMatchSnapshot()
 })
 test('five', () => {
   expect(
@@ -113,17 +65,5 @@ test('five', () => {
       },
       false,
     ).getBlocks(),
-  ).toEqual([
-    {
-      end: 72.4,
-      offsetPx: 521,
-      refName: 'ctgA',
-      start: 26.05,
-      parentRegion: ctgA,
-      isLeftEndOfDisplayedRegion: false,
-      isRightEndOfDisplayedRegion: false,
-      key: 'ctgA:27.05-72.4',
-      widthPx: 927.0000000000001,
-    },
-  ])
+  ).toMatchSnapshot()
 })

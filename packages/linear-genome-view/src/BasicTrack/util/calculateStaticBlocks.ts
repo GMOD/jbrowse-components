@@ -97,6 +97,16 @@ export function calculateBlocksForward(self: LGV, extra = 0) {
         key: '',
       }
       blockData.key = assembleLocString(blockData)
+      if (regionNumber === 0 && blockNum === 0) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${blockData.key}-beforeFirstRegion`,
+            widthPx: width,
+            offsetPx: blockData.offsetPx - width,
+            variant: 'boundary',
+          }),
+        )
+      }
       if (regionWidthPx < minimumBlockWidth) {
         blocks.push(new ElidedBlock(blockData))
       } else {
@@ -111,9 +121,22 @@ export function calculateBlocksForward(self: LGV, extra = 0) {
       ) {
         blocks.push(
           new InterRegionPaddingBlock({
-            key: `${blockData.key}-rightpad`,
+            key: `${blockData.key}-${regionNumber}-rightpad`,
             widthPx: interRegionPaddingWidth,
             offsetPx: blockData.offsetPx + blockData.widthPx,
+          }),
+        )
+      }
+      if (
+        regionNumber === displayedRegions.length - 1 &&
+        blockData.isRightEndOfDisplayedRegion
+      ) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${blockData.key}-afterLastRegion`,
+            widthPx: width,
+            offsetPx: blockData.offsetPx + blockData.widthPx,
+            variant: 'boundary',
           }),
         )
       }

@@ -67,14 +67,26 @@ export default function calculateDynamicBlocks(
       let isRightEndOfDisplayedRegion
       let blockOffsetPx
       if (horizontallyFlipped) {
-        endBp = end - (leftPx - displayedRegionLeftPx) * bpPerPx
-        startBp = end - (rightPx - displayedRegionLeftPx) * bpPerPx
+        endBp = Math.min(
+          end - (leftPx - displayedRegionLeftPx) * bpPerPx,
+          parentRegion.end,
+        )
+        startBp = Math.max(
+          end - (rightPx - displayedRegionLeftPx) * bpPerPx,
+          parentRegion.start,
+        )
         isRightEndOfDisplayedRegion = startBp === parentRegion.start
         isLeftEndOfDisplayedRegion = endBp === parentRegion.end
         blockOffsetPx = displayedRegionLeftPx + (end - endBp) / bpPerPx
       } else {
-        startBp = (leftPx - displayedRegionLeftPx) * bpPerPx + start
-        endBp = (rightPx - displayedRegionLeftPx) * bpPerPx + start
+        startBp = Math.max(
+          (leftPx - displayedRegionLeftPx) * bpPerPx + start,
+          parentRegion.start,
+        )
+        endBp = Math.min(
+          (rightPx - displayedRegionLeftPx) * bpPerPx + start,
+          parentRegion.end,
+        )
         isLeftEndOfDisplayedRegion = startBp === parentRegion.start
         isRightEndOfDisplayedRegion = endBp === parentRegion.end
         blockOffsetPx = displayedRegionLeftPx + (startBp - start) / bpPerPx
@@ -94,6 +106,16 @@ export default function calculateDynamicBlocks(
         key: '',
       }
       blockData.key = assembleLocString(blockData)
+      if (blocks.length === 0 && isLeftEndOfDisplayedRegion) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${blockData.key}-beforeFirstRegion`,
+            widthPx: -offsetPx,
+            offsetPx: blockData.offsetPx + offsetPx,
+            variant: 'boundary',
+          }),
+        )
+      }
       if (parentRegionWidthPx < minimumBlockWidth) {
         blocks.push(new ElidedBlock(blockData))
       } else {
@@ -107,9 +129,23 @@ export default function calculateDynamicBlocks(
       ) {
         blocks.push(
           new InterRegionPaddingBlock({
-            key: `${blockData.key}-rightpad`,
+            key: `${blockData.key}-${i}-rightpad`,
             widthPx: interRegionPaddingWidth,
             offsetPx: blockData.offsetPx + blockData.widthPx,
+          }),
+        )
+      }
+      if (
+        i === displayedRegions.length - 1 &&
+        blockData.isRightEndOfDisplayedRegion
+      ) {
+        blockOffsetPx = blockData.offsetPx + blockData.widthPx
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${blockData.key}-afterLastRegion`,
+            widthPx: width - blockOffsetPx + offsetPx,
+            offsetPx: blockOffsetPx,
+            variant: 'boundary',
           }),
         )
       }

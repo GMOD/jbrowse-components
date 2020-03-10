@@ -3,6 +3,16 @@
 exports[`block calculation can calculate some blocks 1 1`] = `
 BlockSet {
   "blocks": Array [
+    InterRegionPaddingBlock {
+      "assemblyName": undefined,
+      "end": undefined,
+      "key": "ctgA:1-800-beforeFirstRegion",
+      "offsetPx": -800,
+      "refName": undefined,
+      "start": undefined,
+      "variant": "boundary",
+      "widthPx": 800,
+    },
     ContentBlock {
       "assemblyName": undefined,
       "end": 800,
@@ -42,6 +52,16 @@ BlockSet {
 exports[`block calculation can calculate some blocks 2 1`] = `
 BlockSet {
   "blocks": Array [
+    InterRegionPaddingBlock {
+      "assemblyName": undefined,
+      "end": undefined,
+      "key": "ctgA:1-100-beforeFirstRegion",
+      "offsetPx": -800,
+      "refName": undefined,
+      "start": undefined,
+      "variant": "boundary",
+      "widthPx": 800,
+    },
     ContentBlock {
       "assemblyName": undefined,
       "end": 100,
@@ -73,6 +93,16 @@ BlockSet {
       "refName": "ctgB",
       "start": 100,
       "widthPx": 100,
+    },
+    InterRegionPaddingBlock {
+      "assemblyName": undefined,
+      "end": undefined,
+      "key": "ctgB:101-200-afterLastRegion",
+      "offsetPx": 202,
+      "refName": undefined,
+      "start": undefined,
+      "variant": "boundary",
+      "widthPx": 800,
     },
   ],
 }
@@ -120,6 +150,16 @@ BlockSet {
 exports[`block calculation can calculate some blocks 6 1`] = `
 BlockSet {
   "blocks": Array [
+    InterRegionPaddingBlock {
+      "assemblyName": undefined,
+      "end": undefined,
+      "key": "ctgA:1-200-beforeFirstRegion",
+      "offsetPx": -800,
+      "refName": undefined,
+      "start": undefined,
+      "variant": "boundary",
+      "widthPx": 800,
+    },
     ContentBlock {
       "assemblyName": undefined,
       "end": 200,
@@ -190,6 +230,16 @@ BlockSet {
       "refName": "ctgB",
       "start": 800,
       "widthPx": 200,
+    },
+    InterRegionPaddingBlock {
+      "assemblyName": undefined,
+      "end": undefined,
+      "key": "ctgB:801-1000-afterLastRegion",
+      "offsetPx": 1202,
+      "refName": undefined,
+      "start": undefined,
+      "variant": "boundary",
+      "widthPx": 800,
     },
   ],
 }
@@ -275,6 +325,16 @@ BlockSet {
 
 exports[`block calculation can calculate some blocks 10 1`] = `
 Array [
+  InterRegionPaddingBlock {
+    "assemblyName": undefined,
+    "end": undefined,
+    "key": "ctgA:101-140-beforeFirstRegion",
+    "offsetPx": -800,
+    "refName": undefined,
+    "start": undefined,
+    "variant": "boundary",
+    "widthPx": 800,
+  },
   ContentBlock {
     "assemblyName": undefined,
     "end": 140,
@@ -313,6 +373,16 @@ Array [
 exports[`horizontally flipped displayed regions with elided region 1`] = `
 BlockSet {
   "blocks": Array [
+    InterRegionPaddingBlock {
+      "assemblyName": undefined,
+      "end": undefined,
+      "key": "ctgA:1-1-beforeFirstRegion-reversed",
+      "offsetPx": -800,
+      "refName": undefined,
+      "start": undefined,
+      "variant": "boundary",
+      "widthPx": 800,
+    },
     ElidedBlock {
       "assemblyName": undefined,
       "elidedBlockCount": 1,
@@ -369,6 +439,16 @@ BlockSet {
 exports[`horizontally flipped displayed regions without elided region 1`] = `
 BlockSet {
   "blocks": Array [
+    InterRegionPaddingBlock {
+      "assemblyName": undefined,
+      "end": undefined,
+      "key": "ctgA:101-200-beforeFirstRegion-reversed",
+      "offsetPx": -800,
+      "refName": undefined,
+      "start": undefined,
+      "variant": "boundary",
+      "widthPx": 800,
+    },
     ContentBlock {
       "assemblyName": undefined,
       "end": 200,
@@ -401,6 +481,16 @@ BlockSet {
       "start": 500,
       "widthPx": 100,
     },
+    InterRegionPaddingBlock {
+      "assemblyName": undefined,
+      "end": undefined,
+      "key": "ctgA:501-600-afterLastRegion-reversed",
+      "offsetPx": 202,
+      "refName": undefined,
+      "start": undefined,
+      "variant": "boundary",
+      "widthPx": 800,
+    },
   ],
 }
 `;
@@ -408,6 +498,16 @@ BlockSet {
 exports[`reverse block calculation 1 1`] = `
 BlockSet {
   "blocks": Array [
+    InterRegionPaddingBlock {
+      "assemblyName": undefined,
+      "end": undefined,
+      "key": "ctgA:1-800-beforeFirstRegion-reversed",
+      "offsetPx": -800,
+      "refName": undefined,
+      "start": undefined,
+      "variant": "boundary",
+      "widthPx": 800,
+    },
     ContentBlock {
       "assemblyName": undefined,
       "end": 10000,
