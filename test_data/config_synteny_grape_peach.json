@@ -124,6 +124,38 @@
   ],
   "tracks": [
     {
+      "trackId": "grape_peach_synteny_mcscan_simple",
+      "type": "LinearSyntenyTrack",
+      "assemblyNames": [
+        "peach",
+        "grape"
+      ],
+      "renderDelay": 100,
+      "adapter": {
+        "mcscanSimpleAnchorsLocation": {
+          "uri": "test_data/grape.peach.anchors.simple"
+        },
+        "subadapters": [
+          {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+          },
+          {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+          }
+        ],
+        "type": "MCScanSimpleAnchorsAdapter"
+      },
+      "renderer": {
+        "type": "LinearSyntenyRenderer"
+      },
+      "name": "Grape peach synteny (MCScan SimpleAnchors)",
+      "category": [
+        "Annotation"
+      ]
+    },
+    {
       "trackId": "grape_peach_synteny_mcscan",
       "type": "LinearSyntenyTrack",
       "assemblyNames": [

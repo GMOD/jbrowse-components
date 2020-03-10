@@ -9,8 +9,10 @@ import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { AdapterClass as NCListAdapter } from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
 
 type RowToGeneNames = {
-  name1: string
-  name2: string
+  s1n1: string
+  s1n2: string
+  s2n1: string
+  s2n2: string
   score: number
 }[]
 
@@ -29,18 +31,18 @@ export default class extends BaseAdapter {
 
   private assemblyNames: string[]
 
-  private mcscanAnchorsLocation: GenericFilehandle
+  private mcscanSimpleAnchorsLocation: GenericFilehandle
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: {
-    mcscanAnchorsLocation: IFileLocation
+    mcscanSimpleAnchorsLocation: IFileLocation
     subadapters: BaseAdapter[] | any // todo remove any
     assemblyNames: string[]
   }) {
     super()
-    const { mcscanAnchorsLocation, subadapters, assemblyNames } = config
-    this.mcscanAnchorsLocation = openLocation(mcscanAnchorsLocation)
+    const { mcscanSimpleAnchorsLocation, subadapters, assemblyNames } = config
+    this.mcscanSimpleAnchorsLocation = openLocation(mcscanSimpleAnchorsLocation)
 
     // TODO remove this logic once subadapter is updated by Rob
     this.subadapters = !subadapters[0].getFeatures
@@ -52,19 +54,35 @@ export default class extends BaseAdapter {
 
   async setup(opts?: BaseOptions) {
     if (!this.initialized) {
-      const text = (await this.mcscanAnchorsLocation.readFile('utf8')) as string
+      const text = (await this.mcscanSimpleAnchorsLocation.readFile(
+        'utf8',
+      )) as string
       text.split('\n').forEach((line: string, index: number) => {
         if (line.length && line !== '###') {
-          const [name1, name2, score] = line.split('\t')
-          if (this.geneNameToRows[name1] === undefined) {
-            this.geneNameToRows[name1] = []
+          const [s1n1, s1n2, s2n1, s2n2, score] = line.split('\t')
+          if (this.geneNameToRows[s1n1] === undefined) {
+            this.geneNameToRows[s1n1] = []
           }
-          if (this.geneNameToRows[name2] === undefined) {
-            this.geneNameToRows[name2] = []
+          if (this.geneNameToRows[s1n2] === undefined) {
+            this.geneNameToRows[s1n2] = []
           }
-          this.geneNameToRows[name1].push(index)
-          this.geneNameToRows[name2].push(index)
-          this.rowToGeneName[index] = { name1, name2, score: +score }
+          if (this.geneNameToRows[s2n1] === undefined) {
+            this.geneNameToRows[s2n1] = []
+          }
+          if (this.geneNameToRows[s2n2] === undefined) {
+            this.geneNameToRows[s2n2] = []
+          }
+          this.geneNameToRows[s1n1].push(index)
+          this.geneNameToRows[s1n2].push(index)
+          this.geneNameToRows[s2n1].push(index)
+          this.geneNameToRows[s2n2].push(index)
+          this.rowToGeneName[index] = {
+            s1n1,
+            s1n2,
+            s2n1,
+            s2n2,
+            score: +score,
+          }
         }
       })
       this.initialized = true
@@ -100,19 +118,45 @@ export default class extends BaseAdapter {
       const index = this.assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
         const features = this.subadapters[index].getFeatures(region)
+        const featuresUnderConstruction = [] as (
+          | { f1?: Feature; f2?: Feature }
+          | undefined
+        )[]
         await features
           .pipe(
             tap(feature => {
               // We first fetch from the NCList and connect each result
               // with the anchor file via geneNameToRows. Note that each
               // gene name can correspond to multiple rows
-              const rows = this.geneNameToRows[feature.get('name')] || []
-              rows.forEach(row => {
-                observer.next(
-                  new SimpleFeature({
-                    data: { ...feature.toJSON(), syntenyId: row },
-                  }),
-                )
+              const name = feature.get('name')
+              ;(this.geneNameToRows[name] || []).forEach(row => {
+                const record = this.rowToGeneName[row]
+                const current = featuresUnderConstruction[row] || {}
+                featuresUnderConstruction[row] = current
+                if (record.s1n1 == name) {
+                  current.f1 = feature
+                } else if (record.s1n2 === name) {
+                  current.f2 = feature
+                } else if (record.s2n1 === name) {
+                  current.f1 = feature
+                } else if (record.s2n2 === name) {
+                  current.f2 = feature
+                }
+
+                if (current.f1 && current.f2) {
+                  observer.next(
+                    new SimpleFeature({
+                      data: {
+                        uniqueId: row + 1,
+                        start: current.f1.get('start'),
+                        end: current.f2.get('end'),
+                        refName: current.f1.get('refName'),
+                        syntenyId: row,
+                      },
+                    }),
+                  )
+                  featuresUnderConstruction[row] = undefined
+                }
               })
             }),
           )

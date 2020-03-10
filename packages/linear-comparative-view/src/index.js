@@ -11,6 +11,10 @@ import {
   stateModelFactory as syntenyTrackStateModelFactory,
 } from './LinearSyntenyTrack'
 import {
+  configSchema as MCScanSimpleAnchorsConfigSchema,
+  AdapterClass as MCScanSimpleAnchorsAdapter,
+} from './MCScanSimpleAnchorsAdapter'
+import {
   configSchema as MCScanAnchorsConfigSchema,
   AdapterClass as MCScanAnchorsAdapter,
 } from './MCScanAnchorsAdapter'
@@ -47,6 +51,14 @@ export default class extends Plugin {
         stateModel: syntenyTrackStateModelFactory(pluginManager, configSchema),
       })
     })
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'MCScanSimpleAnchorsAdapter',
+          configSchema: MCScanSimpleAnchorsConfigSchema,
+          AdapterClass: MCScanSimpleAnchorsAdapter,
+        }),
+    )
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
