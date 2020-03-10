@@ -16,6 +16,8 @@ import { IRegion, INoAssemblyRegion } from '../mst-types'
 import PluginManager from '../PluginManager'
 import { AnyConfigurationModel } from '../configuration'
 
+export * from './types'
+
 if (!Object.fromEntries) {
   fromEntries.shim()
 }

@@ -1,4 +1,7 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@gmod/jbrowse-core/configuration'
 import BoxRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { bpSpanPx, iterMap } from '@gmod/jbrowse-core/util'
@@ -13,7 +16,7 @@ import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 interface PileupRenderProps {
   features: Map<string, Feature>
   layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  config: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  config: AnyConfigurationModel
   region: IRegion
   bpPerPx: number
   height: number
@@ -40,7 +43,7 @@ export default class PileupRenderer extends BoxRendererType {
   layoutFeature(
     feature: Feature,
     subLayout: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-    config: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    config: AnyConfigurationModel,
     bpPerPx: number,
     region: IRegion,
     horizontallyFlipped = false,

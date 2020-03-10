@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { types, IAnyModelType } from 'mobx-state-tree'
+import { types, IAnyModelType, IAnyComplexType } from 'mobx-state-tree'
 import { stringToFunction, functionRegexp } from '../util/functionStrings'
 import { inDevelopment } from '../util'
 import { FileLocation } from '../mst-types'
@@ -134,7 +134,7 @@ const FunctionStringType = types.refinement(
 
 export interface ConfigSlotDefinition {
   description?: string
-  model?: IAnyModelType
+  model?: IAnyModelType | IAnyComplexType
   type: string
   defaultValue: any
   functionSignature?: string[]

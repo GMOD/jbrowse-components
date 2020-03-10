@@ -13,7 +13,7 @@ import ServerSideRendererType, {
   RenderResults,
 } from './ServerSideRendererType'
 import { IRegion } from '../../mst-types'
-import { SerializedLayout } from '../../util/layouts/BaseLayout'
+import { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
 
 interface LayoutSessionProps {
   config: AnyConfigurationModel
@@ -21,8 +21,9 @@ interface LayoutSessionProps {
   filters: any
 }
 
+type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
 interface CachedLayout {
-  layout: MultiLayout
+  layout: MyMultiLayout
   config: AnyConfigurationModel
   filters: any
 }
@@ -70,7 +71,7 @@ export class LayoutSession implements LayoutSessionProps {
 
   cachedLayout: CachedLayout | undefined
 
-  get layout(): MultiLayout {
+  get layout(): MyMultiLayout {
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
       this.cachedLayout = {
         layout: this.makeLayout(),
@@ -82,12 +83,16 @@ export class LayoutSession implements LayoutSessionProps {
   }
 }
 
+/// *****************************************************************************
+/// *****************************************************************************
+/// *****************************************************************************
+
 type ResultsDeserialized = BaseResultsDeserialized & {
   layout: PrecomputedLayout<string>
 }
 
 type RenderArgsDeserialized = BaseRenderArgsDeserialized & {
-  layout: MultiLayout
+  layout: BaseLayout<unknown>
 }
 
 type ResultsSerialized = BaseResultsSerialized & {
@@ -174,16 +179,19 @@ export default class BoxRendererType extends ServerSideRendererType {
       args,
     ) as ResultsSerialized
 
-    results.layout = args.layout.serializeRegion(
-      this.getExpandedGlyphRegion(args.region, args),
-    )
-    for (const [k] of features) {
-      if (results.layout.rectangles && !results.layout.rectangles[k]) {
-        features.delete(k)
+    if (isSingleRegionRenderArgs(args)) {
+      serialized.layout = args.layout.serializeRegion(
+        this.getExpandedGlyphRegion(args.region, args),
+      )
+      for (const [k] of features) {
+        if (serialized.layout.rectangles && !serialized.layout.rectangles[k]) {
+          features.delete(k)
+        }
       }
-    }
 
-    serialized.maxHeightReached = results.layout.maxHeightReached
-    return serialized
+      serialized.maxHeightReached = serialized.layout.maxHeightReached
+      return serialized
+    }
+    throw new Error('invalid render args type')
   }
 }

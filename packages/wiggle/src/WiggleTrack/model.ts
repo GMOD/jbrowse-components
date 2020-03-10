@@ -121,11 +121,11 @@ const stateModelFactory = (configSchema: any) =>
     })
     .actions(self => {
       async function getStats(signal: AbortSignal) {
-        const { rpcManager } = getSession(self) as {
+        const { rpcManager } = (getSession(self) as unknown) as {
           rpcManager: { call: Function }
         }
         const nd = getConf(self, 'numStdDev')
-        const autoscaleType = getConf(self, 'autoscale', {})
+        const autoscaleType = getConf(self, 'autoscale', [])
         const { adapter } = self.configuration
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
           const r = await rpcManager.call('statsGathering', 'getGlobalStats', {

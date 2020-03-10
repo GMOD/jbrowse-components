@@ -1,5 +1,5 @@
 /* eslint-disable import/no-cycle */
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject, AnyConfigurationModel } from '@gmod/jbrowse-core/configuration'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import Box from './Box'
@@ -37,8 +37,7 @@ interface BaseLayOutArgs {
   layout: SceneGraph
   bpPerPx: number
   horizontallyFlipped: boolean
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  config: any
+  config: AnyConfigurationModel
 }
 
 interface FeatureLayOutArgs extends BaseLayOutArgs {

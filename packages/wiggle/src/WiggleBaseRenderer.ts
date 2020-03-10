@@ -7,12 +7,13 @@ import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import React from 'react'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration'
 import { ScaleOpts } from './util'
 
 interface WiggleBaseRendererProps {
   features: Map<string, Feature>
   layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  config: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  config: AnyConfigurationModel
   region: IRegion
   bpPerPx: number
   height: number
@@ -52,11 +53,9 @@ export default class extends ServerSideRendererType {
     /* draw features to context given props */
   }
 
-  // @ts-ignore
   async render(renderProps: WiggleBaseRendererProps) {
     const { height, width, imageData } = await this.makeImageData(renderProps)
     const element = React.createElement(
-      // @ts-ignore
       this.ReactComponent,
       { ...renderProps, height, width, imageData },
       null,

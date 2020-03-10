@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import {
+  Feature,
+  SimpleFeatureSerialized,
+} from '@gmod/jbrowse-core/util/simpleFeature'
 
 const jb2ToJb1 = { refName: 'seq_id' }
 
@@ -77,10 +80,8 @@ export default class NCListFeature implements Feature {
     return this.get('subfeatures')
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  toJSON(): Record<string, any> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data: Record<string, any> = { uniqueId: this.id() }
+  toJSON(): SimpleFeatureSerialized {
+    const data: SimpleFeatureSerialized = { uniqueId: this.id() }
     this.ncFeature.tags().forEach((tag: string) => {
       const mappedTag = this.jb1TagToJb2Tag(tag)
       const value = this.ncFeature.get(tag)

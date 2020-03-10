@@ -5,6 +5,6 @@ import AdapterF from './CramAdapter'
 export default (pluginManager: PluginManager) => {
   return {
     configSchema: pluginManager.load(configSchemaF),
-    AdapterClass: AdapterF(pluginManager),
+    AdapterClass: pluginManager.load(AdapterF),
   }
 }

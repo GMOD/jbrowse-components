@@ -49,6 +49,7 @@ export interface SimpleFeatureArgs {
   id?: string | number // thing that can be stringified easily
 }
 export interface SimpleFeatureSerialized {
+  [key: string]: any
   parentId?: string
   subfeatures?: SimpleFeatureSerialized[]
   uniqueId: string

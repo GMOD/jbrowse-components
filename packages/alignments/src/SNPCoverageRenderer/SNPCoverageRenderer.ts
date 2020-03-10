@@ -8,11 +8,12 @@ import {
   ScaleOpts,
 } from '@gmod/jbrowse-plugin-wiggle/src/util'
 import WiggleBaseRenderer from '@gmod/jbrowse-plugin-wiggle/src/WiggleBaseRenderer'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration'
 
 interface SNPCoverageRendererProps {
   features: Map<string, Feature>
   layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  config: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  config: AnyConfigurationModel
   region: IRegion
   bpPerPx: number
   height: number

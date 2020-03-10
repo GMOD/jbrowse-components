@@ -48,7 +48,6 @@ const getView = () => {
             },
           })),
         ReactComponent,
-        RenderingComponent: true,
       }),
   )
 
