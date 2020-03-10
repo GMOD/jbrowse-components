@@ -1,29 +1,31 @@
 import React from 'react'
 import Menu from '@material-ui/core/Menu'
-import MenuItem from '@material-ui/core/MenuItem'
+import PropTypes from 'prop-types'
+import { observer } from 'mobx-react'
 
 const initialState = {
   mouseX: null,
   mouseY: null,
 }
 
-export default function ContextMenu() {
+function ContextMenu(props) {
+  const { children } = props
   const [state, setState] = React.useState(initialState)
 
-  const handleClick = event => {
-    event.preventDefault()
-    setState({
-      mouseX: event.clientX - 2,
-      mouseY: event.clientY - 4,
-    })
-  }
-
-  const handleClose = () => {
+  const handleClose = async () => {
     setState(initialState)
   }
 
   return (
-    <div onContextMenu={handleClick} style={{ cursor: 'context-menu' }}>
+    <div
+      onContextMenu={e => {
+        e.preventDefault()
+        setState(() => ({
+          mouseX: e.clientX - 2,
+          mouseY: e.clientY - 4,
+        }))
+      }}
+    >
       <Menu
         keepMounted
         open={state.mouseY !== null}
@@ -34,12 +36,16 @@ export default function ContextMenu() {
             ? { top: state.mouseY, left: state.mouseX }
             : undefined
         }
+        style={{ zIndex: 10000 }}
       >
-        <MenuItem onClick={handleClose}>Copy</MenuItem>
-        <MenuItem onClick={handleClose}>Print</MenuItem>
-        <MenuItem onClick={handleClose}>Highlight</MenuItem>
-        <MenuItem onClick={handleClose}>Email</MenuItem>
+        <div style={{ pointerEvents: 'auto' }}>{children}</div>
       </Menu>
     </div>
   )
 }
+
+ContextMenu.propTypes = {
+  children: PropTypes.array.isRequired,
+}
+
+export default observer(ContextMenu)
