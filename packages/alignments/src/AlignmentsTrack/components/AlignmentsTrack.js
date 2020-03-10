@@ -1,4 +1,3 @@
-// import { getConf } from '@gmod/jbrowse-core/configuration'
 import BlockBasedTrack from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/BlockBasedTrack'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState, useEffect } from 'react'
@@ -8,22 +7,25 @@ import MenuItem from '@material-ui/core/MenuItem'
 import Icon from '@material-ui/core/Icon'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import NestedMenuItem from '@gmod/jbrowse-core/ui/NestedMenuItem'
+// import ContextMenu from '@gmod/jbrowse-core/ui/ContextMenu'
 
 const initialState = {
   mouseX: null,
   mouseY: null,
 }
 
-const sortChoices = [
-  'Start Location',
-  'Read Strand',
-  'First-of-pair strand',
-  'Base',
-]
-
 function AlignmentsTrackComponent(props) {
   const { model } = props
-  const { PileupTrack, SNPCoverageTrack, height } = model
+  const {
+    PileupTrack,
+    SNPCoverageTrack,
+    height,
+    menuOptions,
+    subMenuOptions,
+    showPileup,
+    showCoverage,
+    sortedBy,
+  } = model
 
   let showScalebar = false
   if (SNPCoverageTrack) {
@@ -31,31 +33,21 @@ function AlignmentsTrackComponent(props) {
     if (ready && stats && needsScalebar) showScalebar = true
   }
 
+  // const [sortedBy, setSortedBy] = useState('')
+  // const selectedSortOption = e => {
+  //   const sortOption = e.target.getAttribute('name')
+  //   e.preventDefault()
+  //   setSortedBy(sortOption)
+  //   // sorting code goes here
+  //   switch (sortOption) {
+  //     default:
+  //       handleClose()
+  //   }
+  //   handleClose()
+  // }
+
   // Set up context menu
   const [state, setState] = useState(initialState)
-  const [trackState, setTrackState] = useState({
-    showCoverage: true,
-    showPileup: true,
-    showCenterLine: false,
-  })
-  const [sortedBy, setSortedBy] = useState('')
-
-  const generateToggledMenuItems = (
-    optionName,
-    optionText,
-    disableCondition = false,
-  ) => {
-    return (
-      <MenuItem
-        name={optionName}
-        onClick={handleTrackToggle}
-        disabled={disableCondition}
-      >
-        {displayIcon(optionName)}
-        {trackState[optionName] ? `Hide ${optionText}` : `Show ${optionText}`}
-      </MenuItem>
-    )
-  }
 
   const handleRightClick = e => {
     e.preventDefault()
@@ -65,55 +57,17 @@ function AlignmentsTrackComponent(props) {
     }))
   }
 
-  const handleClose = () => {
+  const handleClose = async () => {
     setState(initialState)
   }
 
-  const handleTrackToggle = e => {
-    e.preventDefault()
-    const trackSelected = e.target.getAttribute('name')
-    setTimeout(() => {
-      setTrackState(prevState => ({
-        ...trackState,
-        [trackSelected]: !prevState[trackSelected],
-      }))
-    }, 300) // short delay so text changes/disable after menu close
-    handleClose()
-  }
-
-  const displayIcon = name => {
-    return (
-      <ListItemIcon style={{ minWidth: '30px' }}>
-        <Icon name={name} color="primary" fontSize="small">
-          {trackState[name] ? 'visibility_off' : 'visibility'}
-        </Icon>
-      </ListItemIcon>
-    )
-  }
-
-  const selectedSortOption = e => {
-    const sortOption = e.target.getAttribute('name')
-    e.preventDefault()
-    setSortedBy(sortOption)
-    // sorting code goes here
-    switch (sortOption) {
-      default:
-        handleClose()
-    }
-    handleClose()
-  }
-
+  // when toggling pileuptrack, determines the height of the model
   useEffect(() => {
-    const newHeight =
-      SNPCoverageTrack.height +
-      (!trackState.showPileup ? 0 : PileupTrack.height)
+    const newHeight = !showPileup
+      ? Math.min(model.height, SNPCoverageTrack.height)
+      : Math.max(model.height, SNPCoverageTrack.height + PileupTrack.height)
     model.setHeight(newHeight)
-  }, [
-    PileupTrack.height,
-    SNPCoverageTrack.height,
-    model,
-    trackState.showPileup,
-  ])
+  }, [PileupTrack.height, SNPCoverageTrack.height, model, showPileup])
 
   return (
     <div
@@ -124,10 +78,10 @@ function AlignmentsTrackComponent(props) {
         {...props}
         {...PileupTrack}
         {...SNPCoverageTrack}
-        showPileup={trackState.showPileup}
-        showSNPCoverage={trackState.showCoverage}
+        showPileup={showPileup}
+        showSNPCoverage={showCoverage}
       >
-        {showScalebar && trackState.showCoverage ? (
+        {showScalebar && showCoverage ? (
           <YScaleBar model={SNPCoverageTrack} />
         ) : null}
       </BlockBasedTrack>
@@ -143,56 +97,54 @@ function AlignmentsTrackComponent(props) {
         }
         style={{ zIndex: 10000 }}
       >
-        {/* {generateToggledMenuItems(
-          'showCoverage',
-          SNPCoverageTrack.type,
-          !trackState.showPileup,
-        )}
-        {generateToggledMenuItems(
-          'showPileup',
-          PileupTrack.type,
-          !trackState.showCoverage,
-        )}
-        {generateToggledMenuItems('showCenterLine', 'Center Line')} */}
-        <MenuItem
-          name="showCoverage"
-          onClick={handleTrackToggle}
-          disabled={!trackState.showPileup}
-        >
-          {displayIcon('showCoverage')}
-          {trackState.showCoverage
-            ? `Hide ${SNPCoverageTrack.type}`
-            : `Show ${SNPCoverageTrack.type}`}
-        </MenuItem>
-        <MenuItem
-          name="showPileup"
-          onClick={handleTrackToggle}
-          disabled={!trackState.showCoverage}
-        >
-          {displayIcon('showPileup')}
-          {trackState.showPileup
-            ? `Hide ${PileupTrack.type}`
-            : `Show ${PileupTrack.type}`}
-        </MenuItem>
-        <MenuItem name="showCenterLine" onClick={handleTrackToggle}>
-          {displayIcon('showCenterLine')}
-          {trackState.showPileup ? 'Hide Center Line' : 'Show CenterLine'}
-        </MenuItem>
+        {menuOptions.map(option => {
+          return (
+            <MenuItem
+              key={option.key}
+              onClick={() => {
+                handleClose().then(option.callback())
+                // setTimeout(() => {
+                //   option.callback()
+                // }, 200)
+              }}
+              disabled={option.disableCondition || false}
+            >
+              {option.icon ? (
+                <ListItemIcon key={option.key} style={{ minWidth: '30px' }}>
+                  <Icon color="primary" fontSize="small">
+                    {option.icon}
+                  </Icon>
+                </ListItemIcon>
+              ) : null}
+
+              {option.title}
+            </MenuItem>
+          )
+        })}
         <NestedMenuItem
           {...props}
           label="Sort by"
           parentMenuOpen={state !== initialState}
         >
-          {sortChoices.map((name, idx) => (
-            <MenuItem
-              name={name}
-              key={idx}
-              style={{ backgroundColor: sortedBy === name && 'darkseagreen' }}
-              onClick={selectedSortOption}
-            >
-              {name}
-            </MenuItem>
-          ))}
+          {subMenuOptions.map(option => {
+            return (
+              <MenuItem
+                key={option.key}
+                style={{
+                  backgroundColor:
+                    sortedBy !== '' &&
+                    sortedBy === option.key &&
+                    'darkseagreen',
+                }}
+                onClick={() => {
+                  model.sortSelected(option.key)
+                  handleClose()
+                }}
+              >
+                {option.title}
+              </MenuItem>
+            )
+          })}
         </NestedMenuItem>
       </Menu>
     </div>

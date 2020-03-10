@@ -22,6 +22,11 @@ export default (pluginManager, configSchema) => {
         type: types.literal('AlignmentsTrack'),
         configuration: ConfigurationReference(configSchema),
         height: 250,
+        sortedBy: '',
+        showCoverage: true,
+        showPileup: true,
+        showCenterLine: false,
+        hideHeader: false,
       })
       .volatile(() => ({
         ReactComponent: AlignmentsTrackComponent,
@@ -48,6 +53,56 @@ export default (pluginManager, configSchema) => {
             },
           }
         },
+        get menuOptions() {
+          return [
+            {
+              title: self.showCoverage
+                ? 'Hide Coverage Track'
+                : 'Show Coverage Track',
+              key: 'showCoverage',
+              icon: self.showCoverage ? 'visibility_off' : 'visibility',
+              callback: self.toggleCoverage,
+              disableCondition: !self.showPileup,
+            },
+            {
+              title: self.showPileup
+                ? 'Hide Pileup Track'
+                : 'Show Pileup Track',
+              key: 'showPileup',
+              icon: self.showPileup ? 'visibility_off' : 'visibility',
+              callback: self.togglePileup,
+              disableCondition: !self.showCoverage,
+            },
+            {
+              title: self.showCenterLine
+                ? 'Hide Center Line'
+                : 'Show Center Line',
+              key: 'showCenterLine',
+              icon: self.showCenterLine ? 'visibility_off' : 'visibility',
+              callback: self.toggleCenterLine,
+            },
+          ]
+        },
+        get subMenuOptions() {
+          return [
+            {
+              title: 'Start Location',
+              key: 'start',
+            },
+            {
+              title: 'Read Strand',
+              key: 'read',
+            },
+            {
+              title: 'First-of-pair strand',
+              key: 'first',
+            },
+            {
+              title: 'Clear Sort',
+              key: '',
+            },
+          ]
+        },
       }))
       .actions(self => ({
         afterAttach() {
@@ -64,6 +119,18 @@ export default (pluginManager, configSchema) => {
             type: `${trackType}`,
             configuration: trackConfig,
           }
+        },
+        sortSelected(selected) {
+          self.sortedBy = selected
+        },
+        toggleCenterLine() {
+          self.showCenterLine = !self.showCenterLine
+        },
+        toggleCoverage() {
+          self.showCoverage = !self.showCoverage
+        },
+        togglePileup() {
+          self.showPileup = !self.showPileup
         },
       })),
   )
