@@ -17,7 +17,7 @@ test('test rendering a simple synteny from fake data', async () => {
   const result = await renderer.render({
     width: 800,
     height: 600,
-    config: {},
+    config: { color: 'rgba(255,100,100,0.3)' },
     horizontallyFlipped: false,
     highResolutionScaling: 1,
     trackIds: ['peach_gene', 'grape_gene'],
