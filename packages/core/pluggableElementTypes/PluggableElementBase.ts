@@ -1,4 +1,6 @@
 export default abstract class PluggableElementBase {
+  [key: string]: any
+
   name = ''
 
   constructor({ name }: { name: string }) {

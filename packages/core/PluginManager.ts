@@ -69,7 +69,6 @@ type PluggableElementTypeGroup =
 class TypeRecord<ElementClass extends PluggableElementBase> {
   registeredTypes: { [name: string]: ElementClass } = {}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   baseClass: { new (...args: any[]): ElementClass }
 
   constructor(elementType: { new (...args: any[]): ElementClass }) {
@@ -228,7 +227,7 @@ export default class PluginManager {
     const pluggableTypes: IAnyModelType[] = []
     this.getElementTypeRecord(typeGroup)
       .all()
-      .forEach((t: Record<string, any>) => {
+      .forEach(t => {
         const thing = t[fieldName]
         if (isModelType(thing)) {
           pluggableTypes.push(thing)
@@ -252,7 +251,7 @@ export default class PluginManager {
     const pluggableTypes: AnyConfigurationSchemaType[] = []
     this.getElementTypeRecord(typeGroup)
       .all()
-      .forEach((t: Record<string, any>) => {
+      .forEach(t => {
         const thing = t[fieldName]
         if (isBareConfigurationSchemaType(thing)) {
           pluggableTypes.push(thing)

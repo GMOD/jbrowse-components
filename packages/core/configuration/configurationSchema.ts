@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   types,
   isModelType,
@@ -10,6 +9,7 @@ import {
   getType,
   Instance,
   IAnyType,
+  isType,
 } from 'mobx-state-tree'
 
 import { ElementId } from '../mst-types'
@@ -21,22 +21,24 @@ import {
   getDefaultValue,
 } from '../util/mst-reflection'
 
-function isEmptyObject(thing: any) {
+function isEmptyObject(thing: unknown) {
   return (
     typeof thing === 'object' &&
     !Array.isArray(thing) &&
+    thing !== null &&
     Object.keys(thing).length === 0
   )
 }
 
-function isEmptyArray(thing: any) {
+function isEmptyArray(thing: unknown) {
   return Array.isArray(thing) && thing.length === 0
 }
 
 export function isBareConfigurationSchemaType(
-  thing: any,
+  thing: unknown,
 ): thing is AnyConfigurationSchemaType {
   if (
+    isType(thing) &&
     isModelType(thing) &&
     ('isJBrowseConfigurationSchema' in thing ||
       thing.name.includes('ConfigurationSchema'))
@@ -46,8 +48,8 @@ export function isBareConfigurationSchemaType(
   return false
 }
 
-export function isConfigurationSchemaType(thing: any): boolean {
-  if (!thing) return false
+export function isConfigurationSchemaType(thing: unknown): boolean {
+  if (!isType(thing)) return false
 
   // written as a series of if-statements instead of a big logical OR
   // because this construction gives much better debugging backtraces.
@@ -78,7 +80,9 @@ export function isConfigurationSchemaType(thing: any): boolean {
   return false
 }
 
-export function isConfigurationModel(thing: any) {
+export function isConfigurationModel(
+  thing: unknown,
+): thing is AnyConfigurationModel {
   return isStateTreeNode(thing) && isConfigurationSchemaType(getType(thing))
 }
 
@@ -89,8 +93,8 @@ export function isConfigurationModel(thing: any) {
  * @param {mst union type} unionType
  * @returns {Array[string]} type names contained in the union
  */
-export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: any) {
-  if (isUnionType(maybeUnionType)) {
+export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
+  if (isType(maybeUnionType) && isUnionType(maybeUnionType)) {
     const typeNames: string[] = []
     getUnionSubTypes(maybeUnionType).forEach(type => {
       let typeName = getTypeNamesFromExplicitlyTypedUnion(type)
@@ -106,8 +110,12 @@ export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: any) {
   return []
 }
 
-export function isConfigurationSlotType(thing: any) {
-  return thing && Boolean(thing.isJBrowseConfigurationSlot)
+export function isConfigurationSlotType(thing: unknown) {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'isJBrowseConfigurationSlot' in thing
+  )
 }
 
 export interface ConfigurationSchemaDefinition {
@@ -124,9 +132,9 @@ interface ConfigurationSchemaOptions {
   explicitIdentifier?: string
   implicitIdentifier?: string
   baseConfiguration?: AnyConfigurationSchemaType
-  actions?: (self: any) => Record<string, Function>
-  views?: (self: any) => Record<string, Function>
-  extend?: (self: any) => Record<string, Function>
+  actions?: (self: unknown) => Record<string, Function>
+  views?: (self: unknown) => Record<string, Function>
+  extend?: (self: unknown) => Record<string, Function>
 }
 
 function preprocessConfigurationSchemaArguments(

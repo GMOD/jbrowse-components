@@ -132,6 +132,7 @@ export function useDebouncedCallback<A extends any[]>(
 }
 
 export interface SessionModel {
+  editConfiguration(configuration: AnyConfigurationModel): void
   configuration: AnyConfigurationModel
   pluginManager: PluginManager
 }
