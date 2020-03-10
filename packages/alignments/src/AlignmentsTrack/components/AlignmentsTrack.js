@@ -14,7 +14,12 @@ const initialState = {
   mouseY: null,
 }
 
-const sortChoices = ['Option 1', 'Option 2', 'Option 3', 'Option 4']
+const sortChoices = [
+  'Start Location',
+  'Read Strand',
+  'First-of-pair strand',
+  'Base',
+]
 
 function AlignmentsTrackComponent(props) {
   const { model } = props
@@ -31,8 +36,26 @@ function AlignmentsTrackComponent(props) {
   const [trackState, setTrackState] = useState({
     showCoverage: true,
     showPileup: true,
+    showCenterLine: false,
   })
   const [sortedBy, setSortedBy] = useState('')
+
+  const generateToggledMenuItems = (
+    optionName,
+    optionText,
+    disableCondition = false,
+  ) => {
+    return (
+      <MenuItem
+        name={optionName}
+        onClick={handleTrackToggle}
+        disabled={disableCondition}
+      >
+        {displayIcon(optionName)}
+        {trackState[optionName] ? `Hide ${optionText}` : `Show ${optionText}`}
+      </MenuItem>
+    )
+  }
 
   const handleRightClick = e => {
     e.preventDefault()
@@ -49,7 +72,6 @@ function AlignmentsTrackComponent(props) {
   const handleTrackToggle = e => {
     e.preventDefault()
     const trackSelected = e.target.getAttribute('name')
-    console.log('clicked', e.target)
     setTimeout(() => {
       setTrackState(prevState => ({
         ...trackState,
@@ -59,13 +81,7 @@ function AlignmentsTrackComponent(props) {
     handleClose()
   }
 
-  const selectedSortOption = e => {
-    e.preventDefault()
-    setSortedBy(e.target.getAttribute('name'))
-    handleClose()
-  }
-
-  const displayIcon = (name) => {
+  const displayIcon = name => {
     return (
       <ListItemIcon style={{ minWidth: '30px' }}>
         <Icon name={name} color="primary" fontSize="small">
@@ -75,10 +91,16 @@ function AlignmentsTrackComponent(props) {
     )
   }
 
-  const displayActiveSort = sortName => {
-    return {
-      backgroundColor: sortedBy === sortName ? 'darkseagreen' : '',
+  const selectedSortOption = e => {
+    const sortOption = e.target.getAttribute('name')
+    e.preventDefault()
+    setSortedBy(sortOption)
+    // sorting code goes here
+    switch (sortOption) {
+      default:
+        handleClose()
     }
+    handleClose()
   }
 
   useEffect(() => {
@@ -121,6 +143,17 @@ function AlignmentsTrackComponent(props) {
         }
         style={{ zIndex: 10000 }}
       >
+        {/* {generateToggledMenuItems(
+          'showCoverage',
+          SNPCoverageTrack.type,
+          !trackState.showPileup,
+        )}
+        {generateToggledMenuItems(
+          'showPileup',
+          PileupTrack.type,
+          !trackState.showCoverage,
+        )}
+        {generateToggledMenuItems('showCenterLine', 'Center Line')} */}
         <MenuItem
           name="showCoverage"
           onClick={handleTrackToggle}
@@ -128,8 +161,8 @@ function AlignmentsTrackComponent(props) {
         >
           {displayIcon('showCoverage')}
           {trackState.showCoverage
-            ? 'Hide Coverage Track'
-            : 'Show Coverage Track'}
+            ? `Hide ${SNPCoverageTrack.type}`
+            : `Show ${SNPCoverageTrack.type}`}
         </MenuItem>
         <MenuItem
           name="showPileup"
@@ -137,25 +170,30 @@ function AlignmentsTrackComponent(props) {
           disabled={!trackState.showCoverage}
         >
           {displayIcon('showPileup')}
-          {trackState.showPileup ? 'Hide Pileup Track' : 'Show Pileup Track'}
+          {trackState.showPileup
+            ? `Hide ${PileupTrack.type}`
+            : `Show ${PileupTrack.type}`}
+        </MenuItem>
+        <MenuItem name="showCenterLine" onClick={handleTrackToggle}>
+          {displayIcon('showCenterLine')}
+          {trackState.showPileup ? 'Hide Center Line' : 'Show CenterLine'}
         </MenuItem>
         <NestedMenuItem
           {...props}
-          label="Sort"
+          label="Sort by"
           parentMenuOpen={state !== initialState}
         >
           {sortChoices.map((name, idx) => (
             <MenuItem
               name={name}
               key={idx}
-              style={displayActiveSort(name)}
+              style={{ backgroundColor: sortedBy === name && 'darkseagreen' }}
               onClick={selectedSortOption}
             >
               {name}
             </MenuItem>
           ))}
         </NestedMenuItem>
-        <MenuItem onClick={handleClose}>Copy</MenuItem>
       </Menu>
     </div>
   )
