@@ -3,19 +3,18 @@ import BlockBasedTrack from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTr
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState, useEffect } from 'react'
 import { YScaleBar } from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
-import ContextMenu from '@gmod/jbrowse-core/ui/ContextMenu'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Icon from '@material-ui/core/Icon'
-import IconButton from '@material-ui/core/IconButton'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ChevronRight from '@material-ui/icons/ChevronRight'
 import NestedMenuItem from '@gmod/jbrowse-core/ui/NestedMenuItem'
 
 const initialState = {
   mouseX: null,
   mouseY: null,
 }
+
+const sortChoices = ['Option 1', 'Option 2', 'Option 3', 'Option 4']
 
 function AlignmentsTrackComponent(props) {
   const { model } = props
@@ -33,6 +32,7 @@ function AlignmentsTrackComponent(props) {
     showCoverage: true,
     showPileup: true,
   })
+  const [sortedBy, setSortedBy] = useState('')
 
   const handleRightClick = e => {
     e.preventDefault()
@@ -49,6 +49,7 @@ function AlignmentsTrackComponent(props) {
   const handleTrackToggle = e => {
     e.preventDefault()
     const trackSelected = e.target.getAttribute('name')
+    console.log('clicked', e.target)
     setTimeout(() => {
       setTrackState(prevState => ({
         ...trackState,
@@ -58,9 +59,29 @@ function AlignmentsTrackComponent(props) {
     handleClose()
   }
 
-  // very experimental way to set height when hiding
+  const selectedSortOption = e => {
+    e.preventDefault()
+    setSortedBy(e.target.getAttribute('name'))
+    handleClose()
+  }
+
+  const displayIcon = (name) => {
+    return (
+      <ListItemIcon style={{ minWidth: '30px' }}>
+        <Icon name={name} color="primary" fontSize="small">
+          {trackState[name] ? 'visibility_off' : 'visibility'}
+        </Icon>
+      </ListItemIcon>
+    )
+  }
+
+  const displayActiveSort = sortName => {
+    return {
+      backgroundColor: sortedBy === sortName ? 'darkseagreen' : '',
+    }
+  }
+
   useEffect(() => {
-    console.log('render')
     const newHeight =
       SNPCoverageTrack.height +
       (!trackState.showPileup ? 0 : PileupTrack.height)
@@ -73,9 +94,6 @@ function AlignmentsTrackComponent(props) {
   ])
 
   return (
-    // <BlockBasedTrack {...props} {...PileupTrack} {...SNPCoverageTrack}>
-    //   {showScalebar ? <YScaleBar model={SNPCoverageTrack} /> : null}
-    // </BlockBasedTrack>
     <div
       onContextMenu={handleRightClick}
       style={{ position: 'relative', height }}
@@ -108,6 +126,7 @@ function AlignmentsTrackComponent(props) {
           onClick={handleTrackToggle}
           disabled={!trackState.showPileup}
         >
+          {displayIcon('showCoverage')}
           {trackState.showCoverage
             ? 'Hide Coverage Track'
             : 'Show Coverage Track'}
@@ -117,22 +136,25 @@ function AlignmentsTrackComponent(props) {
           onClick={handleTrackToggle}
           disabled={!trackState.showCoverage}
         >
+          {displayIcon('showPileup')}
           {trackState.showPileup ? 'Hide Pileup Track' : 'Show Pileup Track'}
         </MenuItem>
         <NestedMenuItem
           {...props}
           label="Sort"
-          parentMenuOpen={!!state}
-          rightIcon={<ChevronRight />}
+          parentMenuOpen={state !== initialState}
         >
-          <MenuItem key="1" onClick={handleClose}>
-            Button 1
-          </MenuItem>
-          <MenuItem key="2" onClick={handleClose}>
-            Button 2
-          </MenuItem>
+          {sortChoices.map((name, idx) => (
+            <MenuItem
+              name={name}
+              key={idx}
+              style={displayActiveSort(name)}
+              onClick={selectedSortOption}
+            >
+              {name}
+            </MenuItem>
+          ))}
         </NestedMenuItem>
-        {/* <MenuItem onClick={handleClose}>Sort</MenuItem> */}
         <MenuItem onClick={handleClose}>Copy</MenuItem>
       </Menu>
     </div>

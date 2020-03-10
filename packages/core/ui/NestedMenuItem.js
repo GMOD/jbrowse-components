@@ -1,9 +1,10 @@
-import React, { Component, useState, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
+import Icon from '@material-ui/core/Icon'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
 import PropTypes from 'prop-types'
 import { observer } from 'mobx-react'
-import jsonStableStringify from 'json-stable-stringify'
 
 function NestedMenuItem(props) {
   const { label, parentMenuOpen, children, rightIcon, highlightColor } = props
@@ -17,7 +18,7 @@ function NestedMenuItem(props) {
         setSubMenuState(true)
         refs.current.style.backgroundColor = highlightColor
       }}
-      onMouseLeave={e => {
+      onMouseLeave={() => {
         setSubMenuState(false)
         refs.current.style.backgroundColor = 'white'
       }}
@@ -28,7 +29,11 @@ function NestedMenuItem(props) {
     >
       <MenuItem ref={refs}>
         {label}
-        {rightIcon}
+        <ListItemIcon>
+          <Icon color="primary" fontSize="small">
+            {rightIcon}
+          </Icon>
+        </ListItemIcon>
       </MenuItem>
       <Menu
         style={{ pointerEvents: 'none', zIndex: 10000 }}
@@ -45,6 +50,9 @@ function NestedMenuItem(props) {
         onClose={() => {
           setSubMenuState(false)
         }}
+        onExited={() => {
+          refs.current.style.backgroundColor = 'white'
+        }}
       >
         <div style={{ pointerEvents: 'auto' }}>{children}</div>
       </Menu>
@@ -52,7 +60,7 @@ function NestedMenuItem(props) {
   )
 }
 
-// class NestedMenuItem extends Component {
+// class NestedMenuItem extends React.Component {
 //   constructor(props) {
 //     super(props)
 //     this.state = {
@@ -88,7 +96,11 @@ function NestedMenuItem(props) {
 //       >
 //         <MenuItem ref="subMenuItem">
 //           {label}
-//           {rightIcon}
+//           <ListItemIcon>
+//             <Icon color="primary" fontSize="small">
+//               {rightIcon}
+//             </Icon>
+//           </ListItemIcon>
 //         </MenuItem>
 //         <Menu
 //           style={{ pointerEvents: 'none', zIndex: 10000 }}
@@ -116,12 +128,13 @@ function NestedMenuItem(props) {
 NestedMenuItem.propTypes = {
   label: PropTypes.string.isRequired,
   parentMenuOpen: PropTypes.bool.isRequired,
-  rightIcon: PropTypes.object.isRequired,
+  rightIcon: PropTypes.string,
   highlightColor: PropTypes.string,
   children: PropTypes.array.isRequired,
 }
 
 NestedMenuItem.defaultProps = {
+  rightIcon: 'chevron_right',
   highlightColor: '#eeeeee',
 }
 
