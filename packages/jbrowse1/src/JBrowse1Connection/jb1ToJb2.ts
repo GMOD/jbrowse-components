@@ -8,10 +8,11 @@ import {
   UNKNOWN,
   UNSUPPORTED,
 } from '@gmod/jbrowse-core/util/tracks'
+import { JBLocation, Track, RefSeqs, RefSeq } from './types'
 
 interface Jb2Track {
   trackId: string
-  name?: string
+  name: string
   description?: string
   category?: string[]
   adapter?: Jb2Adapter

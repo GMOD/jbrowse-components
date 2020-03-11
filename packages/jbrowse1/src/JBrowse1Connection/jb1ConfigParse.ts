@@ -2,6 +2,7 @@
 import getValue from 'get-value'
 import setValue from 'set-value'
 import { isSource, isTrack, objectFingerprint } from './util'
+import { Config, Track, Source, Store, Names } from './types'
 
 export function parseJB1Json(config: Config | string, url: string): Config {
   if (typeof config === 'string') {

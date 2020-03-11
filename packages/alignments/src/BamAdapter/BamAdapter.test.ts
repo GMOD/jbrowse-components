@@ -1,19 +1,23 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './BamAdapter'
+import configSchema from './configSchema'
 
 test('adapter can fetch features from volvox.bam', async () => {
-  const adapter = new Adapter({
-    bamLocation: {
-      localPath: require.resolve('../../test_data/volvox-sorted.bam'),
-    },
-    index: {
-      location: {
-        localPath: require.resolve('../../test_data/volvox-sorted.bam.bai'),
+  const adapter = new Adapter(
+    configSchema.create({
+      bamLocation: {
+        localPath: require.resolve('../../test_data/volvox-sorted.bam'),
       },
-    },
-  })
+      index: {
+        location: {
+          localPath: require.resolve('../../test_data/volvox-sorted.bam.bai'),
+        },
+      },
+    }),
+  )
 
   const features = await adapter.getFeatures({
+    assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -30,19 +34,22 @@ test('adapter can fetch features from volvox.bam', async () => {
 
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
 
-  const adapterCSI = new Adapter({
-    bamLocation: {
-      localPath: require.resolve('../../test_data/volvox-sorted.bam'),
-    },
-    index: {
-      indexType: 'CSI',
-      location: {
-        localPath: require.resolve('../../test_data/volvox-sorted.bam.csi'),
+  const adapterCSI = new Adapter(
+    configSchema.create({
+      bamLocation: {
+        localPath: require.resolve('../../test_data/volvox-sorted.bam'),
       },
-    },
-  })
+      index: {
+        indexType: 'CSI',
+        location: {
+          localPath: require.resolve('../../test_data/volvox-sorted.bam.csi'),
+        },
+      },
+    }),
+  )
 
   const featuresCSI = await adapterCSI.getFeatures({
+    assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -53,19 +60,22 @@ test('adapter can fetch features from volvox.bam', async () => {
 })
 
 test('test usage of BamSlightlyLazyFeature toJSON (used in the drawer widget)', async () => {
-  const adapter = new Adapter({
-    bamLocation: {
-      localPath: require.resolve('../../test_data/volvox-sorted.bam'),
-    },
-    index: {
-      location: {
-        localPath: require.resolve('../../test_data/volvox-sorted.bam.bai'),
+  const adapter = new Adapter(
+    configSchema.create({
+      bamLocation: {
+        localPath: require.resolve('../../test_data/volvox-sorted.bam'),
       },
-      indexType: 'BAI',
-    },
-  })
+      index: {
+        location: {
+          localPath: require.resolve('../../test_data/volvox-sorted.bam.bai'),
+        },
+        indexType: 'BAI',
+      },
+    }),
+  )
 
   const features = await adapter.getFeatures({
+    assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
     end: 100,
@@ -79,19 +89,22 @@ test('test usage of BamSlightlyLazyFeature toJSON (used in the drawer widget)', 
 })
 
 test('test usage of BamSlightlyLazyFeature for extended CIGAR', async () => {
-  const adapter = new Adapter({
-    bamLocation: {
-      localPath: require.resolve('../../test_data/extended_cigar.bam'),
-    },
-    index: {
-      location: {
-        localPath: require.resolve('../../test_data/extended_cigar.bam.bai'),
+  const adapter = new Adapter(
+    configSchema.create({
+      bamLocation: {
+        localPath: require.resolve('../../test_data/extended_cigar.bam'),
       },
-      indexType: 'BAI',
-    },
-  })
+      index: {
+        location: {
+          localPath: require.resolve('../../test_data/extended_cigar.bam.bai'),
+        },
+        indexType: 'BAI',
+      },
+    }),
+  )
 
   const features = await adapter.getFeatures({
+    assemblyName: 'hg19',
     refName: '1',
     start: 13260,
     end: 13340,

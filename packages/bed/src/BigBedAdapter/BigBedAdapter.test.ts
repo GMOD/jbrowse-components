@@ -1,12 +1,16 @@
 import { toArray } from 'rxjs/operators'
 import BigBedAdapter from './BigBedAdapter'
+import configSchema from './configSchema'
 
 test('adapter can fetch features from volvox.bb', async () => {
-  const adapter = new BigBedAdapter({
-    bigBedLocation: { localPath: require.resolve('./test_data/volvox.bb') },
-  })
+  const adapter = new BigBedAdapter(
+    configSchema.create({
+      bigBedLocation: { localPath: require.resolve('./test_data/volvox.bb') },
+    }),
+  )
 
   const features = await adapter.getFeatures({
+    assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
     end: 20000,

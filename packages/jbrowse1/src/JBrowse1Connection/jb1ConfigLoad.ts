@@ -1,6 +1,14 @@
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { parseJB1Json, parseJB1Conf, regularizeConf } from './jb1ConfigParse'
 import { clone, deepUpdate, evalHooks, fillTemplate } from './util'
+import {
+  JBLocation,
+  UriLocation,
+  LocalPathLocation,
+  Config,
+  Track,
+  Include,
+} from './types'
 
 function isUriLocation(location: JBLocation): location is UriLocation {
   return (location as UriLocation).uri !== undefined
