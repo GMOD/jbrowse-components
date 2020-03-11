@@ -71,6 +71,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           imageData: '',
           error: undefined as Error | undefined,
           message: undefined as string | undefined,
+          viewOffsets: [] as number[],
           renderingComponent: undefined as any,
           ReactComponent: (LinearSyntenyTrackComponent as unknown) as React.FC,
           ReactComponent2: (ServerSideRenderedBlockContent as unknown) as React.FC,
@@ -115,6 +116,16 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
     }))
     .actions(self => {
       let renderInProgress: undefined | AbortController
+      function debounceEffect<T>(
+        effect: (arg: T, r: any) => void,
+        debounceMs: number,
+      ) {
+        let timer: NodeJS.Timeout
+        return (arg: T, r: any) => {
+          clearTimeout(timer)
+          timer = setTimeout(() => effect(arg, r), debounceMs)
+        }
+      }
       return {
         afterAttach() {
           makeAbortableReaction(
@@ -124,7 +135,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
             renderBlockEffect as any,
             {
               name: `${self.type} ${self.id} rendering`,
-              delay: 1000,
+              delay: 10000,
               fireImmediately: true,
             },
             self.setLoading,
@@ -137,6 +148,9 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           self.filled = false
           self.message = undefined
           self.imageData = ''
+          self.viewOffsets = getParent(self, 2).views.map(
+            (view: any) => view.offsetPx,
+          )
           self.data = undefined
           self.error = undefined
           self.renderingComponent = undefined
@@ -163,7 +177,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           const { data, imageData, renderingComponent } = args
           self.filled = true
           self.message = undefined
-          console.log('setRendered', imageData)
           self.imageData = imageData
           self.data = data
           self.error = undefined

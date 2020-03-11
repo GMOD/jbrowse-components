@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react'
+import { getParent } from 'mobx-state-tree'
 import { observer, PropTypes } from 'mobx-react'
 import { ImageBitmapType } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 
@@ -14,7 +15,14 @@ function ServerSideSyntenyRendering(props) {
     effectiveHeight: height,
     style,
     highResolutionScaling,
+    viewOffsets,
   } = model
+  const { views } = getParent(model, 2)
+  const voffs = []
+  for (let i = 0; i < views.length; i++) {
+    voffs.push(views[i].offsetPx - viewOffsets[i])
+  }
+  console.log(voffs)
 
   const featureCanvas = useRef()
 
@@ -24,6 +32,9 @@ function ServerSideSyntenyRendering(props) {
     }
     const canvas = featureCanvas.current
     const context = canvas.getContext('2d')
+    context.clearRect(0, 0, width, height)
+    context.resetTransform()
+    context.transform(1, 0, -0.15, 1, -voffs[0], 0) // 0.75
     if (imageData.commands) {
       imageData.commands.forEach(command => {
         if (command.type === 'strokeStyle') {
@@ -37,13 +48,14 @@ function ServerSideSyntenyRendering(props) {
         }
       })
     } else if (imageData instanceof ImageBitmapType) {
+      console.log(voffs[0])
       context.drawImage(imageData, 0, 0)
     } else if (imageData.dataURL) {
       const img = new Image()
       img.onload = () => context.drawImage(img, 0, 0)
       img.src = imageData.dataURL
     }
-  }, [imageData])
+  }, [height, imageData, voffs, width])
 
   return (
     <canvas
