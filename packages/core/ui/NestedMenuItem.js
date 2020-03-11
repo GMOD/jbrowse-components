@@ -11,15 +11,19 @@ function NestedMenuItem(props) {
     label,
     parentMenuOpen,
     children,
+    tabIndex,
     zIndex,
     rightIcon,
     highlightColor,
   } = props
   const refs = useRef()
+  const containerRefs = useRef()
+  const menuContainerRefs = useRef(null)
   const [subMenuState, setSubMenuState] = useState(false)
 
   return (
     <div
+      ref={containerRefs}
       onMouseEnter={e => {
         e.preventDefault()
         setSubMenuState(true)
@@ -32,6 +36,28 @@ function NestedMenuItem(props) {
       onClick={e => {
         e.preventDefault()
         setSubMenuState(!subMenuState)
+      }}
+      tabIndex={tabIndex}
+      onFocus={e => {
+        refs.current.style.backgroundColor = highlightColor
+      }}
+      onKeyDown={e => {
+        if (
+          e.key === 'ArrowRight' &&
+          e.target === containerRefs.current &&
+          !subMenuState
+        ) {
+          e.stopPropagation()
+          setSubMenuState(true)
+          //   menuContainerRefs.current &&
+          //     menuContainerRefs.current.children[0].focus()
+        }
+
+        if (e.key === 'ArrowLeft' && subMenuState) {
+          e.stopPropagation()
+          setSubMenuState(false)
+          containerRefs.current.focus()
+        }
       }}
     >
       <MenuItem ref={refs}>
@@ -59,9 +85,12 @@ function NestedMenuItem(props) {
         }}
         onExited={() => {
           refs.current.style.backgroundColor = 'white'
+          setSubMenuState(false)
         }}
       >
-        <div style={{ pointerEvents: 'auto' }}>{children}</div>
+        <div ref={menuContainerRefs} style={{ pointerEvents: 'auto' }}>
+          {children}
+        </div>
       </Menu>
     </div>
   )
@@ -70,6 +99,7 @@ function NestedMenuItem(props) {
 NestedMenuItem.propTypes = {
   label: PropTypes.string.isRequired,
   parentMenuOpen: PropTypes.bool.isRequired,
+  tabIndex: PropTypes.number.isRequired,
   zIndex: PropTypes.number,
   rightIcon: PropTypes.string,
   highlightColor: PropTypes.string,

@@ -33,22 +33,9 @@ function AlignmentsTrackComponent(props) {
     if (ready && stats && needsScalebar) showScalebar = true
   }
 
-  // const [sortedBy, setSortedBy] = useState('')
-  // const selectedSortOption = e => {
-  //   const sortOption = e.target.getAttribute('name')
-  //   e.preventDefault()
-  //   setSortedBy(sortOption)
-  //   // sorting code goes here
-  //   switch (sortOption) {
-  //     default:
-  //       handleClose()
-  //   }
-  //   handleClose()
-  // }
-
   // Set up context menu
   const [state, setState] = useState(initialState)
-  const zIndex = 10000
+  const zIndex = 10000 // zIndex matches tooltip zindex to bring to front
 
   const handleRightClick = e => {
     e.preventDefault()
@@ -62,7 +49,7 @@ function AlignmentsTrackComponent(props) {
     setState(initialState)
   }
 
-  // when toggling pileuptrack, determines the height of the model
+  // determine height of the model when toggling pileuptrack
   useEffect(() => {
     const newHeight = !showPileup
       ? Math.min(model.height, SNPCoverageTrack.height)
@@ -96,7 +83,7 @@ function AlignmentsTrackComponent(props) {
             ? { top: state.mouseY, left: state.mouseX }
             : undefined
         }
-        style={{ zIndex }} // zIndex matches tooltip zindex to bring to front
+        style={{ zIndex }}
       >
         {menuOptions.map(option => {
           return (
@@ -125,6 +112,7 @@ function AlignmentsTrackComponent(props) {
           label="Sort by"
           parentMenuOpen={state !== initialState}
           zIndex={zIndex}
+          tabIndex={-1}
         >
           {subMenuOptions.map(option => {
             return (
