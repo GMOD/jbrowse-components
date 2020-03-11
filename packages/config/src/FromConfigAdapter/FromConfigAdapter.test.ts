@@ -1,12 +1,13 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './FromConfigAdapter'
+import configSchema from './configSchema'
 
 test('adapter can fetch features', async () => {
   const features = [
     { uniqueId: 'one', refName: 'ctgA', start: 20, end: 40 },
     { uniqueId: 'two', refName: 'ctgB', start: 50, end: 60 },
   ]
-  const adapter = new Adapter({ features })
+  const adapter = new Adapter(configSchema.create({ features }))
   const result = await adapter.getFeatures({
     refName: 'ctgA',
     start: 0,
@@ -24,7 +25,7 @@ test('adapter can fetch regions 1', async () => {
     { uniqueId: 'two', refName: 'ctgA', start: 150, end: 300 },
     { uniqueId: 'three', refName: 'ctgB', start: 50, end: 60 },
   ]
-  const adapter = new Adapter({ features })
+  const adapter = new Adapter(configSchema.create({ features }))
   const result = await adapter.getRegions()
   expect(result).toEqual([
     { refName: 'ctgA', start: 150, end: 400 },
@@ -38,7 +39,7 @@ test('adapter can fetch regions 2', async () => {
     { uniqueId: 'two', refName: 'ctgA', start: 150, end: 300 },
     { uniqueId: 'one', refName: 'ctgA', start: 250, end: 400 },
   ]
-  const adapter = new Adapter({ features })
+  const adapter = new Adapter(configSchema.create({ features }))
   const result = await adapter.getRegions()
   expect(result).toEqual([
     { refName: 'ctgA', start: 150, end: 400 },
@@ -52,7 +53,7 @@ test('adapter can fetch regions 3', async () => {
     { uniqueId: 'one', refName: 'ctgA', start: 250, end: 400 },
     { uniqueId: 'three', refName: 'ctgB', start: 50, end: 60 },
   ]
-  const adapter = new Adapter({ features })
+  const adapter = new Adapter(configSchema.create({ features }))
   const result = await adapter.getRegions()
   expect(result).toEqual([
     { refName: 'ctgA', start: 150, end: 400 },
@@ -66,7 +67,7 @@ test('adapter can fetch regions 4', async () => {
     { uniqueId: 'onePrime', refName: 'ctgA', start: 300, end: 400 },
     { uniqueId: 'three', refName: 'ctgB', start: 50, end: 60 },
   ]
-  const adapter = new Adapter({ features })
+  const adapter = new Adapter(configSchema.create({ features }))
   const result = await adapter.getRegions()
   expect(result).toEqual([
     { refName: 'ctgA', start: 150, end: 400 },

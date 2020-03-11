@@ -32,7 +32,7 @@ import SNPCoverageRenderer, {
 
 import CramAdapterF from './CramAdapter'
 
-export default class extends Plugin {
+export default class AlignmentsPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     pluginManager.addTrackType(() => {
       const configSchema = alignmentsTrackConfigSchemaFactory(pluginManager)

@@ -5,10 +5,7 @@ export default (pluginManager: PluginManager) =>
   ConfigurationSchema(
     'SNPCoverageAdapter',
     {
-      subadapter: pluginManager.pluggableConfigSchemaType(
-        'adapter',
-        'configSchema',
-      ),
+      subadapter: pluginManager.pluggableConfigSchemaType('adapter'),
     },
     { explicitlyTyped: true },
   )

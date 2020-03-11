@@ -5,12 +5,15 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { TwoBitFile } from '@gmod/twobit'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { Instance } from 'mobx-state-tree'
 
-export default class extends BaseFeatureDataAdapter {
+import configSchema from './configSchema'
+
+export default class TwoBitAdapter extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private twobit: any
 
-  public constructor(config: { twoBitLocation: IFileLocation }) {
+  constructor(config: Instance<typeof configSchema>) {
     super()
     const twoBitOpts = {
       filehandle: openLocation(readConfObject(config, 'twoBitLocation')),

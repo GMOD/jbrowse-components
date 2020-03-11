@@ -6,6 +6,8 @@ import queryResponse from './test_data/queryResponse.json'
 import refNamesResponse from './test_data/refNamesResponse.json'
 import 'core-js/stable'
 
+import configSchema from './configSchema'
+
 // window.fetch = jest.fn(url => new Promise(resolve => resolve()))
 
 test('adapter can fetch variants from volvox.vcf.gz', async () => {
@@ -21,13 +23,15 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   // @ts-ignore
   const spy = jest.spyOn(global, 'fetch')
   spy.mockImplementation(mockFetch)
-  const adapter = new Adapter({
-    endpoint: { uri: 'http://somesite.com/sparql' },
-    queryTemplate: 'fakeSPARQLQuery-start{start}-end{end}-{refName}',
-    refNamesQueryTemplate: 'fakeRefNamesQuery',
-    additionalQueryParams: ['format=json'],
-    refNames: [],
-  })
+  const adapter = new Adapter(
+    configSchema.create({
+      endpoint: { uri: 'http://somesite.com/sparql' },
+      queryTemplate: 'fakeSPARQLQuery-start{start}-end{end}-{refName}',
+      refNamesQueryTemplate: 'fakeRefNamesQuery',
+      additionalQueryParams: ['format=json'],
+      refNames: [],
+    }),
+  )
 
   const refNames = await adapter.getRefNames()
   expect(spy).toHaveBeenLastCalledWith(

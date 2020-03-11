@@ -9,7 +9,11 @@ import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
+
+import MyConfigSchema from './configSchema'
 
 interface HeaderLine {
   tag: string
@@ -20,24 +24,24 @@ interface Header {
   nameToId?: Record<string, number>
 }
 
-export default class extends BaseFeatureDataAdapter {
+export default class BamAdapter extends BaseFeatureDataAdapter {
   private bam: BamFile
 
   private samHeader: Header = {}
 
-  public constructor(config: {
-    bamLocation: IFileLocation
-    index: { location: IFileLocation; indexType: string }
-    chunkSizeLimit: number
-    fetchSizeLimit: number
-  }) {
+  public constructor(
+    config: Instance<typeof MyConfigSchema>,
+    // bamLocation: IFileLocation
+    // index: { location: IFileLocation; indexType: string }
+    // chunkSizeLimit: number
+    // fetchSizeLimit: number
+  ) {
     super()
-    const {
-      bamLocation,
-      index: { location, indexType },
-      chunkSizeLimit,
-      fetchSizeLimit,
-    } = config
+    const bamLocation = readConfObject(config, 'bamLocation')
+    const location = readConfObject(config, ['index', 'location'])
+    const indexType = readConfObject(config, ['index', 'indexType'])
+    const chunkSizeLimit = readConfObject(config, 'chunkSizeLimit')
+    const fetchSizeLimit = readConfObject(config, 'fetchSizeLimit')
 
     this.bam = new BamFile({
       bamFilehandle: openLocation(bamLocation),

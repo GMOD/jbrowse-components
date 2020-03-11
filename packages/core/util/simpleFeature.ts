@@ -46,7 +46,7 @@ export interface SimpleFeatureArgs {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>
   parent?: Feature
-  id?: string | number // thing that can be stringified easily
+  id: string | number // thing that can be stringified easily
 }
 export interface SimpleFeatureSerialized {
   [key: string]: any
@@ -96,6 +96,7 @@ export default class SimpleFeature implements Feature {
     // args.id, args.data.uniqueId, or args.uniqueId due to this initialization
     const id = isSimpleFeatureSerialized(args) ? args.uniqueId : args.id
     if (id === undefined || id === null) {
+      debugger
       throw new Error(
         'SimpleFeature requires a unique `id` or `data.uniqueId` attribute',
       )

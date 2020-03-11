@@ -1,5 +1,8 @@
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import SimpleFeature, {
+  Feature,
+  SimpleFeatureSerialized,
+} from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import {
@@ -20,14 +23,16 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
 
   constructor(
     config: ConfigurationModel<typeof FromConfigAdapterConfigSchema>,
-    getSubAdapter: getSubAdapterType,
   ) {
     super()
-    const features = readConfObject(config, 'features')
+    const features = readConfObject(
+      config,
+      'features',
+    ) as SimpleFeatureSerialized[]
     this.features = this.makeFeatures(features || [])
   }
 
-  makeFeatures(fdata: Feature[]): Map<string, SimpleFeature[]> {
+  makeFeatures(fdata: SimpleFeatureSerialized[]): Map<string, SimpleFeature[]> {
     const features = new Map()
     for (let i = 0; i < fdata.length; i += 1) {
       if (fdata[i]) {
@@ -48,8 +53,8 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
     return features
   }
 
-  makeFeature(data: Feature): SimpleFeature {
-    return new SimpleFeature({ data })
+  makeFeature(data: SimpleFeatureSerialized): SimpleFeature {
+    return new SimpleFeature(data)
   }
 
   async getRefNames(): Promise<string[]> {
@@ -131,7 +136,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: INoAssemblyRegion) {
     const { refName, start, end } = region
 
-    return ObservableCreate<Feature>(async observer => {
+    return ObservableCreate<SimpleFeature>(async observer => {
       const features = this.features.get(refName) || []
       for (let i = 0; i < features.length; i += 1) {
         const f = features[i]

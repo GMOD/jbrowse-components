@@ -1,9 +1,12 @@
-import Adapter from './RefNameAliasAdapter.ts'
+import Adapter from './RefNameAliasAdapter'
+import configSchema from './configSchema'
 
 test('adapter can fetch a simple alias file', async () => {
-  const adapter = new Adapter({
-    location: { localPath: require.resolve('./test_data/simple_alias.txt') },
-  })
+  const adapter = new Adapter(
+    configSchema.create({
+      location: { localPath: require.resolve('./test_data/simple_alias.txt') },
+    }),
+  )
   const result = await adapter.getRefNameAliases()
   expect(result[0].refName).toBe('chr1')
   expect(result[0].aliases).toEqual(['1', 'NC_000001.10'])

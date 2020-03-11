@@ -10,6 +10,7 @@ import {
   Instance,
   IAnyType,
   isType,
+  isLateType,
 } from 'mobx-state-tree'
 
 import { ElementId } from '../mst-types'
@@ -212,8 +213,12 @@ function makeConfigurationSchemaModel<
     },
   }
   Object.entries(schemaDefinition).forEach(([slotName, slotDefinition]) => {
-    if (isConfigurationSchemaType(slotDefinition)) {
-      // this is a sub-configuration
+    if (
+      (isType(slotDefinition) && isLateType(slotDefinition)) ||
+      isConfigurationSchemaType(slotDefinition)
+    ) {
+      // this is either an MST late() type (which we assume to be a sub-configuration),
+      // or an actual sub-configuration
       modelDefinition[slotName] = slotDefinition
     } else if (
       typeof slotDefinition === 'string' ||

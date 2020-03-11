@@ -5,11 +5,14 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion, IFileLocation } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { map, mergeAll } from 'rxjs/operators'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { Instance } from 'mobx-state-tree'
+import configSchema from './configSchema'
 
 interface BEDFeature {
   chrom: string
@@ -31,15 +34,19 @@ interface Parser {
   parseLine: (line: string, opts: { uniqueId: string | number }) => BEDFeature
 }
 
-export default class extends BaseFeatureDataAdapter {
+export default class BigBedAdapter extends BaseFeatureDataAdapter {
   private bigbed: BigBed
 
   private parser: Promise<Parser>
 
-  public constructor(config: { bigBedLocation: IFileLocation }) {
+  public constructor(config: Instance<typeof configSchema>) {
     super()
+    const bigBedLocation = readConfObject(
+      config,
+      'bigBedLocation',
+    ) as IFileLocation
     this.bigbed = new BigBed({
-      filehandle: openLocation(config.bigBedLocation),
+      filehandle: openLocation(bigBedLocation),
     })
 
     this.parser = this.bigbed
@@ -106,6 +113,8 @@ export default class extends BaseFeatureDataAdapter {
                   })
                 }
               }
+              if (r.uniqueId === undefined)
+                throw new Error('invalid bbi feature')
               const f = new SimpleFeature({
                 id: r.uniqueId,
                 data: {

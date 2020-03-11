@@ -7,6 +7,10 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import format from 'string-template'
 
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import MyConfigSchema from './configSchema'
+
 interface SPARQLEntry {
   type: string
   value: string
@@ -44,7 +48,7 @@ interface SPARQLFeature {
   data: SPARQLFeatureData
 }
 
-export default class extends BaseFeatureDataAdapter {
+export default class SPARQLAdapter extends BaseFeatureDataAdapter {
   private endpoint: string
 
   private queryTemplate: string
@@ -57,28 +61,13 @@ export default class extends BaseFeatureDataAdapter {
 
   private refNames: string[] | undefined
 
-  public constructor(config: {
-    endpoint: IFileLocation
-    queryTemplate: string
-    refNamesQueryTemplate: string
-    additionalQueryParams: string[]
-    refNames: string[]
-  }) {
+  public constructor(config: Instance<typeof MyConfigSchema>) {
     super()
-    const {
-      endpoint,
-      queryTemplate,
-      refNamesQueryTemplate,
-      additionalQueryParams,
-      refNames,
-    } = config
-
-    // @ts-ignore
-    this.endpoint = endpoint.uri
-    this.queryTemplate = queryTemplate
-    this.additionalQueryParams = additionalQueryParams
-    this.refNamesQueryTemplate = refNamesQueryTemplate
-    this.configRefNames = refNames
+    this.endpoint = readConfObject(config, 'endpoint').uri
+    this.queryTemplate = readConfObject(config, 'queryTemplate')
+    this.additionalQueryParams = readConfObject(config, 'additionalQueryParams')
+    this.refNamesQueryTemplate = readConfObject(config, 'refNamesQueryTemplate')
+    this.configRefNames = readConfObject(config, 'refNames')
   }
 
   public async getRefNames(opts: BaseOptions = {}): Promise<string[]> {
@@ -225,11 +214,9 @@ export default class extends BaseFeatureDataAdapter {
     return Object.keys(seenFeatures).map(
       seenFeature =>
         new SimpleFeature({
-          data: {
-            uniqueId: seenFeature,
-            ...seenFeatures[seenFeature].data,
-            subfeatures: seenFeatures[seenFeature].data.subfeatures,
-          },
+          uniqueId: seenFeature,
+          ...seenFeatures[seenFeature].data,
+          subfeatures: seenFeatures[seenFeature].data.subfeatures,
         }),
     )
   }

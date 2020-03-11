@@ -1,14 +1,22 @@
 import { toArray } from 'rxjs/operators'
-import { LocalFile } from 'generic-filehandle'
+import { LocalFile, GenericFilehandle } from 'generic-filehandle'
 import { Observable } from 'rxjs'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
-import Adapter from './SNPCoverageAdapter'
-import SubadapterBam from '../BamAdapter/BamAdapter'
-import SubadapterCram from '../CramAdapter/CramAdapter'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import AdapterF from './index'
+import BamAdapter from '../BamAdapter/BamAdapter'
+
+const pluginManager = new PluginManager()
+const { AdapterClass: SNPCoverageAdapter, configSchema } = pluginManager.load(
+  AdapterF,
+)
+pluginManager.configure()
 
 test('SNP adapter can fetch features from volvox.bam using bam subadapter', async () => {
-  const adapter = new Adapter({
-    subadapter: new SubadapterBam({
+  const config = configSchema.create({
+    zonk: 3,
+    subadapter: {
+      type: 'BamAdapter',
       bamLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.bam'),
       },
@@ -18,7 +26,14 @@ test('SNP adapter can fetch features from volvox.bam using bam subadapter', asyn
         },
         indexType: 'BAI',
       },
-    }),
+    },
+  })
+  debugger
+  const adapter = new SNPCoverageAdapter(config, () => {
+    return {
+      dataAdapter: new BamAdapter(config.subadapter),
+      sessionIds: new Set(),
+    }
   })
 
   const features = await adapter.getFeatures(

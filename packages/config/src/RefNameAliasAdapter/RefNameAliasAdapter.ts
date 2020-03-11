@@ -17,10 +17,7 @@ export default class RefNameAliasAdapter extends BaseRefNameAliasAdapter {
 
   private promise: Promise<Alias[]>
 
-  constructor(
-    config: ConfigurationModel<typeof MyConfigAdapterSchema>,
-    getSubAdapter: getSubAdapterType,
-  ) {
+  constructor(config: ConfigurationModel<typeof MyConfigAdapterSchema>) {
     super()
     this.location = openLocation(readConfObject(config, 'location'))
     this.promise = this.downloadResults()
