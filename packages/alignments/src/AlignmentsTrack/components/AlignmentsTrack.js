@@ -48,6 +48,7 @@ function AlignmentsTrackComponent(props) {
 
   // Set up context menu
   const [state, setState] = useState(initialState)
+  const zIndex = 10000
 
   const handleRightClick = e => {
     e.preventDefault()
@@ -57,7 +58,7 @@ function AlignmentsTrackComponent(props) {
     }))
   }
 
-  const handleClose = async () => {
+  const handleClose = () => {
     setState(initialState)
   }
 
@@ -95,17 +96,15 @@ function AlignmentsTrackComponent(props) {
             ? { top: state.mouseY, left: state.mouseX }
             : undefined
         }
-        style={{ zIndex: 10000 }}
+        style={{ zIndex }} // zIndex matches tooltip zindex to bring to front
       >
         {menuOptions.map(option => {
           return (
             <MenuItem
               key={option.key}
               onClick={() => {
-                handleClose().then(option.callback())
-                // setTimeout(() => {
-                //   option.callback()
-                // }, 200)
+                option.callback()
+                handleClose()
               }}
               disabled={option.disableCondition || false}
             >
@@ -125,6 +124,7 @@ function AlignmentsTrackComponent(props) {
           {...props}
           label="Sort by"
           parentMenuOpen={state !== initialState}
+          zIndex={zIndex}
         >
           {subMenuOptions.map(option => {
             return (

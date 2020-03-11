@@ -7,14 +7,21 @@ import PropTypes from 'prop-types'
 import { observer } from 'mobx-react'
 
 function NestedMenuItem(props) {
-  const { label, parentMenuOpen, children, rightIcon, highlightColor } = props
+  const {
+    label,
+    parentMenuOpen,
+    children,
+    zIndex,
+    rightIcon,
+    highlightColor,
+  } = props
   const refs = useRef()
   const [subMenuState, setSubMenuState] = useState(false)
 
   return (
     <div
       onMouseEnter={e => {
-        e.stopPropagation()
+        e.preventDefault()
         setSubMenuState(true)
         refs.current.style.backgroundColor = highlightColor
       }}
@@ -23,7 +30,7 @@ function NestedMenuItem(props) {
         refs.current.style.backgroundColor = 'white'
       }}
       onClick={e => {
-        e.stopPropagation()
+        e.preventDefault()
         setSubMenuState(!subMenuState)
       }}
     >
@@ -36,7 +43,7 @@ function NestedMenuItem(props) {
         </ListItemIcon>
       </MenuItem>
       <Menu
-        style={{ pointerEvents: 'none', zIndex: 10000 }}
+        style={{ pointerEvents: 'none', zIndex }}
         anchorEl={refs.current}
         anchorOrigin={{
           vertical: 'top',
@@ -63,12 +70,14 @@ function NestedMenuItem(props) {
 NestedMenuItem.propTypes = {
   label: PropTypes.string.isRequired,
   parentMenuOpen: PropTypes.bool.isRequired,
+  zIndex: PropTypes.number,
   rightIcon: PropTypes.string,
   highlightColor: PropTypes.string,
   children: PropTypes.array.isRequired,
 }
 
 NestedMenuItem.defaultProps = {
+  zIndex: 0,
   rightIcon: 'chevron_right',
   highlightColor: '#eeeeee',
 }
