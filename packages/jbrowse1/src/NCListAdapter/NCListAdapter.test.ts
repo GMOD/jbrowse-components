@@ -5,6 +5,7 @@ import { toArray } from 'rxjs/operators'
 import objectHash from 'object-hash'
 
 import Adapter from './NCListAdapter'
+import configSchema from './configSchema'
 
 test('adapter can fetch features from ensembl_genes test set', async () => {
   const rootTemplate = path
@@ -18,14 +19,15 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
       'trackData.json',
     )
     .replace(/\\/g, '\\\\')
-  await fsPromises.stat(rootTemplate.replace('{refseq}', 21)) // will throw if doesnt exist
+  await fsPromises.stat(rootTemplate.replace('{refseq}', '21')) // will throw if doesnt exist
   const args = {
     rootUrlTemplate: decodeURI(new URL(`file://${rootTemplate}`).href),
   }
   const hash = objectHash(args)
-  const adapter = new Adapter(args)
+  const adapter = new Adapter(configSchema.create(args))
 
   const features = await adapter.getFeatures({
+    assemblyName: 'volvox',
     refName: '21',
     start: 34960388,
     end: 35960388,

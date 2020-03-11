@@ -1,5 +1,3 @@
-declare module '@gmod/jbrowse-core/util/tracks'
-
 interface ProtoTrack {
   backendVersion?: number
   baseUrl?: string

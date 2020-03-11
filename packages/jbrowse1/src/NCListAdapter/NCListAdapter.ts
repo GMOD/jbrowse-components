@@ -10,7 +10,10 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import objectHash from 'object-hash'
 
+import { Instance, getSnapshot } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import NCListFeature from './NCListFeature'
+import MyConfigSchema from './configSchema'
 
 export default class extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,11 +23,12 @@ export default class extends BaseFeatureDataAdapter {
 
   private id: string
 
-  constructor(args: { refNames?: string[]; rootUrlTemplate: string }) {
+  constructor(config: Instance<typeof MyConfigSchema>) {
     super()
-    const { refNames, rootUrlTemplate } = args
+    const refNames = readConfObject(config, 'refNames')
+    const rootUrlTemplate = readConfObject(config, 'rootUrlTemplate')
     this.configRefNames = refNames
-    this.id = objectHash(args)
+    this.id = objectHash(getSnapshot(config))
 
     this.nclist = new NCListStore({
       baseUrl: '',

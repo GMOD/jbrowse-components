@@ -1,6 +1,7 @@
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import ConnectionType from '@gmod/jbrowse-core/pluggableElementTypes/ConnectionType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
   AdapterClass as NCListAdapterClass,
   configSchema as ncListAdapterConfigSchema,
@@ -10,8 +11,8 @@ import {
   modelFactory as jbrowse1ModelFactory,
 } from './JBrowse1Connection'
 
-export default class extends Plugin {
-  install(pluginManager) {
+export default class JBrowse1CompatibilityPlugin extends Plugin {
+  install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
