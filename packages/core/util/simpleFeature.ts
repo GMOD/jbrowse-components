@@ -85,7 +85,7 @@ export default class SimpleFeature implements Feature {
     if (isSimpleFeatureSerialized(args)) {
       this.data = args
     } else {
-      this.data = args.data
+      this.data = args.data || {}
       // load handle from args.parent (not args.data.parent)
       // this reason is because if args is an object, it likely isn't properly loaded with
       // parent as a Feature reference (probably a raw parent ID or something instead)
@@ -96,7 +96,6 @@ export default class SimpleFeature implements Feature {
     // args.id, args.data.uniqueId, or args.uniqueId due to this initialization
     const id = isSimpleFeatureSerialized(args) ? args.uniqueId : args.id
     if (id === undefined || id === null) {
-      debugger
       throw new Error(
         'SimpleFeature requires a unique `id` or `data.uniqueId` attribute',
       )
