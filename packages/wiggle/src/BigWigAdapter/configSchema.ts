@@ -1,8 +1,6 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 
-export { default as AdapterClass } from './BigWigAdapter'
-
-export const configSchema = ConfigurationSchema(
+export default ConfigurationSchema(
   'BigWigAdapter',
   {
     bigWigLocation: {

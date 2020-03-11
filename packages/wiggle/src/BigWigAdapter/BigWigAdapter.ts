@@ -10,6 +10,8 @@ import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
 import { map, mergeAll } from 'rxjs/operators'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { Instance } from 'mobx-state-tree'
 import {
   blankStats,
   FeatureStats,
@@ -17,6 +19,8 @@ import {
   scoresToStats,
   UnrectifiedFeatureStats,
 } from '../statsUtil'
+
+import configSchema from './configSchema'
 
 interface StatsRegion {
   refName: string
@@ -36,10 +40,10 @@ export default class extends BaseFeatureDataAdapter {
     ) => Promise<FeatureStats>
   }
 
-  public constructor(config: { bigWigLocation: IFileLocation }) {
+  public constructor(config: Instance<typeof configSchema>) {
     super()
     this.bigwig = new BigWig({
-      filehandle: openLocation(config.bigWigLocation),
+      filehandle: openLocation(readConfObject(config, 'bigWigLocation')),
     })
     this.statsCache = new AbortablePromiseCache({
       cache: new QuickLRU({ maxSize: 1000 }),

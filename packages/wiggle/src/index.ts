@@ -1,6 +1,7 @@
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
   AdapterClass as BigWigAdapterClass,
   configSchema as bigWigAdapterConfigSchema,
@@ -23,11 +24,12 @@ import LinePlotRenderer, {
 } from './LinePlotRenderer'
 
 export default class extends Plugin {
-  install(pluginManager) {
+  install(pluginManager: PluginManager) {
     pluginManager.addTrackType(() => {
       const configSchema = wiggleTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
         name: 'WiggleTrack',
+        compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: wiggleTrackModelFactory(configSchema),
       })

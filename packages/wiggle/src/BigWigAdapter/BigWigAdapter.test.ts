@@ -1,14 +1,14 @@
 import { toArray } from 'rxjs/operators'
 import BigWigAdapter from './BigWigAdapter'
+import configSchema from './configSchema'
 
 describe('adapter can fetch features from volvox.bw', () => {
-  let adapter
+  let adapter: BigWigAdapter
   beforeEach(() => {
     adapter = new BigWigAdapter(
-      {
+      configSchema.create({
         bigWigLocation: { localPath: require.resolve('./test_data/volvox.bw') },
-      },
-      {},
+      }),
     )
   })
   it('test basic aspects of getfeatures', async () => {
@@ -45,13 +45,12 @@ describe('adapter can fetch features from volvox.bw', () => {
       end: 40000,
     })
 
-    ret.theCacheWorks = true
     const ret2 = await adapter.getRegionStats({
       refName: 'ctgA',
       start: 10000,
       end: 40000,
     })
-    expect(ret2.theCacheWorks).toEqual(true)
+    expect(ret2).toBe(ret)
   })
   it('get local stats', async () => {
     expect(
