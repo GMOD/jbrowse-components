@@ -135,7 +135,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
             renderBlockEffect as any,
             {
               name: `${self.type} ${self.id} rendering`,
-              delay: 10000,
+              delay: 2000,
               fireImmediately: true,
             },
             self.setLoading,

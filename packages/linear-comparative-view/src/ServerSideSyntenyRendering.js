@@ -34,7 +34,8 @@ function ServerSideSyntenyRendering(props) {
     const context = canvas.getContext('2d')
     context.clearRect(0, 0, width, height)
     context.resetTransform()
-    context.transform(1, 0, -0.15, 1, -voffs[0], 0) // 0.75
+    // see https://en.wikipedia.org/wiki/Transformation_matrix#/media/File:2D_affine_transformation_matrix.svg
+    context.transform(1, 0, -(voffs[1] - voffs[0]) / height, 1, -voffs[0], 0)
     if (imageData.commands) {
       imageData.commands.forEach(command => {
         if (command.type === 'strokeStyle') {
@@ -48,7 +49,6 @@ function ServerSideSyntenyRendering(props) {
         }
       })
     } else if (imageData instanceof ImageBitmapType) {
-      console.log(voffs[0])
       context.drawImage(imageData, 0, 0)
     } else if (imageData.dataURL) {
       const img = new Image()
