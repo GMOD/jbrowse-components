@@ -182,7 +182,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
     const results = await this.render({ ...args })
     checkAbortSignal(args.signal)
     // @ts-ignore
-    results.html = renderToString(results.element)
+    results.imageData = JSON.stringify(results.imageData)
     delete results.element
 
     // serialize the results for passing back to the main thread.

@@ -68,7 +68,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           renderInProgress: undefined as AbortController | undefined,
           filled: false,
           data: undefined as any,
-          html: '',
+          imageData: '',
           error: undefined as Error | undefined,
           message: undefined as string | undefined,
           renderingComponent: undefined as any,
@@ -78,35 +78,20 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
     )
 
     .views(self => ({
-      // get subtracks(): any[] {
-      //   const subtracks: any[] = []
-      //   const parentView = getParent(self, 2)
-      //   parentView.views.forEach((subview: any) => {
-      //     subview.tracks.forEach((subviewTrack: any) => {
-      //       const subtrackId = getConf(subviewTrack, 'trackId')
-      //       if (this.trackIds.includes(subtrackId)) {
-      //         subtracks.push(subviewTrack)
-      //       }
-      //     })
-      //   })
-      //   return subtracks
-      // },
-
-      // get subtrackFeatures() {
-      //   return new CompositeMap<string, Feature>(
-      //     this.subtracks.map(t => t.features),
-      //   )
-      // },
-      //
+      // see link, can't have colliding name `width` so renamed to `effectiveWidth`
+      // https://spectrum.chat/mobx-state-tree/general/types-compose-error~484a5bbe-a280-4fae-8ba7-eb14afc1257d
+      get effectiveWidth() {
+        return getParent(self, 2).views[0].viewingRegionWidth
+      },
+      get effectiveHeight() {
+        return 100
+      },
       get renderProps() {
-        const config = getConf(self, 'renderer')
-        const width = getParent(self, 2).views[0].viewingRegionWidth
-
         return {
           trackModel: self,
-          config,
-          height: 100,
-          width,
+          config: getConf(self, 'renderer'),
+          height: this.effectiveHeight,
+          width: this.effectiveWidth,
         }
       },
       get rendererTypeName() {
@@ -148,7 +133,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         setLoading(abortController: AbortController) {
           self.filled = false
           self.message = undefined
-          self.html = ''
+          self.imageData = ''
           self.data = undefined
           self.error = undefined
           self.renderingComponent = undefined
@@ -160,7 +145,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           }
           self.filled = false
           self.message = messageText
-          self.html = ''
+          self.imageData = ''
           self.data = undefined
           self.error = undefined
           self.renderingComponent = undefined
@@ -168,18 +153,18 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         },
         setRendered({
           data,
-          html,
+          imageData,
           renderingComponent,
           renderProps,
         }: {
           data: any
-          html: any
+          imageData: any
           renderingComponent: React.Component
           renderProps: any
         }) {
           self.filled = true
           self.message = undefined
-          self.html = html
+          self.imageData = imageData
           self.data = data
           self.error = undefined
           self.renderingComponent = renderingComponent
@@ -193,7 +178,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           // the rendering failed for some reason
           self.filled = false
           self.message = undefined
-          self.html = ''
+          self.imageData = ''
           self.data = undefined
           self.error = error
           self.renderingComponent = undefined
@@ -203,7 +188,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         //   self.renderInProgress = undefined
         //   self.filled = false
         //   self.data = undefined
-        //   self.html = ''
+        //   self.imageData = ''
         //   self.error = undefined
         //   self.message = undefined
         //   self.ReactComponent = ServerSideRenderedBlockContent
@@ -278,15 +263,12 @@ async function renderBlockEffect(
 
   const { rendererType, rpcManager, renderArgs } = props
 
-  // @ts-ignore
-  renderArgs.signal = signal
-
-  const { html, ...data } = await rendererType.renderInClient(
+  const { imageData, ...data } = await rendererType.renderInClient(
     rpcManager,
     renderArgs,
   )
 
-  return { html, data, renderingComponent: rendererType.ReactComponent }
+  return { imageData, data, renderingComponent: rendererType.ReactComponent }
 }
 
 export type LinearSyntenyTrackStateModel = ReturnType<typeof stateModelFactory>
