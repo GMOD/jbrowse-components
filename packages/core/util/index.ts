@@ -464,6 +464,7 @@ export function makeAbortableReaction<T, U>(
   ) => Promise<void>,
   reactionOptions: { name: string; fireImmediately: boolean; delay: number },
   startedFunction: (aborter: AbortController) => void,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   successFunction: (arg: any) => void,
   errorFunction: (err: Error) => void,
 ) {

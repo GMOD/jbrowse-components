@@ -22,7 +22,6 @@ function ServerSideSyntenyRendering(props) {
   for (let i = 0; i < views.length; i++) {
     voffs.push(views[i].offsetPx - viewOffsets[i])
   }
-  console.log(voffs)
 
   const featureCanvas = useRef()
 

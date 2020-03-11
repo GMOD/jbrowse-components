@@ -133,7 +133,7 @@ export default class extends BaseAdapter {
                 const record = this.rowToGeneName[row]
                 const current = featuresUnderConstruction[row] || {}
                 featuresUnderConstruction[row] = current
-                if (record.s1n1 == name) {
+                if (record.s1n1 === name) {
                   current.f1 = feature
                 } else if (record.s1n2 === name) {
                   current.f2 = feature

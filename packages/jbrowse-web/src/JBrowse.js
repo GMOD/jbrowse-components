@@ -264,7 +264,9 @@ export default props => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <JBrowse {...props} />
+      <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
+        <JBrowse {...props} />
+      </ErrorBoundary>
     </ThemeProvider>
   )
 }

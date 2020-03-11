@@ -1,18 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,import/no-extraneous-dependencies */
-import {
-  types,
-  cast,
-  Instance,
-  getParent,
-  isAlive,
-  getSnapshot,
-} from 'mobx-state-tree'
+import { types, Instance, getParent, getSnapshot } from 'mobx-state-tree'
 import jsonStableStringify from 'json-stable-stringify'
-import {
-  getSession,
-  isAbortException,
-  makeAbortableReaction,
-} from '@gmod/jbrowse-core/util'
+import { getSession, makeAbortableReaction } from '@gmod/jbrowse-core/util'
 import {
   getConf,
   ConfigurationReference,
@@ -116,6 +105,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
     }))
     .actions(self => {
       let renderInProgress: undefined | AbortController
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       function debounceEffect<T>(
         effect: (arg: T, r: any) => void,
         debounceMs: number,
