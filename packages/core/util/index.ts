@@ -392,12 +392,12 @@ export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
  * @param {Error} exception
  * @returns {boolean}
  */
-export function isAbortException(exception: AbortError): boolean {
+export function isAbortException(exception: Error): boolean {
   return (
     // DOMException
     exception.name === 'AbortError' ||
     // standard-ish non-DOM abort exception
-    exception.code === 'ERR_ABORTED' ||
+    (exception as AbortError).code === 'ERR_ABORTED' ||
     // message contains aborted for bubbling through RPC
     // things we have seen that we want to catch here
     // Error: aborted
