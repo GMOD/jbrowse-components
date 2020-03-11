@@ -86,6 +86,9 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       get effectiveHeight() {
         return 100
       },
+      get highResolutionScaling() {
+        return 1
+      },
       get renderProps() {
         return {
           trackModel: self,
@@ -151,19 +154,16 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           self.renderingComponent = undefined
           renderInProgress = undefined
         },
-        setRendered({
-          data,
-          imageData,
-          renderingComponent,
-          renderProps,
-        }: {
+        setRendered(args: {
           data: any
           imageData: any
           renderingComponent: React.Component
           renderProps: any
         }) {
+          const { data, imageData, renderingComponent } = args
           self.filled = true
           self.message = undefined
+          console.log('setRendered', imageData)
           self.imageData = imageData
           self.data = data
           self.error = undefined
@@ -184,18 +184,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           self.renderingComponent = undefined
           renderInProgress = undefined
         },
-        // reload() {
-        //   self.renderInProgress = undefined
-        //   self.filled = false
-        //   self.data = undefined
-        //   self.imageData = ''
-        //   self.error = undefined
-        //   self.message = undefined
-        //   self.ReactComponent = ServerSideRenderedBlockContent
-        //   self.renderingComponent = undefined
-        //   const data = renderBlockData(self as any)
-        //   renderBlockEffect(cast(self), data)
-        // },
       }
     })
 }

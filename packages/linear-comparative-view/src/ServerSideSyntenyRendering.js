@@ -8,13 +8,20 @@ import { ImageBitmapType } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill
  */
 function ServerSideSyntenyRendering(props) {
   const { model } = props
-  const { imageData, width, height, style, highResolutionScaling } = model
-  console.log('imageData', imageData)
+  const {
+    imageData,
+    effectiveWidth: width,
+    effectiveHeight: height,
+    style,
+    highResolutionScaling,
+  } = model
 
   const featureCanvas = useRef()
 
   useEffect(() => {
-    if (!imageData) return
+    if (!imageData) {
+      return
+    }
     const canvas = featureCanvas.current
     const context = canvas.getContext('2d')
     if (imageData.commands) {
