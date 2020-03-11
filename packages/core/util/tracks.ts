@@ -1,7 +1,7 @@
 import { getParent, isRoot, IStateTreeNode } from 'mobx-state-tree'
 import objectHash from 'object-hash'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
-import { IFileLocation, IUriLocation, ILocalPathLocation } from '../mst-types'
+import { IUriLocation, ILocalPathLocation } from '../mst-types'
 
 /* utility functions for use by track models and so forth */
 
@@ -51,8 +51,8 @@ export const UNSUPPORTED = 'UNSUPPORTED'
 
 export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
   function makeLocation(location: string): IUriLocation | ILocalPathLocation {
-    if (protocol === 'uri') return { uri: fileName }
-    if (protocol === 'localPath') return { localPath: fileName }
+    if (protocol === 'uri') return { uri: location }
+    if (protocol === 'localPath') return { localPath: location }
     throw new Error(`invalid protocol ${protocol}`)
   }
   if (/\.bam$/i.test(fileName))

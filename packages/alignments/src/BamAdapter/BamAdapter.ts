@@ -3,7 +3,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
