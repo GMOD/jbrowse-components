@@ -4,18 +4,20 @@ import {
   cast,
   Instance,
   getParent,
-  addDisposer,
   isAlive,
   getSnapshot,
 } from 'mobx-state-tree'
 import jsonStableStringify from 'json-stable-stringify'
-import { getSession, isAbortException } from '@gmod/jbrowse-core/util'
+import {
+  getSession,
+  isAbortException,
+  makeAbortableReaction,
+} from '@gmod/jbrowse-core/util'
 import {
   getConf,
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
-import { reaction } from 'mobx'
 
 import {
   configSchemaFactory as baseConfigFactory,
@@ -127,26 +129,23 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       let renderInProgress: undefined | AbortController
       return {
         afterAttach() {
-          addDisposer(
-            self,
-            reaction(
-              () => renderBlockData(cast(self)),
-              data => renderBlockEffect(cast(self), data),
-              {
-                name: `{track.id} rendering`,
-                delay: 1000,
-                fireImmediately: true,
-              },
-            ),
+          makeAbortableReaction(
+            self as any,
+            'render',
+            renderBlockData as any,
+            renderBlockEffect as any,
+            {
+              name: `${self.type} ${self.id} rendering`,
+              delay: 1000,
+              fireImmediately: true,
+            },
+            self.setLoading,
+            self.setRendered,
+            self.setError,
           )
         },
 
         setLoading(abortController: AbortController) {
-          if (renderInProgress !== undefined) {
-            if (!renderInProgress.signal.aborted) {
-              renderInProgress.abort()
-            }
-          }
           self.filled = false
           self.message = undefined
           self.html = ''
@@ -167,12 +166,17 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           self.renderingComponent = undefined
           renderInProgress = undefined
         },
-        setRendered(
-          data: any,
-          html: any,
-          renderingComponent: React.Component,
-          renderProps: any,
-        ) {
+        setRendered({
+          data,
+          html,
+          renderingComponent,
+          renderProps,
+        }: {
+          data: any
+          html: any
+          renderingComponent: React.Component
+          renderProps: any
+        }) {
           self.filled = true
           self.message = undefined
           self.html = html
@@ -195,18 +199,18 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           self.renderingComponent = undefined
           renderInProgress = undefined
         },
-        reload() {
-          self.renderInProgress = undefined
-          self.filled = false
-          self.data = undefined
-          self.html = ''
-          self.error = undefined
-          self.message = undefined
-          self.ReactComponent = ServerSideRenderedBlockContent
-          self.renderingComponent = undefined
-          const data = renderBlockData(self as any)
-          renderBlockEffect(cast(self), data)
-        },
+        // reload() {
+        //   self.renderInProgress = undefined
+        //   self.filled = false
+        //   self.data = undefined
+        //   self.html = ''
+        //   self.error = undefined
+        //   self.message = undefined
+        //   self.ReactComponent = ServerSideRenderedBlockContent
+        //   self.renderingComponent = undefined
+        //   const data = renderBlockData(self as any)
+        //   renderBlockEffect(cast(self), data)
+        // },
       }
     })
 }
@@ -263,66 +267,26 @@ function renderBlockData(self: SyntenyTrack) {
 }
 
 async function renderBlockEffect(
-  self: Instance<SyntenyTrack>,
   props: ReturnType<typeof renderBlockData>,
+  signal: AbortSignal,
+  self: Instance<SyntenyTrack>,
   allowRefetch = false,
 ) {
-  const {
-    trackError,
-    rendererType,
-    renderProps,
+  if (!props) {
+    throw new Error('cannot render with no props')
+  }
+
+  const { rendererType, rpcManager, renderArgs } = props
+
+  // @ts-ignore
+  renderArgs.signal = signal
+
+  const { html, ...data } = await rendererType.renderInClient(
     rpcManager,
     renderArgs,
-  } = props
+  )
 
-  // note: cannotBeRenderedReason removed during hacking
-  //
-  //
-  if (!isAlive(self)) {
-    return
-  }
-
-  if (trackError) {
-    self.setError(trackError)
-    return
-  }
-
-  const aborter = new AbortController()
-  self.setLoading(aborter)
-
-  try {
-    // @ts-ignore
-    renderArgs.signal = aborter.signal
-    // const callId = [
-    //   assembleLocString(renderArgs.region),
-    //   renderArgs.rendererType,
-    // ]
-    const { html, ...data } = await rendererType.renderInClient(
-      rpcManager,
-      renderArgs,
-    )
-    // if (aborter.signal.aborted) {
-    //   console.log(...callId, 'request to abort render was ignored', html, data)
-    // checkAbortSignal(aborter.signal)
-    self.setRendered(data, html, rendererType.ReactComponent, renderProps)
-  } catch (error) {
-    if (isAbortException(error) && !aborter.signal.aborted) {
-      // there is a bug in the underlying code and something is caching aborts. try to refetch once
-      const track = getParent(self, 2)
-      if (allowRefetch) {
-        console.warn(`cached abort detected, refetching "${track.name}"`)
-        renderBlockEffect(self, props, false)
-        return
-      }
-      console.warn(`cached abort detected, failed to recover "${track.name}"`)
-    }
-    if (isAlive(self) && !isAbortException(error)) {
-      console.error(error)
-      // setting the aborted exception as an error will draw the "aborted" error, and we
-      // have not found how to create a re-render if this occurs
-      self.setError(error)
-    }
-  }
+  return { html, data, renderingComponent: rendererType.ReactComponent }
 }
 
 export type LinearSyntenyTrackStateModel = ReturnType<typeof stateModelFactory>

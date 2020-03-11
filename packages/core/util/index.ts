@@ -462,7 +462,7 @@ export function makeAbortableReaction<T, U>(
     model: T,
     handle: IReactionPublic,
   ) => Promise<void>,
-  reactionOptions: { delay: number },
+  reactionOptions: { name: string; fireImmediately: boolean; delay: number },
   startedFunction: (aborter: AbortController) => void,
   successFunction: (arg: any) => void,
   errorFunction: (err: Error) => void,
