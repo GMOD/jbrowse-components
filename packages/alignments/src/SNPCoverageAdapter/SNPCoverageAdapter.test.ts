@@ -1,17 +1,14 @@
 import { toArray } from 'rxjs/operators'
-import { LocalFile, GenericFilehandle } from 'generic-filehandle'
-import { Observable } from 'rxjs'
-import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import { LocalFile } from 'generic-filehandle'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration'
-import { Instance, SnapshotIn } from 'mobx-state-tree'
-import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { SnapshotIn } from 'mobx-state-tree'
 import AdapterF from './index'
 import CramAdapterF from '../CramAdapter'
 import {
   AdapterClass as BamAdapter,
   configSchema as BamConfigSchema,
 } from '../BamAdapter'
+import { SequenceAdapter } from '../CramAdapter/CramTestAdapters'
 
 const pluginManager = new PluginManager()
 const { AdapterClass: SNPCoverageAdapter, configSchema } = pluginManager.load(
@@ -136,94 +133,6 @@ test('test usage of getMultiRegion stats, SNP adapter can generate a domain from
   expect(stats.scoreMin).toEqual(0)
   expect(stats.scoreMax).toEqual(13)
 })
-
-// setup for Cram Adapter Testing
-function parseSmallFasta(text: string) {
-  return text
-    .split('>')
-    .filter(t => /\S/.test(t))
-    .map(entryText => {
-      const [defLine, ...seqLines] = entryText.split('\n')
-      const [id, ...descriptionLines] = defLine.split(' ')
-      const description = descriptionLines.join(' ')
-      const sequence = seqLines.join('').replace(/\s/g, '')
-      return { id, description, sequence }
-    })
-}
-
-type FileHandle = GenericFilehandle
-
-class FetchableSmallFasta {
-  data: Promise<ReturnType<typeof parseSmallFasta>>
-
-  constructor(filehandle: FileHandle) {
-    this.data = filehandle.readFile().then(buffer => {
-      const text = buffer.toString('utf8')
-      return parseSmallFasta(text)
-    })
-  }
-
-  async fetch(id: number, start: number, end: number) {
-    const data = await this.data
-    const entry = data[id]
-    const length = end - start + 1
-    if (!entry) throw new Error(`no sequence with id ${id} exists`)
-    return entry.sequence.substr(start - 1, length)
-  }
-
-  async getSequenceList() {
-    const data = await this.data
-    return data.map(entry => entry.id)
-  }
-}
-
-class SequenceAdapter extends BaseFeatureDataAdapter {
-  fasta: FetchableSmallFasta
-
-  refNames: string[] = []
-
-  constructor(filehandle: FileHandle) {
-    super()
-    this.fasta = new FetchableSmallFasta(filehandle)
-  }
-
-  async getRefNames() {
-    return this.refNames
-  }
-
-  getFeatures({
-    refName,
-    start,
-    end,
-  }: {
-    refName: string
-    start: number
-    end: number
-  }): Observable<SimpleFeature> {
-    return new Observable(observer => {
-      this.fasta
-        .getSequenceList()
-        .then(refNames => {
-          this.refNames = refNames
-        })
-        .then(() =>
-          this.fasta.fetch(this.refNames.indexOf(refName), start, end),
-        )
-        .then(ret => {
-          observer.next(
-            new SimpleFeature({
-              uniqueId: `${refName}-${start}-${end}`,
-              seq: ret,
-              start,
-              end,
-            }),
-          )
-          observer.complete()
-        })
-      return { unsubscribe: () => {} }
-    })
-  }
-}
 
 function newSNPCoverageWithCram(
   cramConf: SnapshotIn<typeof CramConfigSchema>,
