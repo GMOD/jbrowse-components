@@ -3,7 +3,7 @@ import {
   ConfigurationReference,
 } from '@gmod/jbrowse-core/configuration'
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { types, addDisposer } from 'mobx-state-tree'
+import { types, addDisposer, getParent } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import AlignmentsTrackComponent from './components/AlignmentsTrack'
 
@@ -22,6 +22,7 @@ export default (pluginManager, configSchema) => {
         type: types.literal('AlignmentsTrack'),
         configuration: ConfigurationReference(configSchema),
         height: 250,
+        centerLinePosition: 0,
         sortedBy: '',
         showCoverage: true,
         showPileup: true,
@@ -103,6 +104,13 @@ export default (pluginManager, configSchema) => {
             },
           ]
         },
+        calculateCenterLine() {
+          const LGVModel = getParent(getParent(self))
+          const centerLinePosition = LGVModel.displayedRegionsInOrder.length
+            ? LGVModel.pxToBp(LGVModel.viewingRegionWidth / 2).offset
+            : 0
+          return centerLinePosition
+        },
       }))
       .actions(self => ({
         afterAttach() {
@@ -120,11 +128,15 @@ export default (pluginManager, configSchema) => {
             configuration: trackConfig,
           }
         },
+        setCenterLine() {
+          self.centerLinePosition = self.calculateCenterLine()
+        },
         sortSelected(selected) {
           self.sortedBy = selected
         },
         toggleCenterLine() {
           self.showCenterLine = !self.showCenterLine
+          if (self.showCenterLine) self.setCenterLine()
         },
         toggleCoverage() {
           self.showCoverage = !self.showCoverage

@@ -7,6 +7,7 @@ import MenuItem from '@material-ui/core/MenuItem'
 import Icon from '@material-ui/core/Icon'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import NestedMenuItem from '@gmod/jbrowse-core/ui/NestedMenuItem'
+
 // import ContextMenu from '@gmod/jbrowse-core/ui/ContextMenu'
 
 const initialState = {
@@ -24,6 +25,7 @@ function AlignmentsTrackComponent(props) {
     subMenuOptions,
     showPileup,
     showCoverage,
+    showCenterLine,
     sortedBy,
   } = model
 
@@ -33,10 +35,11 @@ function AlignmentsTrackComponent(props) {
     if (ready && stats && needsScalebar) showScalebar = true
   }
 
+  if (showCenterLine) model.setCenterLine() // calculates when scrolling
+
   // Set up context menu
   const [state, setState] = useState(initialState)
   const zIndex = 10000 // zIndex matches tooltip zindex to bring to front
-
   const handleRightClick = e => {
     e.preventDefault()
     setState(() => ({

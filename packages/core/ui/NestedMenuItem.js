@@ -39,6 +39,7 @@ function NestedMenuItem(props) {
       }}
       tabIndex={tabIndex}
       onFocus={e => {
+        e.preventDefault()
         refs.current.style.backgroundColor = highlightColor
       }}
       onKeyDown={e => {
