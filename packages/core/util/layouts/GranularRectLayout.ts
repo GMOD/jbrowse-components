@@ -302,7 +302,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private rectangles: Map<string, Rectangle<T>>
 
-  private maxHeightReached: boolean
+  public maxHeightReached: boolean
 
   private maxHeight: number
 

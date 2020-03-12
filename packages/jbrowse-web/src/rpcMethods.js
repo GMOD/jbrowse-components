@@ -161,14 +161,14 @@ export async function render(
     sessionId,
     adapterType,
     adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
     rendererType,
     renderProps,
     signal,
   },
 ) {
-  if (!sessionId) throw new Error('must pass a unique session id')
+  if (!sessionId) {
+    throw new Error('must pass a unique session id')
+  }
 
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
@@ -180,8 +180,6 @@ export async function render(
     sessionId,
     adapterType,
     adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
   )
 
   const RendererType = pluginManager.getRendererType(rendererType)

@@ -11,11 +11,12 @@ import {
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
+import { BaseLayout } from '@gmod/jbrowse-core/util/layouts/BaseLayout'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 
 interface PileupRenderProps {
   features: Map<string, Feature>
-  layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  layout: BaseLayout<string>
   config: AnyConfigurationModel
   region: IRegion
   bpPerPx: number
@@ -96,8 +97,13 @@ export default class PileupRenderer extends BoxRendererType {
       horizontallyFlipped,
       highResolutionScaling = 1,
     } = props
-    if (!layout) throw new Error(`layout required`)
-    if (!layout.addRect) throw new Error('invalid layout object')
+    if (!layout) {
+      debugger
+      throw new Error(`layout required`)
+    }
+    if (!layout.addRect) {
+      throw new Error('invalid layout object')
+    }
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const w = Math.max(minFeatWidth, pxPerBp)

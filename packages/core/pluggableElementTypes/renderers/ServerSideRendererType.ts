@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderToString } from 'react-dom/server'
 import { filter, ignoreElements, tap } from 'rxjs/operators'
-import { SnapshotOrInstance } from 'mobx-state-tree'
+import {
+  SnapshotOrInstance,
+  SnapshotIn,
+  getSnapshot,
+  isStateTreeNode,
+} from 'mobx-state-tree'
 import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import { IRegion } from '../../mst-types'
 import { readConfObject } from '../../configuration'
@@ -21,8 +26,8 @@ interface BaseRenderArgs {
   filters?: any
   dataAdapter: BaseFeatureDataAdapter
   bpPerPx: number
-  config: SnapshotOrInstance<AnyConfigurationModel>
   renderProps: { trackModel: any; blockKey: string }
+  config: SnapshotOrInstance<AnyConfigurationModel>
 }
 
 interface MultiRegionRenderArgs extends BaseRenderArgs {
@@ -37,7 +42,9 @@ interface SingleRegionRenderArgs extends BaseRenderArgs {
 
 export type RenderArgs = MultiRegionRenderArgs | SingleRegionRenderArgs
 
-export type RenderArgsSerialized = RenderArgs
+export type RenderArgsSerialized = RenderArgs & {
+  config: SnapshotIn<AnyConfigurationModel>
+}
 export type RenderArgsDeserialized = RenderArgs & {
   config: AnyConfigurationModel
 }
@@ -101,11 +108,20 @@ export default class ServerSideRenderer extends RendererType {
     if (isMultiRegionRenderArgs(args)) {
       return {
         ...args,
+        config: isStateTreeNode(args.config)
+          ? getSnapshot(args.config)
+          : args.config,
         regions: [...args.regions],
       }
     }
     if (isSingleRegionRenderArgs(args)) {
-      return { ...args, region: { ...args.region } }
+      return {
+        ...args,
+        config: isStateTreeNode(args.config)
+          ? getSnapshot(args.config)
+          : args.config,
+        region: { ...args.region },
+      }
     }
     throw new Error('invalid renderer args')
   }
@@ -273,16 +289,14 @@ export default class ServerSideRenderer extends RendererType {
   }
 
   // render method called on the worker
-  async renderInWorker(
-    args: RenderArgsDeserialized,
-  ): Promise<ResultsSerialized> {
+  async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
     checkAbortSignal(args.signal)
-    this.deserializeArgsInWorker(args)
+    const deserialized = this.deserializeArgsInWorker(args)
 
-    const features = await this.getFeatures(args)
+    const features = await this.getFeatures(deserialized)
     checkAbortSignal(args.signal)
 
-    const results = await this.render({ ...args, features })
+    const results = await this.render({ ...deserialized, features })
     checkAbortSignal(args.signal)
     const html = renderToString(results.element)
     delete results.element
@@ -290,7 +304,11 @@ export default class ServerSideRenderer extends RendererType {
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out
     // as the result of renderRegionWithWorker.
-    return this.serializeResultsInWorker({ ...results, html }, features, args)
+    return this.serializeResultsInWorker(
+      { ...results, html },
+      features,
+      deserialized,
+    )
   }
 
   freeResourcesInClient(rpcManager: any, args: RenderArgs) {

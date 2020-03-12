@@ -172,7 +172,8 @@ export function findParentThatIs<
   return findParentThat(node, predicate) as TypeTestedByPredicate<PREDICATE>
 }
 
-export function getSession(node: IAnyStateTreeNode): AbstractSessionModel {
+/** get the current JBrowse session model, starting at any node in the state tree */
+export function getSession(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isSessionModel)
   } catch (e) {
@@ -180,6 +181,7 @@ export function getSession(node: IAnyStateTreeNode): AbstractSessionModel {
   }
 }
 
+/** get the state model of the view in the state tree that contains the given node */
 export function getContainingView(
   node: IAnyStateTreeNode,
 ): IAnyStateTreeNode | undefined {

@@ -1,5 +1,9 @@
 import deepEqual from 'deep-equal'
-import { readConfObject, AnyConfigurationModel } from '../../configuration'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+  isConfigurationModel,
+} from '../../configuration'
 import GranularRectLayout from '../../util/layouts/GranularRectLayout'
 import MultiLayout from '../../util/layouts/MultiLayout'
 import PrecomputedLayout from '../../util/layouts/PrecomputedLayout'
@@ -18,7 +22,7 @@ import { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
 interface LayoutSessionProps {
   config: AnyConfigurationModel
   bpPerPx: number
-  filters: any
+  filters?: any
 }
 
 type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
@@ -37,6 +41,10 @@ export class LayoutSession implements LayoutSessionProps {
 
   constructor(args: LayoutSessionProps) {
     this.config = args.config
+    if (!isConfigurationModel(this.config)) {
+      debugger
+      throw new Error('configuration required')
+    }
     this.bpPerPx = args.bpPerPx
     this.filters = args.filters
     this.update(args)
@@ -148,7 +156,7 @@ export default class BoxRendererType extends ServerSideRendererType {
     return deserialized
   }
 
-  deserializeLayoutInWorker(args: RenderArgs & LayoutSessionProps) {
+  deserializeLayoutInWorker(args: RenderArgsDeserialized & LayoutSessionProps) {
     if (isSingleRegionRenderArgs(args)) {
       const { region } = args
       const session = this.getWorkerSession(args)
@@ -164,7 +172,7 @@ export default class BoxRendererType extends ServerSideRendererType {
     const deserialized = super.deserializeArgsInWorker(
       args,
     ) as RenderArgsDeserialized
-    deserialized.layout = this.deserializeLayoutInWorker(args)
+    deserialized.layout = this.deserializeLayoutInWorker(deserialized)
     return deserialized
   }
 
