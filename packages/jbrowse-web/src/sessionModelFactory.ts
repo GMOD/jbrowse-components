@@ -22,13 +22,14 @@ import {
   types,
   walk,
 } from 'mobx-state-tree'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
   key: string
 }
 
-export default function sessionModelFactory(pluginManager: any) {
+export default function sessionModelFactory(pluginManager: PluginManager) {
   const minWidth = 384
   const minDrawerWidth = 128
   return types

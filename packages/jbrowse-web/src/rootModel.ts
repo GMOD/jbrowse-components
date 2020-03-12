@@ -1,5 +1,6 @@
 import { getSnapshot, types, cast, SnapshotIn } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
+import { AbstractSessionModel } from '@gmod/jbrowse-core/util'
 import JBrowseWeb, { Session } from './jbrowseModel'
 
 const RootModel = types
@@ -77,7 +78,7 @@ export function createTestSession(snapshot = {}) {
     ...snapshot,
   })
   root.setHistory(UndoManager.create({}, { targetStore: root.session }))
-  return root.session
+  return root.session as AbstractSessionModel
 }
 
 export default RootModel

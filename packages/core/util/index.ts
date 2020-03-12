@@ -4,7 +4,7 @@ import {
   isAlive,
   IAnyStateTreeNode,
   getType,
-  isStateTreeNode,
+  hasParent,
 } from 'mobx-state-tree'
 import { inflate, deflate } from 'pako'
 import { Observable, fromEvent } from 'rxjs'
@@ -15,6 +15,7 @@ import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
 import PluginManager from '../PluginManager'
 import { AnyConfigurationModel } from '../configuration'
+import { TypeTestedByPredicate } from './types'
 
 export * from './types'
 
@@ -131,25 +132,52 @@ export function useDebouncedCallback<A extends any[]>(
   }
 }
 
-export interface SessionModel {
+/** minimum interface that all session state models must implement */
+export interface AbstractSessionModel {
   editConfiguration(configuration: AnyConfigurationModel): void
+  clearSelection(): void
   configuration: AnyConfigurationModel
   pluginManager: PluginManager
 }
-export function isSessionModel(thing: unknown): thing is SessionModel {
+export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
-    isStateTreeNode(thing) &&
+    typeof thing === 'object' &&
+    thing !== null &&
     'pluginManager' in thing &&
     'configuration' in thing
   )
 }
 
-export function getSession(node: IAnyStateTreeNode): SessionModel {
-  let currentNode = node
-  while (isAlive(currentNode) && !isSessionModel(currentNode))
-    currentNode = getParent(currentNode)
-  if (isAlive(currentNode) && isSessionModel(currentNode)) return currentNode
-  throw new Error('no session model found!')
+/** find the first node in the hierarchy that matches the given predicate */
+export function findParentThat(
+  node: IAnyStateTreeNode,
+  predicate: (thing: IAnyStateTreeNode) => boolean,
+) {
+  let currentNode: IAnyStateTreeNode | undefined = node
+  while (currentNode && isAlive(currentNode)) {
+    if (predicate(currentNode)) return currentNode
+    if (hasParent(currentNode)) currentNode = getParent(currentNode)
+    else break
+  }
+  throw new Error('no matching node found')
+}
+
+/** find the first node in the hierarchy that matches the given 'is' typescript type guard predicate */
+export function findParentThatIs<
+  PREDICATE extends (thing: IAnyStateTreeNode) => boolean
+>(
+  node: IAnyStateTreeNode,
+  predicate: PREDICATE,
+): TypeTestedByPredicate<PREDICATE> {
+  return findParentThat(node, predicate) as TypeTestedByPredicate<PREDICATE>
+}
+
+export function getSession(node: IAnyStateTreeNode): AbstractSessionModel {
+  try {
+    return findParentThatIs(node, isSessionModel)
+  } catch (e) {
+    throw new Error('no session model found!')
+  }
 }
 
 export function getContainingView(

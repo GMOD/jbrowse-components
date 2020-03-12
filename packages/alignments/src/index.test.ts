@@ -1,8 +1,9 @@
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import { getSnapshot, types } from 'mobx-state-tree'
+import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import MyPlugin from '.'
 
-const createMockTrackStateModel = track =>
+const createMockTrackStateModel = (track: TrackType) =>
   types
     .model({
       name: 'testSession',
@@ -11,10 +12,12 @@ const createMockTrackStateModel = track =>
       staticBlocks: types.frozen(),
       track: track.stateModel,
       pluginManager: 'mockPluginManager',
+      configuration: 'mockConfiguration',
+      selection: types.frozen(),
     })
     .actions(self => {
       return {
-        setSelection(thing) {
+        setSelection(thing: unknown) {
           self.selection = thing
         },
         clearSelection() {
@@ -23,7 +26,7 @@ const createMockTrackStateModel = track =>
       }
     })
 
-const createMockTrack = track =>
+const createMockTrack = (track: TrackType) =>
   createMockTrackStateModel(track).create({
     staticBlocks: [],
     track: {

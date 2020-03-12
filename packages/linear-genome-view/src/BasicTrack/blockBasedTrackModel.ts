@@ -213,7 +213,7 @@ const blockBasedTrack = types
     },
 
     clearFeatureSelection() {
-      const session = getSession(self) as any
+      const session = getSession(self)
       session.clearSelection()
     },
 
