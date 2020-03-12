@@ -1,8 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  getConf,
-  readConfObject,
-} from '@gmod/jbrowse-core/configuration'
+import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
 import {
   clamp,
@@ -14,10 +11,10 @@ import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
 import { getParent, getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
 
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { BlockSet } from '../BasicTrack/util/blockTypes'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 export interface LGVMenuOption {

@@ -187,78 +187,69 @@ test('SNP adapter can fetch features from volvox.cram using cram subadapter', as
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
 })
 
-// test('test usage of CramSlightlyLazyFeature toJSON in a SNP adapter', async () => {
-//   const adapter = getAdapter(
-//     pluginManager,
-//     'testSession',
-//     'SNPCoverageAdapter',
-//     {
-//       cramLocation: {
-//         localPath: require.resolve('../../test_data/volvox-sorted.cram'),
-//       },
-//       craiLocation: {
-//         localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
-//       },
-//       sequenceAdapter: new SequenceAdapter(
-//         new LocalFile(require.resolve('../../test_data/volvox.fa')),
-//       ),
-//     },
-//   ).dataAdapter as SNPCoverageAdapter
+test('test usage of CramSlightlyLazyFeature toJSON in a SNP adapter', async () => {
+  const adapter = newSNPCoverageWithCram(
+    {
+      type: 'CramAdapter',
+      cramLocation: {
+        localPath: require.resolve('../../test_data/volvox-sorted.cram'),
+      },
+      craiLocation: {
+        localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
+      },
+    },
+    require.resolve('../../test_data/volvox.fa'),
+  )
 
-//   const features = await adapter.getFeatures({
-//     assemblyName: 'volvox',
-//     refName: 'ctgA',
-//     start: 0,
-//     end: 100,
-//   })
-//   const featuresArray = await features.pipe(toArray()).toPromise()
-//   const f = featuresArray[0].toJSON()
+  const features = await adapter.getFeatures({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+  })
+  const featuresArray = await features.pipe(toArray()).toPromise()
+  const f = featuresArray[0].toJSON()
 
-//   expect(f.refName).toBe('ctgA')
-//   expect(f.start).toBe(0)
-//   expect(f.end).toBe(1)
-//   expect(f.snpinfo).toBeTruthy()
-// })
+  expect(f.refName).toBe('ctgA')
+  expect(f.start).toBe(0)
+  expect(f.end).toBe(1)
+  expect(f.snpinfo).toBeTruthy()
+})
 
-// test('test usage of getMultiRegion stats, SNP adapter can generate a domain from CramFile', async () => {
-//   const adapter = getAdapter(
-//     pluginManager,
-//     'testSession',
-//     'SNPCoverageAdapter',
-//     {
-//       type: 'CramAdapter',
-//       cramLocation: {
-//         localPath: require.resolve('../../test_data/volvox-sorted.cram'),
-//       },
-//       craiLocation: {
-//         localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
-//       },
-//       sequenceAdapter: new SequenceAdapter(
-//         new LocalFile(require.resolve('../../test_data/volvox.fa')),
-//       ),
-//     },
-//   ).dataAdapter as SNPCoverageAdapter
+test('test usage of getMultiRegion stats, SNP adapter can generate a domain from CramFile', async () => {
+  const adapter = newSNPCoverageWithCram(
+    {
+      type: 'CramAdapter',
+      cramLocation: {
+        localPath: require.resolve('../../test_data/volvox-sorted.cram'),
+      },
+      craiLocation: {
+        localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
+      },
+    },
+    require.resolve('../../test_data/volvox.fa'),
+  )
 
-//   const stats = await adapter.getMultiRegionStats(
-//     [
-//       {
-//         refName: 'ctgA',
-//         start: 0,
-//         end: 100,
-//       },
-//     ],
-//     {
-//       opts: {
-//         signal: {
-//           aborted: false,
-//           onabort: null,
-//         },
-//         bpPerPx: 0.2,
-//       },
-//     },
-//   )
+  const stats = await adapter.getMultiRegionStats(
+    [
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 100,
+      },
+    ],
+    {
+      opts: {
+        signal: {
+          aborted: false,
+          onabort: null,
+        },
+        bpPerPx: 0.2,
+      },
+    },
+  )
 
-//   expect(Object.keys(stats).length).toEqual(9)
-//   expect(stats.scoreMin).toEqual(0)
-//   expect(stats.scoreMax).toEqual(13)
-// })
+  expect(Object.keys(stats).length).toEqual(9)
+  expect(stats.scoreMin).toEqual(0)
+  expect(stats.scoreMax).toEqual(13)
+})
