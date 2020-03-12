@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   readConfObject,
-  AnyConfigurationModel,
   isConfigurationModel,
 } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
@@ -22,6 +21,7 @@ import {
   types,
   walk,
 } from 'mobx-state-tree'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode

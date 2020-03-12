@@ -4,7 +4,7 @@ import { IRegion as Region } from '../mst-types'
 import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
-import { AnyConfigurationModel } from '../configuration'
+import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
 
 export interface BaseOptions {

@@ -11,7 +11,6 @@ import ConnectionType from './pluggableElementTypes/ConnectionType'
 
 import {
   ConfigurationSchema,
-  AnyConfigurationSchemaType,
   isBareConfigurationSchemaType,
 } from './configuration'
 
@@ -22,6 +21,7 @@ import {
   PluggableElementType,
   PluggableElementMember,
 } from './pluggableElementTypes'
+import { AnyConfigurationSchemaType } from './configuration/configurationSchema'
 
 /** little helper class that keeps groups of callbacks that are
 then run in a specified order by group */

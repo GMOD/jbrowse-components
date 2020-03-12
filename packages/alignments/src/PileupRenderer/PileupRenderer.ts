@@ -1,7 +1,4 @@
-import {
-  readConfObject,
-  AnyConfigurationModel,
-} from '@gmod/jbrowse-core/configuration'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import BoxRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { bpSpanPx, iterMap } from '@gmod/jbrowse-core/util'
@@ -12,6 +9,7 @@ import {
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
 import { BaseLayout } from '@gmod/jbrowse-core/util/layouts/BaseLayout'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 
 interface PileupRenderProps {

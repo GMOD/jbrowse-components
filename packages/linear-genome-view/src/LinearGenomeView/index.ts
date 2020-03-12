@@ -2,7 +2,6 @@
 import {
   getConf,
   readConfObject,
-  AnyConfigurationModel,
 } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
 import {
@@ -18,6 +17,7 @@ import { getParent, getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
 import { BlockSet } from '../BasicTrack/util/blockTypes'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 export interface LGVMenuOption {

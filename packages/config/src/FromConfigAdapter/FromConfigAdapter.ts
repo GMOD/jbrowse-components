@@ -5,11 +5,8 @@ import SimpleFeature, {
 } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
-import {
-  ConfigurationModel,
-  readConfObject,
-} from '@gmod/jbrowse-core/configuration'
-import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { ConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import FromConfigAdapterConfigSchema from './configSchema'
 
 /**

@@ -8,7 +8,7 @@ import {
   ScaleOpts,
 } from '@gmod/jbrowse-plugin-wiggle/src/util'
 import WiggleBaseRenderer from '@gmod/jbrowse-plugin-wiggle/src/WiggleBaseRenderer'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
 interface SNPCoverageRendererProps {
   features: Map<string, Feature>

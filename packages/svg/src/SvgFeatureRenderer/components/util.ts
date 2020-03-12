@@ -1,5 +1,5 @@
 /* eslint-disable import/no-cycle */
-import { readConfObject, AnyConfigurationModel } from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import Box from './Box'
@@ -7,6 +7,7 @@ import Chevron from './Chevron'
 import ProcessedTranscript from './ProcessedTranscript'
 import Segments from './Segments'
 import Subfeatures from './Subfeatures'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
 interface Glyph extends React.FunctionComponent {
   layOut?: Function

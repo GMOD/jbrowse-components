@@ -7,7 +7,7 @@ import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import React from 'react'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { ScaleOpts } from './util'
 
 interface WiggleBaseRendererProps {

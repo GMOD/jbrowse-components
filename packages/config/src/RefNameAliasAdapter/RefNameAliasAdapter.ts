@@ -4,12 +4,9 @@ import {
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { GenericFilehandle } from 'generic-filehandle'
-import {
-  ConfigurationModel,
-  readConfObject,
-} from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
-import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
+import { ConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import MyConfigAdapterSchema from './configSchema'
 
 export default class RefNameAliasAdapter extends BaseRefNameAliasAdapter {

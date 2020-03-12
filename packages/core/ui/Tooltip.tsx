@@ -4,7 +4,8 @@ import { observer } from 'mobx-react'
 import React, { useEffect, useState } from 'react'
 import ReactPropTypes from 'prop-types'
 import Feature from '../util/simpleFeature'
-import { readConfObject, AnyConfigurationModel } from '../configuration'
+import { readConfObject } from '../configuration'
+import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 const useStyles = makeStyles({
   hoverLabel: {

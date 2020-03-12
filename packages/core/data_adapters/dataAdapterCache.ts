@@ -1,7 +1,7 @@
 import jsonStableStringify from 'json-stable-stringify'
 import { SnapshotIn } from 'mobx-state-tree'
 import PluginManager from '../PluginManager'
-import { AnyConfigurationSchemaType } from '../configuration'
+import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
 import { AnyDataAdapter } from './BaseAdapter'
 import { IRegion } from '../mst-types'
 

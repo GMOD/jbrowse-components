@@ -14,7 +14,7 @@ import merge from 'deepmerge'
 import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
 import PluginManager from '../PluginManager'
-import { AnyConfigurationModel } from '../configuration'
+import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { TypeTestedByPredicate } from './types'
 
 export * from './types'
