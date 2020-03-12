@@ -42,7 +42,6 @@ export class LayoutSession implements LayoutSessionProps {
   constructor(args: LayoutSessionProps) {
     this.config = args.config
     if (!isConfigurationModel(this.config)) {
-      debugger
       throw new Error('configuration required')
     }
     this.bpPerPx = args.bpPerPx

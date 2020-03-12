@@ -98,7 +98,6 @@ export default class PileupRenderer extends BoxRendererType {
       highResolutionScaling = 1,
     } = props
     if (!layout) {
-      debugger
       throw new Error(`layout required`)
     }
     if (!layout.addRect) {
