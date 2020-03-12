@@ -69,7 +69,6 @@ export class LayoutSession implements LayoutSessionProps {
   cachedLayoutIsValid(cachedLayout: CachedLayout) {
     return (
       cachedLayout &&
-      // @ts-ignore
       cachedLayout.layout.subLayoutConstructorArgs.pitchX === this.bpPerPx &&
       deepEqual(readConfObject(this.config), cachedLayout.config) &&
       deepEqual(this.filters, cachedLayout.filters)

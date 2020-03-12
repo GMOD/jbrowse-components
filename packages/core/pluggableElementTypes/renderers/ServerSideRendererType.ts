@@ -16,14 +16,16 @@ import SimpleFeature, {
   SimpleFeatureSerialized,
 } from '../../util/simpleFeature'
 import RendererType from './RendererType'
-import SerializableFilterChain from './util/serializableFilterChain'
+import SerializableFilterChain, {
+  SerializedFilterChain,
+} from './util/serializableFilterChain'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
 interface BaseRenderArgs {
   blockKey: string
   sessionId: string
   signal?: AbortSignal
-  filters?: any
+  filters?: SerializedFilterChain
   dataAdapter: BaseFeatureDataAdapter
   bpPerPx: number
   renderProps: { trackModel: any; blockKey: string }
@@ -282,6 +284,7 @@ export default class ServerSideRenderer extends RendererType {
    * @returns {boolean} true if this feature passes all configured filters
    */
   featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
+    if (!renderArgs.filters) return true
     const filterChain = new SerializableFilterChain({
       filters: renderArgs.filters,
     })
