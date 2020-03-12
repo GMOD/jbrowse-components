@@ -66,16 +66,20 @@ interface LayoutRecord {
 
 export type LayoutTuple = [number, number, number, number]
 
+const strcmp = new Intl.Collator(undefined, {
+  numeric: true,
+  sensitivity: 'base',
+}).compare
+
 function* generateMatches(l1: Feature[], l2: Feature[]) {
   let i = 0
   let j = 0
   while (i < l1.length && j < l2.length) {
-    console.log(l1[i].get('syntenyId'))
-    const a = l1[i].get('syntenyId')
-    const b = l2[j].get('syntenyId')
-    if (a < b) {
+    const a = l1[i].get('name')
+    const b = l2[j].get('name')
+    if (strcmp(a, b) < 1) {
       i++
-    } else if (b < a) {
+    } else if (strcmp(a, b) > 1) {
       j++
     } else {
       yield [l1[i], l2[j]]
