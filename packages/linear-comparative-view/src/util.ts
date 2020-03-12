@@ -1,7 +1,25 @@
 import { clamp } from '@gmod/jbrowse-core/util'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { LayoutRecord } from './LinearComparativeView/model'
-import { ReducedLinearGenomeViewModel } from './LinearSyntenyRenderer/LinearSyntenyRenderer'
 
+export interface ReducedLinearGenomeViewModel {
+  bpPerPx: number
+  offsetPx: number
+  staticBlocks: IRegion[]
+  dynamicBlocks: IRegion[]
+  displayedRegions: IRegion[]
+  headerHeight: number
+  scaleBarHeight: number
+  height: number
+  horizontallyFlipped: boolean
+  features: Feature[]
+  tracks: {
+    scrollTop: number
+    height: number
+    trackId: string
+  }[]
+}
 const [, TOP, , BOTTOM] = [0, 1, 2, 3]
 
 export function cheight(chunk: LayoutRecord) {
@@ -80,7 +98,7 @@ function bpToPx(
 
   const index = view.displayedRegions.findIndex(r => {
     if (refName === r.refName && coord >= r.start && coord <= r.end) {
-      offsetBp += view.reversed ? r.end - coord : coord - r.start
+      offsetBp += view.horizontallyFlipped ? r.end - coord : coord - r.start
       return true
     }
     offsetBp += r.end - r.start

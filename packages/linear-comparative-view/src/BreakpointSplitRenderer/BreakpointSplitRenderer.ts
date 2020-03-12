@@ -1,34 +1,20 @@
 /* eslint-disable  no-continue, no-plusplus */
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import {
   createCanvas,
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
-import { overlayYPos, interstitialYPos, getPxFromCoordinate } from '../util'
+import {
+  overlayYPos,
+  interstitialYPos,
+  getPxFromCoordinate,
+  ReducedLinearGenomeViewModel,
+} from '../util'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
-
-export interface ReducedLinearGenomeViewModel {
-  bpPerPx: number
-  offsetPx: number
-  staticBlocks: IRegion[]
-  dynamicBlocks: IRegion[]
-  displayedRegions: IRegion[]
-  headerHeight: number
-  scaleBarHeight: number
-  height: number
-  reversed: boolean
-  features: Feature[]
-  tracks: {
-    scrollTop: number
-    height: number
-    trackId: string
-  }[]
-}
 
 interface LayoutMatch {
   level: number
@@ -36,7 +22,7 @@ interface LayoutMatch {
   feature: Feature
   refName: string
 }
-interface LinearSyntenyRenderProps {
+interface BreakpointSplitRenderProps {
   config: any // eslint-disable-line @typescript-eslint/no-explicit-any
   height: number
   width: number
@@ -46,11 +32,11 @@ interface LinearSyntenyRenderProps {
   views: ReducedLinearGenomeViewModel[]
 }
 
-interface LinearSyntenyRenderingProps extends LinearSyntenyRenderProps {
+interface BreakpointSplitRenderingProps extends BreakpointSplitRenderProps {
   imageData: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-interface LinearSyntenyImageData {
+interface BreakpointSplitImageData {
   imageData?: ImageBitmap
   height: number
   width: number
@@ -121,8 +107,8 @@ function layoutMatchesFromViews(views: ReducedLinearGenomeViewModel[]) {
   }
   return layoutMatches
 }
-export default class LinearSyntenyRenderer extends ComparativeServerSideRendererType {
-  async makeImageData(props: LinearSyntenyRenderProps) {
+export default class BreakpointSplitRenderer extends ComparativeServerSideRendererType {
+  async makeImageData(props: BreakpointSplitRenderProps) {
     const {
       highResolutionScaling = 1,
       width,
@@ -147,7 +133,6 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
     const showIntraviewLinks = false
     const middle = true
     const hideTiny = false
-    console.log('layoutMatches', layoutMatches)
 
     layoutMatches.forEach(chunk => {
       // we follow a path in the list of chunks, not from top to bottom, just in series
@@ -191,6 +176,22 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
         const x21 = getPxFromCoordinate(v2, ref2, c2[LEFT])
         const x22 = getPxFromCoordinate(v2, ref2, c2[RIGHT])
 
+        // flipMultiplier combines with normal directionality of the curve
+        const flipMultipliers = views.map(v => (v.horizontallyFlipped ? -1 : 1))
+
+        const x1 = getPxFromCoordinate(
+          views[level1],
+          f1.get('refName'),
+          c1[f1.get('strand') === -1 ? LEFT : RIGHT],
+        )
+        const x2 = getPxFromCoordinate(
+          views[level2],
+          f2.get('refName'),
+          c2[f2.get('strand') === -1 ? RIGHT : LEFT],
+        )
+
+        const tracks = views.map(v => v.getTrack(trackConfigId))
+
         const y1 = middle
           ? interstitialYPos(level1 < level2, height)
           : overlayYPos(trackIds[0], level1, views, c1, level1 < level2)
@@ -198,6 +199,18 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
           ? interstitialYPos(level2 < level1, height)
           : overlayYPos(trackIds[1], level2, views, c2, level2 < level1)
 
+        // possible todo: use totalCurveHeight to possibly make alternative squiggle if the S is too small
+        const path = Path()
+          .moveTo(x1, y1)
+          .curveTo(
+            x1 + 200 * f1.get('strand') * flipMultipliers[level1],
+            y1,
+            x2 - 200 * f2.get('strand') * flipMultipliers[level2],
+            y2,
+            x2,
+            y2,
+          )
+          .end()
         ctx.beginPath()
         ctx.moveTo(x11, y1)
         ctx.lineTo(x12, y1)
@@ -216,7 +229,7 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
     }
   }
 
-  async render(renderProps: LinearSyntenyRenderProps) {
+  async render(renderProps: BreakpointSplitRenderProps) {
     const { height, width, imageData } = await this.makeImageData(renderProps)
 
     const element = React.createElement(
