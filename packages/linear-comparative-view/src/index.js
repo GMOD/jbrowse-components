@@ -11,6 +11,10 @@ import {
   stateModelFactory as syntenyTrackStateModelFactory,
 } from './LinearSyntenyTrack'
 import {
+  configSchemaFactory as breakpointTrackConfigSchemaFactory,
+  stateModelFactory as breakpointTrackStateModelFactory,
+} from './BreakpointSplitTrack'
+import {
   configSchema as MCScanSimpleAnchorsConfigSchema,
   AdapterClass as MCScanSimpleAnchorsAdapter,
 } from './MCScanSimpleAnchorsAdapter'
@@ -22,6 +26,10 @@ import LinearSyntenyRenderer, {
   configSchema as linearSyntenyRendererConfigSchema,
   ReactComponent as LinearSyntenyRendererReactComponent,
 } from './LinearSyntenyRenderer'
+import BreakpointSplitRenderer, {
+  configSchema as breakpointSplitRendererConfigSchema,
+  ReactComponent as BreakpointSplitRendererReactComponent,
+} from './BreakpointSplitRenderer'
 
 export default class extends Plugin {
   install(pluginManager) {
@@ -31,7 +39,20 @@ export default class extends Plugin {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(require('./LinearSyntenyView')),
     )
-
+    pluginManager.addViewType(() =>
+      pluginManager.jbrequire(require('./BreakpointSplitView')),
+    )
+    pluginManager.addTrackType(() => {
+      const configSchema = breakpointTrackConfigSchemaFactory(pluginManager)
+      return new TrackType({
+        name: 'BreakpointSplitTrack',
+        configSchema,
+        stateModel: breakpointTrackStateModelFactory(
+          pluginManager,
+          configSchema,
+        ),
+      })
+    })
     pluginManager.addTrackType(() => {
       const configSchema = comparativeTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
@@ -73,6 +94,14 @@ export default class extends Plugin {
           name: 'LinearSyntenyRenderer',
           configSchema: linearSyntenyRendererConfigSchema,
           ReactComponent: LinearSyntenyRendererReactComponent,
+        }),
+    )
+    pluginManager.addRendererType(
+      () =>
+        new BreakpointSplitRenderer({
+          name: 'BreakpointSplitRenderer',
+          configSchema: breakpointSplitRendererConfigSchema,
+          ReactComponent: BreakpointSplitRendererReactComponent,
         }),
     )
   }

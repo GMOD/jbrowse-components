@@ -16,7 +16,6 @@ import TrackHubRegistry from '@gmod/jbrowse-plugin-trackhub-registry'
 import Variants from '@gmod/jbrowse-plugin-variants'
 import Wiggle from '@gmod/jbrowse-plugin-wiggle'
 import SpreadsheetViewPlugin from '@gmod/jbrowse-plugin-spreadsheet-view'
-import BreakpointSplitView from '@gmod/jbrowse-plugin-breakpoint-split-view'
 import SvInspectorPlugin from '@gmod/jbrowse-plugin-sv-inspector'
 
 export default [
@@ -38,6 +37,5 @@ export default [
   Variants,
   Wiggle,
   SpreadsheetViewPlugin,
-  BreakpointSplitView,
   SvInspectorPlugin,
 ]

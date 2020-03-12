@@ -12,7 +12,7 @@ import {
   configSchemaFactory as baseConfigFactory,
   stateModelFactory as baseModelFactory,
 } from '../LinearComparativeTrack'
-import LinearSyntenyTrackComponent from './components/LinearSyntenyTrack'
+import BreakpointSplitTrackComponent from './components/BreakpointSplitTrack'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 
 interface Block {
@@ -25,9 +25,9 @@ interface Block {
 
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
-    'LinearSyntenyTrack',
+    'BreakpointSplitTrack',
     {
-      viewType: 'LinearSyntenyView',
+      viewType: 'BreakpointSplitView',
       // trackIds: {
       //   type: 'stringArray',
       //   defaultValue: [],
@@ -45,11 +45,11 @@ export function configSchemaFactory(pluginManager: any) {
 export function stateModelFactory(pluginManager: any, configSchema: any) {
   return types
     .compose(
-      'LinearSyntenyTrack',
+      'BreakpointSplitTrack',
       baseModelFactory(pluginManager, configSchema),
       types
-        .model('LinearSyntenyTrack', {
-          type: types.literal('LinearSyntenyTrack'),
+        .model('BreakpointSplitTrack', {
+          type: types.literal('BreakpointSplitTrack'),
           configuration: ConfigurationReference(configSchema),
         })
         .volatile(self => ({
@@ -62,7 +62,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           message: undefined as string | undefined,
           viewOffsets: [] as number[],
           renderingComponent: undefined as any,
-          ReactComponent: (LinearSyntenyTrackComponent as unknown) as React.FC,
+          ReactComponent: (BreakpointSplitTrackComponent as unknown) as React.FC,
           ReactComponent2: (ServerSideRenderedBlockContent as unknown) as React.FC,
         })),
     )
@@ -262,4 +262,6 @@ async function renderBlockEffect(
   return { imageData, data, renderingComponent: rendererType.ReactComponent }
 }
 
-export type LinearSyntenyTrackStateModel = ReturnType<typeof stateModelFactory>
+export type BreakpointSplitTrackStateModel = ReturnType<
+  typeof stateModelFactory
+>

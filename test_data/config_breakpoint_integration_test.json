@@ -3,7 +3,7 @@
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"
     },
-    "updateUrl": false
+    "updateUrl": true
   },
   "assemblies": [
     {
@@ -65,6 +65,32 @@
         "SvgFeatureRenderer": {
           "type": "SvgFeatureRenderer"
         }
+      }
+    },
+    {
+      "type": "BreakpointSplitTrack",
+      "trackId": "pacbio_hg002_breakpoint_track",
+      "name": "HG002.hs37d5.11kb breakpoints",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "PacBio",
+        "BAM"
+      ],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "test_data/pacbio_chr3_chr6.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/pacbio_chr3_chr6.bam.bai"
+          }
+        }
+      },
+      "renderer": {
+        "type": "BreakpointSplitRenderer"
       }
     },
     {
