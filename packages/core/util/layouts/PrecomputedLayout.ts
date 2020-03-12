@@ -11,10 +11,13 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
 
   private totalHeight: number
 
-  constructor({ rectangles = {}, totalHeight = 0 }: SerializedLayout) {
+  public maxHeightReached: boolean
+
+  constructor({ rectangles, totalHeight, maxHeightReached }: SerializedLayout) {
     this.rectangles = new Map(Object.entries(rectangles))
     // rectangles is of the form "featureId": [leftPx, topPx, rightPx, bottomPx]
     this.totalHeight = totalHeight
+    this.maxHeightReached = maxHeightReached
   }
 
   addRect(id: string): number {
