@@ -1,7 +1,6 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
 export default ({ jbrequire }: { jbrequire: Function }) => {
-  const { getRoot } = jbrequire('mobx-state-tree')
   const ViewType = jbrequire(
     '@gmod/jbrowse-core/pluggableElementTypes/ViewType',
   )
@@ -13,7 +12,6 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
     async snapshotFromBreakendFeature(
       feature: Feature,
       view: {
-        displayRegionsFromAssemblyName?: string
         displayedRegions: [{ start: number; end: number; refName: string }]
       },
     ) {
@@ -21,13 +19,8 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
       const startPos = feature.get('start')
       let endPos
       const bpPerPx = 10
-      const asm = view.displayRegionsFromAssemblyName
 
       const getCanonicalRefName = (ref: string) => {
-        if (asm) {
-          const session = getRoot(view).jbrowse
-          return session.getCanonicalRefName(ref, asm)
-        }
         return ref
       }
       const featureRefName = await getCanonicalRefName(feature.get('refName'))

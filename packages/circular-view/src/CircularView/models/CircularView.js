@@ -3,7 +3,7 @@ import { viewportVisibleSection } from './viewportVisibleRegion'
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { transaction } = jbrequire('mobx')
-  const { types, getParent, getRoot } = jbrequire('mobx-state-tree')
+  const { types, getParent } = jbrequire('mobx-state-tree')
   const { ElementId, Region } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
   const { clamp, getSession } = jbrequire('@gmod/jbrowse-core/util')
@@ -43,7 +43,6 @@ export default pluginManager => {
       minVisibleWidth: 6,
       minimumBlockWidth: 20,
       displayedRegions: types.array(Region),
-      displayRegionsFromAssemblyName: types.maybe(types.string),
       scrollX: 0,
       scrollY: 0,
       trackSelectorType: 'hierarchical',
@@ -243,20 +242,12 @@ export default pluginManager => {
         getParent(self, 2).removeView(self)
       },
 
-      setDisplayedRegions(regions, isFromAssemblyName = false) {
+      setDisplayedRegions(regions) {
         const previouslyEmpty = self.displayedRegions.length === 0
         self.displayedRegions = regions
-        if (!isFromAssemblyName)
-          this.setDisplayedRegionsFromAssemblyName(undefined)
 
         if (previouslyEmpty) self.setBpPerPx(self.minBpPerPx)
         else self.setBpPerPx(self.bpPerPx)
-      },
-
-      setDisplayedRegionsFromAssemblyName(assemblyName) {
-        self.displayRegionsFromAssemblyName = assemblyName
-        const root = getRoot(self)
-        if (root.updateAssemblies) root.updateAssemblies()
       },
 
       activateTrackSelector() {

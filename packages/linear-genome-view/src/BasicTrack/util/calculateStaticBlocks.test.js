@@ -9,14 +9,14 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
-      displayedRegionsInOrder: [{ refName: 'ctgA', start: 0, end: 10000 }],
+      displayedRegions: [{ refName: 'ctgA', start: 0, end: 10000 }],
     })
 
     const blocks2 = calculateBlocks({
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
-      displayedRegionsInOrder: [{ refName: 'ctgA', start: 0, end: 10000 }],
+      displayedRegions: [{ refName: 'ctgA', start: 0, end: 10000 }],
     })
     expect(blocks1).toMatchSnapshot()
     expect(blocks1).toEqual(blocks2)
@@ -27,7 +27,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 30,
-      displayedRegionsInOrder: [
+      displayedRegions: [
         { refName: 'ctgA', start: 0, end: 100 },
         { refName: 'ctgB', start: 100, end: 200 },
       ],
@@ -40,7 +40,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 1000,
-      displayedRegionsInOrder: [
+      displayedRegions: [
         { refName: 'ctgA', start: 0, end: 100 },
         { refName: 'ctgB', start: 100, end: 200 },
       ],
@@ -54,7 +54,7 @@ describe('block calculation', () => {
         bpPerPx: 1,
         width: 800,
         offsetPx: -1000,
-        displayedRegionsInOrder: [
+        displayedRegions: [
           { refName: 'ctgA', start: 0, end: 100 },
           { refName: 'ctgB', start: 100, end: 200 },
         ],
@@ -71,7 +71,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 5000,
-      displayedRegionsInOrder: [
+      displayedRegions: [
         { refName: 'ctgA', start: 0, end: 10000 },
         { refName: 'ctgB', start: 100, end: 10000 },
       ],
@@ -84,7 +84,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
-      displayedRegionsInOrder: [
+      displayedRegions: [
         { refName: 'ctgA', start: 0, end: 200 },
         { refName: 'ctgB', start: 0, end: 1000 },
       ],
@@ -98,7 +98,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 801,
-      displayedRegionsInOrder: [
+      displayedRegions: [
         { refName: 'ctgA', start: 0, end: 200 },
         { refName: 'ctgB', start: 0, end: 1000 },
       ],
@@ -111,7 +111,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 1600,
-      displayedRegionsInOrder: [
+      displayedRegions: [
         { refName: 'ctgA', start: 0, end: 200 },
         { refName: 'ctgB', start: 0, end: 10000000 },
       ],
@@ -125,7 +125,7 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 1069,
       bpPerPx: 2,
-      displayedRegionsInOrder: [
+      displayedRegions: [
         { refName: 'ctgA', start: 0, end: 50000 },
         { refName: 'ctgB', start: 0, end: 300 },
       ],
@@ -139,7 +139,7 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 0,
       bpPerPx: 0.05,
-      displayedRegionsInOrder: [
+      displayedRegions: [
         { refName: 'ctgA', start: 100, end: 200 },
         { refName: 'ctgA', start: 300, end: 400 },
       ],
@@ -157,7 +157,7 @@ describe('reverse block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
-      displayedRegionsInOrder: [{ refName: 'ctgA', start: 0, end: 10000 }],
+      displayedRegions: [{ refName: 'ctgA', start: 0, end: 10000 }],
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -170,7 +170,7 @@ describe('horizontally flipped displayed regions', () => {
         bpPerPx: 1,
         width: 800,
         offsetPx: 0,
-        displayedRegionsInOrder: [
+        displayedRegions: [
           { refName: 'ctgA', start: 100, end: 200 },
           { refName: 'ctgA', start: 500, end: 600 },
         ],
@@ -186,7 +186,7 @@ describe('horizontally flipped displayed regions', () => {
         width: 800,
         offsetPx: 0,
         minimumBlockWidth: 2,
-        displayedRegionsInOrder: [
+        displayedRegions: [
           { refName: 'ctgA', start: 0, end: 1 },
           { refName: 'ctgA', start: 0, end: 10000 },
         ],

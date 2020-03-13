@@ -340,12 +340,8 @@ export function iterMap<T, U>(
 
 export function generateLocString(
   r: IRegion,
-  tied: boolean,
   includeAssemblyName = true,
 ): string {
-  if (tied) {
-    return r.refName
-  }
   let s = ''
   if (includeAssemblyName && r.assemblyName) {
     s = `${r.assemblyName}:`

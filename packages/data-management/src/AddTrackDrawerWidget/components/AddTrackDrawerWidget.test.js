@@ -86,7 +86,16 @@ describe('<AddTrackDrawerWidget />', () => {
       },
       filterAttributes: ['type', 'start', 'end'],
     })
-    const view = session.addLinearGenomeViewOfAssembly('volMyt1')
+    const view = session.addView('LinearGenomeView', {
+      displayedRegions: [
+        {
+          assemblyName: 'volMyt1',
+          refName: 'ctgA',
+          start: 0,
+          end: 1000,
+        },
+      ],
+    })
     model = session.addDrawerWidget(
       'AddTrackDrawerWidget',
       'addTrackDrawerWidget',

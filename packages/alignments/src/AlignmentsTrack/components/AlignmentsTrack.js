@@ -1,4 +1,3 @@
-import BlockBasedTrack from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/BlockBasedTrack'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState, useEffect } from 'react'
 import { YScaleBar } from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
@@ -8,6 +7,7 @@ import MenuItem from '@material-ui/core/MenuItem'
 import Icon from '@material-ui/core/Icon'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import NestedMenuItem from '@gmod/jbrowse-core/ui/NestedMenuItem'
+import AlignmentsBlockBasedTrack from './AlignmentsBlockBasedTrack'
 
 // import ContextMenu from '@gmod/jbrowse-core/ui/ContextMenu'
 
@@ -67,7 +67,7 @@ function AlignmentsTrackComponent(props) {
       onContextMenu={handleRightClick}
       style={{ position: 'relative', height }}
     >
-      <BlockBasedTrack
+      <AlignmentsBlockBasedTrack
         {...props}
         {...PileupTrack}
         {...SNPCoverageTrack}
@@ -80,7 +80,7 @@ function AlignmentsTrackComponent(props) {
         {showScalebar && showCoverage ? (
           <YScaleBar model={SNPCoverageTrack} />
         ) : null}
-      </BlockBasedTrack>
+      </AlignmentsBlockBasedTrack>
       <Menu
         keepMounted
         open={state.mouseY !== null}

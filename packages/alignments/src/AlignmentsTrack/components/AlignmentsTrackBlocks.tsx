@@ -1,9 +1,12 @@
 import { observer, PropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
-import { BlockBasedTrackStateModel } from '../blockBasedTrackModel'
-import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
-import { RenderedBlocks, useStyles } from './TrackBlocks'
+import { BlockBasedTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
+import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+import {
+  RenderedBlocks,
+  useStyles,
+} from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/TrackBlocks'
 
 interface AlignmentsBlockBasedTrackStateModel
   extends Instance<BlockBasedTrackStateModel> {
@@ -11,7 +14,6 @@ interface AlignmentsBlockBasedTrackStateModel
   SNPCoverageTrack: Instance<BlockBasedTrackStateModel>
 }
 
-// possibly make this code inside alignments folder instead of basic track folder
 function AlignmentsTrackBlocks({
   model,
   viewModel,

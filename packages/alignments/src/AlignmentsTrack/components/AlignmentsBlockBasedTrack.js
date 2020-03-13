@@ -3,32 +3,33 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React from 'react'
-import Track from './Track'
-import TrackBlocks from './TrackBlocks'
+import Track from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/Track'
+import AlignmentsTrackBlocks from './AlignmentsTrackBlocks'
 
-function BlockBasedTrack(props) {
+function AlignmentsBlockBasedTrack(props) {
   const { model, children } = props
   return (
     <Track {...props} trackId={getConf(model, 'trackId')}>
       {model.trackMessageComponent ? (
         <model.trackMessageComponent model={model} />
       ) : (
-        <TrackBlocks {...props} viewModel={getParent(getParent(model))} />
+        <AlignmentsTrackBlocks
+          {...props}
+          viewModel={getParent(getParent(model))}
+        />
       )}
       {children}
     </Track>
   )
 }
 
-BlockBasedTrack.propTypes = {
+AlignmentsBlockBasedTrack.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
   children: PropTypes.node,
-  showPileup: PropTypes.bool.isRequired,
-  showSNPCoverage: PropTypes.bool.isRequired,
 }
 
-BlockBasedTrack.defaultProps = {
+AlignmentsBlockBasedTrack.defaultProps = {
   children: null,
 }
 
-export default observer(BlockBasedTrack)
+export default observer(AlignmentsBlockBasedTrack)
