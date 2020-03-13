@@ -1,8 +1,7 @@
-// import { getConf } from '@gmod/jbrowse-core/configuration'
-import BlockBasedTrack from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/BlockBasedTrack'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React from 'react'
 import { YScaleBar } from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
+import AlignmentsBlockBasedTrack from './AlignmentsBlockBasedTrack'
 
 function AlignmentsTrackComponent(props) {
   const { model } = props
@@ -15,9 +14,13 @@ function AlignmentsTrackComponent(props) {
   }
 
   return (
-    <BlockBasedTrack {...props} {...PileupTrack} {...SNPCoverageTrack}>
+    <AlignmentsBlockBasedTrack
+      {...props}
+      {...PileupTrack}
+      {...SNPCoverageTrack}
+    >
       {showScalebar ? <YScaleBar model={SNPCoverageTrack} /> : null}
-    </BlockBasedTrack>
+    </AlignmentsBlockBasedTrack>
   )
 }
 
