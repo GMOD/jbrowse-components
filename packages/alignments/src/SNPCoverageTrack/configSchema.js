@@ -47,12 +47,6 @@ export default pluginManager => {
       },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
 
-      defaultRendering: {
-        type: 'stringEnum',
-        model: types.enumeration('Rendering', ['snpcoverage', 'svg']),
-        defaultValue: 'snpcoverage',
-      },
-
       renderers: ConfigurationSchema('RenderersConfiguration', {
         SNPCoverageRenderer: SNPCoverageRendererConfigSchema,
       }),

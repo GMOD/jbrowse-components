@@ -10,7 +10,6 @@ export interface UnrectifiedFeatureStats {
   scoreSumSquares: number
   featureCount: number
   basesCovered: number
-  emptyRegion?: boolean
 }
 export interface FeatureStats extends UnrectifiedFeatureStats {
   scoreMean: number
@@ -170,7 +169,7 @@ export async function scoresToStats(
   })
 }
 
-export function blankStats(emptyRegion: boolean): FeatureStats {
+export function blankStats(): FeatureStats {
   return {
     scoreMin: 0,
     scoreMax: 0,
@@ -181,6 +180,5 @@ export function blankStats(emptyRegion: boolean): FeatureStats {
     featureCount: 0,
     featureDensity: 0,
     basesCovered: 0,
-    emptyRegion, // if stats not returned from blank stats this is undefined(falsy)
   }
 }

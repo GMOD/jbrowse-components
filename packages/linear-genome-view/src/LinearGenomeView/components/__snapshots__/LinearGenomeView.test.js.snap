@@ -479,7 +479,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       >
         <div
           class="makeStyles-trackBlocks"
-          data-testid="Block"
+          data-testid="Blockset"
           style="left: 0px;"
         >
           <div
@@ -488,7 +488,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           >
             <div
               class="ssr-container"
-              data-html-size="313"
+              data-html-size="328"
             >
               <div
                 classname="ssr-container-inner"
@@ -498,7 +498,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                   style="position:relative;width:0;height:0"
                 >
                   <canvas
-                    data-testid="prerendered_canvas"
+                    data-testid="prerendered_canvas_PileupRenderer"
                     height="0"
                     style="width:0;height:0;position:absolute;left:0;top:0"
                     width="0"
@@ -1225,7 +1225,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           >
             <div
               class="ssr-container"
-              data-html-size="313"
+              data-html-size="328"
             >
               <div
                 classname="ssr-container-inner"
@@ -1235,7 +1235,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   style="position:relative;width:0;height:0"
                 >
                   <canvas
-                    data-testid="prerendered_canvas"
+                    data-testid="prerendered_canvas_PileupRenderer"
                     height="0"
                     style="width:0;height:0;position:absolute;left:0;top:0"
                     width="0"
@@ -1359,7 +1359,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           >
             <div
               class="ssr-container"
-              data-html-size="313"
+              data-html-size="328"
             >
               <div
                 classname="ssr-container-inner"
@@ -1369,7 +1369,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   style="position:relative;width:0;height:0"
                 >
                   <canvas
-                    data-testid="prerendered_canvas"
+                    data-testid="prerendered_canvas_PileupRenderer"
                     height="0"
                     style="width:0;height:0;position:absolute;left:0;top:0"
                     width="0"

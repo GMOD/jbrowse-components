@@ -187,10 +187,14 @@ const stateModelFactory = (configSchema: any) =>
                 try {
                   const aborter = new AbortController()
                   self.setLoading(aborter)
-                  const stats = await getStats(aborter.signal)
 
-                  // check if stats returned from empty region
-                  if (isAlive(self) && !stats.emptyRegion) {
+                  const { dynamicBlocks } = getContainingView(self)
+                  if (!dynamicBlocks.contentBlocks.length && !self.ready) {
+                    return
+                  }
+
+                  const stats = await getStats(aborter.signal)
+                  if (isAlive(self)) {
                     self.updateStats(stats)
                   }
                 } catch (e) {

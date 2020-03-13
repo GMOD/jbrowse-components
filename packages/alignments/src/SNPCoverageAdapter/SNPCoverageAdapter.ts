@@ -11,7 +11,6 @@ import {
   rectifyStats,
   scoresToStats,
 } from '@gmod/jbrowse-plugin-wiggle/src/statsUtil'
-import { Observer } from 'rxjs'
 import NestedFrequencyTable from '../NestedFrequencyTable'
 
 export interface Mismatch {
@@ -99,7 +98,6 @@ export default class extends BaseAdapter {
             basesPerSpan: bpPerPx,
           },
         )
-        // @ts-ignore
         return scoresToStats({ refName, start, end }, feats)
       },
     })
@@ -131,7 +129,7 @@ export default class extends BaseAdapter {
     opts: BaseOptions = {},
   ) {
     if (!regions.length) {
-      return blankStats(true)
+      return blankStats()
     }
 
     const feats = await Promise.all(
@@ -174,7 +172,7 @@ export default class extends BaseAdapter {
    */
 
   getFeatures(region: IRegion, opts: BaseOptions = {}) {
-    return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
+    return ObservableCreate<Feature>(async observer => {
       const features = await this.subadapter
         .getFeatures(region, opts)
         .pipe(toArray())
