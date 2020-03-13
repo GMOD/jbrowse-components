@@ -38,13 +38,16 @@ function isEmptyArray(thing: unknown) {
 export function isBareConfigurationSchemaType(
   thing: unknown,
 ): thing is AnyConfigurationSchemaType {
-  if (
-    isType(thing) &&
-    isModelType(thing) &&
-    ('isJBrowseConfigurationSchema' in thing ||
-      thing.name.includes('ConfigurationSchema'))
-  ) {
-    return true
+  if (isType(thing)) {
+    if (
+      isModelType(thing) &&
+      ('isJBrowseConfigurationSchema' in thing ||
+        thing.name.includes('ConfigurationSchema'))
+    ) {
+      return true
+    }
+    // if it's a late type, assume its a config schema
+    if (isLateType(thing)) return true
   }
   return false
 }

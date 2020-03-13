@@ -14,7 +14,7 @@ import {
   rectifyStats,
   scoresToStats,
 } from '@gmod/jbrowse-plugin-wiggle/src/statsUtil'
-import { Instance } from 'mobx-state-tree'
+import { Instance, getSnapshot } from 'mobx-state-tree'
 import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import NestedFrequencyTable from '../NestedFrequencyTable'
@@ -91,7 +91,7 @@ export default (pluginManager: PluginManager) => {
 
       const subadapter = getSubAdapter(
         config.subadapter.type,
-        config.subadapter,
+        getSnapshot(config.subadapter),
       ).dataAdapter
 
       if (subadapter instanceof BaseFeatureDataAdapter) {
