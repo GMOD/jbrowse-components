@@ -23,8 +23,6 @@ function BlockBasedTrack(props) {
 BlockBasedTrack.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
   children: PropTypes.node,
-  showPileup: PropTypes.bool.isRequired,
-  showSNPCoverage: PropTypes.bool.isRequired,
 }
 
 BlockBasedTrack.defaultProps = {

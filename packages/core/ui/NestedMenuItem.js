@@ -104,10 +104,11 @@ NestedMenuItem.propTypes = {
   zIndex: PropTypes.number,
   rightIcon: PropTypes.string,
   highlightColor: PropTypes.string,
-  children: PropTypes.array.isRequired,
+  children: PropTypes.node,
 }
 
 NestedMenuItem.defaultProps = {
+  children: null,
   zIndex: 0,
   rightIcon: 'chevron_right',
   highlightColor: '#eeeeee',

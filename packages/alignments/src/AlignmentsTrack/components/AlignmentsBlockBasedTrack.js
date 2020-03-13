@@ -28,6 +28,8 @@ function AlignmentsBlockBasedTrack(props) {
 AlignmentsBlockBasedTrack.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
   children: PropTypes.node,
+  showPileup: PropTypes.bool.isRequired,
+  showSNPCoverage: PropTypes.bool.isRequired,
 }
 
 AlignmentsBlockBasedTrack.defaultProps = {
