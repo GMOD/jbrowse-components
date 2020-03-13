@@ -1,9 +1,7 @@
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 
-export { default as AdapterClass } from './VcfTabixAdapter'
-
-export const configSchema = ConfigurationSchema(
+export default ConfigurationSchema(
   'VcfTabixAdapter',
   {
     vcfGzLocation: {

@@ -1,30 +1,35 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './VcfTabixAdapter'
+import configSchema from './configSchema'
 
 test('adapter can fetch variants from volvox.vcf.gz', async () => {
-  const adapter = new Adapter({
-    vcfGzLocation: {
-      localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
-    },
-    index: {
-      indexType: 'TBI',
-      location: {
-        localPath: require.resolve('./test_data/volvox.filtered.vcf.gz.tbi'),
+  const adapter = new Adapter(
+    configSchema.create({
+      vcfGzLocation: {
+        localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
       },
-    },
-  })
+      index: {
+        indexType: 'TBI',
+        location: {
+          localPath: require.resolve('./test_data/volvox.filtered.vcf.gz.tbi'),
+        },
+      },
+    }),
+  )
 
-  const csiAdapter = new Adapter({
-    vcfGzLocation: {
-      localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
-    },
-    index: {
-      indexType: 'CSI',
-      location: {
-        localPath: require.resolve('./test_data/volvox.filtered.vcf.gz.csi'),
+  const csiAdapter = new Adapter(
+    configSchema.create({
+      vcfGzLocation: {
+        localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
       },
-    },
-  })
+      index: {
+        indexType: 'CSI',
+        location: {
+          localPath: require.resolve('./test_data/volvox.filtered.vcf.gz.csi'),
+        },
+      },
+    }),
+  )
 
   const csiFeatures = await csiAdapter.getFeatures({
     refName: 'ctgA',

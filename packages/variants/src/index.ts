@@ -3,6 +3,7 @@ import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWid
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import { lazy } from 'react'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
   AdapterClass as VcfTabixAdapterClass,
   configSchema as vcfTabixAdapterConfigSchema,
@@ -17,8 +18,8 @@ import {
   modelFactory as variantTrackModelFactory,
 } from './VariantTrack'
 
-export default class extends Plugin {
-  install(pluginManager) {
+export default class VariantsPlugin extends Plugin {
+  install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
@@ -32,6 +33,7 @@ export default class extends Plugin {
       const configSchema = variantTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
         name: 'VariantTrack',
+        compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: variantTrackModelFactory(configSchema),
       })
