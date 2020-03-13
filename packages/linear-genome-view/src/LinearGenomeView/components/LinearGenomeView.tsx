@@ -45,6 +45,7 @@ import {
   SCALE_BAR_HEIGHT,
 } from '..'
 import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
+import CenterLine from './CenterLine'
 
 const dragHandleHeight = 3
 
@@ -514,6 +515,11 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
       }
     : {}) as React.CSSProperties
 
+  const firstAlignmentsTrackIdx = tracks.findIndex(
+    track => track.type === 'AlignmentsTrack',
+  )
+  const alignModel = tracks[firstAlignmentsTrackIdx]
+
   return (
     <div className={classes.root}>
       <div className={classes.linearGenomeView} style={style}>
@@ -531,6 +537,12 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
               )}
             </div>
 
+            {/* {alignModel.showCenterLine && alignModel.centerLinePosition > 0 && (
+              <CenterLine
+                height={alignModel.height}
+                model={alignModel}
+              ></CenterLine>
+            )} */}
             <Rubberband height={SCALE_BAR_HEIGHT} model={model}>
               <ScaleBar model={model} height={SCALE_BAR_HEIGHT} />
             </Rubberband>

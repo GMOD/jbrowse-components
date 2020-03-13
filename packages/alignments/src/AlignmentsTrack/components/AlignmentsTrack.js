@@ -2,6 +2,7 @@ import BlockBasedTrack from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTr
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState, useEffect } from 'react'
 import { YScaleBar } from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
+import CenterLine from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView/components/CenterLine'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Icon from '@material-ui/core/Icon'
@@ -26,6 +27,7 @@ function AlignmentsTrackComponent(props) {
     showPileup,
     showCoverage,
     showCenterLine,
+    centerLinePosition,
     sortedBy,
   } = model
 
@@ -72,6 +74,9 @@ function AlignmentsTrackComponent(props) {
         showPileup={showPileup}
         showSNPCoverage={showCoverage}
       >
+        {showCenterLine && centerLinePosition > 0 && (
+          <CenterLine model={model} height={height}></CenterLine>
+        )}
         {showScalebar && showCoverage ? (
           <YScaleBar model={SNPCoverageTrack} />
         ) : null}
