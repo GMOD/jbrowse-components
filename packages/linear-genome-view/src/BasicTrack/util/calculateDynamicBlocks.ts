@@ -103,7 +103,7 @@ export default function calculateDynamicBlocks(
       if (
         parentRegionWidthPx >= minimumBlockWidth &&
         blockData.isRightEndOfDisplayedRegion &&
-        i < displayedRegionsInOrder.length - 1
+        i < displayedRegions.length - 1
       ) {
         blocks.push(
           new InterRegionPaddingBlock({
