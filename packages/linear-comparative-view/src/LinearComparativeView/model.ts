@@ -9,7 +9,7 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 
-type LGV = Instance<LinearGenomeViewStateModel>
+export type LGV = Instance<LinearGenomeViewStateModel>
 type ConfigRelationship = { type: string; target: string }
 
 export default function stateModelFactory(pluginManager: any) {
@@ -24,7 +24,6 @@ export default function stateModelFactory(pluginManager: any) {
   } = jbrequire('mobx-state-tree')
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
 
-  const minHeight = 40
   const defaultHeight = 400
   return (jbrequiredTypes as Instance<typeof types>)
     .model('LinearComparativeView', {
@@ -32,14 +31,7 @@ export default function stateModelFactory(pluginManager: any) {
       type: types.literal('LinearComparativeView'),
       headerHeight: 0,
       width: 800,
-      height: types.optional(
-        types.refinement(
-          'viewHeight',
-          types.number,
-          (n: number) => n >= minHeight,
-        ),
-        defaultHeight,
-      ),
+      height: defaultHeight,
       displayName: 'synteny detail',
       trackSelectorType: 'hierarchical',
       showIntraviewLinks: true,
@@ -113,6 +105,9 @@ export default function stateModelFactory(pluginManager: any) {
       setWidth(newWidth: number) {
         self.width = newWidth
         self.views.forEach(v => v.setWidth(newWidth))
+      },
+      setHeight(newHeight: number) {
+        self.height = newHeight
       },
 
       removeView(view: LGV) {
@@ -189,6 +184,5 @@ export default function stateModelFactory(pluginManager: any) {
     }))
 }
 
-export type LinearComparativeViewStateModel = ReturnType<
-  typeof stateModelFactory
->
+export type LinearComparativeViewModel = ReturnType<typeof stateModelFactory>
+export type LCV = Instance<LinearComparativeViewModel>

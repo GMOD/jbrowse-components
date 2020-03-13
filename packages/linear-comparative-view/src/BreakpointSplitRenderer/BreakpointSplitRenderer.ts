@@ -97,7 +97,6 @@ function* generateLayoutMatches(
     })
     .flat()
     .sort((a, b) => strcmp(a.feature.get('name'), b.feature.get('name')))
-  console.log(feats)
 
   let currEmit = [feats[0]]
   let currFeat: { feature: Feature; level: number } = feats[0]
@@ -150,8 +149,6 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
       linkedTrack,
       config,
     } = props
-
-    console.log('re-rendering')
 
     const trackId = linkedTrack
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)

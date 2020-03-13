@@ -23,6 +23,7 @@
     "rxjs": "^6.0.0"
   },
   "dependencies": {
+    "@rehooks/component-size": "^1.0.3",
     "abortable-promise-cache": "^1.0.1",
     "clsx": "^1.1.0",
     "generic-filehandle": "^2.0.1",

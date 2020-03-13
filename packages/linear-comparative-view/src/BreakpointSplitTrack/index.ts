@@ -75,7 +75,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         return getParent(self, 2).views[0].viewingRegionWidth
       },
       get effectiveHeight() {
-        return 100
+        return getParent(self, 2).height
       },
       get highResolutionScaling() {
         return 1

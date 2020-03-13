@@ -12,12 +12,7 @@ const BreakpointSplitTrack: React.FC<{
 }> = props => {
   const { model, children } = props
   return (
-    <div
-      style={{
-        height: model.renderProps.height,
-        width: model.renderProps.width,
-      }}
-    >
+    <div>
       <model.ReactComponent2 {...props} />
       {children}
     </div>
