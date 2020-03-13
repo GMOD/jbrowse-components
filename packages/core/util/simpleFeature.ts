@@ -58,7 +58,7 @@ export interface SimpleFeatureSerialized {
 function isSimpleFeatureSerialized(
   args: SimpleFeatureSerialized | SimpleFeatureArgs,
 ): args is SimpleFeatureSerialized {
-  return 'uniqueId' in args
+  return 'uniqueId' in args && typeof args.data !== 'object'
 }
 
 /**
