@@ -12,7 +12,8 @@
     "clsx": "^1.0.4",
     "json-stable-stringify": "^1.0.1",
     "rbush": "^3.0.1",
-    "react-sizeme": "^2.6.7"
+    "react-sizeme": "^2.6.7",
+    "react-window": "^1.8.5"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",
