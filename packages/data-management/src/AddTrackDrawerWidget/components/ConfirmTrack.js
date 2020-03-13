@@ -1,7 +1,7 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import {
   guessAdapter,
-  guessSNPCoverageSubadapter,
+  guessSubadapter,
   guessTrackType,
   UNKNOWN,
   UNSUPPORTED,
@@ -132,7 +132,7 @@ function ConfirmTrack({
   if (trackData.uri || trackData.localPath || trackData.config) {
     let message = null
     if (trackData.uri || trackData.localPath)
-      trackAdapter.type === 'SNPCoverageAdapter'
+      trackAdapter.subadapter
         ? (message = (
             <Typography className={classes.spacing}>
               Selected <code>{trackType}</code>. Using adapter{' '}
@@ -175,14 +175,19 @@ function ConfirmTrack({
           fullWidth
           onChange={event => {
             setTrackType(event.target.value)
-            // selecting SNPCoverageTrack sets up SNPCoverage adapter. If
-            // switching from SNP to non-SNP, restore old adapter
+            // selecting SNPCoverageTrack sets up SNPCoverage adapter.
+            // In future make generic for others with subadapter
+            // If switching from track w sub to non-sub, restore old adapter
             if (event.target.value === 'SNPCoverageTrack') {
               const adapter = trackData.uri
-                ? guessSNPCoverageSubadapter(trackData.uri, 'uri')
-                : guessSNPCoverageSubadapter(trackData.localPath, 'localPath')
+                ? guessSubadapter(trackData.uri, 'uri', 'SNPCoverageAdapter')
+                : guessSubadapter(
+                    trackData.localPath,
+                    'localPath',
+                    'SNPCoverageAdapter',
+                  )
               setTrackAdapter(adapter)
-            } else if (trackAdapter.type === 'SNPCoverageAdapter') {
+            } else if (trackAdapter.subadapter) {
               setTrackAdapter(trackAdapter.subadapter)
             }
           }}
