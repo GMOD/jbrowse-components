@@ -7,7 +7,7 @@ import Track from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/compon
 import AlignmentsTrackBlocks from './AlignmentsTrackBlocks'
 
 function AlignmentsBlockBasedTrack(props) {
-  const { model, children } = props
+  const { model, children, showPileup, showSNPCoverage } = props
   return (
     <Track {...props} trackId={getConf(model, 'trackId')}>
       {model.trackMessageComponent ? (
@@ -16,6 +16,8 @@ function AlignmentsBlockBasedTrack(props) {
         <AlignmentsTrackBlocks
           {...props}
           viewModel={getParent(getParent(model))}
+          showPileup={showPileup}
+          showSNPCoverage={showSNPCoverage}
         />
       )}
       {children}
