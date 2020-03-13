@@ -6,16 +6,6 @@ import { readConfObject } from '../configuration'
 
 /* utility functions for use by track models and so forth */
 
-/**
- * get the closest view object that contains this state tree node
- * @param {MSTNode} node
- */
-export function getContainingView(node: IStateTreeNode) {
-  let currentNode = node
-  while (!('bpPerPx' in currentNode)) currentNode = getParent(currentNode)
-  return currentNode
-}
-
 export function getTrackAssemblyNames(
   track: IStateTreeNode & { configuration: AnyConfigurationModel },
 ) {

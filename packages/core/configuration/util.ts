@@ -9,7 +9,6 @@ import {
   isArrayType,
   isModelType,
   isLateType,
-  IAnyType,
 } from 'mobx-state-tree'
 
 import {
@@ -104,7 +103,7 @@ export function getConf(
   model: unknown,
   slotName: string | string[],
   args: unknown[] = [],
-): any {
+) {
   if (!model) throw new TypeError('must provide a model object')
   const { configuration } = model as ThingWithConfigurationMember
   if (isConfigurationModel(configuration)) {
@@ -130,7 +129,10 @@ export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
         type = resolveLateType(type)
         let typeName = getTypeNamesFromExplicitlyTypedUnion(type)
         if (!typeName.length) {
-          typeName = [getDefaultValue(type).type]
+          const def = getDefaultValue(type)
+          if (!def) debugger
+          if (!def.type) debugger
+          typeName = [def.type]
         }
         if (!typeName[0]) {
           // debugger

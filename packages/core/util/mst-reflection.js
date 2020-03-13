@@ -81,11 +81,9 @@ export function resolveLateType(maybeLate) {
   if (
     !isUnionType(maybeLate) &&
     !isArrayType(maybeLate) &&
-    !isOptionalType(maybeLate)
+    isLateType(maybeLate)
   ) {
-    if (isLateType(maybeLate)) {
-      return getSubType(maybeLate)
-    }
+    return maybeLate.getSubType()
   }
   return maybeLate
 }

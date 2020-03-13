@@ -4,17 +4,16 @@ import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
 export default class extends BaseFeatureDataAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected fasta: any
 
-  public constructor(config: {
-    fastaLocation: IFileLocation
-    faiLocation: IFileLocation
-  }) {
+  public constructor(config: AnyConfigurationModel) {
     super()
-    const { fastaLocation, faiLocation } = config
+    const fastaLocation = readConfObject(config, 'fastaLocation')
+    const faiLocation = readConfObject(config, 'faiLocation')
     if (!fastaLocation) {
       throw new Error('must provide fastaLocation')
     }
@@ -22,8 +21,8 @@ export default class extends BaseFeatureDataAdapter {
       throw new Error('must provide faiLocation')
     }
     const fastaOpts = {
-      fasta: openLocation(fastaLocation),
-      fai: openLocation(faiLocation),
+      fasta: openLocation(fastaLocation as IFileLocation),
+      fai: openLocation(faiLocation as IFileLocation),
     }
 
     this.fasta = new IndexedFasta(fastaOpts)

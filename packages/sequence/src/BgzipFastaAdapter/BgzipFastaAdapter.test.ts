@@ -1,18 +1,21 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './BgzipFastaAdapter'
+import configSchema from './configSchema'
 
 test('can use a indexed fasta with gzi', async () => {
-  const adapter = new Adapter({
-    fastaLocation: {
-      localPath: require.resolve('../../test_data/volvox.fa.gz'),
-    },
-    faiLocation: {
-      localPath: require.resolve('../../test_data/volvox.fa.gz.fai'),
-    },
-    gziLocation: {
-      localPath: require.resolve('../../test_data/volvox.fa.gz.gzi'),
-    },
-  })
+  const adapter = new Adapter(
+    configSchema.create({
+      fastaLocation: {
+        localPath: require.resolve('../../test_data/volvox.fa.gz'),
+      },
+      faiLocation: {
+        localPath: require.resolve('../../test_data/volvox.fa.gz.fai'),
+      },
+      gziLocation: {
+        localPath: require.resolve('../../test_data/volvox.fa.gz.gzi'),
+      },
+    }),
+  )
 
   const features = await adapter.getFeatures({
     refName: 'ctgA',

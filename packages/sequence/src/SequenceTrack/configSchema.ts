@@ -1,8 +1,9 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import { BaseTrackConfig as LinearGenomeTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import DivSequenceRendererConfigurationSchema from '../DivSequenceRenderer/configSchema'
 
-export default (pluginManager, trackType) => {
+export default (pluginManager: PluginManager, trackType: string) => {
   if (trackType === 'SequenceTrack')
     return ConfigurationSchema(
       'SequenceTrack',
@@ -26,6 +27,5 @@ export default (pluginManager, trackType) => {
       },
       { explicitIdentifier: 'trackId', explicitlyTyped: true },
     )
-
-  return null
+  throw new Error('invalid trackType')
 }

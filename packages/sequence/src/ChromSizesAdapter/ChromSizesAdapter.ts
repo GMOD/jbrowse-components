@@ -4,23 +4,23 @@ import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { GenericFilehandle } from 'generic-filehandle'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { Instance } from 'mobx-state-tree'
+import MyConfigSchema from './configSchema'
 
 export default class extends BaseFeatureDataAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected data: any
-
   // the map of refSeq to length
-  protected refSeqs: Promise<{ [key: string]: number }>
+  protected refSeqs: Promise<Record<string, number>>
 
   protected source: string
 
-  public constructor(config: { chromSizesLocation: IFileLocation }) {
+  public constructor(config: Instance<typeof MyConfigSchema>) {
     super()
-    const { chromSizesLocation } = config
+    const chromSizesLocation = readConfObject(config, 'chromSizesLocation')
     if (!chromSizesLocation) {
       throw new Error('must provide chromSizesLocation')
     }
-    const file = openLocation(chromSizesLocation)
+    const file = openLocation(chromSizesLocation as IFileLocation)
     this.source = file.toString()
     this.refSeqs = this.init(file)
   }

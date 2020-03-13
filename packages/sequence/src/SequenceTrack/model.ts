@@ -8,8 +8,9 @@ import {
   blockBasedTrackModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
+import { AnyConfigurationSchemaType } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
-export default (configSchema, trackType) =>
+export default (configSchema: AnyConfigurationSchemaType, trackType: string) =>
   types.compose(
     trackType,
     blockBasedTrackModel,

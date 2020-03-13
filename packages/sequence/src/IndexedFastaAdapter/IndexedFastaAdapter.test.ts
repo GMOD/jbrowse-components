@@ -1,13 +1,18 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './IndexedFastaAdapter'
+import configSchema from './configSchema'
 
 test('adapter can fetch sequence from volvox.fa', async () => {
-  const adapter = new Adapter({
-    fastaLocation: { localPath: require.resolve('../../test_data/volvox.fa') },
-    faiLocation: {
-      localPath: require.resolve('../../test_data/volvox.fa.fai'),
-    },
-  })
+  const adapter = new Adapter(
+    configSchema.create({
+      fastaLocation: {
+        localPath: require.resolve('../../test_data/volvox.fa'),
+      },
+      faiLocation: {
+        localPath: require.resolve('../../test_data/volvox.fa.fai'),
+      },
+    }),
+  )
 
   const features = await adapter.getFeatures({
     refName: 'ctgA',

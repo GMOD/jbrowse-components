@@ -1,8 +1,6 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 
-export { default as AdapterClass } from './ChromSizesAdapter'
-
-export const configSchema = ConfigurationSchema(
+export default ConfigurationSchema(
   'ChromSizesAdapter',
   {
     chromSizesLocation: {

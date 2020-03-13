@@ -2,6 +2,7 @@ import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
   AdapterClass as BgzipFastaAdapterClass,
   configSchema as bgzipFastaAdapterConfigSchema,
@@ -31,8 +32,8 @@ import {
   configSchema as twoBitAdapterConfigSchema,
 } from './TwoBitAdapter'
 
-export default class extends Plugin {
-  install(pluginManager) {
+export default class SequencePlugin extends Plugin {
+  install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
@@ -76,6 +77,7 @@ export default class extends Plugin {
       )
       return new TrackType({
         name: 'SequenceTrack',
+        compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: sequenceTrackModelFactory(configSchema, 'SequenceTrack'),
       })
@@ -88,6 +90,7 @@ export default class extends Plugin {
       )
       return new TrackType({
         name: 'ReferenceSequenceTrack',
+        compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: referenceSequenceTrackModelFactory(
           configSchema,

@@ -1,8 +1,6 @@
 import { types, getSnapshot } from 'mobx-state-tree'
-import {
-  ConfigurationSchema,
-  isConfigurationModel,
-} from './configurationSchema'
+import { ConfigurationSchema } from './configurationSchema'
+import { isConfigurationModel } from './util'
 
 import { getConf, readConfObject } from '.'
 
@@ -137,7 +135,6 @@ describe('configuration schemas', () => {
     })
 
     const model = container.create({
-      type: 'Foo',
       configuration: {
         someInteger: 42,
         mySubConfiguration: {},
@@ -189,7 +186,6 @@ describe('configuration schemas', () => {
     })
 
     const model = container.create({
-      type: 'Foo',
       configuration: {
         someInteger: 12,
         myConfigurationMap: { nog: {} },
