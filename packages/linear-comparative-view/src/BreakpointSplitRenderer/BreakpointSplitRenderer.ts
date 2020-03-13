@@ -69,6 +69,8 @@ function* generateLayoutMatches(views: ReducedLinearGenomeViewModel[]) {
     )
     .flat()
     .sort((a, b) => strcmp(a.feature.get('name'), b.feature.get('name')))
+  console.log('layoutFeatures', views[0].tracks[0].layoutFeatures)
+  console.log('features', views[0].features)
 
   let currEmit = [feats[0]]
   let currFeat: { feature: Feature; level: number } = feats[0]

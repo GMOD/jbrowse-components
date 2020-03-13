@@ -1,7 +1,8 @@
 import { clamp } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { LayoutRecord } from './LinearComparativeView/model'
+
+export type LayoutRecord = [number, number, number, number]
 
 export interface ReducedLinearGenomeViewModel {
   bpPerPx: number
@@ -18,6 +19,7 @@ export interface ReducedLinearGenomeViewModel {
     scrollTop: number
     height: number
     trackId: string
+    layoutFeatures: [string, LayoutRecord][]
   }[]
 }
 const [, TOP, , BOTTOM] = [0, 1, 2, 3]

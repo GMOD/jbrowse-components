@@ -225,6 +225,15 @@ function renderBlockData(self: SyntenyTrack) {
             staticBlocks: view.staticBlocks.getRegions(),
             dynamicBlocks: view.dynamicBlocks.getRegions(),
             displayedRegions: view.displayedRegions,
+            features: JSON.stringify(view.features),
+            layoutFeatures: JSON.stringify(view.layoutFeatures),
+            tracks: view.tracks.map((t: any) => {
+              const l = [...t.layoutFeatures.entries()]
+              return {
+                ...(getSnapshot(t) as any),
+                layoutFeatures: l,
+              }
+            }),
           }
         }),
         width: 100,

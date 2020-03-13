@@ -9,8 +9,6 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 
-export type LayoutRecord = [number, number, number, number]
-
 type LGV = Instance<LinearGenomeViewStateModel>
 type ConfigRelationship = { type: string; target: string }
 
