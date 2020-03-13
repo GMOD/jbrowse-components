@@ -1,4 +1,4 @@
-/* eslint-disable  no-continue, no-plusplus */
+/* eslint-disable  no-continue */
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -84,85 +84,32 @@ function* generateLayoutMatches(views: ReducedLinearGenomeViewModel[]) {
   }
 }
 
-// function merge(lists: Feature[][]) {
-//    const ret = [] as Feature[]
+function drawArrow(
+  context: CanvasRenderingContext2D,
+  fromx: number,
+  fromy: number,
+  tox: number,
+  toy: number,
+) {
+  const headlen = 6 // length of head in pixels
+  const dx = tox - fromx
+  const dy = toy - fromy
+  const angle = Math.atan2(dy, dx)
+  context.fillStyle = 'black'
+  context.beginPath()
+  context.moveTo(tox, toy)
+  context.lineTo(
+    tox - headlen * Math.cos(angle - Math.PI / 8),
+    toy - headlen * Math.sin(angle - Math.PI / 6),
+  )
+  context.lineTo(
+    tox - headlen * Math.cos(angle + Math.PI / 8),
+    toy - headlen * Math.sin(angle + Math.PI / 8),
+  )
+  context.closePath()
+  context.fill()
+}
 
-//     // priority_queue 'pq' implemeted as min heap with the
-//     // help of 'compare' function
-//     const pq = new TinyQueue()
-
-//   let i = 0
-//   let j = 0
-//   const res = []
-//   while (i < l1.length && j < l2.length) {
-//     const a = l1[i].get('name')
-//     const b = l2[j].get('name')
-//     if (strcmp(a, b) < 0) {
-//       res.push({
-//         level: 0,
-//         l1[i++]
-//       })
-//     } else if (strcmp(a, b) > 0) {
-//       res.push(l2[j++])
-//     } else {
-//       res.push(l1[i++])
-//       res.push(l2[j++])
-//     }
-//   }
-//   return res
-// }
-
-// function* generateMatches(feats: Feature[]) {
-//   let currEmit = [feats[0]]
-//   let currFeat: Feature = feats[0]
-//   for (let i = 1; i < feats.length; i++) {
-//     if (currFeat.get('name') !== feats[i].get('name')) {
-//       }
-//       yield currEmit
-//       currFeat = feats[i]
-//       currEmit = [feats[i]]
-//     } else {
-//       currEmit.push(feats[i])
-//     }
-//   }
-// }
-// function layoutMatchesFromViews(views: ReducedLinearGenomeViewModel[]) {
-//   const layoutMatches = []
-//   for (let i = 0; i < views.length; i++) {
-//     for (let j = i; j < views.length; j++) {
-//       if (i !== j) {
-//         // NOTE: we might need intra-view "synteny" e.g. ortholog?
-//         // similar to breakpoint squiggles in a single LGV, so may not want
-//         // the check for i != j
-//         const merged = merge(views[i].features, views[j].features)
-//         console.log(merged.map(m => m.get('name')))
-//         for (const matches of generateMatches(merged)) {
-//           for (let k = 0; k < matches.length - 1; k++) {
-//             const l1 = matches[k]
-//             const l2 = matches[k + 1]
-//             console.log('here', l1.get('name'), l2.get('name'), matches.length)
-//             layoutMatches.push([
-//               {
-//                 feature: l1,
-//                 level: i,
-//                 refName: l1.get('refName'),
-//                 layout: [l1.get('start'), 0, l1.get('end'), 10] as LayoutTuple,
-//               },
-//               {
-//                 feature: l2,
-//                 level: j,
-//                 refName: l2.get('refName'),
-//                 layout: [l2.get('start'), 0, l2.get('end'), 10] as LayoutTuple,
-//               },
-//             ])
-//           }
-//         }
-//       }
-//     }
-//   }
-//   console.log(layoutMatches)
-//   return layoutMatches
-// }
 export default class BreakpointSplitRenderer extends ComparativeServerSideRendererType {
   async makeImageData(props: BreakpointSplitRenderProps) {
     const {
@@ -244,6 +191,13 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
           y2,
         )
         ctx.stroke()
+        drawArrow(
+          ctx,
+          x2 - 10 * f2.get('strand') * flipMultipliers[level2],
+          y2,
+          x2,
+          y2,
+        )
       }
     }
 

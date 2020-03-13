@@ -1,34 +1,20 @@
 /* eslint-disable  no-continue, no-plusplus */
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import {
   createCanvas,
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
-import { overlayYPos, interstitialYPos, getPxFromCoordinate } from '../util'
+import {
+  overlayYPos,
+  interstitialYPos,
+  getPxFromCoordinate,
+  ReducedLinearGenomeViewModel,
+} from '../util'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
-
-export interface ReducedLinearGenomeViewModel {
-  bpPerPx: number
-  offsetPx: number
-  staticBlocks: IRegion[]
-  dynamicBlocks: IRegion[]
-  displayedRegions: IRegion[]
-  headerHeight: number
-  scaleBarHeight: number
-  height: number
-  reversed: boolean
-  features: Feature[]
-  tracks: {
-    scrollTop: number
-    height: number
-    trackId: string
-  }[]
-}
 
 interface LayoutMatch {
   level: number
@@ -116,6 +102,7 @@ function layoutMatchesFromViews(views: ReducedLinearGenomeViewModel[]) {
   }
   return layoutMatches
 }
+
 export default class LinearSyntenyRenderer extends ComparativeServerSideRendererType {
   async makeImageData(props: LinearSyntenyRenderProps) {
     const {

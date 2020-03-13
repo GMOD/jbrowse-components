@@ -55,7 +55,7 @@ export function getTrackPos(
   return accum
 }
 
-// uses bpToPx to get the screen pixel coordinates but ignores some error conditions
+// Uses bpToPx to get the screen pixel coordinates but ignores some conditions
 // where bpToPx could return undefined
 export function getPxFromCoordinate(
   view: ReducedLinearGenomeViewModel,
@@ -67,8 +67,8 @@ export function getPxFromCoordinate(
   )
 }
 
-// get's the yposition of a layout record in a track
-// if track not found returns 0
+// Retrieves the y-position of a layout record in a track
+// If track not found returns 0
 export function overlayYPos(
   trackConfigId: string,
   level: number,
@@ -85,11 +85,11 @@ export function overlayYPos(
   return ypos + (cond ? cheight(c) : 0)
 }
 
-// returns the pixel screen position of a refName:coord input or undefined if
-// the input could not be located. uses the view.staticBlocks as a representation
+// Returns the pixel screen position of a refName:coord input, or undefined if
+// the input could not be located. Uses view.displayedRegions as a representation
 // of what is on the screen
 //
-// note: does not consider that this refName:coord input could multi-match
+// Note: does not consider that this refName:coord input could multi-match
 function bpToPx(
   view: ReducedLinearGenomeViewModel,
   { refName, coord }: { refName: string; coord: number },
@@ -114,6 +114,7 @@ function bpToPx(
   return undefined
 }
 
+// Returns either 0 or height depending on condition
 export function interstitialYPos(cond: boolean, height: number) {
-  return cond ? 0 : height
+  return cond ? 5 : height - 5
 }
