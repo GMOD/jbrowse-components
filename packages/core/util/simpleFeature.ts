@@ -58,7 +58,7 @@ export interface SimpleFeatureSerialized {
 function isSimpleFeatureSerialized(
   args: SimpleFeatureSerialized | SimpleFeatureArgs,
 ): args is SimpleFeatureSerialized {
-  return !('data' in args) && !('id' in args)
+  return 'uniqueId' in args
 }
 
 /**
@@ -103,6 +103,7 @@ export default class SimpleFeature implements Feature {
     this.uniqueId = String(id)
 
     if (!(this.data.aliases || this.data.end - this.data.start >= 0)) {
+      debugger
       throw new Error(
         `invalid feature data, end less than start. end: ${this.data.end} start: ${this.data.start}`,
       )
