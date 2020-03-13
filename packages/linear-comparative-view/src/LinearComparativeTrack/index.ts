@@ -11,15 +11,7 @@ export function configSchemaFactory(pluginManager: any) {
     'LinearComparativeTrack',
     {
       viewType: 'LinearComparativeView',
-      trackIds: {
-        type: 'stringArray',
-        defaultValue: [],
-      },
       middle: {
-        type: 'boolean',
-        defaultValue: true,
-      },
-      hideTiny: {
         type: 'boolean',
         defaultValue: true,
       },

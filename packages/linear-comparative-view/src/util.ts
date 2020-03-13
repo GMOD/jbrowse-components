@@ -4,7 +4,7 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
 export type LayoutRecord = [number, number, number, number]
 
-export interface ReducedLinearGenomeViewModel {
+export interface ReducedLinearGenomeView {
   bpPerPx: number
   offsetPx: number
   staticBlocks: IRegion[]
@@ -18,17 +18,18 @@ export interface ReducedLinearGenomeViewModel {
   tracks: {
     scrollTop: number
     height: number
-    trackId: string
+    configuration: string
     layoutFeatures: [string, LayoutRecord][]
   }[]
 }
+
 const [, TOP, , BOTTOM] = [0, 1, 2, 3]
 
 export function cheight(chunk: LayoutRecord) {
   return chunk[BOTTOM] - chunk[TOP]
 }
 function heightFromSpecificLevel(
-  views: ReducedLinearGenomeViewModel[],
+  views: ReducedLinearGenomeView[],
   trackConfigId: string,
   level: number,
 ) {
@@ -36,6 +37,7 @@ function heightFromSpecificLevel(
     .slice(0, level)
     .map(v => v.height + 7)
     .reduce((a, b) => a + b, 0)
+
   return (
     heightUpUntilThisPoint +
     views[level].headerHeight +
@@ -46,10 +48,10 @@ function heightFromSpecificLevel(
 }
 
 export function getTrackPos(
-  view: ReducedLinearGenomeViewModel,
+  view: ReducedLinearGenomeView,
   trackConfigId: string,
 ) {
-  const idx = view.tracks.findIndex(t => t.trackId === trackConfigId)
+  const idx = view.tracks.findIndex(t => t.configuration === trackConfigId)
   let accum = 0
   for (let i = 0; i < idx; i += 1) {
     accum += view.tracks[i].height + 3 // +1px for trackresizehandle
@@ -60,7 +62,7 @@ export function getTrackPos(
 // Uses bpToPx to get the screen pixel coordinates but ignores some conditions
 // where bpToPx could return undefined
 export function getPxFromCoordinate(
-  view: ReducedLinearGenomeViewModel,
+  view: ReducedLinearGenomeView,
   refName: string,
   coord: number,
 ) {
@@ -74,16 +76,16 @@ export function getPxFromCoordinate(
 export function overlayYPos(
   trackConfigId: string,
   level: number,
-  views: ReducedLinearGenomeViewModel[],
+  views: ReducedLinearGenomeView[],
   c: LayoutRecord,
   cond: boolean,
 ) {
-  const view = views[level]
-  const track = view.tracks.find(t => t.trackId === trackConfigId)
+  const track = views[level].tracks.find(t => t.configuration === trackConfigId)
   const ypos = track
-    ? clamp(c[TOP] - track.scrollTop, 0, track.height) +
+    ? clamp(c[TOP] - (track.scrollTop || 0), 0, track.height) +
       heightFromSpecificLevel(views, trackConfigId, level)
     : 0
+
   return ypos + (cond ? cheight(c) : 0)
 }
 
@@ -93,7 +95,7 @@ export function overlayYPos(
 //
 // Note: does not consider that this refName:coord input could multi-match
 function bpToPx(
-  view: ReducedLinearGenomeViewModel,
+  view: ReducedLinearGenomeView,
   { refName, coord }: { refName: string; coord: number },
 ) {
   let offsetBp = 0

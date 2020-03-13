@@ -70,6 +70,7 @@
     {
       "type": "BreakpointSplitTrack",
       "trackId": "pacbio_hg002_breakpoint_track",
+      "linkedTrack": "pacbio_hg002_breakpoints",
       "name": "HG002.hs37d5.11kb breakpoints",
       "assemblyNames": [
         "hg19"

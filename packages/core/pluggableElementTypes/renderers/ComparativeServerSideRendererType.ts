@@ -87,7 +87,6 @@ export default class ComparativeServerSideRenderer extends RendererType {
    */
   async renderInClient(rpcManager: any, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
-    console.log('renderInClient', args, serializedArgs)
 
     const stateGroupName = args.sessionId
     const result = await rpcManager.call(
@@ -177,7 +176,6 @@ export default class ComparativeServerSideRenderer extends RendererType {
         })
       }),
     )
-    console.log(args.views)
     checkAbortSignal(args.signal)
 
     const results = await this.render({ ...args })

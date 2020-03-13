@@ -3,6 +3,7 @@ import { types, Instance, getParent, getSnapshot } from 'mobx-state-tree'
 import jsonStableStringify from 'json-stable-stringify'
 import { getSession, makeAbortableReaction } from '@gmod/jbrowse-core/util'
 import {
+  readConfObject,
   getConf,
   ConfigurationReference,
   ConfigurationSchema,
@@ -28,10 +29,10 @@ export function configSchemaFactory(pluginManager: any) {
     'BreakpointSplitTrack',
     {
       viewType: 'BreakpointSplitView',
-      // trackIds: {
-      //   type: 'stringArray',
-      //   defaultValue: [],
-      // },
+      linkedTrack: {
+        type: 'string',
+        defaultValue: '',
+      },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
     },
@@ -82,7 +83,8 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       get renderProps() {
         return {
           trackModel: self,
-          config: getConf(self, 'renderer'),
+          linkedTrack: getConf(self, 'linkedTrack'),
+          middle: getConf(self, 'middle'),
           height: this.effectiveHeight,
           width: this.effectiveWidth,
         }
@@ -162,7 +164,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           data: any
           imageData: any
           renderingComponent: React.Component
-          renderProps: any
         }) {
           const { data, imageData, renderingComponent } = args
           self.filled = true
@@ -200,13 +201,17 @@ function renderBlockData(self: SyntenyTrack) {
     const track = self
 
     const { renderProps, rendererType } = track
-    // NOTE the readConfObject(config) was removed because it was not a true
-    // config the way this is setup, may need to reconsider
+
+    // Alternative to readConfObject(config) is below
+    // used because renderProps is something under our control.
+    // Compare to serverSideRenderedBlock
+    readConfObject(self.configuration)
 
     const sequenceConfig: { type?: string } = {}
 
     const { adapterConfig } = self
     const adapterConfigId = jsonStableStringify(adapterConfig)
+    const parentView = getParent(self, 2)
     return {
       rendererType,
       rpcManager,
@@ -218,7 +223,7 @@ function renderBlockData(self: SyntenyTrack) {
         sequenceAdapterType: sequenceConfig.type,
         sequenceAdapterConfig: sequenceConfig,
         rendererType: rendererType.name,
-        views: getParent(self, 2).views.map((view: any) => {
+        views: parentView.views.map((view: any) => {
           return {
             ...(getSnapshot(view) as any),
             regions: view.staticBlocks.getRegions(),
@@ -226,12 +231,17 @@ function renderBlockData(self: SyntenyTrack) {
             dynamicBlocks: view.dynamicBlocks.getRegions(),
             displayedRegions: view.displayedRegions,
             features: JSON.stringify(view.features),
-            layoutFeatures: JSON.stringify(view.layoutFeatures),
+            // important params for overlays
+            headerHeight: view.headerHeight,
+            height: view.height,
+            scaleBarHeight: view.scaleBarHeight,
+            // details about inner tracks such as layoutFeatures for overlays
             tracks: view.tracks.map((t: any) => {
-              const l = [...t.layoutFeatures.entries()]
               return {
                 ...(getSnapshot(t) as any),
-                layoutFeatures: l,
+                layoutFeatures: Array.from(t.layoutFeatures.entries()),
+                height: t.height,
+                scrollTop: t.scrollTop,
               }
             }),
           }

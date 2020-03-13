@@ -11,7 +11,7 @@ import {
   overlayYPos,
   interstitialYPos,
   getPxFromCoordinate,
-  ReducedLinearGenomeViewModel,
+  ReducedLinearGenomeView,
 } from '../util'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
@@ -29,7 +29,7 @@ interface LinearSyntenyRenderProps {
   horizontallyFlipped: boolean
   highResolutionScaling: number
   trackIds: string[]
-  views: ReducedLinearGenomeViewModel[]
+  views: ReducedLinearGenomeView[]
 }
 
 interface LinearSyntenyRenderingProps extends LinearSyntenyRenderProps {
@@ -69,7 +69,7 @@ function* generateMatches(l1: Feature[], l2: Feature[]) {
     }
   }
 }
-function layoutMatchesFromViews(views: ReducedLinearGenomeViewModel[]) {
+function layoutMatchesFromViews(views: ReducedLinearGenomeView[]) {
   const layoutMatches = []
   for (let i = 0; i < views.length; i++) {
     for (let j = i; j < views.length; j++) {

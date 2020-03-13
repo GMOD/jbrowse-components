@@ -11,14 +11,15 @@ import {
   overlayYPos,
   interstitialYPos,
   getPxFromCoordinate,
-  ReducedLinearGenomeViewModel,
+  LayoutRecord,
+  ReducedLinearGenomeView,
 } from '../util'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
 interface LayoutMatch {
   level: number
-  layout: LayoutTuple
+  layout: LayoutRecord
   feature: Feature
   refName: string
 }
@@ -26,10 +27,11 @@ interface BreakpointSplitRenderProps {
   config: any // eslint-disable-line @typescript-eslint/no-explicit-any
   height: number
   width: number
+  middle: boolean
   horizontallyFlipped: boolean
   highResolutionScaling: number
-  trackIds: string[]
-  views: ReducedLinearGenomeViewModel[]
+  linkedTrack: string
+  views: ReducedLinearGenomeView[]
 }
 
 interface BreakpointSplitRenderingProps extends BreakpointSplitRenderProps {
@@ -42,7 +44,7 @@ interface BreakpointSplitImageData {
   width: number
   maxHeightReached: boolean
 }
-interface LayoutRecord {
+interface LayoutRect {
   feature: Feature
   leftPx: number
   rightPx: number
@@ -50,27 +52,52 @@ interface LayoutRecord {
   heightPx: number
 }
 
-export type LayoutTuple = [number, number, number, number]
-
+// faster than localeCompare by 5x or so
 const strcmp = new Intl.Collator(undefined, {
   numeric: true,
   sensitivity: 'base',
 }).compare
 
-function* generateLayoutMatches(views: ReducedLinearGenomeViewModel[]) {
+function instantiateTrackLayoutFeatures(views: ReducedLinearGenomeView[]) {
+  views.forEach(view => {
+    view.tracks.forEach(track => {
+      if (track.layoutFeatures) {
+        // @ts-ignore
+        track.layoutFeatures = new Map(track.layoutFeatures)
+      }
+    })
+  })
+}
+
+function* generateLayoutMatches(
+  views: ReducedLinearGenomeView[],
+  trackId: string,
+  middle: boolean,
+) {
   const feats = views
-    .map((view, index) =>
-      view.features.map(feature => ({
-        feature,
-        level: index,
-        refName: feature.get('refName'),
-        layout: [feature.get('start'), 0, feature.get('end'), 0] as LayoutTuple,
-      })),
-    )
+    .map((view, index) => {
+      // TODO why is it t.configuration?
+      const track = views[index].tracks.find(t => t.configuration === trackId)
+      if (!track) {
+        throw new Error('Linked track not found')
+      }
+      // @ts-ignore
+      const layoutFeatures = track.layoutFeatures as Map<string, LayoutRecord>
+
+      return view.features.map(feature => {
+        return {
+          feature,
+          level: index,
+          refName: feature.get('refName'),
+          layout: middle
+            ? ([feature.get('start'), 0, feature.get('end'), 0] as LayoutRecord)
+            : layoutFeatures.get(String(feature.id())),
+        }
+      })
+    })
     .flat()
     .sort((a, b) => strcmp(a.feature.get('name'), b.feature.get('name')))
-  console.log('layoutFeatures', views[0].tracks[0].layoutFeatures)
-  console.log('features', views[0].features)
+  console.log(feats)
 
   let currEmit = [feats[0]]
   let currFeat: { feature: Feature; level: number } = feats[0]
@@ -119,18 +146,22 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
       width,
       height,
       views,
-      trackIds,
+      middle,
+      linkedTrack,
       config,
     } = props
 
+    console.log('re-rendering')
+
+    const trackId = linkedTrack
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d')
     ctx.scale(scale, scale)
     ctx.fillStyle = readConfObject(config, 'color')
-    const showIntraviewLinks = false
-    const middle = true
+    instantiateTrackLayoutFeatures(views)
 
-    for (const chunk of generateLayoutMatches(views)) {
+    instantiateTrackLayoutFeatures(views)
+    for (const chunk of generateLayoutMatches(views, trackId, middle)) {
       // we follow a path in the list of chunks, not from top to bottom, just in series
       // following x1,y1 -> x2,y2
       chunk.sort((a, b) => a.feature.get('clipPos') - b.feature.get('clipPos'))
@@ -153,9 +184,9 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
         // restore refName mapping for alternative refNames
 
         // disable rendering connections in a single level
-        if (!showIntraviewLinks && level1 === level2) {
-          continue
-        }
+        // if (!showIntraviewLinks && level1 === level2) {
+        //   continue
+        // }
 
         // flipMultiplier combines with normal directionality of the curve
         const flipMultipliers = views.map(v => (v.horizontallyFlipped ? -1 : 1))
@@ -175,10 +206,10 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
 
         const y1 = middle
           ? interstitialYPos(level1 < level2, height)
-          : overlayYPos(trackIds[0], level1, views, c1, level1 < level2)
+          : overlayYPos(trackId, level1, views, c1, level1 < level2)
         const y2 = middle
           ? interstitialYPos(level2 < level1, height)
-          : overlayYPos(trackIds[1], level2, views, c2, level2 < level1)
+          : overlayYPos(trackId, level2, views, c2, level2 < level1)
 
         // possible todo: use totalCurveHeight to possibly make alternative squiggle if the S is too small
 
