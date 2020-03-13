@@ -91,7 +91,7 @@ export default class extends BaseAdapter {
     opts: BaseOptions = {},
   ) {
     if (!regions.length) {
-      return blankStats(true)
+      return blankStats()
     }
     const feats = await Promise.all(
       regions.map(r => this.getRegionStats(r, opts)),
