@@ -1,8 +1,5 @@
 import deepEqual from 'deep-equal'
-import {
-  AnyConfigurationModel,
-  isConfigurationModel,
-} from '../../configuration/configurationSchema'
+import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 import GranularRectLayout from '../../util/layouts/GranularRectLayout'
 import MultiLayout from '../../util/layouts/MultiLayout'
 import PrecomputedLayout from '../../util/layouts/PrecomputedLayout'
@@ -17,7 +14,7 @@ import ServerSideRendererType, {
 } from './ServerSideRendererType'
 import { IRegion } from '../../mst-types'
 import { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
-import { readConfObject } from '../../configuration'
+import { readConfObject, isConfigurationModel } from '../../configuration'
 
 interface LayoutSessionProps {
   config: AnyConfigurationModel

@@ -1,12 +1,6 @@
 import {
   types,
-  isModelType,
-  isArrayType,
-  isUnionType,
-  isMapType,
-  isOptionalType,
   isStateTreeNode,
-  getType,
   Instance,
   IAnyType,
   isType,
@@ -16,11 +10,7 @@ import {
 import { ElementId } from '../mst-types'
 
 import ConfigSlot, { ConfigSlotDefinition } from './configurationSlot'
-import {
-  getUnionSubTypes,
-  getSubType,
-  getDefaultValue,
-} from '../util/mst-reflection'
+import { isConfigurationSchemaType } from './util'
 
 function isEmptyObject(thing: unknown) {
   return (
@@ -33,93 +23,6 @@ function isEmptyObject(thing: unknown) {
 
 function isEmptyArray(thing: unknown) {
   return Array.isArray(thing) && thing.length === 0
-}
-
-export function isBareConfigurationSchemaType(
-  thing: unknown,
-): thing is AnyConfigurationSchemaType {
-  if (isType(thing)) {
-    if (
-      isModelType(thing) &&
-      ('isJBrowseConfigurationSchema' in thing ||
-        thing.name.includes('ConfigurationSchema'))
-    ) {
-      return true
-    }
-    // if it's a late type, assume its a config schema
-    if (isLateType(thing)) return true
-  }
-  return false
-}
-
-export function isConfigurationSchemaType(thing: unknown): boolean {
-  if (!isType(thing)) return false
-
-  // written as a series of if-statements instead of a big logical OR
-  // because this construction gives much better debugging backtraces.
-
-  // also, note that the order of these statements matters, because
-  // for example some union types are also optional types
-
-  if (isBareConfigurationSchemaType(thing)) return true
-
-  if (isUnionType(thing)) {
-    return getUnionSubTypes(thing).every(
-      t => isConfigurationSchemaType(t) || t.name === 'undefined',
-    )
-  }
-
-  if (isOptionalType(thing) && isConfigurationSchemaType(getSubType(thing))) {
-    return true
-  }
-
-  if (isArrayType(thing) && isConfigurationSchemaType(getSubType(thing))) {
-    return true
-  }
-
-  if (isMapType(thing) && isConfigurationSchemaType(getSubType(thing))) {
-    return true
-  }
-
-  return false
-}
-
-export function isConfigurationModel(
-  thing: unknown,
-): thing is AnyConfigurationModel {
-  return isStateTreeNode(thing) && isConfigurationSchemaType(getType(thing))
-}
-
-/**
- * given a union of explicitly typed configuration schema types,
- * extract an array of the type names contained in the union
- *
- * @param {mst union type} unionType
- * @returns {Array[string]} type names contained in the union
- */
-export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
-  if (isType(maybeUnionType) && isUnionType(maybeUnionType)) {
-    const typeNames: string[] = []
-    getUnionSubTypes(maybeUnionType).forEach(type => {
-      let typeName = getTypeNamesFromExplicitlyTypedUnion(type)
-      if (!typeName.length) typeName = [getDefaultValue(type).type]
-      if (!typeName[0]) {
-        // debugger
-        throw new Error(`invalid config schema type ${type}`)
-      }
-      typeNames.push(...typeName)
-    })
-    return typeNames
-  }
-  return []
-}
-
-export function isConfigurationSlotType(thing: unknown) {
-  return (
-    typeof thing === 'object' &&
-    thing !== null &&
-    'isJBrowseConfigurationSlot' in thing
-  )
 }
 
 export interface ConfigurationSchemaDefinition {
@@ -349,6 +252,6 @@ export function ConfigurationSchema<
   return schemaType
 }
 
-export function ConfigurationReference(schemaType: AnyConfigurationSchemaType) {
+export function ConfigurationReference(schemaType: IAnyType) {
   return types.union(types.reference(schemaType), schemaType)
 }

@@ -1,8 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  isConfigurationModel,
-  AnyConfigurationModel,
-} from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 import jsonStableStringify from 'json-stable-stringify'
@@ -22,7 +19,10 @@ import {
   walk,
 } from 'mobx-state-tree'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import {
+  readConfObject,
+  isConfigurationModel,
+} from '@gmod/jbrowse-core/configuration'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode

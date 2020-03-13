@@ -3,12 +3,25 @@ import {
   getSnapshot,
   getType,
   isMapType,
+  isType,
+  isUnionType,
+  isOptionalType,
+  isArrayType,
+  isModelType,
+  isLateType,
+  IAnyType,
 } from 'mobx-state-tree'
 
 import {
   AnyConfigurationModel,
-  isConfigurationModel,
+  AnyConfigurationSchemaType,
 } from './configurationSchema'
+import {
+  getUnionSubTypes,
+  getDefaultValue,
+  getSubType,
+  resolveLateType,
+} from '../util/mst-reflection'
 
 /**
  * given a configuration model (an instance of a ConfigurationSchema),
@@ -98,4 +111,98 @@ export function getConf(
     return readConfObject(configuration, slotName, args)
   }
   throw new TypeError('cannot getConf on this model, it has no configuration')
+}
+
+/**
+ * given a union of explicitly typed configuration schema types,
+ * extract an array of the type names contained in the union
+ *
+ * @param {mst union type} unionType
+ * @returns {Array[string]} type names contained in the union
+ */
+export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
+  if (isType(maybeUnionType)) {
+    maybeUnionType = resolveLateType(maybeUnionType)
+    // @ts-ignore
+    if (isUnionType(maybeUnionType)) {
+      const typeNames: string[] = []
+      getUnionSubTypes(maybeUnionType).forEach(type => {
+        type = resolveLateType(type)
+        let typeName = getTypeNamesFromExplicitlyTypedUnion(type)
+        if (!typeName.length) {
+          typeName = [getDefaultValue(type).type]
+        }
+        if (!typeName[0]) {
+          // debugger
+          throw new Error(`invalid config schema type ${type}`)
+        }
+        typeNames.push(...typeName)
+      })
+      return typeNames
+    }
+  }
+  return []
+}
+
+export function isBareConfigurationSchemaType(
+  thing: unknown,
+): thing is AnyConfigurationSchemaType {
+  if (isType(thing)) {
+    if (
+      isModelType(thing) &&
+      ('isJBrowseConfigurationSchema' in thing ||
+        thing.name.includes('ConfigurationSchema'))
+    ) {
+      return true
+    }
+    // if it's a late type, assume its a config schema
+    if (isLateType(thing)) return true
+  }
+  return false
+}
+
+export function isConfigurationSchemaType(thing: unknown): boolean {
+  if (!isType(thing)) return false
+
+  // written as a series of if-statements instead of a big logical OR
+  // because this construction gives much better debugging backtraces.
+
+  // also, note that the order of these statements matters, because
+  // for example some union types are also optional types
+
+  if (isBareConfigurationSchemaType(thing)) return true
+
+  if (isUnionType(thing)) {
+    return getUnionSubTypes(thing).every(
+      t => isConfigurationSchemaType(t) || t.name === 'undefined',
+    )
+  }
+
+  if (isOptionalType(thing) && isConfigurationSchemaType(getSubType(thing))) {
+    return true
+  }
+
+  if (isArrayType(thing) && isConfigurationSchemaType(getSubType(thing))) {
+    return true
+  }
+
+  if (isMapType(thing) && isConfigurationSchemaType(getSubType(thing))) {
+    return true
+  }
+
+  return false
+}
+
+export function isConfigurationModel(
+  thing: unknown,
+): thing is AnyConfigurationModel {
+  return isStateTreeNode(thing) && isConfigurationSchemaType(getType(thing))
+}
+
+export function isConfigurationSlotType(thing: unknown) {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'isJBrowseConfigurationSlot' in thing
+  )
 }

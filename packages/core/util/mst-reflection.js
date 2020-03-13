@@ -4,10 +4,12 @@ import {
   isUnionType,
   isArrayType,
   isMapType,
+  isLateType,
+  IModelType,
 } from 'mobx-state-tree'
 
 /**
- * get the inner type of an MST optional or array type object
+ * get the inner type of an MST optional, array, or late type object
  *
  * @param {IModelType} type
  * @returns {IModelType}
@@ -18,6 +20,8 @@ export function getSubType(type) {
     t = type._subtype || type.type
   } else if (isArrayType(type) || isMapType(type)) {
     t = type._subtype || type._subType || type.subType
+  } else if (typeof type.getSubType === 'function') {
+    return type.getSubType()
   } else {
     throw new TypeError('unsupported mst type')
   }
@@ -60,8 +64,9 @@ export function getPropertyType(type, propertyName) {
  * @param {*} type
  */
 export function getDefaultValue(type) {
-  if (!isOptionalType(type))
+  if (!isOptionalType(type)) {
     throw new TypeError('type must be an optional type')
+  }
   return type._defaultValue || type.defaultValue
 }
 
@@ -70,4 +75,17 @@ export function getEnumerationValues(type) {
   const subtypes = getUnionSubTypes(type)
   // the subtypes should all be literals with a value member
   return subtypes.map(t => t.value)
+}
+
+export function resolveLateType(maybeLate) {
+  if (
+    !isUnionType(maybeLate) &&
+    !isArrayType(maybeLate) &&
+    !isOptionalType(maybeLate)
+  ) {
+    if (isLateType(maybeLate)) {
+      return getSubType(maybeLate)
+    }
+  }
+  return maybeLate
 }

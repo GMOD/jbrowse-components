@@ -1,9 +1,10 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import {
+  readConfObject,
   getTypeNamesFromExplicitlyTypedUnion,
   isConfigurationSchemaType,
   isConfigurationSlotType,
-} from '@gmod/jbrowse-core/configuration/configurationSchema'
+} from '@gmod/jbrowse-core/configuration'
+
 import { iterMap } from '@gmod/jbrowse-core/util'
 import FormGroup from '@material-ui/core/FormGroup'
 import FormLabel from '@material-ui/core/FormLabel'
