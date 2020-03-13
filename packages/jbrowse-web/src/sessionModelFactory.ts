@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import { getContainingView } from '@gmod/jbrowse-core/util'
 import jsonStableStringify from 'json-stable-stringify'
 import { autorun } from 'mobx'
 import {

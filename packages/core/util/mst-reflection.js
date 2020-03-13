@@ -5,7 +5,6 @@ import {
   isArrayType,
   isMapType,
   isLateType,
-  IModelType,
 } from 'mobx-state-tree'
 
 /**

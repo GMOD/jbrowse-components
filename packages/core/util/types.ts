@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import PluginManager from '../PluginManager'
+import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 /**
  * Obtain the return type of a constructor function type.
@@ -21,3 +22,33 @@ export type AnyReactComponentType = React.ComponentType<Record<string, unknown>>
 export type TypeTestedByPredicate<
   PREDICATE extends (thing: any) => boolean
 > = PREDICATE extends (thing: any) => thing is infer TYPE ? TYPE : never
+
+/** minimum interface that all session state models must implement */
+export interface AbstractSessionModel {
+  editConfiguration(configuration: AnyConfigurationModel): void
+  clearSelection(): void
+  configuration: AnyConfigurationModel
+  pluginManager: PluginManager
+}
+export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'pluginManager' in thing &&
+    'configuration' in thing
+  )
+}
+
+/** minimum interface that all view state models must implement */
+export interface AbstractViewModel {
+  showTrack(configuration: AnyConfigurationModel): void
+  hideTrack(configuration: AnyConfigurationModel): void
+}
+export function isViewModel(thing: unknown): thing is AbstractViewModel {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'showTrack' in thing &&
+    'hideTrack' in thing
+  )
+}

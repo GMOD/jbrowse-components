@@ -15,7 +15,7 @@ import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
 import PluginManager from '../PluginManager'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
-import { TypeTestedByPredicate } from './types'
+import { TypeTestedByPredicate, isSessionModel, isViewModel } from './types'
 
 export * from './types'
 
@@ -132,22 +132,6 @@ export function useDebouncedCallback<A extends any[]>(
   }
 }
 
-/** minimum interface that all session state models must implement */
-export interface AbstractSessionModel {
-  editConfiguration(configuration: AnyConfigurationModel): void
-  clearSelection(): void
-  configuration: AnyConfigurationModel
-  pluginManager: PluginManager
-}
-export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
-  return (
-    typeof thing === 'object' &&
-    thing !== null &&
-    'pluginManager' in thing &&
-    'configuration' in thing
-  )
-}
-
 /** find the first node in the hierarchy that matches the given predicate */
 export function findParentThat(
   node: IAnyStateTreeNode,
@@ -182,14 +166,12 @@ export function getSession(node: IAnyStateTreeNode) {
 }
 
 /** get the state model of the view in the state tree that contains the given node */
-export function getContainingView(
-  node: IAnyStateTreeNode,
-): IAnyStateTreeNode | undefined {
-  const currentNode = getParent(node, 2)
-  if (getType(currentNode).name.includes('View')) {
-    return currentNode
+export function getContainingView(node: IAnyStateTreeNode) {
+  try {
+    return findParentThatIs(node, isViewModel)
+  } catch (e) {
+    throw new Error('no containing view found')
   }
-  return undefined
 }
 
 /**

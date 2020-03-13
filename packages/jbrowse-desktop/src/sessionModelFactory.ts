@@ -4,7 +4,7 @@ import {
   isConfigurationModel,
 } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import { getContainingView } from '@gmod/jbrowse-core/util'
 import jsonStableStringify from 'json-stable-stringify'
 import { autorun } from 'mobx'
 import {
