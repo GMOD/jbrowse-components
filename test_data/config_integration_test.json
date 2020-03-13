@@ -593,7 +593,14 @@
           "type": "LinearGenomeView",
           "offsetPx": 2000,
           "bpPerPx": 0.05,
-          "displayRegionsFromAssemblyName": "volvox"
+          "displayedRegions": [
+            {
+              "refName": "ctgA",
+              "start": 0,
+              "end": 50001,
+              "assemblyName": "volvox"
+            }
+          ]
         }
       ],
       "drawerWidgets": {

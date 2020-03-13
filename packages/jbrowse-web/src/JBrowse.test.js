@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   createEvent,
   fireEvent,
@@ -50,7 +51,7 @@ const readBuffer = async (url, args) => {
       }
     }
     const body = await file.readFile()
-    return { status: 200, text: () => body, buffer: () => body }
+    return { status: 200, text: () => body.toString(), buffer: () => body }
   } catch (e) {
     console.error(e)
     return { status: 404, buffer: () => {} }
@@ -450,7 +451,11 @@ describe('circular views', () => {
     await waitForElement(() => getByText('Help'))
 
     // open a new circular view on the same assembly as the test linear view
-    state.session.addViewFromAnotherView('CircularView', state.session.views[0])
+    const regions = await state.session.getRegionsForAssemblyName('volvox')
+    act(() => {
+      const circularView = state.session.addView('CircularView')
+      circularView.setDisplayedRegions(regions)
+    })
 
     // open a track selector for the circular view
     const trackSelectButtons = await waitForElement(() =>
@@ -496,22 +501,40 @@ describe('breakpoint split view', () => {
   }, 10000)
 })
 
-test('cause an exception in the jbrowse module loading', async () => {
-  const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-  const { getByText } = render(
-    <JBrowse configSnapshot={{ configuration: [] }} />,
-  )
-  expect(await getByText('Fatal error')).toBeTruthy()
-  expect(spy).toHaveBeenCalled()
-  spy.mockRestore()
+describe('Fatal error', () => {
+  it('occurs when given an invalid snapshot', () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const { getByText } = render(
+      <JBrowse configSnapshot={{ configuration: [] }} />,
+    )
+    expect(getByText('Fatal error')).toBeTruthy()
+    expect(spy).toHaveBeenCalled()
+    spy.mockRestore()
+  })
+  it('occurs when multiple assemblies have the same name', async () => {
+    const newConfig = JSON.parse(JSON.stringify(config))
+    newConfig.assemblies.push({
+      name: 'volvox',
+      aliases: [],
+    })
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const { findByText } = render(<JBrowse configSnapshot={newConfig} />)
+    expect(
+      await findByText('Found two assemblies with the same name: volvox', {
+        exact: false,
+      }),
+    ).toBeTruthy()
+    expect(spy).toHaveBeenCalled()
+    spy.mockRestore()
+  })
 })
 
 test('404 sequence file', async () => {
   const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-  const { findByText } = render(
+  const { findAllByText } = render(
     <JBrowse config={{ uri: 'test_data/config_chrom_sizes_test.json' }} />,
   )
-  await findByText(/HTTP 404/)
+  await findAllByText(/HTTP 404/)
   expect(spy).toHaveBeenCalled()
   spy.mockRestore()
 })

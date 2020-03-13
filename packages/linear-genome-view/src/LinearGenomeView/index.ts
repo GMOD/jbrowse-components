@@ -79,9 +79,8 @@ export function stateModelFactory(pluginManager: any) {
       offsetPx: 0,
       bpPerPx: 1,
       displayedRegions: types.array(Region),
-      displayRegionsFromAssemblyName: types.maybe(types.string),
       displayName: types.maybe(types.string),
-      reversed: false,
+      horizontallyFlipped: false,
       // we use an array for the tracks because the tracks are displayed in a specific
       // order that we need to keep.
       tracks: types.array(
@@ -132,7 +131,7 @@ export function stateModelFactory(pluginManager: any) {
       },
       get totalBp() {
         let totalbp = 0
-        this.displayedRegionsInOrder.forEach(region => {
+        self.displayedRegions.forEach(region => {
           totalbp += region.end - region.start
         })
         return totalbp
@@ -144,16 +143,6 @@ export function stateModelFactory(pluginManager: any) {
 
       get minBpPerPx() {
         return constrainBpPerPx(0)
-      },
-
-      get horizontallyFlipped() {
-        return self.reversed
-      },
-
-      get displayedRegionsInOrder() {
-        return self.reversed
-          ? self.displayedRegions.slice().reverse()
-          : self.displayedRegions
       },
 
       get displayedRegionsTotalPx() {
@@ -168,7 +157,7 @@ export function stateModelFactory(pluginManager: any) {
             getSession(self),
             'highResolutionScaling',
           ),
-          horizontallyFlipped: this.horizontallyFlipped,
+          horizontallyFlipped: self.horizontallyFlipped,
         }
       },
       get assemblyNames() {
@@ -183,9 +172,11 @@ export function stateModelFactory(pluginManager: any) {
       bpToPx({ refName, coord }: { refName: string; coord: number }) {
         let offsetBp = 0
 
-        const index = this.displayedRegionsInOrder.findIndex(r => {
+        const index = self.displayedRegions.findIndex(r => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
-            offsetBp += self.reversed ? r.end - coord : coord - r.start
+            offsetBp += self.horizontallyFlipped
+              ? r.end - coord
+              : coord - r.start
             return true
           }
           offsetBp += r.end - r.start
@@ -208,7 +199,7 @@ export function stateModelFactory(pluginManager: any) {
       pxToBp(px: number) {
         const bp = (self.offsetPx + px) * self.bpPerPx + 1
         let bpSoFar = 0
-        let r = this.displayedRegionsInOrder[0]
+        let r = self.displayedRegions[0]
         if (bp < 0) {
           return {
             ...r,
@@ -216,12 +207,8 @@ export function stateModelFactory(pluginManager: any) {
             index: 0,
           }
         }
-        for (
-          let index = 0;
-          index < this.displayedRegionsInOrder.length;
-          index += 1
-        ) {
-          r = this.displayedRegionsInOrder[index]
+        for (let index = 0; index < self.displayedRegions.length; index += 1) {
+          r = self.displayedRegions[index]
           if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
             return { ...r, offset: Math.round(bp - bpSoFar), index }
           }
@@ -231,7 +218,7 @@ export function stateModelFactory(pluginManager: any) {
         return {
           ...r,
           offset: Math.round(bp - bpSoFar),
-          index: this.displayedRegionsInOrder.length,
+          index: self.displayedRegions.length,
         }
       },
 
@@ -268,7 +255,8 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       horizontallyFlip() {
-        self.reversed = !self.reversed
+        self.horizontallyFlipped = !self.horizontallyFlipped
+        self.displayedRegions = cast(self.displayedRegions.slice().reverse())
         self.offsetPx = self.totalBp / self.bpPerPx - self.offsetPx - self.width
       },
 
@@ -330,23 +318,8 @@ export function stateModelFactory(pluginManager: any) {
         if (!hiddenCount) this.showTrack(configuration)
       },
 
-      setDisplayedRegions(regions: IRegion[], isFromAssemblyName = false) {
-        try {
-          self.displayedRegions = cast(regions)
-          if (!isFromAssemblyName)
-            this.setDisplayedRegionsFromAssemblyName(undefined)
-
-          self.afterDisplayedRegionsSetCallbacks.forEach(cb => {
-            cb(self)
-          })
-          self.afterDisplayedRegionsSetCallbacks = []
-        } catch (error) {
-          console.error(error)
-        }
-      },
-
-      setDisplayedRegionsFromAssemblyName(assemblyName: string | undefined) {
-        self.displayRegionsFromAssemblyName = assemblyName
+      setDisplayedRegions(regions: IRegion[]) {
+        self.displayedRegions = cast(regions)
       },
 
       activateTrackSelector() {
@@ -410,7 +383,7 @@ export function stateModelFactory(pluginManager: any) {
           // get the proper displayedRegion that is relevant for the nav command
           // assumes that a single displayedRegion will satisfy the query
           // TODO: may not necessarily be true?
-          const index = self.displayedRegionsInOrder.findIndex(region => {
+          const index = self.displayedRegions.findIndex(region => {
             if (refName === region.refName) {
               if (start === undefined) {
                 start = region.start
@@ -429,7 +402,7 @@ export function stateModelFactory(pluginManager: any) {
             return false
           }
           if (index !== -1) {
-            const result = self.displayedRegionsInOrder[index]
+            const result = self.displayedRegions[index]
             this.moveTo(
               { index, offset: start - result.start },
               { index, offset: end - result.start },
@@ -461,20 +434,19 @@ export function stateModelFactory(pluginManager: any) {
         if (start.index === end.index) {
           bpSoFar += end.offset - start.offset
         } else {
-          const s = self.displayedRegionsInOrder[start.index]
+          const s = self.displayedRegions[start.index]
           bpSoFar += s.end - start.offset
           if (end.index - start.index >= 2) {
             for (let i = start.index + 1; i < end.index; i += 1) {
               bpSoFar +=
-                self.displayedRegionsInOrder[i].end -
-                self.displayedRegionsInOrder[i].start
+                self.displayedRegions[i].end - self.displayedRegions[i].start
             }
           }
           bpSoFar += end.offset
         }
         let bpToStart = 0
-        for (let i = 0; i < self.displayedRegionsInOrder.length; i += 1) {
-          const region = self.displayedRegionsInOrder[i]
+        for (let i = 0; i < self.displayedRegions.length; i += 1) {
+          const region = self.displayedRegions[i]
           if (start.index === i) {
             bpToStart += start.offset
             break
@@ -577,13 +549,6 @@ export function stateModelFactory(pluginManager: any) {
           return calculateDynamicBlocks(cast(self), self.horizontallyFlipped)
         },
       }
-    })
-    .postProcessSnapshot(self => {
-      if (self.displayRegionsFromAssemblyName) {
-        const { displayedRegions, ...rest } = self
-        return rest
-      }
-      return self
     })
 }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
