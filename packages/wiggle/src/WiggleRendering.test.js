@@ -12,6 +12,7 @@ test('one', () => {
       highResolutionScaling={1}
       region={{ refName: 'chr1', start: 1, end: 3 }}
       bpPerPx={3}
+      config={{ type: 'DummyRenderer' }}
     />,
   )
 
