@@ -57,60 +57,116 @@ const strcmp = new Intl.Collator(undefined, {
   sensitivity: 'base',
 }).compare
 
-function* generateMatches(l1: Feature[], l2: Feature[]) {
-  let i = 0
-  let j = 0
-  while (i < l1.length && j < l2.length) {
-    const a = l1[i].get('name')
-    const b = l2[j].get('name')
-    if (strcmp(a, b) < 1) {
-      i++
-    } else if (strcmp(a, b) > 1) {
-      j++
+function* generateLayoutMatches(views: ReducedLinearGenomeViewModel[]) {
+  const feats = views
+    .map((view, index) =>
+      view.features.map(feature => ({
+        feature,
+        level: index,
+        refName: feature.get('refName'),
+        layout: [feature.get('start'), 0, feature.get('end'), 0] as LayoutTuple,
+      })),
+    )
+    .flat()
+    .sort((a, b) => strcmp(a.feature.get('name'), b.feature.get('name')))
+
+  let currEmit = [feats[0]]
+  let currFeat: { feature: Feature; level: number } = feats[0]
+
+  for (let i = 1; i < feats.length; i++) {
+    if (currFeat.feature.get('name') !== feats[i].feature.get('name')) {
+      yield currEmit
+      currFeat = feats[i]
+      currEmit = [feats[i]]
     } else {
-      yield [l1[i], l2[j]]
-      i++
-      j++
+      currEmit.push(feats[i])
     }
   }
 }
-function layoutMatchesFromViews(views: ReducedLinearGenomeViewModel[]) {
-  const layoutMatches = []
-  for (let i = 0; i < views.length; i++) {
-    for (let j = i; j < views.length; j++) {
-      if (i !== j) {
-        // NOTE: we might need intra-view "synteny" e.g. ortholog?
-        // similar to breakpoint squiggles in a single LGV, so may not want
-        // the check for i != j
-        for (const match of generateMatches(
-          views[i].features,
-          views[j].features,
-        )) {
-          const [l1, l2] = match
-          layoutMatches.push([
-            {
-              feature: l1,
-              level: i,
-              refName: l1.get('refName'),
-              layout: [l1.get('start'), 0, l1.get('end'), 10] as LayoutTuple,
-            },
-            {
-              feature: l2,
-              level: j,
-              refName: l2.get('refName'),
-              layout: [l2.get('start'), 0, l2.get('end'), 10] as LayoutTuple,
-            },
-          ])
-        }
-      }
-    }
-  }
-  return layoutMatches
-}
+
+// function merge(lists: Feature[][]) {
+//    const ret = [] as Feature[]
+
+//     // priority_queue 'pq' implemeted as min heap with the
+//     // help of 'compare' function
+//     const pq = new TinyQueue()
+
+//   let i = 0
+//   let j = 0
+//   const res = []
+//   while (i < l1.length && j < l2.length) {
+//     const a = l1[i].get('name')
+//     const b = l2[j].get('name')
+//     if (strcmp(a, b) < 0) {
+//       res.push({
+//         level: 0,
+//         l1[i++]
+//       })
+//     } else if (strcmp(a, b) > 0) {
+//       res.push(l2[j++])
+//     } else {
+//       res.push(l1[i++])
+//       res.push(l2[j++])
+//     }
+//   }
+//   return res
+// }
+
+// function* generateMatches(feats: Feature[]) {
+//   let currEmit = [feats[0]]
+//   let currFeat: Feature = feats[0]
+//   for (let i = 1; i < feats.length; i++) {
+//     if (currFeat.get('name') !== feats[i].get('name')) {
+//       }
+//       yield currEmit
+//       currFeat = feats[i]
+//       currEmit = [feats[i]]
+//     } else {
+//       currEmit.push(feats[i])
+//     }
+//   }
+// }
+// function layoutMatchesFromViews(views: ReducedLinearGenomeViewModel[]) {
+//   const layoutMatches = []
+//   for (let i = 0; i < views.length; i++) {
+//     for (let j = i; j < views.length; j++) {
+//       if (i !== j) {
+//         // NOTE: we might need intra-view "synteny" e.g. ortholog?
+//         // similar to breakpoint squiggles in a single LGV, so may not want
+//         // the check for i != j
+//         const merged = merge(views[i].features, views[j].features)
+//         console.log(merged.map(m => m.get('name')))
+//         for (const matches of generateMatches(merged)) {
+//           for (let k = 0; k < matches.length - 1; k++) {
+//             const l1 = matches[k]
+//             const l2 = matches[k + 1]
+//             console.log('here', l1.get('name'), l2.get('name'), matches.length)
+//             layoutMatches.push([
+//               {
+//                 feature: l1,
+//                 level: i,
+//                 refName: l1.get('refName'),
+//                 layout: [l1.get('start'), 0, l1.get('end'), 10] as LayoutTuple,
+//               },
+//               {
+//                 feature: l2,
+//                 level: j,
+//                 refName: l2.get('refName'),
+//                 layout: [l2.get('start'), 0, l2.get('end'), 10] as LayoutTuple,
+//               },
+//             ])
+//           }
+//         }
+//       }
+//     }
+//   }
+//   console.log(layoutMatches)
+//   return layoutMatches
+// }
 export default class BreakpointSplitRenderer extends ComparativeServerSideRendererType {
   async makeImageData(props: BreakpointSplitRenderProps) {
     const {
-      highResolutionScaling = 1,
+      highResolutionScaling: scale = 1,
       width,
       height,
       views,
@@ -118,25 +174,17 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
       config,
     } = props
 
-    views.forEach(view => {
-      view.features.sort((a, b) => a.get('syntenyId') - b.get('syntenyId'))
-    })
-    const layoutMatches = layoutMatchesFromViews(views)
-
-    const canvas = createCanvas(
-      Math.ceil(width * highResolutionScaling),
-      height * highResolutionScaling,
-    )
+    const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d')
-    ctx.scale(highResolutionScaling, highResolutionScaling)
+    ctx.scale(scale, scale)
     ctx.fillStyle = readConfObject(config, 'color')
     const showIntraviewLinks = false
     const middle = true
-    const hideTiny = false
 
-    layoutMatches.forEach(chunk => {
+    for (const chunk of generateLayoutMatches(views)) {
       // we follow a path in the list of chunks, not from top to bottom, just in series
       // following x1,y1 -> x2,y2
+      chunk.sort((a, b) => a.feature.get('clipPos') - b.feature.get('clipPos'))
       for (let i = 0; i < chunk.length - 1; i += 1) {
         const { layout: c1, feature: f1, level: level1, refName: ref1 } = chunk[
           i
@@ -149,48 +197,32 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
 
         if (!c1 || !c2) {
           console.warn('received null layout for a overlay feature')
-          return
+          continue
         }
+
+        // possible TODO
+        // restore refName mapping for alternative refNames
 
         // disable rendering connections in a single level
         if (!showIntraviewLinks && level1 === level2) {
-          return
+          continue
         }
-        const length1 = f1.get('end') - f1.get('start')
-        const length2 = f2.get('end') - f2.get('start')
-
-        if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
-          if (hideTiny) {
-            continue
-          }
-        }
-        // if (
-        //   !v1.staticBlocks.find(region => region.refName === ref1) ||
-        //   !v2.staticBlocks.find(region => region.refName === ref2)
-        // ) {
-        //   continue
-        // }
-
-        const x11 = getPxFromCoordinate(v1, ref1, c1[LEFT])
-        const x12 = getPxFromCoordinate(v1, ref1, c1[RIGHT])
-        const x21 = getPxFromCoordinate(v2, ref2, c2[LEFT])
-        const x22 = getPxFromCoordinate(v2, ref2, c2[RIGHT])
 
         // flipMultiplier combines with normal directionality of the curve
         const flipMultipliers = views.map(v => (v.horizontallyFlipped ? -1 : 1))
 
         const x1 = getPxFromCoordinate(
-          views[level1],
-          f1.get('refName'),
+          v1,
+          ref1,
           c1[f1.get('strand') === -1 ? LEFT : RIGHT],
         )
         const x2 = getPxFromCoordinate(
-          views[level2],
-          f2.get('refName'),
+          v2,
+          ref2,
           c2[f2.get('strand') === -1 ? RIGHT : LEFT],
         )
 
-        const tracks = views.map(v => v.getTrack(trackConfigId))
+        // const tracks = views.map(v => v.getTrack(trackConfigId))
 
         const y1 = middle
           ? interstitialYPos(level1 < level2, height)
@@ -200,26 +232,20 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
           : overlayYPos(trackIds[1], level2, views, c2, level2 < level1)
 
         // possible todo: use totalCurveHeight to possibly make alternative squiggle if the S is too small
-        const path = Path()
-          .moveTo(x1, y1)
-          .curveTo(
-            x1 + 200 * f1.get('strand') * flipMultipliers[level1],
-            y1,
-            x2 - 200 * f2.get('strand') * flipMultipliers[level2],
-            y2,
-            x2,
-            y2,
-          )
-          .end()
+
         ctx.beginPath()
-        ctx.moveTo(x11, y1)
-        ctx.lineTo(x12, y1)
-        ctx.lineTo(x22, y2)
-        ctx.lineTo(x21, y2)
-        ctx.closePath()
-        ctx.fill()
+        ctx.moveTo(x1, y1)
+        ctx.bezierCurveTo(
+          x1 + 200 * f1.get('strand') * flipMultipliers[level1],
+          y1,
+          x2 - 200 * f2.get('strand') * flipMultipliers[level2],
+          y2,
+          x2,
+          y2,
+        )
+        ctx.stroke()
       }
-    })
+    }
 
     const imageData = await createImageBitmap(canvas)
     return {
