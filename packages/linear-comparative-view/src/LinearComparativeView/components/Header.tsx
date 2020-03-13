@@ -1,7 +1,6 @@
-import { Instance } from 'mobx-state-tree'
 import clsx from 'clsx'
 import { withSize } from 'react-sizeme'
-import { LinearComparativeViewStateModel } from '../model'
+import { LCV } from '../model'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default ({ jbrequire }: { jbrequire: any }) => {
@@ -35,32 +34,26 @@ export default ({ jbrequire }: { jbrequire: any }) => {
     },
   }))
 
-  const Controls = observer(
-    ({ model }: { model: Instance<LinearComparativeViewStateModel> }) => {
-      const classes = useStyles()
-      return (
-        <>
-          <IconButton
-            onClick={model.closeView}
-            className={classes.iconButton}
-            title="close this view"
-          >
-            <Icon fontSize="small">close</Icon>
-          </IconButton>
-        </>
-      )
-    },
-  )
+  const Controls = observer(({ model }: { model: LCV }) => {
+    const classes = useStyles()
+    return (
+      <>
+        <IconButton
+          onClick={model.closeView}
+          className={classes.iconButton}
+          title="close this view"
+        >
+          <Icon fontSize="small">close</Icon>
+        </IconButton>
+      </>
+    )
+  })
 
   Controls.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
 
-  function TextFieldOrTypography({
-    model,
-  }: {
-    model: Instance<LinearComparativeViewStateModel>
-  }) {
+  function TextFieldOrTypography({ model }: { model: LCV }) {
     const classes = useStyles()
     const [name, setName] = useState(model.displayName)
     const [edit, setEdit] = useState(false)
@@ -102,73 +95,61 @@ export default ({ jbrequire }: { jbrequire: any }) => {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
 
-  const InteractWithSquiggles = observer(
-    ({ model }: { model: Instance<LinearComparativeViewStateModel> }) => {
-      const classes = useStyles()
-      return (
-        <IconButton
-          onClick={model.toggleInteract}
-          className={classes.iconButton}
-          title="Toggle interacting with the overlay"
-        >
-          <Icon fontSize="small">
-            {model.interactToggled ? 'location_searching' : 'location_disabled'}
-          </Icon>
-        </IconButton>
-      )
-    },
-  )
+  const InteractWithSquiggles = observer(({ model }: { model: LCV }) => {
+    const classes = useStyles()
+    return (
+      <IconButton
+        onClick={model.toggleInteract}
+        className={classes.iconButton}
+        title="Toggle interacting with the overlay"
+      >
+        <Icon fontSize="small">
+          {model.interactToggled ? 'location_searching' : 'location_disabled'}
+        </Icon>
+      </IconButton>
+    )
+  })
   InteractWithSquiggles.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
-  const LinkViews = observer(
-    ({ model }: { model: Instance<LinearComparativeViewStateModel> }) => {
-      const classes = useStyles()
-      const title = model.linkViews ? 'link' : 'link_off'
-      return (
-        <IconButton
-          onClick={model.toggleLinkViews}
-          className={classes.iconButton}
-          title="Toggle linked scrolls and behavior across views"
-        >
-          <Icon color="secondary" fontSize="small">
-            {title}
-          </Icon>
-        </IconButton>
-      )
-    },
-  )
+  const LinkViews = observer(({ model }: { model: LCV }) => {
+    const classes = useStyles()
+    const title = model.linkViews ? 'link' : 'link_off'
+    return (
+      <IconButton
+        onClick={model.toggleLinkViews}
+        className={classes.iconButton}
+        title="Toggle linked scrolls and behavior across views"
+      >
+        <Icon color="secondary" fontSize="small">
+          {title}
+        </Icon>
+      </IconButton>
+    )
+  })
   LinkViews.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
-  const Sync = observer(
-    ({ model }: { model: Instance<LinearComparativeViewStateModel> }) => {
-      const classes = useStyles()
-      const title = model.showIntraviewLinks ? 'leak_add' : 'leak_remove'
-      return (
-        <IconButton
-          onClick={model.toggleIntraviewLinks}
-          className={classes.iconButton}
-          title="Toggle rendering intraview links"
-        >
-          <Icon color="secondary" fontSize="small">
-            {title}
-          </Icon>
-        </IconButton>
-      )
-    },
-  )
+  const Sync = observer(({ model }: { model: LCV }) => {
+    const classes = useStyles()
+    const title = model.showIntraviewLinks ? 'leak_add' : 'leak_remove'
+    return (
+      <IconButton
+        onClick={model.toggleIntraviewLinks}
+        className={classes.iconButton}
+        title="Toggle rendering intraview links"
+      >
+        <Icon color="secondary" fontSize="small">
+          {title}
+        </Icon>
+      </IconButton>
+    )
+  })
   Sync.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
   const Header = observer(
-    ({
-      model,
-      size,
-    }: {
-      model: Instance<LinearComparativeViewStateModel>
-      size: { height: number }
-    }) => {
+    ({ model, size }: { model: LCV; size: { height: number } }) => {
       const classes = useStyles()
 
       model.setHeaderHeight(size.height)

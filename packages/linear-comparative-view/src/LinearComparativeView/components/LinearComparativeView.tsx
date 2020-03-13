@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { makeStyles } from '@material-ui/core/styles'
 import useComponentSize from '@rehooks/component-size'
 import { LCV } from '../model'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
@@ -42,6 +42,7 @@ export default (pluginManager: any) => {
         width: '100%',
         gridArea: '1/1',
         zIndex: 100,
+        pointerEvents: 'none',
         '& path': {
           cursor: 'crosshair',
           fill: 'none',
@@ -72,6 +73,7 @@ export default (pluginManager: any) => {
     const classes = useStyles()
     const { views, controlsWidth } = model
     const { ReactComponent } = pluginManager.getViewType(views[0].type)
+    model.setHeight(100)
     return (
       <div>
         <Header model={model} />
@@ -99,7 +101,7 @@ export default (pluginManager: any) => {
     const { views, controlsWidth } = model
     const ref = useRef(null)
     const size = useComponentSize(ref)
-    model.setHeight(size.height-20)
+    model.setHeight(size.height - 20)
     return (
       <div>
         <Header model={model} />
@@ -126,9 +128,13 @@ export default (pluginManager: any) => {
   })
 
   const LinearComparativeView = observer(({ model }: { model: LCV }) => {
-    // const middle = model.tracks.some((t: any) => getConf(t, 'middle'))
+    const middle = model.tracks.some((t: any) => getConf(t, 'middle'))
     // const noMiddle = model.tracks.some((t: any) => !getConf(t, 'middle'))
-    return <OverlayComparativeView model={model} />
+    return middle ? (
+      <MiddleComparativeView model={model} />
+    ) : (
+      <OverlayComparativeView model={model} />
+    )
   })
 
   MiddleComparativeView.propTypes = {

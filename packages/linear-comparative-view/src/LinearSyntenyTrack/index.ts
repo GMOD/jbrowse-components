@@ -28,10 +28,10 @@ export function configSchemaFactory(pluginManager: any) {
     'LinearSyntenyTrack',
     {
       viewType: 'LinearSyntenyView',
-      // trackIds: {
-      //   type: 'stringArray',
-      //   defaultValue: [],
-      // },
+      trackIds: {
+        type: 'stringArray',
+        defaultValue: [],
+      },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
     },
