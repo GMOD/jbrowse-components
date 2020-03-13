@@ -145,7 +145,7 @@ const blockState = types
         }
         const track = getParent(self, 2)
         const view = getContainingView(track)
-        const { rpcManager } = getSession(view) as any
+        const { rpcManager } = getSession(view)
         const { rendererType } = track
         const { renderArgs } = renderBlockData(cast(self))
         rendererType.freeResourcesInClient(

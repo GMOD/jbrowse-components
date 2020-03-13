@@ -29,6 +29,7 @@ export interface AbstractSessionModel {
   clearSelection(): void
   configuration: AnyConfigurationModel
   pluginManager: PluginManager
+  rpcManager: any
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (

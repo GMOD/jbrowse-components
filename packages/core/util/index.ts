@@ -152,8 +152,9 @@ export function findParentThatIs<
 >(
   node: IAnyStateTreeNode,
   predicate: PREDICATE,
-): TypeTestedByPredicate<PREDICATE> {
-  return findParentThat(node, predicate) as TypeTestedByPredicate<PREDICATE>
+): TypeTestedByPredicate<PREDICATE> & IAnyStateTreeNode {
+  return findParentThat(node, predicate) as TypeTestedByPredicate<PREDICATE> &
+    IAnyStateTreeNode
 }
 
 /** get the current JBrowse session model, starting at any node in the state tree */

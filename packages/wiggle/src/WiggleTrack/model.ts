@@ -15,8 +15,15 @@ import blockBasedTrackModel, {
   BlockBasedTrackStateModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
 import { autorun, observable } from 'mobx'
-import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
+import {
+  addDisposer,
+  getSnapshot,
+  isAlive,
+  types,
+  Instance,
+} from 'mobx-state-tree'
 import React from 'react'
+import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { getNiceDomain } from '../util'
 import WiggleTrackComponent from './components/WiggleTrackComponent'
 
@@ -148,7 +155,9 @@ const stateModelFactory = (configSchema: any) =>
             : r
         }
         if (autoscaleType === 'local' || autoscaleType === 'localsd') {
-          const { dynamicBlocks, bpPerPx } = getContainingView(self)
+          const { dynamicBlocks, bpPerPx } = getContainingView(
+            self,
+          ) as Instance<LinearGenomeViewStateModel>
           const r = await rpcManager.call(
             'statsGathering',
             'getMultiRegionStats',

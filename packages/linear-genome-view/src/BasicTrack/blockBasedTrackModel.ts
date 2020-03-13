@@ -4,13 +4,19 @@ import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { autorun } from 'mobx'
 import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { addDisposer, types, Instance } from 'mobx-state-tree'
+import {
+  addDisposer,
+  types,
+  Instance,
+  SnapshotOrInstance,
+} from 'mobx-state-tree'
 import RBush from 'rbush'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import BlockState, { BlockStateModel } from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
 import { BaseBlock, ContentBlock } from './util/blockTypes'
 import BlockBasedTrack from './components/BlockBasedTrack'
+import { LinearGenomeViewStateModel } from '../LinearGenomeView'
 
 type LayoutRecord = [number, number, number, number]
 const blockBasedTrack = types
@@ -31,7 +37,7 @@ const blockBasedTrack = types
     let rbush: { [key: string]: typeof RBush | undefined } = {}
 
     return {
-      get blockType() {
+      get blockType(): 'staticBlocks' | 'dynamicBlocks' {
         return 'staticBlocks'
       },
 
@@ -135,7 +141,11 @@ const blockBasedTrack = types
       },
 
       get blockDefinitions() {
-        return getContainingView(self)[this.blockType]
+        const { blockType } = this
+        const view = getContainingView(self) as Instance<
+          LinearGenomeViewStateModel
+        >
+        return view[blockType]
       },
 
       /**
@@ -166,7 +176,7 @@ const blockBasedTrack = types
       const blockWatchDisposer = autorun(() => {
         // create any blocks that we need to create
         const blocksPresent: { [key: string]: boolean } = {}
-        self.blockDefinitions.forEach((block: Instance<BlockStateModel>) => {
+        self.blockDefinitions.forEach((block: any) => {
           if (!(block instanceof ContentBlock)) return
           blocksPresent[block.key] = true
           if (!self.blockState.has(block.key)) {
