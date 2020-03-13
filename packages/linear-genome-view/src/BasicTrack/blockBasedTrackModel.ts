@@ -1,11 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
-import {
-  getContainingView,
-  getParentRenderProps,
-} from '@gmod/jbrowse-core/util/tracks'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { autorun } from 'mobx'
-import { getSession } from '@gmod/jbrowse-core/util'
+import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { addDisposer, types, Instance } from 'mobx-state-tree'
 import RBush from 'rbush'

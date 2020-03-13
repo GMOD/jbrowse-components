@@ -19,11 +19,9 @@ import {
   checkAbortSignal,
   isAbortException,
   getSession,
-} from '@gmod/jbrowse-core/util'
-import {
   getContainingView,
-  getTrackAssemblyNames,
-} from '@gmod/jbrowse-core/util/tracks'
+} from '@gmod/jbrowse-core/util'
+import { getTrackAssemblyNames } from '@gmod/jbrowse-core/util/tracks'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 

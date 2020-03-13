@@ -2,9 +2,12 @@ import {
   ConfigurationReference,
   getConf,
 } from '@gmod/jbrowse-core/configuration'
-import { isAbortException, getSession } from '@gmod/jbrowse-core/util'
 import {
+  isAbortException,
+  getSession,
   getContainingView,
+} from '@gmod/jbrowse-core/util'
+import {
   getParentRenderProps,
   getTrackAssemblyNames,
 } from '@gmod/jbrowse-core/util/tracks'
