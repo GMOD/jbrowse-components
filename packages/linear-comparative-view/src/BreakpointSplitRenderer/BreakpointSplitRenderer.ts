@@ -156,7 +156,6 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
     ctx.strokeStyle = readConfObject(config, 'color')
     ctx.fillStyle = readConfObject(config, 'color')
     const drawMode = readConfObject(config, 'drawMode')
-    console.log(drawMode)
     instantiateTrackLayoutFeatures(views)
 
     instantiateTrackLayoutFeatures(views)

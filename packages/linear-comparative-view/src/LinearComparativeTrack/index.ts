@@ -210,6 +210,8 @@ async function renderBlockEffect(
 ) {
   if (!props) {
     throw new Error('cannot render with no props')
+  } else if (props.trackError) {
+    throw new Error(props.trackError)
   }
 
   const { rendererType, rpcManager, renderArgs } = props
