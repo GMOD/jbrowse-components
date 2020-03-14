@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,import/no-extraneous-dependencies */
 import { types, Instance, getParent } from 'mobx-state-tree'
 
-import { makeAbortableReaction } from '@gmod/jbrowse-core/util'
 import {
   readConfObject,
   getConf,
@@ -13,8 +12,7 @@ import {
   configSchemaFactory as baseConfigFactory,
   stateModelFactory as baseModelFactory,
 } from '../LinearComparativeTrack'
-import BreakpointSplitTrackComponent from './components/BreakpointSplitTrack'
-import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
+
 
 interface Block {
   start: number
@@ -48,24 +46,10 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
     .compose(
       'BreakpointSplitTrack',
       baseModelFactory(pluginManager, configSchema),
-      types
-        .model('BreakpointSplitTrack', {
-          type: types.literal('BreakpointSplitTrack'),
-          configuration: ConfigurationReference(configSchema),
-        })
-        .volatile(self => ({
-          // avoid circular typescript reference by casting to generic functional component
-          renderInProgress: undefined as AbortController | undefined,
-          filled: false,
-          data: undefined as any,
-          imageData: '',
-          error: undefined as Error | undefined,
-          message: undefined as string | undefined,
-          viewOffsets: [] as number[],
-          renderingComponent: undefined as any,
-          ReactComponent: (BreakpointSplitTrackComponent as unknown) as React.FC,
-          ReactComponent2: (ServerSideRenderedBlockContent as unknown) as React.FC,
-        })),
+      types.model('BreakpointSplitTrack', {
+        type: types.literal('BreakpointSplitTrack'),
+        configuration: ConfigurationReference(configSchema),
+      }),
     )
 
     .views(self => ({

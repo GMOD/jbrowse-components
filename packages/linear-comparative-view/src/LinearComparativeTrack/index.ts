@@ -4,7 +4,6 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
-
 import { types, Instance, getParent, getSnapshot } from 'mobx-state-tree'
 import {
   BaseTrackConfig,
@@ -12,6 +11,8 @@ import {
 } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { getSession, makeAbortableReaction } from '@gmod/jbrowse-core/util'
 import jsonStableStringify from 'json-stable-stringify'
+import LinearComparativeTrackComponent from './components/LinearComparativeTrack'
+import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
@@ -36,14 +37,27 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
     .compose(
       'LinearComparativeTrack',
       BaseTrack,
-      types.model('LinearComparativeTrack', {
-        type: types.literal('LinearComparativeTrack'),
-        configuration: ConfigurationReference(configSchema),
-      }),
+      types
+        .model('LinearComparativeTrack', {
+          type: types.literal('LinearComparativeTrack'),
+          configuration: ConfigurationReference(configSchema),
+        })
+        .volatile(self => ({
+          // avoid circular typescript reference by casting to generic functional component
+          renderInProgress: undefined as AbortController | undefined,
+          filled: false,
+          data: undefined as any,
+          imageData: '',
+          error: undefined as Error | undefined,
+          message: undefined as string | undefined,
+          viewOffsets: [] as number[],
+          renderingComponent: undefined as any,
+          ReactComponent: (LinearComparativeTrackComponent as unknown) as React.FC,
+          ReactComponent2: (ServerSideRenderedBlockContent as unknown) as React.FC,
+        })),
     )
     .actions(self => {
       let renderInProgress: undefined | AbortController
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
       return {
         afterAttach() {
