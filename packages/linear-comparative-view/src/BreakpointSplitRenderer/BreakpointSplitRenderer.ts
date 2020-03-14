@@ -154,7 +154,9 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d')
     ctx.scale(scale, scale)
-    ctx.fillStyle = readConfObject(config, 'color')
+    ctx.strokeStyle = readConfObject(config, 'color')
+    const drawMode = readConfObject(config, 'drawMode')
+    console.log(drawMode)
     instantiateTrackLayoutFeatures(views)
 
     instantiateTrackLayoutFeatures(views)
@@ -209,25 +211,42 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
           : overlayYPos(trackId, level2, views, c2, level2 < level1)
 
         // possible todo: use totalCurveHeight to possibly make alternative squiggle if the S is too small
+        //
 
-        ctx.beginPath()
-        ctx.moveTo(x1, y1)
-        ctx.bezierCurveTo(
-          x1 + 200 * f1.get('strand') * flipMultipliers[level1],
-          y1,
-          x2 - 200 * f2.get('strand') * flipMultipliers[level2],
-          y2,
-          x2,
-          y2,
-        )
-        ctx.stroke()
-        drawArrow(
-          ctx,
-          x2 - 10 * f2.get('strand') * flipMultipliers[level2],
-          y2,
-          x2,
-          y2,
-        )
+        if (drawMode === 'spline') {
+          ctx.beginPath()
+          ctx.moveTo(x1, y1)
+          ctx.bezierCurveTo(
+            x1 + 200 * f1.get('strand') * flipMultipliers[level1],
+            y1,
+            x2 - 200 * f2.get('strand') * flipMultipliers[level2],
+            y2,
+            x2,
+            y2,
+          )
+          ctx.stroke()
+          drawArrow(
+            ctx,
+            x2 - 10 * f2.get('strand') * flipMultipliers[level2],
+            y2,
+            x2,
+            y2,
+          )
+        } else {
+          ctx.beginPath()
+          ctx.moveTo(x1 + 200 * f1.get('strand') * flipMultipliers[level1])
+          ctx.lineTo(x1, y1)
+          ctx.lineTo(x2 - 200 * f2.get('strand') * flipMultipliers[level2], y2)
+          ctx.lineTo(x2, y2)
+          ctx.stroke()
+          drawArrow(
+            ctx,
+            x2 - 10 * f2.get('strand') * flipMultipliers[level2],
+            y2,
+            x2,
+            y2,
+          )
+        }
       }
     }
 
