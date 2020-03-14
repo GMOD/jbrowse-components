@@ -83,6 +83,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       get renderProps() {
         return {
           trackModel: self,
+          config: readConfObject(self.configuration, 'renderer'),
           linkedTrack: getConf(self, 'linkedTrack'),
           middle: getConf(self, 'middle'),
           height: this.effectiveHeight,

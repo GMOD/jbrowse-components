@@ -123,7 +123,6 @@ function drawArrow(
   const dx = tox - fromx
   const dy = toy - fromy
   const angle = Math.atan2(dy, dx)
-  context.fillStyle = 'black'
   context.beginPath()
   context.moveTo(tox, toy)
   context.lineTo(
@@ -155,6 +154,7 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
     const ctx = canvas.getContext('2d')
     ctx.scale(scale, scale)
     ctx.strokeStyle = readConfObject(config, 'color')
+    ctx.fillStyle = readConfObject(config, 'color')
     const drawMode = readConfObject(config, 'drawMode')
     console.log(drawMode)
     instantiateTrackLayoutFeatures(views)
@@ -234,18 +234,24 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
           )
         } else {
           ctx.beginPath()
-          ctx.moveTo(x1 + 200 * f1.get('strand') * flipMultipliers[level1])
+          ctx.moveTo(
+            x1 + 10 * f1.get('strand') * flipMultipliers[level1] * -1,
+            y1,
+          )
           ctx.lineTo(x1, y1)
-          ctx.lineTo(x2 - 200 * f2.get('strand') * flipMultipliers[level2], y2)
-          ctx.lineTo(x2, y2)
-          ctx.stroke()
-          drawArrow(
-            ctx,
-            x2 - 10 * f2.get('strand') * flipMultipliers[level2],
-            y2,
-            x2,
+          ctx.lineTo(
+            x2 - 10 * f2.get('strand') * flipMultipliers[level2] * -1,
             y2,
           )
+          ctx.lineTo(x2, y2)
+          ctx.stroke()
+          // drawArrow(
+          //   ctx,
+          //   x2 - 10 * f2.get('strand') * flipMultipliers[level2],
+          //   y2,
+          //   x2,
+          //   y2,
+          // )
         }
       }
     }
