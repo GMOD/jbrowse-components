@@ -46,6 +46,10 @@ export class BlockSet {
   get offsetPx() {
     return this.blocks.length ? this.blocks[0].offsetPx : 0
   }
+
+  get contentBlocks() {
+    return this.blocks.filter(block => block instanceof ContentBlock)
+  }
 }
 
 export class BaseBlock {

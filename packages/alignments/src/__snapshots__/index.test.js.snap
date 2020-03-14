@@ -15,6 +15,9 @@ Object {
     "PileupRenderer": Object {
       "type": "PileupRenderer",
     },
+    "SNPCoverageRenderer": Object {
+      "type": "SNPCoverageRenderer",
+    },
     "SvgFeatureRenderer": Object {
       "type": "SvgFeatureRenderer",
     },

@@ -114,7 +114,7 @@ export function convertTrackConfig(
       else adapter.index = { location: { uri: `${urlTemplate}.bai` } }
       return {
         ...jb2TrackConfig,
-        type: 'AlignmentsTrack',
+        type: 'PileupTrack',
         adapter,
       }
     }
@@ -130,7 +130,7 @@ export function convertTrackConfig(
       else adapter.craiLocation = { uri: `${urlTemplate}.crai` }
       return {
         ...jb2TrackConfig,
-        type: 'AlignmentsTrack',
+        type: 'PileupTrack',
         adapter,
       }
     }

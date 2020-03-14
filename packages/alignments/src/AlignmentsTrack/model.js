@@ -1,67 +1,70 @@
 import {
-  ConfigurationReference,
   getConf,
+  ConfigurationReference,
 } from '@gmod/jbrowse-core/configuration'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { getSession } from '@gmod/jbrowse-core/util'
-import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { types } from 'mobx-state-tree'
+import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { types, addDisposer } from 'mobx-state-tree'
+import { autorun } from 'mobx'
+import AlignmentsTrackComponent from './components/AlignmentsTrack'
 
-// using a map because it preserves order
-const rendererTypes = new Map([
-  ['pileup', 'PileupRenderer'],
-  ['svg', 'SvgFeatureRenderer'],
-])
-
-export default (pluginManager, configSchema) =>
-  types.compose(
+export default (pluginManager, configSchema) => {
+  return types.compose(
     'AlignmentsTrack',
-    blockBasedTrackModel,
+    BaseTrack,
     types
       .model({
+        PileupTrack: types.maybe(
+          pluginManager.getTrackType('PileupTrack').stateModel,
+        ),
+        SNPCoverageTrack: types.maybe(
+          pluginManager.getTrackType('SNPCoverageTrack').stateModel,
+        ),
         type: types.literal('AlignmentsTrack'),
         configuration: ConfigurationReference(configSchema),
+        height: 250,
       })
-      .actions(self => ({
-        selectFeature(feature) {
-          const session = getSession(self)
-          const featureWidget = session.addDrawerWidget(
-            'AlignmentsFeatureDrawerWidget',
-            'alignmentFeature',
-            { featureData: feature.data },
-          )
-          session.showDrawerWidget(featureWidget)
-          session.setSelection(feature)
-        },
+      .volatile(() => ({
+        ReactComponent: AlignmentsTrackComponent,
       }))
       .views(self => ({
-        /**
-         * the renderer type name is based on the "view"
-         * selected in the UI: pileup, coverage, etc
-         */
-        get rendererTypeName() {
-          const viewName = getConf(self, 'defaultRendering')
-          const rendererType = rendererTypes.get(viewName)
-          if (!rendererType)
-            throw new Error(`unknown alignments view name ${viewName}`)
-          return rendererType
+        get pileupTrackConfig() {
+          return {
+            ...getConf(self),
+            type: 'PileupTrack',
+            name: `${getConf(self, 'name')} pileup`,
+            trackId: `${self.configuration.trackId}_pileup`,
+          }
         },
 
-        /**
-         * the react props that are passed to the Renderer when data
-         * is rendered in this track
-         */
-        get renderProps() {
-          // view -> [tracks] -> [blocks]
-          const config = self.rendererType.configSchema.create(
-            getConf(self, ['renderers', self.rendererTypeName]) || {},
-          )
+        get snpCoverageTrackConfig() {
           return {
-            ...self.composedRenderProps,
-            ...getParentRenderProps(self),
-            trackModel: self,
-            config,
+            ...getConf(self),
+            type: 'SNPCoverageTrack',
+            name: `${getConf(self, 'name')} snpcoverage`,
+            trackId: `${self.configuration.trackId}_snpcoverage`,
+            adapter: {
+              type: 'SNPCoverageAdapter',
+              subadapter: getConf(self, 'adapter'),
+            },
+          }
+        },
+      }))
+      .actions(self => ({
+        afterAttach() {
+          addDisposer(
+            self,
+            autorun(() => {
+              self.setTrack('PileupTrack', self.pileupTrackConfig)
+              self.setTrack('SNPCoverageTrack', self.snpCoverageTrackConfig)
+            }),
+          )
+        },
+        setTrack(trackType, trackConfig) {
+          self[trackType] = {
+            type: `${trackType}`,
+            configuration: trackConfig,
           }
         },
       })),
   )
+}

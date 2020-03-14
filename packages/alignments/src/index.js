@@ -4,14 +4,18 @@ import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import { lazy } from 'react'
 import {
+  configSchemaFactory as alignmentsTrackConfigSchemaFactory,
+  modelFactory as alignmentsTrackModelFactory,
+} from './AlignmentsTrack'
+import {
   configSchema as alignmentsFeatureDetailConfigSchema,
   ReactComponent as AlignmentsFeatureDetailReactComponent,
   stateModel as alignmentsFeatureDetailStateModel,
 } from './AlignmentsFeatureDetail'
 import {
-  configSchemaFactory as alignmentsTrackConfigSchemaFactory,
-  modelFactory as alignmentsTrackModelFactory,
-} from './AlignmentsTrack'
+  configSchemaFactory as pileupTrackConfigSchemaFactory,
+  modelFactory as pileupTrackModelFactory,
+} from './PileupTrack'
 import {
   configSchemaFactory as snpCoverageTrackConfigSchemaFactory,
   modelFactory as snpCoverageTrackModelFactory,
@@ -40,14 +44,13 @@ import SNPCoverageRenderer, {
 export default class extends Plugin {
   install(pluginManager) {
     pluginManager.addTrackType(() => {
-      const configSchema = alignmentsTrackConfigSchemaFactory(pluginManager)
+      const configSchema = pileupTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
-        name: 'AlignmentsTrack',
+        name: 'PileupTrack',
         configSchema,
-        stateModel: alignmentsTrackModelFactory(pluginManager, configSchema),
+        stateModel: pileupTrackModelFactory(pluginManager, configSchema),
       })
     })
-
     pluginManager.addDrawerWidgetType(
       () =>
         new DrawerWidgetType({
@@ -64,6 +67,14 @@ export default class extends Plugin {
         name: 'SNPCoverageTrack',
         configSchema,
         stateModel: snpCoverageTrackModelFactory(configSchema),
+      })
+    })
+    pluginManager.addTrackType(() => {
+      const configSchema = alignmentsTrackConfigSchemaFactory(pluginManager)
+      return new TrackType({
+        name: 'AlignmentsTrack',
+        configSchema,
+        stateModel: alignmentsTrackModelFactory(pluginManager, configSchema),
       })
     })
     pluginManager.addAdapterType(

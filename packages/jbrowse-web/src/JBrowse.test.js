@@ -249,19 +249,21 @@ describe('test renamed refs', () => {
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_cram_alignments')),
     )
+
     const canvas = await waitForElement(() =>
-      getAllByTestId('prerendered_canvas'),
+      getAllByTestId('prerendered_canvas_PileupRenderer'),
     )
+
     const img = canvas[0].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
     // this is needed to do a fuzzy image comparison because
     // the travis-ci was 2 pixels different for some reason, see PR #710
     expect(buf).toMatchImageSnapshot({
-      failureThreshold: 0.001,
+      failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
-  })
+  }, 10000 /* this test needs more time to run */)
   it('test that bam with contigA instead of ctgA displays', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
@@ -290,7 +292,7 @@ describe('test renamed refs', () => {
       ),
     )
     await expect(
-      waitForElement(() => getAllByTestId('prerendered_canvas')),
+      waitForElement(() => getAllByTestId('prerendered_canvas_XYPlotRenderer')),
     ).resolves.toBeTruthy()
   })
 })
@@ -392,7 +394,49 @@ describe('test configuration editor', () => {
     })
   }, 10000)
 })
+describe('alignments track', () => {
+  // improve this, currently renders the pileup and stops
+  // if pileup rendering is disabled then snp coverage will run
+  it('opens an alignments track', async () => {
+    const state = JBrowseRootModel.create({ jbrowse: config })
+    const { getByTestId: byId, getAllByTestId, getByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    await waitForElement(() => getByText('Help'))
+    state.session.views[0].setNewView(5, 100)
+    fireEvent.click(
+      await waitForElement(() =>
+        byId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+      ),
+    )
 
+    /* Since alignments track has subtracks, need to look for both
+    prerendered canvases. PrerenderedCanvas data-test id now appends 
+    rendererType so both can be found and not stopped prematurely */
+    const pileupCanvas = await waitForElement(() =>
+      getAllByTestId('prerendered_canvas_PileupRenderer'),
+    )
+    const pileupImg = pileupCanvas[0].toDataURL()
+    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
+    const pileupBuf = Buffer.from(pileupData, 'base64')
+    expect(pileupBuf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
+
+    const snpCovCanvas = await waitForElement(() =>
+      getAllByTestId('prerendered_canvas_SNPCoverageRenderer'),
+    )
+    // snpCov image
+    const snpCovImg = snpCovCanvas[0].toDataURL()
+    const snpCovData = snpCovImg.replace(/^data:image\/\w+;base64,/, '')
+    const snpCovBuf = Buffer.from(snpCovData, 'base64')
+    expect(snpCovBuf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
+  })
+})
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
@@ -405,7 +449,7 @@ describe('bigwig', () => {
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray')),
     )
     await expect(
-      waitForElement(() => getAllByTestId('prerendered_canvas')),
+      waitForElement(() => getAllByTestId('prerendered_canvas_XYPlotRenderer')),
     ).resolves.toBeTruthy()
   })
   it('open a bigwig line track', async () => {
@@ -419,7 +463,9 @@ describe('bigwig', () => {
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray_line')),
     )
     await expect(
-      waitForElement(() => getAllByTestId('prerendered_canvas')),
+      waitForElement(() =>
+        getAllByTestId('prerendered_canvas_LinePlotRenderer'),
+      ),
     ).resolves.toBeTruthy()
   })
   it('open a bigwig density track', async () => {
@@ -435,7 +481,9 @@ describe('bigwig', () => {
       ),
     )
     await expect(
-      waitForElement(() => getAllByTestId('prerendered_canvas')),
+      waitForElement(() =>
+        getAllByTestId('prerendered_canvas_DensityRenderer'),
+      ),
     ).resolves.toBeTruthy()
   })
 })
@@ -537,76 +585,4 @@ test('404 sequence file', async () => {
   await findAllByText(/HTTP 404/)
   expect(spy).toHaveBeenCalled()
   spy.mockRestore()
-})
-
-describe('snpcoverage adapter tests', () => {
-  it('test that SNPCoverage with CRAM displays (uses contigA instead of ctgA)', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { getByTestId: byId, getAllByTestId, getByText } = render(
-      <JBrowse initialState={state} />,
-    )
-    await waitForElement(() => getByText('Help'))
-    state.session.views[0].setNewView(5, 100)
-    fireEvent.click(
-      await waitForElement(() => byId('htsTrackEntry-volvox_cram_SNP')),
-    )
-    const canvas = await waitForElement(() =>
-      getAllByTestId('prerendered_canvas'),
-    )
-
-    const img = canvas[0].toDataURL()
-    const data = img.replace(/^data:image\/\w+;base64,/, '')
-    const buf = Buffer.from(data, 'base64')
-    // this is needed to do a fuzzy image comparison because
-    // the travis-ci was 2 pixels different for some reason, see PR #710
-    expect(buf).toMatchImageSnapshot({
-      failureThreshold: 0.5,
-      failureThresholdType: 'percent',
-    })
-  })
-  it('test that SNPCoverage with BAM displays (uses contigA instead of ctgA)', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { getByTestId: byId, getAllByTestId, getByText } = render(
-      <JBrowse initialState={state} />,
-    )
-    await waitForElement(() => getByText('Help'))
-    state.session.views[0].setNewView(5, 100)
-    fireEvent.click(
-      await waitForElement(() => byId('htsTrackEntry-volvox_bam_altname_SNP')),
-    )
-    const canvas = await waitForElement(() =>
-      getAllByTestId('prerendered_canvas'),
-    )
-
-    const img = canvas[0].toDataURL()
-    const data = img.replace(/^data:image\/\w+;base64,/, '')
-    const buf = Buffer.from(data, 'base64')
-    // this is needed to do a fuzzy image comparison because
-    // the travis-ci was 2 pixels different for some reason, see PR #710
-    expect(buf).toMatchImageSnapshot({
-      failureThreshold: 0.5,
-      failureThresholdType: 'percent',
-    })
-  })
-  it('SNPCoverage test that BAI with 404 file displays error', async () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { getByTestId: byId, getAllByText } = render(
-      <JBrowse initialState={state} />,
-    )
-    fireEvent.click(
-      await waitForElement(() =>
-        byId('htsTrackEntry-volvox_alignments_bai_nonexist_SNP'),
-      ),
-    )
-    await expect(
-      waitForElement(() =>
-        getAllByText(
-          'HTTP 404 fetching test_data/volvox-sorted.bam.bai.nonexist',
-        ),
-      ),
-    ).resolves.toBeTruthy()
-    expect(spy).toHaveBeenCalled()
-    spy.mockRestore()
-  })
 })

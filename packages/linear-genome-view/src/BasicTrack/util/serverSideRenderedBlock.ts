@@ -184,8 +184,9 @@ function renderBlockData(self: Instance<BlockStateModel>) {
         if (trackAssemblyAliases.includes(self.region.assemblyName))
           matchFound = true
       })
-      if (!matchFound)
+      if (!matchFound) {
         cannotBeRenderedReason = `region assembly (${self.region.assemblyName}) does not match track assemblies (${assemblyNames})`
+      }
     }
     if (!cannotBeRenderedReason)
       cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
@@ -203,7 +204,13 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
     }
     const adapterConfig = getConf(track, 'adapter')
-    const adapterConfigId = jsonStableStringify(adapterConfig)
+    // Only subtracks will have parent tracks with configs
+    // They use parent's adapter config for matching sessionId
+    const parentTrack = getParent(track)
+    const adapterConfigId = parentTrack.configuration
+      ? jsonStableStringify(getConf(parentTrack, 'adapter'))
+      : jsonStableStringify(adapterConfig)
+
     return {
       rendererType,
       rpcManager,
