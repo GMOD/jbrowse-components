@@ -1,13 +1,10 @@
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { BreakpointSplitTrackStateModel } from '..'
+import { LinearComparativeTrack as LCT } from '..'
 
-type BSV = Instance<BreakpointSplitTrackStateModel>
-
-const BreakpointSplitTrack: React.FC<{
-  model: BSV
+const LinearComparativeTrack: React.FC<{
+  model: LCT
   children?: React.ReactNode
 }> = props => {
   const { model, children } = props
@@ -18,12 +15,12 @@ const BreakpointSplitTrack: React.FC<{
     </div>
   )
 }
-BreakpointSplitTrack.propTypes = {
+LinearComparativeTrack.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
   children: PropTypes.element,
 }
 
-BreakpointSplitTrack.defaultProps = {
+LinearComparativeTrack.defaultProps = {
   children: null,
 }
-export default observer(BreakpointSplitTrack)
+export default observer(LinearComparativeTrack)

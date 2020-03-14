@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   readConfObject,
-  getConf,
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
@@ -13,7 +13,7 @@ import { getSession, makeAbortableReaction } from '@gmod/jbrowse-core/util'
 import jsonStableStringify from 'json-stable-stringify'
 import LinearComparativeTrackComponent from './components/LinearComparativeTrack'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
     'LinearComparativeTrack',
@@ -31,7 +31,6 @@ export function configSchemaFactory(pluginManager: any) {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function stateModelFactory(pluginManager: any, configSchema: any) {
   return types
     .compose(
@@ -132,10 +131,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       }
     })
 }
-
-type LinearComparativeTrackModel = ReturnType<typeof stateModelFactory>
-type LinearComparativeTrack = Instance<LinearComparativeTrackModel>
-
 function renderBlockData(self: LinearComparativeTrack) {
   try {
     const { rpcManager } = getSession(self) as any
@@ -223,3 +218,5 @@ async function renderBlockEffect(
 
   return { imageData, data, renderingComponent: rendererType.ReactComponent }
 }
+export type LinearComparativeTrackModel = ReturnType<typeof stateModelFactory>
+export type LinearComparativeTrack = Instance<LinearComparativeTrackModel>

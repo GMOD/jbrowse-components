@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,import/no-extraneous-dependencies */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, Instance, getParent } from 'mobx-state-tree'
 
 import {
@@ -12,7 +12,6 @@ import {
   configSchemaFactory as baseConfigFactory,
   stateModelFactory as baseModelFactory,
 } from '../LinearComparativeTrack'
-
 
 interface Block {
   start: number

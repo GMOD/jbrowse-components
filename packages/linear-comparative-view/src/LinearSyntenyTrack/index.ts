@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,import/no-extraneous-dependencies */
-import { types, Instance, getParent, getSnapshot } from 'mobx-state-tree'
-import jsonStableStringify from 'json-stable-stringify'
-import { getSession, makeAbortableReaction } from '@gmod/jbrowse-core/util'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { types, Instance, getParent } from 'mobx-state-tree'
 import {
   getConf,
   ConfigurationReference,
