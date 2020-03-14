@@ -1,3 +1,4 @@
+import jsonStableStringify from 'json-stable-stringify'
 import {
   ConfigurationReference,
   getConf,
@@ -12,7 +13,13 @@ import blockBasedTrackModel, {
   BlockBasedTrackStateModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
 import { autorun, observable } from 'mobx'
-import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
+import {
+  addDisposer,
+  getSnapshot,
+  getParent,
+  isAlive,
+  types,
+} from 'mobx-state-tree'
 import React from 'react'
 import { getNiceDomain } from '../util'
 import WiggleTrackComponent from './components/WiggleTrackComponent'
@@ -145,11 +152,16 @@ const stateModelFactory = (configSchema: any) =>
         }
         if (autoscaleType === 'local' || autoscaleType === 'localsd') {
           const { dynamicBlocks, bpPerPx } = getContainingView(self)
+          const adapterConfig = getSnapshot(adapter)
+          const parentTrack = getParent(self)
+          const adapterConfigId = parentTrack.configuration
+            ? jsonStableStringify(getConf(parentTrack, 'adapter'))
+            : jsonStableStringify(adapterConfig)
           const r = await rpcManager.call(
-            'statsGathering',
+            adapterConfigId,
             'getMultiRegionStats',
             {
-              adapterConfig: getSnapshot(adapter),
+              adapterConfig,
               adapterType: adapter.type,
               // TODO: Figure this out for multiple assembly names
               assemblyName: getTrackAssemblyNames(self)[0],

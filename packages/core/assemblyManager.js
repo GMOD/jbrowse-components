@@ -88,7 +88,12 @@ export default self => ({
      * gets the list of reference sequence names from the adapter in question, and
      * uses those to build a Map of adapter_ref_name -> canonical_ref_name
      */
-    async addRefNameMapForAdapter(adapterConf, assemblyName, opts = {}) {
+    async addRefNameMapForAdapter(
+      adapterConf,
+      assemblyName,
+      stateGroupName,
+      opts = {},
+    ) {
       const assemblyConfig = self.assemblyData.get(assemblyName)
       let sequenceConfig = {}
       if (assemblyConfig && assemblyConfig.sequence) {
@@ -99,7 +104,7 @@ export default self => ({
       const refNameMap = observable.map({})
 
       const refNames = await self.rpcManager.call(
-        adapterConfigId,
+        stateGroupName,
         'getRefNames',
         {
           sessionId: assemblyName,
@@ -134,10 +139,20 @@ export default self => ({
     /**
      * get Map of canonical-name -> adapter-specific-name
      */
-    async getRefNameMapForAdapter(adapterConf, assemblyName, opts = {}) {
+    async getRefNameMapForAdapter(
+      adapterConf,
+      assemblyName,
+      stateGroupName,
+      opts = {},
+    ) {
       const adapterConfigId = jsonStableStringify(adapterConf)
       if (!self.refNameMaps.has(adapterConfigId)) {
-        return self.addRefNameMapForAdapter(adapterConf, assemblyName, opts)
+        return self.addRefNameMapForAdapter(
+          adapterConf,
+          assemblyName,
+          stateGroupName,
+          opts,
+        )
       }
       return self.refNameMaps.get(adapterConfigId)
     },

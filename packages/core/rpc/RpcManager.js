@@ -97,7 +97,8 @@ class RpcManager {
       const refNameMap = await this.getRefNameMapForAdapter(
         adapterConfig,
         assemblyName,
-        { signal },
+        stateGroupName,
+        { signal, stateGroupName },
       )
 
       if (region) {
