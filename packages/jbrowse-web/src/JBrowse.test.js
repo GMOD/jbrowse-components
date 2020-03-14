@@ -14,7 +14,6 @@ import rangeParser from 'range-parser'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import JBrowse from './JBrowse'
 import config from '../test_data/config_integration_test.json'
-import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
 import JBrowseRootModel from './rootModel'
 
 expect.extend({ toMatchImageSnapshot })
@@ -525,25 +524,6 @@ describe('circular views', () => {
       waitForElement(() => getByTestId('rpc-rendered-circular-chord-track')),
     ).resolves.toBeTruthy()
   })
-})
-
-describe('breakpoint split view', () => {
-  it('open a split view', async () => {
-    console.warn = jest.fn()
-    const state = JBrowseRootModel.create({ jbrowse: breakpointConfig })
-    const { findByTestId, queryAllByTestId } = render(
-      <JBrowse initialState={state} />,
-    )
-    await wait(() => {
-      const r = queryAllByTestId('r1')
-      expect(r.length).toBe(2)
-    }) // the breakpoint could be partially loaded so explicitly wait for two items
-    expect(
-      await findByTestId('pacbio_hg002_breakpoints-loaded'),
-    ).toMatchSnapshot()
-
-    expect(await findByTestId('pacbio_vcf-loaded')).toMatchSnapshot()
-  }, 10000)
 })
 
 describe('Fatal error', () => {
