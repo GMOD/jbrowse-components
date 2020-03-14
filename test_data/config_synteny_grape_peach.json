@@ -28,8 +28,15 @@
               "id": "test1_1",
               "offsetPx": 0,
               "bpPerPx": 1000,
-              "displayRegionsFromAssemblyName": "peach",
-              "reversed": false,
+              "displayedRegions": [
+                {
+                  "refName": "Pp01",
+                  "assemblyName": "peach",
+                  "start": 0,
+                  "end": 100000000
+                }
+              ],
+              "horizontallyFlipped": false,
               "tracks": [
                 {
                   "type": "BasicTrack",
@@ -51,8 +58,15 @@
               "id": "test1_2",
               "offsetPx": 0,
               "bpPerPx": 1000,
-              "displayRegionsFromAssemblyName": "grape",
-              "reversed": false,
+              "horizontallyFlipped": false,
+              "displayedRegions": [
+                {
+                  "refName": "chr1",
+                  "assemblyName": "grape",
+                  "start": 0,
+                  "end": 100000000
+                }
+              ],
               "tracks": [
                 {
                   "type": "BasicTrack",
