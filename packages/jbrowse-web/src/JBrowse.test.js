@@ -216,7 +216,7 @@ describe('valid file tests', () => {
 
 describe('some error state', () => {
   it('test that BAI with 404 file displays error', async () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    console.error = jest.fn()
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
       <JBrowse initialState={state} />,
@@ -233,8 +233,8 @@ describe('some error state', () => {
         ),
       ),
     ).resolves.toBeTruthy()
-    expect(spy).toHaveBeenCalled()
-    spy.mockRestore()
+
+    expect(console.error).toHaveBeenCalled()
   })
 })
 
@@ -411,7 +411,7 @@ describe('alignments track', () => {
     )
 
     /* Since alignments track has subtracks, need to look for both
-    prerendered canvases. PrerenderedCanvas data-test id now appends 
+    prerendered canvases. PrerenderedCanvas data-test id now appends
     rendererType so both can be found and not stopped prematurely */
     const pileupCanvas = await waitForElement(() =>
       getAllByTestId('prerendered_canvas_PileupRenderer'),
@@ -490,7 +490,7 @@ describe('bigwig', () => {
 
 describe('circular views', () => {
   it('open a circular view', async () => {
-    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    console.warn = jest.fn()
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getByText, getAllByTestId } = render(
       <JBrowse initialState={state} />,
@@ -524,14 +524,12 @@ describe('circular views', () => {
     await expect(
       waitForElement(() => getByTestId('rpc-rendered-circular-chord-track')),
     ).resolves.toBeTruthy()
-    expect(spy).toHaveBeenCalled()
-    spy.mockRestore()
   })
 })
 
 describe('breakpoint split view', () => {
   it('open a split view', async () => {
-    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    console.warn = jest.fn()
     const state = JBrowseRootModel.create({ jbrowse: breakpointConfig })
     const { findByTestId, queryAllByTestId } = render(
       <JBrowse initialState={state} />,
@@ -545,19 +543,15 @@ describe('breakpoint split view', () => {
     ).toMatchSnapshot()
 
     expect(await findByTestId('pacbio_vcf-loaded')).toMatchSnapshot()
-    spy.mockRestore()
   }, 10000)
 })
 
 describe('Fatal error', () => {
   it('occurs when given an invalid snapshot', () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
     const { getByText } = render(
       <JBrowse configSnapshot={{ configuration: [] }} />,
     )
     expect(getByText('Fatal error')).toBeTruthy()
-    expect(spy).toHaveBeenCalled()
-    spy.mockRestore()
   })
   it('occurs when multiple assemblies have the same name', async () => {
     const newConfig = JSON.parse(JSON.stringify(config))
@@ -565,24 +559,19 @@ describe('Fatal error', () => {
       name: 'volvox',
       aliases: [],
     })
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
     const { findByText } = render(<JBrowse configSnapshot={newConfig} />)
     expect(
       await findByText('Found two assemblies with the same name: volvox', {
         exact: false,
       }),
     ).toBeTruthy()
-    expect(spy).toHaveBeenCalled()
-    spy.mockRestore()
   })
 })
 
 test('404 sequence file', async () => {
-  const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  console.error = jest.fn()
   const { findAllByText } = render(
     <JBrowse config={{ uri: 'test_data/config_chrom_sizes_test.json' }} />,
   )
   await findAllByText(/HTTP 404/)
-  expect(spy).toHaveBeenCalled()
-  spy.mockRestore()
 })
