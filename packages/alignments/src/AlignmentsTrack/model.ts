@@ -49,7 +49,6 @@ export default (pluginManager: any, configSchema: any) => {
           type: 'SNPCoverageTrack',
           name: `${getConf(self, 'name')} snpcoverage`,
           trackId: `${self.configuration.trackId}_snpcoverage`,
-          height: 10,
           adapter: {
             type: 'SNPCoverageAdapter',
             subadapter: getConf(self, 'adapter'),
