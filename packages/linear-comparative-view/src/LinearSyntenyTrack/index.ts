@@ -76,7 +76,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         // TODO possibly enriches with the adapters from associated trackIds
         return {
           name: self.configuration.adapter.type,
-          assemblyNames: ['peach', 'grape'],
+          assemblyNames: getConf(self, 'assemblyNames'),
           ...getConf(self, 'adapter'),
         }
       },

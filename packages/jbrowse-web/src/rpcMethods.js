@@ -249,6 +249,7 @@ export async function comparativeRender(
 
   const result = await RendererType.renderInWorker({
     ...renderProps,
+    pluginManager,
     sessionId,
     dataAdapter,
     views,

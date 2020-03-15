@@ -2,7 +2,6 @@
 import { types, Instance, getParent } from 'mobx-state-tree'
 
 import {
-  readConfObject,
   getConf,
   ConfigurationReference,
   ConfigurationSchema,
@@ -66,7 +65,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       get renderProps() {
         return {
           trackModel: self,
-          config: readConfObject(self.configuration, 'renderer'),
+          config: getConf(self, 'renderer'),
           linkedTrack: getConf(self, 'linkedTrack'),
           middle: getConf(self, 'middle'),
           height: this.effectiveHeight,
@@ -80,7 +79,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         // TODO possibly enriches with the adapters from associated trackIds
         return {
           name: self.configuration.adapter.type,
-          assemblyNames: ['peach', 'grape'],
+          assemblyNames: getConf(self, 'assemblyNames'),
           ...getConf(self, 'adapter'),
         }
       },

@@ -67,7 +67,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
             renderBlockEffect as any,
             {
               name: `${self.type} ${self.id} rendering`,
-              delay: 300,
+              delay: 1000,
               fireImmediately: true,
             },
             self.setLoading,
@@ -152,7 +152,7 @@ function renderBlockData(self: LinearComparativeTrack) {
       rendererType,
       rpcManager,
       renderProps,
-      trackError: '', // track.error,
+      trackError: track.error,
       renderArgs: {
         adapterType: self.adapterType.name,
         adapterConfig,
@@ -182,8 +182,6 @@ function renderBlockData(self: LinearComparativeTrack) {
             }),
           }
         }),
-        width: 100,
-        height: 100,
         renderProps,
         sessionId: adapterConfigId,
         timeout: 1000000, // 10000,

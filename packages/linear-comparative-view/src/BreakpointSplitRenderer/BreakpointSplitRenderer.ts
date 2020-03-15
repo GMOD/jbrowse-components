@@ -2,6 +2,7 @@
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { stateModelFactory } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import {
   createCanvas,
   createImageBitmap,
@@ -31,6 +32,7 @@ interface BreakpointSplitRenderProps {
   horizontallyFlipped: boolean
   highResolutionScaling: number
   linkedTrack: string
+  pluginManager: any
   views: ReducedLinearGenomeView[]
 }
 
@@ -58,7 +60,10 @@ const strcmp = new Intl.Collator(undefined, {
   sensitivity: 'base',
 }).compare
 
-function instantiateTrackLayoutFeatures(views: ReducedLinearGenomeView[]) {
+function instantiateTrackLayoutFeatures(
+  views: ReducedLinearGenomeView[],
+  pluginManager: any,
+) {
   views.forEach(view => {
     view.tracks.forEach(track => {
       if (track.layoutFeatures) {
@@ -66,6 +71,11 @@ function instantiateTrackLayoutFeatures(views: ReducedLinearGenomeView[]) {
         track.layoutFeatures = new Map(track.layoutFeatures)
       }
     })
+  })
+  return views.map(view => {
+    console.log(view)
+    // view.tracks = []
+    return stateModelFactory(pluginManager).create(view)
   })
 }
 
@@ -143,8 +153,8 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
       highResolutionScaling: scale = 1,
       width,
       height,
-      views,
       middle,
+      pluginManager,
       linkedTrack,
       config,
     } = props
@@ -156,9 +166,9 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
     ctx.strokeStyle = readConfObject(config, 'color')
     ctx.fillStyle = readConfObject(config, 'color')
     const drawMode = readConfObject(config, 'drawMode')
-    instantiateTrackLayoutFeatures(views)
+    const views = instantiateTrackLayoutFeatures(props.views, pluginManager)
+    console.log(views)
 
-    instantiateTrackLayoutFeatures(views)
     for (const chunk of generateLayoutMatches(views, trackId, middle)) {
       // we follow a path in the list of chunks, not from top to bottom, just in series
       // following x1,y1 -> x2,y2
