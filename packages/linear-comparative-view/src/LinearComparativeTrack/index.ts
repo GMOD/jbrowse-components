@@ -178,6 +178,7 @@ function renderBlockData(self: LinearComparativeTrack) {
                 layoutFeatures: Array.from(t.layoutFeatures.entries()),
                 height: t.height,
                 scrollTop: t.scrollTop,
+                skip: t.SNPCoverageTrack ? t.SNPCoverageTrack.height + 5 : 0,
               }
             }),
           }

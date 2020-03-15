@@ -1,15 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  types,
-  getParent,
-  isAlive,
-  addDisposer,
-  cast,
-  Instance,
-  getSnapshot,
-} from 'mobx-state-tree'
+import { types, getParent, cast, Instance, getSnapshot } from 'mobx-state-tree'
 import { Component } from 'react'
-import { reaction } from 'mobx'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import jsonStableStringify from 'json-stable-stringify'
 import { Region } from '@gmod/jbrowse-core/mst-types'
@@ -17,7 +8,6 @@ import { Region } from '@gmod/jbrowse-core/mst-types'
 import {
   assembleLocString,
   checkAbortSignal,
-  isAbortException,
   getSession,
   makeAbortableReaction,
 } from '@gmod/jbrowse-core/util'

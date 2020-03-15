@@ -20,6 +20,7 @@ export interface ReducedLinearGenomeView {
     height: number
     configuration: string
     layoutFeatures: [string, LayoutRecord][]
+    skip: number
   }[]
 }
 
@@ -83,7 +84,8 @@ export function overlayYPos(
   const track = views[level].tracks.find(t => t.configuration === trackConfigId)
   const ypos = track
     ? clamp(c[TOP] - (track.scrollTop || 0), 0, track.height) +
-      heightFromSpecificLevel(views, trackConfigId, level)
+      heightFromSpecificLevel(views, trackConfigId, level) +
+      track.skip
     : 0
 
   return ypos + (cond ? cheight(c) : 0)

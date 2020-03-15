@@ -1,8 +1,8 @@
-/* eslint-disable  no-continue */
+/* eslint-disable  no-continue,@typescript-eslint/no-explicit-any */
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { stateModelFactory } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+// import { stateModelFactory } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import {
   createCanvas,
   createImageBitmap,
@@ -25,7 +25,7 @@ interface LayoutMatch {
   refName: string
 }
 interface BreakpointSplitRenderProps {
-  config: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  config: any
   height: number
   width: number
   middle: boolean
@@ -37,7 +37,7 @@ interface BreakpointSplitRenderProps {
 }
 
 interface BreakpointSplitRenderingProps extends BreakpointSplitRenderProps {
-  imageData: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  imageData: any
 }
 
 interface BreakpointSplitImageData {
@@ -72,11 +72,13 @@ function instantiateTrackLayoutFeatures(
       }
     })
   })
-  return views.map(view => {
-    console.log(view)
-    // view.tracks = []
-    return stateModelFactory(pluginManager).create(view)
-  })
+  return views
+  // return views.map(view => {
+  //   console.log(view)
+  //   // view.tracks = []
+  //   console.log(view.tracks)
+  //   return stateModelFactory(pluginManager).create(view)
+  // })
 }
 
 function* generateLayoutMatches(
@@ -167,7 +169,6 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
     ctx.fillStyle = readConfObject(config, 'color')
     const drawMode = readConfObject(config, 'drawMode')
     const views = instantiateTrackLayoutFeatures(props.views, pluginManager)
-    console.log(views)
 
     for (const chunk of generateLayoutMatches(views, trackId, middle)) {
       // we follow a path in the list of chunks, not from top to bottom, just in series
