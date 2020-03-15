@@ -532,11 +532,7 @@ export function stateModelFactory(pluginManager: any) {
         },
 
         get staticBlocks() {
-          const ret = calculateStaticBlocks(
-            cast(self),
-            self.horizontallyFlipped,
-            1,
-          )
+          const ret = calculateStaticBlocks(cast(self), 1)
           const sret = JSON.stringify(ret)
           if (stringifiedCurrentlyCalculatedStaticBlocks !== sret) {
             currentlyCalculatedStaticBlocks = ret
@@ -546,7 +542,7 @@ export function stateModelFactory(pluginManager: any) {
         },
 
         get dynamicBlocks() {
-          return calculateDynamicBlocks(cast(self), self.horizontallyFlipped)
+          return calculateDynamicBlocks(cast(self))
         },
       }
     })
