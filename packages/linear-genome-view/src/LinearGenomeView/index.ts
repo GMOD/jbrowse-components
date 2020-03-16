@@ -251,7 +251,12 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       horizontallyFlip() {
-        self.displayedRegions = cast(self.displayedRegions.slice().reverse())
+        self.displayedRegions = cast(
+          self.displayedRegions
+            .slice()
+            .reverse()
+            .map(region => ({ ...region, reversed: !region.reversed })),
+        )
         self.offsetPx = self.totalBp / self.bpPerPx - self.offsetPx - self.width
       },
 
@@ -430,7 +435,7 @@ export function stateModelFactory(pluginManager: any) {
           bpSoFar += end.offset - start.offset
         } else {
           const s = self.displayedRegions[start.index]
-          bpSoFar += s.end - start.offset
+          bpSoFar += (s.reversed ? s.start : s.end) - start.offset
           if (end.index - start.index >= 2) {
             for (let i = start.index + 1; i < end.index; i += 1) {
               bpSoFar +=
@@ -504,13 +509,12 @@ export function stateModelFactory(pluginManager: any) {
       return {
         get menuOptions(): LGVMenuOption[] {
           return [
-            // {
-            //   title: 'Horizontally flip',
-            //   key: 'flip',
-            //   callback: self.horizontallyFlip,
-            //   checked: self.horizontallyFlipped,
-            //   isCheckbox: true,
-            // },
+            {
+              title: 'Horizontally flip',
+              key: 'flip',
+              callback: self.horizontallyFlip,
+              isCheckbox: false,
+            },
             {
               title: 'Show all regions',
               key: 'showall',
