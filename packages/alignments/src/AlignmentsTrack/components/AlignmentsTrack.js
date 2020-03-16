@@ -1,5 +1,5 @@
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { YScaleBar } from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
 import CenterLine from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView/components/CenterLine'
 import Menu from '@material-ui/core/Menu'
@@ -49,6 +49,7 @@ function AlignmentsTrackComponent(props) {
       mouseY: e.clientY - 4,
     }))
   }
+  const ref = useRef()
 
   const handleClose = () => {
     setState(initialState)
@@ -65,7 +66,8 @@ function AlignmentsTrackComponent(props) {
   return (
     <div
       onContextMenu={handleRightClick}
-      style={{ position: 'relative', height }}
+      style={{ position: 'relative', height, width: '100%' }}
+      ref={ref}
     >
       <AlignmentsBlockBasedTrack
         {...props}
@@ -74,8 +76,12 @@ function AlignmentsTrackComponent(props) {
         showPileup={showPileup}
         showSNPCoverage={showCoverage}
       >
-        {showCenterLine && centerLinePosition > 0 && (
-          <CenterLine model={model} height={height}></CenterLine>
+        {showCenterLine && centerLinePosition > 0 && ref.current && (
+          <CenterLine
+            model={model}
+            height={height}
+            startingPosition={ref.current.clientWidth / 2}
+          ></CenterLine>
         )}
         {showScalebar && showCoverage ? (
           <YScaleBar model={SNPCoverageTrack} />

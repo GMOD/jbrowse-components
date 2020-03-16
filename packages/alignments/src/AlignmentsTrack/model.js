@@ -106,7 +106,7 @@ export default (pluginManager, configSchema) => {
         },
         calculateCenterLine() {
           const LGVModel = getParent(getParent(self))
-          const centerLinePosition = LGVModel.displayedRegionsInOrder.length
+          const centerLinePosition = LGVModel.displayedRegions.length
             ? LGVModel.pxToBp(LGVModel.viewingRegionWidth / 2).offset
             : 0
           return centerLinePosition

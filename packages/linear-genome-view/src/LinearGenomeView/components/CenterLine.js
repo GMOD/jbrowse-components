@@ -1,65 +1,48 @@
 import { makeStyles } from '@material-ui/core/styles'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useRef, useEffect, useState } from 'react'
-import { getParent } from 'mobx-state-tree'
+import React, { useRef } from 'react'
 
-const useStyles = makeStyles(theme => ({
-  centerLine: {
-    borderLeft: '2px dashed #fff',
-    borderRight: '2px dashed #fff',
-    color: '#fff',
-    backgroundColor: '#fff',
-    position: 'absolute',
-    zIndex: 20000,
-  },
+const useStyles = makeStyles(() => ({
   centerLineContainer: {
-    background: theme.palette.grey[600],
-    width: '100%',
+    background: 'transparent',
     height: '100%',
+    width: 1,
+    zIndex: 1,
+    position: 'absolute',
   },
 }))
 
-function CenterLine({ model, height }) {
+// TODO: width must be dependent on zoom level, create a second container
+// and line if zoomed in enough where bp length is larger than 1 px
+// from | to | | to encapsulate the whole bp it is showing. try to make it dotted
+function CenterLine({ model, height, startingPosition }) {
   const { centerLinePosition } = model
   const ref = useRef()
+  const svgRef = useRef()
   const classes = useStyles()
 
-  console.log(centerLinePosition)
   return (
     <div
       data-testid="centerline_container"
       className={classes.centerLineContainer}
       role="presentation"
       ref={ref}
-      style={{ height }}
+      value={centerLinePosition}
+      style={{ left: `${startingPosition}px` }}
     >
-      {/* <hr
-        width={1}
-        height={height}
-        style={{
-          color: 'black',
-          border: 'dashed black',
-          transform: 'rotate(90deg)',
-          zIndex: 20000,
-        }}
-      /> */}
-      <svg
-        role="presentation"
-        // className={classes.centerLine}
-        ref={ref}
-        width={'100%'}
-        height={height}
-        style={{ zIndex: 20000 }}
-      >
+      <svg role="presentation" ref={svgRef} width={'100%'} height={height}>
         <rect
-          className={classes.centerLine}
-          x={centerLinePosition}
+          x={0}
           y={0}
           width={1}
-          height={height}
+          height={height - 10}
+          fill="black"
+          strokeWidth={3}
+          strokeDasharray="1, 6"
         />
       </svg>
+      {`center is at: ${centerLinePosition}bp`}
     </div>
   )
 }
@@ -67,6 +50,7 @@ function CenterLine({ model, height }) {
 CenterLine.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
   height: ReactPropTypes.number.isRequired,
+  startingPosition: ReactPropTypes.number.isRequired,
 }
 
 CenterLine.defaultProps = {
