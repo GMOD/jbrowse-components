@@ -118,7 +118,7 @@ function Ruler({
   start: number
   end: number
   bpPerPx: number
-  reversed: boolean
+  reversed?: boolean
   major: boolean
   minor: boolean
 }) {

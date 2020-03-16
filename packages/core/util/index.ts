@@ -255,7 +255,7 @@ function roundToNearestPointOne(num: number): number {
  */
 export function bpToPx(
   bp: number,
-  region: { start: number; end: number; reversed: boolean },
+  region: { start: number; end: number; reversed?: boolean },
   bpPerPx: number,
 ): number {
   if (region.reversed) {

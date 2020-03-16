@@ -88,7 +88,6 @@ class Lollipop extends Component {
   }
 
   static defaultProps = {
-
     selectedFeatureId: undefined,
 
     onFeatureMouseDown: undefined,

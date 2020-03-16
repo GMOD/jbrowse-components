@@ -72,7 +72,7 @@ export default function calculateBlocks(self: LGV, extra = 0) {
         refName,
         start,
         end,
-        reversed: Boolean(reversed),
+        reversed,
         offsetPx: (regionBpOffset + blockNum * blockSizeBp) / bpPerPx,
         parentRegion: region,
         widthPx,
