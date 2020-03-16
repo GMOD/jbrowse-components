@@ -141,7 +141,6 @@
                   "assemblyName": "hg19"
                 }
               ],
-              "horizontallyFlipped": false,
               "tracks": [
                 {
                   "type": "PileupTrack",
@@ -183,7 +182,6 @@
                   "assemblyName": "hg19"
                 }
               ],
-              "horizontallyFlipped": false,
               "tracks": [
                 {
                   "type": "PileupTrack",

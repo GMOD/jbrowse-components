@@ -37,21 +37,15 @@ Subfeatures.propTypes = {
 
 Subfeatures.defaultProps = {
   selected: false,
-  horizontallyFlipped: false,
+  reversed: false,
 }
 
-Subfeatures.layOut = ({
-  layout,
-  feature,
-  bpPerPx,
-  horizontallyFlipped,
-  config,
-}) => {
+Subfeatures.layOut = ({ layout, feature, bpPerPx, reversed, config }) => {
   const subLayout = layOutFeature({
     layout,
     feature,
     bpPerPx,
-    horizontallyFlipped,
+    reversed,
     config,
   })
   const displayMode = readConfObject(config, 'displayMode')
@@ -66,7 +60,7 @@ Subfeatures.layOut = ({
         layout: subLayout,
         feature: subfeature,
         bpPerPx,
-        horizontallyFlipped,
+        reversed,
         config,
       })
       subSubLayout.move(0, topOffset)

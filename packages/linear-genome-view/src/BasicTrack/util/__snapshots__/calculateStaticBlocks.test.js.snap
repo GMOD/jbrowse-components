@@ -326,7 +326,50 @@ Array [
 ]
 `;
 
-exports[`horizontally flipped displayed regions with elided region 1`] = `
+exports[`reverse block calculation 1 1`] = `
+BlockSet {
+  "blocks": Array [
+    ContentBlock {
+      "assemblyName": undefined,
+      "end": 10000,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgA:9201-10000-reversed",
+      "offsetPx": 0,
+      "parentRegion": Object {
+        "end": 10000,
+        "refName": "ctgA",
+        "reversed": true,
+        "start": 0,
+      },
+      "refName": "ctgA",
+      "reversed": true,
+      "start": 9200,
+      "widthPx": 800,
+    },
+    ContentBlock {
+      "assemblyName": undefined,
+      "end": 9200,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgA:8401-9200-reversed",
+      "offsetPx": 800,
+      "parentRegion": Object {
+        "end": 10000,
+        "refName": "ctgA",
+        "reversed": true,
+        "start": 0,
+      },
+      "refName": "ctgA",
+      "reversed": true,
+      "start": 8400,
+      "widthPx": 800,
+    },
+  ],
+}
+`;
+
+exports[`reversed displayed regions with elided region 1`] = `
 BlockSet {
   "blocks": Array [
     ElidedBlock {
@@ -388,7 +431,7 @@ BlockSet {
 }
 `;
 
-exports[`horizontally flipped displayed regions without elided region 1`] = `
+exports[`reversed displayed regions without elided region 1`] = `
 BlockSet {
   "blocks": Array [
     ContentBlock {
@@ -426,49 +469,6 @@ BlockSet {
       "reversed": true,
       "start": 500,
       "widthPx": 100,
-    },
-  ],
-}
-`;
-
-exports[`reverse block calculation 1 1`] = `
-BlockSet {
-  "blocks": Array [
-    ContentBlock {
-      "assemblyName": undefined,
-      "end": 10000,
-      "isLeftEndOfDisplayedRegion": true,
-      "isRightEndOfDisplayedRegion": false,
-      "key": "ctgA:9201-10000-reversed",
-      "offsetPx": 0,
-      "parentRegion": Object {
-        "end": 10000,
-        "refName": "ctgA",
-        "reversed": true,
-        "start": 0,
-      },
-      "refName": "ctgA",
-      "reversed": true,
-      "start": 9200,
-      "widthPx": 800,
-    },
-    ContentBlock {
-      "assemblyName": undefined,
-      "end": 9200,
-      "isLeftEndOfDisplayedRegion": false,
-      "isRightEndOfDisplayedRegion": false,
-      "key": "ctgA:8401-9200-reversed",
-      "offsetPx": 800,
-      "parentRegion": Object {
-        "end": 10000,
-        "refName": "ctgA",
-        "reversed": true,
-        "start": 0,
-      },
-      "refName": "ctgA",
-      "reversed": true,
-      "start": 8400,
-      "widthPx": 800,
     },
   ],
 }

@@ -6,15 +6,7 @@ import WiggleBaseRenderer from '../WiggleBaseRenderer'
 
 export default class XYPlotRenderer extends WiggleBaseRenderer {
   draw(ctx, props) {
-    const {
-      features,
-      region,
-      bpPerPx,
-      scaleOpts,
-      height,
-      config,
-      horizontallyFlipped,
-    } = props
+    const { features, region, bpPerPx, scaleOpts, height, config } = props
 
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
@@ -37,12 +29,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     }
 
     for (const feature of features.values()) {
-      const [leftPx, rightPx] = featureSpanPx(
-        feature,
-        region,
-        bpPerPx,
-        horizontallyFlipped,
-      )
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       let score = feature.get('score')
       const maxr = feature.get('maxScore')
       const minr = feature.get('minScore')

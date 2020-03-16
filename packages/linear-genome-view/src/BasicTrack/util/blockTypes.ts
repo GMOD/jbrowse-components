@@ -100,6 +100,7 @@ export class BaseBlock {
       start: this.start,
       end: this.end,
       assemblyName: this.assemblyName,
+      reversed: this.reversed,
     }
   }
 }

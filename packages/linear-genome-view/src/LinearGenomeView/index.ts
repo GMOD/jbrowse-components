@@ -80,7 +80,6 @@ export function stateModelFactory(pluginManager: any) {
       bpPerPx: 1,
       displayedRegions: types.array(Region),
       displayName: types.maybe(types.string),
-      horizontallyFlipped: false,
       // we use an array for the tracks because the tracks are displayed in a specific
       // order that we need to keep.
       tracks: types.array(
@@ -157,7 +156,6 @@ export function stateModelFactory(pluginManager: any) {
             getSession(self),
             'highResolutionScaling',
           ),
-          horizontallyFlipped: self.horizontallyFlipped,
         }
       },
       get assemblyNames() {
@@ -174,9 +172,7 @@ export function stateModelFactory(pluginManager: any) {
 
         const index = self.displayedRegions.findIndex(r => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
-            offsetBp += self.horizontallyFlipped
-              ? r.end - coord
-              : coord - r.start
+            offsetBp += r.reversed ? r.end - coord : coord - r.start
             return true
           }
           offsetBp += r.end - r.start
@@ -255,7 +251,6 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       horizontallyFlip() {
-        self.horizontallyFlipped = !self.horizontallyFlipped
         self.displayedRegions = cast(self.displayedRegions.slice().reverse())
         self.offsetPx = self.totalBp / self.bpPerPx - self.offsetPx - self.width
       },
@@ -509,13 +504,13 @@ export function stateModelFactory(pluginManager: any) {
       return {
         get menuOptions(): LGVMenuOption[] {
           return [
-            {
-              title: 'Horizontally flip',
-              key: 'flip',
-              callback: self.horizontallyFlip,
-              checked: self.horizontallyFlipped,
-              isCheckbox: true,
-            },
+            // {
+            //   title: 'Horizontally flip',
+            //   key: 'flip',
+            //   callback: self.horizontallyFlip,
+            //   checked: self.horizontallyFlipped,
+            //   isCheckbox: true,
+            // },
             {
               title: 'Show all regions',
               key: 'showall',

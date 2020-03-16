@@ -162,7 +162,7 @@ describe('reverse block calculation', () => {
   })
 })
 
-describe('horizontally flipped displayed regions', () => {
+describe('reversed displayed regions', () => {
   test('without elided region', () => {
     const blocks = calculateBlocks(
       {

@@ -15,7 +15,6 @@ test('one', () => {
       end: 200,
       offsetPx: 0,
       refName: 'ctgA',
-      reversed: false,
       start: 0,
       parentRegion: ctgA,
       isLeftEndOfDisplayedRegion: true,
@@ -84,7 +83,6 @@ test('four', () => {
       end: 250,
       offsetPx: 0,
       refName: 'ctgA',
-      reversed: false,
       start: 0,
       parentRegion: ctgA,
       isLeftEndOfDisplayedRegion: true,
@@ -99,7 +97,7 @@ test('five', () => {
     calculateVisibleRegions({
       offsetPx: 521,
       viewingRegionWidth: 927,
-      displayedRegions: [ctgA],
+      displayedRegions: [{ ...ctgA, reversed: false }],
       bpPerPx: 0.05,
     }).getBlocks(),
   ).toEqual([
@@ -109,7 +107,7 @@ test('five', () => {
       refName: 'ctgA',
       reversed: false,
       start: 26.05,
-      parentRegion: ctgA,
+      parentRegion: { ...ctgA, reversed: false },
       isLeftEndOfDisplayedRegion: false,
       isRightEndOfDisplayedRegion: false,
       key: 'ctgA:27.05-72.4',

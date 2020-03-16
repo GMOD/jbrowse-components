@@ -14,20 +14,23 @@ const interRegionPaddingWidth = 2
 type LGV = Instance<LinearGenomeViewStateModel>
 
 /**
- * returns an array of 'dynamic blocks', which are blocks representing only the regions that
- * are visible in the view right now. these are mostly used by tracks for which static blocks
+ * returns a BlockSet of which the `blocks` attribute is an array of 'dynamic
+ * blocks', which are blocks representing only the regions that are visible in
+ * the view right now. these are mostly used by tracks for which static blocks
  * are not feasible.
  *
- * each region is a plain JS object like:
- *   { refName, startBp, endBp, offsetPx, horizontallyFlipped? }
+ * each block is a plain JS object like:
+ *   `{ refName, start, end, offsetPx, reversed? }`
  *
- * startBp is always less than endBp, but if horizontallyFlipped is true, startBp will be on the
- * right side of the visible region.
- * offsetPx is the number of pixels from the left edge of the view to the left edge of the region
+ * start and end are in bp, and start is always less than end, but if reversed
+ * is true, startBp will be on the right side of the visible region.
  *
- * NOTE: startBp, endBp, and offsetPx may all be fractional!
+ * offsetPx is the number of pixels from the left edge of the view to the left
+ * edge of the region
  *
- * @returns {Array} of ` { refName, startBp, endBp, offsetPx, horizontallyFlipped? }`
+ * NOTE: start, end, and offsetPx may all be fractional!
+ *
+ * @returns {BlockSet} of ` { refName, startBp, end, offset, reversed? }`
  */
 export default function calculateDynamicBlocks(model: LGV) {
   const {
@@ -89,7 +92,7 @@ export default function calculateDynamicBlocks(model: LGV) {
         refName,
         start,
         end,
-        reversed: Boolean(reversed),
+        reversed,
         offsetPx: blockOffsetPx,
         parentRegion: region,
         widthPx,
