@@ -59,9 +59,4 @@ CenterLine.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
-CenterLine.defaultProps = {
-  children: undefined,
-  heightOffset: 0,
-}
-
 export default observer(CenterLine)
