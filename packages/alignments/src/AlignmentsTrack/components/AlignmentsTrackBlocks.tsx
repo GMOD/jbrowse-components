@@ -47,7 +47,7 @@ function AlignmentsTrackBlocks({
       )}
       <ResizeHandle
         onDrag={delta => {
-          if (SNPCoverageTrack && showSNPCoverage) {
+          if (SNPCoverageTrack) {
             SNPCoverageTrack.setHeight(SNPCoverageTrack.height + delta)
             return delta
           }
