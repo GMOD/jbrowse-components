@@ -5,6 +5,7 @@ import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Icon from '@material-ui/core/Icon'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
+import { useTheme } from '@material-ui/core/styles'
 import NestedMenuItem from '@gmod/jbrowse-core/ui/NestedMenuItem'
 import AlignmentsBlockBasedTrack from './AlignmentsBlockBasedTrack'
 
@@ -36,7 +37,6 @@ function AlignmentsTrackComponent(props) {
 
   // Set up context menu
   const [state, setState] = useState(initialState)
-  const zIndex = 10000 // zIndex matches tooltip zindex to bring to front
   const handleRightClick = e => {
     e.preventDefault()
     setState(() => ({
@@ -45,6 +45,7 @@ function AlignmentsTrackComponent(props) {
     }))
   }
   const ref = useRef()
+  const zIndex = useTheme().zIndex.tooltip // zIndex matches tooltip zindex to bring to front
 
   const handleClose = () => {
     setState(initialState)
