@@ -21,6 +21,7 @@
     "@gmod/jbrowse-plugin-circular-view": "^2.0.0",
     "@gmod/jbrowse-plugin-config": "^2.0.0",
     "@gmod/jbrowse-plugin-data-management": "^2.0.0",
+    "@gmod/jbrowse-plugin-dotplot-view": "^2.0.0",
     "@gmod/jbrowse-plugin-filtering": "^2.0.0",
     "@gmod/jbrowse-plugin-gff3tabix": "^2.0.0",
     "@gmod/jbrowse-plugin-jbrowse1": "^2.0.0",

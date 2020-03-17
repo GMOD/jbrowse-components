@@ -1,0 +1,258 @@
+{
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    },
+    "updateUrl": true
+  },
+  "assemblies": [
+    {
+      "name": "hg19",
+      "aliases": [
+        "GRCh37"
+      ]
+    }
+  ],
+  "tracks": [
+    {
+      "type": "StructuralVariantChordTrack",
+      "trackId": "sv_chord_track",
+      "name": "human chord test",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+          }
+        }
+      },
+      "renderer": {
+        "type": "StructuralVariantChordRenderer"
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "pacbio_vcf",
+      "name": "HG002.hs37d5.bnds",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "PacBio",
+        "VCF"
+      ],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "test_data/pacbio_chr3_chr6.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/pacbio_chr3_chr6.vcf.gz.tbi"
+          }
+        }
+      },
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer"
+        }
+      }
+    },
+    {
+      "type": "BreakpointSplitTrack",
+      "trackId": "pacbio_hg002_breakpoint_track",
+      "middle": true,
+      "linkedTrack": "pacbio_hg002_breakpoints",
+      "name": "HG002.hs37d5.11kb breakpoints",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "PacBio",
+        "BAM"
+      ],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "test_data/pacbio_chr3_chr6.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/pacbio_chr3_chr6.bam.bai"
+          }
+        }
+      },
+      "renderer": {
+        "type": "BreakpointSplitRenderer"
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "pacbio_hg002_breakpoints",
+      "name": "HG002.hs37d5.11kb",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "PacBio",
+        "BAM"
+      ],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "test_data/pacbio_chr3_chr6.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/pacbio_chr3_chr6.bam.bai"
+          }
+        }
+      },
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer"
+        }
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "New Session",
+    "menuBars": [
+      {
+        "type": "MainMenuBar"
+      }
+    ]
+  },
+  "savedSessions": [
+    {
+      "name": "Grape vs Peach",
+      "width": 1850,
+      "drawerWidth": 384,
+      "views": [
+        {
+          "id": "MiDMyyWpp",
+          "type": "DotplotView",
+          "assemblyNames": [
+            "grape",
+            "peach"
+          ],
+          "displayedRegions": [
+            [
+              {
+                "refName": "Pp01",
+                "start": 0,
+                "end": 100000
+              }
+            ],
+            [
+              {
+                "refName": "chr1",
+                "start": 0,
+                "end": 100000
+              }
+            ]
+          ],
+          "headerHeight": 44,
+          "width": 1850,
+          "height": 400,
+          "displayName": "Grape vs Peach",
+          "trackSelectorType": "hierarchical"
+        }
+      ],
+      "drawerWidgets": {
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "collapsed": {},
+          "filterText": ""
+        },
+        "sessionManager": {
+          "id": "sessionManager",
+          "type": "SessionManager"
+        }
+      },
+      "activeDrawerWidgets": {},
+      "menuBars": [
+        {
+          "id": "aU_iMpOUx4",
+          "type": "MainMenuBar",
+          "menus": [
+            {
+              "name": "File",
+              "menuItems": [
+                {
+                  "name": "New Session",
+                  "icon": "add",
+                  "callback": "function(session) {session.setDefaultSession();}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Open Session...",
+                  "icon": "folder_open",
+                  "callback": "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Duplicate Session",
+                  "icon": "file_copy",
+                  "callback": "function(session) {session.duplicateCurrentSession();}"
+                }
+              ]
+            },
+            {
+              "name": "Admin",
+              "menuItems": [
+                {
+                  "name": "Export configuration",
+                  "icon": "cloud_download",
+                  "callback": "exportConfiguration"
+                },
+                {
+                  "name": "Import configuration",
+                  "icon": "cloud_upload",
+                  "callback": "importConfiguration"
+                }
+              ]
+            },
+            {
+              "name": "Help",
+              "menuItems": [
+                {
+                  "name": "About",
+                  "icon": "info",
+                  "callback": "openAbout"
+                },
+                {
+                  "name": "Help",
+                  "icon": "help",
+                  "callback": "openHelp"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "connections": {}
+    }
+  ]
+}

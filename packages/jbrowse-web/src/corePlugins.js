@@ -3,6 +3,7 @@ import Bed from '@gmod/jbrowse-plugin-bed'
 import CircularView from '@gmod/jbrowse-plugin-circular-view'
 import Config from '@gmod/jbrowse-plugin-config'
 import DataManagement from '@gmod/jbrowse-plugin-data-management'
+import DotplotView from '@gmod/jbrowse-plugin-dotplot-view'
 import Filtering from '@gmod/jbrowse-plugin-filtering'
 import Gff3Tabix from '@gmod/jbrowse-plugin-gff3tabix'
 import JBrowse1 from '@gmod/jbrowse-plugin-jbrowse1'
@@ -25,6 +26,7 @@ export default [
   CircularView,
   Config,
   DataManagement,
+  DotplotView,
   Filtering,
   Gff3Tabix,
   JBrowse1,
