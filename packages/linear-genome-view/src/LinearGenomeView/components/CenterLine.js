@@ -5,7 +5,7 @@ import React, { useRef } from 'react'
 const useStyles = makeStyles(() => ({
   centerLineContainer: {
     background: 'transparent',
-    height: '90%',
+    height: '100%',
     zIndex: 1,
     position: 'absolute',
     border: '1px black dashed',
@@ -16,14 +16,12 @@ const useStyles = makeStyles(() => ({
   centerLineText: {
     position: 'absolute',
     pointerEvents: 'none',
-    // overflow: 'hidden',
     whiteSpace: 'nowrap',
   },
 }))
 
 function CenterLine({ model }) {
-  // view level center line
-  const { bpPerPx, headerHeight, dynamicBlocks, controlsWidth, height } = model
+  const { bpPerPx, headerHeight, dynamicBlocks, controlsWidth } = model
   const ref = useRef()
   const classes = useStyles()
   const startingPosition = dynamicBlocks.totalWidthPx / 2 + controlsWidth
@@ -41,12 +39,14 @@ function CenterLine({ model }) {
       }}
     >
       <div
+        // text that indicates what bp is center, positioned
+        // at the bottom right of the center line
         data-testid="centerline_text"
         className={classes.centerLineText}
         role="presentation"
         style={{
           left: Math.max(1 / bpPerPx, 1) + 5,
-          top: height * 0.8,
+          bottom: headerHeight,
         }}
       >
         Bp: {model.centerLinePosition}
