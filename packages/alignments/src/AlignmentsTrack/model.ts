@@ -3,7 +3,7 @@ import {
   ConfigurationReference,
 } from '@gmod/jbrowse-core/configuration'
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { types, addDisposer } from 'mobx-state-tree'
+import { types, addDisposer, getParent } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import AlignmentsTrackComponent from './components/AlignmentsTrack'
 
@@ -24,6 +24,12 @@ export default (pluginManager: any, configSchema: any) => {
           type: types.literal('AlignmentsTrack'),
           configuration: ConfigurationReference(configSchema),
           height: 250,
+          centerLinePosition: 0,
+          sortedBy: '',
+          showCoverage: true,
+          showPileup: true,
+          showCenterLine: false,
+          hideHeader: false,
         })
         .volatile(() => ({
           ReactComponent: AlignmentsTrackComponent,
@@ -55,6 +61,61 @@ export default (pluginManager: any, configSchema: any) => {
           },
         }
       },
+      get menuOptions() {
+        return [
+          {
+            title: self.showCoverage
+              ? 'Hide Coverage Track'
+              : 'Show Coverage Track',
+            key: 'showCoverage',
+            icon: self.showCoverage ? 'visibility_off' : 'visibility',
+            callback: self.toggleCoverage,
+            disableCondition: !self.showPileup,
+          },
+          {
+            title: self.showPileup ? 'Hide Pileup Track' : 'Show Pileup Track',
+            key: 'showPileup',
+            icon: self.showPileup ? 'visibility_off' : 'visibility',
+            callback: self.togglePileup,
+            disableCondition: !self.showCoverage,
+          },
+          {
+            title: self.showCenterLine
+              ? 'Hide Center Line'
+              : 'Show Center Line',
+            key: 'showCenterLine',
+            icon: self.showCenterLine ? 'visibility_off' : 'visibility',
+            callback: self.toggleCenterLine,
+          },
+        ]
+      },
+      get subMenuOptions() {
+        return [
+          {
+            title: 'Start Location',
+            key: 'start',
+          },
+          {
+            title: 'Read Strand',
+            key: 'read',
+          },
+          {
+            title: 'First-of-pair strand',
+            key: 'first',
+          },
+          {
+            title: 'Clear Sort',
+            key: '',
+          },
+        ]
+      },
+      calculateCenterLine() {
+        const LGVModel = getParent(getParent(self))
+        const centerLinePosition = LGVModel.displayedRegions.length
+          ? LGVModel.pxToBp(LGVModel.viewingRegionWidth / 2).offset
+          : 0
+        return centerLinePosition
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -80,6 +141,22 @@ export default (pluginManager: any, configSchema: any) => {
           type: 'PileupTrack',
           configuration: trackConfig,
         }
+      },
+      setCenterLine() {
+        self.centerLinePosition = self.calculateCenterLine()
+      },
+      sortSelected(selected: string) {
+        self.sortedBy = selected
+      },
+      toggleCenterLine() {
+        self.showCenterLine = !self.showCenterLine
+        if (self.showCenterLine) self.setCenterLine()
+      },
+      toggleCoverage() {
+        self.showCoverage = !self.showCoverage
+      },
+      togglePileup() {
+        self.showPileup = !self.showPileup
       },
     }))
 }
