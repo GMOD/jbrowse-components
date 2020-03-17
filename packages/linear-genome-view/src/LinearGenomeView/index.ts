@@ -97,6 +97,7 @@ export function stateModelFactory(pluginManager: any) {
         'hierarchical',
       ),
       minimumBlockWidth: 20,
+      showCenterLine: false,
     })
     .volatile(() => ({
       draggingTrackId: undefined as undefined | string,
@@ -236,6 +237,12 @@ export function stateModelFactory(pluginManager: any) {
         }
         return accum
       },
+      get centerLinePosition() {
+        const centerLinePosition = self.displayedRegions.length
+          ? this.pxToBp(this.viewingRegionWidth / 2).offset
+          : 0
+        return centerLinePosition
+      },
     }))
     .actions(self => ({
       setWidth(newWidth: number) {
@@ -316,6 +323,10 @@ export function stateModelFactory(pluginManager: any) {
         const hiddenCount = this.hideTrack(configuration)
         // if none had that configuration, turn one on
         if (!hiddenCount) this.showTrack(configuration)
+      },
+
+      toggleCenterLine() {
+        self.showCenterLine = !self.showCenterLine
       },
 
       setDisplayedRegions(regions: IRegion[]) {
@@ -526,6 +537,14 @@ export function stateModelFactory(pluginManager: any) {
               title: self.hideHeader ? 'Show header' : 'Hide header',
               key: 'hide_header',
               callback: self.toggleHeader,
+              isCheckbox: false,
+            },
+            {
+              title: self.showCenterLine
+                ? 'Hide Center Line'
+                : 'Show Center Line',
+              key: 'center_line',
+              callback: self.toggleCenterLine,
               isCheckbox: false,
             },
           ]

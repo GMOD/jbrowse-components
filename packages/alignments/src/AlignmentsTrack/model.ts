@@ -3,7 +3,7 @@ import {
   ConfigurationReference,
 } from '@gmod/jbrowse-core/configuration'
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { types, addDisposer, getParent } from 'mobx-state-tree'
+import { types, addDisposer } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import AlignmentsTrackComponent from './components/AlignmentsTrack'
 
@@ -24,11 +24,9 @@ export default (pluginManager: any, configSchema: any) => {
           type: types.literal('AlignmentsTrack'),
           configuration: ConfigurationReference(configSchema),
           height: 250,
-          centerLinePosition: 0,
           sortedBy: '',
           showCoverage: true,
           showPileup: true,
-          showCenterLine: false,
           hideHeader: false,
         })
         .volatile(() => ({
@@ -79,14 +77,6 @@ export default (pluginManager: any, configSchema: any) => {
             callback: self.togglePileup,
             disableCondition: !self.showCoverage,
           },
-          {
-            title: self.showCenterLine
-              ? 'Hide Center Line'
-              : 'Show Center Line',
-            key: 'showCenterLine',
-            icon: self.showCenterLine ? 'visibility_off' : 'visibility',
-            callback: self.toggleCenterLine,
-          },
         ]
       },
       get subMenuOptions() {
@@ -108,13 +98,6 @@ export default (pluginManager: any, configSchema: any) => {
             key: '',
           },
         ]
-      },
-      calculateCenterLine() {
-        const LGVModel = getParent(getParent(self))
-        const centerLinePosition = LGVModel.displayedRegions.length
-          ? LGVModel.pxToBp(LGVModel.viewingRegionWidth / 2).offset
-          : 0
-        return centerLinePosition
       },
     }))
     .actions(self => ({
@@ -142,15 +125,8 @@ export default (pluginManager: any, configSchema: any) => {
           configuration: trackConfig,
         }
       },
-      setCenterLine() {
-        self.centerLinePosition = self.calculateCenterLine()
-      },
       sortSelected(selected: string) {
         self.sortedBy = selected
-      },
-      toggleCenterLine() {
-        self.showCenterLine = !self.showCenterLine
-        if (self.showCenterLine) self.setCenterLine()
       },
       toggleCoverage() {
         self.showCoverage = !self.showCoverage

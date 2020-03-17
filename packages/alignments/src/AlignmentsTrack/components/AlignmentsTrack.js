@@ -1,7 +1,6 @@
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState, useEffect, useRef } from 'react'
 import { YScaleBar } from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
-import CenterLine from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView/components/CenterLine'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Icon from '@material-ui/core/Icon'
@@ -26,8 +25,6 @@ function AlignmentsTrackComponent(props) {
     subMenuOptions,
     showPileup,
     showCoverage,
-    showCenterLine,
-    centerLinePosition,
     sortedBy,
   } = model
 
@@ -36,8 +33,6 @@ function AlignmentsTrackComponent(props) {
     const { ready, stats, needsScalebar } = SNPCoverageTrack
     if (ready && stats && needsScalebar) showScalebar = true
   }
-
-  if (showCenterLine) model.setCenterLine() // calculates when scrolling
 
   // Set up context menu
   const [state, setState] = useState(initialState)
@@ -57,11 +52,8 @@ function AlignmentsTrackComponent(props) {
 
   // determine height of the model when toggling pileuptrack
   useEffect(() => {
-    const newHeight = !showPileup
-      ? Math.min(model.height, SNPCoverageTrack.height)
-      : Math.max(model.height, SNPCoverageTrack.height + PileupTrack.height)
-    model.setHeight(newHeight)
-  }, [PileupTrack.height, SNPCoverageTrack.height, model, showPileup])
+    SNPCoverageTrack.setHeight(!showPileup ? model.height : 40)
+  }, [SNPCoverageTrack, model, showPileup])
 
   return (
     <div
@@ -76,13 +68,6 @@ function AlignmentsTrackComponent(props) {
         showPileup={showPileup}
         showSNPCoverage={showCoverage}
       >
-        {showCenterLine && centerLinePosition > 0 && ref.current && (
-          <CenterLine
-            model={model}
-            height={height}
-            startingPosition={ref.current.clientWidth / 2}
-          ></CenterLine>
-        )}
         {showScalebar && showCoverage ? (
           <YScaleBar model={SNPCoverageTrack} />
         ) : null}
