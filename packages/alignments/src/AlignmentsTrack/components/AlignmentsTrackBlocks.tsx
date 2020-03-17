@@ -3,6 +3,7 @@ import { Instance } from 'mobx-state-tree'
 import React from 'react'
 import { BlockBasedTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+import { ResizeHandle } from '@gmod/jbrowse-core/ui'
 import {
   RenderedBlocks,
   useStyles,
@@ -44,7 +45,20 @@ function AlignmentsTrackBlocks({
           <RenderedBlocks model={SNPCoverageTrack} />
         </div>
       )}
-      {/* {PileupTrack && showPileup && ( */}
+      <ResizeHandle
+        onDrag={delta => {
+          if (SNPCoverageTrack && showSNPCoverage) {
+            SNPCoverageTrack.setHeight(SNPCoverageTrack.height + delta)
+            return delta
+          }
+          return 0
+        }}
+        style={{
+          position: 'absolute',
+          top: SNPCoverageTrack ? SNPCoverageTrack.height + 2 : 0,
+          height: 3,
+        }}
+      />
       {PileupTrack && (
         <div
           data-testid="Blockset"
@@ -52,7 +66,9 @@ function AlignmentsTrackBlocks({
           style={{
             left: PileupTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
             top:
-              SNPCoverageTrack && showSNPCoverage ? SNPCoverageTrack.height : 0,
+              SNPCoverageTrack && showSNPCoverage
+                ? SNPCoverageTrack.height + 5
+                : 0,
             display: showPileup ? 'flex' : 'none',
           }}
         >
