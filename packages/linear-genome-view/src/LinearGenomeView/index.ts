@@ -57,6 +57,7 @@ const validBpPerPx = [
 
 export const HEADER_BAR_HEIGHT = 50
 export const SCALE_BAR_HEIGHT = 40
+export const RESIZE_HANDLE_HEIGHT = 3
 
 export function stateModelFactory(pluginManager: any) {
   return types
@@ -103,7 +104,7 @@ export function stateModelFactory(pluginManager: any) {
         return self.tracks.map(t => t.height).reduce((a, b) => a + b, 0)
       },
       get trackHeightsWithResizeHandles() {
-        return this.trackHeights + self.tracks.length * 3
+        return this.trackHeights + self.tracks.length * RESIZE_HANDLE_HEIGHT
       },
       get height() {
         return (
@@ -235,7 +236,7 @@ export function stateModelFactory(pluginManager: any) {
         )
         let accum = 0
         for (let i = 0; i < idx; i += 1) {
-          accum += self.tracks[i].height + 3 // +1px for trackresizehandle
+          accum += self.tracks[i].height + RESIZE_HANDLE_HEIGHT
         }
         return accum
       },

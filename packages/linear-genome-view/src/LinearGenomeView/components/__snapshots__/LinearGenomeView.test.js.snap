@@ -478,9 +478,8 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       </div>
     </div>
     <div
-      class="makeStyles-horizontalHandle"
+      class="makeStyles-horizontalHandle makeStyles-resizeHandle"
       role="presentation"
-      style="height: 3px; background: rgb(204, 204, 204); box-sizing: border-box; border-top: 1px solid #fafafa;"
     />
   </div>
 </div>
@@ -1853,9 +1852,8 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       </div>
     </div>
     <div
-      class="makeStyles-horizontalHandle"
+      class="makeStyles-horizontalHandle makeStyles-resizeHandle"
       role="presentation"
-      style="height: 3px; background: rgb(204, 204, 204); box-sizing: border-box; border-top: 1px solid #fafafa;"
     />
   </div>
   <div
@@ -2014,9 +2012,8 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       </div>
     </div>
     <div
-      class="makeStyles-horizontalHandle"
+      class="makeStyles-horizontalHandle makeStyles-resizeHandle"
       role="presentation"
-      style="height: 3px; background: rgb(204, 204, 204); box-sizing: border-box; border-top: 1px solid #fafafa;"
     />
   </div>
 </div>

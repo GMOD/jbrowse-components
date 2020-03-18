@@ -2,21 +2,31 @@ import { getConf } from '@gmod/jbrowse-core/configuration'
 import { ResizeHandle } from '@gmod/jbrowse-core/ui'
 import { useDebouncedCallback } from '@gmod/jbrowse-core/util'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { Instance, isAlive } from 'mobx-state-tree'
 import React from 'react'
-import { LinearGenomeViewStateModel } from '..'
+import { LinearGenomeViewStateModel, RESIZE_HANDLE_HEIGHT } from '..'
 import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
 import TrackLabel from './TrackLabel'
 import TrackRenderingContainer from './TrackRenderingContainer'
 
-const dragHandleHeight = 3
 type LGV = Instance<LinearGenomeViewStateModel>
+
+const useStyles = makeStyles(theme => ({
+  resizeHandle: {
+    height: RESIZE_HANDLE_HEIGHT,
+    boxSizing: 'border-box',
+    position: 'relative',
+    zIndex: 2,
+  },
+}))
 
 function TrackContainer(props: {
   model: LGV
   track: Instance<BaseTrackStateModel>
 }) {
+  const classes = useStyles()
   const { model, track } = props
   const {
     bpPerPx,
@@ -77,12 +87,7 @@ function TrackContainer(props: {
       ) : null}
       <ResizeHandle
         onDrag={track.resizeHeight}
-        style={{
-          height: dragHandleHeight,
-          background: '#ccc',
-          boxSizing: 'border-box',
-          borderTop: '1px solid #fafafa',
-        }}
+        className={classes.resizeHandle}
       />
     </div>
   )

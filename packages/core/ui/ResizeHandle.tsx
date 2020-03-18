@@ -1,4 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles'
+import clsx from 'clsx'
 import React, { useEffect, useRef, useState } from 'react'
 
 const useStyles = makeStyles({
@@ -26,6 +27,7 @@ interface ResizeHandleProps {
   onDrag: Function
   vertical?: boolean
   flexbox?: boolean
+  className?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [props: string]: any
 }
@@ -34,6 +36,7 @@ function ResizeHandle({
   onDrag,
   vertical = false,
   flexbox = false,
+  className: originalClassName,
   ...props
 }: ResizeHandleProps) {
   const [mouseDragging, setMouseDragging] = useState(false)
@@ -92,7 +95,7 @@ function ResizeHandle({
       onMouseDown={mouseDown}
       onMouseLeave={mouseLeave}
       role="presentation"
-      className={className}
+      className={clsx(className, originalClassName)}
       {...props}
     />
   )
