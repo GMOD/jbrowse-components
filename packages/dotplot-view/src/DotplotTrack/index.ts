@@ -5,7 +5,7 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
-import { types, getParent, getSnapshot, Instance } from 'mobx-state-tree'
+import { types, getParent, Instance } from 'mobx-state-tree'
 import {
   BaseTrackConfig,
   BaseTrack,
@@ -61,9 +61,22 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         return getConf(self, 'adapter')
       },
       get renderProps() {
+        const parentView = getParent(self, 2)
+        const {
+          width,
+          height,
+          borderSize,
+          fontSize,
+          verticalBpPerPx,
+          horizontalBpPerPx,
+        } = parentView
         return {
-          width: 800,
-          height: 500,
+          verticalBpPerPx,
+          horizontalBpPerPx,
+          width,
+          height,
+          borderSize,
+          fontSize,
         }
       },
     }))

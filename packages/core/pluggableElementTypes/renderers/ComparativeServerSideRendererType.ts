@@ -176,7 +176,6 @@ export default class ComparativeServerSideRenderer extends RendererType {
         })
       }),
     )
-    console.log(args.views)
     checkAbortSignal(args.signal)
 
     const results = await this.render({ ...args })

@@ -8,7 +8,6 @@ const DotplotTrack: React.FC<{
   children?: React.ReactNode
 }> = props => {
   const { model, children } = props
-  console.log('dotplot track component')
   return (
     <div>
       <model.ReactComponent2 {...props} />

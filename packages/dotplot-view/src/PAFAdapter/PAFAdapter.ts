@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,import/no-extraneous-dependencies */
+/* eslint-disable import/no-extraneous-dependencies */
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import {
   IFileLocation,

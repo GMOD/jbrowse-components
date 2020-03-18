@@ -134,7 +134,7 @@ export default (pluginManager: any) => {
   )
 
   const LinearComparativeView = observer(
-    ({ model }: { model: LinearComparativeView }) => {
+    ({ model }: { model: LinearComparativeViewModel }) => {
       const middle = model.tracks.some((t: any) => getConf(t, 'middle'))
       // const noMiddle = model.tracks.some((t: any) => !getConf(t, 'middle'))
       return middle ? (

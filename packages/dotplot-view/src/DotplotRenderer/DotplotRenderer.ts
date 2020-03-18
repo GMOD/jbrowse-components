@@ -1,4 +1,4 @@
-/* eslint-disable  no-continue,@typescript-eslint/no-explicit-any */
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
@@ -13,10 +13,12 @@ interface DotplotRenderProps {
   config: any
   height: number
   width: number
-  middle: boolean
+  verticalBpPerPx: number
+  horizontalBpPerPx: number
+  borderSize: number
+  fontSize: number
   horizontallyFlipped: boolean
   highResolutionScaling: number
-  linkedTrack: string
   pluginManager: any
   views: { features: Feature[]; displayedRegions: IRegion[] }[]
 }
@@ -54,50 +56,23 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
   async makeImageData(props: DotplotRenderProps) {
     const {
       highResolutionScaling: scale = 1,
-      width: totalWidth,
-      height: totalHeight,
+      width,
+      height,
+      borderSize,
+      verticalBpPerPx,
+      horizontalBpPerPx,
       config,
       views,
     } = props
-    const totalBp = views.map(view =>
-      view.displayedRegions
-        .map(region => region.end - region.start)
-        .reduce((a, b) => a + b, 0),
-    )
-    const canvas = createCanvas(
-      Math.ceil(totalWidth * scale),
-      totalHeight * scale,
-    )
+
+    const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d')
     ctx.scale(scale, scale)
 
-    // background
-    ctx.fillStyle = 'white'
-    ctx.fillRect(0, 0, totalWidth, totalHeight)
-    ctx.lineWidth = 1
-
-    // draw border
-    const p = 20
-    ctx.strokeStyle = 'black'
-    ctx.moveTo(p, p)
-    ctx.lineTo(p, totalHeight - p)
-    ctx.lineTo(totalWidth - p, totalHeight - p)
-    ctx.lineTo(totalWidth - p, p)
-    ctx.lineTo(p, p)
-    ctx.stroke()
-    const width = totalWidth - 2 * p
-    const height = totalHeight - 2 * p
-
-    const wt = width / totalBp[0]
-    const ht = height / totalBp[1]
     ctx.fillStyle = 'black'
-    ctx.textAlign = 'center'
-
-    const current = 0
 
     // clip method avoids drawing outside box
-    ctx.rect(p, p, width, height)
-    ctx.stroke()
+    ctx.rect(borderSize, borderSize, width, height)
     ctx.clip()
 
     ctx.lineWidth = 3
@@ -109,10 +84,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const mate = feature.get('mate')
       const identity = feature.get('numMatches') / feature.get('blockLen')
       ctx.fillStyle = `hsl(${identity * 150},50%,50%)`
-      const b1 = bpToPx(views[0], wt, refName, start)
-      const b2 = bpToPx(views[0], wt, refName, end)
-      const e1 = bpToPx(views[1], ht, mate.refName, mate.start)
-      const e2 = bpToPx(views[1], ht, mate.refName, mate.end)
+      const b1 = bpToPx(views[0], horizontalBpPerPx, refName, start)
+      const b2 = bpToPx(views[0], horizontalBpPerPx, refName, end)
+      const e1 = bpToPx(views[1], verticalBpPerPx, mate.refName, mate.start)
+      const e2 = bpToPx(views[1], verticalBpPerPx, mate.refName, mate.end)
       if (b1 && b2 && e1 && e2) {
         if (b1 - b2 < 3 && e1 - e2 < 3) {
           ctx.fillRect(b1, e1, 3, 3)
@@ -129,10 +104,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const end = feature.get('end')
       const refName = feature.get('refName')
       const mate = feature.get('mate')
-      const b1 = bpToPx(views[0], wt, refName, start)
-      const b2 = bpToPx(views[0], wt, refName, end)
-      const e1 = bpToPx(views[1], ht, mate.refName, mate.start)
-      const e2 = bpToPx(views[1], ht, mate.refName, mate.end)
+      const b1 = bpToPx(views[0], horizontalBpPerPx, refName, start)
+      const b2 = bpToPx(views[0], horizontalBpPerPx, refName, end)
+      const e1 = bpToPx(views[1], verticalBpPerPx, mate.refName, mate.start)
+      const e2 = bpToPx(views[1], verticalBpPerPx, mate.refName, mate.end)
       if (b1 && b2 && e1 && e2) {
         if (b1 - b2 < 3 && e1 - e2 < 3) {
           ctx.fillRect(b1, e1, 3, 3)
