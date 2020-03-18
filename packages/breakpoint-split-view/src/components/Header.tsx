@@ -5,7 +5,6 @@ import { BreakpointViewModel } from '../model'
 export default ({ jbrequire }: { jbrequire: any }) => {
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { EditableTypography } = jbrequire('@gmod/jbrowse-core/ui')
   const Icon = jbrequire('@material-ui/core/Icon')
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
@@ -48,25 +47,6 @@ export default ({ jbrequire }: { jbrequire: any }) => {
       backgroundColor: theme.palette.secondary.light,
     },
   }))
-
-  const Controls = observer(({ model }: { model: BreakpointViewModel }) => {
-    const classes = useStyles()
-    return (
-      <>
-        <IconButton
-          onClick={model.closeView}
-          className={classes.iconButton}
-          title="close this view"
-        >
-          <Icon fontSize="small">close</Icon>
-        </IconButton>
-      </>
-    )
-  })
-
-  Controls.propTypes = {
-    model: PropTypes.objectOrObservableObject.isRequired,
-  }
 
   const InteractWithSquiggles = observer(
     ({ model }: { model: BreakpointViewModel }) => {
@@ -136,19 +116,6 @@ export default ({ jbrequire }: { jbrequire: any }) => {
       model.setHeaderHeight(size.height)
       return (
         <div className={classes.headerBar}>
-          <Controls model={model} />
-          <div className={classes.displayName}>
-            <EditableTypography
-              value={model.displayName || ''}
-              setValue={model.setDisplayName}
-              variant="body2"
-              classes={{
-                inputBase: classes.inputBase,
-                inputRoot: classes.inputRoot,
-                inputFocused: classes.inputFocused,
-              }}
-            />
-          </div>
           <LinkViews model={model} />
           <InteractWithSquiggles model={model} />
           <Sync model={model} />

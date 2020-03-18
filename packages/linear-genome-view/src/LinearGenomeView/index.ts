@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
+import { MenuOption } from '@gmod/jbrowse-core/ui'
 import {
   clamp,
   getContainingView,
@@ -16,13 +17,7 @@ import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
-export interface LGVMenuOption {
-  title: string
-  key: string
-  callback: Function
-  checked?: boolean
-  isCheckbox: boolean
-}
+
 interface BpOffset {
   refName?: string
   index: number
@@ -83,7 +78,6 @@ export function stateModelFactory(pluginManager: any) {
       // set this to true to hide the close, config, and tracksel buttons
       hideControls: false,
       hideHeader: false,
-      hideCloseButton: false,
       trackSelectorType: types.optional(
         types.enumeration(['hierarchical']),
         'hierarchical',
@@ -99,9 +93,6 @@ export function stateModelFactory(pluginManager: any) {
       afterDisplayedRegionsSetCallbacks: [] as Function[],
     }))
     .views(self => ({
-      get viewingRegionWidth() {
-        return self.width - self.controlsWidth
-      },
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + 1 // 1px border
       },
@@ -131,7 +122,7 @@ export function stateModelFactory(pluginManager: any) {
 
       get zoomLevels() {
         const zoomLevels = validBpPerPx.filter(
-          val => val <= this.totalBp / this.viewingRegionWidth && val >= 0,
+          val => val <= this.totalBp / self.width && val >= 0,
         )
         if (!zoomLevels.length) {
           zoomLevels.push(validBpPerPx[0])
@@ -382,7 +373,7 @@ export function stateModelFactory(pluginManager: any) {
         self.bpPerPx = bpPerPx
 
         // tweak the offset so that the center of the view remains at the same coordinate
-        const viewWidth = self.viewingRegionWidth
+        const viewWidth = self.width
         self.offsetPx = Math.round(
           ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
             viewWidth / 2,
@@ -502,7 +493,7 @@ export function stateModelFactory(pluginManager: any) {
         const leftPadding = 10
         const rightPadding = 30
         const maxOffset = self.displayedRegionsTotalPx - leftPadding
-        const minOffset = -self.viewingRegionWidth + rightPadding
+        const minOffset = -self.width + rightPadding
         // the scroll is clamped to keep the linear genome on the main screen
         const newOffsetPx = clamp(
           self.offsetPx + distance,
@@ -529,9 +520,7 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       showAllRegions() {
-        self.bpPerPx = self.constrainBpPerPx(
-          self.totalBp / self.viewingRegionWidth,
-        )
+        self.bpPerPx = self.constrainBpPerPx(self.totalBp / self.width)
         self.offsetPx = 0
       },
 
@@ -543,11 +532,12 @@ export function stateModelFactory(pluginManager: any) {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
-        get menuOptions(): LGVMenuOption[] {
+        get menuOptions(): MenuOption[] {
           return [
             {
-              title: 'Horizontally flip',
+              title: 'Horizontally flipped',
               key: 'flip',
+              icon: 'flip',
               callback: self.horizontallyFlip,
               checked: self.horizontallyFlipped,
               isCheckbox: true,

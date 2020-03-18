@@ -6,8 +6,6 @@ import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import Container from '@material-ui/core/Container'
 import Grid from '@material-ui/core/Grid'
-import Icon from '@material-ui/core/Icon'
-import IconButton from '@material-ui/core/IconButton'
 import MenuItem from '@material-ui/core/MenuItem'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
@@ -81,74 +79,60 @@ const ImportForm = observer(({ model }) => {
   }
 
   return (
-    <>
-      {model.hideCloseButton ? null : (
-        <div style={{ height: 40 }}>
-          <IconButton
-            onClick={model.closeView}
-            className={classes.iconButton}
-            title="close this view"
-            color="secondary"
+    <Container className={classes.importFormContainer}>
+      <Grid container spacing={1} justify="center" alignItems="center">
+        <Grid item>
+          <TextField
+            select
+            variant="outlined"
+            value={
+              assemblyNames[selectedAssemblyIdx] && !error
+                ? selectedAssemblyIdx
+                : ''
+            }
+            onChange={onAssemblyChange}
+            label="Assembly"
+            helperText={error || 'Select assembly to view'}
+            error={!!error}
+            disabled={!!error}
+            margin="normal"
+            className={classes.importFormEntry}
           >
-            <Icon>close</Icon>
-          </IconButton>
-        </div>
-      )}
-      <Container className={classes.importFormContainer}>
-        <Grid container spacing={1} justify="center" alignItems="center">
-          <Grid item>
-            <TextField
-              select
-              variant="outlined"
-              value={
-                assemblyNames[selectedAssemblyIdx] && !error
-                  ? selectedAssemblyIdx
-                  : ''
-              }
-              onChange={onAssemblyChange}
-              label="Assembly"
-              helperText={error || 'Select assembly to view'}
-              error={!!error}
-              disabled={!!error}
-              margin="normal"
-              className={classes.importFormEntry}
-            >
-              {assemblyNames.map((name, idx) => (
-                <MenuItem key={name} value={idx}>
-                  {name}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-          <Grid item>
-            <RefNameAutocomplete
-              model={model}
-              assemblyName={
-                error ? undefined : assemblyNames[selectedAssemblyIdx]
-              }
-              onSelect={setSelectedRegion}
-              TextFieldProps={{
-                margin: 'normal',
-                variant: 'outlined',
-                label: 'Sequence',
-                className: classes.importFormEntry,
-                helperText: 'Select sequence to view',
-              }}
-            />
-          </Grid>
-          <Grid item>
-            <Button
-              disabled={!selectedRegion}
-              onClick={onOpenClick}
-              variant="contained"
-              color="primary"
-            >
-              Open
-            </Button>
-          </Grid>
+            {assemblyNames.map((name, idx) => (
+              <MenuItem key={name} value={idx}>
+                {name}
+              </MenuItem>
+            ))}
+          </TextField>
         </Grid>
-      </Container>
-    </>
+        <Grid item>
+          <RefNameAutocomplete
+            model={model}
+            assemblyName={
+              error ? undefined : assemblyNames[selectedAssemblyIdx]
+            }
+            onSelect={setSelectedRegion}
+            TextFieldProps={{
+              margin: 'normal',
+              variant: 'outlined',
+              label: 'Sequence',
+              className: classes.importFormEntry,
+              helperText: 'Select sequence to view',
+            }}
+          />
+        </Grid>
+        <Grid item>
+          <Button
+            disabled={!selectedRegion}
+            onClick={onOpenClick}
+            variant="contained"
+            color="primary"
+          >
+            Open
+          </Button>
+        </Grid>
+      </Grid>
+    </Container>
   )
 })
 

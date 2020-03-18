@@ -35,6 +35,7 @@ export default function sessionModelFactory(pluginManager: any) {
         types.refinement(types.integer, width => width >= minWidth),
         1024,
       ),
+      margin: 0,
       drawerWidth: types.optional(
         types.refinement(types.integer, width => width >= minDrawerWidth),
         384,
@@ -101,9 +102,11 @@ export default function sessionModelFactory(pluginManager: any) {
       get history() {
         return getParent(self).history
       },
-      get viewsWidth() {
-        // TODO: when drawer is permanent, subtract its width
+      get appWidth() {
         return self.width - (this.visibleDrawerWidget ? self.drawerWidth : 0)
+      },
+      get viewsWidth() {
+        return this.appWidth - self.margin * 2
       },
       get maxDrawerWidth() {
         return self.width - 256
@@ -263,7 +266,8 @@ export default function sessionModelFactory(pluginManager: any) {
         connectionInstances.remove(connection)
       },
 
-      updateWidth(width: number) {
+      updateWidth(width: number, margin = 0) {
+        self.margin = margin
         let newWidth = Math.floor(width)
         if (newWidth === self.width) return
         if (newWidth < minWidth) newWidth = minWidth

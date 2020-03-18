@@ -1,12 +1,7 @@
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { EditableTypography } from '@gmod/jbrowse-core/ui'
-import Checkbox from '@material-ui/core/Checkbox'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputBase from '@material-ui/core/InputBase'
-import Menu from '@material-ui/core/Menu'
-import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
@@ -78,95 +73,16 @@ const useStyles = makeStyles(theme => ({
   ...buttonStyles(theme),
 }))
 
-const LongMenu = observer(
-  ({ model, className }: { model: LGV; className: string }) => {
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-    const open = Boolean(anchorEl)
-
-    function handleClick(event: React.MouseEvent<HTMLElement>) {
-      setAnchorEl(event.currentTarget)
-    }
-
-    function handleClose() {
-      setAnchorEl(null)
-    }
-
-    return (
-      <>
-        <IconButton
-          aria-label="more"
-          aria-controls="long-menu"
-          aria-haspopup="true"
-          className={className}
-          onClick={handleClick}
-          color="secondary"
-        >
-          <Icon>more_vert</Icon>
-        </IconButton>
-        <Menu
-          id="long-menu"
-          anchorEl={anchorEl}
-          keepMounted
-          open={open}
-          onClose={handleClose}
-        >
-          {model.menuOptions.map(option => {
-            return option.isCheckbox ? (
-              <MenuItem key={option.key}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={option.checked}
-                      onChange={() => {
-                        option.callback()
-                        handleClose()
-                      }}
-                    />
-                  }
-                  label={option.title}
-                />
-              </MenuItem>
-            ) : (
-              <MenuItem
-                key={option.key}
-                onClick={() => {
-                  option.callback()
-                  handleClose()
-                }}
-              >
-                {option.title}
-              </MenuItem>
-            )
-          })}
-        </Menu>
-      </>
-    )
-  },
-)
-
 const Controls = observer(({ model }) => {
-  const classes = useStyles()
   return (
-    <>
-      <IconButton
-        onClick={model.closeView}
-        className={classes.iconButton}
-        title="close this view"
-        color="secondary"
-      >
-        <Icon fontSize="small">close</Icon>
-      </IconButton>
-
-      <IconButton
-        onClick={model.activateTrackSelector}
-        title="select tracks"
-        value="track_select"
-        color="secondary"
-      >
-        <Icon fontSize="small">line_style</Icon>
-      </IconButton>
-      <LongMenu className={classes.iconButton} model={model} />
-    </>
+    <IconButton
+      onClick={model.activateTrackSelector}
+      title="select tracks"
+      value="track_select"
+      color="secondary"
+    >
+      <Icon fontSize="small">line_style</Icon>
+    </IconButton>
   )
 })
 
@@ -224,20 +140,7 @@ export default observer(({ model }: { model: LGV }) => {
   return (
     <div className={classes.headerBar}>
       <Controls model={model} />
-      <div className={classes.displayName}>
-        <EditableTypography
-          value={model.displayName || ''}
-          setValue={model.setDisplayName}
-          variant="body2"
-          classes={{
-            inputBase: classes.inputBase,
-            inputRoot: classes.inputRoot,
-            inputFocused: classes.inputFocused,
-          }}
-        />
-      </div>
       <div className={classes.spacer} />
-
       <Search onSubmit={model.navToLocstring} error={''} />
       <RefNameAutocomplete
         model={model}

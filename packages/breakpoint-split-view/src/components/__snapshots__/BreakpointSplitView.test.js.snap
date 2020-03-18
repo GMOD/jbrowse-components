@@ -8,53 +8,6 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
     <button
       class="MuiButtonBase-root MuiIconButton-root"
       tabindex="0"
-      title="close this view"
-      type="button"
-    >
-      <span
-        class="MuiIconButton-label"
-      >
-        <span
-          aria-hidden="true"
-          class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-        >
-          close
-        </span>
-      </span>
-      <span
-        class="MuiTouchRipple-root"
-      />
-    </button>
-    <div
-      class="makeStyles-displayName"
-    >
-      <div
-        classes="[object Object]"
-      >
-        <div
-          style="position: relative;"
-        >
-          <span
-            class="MuiTypography-root makeStyles-typography MuiTypography-body2"
-          >
-            breakpoint detail
-          </span>
-        </div>
-        <div
-          class="MuiInputBase-root makeStyles-inputRoot makeStyles-inputRoot makeStyles-inputBase makeStyles-inputBase"
-        >
-          <input
-            class="MuiInputBase-input makeStyles-input"
-            style="width: 0px; font-family: \\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif; font-weight: 400; font-size: 0.875rem; line-height: 1.43; letter-spacing: 0.01071em;"
-            type="text"
-            value="breakpoint detail"
-          />
-        </div>
-      </div>
-    </div>
-    <button
-      class="MuiButtonBase-root MuiIconButton-root"
-      tabindex="0"
       title="Toggle linked scrolls and behavior across views"
       type="button"
     >
@@ -165,26 +118,6 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               class="makeStyles-headerBar"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="close this view"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <span
-                    aria-hidden="true"
-                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                  >
-                    close
-                  </span>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-              <button
                 class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                 tabindex="0"
                 title="select tracks"
@@ -205,53 +138,6 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   class="MuiTouchRipple-root"
                 />
               </button>
-              <button
-                aria-controls="long-menu"
-                aria-haspopup="true"
-                aria-label="more"
-                class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-                tabindex="0"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <span
-                    aria-hidden="true"
-                    class="material-icons MuiIcon-root"
-                  >
-                    more_vert
-                  </span>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-              <div
-                class="makeStyles-displayName"
-              >
-                <div
-                  classes="[object Object]"
-                >
-                  <div
-                    style="position: relative;"
-                  >
-                    <span
-                      class="MuiTypography-root makeStyles-typography MuiTypography-body2"
-                    />
-                  </div>
-                  <div
-                    class="MuiInputBase-root makeStyles-inputRoot makeStyles-inputRoot makeStyles-inputBase makeStyles-inputBase"
-                  >
-                    <input
-                      class="MuiInputBase-input makeStyles-input"
-                      style="width: 0px; font-family: \\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif; font-weight: 400; font-size: 0.875rem; line-height: 1.43; letter-spacing: 0.01071em;"
-                      type="text"
-                      value=""
-                    />
-                  </div>
-                </div>
-              </div>
               <div
                 class="makeStyles-spacer"
               />
@@ -488,26 +374,6 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               class="makeStyles-headerBar"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="close this view"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <span
-                    aria-hidden="true"
-                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                  >
-                    close
-                  </span>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-              <button
                 class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                 tabindex="0"
                 title="select tracks"
@@ -528,53 +394,6 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   class="MuiTouchRipple-root"
                 />
               </button>
-              <button
-                aria-controls="long-menu"
-                aria-haspopup="true"
-                aria-label="more"
-                class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-                tabindex="0"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <span
-                    aria-hidden="true"
-                    class="material-icons MuiIcon-root"
-                  >
-                    more_vert
-                  </span>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-              <div
-                class="makeStyles-displayName"
-              >
-                <div
-                  classes="[object Object]"
-                >
-                  <div
-                    style="position: relative;"
-                  >
-                    <span
-                      class="MuiTypography-root makeStyles-typography MuiTypography-body2"
-                    />
-                  </div>
-                  <div
-                    class="MuiInputBase-root makeStyles-inputRoot makeStyles-inputRoot makeStyles-inputBase makeStyles-inputBase"
-                  >
-                    <input
-                      class="MuiInputBase-input makeStyles-input"
-                      style="width: 0px; font-family: \\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif; font-weight: 400; font-size: 0.875rem; line-height: 1.43; letter-spacing: 0.01071em;"
-                      type="text"
-                      value=""
-                    />
-                  </div>
-                </div>
-              </div>
               <div
                 class="makeStyles-spacer"
               />

@@ -1,15 +1,16 @@
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles, useTheme } from '@material-ui/core/styles'
 
 import { observer, PropTypes } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect } from 'react'
 import { withContentRect } from 'react-measure'
 
 import DrawerWidget from './DrawerWidget'
 import Snackbar from './Snackbar'
+import ViewContainer from './ViewContainer'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles({
   '@global': {
     html: {
       'font-family': 'Roboto',
@@ -30,66 +31,33 @@ const useStyles = makeStyles(theme => ({
     gridRow: 'menubars',
   },
   components: {
-    background: theme.palette.background.mainApp,
     overflowY: 'auto',
     gridRow: 'components',
   },
-  viewContainer: { marginTop: 8 },
-}))
-
-function ViewContainer({ session, view }) {
-  const { pluginManager } = session
-  const classes = useStyles()
-  const viewType = pluginManager.getViewType(view.type)
-  if (!viewType) {
-    throw new Error(`unknown view type ${view.type}`)
-  }
-  const { ReactComponent } = viewType
-  const containerNodeRef = useRef()
-
-  // scroll the view into view when first mounted
-  // note that this effect will run only once, because of
-  // the empty array second param
-  useEffect(() => {
-    if (containerNodeRef.current.scrollIntoView)
-      containerNodeRef.current.scrollIntoView({ block: 'center' })
-  }, [])
-
-  return (
-    <div ref={containerNodeRef} className={classes.viewContainer}>
-      <ReactComponent
-        model={view}
-        session={session}
-        getTrackType={pluginManager.getTrackType}
-      />
-    </div>
-  )
-}
-
-ViewContainer.propTypes = {
-  session: PropTypes.observableObject.isRequired,
-  view: PropTypes.objectOrObservableObject.isRequired,
-}
+})
 
 function App({ contentRect, measureRef, session }) {
+  const theme = useTheme()
+  const margin = theme.spacing(1)
   const classes = useStyles()
   const { pluginManager } = session
+  const { width } = contentRect.bounds
   useEffect(() => {
-    if (contentRect.bounds.width) {
+    if (width) {
       if (isAlive(session)) {
-        session.updateWidth(contentRect.bounds.width)
+        session.updateWidth(width, margin * 2)
       }
     }
-  }, [session, contentRect])
+  }, [session, width, margin])
 
-  const { visibleDrawerWidget, viewsWidth, drawerWidth } = session
+  const { visibleDrawerWidget, appWidth, drawerWidth } = session
 
   return (
     <div
       ref={measureRef}
       className={classes.root}
       style={{
-        gridTemplateColumns: `[main] ${viewsWidth}px${
+        gridTemplateColumns: `[main] ${appWidth}px${
           visibleDrawerWidget ? ` [drawer] ${drawerWidth}px` : ''
         }`,
       }}
@@ -115,13 +83,32 @@ function App({ contentRect, measureRef, session }) {
           })}
         </div>
         <div className={classes.components}>
-          {session.views.map(view => (
-            <ViewContainer
-              key={`view-${view.id}`}
-              session={session}
-              view={view}
-            />
-          ))}
+          {session.views.map(view => {
+            const viewType = pluginManager.getViewType(view.type)
+            if (!viewType) {
+              throw new Error(`unknown view type ${view.type}`)
+            }
+            const { ReactComponent } = viewType
+            return (
+              <ViewContainer
+                key={`view-${view.id}`}
+                view={view}
+                onClose={() => session.removeView(view)}
+                style={{
+                  margin,
+                  paddingLeft: margin,
+                  paddingRight: margin,
+                  paddingBottom: margin,
+                }}
+              >
+                <ReactComponent
+                  model={view}
+                  session={session}
+                  getTrackType={pluginManager.getTrackType}
+                />
+              </ViewContainer>
+            )
+          })}
           <div style={{ height: 300 }} />
         </div>
       </div>

@@ -35,7 +35,7 @@ export default function calculateDynamicBlocks(
 ) {
   const {
     offsetPx,
-    viewingRegionWidth: width,
+    width,
     displayedRegions,
     bpPerPx,
     minimumBlockWidth,

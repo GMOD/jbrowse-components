@@ -7,7 +7,7 @@ test('one', () => {
     calculateVisibleRegions(
       {
         offsetPx: 0,
-        viewingRegionWidth: 200,
+        width: 200,
         displayedRegions: [ctgA],
         bpPerPx: 1,
       },
@@ -20,7 +20,7 @@ test('two', () => {
     calculateVisibleRegions(
       {
         offsetPx: 0,
-        viewingRegionWidth: 200,
+        width: 200,
         displayedRegions: [ctgA],
         bpPerPx: 1,
       },
@@ -33,7 +33,7 @@ test('three', () => {
     calculateVisibleRegions(
       {
         offsetPx: -100,
-        viewingRegionWidth: 200,
+        width: 200,
         displayedRegions: [ctgA],
         bpPerPx: 1,
       },
@@ -46,7 +46,7 @@ test('four', () => {
     calculateVisibleRegions(
       {
         offsetPx: -100,
-        viewingRegionWidth: 350,
+        width: 350,
         displayedRegions: [ctgA],
         bpPerPx: 1,
       },
@@ -59,7 +59,7 @@ test('five', () => {
     calculateVisibleRegions(
       {
         offsetPx: 521,
-        viewingRegionWidth: 927,
+        width: 927,
         displayedRegions: [ctgA],
         bpPerPx: 0.05,
       },

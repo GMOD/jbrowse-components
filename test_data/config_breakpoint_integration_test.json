@@ -160,7 +160,6 @@
               "width": 800,
               "hideControls": false,
               "hideHeader": true,
-              "hideCloseButton": true,
               "trackSelectorType": "hierarchical",
               "minimumBlockWidth": 20
             },
@@ -202,7 +201,7 @@
               "width": 800,
               "hideControls": false,
               "hideHeader": true,
-              "hideCloseButton": true,
+              "": true,
               "trackSelectorType": "hierarchical",
               "minimumBlockWidth": 20
             }
