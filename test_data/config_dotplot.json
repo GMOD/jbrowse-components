@@ -87,8 +87,26 @@
                 {
                   "assemblyName": "peach",
                   "refName": "Pp01",
-                  "start": 22000000,
+                  "start": 0,
                   "end": 33000000
+                },
+                {
+                  "assemblyName": "peach",
+                  "refName": "Pp02",
+                  "start": 0,
+                  "end": 20000000
+                },
+                {
+                  "assemblyName": "peach",
+                  "refName": "Pp03",
+                  "start": 0,
+                  "end": 20000000
+                },
+                {
+                  "assemblyName": "peach",
+                  "refName": "Pp04",
+                  "start": 0,
+                  "end": 20000000
                 }
               ]
             },
@@ -97,6 +115,24 @@
                 {
                   "assemblyName": "grape",
                   "refName": "chr1",
+                  "start": 0,
+                  "end": 22000000
+                },
+                {
+                  "assemblyName": "grape",
+                  "refName": "chr2",
+                  "start": 0,
+                  "end": 22000000
+                },
+                {
+                  "assemblyName": "grape",
+                  "refName": "chr3",
+                  "start": 0,
+                  "end": 22000000
+                },
+                {
+                  "assemblyName": "grape",
+                  "refName": "chr4",
                   "start": 0,
                   "end": 22000000
                 }

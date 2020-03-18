@@ -98,8 +98,8 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const len = region.end - region.start
       ctx.fillText(region.refName, (current + len / 2) * wt, height + p + 15)
       ctx.beginPath()
-      ctx.moveTo(current + len * wt + p, height + p)
-      ctx.lineTo(current + len * wt + p, p)
+      ctx.moveTo((current + len) * wt + p, height + p)
+      ctx.lineTo((current + len) * wt + p, p)
       ctx.stroke()
       current += len
     })
@@ -112,8 +112,8 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const len = region.end - region.start
       ctx.fillText(region.refName, (current + len / 2) * ht, p - 10)
       ctx.beginPath()
-      ctx.moveTo(current + len * ht + p, width + p)
-      ctx.lineTo(current + len * ht + p, p)
+      ctx.moveTo((current + len) * ht + p, width + p)
+      ctx.lineTo((current + len) * ht + p, p)
       ctx.stroke()
       current += len
     })
