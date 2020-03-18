@@ -172,10 +172,11 @@ export default class ComparativeServerSideRenderer extends RendererType {
       args.views.map(async view => {
         view.features = await this.getFeatures({
           ...args,
-          regions: view.regions,
+          regions: view.displayedRegions,
         })
       }),
     )
+    console.log(args.views)
     checkAbortSignal(args.signal)
 
     const results = await this.render({ ...args })

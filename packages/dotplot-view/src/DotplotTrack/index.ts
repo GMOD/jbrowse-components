@@ -5,7 +5,7 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
-import { types, getParent, Instance } from 'mobx-state-tree'
+import { types, getParent, getSnapshot, Instance } from 'mobx-state-tree'
 import {
   BaseTrackConfig,
   BaseTrack,

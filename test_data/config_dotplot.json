@@ -89,6 +89,12 @@
                   "refName": "Pp01",
                   "start": 0,
                   "end": 200000
+                },
+                {
+                  "assemblyName": "peach",
+                  "refName": "Pp02",
+                  "start": 0,
+                  "end": 200000
                 }
               ]
             },
