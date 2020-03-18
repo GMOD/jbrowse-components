@@ -47,6 +47,18 @@ export default function stateModelFactory(pluginManager: any) {
             .reduce((a, b) => a + b, 0),
         )
       },
+      get verticalBpPerPx() {
+        return this.viewingRegionHeight / this.totalBp[1]
+      },
+      get horizontalBpPerPx() {
+        return this.viewingRegionWidth / this.totalBp[0]
+      },
+      get viewingRegionWidth() {
+        return self.width - self.borderSize * 2
+      },
+      get viewingRegionHeight() {
+        return self.height - self.borderSize * 2
+      },
     }))
     .actions(self => ({
       setDisplayName(name: string) {

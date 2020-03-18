@@ -47,6 +47,88 @@ export default (pluginManager: any) => {
     }
   })
 
+  function DrawGrid(model: DotplotViewModel, ctx: CanvasRenderingContext2D) {
+    const {
+      views,
+      horizontalBpPerPx,
+      verticalBpPerPx,
+      viewingRegionWidth,
+      viewingRegionHeight,
+      height,
+      borderSize,
+    } = model
+    let currWidth = 0
+    ctx.strokeRect(
+      borderSize,
+      borderSize,
+      viewingRegionWidth,
+      viewingRegionHeight,
+    )
+    views[0].displayedRegions.forEach((region: IRegion) => {
+      const len = region.end - region.start
+
+      ctx.beginPath()
+      ctx.moveTo(
+        (currWidth + len) * horizontalBpPerPx + borderSize,
+        height - borderSize,
+      )
+      ctx.lineTo((currWidth + len) * horizontalBpPerPx + borderSize, borderSize)
+      ctx.stroke()
+      currWidth += len
+    })
+    let currHeight = 0
+    views[1].displayedRegions.forEach(region => {
+      const len = region.end - region.start
+
+      ctx.beginPath()
+      ctx.moveTo(
+        viewingRegionWidth + borderSize,
+        (currHeight + len) * verticalBpPerPx + borderSize,
+      )
+      ctx.lineTo(borderSize, (currHeight + len) * verticalBpPerPx + borderSize)
+      ctx.stroke()
+      currHeight += len
+    })
+  }
+
+  function DrawLabels(model: DotplotViewModel, ctx: CanvasRenderingContext2D) {
+    const {
+      views,
+      fontSize,
+      height,
+      borderSize,
+      verticalBpPerPx,
+      horizontalBpPerPx,
+    } = model
+    let currHeight = 0
+    views[0].displayedRegions.forEach(region => {
+      const len = region.end - region.start
+      ctx.fillText(
+        region.refName,
+        (currHeight + len / 2) * horizontalBpPerPx,
+        height - borderSize + fontSize,
+      )
+
+      currHeight += len
+    })
+
+    ctx.save()
+    ctx.translate(0, height)
+    ctx.rotate(-Math.PI / 2)
+    let currWidth = 0
+    views[1].displayedRegions.forEach(region => {
+      const len = region.end - region.start
+      ctx.fillText(
+        region.refName,
+        (currWidth + len / 2) * verticalBpPerPx + borderSize,
+        borderSize - 10,
+      )
+
+      currWidth += len
+    })
+    ctx.restore()
+  }
+
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
     const ref = useRef()
@@ -54,43 +136,12 @@ export default (pluginManager: any) => {
     useEffect(() => {
       if (ref.current) {
         const ctx = ref.current.getContext('2d')
-        const wt = width / totalBp[0]
-        const ht = height / totalBp[1]
-        let current = 0
-        views[0].displayedRegions.forEach((region: IRegion) => {
-          const len = region.end - region.start
-          ctx.fillText(
-            region.refName,
-            (current + len / 2) * wt,
-            height + borderSize + fontSize,
-          )
-          ctx.beginPath()
-          ctx.moveTo((current + len) * wt + borderSize, height + borderSize)
-          ctx.lineTo((current + len) * wt + borderSize, borderSize)
-          ctx.stroke()
-          current += len
-        })
+        DrawLabels(model, ctx)
+        DrawGrid(model, ctx)
 
-        ctx.save()
-        ctx.translate(0, height)
-        ctx.rotate(-Math.PI / 2)
-        current = 0
-        views[1].displayedRegions.forEach(region => {
-          const len = region.end - region.start
-          ctx.fillText(
-            region.refName,
-            (current + len / 2) * ht,
-            borderSize - 10,
-          )
-          ctx.beginPath()
-          ctx.moveTo((current + len) * ht + borderSize, width + borderSize)
-          ctx.lineTo((current + len) * ht + borderSize, borderSize)
-          ctx.stroke()
-          current += len
-        })
         ctx.restore()
       }
-    }, [borderSize, fontSize, height, totalBp, views, width])
+    }, [borderSize, fontSize, height, model, totalBp, views, width])
     return (
       <div>
         <Header model={model} />
