@@ -108,6 +108,11 @@ export default class extends BaseAdapter {
                     start: record[index].start,
                     end: record[index].end,
                     refName: record[index].refName,
+                    mate: {
+                      start: record[+!index].start,
+                      end: record[+!index].end,
+                      refName: record[+!index].refName,
+                    },
                   },
                 }),
               )

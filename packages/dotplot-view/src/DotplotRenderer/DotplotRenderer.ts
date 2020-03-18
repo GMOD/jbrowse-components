@@ -2,6 +2,7 @@
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import {
   createCanvas,
   createImageBitmap,
@@ -17,7 +18,7 @@ interface DotplotRenderProps {
   highResolutionScaling: number
   linkedTrack: string
   pluginManager: any
-  views: { displayedRegions: IRegion[] }[]
+  views: { features: Feature[]; displayedRegions: IRegion[] }[]
 }
 
 interface DotplotRenderingProps extends DotplotRenderProps {
@@ -31,6 +32,24 @@ interface DotplotImageData {
   maxHeightReached: boolean
 }
 
+function bpToPx(self: any, pxPerBp: number, refName: string, coord: number) {
+  let offsetBp = 0
+
+  const index = self.displayedRegions.findIndex((r: IRegion) => {
+    if (refName === r.refName && coord >= r.start && coord <= r.end) {
+      offsetBp += self.horizontallyFlipped ? r.end - coord : coord - r.start
+      return true
+    }
+    offsetBp += r.end - r.start
+    return false
+  })
+  const foundRegion = self.displayedRegions[index]
+  if (foundRegion) {
+    return Math.round(offsetBp * pxPerBp)
+  }
+  return undefined
+}
+
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
   async makeImageData(props: DotplotRenderProps) {
     const {
@@ -40,7 +59,11 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       config,
       views,
     } = props
-
+    const totalBp = views.map(view =>
+      view.displayedRegions
+        .map(region => region.end - region.start)
+        .reduce((a, b) => a + b, 0),
+    )
     const canvas = createCanvas(
       Math.ceil(totalWidth * scale),
       totalHeight * scale,
@@ -51,8 +74,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     // background
     ctx.fillStyle = 'white'
     ctx.fillRect(0, 0, totalWidth, totalHeight)
+    ctx.lineWidth = 1
 
-    // border
+    // draw border
     const p = 20
     ctx.strokeStyle = 'black'
     ctx.moveTo(p, p)
@@ -64,21 +88,19 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const width = totalWidth - 2 * p
     const height = totalHeight - 2 * p
 
-    const totalBp = views.map(view =>
-      view.displayedRegions
-        .map(region => region.end - region.start)
-        .reduce((a, b) => a + b, 0),
-    )
-
     const wt = width / totalBp[0]
     const ht = height / totalBp[1]
     ctx.fillStyle = 'black'
     ctx.textAlign = 'center'
+
     let current = 0
     views[0].displayedRegions.forEach(region => {
       const len = region.end - region.start
-
       ctx.fillText(region.refName, (current + len / 2) * wt, height + p + 15)
+      ctx.beginPath()
+      ctx.moveTo(current + len * wt + p, height + p)
+      ctx.lineTo(current + len * wt + p, p)
+      ctx.stroke()
       current += len
     })
 
@@ -89,11 +111,62 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     views[1].displayedRegions.forEach(region => {
       const len = region.end - region.start
       ctx.fillText(region.refName, (current + len / 2) * ht, p - 10)
+      ctx.beginPath()
+      ctx.moveTo(current + len * ht + p, width + p)
+      ctx.lineTo(current + len * ht + p, p)
+      ctx.stroke()
       current += len
     })
     ctx.restore()
 
-    readConfObject(config, 'color')
+    // clip method avoids drawing outside box
+    ctx.rect(p, p, width, height)
+    ctx.stroke()
+    ctx.clip()
+
+    ctx.lineWidth = 3
+    ctx.fillStyle = readConfObject(config, 'color')
+    views[0].features.forEach(feature => {
+      const start = feature.get('start')
+      const end = feature.get('end')
+      const refName = feature.get('refName')
+      const mate = feature.get('mate')
+      const b1 = bpToPx(views[0], wt, refName, start)
+      const b2 = bpToPx(views[0], wt, refName, end)
+      const e1 = bpToPx(views[1], ht, mate.refName, mate.start)
+      const e2 = bpToPx(views[1], ht, mate.refName, mate.end)
+      if (b1 && b2 && e1 && e2) {
+        if (b1 - b2 < 3 && e1 - e2 < 3) {
+          ctx.fillRect(b1, e1, 3, 3)
+        } else {
+          ctx.beginPath()
+          ctx.moveTo(b1, e1)
+          ctx.lineTo(b2, e2)
+          ctx.stroke()
+        }
+      }
+    })
+    views[1].features.forEach(feature => {
+      const start = feature.get('start')
+      const end = feature.get('end')
+      const refName = feature.get('refName')
+      const mate = feature.get('mate')
+      const b1 = bpToPx(views[0], wt, refName, start)
+      const b2 = bpToPx(views[0], wt, refName, end)
+      const e1 = bpToPx(views[1], ht, mate.refName, mate.start)
+      const e2 = bpToPx(views[1], ht, mate.refName, mate.end)
+      if (b1 && b2 && e1 && e2) {
+        if (b1 - b2 < 3 && e1 - e2 < 3) {
+          ctx.fillRect(b1, e1, 3, 3)
+        } else {
+          ctx.beginPath()
+          ctx.moveTo(b1, e1)
+          ctx.lineTo(b2, e2)
+          ctx.stroke()
+        }
+      }
+    })
+
     // ctx.fillStyle = 'red' // readConfObject(config, 'color')
     // // const drawMode = readConfObject(config, 'drawMode')
     // ctx.fillRect(0, 0, 100, 100)

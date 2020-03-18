@@ -62,7 +62,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       },
       get renderProps() {
         return {
-          width: 500,
+          width: 800,
           height: 500,
         }
       },
