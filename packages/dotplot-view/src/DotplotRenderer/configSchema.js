@@ -2,13 +2,13 @@ import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import { types } from 'mobx-state-tree'
 
 export default ConfigurationSchema(
-  'BreakpointSplitRenderer',
+  'DotplotRenderer',
   {
     drawMode: {
       type: 'stringEnum',
       description: 'drawing mode',
-      model: types.enumeration('Rendering', ['spline', 'bracket']),
-      defaultValue: 'spline',
+      model: types.enumeration('Rendering', ['normal']),
+      defaultValue: 'normal',
     },
     color: {
       type: 'color',
