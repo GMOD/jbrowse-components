@@ -94,6 +94,10 @@ export default (pluginManager: any, configSchema: any) => {
             key: 'first',
           },
           {
+            title: 'Base Pair',
+            key: 'bp',
+          },
+          {
             title: 'Clear Sort',
             key: '',
           },

@@ -83,6 +83,8 @@ export default class extends BoxRendererType {
     }
   }
 
+  // TODOSORT: write sorting inside here and util, props should contain a sort by this time
+  // look at logic related to filter to see if any special logic is necessary
   async makeImageData(props: PileupRenderProps) {
     const {
       features,
@@ -100,6 +102,8 @@ export default class extends BoxRendererType {
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const w = Math.max(minFeatWidth, pxPerBp)
 
+    // TODOSORT: this is where the layout is generated, feature needs to be sorted before here
+    // might be interblock dependencies watch out for them
     const layoutRecords = iterMap(
       features.values(),
       feature =>
@@ -136,6 +140,10 @@ export default class extends BoxRendererType {
       const { feature, leftPx, rightPx, topPx, heightPx } = feat
       ctx.fillStyle = readConfObject(config, 'color', [feature])
       ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
+      // TODOSORT: use Mismatch in util function
+      //       Array.from(features)
+      // [...features] transform map -> array then sort the array base on criteria
+      // then turn back into map and pass back into here possibly
       const mismatches: Mismatch[] =
         bpPerPx < 10 ? feature.get('mismatches') : feature.get('skips_and_dels')
       if (mismatches) {

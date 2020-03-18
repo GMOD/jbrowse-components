@@ -234,6 +234,7 @@ export default class ServerSideRenderer extends RendererType {
     checkAbortSignal(args.signal)
     this.deserializeArgsInWorker(args)
 
+    // TODOSORT: args should have a sort "flag"/object by this point
     const features = await this.getFeatures(args)
     checkAbortSignal(args.signal)
 

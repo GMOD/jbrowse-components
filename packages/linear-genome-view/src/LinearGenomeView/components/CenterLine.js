@@ -21,10 +21,10 @@ const useStyles = makeStyles(() => ({
 }))
 
 function CenterLine({ model }) {
-  const { bpPerPx, headerHeight, dynamicBlocks, controlsWidth } = model
+  const { bpPerPx, headerHeight, viewingRegionWidth, controlsWidth } = model
   const ref = useRef()
   const classes = useStyles()
-  const startingPosition = dynamicBlocks.totalWidthPx / 2 + controlsWidth
+  const startingPosition = viewingRegionWidth / 2 + controlsWidth
 
   return (
     <div
