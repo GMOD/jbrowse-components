@@ -227,7 +227,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       trackError: track.error,
       renderArgs: {
         assemblyName: self.region.assemblyName,
-        region: self.region,
+        region: getSnapshot(self.region),
         adapterType: track.adapterType.name,
         adapterConfig,
         sequenceAdapterType: sequenceConfig.type,
@@ -273,7 +273,8 @@ async function renderBlockEffect(
   } = props as RenderProps
 
   if (cannotBeRenderedReason) {
-    return { cannotBeRenderedReason }
+    self.setMessage(cannotBeRenderedReason)
+    return undefined
   }
 
   renderArgs.signal = signal
