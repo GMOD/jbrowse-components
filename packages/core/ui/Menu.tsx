@@ -229,7 +229,9 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
       menuOption.type === 'checkbox' ||
       menuOption.type === 'radio',
   )
-  const hasIcon = menuOptions.some(menuOption => 'icon' in menuOption)
+  const hasIcon = menuOptions.some(
+    menuOption => 'icon' in menuOption && menuOption.icon,
+  )
   const menuItemStyle: MenuItemStyleProp = {}
   if (hasEndDecoration) {
     menuItemStyle.paddingRight = 48
