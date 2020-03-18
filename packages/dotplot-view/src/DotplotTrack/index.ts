@@ -60,6 +60,12 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       get adapterConfig() {
         return getConf(self, 'adapter')
       },
+      get renderProps() {
+        return {
+          width: 100,
+          height: 100,
+        }
+      },
     }))
     .actions(self => {
       let renderInProgress: undefined | AbortController

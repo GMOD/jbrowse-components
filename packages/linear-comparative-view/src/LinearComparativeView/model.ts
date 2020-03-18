@@ -184,5 +184,9 @@ export default function stateModelFactory(pluginManager: any) {
     }))
 }
 
-export type LinearComparativeViewModel = ReturnType<typeof stateModelFactory>
-export type LCV = Instance<LinearComparativeViewModel>
+export type LinearComparativeViewStateModel = ReturnType<
+  typeof stateModelFactory
+>
+export type LinearComparativeViewModel = Instance<
+  LinearComparativeViewStateModel
+>

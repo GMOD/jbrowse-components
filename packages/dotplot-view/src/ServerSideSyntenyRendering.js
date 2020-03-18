@@ -1,5 +1,4 @@
 import React, { useRef, useEffect } from 'react'
-import { getParent } from 'mobx-state-tree'
 import { observer, PropTypes } from 'mobx-react'
 import { ImageBitmapType } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 
@@ -9,13 +8,8 @@ import { ImageBitmapType } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill
  */
 function ServerSideSyntenyRendering(props) {
   const { model } = props
-  const {
-    imageData,
-    effectiveWidth: width,
-    effectiveHeight: height,
-    style,
-    highResolutionScaling,
-  } = model
+  const { imageData, style, renderProps } = model
+  const { width, height, highResolutionScaling = 1 } = renderProps
 
   const featureCanvas = useRef()
 
@@ -25,8 +19,6 @@ function ServerSideSyntenyRendering(props) {
     }
     const canvas = featureCanvas.current
     const context = canvas.getContext('2d')
-    context.clearRect(0, 0, width, height)
-    context.resetTransform()
     if (imageData.commands) {
       imageData.commands.forEach(command => {
         if (command.type === 'strokeStyle') {

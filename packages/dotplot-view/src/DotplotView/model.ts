@@ -106,4 +106,4 @@ export default function stateModelFactory(pluginManager: any) {
 }
 
 export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>
-export type DotplotView = Instance<DotplotViewStateModel>
+export type DotplotViewModel = Instance<DotplotViewStateModel>

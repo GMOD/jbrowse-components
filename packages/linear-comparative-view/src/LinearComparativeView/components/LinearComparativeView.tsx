@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { makeStyles } from '@material-ui/core/styles'
 import useComponentSize from '@rehooks/component-size'
-import { LCV } from '../model'
+import { LinearComparativeViewModel } from '../model'
 
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
@@ -55,7 +55,7 @@ export default (pluginManager: any) => {
   })
 
   const Overlays = observer(
-    ({ model }: { model: LCV; comparativeGroup: string }) => (
+    ({ model }: { model: LinearComparativeViewModel }) => (
       <>
         {model.tracks.map((track: any) => {
           const { ReactComponent } = track
@@ -69,73 +69,81 @@ export default (pluginManager: any) => {
   )
 
   // The comparative is in the middle of the views
-  const MiddleComparativeView = observer(({ model }: { model: LCV }) => {
-    const classes = useStyles()
-    const { views, controlsWidth } = model
-    const { ReactComponent } = pluginManager.getViewType(views[0].type)
-    model.setHeight(100)
-    return (
-      <div>
-        <Header model={model} />
-        <div className={classes.container}>
-          <div className={classes.content}>
-            <div style={{ position: 'relative' }}>
-              <div className={classes.viewContainer}>
-                <ReactComponent model={views[0]} />
-              </div>
-              <div style={{ display: 'flex' }}>
-                <div style={{ width: controlsWidth, flexShrink: 0 }} />
-                <Overlays model={model} />
-              </div>
-              <div className={classes.viewContainer}>
-                <ReactComponent model={views[1]} />
+  const MiddleComparativeView = observer(
+    ({ model }: { model: LinearComparativeViewModel }) => {
+      const classes = useStyles()
+      const { views, controlsWidth } = model
+      const { ReactComponent } = pluginManager.getViewType(views[0].type)
+      model.setHeight(100)
+      return (
+        <div>
+          <Header model={model} />
+          <div className={classes.container}>
+            <div className={classes.content}>
+              <div style={{ position: 'relative' }}>
+                <div className={classes.viewContainer}>
+                  <ReactComponent model={views[0]} />
+                </div>
+                <div style={{ display: 'flex' }}>
+                  <div style={{ width: controlsWidth, flexShrink: 0 }} />
+                  <Overlays model={model} />
+                </div>
+                <div className={classes.viewContainer}>
+                  <ReactComponent model={views[1]} />
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    )
-  })
-  const OverlayComparativeView = observer(({ model }: { model: LCV }) => {
-    const classes = useStyles()
-    const { views, controlsWidth } = model
-    const ref = useRef(null)
-    const size = useComponentSize(ref)
-    model.setHeight(size.height - 20)
-    return (
-      <div>
-        <Header model={model} />
-        <div className={classes.container} ref={ref}>
-          <div className={classes.content}>
-            <div style={{ position: 'relative' }}>
-              {views.map(view => {
-                const { ReactComponent } = pluginManager.getViewType(view.type)
-                return (
-                  <div key={view.id} className={classes.viewContainer}>
-                    <ReactComponent model={view} />
-                  </div>
-                )
-              })}
+      )
+    },
+  )
+  const OverlayComparativeView = observer(
+    ({ model }: { model: LinearComparativeViewModel }) => {
+      const classes = useStyles()
+      const { views, controlsWidth } = model
+      const ref = useRef(null)
+      const size = useComponentSize(ref)
+      model.setHeight(size.height - 20)
+      return (
+        <div>
+          <Header model={model} />
+          <div className={classes.container} ref={ref}>
+            <div className={classes.content}>
+              <div style={{ position: 'relative' }}>
+                {views.map(view => {
+                  const { ReactComponent } = pluginManager.getViewType(
+                    view.type,
+                  )
+                  return (
+                    <div key={view.id} className={classes.viewContainer}>
+                      <ReactComponent model={view} />
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            <div className={classes.overlay}>
+              <div style={{ width: controlsWidth, flexShrink: 0 }} />
+              <Overlays model={model} />
             </div>
           </div>
-          <div className={classes.overlay}>
-            <div style={{ width: controlsWidth, flexShrink: 0 }} />
-            <Overlays model={model} />
-          </div>
         </div>
-      </div>
-    )
-  })
+      )
+    },
+  )
 
-  const LinearComparativeView = observer(({ model }: { model: LCV }) => {
-    const middle = model.tracks.some((t: any) => getConf(t, 'middle'))
-    // const noMiddle = model.tracks.some((t: any) => !getConf(t, 'middle'))
-    return middle ? (
-      <MiddleComparativeView model={model} />
-    ) : (
-      <OverlayComparativeView model={model} />
-    )
-  })
+  const LinearComparativeView = observer(
+    ({ model }: { model: LinearComparativeView }) => {
+      const middle = model.tracks.some((t: any) => getConf(t, 'middle'))
+      // const noMiddle = model.tracks.some((t: any) => !getConf(t, 'middle'))
+      return middle ? (
+        <MiddleComparativeView model={model} />
+      ) : (
+        <OverlayComparativeView model={model} />
+      )
+    },
+  )
 
   MiddleComparativeView.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,

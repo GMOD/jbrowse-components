@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { withSize } from 'react-sizeme'
-import { DotplotView } from '../model'
+import { DotplotViewModel } from '../model'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default ({ jbrequire }: { jbrequire: any }) => {
@@ -34,7 +34,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
     },
   }))
 
-  const Controls = observer(({ model }: { model: DotplotView }) => {
+  const Controls = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
     return (
       <>
@@ -53,7 +53,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
 
-  function TextFieldOrTypography({ model }: { model: DotplotView }) {
+  function TextFieldOrTypography({ model }: { model: DotplotViewModel }) {
     const classes = useStyles()
     const [name, setName] = useState(model.displayName)
     const [edit, setEdit] = useState(false)
@@ -96,7 +96,13 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   }
 
   const Header = observer(
-    ({ model, size }: { model: DotplotView; size: { height: number } }) => {
+    ({
+      model,
+      size,
+    }: {
+      model: DotplotViewModel
+      size: { height: number }
+    }) => {
       const classes = useStyles()
 
       model.setHeaderHeight(size.height)

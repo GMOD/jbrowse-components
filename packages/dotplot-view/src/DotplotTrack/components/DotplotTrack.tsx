@@ -1,13 +1,14 @@
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { LinearComparativeTrack as LCT } from '..'
+import { DotplotTrack as DotplotTrackModel } from '..'
 
-const LinearComparativeTrack: React.FC<{
-  model: LCT
+const DotplotTrack: React.FC<{
+  model: DotplotTrackModel
   children?: React.ReactNode
 }> = props => {
   const { model, children } = props
+  console.log('dotplot track component')
   return (
     <div>
       <model.ReactComponent2 {...props} />
@@ -15,12 +16,12 @@ const LinearComparativeTrack: React.FC<{
     </div>
   )
 }
-LinearComparativeTrack.propTypes = {
+DotplotTrack.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
   children: PropTypes.element,
 }
 
-LinearComparativeTrack.defaultProps = {
+DotplotTrack.defaultProps = {
   children: null,
 }
-export default observer(LinearComparativeTrack)
+export default observer(DotplotTrack)

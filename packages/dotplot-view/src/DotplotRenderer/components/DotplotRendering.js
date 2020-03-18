@@ -3,13 +3,13 @@ import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
 
-function BreakpointSplitRendering(props) {
+function DotplotRendering(props) {
   const { width, height } = props
 
   const canvasWidth = Math.ceil(width)
   return (
     <div
-      className="BreakpointSplitRendering"
+      className="DotplotRendering"
       style={{ position: 'relative', width: canvasWidth, height }}
     >
       <PrerenderedCanvas
@@ -20,7 +20,7 @@ function BreakpointSplitRendering(props) {
   )
 }
 
-BreakpointSplitRendering.propTypes = {
+DotplotRendering.propTypes = {
   // layout: ReactPropTypes.shape({
   //   getRectangles: ReactPropTypes.func.isRequired,
   // }).isRequired,
@@ -61,7 +61,7 @@ BreakpointSplitRendering.propTypes = {
   onClick: ReactPropTypes.func,
 }
 
-BreakpointSplitRendering.defaultProps = {
+DotplotRendering.defaultProps = {
   // blockKey: undefined,
   // horizontallyFlipped: false,
   // trackModel: {
@@ -85,4 +85,4 @@ BreakpointSplitRendering.defaultProps = {
   onClick: undefined,
 }
 
-export default observer(BreakpointSplitRendering)
+export default observer(DotplotRendering)

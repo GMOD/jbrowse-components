@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { makeStyles } from '@material-ui/core/styles'
-import { DotplotView as DotplotViewModel } from '../model'
+import { DotplotViewModel } from '../model'
 
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
@@ -45,9 +45,10 @@ export default (pluginManager: any) => {
     }
   })
 
-  const Overlays = observer(
-    ({ model }: { model: DotplotViewModel; comparativeGroup: string }) => (
-      <>
+  const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
+    return (
+      <div>
+        <Header model={model} />
         {model.tracks.map((track: any) => {
           const { ReactComponent } = track
 
@@ -55,15 +56,6 @@ export default (pluginManager: any) => {
             <ReactComponent key={getConf(track, 'trackId')} model={track} />
           ) : null
         })}
-      </>
-    ),
-  )
-
-  const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
-    return (
-      <div>
-        <Header model={model} />
-        <div style={{ width: '100%', height: 40, background: 'grey' }} />
       </div>
     )
   })

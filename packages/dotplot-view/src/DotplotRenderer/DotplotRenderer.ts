@@ -1,8 +1,6 @@
 /* eslint-disable  no-continue,@typescript-eslint/no-explicit-any */
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-// import { stateModelFactory } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import {
   createCanvas,
   createImageBitmap,
@@ -39,8 +37,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const ctx = canvas.getContext('2d')
     ctx.scale(scale, scale)
     ctx.strokeStyle = readConfObject(config, 'color')
-    ctx.fillStyle = readConfObject(config, 'color')
-    const drawMode = readConfObject(config, 'drawMode')
+    ctx.fillStyle = 'red' // readConfObject(config, 'color')
+    // const drawMode = readConfObject(config, 'drawMode')
+    ctx.fillRect(0, 0, 100, 100)
 
     const imageData = await createImageBitmap(canvas)
     return {
