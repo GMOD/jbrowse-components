@@ -26,7 +26,11 @@
         "type": "PAFAdapter",
         "pafLocation": {
           "uri": "test_data/peach_grape.paf"
-        }
+        },
+        "assemblyNames": [
+          "peach",
+          "grape"
+        ]
       },
       "renderer": {
         "type": "DotplotRenderer"

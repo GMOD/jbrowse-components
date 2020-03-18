@@ -41,7 +41,6 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     ctx.strokeStyle = readConfObject(config, 'color')
     ctx.fillStyle = readConfObject(config, 'color')
     const drawMode = readConfObject(config, 'drawMode')
-    console.log('logging')
 
     const imageData = await createImageBitmap(canvas)
     return {

@@ -1,17 +1,17 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 
-export { default as AdapterClass } from './MCScanAnchorsAdapter'
+export { default as AdapterClass } from './PAFAdapter'
 
 export const configSchema = ConfigurationSchema(
-  'MCScanAnchorsAdapter',
+  'PAFAdapter',
   {
-    mcscanAnchorsLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/mcscan.anchors' },
-    },
-    subadapters: {
-      type: 'frozen',
+    assemblyNames: {
+      type: 'stringArray',
       defaultValue: [],
+    },
+    pafLocation: {
+      type: 'fileLocation',
+      defaultValue: { uri: '/path/to/file.paf' },
     },
   },
   { explicitlyTyped: true },

@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  getConf,
   readConfObject,
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
-import { types, Instance, getParent, getSnapshot } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import {
   BaseTrackConfig,
   BaseTrack,
@@ -19,10 +20,8 @@ export function configSchemaFactory(pluginManager: any) {
     'DotplotTrack',
     {
       viewType: 'DotplotView',
-      middle: {
-        type: 'boolean',
-        defaultValue: true,
-      },
+      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
+      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
     },
     {
       baseConfiguration: BaseTrackConfig,
@@ -54,6 +53,14 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           ReactComponent2: (ServerSideRenderedBlockContent as unknown) as React.FC,
         })),
     )
+    .views(self => ({
+      get rendererTypeName() {
+        return getConf(self, 'renderer').type
+      },
+      get adapterConfig() {
+        return getConf(self, 'adapter')
+      },
+    }))
     .actions(self => {
       let renderInProgress: undefined | AbortController
 
@@ -128,67 +135,40 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
     })
 }
 function renderBlockData(self: DotplotTrack) {
-  try {
-    const { rpcManager } = getSession(self) as any
-    const track = self
+  const { rpcManager } = getSession(self) as any
+  const track = self
 
-    const { renderProps, rendererType } = track
+  const { renderProps, rendererType } = track
 
-    // Alternative to readConfObject(config) is below
-    // used because renderProps is something under our control.
-    // Compare to serverSideRenderedBlock
-    readConfObject(self.configuration)
+  // Alternative to readConfObject(config) is below
+  // used because renderProps is something under our control.
+  // Compare to serverSideRenderedBlock
+  readConfObject(self.configuration)
 
-    const sequenceConfig: { type?: string } = {}
+  const sequenceConfig: { type?: string } = {}
 
-    const { adapterConfig } = self
-    const adapterConfigId = jsonStableStringify(adapterConfig)
-    const parentView = getParent(self, 2)
-    return {
-      rendererType,
-      rpcManager,
+  const { adapterConfig } = self
+  const adapterConfigId = jsonStableStringify(adapterConfig)
+  return {
+    rendererType,
+    rpcManager,
+    renderProps,
+    renderArgs: {
+      width: 100,
+      height: 100,
+      views: [
+        { regions: [{ refName: 'Pp01', start: 0, end: 1000000 }] },
+        { regions: [{ refName: 'chr1', start: 0, end: 1000000 }] },
+      ],
+      adapterType: self.adapterType.name,
+      adapterConfig,
+      sequenceAdapterType: sequenceConfig.type,
+      sequenceAdapterConfig: sequenceConfig,
+      rendererType: rendererType.name,
       renderProps,
-      trackError: track.error,
-      renderArgs: {
-        adapterType: self.adapterType.name,
-        adapterConfig,
-        sequenceAdapterType: sequenceConfig.type,
-        sequenceAdapterConfig: sequenceConfig,
-        rendererType: rendererType.name,
-        views: parentView.views.map((view: any) => {
-          return {
-            ...(getSnapshot(view) as any),
-            regions: view.staticBlocks.getRegions(),
-            staticBlocks: view.staticBlocks.getRegions(),
-            dynamicBlocks: view.dynamicBlocks.getRegions(),
-            displayedRegions: view.displayedRegions,
-            features: JSON.stringify(view.features),
-            // important params for overlays
-            headerHeight: view.headerHeight,
-            height: view.height,
-            scaleBarHeight: view.scaleBarHeight,
-            // details about inner tracks such as layoutFeatures for overlays
-            tracks: view.tracks.map((t: any) => {
-              return {
-                ...(getSnapshot(t) as any),
-                layoutFeatures: Array.from(t.layoutFeatures.entries()),
-                height: t.height,
-                scrollTop: t.scrollTop,
-                skip: t.SNPCoverageTrack ? t.SNPCoverageTrack.height + 5 : 0,
-              }
-            }),
-          }
-        }),
-        renderProps,
-        sessionId: adapterConfigId,
-        timeout: 1000000, // 10000,
-      },
-    }
-  } catch (error) {
-    console.error(error)
-    return {
-      trackError: error,
-    }
+      sessionId: adapterConfigId,
+      timeout: 1000000, // 10000,
+    },
   }
 }
 
@@ -200,8 +180,6 @@ async function renderBlockEffect(
 ) {
   if (!props) {
     throw new Error('cannot render with no props')
-  } else if (props.trackError) {
-    throw new Error(props.trackError)
   }
 
   const { rendererType, rpcManager, renderArgs } = props
