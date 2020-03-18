@@ -93,31 +93,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     ctx.fillStyle = 'black'
     ctx.textAlign = 'center'
 
-    let current = 0
-    views[0].displayedRegions.forEach(region => {
-      const len = region.end - region.start
-      ctx.fillText(region.refName, (current + len / 2) * wt, height + p + 15)
-      ctx.beginPath()
-      ctx.moveTo((current + len) * wt + p, height + p)
-      ctx.lineTo((current + len) * wt + p, p)
-      ctx.stroke()
-      current += len
-    })
-
-    ctx.save()
-    ctx.translate(0, totalHeight)
-    ctx.rotate(-Math.PI / 2)
-    current = 0
-    views[1].displayedRegions.forEach(region => {
-      const len = region.end - region.start
-      ctx.fillText(region.refName, (current + len / 2) * ht, p - 10)
-      ctx.beginPath()
-      ctx.moveTo((current + len) * ht + p, width + p)
-      ctx.lineTo((current + len) * ht + p, p)
-      ctx.stroke()
-      current += len
-    })
-    ctx.restore()
+    const current = 0
 
     // clip method avoids drawing outside box
     ctx.rect(p, p, width, height)

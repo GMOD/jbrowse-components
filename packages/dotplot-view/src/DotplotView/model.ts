@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getSession } from '@gmod/jbrowse-core/util'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { types, Instance } from 'mobx-state-tree'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { transaction } from 'mobx'
@@ -23,10 +24,14 @@ export default function stateModelFactory(pluginManager: any) {
       headerHeight: 0,
       width: 800,
       height: defaultHeight,
+      borderSize: 20,
+      fontSize: 15,
       displayName: 'dotplot',
       trackSelectorType: 'hierarchical',
       assemblyNames: types.array(types.string),
-      views: types.frozen(),
+      views: types.frozen<
+        { features: Feature[]; displayedRegions: IRegion[] }[]
+      >(),
       tracks: types.array(
         pluginManager.pluggableMstType(
           'track',
@@ -34,6 +39,15 @@ export default function stateModelFactory(pluginManager: any) {
         ) as BaseTrackStateModel,
       ),
     })
+    .views(self => ({
+      get totalBp() {
+        return self.views.map(view =>
+          view.displayedRegions
+            .map(region => region.end - region.start)
+            .reduce((a, b) => a + b, 0),
+        )
+      },
+    }))
     .actions(self => ({
       setDisplayName(name: string) {
         self.displayName = name
