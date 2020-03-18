@@ -11,7 +11,15 @@ import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
-type PafRecord = [INoAssemblyRegion, INoAssemblyRegion]
+interface PafRecord {
+  records: INoAssemblyRegion[]
+  extra: {
+    blockLen: number
+    mappingQual: number
+    numMatches: number
+    strand: string
+  }
+}
 
 export default class extends BaseAdapter {
   private initialized = false
@@ -41,19 +49,32 @@ export default class extends BaseAdapter {
         if (line.length) {
           const [
             chr1,
-            ,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            queryRefSeqLen,
             start1,
             end1,
-            strand1,
+            strand,
             chr2,
-            ,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            targetRefSeqLen,
             start2,
             end2,
+            numMatches,
+            blockLen,
+            mappingQual,
           ] = line.split('\t')
-          this.pafRecords[index] = [
-            { refName: chr1, start: +start1, end: +end1 },
-            { refName: chr2, start: +start2, end: +end2 },
-          ]
+          this.pafRecords[index] = {
+            records: [
+              { refName: chr1, start: +start1, end: +end1 },
+              { refName: chr2, start: +start2, end: +end2 },
+            ],
+            extra: {
+              numMatches: +numMatches,
+              blockLen: +blockLen,
+              strand,
+              mappingQual: +mappingQual,
+            },
+          }
         }
       })
 
@@ -90,14 +111,14 @@ export default class extends BaseAdapter {
       const index = this.assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
         for (let i = 0; i < this.pafRecords.length; i++) {
-          const record = this.pafRecords[i]
-          if (record[index].refName === region.refName) {
+          const { extra, records } = this.pafRecords[i]
+          if (records[index].refName === region.refName) {
             if (
               doesIntersect2(
                 region.start,
                 region.end,
-                record[index].start,
-                record[index].end,
+                records[index].start,
+                records[index].end,
               )
             ) {
               observer.next(
@@ -105,14 +126,15 @@ export default class extends BaseAdapter {
                   data: {
                     uniqueId: `row_${i}`,
                     syntenyId: i,
-                    start: record[index].start,
-                    end: record[index].end,
-                    refName: record[index].refName,
+                    start: records[index].start,
+                    end: records[index].end,
+                    refName: records[index].refName,
                     mate: {
-                      start: record[+!index].start,
-                      end: record[+!index].end,
-                      refName: record[+!index].refName,
+                      start: records[+!index].start,
+                      end: records[+!index].end,
+                      refName: records[+!index].refName,
                     },
+                    ...extra,
                   },
                 }),
               )
