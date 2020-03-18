@@ -5,7 +5,7 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
-import { types, Instance } from 'mobx-state-tree'
+import { types, getParent, Instance } from 'mobx-state-tree'
 import {
   BaseTrackConfig,
   BaseTrack,
@@ -62,8 +62,8 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       },
       get renderProps() {
         return {
-          width: 100,
-          height: 100,
+          width: 500,
+          height: 500,
         }
       },
     }))
@@ -160,12 +160,7 @@ function renderBlockData(self: DotplotTrack) {
     rpcManager,
     renderProps,
     renderArgs: {
-      width: 100,
-      height: 100,
-      views: [
-        { regions: [{ refName: 'Pp01', start: 0, end: 1000000 }] },
-        { regions: [{ refName: 'chr1', start: 0, end: 1000000 }] },
-      ],
+      views: getParent(self, 2).views,
       adapterType: self.adapterType.name,
       adapterConfig,
       sequenceAdapterType: sequenceConfig.type,

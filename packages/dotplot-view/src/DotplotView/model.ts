@@ -13,7 +13,7 @@ type ConfigRelationship = { type: string; target: string }
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
   const { types: jbrequiredTypes, getParent } = jbrequire('mobx-state-tree')
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const { ElementId, Region } = jbrequire('@gmod/jbrowse-core/mst-types')
 
   const defaultHeight = 400
   return (jbrequiredTypes as Instance<typeof types>)
@@ -26,6 +26,7 @@ export default function stateModelFactory(pluginManager: any) {
       displayName: 'dotplot',
       trackSelectorType: 'hierarchical',
       assemblyNames: types.array(types.string),
+      views: types.array(types.frozen()),
       tracks: types.array(
         pluginManager.pluggableMstType(
           'track',

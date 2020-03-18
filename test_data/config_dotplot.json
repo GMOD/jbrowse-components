@@ -1,16 +1,39 @@
 {
   "configuration": {
-    "rpc": {
-      "defaultDriver": "MainThreadRpcDriver"
-    },
     "updateUrl": true
   },
   "assemblies": [
     {
-      "name": "hg19",
-      "aliases": [
-        "GRCh37"
-      ]
+      "name": "grape",
+      "sequence": {
+        "trackId": "grape_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/grape.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
+    },
+    {
+      "name": "peach",
+      "sequence": {
+        "trackId": "peach_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/peach.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
     }
   ],
   "tracks": [
@@ -58,21 +81,27 @@
             "grape",
             "peach"
           ],
-          "displayedRegions": [
-            [
-              {
-                "refName": "Pp01",
-                "start": 0,
-                "end": 100000
-              }
-            ],
-            [
-              {
-                "refName": "chr1",
-                "start": 0,
-                "end": 100000
-              }
-            ]
+          "views": [
+            {
+              "displayedRegions": [
+                {
+                  "assemblyName": "peach",
+                  "refName": "Pp01",
+                  "start": 0,
+                  "end": 200000
+                }
+              ]
+            },
+            {
+              "displayedRegions": [
+                {
+                  "assemblyName": "grape",
+                  "refName": "chr1",
+                  "start": 0,
+                  "end": 200000
+                }
+              ]
+            }
           ],
           "headerHeight": 44,
           "width": 1850,

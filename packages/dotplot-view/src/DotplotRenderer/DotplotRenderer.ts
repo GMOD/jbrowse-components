@@ -32,6 +32,7 @@ interface DotplotImageData {
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
   async makeImageData(props: DotplotRenderProps) {
     const { highResolutionScaling: scale = 1, width, height, config } = props
+    console.log(props)
 
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d')
