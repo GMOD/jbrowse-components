@@ -1,7 +1,7 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './PAFAdapter'
 
-test('adapter can fetch features from volvox.bam', async () => {
+test('adapter can fetch features from peach_grape.paf', async () => {
   const adapter = new Adapter({
     pafLocation: {
       localPath: require.resolve('./test_data/peach_grape.paf'),
@@ -26,8 +26,7 @@ test('adapter can fetch features from volvox.bam', async () => {
   const fa1 = await features1.pipe(toArray()).toPromise()
   const fa2 = await features2.pipe(toArray()).toPromise()
   expect(fa1.length).toBe(11)
-  expect(fa2.length).toBe(0)
-  // expect(fa1[0].get('refName')).toBe('peach_chr1')
-  // expect(fa2[0].get('refName')).toBe('grape_chr1')
-  // expect(fa1[0].get('syntenyId')).toEqual(fa2[0].get('syntenyId'))
+  expect(fa2.length).toBe(5)
+  expect(fa1[0].get('refName')).toBe('Pp01')
+  expect(fa2[0].get('refName')).toBe('chr1')
 })

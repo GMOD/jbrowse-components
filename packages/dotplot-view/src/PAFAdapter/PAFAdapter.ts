@@ -91,26 +91,26 @@ export default class extends BaseAdapter {
       if (index !== -1) {
         for (let i = 0; i < this.pafRecords.length; i++) {
           const record = this.pafRecords[i]
-          if (index === 0) {
-            if (record[index].refName === region.refName) {
-              if (
-                doesIntersect2(
-                  region.start,
-                  region.end,
-                  record[index].start,
-                  record[index].end,
-                )
-              ) {
-                observer.next(
-                  new SimpleFeature({
-                    data: {
-                      uniqueId: `row_${i}`,
-                      start: record[index].start,
-                      end: record[index].end,
-                    },
-                  }),
-                )
-              }
+          if (record[index].refName === region.refName) {
+            if (
+              doesIntersect2(
+                region.start,
+                region.end,
+                record[index].start,
+                record[index].end,
+              )
+            ) {
+              observer.next(
+                new SimpleFeature({
+                  data: {
+                    uniqueId: `row_${i}`,
+                    syntenyId: i,
+                    start: record[index].start,
+                    end: record[index].end,
+                    refName: record[index].refName,
+                  },
+                }),
+              )
             }
           }
         }

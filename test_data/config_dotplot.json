@@ -15,115 +15,21 @@
   ],
   "tracks": [
     {
-      "type": "StructuralVariantChordTrack",
-      "trackId": "sv_chord_track",
-      "name": "human chord test",
+      "type": "DotplotTrack",
+      "trackId": "dotplot_track",
+      "name": "dotplot",
       "assemblyNames": [
-        "hg19"
+        "grape",
+        "peach"
       ],
       "adapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
-        },
-        "index": {
-          "location": {
-            "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
-          }
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "test_data/peach_grape.paf"
         }
       },
       "renderer": {
-        "type": "StructuralVariantChordRenderer"
-      }
-    },
-    {
-      "type": "VariantTrack",
-      "trackId": "pacbio_vcf",
-      "name": "HG002.hs37d5.bnds",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "PacBio",
-        "VCF"
-      ],
-      "adapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "test_data/pacbio_chr3_chr6.vcf.gz"
-        },
-        "index": {
-          "location": {
-            "uri": "test_data/pacbio_chr3_chr6.vcf.gz.tbi"
-          }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
-      }
-    },
-    {
-      "type": "BreakpointSplitTrack",
-      "trackId": "pacbio_hg002_breakpoint_track",
-      "middle": true,
-      "linkedTrack": "pacbio_hg002_breakpoints",
-      "name": "HG002.hs37d5.11kb breakpoints",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "PacBio",
-        "BAM"
-      ],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "test_data/pacbio_chr3_chr6.bam"
-        },
-        "index": {
-          "location": {
-            "uri": "test_data/pacbio_chr3_chr6.bam.bai"
-          }
-        }
-      },
-      "renderer": {
-        "type": "BreakpointSplitRenderer"
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "pacbio_hg002_breakpoints",
-      "name": "HG002.hs37d5.11kb",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "PacBio",
-        "BAM"
-      ],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "test_data/pacbio_chr3_chr6.bam"
-        },
-        "index": {
-          "location": {
-            "uri": "test_data/pacbio_chr3_chr6.bam.bai"
-          }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
+        "type": "DotplotRenderer"
       }
     }
   ],
