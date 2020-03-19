@@ -141,6 +141,8 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   const { tracks, error } = model
   const classes = useStyles()
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session: any = getSession(model)
   const initialized = !!model.displayedRegions.length
   return (
     <div className={classes.root}>
@@ -160,10 +162,20 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
               </Rubberband>
               {!tracks.length ? (
                 <Container className={classes.noTracksMessage}>
-                  <Typography>
-                    No tracks active, click the "select tracks" button to choose
-                    some.
-                  </Typography>
+                  <Typography>No tracks active.</Typography>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={model.activateTrackSelector}
+                    disabled={
+                      session.visibleDrawerWidget &&
+                      session.visibleDrawerWidget.id ===
+                        'hierarchicalTrackSelector' &&
+                      session.visibleDrawerWidget.view.id === model.id
+                    }
+                  >
+                    Select Tracks
+                  </Button>
                 </Container>
               ) : (
                 tracks.map(track => (

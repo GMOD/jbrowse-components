@@ -397,8 +397,22 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               <p
                 class="MuiTypography-root MuiTypography-body1"
               >
-                No tracks active, click the "select tracks" button to choose some.
+                No tracks active.
               </p>
+              <button
+                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+                tabindex="0"
+                type="button"
+              >
+                <span
+                  class="MuiButton-label"
+                >
+                  Select Tracks
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
             </div>
           </div>
         </div>
@@ -691,8 +705,22 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               <p
                 class="MuiTypography-root MuiTypography-body1"
               >
-                No tracks active, click the "select tracks" button to choose some.
+                No tracks active.
               </p>
+              <button
+                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+                tabindex="0"
+                type="button"
+              >
+                <span
+                  class="MuiButton-label"
+                >
+                  Select Tracks
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
             </div>
           </div>
         </div>
