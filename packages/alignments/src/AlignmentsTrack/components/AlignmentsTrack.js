@@ -1,12 +1,8 @@
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState, useEffect, useRef } from 'react'
 import { YScaleBar } from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
-import Menu from '@material-ui/core/Menu'
-import MenuItem from '@material-ui/core/MenuItem'
-import Icon from '@material-ui/core/Icon'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
+import { Menu } from '@gmod/jbrowse-core/ui'
 import { useTheme } from '@material-ui/core/styles'
-import NestedMenuItem from '@gmod/jbrowse-core/ui/NestedMenuItem'
 import AlignmentsBlockBasedTrack from './AlignmentsBlockBasedTrack'
 
 // import ContextMenu from '@gmod/jbrowse-core/ui/ContextMenu'
@@ -22,11 +18,8 @@ function AlignmentsTrackComponent(props) {
     PileupTrack,
     SNPCoverageTrack,
     height,
-    menuOptions,
-    subMenuOptions,
     showPileup,
     showCoverage,
-    sortedBy,
   } = model
 
   let showScalebar = false
@@ -46,6 +39,14 @@ function AlignmentsTrackComponent(props) {
   }
   const ref = useRef()
   const zIndex = useTheme().zIndex.tooltip // zIndex matches tooltip zindex to bring to front
+
+  const handleMenuItemClick = (
+    event,
+    callback, // : () => void,
+  ) => {
+    callback()
+    handleClose()
+  }
 
   const handleClose = () => {
     setState(initialState)
@@ -74,8 +75,8 @@ function AlignmentsTrackComponent(props) {
         ) : null}
       </AlignmentsBlockBasedTrack>
       <Menu
-        keepMounted
         open={state.mouseY !== null}
+        onMenuItemClick={handleMenuItemClick}
         onClose={handleClose}
         anchorReference="anchorPosition"
         anchorPosition={
@@ -84,57 +85,8 @@ function AlignmentsTrackComponent(props) {
             : undefined
         }
         style={{ zIndex }}
-      >
-        {menuOptions.map(option => {
-          return (
-            <MenuItem
-              key={option.key}
-              onClick={() => {
-                option.callback()
-                handleClose()
-              }}
-              disabled={option.disableCondition || false}
-            >
-              {option.icon ? (
-                <ListItemIcon key={option.key} style={{ minWidth: '30px' }}>
-                  <Icon color="primary" fontSize="small">
-                    {option.icon}
-                  </Icon>
-                </ListItemIcon>
-              ) : null}
-
-              {option.title}
-            </MenuItem>
-          )
-        })}
-        <NestedMenuItem
-          {...props}
-          label="Sort by"
-          parentMenuOpen={state !== initialState}
-          zIndex={zIndex}
-          tabIndex={-1}
-        >
-          {subMenuOptions.map(option => {
-            return (
-              <MenuItem
-                key={option.key}
-                style={{
-                  backgroundColor:
-                    sortedBy !== '' &&
-                    sortedBy === option.key &&
-                    'darkseagreen',
-                }}
-                onClick={() => {
-                  model.sortSelected(option.key)
-                  handleClose()
-                }}
-              >
-                {option.title}
-              </MenuItem>
-            )
-          })}
-        </NestedMenuItem>
-      </Menu>
+        menuOptions={model.menuOptions}
+      />
     </div>
   )
 }

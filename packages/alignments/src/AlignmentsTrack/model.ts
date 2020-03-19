@@ -3,6 +3,7 @@ import {
   ConfigurationReference,
 } from '@gmod/jbrowse-core/configuration'
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { MenuOptions } from '@gmod/jbrowse-core/ui'
 import { types, addDisposer } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import AlignmentsTrackComponent from './components/AlignmentsTrack'
@@ -59,47 +60,45 @@ export default (pluginManager: any, configSchema: any) => {
           },
         }
       },
-      get menuOptions() {
+      get sortOptions() {
         return [
-          {
-            title: self.showCoverage
-              ? 'Hide Coverage Track'
-              : 'Show Coverage Track',
-            key: 'showCoverage',
-            icon: self.showCoverage ? 'visibility_off' : 'visibility',
-            callback: self.toggleCoverage,
-            disableCondition: !self.showPileup,
-          },
-          {
-            title: self.showPileup ? 'Hide Pileup Track' : 'Show Pileup Track',
-            key: 'showPileup',
-            icon: self.showPileup ? 'visibility_off' : 'visibility',
-            callback: self.togglePileup,
-            disableCondition: !self.showCoverage,
-          },
+          'Start Location',
+          'Read Strand',
+          'First-of-pair strand',
+          'Base Pair',
+          'Clear Sort',
         ]
       },
-      get subMenuOptions() {
+      get menuOptions(): MenuOptions[] {
         return [
           {
-            title: 'Start Location',
-            key: 'start',
+            label: self.showCoverage
+              ? 'Hide Coverage Track'
+              : 'Show Coverage Track',
+            icon: self.showCoverage ? 'visibility_off' : 'visibility',
+            onClick: self.toggleCoverage,
+            disabled: !self.showPileup,
           },
           {
-            title: 'Read Strand',
-            key: 'read',
+            label: self.showPileup ? 'Hide Pileup Track' : 'Show Pileup Track',
+            icon: self.showPileup ? 'visibility_off' : 'visibility',
+            onClick: self.togglePileup,
+            disabled: !self.showCoverage,
           },
           {
-            title: 'First-of-pair strand',
-            key: 'first',
-          },
-          {
-            title: 'Base Pair',
-            key: 'bp',
-          },
-          {
-            title: 'Clear Sort',
-            key: '',
+            label: 'Sort by',
+            icon: 'sort',
+            subMenu: self.sortOptions.map((option: string) => {
+              return {
+                label: option,
+                type: option !== 'Clear Sort' && 'radio',
+                checked: self.sortedBy === option,
+                onClick:
+                  option === 'Clear Sort' || self.sortedBy === option
+                    ? self.clearSelected
+                    : () => self.sortSelected(option),
+              }
+            }),
           },
         ]
       },
@@ -128,6 +127,9 @@ export default (pluginManager: any, configSchema: any) => {
           type: 'PileupTrack',
           configuration: trackConfig,
         }
+      },
+      clearSelected() {
+        self.sortedBy = ''
       },
       sortSelected(selected: string) {
         self.sortedBy = selected

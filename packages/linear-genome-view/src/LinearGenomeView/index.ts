@@ -530,12 +530,10 @@ export function stateModelFactory(pluginManager: any) {
               onClick: self.toggleHeader,
             },
             {
-              title: self.showCenterLine
+              label: self.showCenterLine
                 ? 'Hide Center Line'
                 : 'Show Center Line',
-              key: 'center_line',
-              callback: self.toggleCenterLine,
-              isCheckbox: false,
+              onClick: self.toggleCenterLine,
             },
           ]
         },
