@@ -3,7 +3,6 @@ import {
   getParent,
   isAlive,
   IAnyStateTreeNode,
-  getType,
   hasParent,
 } from 'mobx-state-tree'
 import { inflate, deflate } from 'pako'
@@ -13,8 +12,6 @@ import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
-import PluginManager from '../PluginManager'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { TypeTestedByPredicate, isSessionModel, isViewModel } from './types'
 
 export * from './types'
@@ -413,6 +410,7 @@ export function checkAbortSignal(signal?: AbortSignal): void {
 
   if (signal.aborted) {
     if (typeof DOMException !== 'undefined') {
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
       throw new DOMException('aborted', 'AbortError')
     } else {
       const e = new AbortError('aborted')

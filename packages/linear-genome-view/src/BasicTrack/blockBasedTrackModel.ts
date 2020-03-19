@@ -4,15 +4,10 @@ import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { autorun } from 'mobx'
 import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import {
-  addDisposer,
-  types,
-  Instance,
-  SnapshotOrInstance,
-} from 'mobx-state-tree'
+import { addDisposer, types, Instance } from 'mobx-state-tree'
 import RBush from 'rbush'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import BlockState, { BlockStateModel } from './util/serverSideRenderedBlock'
+import BlockState from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
 import { BaseBlock, ContentBlock } from './util/blockTypes'
 import BlockBasedTrack from './components/BlockBasedTrack'

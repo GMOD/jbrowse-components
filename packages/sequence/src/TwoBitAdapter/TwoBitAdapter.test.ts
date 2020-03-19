@@ -11,7 +11,7 @@ test('adapter can fetch features from volvox.2bit', async () => {
     }),
   )
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -20,7 +20,7 @@ test('adapter can fetch features from volvox.2bit', async () => {
   const featuresArray = await features.pipe(toArray()).toPromise()
   expect(featuresArray).toMatchSnapshot()
 
-  const features2 = await adapter.getFeatures({
+  const features2 = adapter.getFeatures({
     refName: 'ctgA',
     start: 45000,
     end: 55000,
@@ -29,7 +29,7 @@ test('adapter can fetch features from volvox.2bit', async () => {
   const featuresArray2 = await features2.pipe(toArray()).toPromise()
   expect(featuresArray2[0].get('end')).toBe(50001)
 
-  const features3 = await adapter.getFeatures({
+  const features3 = adapter.getFeatures({
     refName: 'ctgC',
     start: 0,
     end: 20000,

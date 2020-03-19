@@ -3,7 +3,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -52,7 +52,7 @@ export default class extends BaseFeatureDataAdapter {
         abortSignal: AbortSignal,
       ) => {
         const { refName, start, end, bpPerPx } = args
-        const feats = await this.getFeatures(
+        const feats = this.getFeatures(
           { refName, start, end },
           {
             signal: abortSignal,

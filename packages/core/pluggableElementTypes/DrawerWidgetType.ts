@@ -1,4 +1,4 @@
-import { ComponentType, Component } from 'react'
+import { ComponentType } from 'react'
 import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
 import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'

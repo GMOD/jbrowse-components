@@ -39,7 +39,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
     return (
       <>
         <IconButton
-          onClick={model.closeView}
+          onClick={() => model.closeView()}
           className={classes.iconButton}
           title="close this view"
         >
@@ -100,7 +100,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
       const classes = useStyles()
       return (
         <IconButton
-          onClick={model.toggleInteract}
+          onClick={() => model.toggleInteract()}
           className={classes.iconButton}
           title="Toggle interacting with the overlay"
         >
@@ -119,7 +119,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
     const title = model.linkViews ? 'link' : 'link_off'
     return (
       <IconButton
-        onClick={model.toggleLinkViews}
+        onClick={() => model.toggleLinkViews()}
         className={classes.iconButton}
         title="Toggle linked scrolls and behavior across views"
       >

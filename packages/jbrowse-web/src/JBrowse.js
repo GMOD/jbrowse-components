@@ -250,7 +250,7 @@ const JBrowse = observer(({ config, initialState, configSnapshot }) => {
   )
 })
 
-async function factoryReset() {
+function factoryReset() {
   localStorage.removeItem('jbrowse-web-data')
   localStorage.removeItem('jbrowse-web-session')
   window.location.reload()

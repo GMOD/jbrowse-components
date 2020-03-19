@@ -28,7 +28,7 @@ export default class extends BaseFeatureDataAdapter {
     this.fasta = new IndexedFasta(fastaOpts)
   }
 
-  public async getRefNames(): Promise<string[]> {
+  public getRefNames() {
     return this.fasta.getSequenceList()
   }
 

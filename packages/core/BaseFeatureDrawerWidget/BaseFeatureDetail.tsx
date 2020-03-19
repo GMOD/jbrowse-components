@@ -65,7 +65,7 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
   const classes = useStyles()
   const { children, title } = props
   return (
-    <ExpansionPanel style={{ marginTop: '4px' }} defaultExpanded={true}>
+    <ExpansionPanel style={{ marginTop: '4px' }} defaultExpanded>
       <ExpansionPanelSummary
         expandIcon={<Icon className={classes.expandIcon}>expand_more</Icon>}
       >

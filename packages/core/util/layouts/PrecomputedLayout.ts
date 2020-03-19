@@ -56,7 +56,6 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
     throw new Error('Method not implemented.')
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   toJSON(): SerializedLayout {
     return {
       rectangles: objectFromEntries(this.rectangles),

@@ -247,7 +247,7 @@ function HierarchicalTrackSelector({ model }) {
         open={Boolean(modalInfo)}
       >
         <DialogTitle>
-          Close connection "{modalInfo && modalInfo.name}"
+          Close connection &quot;{modalInfo && modalInfo.name}&quot;
         </DialogTitle>
         <DialogContent>
           <DialogContentText>

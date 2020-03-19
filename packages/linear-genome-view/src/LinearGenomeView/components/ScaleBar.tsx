@@ -124,9 +124,7 @@ function ScaleBar({ model, height }: { model: LGV; height: number }) {
     </div>
   )
 }
-ScaleBar.defaultProps = {
-  style: {},
-}
+
 ScaleBar.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
   height: PropTypes.number.isRequired,

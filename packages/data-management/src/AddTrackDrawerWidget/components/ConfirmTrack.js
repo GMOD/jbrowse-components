@@ -131,33 +131,33 @@ function ConfirmTrack({
     return <Typography>Could not recognize this data type.</Typography>
   if (trackData.uri || trackData.localPath || trackData.config) {
     let message = null
-    if (trackData.uri || trackData.localPath)
-      trackAdapter.type === 'SNPCoverageAdapter'
-        ? (message = (
-            <Typography className={classes.spacing}>
-              Selected <code>{trackType}</code>. Using adapter{' '}
-              <code>{trackAdapter.type}</code> with subadapter{' '}
-              <code>{trackAdapter.subadapter.type}</code>. Please enter a track
-              name and, if necessary, update the track type.
-              {/* Using adapter <code>{trackAdapter.type}</code> with subadapter{' '}
+    if (trackData.uri || trackData.localPath) {
+      message =
+        trackAdapter.type === 'SNPCoverageAdapter' ? (
+          <Typography className={classes.spacing}>
+            Selected <code>{trackType}</code>. Using adapter{' '}
+            <code>{trackAdapter.type}</code> with subadapter{' '}
+            <code>{trackAdapter.subadapter.type}</code>. Please enter a track
+            name and, if necessary, update the track type.
+            {/* Using adapter <code>{trackAdapter.type}</code> with subadapter{' '}
               <code>{trackAdapter.subadapter.type}</code> and guessing track
               type <code>{trackType}</code>. Please enter a track name and, if
               necessary, update the track type. */}
-            </Typography>
-          ))
-        : (message = (
-            <Typography className={classes.spacing}>
-              Using adapter <code>{trackAdapter.type}</code> and guessing track
-              type <code>{trackType}</code>. Please enter a track name and, if
-              necessary, update the track type.
-            </Typography>
-          ))
-    else
+          </Typography>
+        ) : (
+          <Typography className={classes.spacing}>
+            Using adapter <code>{trackAdapter.type}</code> and guessing track
+            type <code>{trackType}</code>. Please enter a track name and, if
+            necessary, update the track type.
+          </Typography>
+        )
+    } else {
       message = (
         <Typography className={classes.spacing}>
           Please enter a track type and track name.
         </Typography>
       )
+    }
     return (
       <>
         {message}

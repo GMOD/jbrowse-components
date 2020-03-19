@@ -7,6 +7,7 @@ import {
   ElidedBlock,
   InterRegionPaddingBlock,
 } from './blockTypes'
+
 import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
 
 const interRegionPaddingWidth = 2
@@ -122,10 +123,10 @@ export function calculateBlocksForward(self: LGV, extra = 0) {
             offsetPx: blockData.offsetPx + blockData.widthPx,
           }),
         )
-        regionBpOffset += interRegionPaddingWidth * bpPerPx
       }
     }
 
+    regionBpOffset += interRegionPaddingWidth * bpPerPx
     regionBpOffset += region.end - region.start
   })
 

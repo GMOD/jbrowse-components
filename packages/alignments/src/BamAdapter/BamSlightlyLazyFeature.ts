@@ -3,6 +3,7 @@ import {
   Feature,
   SimpleFeatureSerialized,
 } from '@gmod/jbrowse-core/util/simpleFeature'
+
 import BamAdapter from './BamAdapter'
 
 export interface Mismatch {

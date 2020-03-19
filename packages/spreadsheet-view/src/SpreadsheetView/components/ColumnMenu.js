@@ -329,7 +329,7 @@ export default pluginManager => {
                     vertical: 'top',
                     horizontal: 'left',
                   }}
-                ></Menu>
+                />
               )
             }
             return null

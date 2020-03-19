@@ -1,3 +1,4 @@
+/* eslint-disable react/static-property-placement */
 import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
 import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
@@ -13,7 +14,6 @@ export default class ConnectionType extends PluggableElementBase {
 
   url: string
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(stuff: {
     name: string
     stateModel: IAnyModelType

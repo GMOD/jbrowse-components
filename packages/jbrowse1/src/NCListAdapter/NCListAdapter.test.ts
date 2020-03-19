@@ -2,7 +2,6 @@ import { promises as fsPromises } from 'fs'
 import path from 'path'
 import { URL } from 'url'
 import { toArray } from 'rxjs/operators'
-import objectHash from 'object-hash'
 
 import Adapter from './NCListAdapter'
 import configSchema from './configSchema'

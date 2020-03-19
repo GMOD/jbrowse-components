@@ -382,9 +382,12 @@ function SvgFeatureRendering(props) {
   const click = useCallback(
     event => {
       // don't select a feature if we are clicking and dragging
-      if (movedDuringLastMouseDown) return
-
-      onFeatureClick && onFeatureClick(event)
+      if (movedDuringLastMouseDown) {
+        return
+      }
+      if (onFeatureClick) {
+        onFeatureClick(event)
+      }
     },
     [movedDuringLastMouseDown, onFeatureClick],
   )

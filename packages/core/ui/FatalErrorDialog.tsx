@@ -41,7 +41,7 @@ const FatalErrorDialog = ({
   onFactoryReset: Function
 }) => {
   return (
-    <Dialog open={true}>
+    <Dialog open>
       <DialogTitle style={{ backgroundColor: '#e88' }}>Fatal error</DialogTitle>
       <DialogContent>
         <pre>

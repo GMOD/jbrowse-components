@@ -31,7 +31,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     }),
   )
 
-  const csiFeatures = await csiAdapter.getFeatures({
+  const csiFeatures = csiAdapter.getFeatures({
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -42,7 +42,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   expect(names).toEqual(csiNames)
   expect(names).toMatchSnapshot()
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -53,7 +53,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   expect(featuresArray.slice(0, 5)).toMatchSnapshot()
   expect(csiFeaturesArray.slice(0, 5)).toEqual(featuresArray.slice(0, 5))
 
-  const featuresNonExist = await adapter.getFeatures({
+  const featuresNonExist = adapter.getFeatures({
     refName: 'ctgC',
     start: 0,
     end: 20000,

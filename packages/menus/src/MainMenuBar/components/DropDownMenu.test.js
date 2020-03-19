@@ -36,7 +36,7 @@ describe('<DropDownMenu />', () => {
     expect(container.firstChild).toMatchSnapshot()
   })
 
-  it('opens a menu and selects a menu item', async () => {
+  it('opens a menu and selects a menu item', () => {
     const [menu] = session.menuBars[0].menus
     const { getByTestId } = render(
       <DropDownMenu
