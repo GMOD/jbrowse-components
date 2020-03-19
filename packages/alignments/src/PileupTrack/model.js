@@ -9,6 +9,7 @@ import {
 import { getSession } from '@gmod/jbrowse-core/util'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
+import { observable } from 'mobx'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -37,6 +38,9 @@ export default (pluginManager, configSchema) =>
           session.showDrawerWidget(featureWidget)
           session.setSelection(feature)
         },
+        updateSortPosition() {
+          return getContainingView(self).centerLinePosition
+        },
       }))
       .views(self => ({
         /**
@@ -51,6 +55,16 @@ export default (pluginManager, configSchema) =>
           return rendererType
         },
 
+        // TODOSORT ask about this setup
+        get sortObject() {
+          return getContainingView(self).showCenterLine
+            ? {
+                position: self.updateSortPosition(),
+                by: getParentRenderProps(self).trackModel.sortedBy,
+              }
+            : {}
+        },
+
         /**
          * the react props that are passed to the Renderer when data
          * is rendered in this track
@@ -60,16 +74,12 @@ export default (pluginManager, configSchema) =>
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', self.rendererTypeName]) || {},
           )
-          // TODOSORT: ask about this object below
-          const sortObject = {
-            position: getContainingView(self).centerLinePosition || -1,
-            by: getParentRenderProps(self).trackModel.sortedBy || '',
-          }
+          // if (getContainingView(self).showCenterLine) self.updateSortObject()
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
             trackModel: self,
-            sortObject,
+            sortObject: self.sortObject,
             config,
           }
         },
