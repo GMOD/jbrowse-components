@@ -31,6 +31,44 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
     <div
       class="makeStyles-spacer"
     />
+    <button
+      class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+      tabindex="0"
+      type="button"
+    >
+      <span
+        class="MuiButton-label"
+      >
+        <span
+          aria-hidden="true"
+          class="material-icons MuiIcon-root"
+        >
+          arrow_back
+        </span>
+      </span>
+      <span
+        class="MuiTouchRipple-root"
+      />
+    </button>
+    <button
+      class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+      tabindex="0"
+      type="button"
+    >
+      <span
+        class="MuiButton-label"
+      >
+        <span
+          aria-hidden="true"
+          class="material-icons MuiIcon-root"
+        >
+          arrow_forward
+        </span>
+      </span>
+      <span
+        class="MuiTouchRipple-root"
+      />
+    </button>
     <div
       class="MuiPaper-root makeStyles-searchRoot MuiPaper-elevation1 MuiPaper-rounded"
     >
@@ -694,6 +732,44 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
     <div
       class="makeStyles-spacer"
     />
+    <button
+      class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+      tabindex="0"
+      type="button"
+    >
+      <span
+        class="MuiButton-label"
+      >
+        <span
+          aria-hidden="true"
+          class="material-icons MuiIcon-root"
+        >
+          arrow_back
+        </span>
+      </span>
+      <span
+        class="MuiTouchRipple-root"
+      />
+    </button>
+    <button
+      class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+      tabindex="0"
+      type="button"
+    >
+      <span
+        class="MuiButton-label"
+      >
+        <span
+          aria-hidden="true"
+          class="material-icons MuiIcon-root"
+        >
+          arrow_forward
+        </span>
+      </span>
+      <span
+        class="MuiTouchRipple-root"
+      />
+    </button>
     <div
       class="MuiPaper-root makeStyles-searchRoot MuiPaper-elevation1 MuiPaper-rounded"
     >
