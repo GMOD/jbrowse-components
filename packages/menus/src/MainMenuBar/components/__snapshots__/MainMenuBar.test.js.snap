@@ -13,7 +13,7 @@ exports[`<MainMenuBar /> renders 1`] = `
       <button
         aria-haspopup="true"
         aria-owns="menu-list-grow"
-        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-colorInherit"
+        class="MuiButtonBase-root MuiButton-root makeStyles-buttonRoot MuiButton-text MuiButton-colorInherit"
         data-testid="dropDownMenuButton"
         tabindex="0"
         type="button"
@@ -40,7 +40,7 @@ exports[`<MainMenuBar /> renders 1`] = `
       <button
         aria-haspopup="true"
         aria-owns="menu-list-grow"
-        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-colorInherit"
+        class="MuiButtonBase-root MuiButton-root makeStyles-buttonRoot MuiButton-text MuiButton-colorInherit"
         data-testid="dropDownMenuButton"
         tabindex="0"
         type="button"
