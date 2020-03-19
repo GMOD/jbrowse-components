@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
+import { MenuOptions } from '@gmod/jbrowse-core/ui'
 import {
   clamp,
   getContainingView,
@@ -16,13 +17,7 @@ import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
-export interface LGVMenuOption {
-  title: string
-  key: string
-  callback: Function
-  checked?: boolean
-  isCheckbox: boolean
-}
+
 interface BpOffset {
   refName?: string
   index: number
@@ -518,26 +513,21 @@ export function stateModelFactory(pluginManager: any) {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
-        get menuOptions(): LGVMenuOption[] {
+        get menuOptions(): MenuOptions[] {
           return [
             {
-              title: 'Horizontally flip',
-              key: 'flip',
-              callback: self.horizontallyFlip,
+              label: 'Horizontally flip',
+              type: 'checkbox',
               checked: self.horizontallyFlipped,
-              isCheckbox: true,
+              onClick: self.horizontallyFlip,
             },
             {
-              title: 'Show all regions',
-              key: 'showall',
-              callback: self.showAllRegions,
-              isCheckbox: false,
+              label: 'Show all regions',
+              onClick: self.showAllRegions,
             },
             {
-              title: self.hideHeader ? 'Show header' : 'Hide header',
-              key: 'hide_header',
-              callback: self.toggleHeader,
-              isCheckbox: false,
+              label: self.hideHeader ? 'Show header' : 'Hide header',
+              onClick: self.toggleHeader,
             },
             {
               title: self.showCenterLine
