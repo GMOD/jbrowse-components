@@ -1,18 +1,15 @@
-import { ResizeHandle } from '@gmod/jbrowse-core/ui'
+import { ResizeHandle, Menu } from '@gmod/jbrowse-core/ui'
 import { getSession, useDebouncedCallback } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
 // material ui things
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
-import Checkbox from '@material-ui/core/Checkbox'
 import Container from '@material-ui/core/Container'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Grid from '@material-ui/core/Grid'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputBase from '@material-ui/core/InputBase'
-import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
 import TextField from '@material-ui/core/TextField'
@@ -199,10 +196,17 @@ const TrackContainer = observer(
 const LongMenu = observer(
   ({ model, className }: { model: LGV; className: string }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-    const open = Boolean(anchorEl)
 
     function handleClick(event: React.MouseEvent<HTMLElement>) {
       setAnchorEl(event.currentTarget)
+    }
+
+    const handleMenuItemClick = (
+      event: React.MouseEvent<HTMLLIElement, MouseEvent>,
+      callback: () => void,
+    ) => {
+      callback()
+      setAnchorEl(null)
     }
 
     function handleClose() {
@@ -222,41 +226,12 @@ const LongMenu = observer(
           <Icon>more_vert</Icon>
         </IconButton>
         <Menu
-          id="long-menu"
           anchorEl={anchorEl}
-          keepMounted
-          open={open}
+          open={Boolean(anchorEl)}
+          onMenuItemClick={handleMenuItemClick}
           onClose={handleClose}
-        >
-          {model.menuOptions.map(option => {
-            return option.isCheckbox ? (
-              <MenuItem key={option.key}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={option.checked}
-                      onChange={() => {
-                        option.callback()
-                        handleClose()
-                      }}
-                    />
-                  }
-                  label={option.title}
-                />
-              </MenuItem>
-            ) : (
-              <MenuItem
-                key={option.key}
-                onClick={() => {
-                  option.callback()
-                  handleClose()
-                }}
-              >
-                {option.title}
-              </MenuItem>
-            )
-          })}
-        </Menu>
+          menuOptions={model.menuOptions}
+        />
       </>
     )
   },
