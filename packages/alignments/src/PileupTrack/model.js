@@ -2,7 +2,10 @@ import {
   ConfigurationReference,
   getConf,
 } from '@gmod/jbrowse-core/configuration'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import {
+  getParentRenderProps,
+  getContainingView,
+} from '@gmod/jbrowse-core/util/tracks'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
@@ -57,10 +60,16 @@ export default (pluginManager, configSchema) =>
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', self.rendererTypeName]) || {},
           )
+          // TODOSORT: ask about this object below
+          const sortObject = {
+            position: getContainingView(self).centerLinePosition || -1,
+            by: getParentRenderProps(self).trackModel.sortedBy || '',
+          }
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
             trackModel: self,
+            sortObject,
             config,
           }
         },

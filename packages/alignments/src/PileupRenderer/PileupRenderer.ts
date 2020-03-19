@@ -20,6 +20,10 @@ interface PileupRenderProps {
   width: number
   horizontallyFlipped: boolean
   highResolutionScaling: number
+  sortObject: {
+    position: number
+    by: string
+  }
 }
 
 interface PileupImageData {
@@ -93,8 +97,11 @@ export default class extends BoxRendererType {
       region,
       bpPerPx,
       horizontallyFlipped,
+      sortObject = {},
       highResolutionScaling = 1,
     } = props
+
+    console.log(sortObject)
 
     if (!layout) throw new Error(`layout required`)
     if (!layout.addRect) throw new Error('invalid layout object')

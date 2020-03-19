@@ -14,6 +14,10 @@ interface BaseRenderArgs {
   sessionId: string
   signal?: AbortSignal
   filters?: any
+  sortObject?: {
+    position: number
+    by: string
+  }
   dataAdapter: BaseAdapter
   bpPerPx: number
   config: Record<string, any>
@@ -234,7 +238,6 @@ export default class ServerSideRenderer extends RendererType {
     checkAbortSignal(args.signal)
     this.deserializeArgsInWorker(args)
 
-    // TODOSORT: args should have a sort "flag"/object by this point
     const features = await this.getFeatures(args)
     checkAbortSignal(args.signal)
 
