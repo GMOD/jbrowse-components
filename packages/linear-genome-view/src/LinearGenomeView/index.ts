@@ -75,10 +75,7 @@ export function stateModelFactory(pluginManager: any) {
       tracks: types.array(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
-      controlsWidth: 120,
       width: 800,
-      // set this to true to hide the close, config, and tracksel buttons
-      hideControls: false,
       hideHeader: false,
       trackSelectorType: types.optional(
         types.enumeration(['hierarchical']),

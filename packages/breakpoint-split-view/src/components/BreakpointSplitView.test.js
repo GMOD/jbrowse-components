@@ -58,7 +58,6 @@ describe('BreakpointSplitView genome view component', () => {
           ],
         },
       ],
-      controlsWidth: 100,
       configuration: {},
     })
     const model = session.views[0]

@@ -729,9 +729,6 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
     <div
       class="makeStyles-overlay"
     >
-      <div
-        style="width: 120px; flex-shrink: 0;"
-      />
       <svg
         style="width: 100%; z-index: 10; pointer-events: none;"
       />

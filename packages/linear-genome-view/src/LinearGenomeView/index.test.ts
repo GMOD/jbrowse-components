@@ -73,7 +73,6 @@ test('can instantiate a model that lets you navigate', () => {
       id: 'test1',
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
-      controlsWidth: 0,
     }),
   )
   model.setDisplayedRegions([
@@ -119,7 +118,6 @@ test('can instantiate a model that has multiple displayed regions', () => {
       id: 'test2',
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
-      controlsWidth: 0,
     }),
   )
   model.setDisplayedRegions([
@@ -148,7 +146,6 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
       id: 'test3',
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
-      controlsWidth: 0,
     }),
   )
   model.setDisplayedRegions([
@@ -180,7 +177,6 @@ test('can instantiate a model that >2 regions', () => {
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
       width,
-      controlsWidth: 0,
     }),
   )
   model.setDisplayedRegions([

@@ -73,7 +73,7 @@ export default (pluginManager: any) => {
   const BreakpointSplitView = observer(
     ({ model }: { model: BreakpointViewModel }) => {
       const classes = useStyles()
-      const { views, controlsWidth } = model
+      const { views } = model
       return (
         <div>
           <Header model={model} />
@@ -93,7 +93,6 @@ export default (pluginManager: any) => {
               </div>
             </div>
             <div className={classes.overlay}>
-              <div style={{ width: controlsWidth, flexShrink: 0 }} />
               <svg
                 style={{
                   width: '100%',

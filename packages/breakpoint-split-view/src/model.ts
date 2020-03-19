@@ -53,10 +53,6 @@ export default function stateModelFactory(pluginManager: any) {
       ),
     })
     .views(self => ({
-      get controlsWidth() {
-        return self.views.length ? self.views[0].controlsWidth : 0
-      },
-
       // Find all track ids that match across multiple views
       get matchedTracks(): string[] {
         const viewTracks = self.views.map(view =>
