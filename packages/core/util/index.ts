@@ -204,13 +204,13 @@ export function getContainingView(
 }
 
 /**
- * Assemble a "locstring" from a location, like "ctgA:20-30".
- * The locstring uses 1-based coordinates.
+ * Assemble a "locString" from a location, like "ctgA:20-30".
+ * The locString uses 1-based coordinates.
  *
  * @param {string} args.refName reference sequence name
  * @param {number} args.start start coordinate
  * @param {number} args.end end coordinate
- * @returns {string} the locstring
+ * @returns {string} the locString
  */
 export function assembleLocString(region: IRegion | INoAssemblyRegion): string {
   const { refName, start, end } = region
@@ -227,8 +227,8 @@ export interface ParsedLocString {
   end?: number
 }
 
-export function parseLocString(locstring: string): ParsedLocString {
-  const ret = locstring.split(':')
+export function parseLocString(locString: string): ParsedLocString {
+  const ret = locString.split(':')
   let refName = ''
   let assemblyName
   let rest
@@ -262,8 +262,8 @@ export function parseLocString(locstring: string): ParsedLocString {
   return { assemblyName, refName }
 }
 
-export function parseLocStringAndConvertToInterbase(locstring: string) {
-  const parsed = parseLocString(locstring)
+export function parseLocStringAndConvertToInterbase(locString: string) {
+  const parsed = parseLocString(locString)
   if (typeof parsed.start === 'number') parsed.start -= 1
   return parsed
 }

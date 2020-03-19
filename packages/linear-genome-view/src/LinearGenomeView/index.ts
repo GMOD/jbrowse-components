@@ -391,14 +391,14 @@ export function stateModelFactory(pluginManager: any) {
         )
       },
 
-      navToLocstring(locstring: string) {
-        return this.navTo(parseLocString(locstring))
+      navToLocString(locString: string) {
+        return this.navTo(parseLocString(locString))
       },
 
       /*
        * navTo navigates to a simple refName:start..end type object as input
        * can handle if there are multiple displayedRegions from same chr
-       * only navigates to a locstring if it is entirely within a displayedRegion
+       * only navigates to a locString if it is entirely within a displayedRegion
        *
        * @param {refName,start,end,assemblyName?} is a proposed location to navigate to
        * returns true if navigation was successful, false if not

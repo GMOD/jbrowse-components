@@ -170,7 +170,7 @@ export default observer(({ model }: { model: LGV }) => {
       <Controls model={model} />
       <div className={classes.spacer} />
       <PanControls model={model} />
-      <Search onSubmit={model.navToLocstring} error={''} />
+      <Search onSubmit={model.navToLocString} error={''} />
       <RefNameAutocomplete
         model={model}
         onSelect={setDisplayedRegions}
