@@ -1,4 +1,5 @@
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import Button from '@material-ui/core/Button'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputBase from '@material-ui/core/InputBase'
@@ -70,6 +71,9 @@ const useStyles = makeStyles(theme => ({
     borderColor: theme.palette.primary.main,
     backgroundColor: theme.palette.secondary.light,
   },
+  panButton: {
+    margin: theme.spacing(2),
+  },
   ...buttonStyles(theme),
 }))
 
@@ -128,6 +132,30 @@ Search.propTypes = {
   error: ReactPropTypes.string, // eslint-disable-line react/require-default-props
 }
 
+function PanControls({ model }: { model: LGV }) {
+  const classes = useStyles()
+  return (
+    <>
+      <Button
+        size="small"
+        variant="outlined"
+        className={classes.panButton}
+        onClick={() => model.slide(-0.9)}
+      >
+        <Icon>arrow_back</Icon>
+      </Button>
+      <Button
+        size="small"
+        variant="outlined"
+        className={classes.panButton}
+        onClick={() => model.slide(0.9)}
+      >
+        <Icon>arrow_forward</Icon>
+      </Button>
+    </>
+  )
+}
+
 export default observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
 
@@ -141,6 +169,7 @@ export default observer(({ model }: { model: LGV }) => {
     <div className={classes.headerBar}>
       <Controls model={model} />
       <div className={classes.spacer} />
+      <PanControls model={model} />
       <Search onSubmit={model.navToLocstring} error={''} />
       <RefNameAutocomplete
         model={model}

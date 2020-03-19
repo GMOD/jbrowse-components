@@ -7,6 +7,7 @@ import {
   getContainingView,
   getSession,
   parseLocString,
+  springAnimate,
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
@@ -147,6 +148,18 @@ export function stateModelFactory(pluginManager: any) {
           .sort(
             (a, b) => Math.abs(a - newBpPerPx) - Math.abs(b - newBpPerPx),
           )[0]
+      },
+
+      get maxOffset() {
+        // objectively determined to keep the linear genome on the main screen
+        const leftPadding = 10
+        return this.displayedRegionsTotalPx - leftPadding
+      },
+
+      get minOffset() {
+        // objectively determined to keep the linear genome on the main screen
+        const rightPadding = 30
+        return -self.width + rightPadding
       },
 
       get displayedRegionsTotalPx() {
@@ -490,19 +503,19 @@ export function stateModelFactory(pluginManager: any) {
 
       horizontalScroll(distance: number) {
         const oldOffsetPx = self.offsetPx
-        // objectively determined to keep the linear genome on the main screen
-        const leftPadding = 10
-        const rightPadding = 30
-        const maxOffset = self.displayedRegionsTotalPx - leftPadding
-        const minOffset = -self.width + rightPadding
         // the scroll is clamped to keep the linear genome on the main screen
         const newOffsetPx = clamp(
           self.offsetPx + distance,
-          minOffset,
-          maxOffset,
+          self.minOffset,
+          self.maxOffset,
         )
         self.offsetPx = newOffsetPx
         return newOffsetPx - oldOffsetPx
+      },
+
+      scrollTo(offsetPx: number) {
+        const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
+        self.offsetPx = newOffsetPx
       },
 
       /**
@@ -529,6 +542,22 @@ export function stateModelFactory(pluginManager: any) {
         self.draggingTrackId = idx
       },
     }))
+    .actions(self => {
+      let cancelLastAnimation = () => {}
+
+      function slide(viewWidths: number) {
+        const [animate, cancelAnimation] = springAnimate(
+          self.offsetPx,
+          self.offsetPx + self.width * viewWidths,
+          self.scrollTo,
+        )
+        cancelLastAnimation()
+        cancelLastAnimation = cancelAnimation
+        animate()
+      }
+
+      return { slide }
+    })
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
