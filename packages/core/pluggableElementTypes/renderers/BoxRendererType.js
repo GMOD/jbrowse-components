@@ -28,17 +28,21 @@ export class LayoutSession {
       cachedLayout &&
       cachedLayout.layout.subLayoutConstructorArgs.pitchX === this.bpPerPx &&
       deepEqual(readConfObject(this.config), cachedLayout.config) &&
-      deepEqual(this.filters, cachedLayout.filters)
+      deepEqual(this.filters, cachedLayout.filters) &&
+      deepEqual(this.sortObject, cachedLayout.sortObject)
+      // deepEqual(this.sortObject.by, cachedLayout.sortedBy)
     )
   }
 
   get layout() {
-    // TODOSORT: this conditional is true so no new layout is created
+    // TODOSORT: decide whether to deepEqual sortObject or just the sortedBy string
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
       this.cachedLayout = {
         layout: this.makeLayout(),
         config: readConfObject(this.config),
         filters: this.filters,
+        sortObject: this.sortObject,
+        // sortedBy: this.sortObject.by,
       }
     }
     return this.cachedLayout.layout
