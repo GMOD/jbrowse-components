@@ -1,14 +1,15 @@
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { generateLocString, getSession } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
-import InputBase from '@material-ui/core/InputBase'
-import Paper from '@material-ui/core/Paper'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles, useTheme } from '@material-ui/core/styles'
+import TextField from '@material-ui/core/TextField'
+import Tooltip from '@material-ui/core/Tooltip'
+import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import ReactPropTypes from 'prop-types'
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { LinearGenomeViewStateModel, HEADER_BAR_HEIGHT } from '..'
 import buttonStyles from './buttonStyles'
 import RefNameAutocomplete from './RefNameAutocomplete'
@@ -27,20 +28,6 @@ const useStyles = makeStyles(theme => ({
   spacer: {
     flexGrow: 1,
   },
-  emphasis: {
-    background: theme.palette.secondary.main,
-    padding: theme.spacing(1),
-  },
-  searchRoot: {
-    margin: theme.spacing(1),
-    alignItems: 'center',
-  },
-  viewName: {
-    margin: theme.spacing(0.25),
-  },
-  hovered: {
-    background: theme.palette.secondary.light,
-  },
   input: {
     width: 300,
     error: {
@@ -49,30 +36,16 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(0, 1),
   },
   headerRefName: {
-    minWidth: 140,
-    margin: theme.spacing(0.5),
+    minWidth: 100,
+    margin: theme.spacing(2, 0, 1),
     background: theme.palette.background.default,
-  },
-  displayName: {
-    background: theme.palette.secondary.main,
-    paddingTop: 6,
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1),
-  },
-  inputBase: {
-    color: theme.palette.secondary.contrastText,
-  },
-  inputRoot: {
-    '&:hover': {
-      backgroundColor: theme.palette.secondary.light,
-    },
-  },
-  inputFocused: {
-    borderColor: theme.palette.primary.main,
-    backgroundColor: theme.palette.secondary.light,
   },
   panButton: {
     margin: theme.spacing(2),
+  },
+  bp: {
+    display: 'flex',
+    alignItems: 'center',
   },
   ...buttonStyles(theme),
 }))
@@ -90,47 +63,158 @@ const Controls = observer(({ model }) => {
   )
 })
 
-function Search({
-  onSubmit,
-  error,
-}: {
-  onSubmit: Function
-  error: string | undefined
-}) {
+const Search = observer(({ model }: { model: LGV }) => {
   const [value, setValue] = useState<string | undefined>()
+  const [defaultValue, setDefaultValue] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
   const classes = useStyles()
-  const placeholder = 'Enter location (e.g. chr1:1000..5000)'
+  const theme = useTheme()
+  const { displayedRegions, dynamicBlocks } = model
+  const { blocks } = dynamicBlocks
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = getSession(model) as any
+
+  const contentBlocks = blocks.filter(block => block.refName)
+
+  useEffect(() => {
+    if (!contentBlocks.length) {
+      setDefaultValue('')
+      return
+    }
+    const isSingleAssemblyName = contentBlocks.every(
+      block => block.assemblyName === contentBlocks[0].assemblyName,
+    )
+    const locs = contentBlocks.map(block =>
+      generateLocString(
+        {
+          ...block,
+          start: Math.round(block.start),
+          end: Math.round(block.end),
+        },
+        !isSingleAssemblyName,
+      ),
+    )
+    setDefaultValue(locs.join(';'))
+  }, [contentBlocks])
+
+  function navTo(locString: string) {
+    try {
+      model.navToLocString(locString)
+    } catch (e) {
+      session.pushSnackbarMessage(`${e}`)
+    }
+  }
+
+  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    inputRef && inputRef.current && inputRef.current.blur()
+    value && navTo(value)
+  }
+
+  function onFocus() {
+    setValue(defaultValue)
+  }
+
+  function onBlur() {
+    setValue(undefined)
+  }
+
+  function onChange(
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) {
+    setValue(event.target.value)
+  }
+
+  const setDisplayedRegion = useCallback(
+    (region: IRegion | undefined) => {
+      if (region) {
+        model.setDisplayedRegions([region])
+      }
+    },
+    [model],
+  )
+
+  const disabled = displayedRegions.length > 1
+
+  const searchField = (
+    <TextField
+      inputRef={inputRef}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      className={classes.input}
+      variant="outlined"
+      margin="dense"
+      size="small"
+      onChange={event => onChange(event)}
+      value={value === undefined ? defaultValue : value}
+      InputProps={{
+        startAdornment: <Icon fontSize="small">search</Icon>,
+        style: {
+          background: theme.palette.background.default,
+          height: 32,
+        },
+      }}
+      inputProps={{ style: { padding: theme.spacing() } }}
+      disabled={disabled}
+    />
+  )
 
   return (
-    <Paper className={classes.searchRoot}>
-      <form
-        onSubmit={event => {
-          onSubmit(value)
-          event.preventDefault()
+    <>
+      <RefNameAutocomplete
+        model={model}
+        onSelect={setDisplayedRegion}
+        assemblyName={contentBlocks[0].assemblyName}
+        defaultRegionName={
+          displayedRegions.length > 1 ? '' : contentBlocks[0].refName
+        }
+        TextFieldProps={{
+          variant: 'outlined',
+          margin: 'dense',
+          size: 'small',
+          className: classes.headerRefName,
+          InputProps: {
+            style: {
+              paddingTop: 2,
+              paddingBottom: 2,
+            },
+          },
         }}
-      >
-        <InputBase
-          className={classes.input}
-          error={!!error}
-          onChange={event => setValue(event.target.value)}
-          placeholder={placeholder}
-        />
-        <IconButton
-          onClick={() => onSubmit(value)}
-          className={classes.iconButton}
-          aria-label="search"
-          color="secondary"
-        >
-          <Icon>search</Icon>
-        </IconButton>
+      />
+      <form onSubmit={onSubmit}>
+        {disabled ? (
+          <Tooltip
+            title={
+              disabled
+                ? 'Disabled because this view is displaying multiple regions'
+                : ''
+            }
+          >
+            {searchField}
+          </Tooltip>
+        ) : (
+          searchField
+        )}
       </form>
-    </Paper>
+      <div className={classes.bp}>
+        <Typography
+          variant="body2"
+          color="textSecondary"
+          className={classes.bp}
+        >
+          {`${Math.round(
+            contentBlocks
+              .map(block => block.end - block.start)
+              .reduce(
+                (previousValue, currentValue) => previousValue + currentValue,
+                0,
+              ),
+          ).toLocaleString()} bp`}
+        </Typography>
+      </div>
+    </>
   )
-}
-Search.propTypes = {
-  onSubmit: ReactPropTypes.func.isRequired,
-  error: ReactPropTypes.string, // eslint-disable-line react/require-default-props
-}
+})
 
 function PanControls({ model }: { model: LGV }) {
   const classes = useStyles()
@@ -159,35 +243,12 @@ function PanControls({ model }: { model: LGV }) {
 export default observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
 
-  function setDisplayedRegions(region: IRegion | undefined) {
-    if (region) {
-      model.setDisplayedRegions([region])
-    }
-  }
-
   return (
     <div className={classes.headerBar}>
       <Controls model={model} />
       <div className={classes.spacer} />
       <PanControls model={model} />
-      <Search onSubmit={model.navToLocString} error={''} />
-      <RefNameAutocomplete
-        model={model}
-        onSelect={setDisplayedRegions}
-        assemblyName={model.displayedRegions[0].assemblyName}
-        defaultRegionName={model.displayedRegions[0].refName}
-        TextFieldProps={{
-          variant: 'outlined',
-          margin: 'none',
-          className: classes.headerRefName,
-          InputProps: {
-            style: {
-              paddingTop: 2,
-              paddingBottom: 2,
-            },
-          },
-        }}
-      />
+      <Search model={model} />
 
       <ZoomControls model={model} />
       <div className={classes.spacer} />

@@ -228,35 +228,44 @@ export interface ParsedLocString {
 }
 
 export function parseLocString(locString: string): ParsedLocString {
+  if (!locString)
+    throw new Error('no location string provided, could not parse')
+  // remove any whitespace
+  locString = locString.replace(/\s/, '')
   const ret = locString.split(':')
   let refName = ''
   let assemblyName
   let rest
-  if (ret.length >= 3) {
+  if (ret.length > 3) {
+    throw new Error(`too many ":", could not parse location "${locString}"`)
+  } else if (ret.length === 3) {
     ;[assemblyName, refName, rest] = ret
   } else if (ret.length === 2) {
     ;[refName, rest] = ret
-  } else if (ret.length === 1) {
+  } else {
     ;[refName] = ret
   }
   if (rest) {
-    // remove any whitespace
-    rest = rest.replace(/\s/, '')
     // see if it's a range
     const rangeMatch = rest.match(/^(-?\d+)(\.\.|-)(-?\d+)$/)
+    // see if it's a single point
+    const singleMatch = rest.match(/^(-?\d+)(\.\.|-)?$/)
     if (rangeMatch) {
       const [, start, , end] = rangeMatch
       if (start !== undefined && end !== undefined) {
         return { assemblyName, refName, start: +start, end: +end }
       }
-    }
-    // see if it's a single point
-    const singleMatch = rest.match(/^(-?\d+)$/)
-    if (singleMatch) {
-      const [, start] = singleMatch
+    } else if (singleMatch) {
+      const [, start, separator] = singleMatch
       if (start !== undefined) {
+        if (separator) {
+          // indefinite end
+          return { assemblyName, refName, start: +start }
+        }
         return { assemblyName, refName, start: +start, end: +start }
       }
+    } else {
+      throw new Error(`could not parse range "${rest}" on refName "${refName}"`)
     }
   }
   return { assemblyName, refName }

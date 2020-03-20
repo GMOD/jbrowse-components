@@ -180,52 +180,15 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 />
               </button>
               <div
-                class="MuiPaper-root makeStyles-searchRoot MuiPaper-elevation1 MuiPaper-rounded"
-              >
-                <form>
-                  <div
-                    class="MuiInputBase-root makeStyles-input"
-                  >
-                    <input
-                      aria-invalid="false"
-                      class="MuiInputBase-input"
-                      placeholder="Enter location (e.g. chr1:1000..5000)"
-                      type="text"
-                      value=""
-                    />
-                  </div>
-                  <button
-                    aria-label="search"
-                    class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-                    tabindex="0"
-                    type="button"
-                  >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <span
-                        aria-hidden="true"
-                        class="material-icons MuiIcon-root"
-                      >
-                        search
-                      </span>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
-                    />
-                  </button>
-                </form>
-              </div>
-              <div
                 aria-expanded="false"
                 class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
                 role="combobox"
               >
                 <div
-                  class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
+                  class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-marginDense MuiFormControl-fullWidth"
                 >
                   <div
-                    class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
                     style="padding-top: 2px; padding-bottom: 2px;"
                   >
                     <input
@@ -233,7 +196,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                       aria-invalid="false"
                       autocapitalize="none"
                       autocomplete="off"
-                      class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
+                      class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
                       id="refNameAutocomplete-lgv1"
                       spellcheck="false"
                       type="text"
@@ -285,6 +248,53 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                     </fieldset>
                   </div>
                 </div>
+              </div>
+              <form>
+                <div
+                  class="MuiFormControl-root MuiTextField-root makeStyles-input MuiFormControl-marginDense"
+                >
+                  <div
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
+                    style="background: rgb(250, 250, 250); height: 32px;"
+                  >
+                    <span
+                      aria-hidden="true"
+                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                    >
+                      search
+                    </span>
+                    <input
+                      aria-invalid="false"
+                      class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
+                      style="padding: 8px;"
+                      type="text"
+                      value="ctgA:0..5"
+                    />
+                    <fieldset
+                      aria-hidden="true"
+                      class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                      style="padding-left: 8px;"
+                    >
+                      <legend
+                        class="PrivateNotchedOutline-legend"
+                        style="width: 0.01px;"
+                      >
+                        <span>
+                          ​
+                        </span>
+                      </legend>
+                    </fieldset>
+                  </div>
+                </div>
+              </form>
+              <div
+                class="makeStyles-bp"
+              >
+                <p
+                  class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
+                >
+                  5 bp
+                </p>
               </div>
               <div
                 class="makeStyles-container"
@@ -488,52 +498,15 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 />
               </button>
               <div
-                class="MuiPaper-root makeStyles-searchRoot MuiPaper-elevation1 MuiPaper-rounded"
-              >
-                <form>
-                  <div
-                    class="MuiInputBase-root makeStyles-input"
-                  >
-                    <input
-                      aria-invalid="false"
-                      class="MuiInputBase-input"
-                      placeholder="Enter location (e.g. chr1:1000..5000)"
-                      type="text"
-                      value=""
-                    />
-                  </div>
-                  <button
-                    aria-label="search"
-                    class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-                    tabindex="0"
-                    type="button"
-                  >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <span
-                        aria-hidden="true"
-                        class="material-icons MuiIcon-root"
-                      >
-                        search
-                      </span>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
-                    />
-                  </button>
-                </form>
-              </div>
-              <div
                 aria-expanded="false"
                 class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
                 role="combobox"
               >
                 <div
-                  class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
+                  class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-marginDense MuiFormControl-fullWidth"
                 >
                   <div
-                    class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
                     style="padding-top: 2px; padding-bottom: 2px;"
                   >
                     <input
@@ -541,7 +514,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                       aria-invalid="false"
                       autocapitalize="none"
                       autocomplete="off"
-                      class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
+                      class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
                       id="refNameAutocomplete-lgv2"
                       spellcheck="false"
                       type="text"
@@ -593,6 +566,53 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                     </fieldset>
                   </div>
                 </div>
+              </div>
+              <form>
+                <div
+                  class="MuiFormControl-root MuiTextField-root makeStyles-input MuiFormControl-marginDense"
+                >
+                  <div
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
+                    style="background: rgb(250, 250, 250); height: 32px;"
+                  >
+                    <span
+                      aria-hidden="true"
+                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                    >
+                      search
+                    </span>
+                    <input
+                      aria-invalid="false"
+                      class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
+                      style="padding: 8px;"
+                      type="text"
+                      value="ctgA:5..10"
+                    />
+                    <fieldset
+                      aria-hidden="true"
+                      class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                      style="padding-left: 8px;"
+                    >
+                      <legend
+                        class="PrivateNotchedOutline-legend"
+                        style="width: 0.01px;"
+                      >
+                        <span>
+                          ​
+                        </span>
+                      </legend>
+                    </fieldset>
+                  </div>
+                </div>
+              </form>
+              <div
+                class="makeStyles-bp"
+              >
+                <p
+                  class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
+                >
+                  5 bp
+                </p>
               </div>
               <div
                 class="makeStyles-container"
