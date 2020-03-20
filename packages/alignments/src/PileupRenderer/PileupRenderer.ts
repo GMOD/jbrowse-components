@@ -9,6 +9,7 @@ import {
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
+import { sortFeature } from './sortUtil'
 
 interface PileupRenderProps {
   features: Map<string, Feature>
@@ -97,7 +98,7 @@ export default class extends BoxRendererType {
       region,
       bpPerPx,
       horizontallyFlipped,
-      sortObject = {},
+      sortObject,
       highResolutionScaling = 1,
     } = props
 
@@ -109,8 +110,16 @@ export default class extends BoxRendererType {
 
     // TODOSORT: this is where the layout is generated, feature needs to be sorted before here
     // might be interblock dependencies watch out for them
+    const sortedFeatures = sortFeature(
+      features,
+      sortObject,
+      bpPerPx,
+      region,
+      horizontallyFlipped,
+    )
+    const featureMap = sortObject.by !== '' ? sortedFeatures : features
     const layoutRecords = iterMap(
-      features.values(),
+      featureMap.values(),
       feature =>
         this.layoutFeature(
           feature,
@@ -120,7 +129,7 @@ export default class extends BoxRendererType {
           region,
           horizontallyFlipped,
         ),
-      features.size,
+      featureMap.size,
     )
 
     const width = (region.end - region.start) / bpPerPx

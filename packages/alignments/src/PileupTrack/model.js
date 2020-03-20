@@ -74,7 +74,6 @@ export default (pluginManager, configSchema) =>
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', self.rendererTypeName]) || {},
           )
-          // if (getContainingView(self).showCenterLine) self.updateSortObject()
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
