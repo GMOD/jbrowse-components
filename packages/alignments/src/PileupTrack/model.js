@@ -9,7 +9,6 @@ import {
 import { getSession } from '@gmod/jbrowse-core/util'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
-import { observable } from 'mobx'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -57,12 +56,10 @@ export default (pluginManager, configSchema) =>
 
         // TODOSORT ask about this setup
         get sortObject() {
-          return getContainingView(self).showCenterLine
-            ? {
-                position: self.updateSortPosition(),
-                by: getParentRenderProps(self).trackModel.sortedBy,
-              }
-            : {}
+          return {
+            position: self.updateSortPosition(),
+            by: getParentRenderProps(self).trackModel.sortedBy,
+          }
         },
 
         /**

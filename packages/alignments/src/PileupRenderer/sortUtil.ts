@@ -14,9 +14,8 @@ export const sortFeature = (
   region: IRegion,
   horizontallyFlipped: boolean,
 ) => {
-  console.log(sortObject)
   const featureArray = Array.from(features) // this is an array of arrays
-  const featuresInCenterLine: Array<any> = []
+  const featuresInCenterLine: [string, Feature][] = []
 
   let minIdx = Number.MAX_VALUE
   featureArray.forEach((innerArray, idx) => {
@@ -32,17 +31,17 @@ export const sortFeature = (
 
   switch (sortObject.by) {
     case 'Start Location': {
-      featuresInCenterLine.sort((a: any, b: any) =>
+      featuresInCenterLine.sort((a: [string, Feature], b: [string, Feature]) =>
         a[1].get('start') < b[1].get('start') ? 1 : -1,
       )
       break
     }
 
     case 'Base Pair': {
+      // first sort all references bases, then sort mismatches
       featuresInCenterLine.map((array, idx) => {
         const feature = array[1]
         const mismatches: Mismatch[] = feature.get('mismatches')
-        console.log(mismatches)
         mismatches.forEach(mismatch => {
           const positionOfMismatch = feature.get('start') + mismatch.start + 1
           //   if (positionOfMismatch === sortObject.position) {
@@ -51,8 +50,6 @@ export const sortFeature = (
       })
       break
     }
-    case '':
-      break
     default:
       break
   }

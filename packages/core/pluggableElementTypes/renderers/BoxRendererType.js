@@ -33,6 +33,7 @@ export class LayoutSession {
   }
 
   get layout() {
+    // TODOSORT: this conditional is true so no new layout is created
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
       this.cachedLayout = {
         layout: this.makeLayout(),

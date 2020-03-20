@@ -110,14 +110,17 @@ export default class extends BoxRendererType {
 
     // TODOSORT: this is where the layout is generated, feature needs to be sorted before here
     // might be interblock dependencies watch out for them
-    const sortedFeatures = sortFeature(
-      features,
-      sortObject,
-      bpPerPx,
-      region,
-      horizontallyFlipped,
-    )
-    const featureMap = sortObject.by !== '' ? sortedFeatures : features
+    const sortedFeatures =
+      sortObject.by && sortObject.by !== ''
+        ? sortFeature(
+            features,
+            sortObject,
+            bpPerPx,
+            region,
+            horizontallyFlipped,
+          )
+        : null
+    const featureMap = sortedFeatures || features
     const layoutRecords = iterMap(
       featureMap.values(),
       feature =>
@@ -270,6 +273,7 @@ export default class extends BoxRendererType {
       { ...renderProps, height, width, imageData },
       null,
     )
+    // TODOSORT: renderProps.layout is not updating with new layout
     return {
       element,
       imageData,
