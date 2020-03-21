@@ -23,6 +23,7 @@ interface LayoutMatch {
   refName: string
 }
 interface LinearSyntenyRenderProps {
+  trackModel?: any // eslint-disable-line @typescript-eslint/no-explicit-any
   config: any // eslint-disable-line @typescript-eslint/no-explicit-any
   height: number
   width: number
@@ -31,8 +32,7 @@ interface LinearSyntenyRenderProps {
   trackIds: string[]
   views: ReducedLinearGenomeView[]
 }
-
-interface LinearSyntenyRenderingProps extends LinearSyntenyRenderProps {
+export interface LinearSyntenyRenderingProps extends LinearSyntenyRenderProps {
   imageData: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 

@@ -2,7 +2,6 @@
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-// import { stateModelFactory } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import {
   createCanvas,
   createImageBitmap,
@@ -25,6 +24,8 @@ interface LayoutMatch {
   refName: string
 }
 interface BreakpointSplitRenderProps {
+  trackModel?: any
+  imageData: any
   config: any
   height: number
   width: number
@@ -35,8 +36,8 @@ interface BreakpointSplitRenderProps {
   pluginManager: any
   views: ReducedLinearGenomeView[]
 }
-
-interface BreakpointSplitRenderingProps extends BreakpointSplitRenderProps {
+export interface BreakpointSplitRenderingProps
+  extends BreakpointSplitRenderProps {
   imageData: any
 }
 

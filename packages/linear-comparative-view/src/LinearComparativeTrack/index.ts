@@ -46,7 +46,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           renderInProgress: undefined as AbortController | undefined,
           filled: false,
           data: undefined as any,
-          imageData: '',
+          html: '',
           error: undefined as Error | undefined,
           message: undefined as string | undefined,
           viewOffsets: [] as number[],
@@ -79,7 +79,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         setLoading(abortController: AbortController) {
           self.filled = false
           self.message = undefined
-          self.imageData = ''
+          self.html = ''
           self.viewOffsets = getParent(self, 2).views.map(
             (view: any) => view.offsetPx,
           )
@@ -94,7 +94,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           }
           self.filled = false
           self.message = messageText
-          self.imageData = ''
+          self.html = ''
           self.data = undefined
           self.error = undefined
           self.renderingComponent = undefined
@@ -102,13 +102,13 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         },
         setRendered(args: {
           data: any
-          imageData: any
+          html: any
           renderingComponent: React.Component
         }) {
-          const { data, imageData, renderingComponent } = args
+          const { data, html, renderingComponent } = args
           self.filled = true
           self.message = undefined
-          self.imageData = imageData
+          self.html = html
           self.data = data
           self.error = undefined
           self.renderingComponent = renderingComponent
@@ -122,7 +122,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           // the rendering failed for some reason
           self.filled = false
           self.message = undefined
-          self.imageData = ''
+          self.html = ''
           self.data = undefined
           self.error = error
           self.renderingComponent = undefined
@@ -210,12 +210,12 @@ async function renderBlockEffect(
 
   const { rendererType, rpcManager, renderArgs } = props
 
-  const { imageData, ...data } = await rendererType.renderInClient(
+  const { html, ...data } = await rendererType.renderInClient(
     rpcManager,
     renderArgs,
   )
 
-  return { imageData, data, renderingComponent: rendererType.ReactComponent }
+  return { html, data, renderingComponent: rendererType.ReactComponent }
 }
 export type LinearComparativeTrackModel = ReturnType<typeof stateModelFactory>
 export type LinearComparativeTrack = Instance<LinearComparativeTrackModel>

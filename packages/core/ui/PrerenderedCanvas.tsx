@@ -1,9 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect } from 'react'
 import { readConfObject } from '../configuration'
 import { ImageBitmapType } from '../util/offscreenCanvasPonyfill'
 
-function PrerenderedCanvas(props) {
+interface BasicCanvasProps {
+  width: number
+  height: number
+  highResolutionScaling: number
+  style: any
+  config: any
+  imageData: any
+}
+function PrerenderedCanvas(props: BasicCanvasProps) {
   const {
     width,
     height,
@@ -12,24 +21,33 @@ function PrerenderedCanvas(props) {
     config,
     imageData,
   } = props
-  const featureCanvas = useRef()
+  const featureCanvas = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     if (!imageData) return
     const canvas = featureCanvas.current
+    if (!canvas) {
+      return
+    }
     const context = canvas.getContext('2d')
+    if (!context) {
+      return
+    }
     if (imageData.commands) {
-      imageData.commands.forEach(command => {
-        if (command.type === 'strokeStyle') {
-          context.strokeStyle = command.style
-        } else if (command.type === 'fillStyle') {
-          context.fillStyle = command.style
-        } else if (command.type === 'font') {
-          context.font = command.style
-        } else {
-          context[command.type](...command.args)
-        }
-      })
+      imageData.commands.forEach(
+        (command: { style: string; type: string; args: any[] }) => {
+          if (command.type === 'strokeStyle') {
+            context.strokeStyle = command.style
+          } else if (command.type === 'fillStyle') {
+            context.fillStyle = command.style
+          } else if (command.type === 'font') {
+            context.font = command.style
+          } else {
+            // @ts-ignore
+            context[command.type](...command.args)
+          }
+        },
+      )
     } else if (imageData instanceof ImageBitmapType) {
       context.drawImage(imageData, 0, 0)
     } else if (imageData.dataURL) {

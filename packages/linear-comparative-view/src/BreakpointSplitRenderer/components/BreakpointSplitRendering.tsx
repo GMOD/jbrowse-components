@@ -3,13 +3,13 @@ import React, { useRef, useEffect } from 'react'
 import { getParent, isStateTreeNode } from 'mobx-state-tree'
 import { observer, PropTypes } from 'mobx-react'
 import { ImageBitmapType } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
-import { LinearSyntenyRenderingProps } from '../LinearSyntenyRenderer'
+import { BreakpointSplitRenderingProps } from '../BreakpointSplitRenderer'
 
 /**
  * A block whose content is rendered outside of the main thread and hydrated by this
  * component.
  */
-function LinearSyntenyRendering(props: LinearSyntenyRenderingProps) {
+function BreakpointSplitRendering(props: BreakpointSplitRenderingProps) {
   const {
     trackModel = {},
     width,
@@ -82,8 +82,8 @@ function LinearSyntenyRendering(props: LinearSyntenyRenderingProps) {
   )
 }
 
-LinearSyntenyRendering.propTypes = {
+BreakpointSplitRendering.propTypes = {
   trackModel: PropTypes.observableObject,
 }
 
-export default observer(LinearSyntenyRendering)
+export default observer(BreakpointSplitRendering)
