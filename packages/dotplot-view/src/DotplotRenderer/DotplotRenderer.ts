@@ -82,7 +82,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const end = feature.get('end')
       const refName = feature.get('refName')
       const mate = feature.get('mate')
-      const identity = feature.get('numMatches') / feature.get('blockLen')
+      // const identity = feature.get('numMatches') / feature.get('blockLen')
       ctx.fillStyle = readConfObject(config, 'color')
       // 'black' // `hsl(${identity * 150},50%,50%)`
       const b1 = bpToPx(views[0], horizontalBpPerPx, refName, start)
