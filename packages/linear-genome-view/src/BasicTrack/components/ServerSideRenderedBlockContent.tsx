@@ -46,7 +46,7 @@ function LoadingMessage() {
   ) : null
 }
 
-function BlockMessage({ messageText }) {
+function BlockMessage({ messageText }: { messageText: string }) {
   const classes = useStyles()
   return <div className={classes.blockMessage}>{messageText}</div>
 }
