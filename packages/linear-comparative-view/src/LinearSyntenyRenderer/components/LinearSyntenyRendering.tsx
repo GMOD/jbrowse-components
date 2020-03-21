@@ -7,6 +7,7 @@ function LinearSyntenyRendering(props) {
   const { width, height } = props
 
   const canvasWidth = Math.ceil(width)
+  console.log('here')
   return (
     <div
       className="LinearSyntenyRendering"
