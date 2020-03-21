@@ -9,7 +9,7 @@ import {
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
 
-interface DotplotRenderProps {
+export interface DotplotRenderProps {
   config: any
   height: number
   width: number

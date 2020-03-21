@@ -3,10 +3,11 @@ import { PrerenderedCanvas, Tooltip } from '@gmod/jbrowse-core/ui'
 import { bpSpanPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect, MouseEvent } from 'react'
 import runner from 'mobx-run-in-reactive-context'
+import { PileupRenderProps } from '../PileupRenderer'
 
-function PileupRendering(props) {
+function PileupRendering(props: PileupRenderProps) {
   const {
     blockKey,
     trackModel,
@@ -24,7 +25,7 @@ function PileupRendering(props) {
     configuration,
   } = trackModel
 
-  const highlightOverlayCanvas = useRef()
+  const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
   const [localFeatureIdUnderMouse, setLocalFeatureIdUnderMouse] = useState()
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
@@ -34,7 +35,9 @@ function PileupRendering(props) {
   useEffect(() => {
     const canvas = highlightOverlayCanvas.current
     if (!canvas) return
+
     const ctx = canvas.getContext('2d')
+    if (!ctx) return
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     let rect
     let blockLayout
@@ -95,44 +98,44 @@ function PileupRendering(props) {
     blockLayoutFeatures,
   ])
 
-  function onMouseDown(event) {
+  function onMouseDown(event: MouseEvent) {
     setMouseIsDown(true)
     setMovedDuringLastMouseDown(false)
     callMouseHandler('MouseDown', event)
   }
 
-  function onMouseEnter(event) {
+  function onMouseEnter(event: MouseEvent) {
     callMouseHandler('MouseEnter', event)
   }
 
-  function onMouseOut(event) {
+  function onMouseOut(event: MouseEvent) {
     callMouseHandler('MouseOut', event)
     callMouseHandler('MouseLeave', event)
     trackModel.setFeatureIdUnderMouse(undefined)
     setLocalFeatureIdUnderMouse(undefined)
   }
 
-  function onMouseOver(event) {
+  function onMouseOver(event: MouseEvent) {
     callMouseHandler('MouseOver', event)
   }
 
-  function onMouseUp(event) {
+  function onMouseUp(event: MouseEvent) {
     setMouseIsDown(false)
     callMouseHandler('MouseUp', event)
   }
 
-  function onClick(event) {
+  function onClick(event: MouseEvent) {
     if (!movedDuringLastMouseDown) callMouseHandler('Click', event, true)
   }
 
-  function onMouseLeave(event) {
+  function onMouseLeave(event: MouseEvent) {
     callMouseHandler('MouseOut', event)
     callMouseHandler('MouseLeave', event)
     trackModel.setFeatureIdUnderMouse(undefined)
     setLocalFeatureIdUnderMouse(undefined)
   }
 
-  function onMouseMove(event) {
+  function onMouseMove(event: MouseEvent) {
     if (mouseIsDown) setMovedDuringLastMouseDown(true)
     let offsetX = 0
     let offsetY = 0
@@ -170,8 +173,14 @@ function PileupRendering(props) {
    * @param {*} event - the actual mouse event
    * @param {bool} always - call this handler even if there is no feature
    */
-  function callMouseHandler(handlerName, event, always = false) {
+  function callMouseHandler(
+    handlerName: string,
+    event: MouseEvent,
+    always = false,
+  ) {
+    // @ts-ignore
     const featureHandler = props[`onFeature${handlerName}`]
+    // @ts-ignore
     const canvasHandler = props[`on${handlerName}`]
     if (featureHandler && (always || featureIdUnderMouse)) {
       featureHandler(event, featureIdUnderMouse)

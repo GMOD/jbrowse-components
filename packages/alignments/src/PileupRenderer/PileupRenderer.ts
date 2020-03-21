@@ -10,7 +10,9 @@ import {
 import React from 'react'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 
-interface PileupRenderProps {
+export interface PileupRenderProps {
+  trackModel: any
+  blockKey: string
   features: Map<string, Feature>
   layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
   config: any // eslint-disable-line @typescript-eslint/no-explicit-any

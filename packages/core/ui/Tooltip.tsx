@@ -28,7 +28,7 @@ const Tooltip = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   configuration: any
   feature?: Feature
-  timeout: number
+  timeout?: number
 }) => {
   const classes = useStyles()
   // only show the loading message after 400ms to prevent excessive flickering

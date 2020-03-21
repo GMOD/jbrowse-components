@@ -2,16 +2,21 @@ import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect, useRef } from 'react'
+import { DotplotRenderProps } from '../DotplotRenderer'
 
-function DotplotRendering(props) {
+function DotplotRendering(props: DotplotRenderProps) {
   const { width, height } = props
-  const highlightOverlayCanvas = useRef()
+  const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
+
   useEffect(() => {
     const canvas = highlightOverlayCanvas.current
     if (!canvas) {
       return
     }
     const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      return
+    }
     ctx.clearRect(0, 0, canvas.width, canvas.height)
   }, [])
 
