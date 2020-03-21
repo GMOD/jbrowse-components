@@ -3,8 +3,7 @@ import ReactPropTypes from 'prop-types'
 import { observer, PropTypes } from 'mobx-react'
 import { hydrate, unmountComponentAtNode } from 'react-dom'
 import { isAlive, isStateTreeNode, getSnapshot } from 'mobx-state-tree'
-
-import BlockError from './BlockError'
+import BlockError from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView/components/BlockError'
 
 class RenderErrorBoundary extends Component {
   static propTypes = {
@@ -82,15 +81,14 @@ class ServerSideRenderedContent extends Component {
       // so
       requestIdleCallback(
         () => {
-          if (!isAlive(model) || !isAlive(region)) return
-          const serializedRegion = isStateTreeNode(region)
-            ? getSnapshot(region)
-            : region
+          if (!isAlive(model)) {
+            return
+          }
+
           const mainThreadRendering = React.createElement(
             renderingComponent,
             {
               ...data,
-              region: serializedRegion,
               ...renderProps,
             },
             null,
@@ -110,6 +108,7 @@ class ServerSideRenderedContent extends Component {
 
   render() {
     const { model } = this.props
+    console.log(model)
     return (
       <div
         ref={this.ssrContainerNode}

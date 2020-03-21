@@ -36,7 +36,7 @@ function LoadingMessage() {
   useEffect(() => {
     const timeout = setTimeout(() => setShown(true), 300)
     return () => clearTimeout(timeout)
-  })
+  }, [])
 
   return shown ? (
     <div className={classes.loading}>

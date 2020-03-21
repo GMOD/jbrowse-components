@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import BlockError from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView/components/BlockError'
-import ServerSideRenderedContent from './ServerSideSyntenyRendering'
+import ServerSideRenderedContent from './ServerSideRenderedContent'
 
 const useStyles = makeStyles({
   loading: {
@@ -36,7 +36,7 @@ function LoadingMessage() {
   useEffect(() => {
     const timeout = setTimeout(() => setShown(true), 300)
     return () => clearTimeout(timeout)
-  })
+  }, [])
 
   return shown ? (
     <div data-testid="loading-synteny" className={classes.loading}>

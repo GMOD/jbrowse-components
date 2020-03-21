@@ -6,7 +6,6 @@ import React, { useEffect, useRef } from 'react'
 function DotplotRendering(props) {
   const { width, height } = props
   const highlightOverlayCanvas = useRef()
-  console.log('here')
   useEffect(() => {
     const canvas = highlightOverlayCanvas.current
     if (!canvas) {
@@ -17,10 +16,17 @@ function DotplotRendering(props) {
   }, [])
 
   return (
-    <div>
-      <h1>wtf</h1>
-      <canvas ref={highlightOverlayCanvas} width={width} height={height} />
-      <PrerenderedCanvas {...props} />
+    <div style={{ position: 'relative' }}>
+      <canvas
+        style={{ position: 'absolute', left: 0, top: 0 }}
+        ref={highlightOverlayCanvas}
+        width={width}
+        height={height}
+      />
+      <PrerenderedCanvas
+        style={{ position: 'absolute', left: 0, top: 0 }}
+        {...props}
+      />
     </div>
   )
 }

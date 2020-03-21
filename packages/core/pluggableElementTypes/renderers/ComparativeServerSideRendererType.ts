@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { renderToString } from 'react-dom/server'
 import { filter, distinct, toArray, tap } from 'rxjs/operators'
 import BaseAdapter from '../../BaseAdapter'
 import { IRegion } from '../../mst-types'
@@ -180,6 +181,8 @@ export default class ComparativeServerSideRenderer extends RendererType {
 
     const results = await this.render({ ...args })
     checkAbortSignal(args.signal)
+    // @ts-ignore
+    results.html = renderToString(results.element)
     delete results.element
 
     // serialize the results for passing back to the main thread.
