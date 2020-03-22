@@ -1,12 +1,14 @@
 import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { DotplotRenderProps } from '../DotplotRenderer'
 
 function DotplotRendering(props: DotplotRenderProps) {
   const { width, height } = props
   const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
+  const [down, setDown] = useState<[number, number] | undefined>()
+  const [current, setCurrent] = useState<[number, number]>([0, 0])
 
   useEffect(() => {
     const canvas = highlightOverlayCanvas.current
@@ -18,19 +20,41 @@ function DotplotRendering(props: DotplotRenderProps) {
       return
     }
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-  }, [])
+    const rect = canvas.getBoundingClientRect()
+    if (down) {
+      ctx.fillRect(
+        down[0] - rect.left,
+        down[1] - rect.top,
+        current[0] - down[0],
+        current[1] - down[1],
+      )
+    }
+  }, [down, current])
 
   return (
-    <div style={{ position: 'relative' }}>
-      <canvas
-        style={{ position: 'absolute', left: 0, top: 0 }}
-        ref={highlightOverlayCanvas}
-        width={width}
-        height={height}
-      />
+    <div style={{ position: 'relative', zIndex: 1000 }}>
       <PrerenderedCanvas
         style={{ position: 'absolute', left: 0, top: 0 }}
         {...props}
+      />
+      <canvas
+        style={{ position: 'absolute', left: 0, top: 0, zIndex: 10 }}
+        ref={highlightOverlayCanvas}
+        onMouseDown={event => {
+          setDown([event.clientX, event.clientY])
+          setCurrent([event.clientX, event.clientY])
+        }}
+        onMouseUp={event => {
+          setDown(undefined)
+        }}
+        onMouseLeave={event => {
+          setDown(undefined)
+        }}
+        onMouseMove={event => {
+          setCurrent([event.clientX, event.clientY])
+        }}
+        width={width}
+        height={height}
       />
     </div>
   )

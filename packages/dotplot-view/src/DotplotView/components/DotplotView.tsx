@@ -35,7 +35,6 @@ export default (pluginManager: any) => {
         width: '100%',
         gridArea: '1/1',
         zIndex: 100,
-        pointerEvents: 'none',
         '& path': {
           cursor: 'crosshair',
           fill: 'none',
