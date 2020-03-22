@@ -5,7 +5,7 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
-import { types, getParent, Instance } from 'mobx-state-tree'
+import { types, getParent, getSnapshot, Instance } from 'mobx-state-tree'
 import {
   BaseTrackConfig,
   BaseTrack,
@@ -173,7 +173,7 @@ function renderBlockData(self: DotplotTrack) {
     rpcManager,
     renderProps,
     renderArgs: {
-      views: getParent(self, 2).views,
+      views: getSnapshot(getParent(self, 2).views),
       adapterType: self.adapterType.name,
       adapterConfig,
       sequenceAdapterType: sequenceConfig.type,

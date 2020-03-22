@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getSession } from '@gmod/jbrowse-core/util'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/mst-types'
+
 import { types, Instance } from 'mobx-state-tree'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { transaction } from 'mobx'
@@ -16,22 +17,27 @@ export default function stateModelFactory(pluginManager: any) {
   const { types: jbrequiredTypes, getParent } = jbrequire('mobx-state-tree')
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
 
-  const defaultHeight = 400
+  const DotplotViewDirection = types
+    .model('DotplotViewDirection', {
+      displayedRegions: types.array(Region),
+      bpPerPx: types.number,
+    })
+    .volatile(() => ({
+      features: undefined as undefined | Feature[],
+    }))
   return (jbrequiredTypes as Instance<typeof types>)
     .model('DotplotView', {
       id: ElementId,
       type: types.literal('DotplotView'),
       headerHeight: 0,
       width: 800,
-      height: defaultHeight,
+      height: 400,
       borderSize: 20,
       fontSize: 15,
       displayName: 'dotplot',
       trackSelectorType: 'hierarchical',
       assemblyNames: types.array(types.string),
-      views: types.frozen<
-        { features: Feature[]; displayedRegions: IRegion[] }[]
-      >(),
+      views: types.array(DotplotViewDirection),
       tracks: types.array(
         pluginManager.pluggableMstType(
           'track',
@@ -40,19 +46,6 @@ export default function stateModelFactory(pluginManager: any) {
       ),
     })
     .views(self => ({
-      get totalBp() {
-        return self.views.map(view =>
-          view.displayedRegions
-            .map(region => region.end - region.start)
-            .reduce((a, b) => a + b, 0),
-        )
-      },
-      get verticalBpPerPx() {
-        return this.viewingRegionHeight / this.totalBp[1]
-      },
-      get horizontalBpPerPx() {
-        return this.viewingRegionWidth / this.totalBp[0]
-      },
       get viewingRegionWidth() {
         return self.width - self.borderSize * 2
       },

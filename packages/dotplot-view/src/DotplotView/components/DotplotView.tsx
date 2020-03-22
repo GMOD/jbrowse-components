@@ -49,8 +49,6 @@ export default (pluginManager: any) => {
   function DrawGrid(model: DotplotViewModel, ctx: CanvasRenderingContext2D) {
     const {
       views,
-      horizontalBpPerPx,
-      verticalBpPerPx,
       viewingRegionWidth,
       viewingRegionHeight,
       height,
@@ -68,10 +66,10 @@ export default (pluginManager: any) => {
 
       ctx.beginPath()
       ctx.moveTo(
-        (currWidth + len) * horizontalBpPerPx + borderSize,
+        (currWidth + len) / views[0].bpPerPx + borderSize,
         height - borderSize,
       )
-      ctx.lineTo((currWidth + len) * horizontalBpPerPx + borderSize, borderSize)
+      ctx.lineTo((currWidth + len) / views[0].bpPerPx + borderSize, borderSize)
       ctx.stroke()
       currWidth += len
     })
@@ -82,29 +80,25 @@ export default (pluginManager: any) => {
       ctx.beginPath()
       ctx.moveTo(
         viewingRegionWidth + borderSize,
-        (currHeight + len) * verticalBpPerPx + borderSize,
+        height - (currHeight + len) / views[1].bpPerPx + borderSize,
       )
-      ctx.lineTo(borderSize, (currHeight + len) * verticalBpPerPx + borderSize)
+      ctx.lineTo(
+        borderSize,
+        height - (currHeight + len) / views[1].bpPerPx + borderSize,
+      )
       ctx.stroke()
       currHeight += len
     })
   }
 
   function DrawLabels(model: DotplotViewModel, ctx: CanvasRenderingContext2D) {
-    const {
-      views,
-      fontSize,
-      height,
-      borderSize,
-      verticalBpPerPx,
-      horizontalBpPerPx,
-    } = model
+    const { views, fontSize, height, borderSize } = model
     let currHeight = 0
     views[0].displayedRegions.forEach(region => {
       const len = region.end - region.start
       ctx.fillText(
         region.refName,
-        (currHeight + len / 2) * horizontalBpPerPx,
+        (currHeight + len / 2) / views[0].bpPerPx,
         height - borderSize + fontSize,
       )
 
@@ -119,7 +113,7 @@ export default (pluginManager: any) => {
       const len = region.end - region.start
       ctx.fillText(
         region.refName,
-        (currWidth + len / 2) * verticalBpPerPx + borderSize,
+        (currWidth + len / 2) / views[1].bpPerPx + borderSize,
         borderSize - 10,
       )
 
@@ -131,7 +125,7 @@ export default (pluginManager: any) => {
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
     const ref = useRef()
-    const { totalBp, borderSize, fontSize, views, width, height } = model
+    const { borderSize, fontSize, views, width, height } = model
     useEffect(() => {
       if (ref.current) {
         const ctx = ref.current.getContext('2d')
@@ -140,7 +134,7 @@ export default (pluginManager: any) => {
 
         ctx.restore()
       }
-    }, [borderSize, fontSize, height, model, totalBp, views, width])
+    }, [borderSize, fontSize, height, model, views, width])
     return (
       <div>
         <Header model={model} />

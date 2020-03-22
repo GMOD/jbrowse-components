@@ -9,18 +9,22 @@ import {
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
 
+interface ReducedView {
+  features: Feature[]
+  displayedRegions: IRegion[]
+  horizontallyFlipped: boolean
+  bpPerPx: number
+}
+
 export interface DotplotRenderProps {
   config: any
   height: number
   width: number
-  verticalBpPerPx: number
-  horizontalBpPerPx: number
   borderSize: number
   fontSize: number
-  horizontallyFlipped: boolean
   highResolutionScaling: number
   pluginManager: any
-  views: { features: Feature[]; displayedRegions: IRegion[] }[]
+  views: ReducedView[]
 }
 
 interface DotplotRenderingProps extends DotplotRenderProps {
@@ -34,7 +38,7 @@ interface DotplotImageData {
   maxHeightReached: boolean
 }
 
-function bpToPx(self: any, pxPerBp: number, refName: string, coord: number) {
+function bpToPx(self: ReducedView, refName: string, coord: number) {
   let offsetBp = 0
 
   const index = self.displayedRegions.findIndex((r: IRegion) => {
@@ -47,7 +51,7 @@ function bpToPx(self: any, pxPerBp: number, refName: string, coord: number) {
   })
   const foundRegion = self.displayedRegions[index]
   if (foundRegion) {
-    return Math.round(offsetBp * pxPerBp)
+    return Math.round(offsetBp / self.bpPerPx)
   }
   return undefined
 }
@@ -59,11 +63,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       width,
       height,
       borderSize,
-      verticalBpPerPx,
-      horizontalBpPerPx,
       config,
       views,
     } = props
+    console.log('renderer', views)
 
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d')
@@ -72,7 +75,12 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     ctx.fillStyle = 'black'
 
     // clip method avoids drawing outside box
-    ctx.rect(borderSize, borderSize, width, height)
+    ctx.rect(
+      borderSize,
+      borderSize,
+      width - borderSize * 2,
+      height - borderSize * 2,
+    )
     ctx.clip()
 
     ctx.lineWidth = 3
@@ -85,41 +93,41 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       // const identity = feature.get('numMatches') / feature.get('blockLen')
       ctx.fillStyle = readConfObject(config, 'color')
       // 'black' // `hsl(${identity * 150},50%,50%)`
-      const b1 = bpToPx(views[0], horizontalBpPerPx, refName, start)
-      const b2 = bpToPx(views[0], horizontalBpPerPx, refName, end)
-      const e1 = bpToPx(views[1], verticalBpPerPx, mate.refName, mate.start)
-      const e2 = bpToPx(views[1], verticalBpPerPx, mate.refName, mate.end)
+      const b1 = bpToPx(views[0], refName, start)
+      const b2 = bpToPx(views[0], refName, end)
+      const e1 = bpToPx(views[1], mate.refName, mate.start)
+      const e2 = bpToPx(views[1], mate.refName, mate.end)
       if (b1 && b2 && e1 && e2) {
         if (b1 - b2 < 3 && e1 - e2 < 3) {
-          ctx.fillRect(b1, e1, 3, 3)
+          ctx.fillRect(b1 + borderSize, height - borderSize - e1, 3, 3)
         } else {
           ctx.beginPath()
-          ctx.moveTo(b1, e1)
-          ctx.lineTo(b2, e2)
+          ctx.moveTo(b1, height - e1)
+          ctx.lineTo(b2, height - e2)
           ctx.stroke()
         }
       }
     })
-    views[1].features.forEach(feature => {
-      const start = feature.get('start')
-      const end = feature.get('end')
-      const refName = feature.get('refName')
-      const mate = feature.get('mate')
-      const b1 = bpToPx(views[0], horizontalBpPerPx, refName, start)
-      const b2 = bpToPx(views[0], horizontalBpPerPx, refName, end)
-      const e1 = bpToPx(views[1], verticalBpPerPx, mate.refName, mate.start)
-      const e2 = bpToPx(views[1], verticalBpPerPx, mate.refName, mate.end)
-      if (b1 && b2 && e1 && e2) {
-        if (b1 - b2 < 3 && e1 - e2 < 3) {
-          ctx.fillRect(b1, e1, 3, 3)
-        } else {
-          ctx.beginPath()
-          ctx.moveTo(b1, e1)
-          ctx.lineTo(b2, e2)
-          ctx.stroke()
-        }
-      }
-    })
+    // views[1].features.forEach(feature => {
+    //   const start = feature.get('start')
+    //   const end = feature.get('end')
+    //   const refName = feature.get('refName')
+    //   const mate = feature.get('mate')
+    //   const b1 = bpToPx(views[0], refName, start)
+    //   const b2 = bpToPx(views[0], refName, end)
+    //   const e1 = bpToPx(views[1], mate.refName, mate.start)
+    //   const e2 = bpToPx(views[1], mate.refName, mate.end)
+    //   if (b1 && b2 && e1 && e2) {
+    //     if (b1 - b2 < 3 && e1 - e2 < 3) {
+    //       ctx.fillRect(b1, height - e1, 3, 3)
+    //     } else {
+    //       ctx.beginPath()
+    //       ctx.moveTo(b1, height - e1)
+    //       ctx.lineTo(b2, height - e2)
+    //       ctx.stroke()
+    //     }
+    //   }
+    // })
 
     // ctx.fillStyle = 'red' // readConfObject(config, 'color')
     // // const drawMode = readConfObject(config, 'drawMode')
