@@ -22,6 +22,7 @@ function DotplotRendering(props: DotplotRenderProps) {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     const rect = canvas.getBoundingClientRect()
     if (down) {
+      ctx.fillStyle = 'rgba(255,0,0,0.3)'
       ctx.fillRect(
         down[0] - rect.left,
         down[1] - rect.top,

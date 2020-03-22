@@ -66,7 +66,6 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       config,
       views,
     } = props
-    console.log('renderer', views)
 
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d')
