@@ -25,30 +25,25 @@ interface BaseRenderArgs {
   blockKey: string
   sessionId: string
   signal?: AbortSignal
-  filters?: SerializedFilterChain
   dataAdapter: BaseFeatureDataAdapter
   bpPerPx: number
   renderProps: { trackModel: any; blockKey: string }
-  config: SnapshotOrInstance<AnyConfigurationModel>
-}
-
-interface MultiRegionRenderArgs extends BaseRenderArgs {
   regions: IRegion[]
-  originalRegions: IRegion[]
+  originalRegions?: IRegion[]
 }
 
-interface SingleRegionRenderArgs extends BaseRenderArgs {
-  region: IRegion
-  originalRegion: IRegion
+export interface RenderArgs extends BaseRenderArgs {
+  config: SnapshotOrInstance<AnyConfigurationModel>
+  filters: SerializableFilterChain
 }
 
-export type RenderArgs = MultiRegionRenderArgs | SingleRegionRenderArgs
-
-export type RenderArgsSerialized = RenderArgs & {
+export interface RenderArgsSerialized extends BaseRenderArgs {
   config: SnapshotIn<AnyConfigurationModel>
+  filters: SerializedFilterChain
 }
-export type RenderArgsDeserialized = RenderArgs & {
+export interface RenderArgsDeserialized extends BaseRenderArgs {
   config: AnyConfigurationModel
+  filters: SerializableFilterChain
 }
 
 export interface RenderResults {
@@ -64,23 +59,6 @@ export interface ResultsDeserialized {
   features: Map<string, Feature>
 }
 
-export function isSingleRegionRenderArgs(
-  args: RenderArgs,
-): args is SingleRegionRenderArgs {
-  return (
-    (args as SingleRegionRenderArgs).region &&
-    !(args as MultiRegionRenderArgs).regions
-  )
-}
-
-export function isMultiRegionRenderArgs(
-  args: RenderArgs,
-): args is MultiRegionRenderArgs {
-  return (
-    !(args as SingleRegionRenderArgs).region &&
-    (args as MultiRegionRenderArgs).regions
-  )
-}
 export default class ServerSideRenderer extends RendererType {
   /**
    * directly modifies the render arguments to prepare
@@ -107,25 +85,14 @@ export default class ServerSideRenderer extends RendererType {
         },
       }
     }
-    if (isMultiRegionRenderArgs(args)) {
-      return {
-        ...args,
-        config: isStateTreeNode(args.config)
-          ? getSnapshot(args.config)
-          : args.config,
-        regions: [...args.regions],
-      }
+    return {
+      ...args,
+      config: isStateTreeNode(args.config)
+        ? getSnapshot(args.config)
+        : args.config,
+      regions: [...args.regions],
+      filters: args.filters ? args.filters.toJSON().filters : [],
     }
-    if (isSingleRegionRenderArgs(args)) {
-      return {
-        ...args,
-        config: isStateTreeNode(args.config)
-          ? getSnapshot(args.config)
-          : args.config,
-        region: { ...args.region },
-      }
-    }
-    throw new Error('invalid renderer args')
   }
 
   deserializeResultsInClient(
@@ -153,6 +120,10 @@ export default class ServerSideRenderer extends RendererType {
     const deserialized = ({ ...args } as unknown) as RenderArgsDeserialized
     const config = this.configSchema.create(args.config || {})
     deserialized.config = config
+    deserialized.filters = new SerializableFilterChain({
+      filters: args.filters,
+    })
+
     return deserialized
   }
 
@@ -186,17 +157,17 @@ export default class ServerSideRenderer extends RendererType {
     )
     // const result = await renderRegionWithWorker(session, serializedArgs)
 
-    this.deserializeResultsInClient(result, args)
-    return result
+    const deserialized = this.deserializeResultsInClient(result, args)
+    return deserialized
   }
 
   getExpandedGlyphRegion(region: IRegion, renderArgs: RenderArgsDeserialized) {
     if (!region) return region
     const { bpPerPx, config } = renderArgs
-    const maxFeatureGlyphExpansion = readConfObject(
-      config,
-      'maxFeatureGlyphExpansion',
-    )
+    const maxFeatureGlyphExpansion =
+      config === undefined
+        ? 0
+        : readConfObject(config, 'maxFeatureGlyphExpansion')
     if (!maxFeatureGlyphExpansion) return region
     const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
     return {
@@ -213,21 +184,14 @@ export default class ServerSideRenderer extends RendererType {
    * @returns {Map} of features as { id => feature, ... }
    */
   async getFeatures(renderArgs: RenderArgsDeserialized) {
-    const { dataAdapter, signal, bpPerPx } = renderArgs
+    const {
+      dataAdapter,
+      signal,
+      bpPerPx,
+      regions,
+      originalRegions,
+    } = renderArgs
     const features = new Map()
-
-    let regions
-    let originalRegions
-
-    if (isSingleRegionRenderArgs(renderArgs)) {
-      regions = [renderArgs.region]
-      originalRegions = [renderArgs.originalRegion]
-    } else if (isMultiRegionRenderArgs(renderArgs)) {
-      regions = renderArgs.regions
-      originalRegions = renderArgs.originalRegions
-    } else {
-      throw new Error('invalid render args type')
-    }
 
     if (!regions || regions.length === 0) {
       return features
@@ -241,7 +205,7 @@ export default class ServerSideRenderer extends RendererType {
         requestRegion.start = Math.floor(requestRegion.start)
       }
       if (requestRegion.end) {
-        requestRegion.end = Math.floor(requestRegion.end)
+        requestRegion.end = Math.ceil(requestRegion.end)
       }
       return requestRegion
     })
@@ -253,7 +217,7 @@ export default class ServerSideRenderer extends RendererType {
             {
               signal,
               bpPerPx,
-              originalRegion: originalRegions[0],
+              originalRegions,
             },
           )
         : dataAdapter.getFeaturesInMultipleRegions(requestRegions, {
@@ -285,10 +249,7 @@ export default class ServerSideRenderer extends RendererType {
    */
   featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
     if (!renderArgs.filters) return true
-    const filterChain = new SerializableFilterChain({
-      filters: renderArgs.filters,
-    })
-    return filterChain.passes(feature, renderArgs)
+    return renderArgs.filters.passes(feature, renderArgs)
   }
 
   // render method called on the worker

@@ -1,5 +1,5 @@
 export default abstract class PluggableElementBase {
-  [key: string]: any
+  [key: string]: unknown
 
   name = ''
 

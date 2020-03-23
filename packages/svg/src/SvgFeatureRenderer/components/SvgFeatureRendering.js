@@ -248,7 +248,7 @@ RenderedFeatures.defaultProps = {
 function SvgFeatureRendering(props) {
   const {
     blockKey,
-    region,
+    regions,
     bpPerPx,
     horizontallyFlipped,
     features,
@@ -256,6 +256,7 @@ function SvgFeatureRendering(props) {
     config,
   } = props
   const { configuration } = trackModel
+  const [region] = regions || []
   const width = (region.end - region.start) / bpPerPx
   const displayMode = readConfObject(config, 'displayMode')
 
@@ -416,9 +417,10 @@ function SvgFeatureRendering(props) {
           setHeight={setHeight}
           displayMode={displayMode}
           {...props}
+          region={region}
         />
-        <SvgSelected {...props} />
-        <SvgMouseover {...props} />
+        <SvgSelected {...props} region={region} />
+        <SvgMouseover {...props} region={region} />
       </svg>
       {localFeatureIdUnderMouse ? (
         <Tooltip
@@ -438,7 +440,7 @@ SvgFeatureRendering.propTypes = {
     getTotalHeight: ReactPropTypes.func.isRequired,
   }).isRequired,
 
-  region: CommonPropTypes.Region.isRequired,
+  regions: ReactPropTypes.arrayOf(CommonPropTypes.Region).isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
   horizontallyFlipped: ReactPropTypes.bool,
   features: ReactPropTypes.oneOfType([

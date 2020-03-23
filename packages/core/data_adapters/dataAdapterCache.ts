@@ -102,8 +102,14 @@ export function freeAdapterResources(specification: Record<string, any>) {
     Object.values(adapterCache).forEach(cacheEntry => {
       if (!cacheEntry.dataAdapter.freeResources) {
         console.warn(cacheEntry.dataAdapter, 'does not implement freeResources')
-      } else if ((specification.region as IRegion).refName !== undefined) {
-        cacheEntry.dataAdapter.freeResources(specification.region)
+      } else {
+        const regions =
+          specification.regions ||
+          (specification.region ? [specification.region] : [])
+        regions.forEach((region: IRegion) => {
+          if (region.refName !== undefined)
+            cacheEntry.dataAdapter.freeResources(region)
+        })
       }
     })
   }

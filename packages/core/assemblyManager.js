@@ -105,8 +105,6 @@ export default self => ({
           sessionId: assemblyName,
           adapterType: readConfObject(adapterConf, 'type'),
           adapterConfig: adapterConf,
-          sequenceAdapterType: sequenceConfig.type,
-          sequenceAdapterConfig: sequenceConfig,
           signal: opts.signal,
         },
         { timeout: 1000000 },

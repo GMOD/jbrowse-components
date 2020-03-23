@@ -6,10 +6,11 @@ import {
   getContainingView,
   getSession,
   parseLocString,
+  isViewContainer,
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
-import { getParent, getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
+import { getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
 
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { BlockSet } from '../BasicTrack/util/blockTypes'
@@ -316,13 +317,13 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       closeView() {
-        const parent = getContainingView(self) as any
+        const parent = getContainingView(self)
         if (parent) {
-          // I am embedded in a higher order view
-          parent.removeView(self)
+          // I am embedded in a some other view
+          if (isViewContainer(parent)) parent.removeView(this)
         } else {
           // I am part of a session
-          getParent(self, 2).removeView(self)
+          getSession(self).removeView(this)
         }
       },
 

@@ -486,10 +486,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         initialState = {},
         configuration = { type: typeName },
       ) {
-        const typeDefinition = pluginManager.getElementType(
-          'menu bar',
-          typeName,
-        )
+        const typeDefinition = pluginManager.getMenuBarType(typeName)
         if (!typeDefinition)
           throw new Error(`unknown menu bar type ${typeName}`)
         const data = { ...initialState, type: typeName, configuration }

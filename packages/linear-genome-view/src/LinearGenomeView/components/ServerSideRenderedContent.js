@@ -82,7 +82,7 @@ class ServerSideRenderedContent extends Component {
             renderingComponent,
             {
               ...data,
-              region: serializedRegion,
+              regions: [serializedRegion],
               ...renderProps,
             },
             null,

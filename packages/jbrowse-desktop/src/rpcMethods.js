@@ -128,14 +128,7 @@ async function getRegions(
 
 async function getRefNames(
   pluginManager,
-  {
-    sessionId,
-    signal,
-    adapterType,
-    adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
-  },
+  { sessionId, signal, adapterType, adapterConfig },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
@@ -146,8 +139,6 @@ async function getRefNames(
     sessionId,
     adapterType,
     adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
   )
   return dataAdapter.getRefNames({ signal })
 }
@@ -205,16 +196,12 @@ async function render(pluginManager, args) {
   const {
     blockKey,
     regions,
-    region,
-    originalRegion,
     originalRegions,
     sessionId,
     adapterType,
     adapterConfig,
     rendererType,
     renderProps,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
   } = args
   if (!sessionId) throw new Error('must pass a unique session id')
 
@@ -227,8 +214,6 @@ async function render(pluginManager, args) {
     sessionId,
     adapterType,
     adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
   )
 
   const RendererType = pluginManager.getRendererType(rendererType)
@@ -243,8 +228,6 @@ async function render(pluginManager, args) {
     sessionId,
     dataAdapter,
     regions,
-    region,
-    originalRegion,
     originalRegions,
     signal,
     blockKey,

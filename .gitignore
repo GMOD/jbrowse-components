@@ -12,3 +12,4 @@ lint.log
 yalc.lock
 .yalc
 *.package-lock.json
+foo/

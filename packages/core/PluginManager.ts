@@ -1,4 +1,10 @@
-import { types, IAnyType, IAnyModelType, isModelType } from 'mobx-state-tree'
+import {
+  types,
+  IAnyType,
+  IAnyModelType,
+  isModelType,
+  isType,
+} from 'mobx-state-tree'
 
 import PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
 import RendererType from './pluggableElementTypes/renderers/RendererType'
@@ -69,8 +75,10 @@ type PluggableElementTypeGroup =
 class TypeRecord<ElementClass extends PluggableElementBase> {
   registeredTypes: { [name: string]: ElementClass } = {}
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   baseClass: { new (...args: any[]): ElementClass }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(elementType: { new (...args: any[]): ElementClass }) {
     this.baseClass = elementType
   }
@@ -92,6 +100,7 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any) => any
 
 export default class PluginManager {
@@ -229,7 +238,7 @@ export default class PluginManager {
       .all()
       .forEach(t => {
         const thing = t[fieldName]
-        if (isModelType(thing)) {
+        if (isType(thing) && isModelType(thing)) {
           pluggableTypes.push(thing)
         }
       })
@@ -279,6 +288,7 @@ export default class PluginManager {
    */
   jbrequire = (
     lib: keyof typeof ReExports | AnyFunction | { default: AnyFunction },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any => {
     if (typeof lib === 'string') {
       const pack = this.lib[lib]

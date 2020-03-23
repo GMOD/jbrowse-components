@@ -1,6 +1,7 @@
 /* ---------------- for the RPC client ----------------- */
 
 let abortSignalCounter = 0
+type RemoteAbortSignal = { abortSignalId: number }
 const abortSignalIds: WeakMap<AbortSignal, number> = new WeakMap() // map of abortsignal => numerical ID
 
 /**
@@ -12,7 +13,7 @@ const abortSignalIds: WeakMap<AbortSignal, number> = new WeakMap() // map of abo
 export function serializeAbortSignal(
   signal: AbortSignal,
   callfunc: Function,
-): { abortSignalId: number } {
+): RemoteAbortSignal {
   let abortSignalId = abortSignalIds.get(signal)
   if (!abortSignalId) {
     abortSignalCounter += 1
@@ -32,9 +33,16 @@ export function serializeAbortSignal(
  * @param {object} thing the thing to test
  * @returns {boolean} true if the thing is a remote abort signal
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function isRemoteAbortSignal(thing: Record<string, any>): boolean {
-  return thing && typeof thing.abortSignalId === 'number'
+export function isRemoteAbortSignal(
+  thing: unknown,
+): thing is RemoteAbortSignal {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'abortSignalId' in thing &&
+    // @ts-ignore
+    typeof thing.abortSignalId === 'number'
+  )
 }
 
 // the server side keeps a set of surrogate abort controllers that can be
@@ -65,12 +73,12 @@ export function deserializeAbortSignal({
  *
  * @param {number} abortSignalId
  */
-export function remoteAbort(abortSignalId: number): void {
+export function remoteAbort(abortSignalId: number) {
   const surrogateAbortController = surrogateAbortControllers.get(abortSignalId)
   if (surrogateAbortController) surrogateAbortController.abort()
 }
 
-export function remoteAbortRpcHandler(): { signalAbort: Function } {
+export function remoteAbortRpcHandler() {
   return {
     signalAbort: remoteAbort,
   }

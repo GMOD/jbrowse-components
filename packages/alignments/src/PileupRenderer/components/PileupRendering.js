@@ -12,10 +12,11 @@ function PileupRendering(props) {
     trackModel,
     width,
     height,
-    region,
+    regions,
     bpPerPx,
     horizontallyFlipped,
   } = props
+  const [region] = regions
   const {
     selectedFeatureId,
     featureIdUnderMouse,
@@ -226,7 +227,7 @@ PileupRendering.propTypes = {
   }).isRequired,
   height: ReactPropTypes.number.isRequired,
   width: ReactPropTypes.number.isRequired,
-  region: CommonPropTypes.Region.isRequired,
+  regions: ReactPropTypes.arrayOf(CommonPropTypes.Region).isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
   horizontallyFlipped: ReactPropTypes.bool,
   blockKey: ReactPropTypes.string,

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { isStateTreeNode } from 'mobx-state-tree'
 import PluginManager from '../PluginManager'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
@@ -23,8 +24,17 @@ export type TypeTestedByPredicate<
   PREDICATE extends (thing: any) => boolean
 > = PREDICATE extends (thing: any) => thing is infer TYPE ? TYPE : never
 
+export interface AbstractViewContainer {
+  removeView(view: AbstractViewModel): void
+}
+export function isViewContainer(
+  thing: unknown,
+): thing is AbstractViewContainer {
+  return isStateTreeNode(thing) && 'removeView' in thing
+}
+
 /** minimum interface that all session state models must implement */
-export interface AbstractSessionModel {
+export interface AbstractSessionModel extends AbstractViewContainer {
   editConfiguration(configuration: AnyConfigurationModel): void
   clearSelection(): void
   configuration: AnyConfigurationModel

@@ -28,6 +28,7 @@ export default class RendererType extends PluggableElementBase {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   render(props: Record<string, any>): Record<string, any> {
     return { element: React.createElement(this.ReactComponent, props, null) }
   }

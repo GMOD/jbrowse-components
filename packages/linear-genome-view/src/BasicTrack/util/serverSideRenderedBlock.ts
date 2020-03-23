@@ -205,7 +205,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       trackError: track.error,
       renderArgs: {
         assemblyName: self.region.assemblyName,
-        region: self.region,
+        regions: [self.region],
         adapterType: track.adapterType.name,
         adapterConfig,
         sequenceAdapterType: sequenceConfig.type,

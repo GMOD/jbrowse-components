@@ -35,6 +35,7 @@ export function readConfObject(
   confObject: AnyConfigurationModel,
   slotPath: string[] | string | undefined = undefined,
   args: unknown[] = [],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any {
   if (!confObject) throw new TypeError('must provide conf object to read')
   if (!slotPath) return getSnapshot(confObject)
@@ -130,8 +131,6 @@ export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
         let typeName = getTypeNamesFromExplicitlyTypedUnion(type)
         if (!typeName.length) {
           const def = getDefaultValue(type)
-          if (!def) debugger
-          if (!def.type) debugger
           typeName = [def.type]
         }
         if (!typeName[0]) {

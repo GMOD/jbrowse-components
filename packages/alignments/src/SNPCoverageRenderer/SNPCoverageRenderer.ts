@@ -23,7 +23,7 @@ interface SNPCoverageRendererProps {
   blockKey: string
   dataAdapter: BaseFeatureDataAdapter
   notReady: boolean
-  originalRegion: IRegion
+  originalRegions: IRegion[]
   scaleOpts: ScaleOpts
   sessionId: string
   signal: AbortSignal

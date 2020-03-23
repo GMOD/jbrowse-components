@@ -16,7 +16,7 @@ interface PileupRenderProps {
   features: Map<string, Feature>
   layout: BaseLayout<string>
   config: AnyConfigurationModel
-  region: IRegion
+  regions: IRegion[]
   bpPerPx: number
   height: number
   width: number
@@ -90,11 +90,12 @@ export default class PileupRenderer extends BoxRendererType {
       features,
       layout,
       config,
-      region,
+      regions,
       bpPerPx,
       horizontallyFlipped,
       highResolutionScaling = 1,
     } = props
+    const [region] = regions
     if (!layout) {
       throw new Error(`layout required`)
     }
@@ -250,7 +251,13 @@ export default class PileupRenderer extends BoxRendererType {
     } = await this.makeImageData(renderProps)
     const element = React.createElement(
       this.ReactComponent,
-      { ...renderProps, height, width, imageData },
+      {
+        ...renderProps,
+        region: renderProps.regions[0],
+        height,
+        width,
+        imageData,
+      },
       null,
     )
     return {

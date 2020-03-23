@@ -7,26 +7,27 @@ import { Feature } from '../../util/simpleFeature'
 import ServerSideRendererType, {
   ResultsSerialized as BaseResultsSerialized,
   RenderArgs,
+  RenderArgsSerialized,
   ResultsDeserialized as BaseResultsDeserialized,
-  isSingleRegionRenderArgs,
   RenderArgsDeserialized as BaseRenderArgsDeserialized,
   RenderResults,
 } from './ServerSideRendererType'
 import { IRegion } from '../../mst-types'
 import { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
 import { readConfObject, isConfigurationModel } from '../../configuration'
+import SerializableFilterChain from './util/serializableFilterChain'
 
 interface LayoutSessionProps {
   config: AnyConfigurationModel
   bpPerPx: number
-  filters?: any
+  filters: SerializableFilterChain
 }
 
 type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
 interface CachedLayout {
   layout: MyMultiLayout
   config: AnyConfigurationModel
-  filters: any
+  filters: SerializableFilterChain
 }
 
 export class LayoutSession implements LayoutSessionProps {
@@ -34,7 +35,7 @@ export class LayoutSession implements LayoutSessionProps {
 
   bpPerPx: number
 
-  filters: any
+  filters: SerializableFilterChain
 
   constructor(args: LayoutSessionProps) {
     this.config = args.config
@@ -148,21 +149,19 @@ export default class BoxRendererType extends ServerSideRendererType {
       args,
     ) as ResultsDeserialized
     deserialized.layout = this.deserializeLayoutInClient(result.layout)
+
     return deserialized
   }
 
   deserializeLayoutInWorker(args: RenderArgsDeserialized & LayoutSessionProps) {
-    if (isSingleRegionRenderArgs(args)) {
-      const { region } = args
-      const session = this.getWorkerSession(args)
-      const subLayout = session.layout.getSublayout(region.refName)
-      return subLayout
-    }
-    throw new Error('invalid render args type')
+    const { regions } = args
+    const session = this.getWorkerSession(args)
+    const subLayout = session.layout.getSublayout(regions[0].refName)
+    return subLayout
   }
 
   deserializeArgsInWorker(
-    args: RenderArgs & LayoutSessionProps,
+    args: RenderArgsSerialized & LayoutSessionProps,
   ): RenderArgsDeserialized {
     const deserialized = super.deserializeArgsInWorker(
       args,
@@ -182,19 +181,17 @@ export default class BoxRendererType extends ServerSideRendererType {
       args,
     ) as ResultsSerialized
 
-    if (isSingleRegionRenderArgs(args)) {
-      serialized.layout = args.layout.serializeRegion(
-        this.getExpandedGlyphRegion(args.region, args),
-      )
-      for (const [k] of features) {
-        if (serialized.layout.rectangles && !serialized.layout.rectangles[k]) {
-          features.delete(k)
-        }
+    const [region] = args.regions
+    serialized.layout = args.layout.serializeRegion(
+      this.getExpandedGlyphRegion(region, args),
+    )
+    for (const [k] of features) {
+      if (serialized.layout.rectangles && !serialized.layout.rectangles[k]) {
+        features.delete(k)
       }
-
-      serialized.maxHeightReached = serialized.layout.maxHeightReached
-      return serialized
     }
-    throw new Error('invalid render args type')
+
+    serialized.maxHeightReached = serialized.layout.maxHeightReached
+    return serialized
   }
 }

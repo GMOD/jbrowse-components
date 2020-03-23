@@ -8,7 +8,7 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
 export default class extends BaseFeatureDataAdapter {
-  protected fasta: any
+  protected fasta: typeof IndexedFasta
 
   public constructor(config: AnyConfigurationModel) {
     super()

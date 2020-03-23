@@ -10,7 +10,7 @@ export default class DrawerWidgetType extends PluggableElementBase {
 
   HeadingComponent?: ComponentType
 
-  LazyReactComponent: any
+  LazyReactComponent: unknown
 
   stateModel: IAnyModelType
 
@@ -20,7 +20,7 @@ export default class DrawerWidgetType extends PluggableElementBase {
     HeadingComponent?: ComponentType
     configSchema: AnyConfigurationSchemaType
     stateModel: IAnyModelType
-    LazyReactComponent: any
+    LazyReactComponent: unknown
   }) {
     super(stuff)
     this.heading = stuff.heading

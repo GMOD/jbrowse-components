@@ -5,6 +5,8 @@ import {
   IAnyType,
   isType,
   isLateType,
+  SnapshotOut,
+  ModelPropertiesDeclaration,
 } from 'mobx-state-tree'
 
 import { ElementId } from '../mst-types'
@@ -81,7 +83,8 @@ function makeConfigurationSchemaModel<
   OPTIONS extends ConfigurationSchemaOptions
 >(modelName: string, schemaDefinition: DEFINITION, options: OPTIONS) {
   // now assemble the MST model of the configuration schema
-  const modelDefinition: { [n: string]: any } = {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const modelDefinition: Record<string, any> = {}
   let identifier
 
   if (options.explicitlyTyped) {
@@ -110,7 +113,8 @@ function makeConfigurationSchemaModel<
     }
   }
 
-  const volatileConstants: { [n: string]: any } = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const volatileConstants: Record<string, any> = {
     isJBrowseConfigurationSchema: true,
     jbrowseSchema: {
       modelName,
@@ -158,7 +162,7 @@ function makeConfigurationSchemaModel<
     .actions(self => ({
       setSubschema(
         slotName: string,
-        data: Record<string, any> | AnyConfigurationSchemaType,
+        data: ModelPropertiesDeclaration | AnyConfigurationSchemaType,
       ) {
         if (!isConfigurationSchemaType(modelDefinition[slotName])) {
           throw new Error(`${slotName} is not a subschema, cannot replace`)
@@ -183,7 +187,7 @@ function makeConfigurationSchemaModel<
     completeModel = completeModel.extend(options.extend)
   }
   completeModel = completeModel.postProcessSnapshot(snap => {
-    const newSnap: Record<string, any> = {}
+    const newSnap: SnapshotOut<typeof completeModel> = {}
     // let keyCount = 0
     Object.entries(snap).forEach(([key, value]) => {
       if (
