@@ -1,9 +1,7 @@
 import jsonStableStringify from 'json-stable-stringify'
 import { observable, toJS } from 'mobx'
-import { getSnapshot, types } from 'mobx-state-tree'
+import { getSnapshot } from 'mobx-state-tree'
 import { readConfObject } from './configuration'
-import { Region } from './mst-types'
-
 
 export default self => ({
   views: {

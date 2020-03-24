@@ -78,7 +78,6 @@ export default function stateModelFactory(pluginManager: any) {
             async () => {
               self.assemblyNames.forEach((name, index) => {
                 const axis = [self.width, self.height]
-                console.log(axis)
                 const regions = session.assemblyRegions.get(
                   self.assemblyNames[index],
                 ) as IRegion[] | undefined

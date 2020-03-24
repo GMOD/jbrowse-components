@@ -8,7 +8,7 @@ export default (pluginManager: any) => {
   const { observer, PropTypes } = jbrequire('mobx-react')
   const { getSnapshot } = jbrequire('mobx-state-tree')
   const React = jbrequire('react')
-  const { useRef, useEffect } = React
+  const { useRef, useEffect, useState } = React
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { makeStyles: jbrequiredMakeStyles } = jbrequire(
     '@material-ui/core/styles',
@@ -29,9 +29,11 @@ export default (pluginManager: any) => {
       },
       container: {
         display: 'grid',
+        position: 'relative',
         background: grey[300],
       },
       overlay: {
+        pointerEvents: 'none',
         display: 'flex',
         width: '100%',
         gridArea: '1/1',
@@ -127,6 +129,10 @@ export default (pluginManager: any) => {
     const classes = useStyles()
     const ref = useRef()
     const { borderSize, fontSize, views, width, height } = model
+    const highlightOverlayCanvas = useRef(null)
+    const [down, setDown] = useState()
+    const [current, setCurrent] = useState([0, 0])
+
     const view0 = getSnapshot(views[0].displayedRegions)
     const view1 = getSnapshot(views[1].displayedRegions)
     useEffect(() => {
@@ -139,10 +145,51 @@ export default (pluginManager: any) => {
         ctx.restore()
       }
     }, [borderSize, fontSize, height, model, views, width, view0, view1])
+
+    useEffect(() => {
+      const canvas = highlightOverlayCanvas.current
+      if (!canvas) {
+        return
+      }
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        return
+      }
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      const rect = canvas.getBoundingClientRect()
+      if (down) {
+        ctx.fillStyle = 'rgba(255,0,0,0.3)'
+        ctx.fillRect(
+          down[0] - rect.left,
+          down[1] - rect.top,
+          current[0] - down[0],
+          current[1] - down[1],
+        )
+      }
+    }, [down, current])
     return (
       <div>
         <Header model={model} />
         <div className={classes.container}>
+          <canvas
+            style={{ position: 'absolute', left: 0, top: 0, zIndex: 10 }}
+            ref={highlightOverlayCanvas}
+            onMouseDown={event => {
+              setDown([event.clientX, event.clientY])
+              setCurrent([event.clientX, event.clientY])
+            }}
+            onMouseUp={event => {
+              setDown(undefined)
+            }}
+            onMouseLeave={event => {
+              setDown(undefined)
+            }}
+            onMouseMove={event => {
+              setCurrent([event.clientX, event.clientY])
+            }}
+            width={width}
+            height={height}
+          />
           <canvas
             className={classes.content}
             ref={ref}
