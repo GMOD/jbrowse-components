@@ -132,6 +132,7 @@ export default (pluginManager: any) => {
     useEffect(() => {
       if (ref.current) {
         const ctx = ref.current.getContext('2d')
+        ctx.clearRect(0, 0, width, height)
         DrawLabels(model, ctx)
         DrawGrid(model, ctx)
 

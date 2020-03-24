@@ -13,6 +13,10 @@ export type LGV = Instance<LinearGenomeViewStateModel>
 
 type ConfigRelationship = { type: string; target: string }
 
+function totalBp(regions: IRegion[]) {
+  return regions.map(a => a.end - a.start).reduce((a, b) => a + b, 0)
+}
+
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
   const { cast, types: jbrequiredTypes, getParent, addDisposer } = jbrequire(
@@ -32,6 +36,9 @@ export default function stateModelFactory(pluginManager: any) {
     .actions(self => ({
       setDisplayedRegions(regions: IRegion[]) {
         self.displayedRegions = cast(regions)
+      },
+      setBpToPx(val: number) {
+        self.bpPerPx = val
       },
     }))
   return (jbrequiredTypes as Instance<typeof types>)
@@ -63,9 +70,6 @@ export default function stateModelFactory(pluginManager: any) {
       },
     }))
     .actions(self => ({
-      setDisplayedRegions(index: number, displayRegions: IRegion[]) {
-        self.views[index].setDisplayedRegions(displayRegions)
-      },
       afterAttach() {
         const session = getSession(self) as any
         addDisposer(
@@ -73,17 +77,25 @@ export default function stateModelFactory(pluginManager: any) {
           autorun(
             async () => {
               self.assemblyNames.forEach((name, index) => {
+                const axis = [self.width, self.height]
+                console.log(axis)
                 const regions = session.assemblyRegions.get(
                   self.assemblyNames[index],
-                )
-                if (!regions) {
+                ) as IRegion[] | undefined
+                if (regions === undefined) {
                   session
                     .getRegionsForAssemblyName(self.assemblyNames[index])
                     .then((displayRegions: IRegion[]) => {
-                      this.setDisplayedRegions(index, displayRegions)
+                      self.views[index].setDisplayedRegions(displayRegions)
+                      self.views[index].setBpToPx(
+                        totalBp(displayRegions) / axis[index],
+                      )
                     })
+                } else {
+                  self.views[index].setDisplayedRegions(regions as IRegion[])
+
+                  self.views[index].setBpToPx(totalBp(regions) / axis[index])
                 }
-                this.setDisplayedRegions(index, regions)
               })
             },
             { delay: 1000 },
