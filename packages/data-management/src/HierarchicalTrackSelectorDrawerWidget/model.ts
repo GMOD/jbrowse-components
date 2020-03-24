@@ -85,12 +85,12 @@ export default (pluginManager: any) =>
       // This recursively gets tracks from lower paths
       allTracksInCategoryPath(
         path: string[],
-        connection: any,
-        assemblyName: string,
+        connection?: any,
+        assemblyName?: string,
       ) {
         let currentHier = connection
           ? this.connectionHierarchy(connection)
-          : this.hierarchy(assemblyName)
+          : this.hierarchy(assemblyName as string)
         path.forEach(pathItem => {
           currentHier = currentHier.get(pathItem) || new Map()
         })
@@ -101,11 +101,7 @@ export default (pluginManager: any) =>
           } else {
             tracks = Object.assign(
               tracks,
-              this.allTracksInCategoryPath(
-                path.concat([name]),
-                connection,
-                assemblyName,
-              ),
+              this.allTracksInCategoryPath(path.concat([name])),
             )
           }
         })
