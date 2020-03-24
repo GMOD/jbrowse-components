@@ -89,10 +89,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       },
     }))
 }
-
-type SyntenyTrackModel = ReturnType<typeof stateModelFactory>
-type SyntenyTrack = Instance<SyntenyTrackModel>
-
 export type BreakpointSplitTrackStateModel = ReturnType<
   typeof stateModelFactory
 >
+export type BreakpointSplitTrackModel = Instance<BreakpointSplitTrackStateModel>

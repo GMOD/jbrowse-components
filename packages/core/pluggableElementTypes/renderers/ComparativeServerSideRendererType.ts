@@ -173,7 +173,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
       args.views.map(async view => {
         view.features = await this.getFeatures({
           ...args,
-          regions: view.displayedRegions,
+          regions: view.staticBlocks,
         })
       }),
     )
