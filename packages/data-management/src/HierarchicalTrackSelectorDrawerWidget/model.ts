@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { types } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
@@ -21,8 +21,8 @@ export function generateHierarchy(trackConfigurations: any) {
   return hierarchy
 }
 
-export default (pluginManager: any) =>
-  types
+export default function stateModelFactory(pluginManager: any) {
+  return types
     .model('HierarchicalTrackSelectorDrawerWidget', {
       id: ElementId,
       type: types.literal('HierarchicalTrackSelectorDrawerWidget'),
@@ -108,3 +108,11 @@ export default (pluginManager: any) =>
         return tracks
       },
     }))
+}
+
+export type HierarchicalTrackSelectorStateModel = ReturnType<
+  typeof stateModelFactory
+>
+export type HierarchicalTrackSelectorModel = Instance<
+  HierarchicalTrackSelectorStateModel
+>
