@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { types } from 'mobx-state-tree'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
 
-export function generateHierarchy(trackConfigurations) {
+export function generateHierarchy(trackConfigurations: any) {
   const hierarchy = new Map()
 
-  trackConfigurations.forEach(trackConf => {
+  trackConfigurations.forEach((trackConf: any) => {
     const categories = [...(readConfObject(trackConf, 'category') || [])]
 
     let currLevel = hierarchy
@@ -20,7 +21,7 @@ export function generateHierarchy(trackConfigurations) {
   return hierarchy
 }
 
-export default pluginManager =>
+export default (pluginManager: any) =>
   types
     .model('HierarchicalTrackSelectorDrawerWidget', {
       id: ElementId,
@@ -32,27 +33,27 @@ export default pluginManager =>
       ),
     })
     .actions(self => ({
-      setView(view) {
+      setView(view: any) {
         self.view = view
       },
-      toggleCategory(pathName) {
+      toggleCategory(pathName: string) {
         self.collapsed.set(pathName, !self.collapsed.get(pathName))
       },
       clearFilterText() {
         self.filterText = ''
       },
-      setFilterText(newText) {
+      setFilterText(newText: string) {
         self.filterText = newText
       },
     }))
     .views(self => ({
-      trackConfigurations(assemblyName) {
+      trackConfigurations(assemblyName: string) {
         if (!self.view) return []
-        const session = getSession(self)
+        const session = getSession(self) as any
         const trackConfigurations = session.tracks
 
         const relevantTrackConfigurations = trackConfigurations.filter(
-          conf =>
+          (conf: any) =>
             conf.viewType === self.view.type &&
             readConfObject(conf, 'assemblyNames').includes(assemblyName),
         )
@@ -60,48 +61,51 @@ export default pluginManager =>
       },
 
       get assemblyNames() {
-        if (!self.view) return []
-        const assemblyNames = []
-        self.view.assemblyNames.forEach(assemblyName => {
-          assemblyNames.push(assemblyName)
-        })
-        return assemblyNames
+        return self.view ? self.view.assemblyNames : []
       },
 
-      connectionTrackConfigurations(connection) {
+      connectionTrackConfigurations(connection: any) {
         if (!self.view) return []
         const trackConfigurations = connection.tracks
 
         const relevantTrackConfigurations = trackConfigurations.filter(
-          conf => conf.viewType === self.view.type,
+          (conf: any) => conf.viewType === self.view.type,
         )
         return relevantTrackConfigurations
       },
 
-      hierarchy(assemblyName) {
-        return generateHierarchy(self.trackConfigurations(assemblyName))
+      hierarchy(assemblyName: string) {
+        return generateHierarchy(this.trackConfigurations(assemblyName))
       },
 
-      connectionHierarchy(connection) {
-        return generateHierarchy(self.connectionTrackConfigurations(connection))
+      connectionHierarchy(connection: any) {
+        return generateHierarchy(this.connectionTrackConfigurations(connection))
       },
 
       // This recursively gets tracks from lower paths
-      allTracksInCategoryPath(path, connection, assemblyName) {
+      allTracksInCategoryPath(
+        path: string[],
+        connection: any,
+        assemblyName: string,
+      ) {
         let currentHier = connection
-          ? self.connectionHierarchy(connection)
-          : self.hierarchy(assemblyName)
+          ? this.connectionHierarchy(connection)
+          : this.hierarchy(assemblyName)
         path.forEach(pathItem => {
           currentHier = currentHier.get(pathItem) || new Map()
         })
-        let tracks = {}
+        let tracks: { [key: string]: any } = {}
         currentHier.forEach((contents, name) => {
           if (contents.trackId) {
             tracks[contents.trackId] = contents
           } else {
             tracks = Object.assign(
               tracks,
-              self.allTracksInCategoryPath(path.concat([name])),
+              this.allTracksInCategoryPath(
+                path.concat([name]),
+                connection,
+                assemblyName,
+              ),
             )
           }
         })
