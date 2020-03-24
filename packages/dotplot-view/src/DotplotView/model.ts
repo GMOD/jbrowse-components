@@ -47,7 +47,7 @@ export default function stateModelFactory(pluginManager: any) {
       type: types.literal('DotplotView'),
       headerHeight: 0,
       width: 800,
-      height: 400,
+      height: 600,
       borderSize: 20,
       fontSize: 15,
       displayName: 'dotplot',
