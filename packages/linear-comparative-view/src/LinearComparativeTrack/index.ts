@@ -152,7 +152,6 @@ function renderBlockData(self: LinearComparativeTrack) {
       rendererType,
       rpcManager,
       renderProps,
-      trackError: track.error,
       renderArgs: {
         adapterType: self.adapterType.name,
         adapterConfig,
