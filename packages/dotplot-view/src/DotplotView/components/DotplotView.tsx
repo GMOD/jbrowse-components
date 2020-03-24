@@ -6,6 +6,7 @@ import { DotplotViewModel } from '../model'
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
+  const { getSnapshot } = jbrequire('mobx-state-tree')
   const React = jbrequire('react')
   const { useRef, useEffect } = React
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
@@ -126,6 +127,8 @@ export default (pluginManager: any) => {
     const classes = useStyles()
     const ref = useRef()
     const { borderSize, fontSize, views, width, height } = model
+    const view0 = getSnapshot(views[0].displayedRegions)
+    const view1 = getSnapshot(views[1].displayedRegions)
     useEffect(() => {
       if (ref.current) {
         const ctx = ref.current.getContext('2d')
@@ -134,7 +137,7 @@ export default (pluginManager: any) => {
 
         ctx.restore()
       }
-    }, [borderSize, fontSize, height, model, views, width])
+    }, [borderSize, fontSize, height, model, views, width, view0, view1])
     return (
       <div>
         <Header model={model} />

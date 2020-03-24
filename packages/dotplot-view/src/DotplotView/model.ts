@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getSession } from '@gmod/jbrowse-core/util'
-import { Region } from '@gmod/jbrowse-core/mst-types'
+import { Region, IRegion } from '@gmod/jbrowse-core/mst-types'
 
 import { types, Instance } from 'mobx-state-tree'
+import { autorun, transaction } from 'mobx'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
-import { transaction } from 'mobx'
+
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 
@@ -14,16 +15,24 @@ type ConfigRelationship = { type: string; target: string }
 
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
-  const { types: jbrequiredTypes, getParent } = jbrequire('mobx-state-tree')
+  const { cast, types: jbrequiredTypes, getParent, addDisposer } = jbrequire(
+    'mobx-state-tree',
+  )
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
 
   const DotplotViewDirection = types
     .model('DotplotViewDirection', {
       displayedRegions: types.array(Region),
       bpPerPx: types.number,
+      offsetPx: types.number,
     })
     .volatile(() => ({
       features: undefined as undefined | Feature[],
+    }))
+    .actions(self => ({
+      setDisplayedRegions(regions: IRegion[]) {
+        self.displayedRegions = cast(regions)
+      },
     }))
   return (jbrequiredTypes as Instance<typeof types>)
     .model('DotplotView', {
@@ -54,6 +63,33 @@ export default function stateModelFactory(pluginManager: any) {
       },
     }))
     .actions(self => ({
+      setDisplayedRegions(index: number, displayRegions: IRegion[]) {
+        self.views[index].setDisplayedRegions(displayRegions)
+      },
+      afterAttach() {
+        const session = getSession(self) as any
+        addDisposer(
+          self,
+          autorun(
+            async () => {
+              self.assemblyNames.forEach((name, index) => {
+                const regions = session.assemblyRegions.get(
+                  self.assemblyNames[index],
+                )
+                if (!regions) {
+                  session
+                    .getRegionsForAssemblyName(self.assemblyNames[index])
+                    .then((displayRegions: IRegion[]) => {
+                      this.setDisplayedRegions(index, displayRegions)
+                    })
+                }
+                this.setDisplayedRegions(index, regions)
+              })
+            },
+            { delay: 1000 },
+          ),
+        )
+      },
       setDisplayName(name: string) {
         self.displayName = name
       },

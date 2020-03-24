@@ -78,8 +78,8 @@
           "id": "MiDMyyWpp",
           "type": "DotplotView",
           "assemblyNames": [
-            "grape",
-            "peach"
+            "peach",
+            "grape"
           ],
           "views": [
             {
@@ -109,7 +109,8 @@
                   "end": 20000000
                 }
               ],
-              "bpPerPx": 100000
+              "bpPerPx": 100000,
+              "offsetPx": 0
             },
             {
               "displayedRegions": [
@@ -138,7 +139,8 @@
                   "end": 22000000
                 }
               ],
-              "bpPerPx": 200000
+              "bpPerPx": 200000,
+              "offsetPx": 0
             }
           ],
           "headerHeight": 44,

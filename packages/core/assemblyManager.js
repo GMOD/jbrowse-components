@@ -1,7 +1,9 @@
 import jsonStableStringify from 'json-stable-stringify'
 import { observable, toJS } from 'mobx'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, types } from 'mobx-state-tree'
 import { readConfObject } from './configuration'
+import { Region } from './mst-types'
+
 
 export default self => ({
   views: {
@@ -156,6 +158,41 @@ export default self => ({
         reversed.set(adapterName, canonicalName)
       }
       return reversed
+    },
+
+    setAdapterRegionsForAssembly(assemblyName, adapterRegionsWithAssembly) {
+      self.assemblyRegions.set(assemblyName, adapterRegionsWithAssembly)
+    },
+
+    async getRegionsForAssemblyName(assemblyName, opts = {}) {
+      const assembly = self.assemblyData.get(assemblyName)
+      if (assembly) {
+        const adapterConfig = readConfObject(assembly.sequence, 'adapter')
+        const adapterConfigId = jsonStableStringify(adapterConfig)
+        const adapterRegions = await self.rpcManager.call(
+          adapterConfigId,
+          'getRegions',
+          {
+            sessionId: assemblyName,
+            adapterType: adapterConfig.type,
+            adapterConfig,
+            signal: opts.signal,
+          },
+          { timeout: 1000000 },
+        )
+        const adapterRegionsWithAssembly = adapterRegions.map(
+          adapterRegion => ({
+            ...adapterRegion,
+            assemblyName,
+          }),
+        )
+
+        self.setAdapterRegionsForAssembly(
+          assemblyName,
+          adapterRegionsWithAssembly,
+        )
+      }
+      return Promise.resolve(undefined)
     },
   },
 })
