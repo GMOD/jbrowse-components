@@ -2,6 +2,7 @@ import {
   getConf,
   ConfigurationReference,
 } from '@gmod/jbrowse-core/configuration'
+import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { MenuOptions } from '@gmod/jbrowse-core/ui'
 import { types, addDisposer } from 'mobx-state-tree'
@@ -25,6 +26,7 @@ export default (pluginManager: any, configSchema: any) => {
           type: types.literal('AlignmentsTrack'),
           configuration: ConfigurationReference(configSchema),
           height: 250,
+          centerLinePosition: types.maybe(types.number),
           sortedBy: '',
           showCoverage: true,
           showPileup: true,
@@ -130,9 +132,11 @@ export default (pluginManager: any, configSchema: any) => {
       },
       clearSelected() {
         self.sortedBy = ''
+        self.centerLinePosition = undefined
       },
       sortSelected(selected: string) {
         self.sortedBy = selected
+        self.centerLinePosition = getContainingView(self).centerLinePosition
       },
       toggleCoverage() {
         self.showCoverage = !self.showCoverage

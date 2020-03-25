@@ -110,6 +110,7 @@ export default class extends BoxRendererType {
 
     // TODOSORT: this is where the layout is generated, feature needs to be sorted before here
     // might be interblock dependencies watch out for them
+    console.log(sortObject)
     const sortedFeatures =
       sortObject.by && sortObject.by !== ''
         ? sortFeature(
@@ -120,6 +121,7 @@ export default class extends BoxRendererType {
             horizontallyFlipped,
           )
         : null
+
     const featureMap = sortedFeatures || features
     const layoutRecords = iterMap(
       featureMap.values(),

@@ -37,9 +37,6 @@ export default (pluginManager, configSchema) =>
           session.showDrawerWidget(featureWidget)
           session.setSelection(feature)
         },
-        updateSortPosition() {
-          return getContainingView(self).centerLinePosition
-        },
       }))
       .views(self => ({
         /**
@@ -54,10 +51,10 @@ export default (pluginManager, configSchema) =>
           return rendererType
         },
 
-        // TODOSORT ask about this setup
+        // TODOSORT think about changing by, moving sortedBy to PileupTrack
         get sortObject() {
           return {
-            position: self.updateSortPosition(),
+            position: getParentRenderProps(self).trackModel.centerLinePosition,
             by: getParentRenderProps(self).trackModel.sortedBy,
           }
         },
