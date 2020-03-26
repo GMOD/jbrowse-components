@@ -7,7 +7,7 @@ Array [
     "end": 72.4,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:27.05-72.4",
+    "key": "ctgA:27.05..72.4",
     "offsetPx": 521,
     "parentRegion": Object {
       "end": 50000,
@@ -26,7 +26,7 @@ Array [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
     "end": undefined,
-    "key": "ctgA:1-250-beforeFirstRegion",
+    "key": "ctgA:1..250-beforeFirstRegion",
     "offsetPx": -100,
     "refName": undefined,
     "start": undefined,
@@ -38,7 +38,7 @@ Array [
     "end": 250,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:1-250",
+    "key": "ctgA:1..250",
     "offsetPx": 0,
     "parentRegion": Object {
       "end": 50000,
@@ -57,7 +57,7 @@ Array [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
     "end": undefined,
-    "key": "ctgA:1-200-beforeFirstRegion",
+    "key": "ctgA:1..200-beforeFirstRegion",
     "offsetPx": 0,
     "refName": undefined,
     "start": undefined,
@@ -69,7 +69,7 @@ Array [
     "end": 200,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:1-200",
+    "key": "ctgA:1..200",
     "offsetPx": 0,
     "parentRegion": Object {
       "end": 50000,
@@ -88,7 +88,7 @@ Array [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
     "end": undefined,
-    "key": "ctgA:49901-50000-beforeFirstRegion",
+    "key": "ctgA:49901..50000-beforeFirstRegion",
     "offsetPx": -100,
     "refName": undefined,
     "start": undefined,
@@ -100,7 +100,7 @@ Array [
     "end": 50000,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:49901-50000",
+    "key": "ctgA:49901..50000",
     "offsetPx": 0,
     "parentRegion": Object {
       "end": 50000,
@@ -119,7 +119,7 @@ Array [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
     "end": undefined,
-    "key": "ctgA:49801-50000-beforeFirstRegion",
+    "key": "ctgA:49801..50000-beforeFirstRegion",
     "offsetPx": 0,
     "refName": undefined,
     "start": undefined,
@@ -131,7 +131,7 @@ Array [
     "end": 50000,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:49801-50000",
+    "key": "ctgA:49801..50000",
     "offsetPx": 0,
     "parentRegion": Object {
       "end": 50000,

@@ -268,7 +268,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
                       style="padding: 8px;"
                       type="text"
-                      value="ctgA:0..5"
+                      value="ctgA:1..5"
                     />
                     <fieldset
                       aria-hidden="true"
@@ -586,7 +586,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
                       style="padding: 8px;"
                       type="text"
-                      value="ctgA:5..10"
+                      value="ctgA:6..10"
                     />
                     <fieldset
                       aria-hidden="true"

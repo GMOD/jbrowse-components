@@ -216,8 +216,8 @@ export function assembleLocString(region: IRegion | INoAssemblyRegion): string {
   const { refName, start, end } = region
   let assemblyName
   if ((region as IRegion).assemblyName) ({ assemblyName } = region as IRegion)
-  if (assemblyName) return `${assemblyName}:${refName}:${start + 1}-${end}`
-  return `${refName}:${start + 1}-${end}`
+  if (assemblyName) return `${assemblyName}:${refName}:${start + 1}..${end}`
+  return `${refName}:${start + 1}..${end}`
 }
 
 export interface ParsedLocString {
@@ -409,17 +409,6 @@ export function iterMap<T, U>(
     counter += 1
   }
   return results
-}
-
-export function generateLocString(
-  r: IRegion,
-  includeAssemblyName = true,
-): string {
-  let s = ''
-  if (includeAssemblyName && r.assemblyName) {
-    s = `${r.assemblyName}:`
-  }
-  return `${s}${r.refName}:${r.start}..${r.end}`
 }
 
 class AbortError extends Error {

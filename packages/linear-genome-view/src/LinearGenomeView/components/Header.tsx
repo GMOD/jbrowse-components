@@ -1,5 +1,5 @@
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { generateLocString, getSession } from '@gmod/jbrowse-core/util'
+import { assembleLocString, getSession } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
@@ -85,14 +85,12 @@ const Search = observer(({ model }: { model: LGV }) => {
       block => block.assemblyName === contentBlocks[0].assemblyName,
     )
     const locs = contentBlocks.map(block =>
-      generateLocString(
-        {
-          ...block,
-          start: Math.round(block.start),
-          end: Math.round(block.end),
-        },
-        !isSingleAssemblyName,
-      ),
+      assembleLocString({
+        ...block,
+        start: Math.round(block.start),
+        end: Math.round(block.end),
+        assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
+      }),
     )
     setDefaultValue(locs.join(';'))
   }, [contentBlocks])
