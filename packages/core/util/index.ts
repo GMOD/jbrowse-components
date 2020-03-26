@@ -437,6 +437,13 @@ export function mergeConfigs(A: Config, B: Config) {
   return merged
 }
 
+/** returns a promise that will resolve a very short time later */
+export function nextTick() {
+  return new Promise(resolve => {
+    setTimeout(resolve, 1)
+  })
+}
+
 /**
  * makes a mobx reaction with the given functions, that calls actions
  * on the model for each stage of execution, and to abort the reaction function when the
@@ -477,6 +484,8 @@ export function makeAbortableReaction<T, U>(
       } else {
         console.error(error)
       }
+    } else {
+      console.log(`reaction ${reactionOptions.name} abort caught`)
     }
   }
 
@@ -491,6 +500,7 @@ export function makeAbortableReaction<T, U>(
     },
     (data, mobxReactionHandle) => {
       if (inProgress && !inProgress.signal.aborted) {
+        console.log(`reaction ${reactionOptions.name} abort requested (path 1)`)
         inProgress.abort()
       }
 
@@ -499,9 +509,11 @@ export function makeAbortableReaction<T, U>(
       }
       inProgress = new AbortController()
 
+      console.log(`reaction ${reactionOptions.name} fired`)
+
       const thisInProgress = inProgress
       startedFunction(thisInProgress)
-      Promise.resolve()
+      nextTick()
         .then(() =>
           asyncReactionFunction(
             data,
@@ -517,8 +529,12 @@ export function makeAbortableReaction<T, U>(
           }
         })
         .catch(error => {
-          if (thisInProgress && !thisInProgress.signal.aborted)
+          if (thisInProgress && !thisInProgress.signal.aborted) {
+            console.log(
+              `reaction ${reactionOptions.name} abort requested (path 2)`,
+            )
             thisInProgress.abort()
+          }
           handleError(error)
         })
     },
@@ -528,6 +544,7 @@ export function makeAbortableReaction<T, U>(
   addDisposer(self, reactionDisposer)
   addDisposer(self, () => {
     if (inProgress && !inProgress.signal.aborted) {
+      console.log(`reaction ${reactionOptions.name} abort requested (path 3)`)
       inProgress.abort()
     }
   })
