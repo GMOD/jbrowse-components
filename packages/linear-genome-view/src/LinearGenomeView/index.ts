@@ -6,7 +6,7 @@ import {
   clamp,
   getContainingView,
   getSession,
-  parseLocString,
+  parseLocStringAndConvertToInterbase,
   springAnimate,
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
@@ -208,7 +208,7 @@ export function stateModelFactory(pluginManager: any) {
       /**
        *
        * @param {number} px px in the view area, return value is the displayed regions
-       * @returns {Array} of the displayed region that it lands in
+       * @returns {BpOffset} of the displayed region that it lands in
        */
       pxToBp(px: number) {
         const bp = (self.offsetPx + px) * self.bpPerPx + 1
@@ -396,69 +396,98 @@ export function stateModelFactory(pluginManager: any) {
         )
       },
 
-      navToLocString(locString: string) {
-        return this.navTo(parseLocString(locString))
+      async navToLocString(locString: string) {
+        await this.navTo(parseLocStringAndConvertToInterbase(locString))
       },
 
-      /*
-       * navTo navigates to a simple refName:start..end type object as input
-       * can handle if there are multiple displayedRegions from same chr
-       * only navigates to a locString if it is entirely within a displayedRegion
+      /**
+       * navTo navigates to a simple refName:start..end type object as input.
+       * can handle if there are multiple displayedRegions from same chr.
+       * only navigates to a locString if it is entirely within a
+       * displayedRegion.
        *
-       * @param {refName,start,end,assemblyName?} is a proposed location to navigate to
-       * returns true if navigation was successful, false if not
+       * @param {refName,start?,end?,assemblyName?} location - a proposed
+       * location to navigate to
+       * throws an error if navigation was unsuccessful
        */
       async navTo(query: {
-        refName?: string
+        refName: string
         start?: number
         end?: number
         assemblyName?: string
       }) {
-        try {
-          // eslint-disable-next-line prefer-const
-          let { refName = '', start, end, assemblyName } = query
-          if (refName) {
+        let { refName } = query
+        const { start, end, assemblyName } = query
+        if (refName) {
+          try {
             const root = getRoot(self)
-            refName = await root.jbrowse.getCanonicalRefName(
+            const canonicalRefName = await root.jbrowse.getCanonicalRefName(
               refName,
               assemblyName || self.assemblyNames[0],
             )
-          }
-
-          // get the proper displayedRegion that is relevant for the nav command
-          // assumes that a single displayedRegion will satisfy the query
-          // TODO: may not necessarily be true?
-          const index = self.displayedRegions.findIndex(region => {
-            if (refName === region.refName) {
-              if (start === undefined) {
-                start = region.start
-              }
-              if (end === undefined) {
-                end = region.end
-              }
-              if (start >= region.start && end <= region.end) {
-                return true
-              }
+            if (canonicalRefName) {
+              refName = canonicalRefName
             }
-            return false
-          })
-
-          if (start === undefined || end === undefined) {
-            return false
-          }
-          if (index !== -1) {
-            const result = self.displayedRegions[index]
-            this.moveTo(
-              { index, offset: start - result.start },
-              { index, offset: end - result.start },
+          } catch (error) {
+            console.warn(
+              `wasn't able to look up canonical ref name for ${refName}`,
+              error,
             )
-            return true
+          }
+        }
+
+        let s = start
+        let e = end
+        let refNameMatched = false
+
+        // get the proper displayedRegion that is relevant for the nav command
+        // assumes that a single displayedRegion will satisfy the query
+        // TODO: may not necessarily be true?
+        const index = self.displayedRegions.findIndex(r => {
+          if (refName === r.refName) {
+            refNameMatched = true
+            if (s === undefined) {
+              s = r.start
+            }
+            if (e === undefined) {
+              e = r.end
+            }
+            if (s >= r.start && s <= r.end && e <= r.end && e >= r.start) {
+              return true
+            }
+            s = start
+            e = end
           }
           return false
-        } catch (e) {
-          this.setError(e)
-          return false
+        })
+        if (!refNameMatched) {
+          throw new Error(`could not find a region with refName "${refName}"`)
         }
+        if (s !== undefined && e === undefined) {
+          throw new Error(`could not find a region that contained ${s + 1}`)
+        }
+        if (s === undefined) {
+          throw new Error(
+            `could not find a region with refName "${refName}" that contained an end position ${e}`,
+          )
+        }
+        if (e === undefined) {
+          throw new Error(
+            `could not find a region with refName "${refName}" that contained a start position ${s}`,
+          )
+        }
+        if (index === -1) {
+          throw new Error(
+            `could not find a region that completely contained "${refName}:${
+              start !== undefined ? start + 1 : start
+            }..${end}"`,
+          )
+        }
+        const f = self.displayedRegions[index]
+        this.moveTo(
+          { index, offset: s - f.start },
+          { index, offset: e - f.start },
+        )
       },
 
       // schedule something to be run after the next time displayedRegions is set
@@ -500,7 +529,15 @@ export function stateModelFactory(pluginManager: any) {
           }
         }
         self.bpPerPx = self.constrainBpPerPx(bpSoFar / self.width)
-        self.offsetPx = bpToStart / self.bpPerPx
+        const viewWidth = self.width
+        if (viewWidth > bpSoFar / self.bpPerPx) {
+          self.offsetPx = Math.round(
+            (bpToStart - 1) / self.bpPerPx -
+              (viewWidth - bpSoFar / self.bpPerPx) / 2,
+          )
+        } else {
+          self.offsetPx = Math.round((bpToStart - 1) / self.bpPerPx)
+        }
       },
 
       horizontalScroll(distance: number) {
