@@ -334,6 +334,7 @@ export function stateModelFactory(pluginManager: any) {
 
       setDisplayedRegions(regions: IRegion[]) {
         self.displayedRegions = cast(regions)
+        this.zoomTo(self.bpPerPx)
       },
 
       activateTrackSelector() {
@@ -385,9 +386,13 @@ export function stateModelFactory(pluginManager: any) {
 
         // tweak the offset so that the center of the view remains at the same coordinate
         const viewWidth = self.width
-        self.offsetPx = Math.round(
-          ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
-            viewWidth / 2,
+        self.offsetPx = clamp(
+          Math.round(
+            ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
+              viewWidth / 2,
+          ),
+          self.minOffset,
+          self.maxOffset,
         )
       },
 

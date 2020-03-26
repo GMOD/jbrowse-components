@@ -159,12 +159,15 @@ const Search = observer(({ model }: { model: LGV }) => {
     />
   )
 
+  const assemblyName = contentBlocks.length
+    ? contentBlocks[0].assemblyName
+    : undefined
   return (
     <>
       <RefNameAutocomplete
         model={model}
         onSelect={setDisplayedRegion}
-        assemblyName={contentBlocks[0].assemblyName}
+        assemblyName={assemblyName}
         defaultRegionName={
           displayedRegions.length > 1 ? '' : contentBlocks[0].refName
         }
