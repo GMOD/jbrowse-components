@@ -89,22 +89,17 @@ function* generateLayoutMatches(
 ) {
   const feats = views
     .map((view, index) => {
-      // TODO why is it t.configuration?
       const track = views[index].tracks.find(t => t.configuration === trackId)
-      if (!track) {
-        throw new Error('Linked track not found')
-      }
-      // @ts-ignore
-      const layoutFeatures = track.layoutFeatures as Map<string, LayoutRecord>
-
       return view.features.map(feature => {
+        const layout =
+          track && !middle
+            ? track.layoutFeatures.get(String(feature.id()))
+            : ([feature.get('start'), 0, feature.get('end'), 0] as LayoutRecord)
         return {
           feature,
           level: index,
           refName: feature.get('refName'),
-          layout: middle
-            ? ([feature.get('start'), 0, feature.get('end'), 0] as LayoutRecord)
-            : layoutFeatures.get(String(feature.id())),
+          layout,
         }
       })
     })
