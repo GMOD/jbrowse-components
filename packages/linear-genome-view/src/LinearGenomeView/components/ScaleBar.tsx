@@ -48,7 +48,7 @@ const RenderedScaleBar = observer(
         {model.staticBlocks.map((block, index) => {
           if (block instanceof ContentBlock) {
             return (
-              <Block key={block.key} block={block}>
+              <Block key={`${block.key}-${index}`} block={block}>
                 <svg height={height} width={block.widthPx}>
                   <Ruler
                     start={block.start}
@@ -103,7 +103,7 @@ function ScaleBar({ model, height }: { model: LGV; height: number }) {
           if (block.isLeftEndOfDisplayedRegion || index === lastLeftBlock) {
             return (
               <div
-                key={`refLabel-${block.key}`}
+                key={`refLabel-${block.key}-${index}`}
                 style={{
                   left:
                     index === lastLeftBlock

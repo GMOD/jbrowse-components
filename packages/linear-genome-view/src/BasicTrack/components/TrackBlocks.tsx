@@ -46,11 +46,11 @@ const RenderedBlocks = observer(
     const { blockDefinitions, blockState } = model
     return (
       <>
-        {blockDefinitions.map((block: BaseBlock) => {
+        {blockDefinitions.map((block: BaseBlock, idx: number) => {
           if (block instanceof ContentBlock) {
             const state = blockState.get(block.key)
             return (
-              <Block block={block} key={`${model.id}-${block.key}`}>
+              <Block block={block} key={`${model.id}-${block.key}-${idx}`}>
                 {state && state.ReactComponent ? (
                   <state.ReactComponent model={state} />
                 ) : null}
