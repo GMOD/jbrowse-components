@@ -3,7 +3,7 @@ import { render } from '@testing-library/react'
 
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
-import AlignmentsTrackSchemaFactory from '@gmod/jbrowse-plugin-alignments/src/AlignmentsTrack/configSchema'
+import PileupTrackSchemaFactory from '@gmod/jbrowse-plugin-alignments/src/PileupTrack/configSchema'
 import ConfigurationEditor from './ConfigurationEditor'
 
 describe('ConfigurationEditor drawer widget', () => {
@@ -79,13 +79,11 @@ describe('ConfigurationEditor drawer widget', () => {
     expect(container.firstChild).toMatchSnapshot()
   })
 
-  it('renders with defaults of the AlignmentsTrack schema', () => {
+  it('renders with defaults of the PileupTrack schema', () => {
     const { pluginManager } = createTestSession()
-    const AlignmentsTrackSchema = AlignmentsTrackSchemaFactory(pluginManager)
+    const PileupTrackSchema = PileupTrackSchemaFactory(pluginManager)
     const { container } = render(
-      <ConfigurationEditor
-        model={{ target: AlignmentsTrackSchema.create() }}
-      />,
+      <ConfigurationEditor model={{ target: PileupTrackSchema.create() }} />,
     )
     expect(container.firstChild).toMatchSnapshot()
   })

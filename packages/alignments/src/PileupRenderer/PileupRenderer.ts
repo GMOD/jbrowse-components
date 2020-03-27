@@ -93,6 +93,7 @@ export default class extends BoxRendererType {
       horizontallyFlipped,
       highResolutionScaling = 1,
     } = props
+
     if (!layout) throw new Error(`layout required`)
     if (!layout.addRect) throw new Error('invalid layout object')
     const pxPerBp = Math.min(1 / bpPerPx, 2)

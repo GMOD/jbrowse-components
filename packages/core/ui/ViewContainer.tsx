@@ -2,11 +2,6 @@ import Icon, { IconProps as IP } from '@material-ui/core/Icon'
 import IconButton, {
   IconButtonProps as IBP,
 } from '@material-ui/core/IconButton'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
-import ListItemText from '@material-ui/core/ListItemText'
-import Menu from '@material-ui/core/Menu'
-import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -14,16 +9,7 @@ import Tooltip from '@material-ui/core/Tooltip'
 import { observer } from 'mobx-react'
 import React, { useEffect, useRef, useState } from 'react'
 import EditableTypography from './EditableTypography'
-
-export interface MenuOption {
-  title: string
-  key: string
-  icon?: string
-  callback: Function
-  checked?: boolean
-  isCheckbox: boolean
-  disabled?: boolean
-}
+import Menu, { MenuOptions } from './Menu'
 
 const useStyles = makeStyles(theme => ({
   viewContainer: {
@@ -86,16 +72,22 @@ const ViewMenu = observer(
     IconButtonProps,
     IconProps,
   }: {
-    model: { menuOptions: MenuOption[] }
+    model: { menuOptions: MenuOptions[] }
     IconButtonProps: IBP
     IconProps: IP
   }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-    const classes = useStyles()
-    const open = Boolean(anchorEl)
 
     function handleClick(event: React.MouseEvent<HTMLElement>) {
       setAnchorEl(event.currentTarget)
+    }
+
+    const handleMenuItemClick = (
+      event: React.MouseEvent<HTMLLIElement, MouseEvent>,
+      callback: () => void,
+    ) => {
+      callback()
+      setAnchorEl(null)
     }
 
     function handleClose() {
@@ -118,59 +110,12 @@ const ViewMenu = observer(
           <Icon {...IconProps}>menu</Icon>
         </IconButton>
         <Menu
-          id="view-menu"
           anchorEl={anchorEl}
-          keepMounted
-          open={open}
+          open={Boolean(anchorEl)}
+          onMenuItemClick={handleMenuItemClick}
           onClose={handleClose}
-        >
-          {model.menuOptions.map(option => {
-            return (
-              <MenuItem
-                key={option.key}
-                dense
-                disableGutters
-                onClick={() => {
-                  option.callback()
-                  handleClose()
-                }}
-                classes={{ dense: classes.menuItemDense }}
-              >
-                {option.icon ? (
-                  <ListItemIcon classes={{ root: classes.listItemIconRoot }}>
-                    <Icon fontSize="small">{option.icon}</Icon>
-                  </ListItemIcon>
-                ) : null}
-                <ListItemText
-                  primary={option.title}
-                  inset={!option.icon}
-                  classes={{ inset: classes.listItemInset }}
-                />
-                {option.isCheckbox ? (
-                  <ListItemSecondaryAction
-                    classes={{ root: classes.secondaryActionRoot }}
-                  >
-                    <IconButton
-                      disabled
-                      size="small"
-                      edge="end"
-                      aria-label="delete"
-                    >
-                      <Icon
-                        fontSize="small"
-                        color={option.checked ? 'secondary' : 'inherit'}
-                      >
-                        {option.checked
-                          ? 'check_box'
-                          : 'check_box_outline_blank'}
-                      </Icon>
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                ) : null}
-              </MenuItem>
-            )
-          })}
-        </Menu>
+          menuOptions={model.menuOptions}
+        />
       </>
     )
   },
@@ -184,7 +129,7 @@ export default observer(
     children,
   }: {
     view: {
-      menuOptions: MenuOption[]
+      menuOptions: MenuOptions[]
       displayName: string
       setDisplayName: (displayName: string) => void
     }

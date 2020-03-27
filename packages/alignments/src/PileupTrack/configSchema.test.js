@@ -9,10 +9,6 @@ import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
   ReactComponent as PileupRendererReactComponent,
 } from '../PileupRenderer'
-import SNPCoverageRenderer, {
-  configSchema as snpCoverageRendererConfigSchema,
-  ReactComponent as SNPCoverageRendererReactComponent,
-} from '../SNPCoverageRenderer'
 import configSchemaFactory from './configSchema'
 
 // mock warnings to avoid unnecessary outputs
@@ -50,32 +46,17 @@ class SvgFeatureRendererPlugin extends Plugin {
   }
 }
 
-class SNPCoverageRendererPlugin extends Plugin {
-  install(pluginManager) {
-    pluginManager.addRendererType(
-      () =>
-        new SNPCoverageRenderer({
-          name: 'SNPCoverageRenderer',
-          ReactComponent: SNPCoverageRendererReactComponent,
-          configSchema: snpCoverageRendererConfigSchema,
-        }),
-    )
-  }
-}
-
 test('has a viewType attr', () => {
   const configSchema = configSchemaFactory(
     new PluginManager([
       new PileupRendererPlugin(),
       new SvgFeatureRendererPlugin(),
-      new SNPCoverageRendererPlugin(),
     ]).configure(),
   )
   const config = configSchema.create({
-    type: 'AlignmentsTrack',
+    type: 'PileupTrack',
     trackId: 'track0',
     name: 'Zonker Track',
   })
-
   expect(config.viewType).toEqual('LinearGenomeView')
 })

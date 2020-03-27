@@ -12,6 +12,7 @@ test('one', () => {
       region={{ refName: 'zonk', start: 1, end: 3 }}
       layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
       bpPerPx={3}
+      config={{ type: 'DummyRenderer' }}
     />,
   )
 

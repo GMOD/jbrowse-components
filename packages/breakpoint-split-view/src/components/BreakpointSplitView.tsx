@@ -56,7 +56,7 @@ export default (pluginManager: any) => {
     (props: { model: BreakpointViewModel; trackConfigId: string }) => {
       const { model, trackConfigId } = props
       const tracks = model.getMatchedTracks(trackConfigId)
-      if (tracks[0].type === 'AlignmentsTrack') {
+      if (tracks[0].type === 'PileupTrack') {
         return <AlignmentConnections {...props} />
       }
       if (tracks[0].type === 'VariantTrack') {

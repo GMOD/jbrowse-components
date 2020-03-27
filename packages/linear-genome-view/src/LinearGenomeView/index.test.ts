@@ -55,7 +55,7 @@ test('can instantiate a mostly empty model and read a default configuration valu
   }).setView(
     LinearGenomeModel.create({
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
+      tracks: [{ name: 'foo track', type: 'PileupTrack' }],
     }),
   )
 
@@ -72,7 +72,7 @@ test('can instantiate a model that lets you navigate', () => {
     LinearGenomeModel.create({
       id: 'test1',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
+      tracks: [{ name: 'foo track', type: 'PileupTrack' }],
     }),
   )
   model.setDisplayedRegions([
@@ -117,7 +117,7 @@ test('can instantiate a model that has multiple displayed regions', () => {
     LinearGenomeModel.create({
       id: 'test2',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
+      tracks: [{ name: 'foo track', type: 'PileupTrack' }],
     }),
   )
   model.setDisplayedRegions([
@@ -145,7 +145,7 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
     LinearGenomeModel.create({
       id: 'test3',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
+      tracks: [{ name: 'foo track', type: 'PileupTrack' }],
     }),
   )
   model.setDisplayedRegions([
@@ -177,7 +177,7 @@ test('can instantiate a model that >2 regions', () => {
     LinearGenomeModel.create({
       id: 'test4',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
+      tracks: [{ name: 'foo track', type: 'PileupTrack' }],
       width,
     }),
   )

@@ -68,7 +68,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "PileupTrack",
       "trackId": "pacbio_hg002_breakpoints",
       "name": "HG002.hs37d5.11kb",
       "assemblyNames": [
@@ -144,7 +144,7 @@
               "horizontallyFlipped": false,
               "tracks": [
                 {
-                  "type": "AlignmentsTrack",
+                  "type": "PileupTrack",
                   "height": 100,
                   "configuration": "pacbio_hg002_breakpoints",
                   "selectedRendering": ""
@@ -184,7 +184,7 @@
               "horizontallyFlipped": false,
               "tracks": [
                 {
-                  "type": "AlignmentsTrack",
+                  "type": "PileupTrack",
                   "height": 100,
                   "configuration": "pacbio_hg002_breakpoints",
                   "selectedRendering": ""

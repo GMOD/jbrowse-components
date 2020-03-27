@@ -102,7 +102,7 @@ function TrackBlocks({
   const { blockDefinitions } = model
   return (
     <div
-      data-testid="Block"
+      data-testid="Blockset"
       className={classes.trackBlocks}
       style={{
         left: blockDefinitions.offsetPx - viewModel.offsetPx,
@@ -118,4 +118,5 @@ TrackBlocks.propTypes = {
   viewModel: PropTypes.observableObject.isRequired,
 }
 
+export { RenderedBlocks, useStyles }
 export default observer(TrackBlocks)

@@ -80,7 +80,6 @@ const stateModelFactory = (configSchema: any) =>
             scaleType: getConf(self, 'scaleType'),
             bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
           })
-
           const headroom = getConf(self, 'headroom')
           if (headroom) {
             ret[1] = Math.ceil(ret[1] / headroom) * headroom
@@ -154,7 +153,7 @@ const stateModelFactory = (configSchema: any) =>
               adapterType: adapter.type,
               // TODO: Figure this out for multiple assembly names
               assemblyName: getTrackAssemblyNames(self)[0],
-              regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
+              regions: JSON.parse(JSON.stringify(dynamicBlocks.contentBlocks)),
               signal,
               bpPerPx,
             },
@@ -188,6 +187,12 @@ const stateModelFactory = (configSchema: any) =>
                 try {
                   const aborter = new AbortController()
                   self.setLoading(aborter)
+
+                  const { dynamicBlocks } = getContainingView(self)
+                  if (!dynamicBlocks.contentBlocks.length && !self.ready) {
+                    return
+                  }
+
                   const stats = await getStats(aborter.signal)
                   if (isAlive(self)) {
                     self.updateStats(stats)

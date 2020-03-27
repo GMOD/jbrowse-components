@@ -101,7 +101,7 @@ function makeTrackConfig(track, categories, trackDbFileLocation, trackDb) {
           ? { localPath: track.get('bigDataIndex') }
           : { localPath: `${track.get('bigDataUrl')}.bai` }
       return {
-        type: 'AlignmentsTrack',
+        type: 'PileupTrack',
         name: track.get('shortLabel'),
         description: track.get('longLabel'),
         category: categories,
@@ -220,7 +220,7 @@ function makeTrackConfig(track, categories, trackDbFileLocation, trackDb) {
           ? { localPath: track.get('bigDataIndex') }
           : { localPath: `${track.get('bigDataUrl')}.crai` }
       return {
-        type: 'AlignmentsTrack',
+        type: 'PileupTrack',
         name: track.get('shortLabel'),
         description: track.get('longLabel'),
         category: categories,
