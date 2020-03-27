@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 
-export default function(pluginManager) {
+export default function (pluginManager) {
   const BaseAssemblyConfigSchema = ConfigurationSchema('BaseAssembly', {
     name: {
       type: 'string',

@@ -50,9 +50,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
       } else if (summaryScoreMode === 'whiskers') {
         // max
         if (maxr !== undefined) {
-          ctx.fillStyle = Color(c)
-            .lighten(0.6)
-            .toString()
+          ctx.fillStyle = Color(c).lighten(0.6).toString()
           ctx.fillRect(leftPx, toY(maxr), w, filled ? toHeight(maxr) : 1)
         }
 
@@ -61,9 +59,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
         ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
         // min
         if (minr !== undefined) {
-          ctx.fillStyle = Color(c)
-            .darken(0.6)
-            .toString()
+          ctx.fillStyle = Color(c).darken(0.6).toString()
           ctx.fillRect(leftPx, toY(minr), w, filled ? toHeight(minr) : 1)
         }
       } else {
