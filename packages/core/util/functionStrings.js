@@ -13,8 +13,9 @@ const compilationCache = {}
 export function stringToFunction(str, options = {}) {
   const { verifyFunctionSignature } = options
 
-  const cacheKey = `${verifyFunctionSignature &&
-    verifyFunctionSignature.join(',')}|${str}`
+  const cacheKey = `${
+    verifyFunctionSignature && verifyFunctionSignature.join(',')
+  }|${str}`
   if (!compilationCache[cacheKey]) {
     const match = functionRegexp.exec(str)
     if (!match) {

@@ -69,10 +69,7 @@ function makeTrackConfig(track, categories, trackDbFileLocation, trackDb) {
   let baseTrackType = trackType.split(' ')[0]
   if (
     baseTrackType === 'bam' &&
-    track
-      .get('bigDataUrl')
-      .toLowerCase()
-      .endsWith('cram')
+    track.get('bigDataUrl').toLowerCase().endsWith('cram')
   )
     baseTrackType = 'cram'
   let bigDataLocation

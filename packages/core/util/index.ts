@@ -29,10 +29,7 @@ export function toUrlSafeB64(str: string): string {
   const encoded = fromByteArray(deflated)
   const pos = encoded.indexOf('=')
   return pos > 0
-    ? encoded
-        .slice(0, pos)
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
+    ? encoded.slice(0, pos).replace(/\+/g, '-').replace(/\//g, '_')
     : encoded.replace(/\+/g, '-').replace(/\//g, '_')
 }
 
