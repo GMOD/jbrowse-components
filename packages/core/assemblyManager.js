@@ -6,7 +6,7 @@ import QuickLRU from './util/QuickLRU'
 import { readConfObject } from './configuration'
 
 export default self => {
-  const cache = new AbortablePromiseCache({
+  const refNameMapCache = new AbortablePromiseCache({
     // QuickLRU is a good backing cache to use, but you can use any
     // cache as long as it supports `get`, `set`, `delete`, and `keys`.
     cache: new QuickLRU({ maxSize: 1000 }),
@@ -194,13 +194,9 @@ export default self => {
       /**
        * get Map of canonical-name -> adapter-specific-name
        */
-      async getRefNameMapForAdapter(
-        adapterConf,
-        assemblyName,
-        opts = {},
-      ) {
+      async getRefNameMapForAdapter(adapterConf, assemblyName, opts = {}) {
         const adapterConfigId = jsonStableStringify(adapterConf)
-        return cache.get(
+        return refNameMapCache.get(
           adapterConfigId,
           {
             adapterConf,
@@ -214,13 +210,13 @@ export default self => {
        * get Map of adapter-specific-name -> canonical-name
        */
       async getReverseRefNameMapForAdapter(adapterConf, assemblyName, opts) {
-        const refNameMap = await self.getRefNameMapForAdapter(
+        const map = await self.getRefNameMapForAdapter(
           adapterConf,
           assemblyName,
           opts,
         )
         const reversed = new Map()
-        for (const [canonicalName, adapterName] of refNameMap) {
+        for (const [canonicalName, adapterName] of map) {
           reversed.set(adapterName, canonicalName)
         }
         return reversed
