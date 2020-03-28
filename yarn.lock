@@ -3700,6 +3700,14 @@ abortable-promise-cache@^1.0.1:
     abortcontroller-polyfill "^1.2.9"
     babel-runtime "^6.26.0"
 
+abortable-promise-cache@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/abortable-promise-cache/-/abortable-promise-cache-1.1.2.tgz#79a6c752db48d652e8d78afd14e386bb0d42b2f4"
+  integrity sha512-hPWOIk+dhs/zCur11a/bf/QoHej1aQdWsChCGAh3DIFKlXFLe0rBqQaoH16Pu9DgZN7bN3/bi9NxyUI8L9raXQ==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    abortcontroller-polyfill "^1.2.9"
+
 abortcontroller-polyfill@^1.2.9:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/abortcontroller-polyfill/-/abortcontroller-polyfill-1.4.0.tgz#0d5eb58e522a461774af8086414f68e1dda7a6c4"
