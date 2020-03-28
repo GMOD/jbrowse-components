@@ -140,58 +140,6 @@ export default self => {
       },
 
       /**
-       * gets the list of reference sequence names from the adapter in question, and
-       * uses those to build a Map of adapter_ref_name -> canonical_ref_name
-       */
-      async addRefNameMapForAdapter(
-        adapterConf,
-        assemblyName,
-        stateGroupName,
-        opts = {},
-      ) {
-        const assemblyConfig = self.assemblyData.get(assemblyName)
-        let sequenceConfig = {}
-        if (assemblyConfig && assemblyConfig.sequence) {
-          sequenceConfig = getSnapshot(assemblyConfig.sequence.adapter)
-        }
-        const refNameAliases = await self.getRefNameAliases(assemblyName, opts)
-        const adapterConfigId = jsonStableStringify(adapterConf)
-        const refNameMap = observable.map({})
-
-        const refNames = await self.rpcManager.call(
-          stateGroupName,
-          'getRefNames',
-          {
-            sessionId: assemblyName,
-            adapterType: readConfObject(adapterConf, 'type'),
-            adapterConfig: adapterConf,
-            sequenceAdapterType: sequenceConfig.type,
-            sequenceAdapterConfig: sequenceConfig,
-            signal: opts.signal,
-          },
-          { timeout: 1000000 },
-        )
-        refNames.forEach(refName => {
-          if (refNameAliases[refName])
-            refNameAliases[refName].forEach(refNameAlias => {
-              refNameMap.set(refNameAlias, refName)
-            })
-          else
-            Object.keys(refNameAliases).forEach(configRefName => {
-              if (refNameAliases[configRefName].includes(refName)) {
-                refNameMap.set(configRefName, refName)
-                refNameAliases[configRefName].forEach(refNameAlias => {
-                  if (refNameAlias !== refName)
-                    refNameMap.set(refNameAlias, refName)
-                })
-              }
-            })
-        })
-        self.refNameMaps.set(adapterConfigId, refNameMap)
-        return refNameMap
-      },
-
-      /**
        * get Map of canonical-name -> adapter-specific-name
        */
       async getRefNameMapForAdapter(adapterConf, assemblyName, opts = {}) {
