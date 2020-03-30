@@ -26,6 +26,7 @@ export default configSchema =>
     )
     .actions(self => ({
       selectFeature(feature) {
+        /** @type {any} **/
         const session = getSession(self)
         const featureWidget = session.addDrawerWidget(
           'VariantFeatureDrawerWidget',

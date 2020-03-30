@@ -4,12 +4,9 @@ import BigWigAdapter from './BigWigAdapter'
 describe('adapter can fetch features from volvox.bw', () => {
   let adapter
   beforeEach(() => {
-    adapter = new BigWigAdapter(
-      {
-        bigWigLocation: { localPath: require.resolve('./test_data/volvox.bw') },
-      },
-      {},
-    )
+    adapter = new BigWigAdapter({
+      bigWigLocation: { localPath: require.resolve('./test_data/volvox.bw') },
+    })
   })
   it('test basic aspects of getfeatures', async () => {
     const features = await adapter.getFeatures({

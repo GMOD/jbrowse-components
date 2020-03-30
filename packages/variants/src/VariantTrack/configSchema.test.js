@@ -11,19 +11,11 @@ import {
 } from '@gmod/jbrowse-plugin-svg/src/SvgFeatureRenderer'
 import configSchemaFactory from './configSchema'
 
-// mock warnings to avoid unnecessary outputs
-beforeEach(() => {
-  jest.spyOn(console, 'warn').mockImplementation(() => {})
-})
-
-afterEach(() => {
-  console.warn.mockRestore()
-})
-
 class PileupRendererPlugin extends Plugin {
   install(pluginManager) {
     pluginManager.addRendererType(
       () =>
+        // @ts-ignore
         new PileupRenderer({
           name: 'PileupRenderer',
           ReactComponent: PileupRendererReactComponent,

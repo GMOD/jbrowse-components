@@ -48,7 +48,7 @@ function SelectBox({
 
 SelectBox.propTypes = {
   selectList: PropTypes.arrayOf(
-    PropTypes.oneOfType([PropTypes.string, PropTypes.shape()]),
+    PropTypes.oneOfType([PropTypes.string, PropTypes.shape({})]),
   ).isRequired,
   selectedItem: PropTypes.string.isRequired,
   handleSelect: PropTypes.func.isRequired,

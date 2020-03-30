@@ -46,7 +46,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function TrackHubRegistrySelect({ model, setModelReady }) {
-  const [errorMessage, setErrorMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState<JSX.Element | null>(null)
   const [assemblies, setAssemblies] = useState(null)
   const [selectedSpecies, setSelectedSpecies] = useState('')
   const [selectedAssembly, setSelectedAssembly] = useState('')
@@ -69,7 +69,7 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
         return
       }
       if (pingResponse.ping !== 1) {
-        setErrorMessage('Registry is not available')
+        setErrorMessage(<p>Registry is not available</p>)
         return
       }
       const assembliesResponse = await doGet(
@@ -81,15 +81,17 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     }
 
     getAssemblies()
-  }, [])
+  }, [setAssemblies])
 
   useEffect(() => {
     if (errorMessage) return
     if (selectedAssembly && !hubs.size) getHubs(true)
-    else if (hubs.size && !allHubsRetrieved) getHubs()
+    else if (hubs.size && !allHubsRetrieved) {
+      getHubs(false)
+    }
   })
 
-  async function getHubs(reset) {
+  async function getHubs(reset: boolean) {
     const entriesPerPage = 10
     const newHubs = reset ? new Map() : new Map(hubs)
     const page = Math.floor(hubs.size / entriesPerPage) + 1
@@ -226,6 +228,7 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     return <div>{renderItems}</div>
   }
 
+  // @ts-ignore
   const speciesList = Object.keys(assemblies)
     .sort()
     .filter(item => item.toLowerCase().includes('sapiens'))
@@ -242,6 +245,7 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
   )
 
   if (selectedSpecies) {
+    // @ts-ignore
     const ret = assemblies[selectedSpecies].filter(
       s => !(s.name === 'GRCh37' && s.synonyms[0] === 'hg38'),
     )

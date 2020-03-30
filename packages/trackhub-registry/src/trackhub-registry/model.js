@@ -18,6 +18,7 @@ export default function (pluginManager) {
       })
       .actions(self => ({
         connect(connectionConf) {
+          // @ts-ignore
           self.clear()
           const trackDbId = readConfObject(connectionConf, 'trackDbId')
           fetch(
@@ -29,6 +30,7 @@ export default function (pluginManager) {
                 self.configuration,
                 'assemblyName',
               )
+              // @ts-ignore
               self.setTrackConfs(generateTracks(trackDb, assemblyName))
             })
             .catch(error => {

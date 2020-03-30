@@ -14,6 +14,7 @@ import BaseFeatureDetail, {
 } from '@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail'
 
 const useStyles = makeStyles(theme => ({
+  root: {},
   table: {
     padding: 0,
   },
@@ -95,7 +96,7 @@ function VariantSamples(props) {
 }
 
 VariantSamples.propTypes = {
-  feature: PropTypes.shape().isRequired,
+  feature: PropTypes.shape({}).isRequired,
 }
 
 function VariantFeatureDetails(props) {

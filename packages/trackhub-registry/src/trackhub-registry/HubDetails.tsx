@@ -13,8 +13,8 @@ import React, { useEffect, useState } from 'react'
 import SanitizedHTML from 'react-sanitized-html'
 
 function HubDetails(props) {
-  const [hubFile, setHubFile] = useState(null)
-  const [errorMessage, setErrorMessage] = useState(null)
+  const [hubFile, setHubFile] = useState<any>(null)
+  const [errorMessage, setErrorMessage] = useState<JSX.Element | null>(null)
 
   const { hub } = props
 
@@ -75,7 +75,7 @@ function HubDetails(props) {
           >
             <Icon>email</Icon>
           </IconButton>
-          {hubFile.get('descriptionUrl') ? (
+          {hubFile && hubFile.get('descriptionUrl') ? (
             <IconButton
               href={
                 new URL(hubFile.get('descriptionUrl'), new URL(hubUrl)).href
@@ -93,7 +93,11 @@ function HubDetails(props) {
 }
 
 HubDetails.propTypes = {
-  hub: PropTypes.shape().isRequired,
+  hub: PropTypes.shape({
+    longLabel: PropTypes.string,
+    shortLabel: PropTypes.string,
+    url: PropTypes.string,
+  }).isRequired,
 }
 
 export default HubDetails
