@@ -7,6 +7,7 @@ import MainMenuBar from './MainMenuBar'
 
 describe('<MainMenuBar />', () => {
   it('renders', () => {
+    /** @type any */
     const session = createTestSession({
       defaultSession: { menuBars: [{ id: 'testing', type: 'MainMenuBar' }] },
     })

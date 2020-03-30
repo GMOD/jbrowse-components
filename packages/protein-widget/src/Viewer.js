@@ -31,7 +31,7 @@ const plugins = [Config, LinearGenomeView, Protein, Lollipop, SVG, Filtering]
 // want a lineargenomeview with a sequence track
 // and a variants track
 export class ProteinWidget {
-  constructor(initialState = {}) {
+  constructor(initialState) {
     this.pluginManager = new PluginManager(
       plugins.map(P => new P()),
     ).configure()
@@ -205,8 +205,6 @@ export function ProteinViewerRender(domElement, widget) {
 
 const FeatureRendering = ({ features, region, width, height }) => (
   <Rendering
-    width={width}
-    height={height}
     region={region}
     layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
     features={features}
@@ -215,8 +213,8 @@ const FeatureRendering = ({ features, region, width, height }) => (
   />
 )
 FeatureRendering.propTypes = {
-  features: PropTypes.arrayOf(PropTypes.shape()).isRequired,
-  region: PropTypes.shape().isRequired,
+  features: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  region: PropTypes.shape({}).isRequired,
   width: PropTypes.number.isRequired,
   height: PropTypes.number.isRequired,
 }

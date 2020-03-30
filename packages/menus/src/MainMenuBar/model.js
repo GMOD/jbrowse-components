@@ -13,18 +13,13 @@ export const MenuItemModel = types
       'function(model){console.log(model)}',
     ),
   })
-  .views(self => ({
-    get func() {
-      const action = this.getAction(self.callback)
-      if (action) return action
-      return stringToFunction(self.callback)
-    },
-  }))
+
   .actions(self => ({
     getAction(action) {
       return this[action]
     },
     openAbout() {
+      /** @type any */
       const session = getSession(self)
       const drawerWidget = session.addDrawerWidget(
         'AboutDrawerWidget',
@@ -33,6 +28,7 @@ export const MenuItemModel = types
       session.showDrawerWidget(drawerWidget)
     },
     openHelp() {
+      /** @type any */
       const session = getSession(self)
       const drawerWidget = session.addDrawerWidget(
         'HelpDrawerWidget',
@@ -41,6 +37,7 @@ export const MenuItemModel = types
       session.showDrawerWidget(drawerWidget)
     },
     openConfigurationImport() {
+      /** @type any */
       const session = getSession(self)
       const drawerWidget = session.addDrawerWidget(
         'ImportConfigurationDrawerWidget',
@@ -67,7 +64,14 @@ export const MenuItemModel = types
       return configSnap
     },
     importConfiguration() {
-      self.openConfigurationImport()
+      this.openConfigurationImport()
+    },
+  }))
+  .views(self => ({
+    get func() {
+      const action = self.getAction(self.callback)
+      if (action) return action
+      return stringToFunction(self.callback)
     },
   }))
 
@@ -95,7 +99,7 @@ export default types
   .actions(self => ({
     afterCreate() {
       if (!self.menus.find(menu => menu.name === 'Help'))
-        self.pushMenu({
+        this.pushMenu({
           name: 'Help',
           menuItems: [
             { name: 'About', icon: 'info', callback: 'openAbout' },
@@ -103,7 +107,7 @@ export default types
           ],
         })
       if (!self.menus.find(menu => menu.name === 'File'))
-        self.unshiftMenu({
+        this.unshiftMenu({
           name: 'File',
           menuItems: [
             {

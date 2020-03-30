@@ -5,6 +5,7 @@ describe('Data management', () => {
   let pluginManager
 
   beforeAll(() => {
+    // @ts-ignore
     ;({ pluginManager } = createTestSession())
   })
 

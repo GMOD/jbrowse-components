@@ -25,7 +25,9 @@ const useStyles = makeStyles(theme => ({
 
 export default observer(({ session }) => {
   const classes = useStyles()
-  const [sessionIndexToDelete, setSessionIndexToDelete] = useState(null)
+  const [sessionIndexToDelete, setSessionIndexToDelete] = useState<
+    number | null
+  >(null)
   const [open, setOpen] = useState(false)
 
   function handleDialogOpen(idx) {
@@ -34,8 +36,9 @@ export default observer(({ session }) => {
   }
 
   function handleDialogClose(deleteSession = false) {
-    if (deleteSession)
+    if (deleteSession && sessionIndexToDelete !== null) {
       session.removeSavedSession(session.savedSessions[sessionIndexToDelete])
+    }
     setSessionIndexToDelete(null)
     setOpen(false)
   }

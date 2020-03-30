@@ -77,6 +77,8 @@ function VariantSamples(props) {
               ([key, value]) =>
                 value && (
                   <TableRow key={key}>
+                    {/* lol https://github.com/Microsoft/TypeScript/issues/27552#issuecomment-495830020
+      // @ts-ignore */}
                     <TableCell component="th" scope="row">
                       {key}
                     </TableCell>

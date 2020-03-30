@@ -7,7 +7,7 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Tooltip from '@material-ui/core/Tooltip'
 import { values } from 'mobx'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import DropDownMenu from './DropDownMenu'
 
 const useStyles = makeStyles(theme => {
@@ -51,29 +51,22 @@ const useStyles = makeStyles(theme => {
 
 function MainMenuBar(props) {
   const { model } = props
-  const session = getSession(model)
+
+  const session = getSession(model) as any
 
   const classes = useStyles()
   const [editedName, setEditedName] = useState('')
   const [width, setWidth] = useState(0)
-  const [sizerNode, setSizerNode] = useState(null)
-  const [inputNode, setInputNode] = useState(null)
+  const sizerNode = useRef<HTMLDivElement>(null)
+  const inputNode = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setEditedName(session.name)
   }, [session.name])
 
-  const scrollWidth = sizerNode && sizerNode.scrollWidth
+  const scrollWidth = sizerNode.current ? sizerNode.current.scrollWidth : 0
   const padding = 12 + 1.5 * editedName.length
   if (scrollWidth + padding !== width) setWidth(scrollWidth + padding)
-
-  const sizerRef = node => {
-    setSizerNode(node)
-  }
-
-  const inputRef = node => {
-    setInputNode(node)
-  }
 
   function handleBlur() {
     if (editedName !== session.name) {
@@ -91,11 +84,17 @@ function MainMenuBar(props) {
 
   function handleKeyDown(event) {
     // "Enter"
-    if (event.keyCode === 13) inputNode.blur()
+    if (event.keyCode === 13) {
+      if (inputNode.current) {
+        inputNode.current.blur()
+      }
+    }
     // "Esc"
     else if (event.keyCode === 27) {
       setEditedName(session.name)
-      inputNode.blur()
+      if (inputNode.current) {
+        inputNode.current.blur()
+      }
     }
   }
 
@@ -117,7 +116,7 @@ function MainMenuBar(props) {
         <div className={classes.grow} />
         <Tooltip title="Rename Session">
           <InputBase
-            inputRef={inputRef}
+            inputRef={inputNode}
             className={classes.input}
             style={{ width }}
             classes={{ root: classes.inputRoot, focused: classes.inputFocused }}
@@ -127,7 +126,7 @@ function MainMenuBar(props) {
             onBlur={handleBlur}
           />
         </Tooltip>
-        <div ref={sizerRef} className={classes.sizer}>
+        <div ref={sizerNode} className={classes.sizer}>
           {editedName}
         </div>
         <div className={classes.grow} />

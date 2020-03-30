@@ -7,6 +7,7 @@ const fetch = require('cross-fetch')
 // const entrezGene = 3845
 
 function fetchGeneInfo(entrezGene) {
+  // @ts-ignore
   return fetch(`http://mygene.info/v3/gene/${entrezGene}`)
     .then(res => res.text())
     .then(text => JSON.parse(text))
@@ -63,6 +64,7 @@ function fetchDomains(entrezGene) {
     query: { query },
   })
   // console.log('query url is', bioMartQueryUrl)
+  // @ts-ignore
   return fetch(bioMartQueryUrl)
     .then(r => r.text())
     .then(parseText)
