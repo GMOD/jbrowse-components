@@ -117,7 +117,9 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
     views.forEach(view => {
       view.features.sort((a, b) => a.get('syntenyId') - b.get('syntenyId'))
     })
+    console.log(views.map(v => v.features))
     const layoutMatches = layoutMatchesFromViews(views)
+    console.log(layoutMatches)
 
     const canvas = createCanvas(
       Math.ceil(width * highResolutionScaling),

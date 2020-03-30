@@ -45,6 +45,7 @@ export default class extends BaseAdapter {
   async setup(opts?: BaseOptions) {
     if (!this.initialized) {
       const text = (await this.pafLocation.readFile('utf8')) as string
+      console.log('ere', text)
       text.split('\n').forEach((line: string, index: number) => {
         if (line.length) {
           const [
@@ -109,9 +110,11 @@ export default class extends BaseAdapter {
       // The index of the assembly name in the region list corresponds to
       // the adapter in the subadapters list
       const index = this.assemblyNames.indexOf(region.assemblyName)
+      console.log('ere2', index, region.assemblyName)
       if (index !== -1) {
         for (let i = 0; i < this.pafRecords.length; i++) {
           const { extra, records } = this.pafRecords[i]
+          console.log(records[index].refName, region.refName)
           if (records[index].refName === region.refName) {
             if (
               doesIntersect2(

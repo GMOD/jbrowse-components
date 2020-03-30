@@ -1,0 +1,17 @@
+{
+   "formatVersion" : 1,
+   "tracks" : [
+      {
+         "compress" : 0,
+         "key" : "sarscov2_genes",
+         "label" : "sarscov2_genes",
+         "storeClass" : "JBrowse/Store/SeqFeature/NCList",
+         "style" : {
+            "className" : "feature"
+         },
+         "trackType" : null,
+         "type" : "FeatureTrack",
+         "urlTemplate" : "tracks/sarscov2_genes/{refseq}/trackData.json"
+      }
+   ]
+}

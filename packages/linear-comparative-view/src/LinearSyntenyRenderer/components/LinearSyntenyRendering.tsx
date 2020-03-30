@@ -82,8 +82,6 @@ function LinearSyntenyRendering(props: LinearSyntenyRenderingProps) {
   )
 }
 
-LinearSyntenyRendering.propTypes = {
-  trackModel: PropTypes.observableObject,
-}
+LinearSyntenyRendering.propTypes = {}
 
 export default observer(LinearSyntenyRendering)
