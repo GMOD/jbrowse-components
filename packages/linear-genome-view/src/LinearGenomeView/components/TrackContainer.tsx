@@ -14,11 +14,27 @@ import TrackRenderingContainer from './TrackRenderingContainer'
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles(theme => ({
+  root: {
+    position: 'relative',
+  },
   resizeHandle: {
     height: RESIZE_HANDLE_HEIGHT,
     boxSizing: 'border-box',
     position: 'relative',
     zIndex: 2,
+  },
+  overlay: {
+    pointerEvents: 'none',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    zIndex: 3,
+    borderRadius: theme.shape.borderRadius,
+  },
+  renderingComponentContainer: {
+    position: 'relative',
+    height: '100%',
   },
 }))
 
@@ -49,7 +65,7 @@ function TrackContainer(props: {
   const view = getContainingView(track)
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== track.id
   return (
-    <div style={{ position: 'relative' }}>
+    <div className={classes.root}>
       <TrackRenderingContainer
         trackId={track.id}
         trackHeight={track.height}
@@ -62,29 +78,24 @@ function TrackContainer(props: {
         )}`}
       >
         <TrackLabel track={track} />
-        <RenderingComponent
-          model={track}
-          offsetPx={offsetPx}
-          bpPerPx={bpPerPx}
-          blockState={{}}
-          onHorizontalScroll={horizontalScroll}
-        />
+        <div className={classes.renderingComponentContainer}>
+          <RenderingComponent
+            model={track}
+            offsetPx={offsetPx}
+            bpPerPx={bpPerPx}
+            blockState={{}}
+            onHorizontalScroll={horizontalScroll}
+          />
+        </div>
       </TrackRenderingContainer>
-      {dimmed ? (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            height: track.height,
-            width: '100%',
-            background: 'rgba(0, 0, 0, 0.4)',
-            zIndex: 10000,
-          }}
-          onDragEnter={debouncedOnDragEnter}
-          // {...other}
-        />
-      ) : null}
+      <div
+        className={classes.overlay}
+        style={{
+          height: track.height,
+          background: dimmed ? 'rgba(0, 0, 0, 0.4)' : undefined,
+        }}
+        onDragEnter={debouncedOnDragEnter}
+      />
       <ResizeHandle
         onDrag={track.resizeHeight}
         className={classes.resizeHandle}
