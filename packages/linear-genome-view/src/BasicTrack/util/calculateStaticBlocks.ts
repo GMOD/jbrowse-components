@@ -128,7 +128,7 @@ export function calculateBlocksForward(self: LGV, extra = 0) {
 
 export default function calculateBlocks(
   view: LGV,
-  reversed: boolean,
+  reversed = false,
   extra = 0,
 ) {
   return reversed

@@ -60,7 +60,10 @@ export function makeTicks(
 
   let minBase = start
   let maxBase = end
-  if (minBase === null || maxBase === null) return []
+  const ticks: { type: string; base: number; index: number }[] = []
+  if (minBase === null || maxBase === null) {
+    return ticks
+  }
 
   if (bpPerPx < 0) {
     ;[minBase, maxBase] = [maxBase, minBase]
@@ -73,7 +76,6 @@ export function makeTicks(
 
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
   let index = 0
-  const ticks = []
   for (
     let base = Math.ceil(minBase / iterPitch) * iterPitch;
     base < maxBase;

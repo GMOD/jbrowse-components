@@ -36,7 +36,9 @@ test('one feature', () => {
         new Map([
           [
             'one',
-            new SimpleFeature({ id: 'one', score: 10, start: 1, end: 3 }),
+            new SimpleFeature({
+              data: { uniqueId: 'one', score: 10, start: 1, end: 3 },
+            }),
           ],
         ])
       }

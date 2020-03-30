@@ -176,6 +176,7 @@ export default function RefNameAutocomplete({
       disableListWrap
       disableClearable
       classes={classes}
+      // @ts-ignore
       ListboxComponent={
         ListboxComponent as React.ComponentType<
           React.HTMLAttributes<HTMLElement>

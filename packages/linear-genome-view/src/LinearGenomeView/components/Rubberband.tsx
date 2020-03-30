@@ -30,7 +30,7 @@ function Rubberband({ model, height, children }) {
   const [startX, setStartX] = useState()
   const [currentX, setCurrentX] = useState()
   const [mouseDragging, setMouseDragging] = useState(false)
-  const ref = useRef()
+  const ref = useRef<HTMLDivElement>(null)
   const classes = useStyles()
 
   useEffect(() => {

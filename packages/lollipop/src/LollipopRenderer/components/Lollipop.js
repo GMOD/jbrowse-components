@@ -154,16 +154,12 @@ class Lollipop extends Component {
   }
 
   render() {
+    const { feature, config, layoutRecord, selectedFeatureId } = this.props
     const {
-      feature,
-      config,
-      layoutRecord: {
-        anchorLocation,
-        y,
-        data: { radiusPx, score },
-      },
-      selectedFeatureId,
-    } = this.props
+      anchorLocation,
+      y,
+      data: { radiusPx },
+    } = layoutRecord
 
     const styleOuter = {
       fill: readConfObject(config, 'strokeColor', [feature]),
@@ -215,7 +211,11 @@ class Lollipop extends Component {
             onBlur={this.onFeatureMouseOut}
           />
         )}
-        <ScoreText {...this.props} score={score} />
+        <ScoreText
+          {...this.props}
+          feature={feature}
+          layoutRecord={layoutRecord}
+        />
       </g>
     )
   }

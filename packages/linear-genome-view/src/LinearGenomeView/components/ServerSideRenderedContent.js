@@ -80,7 +80,7 @@ class ServerSideRenderedContent extends Component {
       // a long continuous scroll, it forces it to evaluate because
       // otherwise the continuous scroll would never give it time to do
       // so
-      requestIdleCallback(
+      window.requestIdleCallback(
         () => {
           if (!isAlive(model) || !isAlive(region)) return
           const serializedRegion = isStateTreeNode(region)

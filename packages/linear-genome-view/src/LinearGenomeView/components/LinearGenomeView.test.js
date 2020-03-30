@@ -28,6 +28,7 @@ const assemblyConf = {
 
 describe('<LinearGenomeView />', () => {
   it('renders setup wizard', async () => {
+    /** @type any */
     const session = createTestSession()
     session.addAssemblyConf(assemblyConf)
     session.addView('LinearGenomeView', { id: 'lgv' })
@@ -37,6 +38,7 @@ describe('<LinearGenomeView />', () => {
     expect(container.firstChild).toMatchSnapshot()
   })
   it('renders one track, one region', async () => {
+    /** @type any */
     const session = createTestSession()
     session.addAssemblyConf(assemblyConf)
     session.addTrackConf({
@@ -71,6 +73,7 @@ describe('<LinearGenomeView />', () => {
     expect(container.firstChild).toMatchSnapshot()
   })
   it('renders two tracks, two regions', async () => {
+    /** @type any */
     const session = createTestSession()
     session.addAssemblyConf(assemblyConf)
     session.addTrackConf({
