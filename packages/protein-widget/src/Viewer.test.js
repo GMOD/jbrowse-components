@@ -3,6 +3,7 @@ import React from 'react'
 import { ProteinWidget, ProteinViewer } from './Viewer'
 import data from '../mydata'
 
+// @ts-ignore
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
 

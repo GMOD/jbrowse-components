@@ -11,12 +11,13 @@ import {
  * @param {PluginManager} pluginManager
  * @param {object} args
  * @param {object} args.regions - array of regions to render. some renderers (such as circular chord tracks) accept multiple at a time
+ * @param {object} args.region - a region to render. some renderers (such as  linear genome view) accept single at a time
  * @param {string} args.sessionId
  * @param {string} args.adapterType
  * @param {object} args.adapterConfig
  * @param {string} args.rendererType
  * @param {object} args.renderProps
- * @param {AbortSignal} [args.signal]
+ * @param {object} [args.signal]
  */
 export async function render(
   pluginManager,

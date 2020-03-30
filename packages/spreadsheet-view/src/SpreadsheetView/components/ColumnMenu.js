@@ -14,7 +14,7 @@ export default pluginManager => {
 
       function handleMenuItemClick(event, callback) {
         callback()
-        columnMenuClose(null)
+        columnMenuClose()
       }
 
       const columnNumber = currentColumnMenu && currentColumnMenu.colNumber
@@ -156,9 +156,12 @@ export default pluginManager => {
       // don't display the filter item if this data type doesn't have filtering
       // implemented
       if (dataType && dataType.hasFilter) {
+        // @ts-ignore
         menuOptions.push({
           label: 'Create filter',
           icon: 'filter_list',
+          type: undefined,
+          checked: undefined,
           onClick: filterMenuClick.bind(null, true),
         })
       }

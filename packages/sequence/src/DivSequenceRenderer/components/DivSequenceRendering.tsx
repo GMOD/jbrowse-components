@@ -1,16 +1,27 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
 import './DivSequenceRendering.scss'
 
+interface Props {
+  config: any
+  features: Map<string, Feature>
+  region: IRegion
+  bpPerPx: number
+  horizontallyFlipped: boolean
+}
 // given the displayed region and a Map of id => feature, assemble the region's
 // sequence from the sequences returned by each feature.
-export function featuresToSequence(region, features) {
+export function featuresToSequence(
+  region: IRegion,
+  features: Map<string, Feature>,
+) {
   // insert the `replacement` string into `str` at the given
   // `offset`, putting in `length` characters.
-  function replaceAt(str, offset, replacement) {
+  function replaceAt(str: string, offset: number, replacement: string) {
     let rOffset = 0
     if (offset < 0) {
       rOffset = -offset
@@ -38,7 +49,12 @@ export function featuresToSequence(region, features) {
   return sequence
 }
 
-function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
+function SequenceDivs({
+  features,
+  region,
+  bpPerPx,
+  horizontallyFlipped,
+}: Props) {
   let s = ''
   for (const seq of features.values()) {
     const seqString = seq.get('seq')
@@ -55,12 +71,14 @@ function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
     if (seqString) s += seq.get('seq')
   }
 
-  s = s.split('')
-  if (horizontallyFlipped) s = s.reverse()
+  let letters = s.split('')
+  if (horizontallyFlipped) {
+    letters = letters.reverse()
+  }
 
   return (
     <div style={{ display: 'flex' }}>
-      {s.map((letter, iter) => (
+      {letters.map((letter, iter) => (
         <div
           key={`${region.start}-${iter}`}
           className={`base base-${letter.toLowerCase()} ${
@@ -74,18 +92,7 @@ function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
   )
 }
 
-SequenceDivs.propTypes = {
-  region: CommonPropTypes.Region.isRequired,
-  bpPerPx: ReactPropTypes.number.isRequired,
-  features: ReactPropTypes.instanceOf(Map),
-  horizontallyFlipped: ReactPropTypes.bool,
-}
-SequenceDivs.defaultProps = {
-  features: new Map(),
-  horizontallyFlipped: false,
-}
-
-function DivSequenceRendering(props) {
+function DivSequenceRendering(props: Props) {
   const { config } = props
   const height = readConfObject(config, 'height')
   return (
@@ -96,10 +103,6 @@ function DivSequenceRendering(props) {
       <SequenceDivs {...props} />
     </div>
   )
-}
-DivSequenceRendering.propTypes = {
-  config: CommonPropTypes.ConfigSchema.isRequired,
-  bpPerPx: ReactPropTypes.number.isRequired,
 }
 
 export default observer(DivSequenceRendering)

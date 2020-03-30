@@ -259,6 +259,7 @@ export function ExampleFeatureRendering(domElement) {
 
 export async function NclistFeatureRendering(domElement) {
   const region = {
+    assemblyName: 'hg19',
     refName: 'chr17',
     start: 41190000,
     end: 41280000,
@@ -273,7 +274,11 @@ export async function NclistFeatureRendering(domElement) {
   ReactDOM.render(
     <>
       <svg width={width} height={30}>
-        <Ruler region={region} bpPerPx={(region.end - region.start) / width} />
+        <Ruler
+          start={region.start}
+          end={region.end}
+          bpPerPx={(region.end - region.start) / width}
+        />
       </svg>
       <FeatureRendering
         features={feats}

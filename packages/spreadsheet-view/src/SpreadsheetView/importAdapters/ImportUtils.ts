@@ -96,7 +96,7 @@ async function dataToSpreadsheetSnapshot(
 
   // make our column definitions
   const columns: Column[] = []
-  const columnDisplayOrder = []
+  const columnDisplayOrder: number[] = []
   for (let columnNumber = 0; columnNumber < maxCols; columnNumber += 1) {
     columnDisplayOrder.push(columnNumber)
     columns[columnNumber] = {

@@ -77,7 +77,7 @@ Sequence.defaultProps = {
  * the requested type
  *
  * @param {string} type
- * @param {Iterable[SimpleFeature]} features
+ * @param {Iterable<SimpleFeature>} features
  * @returns {Iterable} of features in the iterator that have the requested type
  */
 function* getFeaturesOfType(type, features) {

@@ -28,6 +28,7 @@ describe('vcf file splitter', () => {
 
   cases.forEach(([input, output], caseNumber) => {
     test(`case ${caseNumber}`, () => {
+      // @ts-ignore typescript thinks this is a confusing thing, need tuples
       expect(splitVcfFileHeaderAndBody(input)).toEqual(output)
     })
   })

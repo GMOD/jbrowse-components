@@ -16,6 +16,8 @@ test('starfusion import', async () => {
   const buf = await fsPromises.readFile(filepath)
   const spreadsheetSnap = await parseSTARFusionBuffer(buf, {
     selectedAssemblyName: 'fogbat',
+    hasColumnNameLine: false,
+    columnNameLineNumber: 0,
   })
   expect(spreadsheetSnap).toMatchSnapshot()
   const spreadsheet = SpreadsheetModel.create(spreadsheetSnap)

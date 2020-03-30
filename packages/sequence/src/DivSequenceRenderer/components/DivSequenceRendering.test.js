@@ -1,7 +1,6 @@
 import React from 'react'
 import ReactPropTypes from 'prop-types'
 import { render } from '@testing-library/react'
-import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import Rendering, { featuresToSequence } from './DivSequenceRendering'
 import DivRenderingConfigSchema from '../configSchema'
@@ -9,15 +8,17 @@ import DivRenderingConfigSchema from '../configSchema'
 test('features to sequence function', () => {
   expect(
     featuresToSequence(
-      { start: 20, end: 30 },
+      { refName: 'zonk', assemblyName: 'volvox', start: 20, end: 30 },
       new Map([
         [
           'one',
           new SimpleFeature({
-            uniqueId: 'foo',
-            start: 10,
-            end: 25,
-            seq: '123456789012345',
+            data: {
+              uniqueId: 'foo',
+              start: 10,
+              end: 25,
+              seq: '123456789012345',
+            },
           }),
         ],
       ]),
@@ -74,10 +75,9 @@ describe('<DivSequenceRendering />', () => {
   it('renders with no features', () => {
     const { container } = render(
       <Rendering
-        width={500}
-        height={500}
-        region={{ refName: 'zonk', start: 0, end: 300 }}
-        layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
+        region={{ refName: 'zonk', assemblyName: 'volvox', start: 0, end: 300 }}
+        features={new Map()}
+        horizontallyFlipped={false}
         config={DivRenderingConfigSchema.create()}
         bpPerPx={3}
       />,
@@ -89,18 +89,24 @@ describe('<DivSequenceRendering />', () => {
   it('renders with one, zoomed way out', () => {
     const { container } = render(
       <Rendering
-        width={500}
-        height={500}
-        region={{ refName: 'zonk', start: 0, end: 1000 }}
+        horizontallyFlipped={false}
+        region={{
+          refName: 'zonk',
+          assemblyName: 'volvox',
+          start: 0,
+          end: 1000,
+        }}
         features={
           new Map([
             [
               'one',
               new SimpleFeature({
-                uniqueId: 'one',
-                start: 1,
-                end: 3,
-                seq: 'AB',
+                data: {
+                  uniqueId: 'one',
+                  start: 1,
+                  end: 3,
+                  seq: 'AB',
+                },
               }),
             ],
           ])
@@ -117,12 +123,21 @@ describe('<DivSequenceRendering />', () => {
     const { container } = render(
       <ErrorCatcher>
         <Rendering
-          width={500}
-          height={500}
-          region={{ refName: 'zonk', start: 0, end: 1000 }}
+          horizontallyFlipped={false}
+          region={{
+            refName: 'zonk',
+            assemblyName: 'volvox',
+            start: 0,
+            end: 300,
+          }}
           features={
             new Map([
-              ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
+              [
+                'one',
+                new SimpleFeature({
+                  data: { uniqueId: 'one', start: 1, end: 3 },
+                }),
+              ],
             ])
           }
           config={DivRenderingConfigSchema.create({})}
@@ -138,18 +153,24 @@ describe('<DivSequenceRendering />', () => {
     const { container } = render(
       <ErrorCatcher>
         <Rendering
-          width={500}
-          height={500}
-          region={{ refName: 'zonk', start: 0, end: 1000 }}
+          horizontallyFlipped={false}
+          region={{
+            refName: 'zonk',
+            assemblyName: 'volvox',
+            start: 0,
+            end: 300,
+          }}
           features={
             new Map([
               [
                 'one',
                 new SimpleFeature({
-                  uniqueId: 'one',
-                  start: 1,
-                  end: 3,
-                  seq: 'ABC',
+                  data: {
+                    uniqueId: 'one',
+                    start: 1,
+                    end: 3,
+                    seq: 'ABC',
+                  },
                 }),
               ],
             ])
@@ -166,18 +187,19 @@ describe('<DivSequenceRendering />', () => {
   it('renders with one feature with a correct seq, zoomed in, should render nicely', () => {
     const { container } = render(
       <Rendering
-        width={500}
-        height={500}
-        region={{ refName: 'zonk', start: 0, end: 1000 }}
+        horizontallyFlipped={false}
+        region={{ refName: 'zonk', assemblyName: 'volvox', start: 0, end: 300 }}
         features={
           new Map([
             [
               'one',
               new SimpleFeature({
-                uniqueId: 'one',
-                start: 1,
-                end: 10,
-                seq: 'ABCDEFGHI',
+                data: {
+                  uniqueId: 'one',
+                  start: 1,
+                  end: 10,
+                  seq: 'ABCDEFGHI',
+                },
               }),
             ],
           ])

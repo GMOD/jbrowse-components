@@ -25,8 +25,8 @@ export function getAdapter(
   sessionId,
   adapterType,
   adapterConfig,
-  sequenceAdapterType,
-  sequenceAdapterConfig,
+  sequenceAdapterType = '',
+  sequenceAdapterConfig = {},
 ) {
   // cache the adapter object
   const cacheKey =
