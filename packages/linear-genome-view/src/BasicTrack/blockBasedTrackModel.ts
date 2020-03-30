@@ -51,7 +51,7 @@ const blockBasedTrack = types
        * just looks in all the block data for that feature
        */
       get features() {
-        const featureMaps = []
+        const featureMaps: Map<string, Feature>[] = []
         for (const block of self.blockState.values()) {
           if (block.data && block.data.features)
             featureMaps.push(block.data.features)
@@ -100,7 +100,7 @@ const blockBasedTrack = types
        * rtree, you cross contaminate the coordinates)
        */
       get layoutFeatures() {
-        const layoutMaps = []
+        const layoutMaps: Map<string, LayoutRecord>[] = []
         for (const block of self.blockState.values()) {
           if (block.data && block.data.layout && block.data.layout.rectangles) {
             layoutMaps.push(block.data.layout.rectangles)

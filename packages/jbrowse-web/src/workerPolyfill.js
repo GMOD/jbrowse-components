@@ -9,12 +9,15 @@ self.window = {
   fetch: self.fetch.bind(self),
   location: self.location,
   Date: self.Date,
+  // @ts-ignore
   requestIdleCallback: cb => cb(),
   cancelIdleCallback: () => {},
+  // @ts-ignore
   requestAnimationFrame: cb => cb(),
   cancelAnimationFrame: () => {},
   navigator: {},
 }
+// @ts-ignore
 self.document = {
   createTextNode() {},
   querySelector() {

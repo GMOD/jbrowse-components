@@ -1,4 +1,5 @@
 /* eslint-disable no-restricted-globals */
+/* global __webpack_require__ */
 import './workerPolyfill'
 
 import RpcServer from '@librpc/web'
@@ -69,6 +70,7 @@ Object.keys(rpcMethods).forEach(key => {
   rpcConfig[key] = wrapForRpc(rpcMethods[key])
 })
 
+// @ts-ignore
 self.rpcServer = new RpcServer.Server({
   ...rpcConfig,
   ...remoteAbortRpcHandler(),

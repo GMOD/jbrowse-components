@@ -74,6 +74,7 @@ describe('Root MST model', () => {
 
   it('throws if session is invalid', () => {
     expect(() =>
+      // @ts-ignore expects an error here
       rootModel.create({
         jbrowse: {
           configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
@@ -85,6 +86,7 @@ describe('Root MST model', () => {
 
   it('throws if session snapshot is invalid', () => {
     expect(() =>
+      // @ts-ignore expects an error here
       rootModel.create({
         jbrowse: {
           configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },

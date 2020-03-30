@@ -18,7 +18,7 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
       'trackData.json',
     )
     .replace(/\\/g, '\\\\')
-  await fsPromises.stat(rootTemplate.replace('{refseq}', 21)) // will throw if doesnt exist
+  await fsPromises.stat(rootTemplate.replace('{refseq}', '21')) // will throw if doesnt exist
   const args = {
     rootUrlTemplate: decodeURI(new URL(`file://${rootTemplate}`).href),
   }
@@ -29,6 +29,7 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
     refName: '21',
     start: 34960388,
     end: 35960388,
+    assemblyName: 'hg38',
   })
 
   const featuresArray = await features.pipe(toArray()).toPromise()

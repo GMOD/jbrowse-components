@@ -8,6 +8,7 @@ test('one', () => {
       {
         offsetPx: 0,
         viewingRegionWidth: 200,
+        // @ts-ignore
         displayedRegions: [ctgA],
         bpPerPx: 1,
       },
@@ -33,6 +34,7 @@ test('two', () => {
       {
         offsetPx: 0,
         viewingRegionWidth: 200,
+        // @ts-ignore
         displayedRegions: [ctgA],
         bpPerPx: 1,
       },
@@ -58,6 +60,7 @@ test('three', () => {
       {
         offsetPx: -100,
         viewingRegionWidth: 200,
+        // @ts-ignore
         displayedRegions: [ctgA],
         bpPerPx: 1,
       },
@@ -83,6 +86,7 @@ test('four', () => {
       {
         offsetPx: -100,
         viewingRegionWidth: 350,
+        // @ts-ignore
         displayedRegions: [ctgA],
         bpPerPx: 1,
       },
@@ -108,6 +112,7 @@ test('five', () => {
       {
         offsetPx: 521,
         viewingRegionWidth: 927,
+        // @ts-ignore
         displayedRegions: [ctgA],
         bpPerPx: 0.05,
       },

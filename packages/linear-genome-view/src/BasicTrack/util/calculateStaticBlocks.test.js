@@ -198,7 +198,9 @@ describe('horizontally flipped displayed regions', () => {
         width: 800,
         offsetPx: 0,
         displayedRegions: [
+          // @ts-ignore
           { refName: 'ctgA', start: 100, end: 200, assemblyName: 'volvox' },
+          // @ts-ignore
           { refName: 'ctgA', start: 500, end: 600, assemblyName: 'volvox' },
         ],
       },
@@ -214,7 +216,9 @@ describe('horizontally flipped displayed regions', () => {
         offsetPx: 0,
         minimumBlockWidth: 2,
         displayedRegions: [
+          // @ts-ignore
           { refName: 'ctgA', start: 0, end: 1, assemblyName: 'volvox' },
+          // @ts-ignore
           { refName: 'ctgA', start: 0, end: 10000, assemblyName: 'volvox' },
         ],
       },

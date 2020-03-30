@@ -3,6 +3,7 @@ import { render, freeResources } from './rpcMethods'
 
 let pluginManager
 beforeAll(() => {
+  // @ts-ignore
   ;({ pluginManager } = createTestSession())
 })
 
@@ -99,6 +100,7 @@ test('throws if no session ID', async () => {
     sessionId: undefined,
   }
 
+  // @ts-ignore expects an error about sessionId
   await expect(render(pluginManager, testprops)).rejects.toThrow(
     /must pass a unique session id/,
   )
@@ -133,17 +135,6 @@ test('can render a single region with SvgFeatures + BamAdapter (larger maxHeight
   ).toBe(0)
 })
 
-test('throws if no session ID', async () => {
-  const testprops = {
-    ...baseprops,
-    rendererType: 'PileupRenderer',
-    sessionId: undefined,
-  }
-
-  await expect(render(pluginManager, testprops)).rejects.toThrow(
-    /must pass a unique session id/,
-  )
-})
 test('throws on unrecoginze worker', async () => {
   const testprops = {
     ...baseprops,
