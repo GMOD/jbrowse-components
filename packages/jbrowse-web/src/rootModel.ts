@@ -77,7 +77,7 @@ export function createTestSession(snapshot = {}) {
     ...snapshot,
   })
   root.setHistory(UndoManager.create({}, { targetStore: root.session }))
-  return root.session
+  return root.session as any
 }
 
 export default RootModel

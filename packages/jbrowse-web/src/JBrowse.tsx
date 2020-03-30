@@ -12,6 +12,7 @@ import ErrorBoundary from 'react-error-boundary'
 import queryString from 'query-string'
 
 import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { IFileLocation } from '@gmod/jbrowse-core/mst-types'
 
 // material-ui
 import CircularProgress from '@material-ui/core/CircularProgress'
@@ -28,22 +29,24 @@ import JBrowseRootModel from './rootModel'
 
 const MAX_SESSION_SIZE_IN_URL = 10000
 
-async function parseConfig(configLoc) {
-  let config = JSON.parse(await openLocation(configLoc).readFile('utf8'))
+async function parseConfig(configLoc: IFileLocation) {
+  const data = await openLocation(configLoc).readFile('utf8')
+  let config = JSON.parse(data as string)
+  // @ts-ignore
   if (configLoc.uri === 'test_data/config.json' && inDevelopment) {
-    config = mergeConfigs(
-      config,
-      JSON.parse(
-        await openLocation({ uri: 'test_data/config_in_dev.json' }).readFile(
-          'utf8',
-        ),
-      ),
-    )
+    const extra = await openLocation({
+      uri: 'test_data/config_in_dev.json',
+    }).readFile('utf8')
+    config = mergeConfigs(config, JSON.parse(extra as string))
   }
   return config
 }
 
-function useJBrowseWeb(config, initialState, initialConfigSnapshot) {
+function useJBrowseWeb(
+  config: any,
+  initialState: any,
+  initialConfigSnapshot: any,
+) {
   const [loaded, setLoaded] = useState(false)
   const [rootModel, setRootModel] = useState(initialState || {})
   const [urlSnapshot, setUrlSnapshot] = useState()
@@ -140,7 +143,7 @@ function useJBrowseWeb(config, initialState, initialConfigSnapshot) {
   // finalize rootModel and setLoaded
   useEffect(() => {
     try {
-      const params = new URL(document.location).searchParams
+      const params = new URL(document.location.toString()).searchParams
       const urlSession = params.get('session')
       if (rootModel && rootModel.jbrowse) {
         if (urlSession) {
@@ -186,7 +189,9 @@ function useJBrowseWeb(config, initialState, initialConfigSnapshot) {
   // e.g. window.MODEL.views[0] in devtools
   useEffect(() => {
     if (loaded) {
+      // @ts-ignore
       window.MODEL = rootModel.session
+      // @ts-ignore
       window.ROOTMODEL = rootModel
     }
   }, [loaded, rootModel])
@@ -256,11 +261,11 @@ async function factoryReset() {
   window.location.reload()
 }
 
-const PlatformSpecificFatalErrorDialog = props => {
+const PlatformSpecificFatalErrorDialog = (props: any) => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
 }
 
-export default props => {
+export default (props: any) => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

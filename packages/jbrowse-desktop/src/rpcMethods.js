@@ -12,6 +12,7 @@ import {
 import { useStaticRendering } from 'mobx-react'
 import corePlugins from './corePlugins'
 
+// @ts-ignore
 window.rpcStuff = {
   useStaticRendering,
   PluginManager,
@@ -193,17 +194,21 @@ function freeResources(pluginManager, specification) {
  * s
  * @param {PluginManager} pluginManager
  * @param {object} args
- * @param {object} args.regions - array of regions to render. some renderers (such as circular chord tracks) accept multiple at a time
+ * @param {object} [args.regions] - array of regions to render. some renderers (such as circular chord tracks) accept multiple at a time
+ * @param {object} [args.region] - region to render. some renderers (such as linear tracks) accept single at a time
  * @param {string} args.sessionId
  * @param {string} args.adapterType
  * @param {object} args.adapterConfig
  * @param {string} args.rendererType
  * @param {object} args.renderProps
- * @param {AbortSignal} [args.signal]
+ * @param {object} [args.originalRegion]
+ * @param {object} [args.originalRegions]
+ * @param {object} [args.sequenceAdapterConfig]
+ * @param {object} [args.sequenceAdapterType]
+ * @param {object} [args.signal]
  */
 async function render(pluginManager, args) {
   const {
-    blockKey,
     regions,
     region,
     originalRegion,
@@ -247,12 +252,12 @@ async function render(pluginManager, args) {
     originalRegion,
     originalRegions,
     signal,
-    blockKey,
   })
   checkAbortSignal(signal)
   return result
 }
 
+// @ts-ignore
 window.rpcMethods = {
   getGlobalStats,
   getRegionStats,

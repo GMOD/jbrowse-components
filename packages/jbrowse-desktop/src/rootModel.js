@@ -11,6 +11,9 @@ const RootModel = types
     session: types.maybe(Session),
     savedSessionNames: types.maybe(types.array(types.string)),
   })
+  .volatile((/* self */) => ({
+    history: {},
+  }))
   .actions(self => ({
     setSavedSessionNames(sessionNames) {
       self.savedSessionNames = sessionNames
@@ -19,7 +22,7 @@ const RootModel = types
       self.session = sessionSnapshot
     },
     setDefaultSession() {
-      self.setSession({
+      this.setSession({
         ...self.jbrowse.defaultSession,
         name: `${self.jbrowse.defaultSession.name} ${new Date(
           Date.now(),
@@ -30,7 +33,7 @@ const RootModel = types
       const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
       const oldName = snapshot.name
       snapshot.name = sessionName
-      self.setSession(snapshot)
+      this.setSession(snapshot)
       ipcRenderer.invoke('renameSession', oldName, sessionName)
     },
     duplicateCurrentSession() {
@@ -44,20 +47,17 @@ const RootModel = types
         } while (self.jbrowse.savedSessionNames.includes(newSnapshotName))
       }
       snapshot.name = newSnapshotName
-      self.setSession(snapshot)
+      this.setSession(snapshot)
     },
     activateSession(sessionSnapshot) {
-      self.setSession(sessionSnapshot)
+      this.setSession(sessionSnapshot)
       if (sessionSnapshot)
-        self.setHistory(UndoManager.create({}, { targetStore: self.session }))
-      else self.setHistory(undefined)
+        this.setHistory(UndoManager.create({}, { targetStore: self.session }))
+      else this.setHistory(undefined)
     },
     setHistory(history) {
       self.history = history
     },
-  }))
-  .volatile((/* self */) => ({
-    history: {},
   }))
 
 export function createTestSession(snapshot = {}) {

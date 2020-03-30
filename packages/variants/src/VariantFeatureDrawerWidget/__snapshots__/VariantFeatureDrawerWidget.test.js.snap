@@ -2,7 +2,7 @@
 
 exports[`VariantTrack drawer widget renders with just the required model elements 1`] = `
 <div
-  class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
+  class="MuiPaper-root makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
   data-testid="variant-side-drawer"
 >
   <div

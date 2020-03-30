@@ -59,6 +59,9 @@ const JBrowseWeb = types
       menuBars: [{ type: 'MainMenuBar' }],
     }),
   })
+  // Grouping the "assembly manager" stuff under an `extend` just for
+  // code organization
+  .extend(assemblyManager)
   .actions(self => ({
     afterCreate() {
       const seen = []
@@ -119,9 +122,7 @@ const JBrowseWeb = types
       return self.assemblies.map(assembly => readConfObject(assembly, 'name'))
     },
   }))
-  // Grouping the "assembly manager" stuff under an `extend` just for
-  // code organization
-  .extend(assemblyManager)
+
   .volatile(self => ({
     rpcManager: new RpcManager(
       pluginManager,

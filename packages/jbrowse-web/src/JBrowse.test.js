@@ -19,8 +19,10 @@ import JBrowseRootModel from './rootModel'
 
 expect.extend({ toMatchImageSnapshot })
 
+// @ts-ignore
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
+// @ts-ignore
 window.requestAnimationFrame = cb => cb()
 window.cancelAnimationFrame = () => {}
 
@@ -59,7 +61,7 @@ const readBuffer = async (url, args) => {
 }
 
 afterEach(cleanup)
-
+// @ts-ignore
 jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
 
 describe('<JBrowse />', () => {
@@ -117,6 +119,7 @@ describe('valid file tests', () => {
       ),
     )
 
+    // @ts-ignore
     const start = state.session.views[0].offsetPx
     const track = await waitForElement(() =>
       getByTestId('track-volvox_alignments'),
@@ -124,6 +127,7 @@ describe('valid file tests', () => {
     fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
     fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
     fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
+    // @ts-ignore
     const end = state.session.views[0].offsetPx
     expect(end - start).toEqual(150)
   })
@@ -135,10 +139,12 @@ describe('valid file tests', () => {
       getByTestId('rubberband_container'),
     )
 
+    // @ts-ignore
     expect(state.session.views[0].bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
     fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
     fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
+    // @ts-ignore
     expect(state.session.views[0].bpPerPx).toEqual(0.02)
   })
 
@@ -156,6 +162,7 @@ describe('valid file tests', () => {
       ),
     )
 
+    // @ts-ignore
     const trackId1 = state.session.views[0].tracks[1].id
     const dragHandle0 = await waitForElement(() =>
       getByTestId('dragHandle-integration_test-volvox_alignments'),
@@ -174,15 +181,18 @@ describe('valid file tests', () => {
     fireEvent.dragEnter(trackControls1)
     fireEvent.dragEnd(dragHandle0, { clientX: 10, clientY: 220 })
     fireEvent.mouseUp(dragHandle0, { clientX: 10, clientY: 220 })
+    // @ts-ignore
     await wait(() => expect(state.session.views[0].tracks[0].id).toBe(trackId1))
   })
 
   it('click and zoom in and back out', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId: byId } = render(<JBrowse initialState={state} />)
+    // @ts-ignore
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await waitForElement(() => byId('zoom_in')))
     fireEvent.click(await waitForElement(() => byId('zoom_out')))
+    // @ts-ignore
     expect(state.session.views[0].bpPerPx).toEqual(before)
   })
 
@@ -191,12 +201,14 @@ describe('valid file tests', () => {
     const { getByTestId } = render(<JBrowse initialState={state} />)
 
     await waitForElement(() => getByTestId('htsTrackEntry-volvox_alignments'))
+    // @ts-ignore
     expect(state.session.views[0].tracks.length).toBe(0)
     fireEvent.click(
       await waitForElement(() =>
         getByTestId('htsTrackEntry-volvox_alignments'),
       ),
     )
+    // @ts-ignore
     expect(state.session.views[0].tracks.length).toBe(1)
   })
 
@@ -208,6 +220,7 @@ describe('valid file tests', () => {
     fireEvent.click(
       await waitForElement(() => getByTestId('htsTrackEntry-volvox_refseq')),
     )
+    // @ts-ignore
     state.session.views[0].setNewView(20, 0)
     await waitForElement(() => getByTestId('track-volvox_refseq'))
     expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
@@ -245,6 +258,7 @@ describe('test renamed refs', () => {
       <JBrowse initialState={state} />,
     )
     await waitForElement(() => getByText('Help'))
+    // @ts-ignore
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_cram_alignments')),
@@ -254,11 +268,13 @@ describe('test renamed refs', () => {
       getAllByTestId('prerendered_canvas_PileupRenderer'),
     )
 
+    // @ts-ignore
     const img = canvas[0].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
     // this is needed to do a fuzzy image comparison because
     // the travis-ci was 2 pixels different for some reason, see PR #710
+    // @ts-ignore
     expect(buf).toMatchImageSnapshot({
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
@@ -285,6 +301,7 @@ describe('test renamed refs', () => {
       <JBrowse initialState={state} />,
     )
     await waitForElement(() => getByText('Help'))
+    // @ts-ignore
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() =>
@@ -320,6 +337,7 @@ test('lollipop track test', async () => {
     <JBrowse initialState={state} />,
   )
   await waitForElement(() => getByText('Help'))
+  // @ts-ignore
   state.session.views[0].setNewView(1, 150)
   fireEvent.click(
     await waitForElement(() => byId('htsTrackEntry-lollipop_track')),
@@ -335,6 +353,7 @@ test('variant track test - opens feature detail view', async () => {
     <JBrowse initialState={state} />,
   )
   await waitForElement(() => getByText('Help'))
+  // @ts-ignore
   state.session.views[0].setNewView(0.05, 5000)
   fireEvent.click(
     await waitForElement(() => byId('htsTrackEntry-volvox_filtered_vcf')),
@@ -353,6 +372,7 @@ describe('nclist track test with long name', () => {
       <JBrowse initialState={state} />,
     )
     await waitForElement(() => getByText('Help'))
+    // @ts-ignore
     state.session.views[0].setNewView(1, -539)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-nclist_long_names')),
@@ -376,6 +396,7 @@ describe('test configuration editor', () => {
       getByDisplayValue,
     } = render(<JBrowse initialState={state} />)
     await waitForElement(() => getByText('Help'))
+    // @ts-ignore
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_filtered_vcf')),
@@ -403,6 +424,7 @@ describe('alignments track', () => {
       <JBrowse initialState={state} />,
     )
     await waitForElement(() => getByText('Help'))
+    // @ts-ignore
     state.session.views[0].setNewView(5, 100)
     fireEvent.click(
       await waitForElement(() =>
@@ -416,9 +438,11 @@ describe('alignments track', () => {
     const pileupCanvas = await waitForElement(() =>
       getAllByTestId('prerendered_canvas_PileupRenderer'),
     )
+    // @ts-ignore
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
+    // @ts-ignore
     expect(pileupBuf).toMatchImageSnapshot({
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
@@ -427,10 +451,11 @@ describe('alignments track', () => {
     const snpCovCanvas = await waitForElement(() =>
       getAllByTestId('prerendered_canvas_SNPCoverageRenderer'),
     )
-    // snpCov image
+    // @ts-ignore
     const snpCovImg = snpCovCanvas[0].toDataURL()
     const snpCovData = snpCovImg.replace(/^data:image\/\w+;base64,/, '')
     const snpCovBuf = Buffer.from(snpCovData, 'base64')
+    // @ts-ignore
     expect(snpCovBuf).toMatchImageSnapshot({
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
@@ -444,6 +469,7 @@ describe('bigwig', () => {
       <JBrowse initialState={state} />,
     )
     await waitForElement(() => getByText('Help'))
+    // @ts-ignore
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray')),
@@ -458,6 +484,7 @@ describe('bigwig', () => {
       <JBrowse initialState={state} />,
     )
     await waitForElement(() => getByText('Help'))
+    // @ts-ignore
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray_line')),
@@ -474,6 +501,7 @@ describe('bigwig', () => {
       <JBrowse initialState={state} />,
     )
     await waitForElement(() => getByText('Help'))
+    // @ts-ignore
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() =>
@@ -499,8 +527,10 @@ describe('circular views', () => {
     await waitForElement(() => getByText('Help'))
 
     // open a new circular view on the same assembly as the test linear view
+    // @ts-ignore
     const regions = await state.session.getRegionsForAssemblyName('volvox')
     act(() => {
+      // @ts-ignore
       const circularView = state.session.addView('CircularView')
       circularView.setDisplayedRegions(regions)
     })

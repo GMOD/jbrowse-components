@@ -33,7 +33,7 @@ test('empty', async () => {
     width: 800,
     blockKey: 'test',
   })
-  expect(result).toEqual({ width: 0, height: 0 })
+  expect(result).toMatchSnapshot()
 })
 
 test('inverted mode and horizontally flipped', async () => {

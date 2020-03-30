@@ -14,7 +14,10 @@ const fontWidthScaleFactor = 0.6
 export const SvgSelected = observer(
   ({
     region,
-    trackModel: { blockLayoutFeatures, selectedFeatureId },
+    trackModel: {
+      blockLayoutFeatures = undefined,
+      selectedFeatureId = undefined,
+    } = {},
     bpPerPx,
     horizontallyFlipped,
     blockKey,
@@ -54,7 +57,10 @@ export const SvgSelected = observer(
 
 export const SvgMouseover = observer(
   ({
-    trackModel: { blockLayoutFeatures, featureIdUnderMouse },
+    trackModel: {
+      blockLayoutFeatures = undefined,
+      featureIdUnderMouse = undefined,
+    } = {},
     region,
     bpPerPx,
     horizontallyFlipped,

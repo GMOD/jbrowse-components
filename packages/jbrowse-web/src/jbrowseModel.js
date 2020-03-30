@@ -21,7 +21,9 @@ const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
 )
 
 // poke some things for testing (this stuff will eventually be removed)
+// @ts-ignore
 window.getSnapshot = getSnapshot
+// @ts-ignore
 window.resolveIdentifier = resolveIdentifier
 
 const JBrowseWeb = types
@@ -57,6 +59,7 @@ const JBrowseWeb = types
     }),
     savedSessions: types.array(types.frozen(Session)),
   })
+  .extend(assemblyManager)
   .actions(self => ({
     afterCreate() {
       const seen = []
@@ -126,7 +129,6 @@ const JBrowseWeb = types
   }))
   // Grouping the "assembly manager" stuff under an `extend` just for
   // code organization
-  .extend(assemblyManager)
   .volatile(self => ({
     rpcManager: new RpcManager(
       pluginManager,
