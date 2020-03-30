@@ -29,15 +29,15 @@ const useStyles = makeStyles(theme => ({
 
 function DropDownMenu({ menuTitle, menuItems, session }) {
   const [open, setOpen] = useState(false)
-  const anchorEl = useRef(null)
+  const anchorEl = useRef<HTMLButtonElement>(null)
   const classes = useStyles()
 
   function handleToggle() {
     setOpen(!open)
   }
 
-  function handleClose(event, callback) {
-    if (anchorEl.current.contains(event.target)) return
+  function handleClose(event, callback = (arg: any) => {}) {
+    if (anchorEl.current && anchorEl.current.contains(event.target)) return
 
     setOpen(false)
     if (callback) callback(session)
@@ -47,7 +47,7 @@ function DropDownMenu({ menuTitle, menuItems, session }) {
     <div className={classes.root}>
       <Button
         buttonRef={anchorEl}
-        aria-owns={anchorEl ? 'menu-list-grow' : null}
+        aria-owns={anchorEl ? 'menu-list-grow' : undefined}
         aria-haspopup="true"
         onClick={handleToggle}
         color="inherit"
@@ -64,41 +64,40 @@ function DropDownMenu({ menuTitle, menuItems, session }) {
         transition
         // disablePortal
       >
-        {({ TransitionProps }) => (
-          <Grow
-            {...TransitionProps}
-            id="menu-list-grow"
-            className={classes.grow}
-          >
-            <Paper>
-              <ClickAwayListener onClickAway={handleClose}>
-                <MenuList>
-                  {values(menuItems).map((menuItem, idx) =>
-                    menuItem.name === 'divider' ? (
-                      <Divider key={`divider-${idx}`} />
-                    ) : (
-                      <MenuItem
-                        key={menuItem.name}
-                        onClick={event => handleClose(event, menuItem.func)}
-                        data-testid="menuItemId"
-                      >
-                        {menuItem.icon ? (
-                          <ListItemIcon key={menuItem.name}>
-                            <Icon>{menuItem.icon}</Icon>
-                          </ListItemIcon>
-                        ) : null}
-                        <ListItemText
-                          inset={!menuItem.icon}
-                          primary={menuItem.name}
-                        />
-                      </MenuItem>
-                    ),
-                  )}
-                </MenuList>
-              </ClickAwayListener>
-            </Paper>
-          </Grow>
-        )}
+        {({ TransitionProps }) => {
+          return (
+            // @ts-ignore
+            <Grow {...TransitionProps} className={classes.grow}>
+              <Paper>
+                <ClickAwayListener onClickAway={handleClose}>
+                  <MenuList>
+                    {values(menuItems).map((menuItem, idx) =>
+                      menuItem.name === 'divider' ? (
+                        <Divider key={`divider-${idx}`} />
+                      ) : (
+                        <MenuItem
+                          key={menuItem.name}
+                          onClick={event => handleClose(event, menuItem.func)}
+                          data-testid="menuItemId"
+                        >
+                          {menuItem.icon ? (
+                            <ListItemIcon key={menuItem.name}>
+                              <Icon>{menuItem.icon}</Icon>
+                            </ListItemIcon>
+                          ) : null}
+                          <ListItemText
+                            inset={!menuItem.icon}
+                            primary={menuItem.name}
+                          />
+                        </MenuItem>
+                      ),
+                    )}
+                  </MenuList>
+                </ClickAwayListener>
+              </Paper>
+            </Grow>
+          )
+        }}
       </Popper>
     </div>
   )

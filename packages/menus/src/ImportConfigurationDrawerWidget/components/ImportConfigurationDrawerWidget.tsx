@@ -71,10 +71,15 @@ const useStyles = makeStyles(theme => ({
     color: '#FFFFFF',
   },
 }))
-
+interface FileConfig {
+  config: any
+  path: string
+}
 function ImportConfiguration(props) {
   const [errorMessage, setErrorMessage] = useState('')
-  const [acceptedFilesParsed, setAcceptedFilesParsed] = useState([])
+  const [acceptedFilesParsed, setAcceptedFilesParsed] = useState<FileConfig[]>(
+    [],
+  )
   const {
     acceptedFiles,
     getRootProps,
@@ -85,7 +90,7 @@ function ImportConfiguration(props) {
   })
   useEffect(() => {
     async function getConfigs() {
-      const newConfigs = []
+      const newConfigs: FileConfig[] = []
       for (const file of acceptedFiles) {
         let config
         if (
@@ -123,7 +128,9 @@ function ImportConfiguration(props) {
       }
 
       setAcceptedFilesParsed(
+        // @ts-ignore
         acceptedFiles.map((file, idx) => {
+          // @ts-ignore
           file.config = newConfigs[idx]
           return file
         }),
@@ -135,7 +142,7 @@ function ImportConfiguration(props) {
   const classes = useStyles({ isDragActive })
 
   const { addSessions, setActiveSession, model } = props
-  const session = getSession(model)
+  const session = getSession(model) as any
 
   async function importConfigs() {
     try {

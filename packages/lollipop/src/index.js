@@ -8,6 +8,7 @@ export default class extends Plugin {
   install(pluginManager) {
     pluginManager.addRendererType(
       () =>
+        // @ts-ignore
         new LollipopRenderer({
           name: 'LollipopRenderer',
           ReactComponent: LollipopRendererReactComponent,
