@@ -77,6 +77,7 @@ export function createTestSession(snapshot = {}) {
     ...snapshot,
   })
   root.setHistory(UndoManager.create({}, { targetStore: root.session }))
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return root.session as any
 }
 

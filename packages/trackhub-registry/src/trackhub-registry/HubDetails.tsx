@@ -13,7 +13,7 @@ import React, { useEffect, useState } from 'react'
 import SanitizedHTML from 'react-sanitized-html'
 
 function HubDetails(props) {
-  const [hubFile, setHubFile] = useState<any>(null)
+  const [hubFile, setHubFile] = useState<HubFile | null>(null)
   const [errorMessage, setErrorMessage] = useState<JSX.Element | null>(null)
 
   const { hub } = props

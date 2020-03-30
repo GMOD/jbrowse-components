@@ -5,7 +5,7 @@ import {
   AdapterClass as NCListAdapterClass,
   configSchema as ncListAdapterConfigSchema,
 } from './NCListAdapter'
-//@ts-ignore
+// @ts-ignore
 import {
   configSchema as jbrowse1ConfigSchema,
   modelFactory as jbrowse1ModelFactory,

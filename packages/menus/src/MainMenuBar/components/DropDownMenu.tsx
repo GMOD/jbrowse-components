@@ -36,11 +36,16 @@ function DropDownMenu({ menuTitle, menuItems, session }) {
     setOpen(!open)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function handleClose(event, callback = (arg: any) => {}) {
-    if (anchorEl.current && anchorEl.current.contains(event.target)) return
+    if (anchorEl.current && anchorEl.current.contains(event.target)) {
+      return
+    }
 
     setOpen(false)
-    if (callback) callback(session)
+    if (callback) {
+      callback(session)
+    }
   }
 
   return (

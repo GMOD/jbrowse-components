@@ -2,12 +2,11 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { observer } from 'mobx-react'
-import ReactPropTypes from 'prop-types'
 import React from 'react'
 import './DivSequenceRendering.scss'
 
 interface Props {
-  config: any
+  config: unknown
   features: Map<string, Feature>
   region: IRegion
   bpPerPx: number

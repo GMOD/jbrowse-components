@@ -52,6 +52,7 @@ const useStyles = makeStyles(theme => {
 function MainMenuBar(props) {
   const { model } = props
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const session = getSession(model) as any
 
   const classes = useStyles()

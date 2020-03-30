@@ -21,27 +21,33 @@ function Tooltip({ offsetX, feature }: { offsetX: number; feature: Feature }) {
 
   // construct a table with all relevant information
   const renderTableData = info
-    ? info.map((mismatch: { base: string; score: number; strands: any }) => {
-        const { base, score, strands } = mismatch
-        return (
-          <tr key={base}>
-            <td id={condId}>{base.toUpperCase()}</td>
-            <td id={condId}>{score}</td>
-            <td id={condId}>
-              {base === 'total'
-                ? '---'
-                : `${Math.floor((score / total) * 100)}%`}
-            </td>
-            <td id={condId}>
-              {base === 'total'
-                ? '---'
-                : (strands['+']
-                    ? `+:${strands['+']} ${strands['-'] ? `,\t` : `\t`} `
-                    : ``) + (strands['-'] ? `-:${strands['-']}` : ``)}
-            </td>
-          </tr>
-        )
-      })
+    ? info.map(
+        (mismatch: {
+          base: string
+          score: number
+          strands: { '+': number; '-': number }
+        }) => {
+          const { base, score, strands } = mismatch
+          return (
+            <tr key={base}>
+              <td id={condId}>{base.toUpperCase()}</td>
+              <td id={condId}>{score}</td>
+              <td id={condId}>
+                {base === 'total'
+                  ? '---'
+                  : `${Math.floor((score / total) * 100)}%`}
+              </td>
+              <td id={condId}>
+                {base === 'total'
+                  ? '---'
+                  : (strands['+']
+                      ? `+:${strands['+']} ${strands['-'] ? `,\t` : `\t`} `
+                      : ``) + (strands['-'] ? `-:${strands['-']}` : ``)}
+              </td>
+            </tr>
+          )
+        },
+      )
     : null
 
   return (

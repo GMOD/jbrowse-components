@@ -98,7 +98,7 @@ function VariantSamples(props) {
 }
 
 VariantSamples.propTypes = {
-  feature: PropTypes.shape({}).isRequired,
+  feature: PropTypes.shape({ samples: PropTypes.shape({}) }).isRequired,
 }
 
 function VariantFeatureDetails(props) {

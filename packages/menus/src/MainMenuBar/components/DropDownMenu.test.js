@@ -10,7 +10,7 @@ describe('<DropDownMenu />', () => {
     session = createTestSession({
       rpc: { defaultDriver: 'MainThreadRpcDriver' },
     })
-    //@ts-ignore
+    // @ts-ignore
     session.menuBars[0].unshiftMenu({
       name: 'Test Menu',
       menuItems: [

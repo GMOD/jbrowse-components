@@ -31,7 +31,7 @@ Block.defaultProps = {
   children: undefined,
 }
 Block.propTypes = {
-  block: PropTypes.shape({}).isRequired,
+  block: PropTypes.shape({ widthPx: PropTypes.number }).isRequired,
   children: PropTypes.oneOfType([
     PropTypes.node,
     PropTypes.arrayOf(PropTypes.node),

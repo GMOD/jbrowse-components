@@ -43,8 +43,10 @@ async function parseConfig(configLoc: IFileLocation) {
 }
 
 function useJBrowseWeb(
-  config: any,
+  config: IFileLocation,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialState: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialConfigSnapshot: any,
 ) {
   const [loaded, setLoaded] = useState(false)
@@ -261,10 +263,12 @@ async function factoryReset() {
   window.location.reload()
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const PlatformSpecificFatalErrorDialog = (props: any) => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (props: any) => {
   return (
     <ThemeProvider theme={theme}>

@@ -72,6 +72,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 interface FileConfig {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config: any
   path: string
 }
@@ -142,6 +143,7 @@ function ImportConfiguration(props) {
   const classes = useStyles({ isDragActive })
 
   const { addSessions, setActiveSession, model } = props
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const session = getSession(model) as any
 
   async function importConfigs() {

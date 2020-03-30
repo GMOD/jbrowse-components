@@ -203,7 +203,7 @@ export function ProteinViewerRender(domElement, widget) {
   ReactDOM.render(<ProteinViewer widget={widget} />, domElement)
 }
 
-const FeatureRendering = ({ features, region, width, height }) => (
+const FeatureRendering = ({ features, region, width }) => (
   <Rendering
     region={region}
     layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
@@ -214,9 +214,9 @@ const FeatureRendering = ({ features, region, width, height }) => (
 )
 FeatureRendering.propTypes = {
   features: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  region: PropTypes.shape({}).isRequired,
+  region: PropTypes.shape({ start: PropTypes.number, end: PropTypes.number })
+    .isRequired,
   width: PropTypes.number.isRequired,
-  height: PropTypes.number.isRequired,
 }
 
 export function ExampleFeatureRendering(domElement) {

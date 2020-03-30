@@ -10,7 +10,27 @@ import FeatureGlyph from './FeatureGlyph'
 import { chooseGlyphComponent, layOut } from './util'
 
 const fontWidthScaleFactor = 0.6
+interface Layout {
+  getTotalHeight: () => number
+  addRect: (
+    featId: string,
+    start: number,
+    end: number,
+    height: number,
+  ) => number
+}
 
+interface BaseTrackModel {
+  configuration: unknown
+  blockLayoutFeatures: unknown
+  featureIdCurrentlyUnderMouse: unknown
+  setFeatureIdUnderMouse: (arg0: string | undefined) => void
+  getFeatureOverlapping: (
+    blockKey: string,
+    bp: number,
+    y: number,
+  ) => { name: string }[]
+}
 export const SvgSelected = observer(
   ({
     region,
@@ -103,9 +123,9 @@ function RenderedFeatureGlyph(props: {
   horizontallyFlipped: boolean
   bpPerPx: number
   region: IRegion
-  config: any
+  config: unknown
   displayMode: string
-  layout: any
+  layout: Layout
 }) {
   const {
     feature,
@@ -227,9 +247,9 @@ function SvgFeatureRendering(props: {
   bpPerPx: number
   horizontallyFlipped?: boolean
   features: Map<string, Feature>
-  trackModel?: any
-  layout: any
-  config: any
+  trackModel?: BaseTrackModel
+  layout: Layout
+  config: unknown
   onMouseOut?: Function
   onMouseDown?: Function
   onMouseLeave?: Function
@@ -245,7 +265,13 @@ function SvgFeatureRendering(props: {
     bpPerPx,
     horizontallyFlipped = false,
     features,
-    trackModel = {},
+    trackModel = {
+      getFeatureOverlapping: () => {
+        return []
+      },
+      setFeatureIdUnderMouse: () => {},
+      configuration: {},
+    },
     config,
     onMouseOut,
     onMouseDown,
