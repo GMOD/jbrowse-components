@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react'
 import { LinearGenomeViewStateModel, SCALE_BAR_HEIGHT } from '..'
 import Rubberband from './Rubberband'
 import ScaleBar from './ScaleBar'
+import VerticalGuides from './VerticalGuides'
 
 const useStyles = makeStyles(theme => ({
   tracksContainer: {
@@ -109,10 +110,12 @@ function TracksContainer({
       onMouseUp={mouseUp}
       onMouseLeave={mouseLeave}
     >
-      <Rubberband height={SCALE_BAR_HEIGHT} model={model}>
-        <ScaleBar model={model} height={SCALE_BAR_HEIGHT} />
-      </Rubberband>
-      {children}
+      <VerticalGuides model={model}>
+        <Rubberband height={SCALE_BAR_HEIGHT} model={model}>
+          <ScaleBar model={model} height={SCALE_BAR_HEIGHT} />
+        </Rubberband>
+        {children}
+      </VerticalGuides>
     </div>
   )
 }

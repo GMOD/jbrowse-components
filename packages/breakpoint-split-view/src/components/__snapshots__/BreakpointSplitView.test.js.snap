@@ -375,6 +375,23 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               class="makeStyles-tracksContainer"
             >
               <div
+                class="makeStyles-verticalGuidesContainer"
+                style="left: -1024px; width: 2053px;"
+              >
+                <div
+                  class="makeStyles-boundaryPaddingBlock"
+                  style="width: 1024px;"
+                />
+                <div
+                  class="makeStyles-elidedBlock"
+                  style="width: 5px;"
+                />
+                <div
+                  class="makeStyles-boundaryPaddingBlock"
+                  style="width: 1024px;"
+                />
+              </div>
+              <div
                 class="makeStyles-rubberBandContainer"
                 data-testid="rubberband_container"
                 role="presentation"
@@ -388,16 +405,16 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                     style="left: -1024px; width: 2053px; height: 40px;"
                   >
                     <div
-                      class="makeStyles-interRegionPaddingBlock"
-                      style="width: 1024px;"
+                      class="makeStyles-boundaryPaddingBlock"
+                      style="background: none; width: 1024px;"
                     />
                     <div
                       class="makeStyles-elidedBlock"
                       style="width: 5px;"
                     />
                     <div
-                      class="makeStyles-interRegionPaddingBlock"
-                      style="width: 1024px;"
+                      class="makeStyles-boundaryPaddingBlock"
+                      style="background: none; width: 1024px;"
                     />
                   </div>
                 </div>
@@ -695,6 +712,23 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               class="makeStyles-tracksContainer"
             >
               <div
+                class="makeStyles-verticalGuidesContainer"
+                style="left: -1024px; width: 2053px;"
+              >
+                <div
+                  class="makeStyles-boundaryPaddingBlock"
+                  style="width: 1024px;"
+                />
+                <div
+                  class="makeStyles-elidedBlock"
+                  style="width: 5px;"
+                />
+                <div
+                  class="makeStyles-boundaryPaddingBlock"
+                  style="width: 1024px;"
+                />
+              </div>
+              <div
                 class="makeStyles-rubberBandContainer"
                 data-testid="rubberband_container"
                 role="presentation"
@@ -708,16 +742,16 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                     style="left: -1024px; width: 2053px; height: 40px;"
                   >
                     <div
-                      class="makeStyles-interRegionPaddingBlock"
-                      style="width: 1024px;"
+                      class="makeStyles-boundaryPaddingBlock"
+                      style="background: none; width: 1024px;"
                     />
                     <div
                       class="makeStyles-elidedBlock"
                       style="width: 5px;"
                     />
                     <div
-                      class="makeStyles-interRegionPaddingBlock"
-                      style="width: 1024px;"
+                      class="makeStyles-boundaryPaddingBlock"
+                      style="background: none; width: 1024px;"
                     />
                   </div>
                 </div>

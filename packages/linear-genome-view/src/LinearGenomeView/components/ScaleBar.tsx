@@ -68,6 +68,8 @@ const RenderedScaleBar = observer(
               <InterRegionPaddingBlockMarker
                 key={block.key}
                 width={block.widthPx}
+                style={{ background: 'none' }}
+                boundary={block.variant === 'boundary'}
               />
             )
           }

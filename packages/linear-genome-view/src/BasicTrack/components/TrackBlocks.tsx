@@ -21,7 +21,6 @@ const useStyles = makeStyles({
   trackBlocks: {
     whiteSpace: 'nowrap',
     textAlign: 'left',
-    background: '#404040',
     position: 'absolute',
     display: 'flex',
     minHeight: '100%',
@@ -82,6 +81,8 @@ const RenderedBlocks = observer(
               <InterRegionPaddingBlockMarker
                 key={block.key}
                 width={block.widthPx}
+                style={{ background: 'none' }}
+                boundary={block.variant === 'boundary'}
               />
             )
           }
