@@ -8,6 +8,7 @@ import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
+import { fade } from '@material-ui/core/styles/colorManipulator'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
@@ -15,19 +16,31 @@ import React from 'react'
 import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
 
 const useStyles = makeStyles(theme => ({
+  root: {
+    position: 'absolute',
+    zIndex: 2,
+    background: fade(theme.palette.background.paper, 0.8),
+    margin: theme.spacing(1),
+    '&:hover': {
+      background: theme.palette.background.paper,
+    },
+    transition: theme.transitions.create(['background'], {
+      duration: theme.transitions.duration.shortest,
+    }),
+  },
   trackName: {
     margin: '0 auto',
     width: '90%',
     fontSize: '0.8rem',
+    pointerEvents: 'none',
   },
   dragHandle: {
     verticalAlign: 'middle',
-    padding: theme.spacing(0.5),
     cursor: 'grab',
     color: '#135560',
   },
   iconButton: {
-    padding: theme.spacing(0.5),
+    padding: theme.spacing(1),
   },
 }))
 
@@ -75,13 +88,7 @@ function TrackLabel(props: { track: Instance<BaseTrackStateModel> }) {
   }
   return (
     <>
-      <Paper
-        style={{
-          position: 'absolute',
-          zIndex: 2,
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        }}
-      >
+      <Paper className={classes.root}>
         <Icon
           draggable
           className={classes.dragHandle}
