@@ -79,7 +79,10 @@ function Tooltip({ offsetX, feature }) {
 
 Tooltip.propTypes = {
   offsetX: ReactPropTypes.number.isRequired,
-  feature: ReactPropTypes.object.isRequired,
+  feature: ReactPropTypes.object,
+}
+Tooltip.defaultProps = {
+  feature: {},
 }
 
 function WiggleRendering(props) {
@@ -91,12 +94,12 @@ function WiggleRendering(props) {
     width,
     height,
   } = props
-  const ref = useRef()
+  const ref = useRef(null)
   const [featureUnderMouse, setFeatureUnderMouse] = useState()
-  const [clientX, setClientX] = useState()
+  const [clientX, setClientX] = useState(0)
 
   let offset = 0
-  if (ref.current) {
+  if (ref && ref.current && ref.current !== null) {
     offset = ref.current.getBoundingClientRect().left
   }
   function onMouseMove(evt) {

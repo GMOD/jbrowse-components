@@ -29,17 +29,15 @@ test('test inverted', () => {
 test('test minScore', () => {
   const scaleType = 'linear'
   const domain = [0, 100]
-  const range = [0, 100]
   const bounds = [50, undefined]
-  const ret = getNiceDomain({ scaleType, domain, range, bounds })
+  const ret = getNiceDomain({ scaleType, domain, bounds })
   expect(ret).toEqual([50, 100])
 })
 
 test('test min and max score', () => {
   const scaleType = 'linear'
   const domain = [1, 100]
-  const range = [0, 100]
   const bounds = [undefined, 70]
-  const ret = getNiceDomain({ scaleType, domain, range, bounds })
+  const ret = getNiceDomain({ scaleType, domain, bounds })
   expect(ret).toEqual([0, 70])
 })

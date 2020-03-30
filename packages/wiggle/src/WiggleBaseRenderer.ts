@@ -4,7 +4,6 @@ import {
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import React from 'react'
 import { ScaleOpts } from './util'
@@ -20,13 +19,7 @@ interface WiggleBaseRendererProps {
   horizontallyFlipped: boolean
   highResolutionScaling: number
   blockKey: string
-  dataAdapter: BaseAdapter
-  notReady: boolean
-  originalRegion: IRegion
   scaleOpts: ScaleOpts
-  sessionId: string
-  signal: AbortSignal
-  trackModel: unknown
 }
 
 export default class extends ServerSideRendererType {

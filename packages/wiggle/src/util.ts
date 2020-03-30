@@ -5,7 +5,7 @@ export interface ScaleOpts {
   range: number[]
   scaleType: string
   pivotValue?: number
-  inverted: boolean
+  inverted?: boolean
 }
 /**
  * produces a d3-scale from arguments. applies a "nice domain" adjustment
@@ -23,11 +23,13 @@ export function getScale({
   range = [],
   scaleType,
   pivotValue,
-  inverted,
+  inverted = false,
 }: ScaleOpts) {
   let scale
   const [min, max] = domain
-  if (min === undefined || max === undefined) throw new Error('invalid domain')
+  if (min === undefined || max === undefined) {
+    throw new Error('invalid domain')
+  }
   if (scaleType === 'linear') {
     scale = scaleLinear()
   } else if (scaleType === 'log') {
@@ -89,7 +91,7 @@ export function getNiceDomain({
 }: {
   scaleType: string
   domain: number[]
-  bounds: number[]
+  bounds: (number | undefined)[]
 }) {
   const [minScore, maxScore] = bounds
   let [min, max] = domain

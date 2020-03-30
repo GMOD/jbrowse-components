@@ -78,7 +78,7 @@ export function calcPerBaseStats(
   opts: { windowSize: number } = { windowSize: 1 },
 ): number[] {
   const { start, end } = region
-  const scores = []
+  const scores: number[] = []
   const feats = features.sort((a, b) => a.get('start') - b.get('start'))
   let pos = start
   let currentFeat = 0
