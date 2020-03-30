@@ -1,21 +1,19 @@
 /* eslint-disable react/require-default-props */
 import { makeStyles } from '@material-ui/core/styles'
+import Paper from '@material-ui/core/Paper'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React, { ReactNode, useEffect, useState } from 'react'
+import React, { ReactNode } from 'react'
 
 const useStyles = makeStyles({
   trackRenderingContainer: {
     overflowY: 'auto',
     overflowX: 'hidden',
-    background: '#555',
     whiteSpace: 'nowrap',
+    position: 'relative',
   },
 })
 
-/**
- * mostly does UI gestures: drag scrolling, etc
- */
 const TrackRenderingContainer: React.FC<{
   onHorizontalScroll: Function
   setScrollTop: Function
@@ -34,99 +32,21 @@ const TrackRenderingContainer: React.FC<{
     ...other
   } = props
   const classes = useStyles()
-  const [scheduled, setScheduled] = useState(false)
-  const [delta, setDelta] = useState(0)
-  const [mouseDragging, setMouseDragging] = useState(false)
-  const [prevX, setPrevX] = useState()
 
-  useEffect(() => {
-    let cleanup = () => {}
-
-    function globalMouseMove(event: MouseEvent) {
-      event.preventDefault()
-      const distance = event.clientX - prevX
-      if (distance) {
-        if (!scheduled) {
-          // use rAF to make it so multiple event handlers aren't fired per-frame
-          // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-          window.requestAnimationFrame(() => {
-            onHorizontalScroll(-distance)
-            setScheduled(false)
-            setPrevX(event.clientX)
-          })
-          setScheduled(true)
-        }
-      }
-    }
-
-    function globalMouseUp() {
-      setPrevX(undefined)
-      setMouseDragging(false)
-    }
-
-    if (mouseDragging) {
-      window.addEventListener('mousemove', globalMouseMove, true)
-      window.addEventListener('mouseup', globalMouseUp, true)
-      cleanup = () => {
-        window.removeEventListener('mousemove', globalMouseMove, true)
-        window.removeEventListener('mouseup', globalMouseUp, true)
-      }
-    }
-    return cleanup
-  }, [delta, mouseDragging, onHorizontalScroll, prevX, scheduled])
-
-  function mouseDown(event: React.MouseEvent) {
-    if ((event.target as HTMLElement).draggable) return
-    if (event.button === 0) {
-      event.preventDefault()
-      setPrevX(event.clientX)
-      setMouseDragging(true)
-    }
-  }
-
-  // this local mouseup is used in addition to the global because sometimes
-  // the global add/remove are not called in time, resulting in issue #533
-  function mouseUp(event: React.MouseEvent) {
-    event.preventDefault()
-    setMouseDragging(false)
-  }
-
-  function mouseLeave(event: React.MouseEvent) {
-    event.preventDefault()
-  }
   return (
-    <>
-      <div
-        className={classes.trackRenderingContainer}
-        onWheel={event => {
-          const { deltaX, deltaMode } = event
-          if (scheduled) {
-            setDelta(delta + deltaX)
-          } else {
-            // use rAF to make it so multiple event handlers aren't fired per-frame
-            // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-            window.requestAnimationFrame(() => {
-              onHorizontalScroll((delta + deltaX) * (1 + 50 * deltaMode))
-              setScheduled(false)
-            })
-            setScheduled(true)
-            setDelta(0)
-          }
-        }}
-        style={{ height: trackHeight }}
-        onScroll={event => {
-          const target = event.target as HTMLDivElement
-          setScrollTop(target.scrollTop, target.clientHeight)
-        }}
-        onMouseDown={mouseDown}
-        onMouseUp={mouseUp}
-        onMouseLeave={mouseLeave}
-        role="presentation"
-        {...other}
-      >
-        {children}
-      </div>
-    </>
+    <Paper
+      variant="outlined"
+      className={classes.trackRenderingContainer}
+      style={{ height: trackHeight }}
+      onScroll={event => {
+        const target = event.target as HTMLDivElement
+        setScrollTop(target.scrollTop, target.clientHeight)
+      }}
+      role="presentation"
+      {...other}
+    >
+      <div style={{ position: 'absolute', left: -1 }}>{children}</div>
+    </Paper>
   )
 }
 

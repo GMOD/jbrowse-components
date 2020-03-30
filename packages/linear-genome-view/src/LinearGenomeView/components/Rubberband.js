@@ -76,6 +76,7 @@ function Rubberband({ model, height, children }) {
       ref={ref}
       onMouseDown={event => {
         event.preventDefault()
+        event.stopPropagation()
         setMouseDragging(true)
         setStartX(event.clientX)
       }}

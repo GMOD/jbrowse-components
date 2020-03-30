@@ -1,12 +1,13 @@
-import { getSession } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { getSession } from '@gmod/jbrowse-core/util'
 
 // material ui things
-import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import Container from '@material-ui/core/Container'
 import Grid from '@material-ui/core/Grid'
 import MenuItem from '@material-ui/core/MenuItem'
+import Paper from '@material-ui/core/Paper'
+import { makeStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 
@@ -16,38 +17,26 @@ import { Instance } from 'mobx-state-tree'
 import React, { useState } from 'react'
 
 // locals
-import buttonStyles from './buttonStyles'
-import RefNameAutocomplete from './RefNameAutocomplete'
+import { LinearGenomeViewStateModel } from '..'
 import Header from './Header'
-import Rubberband from './Rubberband'
+import RefNameAutocomplete from './RefNameAutocomplete'
 import TrackContainer from './TrackContainer'
-import ScaleBar from './ScaleBar'
-import { LinearGenomeViewStateModel, SCALE_BAR_HEIGHT } from '..'
+import TracksContainer from './TracksContainer'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles(theme => ({
-  root: {
-    position: 'relative',
-    marginBottom: theme.spacing(1),
-    overflow: 'hidden',
-    background: '#D9D9D9',
-    // background: theme.palette.background.paper,
-    boxSizing: 'content-box',
-  },
   importFormContainer: {
     marginBottom: theme.spacing(4),
   },
   importFormEntry: {
     minWidth: 180,
   },
-  noTracksMessage: {
-    background: theme.palette.background.default,
+  errorMessage: {
     textAlign: 'center',
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
   },
-  ...buttonStyles(theme),
 }))
 
 const ImportForm = observer(({ model }) => {
@@ -138,53 +127,46 @@ const ImportForm = observer(({ model }) => {
 
 const LinearGenomeView = observer((props: { model: LGV }) => {
   const { model } = props
-  const { tracks, error } = model
+  const { displayedRegions, tracks, error, hideHeader } = model
   const classes = useStyles()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const session: any = getSession(model)
-  const initialized = !!model.displayedRegions.length
+  const initialized = !!displayedRegions.length
+
+  if (!initialized) return <ImportForm model={model} />
   return (
-    <div className={classes.root}>
-      {!initialized ? (
-        <ImportForm model={model} />
+    <div>
+      {!hideHeader ? <Header model={model} /> : null}
+      {error ? (
+        <Paper variant="outlined" className={classes.errorMessage}>
+          <Typography color="error">{error.message}</Typography>
+        </Paper>
       ) : (
-        <>
-          {!model.hideHeader ? <Header model={model} /> : null}
-          {error ? (
-            <div style={{ textAlign: 'center', color: 'red' }}>
-              {error.message}
-            </div>
+        <TracksContainer model={model}>
+          {!tracks.length ? (
+            <Paper variant="outlined" className={classes.errorMessage}>
+              <Typography>No tracks active.</Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={model.activateTrackSelector}
+                disabled={
+                  session.visibleDrawerWidget &&
+                  session.visibleDrawerWidget.id ===
+                    'hierarchicalTrackSelector' &&
+                  session.visibleDrawerWidget.view.id === model.id
+                }
+              >
+                Select Tracks
+              </Button>
+            </Paper>
           ) : (
-            <>
-              <Rubberband height={SCALE_BAR_HEIGHT} model={model}>
-                <ScaleBar model={model} height={SCALE_BAR_HEIGHT} />
-              </Rubberband>
-              {!tracks.length ? (
-                <Container className={classes.noTracksMessage}>
-                  <Typography>No tracks active.</Typography>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={model.activateTrackSelector}
-                    disabled={
-                      session.visibleDrawerWidget &&
-                      session.visibleDrawerWidget.id ===
-                        'hierarchicalTrackSelector' &&
-                      session.visibleDrawerWidget.view.id === model.id
-                    }
-                  >
-                    Select Tracks
-                  </Button>
-                </Container>
-              ) : (
-                tracks.map(track => (
-                  <TrackContainer key={track.id} model={model} track={track} />
-                ))
-              )}
-            </>
+            tracks.map(track => (
+              <TrackContainer key={track.id} model={model} track={track} />
+            ))
           )}
-        </>
+        </TracksContainer>
       )}
     </div>
   )

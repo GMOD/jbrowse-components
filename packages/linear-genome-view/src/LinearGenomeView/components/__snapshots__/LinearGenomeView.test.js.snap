@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<LinearGenomeView /> renders one track, one region 1`] = `
-<div
-  class="makeStyles-root"
->
+<div>
   <div
     class="makeStyles-headerBar"
   >
@@ -277,211 +275,20 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
     />
   </div>
   <div
-    class="makeStyles-rubberBandContainer"
-    data-testid="rubberband_container"
-    role="presentation"
-    style="height: 40px;"
+    class="makeStyles-tracksContainer"
   >
     <div
-      class="makeStyles-scaleBarContainer"
-    >
-      <div
-        class="makeStyles-scaleBar"
-        style="left: -1024px; width: 2148px; height: 40px;"
-      >
-        <div
-          class="makeStyles-interRegionPaddingBlock"
-          style="width: 1024px;"
-        />
-        <div
-          class="makeStyles-block"
-          style="width: 100px;"
-        >
-          <svg
-            height="40"
-            width="100"
-          >
-            <line
-              class="makeStyles-majorTick"
-              data-bp="-1"
-              stroke="#555"
-              stroke-width="1"
-              x1="-1"
-              x2="-1"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="19"
-              stroke="#999"
-              stroke-width="1"
-              x1="19"
-              x2="19"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="39"
-              stroke="#999"
-              stroke-width="1"
-              x1="39"
-              x2="39"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="59"
-              stroke="#999"
-              stroke-width="1"
-              x1="59"
-              x2="59"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="79"
-              stroke="#999"
-              stroke-width="1"
-              x1="79"
-              x2="79"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-majorTick"
-              data-bp="99"
-              stroke="#555"
-              stroke-width="1"
-              x1="99"
-              x2="99"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="119"
-              stroke="#999"
-              stroke-width="1"
-              x1="119"
-              x2="119"
-              y1="0"
-              y2="4"
-            />
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="-4"
-              y="7"
-            >
-              0
-            </text>
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="96"
-              y="7"
-            >
-              100
-            </text>
-          </svg>
-        </div>
-        <div
-          class="makeStyles-interRegionPaddingBlock"
-          style="width: 1024px;"
-        />
-      </div>
-      <div
-        class="makeStyles-refLabel"
-        data-testid="refLabel-ctgA"
-        style="left: 0px; z-index: 1;"
-      >
-        ctgA
-      </div>
-    </div>
-  </div>
-  <div
-    style="position: relative;"
-  >
-    <div
-      class="makeStyles-trackRenderingContainer"
-      data-testid="trackRenderingContainer-lgv-testConfig"
+      class="makeStyles-rubberBandContainer"
+      data-testid="rubberband_container"
       role="presentation"
-      style="height: 20px;"
+      style="height: 40px;"
     >
       <div
-        class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
-        style="position: absolute; z-index: 2; background-color: rgba(255, 255, 255, 0.8);"
-      >
-        <span
-          aria-hidden="true"
-          class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
-          data-testid="dragHandle-lgv-testConfig"
-          draggable="true"
-        >
-          drag_indicator
-        </span>
-        <button
-          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-          tabindex="0"
-          title="close this track"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              close
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-        <span
-          class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
-        >
-          Foo Track
-        </span>
-        <button
-          aria-controls="simple-menu"
-          aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-          tabindex="0"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              more_vert
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-      </div>
-      <div
-        class="makeStyles-track"
-        data-testid="track-testConfig"
-        role="presentation"
+        class="makeStyles-scaleBarContainer"
       >
         <div
-          class="makeStyles-trackBlocks"
-          data-testid="Blockset"
-          style="left: -1024px;"
+          class="makeStyles-scaleBar"
+          style="left: -1024px; width: 2148px; height: 40px;"
         >
           <div
             class="makeStyles-interRegionPaddingBlock"
@@ -491,97 +298,377 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             class="makeStyles-block"
             style="width: 100px;"
           >
-            <div
-              class="ssr-container"
-              data-html-size="328"
+            <svg
+              height="40"
+              width="100"
             >
-              <div
-                classname="ssr-container-inner"
+              <line
+                class="makeStyles-majorTick"
+                data-bp="-1"
+                stroke="#555"
+                stroke-width="1"
+                x1="-1"
+                x2="-1"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="19"
+                stroke="#999"
+                stroke-width="1"
+                x1="19"
+                x2="19"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="39"
+                stroke="#999"
+                stroke-width="1"
+                x1="39"
+                x2="39"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="59"
+                stroke="#999"
+                stroke-width="1"
+                x1="59"
+                x2="59"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="79"
+                stroke="#999"
+                stroke-width="1"
+                x1="79"
+                x2="79"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-majorTick"
+                data-bp="99"
+                stroke="#555"
+                stroke-width="1"
+                x1="99"
+                x2="99"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="119"
+                stroke="#999"
+                stroke-width="1"
+                x1="119"
+                x2="119"
+                y1="0"
+                y2="4"
+              />
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="-4"
+                y="7"
               >
-                <div
-                  class="PileupRendering"
-                  style="position:relative;width:0;height:0"
-                >
-                  <canvas
-                    data-testid="prerendered_canvas_PileupRenderer"
-                    height="0"
-                    style="width:0;height:0;position:absolute;left:0;top:0"
-                    width="0"
-                  />
-                  <canvas
-                    class="highlightOverlayCanvas"
-                    height="0"
-                    style="position:absolute;left:0;top:0"
-                    width="0"
-                  />
-                </div>
-              </div>
-            </div>
+                0
+              </text>
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="96"
+                y="7"
+              >
+                100
+              </text>
+            </svg>
           </div>
           <div
             class="makeStyles-interRegionPaddingBlock"
             style="width: 1024px;"
           />
         </div>
+        <div
+          class="makeStyles-refLabel"
+          data-testid="refLabel-ctgA"
+          style="left: 0px; z-index: 1;"
+        >
+          ctgA
+        </div>
       </div>
     </div>
     <div
-      class="makeStyles-horizontalHandle makeStyles-resizeHandle"
-      role="presentation"
-    />
+      style="position: relative;"
+    >
+      <div
+        class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
+        data-testid="trackRenderingContainer-lgv-testConfig"
+        role="presentation"
+        style="height: 20px;"
+      >
+        <div
+          style="position: absolute; left: -1px;"
+        >
+          <div
+            class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
+            style="position: absolute; z-index: 2; background-color: rgba(255, 255, 255, 0.8);"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
+              data-testid="dragHandle-lgv-testConfig"
+              draggable="true"
+            >
+              drag_indicator
+            </span>
+            <button
+              class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+              tabindex="0"
+              title="close this track"
+              type="button"
+            >
+              <span
+                class="MuiIconButton-label"
+              >
+                <span
+                  aria-hidden="true"
+                  class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                >
+                  close
+                </span>
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+            <span
+              class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+            >
+              Foo Track
+            </span>
+            <button
+              aria-controls="simple-menu"
+              aria-haspopup="true"
+              class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+              tabindex="0"
+              type="button"
+            >
+              <span
+                class="MuiIconButton-label"
+              >
+                <span
+                  aria-hidden="true"
+                  class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                >
+                  more_vert
+                </span>
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+          </div>
+          <div
+            class="makeStyles-track"
+            data-testid="track-testConfig"
+            role="presentation"
+          >
+            <div
+              class="makeStyles-trackBlocks"
+              data-testid="Blockset"
+              style="left: -1024px;"
+            >
+              <div
+                class="makeStyles-interRegionPaddingBlock"
+                style="width: 1024px;"
+              />
+              <div
+                class="makeStyles-block"
+                style="width: 100px;"
+              >
+                <div
+                  class="ssr-container"
+                  data-html-size="328"
+                >
+                  <div
+                    classname="ssr-container-inner"
+                  >
+                    <div
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
+                    >
+                      <canvas
+                        data-testid="prerendered_canvas_PileupRenderer"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="makeStyles-interRegionPaddingBlock"
+                style="width: 1024px;"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="makeStyles-horizontalHandle makeStyles-resizeHandle"
+        role="presentation"
+      />
+    </div>
   </div>
 </div>
 `;
 
 exports[`<LinearGenomeView /> renders setup wizard 1`] = `
 <div
-  class="makeStyles-root"
+  class="MuiContainer-root makeStyles-importFormContainer MuiContainer-maxWidthLg"
 >
   <div
-    class="MuiContainer-root makeStyles-importFormContainer MuiContainer-maxWidthLg"
+    class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center MuiGrid-justify-xs-center"
   >
     <div
-      class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center MuiGrid-justify-xs-center"
+      class="MuiGrid-root MuiGrid-item"
     >
       <div
-        class="MuiGrid-root MuiGrid-item"
+        class="MuiFormControl-root MuiTextField-root makeStyles-importFormEntry MuiFormControl-marginNormal"
+      >
+        <label
+          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled"
+          data-shrink="true"
+        >
+          Assembly
+        </label>
+        <div
+          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl"
+        >
+          <div
+            aria-haspopup="listbox"
+            aria-labelledby=" "
+            class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input"
+            role="button"
+            tabindex="0"
+          >
+            volMyt1
+          </div>
+          <input
+            type="hidden"
+            value="0"
+          />
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSelect-icon MuiSelect-iconOutlined"
+            focusable="false"
+            role="presentation"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M7 10l5 5 5-5z"
+            />
+          </svg>
+          <fieldset
+            aria-hidden="true"
+            class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+          >
+            <legend
+              class="PrivateNotchedOutline-legendLabelled PrivateNotchedOutline-legendNotched"
+            >
+              <span>
+                Assembly
+              </span>
+            </legend>
+          </fieldset>
+        </div>
+        <p
+          class="MuiFormHelperText-root MuiFormHelperText-contained MuiFormHelperText-filled"
+        >
+          Select assembly to view
+        </p>
+      </div>
+    </div>
+    <div
+      class="MuiGrid-root MuiGrid-item"
+    >
+      <div
+        aria-expanded="false"
+        class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
+        role="combobox"
       >
         <div
-          class="MuiFormControl-root MuiTextField-root makeStyles-importFormEntry MuiFormControl-marginNormal"
+          class="MuiFormControl-root MuiTextField-root makeStyles-importFormEntry MuiFormControl-marginNormal MuiFormControl-fullWidth"
         >
           <label
             class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled"
             data-shrink="true"
+            for="refNameAutocomplete-lgv"
+            id="refNameAutocomplete-lgv-label"
           >
-            Assembly
+            Sequence
           </label>
           <div
-            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl"
+            class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
           >
-            <div
-              aria-haspopup="listbox"
-              aria-labelledby=" "
-              class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input"
-              role="button"
-              tabindex="0"
-            >
-              volMyt1
-            </div>
             <input
-              type="hidden"
-              value="0"
+              aria-autocomplete="list"
+              aria-describedby="refNameAutocomplete-lgv-helper-text"
+              aria-invalid="false"
+              autocapitalize="none"
+              autocomplete="off"
+              class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
+              id="refNameAutocomplete-lgv"
+              spellcheck="false"
+              type="text"
+              value="ctgA"
             />
-            <svg
-              aria-hidden="true"
-              class="MuiSvgIcon-root MuiSelect-icon MuiSelect-iconOutlined"
-              focusable="false"
-              role="presentation"
-              viewBox="0 0 24 24"
+            <div
+              class="MuiAutocomplete-endAdornment"
             >
-              <path
-                d="M7 10l5 5 5-5z"
-              />
-            </svg>
+              <button
+                aria-label="Open"
+                class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
+                tabindex="-1"
+                title="Open"
+                type="button"
+              >
+                <span
+                  class="MuiIconButton-label"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    role="presentation"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M7 10l5 5 5-5z"
+                    />
+                  </svg>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
+            </div>
             <fieldset
               aria-hidden="true"
               class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
@@ -590,131 +677,44 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
                 class="PrivateNotchedOutline-legendLabelled PrivateNotchedOutline-legendNotched"
               >
                 <span>
-                  Assembly
+                  Sequence
                 </span>
               </legend>
             </fieldset>
           </div>
           <p
             class="MuiFormHelperText-root MuiFormHelperText-contained MuiFormHelperText-filled"
+            id="refNameAutocomplete-lgv-helper-text"
           >
-            Select assembly to view
+            Select sequence to view
           </p>
         </div>
       </div>
-      <div
-        class="MuiGrid-root MuiGrid-item"
+    </div>
+    <div
+      class="MuiGrid-root MuiGrid-item"
+    >
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+        tabindex="0"
+        type="button"
       >
-        <div
-          aria-expanded="false"
-          class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
-          role="combobox"
+        <span
+          class="MuiButton-label"
         >
-          <div
-            class="MuiFormControl-root MuiTextField-root makeStyles-importFormEntry MuiFormControl-marginNormal MuiFormControl-fullWidth"
-          >
-            <label
-              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled"
-              data-shrink="true"
-              for="refNameAutocomplete-lgv"
-              id="refNameAutocomplete-lgv-label"
-            >
-              Sequence
-            </label>
-            <div
-              class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
-            >
-              <input
-                aria-autocomplete="list"
-                aria-describedby="refNameAutocomplete-lgv-helper-text"
-                aria-invalid="false"
-                autocapitalize="none"
-                autocomplete="off"
-                class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
-                id="refNameAutocomplete-lgv"
-                spellcheck="false"
-                type="text"
-                value="ctgA"
-              />
-              <div
-                class="MuiAutocomplete-endAdornment"
-              >
-                <button
-                  aria-label="Open"
-                  class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
-                  tabindex="-1"
-                  title="Open"
-                  type="button"
-                >
-                  <span
-                    class="MuiIconButton-label"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root"
-                      focusable="false"
-                      role="presentation"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M7 10l5 5 5-5z"
-                      />
-                    </svg>
-                  </span>
-                  <span
-                    class="MuiTouchRipple-root"
-                  />
-                </button>
-              </div>
-              <fieldset
-                aria-hidden="true"
-                class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-              >
-                <legend
-                  class="PrivateNotchedOutline-legendLabelled PrivateNotchedOutline-legendNotched"
-                >
-                  <span>
-                    Sequence
-                  </span>
-                </legend>
-              </fieldset>
-            </div>
-            <p
-              class="MuiFormHelperText-root MuiFormHelperText-contained MuiFormHelperText-filled"
-              id="refNameAutocomplete-lgv-helper-text"
-            >
-              Select sequence to view
-            </p>
-          </div>
-        </div>
-      </div>
-      <div
-        class="MuiGrid-root MuiGrid-item"
-      >
-        <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
-          tabindex="0"
-          type="button"
-        >
-          <span
-            class="MuiButton-label"
-          >
-            Open
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-      </div>
+          Open
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
     </div>
   </div>
 </div>
 `;
 
 exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
-<div
-  class="makeStyles-root"
->
+<div>
   <div
     class="makeStyles-headerBar"
   >
@@ -1026,851 +1026,20 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
     />
   </div>
   <div
-    class="makeStyles-rubberBandContainer"
-    data-testid="rubberband_container"
-    role="presentation"
-    style="height: 40px;"
+    class="makeStyles-tracksContainer"
   >
     <div
-      class="makeStyles-scaleBarContainer"
-    >
-      <div
-        class="makeStyles-scaleBar"
-        style="left: -1024px; width: 3150px; height: 40px;"
-      >
-        <div
-          class="makeStyles-interRegionPaddingBlock"
-          style="width: 1024px;"
-        />
-        <div
-          class="makeStyles-block"
-          style="width: 100px;"
-        >
-          <svg
-            height="40"
-            width="100"
-          >
-            <line
-              class="makeStyles-majorTick"
-              data-bp="-1"
-              stroke="#555"
-              stroke-width="1"
-              x1="-1"
-              x2="-1"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="19"
-              stroke="#999"
-              stroke-width="1"
-              x1="19"
-              x2="19"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="39"
-              stroke="#999"
-              stroke-width="1"
-              x1="39"
-              x2="39"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="59"
-              stroke="#999"
-              stroke-width="1"
-              x1="59"
-              x2="59"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="79"
-              stroke="#999"
-              stroke-width="1"
-              x1="79"
-              x2="79"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-majorTick"
-              data-bp="99"
-              stroke="#555"
-              stroke-width="1"
-              x1="99"
-              x2="99"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="119"
-              stroke="#999"
-              stroke-width="1"
-              x1="119"
-              x2="119"
-              y1="0"
-              y2="4"
-            />
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="-4"
-              y="7"
-            >
-              0
-            </text>
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="96"
-              y="7"
-            >
-              100
-            </text>
-          </svg>
-        </div>
-        <div
-          class="makeStyles-interRegionPaddingBlock"
-          style="width: 2px;"
-        />
-        <div
-          class="makeStyles-block"
-          style="width: 1000px;"
-        >
-          <svg
-            height="40"
-            width="1000"
-          >
-            <line
-              class="makeStyles-majorTick"
-              data-bp="999"
-              stroke="#555"
-              stroke-width="1"
-              x1="-1"
-              x2="-1"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1019"
-              stroke="#999"
-              stroke-width="1"
-              x1="19"
-              x2="19"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1039"
-              stroke="#999"
-              stroke-width="1"
-              x1="39"
-              x2="39"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1059"
-              stroke="#999"
-              stroke-width="1"
-              x1="59"
-              x2="59"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1079"
-              stroke="#999"
-              stroke-width="1"
-              x1="79"
-              x2="79"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-majorTick"
-              data-bp="1099"
-              stroke="#555"
-              stroke-width="1"
-              x1="99"
-              x2="99"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1119"
-              stroke="#999"
-              stroke-width="1"
-              x1="119"
-              x2="119"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1139"
-              stroke="#999"
-              stroke-width="1"
-              x1="139"
-              x2="139"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1159"
-              stroke="#999"
-              stroke-width="1"
-              x1="159"
-              x2="159"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1179"
-              stroke="#999"
-              stroke-width="1"
-              x1="179"
-              x2="179"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-majorTick"
-              data-bp="1199"
-              stroke="#555"
-              stroke-width="1"
-              x1="199"
-              x2="199"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1219"
-              stroke="#999"
-              stroke-width="1"
-              x1="219"
-              x2="219"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1239"
-              stroke="#999"
-              stroke-width="1"
-              x1="239"
-              x2="239"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1259"
-              stroke="#999"
-              stroke-width="1"
-              x1="259"
-              x2="259"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1279"
-              stroke="#999"
-              stroke-width="1"
-              x1="279"
-              x2="279"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-majorTick"
-              data-bp="1299"
-              stroke="#555"
-              stroke-width="1"
-              x1="299"
-              x2="299"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1319"
-              stroke="#999"
-              stroke-width="1"
-              x1="319"
-              x2="319"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1339"
-              stroke="#999"
-              stroke-width="1"
-              x1="339"
-              x2="339"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1359"
-              stroke="#999"
-              stroke-width="1"
-              x1="359"
-              x2="359"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1379"
-              stroke="#999"
-              stroke-width="1"
-              x1="379"
-              x2="379"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-majorTick"
-              data-bp="1399"
-              stroke="#555"
-              stroke-width="1"
-              x1="399"
-              x2="399"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1419"
-              stroke="#999"
-              stroke-width="1"
-              x1="419"
-              x2="419"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1439"
-              stroke="#999"
-              stroke-width="1"
-              x1="439"
-              x2="439"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1459"
-              stroke="#999"
-              stroke-width="1"
-              x1="459"
-              x2="459"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1479"
-              stroke="#999"
-              stroke-width="1"
-              x1="479"
-              x2="479"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-majorTick"
-              data-bp="1499"
-              stroke="#555"
-              stroke-width="1"
-              x1="499"
-              x2="499"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1519"
-              stroke="#999"
-              stroke-width="1"
-              x1="519"
-              x2="519"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1539"
-              stroke="#999"
-              stroke-width="1"
-              x1="539"
-              x2="539"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1559"
-              stroke="#999"
-              stroke-width="1"
-              x1="559"
-              x2="559"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1579"
-              stroke="#999"
-              stroke-width="1"
-              x1="579"
-              x2="579"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-majorTick"
-              data-bp="1599"
-              stroke="#555"
-              stroke-width="1"
-              x1="599"
-              x2="599"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1619"
-              stroke="#999"
-              stroke-width="1"
-              x1="619"
-              x2="619"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1639"
-              stroke="#999"
-              stroke-width="1"
-              x1="639"
-              x2="639"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1659"
-              stroke="#999"
-              stroke-width="1"
-              x1="659"
-              x2="659"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1679"
-              stroke="#999"
-              stroke-width="1"
-              x1="679"
-              x2="679"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-majorTick"
-              data-bp="1699"
-              stroke="#555"
-              stroke-width="1"
-              x1="699"
-              x2="699"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1719"
-              stroke="#999"
-              stroke-width="1"
-              x1="719"
-              x2="719"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1739"
-              stroke="#999"
-              stroke-width="1"
-              x1="739"
-              x2="739"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1759"
-              stroke="#999"
-              stroke-width="1"
-              x1="759"
-              x2="759"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1779"
-              stroke="#999"
-              stroke-width="1"
-              x1="779"
-              x2="779"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-majorTick"
-              data-bp="1799"
-              stroke="#555"
-              stroke-width="1"
-              x1="799"
-              x2="799"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1819"
-              stroke="#999"
-              stroke-width="1"
-              x1="819"
-              x2="819"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1839"
-              stroke="#999"
-              stroke-width="1"
-              x1="839"
-              x2="839"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1859"
-              stroke="#999"
-              stroke-width="1"
-              x1="859"
-              x2="859"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1879"
-              stroke="#999"
-              stroke-width="1"
-              x1="879"
-              x2="879"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-majorTick"
-              data-bp="1899"
-              stroke="#555"
-              stroke-width="1"
-              x1="899"
-              x2="899"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1919"
-              stroke="#999"
-              stroke-width="1"
-              x1="919"
-              x2="919"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1939"
-              stroke="#999"
-              stroke-width="1"
-              x1="939"
-              x2="939"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1959"
-              stroke="#999"
-              stroke-width="1"
-              x1="959"
-              x2="959"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="1979"
-              stroke="#999"
-              stroke-width="1"
-              x1="979"
-              x2="979"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-majorTick"
-              data-bp="1999"
-              stroke="#555"
-              stroke-width="1"
-              x1="999"
-              x2="999"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="2019"
-              stroke="#999"
-              stroke-width="1"
-              x1="1019"
-              x2="1019"
-              y1="0"
-              y2="4"
-            />
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="-4"
-              y="7"
-            >
-              1,000
-            </text>
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="96"
-              y="7"
-            >
-              1,100
-            </text>
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="196"
-              y="7"
-            >
-              1,200
-            </text>
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="296"
-              y="7"
-            >
-              1,300
-            </text>
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="396"
-              y="7"
-            >
-              1,400
-            </text>
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="496"
-              y="7"
-            >
-              1,500
-            </text>
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="596"
-              y="7"
-            >
-              1,600
-            </text>
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="696"
-              y="7"
-            >
-              1,700
-            </text>
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="796"
-              y="7"
-            >
-              1,800
-            </text>
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="896"
-              y="7"
-            >
-              1,900
-            </text>
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="996"
-              y="7"
-            >
-              2,000
-            </text>
-          </svg>
-        </div>
-        <div
-          class="makeStyles-interRegionPaddingBlock"
-          style="width: 1024px;"
-        />
-      </div>
-      <div
-        class="makeStyles-refLabel"
-        data-testid="refLabel-ctgA"
-        style="left: 0px; z-index: 1;"
-      >
-        ctgA
-      </div>
-      <div
-        class="makeStyles-refLabel"
-        data-testid="refLabel-ctgB"
-        style="left: 102px; z-index: 3;"
-      >
-        ctgB
-      </div>
-    </div>
-  </div>
-  <div
-    style="position: relative;"
-  >
-    <div
-      class="makeStyles-trackRenderingContainer"
-      data-testid="trackRenderingContainer-lgv-testConfig"
+      class="makeStyles-rubberBandContainer"
+      data-testid="rubberband_container"
       role="presentation"
-      style="height: 20px;"
+      style="height: 40px;"
     >
       <div
-        class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
-        style="position: absolute; z-index: 2; background-color: rgba(255, 255, 255, 0.8);"
-      >
-        <span
-          aria-hidden="true"
-          class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
-          data-testid="dragHandle-lgv-testConfig"
-          draggable="true"
-        >
-          drag_indicator
-        </span>
-        <button
-          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-          tabindex="0"
-          title="close this track"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              close
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-        <span
-          class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
-        >
-          Foo Track
-        </span>
-        <button
-          aria-controls="simple-menu"
-          aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-          tabindex="0"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              more_vert
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-      </div>
-      <div
-        class="makeStyles-track"
-        data-testid="track-testConfig"
-        role="presentation"
+        class="makeStyles-scaleBarContainer"
       >
         <div
-          class="makeStyles-trackBlocks"
-          data-testid="Blockset"
-          style="left: -1024px;"
+          class="makeStyles-scaleBar"
+          style="left: -1024px; width: 3150px; height: 40px;"
         >
           <div
             class="makeStyles-interRegionPaddingBlock"
@@ -1880,32 +1049,99 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             class="makeStyles-block"
             style="width: 100px;"
           >
-            <div
-              class="ssr-container"
-              data-html-size="328"
+            <svg
+              height="40"
+              width="100"
             >
-              <div
-                classname="ssr-container-inner"
+              <line
+                class="makeStyles-majorTick"
+                data-bp="-1"
+                stroke="#555"
+                stroke-width="1"
+                x1="-1"
+                x2="-1"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="19"
+                stroke="#999"
+                stroke-width="1"
+                x1="19"
+                x2="19"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="39"
+                stroke="#999"
+                stroke-width="1"
+                x1="39"
+                x2="39"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="59"
+                stroke="#999"
+                stroke-width="1"
+                x1="59"
+                x2="59"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="79"
+                stroke="#999"
+                stroke-width="1"
+                x1="79"
+                x2="79"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-majorTick"
+                data-bp="99"
+                stroke="#555"
+                stroke-width="1"
+                x1="99"
+                x2="99"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="119"
+                stroke="#999"
+                stroke-width="1"
+                x1="119"
+                x2="119"
+                y1="0"
+                y2="4"
+              />
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="-4"
+                y="7"
               >
-                <div
-                  class="PileupRendering"
-                  style="position:relative;width:0;height:0"
-                >
-                  <canvas
-                    data-testid="prerendered_canvas_PileupRenderer"
-                    height="0"
-                    style="width:0;height:0;position:absolute;left:0;top:0"
-                    width="0"
-                  />
-                  <canvas
-                    class="highlightOverlayCanvas"
-                    height="0"
-                    style="position:absolute;left:0;top:0"
-                    width="0"
-                  />
-                </div>
-              </div>
-            </div>
+                0
+              </text>
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="96"
+                y="7"
+              >
+                100
+              </text>
+            </svg>
           </div>
           <div
             class="makeStyles-interRegionPaddingBlock"
@@ -1915,204 +1151,980 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             class="makeStyles-block"
             style="width: 1000px;"
           >
-            <div
-              class="ssr-container"
-              data-html-size="328"
+            <svg
+              height="40"
+              width="1000"
             >
-              <div
-                classname="ssr-container-inner"
+              <line
+                class="makeStyles-majorTick"
+                data-bp="999"
+                stroke="#555"
+                stroke-width="1"
+                x1="-1"
+                x2="-1"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1019"
+                stroke="#999"
+                stroke-width="1"
+                x1="19"
+                x2="19"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1039"
+                stroke="#999"
+                stroke-width="1"
+                x1="39"
+                x2="39"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1059"
+                stroke="#999"
+                stroke-width="1"
+                x1="59"
+                x2="59"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1079"
+                stroke="#999"
+                stroke-width="1"
+                x1="79"
+                x2="79"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-majorTick"
+                data-bp="1099"
+                stroke="#555"
+                stroke-width="1"
+                x1="99"
+                x2="99"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1119"
+                stroke="#999"
+                stroke-width="1"
+                x1="119"
+                x2="119"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1139"
+                stroke="#999"
+                stroke-width="1"
+                x1="139"
+                x2="139"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1159"
+                stroke="#999"
+                stroke-width="1"
+                x1="159"
+                x2="159"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1179"
+                stroke="#999"
+                stroke-width="1"
+                x1="179"
+                x2="179"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-majorTick"
+                data-bp="1199"
+                stroke="#555"
+                stroke-width="1"
+                x1="199"
+                x2="199"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1219"
+                stroke="#999"
+                stroke-width="1"
+                x1="219"
+                x2="219"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1239"
+                stroke="#999"
+                stroke-width="1"
+                x1="239"
+                x2="239"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1259"
+                stroke="#999"
+                stroke-width="1"
+                x1="259"
+                x2="259"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1279"
+                stroke="#999"
+                stroke-width="1"
+                x1="279"
+                x2="279"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-majorTick"
+                data-bp="1299"
+                stroke="#555"
+                stroke-width="1"
+                x1="299"
+                x2="299"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1319"
+                stroke="#999"
+                stroke-width="1"
+                x1="319"
+                x2="319"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1339"
+                stroke="#999"
+                stroke-width="1"
+                x1="339"
+                x2="339"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1359"
+                stroke="#999"
+                stroke-width="1"
+                x1="359"
+                x2="359"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1379"
+                stroke="#999"
+                stroke-width="1"
+                x1="379"
+                x2="379"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-majorTick"
+                data-bp="1399"
+                stroke="#555"
+                stroke-width="1"
+                x1="399"
+                x2="399"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1419"
+                stroke="#999"
+                stroke-width="1"
+                x1="419"
+                x2="419"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1439"
+                stroke="#999"
+                stroke-width="1"
+                x1="439"
+                x2="439"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1459"
+                stroke="#999"
+                stroke-width="1"
+                x1="459"
+                x2="459"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1479"
+                stroke="#999"
+                stroke-width="1"
+                x1="479"
+                x2="479"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-majorTick"
+                data-bp="1499"
+                stroke="#555"
+                stroke-width="1"
+                x1="499"
+                x2="499"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1519"
+                stroke="#999"
+                stroke-width="1"
+                x1="519"
+                x2="519"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1539"
+                stroke="#999"
+                stroke-width="1"
+                x1="539"
+                x2="539"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1559"
+                stroke="#999"
+                stroke-width="1"
+                x1="559"
+                x2="559"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1579"
+                stroke="#999"
+                stroke-width="1"
+                x1="579"
+                x2="579"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-majorTick"
+                data-bp="1599"
+                stroke="#555"
+                stroke-width="1"
+                x1="599"
+                x2="599"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1619"
+                stroke="#999"
+                stroke-width="1"
+                x1="619"
+                x2="619"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1639"
+                stroke="#999"
+                stroke-width="1"
+                x1="639"
+                x2="639"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1659"
+                stroke="#999"
+                stroke-width="1"
+                x1="659"
+                x2="659"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1679"
+                stroke="#999"
+                stroke-width="1"
+                x1="679"
+                x2="679"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-majorTick"
+                data-bp="1699"
+                stroke="#555"
+                stroke-width="1"
+                x1="699"
+                x2="699"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1719"
+                stroke="#999"
+                stroke-width="1"
+                x1="719"
+                x2="719"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1739"
+                stroke="#999"
+                stroke-width="1"
+                x1="739"
+                x2="739"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1759"
+                stroke="#999"
+                stroke-width="1"
+                x1="759"
+                x2="759"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1779"
+                stroke="#999"
+                stroke-width="1"
+                x1="779"
+                x2="779"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-majorTick"
+                data-bp="1799"
+                stroke="#555"
+                stroke-width="1"
+                x1="799"
+                x2="799"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1819"
+                stroke="#999"
+                stroke-width="1"
+                x1="819"
+                x2="819"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1839"
+                stroke="#999"
+                stroke-width="1"
+                x1="839"
+                x2="839"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1859"
+                stroke="#999"
+                stroke-width="1"
+                x1="859"
+                x2="859"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1879"
+                stroke="#999"
+                stroke-width="1"
+                x1="879"
+                x2="879"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-majorTick"
+                data-bp="1899"
+                stroke="#555"
+                stroke-width="1"
+                x1="899"
+                x2="899"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1919"
+                stroke="#999"
+                stroke-width="1"
+                x1="919"
+                x2="919"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1939"
+                stroke="#999"
+                stroke-width="1"
+                x1="939"
+                x2="939"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1959"
+                stroke="#999"
+                stroke-width="1"
+                x1="959"
+                x2="959"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="1979"
+                stroke="#999"
+                stroke-width="1"
+                x1="979"
+                x2="979"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-majorTick"
+                data-bp="1999"
+                stroke="#555"
+                stroke-width="1"
+                x1="999"
+                x2="999"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="2019"
+                stroke="#999"
+                stroke-width="1"
+                x1="1019"
+                x2="1019"
+                y1="0"
+                y2="4"
+              />
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="-4"
+                y="7"
               >
-                <div
-                  class="PileupRendering"
-                  style="position:relative;width:0;height:0"
-                >
-                  <canvas
-                    data-testid="prerendered_canvas_PileupRenderer"
-                    height="0"
-                    style="width:0;height:0;position:absolute;left:0;top:0"
-                    width="0"
-                  />
-                  <canvas
-                    class="highlightOverlayCanvas"
-                    height="0"
-                    style="position:absolute;left:0;top:0"
-                    width="0"
-                  />
-                </div>
-              </div>
-            </div>
+                1,000
+              </text>
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="96"
+                y="7"
+              >
+                1,100
+              </text>
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="196"
+                y="7"
+              >
+                1,200
+              </text>
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="296"
+                y="7"
+              >
+                1,300
+              </text>
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="396"
+                y="7"
+              >
+                1,400
+              </text>
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="496"
+                y="7"
+              >
+                1,500
+              </text>
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="596"
+                y="7"
+              >
+                1,600
+              </text>
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="696"
+                y="7"
+              >
+                1,700
+              </text>
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="796"
+                y="7"
+              >
+                1,800
+              </text>
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="896"
+                y="7"
+              >
+                1,900
+              </text>
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="996"
+                y="7"
+              >
+                2,000
+              </text>
+            </svg>
           </div>
           <div
             class="makeStyles-interRegionPaddingBlock"
             style="width: 1024px;"
           />
         </div>
+        <div
+          class="makeStyles-refLabel"
+          data-testid="refLabel-ctgA"
+          style="left: 0px; z-index: 1;"
+        >
+          ctgA
+        </div>
+        <div
+          class="makeStyles-refLabel"
+          data-testid="refLabel-ctgB"
+          style="left: 102px; z-index: 3;"
+        >
+          ctgB
+        </div>
       </div>
     </div>
     <div
-      class="makeStyles-horizontalHandle makeStyles-resizeHandle"
-      role="presentation"
-    />
-  </div>
-  <div
-    style="position: relative;"
-  >
-    <div
-      class="makeStyles-trackRenderingContainer"
-      data-testid="trackRenderingContainer-lgv-testConfig2"
-      role="presentation"
-      style="height: 20px;"
+      style="position: relative;"
     >
       <div
-        class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
-        style="position: absolute; z-index: 2; background-color: rgba(255, 255, 255, 0.8);"
-      >
-        <span
-          aria-hidden="true"
-          class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
-          data-testid="dragHandle-lgv-testConfig2"
-          draggable="true"
-        >
-          drag_indicator
-        </span>
-        <button
-          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-          tabindex="0"
-          title="close this track"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              close
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-        <span
-          class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
-        >
-          Bar Track
-        </span>
-        <button
-          aria-controls="simple-menu"
-          aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-          tabindex="0"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              more_vert
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-      </div>
-      <div
-        class="makeStyles-track"
-        data-testid="track-testConfig2"
+        class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
+        data-testid="trackRenderingContainer-lgv-testConfig"
         role="presentation"
+        style="height: 20px;"
       >
         <div
-          class="makeStyles-trackBlocks"
-          data-testid="Blockset"
-          style="left: -1024px;"
+          style="position: absolute; left: -1px;"
         >
           <div
-            class="makeStyles-interRegionPaddingBlock"
-            style="width: 1024px;"
-          />
-          <div
-            class="makeStyles-block"
-            style="width: 100px;"
+            class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
+            style="position: absolute; z-index: 2; background-color: rgba(255, 255, 255, 0.8);"
           >
-            <div
-              class="ssr-container"
-              data-html-size="328"
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
+              data-testid="dragHandle-lgv-testConfig"
+              draggable="true"
             >
-              <div
-                classname="ssr-container-inner"
+              drag_indicator
+            </span>
+            <button
+              class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+              tabindex="0"
+              title="close this track"
+              type="button"
+            >
+              <span
+                class="MuiIconButton-label"
               >
-                <div
-                  class="PileupRendering"
-                  style="position:relative;width:0;height:0"
+                <span
+                  aria-hidden="true"
+                  class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                 >
-                  <canvas
-                    data-testid="prerendered_canvas_PileupRenderer"
-                    height="0"
-                    style="width:0;height:0;position:absolute;left:0;top:0"
-                    width="0"
-                  />
-                  <canvas
-                    class="highlightOverlayCanvas"
-                    height="0"
-                    style="position:absolute;left:0;top:0"
-                    width="0"
-                  />
-                </div>
-              </div>
-            </div>
+                  close
+                </span>
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+            <span
+              class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+            >
+              Foo Track
+            </span>
+            <button
+              aria-controls="simple-menu"
+              aria-haspopup="true"
+              class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+              tabindex="0"
+              type="button"
+            >
+              <span
+                class="MuiIconButton-label"
+              >
+                <span
+                  aria-hidden="true"
+                  class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                >
+                  more_vert
+                </span>
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
           </div>
           <div
-            class="makeStyles-interRegionPaddingBlock"
-            style="width: 2px;"
-          />
-          <div
-            class="makeStyles-block"
-            style="width: 1000px;"
+            class="makeStyles-track"
+            data-testid="track-testConfig"
+            role="presentation"
           >
             <div
-              class="ssr-container"
-              data-html-size="328"
+              class="makeStyles-trackBlocks"
+              data-testid="Blockset"
+              style="left: -1024px;"
             >
               <div
-                classname="ssr-container-inner"
+                class="makeStyles-interRegionPaddingBlock"
+                style="width: 1024px;"
+              />
+              <div
+                class="makeStyles-block"
+                style="width: 100px;"
               >
                 <div
-                  class="PileupRendering"
-                  style="position:relative;width:0;height:0"
+                  class="ssr-container"
+                  data-html-size="328"
                 >
-                  <canvas
-                    data-testid="prerendered_canvas_PileupRenderer"
-                    height="0"
-                    style="width:0;height:0;position:absolute;left:0;top:0"
-                    width="0"
-                  />
-                  <canvas
-                    class="highlightOverlayCanvas"
-                    height="0"
-                    style="position:absolute;left:0;top:0"
-                    width="0"
-                  />
+                  <div
+                    classname="ssr-container-inner"
+                  >
+                    <div
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
+                    >
+                      <canvas
+                        data-testid="prerendered_canvas_PileupRenderer"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
+              <div
+                class="makeStyles-interRegionPaddingBlock"
+                style="width: 2px;"
+              />
+              <div
+                class="makeStyles-block"
+                style="width: 1000px;"
+              >
+                <div
+                  class="ssr-container"
+                  data-html-size="328"
+                >
+                  <div
+                    classname="ssr-container-inner"
+                  >
+                    <div
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
+                    >
+                      <canvas
+                        data-testid="prerendered_canvas_PileupRenderer"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="makeStyles-interRegionPaddingBlock"
+                style="width: 1024px;"
+              />
             </div>
           </div>
-          <div
-            class="makeStyles-interRegionPaddingBlock"
-            style="width: 1024px;"
-          />
         </div>
       </div>
+      <div
+        class="makeStyles-horizontalHandle makeStyles-resizeHandle"
+        role="presentation"
+      />
     </div>
     <div
-      class="makeStyles-horizontalHandle makeStyles-resizeHandle"
-      role="presentation"
-    />
+      style="position: relative;"
+    >
+      <div
+        class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
+        data-testid="trackRenderingContainer-lgv-testConfig2"
+        role="presentation"
+        style="height: 20px;"
+      >
+        <div
+          style="position: absolute; left: -1px;"
+        >
+          <div
+            class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
+            style="position: absolute; z-index: 2; background-color: rgba(255, 255, 255, 0.8);"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
+              data-testid="dragHandle-lgv-testConfig2"
+              draggable="true"
+            >
+              drag_indicator
+            </span>
+            <button
+              class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+              tabindex="0"
+              title="close this track"
+              type="button"
+            >
+              <span
+                class="MuiIconButton-label"
+              >
+                <span
+                  aria-hidden="true"
+                  class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                >
+                  close
+                </span>
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+            <span
+              class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+            >
+              Bar Track
+            </span>
+            <button
+              aria-controls="simple-menu"
+              aria-haspopup="true"
+              class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+              tabindex="0"
+              type="button"
+            >
+              <span
+                class="MuiIconButton-label"
+              >
+                <span
+                  aria-hidden="true"
+                  class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                >
+                  more_vert
+                </span>
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+          </div>
+          <div
+            class="makeStyles-track"
+            data-testid="track-testConfig2"
+            role="presentation"
+          >
+            <div
+              class="makeStyles-trackBlocks"
+              data-testid="Blockset"
+              style="left: -1024px;"
+            >
+              <div
+                class="makeStyles-interRegionPaddingBlock"
+                style="width: 1024px;"
+              />
+              <div
+                class="makeStyles-block"
+                style="width: 100px;"
+              >
+                <div
+                  class="ssr-container"
+                  data-html-size="328"
+                >
+                  <div
+                    classname="ssr-container-inner"
+                  >
+                    <div
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
+                    >
+                      <canvas
+                        data-testid="prerendered_canvas_PileupRenderer"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="makeStyles-interRegionPaddingBlock"
+                style="width: 2px;"
+              />
+              <div
+                class="makeStyles-block"
+                style="width: 1000px;"
+              >
+                <div
+                  class="ssr-container"
+                  data-html-size="328"
+                >
+                  <div
+                    classname="ssr-container-inner"
+                  >
+                    <div
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
+                    >
+                      <canvas
+                        data-testid="prerendered_canvas_PileupRenderer"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="makeStyles-interRegionPaddingBlock"
+                style="width: 1024px;"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="makeStyles-horizontalHandle makeStyles-resizeHandle"
+        role="presentation"
+      />
+    </div>
   </div>
 </div>
 `;

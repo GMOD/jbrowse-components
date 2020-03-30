@@ -111,9 +111,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
         <div
           class="makeStyles-viewContainer"
         >
-          <div
-            class="makeStyles-root"
-          >
+          <div>
             <div
               class="makeStyles-headerBar"
             >
@@ -374,64 +372,66 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               />
             </div>
             <div
-              class="makeStyles-rubberBandContainer"
-              data-testid="rubberband_container"
-              role="presentation"
-              style="height: 40px;"
+              class="makeStyles-tracksContainer"
             >
               <div
-                class="makeStyles-scaleBarContainer"
+                class="makeStyles-rubberBandContainer"
+                data-testid="rubberband_container"
+                role="presentation"
+                style="height: 40px;"
               >
                 <div
-                  class="makeStyles-scaleBar"
-                  style="left: -1024px; width: 2053px; height: 40px;"
+                  class="makeStyles-scaleBarContainer"
                 >
                   <div
-                    class="makeStyles-interRegionPaddingBlock"
-                    style="width: 1024px;"
-                  />
-                  <div
-                    class="makeStyles-elidedBlock"
-                    style="width: 5px;"
-                  />
-                  <div
-                    class="makeStyles-interRegionPaddingBlock"
-                    style="width: 1024px;"
-                  />
+                    class="makeStyles-scaleBar"
+                    style="left: -1024px; width: 2053px; height: 40px;"
+                  >
+                    <div
+                      class="makeStyles-interRegionPaddingBlock"
+                      style="width: 1024px;"
+                    />
+                    <div
+                      class="makeStyles-elidedBlock"
+                      style="width: 5px;"
+                    />
+                    <div
+                      class="makeStyles-interRegionPaddingBlock"
+                      style="width: 1024px;"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div
-              class="MuiContainer-root makeStyles-noTracksMessage MuiContainer-maxWidthLg"
-            >
-              <p
-                class="MuiTypography-root MuiTypography-body1"
+              <div
+                class="MuiPaper-root makeStyles-errorMessage MuiPaper-outlined MuiPaper-rounded"
               >
-                No tracks active.
-              </p>
-              <button
-                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
-                tabindex="0"
-                type="button"
-              >
-                <span
-                  class="MuiButton-label"
+                <p
+                  class="MuiTypography-root MuiTypography-body1"
                 >
-                  Select Tracks
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
+                  No tracks active.
+                </p>
+                <button
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+                  tabindex="0"
+                  type="button"
+                >
+                  <span
+                    class="MuiButton-label"
+                  >
+                    Select Tracks
+                  </span>
+                  <span
+                    class="MuiTouchRipple-root"
+                  />
+                </button>
+              </div>
             </div>
           </div>
         </div>
         <div
           class="makeStyles-viewContainer"
         >
-          <div
-            class="makeStyles-root"
-          >
+          <div>
             <div
               class="makeStyles-headerBar"
             >
@@ -692,55 +692,59 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               />
             </div>
             <div
-              class="makeStyles-rubberBandContainer"
-              data-testid="rubberband_container"
-              role="presentation"
-              style="height: 40px;"
+              class="makeStyles-tracksContainer"
             >
               <div
-                class="makeStyles-scaleBarContainer"
+                class="makeStyles-rubberBandContainer"
+                data-testid="rubberband_container"
+                role="presentation"
+                style="height: 40px;"
               >
                 <div
-                  class="makeStyles-scaleBar"
-                  style="left: -1024px; width: 2053px; height: 40px;"
+                  class="makeStyles-scaleBarContainer"
                 >
                   <div
-                    class="makeStyles-interRegionPaddingBlock"
-                    style="width: 1024px;"
-                  />
-                  <div
-                    class="makeStyles-elidedBlock"
-                    style="width: 5px;"
-                  />
-                  <div
-                    class="makeStyles-interRegionPaddingBlock"
-                    style="width: 1024px;"
-                  />
+                    class="makeStyles-scaleBar"
+                    style="left: -1024px; width: 2053px; height: 40px;"
+                  >
+                    <div
+                      class="makeStyles-interRegionPaddingBlock"
+                      style="width: 1024px;"
+                    />
+                    <div
+                      class="makeStyles-elidedBlock"
+                      style="width: 5px;"
+                    />
+                    <div
+                      class="makeStyles-interRegionPaddingBlock"
+                      style="width: 1024px;"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div
-              class="MuiContainer-root makeStyles-noTracksMessage MuiContainer-maxWidthLg"
-            >
-              <p
-                class="MuiTypography-root MuiTypography-body1"
+              <div
+                class="MuiPaper-root makeStyles-errorMessage MuiPaper-outlined MuiPaper-rounded"
               >
-                No tracks active.
-              </p>
-              <button
-                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
-                tabindex="0"
-                type="button"
-              >
-                <span
-                  class="MuiButton-label"
+                <p
+                  class="MuiTypography-root MuiTypography-body1"
                 >
-                  Select Tracks
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
+                  No tracks active.
+                </p>
+                <button
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+                  tabindex="0"
+                  type="button"
+                >
+                  <span
+                    class="MuiButton-label"
+                  >
+                    Select Tracks
+                  </span>
+                  <span
+                    class="MuiTouchRipple-root"
+                  />
+                </button>
+              </div>
             </div>
           </div>
         </div>
