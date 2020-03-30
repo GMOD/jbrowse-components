@@ -45,7 +45,7 @@ function Segments(props) {
             ? `rotate(180,${left + width / 2},${top + height / 2})`
             : undefined
         }
-        points={points}
+        points={points.toString()}
         stroke={selected ? emphasizedColor2 : color2}
       />
       {feature.get('subfeatures').map(subfeature => {

@@ -61,7 +61,7 @@ function Chevron(props) {
         [left + width - height / 2, top + height],
         [left, top + height],
         // [left + height / 2, top + height / 2],
-      ]}
+      ].toString()}
     />
   ) : (
     <polygon
@@ -71,7 +71,7 @@ function Chevron(props) {
         [left, top],
         [left + width, top + height / 2],
         [left, top + height],
-      ]}
+      ].toString()}
       stroke={selected ? emphasizedColor : color}
     />
     // <polyline

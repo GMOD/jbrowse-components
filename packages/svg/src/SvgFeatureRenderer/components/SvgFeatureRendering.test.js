@@ -10,10 +10,9 @@ import Rendering, { SvgMouseover, SvgSelected } from './SvgFeatureRendering'
 test('no features', () => {
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      region={{ refName: 'zonk', start: 0, end: 300 }}
+      region={{ refName: 'zonk', start: 0, end: 300, assemblyName: 'volvox' }}
       layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
+      features={new Map()}
       config={{}}
       bpPerPx={3}
     />,
@@ -25,12 +24,12 @@ test('no features', () => {
 test('one feature', () => {
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      region={{ refName: 'zonk', start: 0, end: 1000 }}
+      region={{ refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' }}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
       features={
-        new Map([['one', new SimpleFeature({ id: 'one', start: 1, end: 3 })]])
+        new Map([
+          ['one', new SimpleFeature({ id: 'one', data: { start: 1, end: 3 } })],
+        ])
       }
       config={SvgRendererConfigSchema.create({})}
       bpPerPx={3}
@@ -45,9 +44,7 @@ test('one feature (compact mode)', () => {
 
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      region={{ refName: 'zonk', start: 0, end: 1000 }}
+      region={{ refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' }}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
       features={
         new Map([
@@ -208,12 +205,12 @@ test('processed transcript (reducedRepresentation mode)', () => {
   })
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      region={{ refName: 'zonk', start: 0, end: 1000 }}
+      region={{ refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' }}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
       features={
-        new Map([['one', new SimpleFeature({ id: 'one', start: 1, end: 3 })]])
+        new Map([
+          ['one', new SimpleFeature({ id: 'one', data: { start: 1, end: 3 } })],
+        ])
       }
       config={config}
       bpPerPx={3}
@@ -226,9 +223,7 @@ test('processed transcript (reducedRepresentation mode)', () => {
 test('processed transcript', () => {
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      region={{ refName: 'zonk', start: 0, end: 1000 }}
+      region={{ refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' }}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
       features={
         new Map([
@@ -394,7 +389,12 @@ test('svg selected', () => {
         width={500}
         height={500}
         blockKey="block1"
-        region={{ refName: 'zonk', start: 0, end: 1000 }}
+        region={{
+          refName: 'zonk',
+          start: 0,
+          end: 1000,
+          assemblyName: 'volvox',
+        }}
         trackModel={{ blockLayoutFeatures, featureIdUnderMouse: 'one' }}
         config={SvgRendererConfigSchema.create({})}
         bpPerPx={3}
@@ -403,7 +403,12 @@ test('svg selected', () => {
         width={500}
         height={500}
         blockKey="block1"
-        region={{ refName: 'zonk', start: 0, end: 1000 }}
+        region={{
+          refName: 'zonk',
+          start: 0,
+          end: 1000,
+          assemblyName: 'volvox',
+        }}
         trackModel={{ blockLayoutFeatures, selectedFeatureId: 'one' }}
         config={SvgRendererConfigSchema.create({})}
         bpPerPx={3}

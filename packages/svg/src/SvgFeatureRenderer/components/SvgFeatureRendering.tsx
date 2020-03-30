@@ -1,18 +1,15 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { bpToPx, bpSpanPx } from '@gmod/jbrowse-core/util'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
-import ReactPropTypes from 'prop-types'
 import React, { useRef, useState, useCallback } from 'react'
 import { Tooltip } from '@gmod/jbrowse-core/ui'
 import FeatureGlyph from './FeatureGlyph'
 import { chooseGlyphComponent, layOut } from './util'
 
 const fontWidthScaleFactor = 0.6
-const renderingStyle = {
-  position: 'relative',
-}
 
 export const SvgSelected = observer(
   ({
@@ -95,7 +92,15 @@ export const SvgMouseover = observer(
   },
 )
 
-function RenderedFeatureGlyph(props) {
+function RenderedFeatureGlyph(props: {
+  feature: Feature
+  horizontallyFlipped: boolean
+  bpPerPx: number
+  region: IRegion
+  config: any
+  displayMode: string
+  layout: any
+}) {
   const {
     feature,
     horizontallyFlipped,
@@ -198,30 +203,9 @@ function RenderedFeatureGlyph(props) {
   )
 }
 
-RenderedFeatureGlyph.propTypes = {
-  layout: ReactPropTypes.shape({
-    addRect: ReactPropTypes.func.isRequired,
-    getTotalHeight: ReactPropTypes.func.isRequired,
-  }).isRequired,
-
-  displayMode: ReactPropTypes.string.isRequired,
-  region: CommonPropTypes.Region.isRequired,
-  bpPerPx: ReactPropTypes.number.isRequired,
-  horizontallyFlipped: ReactPropTypes.bool,
-  feature: ReactPropTypes.shape({
-    id: ReactPropTypes.func.isRequired,
-    get: ReactPropTypes.func.isRequired,
-  }).isRequired,
-  config: CommonPropTypes.ConfigSchema.isRequired,
-}
-
-RenderedFeatureGlyph.defaultProps = {
-  horizontallyFlipped: false,
-}
-
 const RenderedFeatures = observer(props => {
   const { layout, setHeight, features } = props
-  const featuresRendered = []
+  const featuresRendered: JSX.Element[] = []
   for (const feature of features.values()) {
     featuresRendered.push(
       <RenderedFeatureGlyph key={feature.id()} feature={feature} {...props} />,
@@ -230,44 +214,33 @@ const RenderedFeatures = observer(props => {
   setHeight(layout.getTotalHeight())
   return <>{featuresRendered}</>
 })
-RenderedFeatures.propTypes = {
-  features: ReactPropTypes.oneOfType([
-    ReactPropTypes.instanceOf(Map),
-    ReactPropTypes.arrayOf(ReactPropTypes.shape()),
-  ]),
-  layout: ReactPropTypes.shape({
-    addRect: ReactPropTypes.func.isRequired,
-    getTotalHeight: ReactPropTypes.func.isRequired,
-  }).isRequired,
-}
 
-RenderedFeatures.defaultProps = {
-  features: [],
-}
-
-function SvgFeatureRendering(props) {
+function SvgFeatureRendering(props: {
+  blockKey?: string
+  region: IRegion
+  bpPerPx: number
+  horizontallyFlipped?: boolean
+  features: Map<string, Feature>
+  trackModel?: any
+  layout: any
+  config: any
+  onMouseOut?: Function
+  onMouseDown?: Function
+  onMouseLeave?: Function
+  onMouseEnter?: Function
+  onMouseOver?: Function
+  onMouseMove?: Function
+  onMouseUp?: Function
+  onFeatureClick?: Function
+}) {
   const {
-    blockKey,
+    blockKey = '',
     region,
     bpPerPx,
-    horizontallyFlipped,
+    horizontallyFlipped = false,
     features,
-    trackModel,
+    trackModel = {},
     config,
-  } = props
-  const { configuration } = trackModel
-  const width = (region.end - region.start) / bpPerPx
-  const displayMode = readConfObject(config, 'displayMode')
-
-  const ref = useRef()
-  const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [localFeatureIdUnderMouse, setLocalFeatureIdUnderMouse] = useState()
-  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
-    false,
-  )
-  const [tooltipCoord, setTooltipCoord] = useState([0, 0])
-  const [height, setHeight] = useState(0)
-  const {
     onMouseOut,
     onMouseDown,
     onMouseLeave,
@@ -277,6 +250,20 @@ function SvgFeatureRendering(props) {
     onMouseUp,
     onFeatureClick,
   } = props
+  const { configuration } = trackModel
+  const width = (region.end - region.start) / bpPerPx
+  const displayMode = readConfObject(config, 'displayMode')
+
+  const ref = useRef<SVGSVGElement>(null)
+  const [mouseIsDown, setMouseIsDown] = useState(false)
+  const [localFeatureIdUnderMouse, setLocalFeatureIdUnderMouse] = useState<
+    undefined | string
+  >()
+  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
+    false,
+  )
+  const [tooltipCoord, setTooltipCoord] = useState([0, 0])
+  const [height, setHeight] = useState(0)
 
   const mouseDown = useCallback(
     event => {
@@ -390,7 +377,7 @@ function SvgFeatureRendering(props) {
   )
 
   return (
-    <div style={renderingStyle}>
+    <div style={{ position: 'relative' }}>
       <svg
         ref={ref}
         className="SvgFeatureRendering"
@@ -427,59 +414,6 @@ function SvgFeatureRendering(props) {
       ) : null}
     </div>
   )
-}
-
-SvgFeatureRendering.propTypes = {
-  layout: ReactPropTypes.shape({
-    addRect: ReactPropTypes.func.isRequired,
-    getTotalHeight: ReactPropTypes.func.isRequired,
-  }).isRequired,
-
-  region: CommonPropTypes.Region.isRequired,
-  bpPerPx: ReactPropTypes.number.isRequired,
-  horizontallyFlipped: ReactPropTypes.bool,
-  features: ReactPropTypes.oneOfType([
-    ReactPropTypes.instanceOf(Map),
-    ReactPropTypes.arrayOf(ReactPropTypes.shape()),
-  ]),
-  config: CommonPropTypes.ConfigSchema.isRequired,
-  trackModel: ReactPropTypes.shape({
-    configuration: ReactPropTypes.shape({}),
-    setFeatureIdUnderMouse: ReactPropTypes.func,
-    getFeatureOverlapping: ReactPropTypes.func,
-    selectedFeatureId: ReactPropTypes.string,
-    featureIdUnderMouse: ReactPropTypes.string,
-  }),
-
-  onMouseDown: ReactPropTypes.func,
-  onMouseUp: ReactPropTypes.func,
-  onMouseEnter: ReactPropTypes.func,
-  onMouseLeave: ReactPropTypes.func,
-  onMouseOver: ReactPropTypes.func,
-  onMouseOut: ReactPropTypes.func,
-  onMouseMove: ReactPropTypes.func,
-  onClick: ReactPropTypes.func,
-  onFeatureClick: ReactPropTypes.func,
-  blockKey: ReactPropTypes.string,
-}
-
-SvgFeatureRendering.defaultProps = {
-  horizontallyFlipped: false,
-
-  trackModel: {},
-
-  features: new Map(),
-  blockKey: undefined,
-
-  onMouseDown: undefined,
-  onMouseUp: undefined,
-  onMouseEnter: undefined,
-  onMouseLeave: undefined,
-  onMouseOver: undefined,
-  onMouseOut: undefined,
-  onMouseMove: undefined,
-  onClick: undefined,
-  onFeatureClick: undefined,
 }
 
 export default observer(SvgFeatureRendering)
