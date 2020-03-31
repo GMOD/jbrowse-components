@@ -7,6 +7,6 @@ export const configSchema = ConfigurationSchema(
   'GDCFilterConfigurationEditorDrawerWidget',
   {},
 )
-export const HeadingComponent = observer(({ model }) => {
+export const HeadingComponent = observer(() => {
   return 'GDC Filters'
 })

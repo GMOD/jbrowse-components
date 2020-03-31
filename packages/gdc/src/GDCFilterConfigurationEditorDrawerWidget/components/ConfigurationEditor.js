@@ -1,9 +1,3 @@
-import {
-  getTypeNamesFromExplicitlyTypedUnion,
-  isConfigurationSchemaType,
-  isConfigurationSlotType,
-} from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { iterMap } from '@gmod/jbrowse-core/util'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React from 'react'
@@ -24,6 +18,7 @@ import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import Tooltip from '@material-ui/core/Tooltip'
 
+// TODO: Convert these to use the GDC API
 const ssmFacets = [
   {
     name: 'consequence.transcript.annotation.polyphen_impact',
@@ -561,7 +556,7 @@ const Filter = observer(props => {
     target.adapter.filters.set(JSON.stringify(gdcFilters))
   }
 
-  const handleFilterDelete = event => {
+  const handleFilterDelete = () => {
     schema.deleteFilter(filterObject.id)
     updateTrack(schema.filters, schema.target)
   }
@@ -633,7 +628,7 @@ const Filter = observer(props => {
 const FilterList = observer(({ schema, type, facets }) => {
   const initialFilterSelection = facets[0].name
 
-  const handleClick = event => {
+  const handleClick = () => {
     schema.addFilter(uuidv4(), initialFilterSelection, type, '')
   }
 

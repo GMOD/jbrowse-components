@@ -1,5 +1,6 @@
 import { TrackControls } from '@gmod/jbrowse-core/ui'
 import Icon from '@material-ui/core/Icon'
+import { PropTypes } from 'mobx-react'
 
 import React from 'react'
 
@@ -15,4 +16,8 @@ export default function GDCTrackControls(props) {
       </button>
     </div>
   )
+}
+
+GDCTrackControls.propTypes = {
+  track: PropTypes.objectOrObservableObject.isRequired,
 }

@@ -107,8 +107,8 @@ export default class GDCFeature implements Feature {
    */
   createAffectedCaseCount() {
     if (this.featureType === 'mutation') {
-      this.gdcObject.numAffectedCasesInCohort = `${this.gdcObject.filteredOccurences.hits.numOfAffectedCasesInCohort}/${this.gdcObject.totalCasesInCohort}`
-      this.gdcObject.numAffectedCasesAcrossTheGDC = `${this.gdcObject.occurrence.hits.numOfAffectedCasesAcrossGDC}/${this.gdcObject.totalCasesInGDC}`
+      this.gdcObject.fractionAffectedCasesInCohort = `${this.gdcObject.filteredOccurences.hits.numOfAffectedCasesInCohort}/${this.gdcObject.totalCasesInCohort}`
+      this.gdcObject.fractionAffectedCasesAcrossTheGDC = `${this.gdcObject.occurrence.hits.numOfAffectedCasesAcrossGDC}/${this.gdcObject.totalCasesInGDC}`
 
       this.gdcObject.percentAffectedCasesInCohort = `${(
         (this.gdcObject.filteredOccurences.hits.numOfAffectedCasesInCohort /
@@ -186,7 +186,7 @@ export default class GDCFeature implements Feature {
         this.gdcObject.geneId,
         this.ENSEMBL_LINK,
       )
-      this.gdcObject.canonical_transcript_id = this.convertStringToLink(
+      this.gdcObject.canonicalTranscriptId = this.convertStringToLink(
         this.gdcObject.canonicalTranscriptId,
         this.gdcObject.canonicalTranscriptId,
         this.ENSEMBL_LINK,
@@ -204,26 +204,26 @@ export default class GDCFeature implements Feature {
         this.HGNC_LINK,
       )
 
-      this.gdcObject.uniprotkb_swissprot = this.convertStringToLink(
+      this.gdcObject.uniprotkbSwissprot = this.convertStringToLink(
         this.gdcObject.externalDbIds.uniprotkbSwissprot,
         this.gdcObject.externalDbIds.uniprotkbSwissprot,
         this.UNI_LINK,
       )
 
-      this.gdcObject.ncbi_gene = this.convertStringToLink(
+      this.gdcObject.ncbiGene = this.convertStringToLink(
         this.gdcObject.externalDbIds.entrezGene,
         this.gdcObject.externalDbIds.entrezGene,
         this.NCBI_LINK,
       )
 
-      this.gdcObject.omim_gene = this.convertStringToLink(
+      this.gdcObject.omimGene = this.convertStringToLink(
         this.gdcObject.externalDbIds.omimGene,
         this.gdcObject.externalDbIds.omimGene,
         this.OMIM_LINK,
       )
 
       // Clear some elements that have been converted
-      this.gdcObject.gene_id = undefined
+      this.gdcObject.geneId = undefined
       this.gdcObject.externalDbIds.uniprotkbSwissprot = undefined
       this.gdcObject.externalDbIds.hgnc = undefined
       this.gdcObject.externalDbIds.entrezGene = undefined

@@ -1,7 +1,4 @@
-import {
-  ConfigurationReference,
-  getConf,
-} from '@gmod/jbrowse-core/configuration'
+import { ConfigurationReference } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { getSession } from '@gmod/jbrowse-core/util'
 import {

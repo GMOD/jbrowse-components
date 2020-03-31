@@ -149,7 +149,7 @@ export default class extends BaseAdapter {
     const body = {
       query: ssmQuery,
       variables: {
-        size: this.size ? this.size : 1000,
+        size: this.size ? this.size : 5000,
         offset: 0,
         filters: combinedFilters,
         score: 'occurrence.case.project.project_id',
@@ -187,7 +187,7 @@ export default class extends BaseAdapter {
       query: geneQuery,
       variables: {
         filters: combinedFilters,
-        size: this.size ? this.size : 1000,
+        size: this.size ? this.size : 5000,
         offset: 0,
         score: 'case.project.project_id',
       },
