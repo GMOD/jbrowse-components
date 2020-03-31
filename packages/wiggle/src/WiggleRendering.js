@@ -4,13 +4,12 @@ import ReactPropTypes from 'prop-types'
 import React, { useState, useRef } from 'react'
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
 import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
-import { useTheme } from '@material-ui/core/styles'
+import MUITooltip from '@material-ui/core/Tooltip'
 import './WiggleRendering.scss'
 
 const toP = s => parseFloat(s.toPrecision(6))
 
 function Tooltip({ offsetX, feature }) {
-  const theme = useTheme()
   const info = feature.get('snpinfo') ? feature.get('snpinfo') : null
   const total = info ? info[info.map(e => e.base).indexOf('total')].score : 0
   const condId = info && info.length >= 5 ? 'smallInfo' : 'info' // readjust table size to fit all
@@ -40,40 +39,49 @@ function Tooltip({ offsetX, feature }) {
       })
     : null
 
+  const contents = info ? (
+    <div id="info">
+      <table>
+        <thead>
+          <tr>
+            <th id={condId}>Base</th>
+            <th id={condId}>Count</th>
+            <th id={condId}>% of Total</th>
+            <th id={condId}>Strands</th>
+          </tr>
+        </thead>
+        <tbody>{renderTableData}</tbody>
+      </table>
+    </div>
+  ) : feature.get('maxScore') !== undefined ? (
+    <div>
+      Summary
+      <br />
+      Max: {toP(feature.get('maxScore'))}
+      <br />
+      Avg: {toP(feature.get('score'))}
+      <br />
+      Min: {toP(feature.get('minScore'))}
+    </div>
+  ) : (
+    toP(feature.get('score'))
+  )
+
   return (
     <>
-      <div
-        className="hoverLabel"
-        style={{ left: `${offsetX}px`, zIndex: theme.zIndex.tooltip }}
-      >
-        {info ? (
-          <div id="info">
-            <table>
-              <thead>
-                <tr>
-                  <th id={condId}>Base</th>
-                  <th id={condId}>Count</th>
-                  <th id={condId}>% of Total</th>
-                  <th id={condId}>Strands</th>
-                </tr>
-              </thead>
-              <tbody>{renderTableData}</tbody>
-            </table>
-          </div>
-        ) : feature.get('maxScore') !== undefined ? (
-          <div>
-            Summary
-            <br />
-            Max: {toP(feature.get('maxScore'))}
-            <br />
-            Avg: {toP(feature.get('score'))}
-            <br />
-            Min: {toP(feature.get('minScore'))}
-          </div>
-        ) : (
-          toP(feature.get('score'))
-        )}
-      </div>
+      <MUITooltip title={contents} placement="right-start" open>
+        <div
+          className="hoverLabel"
+          style={{
+            left: `${offsetX}px`,
+            zIndex: 10000,
+            width: 1,
+            height: 100,
+          }}
+        >
+          {' '}
+        </div>
+      </MUITooltip>
       <div className="hoverVertical" style={{ left: `${offsetX}px` }} />
     </>
   )
