@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
 import { LinearGenomeViewStateModel, SCALE_BAR_HEIGHT } from '..'
-import Rubberband from './Rubberband'
+import RubberBand from './RubberBand'
 import ScaleBar from './ScaleBar'
 import VerticalGuides from './VerticalGuides'
 
@@ -12,6 +12,10 @@ const useStyles = makeStyles(theme => ({
     position: 'relative',
     borderRadius: theme.shape.borderRadius,
     overflow: 'hidden',
+  },
+  spacer: {
+    position: 'relative',
+    height: 3,
   },
 }))
 
@@ -111,10 +115,15 @@ function TracksContainer({
       onMouseLeave={mouseLeave}
     >
       <VerticalGuides model={model}>
-        <Rubberband height={SCALE_BAR_HEIGHT} model={model}>
-          <ScaleBar model={model} height={SCALE_BAR_HEIGHT} />
-        </Rubberband>
-        {children}
+        <RubberBand
+          model={model}
+          ControlComponent={
+            <ScaleBar model={model} style={{ height: SCALE_BAR_HEIGHT }} />
+          }
+        >
+          <div className={classes.spacer} />
+          {children}
+        </RubberBand>
       </VerticalGuides>
     </div>
   )

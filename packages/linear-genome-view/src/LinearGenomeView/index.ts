@@ -57,7 +57,7 @@ const validBpPerPx = [
 ].sort((a, b) => a - b)
 
 export const HEADER_BAR_HEIGHT = 50
-export const SCALE_BAR_HEIGHT = 40
+export const SCALE_BAR_HEIGHT = 15
 export const RESIZE_HANDLE_HEIGHT = 3
 
 export function stateModelFactory(pluginManager: any) {

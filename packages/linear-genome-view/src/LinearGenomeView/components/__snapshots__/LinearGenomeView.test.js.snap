@@ -324,125 +324,50 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       />
     </div>
     <div
-      class="makeStyles-rubberBandContainer"
-      data-testid="rubberband_container"
+      class="MuiPaper-root makeStyles-scaleBarContainer makeStyles-rubberBandControl MuiPaper-outlined MuiPaper-rounded"
+      data-testid="rubberBand_controls"
       role="presentation"
-      style="height: 40px;"
+      style="height: 15px;"
     >
       <div
-        class="makeStyles-scaleBarContainer"
+        class="makeStyles-scaleBar"
+        style="left: -1025px; width: 2148px; height: 15px;"
       >
         <div
-          class="makeStyles-scaleBar"
-          style="left: -1024px; width: 2148px; height: 40px;"
+          class="makeStyles-boundaryPaddingBlock"
+          style="background: none; width: 1024px;"
+        />
+        <div
+          class="makeStyles-block"
+          style="width: 100px;"
         >
           <div
-            class="makeStyles-boundaryPaddingBlock"
-            style="background: none; width: 1024px;"
-          />
-          <div
-            class="makeStyles-block"
-            style="width: 100px;"
+            class="makeStyles-tick"
+            style="left: -1px;"
           >
-            <svg
-              height="40"
-              width="100"
+            <p
+              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
             >
-              <line
-                class="makeStyles-minorTick"
-                data-bp="-1"
-                stroke="#999"
-                stroke-width="1"
-                x1="-1"
-                x2="-1"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="19"
-                stroke="#999"
-                stroke-width="1"
-                x1="19"
-                x2="19"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="39"
-                stroke="#999"
-                stroke-width="1"
-                x1="39"
-                x2="39"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="59"
-                stroke="#999"
-                stroke-width="1"
-                x1="59"
-                x2="59"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="79"
-                stroke="#999"
-                stroke-width="1"
-                x1="79"
-                x2="79"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-majorTick"
-                data-bp="99"
-                stroke="#555"
-                stroke-width="1"
-                x1="99"
-                x2="99"
-                y1="0"
-                y2="6"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="119"
-                stroke="#999"
-                stroke-width="1"
-                x1="119"
-                x2="119"
-                y1="0"
-                y2="4"
-              />
-              <text
-                class="makeStyles-majorTickLabel"
-                dominant-baseline="hanging"
-                style="font-size: 11px;"
-                x="96"
-                y="7"
-              >
-                100
-              </text>
-            </svg>
+              0
+            </p>
           </div>
-          <div
-            class="makeStyles-boundaryPaddingBlock"
-            style="background: none; width: 1024px;"
-          />
         </div>
         <div
-          class="makeStyles-refLabel"
-          data-testid="refLabel-ctgA"
-          style="left: 0px; z-index: 1;"
-        >
-          ctgA
-        </div>
+          class="makeStyles-boundaryPaddingBlock"
+          style="background: none; width: 1024px;"
+        />
       </div>
+      <p
+        class="MuiTypography-root makeStyles-refLabel MuiTypography-body1"
+        data-testid="refLabel-ctgA"
+        style="left: -1px; padding-left: 1px; z-index: 1;"
+      >
+        ctgA
+      </p>
     </div>
+    <div
+      class="makeStyles-spacer"
+    />
     <div
       class="makeStyles-root"
     >
@@ -1336,711 +1261,126 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       />
     </div>
     <div
-      class="makeStyles-rubberBandContainer"
-      data-testid="rubberband_container"
+      class="MuiPaper-root makeStyles-scaleBarContainer makeStyles-rubberBandControl MuiPaper-outlined MuiPaper-rounded"
+      data-testid="rubberBand_controls"
       role="presentation"
-      style="height: 40px;"
+      style="height: 15px;"
     >
       <div
-        class="makeStyles-scaleBarContainer"
+        class="makeStyles-scaleBar"
+        style="left: -1025px; width: 3150px; height: 15px;"
       >
         <div
-          class="makeStyles-scaleBar"
-          style="left: -1024px; width: 3150px; height: 40px;"
+          class="makeStyles-boundaryPaddingBlock"
+          style="background: none; width: 1024px;"
+        />
+        <div
+          class="makeStyles-block"
+          style="width: 100px;"
         >
           <div
-            class="makeStyles-boundaryPaddingBlock"
-            style="background: none; width: 1024px;"
-          />
-          <div
-            class="makeStyles-block"
-            style="width: 100px;"
+            class="makeStyles-tick"
+            style="left: -1px;"
           >
-            <svg
-              height="40"
-              width="100"
+            <p
+              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
             >
-              <line
-                class="makeStyles-minorTick"
-                data-bp="-1"
-                stroke="#999"
-                stroke-width="1"
-                x1="-1"
-                x2="-1"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="19"
-                stroke="#999"
-                stroke-width="1"
-                x1="19"
-                x2="19"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="39"
-                stroke="#999"
-                stroke-width="1"
-                x1="39"
-                x2="39"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="59"
-                stroke="#999"
-                stroke-width="1"
-                x1="59"
-                x2="59"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="79"
-                stroke="#999"
-                stroke-width="1"
-                x1="79"
-                x2="79"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-majorTick"
-                data-bp="99"
-                stroke="#555"
-                stroke-width="1"
-                x1="99"
-                x2="99"
-                y1="0"
-                y2="6"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="119"
-                stroke="#999"
-                stroke-width="1"
-                x1="119"
-                x2="119"
-                y1="0"
-                y2="4"
-              />
-              <text
-                class="makeStyles-majorTickLabel"
-                dominant-baseline="hanging"
-                style="font-size: 11px;"
-                x="96"
-                y="7"
-              >
-                100
-              </text>
-            </svg>
+              0
+            </p>
           </div>
-          <div
-            class="makeStyles-interRegionPaddingBlock"
-            style="background: none; width: 2px;"
-          />
-          <div
-            class="makeStyles-block"
-            style="width: 1000px;"
-          >
-            <svg
-              height="40"
-              width="1000"
-            >
-              <line
-                class="makeStyles-minorTick"
-                data-bp="999"
-                stroke="#999"
-                stroke-width="1"
-                x1="-1"
-                x2="-1"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1019"
-                stroke="#999"
-                stroke-width="1"
-                x1="19"
-                x2="19"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1039"
-                stroke="#999"
-                stroke-width="1"
-                x1="39"
-                x2="39"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1059"
-                stroke="#999"
-                stroke-width="1"
-                x1="59"
-                x2="59"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1079"
-                stroke="#999"
-                stroke-width="1"
-                x1="79"
-                x2="79"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-majorTick"
-                data-bp="1099"
-                stroke="#555"
-                stroke-width="1"
-                x1="99"
-                x2="99"
-                y1="0"
-                y2="6"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1119"
-                stroke="#999"
-                stroke-width="1"
-                x1="119"
-                x2="119"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1139"
-                stroke="#999"
-                stroke-width="1"
-                x1="139"
-                x2="139"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1159"
-                stroke="#999"
-                stroke-width="1"
-                x1="159"
-                x2="159"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1179"
-                stroke="#999"
-                stroke-width="1"
-                x1="179"
-                x2="179"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1199"
-                stroke="#999"
-                stroke-width="1"
-                x1="199"
-                x2="199"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1219"
-                stroke="#999"
-                stroke-width="1"
-                x1="219"
-                x2="219"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1239"
-                stroke="#999"
-                stroke-width="1"
-                x1="239"
-                x2="239"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1259"
-                stroke="#999"
-                stroke-width="1"
-                x1="259"
-                x2="259"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1279"
-                stroke="#999"
-                stroke-width="1"
-                x1="279"
-                x2="279"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-majorTick"
-                data-bp="1299"
-                stroke="#555"
-                stroke-width="1"
-                x1="299"
-                x2="299"
-                y1="0"
-                y2="6"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1319"
-                stroke="#999"
-                stroke-width="1"
-                x1="319"
-                x2="319"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1339"
-                stroke="#999"
-                stroke-width="1"
-                x1="339"
-                x2="339"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1359"
-                stroke="#999"
-                stroke-width="1"
-                x1="359"
-                x2="359"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1379"
-                stroke="#999"
-                stroke-width="1"
-                x1="379"
-                x2="379"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1399"
-                stroke="#999"
-                stroke-width="1"
-                x1="399"
-                x2="399"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1419"
-                stroke="#999"
-                stroke-width="1"
-                x1="419"
-                x2="419"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1439"
-                stroke="#999"
-                stroke-width="1"
-                x1="439"
-                x2="439"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1459"
-                stroke="#999"
-                stroke-width="1"
-                x1="459"
-                x2="459"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1479"
-                stroke="#999"
-                stroke-width="1"
-                x1="479"
-                x2="479"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-majorTick"
-                data-bp="1499"
-                stroke="#555"
-                stroke-width="1"
-                x1="499"
-                x2="499"
-                y1="0"
-                y2="6"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1519"
-                stroke="#999"
-                stroke-width="1"
-                x1="519"
-                x2="519"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1539"
-                stroke="#999"
-                stroke-width="1"
-                x1="539"
-                x2="539"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1559"
-                stroke="#999"
-                stroke-width="1"
-                x1="559"
-                x2="559"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1579"
-                stroke="#999"
-                stroke-width="1"
-                x1="579"
-                x2="579"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1599"
-                stroke="#999"
-                stroke-width="1"
-                x1="599"
-                x2="599"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1619"
-                stroke="#999"
-                stroke-width="1"
-                x1="619"
-                x2="619"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1639"
-                stroke="#999"
-                stroke-width="1"
-                x1="639"
-                x2="639"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1659"
-                stroke="#999"
-                stroke-width="1"
-                x1="659"
-                x2="659"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1679"
-                stroke="#999"
-                stroke-width="1"
-                x1="679"
-                x2="679"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-majorTick"
-                data-bp="1699"
-                stroke="#555"
-                stroke-width="1"
-                x1="699"
-                x2="699"
-                y1="0"
-                y2="6"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1719"
-                stroke="#999"
-                stroke-width="1"
-                x1="719"
-                x2="719"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1739"
-                stroke="#999"
-                stroke-width="1"
-                x1="739"
-                x2="739"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1759"
-                stroke="#999"
-                stroke-width="1"
-                x1="759"
-                x2="759"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1779"
-                stroke="#999"
-                stroke-width="1"
-                x1="779"
-                x2="779"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1799"
-                stroke="#999"
-                stroke-width="1"
-                x1="799"
-                x2="799"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1819"
-                stroke="#999"
-                stroke-width="1"
-                x1="819"
-                x2="819"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1839"
-                stroke="#999"
-                stroke-width="1"
-                x1="839"
-                x2="839"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1859"
-                stroke="#999"
-                stroke-width="1"
-                x1="859"
-                x2="859"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1879"
-                stroke="#999"
-                stroke-width="1"
-                x1="879"
-                x2="879"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-majorTick"
-                data-bp="1899"
-                stroke="#555"
-                stroke-width="1"
-                x1="899"
-                x2="899"
-                y1="0"
-                y2="6"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1919"
-                stroke="#999"
-                stroke-width="1"
-                x1="919"
-                x2="919"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1939"
-                stroke="#999"
-                stroke-width="1"
-                x1="939"
-                x2="939"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1959"
-                stroke="#999"
-                stroke-width="1"
-                x1="959"
-                x2="959"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1979"
-                stroke="#999"
-                stroke-width="1"
-                x1="979"
-                x2="979"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="1999"
-                stroke="#999"
-                stroke-width="1"
-                x1="999"
-                x2="999"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="makeStyles-minorTick"
-                data-bp="2019"
-                stroke="#999"
-                stroke-width="1"
-                x1="1019"
-                x2="1019"
-                y1="0"
-                y2="4"
-              />
-              <text
-                class="makeStyles-majorTickLabel"
-                dominant-baseline="hanging"
-                style="font-size: 11px;"
-                x="96"
-                y="7"
-              >
-                1,100
-              </text>
-              <text
-                class="makeStyles-majorTickLabel"
-                dominant-baseline="hanging"
-                style="font-size: 11px;"
-                x="296"
-                y="7"
-              >
-                1,300
-              </text>
-              <text
-                class="makeStyles-majorTickLabel"
-                dominant-baseline="hanging"
-                style="font-size: 11px;"
-                x="496"
-                y="7"
-              >
-                1,500
-              </text>
-              <text
-                class="makeStyles-majorTickLabel"
-                dominant-baseline="hanging"
-                style="font-size: 11px;"
-                x="696"
-                y="7"
-              >
-                1,700
-              </text>
-              <text
-                class="makeStyles-majorTickLabel"
-                dominant-baseline="hanging"
-                style="font-size: 11px;"
-                x="896"
-                y="7"
-              >
-                1,900
-              </text>
-            </svg>
-          </div>
-          <div
-            class="makeStyles-boundaryPaddingBlock"
-            style="background: none; width: 1024px;"
-          />
         </div>
         <div
-          class="makeStyles-refLabel"
-          data-testid="refLabel-ctgA"
-          style="left: 0px; z-index: 1;"
+          class="makeStyles-interRegionPaddingBlock"
+          style="background: none; width: 2px;"
+        />
+        <div
+          class="makeStyles-block"
+          style="width: 1000px;"
         >
-          ctgA
+          <div
+            class="makeStyles-tick"
+            style="left: -1px;"
+          >
+            <p
+              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+            >
+              1,000
+            </p>
+          </div>
+          <div
+            class="makeStyles-tick"
+            style="left: 199px;"
+          >
+            <p
+              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+            >
+              1,200
+            </p>
+          </div>
+          <div
+            class="makeStyles-tick"
+            style="left: 399px;"
+          >
+            <p
+              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+            >
+              1,400
+            </p>
+          </div>
+          <div
+            class="makeStyles-tick"
+            style="left: 599px;"
+          >
+            <p
+              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+            >
+              1,600
+            </p>
+          </div>
+          <div
+            class="makeStyles-tick"
+            style="left: 799px;"
+          >
+            <p
+              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+            >
+              1,800
+            </p>
+          </div>
+          <div
+            class="makeStyles-tick"
+            style="left: 999px;"
+          >
+            <p
+              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+            >
+              2,000
+            </p>
+          </div>
         </div>
         <div
-          class="makeStyles-refLabel"
-          data-testid="refLabel-ctgB"
-          style="left: 102px; z-index: 3;"
-        >
-          ctgB
-        </div>
+          class="makeStyles-boundaryPaddingBlock"
+          style="background: none; width: 1024px;"
+        />
       </div>
+      <p
+        class="MuiTypography-root makeStyles-refLabel MuiTypography-body1"
+        data-testid="refLabel-ctgA"
+        style="left: -1px; padding-left: 1px; z-index: 1;"
+      >
+        ctgA
+      </p>
+      <p
+        class="MuiTypography-root makeStyles-refLabel MuiTypography-body1"
+        data-testid="refLabel-ctgB"
+        style="left: 101px; padding-left: 1px; z-index: 3;"
+      >
+        ctgB
+      </p>
     </div>
+    <div
+      class="makeStyles-spacer"
+    />
     <div
       class="makeStyles-root"
     >
