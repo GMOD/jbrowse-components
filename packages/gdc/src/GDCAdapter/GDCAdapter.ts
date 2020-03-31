@@ -81,12 +81,12 @@ export default class extends BaseAdapter {
               start,
               end,
             )
-            idField = 'ssm_id'
+            idField = 'ssmId'
             break
           }
           case 'gene': {
             query = this.createGeneQuery(refName.replace(/chr/, ''), start, end)
-            idField = 'gene_id'
+            idField = 'geneId'
             break
           }
           default: {
@@ -103,15 +103,22 @@ export default class extends BaseAdapter {
         )
         const data = await response.json()
         const queryResults = data.data.viewer.explore.features.hits.edges
-        const totalCaseCount = data.data.viewer.explore.cases.hits.total
-        const filteredCaseCount =
-          data.data.viewer.explore.filteredCases.hits.total
+        const totalCaseCount = data.data.viewer.explore.cases
+          ? data.data.viewer.explore.cases.hits.total
+          : undefined
+        const filteredCaseCount = data.data.viewer.explore.filteredCases
+          ? data.data.viewer.explore.filteredCases.hits.total
+          : undefined
 
         for (const hit of queryResults) {
           if (hit) {
             const gdcObject = hit.node
-            gdcObject.totalCasesInCohort = filteredCaseCount
-            gdcObject.totalCasesInGDC = totalCaseCount
+            if (filteredCaseCount) {
+              gdcObject.totalCasesInCohort = filteredCaseCount
+            }
+            if (totalCaseCount) {
+              gdcObject.totalCasesInGDC = totalCaseCount
+            }
             const feature = new GDCFeature({
               gdcObject,
               parser,
@@ -137,8 +144,7 @@ export default class extends BaseAdapter {
    * @param end end position
    */
   private createMutationQuery(ref: string, start: number, end: number) {
-    const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $ssmFilter: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { cases { hits(first: 0, filters: $ssmFilter) { total } } filteredCases: cases { hits(first: 0, filters: $filters) { total } } features: ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { score start_position end_position mutation_type cosmic_id reference_allele ncbi_build genomic_dna_change mutation_subtype ssm_id chromosome filteredOccurences: occurrence { hits(first: 0, filters: $filters) { numOfAffectedCasesInCohort: total } } occurrence { hits(first: 0, filters: $ssmFilter) { numOfAffectedCasesAcrossGDC: total } } } } } } } } }`
-    // const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { features: ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { start_position end_position mutation_type cosmic_id reference_allele ncbi_build score genomic_dna_change mutation_subtype ssm_id chromosome consequence { hits { edges { node { transcript { is_canonical annotation { vep_impact polyphen_impact polyphen_score sift_score sift_impact hgvsc } consequence_type gene { gene_id symbol gene_strand } aa_change transcript_id } id } } } } } } } } } } }`
+    const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $ssmFilter: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { cases { hits(first: 0, filters: $ssmFilter) { total } } filteredCases: cases { hits(first: 0, filters: $filters) { total } } features: ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { score startPosition: start_position endPosition: end_position mutationType: mutation_type cosmicId: cosmic_id referenceAllele: reference_allele ncbiBuild: ncbi_build genomicDnaChange: genomic_dna_change mutationSubtype: mutation_subtype ssmId: ssm_id chromosome filteredOccurences: occurrence { hits(first: 0, filters: $filters) { numOfAffectedCasesInCohort: total } } occurrence { hits(first: 0, filters: $ssmFilter) { numOfAffectedCasesAcrossGDC: total } } } } } } } } }`
     const combinedFilters = this.getFilterQuery(ref, start, end)
     const body = {
       query: ssmQuery,
@@ -175,7 +181,7 @@ export default class extends BaseAdapter {
    * @param end end position
    */
   private createGeneQuery(ref: string, start: number, end: number) {
-    const geneQuery = `query genesQuery( $filters: FiltersArgument $size: Int $offset: Int $score: String ) { viewer { explore { features: genes { hits(first: $size, offset: $offset, filters: $filters, score: $score) { total edges { node { gene_id id gene_strand synonyms symbol name gene_start gene_end gene_chromosome description canonical_transcript_id external_db_ids { hgnc omim_gene uniprotkb_swissprot entrez_gene } biotype is_cancer_gene_census } } } } } } }`
+    const geneQuery = `query genesQuery( $filters: FiltersArgument $size: Int $offset: Int $score: String ) { viewer { explore { features: genes { hits(first: $size, offset: $offset, filters: $filters, score: $score) { total edges { node { geneId: gene_id id geneStrand: gene_strand synonyms symbol name geneStart: gene_start geneEnd: gene_end geneChromosome: gene_chromosome description canonicalTranscriptId: canonical_transcript_id externalDbIds: external_db_ids { hgnc omimGene: omim_gene uniprotkbSwissprot: uniprotkb_swissprot entrezGene: entrez_gene } biotype isCancerGeneCensus: is_cancer_gene_census } } } } } } }`
     const combinedFilters = this.getFilterQuery(ref, start, end)
     const body = {
       query: geneQuery,

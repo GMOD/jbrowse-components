@@ -84,16 +84,16 @@ export default class GDCFeature implements Feature {
     // Defaults to mutation values
     const featureData: FeatureData = {
       refName: gdcObject.chromosome,
-      type: gdcObject.mutation_type,
-      start: gdcObject.start_position,
-      end: gdcObject.end_position,
+      type: gdcObject.mutationType,
+      start: gdcObject.startPosition,
+      end: gdcObject.endPosition,
     }
 
     switch (featureType) {
       case 'gene': {
-        featureData.start = gdcObject.gene_start
-        featureData.end = gdcObject.gene_end
-        featureData.refName = gdcObject.gene_chromosome
+        featureData.start = gdcObject.geneStart
+        featureData.end = gdcObject.geneEnd
+        featureData.refName = gdcObject.geneChromosome
         featureData.type = gdcObject.biotype
         break
       }
@@ -167,67 +167,67 @@ export default class GDCFeature implements Feature {
    */
   createLinksToRemoteSites(): void {
     if (this.featureType === 'mutation') {
-      this.gdcObject.ssm_id = this.convertStringToLink(
-        this.gdcObject.ssm_id,
-        this.gdcObject.ssm_id,
+      this.gdcObject.ssmId = this.convertStringToLink(
+        this.gdcObject.ssmId,
+        this.gdcObject.ssmId,
         `${this.GDC_LINK}ssms/`,
       )
-      this.gdcObject.cosmic_id = this.convertCosmicIdsToLinks(
-        this.gdcObject.cosmic_id,
+      this.gdcObject.cosmicId = this.convertCosmicIdsToLinks(
+        this.gdcObject.cosmicId,
       )
     } else if (this.featureType === 'gene') {
       this.gdcObject.gdc = this.convertStringToLink(
-        this.gdcObject.gene_id,
-        this.gdcObject.gene_id,
+        this.gdcObject.geneId,
+        this.gdcObject.geneId,
         `${this.GDC_LINK}genes/`,
       )
       this.gdcObject.ensembl = this.convertStringToLink(
-        this.gdcObject.gene_id,
-        this.gdcObject.gene_id,
+        this.gdcObject.geneId,
+        this.gdcObject.geneId,
         this.ENSEMBL_LINK,
       )
       this.gdcObject.canonical_transcript_id = this.convertStringToLink(
-        this.gdcObject.canonical_transcript_id,
-        this.gdcObject.canonical_transcript_id,
+        this.gdcObject.canonicalTranscriptId,
+        this.gdcObject.canonicalTranscriptId,
         this.ENSEMBL_LINK,
       )
 
       this.gdcObject.hgnc = this.convertStringToLink(
-        this.gdcObject.external_db_ids.hgnc,
-        this.gdcObject.external_db_ids.hgnc,
+        this.gdcObject.externalDbIds.hgnc,
+        this.gdcObject.externalDbIds.hgnc,
         this.HGNC_LINK,
       )
 
       this.gdcObject.hgnc = this.convertStringToLink(
-        this.gdcObject.external_db_ids.hgnc,
-        this.gdcObject.external_db_ids.hgnc,
+        this.gdcObject.externalDbIds.hgnc,
+        this.gdcObject.externalDbIds.hgnc,
         this.HGNC_LINK,
       )
 
       this.gdcObject.uniprotkb_swissprot = this.convertStringToLink(
-        this.gdcObject.external_db_ids.uniprotkb_swissprot,
-        this.gdcObject.external_db_ids.uniprotkb_swissprot,
+        this.gdcObject.externalDbIds.uniprotkbSwissprot,
+        this.gdcObject.externalDbIds.uniprotkbSwissprot,
         this.UNI_LINK,
       )
 
       this.gdcObject.ncbi_gene = this.convertStringToLink(
-        this.gdcObject.external_db_ids.entrez_gene,
-        this.gdcObject.external_db_ids.entrez_gene,
+        this.gdcObject.externalDbIds.entrezGene,
+        this.gdcObject.externalDbIds.entrezGene,
         this.NCBI_LINK,
       )
 
       this.gdcObject.omim_gene = this.convertStringToLink(
-        this.gdcObject.external_db_ids.omim_gene,
-        this.gdcObject.external_db_ids.omim_gene,
+        this.gdcObject.externalDbIds.omimGene,
+        this.gdcObject.externalDbIds.omimGene,
         this.OMIM_LINK,
       )
 
       // Clear some elements that have been converted
       this.gdcObject.gene_id = undefined
-      this.gdcObject.external_db_ids.uniprotkb_swissprot = undefined
-      this.gdcObject.external_db_ids.hgnc = undefined
-      this.gdcObject.external_db_ids.entrez_gene = undefined
-      this.gdcObject.external_db_ids.omim_gene = undefined
+      this.gdcObject.externalDbIds.uniprotkbSwissprot = undefined
+      this.gdcObject.externalDbIds.hgnc = undefined
+      this.gdcObject.externalDbIds.entrezGene = undefined
+      this.gdcObject.externalDbIds.omimGene = undefined
     }
   }
 
