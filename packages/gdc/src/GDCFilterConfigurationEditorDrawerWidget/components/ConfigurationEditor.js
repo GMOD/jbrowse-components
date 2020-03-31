@@ -2,6 +2,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React from 'react'
 import Typography from '@material-ui/core/Typography'
+import Alert from '@material-ui/lab/Alert'
 import MenuItem from '@material-ui/core/MenuItem'
 import FormControl from '@material-ui/core/FormControl'
 import FormLabel from '@material-ui/core/FormLabel'
@@ -461,6 +462,8 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+let isValidGDCFilter = true
+
 /**
  * A component for changing the track type
  */
@@ -666,24 +669,29 @@ const FilterList = observer(({ schema, type, facets }) => {
  * @param {*} schema schema
  */
 function loadFilters(schema) {
-  const filters = JSON.parse(schema.target.adapter.filters.value)
-  if (filters.content && filters.content.length > 0) {
-    for (const filter of filters.content) {
-      let type
-      if (filter.content.field.startsWith('cases.')) {
-        type = 'case'
-      } else if (filter.content.field.startsWith('ssms.')) {
-        type = 'ssm'
-      } else if (filter.content.field.startsWith('genes.')) {
-        type = 'gene'
-      } else {
-        throw new Error(
-          `The filter ${filter.content.field} is missing a type prefix.`,
-        )
+  isValidGDCFilter = true
+  try {
+    const filters = JSON.parse(schema.target.adapter.filters.value)
+    if (filters.content && filters.content.length > 0) {
+      for (const filter of filters.content) {
+        let type
+        if (filter.content.field.startsWith('cases.')) {
+          type = 'case'
+        } else if (filter.content.field.startsWith('ssms.')) {
+          type = 'ssm'
+        } else if (filter.content.field.startsWith('genes.')) {
+          type = 'gene'
+        } else {
+          throw new Error(
+            `The filter ${filter.content.field} is missing a type prefix.`,
+          )
+        }
+        const name = filter.content.field.replace(`${type}s.`, '')
+        schema.addFilter(uuidv4(), name, type, filter.content.value.join(','))
       }
-      const name = filter.content.field.replace(`${type}s.`, '')
-      schema.addFilter(uuidv4(), name, type, filter.content.value.join(','))
     }
+  } catch (error) {
+    isValidGDCFilter = false
   }
 }
 
@@ -694,6 +702,12 @@ const GDCQueryBuilder = observer(({ schema }) => {
   const classes = useStyles()
   return (
     <>
+      {!isValidGDCFilter && (
+        <Alert severity="info">
+          The current filters are not in the expected format. Any changes on
+          this panel will overwrite existing filters.
+        </Alert>
+      )}
       <TrackType {...schema.target} />
       <Typography variant="h6" className={classes.text}>
         Filters

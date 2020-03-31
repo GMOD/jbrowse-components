@@ -72,7 +72,7 @@ export default class extends BaseAdapter {
       try {
         const parser = await this.parser
         let query = {}
-        let idField = 'mutation'
+        let idField = 'ssmId'
 
         switch (this.featureType) {
           case 'mutation': {
@@ -172,7 +172,7 @@ export default class extends BaseAdapter {
   }
 
   /**
-   * Create the full filter based on the given filter and the location
+   * Create the full filter based on the given filter, location and case(s)
    * @param chr chromosome (ex. 1)
    * @param start start position
    * @param end end position
@@ -180,7 +180,7 @@ export default class extends BaseAdapter {
   private getFilterQuery(chr: string, start: number, end: number) {
     const resultingFilterQuery = {
       op: 'and',
-      content: [this.getLocationFilters(chr, start, end)],
+      content: [this.addLocationAndCasesToFilter(chr, start, end)],
     }
 
     const filterObject = JSON.parse(this.filters)
@@ -193,12 +193,12 @@ export default class extends BaseAdapter {
   }
 
   /**
-   * Create a filter for the current location visible
+   * Create a filter for the current visible location and case(s)
    * @param chr chromosome (ex. 1)
    * @param start start position
    * @param end end position
    */
-  private getLocationFilters(chr: string, start: number, end: number) {
+  private addLocationAndCasesToFilter(chr: string, start: number, end: number) {
     let locationFilter: any
 
     switch (this.featureType) {
