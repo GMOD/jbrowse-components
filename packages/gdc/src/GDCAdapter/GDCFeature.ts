@@ -49,7 +49,6 @@ export default class GDCFeature implements Feature {
     this.parser = args.parser
     this.featureType = args.featureType ? args.featureType : 'mutation'
     this.createLinksToRemoteSites()
-    this.createAffectedCaseCount()
     this.data = this.dataFromGDCObject(this.gdcObject, this.featureType)
     this.uniqueId = args.id
   }
@@ -100,27 +99,6 @@ export default class GDCFeature implements Feature {
     }
 
     return featureData
-  }
-
-  /**
-   * Adds fields for case distribution across the cohort and GDC
-   */
-  createAffectedCaseCount() {
-    if (this.featureType === 'mutation') {
-      this.gdcObject.fractionAffectedCasesInCohort = `${this.gdcObject.filteredOccurences.hits.numOfAffectedCasesInCohort}/${this.gdcObject.totalCasesInCohort}`
-      this.gdcObject.fractionAffectedCasesAcrossTheGDC = `${this.gdcObject.occurrence.hits.numOfAffectedCasesAcrossGDC}/${this.gdcObject.totalCasesInGDC}`
-
-      this.gdcObject.percentAffectedCasesInCohort = `${(
-        (this.gdcObject.filteredOccurences.hits.numOfAffectedCasesInCohort /
-          this.gdcObject.totalCasesInCohort) *
-        100
-      ).toFixed(2)}%`
-      this.gdcObject.percentAffectedCasesAcrossTheGDC = `${(
-        (this.gdcObject.occurrence.hits.numOfAffectedCasesAcrossGDC /
-          this.gdcObject.totalCasesInGDC) *
-        100
-      ).toFixed(2)}%`
-    }
   }
 
   /**

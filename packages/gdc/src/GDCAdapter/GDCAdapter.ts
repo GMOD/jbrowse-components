@@ -103,22 +103,10 @@ export default class extends BaseAdapter {
         )
         const data = await response.json()
         const queryResults = data.data.viewer.explore.features.hits.edges
-        const totalCaseCount = data.data.viewer.explore.cases
-          ? data.data.viewer.explore.cases.hits.total
-          : undefined
-        const filteredCaseCount = data.data.viewer.explore.filteredCases
-          ? data.data.viewer.explore.filteredCases.hits.total
-          : undefined
 
         for (const hit of queryResults) {
           if (hit) {
             const gdcObject = hit.node
-            if (filteredCaseCount) {
-              gdcObject.totalCasesInCohort = filteredCaseCount
-            }
-            if (totalCaseCount) {
-              gdcObject.totalCasesInGDC = totalCaseCount
-            }
             const feature = new GDCFeature({
               gdcObject,
               parser,
@@ -144,7 +132,7 @@ export default class extends BaseAdapter {
    * @param end end position
    */
   private createMutationQuery(ref: string, start: number, end: number) {
-    const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $ssmFilter: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { cases { hits(first: 0, filters: $ssmFilter) { total } } filteredCases: cases { hits(first: 0, filters: $filters) { total } } features: ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { score startPosition: start_position endPosition: end_position mutationType: mutation_type cosmicId: cosmic_id referenceAllele: reference_allele ncbiBuild: ncbi_build genomicDnaChange: genomic_dna_change mutationSubtype: mutation_subtype ssmId: ssm_id chromosome filteredOccurences: occurrence { hits(first: 0, filters: $filters) { numOfAffectedCasesInCohort: total } } occurrence { hits(first: 0, filters: $ssmFilter) { numOfAffectedCasesAcrossGDC: total } } } } } } } } }`
+    const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { features: ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { score startPosition: start_position endPosition: end_position mutationType: mutation_type cosmicId: cosmic_id referenceAllele: reference_allele ncbiBuild: ncbi_build genomicDnaChange: genomic_dna_change mutationSubtype: mutation_subtype ssmId: ssm_id chromosome } } } } } } }`
     const combinedFilters = this.getFilterQuery(ref, start, end)
     const body = {
       query: ssmQuery,
@@ -157,18 +145,6 @@ export default class extends BaseAdapter {
           { field: '_score', order: 'desc' },
           { field: '_uid', order: 'asc' },
         ],
-        ssmFilter: {
-          op: 'and',
-          content: [
-            {
-              op: 'in',
-              content: {
-                field: 'cases.available_variation_data',
-                value: ['ssm'],
-              },
-            },
-          ],
-        },
       },
     }
     return body
