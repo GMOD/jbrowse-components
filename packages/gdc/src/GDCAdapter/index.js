@@ -9,7 +9,8 @@ export const configSchema = ConfigurationSchema(
     filters: {
       type: 'string',
       defaultValue: '{}',
-      description: 'The filters to be applied to the track',
+      description:
+        'The filters to be applied to the track. Only edit if you know what you are doing.',
     },
     featureType: {
       type: 'stringEnum',

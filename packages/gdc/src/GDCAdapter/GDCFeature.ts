@@ -49,6 +49,7 @@ export default class GDCFeature implements Feature {
     this.parser = args.parser
     this.featureType = args.featureType ? args.featureType : 'mutation'
     this.createLinksToRemoteSites()
+    this.createAffectedCaseCount()
     this.data = this.dataFromGDCObject(this.gdcObject, this.featureType)
     this.uniqueId = args.id
   }
@@ -101,6 +102,33 @@ export default class GDCFeature implements Feature {
     return featureData
   }
 
+  /**
+   * Adds fields for case distribution across the cohort and GDC
+   */
+  createAffectedCaseCount() {
+    if (this.featureType === 'mutation') {
+      this.gdcObject.numAffectedCasesInCohort = `${this.gdcObject.filteredOccurences.hits.numOfAffectedCasesInCohort}/${this.gdcObject.totalCasesInCohort}`
+      this.gdcObject.numAffectedCasesAcrossTheGDC = `${this.gdcObject.occurrence.hits.numOfAffectedCasesAcrossGDC}/${this.gdcObject.totalCasesInGDC}`
+
+      this.gdcObject.percentAffectedCasesInCohort = `${(
+        (this.gdcObject.filteredOccurences.hits.numOfAffectedCasesInCohort /
+          this.gdcObject.totalCasesInCohort) *
+        100
+      ).toFixed(2)}%`
+      this.gdcObject.percentAffectedCasesAcrossTheGDC = `${(
+        (this.gdcObject.occurrence.hits.numOfAffectedCasesAcrossGDC /
+          this.gdcObject.totalCasesInGDC) *
+        100
+      ).toFixed(2)}%`
+    }
+  }
+
+  /**
+   * Converts and id string to a link
+   * @param id element id
+   * @param name element name (to display)
+   * @param url URL to element on site
+   */
   convertStringToLink(id: string, name: string, url: string): string {
     if (!id || !name || id.length === 0 || name.length === 0) {
       return 'n/a'
@@ -108,6 +136,10 @@ export default class GDCFeature implements Feature {
     return `<a href="${url}${id}" target="_blank">${name}</a>`
   }
 
+  /**
+   * Converts an array of cosmic ids to links
+   * @param cosmic array of cosmic ids
+   */
   convertCosmicIdsToLinks(cosmic: string[]): string {
     if (cosmic) {
       const cosmicLinks: string[] = []
@@ -190,7 +222,7 @@ export default class GDCFeature implements Feature {
         this.OMIM_LINK,
       )
 
-      // Clear some elements
+      // Clear some elements that have been converted
       this.gdcObject.gene_id = undefined
       this.gdcObject.external_db_ids.uniprotkb_swissprot = undefined
       this.gdcObject.external_db_ids.hgnc = undefined

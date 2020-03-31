@@ -675,17 +675,18 @@ function loadFilters(schema) {
   if (filters.content && filters.content.length > 0) {
     for (const filter of filters.content) {
       let type
-      let name = filter.content.field
       if (filter.content.field.startsWith('cases.')) {
         type = 'case'
-        name = name.replace('cases.', '')
       } else if (filter.content.field.startsWith('ssms.')) {
         type = 'ssm'
-        name = name.replace('ssms.', '')
       } else if (filter.content.field.startsWith('genes.')) {
         type = 'gene'
-        name = name.replace('genes.', '')
+      } else {
+        throw new Error(
+          `The filter ${filter.content.field} is missing a type prefix.`,
+        )
       }
+      const name = filter.content.field.replace(`${type}s.`, '')
       schema.addFilter(uuidv4(), name, type, filter.content.value.join(','))
     }
   }
