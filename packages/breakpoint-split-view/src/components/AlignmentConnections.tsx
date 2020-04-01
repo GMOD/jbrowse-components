@@ -62,11 +62,6 @@ export default (pluginManager: any) => {
                 return null
               }
 
-              // flipMultiplier combines with normal directionality of the curve
-              const flipMultipliers = views.map(v =>
-                v.horizontallyFlipped ? -1 : 1,
-              )
-
               const x1 = getPxFromCoordinate(
                 views[level1],
                 f1.get('refName'),
@@ -77,6 +72,8 @@ export default (pluginManager: any) => {
                 f2.get('refName'),
                 c2[f2.get('strand') === -1 ? RIGHT : LEFT],
               )
+              const reversed1 = views[level1].pxToBp(x1).reversed
+              const reversed2 = views[level2].pxToBp(x2).reversed
 
               const tracks = views.map(v => v.getTrack(trackConfigId))
 
@@ -87,9 +84,9 @@ export default (pluginManager: any) => {
               const path = Path()
                 .moveTo(x1, y1)
                 .curveTo(
-                  x1 + 200 * f1.get('strand') * flipMultipliers[level1],
+                  x1 + 200 * f1.get('strand') * (reversed1 ? -1 : 1),
                   y1,
-                  x2 - 200 * f2.get('strand') * flipMultipliers[level2],
+                  x2 - 200 * f2.get('strand') * (reversed2 ? -1 : 1),
                   y2,
                   x2,
                   y2,

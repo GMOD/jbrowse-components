@@ -6,13 +6,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 
 function Segments(props) {
-  const {
-    feature,
-    featureLayout,
-    selected,
-    config,
-    horizontallyFlipped,
-  } = props
+  const { feature, featureLayout, selected, config, reversed } = props
 
   const color2 = readConfObject(config, 'color2', [feature])
   let emphasizedColor2
@@ -39,9 +33,7 @@ function Segments(props) {
       <polyline
         data-testid={feature.id()}
         transform={
-          strand &&
-          ((!horizontallyFlipped && strand < 0) ||
-            (horizontallyFlipped && strand > 0))
+          strand && ((!reversed && strand < 0) || (reversed && strand > 0))
             ? `rotate(180,${left + width / 2},${top + height / 2})`
             : undefined
         }
@@ -84,12 +76,12 @@ Segments.propTypes = {
   }).isRequired,
   selected: PropTypes.bool,
   config: CommonPropTypes.ConfigSchema.isRequired,
-  horizontallyFlipped: PropTypes.bool,
+  reversed: PropTypes.bool,
 }
 
 Segments.defaultProps = {
   selected: false,
-  horizontallyFlipped: false,
+  reversed: false,
 }
 
 export default observer(Segments)

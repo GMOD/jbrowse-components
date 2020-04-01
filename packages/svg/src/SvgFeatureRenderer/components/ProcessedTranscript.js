@@ -11,14 +11,14 @@ ProcessedTranscript.layOut = ({
   layout,
   feature,
   bpPerPx,
-  horizontallyFlipped,
+  reversed,
   config,
 }) => {
   const subLayout = layOutFeature({
     layout,
     feature,
     bpPerPx,
-    horizontallyFlipped,
+    reversed,
     config,
   })
   const subfeatures = (feature.get('subfeatures') || []).filter(subfeature =>
@@ -30,7 +30,7 @@ ProcessedTranscript.layOut = ({
     layout: subLayout,
     subfeatures,
     bpPerPx,
-    horizontallyFlipped,
+    reversed,
     config,
   })
   return subLayout

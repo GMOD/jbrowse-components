@@ -25,7 +25,6 @@ test('several features', async () => {
     config: {},
     bpPerPx: 3,
     highResolutionScaling: 1,
-    horizontallyFlipped: false,
     height: 100,
   })
 

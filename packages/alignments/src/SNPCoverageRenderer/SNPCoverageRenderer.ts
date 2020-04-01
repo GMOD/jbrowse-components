@@ -17,7 +17,6 @@ interface SNPCoverageRendererProps {
   bpPerPx: number
   height: number
   width: number
-  horizontallyFlipped: boolean
   highResolutionScaling: number
   blockKey: string
   dataAdapter: BaseAdapter
@@ -39,14 +38,7 @@ interface BaseInfo {
 
 export default class SNPCoverageRenderer extends WiggleBaseRenderer {
   draw(ctx: CanvasRenderingContext2D, props: SNPCoverageRendererProps) {
-    const {
-      features,
-      region,
-      bpPerPx,
-      scaleOpts,
-      height,
-      horizontallyFlipped,
-    } = props
+    const { features, region, bpPerPx, scaleOpts, height } = props
 
     const viewScale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
@@ -69,12 +61,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     // Second pass: draw the SNP data, and add a minimum feature width of 1px which can be wider than the actual bpPerPx
     // This reduces overdrawing of the grey background over the SNPs
     for (const feature of features.values()) {
-      const [leftPx, rightPx] = featureSpanPx(
-        feature,
-        region,
-        bpPerPx,
-        horizontallyFlipped,
-      )
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const score = feature.get('score')
 
       // draw total
@@ -83,12 +70,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
     }
     for (const feature of features.values()) {
-      const [leftPx, rightPx] = featureSpanPx(
-        feature,
-        region,
-        bpPerPx,
-        horizontallyFlipped,
-      )
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = Math.max(rightPx - leftPx + 0.3, 1)
       // grab array with nestedtable's info, draw mismatches
       const infoArray = feature.get('snpinfo') || []
