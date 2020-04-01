@@ -354,6 +354,9 @@
       "type": "GDCTrack",
       "trackId": "gdc_plugin_track",
       "name": "GDC",
+      "assemblyNames": [
+        "hg38"
+      ],
       "category": [
         "Annotation"
       ],
