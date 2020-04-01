@@ -24,7 +24,7 @@ const ssmFacets = [
   {
     name: 'consequence.transcript.annotation.polyphen_impact',
     prettyName: 'polyphen impact',
-    values: ['', 'benign', 'probably_damaging', 'possibly_damaging', 'unknown'],
+    values: ['benign', 'probably_damaging', 'possibly_damaging', 'unknown'],
   },
   {
     name: 'consequence.transcript.annotation.sift_impact',
@@ -463,6 +463,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 let isValidGDCFilter = true
+let validationMessage = ''
 
 /**
  * A component for changing the track type
@@ -513,32 +514,38 @@ const TrackType = observer(props => {
 })
 
 /**
- * A card representing an individual filter with a category and set of applied values
+ * An element representing an individual filter with a category and set of applied values
  */
 const Filter = observer(props => {
   const classes = useStyles()
-  const { schema, filterObject, facets } = props
+  const { schema, filterModel, facets } = props
+
   const [categoryValue, setCategoryValue] = React.useState(
-    filterObject.category
-      ? facets.find(f => f.name === filterObject.category)
+    filterModel.category
+      ? facets.find(f => f.name === filterModel.category)
       : facets[0],
   )
   const [filterValue, setFilterValue] = React.useState(
-    filterObject.filter ? filterObject.filter.split(',') : [],
+    filterModel.filter ? filterModel.filter.split(',') : [],
   )
 
   const handleChangeCategory = event => {
     setCategoryValue(event.target.value)
     setFilterValue([])
-    filterObject.setCategory(event.target.value.name)
+    filterModel.setCategory(event.target.value.name)
   }
 
   const handleChangeFilter = event => {
     setFilterValue(event.target.value)
-    filterObject.setFilter(event.target.value.join(','))
+    filterModel.setFilter(event.target.value.join(','))
     updateTrack(schema.filters, schema.target)
   }
 
+  /**
+   * Converts filter model objects to a GDC filter query and updates the track
+   * @param {*} filters Array of filter model objects
+   * @param {*} target Track target
+   */
   function updateTrack(filters, target) {
     let gdcFilters = { op: 'and', content: [] }
     if (filters.length > 0) {
@@ -560,7 +567,7 @@ const Filter = observer(props => {
   }
 
   const handleFilterDelete = () => {
-    schema.deleteFilter(filterObject.id)
+    schema.deleteFilter(filterModel.id)
     updateTrack(schema.filters, schema.target)
   }
 
@@ -628,6 +635,9 @@ const Filter = observer(props => {
   )
 })
 
+/**
+ * A collection of filters along with a button to add new filters
+ */
 const FilterList = observer(({ schema, type, facets }) => {
   const initialFilterSelection = facets[0].name
 
@@ -641,13 +651,13 @@ const FilterList = observer(({ schema, type, facets }) => {
         <FormLabel>{type} filters</FormLabel>
       </div>
 
-      {schema.filters.map(filterObject => {
-        if (filterObject.type === type) {
+      {schema.filters.map(filterModel => {
+        if (filterModel.type === type) {
           return (
             <Filter
               schema={schema}
-              {...{ filterObject }}
-              key={filterObject.id}
+              {...{ filterModel }}
+              key={filterModel.id}
               facets={facets}
             />
           )
@@ -664,12 +674,12 @@ const FilterList = observer(({ schema, type, facets }) => {
 })
 
 /**
- * Creates a corresponding filter model for existing filters from track
+ * Creates corresponding filter models for existing filters from track
  * Assumes that the track filters are in a specific format
  * @param {*} schema schema
  */
 function loadFilters(schema) {
-  isValidGDCFilter = true
+  setValidationMessage('', true)
   try {
     const filters = JSON.parse(schema.target.adapter.filters.value)
     if (filters.content && filters.content.length > 0) {
@@ -682,19 +692,28 @@ function loadFilters(schema) {
         } else if (filter.content.field.startsWith('genes.')) {
           type = 'gene'
         } else {
-          throw new Error(
-            `The filter ${filter.content.field} is missing a type prefix.`,
+          setValidationMessage(
+            `The filter ${filter.content.field} is missing a type prefix and is invalid. Any changes on this panel will overwrite invalid filters.`,
+            false,
           )
         }
-        const name = filter.content.field.replace(`${type}s.`, '')
-        schema.addFilter(uuidv4(), name, type, filter.content.value.join(','))
+        if (type) {
+          const name = filter.content.field.replace(`${type}s.`, '')
+          schema.addFilter(uuidv4(), name, type, filter.content.value.join(','))
+        }
       }
     }
   } catch (error) {
-    isValidGDCFilter = false
+    setValidationMessage(
+      'The current filters are not in the expected format. Any changes on this panel will overwrite invalid filters.',
+      false,
+    )
   }
 }
 
+/**
+ * Creates the form for interacting with the track filters
+ */
 const GDCQueryBuilder = observer(({ schema }) => {
   schema.clearFilters()
   loadFilters(schema)
@@ -702,12 +721,7 @@ const GDCQueryBuilder = observer(({ schema }) => {
   const classes = useStyles()
   return (
     <>
-      {!isValidGDCFilter && (
-        <Alert severity="info">
-          The current filters are not in the expected format. Any changes on
-          this panel will overwrite existing filters.
-        </Alert>
-      )}
+      {!isValidGDCFilter && <Alert severity="info">{validationMessage}</Alert>}
       <TrackType {...schema.target} />
       <Typography variant="h6" className={classes.text}>
         Filters
@@ -755,6 +769,16 @@ function ConfigurationEditor({ model }) {
 }
 ConfigurationEditor.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
+}
+
+/**
+ * Updates the validation message for filters
+ * @param {*} msg Message to display if invalid
+ * @param {*} isValid Do not display if valid
+ */
+function setValidationMessage(msg, isValid) {
+  validationMessage = msg
+  isValidGDCFilter = isValid
 }
 
 export default observer(ConfigurationEditor)
