@@ -1095,6 +1095,23 @@
       }
     },
     {
+      "type": "GDCTrack",
+      "trackId": "gdc_plugin_track",
+      "name": "GDC",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "GDCAdapter"
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
       "type": "StructuralVariantChordTrack",
       "trackId": "QGoUN4vNq",
       "name": "volvox chord test",

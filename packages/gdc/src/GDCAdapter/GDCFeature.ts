@@ -84,13 +84,13 @@ export default class GDCFeature implements Feature {
     const featureData: FeatureData = {
       refName: gdcObject.chromosome,
       type: gdcObject.mutationType,
-      start: gdcObject.startPosition,
+      start: gdcObject.startPosition - 1,
       end: gdcObject.endPosition,
     }
 
     switch (featureType) {
       case 'gene': {
-        featureData.start = gdcObject.geneStart
+        featureData.start = gdcObject.geneStart - 1
         featureData.end = gdcObject.geneEnd
         featureData.refName = gdcObject.geneChromosome
         featureData.type = gdcObject.biotype
