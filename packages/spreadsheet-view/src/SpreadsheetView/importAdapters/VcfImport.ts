@@ -108,7 +108,7 @@ export function parseVcfBuffer(
     columnDisplayOrder,
     hasColumnNames: true,
     columns,
-    datasetName: options.selectedDatasetName,
+    assemblyName: options.selectedAssemblyName,
   }
 }
 

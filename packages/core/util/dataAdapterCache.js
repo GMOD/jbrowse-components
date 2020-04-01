@@ -38,6 +38,8 @@ export function getAdapter(
       throw new Error(`unknown data adapter type ${adapterType}`)
     }
 
+    // Some adapters use the special sequence store
+    // specifically CRAM
     if (
       dataAdapterType.requiresSequenceAdapter &&
       sequenceAdapterType &&
@@ -50,6 +52,19 @@ export function getAdapter(
         sequenceAdapterConfig,
       ).dataAdapter
     }
+
+    // Some adapters initialize a subadapter
+    if (adapterConfig.subadapter) {
+      adapterConfig.subadapter = getAdapter(
+        pluginManager,
+        sessionId,
+        adapterConfig.subadapter.type,
+        adapterConfig.subadapter,
+        sequenceAdapterType,
+        sequenceAdapterConfig,
+      ).dataAdapter
+    }
+
     // console.log('new adapter', cacheKey)
     const dataAdapter = new dataAdapterType.AdapterClass(adapterConfig)
 
@@ -58,6 +73,7 @@ export function getAdapter(
       sessionIds: new Set([sessionId]),
     }
   }
+
   const cacheEntry = adapterCache[cacheKey]
   cacheEntry.sessionIds.add(sessionId)
 

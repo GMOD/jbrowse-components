@@ -4,6 +4,7 @@ import { guessAdapter } from '@gmod/jbrowse-core/util/tracks'
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import ConfirmTrack from './ConfirmTrack'
 
+// note work on this tomorrow, fix confirm track to work with alignments tracks
 describe('<ConfirmTrack />', () => {
   let session
 
@@ -29,8 +30,8 @@ describe('<ConfirmTrack />', () => {
           index: { location: { uri: 'test.bam.bai' } },
         }}
         setTrackAdapter={mockFunction}
-        datasetName=""
-        setDatasetName={mockFunction}
+        assemblyName=""
+        setAssemblyName={mockFunction}
       />,
     )
     expect(container.firstChild).toMatchSnapshot()
@@ -52,8 +53,8 @@ describe('<ConfirmTrack />', () => {
           index: { location: { uri: 'test.bam.bai' } },
         }}
         setTrackAdapter={mockFunction}
-        datasetName=""
-        setDatasetName={mockFunction}
+        assemblyName=""
+        setAssemblyName={mockFunction}
       />,
     )
     expect(container.firstChild).toMatchSnapshot()
@@ -76,8 +77,8 @@ describe('<ConfirmTrack />', () => {
           index: { location: { localPath: 'test.bam.bai' } },
         }}
         setTrackAdapter={mockFunction}
-        datasetName=""
-        setDatasetName={mockFunction}
+        assemblyName=""
+        setAssemblyName={mockFunction}
       />,
     )
     expect(container.firstChild).toMatchSnapshot()
@@ -98,8 +99,8 @@ describe('<ConfirmTrack />', () => {
           type: 'FromConfigAdapter',
         }}
         setTrackAdapter={mockFunction}
-        datasetName=""
-        setDatasetName={mockFunction}
+        assemblyName=""
+        setAssemblyName={mockFunction}
       />,
     )
     expect(container.firstChild).toMatchSnapshot()
@@ -158,5 +159,58 @@ describe('<ConfirmTrack />', () => {
   fileList.forEach(fileName => {
     const adapter = guessAdapter(fileName, 'uri')
     expect(adapter.type).not.toBeUndefined()
+  })
+
+  // tests cause Coverage track mounts differently
+  it('renders SNPCoverageTrack with a subadapter', () => {
+    const mockFunction = () => {}
+    const { container } = render(
+      <ConfirmTrack
+        session={session}
+        trackData={{ uri: 'test.bam' }}
+        trackName=""
+        setTrackName={mockFunction}
+        trackType="SNPCoverageTrack"
+        setTrackType={mockFunction}
+        trackAdapter={{
+          type: 'SNPCoverageAdapter',
+          subadapter: {
+            type: 'BamAdapter',
+            bamLocation: { uri: 'test.bam' },
+            index: { location: { uri: 'test.bam.bai' } },
+          },
+        }}
+        setTrackAdapter={mockFunction}
+        assemblyName=""
+        setAssemblyName={mockFunction}
+      />,
+    )
+    expect(container.firstChild).toMatchSnapshot()
+  })
+  it('SNPCoverageTrack mounts with uri', () => {
+    const mockFunction = jest.fn(() => {})
+    const { container } = render(
+      <ConfirmTrack
+        session={session}
+        trackData={{ uri: 'test.bam' }}
+        trackName=""
+        setTrackName={mockFunction}
+        trackType="SNPCoverageTrack"
+        setTrackType={mockFunction}
+        trackAdapter={{
+          type: 'SNPCoverageAdapter',
+          subadapter: {
+            type: 'BamAdapter',
+            bamLocation: { uri: 'test.bam' },
+            index: { location: { uri: 'test.bam.bai' } },
+          },
+        }}
+        setTrackAdapter={mockFunction}
+        assemblyName=""
+        setAssemblyName={mockFunction}
+      />,
+    )
+    expect(container.firstChild).toMatchSnapshot()
+    expect(mockFunction.mock.calls.length).toBe(2)
   })
 })

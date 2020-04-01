@@ -1,27 +1,62 @@
 import { ParseOptions, parseTsvBuffer } from './ImportUtils'
 
-export function parseBedBuffer(buffer: Buffer, options: ParseOptions) {
-  return parseTsvBuffer(buffer).then(data => {
-    const bedColumns = [
-      { name: 'chrom', dataType: { type: 'Text' } },
-      { name: 'chromStart', dataType: { type: 'Number' } },
-      { name: 'chromEnd', dataType: { type: 'Number' } },
-      { name: 'name', dataType: { type: 'Text' } },
-      { name: 'score', dataType: { type: 'Number' } },
-      { name: 'strand', dataType: { type: 'Text' } },
-    ]
-    data.columns.forEach((col, colNumber) => {
-      const bedColumn = bedColumns[colNumber]
-      if (bedColumn) {
-        col.name = bedColumn.name
-        col.dataType = bedColumn.dataType
-      }
-    })
-    data.hasColumnNames = true
-    data.datasetName = options.selectedDatasetName
+const browserBytes = 'browser '.split('').map(c => c.charCodeAt(0))
+const trackBytes = 'track '.split('').map(c => c.charCodeAt(0))
 
-    return data
-  })
+function bytesAreFoundAt(position: number, buffer: Buffer, bytes: number[]) {
+  let i = 0
+  for (; i < bytes.length; i += 1) {
+    if (buffer[position + i] !== bytes[i]) return false
+  }
+  return true
+}
+export async function removeBedHeaders(buffer: Buffer) {
+  // slice off the first lines of the buffer if it starts with one or more header lines
+  let i = 0
+  for (; i < buffer.length; i += 1) {
+    if (
+      bytesAreFoundAt(i, buffer, browserBytes) ||
+      bytesAreFoundAt(i, buffer, trackBytes)
+    ) {
+      // consume up to the next newline
+      do {
+        i += 1
+      } while (buffer[i] !== 10)
+    } else {
+      // end of headers, return
+      break
+    }
+  }
+  if (i) {
+    return buffer.slice(i)
+  }
+  return buffer
+}
+
+export function parseBedBuffer(buffer: Buffer, options: ParseOptions) {
+  return removeBedHeaders(buffer)
+    .then(b => parseTsvBuffer(b))
+    .then(data => {
+      const bedColumns = [
+        { name: 'chrom', dataType: { type: 'Text' } },
+        { name: 'chromStart', dataType: { type: 'Number' } },
+        { name: 'chromEnd', dataType: { type: 'Number' } },
+        { name: 'name', dataType: { type: 'Text' } },
+        { name: 'score', dataType: { type: 'Number' } },
+        { name: 'strand', dataType: { type: 'Text' } },
+      ]
+      data.columns.forEach((col, colNumber) => {
+        const bedColumn = bedColumns[colNumber]
+        if (bedColumn) {
+          col.name = bedColumn.name
+          col.dataType = bedColumn.dataType
+        }
+      })
+      data.hasColumnNames = true
+      data.assemblyName = options.selectedAssemblyName
+
+      return data
+    })
 }
 
 export function parseBedPEBuffer(buffer: Buffer, options: ParseOptions) {
@@ -102,7 +137,7 @@ export function parseBedPEBuffer(buffer: Buffer, options: ParseOptions) {
       }
     })
 
-    data.datasetName = options.selectedDatasetName
+    data.assemblyName = options.selectedAssemblyName
 
     return data
   })

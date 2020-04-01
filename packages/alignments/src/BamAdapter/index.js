@@ -21,6 +21,14 @@ export const configSchema = ConfigurationSchema(
         defaultValue: { uri: '/path/to/my.bam.bai' },
       },
     }),
+    chunkSizeLimit: {
+      type: 'number',
+      defaultValue: 100000000,
+    },
+    fetchSizeLimit: {
+      type: 'number',
+      defaultValue: 500000000,
+    },
   },
   { explicitlyTyped: true },
 )

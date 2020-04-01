@@ -2,6 +2,7 @@
 
 exports[`csv to spreadsheet snapshot 1`] = `
 Object {
+  "assemblyName": undefined,
   "columnDisplayOrder": Array [
     0,
     1,
@@ -223,7 +224,6 @@ Object {
       "name": undefined,
     },
   ],
-  "datasetName": undefined,
   "hasColumnNames": true,
   "rowSet": Object {
     "isLoaded": true,

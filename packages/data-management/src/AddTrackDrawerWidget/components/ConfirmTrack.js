@@ -1,6 +1,7 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import {
   guessAdapter,
+  guessSubadapter,
   guessTrackType,
   UNKNOWN,
   UNSUPPORTED,
@@ -28,12 +29,11 @@ function ConfirmTrack({
   trackType,
   setTrackType,
   trackAdapter,
-  datasetName,
-  setDatasetName,
+  assemblyName,
+  setAssemblyName,
   session,
 }) {
   const classes = useStyles()
-
   useEffect(() => {
     if (trackData.uri) {
       const adapter = guessAdapter(trackData.uri, 'uri')
@@ -110,16 +110,18 @@ function ConfirmTrack({
             SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
           }}
         >
-          {session.pluginManager
-            .getElementTypesInGroup('adapter')
-            .map(installedAdapterType => (
-              <MenuItem
-                key={installedAdapterType.name}
-                value={installedAdapterType.name}
-              >
-                {installedAdapterType.name}
-              </MenuItem>
-            ))}
+          {session.pluginManager.getElementTypesInGroup('adapter').map(
+            installedAdapterType =>
+              // Exclude SNPCoverageAdapter from primary adapter user selection
+              installedAdapterType.name !== 'SNPCoverageAdapter' && (
+                <MenuItem
+                  key={installedAdapterType.name}
+                  value={installedAdapterType.name}
+                >
+                  {installedAdapterType.name}
+                </MenuItem>
+              ),
+          )}
         </TextField>
       </>
     )
@@ -130,13 +132,22 @@ function ConfirmTrack({
   if (trackData.uri || trackData.localPath || trackData.config) {
     let message = null
     if (trackData.uri || trackData.localPath)
-      message = (
-        <Typography className={classes.spacing}>
-          Using adapter <code>{trackAdapter.type}</code> and guessing track type{' '}
-          <code>{trackType}</code>. Please enter a track name and, if necessary,
-          update the track type.
-        </Typography>
-      )
+      trackAdapter.subadapter
+        ? (message = (
+            <Typography className={classes.spacing}>
+              Selected <code>{trackType}</code>. Using adapter{' '}
+              <code>{trackAdapter.type}</code> with subadapter{' '}
+              <code>{trackAdapter.subadapter.type}</code>. Please enter a track
+              name and, if necessary, update the track type.
+            </Typography>
+          ))
+        : (message = (
+            <Typography className={classes.spacing}>
+              Using adapter <code>{trackAdapter.type}</code> and guessing track
+              type <code>{trackType}</code>. Please enter a track name and, if
+              necessary, update the track type.
+            </Typography>
+          ))
     else
       message = (
         <Typography className={classes.spacing}>
@@ -162,7 +173,24 @@ function ConfirmTrack({
           helperText="A track type"
           select
           fullWidth
-          onChange={event => setTrackType(event.target.value)}
+          onChange={event => {
+            setTrackType(event.target.value)
+            // selecting SNPCoverageTrack sets up SNPCoverage adapter.
+            // In future make generic for others with subadapter
+            // If switching from track w sub to non-sub, restore old adapter
+            if (event.target.value === 'SNPCoverageTrack') {
+              const adapter = trackData.uri
+                ? guessSubadapter(trackData.uri, 'uri', 'SNPCoverageAdapter')
+                : guessSubadapter(
+                    trackData.localPath,
+                    'localPath',
+                    'SNPCoverageAdapter',
+                  )
+              setTrackAdapter(adapter)
+            } else if (trackAdapter.subadapter) {
+              setTrackAdapter(trackAdapter.subadapter)
+            }
+          }}
           SelectProps={{
             SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
           }}
@@ -179,21 +207,21 @@ function ConfirmTrack({
             ))}
         </TextField>
         <TextField
-          value={datasetName}
-          label="datasetName"
-          helperText="Dataset to which the track will be added"
+          value={assemblyName}
+          label="assemblyName"
+          helperText="Assembly to which the track will be added"
           select
           fullWidth
-          onChange={event => setDatasetName(event.target.value)}
+          onChange={event => setAssemblyName(event.target.value)}
           SelectProps={{
-            SelectDisplayProps: { 'data-testid': 'datasetNameSelect' },
+            SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
           }}
         >
-          {session.datasets.map(dataset => {
-            const newDatasetName = readConfObject(dataset, 'name')
+          {session.assemblies.map(assembly => {
+            const newAssemblyName = readConfObject(assembly, 'name')
             return (
-              <MenuItem key={newDatasetName} value={newDatasetName}>
-                {newDatasetName}
+              <MenuItem key={newAssemblyName} value={newAssemblyName}>
+                {newAssemblyName}
               </MenuItem>
             )
           })}
@@ -205,8 +233,8 @@ function ConfirmTrack({
 }
 
 ConfirmTrack.propTypes = {
-  datasetName: PropTypes.string.isRequired,
-  setDatasetName: PropTypes.func.isRequired,
+  assemblyName: PropTypes.string.isRequired,
+  setAssemblyName: PropTypes.func.isRequired,
   trackData: PropTypes.shape({
     uri: PropTypes.string,
     localPath: PropTypes.string,
@@ -218,6 +246,9 @@ ConfirmTrack.propTypes = {
   setTrackType: PropTypes.func.isRequired,
   trackAdapter: PropTypes.shape({
     type: PropTypes.string,
+    subadapter: PropTypes.shape({
+      type: PropTypes.string,
+    }),
   }).isRequired,
   setTrackAdapter: PropTypes.func.isRequired,
   session: MobxPropTypes.observableObject.isRequired,

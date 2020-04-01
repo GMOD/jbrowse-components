@@ -9,7 +9,7 @@
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {
-    "@gmod/tabix": "^1.3.2",
+    "@gmod/tabix": "^1.4.3",
     "@gmod/vcf": "^4.0.1",
     "generic-filehandle": "^2.0.0"
   },

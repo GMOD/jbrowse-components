@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
+import { MenuOptions } from '@gmod/jbrowse-core/ui'
 import {
   clamp,
   getContainingView,
@@ -9,19 +10,14 @@ import {
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
-import { getParent, getSnapshot, types, cast } from 'mobx-state-tree'
+import { getParent, getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
+
 import { BlockSet } from '../BasicTrack/util/blockTypes'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
-export interface LGVMenuOption {
-  title: string
-  key: string
-  callback: Function
-  checked?: boolean
-  isCheckbox: boolean
-}
+
 interface BpOffset {
   refName?: string
   index: number
@@ -78,9 +74,8 @@ export function stateModelFactory(pluginManager: any) {
       offsetPx: 0,
       bpPerPx: 1,
       displayedRegions: types.array(Region),
-      displayRegionsFromAssemblyName: types.maybe(types.string),
       displayName: types.maybe(types.string),
-      reversed: false,
+      horizontallyFlipped: false,
       // we use an array for the tracks because the tracks are displayed in a specific
       // order that we need to keep.
       tracks: types.array(
@@ -131,7 +126,7 @@ export function stateModelFactory(pluginManager: any) {
       },
       get totalBp() {
         let totalbp = 0
-        this.displayedRegionsInOrder.forEach(region => {
+        self.displayedRegions.forEach(region => {
           totalbp += region.end - region.start
         })
         return totalbp
@@ -143,16 +138,6 @@ export function stateModelFactory(pluginManager: any) {
 
       get minBpPerPx() {
         return constrainBpPerPx(0)
-      },
-
-      get horizontallyFlipped() {
-        return self.reversed
-      },
-
-      get displayedRegionsInOrder() {
-        return self.reversed
-          ? self.displayedRegions.slice().reverse()
-          : self.displayedRegions
       },
 
       get displayedRegionsTotalPx() {
@@ -167,26 +152,36 @@ export function stateModelFactory(pluginManager: any) {
             getSession(self),
             'highResolutionScaling',
           ),
-          horizontallyFlipped: this.horizontallyFlipped,
+          horizontallyFlipped: self.horizontallyFlipped,
         }
+      },
+      get assemblyNames() {
+        const assemblyNames: string[] = []
+        self.displayedRegions.forEach(displayedRegion => {
+          if (!assemblyNames.includes(displayedRegion.assemblyName))
+            assemblyNames.push(displayedRegion.assemblyName)
+        })
+        return assemblyNames
       },
 
       bpToPx({ refName, coord }: { refName: string; coord: number }) {
-        let offsetPx = 0
-        const index = this.displayedRegionsInOrder.findIndex(r => {
+        let offsetBp = 0
+
+        const index = self.displayedRegions.findIndex(r => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
-            offsetPx += (coord - r.start) / self.bpPerPx
+            offsetBp += self.horizontallyFlipped
+              ? r.end - coord
+              : coord - r.start
             return true
           }
-          offsetPx += (r.end - r.start) / self.bpPerPx
+          offsetBp += r.end - r.start
           return false
         })
         const foundRegion = self.displayedRegions[index]
-        offsetPx = Math.round(offsetPx)
         if (foundRegion) {
           return {
             index,
-            offsetPx,
+            offsetPx: Math.round(offsetBp / self.bpPerPx),
           }
         }
         return undefined
@@ -199,7 +194,7 @@ export function stateModelFactory(pluginManager: any) {
       pxToBp(px: number) {
         const bp = (self.offsetPx + px) * self.bpPerPx + 1
         let bpSoFar = 0
-        let r = this.displayedRegionsInOrder[0]
+        let r = self.displayedRegions[0]
         if (bp < 0) {
           return {
             ...r,
@@ -207,12 +202,8 @@ export function stateModelFactory(pluginManager: any) {
             index: 0,
           }
         }
-        for (
-          let index = 0;
-          index < this.displayedRegionsInOrder.length;
-          index += 1
-        ) {
-          r = this.displayedRegionsInOrder[index]
+        for (let index = 0; index < self.displayedRegions.length; index += 1) {
+          r = self.displayedRegions[index]
           if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
             return { ...r, offset: Math.round(bp - bpSoFar), index }
           }
@@ -222,7 +213,7 @@ export function stateModelFactory(pluginManager: any) {
         return {
           ...r,
           offset: Math.round(bp - bpSoFar),
-          index: this.displayedRegionsInOrder.length,
+          index: self.displayedRegions.length,
         }
       },
 
@@ -246,7 +237,7 @@ export function stateModelFactory(pluginManager: any) {
         self.width = newWidth
       },
 
-      setError(error: Error) {
+      setError(error: Error | undefined) {
         self.error = error
       },
 
@@ -259,7 +250,8 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       horizontallyFlip() {
-        self.reversed = !self.reversed
+        self.horizontallyFlipped = !self.horizontallyFlipped
+        self.displayedRegions = cast(self.displayedRegions.slice().reverse())
         self.offsetPx = self.totalBp / self.bpPerPx - self.offsetPx - self.width
       },
 
@@ -321,23 +313,8 @@ export function stateModelFactory(pluginManager: any) {
         if (!hiddenCount) this.showTrack(configuration)
       },
 
-      setDisplayedRegions(regions: IRegion[], isFromAssemblyName = false) {
-        try {
-          self.displayedRegions = cast(regions)
-          if (!isFromAssemblyName)
-            this.setDisplayedRegionsFromAssemblyName(undefined)
-
-          self.afterDisplayedRegionsSetCallbacks.forEach(cb => {
-            cb(self)
-          })
-          self.afterDisplayedRegionsSetCallbacks = []
-        } catch (error) {
-          console.error(error)
-        }
-      },
-
-      setDisplayedRegionsFromAssemblyName(assemblyName: string | undefined) {
-        self.displayRegionsFromAssemblyName = assemblyName
+      setDisplayedRegions(regions: IRegion[]) {
+        self.displayedRegions = cast(regions)
       },
 
       activateTrackSelector() {
@@ -370,8 +347,7 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       navToLocstring(locstring: string) {
-        const parsed = parseLocString(locstring) as IRegion
-        return this.navTo(parsed)
+        return this.navTo(parseLocString(locstring))
       },
 
       /*
@@ -379,50 +355,60 @@ export function stateModelFactory(pluginManager: any) {
        * can handle if there are multiple displayedRegions from same chr
        * only navigates to a locstring if it is entirely within a displayedRegion
        *
-       * @param {refName,start,end} is a proposed location to navigate to
+       * @param {refName,start,end,assemblyName?} is a proposed location to navigate to
        * returns true if navigation was successful, false if not
        */
-      navTo({
-        refName = '',
-        start,
-        end,
-      }: {
-        assemblyName?: string
+      async navTo(query: {
+        refName?: string
         start?: number
         end?: number
-        refName?: string
+        assemblyName?: string
       }) {
-        let s = start
-        let e = end
-        const index = self.displayedRegionsInOrder.findIndex(r => {
-          if (refName === r.refName) {
-            if (s === undefined) {
-              s = r.start
+        try {
+          // eslint-disable-next-line prefer-const
+          let { refName = '', start, end, assemblyName } = query
+          if (refName) {
+            const root = getRoot(self)
+            refName = await root.jbrowse.getCanonicalRefName(
+              refName,
+              assemblyName || self.assemblyNames[0],
+            )
+          }
+
+          // get the proper displayedRegion that is relevant for the nav command
+          // assumes that a single displayedRegion will satisfy the query
+          // TODO: may not necessarily be true?
+          const index = self.displayedRegions.findIndex(region => {
+            if (refName === region.refName) {
+              if (start === undefined) {
+                start = region.start
+              }
+              if (end === undefined) {
+                end = region.end
+              }
+              if (start >= region.start && end <= region.end) {
+                return true
+              }
             }
-            if (e === undefined) {
-              e = r.end
-            }
-            if (s >= r.start && e <= r.end) {
-              return true
-            }
+            return false
+          })
+
+          if (start === undefined || end === undefined) {
+            return false
+          }
+          if (index !== -1) {
+            const result = self.displayedRegions[index]
+            this.moveTo(
+              { index, offset: start - result.start },
+              { index, offset: end - result.start },
+            )
+            return true
           }
           return false
-        })
-        if (s === undefined) {
+        } catch (e) {
+          this.setError(e)
           return false
         }
-        if (e === undefined) {
-          return false
-        }
-        const f = self.displayedRegionsInOrder[index]
-        if (index !== -1) {
-          this.moveTo(
-            { index, offset: s - f.start },
-            { index, offset: e - f.start },
-          )
-          return true
-        }
-        return false
       },
 
       // schedule something to be run after the next time displayedRegions is set
@@ -443,20 +429,19 @@ export function stateModelFactory(pluginManager: any) {
         if (start.index === end.index) {
           bpSoFar += end.offset - start.offset
         } else {
-          const s = self.displayedRegionsInOrder[start.index]
+          const s = self.displayedRegions[start.index]
           bpSoFar += s.end - start.offset
           if (end.index - start.index >= 2) {
             for (let i = start.index + 1; i < end.index; i += 1) {
               bpSoFar +=
-                self.displayedRegionsInOrder[i].end -
-                self.displayedRegionsInOrder[i].start
+                self.displayedRegions[i].end - self.displayedRegions[i].start
             }
           }
           bpSoFar += end.offset
         }
         let bpToStart = 0
-        for (let i = 0; i < self.displayedRegionsInOrder.length; i += 1) {
-          const region = self.displayedRegionsInOrder[i]
+        for (let i = 0; i < self.displayedRegions.length; i += 1) {
+          const region = self.displayedRegions[i]
           if (start.index === i) {
             bpToStart += start.offset
             break
@@ -517,26 +502,21 @@ export function stateModelFactory(pluginManager: any) {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
-        get menuOptions(): LGVMenuOption[] {
+        get menuOptions(): MenuOptions[] {
           return [
             {
-              title: 'Horizontally flip',
-              key: 'flip',
-              callback: self.horizontallyFlip,
+              label: 'Horizontally flip',
+              type: 'checkbox',
               checked: self.horizontallyFlipped,
-              isCheckbox: true,
+              onClick: self.horizontallyFlip,
             },
             {
-              title: 'Show all regions',
-              key: 'showall',
-              callback: self.showAllRegions,
-              isCheckbox: false,
+              label: 'Show all regions',
+              onClick: self.showAllRegions,
             },
             {
-              title: self.hideHeader ? 'Show header' : 'Hide header',
-              key: 'hide_header',
-              callback: self.toggleHeader,
-              isCheckbox: false,
+              label: self.hideHeader ? 'Show header' : 'Hide header',
+              onClick: self.toggleHeader,
             },
           ]
         },
@@ -559,13 +539,6 @@ export function stateModelFactory(pluginManager: any) {
           return calculateDynamicBlocks(cast(self), self.horizontallyFlipped)
         },
       }
-    })
-    .postProcessSnapshot(self => {
-      if (self.displayRegionsFromAssemblyName) {
-        const { displayedRegions, ...rest } = self
-        return rest
-      }
-      return self
     })
 }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>

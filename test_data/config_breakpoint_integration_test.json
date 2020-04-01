@@ -5,92 +5,98 @@
     },
     "updateUrl": false
   },
-  "datasets": [
+  "assemblies": [
     {
-      "name": "Homo sapiens",
-      "assembly": {
-        "name": "hg19",
-        "aliases": [
-          "GRCh37"
-        ]
-      },
-      "tracks": [
-        {
-          "type": "StructuralVariantChordTrack",
-          "trackId": "sv_chord_track",
-          "name": "human chord test",
-          "adapter": {
-            "type": "VcfTabixAdapter",
-            "vcfGzLocation": {
-              "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
-            },
-            "index": {
-              "location": {
-                "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
-              }
-            }
-          },
-          "renderer": {
-            "type": "StructuralVariantChordRenderer"
-          }
+      "name": "hg19",
+      "aliases": [
+        "GRCh37"
+      ]
+    }
+  ],
+  "tracks": [
+    {
+      "type": "StructuralVariantChordTrack",
+      "trackId": "sv_chord_track",
+      "name": "human chord test",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
         },
-        {
-          "type": "VariantTrack",
-          "trackId": "pacbio_vcf",
-          "name": "HG002.hs37d5.bnds",
-          "category": [
-            "PacBio",
-            "VCF"
-          ],
-          "adapter": {
-            "type": "VcfTabixAdapter",
-            "vcfGzLocation": {
-              "uri": "test_data/pacbio_chr3_chr6.vcf.gz"
-            },
-            "index": {
-              "location": {
-                "uri": "test_data/pacbio_chr3_chr6.vcf.gz.tbi"
-              }
-            }
-          },
-          "renderers": {
-            "PileupRenderer": {
-              "type": "PileupRenderer"
-            },
-            "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer"
-            }
-          }
-        },
-        {
-          "type": "AlignmentsTrack",
-          "trackId": "pacbio_hg002_breakpoints",
-          "name": "HG002.hs37d5.11kb",
-          "category": [
-            "PacBio",
-            "BAM"
-          ],
-          "adapter": {
-            "type": "BamAdapter",
-            "bamLocation": {
-              "uri": "test_data/pacbio_chr3_chr6.bam"
-            },
-            "index": {
-              "location": {
-                "uri": "test_data/pacbio_chr3_chr6.bam.bai"
-              }
-            }
-          },
-          "renderers": {
-            "PileupRenderer": {
-              "type": "PileupRenderer"
-            },
-            "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer"
-            }
+        "index": {
+          "location": {
+            "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
           }
         }
-      ]
+      },
+      "renderer": {
+        "type": "StructuralVariantChordRenderer"
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "pacbio_vcf",
+      "name": "HG002.hs37d5.bnds",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "PacBio",
+        "VCF"
+      ],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "test_data/pacbio_chr3_chr6.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/pacbio_chr3_chr6.vcf.gz.tbi"
+          }
+        }
+      },
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer"
+        }
+      }
+    },
+    {
+      "type": "PileupTrack",
+      "trackId": "pacbio_hg002_breakpoints",
+      "name": "HG002.hs37d5.11kb",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "PacBio",
+        "BAM"
+      ],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "test_data/pacbio_chr3_chr6.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/pacbio_chr3_chr6.bam.bai"
+          }
+        }
+      },
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer"
+        }
+      }
     }
   ],
   "defaultSession": {
@@ -135,10 +141,10 @@
                   "assemblyName": "hg19"
                 }
               ],
-              "reversed": false,
+              "horizontallyFlipped": false,
               "tracks": [
                 {
-                  "type": "AlignmentsTrack",
+                  "type": "PileupTrack",
                   "height": 100,
                   "configuration": "pacbio_hg002_breakpoints",
                   "selectedRendering": ""
@@ -177,10 +183,10 @@
                   "assemblyName": "hg19"
                 }
               ],
-              "reversed": false,
+              "horizontallyFlipped": false,
               "tracks": [
                 {
-                  "type": "AlignmentsTrack",
+                  "type": "PileupTrack",
                   "height": 100,
                   "configuration": "pacbio_hg002_breakpoints",
                   "selectedRendering": ""

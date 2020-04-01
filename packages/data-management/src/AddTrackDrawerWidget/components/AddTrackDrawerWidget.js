@@ -1,4 +1,3 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import Step from '@material-ui/core/Step'
@@ -40,7 +39,7 @@ function AddTrackDrawerWidget({ model }) {
   const [trackName, setTrackName] = useState('')
   const [trackType, setTrackType] = useState('')
   const [trackAdapter, setTrackAdapter] = useState({})
-  const [datasetName, setDatasetName] = useState('')
+  const [assemblyName, setAssemblyName] = useState('')
   const classes = useStyles()
 
   const session = getSession(model)
@@ -67,8 +66,8 @@ function AddTrackDrawerWidget({ model }) {
             setTrackType={setTrackType}
             trackAdapter={trackAdapter}
             setTrackAdapter={setTrackAdapter}
-            datasetName={datasetName}
-            setDatasetName={setDatasetName}
+            assemblyName={assemblyName}
+            setAssemblyName={setAssemblyName}
           />
         )
       default:
@@ -85,14 +84,13 @@ function AddTrackDrawerWidget({ model }) {
     const trackId = `${trackName
       .toLowerCase()
       .replace(/ /g, '_')}-${Date.now()}`
-    const trackConf = session.datasets
-      .find(dataset => readConfObject(dataset, 'name') === datasetName)
-      .addTrackConf({
-        trackId,
-        type: trackType,
-        name: trackName,
-        adapter: trackAdapter,
-      })
+    const trackConf = session.addTrackConf({
+      trackId,
+      type: trackType,
+      name: trackName,
+      assemblyNames: [assemblyName],
+      adapter: trackAdapter,
+    })
     if (model.view) {
       model.view.showTrack(trackConf)
     } else {
@@ -117,7 +115,7 @@ function AddTrackDrawerWidget({ model }) {
           trackData.config
         )
       case 1:
-        return !(trackName && trackType && trackAdapter.type && datasetName)
+        return !(trackName && trackType && trackAdapter.type && assemblyName)
       default:
         return true
     }

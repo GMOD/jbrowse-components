@@ -2,29 +2,27 @@ const dragHandleHeight = 3
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { getRoot } = jbrequire('mobx-state-tree')
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useState } = jbrequire('react')
+  const { useEffect, useState } = jbrequire('react')
 
   // material-ui stuff
   const Button = jbrequire('@material-ui/core/Button')
   const Container = jbrequire('@material-ui/core/Container')
-  const FormControl = jbrequire('@material-ui/core/FormControl')
-  const FormGroup = jbrequire('@material-ui/core/FormGroup')
-  const FormLabel = jbrequire('@material-ui/core/FormLabel')
   const Grid = jbrequire('@material-ui/core/Grid')
   const Icon = jbrequire('@material-ui/core/Icon')
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const MenuItem = jbrequire('@material-ui/core/MenuItem')
-  const Select = jbrequire('@material-ui/core/Select')
+  const TextField = jbrequire('@material-ui/core/TextField')
+  const Typography = jbrequire('@material-ui/core/Typography')
   const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { grey } = jbrequire('@material-ui/core/colors')
 
   const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
-  const { assembleLocString, getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
+  const { assembleLocString, getSession, isAbortException } = jbrequire(
+    '@gmod/jbrowse-core/util',
+  )
   const Ruler = jbrequire(require('./Ruler'))
 
   const useStyles = makeStyles(theme => {
@@ -193,32 +191,61 @@ export default pluginManager => {
     )
   })
 
-  // note: as of writing, this is identifical (except without typescript) to lineargenomeview
-  // if modified, consider refactoring or updating lineargenomeviews copy
-  // not extracted to a separate component just yet...
   const ImportForm = observer(({ model }) => {
     const classes = useStyles()
-    const [selectedDatasetIdx, setSelectedDatasetIdx] = useState('')
-    const { datasets } = getRoot(model).jbrowse
-    const datasetChoices = datasets.map(dataset =>
-      readConfObject(dataset, 'name'),
-    )
-    function openButton() {
-      if (parseInt(selectedDatasetIdx, 10) >= 0) {
-        const dataset = datasets[Number(selectedDatasetIdx)]
-        if (dataset) {
-          const assemblyName = readConfObject(dataset.assembly, 'name')
-          if (
-            assemblyName &&
-            assemblyName !== model.displayRegionsFromAssemblyName
-          ) {
-            model.setDisplayedRegionsFromAssemblyName(assemblyName)
-            return
+    const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
+    const [regions, setRegions] = useState([])
+    const { assemblyNames, getRegionsForAssemblyName } = getSession(model)
+    const [assemblyError, setAssemblyError] = useState('')
+    const [regionsError, setRegionsError] = useState('')
+    if (!assemblyNames.length) {
+      setAssemblyError('No configured assemblies')
+    }
+    useEffect(() => {
+      let aborter
+      let mounted = true
+      async function fetchRegions() {
+        if (mounted)
+          if (assemblyError && mounted) {
+            setRegions([])
+          } else {
+            try {
+              aborter = new AbortController()
+              const fetchedRegions = await getRegionsForAssemblyName(
+                assemblyNames[selectedAssemblyIdx],
+                { signal: aborter.signal },
+              )
+              if (mounted) {
+                setRegions(fetchedRegions)
+              }
+            } catch (e) {
+              if (!isAbortException(e) && mounted) {
+                setRegionsError(String(e))
+              }
+            }
           }
-        }
       }
-      model.setDisplayedRegions([])
-      model.setDisplayedRegionsFromAssemblyName(undefined)
+      fetchRegions()
+
+      return () => {
+        mounted = false
+        aborter && aborter.abort()
+      }
+    }, [
+      assemblyError,
+      assemblyNames,
+      getRegionsForAssemblyName,
+      selectedAssemblyIdx,
+    ])
+
+    function onAssemblyChange(event) {
+      setSelectedAssemblyIdx(Number(event.target.value))
+      setRegions([])
+      setRegionsError('')
+    }
+
+    function onOpenClick() {
+      model.setDisplayedRegions(regions)
     }
 
     return (
@@ -236,47 +263,47 @@ export default pluginManager => {
           </div>
         )}
         <Container className={classes.importFormContainer}>
-          <Grid
-            style={{ width: '25rem', margin: '0 auto' }}
-            container
-            spacing={1}
-            direction="row"
-            alignItems="flex-start"
-          >
+          <Grid container spacing={1} justify="center" alignItems="center">
             <Grid item>
-              <FormControl component="fieldset">
-                <FormLabel component="legend">Select dataset to view</FormLabel>
-                <FormGroup>
-                  <Select
-                    value={selectedDatasetIdx}
-                    onChange={event => {
-                      setSelectedDatasetIdx(String(event.target.value))
-                    }}
-                  >
-                    {datasetChoices.map((name, idx) => (
-                      <MenuItem key={name} value={idx}>
-                        {name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormGroup>
-              </FormControl>
+              <TextField
+                select
+                value={
+                  assemblyNames[selectedAssemblyIdx] && !assemblyError
+                    ? selectedAssemblyIdx
+                    : ''
+                }
+                onChange={onAssemblyChange}
+                helperText={assemblyError || 'Select assembly to view'}
+                error={!!assemblyError}
+                disabled={!!assemblyError}
+                margin="normal"
+              >
+                {assemblyNames.map((name, idx) => (
+                  <MenuItem key={name} value={idx}>
+                    {name}
+                  </MenuItem>
+                ))}
+              </TextField>
             </Grid>
             <Grid item>
               <Button
-                disabled={selectedDatasetIdx === undefined}
-                onClick={openButton}
+                disabled={!regions.length || !!regionsError}
+                onClick={onOpenClick}
                 variant="contained"
                 color="primary"
               >
-                Open
+                {regions.length ? 'Open' : 'Loading…'}
               </Button>
+              {regionsError ? (
+                <Typography color="error">{regionsError}</Typography>
+              ) : null}
             </Grid>
           </Grid>
         </Container>
       </>
     )
   })
+
   function CircularView({ model }) {
     const classes = useStyles()
     const initialized =

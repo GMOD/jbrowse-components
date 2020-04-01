@@ -7,7 +7,7 @@ import { types } from 'mobx-state-tree'
 import configSchema from './configSchema'
 import { generateTracks } from './tracks'
 
-export default function(pluginManager) {
+export default function (pluginManager) {
   return types.compose(
     'TheTrackHubRegistryConnection',
     connectionModelFactory(pluginManager),
@@ -25,7 +25,11 @@ export default function(pluginManager) {
           )
             .then(rawResponse => rawResponse.json())
             .then(trackDb => {
-              self.setTrackConfs(generateTracks(trackDb))
+              const assemblyName = readConfObject(
+                self.configuration,
+                'assemblyName',
+              )
+              self.setTrackConfs(generateTracks(trackDb, assemblyName))
             })
             .catch(error => {
               console.error(error)

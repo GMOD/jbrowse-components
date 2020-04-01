@@ -1,8 +1,8 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import Color from 'color'
-import WiggleBaseRenderer from '../WiggleBaseRenderer'
 import { getOrigin, getScale } from '../util'
+import WiggleBaseRenderer from '../WiggleBaseRenderer'
 
 export default class XYPlotRenderer extends WiggleBaseRenderer {
   draw(ctx, props) {
@@ -15,6 +15,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
       config,
       horizontallyFlipped,
     } = props
+
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')
@@ -62,9 +63,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
       } else if (summaryScoreMode === 'whiskers') {
         // max
         if (maxr !== undefined) {
-          ctx.fillStyle = Color(c)
-            .lighten(0.6)
-            .toString()
+          ctx.fillStyle = Color(c).lighten(0.6).toString()
           ctx.fillRect(leftPx, toY(maxr), w, filled ? toHeight(maxr) : 1)
         }
 
@@ -73,9 +72,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
         ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
         // min
         if (minr !== undefined) {
-          ctx.fillStyle = Color(c)
-            .darken(0.6)
-            .toString()
+          ctx.fillStyle = Color(c).darken(0.6).toString()
           ctx.fillRect(leftPx, toY(minr), w, filled ? toHeight(minr) : 1)
         }
       } else {

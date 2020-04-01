@@ -2,6 +2,7 @@
 
 exports[`starfusion import 1`] = `
 Object {
+  "assemblyName": "fogbat",
   "columnDisplayOrder": Array [
     0,
     1,
@@ -111,7 +112,6 @@ Object {
       "name": "annots",
     },
   ],
-  "datasetName": "fogbat",
   "hasColumnNames": true,
   "rowSet": Object {
     "isLoaded": true,

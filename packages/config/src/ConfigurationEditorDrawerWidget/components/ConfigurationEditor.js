@@ -1,3 +1,4 @@
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import {
   getTypeNamesFromExplicitlyTypedUnion,
   isConfigurationSchemaType,
@@ -94,8 +95,12 @@ const useStyles = makeStyles(theme => ({
 
 function ConfigurationEditor({ model }) {
   const classes = useStyles()
+  // key forces a re-render, otherwise the same field can end up being used
+  // for different tracks since only the backing model changes for example
+  // see pr #804
+  const key = model.target && readConfObject(model.target, 'trackId')
   return (
-    <div className={classes.root} data-testid="configEditor">
+    <div className={classes.root} key={key} data-testid="configEditor">
       {!model.target ? 'no target set' : <Schema schema={model.target} />}
     </div>
   )

@@ -91,7 +91,9 @@ export default class SimpleFeature implements Feature {
     this.uniqueId = String(id)
 
     if (!(this.data.aliases || this.data.end - this.data.start >= 0)) {
-      throw new Error('invalid feature data')
+      throw new Error(
+        `invalid feature data, end less than start. end: ${this.data.end} start: ${this.data.start}`,
+      )
     }
 
     // inflate any subfeatures that are not already feature objects

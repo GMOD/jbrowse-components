@@ -46,13 +46,7 @@ export function calculateBlocksReversed(self: LGV, extra = 0) {
 }
 
 export function calculateBlocksForward(self: LGV, extra = 0) {
-  const {
-    offsetPx,
-    bpPerPx,
-    width,
-    displayedRegionsInOrder,
-    minimumBlockWidth,
-  } = self
+  const { offsetPx, bpPerPx, width, displayedRegions, minimumBlockWidth } = self
   if (!width)
     throw new Error('view has no width, cannot calculate displayed blocks')
   const windowLeftBp = offsetPx * bpPerPx
@@ -62,7 +56,7 @@ export function calculateBlocksForward(self: LGV, extra = 0) {
   // for each displayed region
   let regionBpOffset = 0
   const blocks = new BlockSet()
-  displayedRegionsInOrder.forEach((region, regionNumber) => {
+  displayedRegions.forEach((region, regionNumber) => {
     // find the block numbers of the left and right window sides,
     // clamp those to the region range, and then make blocks for that range
     const regionBlockCount = Math.ceil(
@@ -113,7 +107,7 @@ export function calculateBlocksForward(self: LGV, extra = 0) {
       if (
         regionWidthPx >= minimumBlockWidth &&
         blockData.isRightEndOfDisplayedRegion &&
-        regionNumber < displayedRegionsInOrder.length - 1
+        regionNumber < displayedRegions.length - 1
       ) {
         blocks.push(
           new InterRegionPaddingBlock({
@@ -122,10 +116,10 @@ export function calculateBlocksForward(self: LGV, extra = 0) {
             offsetPx: blockData.offsetPx + blockData.widthPx,
           }),
         )
-        regionBpOffset += interRegionPaddingWidth * bpPerPx
       }
     }
 
+    regionBpOffset += interRegionPaddingWidth * bpPerPx
     regionBpOffset += region.end - region.start
   })
 

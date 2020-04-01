@@ -6,12 +6,12 @@ import { isAbortException, getSession } from '@gmod/jbrowse-core/util'
 import {
   getContainingView,
   getParentRenderProps,
-  getTrackAssemblyName,
+  getTrackAssemblyNames,
 } from '@gmod/jbrowse-core/util/tracks'
 import blockBasedTrackModel, {
   BlockBasedTrackStateModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
-import { autorun } from 'mobx'
+import { autorun, observable } from 'mobx'
 import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
 import React from 'react'
 import { getNiceDomain } from '../util'
@@ -40,16 +40,15 @@ const stateModelFactory = (configSchema: any) =>
           // avoid circular reference since WiggleTrackComponent receives this model
           ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
           ready: false,
-          stats: undefined as
-            | undefined
-            | { scoreMin: number; scoreMax: number; [key: string]: number },
+          stats: observable({ scoreMin: 0, scoreMax: 50 }),
           statsFetchInProgress: undefined as undefined | AbortController,
         })),
     )
     .actions(self => {
       return {
         updateStats(stats: { scoreMin: number; scoreMax: number }) {
-          self.stats = stats
+          self.stats.scoreMin = stats.scoreMin
+          self.stats.scoreMax = stats.scoreMax
           self.ready = true
         },
 
@@ -64,44 +63,61 @@ const stateModelFactory = (configSchema: any) =>
         },
       }
     })
-    .views(self => ({
-      get rendererTypeName() {
-        const viewName = getConf(self, 'defaultRendering')
-        const rendererType = rendererTypes.get(viewName)
-        if (!rendererType)
-          throw new Error(`unknown alignments view name ${viewName}`)
-        return rendererType
-      },
+    .views(self => {
+      let oldDomain: [number, number] = [0, 0]
+      return {
+        get rendererTypeName() {
+          const viewName = getConf(self, 'defaultRendering')
+          const rendererType = rendererTypes.get(viewName)
+          if (!rendererType)
+            throw new Error(`unknown alignments view name ${viewName}`)
+          return rendererType
+        },
 
-      get domain() {
-        return self.stats
-          ? getNiceDomain({
-              domain: [self.stats.scoreMin, self.stats.scoreMax],
-              scaleType: getConf(self, 'scaleType'),
-              bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
-            })
-          : undefined
-      },
-      get renderProps() {
-        const config = self.rendererType.configSchema.create(
-          getConf(self, ['renderers', this.rendererTypeName]) || {},
-        )
-        return {
-          ...getParentRenderProps(self),
-          notReady: !self.ready,
-          trackModel: self,
-          config,
-          scaleOpts: {
-            domain: this.domain,
-            stats: self.stats,
-            autoscaleType: getConf(self, 'autoscale'),
+        get domain() {
+          const ret = getNiceDomain({
+            domain: [self.stats.scoreMin, self.stats.scoreMax],
             scaleType: getConf(self, 'scaleType'),
-            inverted: getConf(self, 'inverted'),
-          },
-          height: self.height,
-        }
-      },
-    }))
+            bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
+          })
+          const headroom = getConf(self, 'headroom')
+          if (headroom) {
+            ret[1] = Math.ceil(ret[1] / headroom) * headroom
+          }
+          if (JSON.stringify(oldDomain) !== JSON.stringify(ret)) {
+            oldDomain = ret
+          }
+          return oldDomain
+        },
+
+        get needsScalebar() {
+          return (
+            self.rendererTypeName === 'XYPlotRenderer' ||
+            self.rendererTypeName === 'LinePlotRenderer'
+          )
+        },
+
+        get renderProps() {
+          const config = self.rendererType.configSchema.create(
+            getConf(self, ['renderers', this.rendererTypeName]) || {},
+          )
+          return {
+            ...getParentRenderProps(self),
+            notReady: !self.ready,
+            trackModel: self,
+            config,
+            scaleOpts: {
+              domain: this.domain,
+              stats: self.stats,
+              autoscaleType: getConf(self, 'autoscale'),
+              scaleType: getConf(self, 'scaleType'),
+              inverted: getConf(self, 'inverted'),
+            },
+            height: self.height,
+          }
+        },
+      }
+    })
     .actions(self => {
       async function getStats(signal: AbortSignal) {
         const { rpcManager } = getSession(self) as {
@@ -135,8 +151,9 @@ const stateModelFactory = (configSchema: any) =>
             {
               adapterConfig: getSnapshot(adapter),
               adapterType: adapter.type,
-              assemblyName: getTrackAssemblyName(self),
-              regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
+              // TODO: Figure this out for multiple assembly names
+              assemblyName: getTrackAssemblyNames(self)[0],
+              regions: JSON.parse(JSON.stringify(dynamicBlocks.contentBlocks)),
               signal,
               bpPerPx,
             },
@@ -170,6 +187,12 @@ const stateModelFactory = (configSchema: any) =>
                 try {
                   const aborter = new AbortController()
                   self.setLoading(aborter)
+
+                  const { dynamicBlocks } = getContainingView(self)
+                  if (!dynamicBlocks.contentBlocks.length && !self.ready) {
+                    return
+                  }
+
                   const stats = await getStats(aborter.signal)
                   if (isAlive(self)) {
                     self.updateStats(stats)

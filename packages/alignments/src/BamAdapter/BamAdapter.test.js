@@ -10,7 +10,6 @@ test('adapter can fetch features from volvox.bam', async () => {
       location: {
         localPath: require.resolve('../../test_data/volvox-sorted.bam.bai'),
       },
-      indexType: 'BAI',
     },
   })
 
@@ -30,6 +29,27 @@ test('adapter can fetch features from volvox.bam', async () => {
   expect(await adapter.refIdToName(1)).toBe(undefined)
 
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
+
+  const adapterCSI = new Adapter({
+    bamLocation: {
+      localPath: require.resolve('../../test_data/volvox-sorted.bam'),
+    },
+    index: {
+      indexType: 'CSI',
+      location: {
+        localPath: require.resolve('../../test_data/volvox-sorted.bam.csi'),
+      },
+    },
+  })
+
+  const featuresCSI = await adapterCSI.getFeatures({
+    refName: 'ctgA',
+    start: 0,
+    end: 20000,
+  })
+  const featuresArrayCSI = await featuresCSI.pipe(toArray()).toPromise()
+  const featuresJsonArrayCSI = featuresArrayCSI.map(f => f.toJSON())
+  expect(featuresJsonArrayCSI).toEqual(featuresJsonArray)
 })
 
 test('test usage of BamSlightlyLazyFeature toJSON (used in the drawer widget)', async () => {
@@ -56,4 +76,27 @@ test('test usage of BamSlightlyLazyFeature toJSON (used in the drawer widget)', 
   expect(f.start).toBe(2)
   expect(f.end).toBe(102)
   expect(f.mismatches).not.toBeTruthy()
+})
+
+test('test usage of BamSlightlyLazyFeature for extended CIGAR', async () => {
+  const adapter = new Adapter({
+    bamLocation: {
+      localPath: require.resolve('../../test_data/extended_cigar.bam'),
+    },
+    index: {
+      location: {
+        localPath: require.resolve('../../test_data/extended_cigar.bam.bai'),
+      },
+      indexType: 'BAI',
+    },
+  })
+
+  const features = await adapter.getFeatures({
+    refName: '1',
+    start: 13260,
+    end: 13340,
+  })
+  const featuresArray = await features.pipe(toArray()).toPromise()
+  const f = featuresArray[0]
+  expect(f.get('mismatches')).toMatchSnapshot()
 })

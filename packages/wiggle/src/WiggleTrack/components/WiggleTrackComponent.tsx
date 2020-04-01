@@ -11,7 +11,7 @@ const powersOfTen: number[] = []
 for (let i = -20; i < 20; i += 1) {
   powersOfTen.push(10 ** i)
 }
-const YScaleBar = observer(
+export const YScaleBar = observer(
   ({ model }: { model: Instance<WiggleTrackModel> }) => {
     const { domain, height } = model
     const scaleType = getConf(model, 'scaleType')
@@ -20,16 +20,14 @@ const YScaleBar = observer(
       domain,
       range: [height, 0],
       inverted: getConf(model, 'inverted'),
-      bounds: {
-        min: getConf(model, 'minScore'),
-        max: getConf(model, 'maxScore'),
-      },
     })
-    const axisProps = axisPropsFromTickScale(scale, 4)
+    const ticks = height < 50 ? 2 : 4
+    const axisProps = axisPropsFromTickScale(scale, ticks)
     const values =
       scaleType === 'log'
         ? axisProps.values.filter((s: number) => powersOfTen.includes(s))
         : axisProps.values
+
     return (
       <svg
         style={{
@@ -52,15 +50,12 @@ const YScaleBar = observer(
 )
 function WiggleTrackComponent(props: { model: Instance<WiggleTrackModel> }) {
   const { model } = props
-  const { stats } = model
-
-  const needsScalebar =
-    model.rendererTypeName === 'XYPlotRenderer' ||
-    model.rendererTypeName === 'LinePlotRenderer'
-
+  const { ready, stats } = model
   return (
     <BlockBasedTrack {...props}>
-      {stats && needsScalebar ? <YScaleBar model={model} /> : null}
+      {ready && stats && model.needsScalebar ? (
+        <YScaleBar model={model} />
+      ) : null}
     </BlockBasedTrack>
   )
 }

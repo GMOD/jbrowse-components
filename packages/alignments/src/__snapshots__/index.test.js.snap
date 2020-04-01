@@ -15,11 +15,20 @@ Object {
     "PileupRenderer": Object {
       "type": "PileupRenderer",
     },
+    "SNPCoverageRenderer": Object {
+      "type": "SNPCoverageRenderer",
+    },
     "SvgFeatureRenderer": Object {
       "type": "SvgFeatureRenderer",
     },
   },
   "trackId": "track0",
   "type": "AlignmentsTrack",
+}
+`;
+
+exports[`plugin in a stock JBrowse 1`] = `
+Object {
+  "type": "BamAdapter",
 }
 `;

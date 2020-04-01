@@ -1,4 +1,4 @@
-import { Observer, Observable, merge } from 'rxjs'
+import { Observable, merge } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
 import { IRegion as Region } from './mst-types'
 import { ObservableCreate } from './util/rxjs'
@@ -78,11 +78,8 @@ export default abstract class BaseAdapter {
    * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
    * @returns {Observable[Feature]} see getFeatures()
    */
-  public getFeaturesInRegion(
-    region: Region,
-    opts: BaseOptions = {},
-  ): Observable<Feature> {
-    return ObservableCreate(async (observer: Observer<Feature>) => {
+  public getFeaturesInRegion(region: Region, opts: BaseOptions = {}) {
+    return ObservableCreate<Feature>(async observer => {
       const hasData = await this.hasDataForRefName(region.refName, opts)
       checkAbortSignal(opts.signal)
       if (!hasData) {
@@ -111,12 +108,14 @@ export default abstract class BaseAdapter {
   public getFeaturesInMultipleRegions(
     regions: Region[],
     opts: BaseOptions = {},
-  ): Observable<Feature> {
+  ) {
     const obs = merge(
       ...regions.map(region => this.getFeaturesInRegion(region, opts)),
     )
 
-    if (opts.signal) return obs.pipe(takeUntil(observeAbortSignal(opts.signal)))
+    if (opts.signal) {
+      return obs.pipe(takeUntil(observeAbortSignal(opts.signal)))
+    }
     return obs
   }
 
@@ -127,13 +126,9 @@ export default abstract class BaseAdapter {
    * @returns {Promise<boolean>} Whether data source has data for the given
    * reference name
    */
-  public async hasDataForRefName(
-    refName: string,
-    opts: BaseOptions = {},
-  ): Promise<boolean> {
+  public async hasDataForRefName(refName: string, opts: BaseOptions = {}) {
     const refNames = await this.getRefNames(opts)
-    if (refNames.includes(refName)) return true
-    return false
+    return refNames.includes(refName)
   }
 }
 

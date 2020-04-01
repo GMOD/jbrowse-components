@@ -6,9 +6,7 @@ import ReactPropTypes from 'prop-types'
 import React, { useEffect, useRef } from 'react'
 import { withContentRect } from 'react-measure'
 
-import { inDevelopment } from '../util'
 import DrawerWidget from './DrawerWidget'
-import DevTools from './DevTools'
 import Snackbar from './Snackbar'
 
 const useStyles = makeStyles(theme => ({
@@ -42,7 +40,11 @@ const useStyles = makeStyles(theme => ({
 function ViewContainer({ session, view }) {
   const { pluginManager } = session
   const classes = useStyles()
-  const { ReactComponent } = pluginManager.getViewType(view.type)
+  const viewType = pluginManager.getViewType(view.type)
+  if (!viewType) {
+    throw new Error(`unknown view type ${view.type}`)
+  }
+  const { ReactComponent } = viewType
   const containerNodeRef = useRef()
 
   // scroll the view into view when first mounted
@@ -120,7 +122,6 @@ function App({ contentRect, measureRef, session }) {
               view={view}
             />
           ))}
-          {inDevelopment ? <DevTools session={session} /> : null}
           <div style={{ height: 300 }} />
         </div>
       </div>

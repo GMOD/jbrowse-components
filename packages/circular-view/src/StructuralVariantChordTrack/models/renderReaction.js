@@ -1,6 +1,6 @@
 export default ({ jbrequire }) => {
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
-  const { getContainingView, getTrackAssemblyName } = jbrequire(
+  const { getContainingView, getTrackAssemblyNames } = jbrequire(
     '@gmod/jbrowse-core/util/tracks',
   )
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
@@ -11,7 +11,7 @@ export default ({ jbrequire }) => {
     const { rendererType, renderProps } = track
     const { rpcManager } = getSession(view)
 
-    const assemblyName = getTrackAssemblyName(track)
+    const assemblyName = getTrackAssemblyNames(track)
     const data = {
       rendererType,
       rpcManager,

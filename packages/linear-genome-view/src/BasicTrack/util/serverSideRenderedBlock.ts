@@ -11,7 +11,7 @@ import {
 import { Component } from 'react'
 import { reaction } from 'mobx'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-
+import jsonStableStringify from 'json-stable-stringify'
 import { Region } from '@gmod/jbrowse-core/mst-types'
 
 import {
@@ -22,7 +22,7 @@ import {
 } from '@gmod/jbrowse-core/util'
 import {
   getContainingView,
-  getTrackAssemblyName,
+  getTrackAssemblyNames,
 } from '@gmod/jbrowse-core/util/tracks'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
@@ -41,7 +41,7 @@ const blockState = types
     filled: false,
     data: undefined as any,
     html: '',
-    error: undefined as string | undefined,
+    error: undefined as Error | undefined,
     message: undefined as string | undefined,
     maxHeightReached: false,
     ReactComponent: ServerSideRenderedBlockContent,
@@ -111,7 +111,7 @@ const blockState = types
         self.renderProps = renderProps
         renderInProgress = undefined
       },
-      setError(error: string) {
+      setError(error: Error) {
         console.error(error)
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
@@ -150,10 +150,15 @@ const blockState = types
         const { rpcManager } = getSession(view) as any
         const { rendererType } = track
         const { renderArgs } = renderBlockData(cast(self))
-        rendererType.freeResourcesInClient(
-          rpcManager,
-          JSON.parse(JSON.stringify(renderArgs)),
-        )
+        rendererType
+          .freeResourcesInClient(
+            rpcManager,
+            JSON.parse(JSON.stringify(renderArgs)),
+          )
+          .catch((e: Error) => {
+            // just console.error if it's something while it's being destroyed
+            console.warn('Error while destroying block', e)
+          })
       },
     }
   })
@@ -165,57 +170,76 @@ export type BlockStateModel = typeof blockState
 // not using a flow for this, because the flow doesn't
 // work with autorun
 function renderBlockData(self: Instance<BlockStateModel>) {
-  const { assemblyData, rpcManager } = getSession(self) as any
-  const track = getParent(self, 2)
-  const assemblyName = getTrackAssemblyName(track)
-  const trackAssemblyData =
-    (assemblyData && assemblyData.get(assemblyName)) || {}
-  const trackAssemblyAliases = trackAssemblyData.aliases || []
-  let cannotBeRenderedReason
-  if (
-    !(
-      assemblyName === self.region.assemblyName ||
-      trackAssemblyAliases.includes(self.region.assemblyName)
-    )
-  )
-    cannotBeRenderedReason = 'region assembly does not match track assembly'
-  else cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
-  const { renderProps } = track
-  const { rendererType } = track
-  const { config } = renderProps
-  // This line is to trigger the mobx reaction when the config changes
-  // It won't trigger the reaction if it doesn't think we're accessing it
-  readConfObject(config)
+  try {
+    const { assemblyData, rpcManager } = getSession(self) as any
+    const track = getParent(self, 2)
+    const assemblyNames = getTrackAssemblyNames(track)
+    let cannotBeRenderedReason
+    if (!assemblyNames.includes(self.region.assemblyName)) {
+      let matchFound = false
+      assemblyNames.forEach((assemblyName: string) => {
+        const trackAssemblyData =
+          (assemblyData && assemblyData.get(assemblyName)) || {}
+        const trackAssemblyAliases = trackAssemblyData.aliases || []
+        if (trackAssemblyAliases.includes(self.region.assemblyName))
+          matchFound = true
+      })
+      if (!matchFound) {
+        cannotBeRenderedReason = `region assembly (${self.region.assemblyName}) does not match track assemblies (${assemblyNames})`
+      }
+    }
+    if (!cannotBeRenderedReason)
+      cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
+    const trackAssemblyData =
+      (assemblyData && assemblyData.get(self.region.assemblyName)) || {}
+    const { renderProps } = track
+    const { rendererType } = track
+    const { config } = renderProps
+    // This line is to trigger the mobx reaction when the config changes
+    // It won't trigger the reaction if it doesn't think we're accessing it
+    readConfObject(config)
 
-  let sequenceConfig: { type?: string } = {}
-  if (trackAssemblyData.sequence) {
-    sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
-  }
+    let sequenceConfig: { type?: string } = {}
+    if (trackAssemblyData.sequence) {
+      sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
+    }
+    const adapterConfig = getConf(track, 'adapter')
+    // Only subtracks will have parent tracks with configs
+    // They use parent's adapter config for matching sessionId
+    const parentTrack = getParent(track)
+    const adapterConfigId = parentTrack.configuration
+      ? jsonStableStringify(getConf(parentTrack, 'adapter'))
+      : jsonStableStringify(adapterConfig)
 
-  return {
-    rendererType,
-    rpcManager,
-    renderProps,
-    cannotBeRenderedReason,
-    trackError: track.error,
-    renderArgs: {
-      assemblyName,
-      region: self.region,
-      adapterType: track.adapterType.name,
-      adapterConfig: getConf(track, 'adapter'),
-      sequenceAdapterType: sequenceConfig.type,
-      sequenceAdapterConfig: sequenceConfig,
-      rendererType: rendererType.name,
+    return {
+      rendererType,
+      rpcManager,
       renderProps,
-      sessionId: track.id,
-      blockKey: self.key,
-      timeout: 1000000, // 10000,
-    },
+      cannotBeRenderedReason,
+      trackError: track.error,
+      renderArgs: {
+        assemblyName: self.region.assemblyName,
+        region: self.region,
+        adapterType: track.adapterType.name,
+        adapterConfig,
+        sequenceAdapterType: sequenceConfig.type,
+        sequenceAdapterConfig: sequenceConfig,
+        rendererType: rendererType.name,
+        renderProps,
+        sessionId: adapterConfigId,
+        blockKey: self.key,
+        timeout: 1000000, // 10000,
+      },
+    }
+  } catch (error) {
+    return {
+      trackError: error,
+    }
   }
 }
 
 interface RenderProps {
-  trackError: string
+  trackError: Error
   rendererType: any
   renderProps: { [key: string]: any }
   rpcManager: { call: Function }
@@ -223,9 +247,13 @@ interface RenderProps {
   renderArgs: { [key: string]: any }
 }
 
+interface ErrorProps {
+  trackError: string
+}
+
 async function renderBlockEffect(
   self: Instance<BlockStateModel>,
-  props: RenderProps,
+  props: RenderProps | ErrorProps,
   allowRefetch = true,
 ) {
   const {
@@ -235,8 +263,7 @@ async function renderBlockEffect(
     rpcManager,
     cannotBeRenderedReason,
     renderArgs,
-  } = props
-  // console.log(getContainingView(self).rendererType)
+  } = props as RenderProps
   if (!isAlive(self)) return
 
   if (trackError) {

@@ -7,8 +7,12 @@ import ucscAssemblies from './ucscAssemblies'
 export { ucscAssemblies }
 
 export async function fetchHubFile(hubFileLocation) {
-  const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
-  return new HubFile(hubFileText)
+  try {
+    const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
+    return new HubFile(hubFileText)
+  } catch (error) {
+    throw new Error(`Not a valid hub.txt file, got error: '${error}'`)
+  }
 }
 
 export async function fetchGenomesFile(genomesFileLocation) {
@@ -25,7 +29,7 @@ export async function fetchTrackDbFile(trackDbFileLocation) {
   return new TrackDbFile(trackDbFileText)
 }
 
-export function generateTracks(trackDb, trackDbFileLocation) {
+export function generateTracks(trackDb, trackDbFileLocation, assemblyName) {
   const tracks = []
 
   trackDb.forEach((track, trackName) => {
@@ -52,6 +56,7 @@ export function generateTracks(trackDb, trackDbFileLocation) {
     )
     const res = makeTrackConfig(track, categories, trackDbFileLocation, trackDb)
     res.trackId = `ucsc-trackhub-${objectHash(res)}`
+    res.assemblyNames = [assemblyName]
     tracks.push(res)
   })
 
@@ -64,10 +69,7 @@ function makeTrackConfig(track, categories, trackDbFileLocation, trackDb) {
   let baseTrackType = trackType.split(' ')[0]
   if (
     baseTrackType === 'bam' &&
-    track
-      .get('bigDataUrl')
-      .toLowerCase()
-      .endsWith('cram')
+    track.get('bigDataUrl').toLowerCase().endsWith('cram')
   )
     baseTrackType = 'cram'
   let bigDataLocation
@@ -96,7 +98,7 @@ function makeTrackConfig(track, categories, trackDbFileLocation, trackDb) {
           ? { localPath: track.get('bigDataIndex') }
           : { localPath: `${track.get('bigDataUrl')}.bai` }
       return {
-        type: 'AlignmentsTrack',
+        type: 'PileupTrack',
         name: track.get('shortLabel'),
         description: track.get('longLabel'),
         category: categories,
@@ -215,7 +217,7 @@ function makeTrackConfig(track, categories, trackDbFileLocation, trackDb) {
           ? { localPath: track.get('bigDataIndex') }
           : { localPath: `${track.get('bigDataUrl')}.crai` }
       return {
-        type: 'AlignmentsTrack',
+        type: 'PileupTrack',
         name: track.get('shortLabel'),
         description: track.get('longLabel'),
         category: categories,

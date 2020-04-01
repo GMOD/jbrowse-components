@@ -1,9 +1,17 @@
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect } from 'react'
+import { readConfObject } from '../configuration'
 import { ImageBitmapType } from '../util/offscreenCanvasPonyfill'
 
 function PrerenderedCanvas(props) {
-  const { width, height, highResolutionScaling, style, imageData } = props
+  const {
+    width,
+    height,
+    highResolutionScaling,
+    style,
+    config,
+    imageData,
+  } = props
   const featureCanvas = useRef()
 
   useEffect(() => {
@@ -31,9 +39,10 @@ function PrerenderedCanvas(props) {
     }
   }, [imageData])
 
+  // appends renderertype for testing multiple subtracks (multiple canvases) loading
   return (
     <canvas
-      data-testid="prerendered_canvas"
+      data-testid={`prerendered_canvas_${readConfObject(config, 'type')}`}
       ref={featureCanvas}
       width={width * highResolutionScaling}
       height={height * highResolutionScaling}
@@ -46,13 +55,15 @@ PrerenderedCanvas.propTypes = {
   height: ReactPropTypes.number.isRequired,
   width: ReactPropTypes.number.isRequired,
   highResolutionScaling: ReactPropTypes.number,
-  imageData: ReactPropTypes.any.isRequired,
   style: ReactPropTypes.objectOf(ReactPropTypes.any),
+  config: ReactPropTypes.objectOf(ReactPropTypes.any),
+  imageData: ReactPropTypes.any,
 }
 PrerenderedCanvas.defaultProps = {
   imageData: undefined,
   highResolutionScaling: 1,
   style: {},
+  config: {},
 }
 
 export default PrerenderedCanvas

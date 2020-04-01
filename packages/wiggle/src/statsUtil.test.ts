@@ -1,10 +1,12 @@
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import { from } from 'rxjs'
 import {
   calcStdFromSums,
   rectifyStats,
   scoresToStats,
   calcPerBaseStats,
   UnrectifiedFeatureStats,
-} from './util'
+} from './statsUtil'
 
 test('calc std', () => {
   const s = [1, 2, 3]
@@ -38,12 +40,15 @@ test('test rectify', () => {
   ).toEqual(1) // calculated from a webapp about sample standard deviations
 })
 
-test('scores to stats', () => {
-  const ret = scoresToStats({ refName: 'ctgA', start: 0, end: 2 }, [
-    { start: 0, end: 1, score: 1 },
-    { start: 1, end: 2, score: 2 },
-    { start: 2, end: 3, score: 3 },
-  ])
+test('scores to stats', async () => {
+  const ret = await scoresToStats(
+    { refName: 'ctgA', start: 0, end: 2 },
+    from([
+      new SimpleFeature({ id: 1, data: { start: 0, end: 1, score: 1 } }),
+      new SimpleFeature({ id: 2, data: { start: 1, end: 2, score: 2 } }),
+      new SimpleFeature({ id: 3, data: { start: 2, end: 3, score: 3 } }),
+    ]),
+  )
   expect(ret.scoreMean).toEqual(2)
   expect(ret.featureDensity).toEqual(1)
   expect(ret.scoreMax).toEqual(3)
@@ -51,32 +56,33 @@ test('scores to stats', () => {
   expect(ret.scoreStdDev).toEqual(1) // calculated from a webapp
 })
 
+// peter TODO: fix this test
 test('calc per base stats', () => {
   // one score at start
   expect(
     calcPerBaseStats({ refName: 'ctgA', start: 0, end: 9 }, [
-      { start: 0, end: 1, score: 10 },
+      new SimpleFeature({ id: 1, data: { start: 0, end: 1, score: 10 } }),
     ]),
   ).toEqual([10, 0, 0, 0, 0, 0, 0, 0, 0])
   // multiple features
   expect(
     calcPerBaseStats({ refName: 'ctgA', start: 0, end: 9 }, [
-      { start: 0, end: 1, score: 10 },
-      { start: 8, end: 9, score: 10 },
+      new SimpleFeature({ id: 1, data: { start: 0, end: 1, score: 10 } }),
+      new SimpleFeature({ id: 2, data: { start: 8, end: 9, score: 10 } }),
     ]),
   ).toEqual([10, 0, 0, 0, 0, 0, 0, 0, 10])
   // multiple features
   expect(
     calcPerBaseStats({ refName: 'ctgA', start: 15, end: 30 }, [
-      { start: 10, end: 20, score: 10 },
-      { start: 25, end: 26, score: 10 },
+      new SimpleFeature({ id: 1, data: { start: 10, end: 20, score: 10 } }),
+      new SimpleFeature({ id: 2, data: { start: 25, end: 26, score: 10 } }),
     ]),
   ).toEqual([10, 10, 10, 10, 10, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0])
   // feature starts before region
   expect(
     calcPerBaseStats({ refName: 'ctgA', start: 10, end: 19 }, [
-      { start: 5, end: 15, score: 10 },
-      { start: 18, end: 26, score: 10 },
+      new SimpleFeature({ id: 1, data: { start: 5, end: 15, score: 10 } }),
+      new SimpleFeature({ id: 1, data: { start: 18, end: 26, score: 10 } }),
     ]),
   ).toEqual([10, 10, 10, 10, 10, 0, 0, 0, 10])
 })

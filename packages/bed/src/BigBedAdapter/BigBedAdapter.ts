@@ -6,7 +6,6 @@ import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { Observable, Observer } from 'rxjs'
 import { map, mergeAll } from 'rxjs/operators'
 
 interface BEDFeature {
@@ -30,7 +29,7 @@ interface Parser {
 }
 
 export default class extends BaseAdapter {
-  private bigbed: any
+  private bigbed: BigBed
 
   private parser: Promise<Parser>
 
@@ -48,8 +47,7 @@ export default class extends BaseAdapter {
   }
 
   public async getRefNames() {
-    const header = await this.bigbed.getHeader()
-    return Object.keys(header.refsByName)
+    return Object.keys((await this.bigbed.getHeader()).refsByName)
   }
 
   public async refIdToName(refId: number) {
@@ -62,13 +60,10 @@ export default class extends BaseAdapter {
    * @param abortSignal an abortSignal
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures(
-    region: IRegion,
-    opts: BaseOptions = {},
-  ): Observable<Feature> {
+  public getFeatures(region: IRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
     const { signal } = opts
-    return ObservableCreate(async (observer: Observer<Feature>) => {
+    return ObservableCreate<Feature>(async observer => {
       try {
         const parser = await this.parser
         const ob = await this.bigbed.getFeatureStream(refName, start, end, {
@@ -81,14 +76,13 @@ export default class extends BaseAdapter {
             (r: {
               start: number
               end: number
-              rest: string
-              refName: string
-              uniqueId: number
+              rest?: string
+              uniqueId?: string
             }) => {
               const data = parser.parseLine(
                 `${refName}\t${r.start}\t${r.end}\t${r.rest}`,
                 {
-                  uniqueId: r.uniqueId,
+                  uniqueId: r.uniqueId as string,
                 },
               )
 
@@ -139,7 +133,9 @@ function ucscProcessedTranscript(feature: Feature) {
   const thickStart = feature.get('thickStart')
   const thickEnd = feature.get('thickEnd')
 
-  if (!thickStart && !thickEnd) return feature
+  if (!thickStart && !thickEnd) {
+    return feature
+  }
 
   const blocks: Feature[] = children
     ? children

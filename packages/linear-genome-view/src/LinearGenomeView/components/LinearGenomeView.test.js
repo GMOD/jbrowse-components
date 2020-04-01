@@ -2,156 +2,124 @@ import React from 'react'
 import { render } from '@testing-library/react'
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import sizeMe from 'react-sizeme'
+import 'requestidlecallback-polyfill'
 import LinearGenomeView from './LinearGenomeView'
 
 sizeMe.noPlaceholders = true
 
-describe('LinearGenomeView genome view component', () => {
-  it('renders with an empty model', () => {
-    const session = createTestSession({
-      views: [
+const assemblyConf = {
+  name: 'volMyt1',
+  sequence: {
+    trackId: 'sequenceConfigId',
+    adapter: {
+      type: 'FromConfigAdapter',
+      features: [
         {
-          type: 'LinearGenomeView',
-          id: 'lgv',
-          offsetPx: 0,
-          bpPerPx: 1,
-          tracks: [],
-          controlsWidth: 100,
-          configuration: {},
+          refName: 'ctgA',
+          uniqueId: 'firstId',
+          start: 0,
+          end: 10,
+          seq: 'cattgttgcg',
         },
       ],
-    })
+    },
+  },
+}
+
+describe('<LinearGenomeView />', () => {
+  it('renders setup wizard', async () => {
+    const session = createTestSession()
+    session.addAssemblyConf(assemblyConf)
+    session.addView('LinearGenomeView', { id: 'lgv' })
     const model = session.views[0]
-    const { container } = render(<LinearGenomeView model={model} />)
+    const { container, findByText } = render(<LinearGenomeView model={model} />)
+    await findByText('Open')
     expect(container.firstChild).toMatchSnapshot()
   })
-  it('renders one track, no blocks', () => {
-    const session = createTestSession({
-      views: [
-        {
-          type: 'LinearGenomeView',
-          id: 'lgv',
-          offsetPx: 0,
-          bpPerPx: 1,
-          tracks: [
-            {
-              id: 'foo',
-              type: 'BasicTrack',
-              height: 20,
-              configuration: 'testConfig',
-            },
-          ],
-          controlsWidth: 100,
-          configuration: {},
-        },
-      ],
+  it('renders one track, one region', async () => {
+    const session = createTestSession()
+    session.addAssemblyConf(assemblyConf)
+    session.addTrackConf({
+      trackId: 'testConfig',
+      assemblyNames: ['volMyt1'],
+      name: 'Foo Track',
+      type: 'BasicTrack',
+      adapter: { type: 'FromConfigAdapter', features: [] },
     })
-    session.addDataset({
-      name: 'volvox',
-      assembly: {
-        name: 'volMyt1',
-        sequence: {
-          trackId: 'ref0',
-          adapter: {
-            type: 'FromConfigAdapter',
-            features: [
-              {
-                refName: 'ctgA',
-                uniqueId: 'firstId',
-                start: 0,
-                end: 10,
-                seq: 'cattgttgcg',
-              },
-            ],
-          },
-        },
-      },
+    session.addView('LinearGenomeView', {
+      type: 'LinearGenomeView',
+      id: 'lgv',
+      offsetPx: 0,
+      bpPerPx: 1,
       tracks: [
         {
-          trackId: 'testConfig',
-          name: 'Foo Track',
+          id: 'foo',
           type: 'BasicTrack',
-          adapter: { type: 'FromConfigAdapter', features: [] },
+          height: 20,
+          configuration: 'testConfig',
         },
       ],
+      displayedRegions: [
+        { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 100 },
+      ],
+      controlsWidth: 100,
+      configuration: {},
     })
     const model = session.views[0]
-    const { container } = render(<LinearGenomeView model={model} />)
+    const { container, findByText } = render(<LinearGenomeView model={model} />)
+    await findByText('Foo Track')
     expect(container.firstChild).toMatchSnapshot()
   })
-  it('renders two tracks, two regions', () => {
-    const session = createTestSession({
-      views: [
+  it('renders two tracks, two regions', async () => {
+    const session = createTestSession()
+    session.addAssemblyConf(assemblyConf)
+    session.addTrackConf({
+      trackId: 'testConfig',
+      name: 'Foo Track',
+      assemblyNames: ['volMyt1'],
+      type: 'BasicTrack',
+      adapter: { type: 'FromConfigAdapter', features: [] },
+    })
+    session.addTrackConf({
+      trackId: 'testConfig2',
+      name: 'Bar Track',
+      assemblyNames: ['volMyt1'],
+      type: 'BasicTrack',
+      adapter: { type: 'FromConfigAdapter', features: [] },
+    })
+    session.addView('LinearGenomeView', {
+      id: 'lgv',
+      offsetPx: 0,
+      bpPerPx: 1,
+      displayedRegions: [
+        { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 100 },
         {
-          type: 'LinearGenomeView',
-          id: 'lgv',
-          offsetPx: 0,
-          bpPerPx: 1,
-          displayedRegions: [
-            { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-            {
-              assemblyName: 'volvox',
-              refName: 'ctgB',
-              start: 1000,
-              end: 200,
-            },
-          ],
-          tracks: [
-            {
-              id: 'foo',
-              type: 'BasicTrack',
-              height: 20,
-              configuration: 'testConfig',
-            },
-            {
-              id: 'bar',
-              type: 'BasicTrack',
-              height: 20,
-              configuration: 'testConfig2',
-            },
-          ],
-          controlsWidth: 100,
-          configuration: {},
+          assemblyName: 'volMyt1',
+          refName: 'ctgB',
+          start: 1000,
+          end: 200,
         },
       ],
-    })
-    session.addDataset({
-      name: 'volvox',
-      assembly: {
-        assemblyName: 'volMyt1',
-        sequence: {
-          trackId: 'ref0',
-          adapter: {
-            type: 'FromConfigAdapter',
-            features: [
-              {
-                refName: 'ctgA',
-                uniqueId: 'firstId',
-                start: 0,
-                end: 10,
-                seq: 'cattgttgcg',
-              },
-            ],
-          },
-        },
-      },
       tracks: [
         {
-          trackId: 'testConfig',
-          name: 'Foo Track',
+          id: 'foo',
           type: 'BasicTrack',
-          adapter: { type: 'FromConfigAdapter', features: [] },
+          height: 20,
+          configuration: 'testConfig',
         },
         {
-          trackId: 'testConfig2',
-          name: 'Bar Track',
+          id: 'bar',
           type: 'BasicTrack',
-          adapter: { type: 'FromConfigAdapter', features: [] },
+          height: 20,
+          configuration: 'testConfig2',
         },
       ],
+      controlsWidth: 100,
+      configuration: {},
     })
     const model = session.views[0]
-    const { container } = render(<LinearGenomeView model={model} />)
+    const { container, findByText } = render(<LinearGenomeView model={model} />)
+    await findByText('Foo Track')
     expect(container.firstChild).toMatchSnapshot()
   })
 })

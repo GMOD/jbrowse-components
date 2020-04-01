@@ -34,7 +34,7 @@ function AddConnectionDrawerWidget({ model }) {
   const [connectionType, setConnectionType] = useState({})
   const [configModel, setConfigModel] = useState({})
   const [configModelReady, setConfigModelReady] = useState(true)
-  const [datasetName, setDatasetName] = useState('')
+  const [assemblyName, setAssemblyName] = useState('')
   const [activeStep, setActiveStep] = useState(0)
   const classes = useStyles()
 
@@ -46,7 +46,8 @@ function AddConnectionDrawerWidget({ model }) {
     setConnectionType(newConnectionType)
     setConfigModel(
       newConnectionType.configSchema.create({
-        connectionId: `${newConnectionType.name}-${datasetName}-${Date.now()}`,
+        connectionId: `${newConnectionType.name}-${assemblyName}-${Date.now()}`,
+        assemblyName,
       }),
     )
   }
@@ -61,11 +62,11 @@ function AddConnectionDrawerWidget({ model }) {
             )}
             connectionType={connectionType}
             setConnectionType={handleSetConnectionType}
-            datasetNameChoices={session.datasets.map(dataset =>
-              readConfObject(dataset, 'name'),
+            assemblyNameChoices={session.assemblies.map(assembly =>
+              readConfObject(assembly, 'name'),
             )}
-            datasetName={datasetName}
-            setDatasetName={setDatasetName}
+            assemblyName={assemblyName}
+            setAssemblyName={setAssemblyName}
           />
         )
       case 1:
@@ -92,9 +93,8 @@ function AddConnectionDrawerWidget({ model }) {
   }
 
   function handleFinish() {
-    session.datasets
-      .find(dataset => readConfObject(dataset, 'name') === datasetName)
-      .addConnectionConf(configModel)
+    const connectionConf = session.addConnectionConf(configModel)
+    session.makeConnection(connectionConf)
     session.hideDrawerWidget(model)
   }
 

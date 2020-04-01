@@ -25,6 +25,11 @@ export default pluginManager => {
         type: 'string',
         defaultValue: 'Track',
       },
+      assemblyNames: {
+        description: 'name of the assembly (or assemblies) track belongs to',
+        type: 'stringArray',
+        defaultValue: ['assemblyName'],
+      },
       description: {
         description: 'a description of the track',
         type: 'string',

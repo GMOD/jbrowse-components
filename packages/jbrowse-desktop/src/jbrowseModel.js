@@ -1,4 +1,7 @@
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import {
+  ConfigurationSchema,
+  readConfObject,
+} from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import {
@@ -20,51 +23,12 @@ const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
   pluginManager,
 )
 
-const DatasetConfigSchema = ConfigurationSchema(
-  'Dataset',
-  {
-    name: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Name of the dataset',
-    },
-    assembly: types.union({ dispatcher }, ...assemblyConfigSchemas),
-    // track configuration is an array of track config schemas. multiple
-    // instances of a track can exist that use the same configuration
-    tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
-    connections: types.array(
-      pluginManager.pluggableConfigSchemaType('connection'),
-    ),
-  },
-  {
-    actions: self => ({
-      addTrackConf(trackConf) {
-        const { type } = trackConf
-        if (!type) throw new Error(`unknown track type ${type}`)
-        const length = self.tracks.push(trackConf)
-        return self.tracks[length - 1]
-      },
-      addConnectionConf(connectionConf) {
-        const { type } = connectionConf
-        if (!type) throw new Error(`unknown connection type ${type}`)
-        const length = self.connections.push(connectionConf)
-        return self.connections[length - 1]
-      },
-    }),
-  },
-)
-
 // poke some things for testing (this stuff will eventually be removed)
 window.getSnapshot = getSnapshot
 window.resolveIdentifier = resolveIdentifier
 
 const JBrowseWeb = types
   .model('JBrowseWeb', {
-    defaultSession: types.optional(types.frozen(Session), {
-      name: `New Session`,
-      menuBars: [{ type: 'MainMenuBar' }],
-    }),
-    datasets: types.array(DatasetConfigSchema),
     configuration: ConfigurationSchema('Root', {
       rpc: RpcManager.configSchema,
       // possibly consider this for global config editor
@@ -81,8 +45,36 @@ const JBrowseWeb = types
         defaultValue: false,
       },
     }),
+    assemblies: types.array(
+      types.union({ dispatcher }, ...assemblyConfigSchemas),
+    ),
+    // track configuration is an array of track config schemas. multiple
+    // instances of a track can exist that use the same configuration
+    tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+    connections: types.array(
+      pluginManager.pluggableConfigSchemaType('connection'),
+    ),
+    defaultSession: types.optional(types.frozen(Session), {
+      name: `New Session`,
+      menuBars: [{ type: 'MainMenuBar' }],
+    }),
   })
   .actions(self => ({
+    afterCreate() {
+      const seen = []
+      self.assemblyNames.forEach(assemblyName => {
+        if (!assemblyName) {
+          throw new Error('Encountered an assembly with no "name" defined')
+        }
+        if (seen.includes(assemblyName)) {
+          throw new Error(
+            `Found two assemblies with the same name: ${assemblyName}`,
+          )
+        } else {
+          seen.push(assemblyName)
+        }
+      })
+    },
     addSavedSession(sessionSnapshot) {
       const length = self.savedSessions.push(sessionSnapshot)
       return self.savedSessions[length - 1]
@@ -96,14 +88,35 @@ const JBrowseWeb = types
       )
       self.savedSessions[savedSessionIndex] = snapshot
     },
-    addDataset(datasetConf) {
-      const length = self.datasets.push(datasetConf)
-      return self.datasets[length - 1]
+    addAssemblyConf(assemblyConf) {
+      const { name } = assemblyConf
+      if (!name) throw new Error('Can\'t add assembly with no "name"')
+      if (self.assemblyNames.includes(name))
+        throw new Error(
+          `Can't add assembly with name "${name}", an assembly with that name already exists`,
+        )
+      const length = self.assemblies.push(assemblyConf)
+      return self.assemblies[length - 1]
+    },
+    addTrackConf(trackConf) {
+      const { type } = trackConf
+      if (!type) throw new Error(`unknown track type ${type}`)
+      const length = self.tracks.push(trackConf)
+      return self.tracks[length - 1]
+    },
+    addConnectionConf(connectionConf) {
+      const { type } = connectionConf
+      if (!type) throw new Error(`unknown connection type ${type}`)
+      const length = self.connections.push(connectionConf)
+      return self.connections[length - 1]
     },
   }))
   .views(self => ({
     get savedSessionNames() {
       return getParent(self).savedSessionNames
+    },
+    get assemblyNames() {
+      return self.assemblies.map(assembly => readConfObject(assembly, 'name'))
     },
   }))
   // Grouping the "assembly manager" stuff under an `extend` just for

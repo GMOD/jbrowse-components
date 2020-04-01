@@ -29,10 +29,7 @@ export function toUrlSafeB64(str: string): string {
   const encoded = fromByteArray(deflated)
   const pos = encoded.indexOf('=')
   return pos > 0
-    ? encoded
-        .slice(0, pos)
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
+    ? encoded.slice(0, pos).replace(/\+/g, '-').replace(/\//g, '_')
     : encoded.replace(/\+/g, '-').replace(/\//g, '_')
 }
 
@@ -340,12 +337,8 @@ export function iterMap<T, U>(
 
 export function generateLocString(
   r: IRegion,
-  tied: boolean,
   includeAssemblyName = true,
 ): string {
-  if (tied) {
-    return r.refName
-  }
   let s = ''
   if (includeAssemblyName && r.assemblyName) {
     s = `${r.assemblyName}:`
@@ -410,27 +403,49 @@ export function isAbortException(exception: AbortError): boolean {
     !!exception.message.match(/\b(aborted|AbortError)\b/i)
   )
 }
-interface Dataset {
-  assembly: {
-    name: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any
-  }
+interface Assembly {
+  name: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
+}
+interface Track {
+  trackId: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
 }
 interface Config {
   savedSessions: unknown[]
-  datasets: Dataset[]
+  assemblies: Assembly[]
+  tracks: Track[]
+  defaultSession?: {}
 }
 // similar to electron.js
 export function mergeConfigs(A: Config, B: Config) {
-  const X: { [key: string]: Dataset } = {}
-  const Y: { [key: string]: Dataset } = {}
-  A.datasets.forEach(a => {
-    X[a.assembly.name] = a
-  })
-  B.datasets.forEach(b => {
-    Y[b.assembly.name] = b
-  })
-  A.savedSessions = (A.savedSessions || []).concat(B.savedSessions)
-  return Object.values(merge(X, Y))
+  const merged = merge(A, B)
+  if (B.defaultSession) merged.defaultSession = B.defaultSession
+  else if (A.defaultSession) merged.defaultSession = A.defaultSession
+  return merged
+}
+
+// https://stackoverflow.com/a/53187807
+/**
+ * Returns the index of the last element in the array where predicate is true,
+ * and -1 otherwise.
+ * @param array The source array to search in
+ * @param predicate find calls predicate once for each element of the array, in
+ * descending order, until it finds one where predicate returns true. If such an
+ * element is found, findLastIndex immediately returns that element index.
+ * Otherwise, findLastIndex returns -1.
+ */
+export function findLastIndex<T>(
+  array: Array<T>,
+  predicate: (value: T, index: number, obj: T[]) => boolean,
+): number {
+  let l = array.length
+  while ((l -= 1)) {
+    if (predicate(array[l], l, array)) {
+      return l
+    }
+  }
+  return -1
 }

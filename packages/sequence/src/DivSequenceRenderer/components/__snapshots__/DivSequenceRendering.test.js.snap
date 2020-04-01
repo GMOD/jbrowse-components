@@ -72,7 +72,7 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
 <h1
   class="error"
 >
-  Error: feature one did not contain a valid \`seq\` attribute
+  Error: feature one did not contain a valid \`seq\` attribute seq length 2 did not match 3
 </h1>
 `;
 
@@ -80,7 +80,7 @@ exports[`<DivSequenceRendering /> renders with one feature with no seq, zoomed i
 <h1
   class="error"
 >
-  Error: feature one did not contain a valid \`seq\` attribute
+  Error: feature one did not contain a valid \`seq\` attribute seq did not exist
 </h1>
 `;
 

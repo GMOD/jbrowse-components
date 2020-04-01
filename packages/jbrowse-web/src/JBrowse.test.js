@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   createEvent,
   fireEvent,
@@ -50,7 +51,7 @@ const readBuffer = async (url, args) => {
       }
     }
     const body = await file.readFile()
-    return { status: 200, text: () => body, buffer: () => body }
+    return { status: 200, text: () => body.toString(), buffer: () => body }
   } catch (e) {
     console.error(e)
     return { status: 404, buffer: () => {} }
@@ -215,7 +216,7 @@ describe('valid file tests', () => {
 
 describe('some error state', () => {
   it('test that BAI with 404 file displays error', async () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    console.error = jest.fn()
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
       <JBrowse initialState={state} />,
@@ -232,8 +233,8 @@ describe('some error state', () => {
         ),
       ),
     ).resolves.toBeTruthy()
-    expect(spy).toHaveBeenCalled()
-    spy.mockRestore()
+
+    expect(console.error).toHaveBeenCalled()
   })
 })
 
@@ -248,19 +249,21 @@ describe('test renamed refs', () => {
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_cram_alignments')),
     )
+
     const canvas = await waitForElement(() =>
-      getAllByTestId('prerendered_canvas'),
+      getAllByTestId('prerendered_canvas_PileupRenderer'),
     )
+
     const img = canvas[0].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
     // this is needed to do a fuzzy image comparison because
     // the travis-ci was 2 pixels different for some reason, see PR #710
     expect(buf).toMatchImageSnapshot({
-      failureThreshold: 0.001,
+      failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
-  })
+  }, 10000 /* this test needs more time to run */)
   it('test that bam with contigA instead of ctgA displays', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
@@ -275,6 +278,7 @@ describe('test renamed refs', () => {
       waitForElement(() => getAllByText('ctgA_110_638_0:0:0_3:0:0_15b')),
     ).resolves.toBeTruthy()
   })
+
   it('open a bigwig with a renamed reference', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId: byId, getAllByTestId, getByText } = render(
@@ -288,7 +292,7 @@ describe('test renamed refs', () => {
       ),
     )
     await expect(
-      waitForElement(() => getAllByTestId('prerendered_canvas')),
+      waitForElement(() => getAllByTestId('prerendered_canvas_XYPlotRenderer')),
     ).resolves.toBeTruthy()
   })
 })
@@ -390,7 +394,49 @@ describe('test configuration editor', () => {
     })
   }, 10000)
 })
+describe('alignments track', () => {
+  // improve this, currently renders the pileup and stops
+  // if pileup rendering is disabled then snp coverage will run
+  it('opens an alignments track', async () => {
+    const state = JBrowseRootModel.create({ jbrowse: config })
+    const { getByTestId: byId, getAllByTestId, getByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    await waitForElement(() => getByText('Help'))
+    state.session.views[0].setNewView(5, 100)
+    fireEvent.click(
+      await waitForElement(() =>
+        byId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+      ),
+    )
 
+    /* Since alignments track has subtracks, need to look for both
+    prerendered canvases. PrerenderedCanvas data-test id now appends
+    rendererType so both can be found and not stopped prematurely */
+    const pileupCanvas = await waitForElement(() =>
+      getAllByTestId('prerendered_canvas_PileupRenderer'),
+    )
+    const pileupImg = pileupCanvas[0].toDataURL()
+    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
+    const pileupBuf = Buffer.from(pileupData, 'base64')
+    expect(pileupBuf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
+
+    const snpCovCanvas = await waitForElement(() =>
+      getAllByTestId('prerendered_canvas_SNPCoverageRenderer'),
+    )
+    // snpCov image
+    const snpCovImg = snpCovCanvas[0].toDataURL()
+    const snpCovData = snpCovImg.replace(/^data:image\/\w+;base64,/, '')
+    const snpCovBuf = Buffer.from(snpCovData, 'base64')
+    expect(snpCovBuf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
+  })
+})
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
@@ -403,7 +449,7 @@ describe('bigwig', () => {
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray')),
     )
     await expect(
-      waitForElement(() => getAllByTestId('prerendered_canvas')),
+      waitForElement(() => getAllByTestId('prerendered_canvas_XYPlotRenderer')),
     ).resolves.toBeTruthy()
   })
   it('open a bigwig line track', async () => {
@@ -417,7 +463,9 @@ describe('bigwig', () => {
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray_line')),
     )
     await expect(
-      waitForElement(() => getAllByTestId('prerendered_canvas')),
+      waitForElement(() =>
+        getAllByTestId('prerendered_canvas_LinePlotRenderer'),
+      ),
     ).resolves.toBeTruthy()
   })
   it('open a bigwig density track', async () => {
@@ -433,14 +481,16 @@ describe('bigwig', () => {
       ),
     )
     await expect(
-      waitForElement(() => getAllByTestId('prerendered_canvas')),
+      waitForElement(() =>
+        getAllByTestId('prerendered_canvas_DensityRenderer'),
+      ),
     ).resolves.toBeTruthy()
   })
 })
 
 describe('circular views', () => {
   it('open a circular view', async () => {
-    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    console.warn = jest.fn()
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getByText, getAllByTestId } = render(
       <JBrowse initialState={state} />,
@@ -448,8 +498,12 @@ describe('circular views', () => {
     // wait for the UI to be loaded
     await waitForElement(() => getByText('Help'))
 
-    // open a new circular view on the same dataset as the test linear view
-    state.session.addViewFromAnotherView('CircularView', state.session.views[0])
+    // open a new circular view on the same assembly as the test linear view
+    const regions = await state.session.getRegionsForAssemblyName('volvox')
+    act(() => {
+      const circularView = state.session.addView('CircularView')
+      circularView.setDisplayedRegions(regions)
+    })
 
     // open a track selector for the circular view
     const trackSelectButtons = await waitForElement(() =>
@@ -470,42 +524,54 @@ describe('circular views', () => {
     await expect(
       waitForElement(() => getByTestId('rpc-rendered-circular-chord-track')),
     ).resolves.toBeTruthy()
-    expect(spy).toHaveBeenCalled()
-    spy.mockRestore()
   })
 })
 
 describe('breakpoint split view', () => {
   it('open a split view', async () => {
-    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    console.warn = jest.fn()
     const state = JBrowseRootModel.create({ jbrowse: breakpointConfig })
-    const { findByTestId } = render(<JBrowse initialState={state} />)
-
+    const { findByTestId, queryAllByTestId } = render(
+      <JBrowse initialState={state} />,
+    )
+    await wait(() => {
+      const r = queryAllByTestId('r1')
+      expect(r.length).toBe(2)
+    }) // the breakpoint could be partially loaded so explicitly wait for two items
     expect(
-      await findByTestId('pacbio_hg002_breakpoints-loaded', { timeout: 8000 }),
+      await findByTestId('pacbio_hg002_breakpoints-loaded'),
     ).toMatchSnapshot()
 
     expect(await findByTestId('pacbio_vcf-loaded')).toMatchSnapshot()
-    spy.mockRestore()
   }, 10000)
 })
 
-test('cause an exception in the jbrowse module loading', async () => {
-  const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-  const { getByText } = render(
-    <JBrowse configSnapshot={{ configuration: [] }} />,
-  )
-  expect(await getByText('Fatal error')).toBeTruthy()
-  expect(spy).toHaveBeenCalled()
-  spy.mockRestore()
+describe('Fatal error', () => {
+  it('occurs when given an invalid snapshot', () => {
+    const { getByText } = render(
+      <JBrowse configSnapshot={{ configuration: [] }} />,
+    )
+    expect(getByText('Fatal error')).toBeTruthy()
+  })
+  it('occurs when multiple assemblies have the same name', async () => {
+    const newConfig = JSON.parse(JSON.stringify(config))
+    newConfig.assemblies.push({
+      name: 'volvox',
+      aliases: [],
+    })
+    const { findByText } = render(<JBrowse configSnapshot={newConfig} />)
+    expect(
+      await findByText('Found two assemblies with the same name: volvox', {
+        exact: false,
+      }),
+    ).toBeTruthy()
+  })
 })
 
 test('404 sequence file', async () => {
-  const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-  const { findByText } = render(
+  console.error = jest.fn()
+  const { findAllByText } = render(
     <JBrowse config={{ uri: 'test_data/config_chrom_sizes_test.json' }} />,
   )
-  await findByText(/HTTP 404/)
-  expect(spy).toHaveBeenCalled()
-  spy.mockRestore()
+  await findAllByText(/HTTP 404/)
 })

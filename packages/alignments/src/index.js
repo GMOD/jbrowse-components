@@ -4,14 +4,26 @@ import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import { lazy } from 'react'
 import {
+  configSchemaFactory as alignmentsTrackConfigSchemaFactory,
+  modelFactory as alignmentsTrackModelFactory,
+} from './AlignmentsTrack'
+import {
   configSchema as alignmentsFeatureDetailConfigSchema,
   ReactComponent as AlignmentsFeatureDetailReactComponent,
   stateModel as alignmentsFeatureDetailStateModel,
 } from './AlignmentsFeatureDetail'
 import {
-  configSchemaFactory as alignmentsTrackConfigSchemaFactory,
-  modelFactory as alignmentsTrackModelFactory,
-} from './AlignmentsTrack'
+  configSchemaFactory as pileupTrackConfigSchemaFactory,
+  modelFactory as pileupTrackModelFactory,
+} from './PileupTrack'
+import {
+  configSchemaFactory as snpCoverageTrackConfigSchemaFactory,
+  modelFactory as snpCoverageTrackModelFactory,
+} from './SNPCoverageTrack'
+import {
+  AdapterClass as SNPCoverageAdapterClass,
+  configSchema as snpCoverageAdapterConfigSchema,
+} from './SNPCoverageAdapter'
 import {
   AdapterClass as BamAdapterClass,
   configSchema as bamAdapterConfigSchema,
@@ -24,18 +36,21 @@ import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
   ReactComponent as PileupRendererReactComponent,
 } from './PileupRenderer'
+import SNPCoverageRenderer, {
+  configSchema as SNPCoverageRendererConfigSchema,
+  ReactComponent as SNPCoverageRendererReactComponent,
+} from './SNPCoverageRenderer'
 
 export default class extends Plugin {
   install(pluginManager) {
     pluginManager.addTrackType(() => {
-      const configSchema = alignmentsTrackConfigSchemaFactory(pluginManager)
+      const configSchema = pileupTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
-        name: 'AlignmentsTrack',
+        name: 'PileupTrack',
         configSchema,
-        stateModel: alignmentsTrackModelFactory(pluginManager, configSchema),
+        stateModel: pileupTrackModelFactory(pluginManager, configSchema),
       })
     })
-
     pluginManager.addDrawerWidgetType(
       () =>
         new DrawerWidgetType({
@@ -46,7 +61,22 @@ export default class extends Plugin {
           LazyReactComponent: lazy(() => AlignmentsFeatureDetailReactComponent),
         }),
     )
-
+    pluginManager.addTrackType(() => {
+      const configSchema = snpCoverageTrackConfigSchemaFactory(pluginManager)
+      return new TrackType({
+        name: 'SNPCoverageTrack',
+        configSchema,
+        stateModel: snpCoverageTrackModelFactory(configSchema),
+      })
+    })
+    pluginManager.addTrackType(() => {
+      const configSchema = alignmentsTrackConfigSchemaFactory(pluginManager)
+      return new TrackType({
+        name: 'AlignmentsTrack',
+        configSchema,
+        stateModel: alignmentsTrackModelFactory(pluginManager, configSchema),
+      })
+    })
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
@@ -55,7 +85,14 @@ export default class extends Plugin {
           AdapterClass: BamAdapterClass,
         }),
     )
-
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'SNPCoverageAdapter',
+          configSchema: snpCoverageAdapterConfigSchema,
+          AdapterClass: SNPCoverageAdapterClass,
+        }),
+    )
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
@@ -71,6 +108,14 @@ export default class extends Plugin {
           name: 'PileupRenderer',
           ReactComponent: PileupRendererReactComponent,
           configSchema: pileupRendererConfigSchema,
+        }),
+    )
+    pluginManager.addRendererType(
+      () =>
+        new SNPCoverageRenderer({
+          name: 'SNPCoverageRenderer',
+          ReactComponent: SNPCoverageRendererReactComponent,
+          configSchema: SNPCoverageRendererConfigSchema,
         }),
     )
   }

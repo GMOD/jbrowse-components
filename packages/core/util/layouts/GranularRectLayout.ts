@@ -174,8 +174,9 @@ class LayoutRow<T> {
     // if (oRight > this.rowState.bits.length) debugger
     if (oRight - oLeft > maxFeaturePitchWidth) {
       console.warn(
-        `Layout X pitch set too low, feature spans ${oRight -
-          oLeft} bits in a single row.`,
+        `Layout X pitch set too low, feature spans ${
+          oRight - oLeft
+        } bits in a single row.`,
         rect,
         data,
       )
@@ -306,17 +307,28 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private maxHeight: number
 
+  private displayMode: string
+
   private pTotalHeight: number
 
   constructor(args: {
     pitchX: number | undefined
     pitchY: number | undefined
     maxHeight: number | undefined
+    displayMode: string | undefined
   }) {
     this.pitchX = args.pitchX || 10
     this.pitchY = args.pitchY || 10
     this.hardRowLimit = 3000
     this.maxHeightReached = false
+
+    this.displayMode = args.displayMode || 'normal'
+
+    // reduce the pitchY to try and pack the features tighter
+    if (this.displayMode === 'compact') {
+      this.pitchY = Math.round(this.pitchY / 4) || 1
+      this.pitchX = Math.round(this.pitchX / 4) || 1
+    }
 
     this.bitmap = []
     this.rectangles = new Map()
@@ -364,15 +376,17 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
     const maxTop = this.maxHeight - pHeight
     let top = 0
-    for (; top <= maxTop; top += 1) {
-      if (!this.collides(rectangle, top)) break
-    }
+    if (this.displayMode !== 'collapse') {
+      for (; top <= maxTop; top += 1) {
+        if (!this.collides(rectangle, top)) break
+      }
 
-    if (top > maxTop) {
-      rectangle.top = null
-      this.rectangles.set(id, rectangle)
-      this.maxHeightReached = true
-      return null
+      if (top > maxTop) {
+        rectangle.top = null
+        this.rectangles.set(id, rectangle)
+        this.maxHeightReached = true
+        return null
+      }
     }
     rectangle.top = top
     this.addRectToBitmap(rectangle)
@@ -406,8 +420,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     if (!row) {
       if (y > this.hardRowLimit) {
         throw new Error(
-          `layout hard limit (${this.hardRowLimit *
-            this.pitchY}px) exceeded, aborting layout`,
+          `layout hard limit (${
+            this.hardRowLimit * this.pitchY
+          }px) exceeded, aborting layout`,
         )
       }
       row = new LayoutRow(y)

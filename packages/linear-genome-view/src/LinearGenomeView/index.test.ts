@@ -23,28 +23,39 @@ stubManager.addTrackType(
 )
 stubManager.configure()
 const LinearGenomeModel = stateModelFactory(stubManager)
+const JBrowse = types.model({}).actions(self => ({
+  getCanonicalRefName(refName: string, assemblyName: string) {
+    if (refName === 'contigA') {
+      return 'ctgA'
+    }
+
+    return refName
+  },
+}))
+
+const Session = types
+  .model({
+    name: 'testSession',
+    pluginManager: 'pluginManagerExists',
+    view: types.maybe(LinearGenomeModel),
+    configuration: types.map(types.string),
+    jbrowse: types.maybe(JBrowse),
+  })
+  .actions(self => ({
+    setView(view: Instance<LinearGenomeViewStateModel>) {
+      self.view = view
+      return view
+    },
+  }))
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
-  const name = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.string),
-    })
-    .actions(self => ({
-      setView(view: Instance<LinearGenomeViewStateModel>) {
-        self.view = view
-        return view
-      },
-    }))
-    .create({
-      configuration: {},
-    })
-
-  const model = name.setView(
+  const model = Session.create({
+    configuration: {},
+    jbrowse: {},
+  }).setView(
     LinearGenomeModel.create({
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
+      tracks: [{ name: 'foo track', type: 'PileupTrack' }],
     }),
   )
 
@@ -53,26 +64,15 @@ test('can instantiate a mostly empty model and read a default configuration valu
 })
 
 test('can instantiate a model that lets you navigate', () => {
-  const name = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.string),
-    })
-    .actions(self => ({
-      setView(view: Instance<LinearGenomeViewStateModel>) {
-        self.view = view
-        return view
-      },
-    }))
-    .create({
-      configuration: {},
-    })
-
-  const model = name.setView(
+  const session = Session.create({
+    configuration: {},
+    jbrowse: {},
+  })
+  const model = session.setView(
     LinearGenomeModel.create({
+      id: 'test1',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
+      tracks: [{ name: 'foo track', type: 'PileupTrack' }],
       controlsWidth: 0,
     }),
   )
@@ -110,26 +110,15 @@ test('can instantiate a model that lets you navigate', () => {
 })
 
 test('can instantiate a model that has multiple displayed regions', () => {
-  const name = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.string),
-    })
-    .actions(self => ({
-      setView(view: Instance<LinearGenomeViewStateModel>) {
-        self.view = view
-        return view
-      },
-    }))
-    .create({
-      configuration: {},
-    })
-
-  const model = name.setView(
+  const session = Session.create({
+    configuration: {},
+    jbrowse: {},
+  })
+  const model = session.setView(
     LinearGenomeModel.create({
+      id: 'test2',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
+      tracks: [{ name: 'foo track', type: 'PileupTrack' }],
       controlsWidth: 0,
     }),
   )
@@ -148,27 +137,16 @@ test('can instantiate a model that has multiple displayed regions', () => {
   expect(model.bpPerPx).toEqual(2.5)
 })
 
-test('can instantiate a model that tests navTo/moveTo', () => {
-  const name = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.string),
-    })
-    .actions(self => ({
-      setView(view: Instance<LinearGenomeViewStateModel>) {
-        self.view = view
-        return view
-      },
-    }))
-    .create({
-      configuration: {},
-    })
-
-  const model = name.setView(
+test('can instantiate a model that tests navTo/moveTo', async () => {
+  const session = Session.create({
+    jbrowse: {},
+    configuration: {},
+  })
+  const model = session.setView(
     LinearGenomeModel.create({
+      id: 'test3',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
+      tracks: [{ name: 'foo track', type: 'PileupTrack' }],
       controlsWidth: 0,
     }),
   )
@@ -178,36 +156,27 @@ test('can instantiate a model that tests navTo/moveTo', () => {
   ])
   expect(model.maxBpPerPx).toEqual(20)
 
-  model.navTo({ refName: 'ctgA', start: 0, end: 100 })
+  await model.navTo({ refName: 'ctgA', start: 0, end: 100 })
   expect(model.bpPerPx).toEqual(100 / 800)
-  model.navTo({ refName: 'ctgA', start: 0, end: 20000 })
+  await model.navTo({ refName: 'ctgA', start: 0, end: 20000 })
   expect(model.bpPerPx).toEqual(100 / 800) // did nothing
-  model.navTo({ refName: 'ctgA' })
+  await model.navTo({ refName: 'ctgA' })
   expect(model.offsetPx).toEqual(0)
   expect(model.bpPerPx).toEqual(10000 / 800)
+  await model.navTo({ refName: 'contigA', start: 0, end: 100 })
+  expect(model.bpPerPx).toEqual(100 / 800)
 })
 
 test('can instantiate a model that >2 regions', () => {
-  const name = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.string),
-    })
-    .actions(self => ({
-      setView(view: Instance<LinearGenomeViewStateModel>) {
-        self.view = view
-        return view
-      },
-    }))
-    .create({
-      configuration: {},
-    })
-
-  const model = name.setView(
+  const session = Session.create({
+    jbrowse: {},
+    configuration: {},
+  })
+  const model = session.setView(
     LinearGenomeModel.create({
+      id: 'test4',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
+      tracks: [{ name: 'foo track', type: 'PileupTrack' }],
       controlsWidth: 0,
     }),
   )

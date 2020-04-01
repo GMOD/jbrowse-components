@@ -109,22 +109,9 @@ export default pluginManager => {
         return self.spreadsheetView.rowSet.selectedRows
       },
 
-      // this is to support the session model automatically pushing displayed regions
-      // from the relevant assembly into this model
-      get displayRegionsFromAssemblyName() {
-        if (self.onlyDisplayRelevantRegionsInCircularView) return undefined
-
-        // the assembly name comes from the selected dataset in the spreadsheet view
-        const { dataset } = self.spreadsheetView
-        if (dataset) {
-          return readConfObject(dataset, ['assembly', 'name'])
-        }
-        return undefined
-      },
-
       get assemblyName() {
-        const { dataset } = self.spreadsheetView
-        if (dataset) return readConfObject(dataset, ['assembly', 'name'])
+        const { assembly } = self.spreadsheetView
+        if (assembly) return readConfObject(assembly, 'name')
         return undefined
       },
 
@@ -215,7 +202,7 @@ export default pluginManager => {
             { name: 'SvInspectorView height binding' },
           ),
         )
-        // bind circularview displayedRegions to spreadsheet dataset, mediated by
+        // bind circularview displayedRegions to spreadsheet assembly, mediated by
         // the onlyRelevantRegions toggle
         addDisposer(
           self,
@@ -271,7 +258,11 @@ export default pluginManager => {
                       .catch(e => console.error(e))
                   }
                 } else {
-                  circularView.setDisplayedRegionsFromAssemblyName(assemblyName)
+                  session
+                    .getRegionsForAssemblyName(assemblyName)
+                    .then(assemblyRegions => {
+                      circularView.setDisplayedRegions(assemblyRegions)
+                    })
                 }
               } else {
                 circularView.setDisplayedRegions([])
@@ -336,10 +327,8 @@ export default pluginManager => {
         getParent(self, 2).removeView(self)
       },
 
-      setDisplayedRegions(regions, isFromAssemblyName = false) {
-        // can only set displayed regions from the fromAssemblyName path.  this kind of sucks
-
-        self.circularView.setDisplayedRegions(regions, isFromAssemblyName)
+      setDisplayedRegions(regions) {
+        self.circularView.setDisplayedRegions(regions)
       },
 
       setOnlyDisplayRelevantRegionsInCircularView(val) {

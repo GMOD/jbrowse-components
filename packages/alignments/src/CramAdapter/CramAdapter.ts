@@ -5,7 +5,6 @@ import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { Observable, Observer } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 
@@ -13,15 +12,19 @@ interface HeaderLine {
   tag: string
   value: string
 }
+
+interface Header {
+  idToName?: string[]
+  nameToId?: Record<string, number>
+}
+
 export default class CramAdapter extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private cram: any
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private sequenceAdapter: any
+  private sequenceAdapter: BaseAdapter
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private samHeader: any
+  private samHeader: Header = {}
 
   // maps a refname to an id
   private seqIdToRefName: string[] | undefined
@@ -50,11 +53,9 @@ export default class CramAdapter extends BaseAdapter {
       index: new CraiIndex({ filehandle: openLocation(craiLocation) }),
       seqFetch: this.seqFetch.bind(this),
       checkSequenceMD5: false,
-      fetchSizeLimit: config.fetchSizeLimit || 60000000,
+      fetchSizeLimit: config.fetchSizeLimit || 600000000,
     })
-    if (sequenceAdapter) {
-      this.sequenceAdapter = sequenceAdapter
-    }
+    this.sequenceAdapter = sequenceAdapter
   }
 
   async seqFetch(seqId: number, start: number, end: number) {
@@ -65,11 +66,15 @@ export default class CramAdapter extends BaseAdapter {
     const refName = this.refIdToOriginalName(seqId)
     if (!refName) return undefined
 
-    const features = await refSeqStore.getFeatures({
-      refName,
-      start,
-      end,
-    })
+    const features = await refSeqStore.getFeatures(
+      {
+        refName,
+        start,
+        end,
+        assemblyName: '',
+      },
+      {},
+    )
 
     const seqChunks = await features.pipe(toArray()).toPromise()
 
@@ -99,9 +104,8 @@ export default class CramAdapter extends BaseAdapter {
   }
 
   async setup(opts?: BaseOptions) {
-    if (!this.samHeader) {
+    if (Object.keys(this.samHeader).length === 0) {
       const samHeader = await this.cram.cram.getSamHeader()
-      this.samHeader = {}
 
       // use the @SQ lines in the header to figure out the
       // mapping between ref ref ID numbers and names
@@ -119,8 +123,7 @@ export default class CramAdapter extends BaseAdapter {
         })
       })
       if (idToName.length) {
-        this.samHeader.idToName = idToName
-        this.samHeader.nameToId = nameToId
+        this.samHeader = { idToName, nameToId }
       }
     }
   }
@@ -174,29 +177,28 @@ export default class CramAdapter extends BaseAdapter {
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures(
-    { refName, start, end }: IRegion,
-    opts: BaseOptions = {},
-  ): Observable<Feature> {
-    return ObservableCreate(async (observer: Observer<Feature>) => {
+  getFeatures({ refName, start, end }: IRegion, opts: BaseOptions = {}) {
+    return ObservableCreate<Feature>(async observer => {
       await this.setup(opts)
       if (this.sequenceAdapter && !this.seqIdToRefName) {
         this.seqIdToRefName = await this.sequenceAdapter.getRefNames(opts)
       }
       const refId = this.refNameToId(refName)
-      this.seqIdToOriginalRefName[refId] =
-        (opts.originalRegion || {}).refName || refName
-      const records = await this.cram.getRecordsForRange(
-        refId,
-        start,
-        end,
-        opts,
-      )
-      checkAbortSignal(opts.signal)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      records.forEach((record: any) => {
-        observer.next(this.cramRecordToFeature(record))
-      })
+      if (refId !== undefined) {
+        this.seqIdToOriginalRefName[refId] =
+          (opts.originalRegion || {}).refName || refName
+        const records = await this.cram.getRecordsForRange(
+          refId,
+          start,
+          end,
+          opts,
+        )
+        checkAbortSignal(opts.signal)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        records.forEach((record: any) => {
+          observer.next(this.cramRecordToFeature(record))
+        })
+      }
       observer.complete()
     })
   }

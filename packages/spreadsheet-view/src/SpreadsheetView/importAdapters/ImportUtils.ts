@@ -29,7 +29,7 @@ export interface RowSet {
 export interface ParseOptions {
   hasColumnNameLine: boolean
   columnNameLineNumber: number
-  selectedDatasetName?: string
+  selectedAssemblyName?: string
 }
 
 export interface Column {
@@ -110,7 +110,7 @@ async function dataToSpreadsheetSnapshot(
     columnDisplayOrder,
     hasColumnNames: !!options.hasColumnNameLine,
     columns,
-    datasetName: options.selectedDatasetName,
+    assemblyName: options.selectedAssemblyName,
   }
 }
 

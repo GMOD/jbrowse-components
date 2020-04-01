@@ -26,10 +26,12 @@ import 'typeface-roboto'
 
 import JBrowseRootModel from './rootModel'
 
+const MAX_SESSION_SIZE_IN_URL = 10000
+
 async function parseConfig(configLoc) {
-  const config = JSON.parse(await openLocation(configLoc).readFile('utf8'))
+  let config = JSON.parse(await openLocation(configLoc).readFile('utf8'))
   if (configLoc.uri === 'test_data/config.json' && inDevelopment) {
-    config.datasets = mergeConfigs(
+    config = mergeConfigs(
       config,
       JSON.parse(
         await openLocation({ uri: 'test_data/config_in_dev.json' }).readFile(
@@ -62,7 +64,12 @@ function useJBrowseWeb(config, initialState, initialConfigSnapshot) {
     if (debouncedUrlSnapshot) {
       const parsed = queryString.parse(document.location.search)
       const urlSplit = window.location.href.split('?')
-      parsed.session = toUrlSafeB64(JSON.stringify(debouncedUrlSnapshot))
+      const json = JSON.stringify(debouncedUrlSnapshot)
+      if (json.length < MAX_SESSION_SIZE_IN_URL) {
+        parsed.session = toUrlSafeB64(json)
+      } else {
+        parsed.session = undefined
+      }
       window.history.replaceState(
         {},
         '',
