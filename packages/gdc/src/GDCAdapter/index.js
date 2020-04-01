@@ -26,7 +26,7 @@ export const configSchema = ConfigurationSchema(
     size: {
       type: 'integer',
       defaultValue: 5000,
-      description: 'The max number of features to show per panel',
+      description: 'The max number of features to show.',
     },
   },
   { explicitlyTyped: true },
