@@ -392,6 +392,18 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 />
               </div>
               <div
+                class="makeStyles-rubberBand"
+                style="left: 0px; width: 0px;"
+              >
+                <h6
+                  class="MuiTypography-root makeStyles-rubberBandText MuiTypography-h6"
+                >
+                  0
+                   bp
+                   
+                </h6>
+              </div>
+              <div
                 class="MuiPaper-root makeStyles-scaleBarContainer makeStyles-rubberBandControl MuiPaper-outlined MuiPaper-rounded"
                 data-testid="rubberBand_controls"
                 role="presentation"
@@ -726,6 +738,18 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   class="makeStyles-boundaryPaddingBlock"
                   style="width: 1024px;"
                 />
+              </div>
+              <div
+                class="makeStyles-rubberBand"
+                style="left: 0px; width: 0px;"
+              >
+                <h6
+                  class="MuiTypography-root makeStyles-rubberBandText MuiTypography-h6"
+                >
+                  0
+                   bp
+                   
+                </h6>
               </div>
               <div
                 class="MuiPaper-root makeStyles-scaleBarContainer makeStyles-rubberBandControl MuiPaper-outlined MuiPaper-rounded"

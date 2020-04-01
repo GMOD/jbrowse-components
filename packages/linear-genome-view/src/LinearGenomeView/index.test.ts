@@ -87,25 +87,25 @@ test('can instantiate a model that lets you navigate', () => {
 
   // test some sanity values from zooming around
   model.setNewView(0.02, 0)
-  expect(model.pxToBp(10).offset).toEqual(1)
+  expect(model.pxToBp(10).offset).toEqual(0.2)
   model.setNewView(0.1, 0)
-  expect(model.pxToBp(100).offset).toEqual(11)
+  expect(model.pxToBp(100).offset).toEqual(10)
   model.setNewView(1, 0)
-  expect(model.pxToBp(100).offset).toEqual(101)
+  expect(model.pxToBp(100).offset).toEqual(100)
   model.setNewView(10, 0)
-  expect(model.pxToBp(100).offset).toEqual(1001)
+  expect(model.pxToBp(100).offset).toEqual(1000)
 
   model.horizontallyFlip()
 
   // this is actually the same in reverse mode, the offset is a representation of linear bp offset not actual bp
   model.setNewView(0.02, 0)
-  expect(model.pxToBp(10).offset).toEqual(1)
+  expect(model.pxToBp(10).offset).toEqual(0.2)
   model.setNewView(0.1, 0)
-  expect(model.pxToBp(100).offset).toEqual(11)
+  expect(model.pxToBp(100).offset).toEqual(10)
   model.setNewView(1, 0)
-  expect(model.pxToBp(100).offset).toEqual(101)
+  expect(model.pxToBp(100).offset).toEqual(100)
   model.setNewView(10, 0)
-  expect(model.pxToBp(100).offset).toEqual(1001)
+  expect(model.pxToBp(100).offset).toEqual(1000)
 })
 
 test('can instantiate a model that has multiple displayed regions', () => {

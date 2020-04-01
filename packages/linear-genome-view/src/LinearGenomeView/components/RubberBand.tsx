@@ -1,6 +1,8 @@
 import { Menu } from '@gmod/jbrowse-core/ui'
+import Popover from '@material-ui/core/Popover'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
+import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
@@ -19,26 +21,35 @@ const useStyles = makeStyles(theme => {
   return {
     rubberBand: {
       height: '100%',
-      // @ts-ignore
       background,
       position: 'absolute',
       zIndex: 10,
+      textAlign: 'center',
+      overflow: 'hidden',
     },
     rubberBandControl: {
       cursor: 'crosshair',
       width: '100%',
       minHeight: 8,
     },
+    rubberBandText: {
+      // @ts-ignore
+      color: theme.palette.tertiary
+        ? // prettier-ignore
+          // @ts-ignore
+          theme.palette.tertiary.contrastText
+        : theme.palette.primary.contrastText,
+    },
+    popover: {
+      mouseEvents: 'none',
+      cursor: 'crosshair',
+    },
+    paper: {
+      paddingLeft: theme.spacing(1),
+      paddingRight: theme.spacing(1),
+    },
   }
 })
-
-function getOffsetX(ref: React.RefObject<HTMLDivElement>, clientX: number) {
-  let offset = 0
-  if (ref.current) {
-    offset = ref.current.getBoundingClientRect().left
-  }
-  return clientX - offset
-}
 
 function RubberBand({
   model,
@@ -59,7 +70,8 @@ function RubberBand({
       }
     | undefined
   >(undefined)
-  const ref = useRef<HTMLDivElement>(null)
+  const controlsRef = useRef<HTMLDivElement>(null)
+  const rubberBandRef = useRef(null)
   const classes = useStyles()
 
   useEffect(() => {
@@ -67,9 +79,9 @@ function RubberBand({
 
     function globalMouseMove(event: MouseEvent) {
       event.preventDefault()
-      if (ref.current) {
+      if (controlsRef.current) {
         const relativeX =
-          event.clientX - ref.current.getBoundingClientRect().left
+          event.clientX - controlsRef.current.getBoundingClientRect().left
         setCurrentX(relativeX)
       }
     }
@@ -102,6 +114,12 @@ function RubberBand({
     return cleanup
   }, [mouseDragging])
 
+  useEffect(() => {
+    if (!mouseDragging && Math.abs(currentX - startX) <= 3) {
+      handleClose()
+    }
+  })
+
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
     event.stopPropagation()
@@ -118,11 +136,9 @@ function RubberBand({
     if (rightPx < leftPx) {
       ;[leftPx, rightPx] = [rightPx, leftPx]
     }
-    if (rightPx - leftPx > 3) {
-      const leftOffset = model.pxToBp(getOffsetX(ref, leftPx))
-      const rightOffset = model.pxToBp(getOffsetX(ref, rightPx))
-      model.moveTo(leftOffset, rightOffset)
-    }
+    const leftOffset = model.pxToBp(leftPx)
+    const rightOffset = model.pxToBp(rightPx)
+    model.moveTo(leftOffset, rightOffset)
   }
 
   function handleClose() {
@@ -138,7 +154,7 @@ function RubberBand({
     'data-testid': 'rubberBand_controls',
     className: classes.rubberBandControl,
     role: 'presentation',
-    ref,
+    ref: controlsRef,
     onMouseDown: mouseDown,
   })
 
@@ -161,18 +177,72 @@ function RubberBand({
     },
   ]
 
+  let left = 0
+  let width = 0
+  if (startX !== undefined && currentX !== undefined) {
+    left = currentX < startX ? currentX : startX
+    width = Math.abs(currentX - startX)
+  }
+
+  const leftBpOffset = model.pxToBp(left)
+  const leftBp = (
+    Math.round(leftBpOffset.start + leftBpOffset.offset) + 1
+  ).toLocaleString()
+  const rightBpOffset = model.pxToBp(left + width)
+  const rightBp = (
+    Math.round(rightBpOffset.start + rightBpOffset.offset) + 1
+  ).toLocaleString()
+
+  const isRubberBandOpen = startX !== undefined && currentX !== undefined
   return (
     <>
-      {startX !== undefined && currentX !== undefined ? (
-        <div
-          className={classes.rubberBand}
-          style={
-            currentX < startX
-              ? { left: currentX, width: startX - currentX }
-              : { left: startX, width: currentX - startX }
-          }
-        />
-      ) : null}
+      <Popover
+        className={classes.popover}
+        classes={{
+          paper: classes.paper,
+        }}
+        open={isRubberBandOpen}
+        anchorEl={rubberBandRef.current}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        keepMounted
+      >
+        <Typography>{isRubberBandOpen ? leftBp : ''}</Typography>
+      </Popover>
+      <Popover
+        className={classes.popover}
+        classes={{
+          paper: classes.paper,
+        }}
+        open={startX !== undefined && currentX !== undefined}
+        anchorEl={rubberBandRef.current}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        keepMounted
+      >
+        <Typography>{isRubberBandOpen ? rightBp : ''}</Typography>
+      </Popover>
+      <div
+        ref={rubberBandRef}
+        className={classes.rubberBand}
+        style={{ left, width }}
+      >
+        <Typography variant="h6" className={classes.rubberBandText}>
+          {Math.round(width * model.bpPerPx).toLocaleString()} bp{' '}
+        </Typography>
+      </div>
       {controlComponent}
       {children}
       <Menu
