@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`inverted mode and horizontally flipped 1`] = `
+exports[`inverted mode and reversed 1`] = `
 Object {
   "height": 100,
   "imageData": Any<Object>,

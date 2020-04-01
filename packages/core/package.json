@@ -35,6 +35,7 @@
   ],
   "dependencies": {
     "@librpc/web": "rbuels/librpc-web#737bb9706762a52a87169a12c9b59fb241febab0",
+    "abortable-promise-cache": "^1.1.2",
     "base64-js": "^1.3.0",
     "canvas": "^2.5.0",
     "clsx": "^1.0.4",

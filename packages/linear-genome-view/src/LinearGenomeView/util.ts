@@ -11,9 +11,7 @@ export function chooseGridPitch(
   scale = Math.abs(scale)
   const minMajorPitchBp = minMajorPitchPx * scale
   const majorMagnitude = parseInt(
-    Number(minMajorPitchBp)
-      .toExponential()
-      .split(/e/i)[1],
+    Number(minMajorPitchBp).toExponential().split(/e/i)[1],
     10,
   )
 

@@ -26,6 +26,7 @@ BlockSet {
         "start": 0,
       },
       "refName": "ctgA",
+      "reversed": undefined,
       "start": 0,
       "widthPx": 800,
     },
@@ -42,6 +43,7 @@ BlockSet {
         "start": 0,
       },
       "refName": "ctgA",
+      "reversed": undefined,
       "start": 800,
       "widthPx": 800,
     },
@@ -75,6 +77,7 @@ BlockSet {
         "start": 0,
       },
       "refName": "ctgA",
+      "reversed": undefined,
       "start": 0,
       "widthPx": 100,
     },
@@ -91,6 +94,7 @@ BlockSet {
         "start": 100,
       },
       "refName": "ctgB",
+      "reversed": undefined,
       "start": 100,
       "widthPx": 100,
     },
@@ -124,6 +128,7 @@ BlockSet {
         "start": 0,
       },
       "refName": "ctgA",
+      "reversed": undefined,
       "start": 4800,
       "widthPx": 800,
     },
@@ -140,6 +145,7 @@ BlockSet {
         "start": 0,
       },
       "refName": "ctgA",
+      "reversed": undefined,
       "start": 5600,
       "widthPx": 800,
     },
@@ -173,6 +179,7 @@ BlockSet {
         "start": 0,
       },
       "refName": "ctgA",
+      "reversed": undefined,
       "start": 0,
       "widthPx": 200,
     },
@@ -189,6 +196,7 @@ BlockSet {
         "start": 0,
       },
       "refName": "ctgB",
+      "reversed": undefined,
       "start": 0,
       "widthPx": 800,
     },
@@ -212,6 +220,7 @@ BlockSet {
         "start": 0,
       },
       "refName": "ctgB",
+      "reversed": undefined,
       "start": 0,
       "widthPx": 800,
     },
@@ -228,6 +237,7 @@ BlockSet {
         "start": 0,
       },
       "refName": "ctgB",
+      "reversed": undefined,
       "start": 800,
       "widthPx": 200,
     },
@@ -261,6 +271,7 @@ BlockSet {
         "start": 0,
       },
       "refName": "ctgB",
+      "reversed": undefined,
       "start": 800,
       "widthPx": 800,
     },
@@ -277,6 +288,7 @@ BlockSet {
         "start": 0,
       },
       "refName": "ctgB",
+      "reversed": undefined,
       "start": 1600,
       "widthPx": 800,
     },
@@ -300,6 +312,7 @@ BlockSet {
         "start": 0,
       },
       "refName": "ctgA",
+      "reversed": undefined,
       "start": 1600,
       "widthPx": 800,
     },
@@ -316,6 +329,7 @@ BlockSet {
         "start": 0,
       },
       "refName": "ctgA",
+      "reversed": undefined,
       "start": 3200,
       "widthPx": 800,
     },
@@ -348,6 +362,7 @@ Array [
       "start": 100,
     },
     "refName": "ctgA",
+    "reversed": undefined,
     "start": 100,
     "widthPx": 800,
   },
@@ -364,19 +379,73 @@ Array [
       "start": 100,
     },
     "refName": "ctgA",
+    "reversed": undefined,
     "start": 140,
     "widthPx": 800,
   },
 ]
 `;
 
-exports[`horizontally flipped displayed regions with elided region 1`] = `
+exports[`reverse block calculation 1 1`] = `
 BlockSet {
   "blocks": Array [
     InterRegionPaddingBlock {
       "assemblyName": undefined,
       "end": undefined,
-      "key": "ctgA:1..1-beforeFirstRegion-reversed",
+      "key": "ctgA:9201..10000-reversed-beforeFirstRegion",
+      "offsetPx": -800,
+      "refName": undefined,
+      "start": undefined,
+      "variant": "boundary",
+      "widthPx": 800,
+    },
+    ContentBlock {
+      "assemblyName": undefined,
+      "end": 10000,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgA:9201..10000-reversed",
+      "offsetPx": 0,
+      "parentRegion": Object {
+        "end": 10000,
+        "refName": "ctgA",
+        "reversed": true,
+        "start": 0,
+      },
+      "refName": "ctgA",
+      "reversed": true,
+      "start": 9200,
+      "widthPx": 800,
+    },
+    ContentBlock {
+      "assemblyName": undefined,
+      "end": 9200,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgA:8401..9200-reversed",
+      "offsetPx": 800,
+      "parentRegion": Object {
+        "end": 10000,
+        "refName": "ctgA",
+        "reversed": true,
+        "start": 0,
+      },
+      "refName": "ctgA",
+      "reversed": true,
+      "start": 8400,
+      "widthPx": 800,
+    },
+  ],
+}
+`;
+
+exports[`reversed displayed regions with elided region 1`] = `
+BlockSet {
+  "blocks": Array [
+    InterRegionPaddingBlock {
+      "assemblyName": undefined,
+      "end": undefined,
+      "key": "ctgA:1..1-reversed-beforeFirstRegion",
       "offsetPx": -800,
       "refName": undefined,
       "start": undefined,
@@ -394,9 +463,11 @@ BlockSet {
       "parentRegion": Object {
         "end": 1,
         "refName": "ctgA",
+        "reversed": true,
         "start": 0,
       },
       "refName": "ctgA",
+      "reversed": true,
       "start": 0,
       "widthPx": 1,
     },
@@ -410,9 +481,11 @@ BlockSet {
       "parentRegion": Object {
         "end": 10000,
         "refName": "ctgA",
+        "reversed": true,
         "start": 0,
       },
       "refName": "ctgA",
+      "reversed": true,
       "start": 9200,
       "widthPx": 800,
     },
@@ -426,9 +499,11 @@ BlockSet {
       "parentRegion": Object {
         "end": 10000,
         "refName": "ctgA",
+        "reversed": true,
         "start": 0,
       },
       "refName": "ctgA",
+      "reversed": true,
       "start": 8400,
       "widthPx": 800,
     },
@@ -436,13 +511,13 @@ BlockSet {
 }
 `;
 
-exports[`horizontally flipped displayed regions without elided region 1`] = `
+exports[`reversed displayed regions without elided region 1`] = `
 BlockSet {
   "blocks": Array [
     InterRegionPaddingBlock {
       "assemblyName": undefined,
       "end": undefined,
-      "key": "ctgA:101..200-beforeFirstRegion-reversed",
+      "key": "ctgA:101..200-reversed-beforeFirstRegion",
       "offsetPx": -800,
       "refName": undefined,
       "start": undefined,
@@ -459,9 +534,11 @@ BlockSet {
       "parentRegion": Object {
         "end": 200,
         "refName": "ctgA",
+        "reversed": true,
         "start": 100,
       },
       "refName": "ctgA",
+      "reversed": true,
       "start": 100,
       "widthPx": 100,
     },
@@ -475,69 +552,22 @@ BlockSet {
       "parentRegion": Object {
         "end": 600,
         "refName": "ctgA",
+        "reversed": true,
         "start": 500,
       },
       "refName": "ctgA",
+      "reversed": true,
       "start": 500,
       "widthPx": 100,
     },
     InterRegionPaddingBlock {
       "assemblyName": undefined,
       "end": undefined,
-      "key": "ctgA:501..600-afterLastRegion-reversed",
+      "key": "ctgA:501..600-reversed-afterLastRegion",
       "offsetPx": 202,
       "refName": undefined,
       "start": undefined,
       "variant": "boundary",
-      "widthPx": 800,
-    },
-  ],
-}
-`;
-
-exports[`reverse block calculation 1 1`] = `
-BlockSet {
-  "blocks": Array [
-    InterRegionPaddingBlock {
-      "assemblyName": undefined,
-      "end": undefined,
-      "key": "ctgA:1..800-beforeFirstRegion-reversed",
-      "offsetPx": -800,
-      "refName": undefined,
-      "start": undefined,
-      "variant": "boundary",
-      "widthPx": 800,
-    },
-    ContentBlock {
-      "assemblyName": undefined,
-      "end": 10000,
-      "isLeftEndOfDisplayedRegion": true,
-      "isRightEndOfDisplayedRegion": false,
-      "key": "ctgA:9201..10000-reversed",
-      "offsetPx": 0,
-      "parentRegion": Object {
-        "end": 10000,
-        "refName": "ctgA",
-        "start": 0,
-      },
-      "refName": "ctgA",
-      "start": 9200,
-      "widthPx": 800,
-    },
-    ContentBlock {
-      "assemblyName": undefined,
-      "end": 9200,
-      "isLeftEndOfDisplayedRegion": false,
-      "isRightEndOfDisplayedRegion": false,
-      "key": "ctgA:8401..9200-reversed",
-      "offsetPx": 800,
-      "parentRegion": Object {
-        "end": 10000,
-        "refName": "ctgA",
-        "start": 0,
-      },
-      "refName": "ctgA",
-      "start": 8400,
       "widthPx": 800,
     },
   ],

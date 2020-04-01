@@ -7,7 +7,7 @@ import { types } from 'mobx-state-tree'
 import configSchema from './configSchema'
 import { generateTracks } from './tracks'
 
-export default function(pluginManager) {
+export default function (pluginManager) {
   return types.compose(
     'TheTrackHubRegistryConnection',
     connectionModelFactory(pluginManager),

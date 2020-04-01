@@ -31,14 +31,14 @@ function Ruler({
   start,
   end,
   bpPerPx,
-  flipped,
+  reversed,
   major,
   minor,
 }: {
   start: number
   end: number
   bpPerPx: number
-  flipped: boolean
+  reversed?: boolean
   major: boolean
   minor: boolean
 }) {
@@ -47,7 +47,7 @@ function Ruler({
   return (
     <>
       {ticks.map(tick => {
-        const x = (flipped ? end - tick.base : tick.base - start) / bpPerPx
+        const x = (reversed ? end - tick.base : tick.base - start) / bpPerPx
         return (
           <line
             key={tick.base}
@@ -67,7 +67,7 @@ function Ruler({
       {ticks
         .filter(tick => tick.type === 'major')
         .map(tick => {
-          const x = (flipped ? end - tick.base : tick.base - start) / bpPerPx
+          const x = (reversed ? end - tick.base : tick.base - start) / bpPerPx
           return (
             <text
               x={x - 3}
@@ -89,13 +89,13 @@ Ruler.propTypes = {
   start: ReactPropTypes.number.isRequired,
   end: ReactPropTypes.number.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
-  flipped: ReactPropTypes.bool,
+  reversed: ReactPropTypes.bool,
   major: ReactPropTypes.bool,
   minor: ReactPropTypes.bool,
 }
 
 Ruler.defaultProps = {
-  flipped: false,
+  reversed: false,
   major: true,
   minor: true,
 }

@@ -17,7 +17,6 @@ class LollipopRendering extends Component {
 
     region: CommonPropTypes.Region.isRequired,
     bpPerPx: ReactPropTypes.number.isRequired,
-    horizontallyFlipped: ReactPropTypes.bool,
     features: ReactPropTypes.instanceOf(Map),
     config: CommonPropTypes.ConfigSchema.isRequired,
     trackModel: ReactPropTypes.shape({
@@ -35,8 +34,6 @@ class LollipopRendering extends Component {
   }
 
   static defaultProps = {
-    horizontallyFlipped: false,
-
     trackModel: {},
 
     features: new Map(),
@@ -93,10 +90,10 @@ class LollipopRendering extends Component {
   }
 
   layout(args) {
-    const { feature, bpPerPx, region, layout, horizontallyFlipped } = args
+    const { feature, bpPerPx, region, layout } = args
 
     const centerBp = Math.abs(feature.get('end') + feature.get('start')) / 2
-    const centerPx = bpToPx(centerBp, region, bpPerPx, horizontallyFlipped)
+    const centerPx = bpToPx(centerBp, region, bpPerPx)
     const radiusPx = readConfObject(args.config, 'radius', [feature])
 
     if (!radiusPx)
@@ -118,7 +115,6 @@ class LollipopRendering extends Component {
       region,
       bpPerPx,
       layout,
-      horizontallyFlipped,
       config,
       features,
       trackModel: { selectedFeatureId },
@@ -129,7 +125,6 @@ class LollipopRendering extends Component {
     for (const feature of features.values()) {
       this.layout({
         feature,
-        horizontallyFlipped,
         bpPerPx,
         region,
         config,

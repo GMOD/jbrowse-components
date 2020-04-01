@@ -77,7 +77,7 @@ function VerticalGuides({
               <Block key={`${block.key}-${index}`} block={block}>
                 {ticks.map(tick => {
                   const x =
-                    (model.horizontallyFlipped
+                    (block.reversed
                       ? block.end - tick.base
                       : tick.base - block.start) / model.bpPerPx
                   return (

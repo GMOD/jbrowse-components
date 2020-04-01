@@ -91,7 +91,7 @@ const ScaleBar = React.forwardRef(
             {ticks.map(tick => {
               if (tick.type === 'labeledMajor') {
                 const x =
-                  (model.horizontallyFlipped
+                  (block.reversed
                     ? block.end - tick.base
                     : tick.base - block.start) / model.bpPerPx
                 const baseNumber = (tick.base + 1).toLocaleString()

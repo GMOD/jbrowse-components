@@ -19,7 +19,6 @@ export const SvgSelected = observer(
     region,
     trackModel: { blockLayoutFeatures, selectedFeatureId },
     bpPerPx,
-    horizontallyFlipped,
     blockKey,
   }) => {
     if (selectedFeatureId && blockLayoutFeatures) {
@@ -28,13 +27,7 @@ export const SvgSelected = observer(
         const rect = blockLayout.get(selectedFeatureId)
         if (rect) {
           const [leftBp, topPx, rightBp, bottomPx] = rect
-          const [leftPx, rightPx] = bpSpanPx(
-            leftBp,
-            rightBp,
-            region,
-            bpPerPx,
-            horizontallyFlipped,
-          )
+          const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
           const rectTop = Math.round(topPx)
           const rectHeight = Math.round(bottomPx - topPx)
 
@@ -60,7 +53,6 @@ export const SvgMouseover = observer(
     trackModel: { blockLayoutFeatures, featureIdUnderMouse },
     region,
     bpPerPx,
-    horizontallyFlipped,
     blockKey,
   }) => {
     if (featureIdUnderMouse && blockLayoutFeatures) {
@@ -69,13 +61,7 @@ export const SvgMouseover = observer(
         const rect = blockLayout.get(featureIdUnderMouse)
         if (rect) {
           const [leftBp, topPx, rightBp, bottomPx] = rect
-          const [leftPx, rightPx] = bpSpanPx(
-            leftBp,
-            rightBp,
-            region,
-            bpPerPx,
-            horizontallyFlipped,
-          )
+          const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
           const rectTop = Math.round(topPx)
           const rectHeight = Math.round(bottomPx - topPx)
           return (
@@ -96,17 +82,10 @@ export const SvgMouseover = observer(
 )
 
 function RenderedFeatureGlyph(props) {
-  const {
-    feature,
-    horizontallyFlipped,
-    bpPerPx,
-    region,
-    config,
-    displayMode,
-    layout,
-  } = props
-  const start = feature.get(horizontallyFlipped ? 'end' : 'start')
-  const startPx = bpToPx(start, region, bpPerPx, horizontallyFlipped)
+  const { feature, bpPerPx, region, config, displayMode, layout } = props
+  const { reversed } = region
+  const start = feature.get(reversed ? 'end' : 'start')
+  const startPx = bpToPx(start, region, bpPerPx)
   const labelsAllowed = displayMode !== 'compact' && displayMode !== 'collapsed'
 
   const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
@@ -115,7 +94,7 @@ function RenderedFeatureGlyph(props) {
     layout: rootLayout,
     feature,
     bpPerPx,
-    horizontallyFlipped,
+    reversed,
     config,
   })
   let shouldShowName
@@ -193,6 +172,7 @@ function RenderedFeatureGlyph(props) {
       shouldShowDescription={shouldShowDescription}
       fontHeight={fontHeight}
       allowedWidthExpansion={expansion}
+      reversed={region.reversed}
       {...props}
     />
   )
@@ -207,16 +187,11 @@ RenderedFeatureGlyph.propTypes = {
   displayMode: ReactPropTypes.string.isRequired,
   region: CommonPropTypes.Region.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
-  horizontallyFlipped: ReactPropTypes.bool,
   feature: ReactPropTypes.shape({
     id: ReactPropTypes.func.isRequired,
     get: ReactPropTypes.func.isRequired,
   }).isRequired,
   config: CommonPropTypes.ConfigSchema.isRequired,
-}
-
-RenderedFeatureGlyph.defaultProps = {
-  horizontallyFlipped: false,
 }
 
 const RenderedFeatures = observer(props => {
@@ -246,15 +221,7 @@ RenderedFeatures.defaultProps = {
 }
 
 function SvgFeatureRendering(props) {
-  const {
-    blockKey,
-    region,
-    bpPerPx,
-    horizontallyFlipped,
-    features,
-    trackModel,
-    config,
-  } = props
+  const { blockKey, region, bpPerPx, features, trackModel, config } = props
   const { configuration } = trackModel
   const width = (region.end - region.start) / bpPerPx
   const displayMode = readConfObject(config, 'displayMode')
@@ -349,7 +316,7 @@ function SvgFeatureRendering(props) {
       }
       offsetX = event.clientX - offsetX
       offsetY = event.clientY - offsetY
-      const px = horizontallyFlipped ? width - offsetX : offsetX
+      const px = region.reversed ? width - offsetX : offsetX
       const clientBp = region.start + bpPerPx * px
 
       const feats = trackModel.getFeatureOverlapping(
@@ -370,9 +337,9 @@ function SvgFeatureRendering(props) {
     [
       blockKey,
       bpPerPx,
-      horizontallyFlipped,
       mouseIsDown,
       onMouseMove,
+      region.reversed,
       region.start,
       trackModel,
       width,
@@ -437,7 +404,6 @@ SvgFeatureRendering.propTypes = {
 
   region: CommonPropTypes.Region.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
-  horizontallyFlipped: ReactPropTypes.bool,
   features: ReactPropTypes.oneOfType([
     ReactPropTypes.instanceOf(Map),
     ReactPropTypes.arrayOf(ReactPropTypes.shape()),
@@ -464,8 +430,6 @@ SvgFeatureRendering.propTypes = {
 }
 
 SvgFeatureRendering.defaultProps = {
-  horizontallyFlipped: false,
-
   trackModel: {},
 
   features: new Map(),

@@ -17,7 +17,6 @@ interface WiggleBaseRendererProps {
   bpPerPx: number
   height: number
   width: number
-  horizontallyFlipped: boolean
   highResolutionScaling: number
   blockKey: string
   dataAdapter: BaseAdapter

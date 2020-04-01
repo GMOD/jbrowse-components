@@ -101,9 +101,9 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
             offsetPx: (bottomRegion.start + endPos) / bpPerPx,
           },
         ],
-        displayName: `${feature.get('name') ||
-          feature.get('id') ||
-          'breakend'} split detail`,
+        displayName: `${
+          feature.get('name') || feature.get('id') || 'breakend'
+        } split detail`,
       }
       return snapshot
     }

@@ -59,9 +59,6 @@ export default (pluginManager: any) => {
               const id = f1.id()
               if (!c1) return null
 
-              const flipMultipliers = views.map(v =>
-                v.horizontallyFlipped ? -1 : 1,
-              )
               const info = f1.get('INFO')
               const chr2 = info.CHR2[0]
               const end2 = info.END[0]
@@ -77,6 +74,8 @@ export default (pluginManager: any) => {
                   c1[LEFT],
                 )
                 const x2 = r
+                const reversed1 = views[level1].pxToBp(x1).reversed
+                const reversed2 = views[level2].pxToBp(x2).reversed
 
                 const tracks = views.map(v => v.getTrack(trackConfigId))
                 const y1 = yPos(trackConfigId, level1, views, tracks, c1)
@@ -87,7 +86,7 @@ export default (pluginManager: any) => {
                     x1 -
                       20 *
                         (myDirection === '+' ? 1 : -1) *
-                        flipMultipliers[level1],
+                        (reversed1 ? -1 : 1),
                     y1,
                   )
                   .lineTo(x1, y1)
@@ -96,7 +95,7 @@ export default (pluginManager: any) => {
                     x2 -
                       20 *
                         (mateDirection === '+' ? 1 : -1) *
-                        flipMultipliers[level2],
+                        (reversed2 ? -1 : 1),
                     y2,
                   )
                   .end()
