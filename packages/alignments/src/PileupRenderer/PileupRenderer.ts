@@ -105,8 +105,7 @@ export default class extends BoxRendererType {
     const w = Math.max(minFeatWidth, pxPerBp)
 
     // TODOSORT: this is where the layout is generated, feature needs to be sorted before here
-    // might be interblock dependencies watch out for them
-    console.log(sortObject)
+
     const sortedFeatures =
       sortObject.by && sortObject.by !== ''
         ? sortFeature(features, sortObject, bpPerPx, region)

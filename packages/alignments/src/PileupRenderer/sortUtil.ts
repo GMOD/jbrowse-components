@@ -1,6 +1,5 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 
 interface SortObject {
@@ -12,12 +11,12 @@ export const sortFeature = (
   sortObject: SortObject,
   bpPerPx: number,
   region: IRegion,
-  horizontallyFlipped: boolean,
 ) => {
   const featureArray = Array.from(features) // this is an array of arrays
   const featuresInCenterLine: [string, Feature][] = []
   const featuresOutsideCenter: [string, Feature][] = []
 
+  console.log('NEW SORT', features)
   featureArray.forEach((innerArray, idx) => {
     const feature = innerArray[1]
     if (
@@ -40,7 +39,7 @@ export const sortFeature = (
     case 'Base Pair': {
       // first sort all mismatches, then all reference bases at the end
       const baseSortArray: [string, Mismatch][] = []
-      featuresInCenterLine.map((array, idx) => {
+      featuresInCenterLine.forEach((array, idx) => {
         const feature = array[1]
         const mismatches: Mismatch[] = feature.get('mismatches')
         mismatches.forEach(mismatch => {
@@ -58,10 +57,11 @@ export const sortFeature = (
         const calculation =
           (aMismatch ? aMismatch.base.charCodeAt(0) : 0) -
           (bMismatch ? bMismatch.base.charCodeAt(0) : 0)
-        console.log(aMismatch, bMismatch, calculation)
+
+        // TODOSORT: on the last call, top 3 features are not included when passed to this util
         return (
-          (aMismatch ? aMismatch.base.charCodeAt(0) : 0) -
-          (bMismatch ? bMismatch.base.charCodeAt(0) : 0)
+          (bMismatch ? bMismatch.base.toUpperCase().charCodeAt(0) : 0) -
+          (aMismatch ? aMismatch.base.toUpperCase().charCodeAt(0) : 0)
         )
       })
 
@@ -72,14 +72,7 @@ export const sortFeature = (
       break
   }
 
-  //   featuresInCenterLine.map(f => console.log(f[1].get('start')))
-  //   featureArray.splice(
-  //     minIdx,
-  //     featuresInCenterLine.length,
-  //     ...featuresInCenterLine,
-  //   )
   const sortedMap = new Map(featuresInCenterLine.concat(featuresOutsideCenter))
-  //   featureArray.forEach((element, idx) => sortedMap.set(element[0], element[1]))
 
   return sortedMap
 }
