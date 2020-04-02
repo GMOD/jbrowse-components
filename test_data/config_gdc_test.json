@@ -1,0 +1,78 @@
+{
+    "configuration": {},
+    "assemblies": [
+      {
+        "name": "hg38",
+        "aliases": [
+          "GRCh38"
+        ],
+        "sequence": {
+          "type": "ReferenceSequenceTrack",
+          "trackId": "P6R5xbRqRr",
+          "adapter": {
+            "type": "BgzipFastaAdapter",
+            "fastaLocation": {
+              "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+            },
+            "faiLocation": {
+              "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+            },
+            "gziLocation": {
+              "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+            }
+          },
+          "rendering": {
+            "type": "DivSequenceRenderer"
+          }
+        },
+        "refNameAliases": {
+          "adapter": {
+            "type": "RefNameAliasAdapter",
+            "location": {
+              "uri": "test_data/GRCh38_RefSeq2UCSC.txt"
+            }
+          }
+        }
+      }
+    ],
+    "tracks": [
+        {
+            "type": "GDCTrack",
+            "trackId": "gdc_plugin_track",
+            "name": "GDC",
+            "assemblyNames": [
+              "hg38"
+            ],
+            "category": [
+              "Annotation"
+            ],
+            "adapter": {
+              "type": "GDCAdapter"
+            },
+            "renderer": {
+              "type": "SvgFeatureRenderer"
+            }
+          }
+    ],
+    "connections": [
+      {
+        "type": "JBrowse1Connection",
+        "connectionId": "COSMIC_connection_grch38",
+        "name": "COSMIC (GRCh38)",
+        "assemblyName": "hg38",
+        "dataDirLocation": {
+          "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch38/v90/cosmic"
+        }
+      }
+    ],
+    "defaultSession": {
+      "name": "New Session",
+      "menuBars": [
+        {
+          "type": "MainMenuBar"
+        }
+      ]
+    },
+    "savedSessions": []
+  }
+  
