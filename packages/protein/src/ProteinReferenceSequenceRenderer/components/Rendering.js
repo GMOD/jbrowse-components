@@ -16,13 +16,12 @@ function Sequence({
   region,
   height,
   bpPerPx,
-  horizontallyFlipped,
   sequence,
   lettersPerBp,
   y,
 }) {
   let s = sequence.split('')
-  if (horizontallyFlipped) s = s.reverse()
+  if (region.reversed) s = s.reverse()
   const letterWidth = 1 / bpPerPx / lettersPerBp
   return (
     <g transform={`translate(0 ${y})`}>
@@ -56,7 +55,6 @@ function Sequence({
 Sequence.propTypes = {
   region: CommonPropTypes.Region.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
-  horizontallyFlipped: ReactPropTypes.bool,
   y: ReactPropTypes.number,
   getTitleForLetter: ReactPropTypes.func,
   getColorForLetter: ReactPropTypes.func,
@@ -66,7 +64,6 @@ Sequence.propTypes = {
 }
 Sequence.defaultProps = {
   y: 0,
-  horizontallyFlipped: false,
   getTitleForLetter: () => undefined,
   getColorForLetter: () => '#ffffff',
   lettersPerBp: 1,

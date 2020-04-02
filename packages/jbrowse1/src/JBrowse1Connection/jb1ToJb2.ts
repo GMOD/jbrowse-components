@@ -411,8 +411,9 @@ export async function createRefSeqsAdapter(
     return refSeqAdapterFromConfig(refSeqs.data || [])
   }
   throw new Error(
-    `Could not determine adapter for JBrowse1 refSeqs: ${refSeqs.url ||
-      JSON.stringify(refSeqs)}`,
+    `Could not determine adapter for JBrowse1 refSeqs: ${
+      refSeqs.url || JSON.stringify(refSeqs)
+    }`,
   )
 }
 

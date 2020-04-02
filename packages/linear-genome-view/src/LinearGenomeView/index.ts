@@ -75,7 +75,6 @@ export function stateModelFactory(pluginManager: any) {
       bpPerPx: 1,
       displayedRegions: types.array(Region),
       displayName: types.maybe(types.string),
-      horizontallyFlipped: false,
       // we use an array for the tracks because the tracks are displayed in a specific
       // order that we need to keep.
       tracks: types.array(
@@ -153,7 +152,6 @@ export function stateModelFactory(pluginManager: any) {
             getSession(self),
             'highResolutionScaling',
           ),
-          horizontallyFlipped: self.horizontallyFlipped,
         }
       },
       get assemblyNames() {
@@ -170,9 +168,7 @@ export function stateModelFactory(pluginManager: any) {
 
         const index = self.displayedRegions.findIndex(r => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
-            offsetBp += self.horizontallyFlipped
-              ? r.end - coord
-              : coord - r.start
+            offsetBp += r.reversed ? r.end - coord : coord - r.start
             return true
           }
           offsetBp += r.end - r.start
@@ -257,8 +253,12 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       horizontallyFlip() {
-        self.horizontallyFlipped = !self.horizontallyFlipped
-        self.displayedRegions = cast(self.displayedRegions.slice().reverse())
+        self.displayedRegions = cast(
+          self.displayedRegions
+            .slice()
+            .reverse()
+            .map(region => ({ ...region, reversed: !region.reversed })),
+        )
         self.offsetPx = self.totalBp / self.bpPerPx - self.offsetPx - self.width
       },
 
@@ -441,7 +441,7 @@ export function stateModelFactory(pluginManager: any) {
           bpSoFar += end.offset - start.offset
         } else {
           const s = self.displayedRegions[start.index]
-          bpSoFar += s.end - start.offset
+          bpSoFar += (s.reversed ? s.start : s.end) - start.offset
           if (end.index - start.index >= 2) {
             for (let i = start.index + 1; i < end.index; i += 1) {
               bpSoFar +=
@@ -517,8 +517,6 @@ export function stateModelFactory(pluginManager: any) {
           return [
             {
               label: 'Horizontally flip',
-              type: 'checkbox',
-              checked: self.horizontallyFlipped,
               onClick: self.horizontallyFlip,
             },
             {
@@ -539,11 +537,7 @@ export function stateModelFactory(pluginManager: any) {
         },
 
         get staticBlocks() {
-          const ret = calculateStaticBlocks(
-            cast(self),
-            self.horizontallyFlipped,
-            1,
-          )
+          const ret = calculateStaticBlocks(cast(self), 1)
           const sret = JSON.stringify(ret)
           if (stringifiedCurrentlyCalculatedStaticBlocks !== sret) {
             currentlyCalculatedStaticBlocks = ret
@@ -553,7 +547,7 @@ export function stateModelFactory(pluginManager: any) {
         },
 
         get dynamicBlocks() {
-          return calculateDynamicBlocks(cast(self), self.horizontallyFlipped)
+          return calculateDynamicBlocks(cast(self))
         },
       }
     })

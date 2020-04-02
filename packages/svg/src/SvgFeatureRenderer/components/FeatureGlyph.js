@@ -17,7 +17,7 @@ function FeatureGlyph(props) {
     shouldShowDescription,
     fontHeight,
     allowedWidthExpansion,
-    horizontallyFlipped,
+    reversed,
   } = props
 
   function onFeatureMouseDown(event) {
@@ -91,7 +91,7 @@ function FeatureGlyph(props) {
         y={rootLayout.getSubRecord('nameLabel').absolute.top}
         color={readConfObject(config, ['labels', 'nameColor'], [feature])}
         fontHeight={fontHeight}
-        horizontallyFlipped={horizontallyFlipped}
+        reversed={reversed}
         featureWidth={featureLayout.width}
         allowedWidthExpansion={allowedWidthExpansion}
       />,
@@ -112,7 +112,7 @@ function FeatureGlyph(props) {
         )}
         fontHeight={fontHeight}
         featureWidth={featureLayout.width}
-        horizontallyFlipped={horizontallyFlipped}
+        reversed={reversed}
         allowedWidthExpansion={allowedWidthExpansion}
       />,
     )
@@ -151,7 +151,7 @@ FeatureGlyph.propTypes = {
   }).isRequired,
   region: CommonPropTypes.Region.isRequired,
   bpPerPx: PropTypes.number.isRequired,
-  horizontallyFlipped: PropTypes.bool,
+  reversed: PropTypes.bool,
   selected: PropTypes.bool,
   config: CommonPropTypes.ConfigSchema.isRequired,
   name: PropTypes.string,
@@ -174,7 +174,7 @@ FeatureGlyph.propTypes = {
 }
 
 FeatureGlyph.defaultProps = {
-  horizontallyFlipped: false,
+  reversed: false,
   selected: false,
   name: '',
   shouldShowName: false,

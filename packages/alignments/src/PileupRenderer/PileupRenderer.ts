@@ -19,7 +19,6 @@ interface PileupRenderProps {
   bpPerPx: number
   height: number
   width: number
-  horizontallyFlipped: boolean
   highResolutionScaling: number
   sortObject: {
     position: number
@@ -48,14 +47,12 @@ export default class extends BoxRendererType {
     config: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     bpPerPx: number,
     region: IRegion,
-    horizontallyFlipped = false,
   ): LayoutRecord | null {
     const [leftPx, rightPx] = bpSpanPx(
       feature.get('start'),
       feature.get('end'),
       region,
       bpPerPx,
-      horizontallyFlipped,
     )
 
     let heightPx = readConfObject(config, 'height', [feature])
@@ -97,7 +94,6 @@ export default class extends BoxRendererType {
       config,
       region,
       bpPerPx,
-      horizontallyFlipped,
       sortObject,
       highResolutionScaling = 1,
     } = props
@@ -113,27 +109,13 @@ export default class extends BoxRendererType {
     console.log(sortObject)
     const sortedFeatures =
       sortObject.by && sortObject.by !== ''
-        ? sortFeature(
-            features,
-            sortObject,
-            bpPerPx,
-            region,
-            horizontallyFlipped,
-          )
+        ? sortFeature(features, sortObject, bpPerPx, region)
         : null
 
     const featureMap = sortedFeatures || features
     const layoutRecords = iterMap(
       featureMap.values(),
-      feature =>
-        this.layoutFeature(
-          feature,
-          layout,
-          config,
-          bpPerPx,
-          region,
-          horizontallyFlipped,
-        ),
+      feature => this.layoutFeature(feature, layout, config, bpPerPx, region),
       featureMap.size,
     )
 
@@ -180,7 +162,6 @@ export default class extends BoxRendererType {
             feature.get('start') + mismatch.start + mismatch.length,
             region,
             bpPerPx,
-            horizontallyFlipped,
           )
           const mismatchWidthPx = Math.max(
             minFeatWidth,

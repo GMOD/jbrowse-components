@@ -53,9 +53,6 @@ export default (pluginManager: any) => {
               const { layout: c1, feature: f1, level: level1 } = chunk[i]
               const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]
               const id = `${f1.id()}-${f2.id()}`
-              const flipMultipliers = views.map(v =>
-                v.horizontallyFlipped ? -1 : 1,
-              )
               const relevantAlt = findMatchingAlt(f1, f2)
               if (!c1 || !c2) return null
               const x1 = getPxFromCoordinate(
@@ -68,6 +65,8 @@ export default (pluginManager: any) => {
                 f2.get('refName'),
                 c2[LEFT],
               )
+              const reversed1 = views[level1].pxToBp(x1).reversed
+              const reversed2 = views[level2].pxToBp(x2).reversed
 
               const tracks = views.map(v => v.getTrack(trackConfigId))
               const y1 = yPos(trackConfigId, level1, views, tracks, c1)
@@ -82,7 +81,7 @@ export default (pluginManager: any) => {
                     x1 -
                       20 *
                         (relevantAlt.Join === 'left' ? -1 : 1) *
-                        flipMultipliers[level1],
+                        (reversed1 ? -1 : 1),
                     y1,
                   )
                   .lineTo(x1, y1)
@@ -91,7 +90,7 @@ export default (pluginManager: any) => {
                     x2 -
                       20 *
                         (relevantAlt.MateDirection === 'left' ? 1 : -1) *
-                        flipMultipliers[level2],
+                        (reversed2 ? -1 : 1),
                     y2,
                   )
                   .end()

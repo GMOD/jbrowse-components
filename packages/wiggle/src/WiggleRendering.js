@@ -85,14 +85,7 @@ Tooltip.propTypes = {
 }
 
 function WiggleRendering(props) {
-  const {
-    region,
-    features,
-    bpPerPx,
-    horizontallyFlipped,
-    width,
-    height,
-  } = props
+  const { region, features, bpPerPx, width, height } = props
   const ref = useRef()
   const [featureUnderMouse, setFeatureUnderMouse] = useState()
   const [clientX, setClientX] = useState()
@@ -103,7 +96,7 @@ function WiggleRendering(props) {
   }
   function onMouseMove(evt) {
     const offsetX = evt.clientX - offset
-    const px = horizontallyFlipped ? width - offsetX : offsetX
+    const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
     for (const feature of features.values()) {
       if (clientBp <= feature.get('end') && clientBp >= feature.get('start')) {
@@ -146,7 +139,6 @@ WiggleRendering.propTypes = {
   region: CommonPropTypes.Region.isRequired,
   features: ReactPropTypes.instanceOf(Map).isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
-  horizontallyFlipped: ReactPropTypes.bool,
   trackModel: ReactPropTypes.shape({
     /** id of the currently selected feature, if any */
     selectedFeatureId: ReactPropTypes.string,
@@ -154,7 +146,6 @@ WiggleRendering.propTypes = {
 }
 
 WiggleRendering.defaultProps = {
-  horizontallyFlipped: false,
   trackModel: {},
 }
 
