@@ -336,6 +336,11 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       </h6>
     </div>
     <div
+      class="makeStyles-guide"
+      style="left: 0px;"
+      title="1"
+    />
+    <div
       class="MuiPaper-root makeStyles-scaleBarContainer makeStyles-rubberBandControl MuiPaper-outlined MuiPaper-rounded"
       data-testid="rubberBand_controls"
       role="presentation"
@@ -1284,6 +1289,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
          
       </h6>
     </div>
+    <div
+      class="makeStyles-guide"
+      style="left: 0px;"
+      title="1"
+    />
     <div
       class="MuiPaper-root makeStyles-scaleBarContainer makeStyles-rubberBandControl MuiPaper-outlined MuiPaper-rounded"
       data-testid="rubberBand_controls"

@@ -2,6 +2,7 @@ import { Menu } from '@gmod/jbrowse-core/ui'
 import Popover from '@material-ui/core/Popover'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
+import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
@@ -48,6 +49,13 @@ const useStyles = makeStyles(theme => {
       paddingLeft: theme.spacing(1),
       paddingRight: theme.spacing(1),
     },
+    guide: {
+      pointerEvents: 'none',
+      height: '100%',
+      width: 1,
+      position: 'absolute',
+      zIndex: 10,
+    },
   }
 })
 
@@ -70,6 +78,8 @@ function RubberBand({
       }
     | undefined
   >(undefined)
+  const [guideX, setGuideX] = useState(0)
+  const [guideOpen, setGuideOpen] = useState(false)
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
   const classes = useStyles()
@@ -130,6 +140,20 @@ function RubberBand({
     setStartX(relativeX)
   }
 
+  function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
+    if (!guideOpen) {
+      setGuideOpen(true)
+    }
+    setGuideX(
+      event.clientX -
+        (event.target as HTMLDivElement).getBoundingClientRect().left,
+    )
+  }
+
+  function mouseOut() {
+    setGuideOpen(false)
+  }
+
   function zoomToRegion() {
     let leftPx = startX
     let rightPx = currentX
@@ -156,6 +180,8 @@ function RubberBand({
     role: 'presentation',
     ref: controlsRef,
     onMouseDown: mouseDown,
+    onMouseOut: mouseOut,
+    onMouseMove: mouseMove,
   })
 
   function handleMenuItemClick(
@@ -243,6 +269,20 @@ function RubberBand({
           {Math.round(width * model.bpPerPx).toLocaleString()} bp{' '}
         </Typography>
       </div>
+      <Tooltip
+        open={guideOpen && !mouseDragging}
+        placement="top"
+        title={Math.round(model.pxToBp(guideX).offset + 1).toLocaleString()}
+        arrow
+      >
+        <div
+          className={classes.guide}
+          style={{
+            left: guideX,
+            background: guideOpen && !mouseDragging ? 'red' : undefined,
+          }}
+        />
+      </Tooltip>
       {controlComponent}
       {children}
       <Menu
