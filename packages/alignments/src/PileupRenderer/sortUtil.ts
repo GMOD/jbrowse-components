@@ -16,6 +16,7 @@ export const sortFeature = (
   const featuresInCenterLine: [string, Feature][] = []
   const featuresOutsideCenter: [string, Feature][] = []
 
+  console.log(bpPerPx)
   console.log('NEW SORT', features)
   featureArray.forEach((innerArray, idx) => {
     const feature = innerArray[1]
@@ -36,6 +37,7 @@ export const sortFeature = (
       break
     }
 
+    // WORKS UP TO BPPERPX OF 0.1
     case 'Base Pair': {
       // first sort all mismatches, then all reference bases at the end
       const baseSortArray: [string, Mismatch][] = []
@@ -65,7 +67,17 @@ export const sortFeature = (
         )
       })
 
-      // read strand feature.getstrand 1 or -1 sort on that
+      break
+    }
+
+    // WORKS UP TO BPPERPX OF 0.1
+    case 'Read Strand': {
+      featuresInCenterLine.sort(
+        (a: [string, Feature], b: [string, Feature]) => {
+          if (a[1].get('strand') < b[1].get('strand')) return 1
+          return -1
+        },
+      )
       break
     }
     default:
