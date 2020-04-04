@@ -225,19 +225,10 @@ ipcMain.handle('loadConfig', async () => {
       const configTemplateLocation = isDev
         ? path.join(app.getAppPath(), 'public', 'test_data', 'config.json')
         : path.join(app.getAppPath(), 'build', 'test_data', 'config.json')
-      let config = JSON.parse(
+      const config = JSON.parse(
         await fsReadFile(configTemplateLocation, { encoding: 'utf8' }),
       )
-      if (isDev) {
-        config = mergeConfigs(
-          config,
-          JSON.parse(
-            await fsReadFile('./test_data/config_in_dev.json', {
-              encoding: 'utf8',
-            }),
-          ),
-        )
-      }
+
       await fsWriteFile(configLocation, JSON.stringify(config, null, 2))
       return config
     }
