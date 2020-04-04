@@ -209,7 +209,7 @@ export function stateModelFactory(pluginManager: any) {
 
         return {
           ...r,
-          offset: Math.round(bp - bpSoFar),
+          offset: Math.floor(bp - bpSoFar),
           index: self.displayedRegions.length,
         }
       },
