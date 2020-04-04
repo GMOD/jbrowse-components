@@ -1,4 +1,5 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 
@@ -16,14 +17,16 @@ export const sortFeature = (
   const featuresInCenterLine: [string, Feature][] = []
   const featuresOutsideCenter: [string, Feature][] = []
 
-//   console.log(bpPerPx, sortObject.position)
-  console.log('NEW SORT -------')
   featureArray.forEach((innerArray, idx) => {
     const feature = innerArray[1]
     console.log(feature.get('start'), feature.get('end'))
     if (
-      sortObject.position <= feature.get('end') &&
-      sortObject.position >= feature.get('start')
+      doesIntersect2(
+        sortObject.position - 1,
+        sortObject.position,
+        feature.get('start'),
+        feature.get('end'),
+      )
     ) {
       featuresInCenterLine.push(innerArray)
     } else featuresOutsideCenter.push(innerArray)
