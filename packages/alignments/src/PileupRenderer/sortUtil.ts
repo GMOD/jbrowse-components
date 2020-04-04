@@ -14,12 +14,12 @@ export const sortFeature = (
   region: IRegion,
 ) => {
   const featureArray = Array.from(features) // this is an array of arrays
-  const featuresInCenterLine: [string, Feature][] = []
-  const featuresOutsideCenter: [string, Feature][] = []
+  const featuresInCenterLine: typeof featureArray = []
+  const featuresOutsideCenter: typeof featureArray = []
+  console.log(sortObject)
 
   featureArray.forEach((innerArray, idx) => {
     const feature = innerArray[1]
-    console.log(feature.get('start'), feature.get('end'))
     if (
       doesIntersect2(
         sortObject.position - 1,
@@ -29,10 +29,10 @@ export const sortFeature = (
       )
     ) {
       featuresInCenterLine.push(innerArray)
-    } else featuresOutsideCenter.push(innerArray)
+    } else {
+      featuresOutsideCenter.push(innerArray)
+    }
   })
-
-  console.log(featureArray.length, featuresInCenterLine.length)
 
   // NOTE: is not sorted when the last sort call featuresInCenterLine length > 0, happens at zoom level 0.05
   switch (sortObject.by) {

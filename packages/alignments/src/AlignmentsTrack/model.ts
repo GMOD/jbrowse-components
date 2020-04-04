@@ -93,10 +93,8 @@ export default (pluginManager: any, configSchema: any) => {
             subMenu: self.sortOptions.map((option: string) => {
               return {
                 label: option,
-                type: option !== 'Clear Sort' && 'radio',
-                checked: self.sortedBy === option,
                 onClick:
-                  option === 'Clear Sort' || self.sortedBy === option
+                  option === 'Clear Sort'
                     ? self.clearSelected
                     : () => self.sortSelected(option),
               }
