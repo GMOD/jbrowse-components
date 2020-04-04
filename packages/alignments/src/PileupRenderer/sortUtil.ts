@@ -16,10 +16,11 @@ export const sortFeature = (
   const featuresInCenterLine: [string, Feature][] = []
   const featuresOutsideCenter: [string, Feature][] = []
 
-  console.log(bpPerPx)
-  console.log('NEW SORT', features)
+//   console.log(bpPerPx, sortObject.position)
+  console.log('NEW SORT -------')
   featureArray.forEach((innerArray, idx) => {
     const feature = innerArray[1]
+    console.log(feature.get('start'), feature.get('end'))
     if (
       sortObject.position <= feature.get('end') &&
       sortObject.position >= feature.get('start')
@@ -28,6 +29,9 @@ export const sortFeature = (
     } else featuresOutsideCenter.push(innerArray)
   })
 
+  console.log(featureArray.length, featuresInCenterLine.length)
+
+  // NOTE: is not sorted when the last sort call featuresInCenterLine length > 0, happens at zoom level 0.05
   switch (sortObject.by) {
     case 'Start Location': {
       featuresInCenterLine.sort(
