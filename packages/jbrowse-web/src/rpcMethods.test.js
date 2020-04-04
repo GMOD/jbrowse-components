@@ -16,11 +16,11 @@ const baseprops = {
   adapterConfig: {
     type: 'BamAdapter',
     bamLocation: {
-      localPath: require.resolve('../public/test_data/volvox-sorted.bam'),
+      localPath: require.resolve('../test_data/volvox/volvox-sorted.bam'),
     },
     index: {
       location: {
-        localPath: require.resolve('../public/test_data/volvox-sorted.bam.bai'),
+        localPath: require.resolve('../test_data/volvox/volvox-sorted.bam.bai'),
       },
     },
   },
