@@ -32,10 +32,10 @@ function AlignmentsTrackComponent(props) {
   const [state, setState] = useState(initialState)
   const handleRightClick = e => {
     e.preventDefault()
-    setState(() => ({
+    setState({
       mouseX: e.clientX - 2,
       mouseY: e.clientY - 4,
-    }))
+    })
   }
   const ref = useRef()
   const zIndex = useTheme().zIndex.tooltip // zIndex matches tooltip zindex to bring to front
