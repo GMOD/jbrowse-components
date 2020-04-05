@@ -42,7 +42,7 @@ export default class BedTabixAdapter extends BaseAdapter {
       indexType?: string
       location: IFileLocation
     }
-    autoSql: string
+    autoSql?: string
   }) {
     super()
     const { bedGzLocation, index, autoSql } = config
