@@ -1,4 +1,4 @@
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
 export function ucscProcessedTranscript(feature: Feature) {
   const children = feature.children()
@@ -6,7 +6,9 @@ export function ucscProcessedTranscript(feature: Feature) {
   const thickStart = feature.get('thickStart')
   const thickEnd = feature.get('thickEnd')
 
-  if (!thickStart && !thickEnd) return feature
+  if (!thickStart && !thickEnd) {
+    return feature
+  }
 
   const blocks: Feature[] = children
     ? children

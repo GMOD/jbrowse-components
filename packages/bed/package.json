@@ -10,7 +10,9 @@
   "license": "MIT",
   "dependencies": {
     "@gmod/bbi": "^1.0.29",
-    "@gmod/bed": "^2.0.2"
+    "@gmod/bed": "^2.0.2",
+    "@gmod/tabix": "^1.4.3",
+    "generic-filehandle": "^2.0.1"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",

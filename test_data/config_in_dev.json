@@ -1573,6 +1573,32 @@
       }
     },
     {
+      "type": "BasicTrack",
+      "trackId": "bedtabix_genes",
+      "name": "BedTabix genes",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "category": [
+        "Miscellaneous"
+      ],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "test_data/volvox-bed12.bed.gz"
+        },
+        "index": {
+          "type": "TBI",
+          "location": {
+            "uri": "test_data/volvox-bed12.bed.gz"
+          }
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
       "type": "FilteringTrack",
       "trackId": "gp2w9yFU-MS",
       "name": "Filter track",
