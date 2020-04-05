@@ -9,23 +9,6 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import { GenericFilehandle } from 'generic-filehandle'
 import { ucscProcessedTranscript } from '../util'
 
-interface BEDFeature {
-  chrom: string
-  chromStart: number
-  chromEnd: number
-  [key: string]: any
-}
-interface AlreadyRegularizedFeature {
-  refName: string
-  start: number
-  end: number
-}
-interface RegularizedFeature {
-  refName: string
-  start: number
-  end: number
-}
-
 export default class BedTabixAdapter extends BaseAdapter {
   private parser: any
 
@@ -73,7 +56,7 @@ export default class BedTabixAdapter extends BaseAdapter {
       await this.bed.getLines(query.refName, query.start, query.end, {
         lineCallback: (line: string, fileOffset: number) => {
           const l = line.split('\t')
-          const refName = +l[0]
+          const refName = l[0]
           const start = +l[1]
           const end = +l[2]
           const uniqueId = `bed-${fileOffset}`

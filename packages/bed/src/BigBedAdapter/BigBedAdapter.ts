@@ -15,16 +15,7 @@ interface BEDFeature {
   chromEnd: number
   [key: string]: any
 }
-interface AlreadyRegularizedFeature {
-  refName: string
-  start: number
-  end: number
-}
-interface RegularizedFeature {
-  refName: string
-  start: number
-  end: number
-}
+
 interface Parser {
   parseLine: (line: string, opts: { uniqueId: string | number }) => BEDFeature
 }
