@@ -119,3 +119,31 @@ test('adapter can fetch features bed with autosql', async () => {
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
   expect(featuresJsonArray).toMatchSnapshot()
 })
+
+test('adapter can fetch bed with header', async () => {
+  const adapter = new BedTabixAdapter({
+    bedGzLocation: {
+      localPath: require.resolve('./test_data/volvox.sort.with.header.bed.gz'),
+    },
+    index: {
+      location: {
+        localPath: require.resolve(
+          './test_data/volvox.sort.with.header.bed.gz.tbi',
+        ),
+      },
+    },
+  })
+
+  const features = await adapter.getFeatures({
+    refName: 'contigA',
+    start: 0,
+    end: 20000,
+    assemblyName: 'volvox',
+  })
+  expect(await adapter.hasDataForRefName('contigA')).toBe(true)
+  expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
+
+  const featuresArray = await features.pipe(toArray()).toPromise()
+  const featuresJsonArray = featuresArray.map(f => f.toJSON())
+  expect(featuresJsonArray).toMatchSnapshot()
+})
