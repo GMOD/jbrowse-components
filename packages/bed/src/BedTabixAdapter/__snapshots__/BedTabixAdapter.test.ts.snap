@@ -1,11 +1,59 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`adapter can fetch features bed with autosql 1`] = `
+Array [
+  Object {
+    "Entrez_Gene_Id": "2782",
+    "Hugo_Symbol": "GNB1",
+    "Matched_Norm_Sample_Barcode": "TCGA-OR-A5KB-11A-11D-A30A-10",
+    "Reference_Allele": "T",
+    "Tumor_Sample_Barcode": "TCGA-OR-A5KB-01A-11D-A30A-10",
+    "Tumor_Seq_Allele1": "T",
+    "Tumor_Seq_Allele2": "G",
+    "Variant_Classification": "Splice_Region",
+    "Variant_Type": "SNP",
+    "alcohol_history": "--",
+    "alcohol_intensity": "--",
+    "bmi": "--",
+    "case_id": "09454ed6-64bc-4a35-af44-7c4344623d45",
+    "cigarettes_per_day": "--",
+    "days_to_death": "--",
+    "dbSNP_RS": "novel",
+    "dbSNP_Val_Status": "",
+    "end": 10,
+    "ethnicity": "not hispanic or latino",
+    "freq": "0.0108695652174",
+    "gender": "female",
+    "height": "--",
+    "name": "T>G",
+    "project_id": "TCGA-ACC",
+    "refName": "ctgA",
+    "reserved": "0,0,0",
+    "sampleCount": "1",
+    "score": 1,
+    "start": 1,
+    "strand": 0,
+    "subfeatures": Array [
+      Object {
+        "end": 2,
+        "parentId": "bed-52985",
+        "start": 1,
+        "strand": 0,
+        "type": "three_prime_UTR",
+        "uniqueId": "bed-52985-0",
+      },
+    ],
+    "type": "mRNA",
+    "uniqueId": "bed-52985",
+    "weight": "--",
+    "years_smoked": "--",
+  },
+]
+`;
+
 exports[`adapter can fetch features from volvox.sort.bed.gz simple bed3 1`] = `
 Array [
   Object {
-    "chrom": "contigA",
-    "chromEnd": 3009,
-    "chromStart": 3000,
     "end": 3009,
     "refName": "contigA",
     "start": 3000,
@@ -13,9 +61,6 @@ Array [
     "uniqueId": "bed-155162",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 3114,
-    "chromStart": 3105,
     "end": 3114,
     "refName": "contigA",
     "start": 3105,
@@ -23,9 +68,6 @@ Array [
     "uniqueId": "bed-155180",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 3161,
-    "chromStart": 3152,
     "end": 3161,
     "refName": "contigA",
     "start": 3152,
@@ -33,9 +75,6 @@ Array [
     "uniqueId": "bed-155198",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 3180,
-    "chromStart": 3171,
     "end": 3180,
     "refName": "contigA",
     "start": 3171,
@@ -43,9 +82,6 @@ Array [
     "uniqueId": "bed-155216",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 3183,
-    "chromStart": 3174,
     "end": 3183,
     "refName": "contigA",
     "start": 3174,
@@ -53,9 +89,6 @@ Array [
     "uniqueId": "bed-155234",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 3222,
-    "chromStart": 3213,
     "end": 3222,
     "refName": "contigA",
     "start": 3213,
@@ -63,9 +96,6 @@ Array [
     "uniqueId": "bed-155252",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 3474,
-    "chromStart": 3465,
     "end": 3474,
     "refName": "contigA",
     "start": 3465,
@@ -73,9 +103,6 @@ Array [
     "uniqueId": "bed-155270",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 3804,
-    "chromStart": 3795,
     "end": 3804,
     "refName": "contigA",
     "start": 3795,
@@ -83,9 +110,6 @@ Array [
     "uniqueId": "bed-155288",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 4044,
-    "chromStart": 4035,
     "end": 4044,
     "refName": "contigA",
     "start": 4035,
@@ -93,9 +117,6 @@ Array [
     "uniqueId": "bed-155306",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 4082,
-    "chromStart": 4073,
     "end": 4082,
     "refName": "contigA",
     "start": 4073,
@@ -103,9 +124,6 @@ Array [
     "uniqueId": "bed-155324",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 4083,
-    "chromStart": 4074,
     "end": 4083,
     "refName": "contigA",
     "start": 4074,
@@ -113,9 +131,6 @@ Array [
     "uniqueId": "bed-155342",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 4175,
-    "chromStart": 4166,
     "end": 4175,
     "refName": "contigA",
     "start": 4166,
@@ -123,9 +138,6 @@ Array [
     "uniqueId": "bed-155360",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 4188,
-    "chromStart": 4179,
     "end": 4188,
     "refName": "contigA",
     "start": 4179,
@@ -133,9 +145,6 @@ Array [
     "uniqueId": "bed-155378",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 4213,
-    "chromStart": 4204,
     "end": 4213,
     "refName": "contigA",
     "start": 4204,
@@ -143,9 +152,6 @@ Array [
     "uniqueId": "bed-155396",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 4257,
-    "chromStart": 4248,
     "end": 4257,
     "refName": "contigA",
     "start": 4248,
@@ -153,9 +159,6 @@ Array [
     "uniqueId": "bed-155414",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 4269,
-    "chromStart": 4260,
     "end": 4269,
     "refName": "contigA",
     "start": 4260,
@@ -163,9 +166,6 @@ Array [
     "uniqueId": "bed-155432",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 4586,
-    "chromStart": 4577,
     "end": 4586,
     "refName": "contigA",
     "start": 4577,
@@ -173,9 +173,6 @@ Array [
     "uniqueId": "bed-155450",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 4837,
-    "chromStart": 4828,
     "end": 4837,
     "refName": "contigA",
     "start": 4828,
@@ -183,9 +180,6 @@ Array [
     "uniqueId": "bed-155468",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 4910,
-    "chromStart": 4901,
     "end": 4910,
     "refName": "contigA",
     "start": 4901,
@@ -193,9 +187,6 @@ Array [
     "uniqueId": "bed-155486",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 5015,
-    "chromStart": 5006,
     "end": 5015,
     "refName": "contigA",
     "start": 5006,
@@ -203,9 +194,6 @@ Array [
     "uniqueId": "bed-155504",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 5060,
-    "chromStart": 5051,
     "end": 5060,
     "refName": "contigA",
     "start": 5051,
@@ -213,9 +201,6 @@ Array [
     "uniqueId": "bed-155522",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 5210,
-    "chromStart": 5201,
     "end": 5210,
     "refName": "contigA",
     "start": 5201,
@@ -223,9 +208,6 @@ Array [
     "uniqueId": "bed-155540",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 5269,
-    "chromStart": 5260,
     "end": 5269,
     "refName": "contigA",
     "start": 5260,
@@ -233,9 +215,6 @@ Array [
     "uniqueId": "bed-155558",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 5290,
-    "chromStart": 5281,
     "end": 5290,
     "refName": "contigA",
     "start": 5281,
@@ -243,9 +222,6 @@ Array [
     "uniqueId": "bed-155576",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 5358,
-    "chromStart": 5349,
     "end": 5358,
     "refName": "contigA",
     "start": 5349,
@@ -253,9 +229,6 @@ Array [
     "uniqueId": "bed-155594",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 5362,
-    "chromStart": 5353,
     "end": 5362,
     "refName": "contigA",
     "start": 5353,
@@ -263,9 +236,6 @@ Array [
     "uniqueId": "bed-155612",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 5432,
-    "chromStart": 5423,
     "end": 5432,
     "refName": "contigA",
     "start": 5423,
@@ -273,9 +243,6 @@ Array [
     "uniqueId": "bed-155630",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 5466,
-    "chromStart": 5457,
     "end": 5466,
     "refName": "contigA",
     "start": 5457,
@@ -283,9 +250,6 @@ Array [
     "uniqueId": "bed-155648",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 5557,
-    "chromStart": 5548,
     "end": 5557,
     "refName": "contigA",
     "start": 5548,
@@ -293,9 +257,6 @@ Array [
     "uniqueId": "bed-155666",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 5635,
-    "chromStart": 5626,
     "end": 5635,
     "refName": "contigA",
     "start": 5626,
@@ -303,9 +264,6 @@ Array [
     "uniqueId": "bed-155684",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 5844,
-    "chromStart": 5835,
     "end": 5844,
     "refName": "contigA",
     "start": 5835,
@@ -313,9 +271,6 @@ Array [
     "uniqueId": "bed-155702",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 5918,
-    "chromStart": 5909,
     "end": 5918,
     "refName": "contigA",
     "start": 5909,
@@ -323,9 +278,6 @@ Array [
     "uniqueId": "bed-155720",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 5936,
-    "chromStart": 5927,
     "end": 5936,
     "refName": "contigA",
     "start": 5927,
@@ -333,9 +285,6 @@ Array [
     "uniqueId": "bed-155738",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 5978,
-    "chromStart": 5969,
     "end": 5978,
     "refName": "contigA",
     "start": 5969,
@@ -343,9 +292,6 @@ Array [
     "uniqueId": "bed-155756",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 6079,
-    "chromStart": 6070,
     "end": 6079,
     "refName": "contigA",
     "start": 6070,
@@ -353,9 +299,6 @@ Array [
     "uniqueId": "bed-155774",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 6194,
-    "chromStart": 6185,
     "end": 6194,
     "refName": "contigA",
     "start": 6185,
@@ -363,9 +306,6 @@ Array [
     "uniqueId": "bed-155792",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 6294,
-    "chromStart": 6285,
     "end": 6294,
     "refName": "contigA",
     "start": 6285,
@@ -373,9 +313,6 @@ Array [
     "uniqueId": "bed-155810",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 6372,
-    "chromStart": 6363,
     "end": 6372,
     "refName": "contigA",
     "start": 6363,
@@ -383,9 +320,6 @@ Array [
     "uniqueId": "bed-155828",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 6568,
-    "chromStart": 6559,
     "end": 6568,
     "refName": "contigA",
     "start": 6559,
@@ -393,9 +327,6 @@ Array [
     "uniqueId": "bed-155846",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 6843,
-    "chromStart": 6834,
     "end": 6843,
     "refName": "contigA",
     "start": 6834,
@@ -403,9 +334,6 @@ Array [
     "uniqueId": "bed-155864",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 6917,
-    "chromStart": 6908,
     "end": 6917,
     "refName": "contigA",
     "start": 6908,
@@ -413,9 +341,6 @@ Array [
     "uniqueId": "bed-155882",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 6927,
-    "chromStart": 6918,
     "end": 6927,
     "refName": "contigA",
     "start": 6918,
@@ -423,9 +348,6 @@ Array [
     "uniqueId": "bed-155900",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 7150,
-    "chromStart": 7141,
     "end": 7150,
     "refName": "contigA",
     "start": 7141,
@@ -433,9 +355,6 @@ Array [
     "uniqueId": "bed-155918",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 7182,
-    "chromStart": 7173,
     "end": 7182,
     "refName": "contigA",
     "start": 7173,
@@ -443,9 +362,6 @@ Array [
     "uniqueId": "bed-155936",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 7578,
-    "chromStart": 7569,
     "end": 7578,
     "refName": "contigA",
     "start": 7569,
@@ -453,9 +369,6 @@ Array [
     "uniqueId": "bed-155954",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 7628,
-    "chromStart": 7619,
     "end": 7628,
     "refName": "contigA",
     "start": 7619,
@@ -463,9 +376,6 @@ Array [
     "uniqueId": "bed-155972",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 7663,
-    "chromStart": 7654,
     "end": 7663,
     "refName": "contigA",
     "start": 7654,
@@ -473,9 +383,6 @@ Array [
     "uniqueId": "bed-155990",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 7680,
-    "chromStart": 7671,
     "end": 7680,
     "refName": "contigA",
     "start": 7671,
@@ -483,9 +390,6 @@ Array [
     "uniqueId": "bed-156008",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 7716,
-    "chromStart": 7707,
     "end": 7716,
     "refName": "contigA",
     "start": 7707,
@@ -493,9 +397,6 @@ Array [
     "uniqueId": "bed-156026",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 7748,
-    "chromStart": 7739,
     "end": 7748,
     "refName": "contigA",
     "start": 7739,
@@ -503,9 +404,6 @@ Array [
     "uniqueId": "bed-156044",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 8086,
-    "chromStart": 8077,
     "end": 8086,
     "refName": "contigA",
     "start": 8077,
@@ -513,9 +411,6 @@ Array [
     "uniqueId": "bed-156062",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 8137,
-    "chromStart": 8128,
     "end": 8137,
     "refName": "contigA",
     "start": 8128,
@@ -523,9 +418,6 @@ Array [
     "uniqueId": "bed-156080",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 8141,
-    "chromStart": 8132,
     "end": 8141,
     "refName": "contigA",
     "start": 8132,
@@ -533,9 +425,6 @@ Array [
     "uniqueId": "bed-156098",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 8219,
-    "chromStart": 8210,
     "end": 8219,
     "refName": "contigA",
     "start": 8210,
@@ -543,9 +432,6 @@ Array [
     "uniqueId": "bed-156116",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 8276,
-    "chromStart": 8267,
     "end": 8276,
     "refName": "contigA",
     "start": 8267,
@@ -553,9 +439,6 @@ Array [
     "uniqueId": "bed-156134",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 8337,
-    "chromStart": 8328,
     "end": 8337,
     "refName": "contigA",
     "start": 8328,
@@ -563,9 +446,6 @@ Array [
     "uniqueId": "bed-156152",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 8533,
-    "chromStart": 8524,
     "end": 8533,
     "refName": "contigA",
     "start": 8524,
@@ -573,9 +453,6 @@ Array [
     "uniqueId": "bed-156170",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 8668,
-    "chromStart": 8659,
     "end": 8668,
     "refName": "contigA",
     "start": 8659,
@@ -583,9 +460,6 @@ Array [
     "uniqueId": "bed-156188",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 8669,
-    "chromStart": 8660,
     "end": 8669,
     "refName": "contigA",
     "start": 8660,
@@ -593,9 +467,6 @@ Array [
     "uniqueId": "bed-156206",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 8751,
-    "chromStart": 8742,
     "end": 8751,
     "refName": "contigA",
     "start": 8742,
@@ -603,9 +474,6 @@ Array [
     "uniqueId": "bed-156224",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 8820,
-    "chromStart": 8811,
     "end": 8820,
     "refName": "contigA",
     "start": 8811,
@@ -613,9 +481,6 @@ Array [
     "uniqueId": "bed-156242",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 8825,
-    "chromStart": 8816,
     "end": 8825,
     "refName": "contigA",
     "start": 8816,
@@ -623,9 +488,6 @@ Array [
     "uniqueId": "bed-156260",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 8973,
-    "chromStart": 8964,
     "end": 8973,
     "refName": "contigA",
     "start": 8964,
@@ -633,9 +495,6 @@ Array [
     "uniqueId": "bed-156278",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9057,
-    "chromStart": 9048,
     "end": 9057,
     "refName": "contigA",
     "start": 9048,
@@ -643,9 +502,6 @@ Array [
     "uniqueId": "bed-156296",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9063,
-    "chromStart": 9054,
     "end": 9063,
     "refName": "contigA",
     "start": 9054,
@@ -653,9 +509,6 @@ Array [
     "uniqueId": "bed-156314",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9145,
-    "chromStart": 9136,
     "end": 9145,
     "refName": "contigA",
     "start": 9136,
@@ -663,9 +516,6 @@ Array [
     "uniqueId": "bed-156332",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9252,
-    "chromStart": 9243,
     "end": 9252,
     "refName": "contigA",
     "start": 9243,
@@ -673,9 +523,6 @@ Array [
     "uniqueId": "bed-156350",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9329,
-    "chromStart": 9320,
     "end": 9329,
     "refName": "contigA",
     "start": 9320,
@@ -683,9 +530,6 @@ Array [
     "uniqueId": "bed-156368",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9375,
-    "chromStart": 9366,
     "end": 9375,
     "refName": "contigA",
     "start": 9366,
@@ -693,9 +537,6 @@ Array [
     "uniqueId": "bed-156386",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9534,
-    "chromStart": 9525,
     "end": 9534,
     "refName": "contigA",
     "start": 9525,
@@ -703,9 +544,6 @@ Array [
     "uniqueId": "bed-156404",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9589,
-    "chromStart": 9580,
     "end": 9589,
     "refName": "contigA",
     "start": 9580,
@@ -713,9 +551,6 @@ Array [
     "uniqueId": "bed-156422",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9619,
-    "chromStart": 9610,
     "end": 9619,
     "refName": "contigA",
     "start": 9610,
@@ -723,9 +558,6 @@ Array [
     "uniqueId": "bed-156440",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9753,
-    "chromStart": 9744,
     "end": 9753,
     "refName": "contigA",
     "start": 9744,
@@ -733,9 +565,6 @@ Array [
     "uniqueId": "bed-156458",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9762,
-    "chromStart": 9753,
     "end": 9762,
     "refName": "contigA",
     "start": 9753,
@@ -743,9 +572,6 @@ Array [
     "uniqueId": "bed-156476",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9768,
-    "chromStart": 9759,
     "end": 9768,
     "refName": "contigA",
     "start": 9759,
@@ -753,9 +579,6 @@ Array [
     "uniqueId": "bed-156494",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9816,
-    "chromStart": 9807,
     "end": 9816,
     "refName": "contigA",
     "start": 9807,
@@ -763,9 +586,6 @@ Array [
     "uniqueId": "bed-156512",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9862,
-    "chromStart": 9853,
     "end": 9862,
     "refName": "contigA",
     "start": 9853,
@@ -773,9 +593,6 @@ Array [
     "uniqueId": "bed-156530",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9893,
-    "chromStart": 9884,
     "end": 9893,
     "refName": "contigA",
     "start": 9884,
@@ -783,9 +600,6 @@ Array [
     "uniqueId": "bed-156548",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 9929,
-    "chromStart": 9920,
     "end": 9929,
     "refName": "contigA",
     "start": 9920,
@@ -793,9 +607,6 @@ Array [
     "uniqueId": "bed-156566",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 10052,
-    "chromStart": 10043,
     "end": 10052,
     "refName": "contigA",
     "start": 10043,
@@ -803,9 +614,6 @@ Array [
     "uniqueId": "bed-156584",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 10225,
-    "chromStart": 10216,
     "end": 10225,
     "refName": "contigA",
     "start": 10216,
@@ -813,9 +621,6 @@ Array [
     "uniqueId": "bed-156604",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 10226,
-    "chromStart": 10217,
     "end": 10226,
     "refName": "contigA",
     "start": 10217,
@@ -823,9 +628,6 @@ Array [
     "uniqueId": "bed-156624",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 10261,
-    "chromStart": 10252,
     "end": 10261,
     "refName": "contigA",
     "start": 10252,
@@ -833,9 +635,6 @@ Array [
     "uniqueId": "bed-156644",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 10393,
-    "chromStart": 10384,
     "end": 10393,
     "refName": "contigA",
     "start": 10384,
@@ -843,9 +642,6 @@ Array [
     "uniqueId": "bed-156664",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 10507,
-    "chromStart": 10498,
     "end": 10507,
     "refName": "contigA",
     "start": 10498,
@@ -853,9 +649,6 @@ Array [
     "uniqueId": "bed-156684",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 10594,
-    "chromStart": 10585,
     "end": 10594,
     "refName": "contigA",
     "start": 10585,
@@ -863,9 +656,6 @@ Array [
     "uniqueId": "bed-156704",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 10693,
-    "chromStart": 10684,
     "end": 10693,
     "refName": "contigA",
     "start": 10684,
@@ -873,9 +663,6 @@ Array [
     "uniqueId": "bed-156724",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 10790,
-    "chromStart": 10781,
     "end": 10790,
     "refName": "contigA",
     "start": 10781,
@@ -883,9 +670,6 @@ Array [
     "uniqueId": "bed-156744",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 10884,
-    "chromStart": 10875,
     "end": 10884,
     "refName": "contigA",
     "start": 10875,
@@ -893,9 +677,6 @@ Array [
     "uniqueId": "bed-156764",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 11013,
-    "chromStart": 11004,
     "end": 11013,
     "refName": "contigA",
     "start": 11004,
@@ -903,9 +684,6 @@ Array [
     "uniqueId": "bed-156784",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 11104,
-    "chromStart": 11095,
     "end": 11104,
     "refName": "contigA",
     "start": 11095,
@@ -913,9 +691,6 @@ Array [
     "uniqueId": "bed-156804",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 11191,
-    "chromStart": 11182,
     "end": 11191,
     "refName": "contigA",
     "start": 11182,
@@ -923,9 +698,6 @@ Array [
     "uniqueId": "bed-156824",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 11216,
-    "chromStart": 11207,
     "end": 11216,
     "refName": "contigA",
     "start": 11207,
@@ -933,9 +705,6 @@ Array [
     "uniqueId": "bed-156844",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 11250,
-    "chromStart": 11241,
     "end": 11250,
     "refName": "contigA",
     "start": 11241,
@@ -943,9 +712,6 @@ Array [
     "uniqueId": "bed-156864",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 11344,
-    "chromStart": 11335,
     "end": 11344,
     "refName": "contigA",
     "start": 11335,
@@ -953,9 +719,6 @@ Array [
     "uniqueId": "bed-156884",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 11349,
-    "chromStart": 11340,
     "end": 11349,
     "refName": "contigA",
     "start": 11340,
@@ -963,9 +726,6 @@ Array [
     "uniqueId": "bed-156904",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 11544,
-    "chromStart": 11535,
     "end": 11544,
     "refName": "contigA",
     "start": 11535,
@@ -973,9 +733,6 @@ Array [
     "uniqueId": "bed-156924",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 11552,
-    "chromStart": 11543,
     "end": 11552,
     "refName": "contigA",
     "start": 11543,
@@ -983,9 +740,6 @@ Array [
     "uniqueId": "bed-156944",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 11558,
-    "chromStart": 11549,
     "end": 11558,
     "refName": "contigA",
     "start": 11549,
@@ -993,9 +747,6 @@ Array [
     "uniqueId": "bed-156964",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 11662,
-    "chromStart": 11653,
     "end": 11662,
     "refName": "contigA",
     "start": 11653,
@@ -1003,9 +754,6 @@ Array [
     "uniqueId": "bed-156984",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 11684,
-    "chromStart": 11675,
     "end": 11684,
     "refName": "contigA",
     "start": 11675,
@@ -1013,9 +761,6 @@ Array [
     "uniqueId": "bed-157004",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 11698,
-    "chromStart": 11689,
     "end": 11698,
     "refName": "contigA",
     "start": 11689,
@@ -1023,9 +768,6 @@ Array [
     "uniqueId": "bed-157024",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 11783,
-    "chromStart": 11774,
     "end": 11783,
     "refName": "contigA",
     "start": 11774,
@@ -1033,9 +775,6 @@ Array [
     "uniqueId": "bed-157044",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 11841,
-    "chromStart": 11832,
     "end": 11841,
     "refName": "contigA",
     "start": 11832,
@@ -1043,9 +782,6 @@ Array [
     "uniqueId": "bed-157064",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 12395,
-    "chromStart": 12386,
     "end": 12395,
     "refName": "contigA",
     "start": 12386,
@@ -1053,9 +789,6 @@ Array [
     "uniqueId": "bed-157084",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 12417,
-    "chromStart": 12408,
     "end": 12417,
     "refName": "contigA",
     "start": 12408,
@@ -1063,9 +796,6 @@ Array [
     "uniqueId": "bed-157104",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 12450,
-    "chromStart": 12441,
     "end": 12450,
     "refName": "contigA",
     "start": 12441,
@@ -1073,9 +803,6 @@ Array [
     "uniqueId": "bed-157124",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 12539,
-    "chromStart": 12530,
     "end": 12539,
     "refName": "contigA",
     "start": 12530,
@@ -1083,9 +810,6 @@ Array [
     "uniqueId": "bed-157144",
   },
   Object {
-    "chrom": "contigA",
-    "chromEnd": 12747,
-    "chromStart": 12738,
     "end": 12747,
     "refName": "contigA",
     "start": 12738,

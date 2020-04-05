@@ -83,6 +83,9 @@ export default class BedTabixAdapter extends BaseAdapter {
               })
             }
           }
+          delete data.chrom
+          delete data.chromStart
+          delete data.chromEnd
           const f = new SimpleFeature({
             id: data.uniqueId,
             data: {
