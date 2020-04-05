@@ -1590,7 +1590,7 @@
         "index": {
           "type": "TBI",
           "location": {
-            "uri": "test_data/volvox-bed12.bed.gz"
+            "uri": "test_data/volvox-bed12.bed.gz.tbi"
           }
         }
       },

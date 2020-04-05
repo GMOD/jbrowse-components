@@ -1,9 +1,16 @@
 import { toArray } from 'rxjs/operators'
-import BigBedAdapter from './BigBedAdapter'
+import BedTabixAdapter from './BedTabixAdapter'
 
 test('adapter can fetch features from volvox.bb', async () => {
-  const adapter = new BigBedAdapter({
-    bigBedLocation: { localPath: require.resolve('./test_data/volvox.bb') },
+  const adapter = new BedTabixAdapter({
+    bedGzLocation: {
+      localPath: require.resolve('./test_data/volvox-bed12.bed.gz'),
+    },
+    index: {
+      location: {
+        localPath: require.resolve('./test_data/volvox-bed12.bed.gz.tbi'),
+      },
+    },
   })
 
   const features = await adapter.getFeatures({
