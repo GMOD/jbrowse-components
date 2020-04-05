@@ -15,6 +15,8 @@ export function ucscProcessedTranscript(feature: Feature) {
         .filter(child => child.get('type') === 'block')
         .sort((a, b) => a.get('start') - b.get('start'))
     : []
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const newChildren: Record<string, any> = []
   blocks.forEach((block, index) => {
     const start = block.get('start')
@@ -95,6 +97,7 @@ export function ucscProcessedTranscript(feature: Feature) {
       })
     }
   })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const newData: Record<string, any> = {}
   feature.tags().forEach(tag => {
     newData[tag] = feature.get(tag)

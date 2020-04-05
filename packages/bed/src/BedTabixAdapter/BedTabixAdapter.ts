@@ -59,14 +59,6 @@ export default class BedTabixAdapter extends BaseAdapter {
     this.parser = new BED({ autoSql })
   }
 
-  async parseBed(bedLocation: IFileLocation) {
-    return ((await openLocation(bedLocation).readFile('utf8')) as string)
-      .split('\n')
-      .map((row, index) => {
-        this.parser.parseLine(row, { uniqueId: `row${index}` })
-      })
-  }
-
   public async getRefNames(opts: BaseOptions = {}) {
     return this.bed.getReferenceSequenceNames(opts)
   }

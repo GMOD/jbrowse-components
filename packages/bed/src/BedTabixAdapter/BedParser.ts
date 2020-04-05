@@ -43,7 +43,6 @@ export class BEDParser {
     for (let i = 0; i < lines.length; i++) {
       line = lines[i]
       // only interested in meta and header lines
-      // eslint-disable-next-line no-continue
       if (
         line[0] === '#' ||
         line.startsWith('browser') ||
@@ -72,21 +71,19 @@ export class BEDParser {
       // < feature line, most common case
       line = line.replace(/\r?\n?$/g, '')
       const f = this.parseFeature(line)
-      this.featureCallback(this._return_item([f]))
+      this.featureCallback(this.returnItem([f]))
     }
     // directive or comment
-    else if ((match = /^\s*(\#+)(.*)/.exec(line))) {
-      const hashsigns = match[1]
-
+    else if ((match = /^\s*(#+)(.*)/.exec(line))) {
       let contents = match[2]
       contents = contents.replace(/\s*/, '')
-      this._return_item({ comment: contents })
+      this.returnItem({ comment: contents })
     } else if (/^\s*$/.test(line)) {
       // blank line, do nothing
     } else {
       // it's a parse error
       line = line.replace(/\r?\n?$/g, '')
-      throw `BED parse error.  Cannot parse '${line}'.`
+      throw new Error(`BED parse error.  Cannot parse '${line}'.`)
     }
   }
 
@@ -99,12 +96,7 @@ export class BEDParser {
   }
 
   parseFeature(line: string) {
-    const f = line.split('\t').map(a => {
-      if (a == '.') {
-        return null
-      }
-      return a
-    })
+    const f = line.split('\t').map(a => (a === '.' ? null : a))
 
     // unescape only the ref and source columns
     if (!f[0]) {
@@ -115,7 +107,7 @@ export class BEDParser {
     const parsed: { [key: string]: any } = {}
     for (let i = 0; i < bedFeatureNames.length; i++) {
       if (f[i]) {
-        parsed[bedFeatureNames[i]] = f[i] == '.' ? null : f[i]
+        parsed[bedFeatureNames[i]] = f[i] === '.' ? null : f[i]
       }
     }
     if (parsed.start !== null) parsed.start = parseInt(parsed.start, 10)
@@ -126,7 +118,7 @@ export class BEDParser {
     return parsed
   }
 
-  _return_item(i: any) {
+  returnItem(i: any) {
     if (i[0]) this.featureCallback(i)
     else if (i.comment) this.commentCallback(i, this.store)
   }
