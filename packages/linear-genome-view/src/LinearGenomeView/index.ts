@@ -302,7 +302,7 @@ export function stateModelFactory(pluginManager: any) {
           parent.removeView(self)
         } else {
           // I am part of a session
-          getParent(self, 2).removeView(self)
+          getParent<any>(self, 2).removeView(self)
         }
       },
 
@@ -368,7 +368,7 @@ export function stateModelFactory(pluginManager: any) {
           // eslint-disable-next-line prefer-const
           let { refName = '', start, end, assemblyName } = query
           if (refName) {
-            const root = getRoot(self)
+            const root = getRoot<any>(self)
             refName = await root.jbrowse.getCanonicalRefName(
               refName,
               assemblyName || self.assemblyNames[0],
