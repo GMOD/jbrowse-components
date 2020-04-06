@@ -9,7 +9,6 @@
   "author": "Andrew Duncan",
   "license": "MIT",
   "dependencies": {
-    "rxjs": "^6.0.0",
     "uuid": "^7.0.1"
   },
   "peerDependencies": {
@@ -21,6 +20,7 @@
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
+    "rxjs": "^6.0.0",
     "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0"
   }
 }
