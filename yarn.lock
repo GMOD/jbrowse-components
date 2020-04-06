@@ -11625,7 +11625,7 @@ mobx-run-in-reactive-context@^1.0.1:
   dependencies:
     mobx "*"
 
-mobx-state-tree@^3.14.1:
+mobx-state-tree@3.15.0, mobx-state-tree@^3.15.0:
   version "3.15.0"
   resolved "https://registry.yarnpkg.com/mobx-state-tree/-/mobx-state-tree-3.15.0.tgz#62efb04acb3562c251f043d6a2624b783887054b"
   integrity sha512-65vvHPBWlz1gmZggbMAdg9ZSEVMGtyLj0drPDTYo/yMv8NVel52mNgBUKxDYWsNU9XMX4GM71wABhx7fD8s0Uw==
