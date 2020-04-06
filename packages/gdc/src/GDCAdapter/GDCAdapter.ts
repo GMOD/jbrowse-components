@@ -3,13 +3,12 @@ import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { Observable, Observer } from 'rxjs'
 import GDCFeature from './GDCFeature'
 
 export default class extends BaseAdapter {
   private filters: string
 
-  private cases: Array<string>
+  private cases: string[]
 
   private size: number
 
@@ -69,9 +68,9 @@ export default class extends BaseAdapter {
    * @param {IRegion} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures(region: IRegion): Observable<Feature> {
+  public getFeatures(region: IRegion) {
     const { refName, start, end } = region
-    return ObservableCreate(async (observer: Observer<Feature>) => {
+    return ObservableCreate<Feature>(async observer => {
       try {
         let query = {}
         let idField = 'ssmId'
@@ -108,7 +107,7 @@ export default class extends BaseAdapter {
             gdcObject,
             id: gdcObject[idField],
             featureType: this.featureType,
-          }) as Feature
+          })
           observer.next(feature)
         }
       } catch (e) {
