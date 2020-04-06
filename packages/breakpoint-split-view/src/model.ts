@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { MenuOptions } from '@gmod/jbrowse-core/ui'
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { types, Instance } from 'mobx-state-tree'
@@ -61,6 +62,23 @@ export default function stateModelFactory(pluginManager: any) {
           view.tracks.map(t => t.configuration.trackId),
         )
         return intersection(...viewTracks)
+      },
+
+      get menuOptions(): MenuOptions[] {
+        const menuOptions: MenuOptions[] = []
+        self.views.forEach((view, idx) => {
+          if (view.menuOptions) {
+            menuOptions.push({
+              label: `View ${idx + 1} Menu`,
+              subMenu: view.menuOptions,
+            })
+          }
+        })
+        return menuOptions
+      },
+
+      get viewDividerHeight() {
+        return VIEW_DIVIDER_HEIGHT
       },
 
       // Get tracks with a given trackId across multiple views

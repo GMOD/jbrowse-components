@@ -56,7 +56,7 @@ const validBpPerPx = [
   10000000,
 ].sort((a, b) => a - b)
 
-export const HEADER_BAR_HEIGHT = 50
+export const HEADER_BAR_HEIGHT = 48
 export const SCALE_BAR_HEIGHT = 17
 export const RESIZE_HANDLE_HEIGHT = 3
 

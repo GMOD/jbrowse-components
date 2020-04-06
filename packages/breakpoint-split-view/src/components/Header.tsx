@@ -14,9 +14,6 @@ export default ({ jbrequire }: { jbrequire: any }) => {
     headerBar: {
       gridArea: '1/1/auto/span 2',
       display: 'flex',
-      background: '#F2F2F2',
-      borderTop: '1px solid #9D9D9D',
-      borderBottom: '1px solid #9D9D9D',
     },
     spacer: {
       flexGrow: 1,

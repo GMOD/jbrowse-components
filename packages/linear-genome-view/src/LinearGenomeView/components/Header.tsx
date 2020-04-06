@@ -44,6 +44,7 @@ const useStyles = makeStyles(theme => ({
   toggleButton: {
     height: 44,
     border: 'none',
+    margin: theme.spacing(0.5),
   },
 }))
 

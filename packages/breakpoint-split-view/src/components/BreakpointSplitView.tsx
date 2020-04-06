@@ -15,7 +15,6 @@ export default (pluginManager: any) => {
   const Translocations = jbrequire(require('./Translocations'))
 
   const Header = jbrequire(require('./Header'))
-  const { grey } = jbrequire('@material-ui/core/colors')
 
   const useStyles = (jbrequiredMakeStyles as typeof makeStyles)(theme => {
     return {
@@ -37,7 +36,6 @@ export default (pluginManager: any) => {
       },
       container: {
         display: 'grid',
-        background: grey[300],
       },
       overlay: {
         display: 'flex',
