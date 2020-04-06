@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-gdc",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "JBrowse 2 GDC plugin",
   "main": "src/index.js",
   "scripts": {
@@ -9,13 +9,12 @@
   "author": "Andrew Duncan",
   "license": "MIT",
   "dependencies": {
-    "@material-ui/icons": "^4.9.1",
-    "@material-ui/lab": "^4.0.0-alpha.47",
     "rxjs": "^6.0.0",
     "uuid": "^7.0.1"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",
+    "@material-ui/lab": "^4.0.0-alpha.47",
     "@material-ui/core": "^4.0.0",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
