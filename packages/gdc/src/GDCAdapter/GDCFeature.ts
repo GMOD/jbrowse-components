@@ -12,9 +12,6 @@ export default class GDCFeature implements Feature {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private gdcObject: any
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private parser: any
-
   private data: FeatureData
 
   private uniqueId: string
@@ -40,13 +37,10 @@ export default class GDCFeature implements Feature {
   constructor(args: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     gdcObject: any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    parser: any
     id: string
     featureType: string
   }) {
     this.gdcObject = args.gdcObject
-    this.parser = args.parser
     this.featureType = args.featureType ? args.featureType : 'mutation'
     this.createLinksToRemoteSites()
     this.data = this.dataFromGDCObject(this.gdcObject, this.featureType)

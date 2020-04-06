@@ -7,8 +7,6 @@ import { Observable, Observer } from 'rxjs'
 import GDCFeature from './GDCFeature'
 
 export default class extends BaseAdapter {
-  protected parser: any
-
   private filters: string
 
   private cases: Array<string>
@@ -19,21 +17,26 @@ export default class extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: {
-    filters: string
-    cases: Array<string>
-    size: number
-    featureType: string
+  public constructor({
+    filters = '{}',
+    cases = [],
+    size = 100,
+    featureType = 'mutation',
+  }: {
+    filters?: string
+    cases?: string[]
+    size?: number
+    featureType?: string
   }) {
     super()
-    this.filters = config.filters ? config.filters : '{}'
-    this.cases = config.cases ? config.cases : []
-    this.size = config.size ? config.size : 100
-    this.featureType = config.featureType ? config.featureType : 'mutation'
+    this.filters = filters
+    this.cases = cases
+    this.size = size
+    this.featureType = featureType
   }
 
   public async getRefNames() {
-    return Promise.resolve([
+    return [
       'chr1',
       'chr10',
       'chr11',
@@ -58,7 +61,7 @@ export default class extends BaseAdapter {
       'chr9',
       'chrX',
       'chrY',
-    ])
+    ]
   }
 
   /**
@@ -70,7 +73,6 @@ export default class extends BaseAdapter {
     const { refName, start, end } = region
     return ObservableCreate(async (observer: Observer<Feature>) => {
       try {
-        const parser = await this.parser
         let query = {}
         let idField = 'ssmId'
 
@@ -93,28 +95,21 @@ export default class extends BaseAdapter {
             observer.error(`Not a valid type: ${this.featureType}`)
           }
         }
-        const options = {
+        const response = await fetch('https://api.gdc.cancer.gov/v0/graphql', {
           method: 'POST',
           body: JSON.stringify(query),
-        }
-        const response = await fetch(
-          'https://api.gdc.cancer.gov/v0/graphql',
-          options,
-        )
-        const data = await response.json()
-        const queryResults = data.data.viewer.explore.features.hits.edges
+        })
+        const result = await response.json()
+        const queryResults = result.data.viewer.explore.features.hits.edges
 
         for (const hit of queryResults) {
-          if (hit) {
-            const gdcObject = hit.node
-            const feature = new GDCFeature({
-              gdcObject,
-              parser,
-              id: gdcObject[idField],
-              featureType: this.featureType,
-            }) as Feature
-            observer.next(feature)
-          }
+          const gdcObject = hit.node
+          const feature = new GDCFeature({
+            gdcObject,
+            id: gdcObject[idField],
+            featureType: this.featureType,
+          }) as Feature
+          observer.next(feature)
         }
       } catch (e) {
         observer.error(e)
