@@ -16,7 +16,6 @@ export const sortFeature = (
   const featureArray = Array.from(features) // this is an array of arrays
   const featuresInCenterLine: typeof featureArray = []
   const featuresOutsideCenter: typeof featureArray = []
-  console.log(sortObject)
 
   featureArray.forEach((innerArray, idx) => {
     const feature = innerArray[1]
@@ -33,6 +32,8 @@ export const sortFeature = (
       featuresOutsideCenter.push(innerArray)
     }
   })
+
+  console.log(featuresInCenterLine.length)
 
   // NOTE: is not sorted when the last sort call featuresInCenterLine length > 0, happens at zoom level 0.05
   switch (sortObject.by) {
@@ -67,12 +68,22 @@ export const sortFeature = (
           (aMismatch ? aMismatch.base.charCodeAt(0) : 0) -
           (bMismatch ? bMismatch.base.charCodeAt(0) : 0)
 
-        // TODOSORT: on the last call, top 3 features are not included when passed to this util
+        // TODOSORT: the call with region overlapping the sort position has the correct order
         return (
           (bMismatch ? bMismatch.base.toUpperCase().charCodeAt(0) : 0) -
           (aMismatch ? aMismatch.base.toUpperCase().charCodeAt(0) : 0)
         )
       })
+
+      if (
+        doesIntersect2(
+          sortObject.position - 1,
+          sortObject.position,
+          region.start,
+          region.end,
+        )
+      )
+        console.log(baseMap, featuresInCenterLine)
 
       break
     }
