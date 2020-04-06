@@ -20,9 +20,9 @@ const Filter = types
 
 export default pluginManager =>
   types
-    .model('GDCFilterConfigurationEditorDrawerWidget', {
+    .model('GDCFilterDrawerWidget', {
       id: ElementId,
-      type: types.literal('GDCFilterConfigurationEditorDrawerWidget'),
+      type: types.literal('GDCFilterDrawerWidget'),
       target: types.safeReference(
         pluginManager.pluggableConfigSchemaType('track'),
       ),
