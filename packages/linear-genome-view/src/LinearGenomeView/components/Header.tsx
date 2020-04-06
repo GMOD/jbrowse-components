@@ -2,16 +2,16 @@ import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { assembleLocString, getSession } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import Icon from '@material-ui/core/Icon'
-import IconButton from '@material-ui/core/IconButton'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
+import { fade } from '@material-ui/core/styles/colorManipulator'
 import TextField from '@material-ui/core/TextField'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
+import ToggleButton from '@material-ui/lab/ToggleButton'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { LinearGenomeViewStateModel, HEADER_BAR_HEIGHT } from '..'
-import buttonStyles from './buttonStyles'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import ZoomControls from './ZoomControls'
 
@@ -21,45 +21,51 @@ const useStyles = makeStyles(theme => ({
   headerBar: {
     height: HEADER_BAR_HEIGHT,
     display: 'flex',
-    background: '#F2F2F2',
-    borderTop: '1px solid #9D9D9D',
-    borderBottom: '1px solid #9D9D9D',
   },
   spacer: {
     flexGrow: 1,
   },
   input: {
     width: 300,
-    error: {
-      backgroundColor: 'red',
-    },
     padding: theme.spacing(0, 1),
   },
   headerRefName: {
     minWidth: 100,
     margin: theme.spacing(2, 0, 1),
-    background: theme.palette.background.default,
   },
   panButton: {
     margin: theme.spacing(2),
+    background: fade(theme.palette.background.paper, 0.8),
   },
   bp: {
     display: 'flex',
     alignItems: 'center',
   },
-  ...buttonStyles(theme),
+  toggleButton: {
+    height: 44,
+    border: 'none',
+  },
 }))
 
 const Controls = observer(({ model }) => {
+  const classes = useStyles()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session: any = getSession(model)
   return (
-    <IconButton
-      onClick={model.activateTrackSelector}
+    <ToggleButton
+      onChange={model.activateTrackSelector}
+      className={classes.toggleButton}
       title="select tracks"
       value="track_select"
       color="secondary"
+      selected={
+        session.visibleDrawerWidget &&
+        session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
+        session.visibleDrawerWidget.view.id === model.id
+      }
     >
       <Icon fontSize="small">line_style</Icon>
-    </IconButton>
+    </ToggleButton>
   )
 })
 
@@ -148,7 +154,7 @@ const Search = observer(({ model }: { model: LGV }) => {
       InputProps={{
         startAdornment: <Icon fontSize="small">search</Icon>,
         style: {
-          background: theme.palette.background.default,
+          background: fade(theme.palette.background.paper, 0.8),
           height: 32,
         },
       }}
@@ -178,19 +184,14 @@ const Search = observer(({ model }: { model: LGV }) => {
             style: {
               paddingTop: 2,
               paddingBottom: 2,
+              background: fade(theme.palette.background.paper, 0.8),
             },
           },
         }}
       />
       <form onSubmit={onSubmit}>
         {disabled ? (
-          <Tooltip
-            title={
-              disabled
-                ? 'Disabled because this view is displaying multiple regions'
-                : ''
-            }
-          >
+          <Tooltip title="Disabled because this view is displaying multiple regions">
             {searchField}
           </Tooltip>
         ) : (
@@ -250,7 +251,6 @@ export default observer(({ model }: { model: LGV }) => {
       <div className={classes.spacer} />
       <PanControls model={model} />
       <Search model={model} />
-
       <ZoomControls model={model} />
       <div className={classes.spacer} />
     </div>

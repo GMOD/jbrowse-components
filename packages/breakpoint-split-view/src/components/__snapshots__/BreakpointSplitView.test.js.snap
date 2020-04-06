@@ -116,14 +116,15 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               class="makeStyles-headerBar"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
+                color="secondary"
                 tabindex="0"
                 title="select tracks"
                 type="button"
                 value="track_select"
               >
                 <span
-                  class="MuiIconButton-label"
+                  class="MuiToggleButton-label"
                 >
                   <span
                     aria-hidden="true"
@@ -187,7 +188,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 >
                   <div
                     class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                    style="padding-top: 2px; padding-bottom: 2px;"
+                    style="padding-top: 2px; padding-bottom: 2px; background: rgba(255, 255, 255, 0.8);"
                   >
                     <input
                       aria-autocomplete="list"
@@ -253,7 +254,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 >
                   <div
                     class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                    style="background: rgb(250, 250, 250); height: 32px;"
+                    style="background: rgba(255, 255, 255, 0.8); height: 32px;"
                   >
                     <span
                       aria-hidden="true"
@@ -469,14 +470,15 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               class="makeStyles-headerBar"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
+                color="secondary"
                 tabindex="0"
                 title="select tracks"
                 type="button"
                 value="track_select"
               >
                 <span
-                  class="MuiIconButton-label"
+                  class="MuiToggleButton-label"
                 >
                   <span
                     aria-hidden="true"
@@ -540,7 +542,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 >
                   <div
                     class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                    style="padding-top: 2px; padding-bottom: 2px;"
+                    style="padding-top: 2px; padding-bottom: 2px; background: rgba(255, 255, 255, 0.8);"
                   >
                     <input
                       aria-autocomplete="list"
@@ -606,7 +608,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 >
                   <div
                     class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                    style="background: rgb(250, 250, 250); height: 32px;"
+                    style="background: rgba(255, 255, 255, 0.8); height: 32px;"
                   >
                     <span
                       aria-hidden="true"
