@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React from 'react'
+import React, { useState } from 'react'
 import Typography from '@material-ui/core/Typography'
 import Alert from '@material-ui/lab/Alert'
 import MenuItem from '@material-ui/core/MenuItem'
@@ -10,9 +10,7 @@ import Select from '@material-ui/core/Select'
 import Input from '@material-ui/core/Input'
 import Checkbox from '@material-ui/core/Checkbox'
 import ListItemText from '@material-ui/core/ListItemText'
-import AddIcon from '@material-ui/icons/Add'
-import ClearIcon from '@material-ui/icons/Clear'
-import HelpIcon from '@material-ui/icons/Help'
+import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import { v4 as uuidv4 } from 'uuid'
 import List from '@material-ui/core/List'
@@ -470,9 +468,7 @@ let validationMessage = ''
  */
 const TrackType = observer(props => {
   const classes = useStyles()
-  const [trackType, setTrackType] = React.useState(
-    props.adapter.featureType.value,
-  )
+  const [trackType, setTrackType] = useState(props.adapter.featureType.value)
 
   const handleChange = event => {
     setTrackType(event.target.value)
@@ -487,7 +483,7 @@ const TrackType = observer(props => {
           aria-label="help"
           placement="right"
         >
-          <HelpIcon color="disabled" />
+          <Icon>help</Icon>
         </Tooltip>
       </Typography>
       <List>
@@ -520,12 +516,12 @@ const Filter = observer(props => {
   const classes = useStyles()
   const { schema, filterModel, facets } = props
 
-  const [categoryValue, setCategoryValue] = React.useState(
+  const [categoryValue, setCategoryValue] = useState(
     filterModel.category
       ? facets.find(f => f.name === filterModel.category)
       : facets[0],
   )
-  const [filterValue, setFilterValue] = React.useState(
+  const [filterValue, setFilterValue] = useState(
     filterModel.filter ? filterModel.filter.split(',') : [],
   )
 
@@ -626,7 +622,7 @@ const Filter = observer(props => {
 
           <Tooltip title="Remove filter" aria-label="remove" placement="bottom">
             <IconButton aria-label="remove filter" onClick={handleFilterDelete}>
-              <ClearIcon />
+              <Icon>clear</Icon>
             </IconButton>
           </Tooltip>
         </ListItem>
@@ -666,7 +662,7 @@ const FilterList = observer(({ schema, type, facets }) => {
       })}
       <Tooltip title="Add a new filter" aria-label="add" placement="right">
         <IconButton aria-label="add" onClick={handleClick}>
-          <AddIcon />
+          <Icon>add</Icon>
         </IconButton>
       </Tooltip>
     </>
@@ -730,27 +726,12 @@ const GDCQueryBuilder = observer(({ schema }) => {
           aria-label="help"
           placement="right"
         >
-          <HelpIcon color="disabled" />
+          <Icon>help</Icon>
         </Tooltip>
       </Typography>
-      <FilterList
-        schema={schema}
-        key="case"
-        type="case"
-        facets={caseFacets}
-      ></FilterList>
-      <FilterList
-        schema={schema}
-        key="gene"
-        type="gene"
-        facets={geneFacets}
-      ></FilterList>
-      <FilterList
-        schema={schema}
-        key="ssm"
-        type="ssm"
-        facets={ssmFacets}
-      ></FilterList>
+      <FilterList schema={schema} type="case" facets={caseFacets} />
+      <FilterList schema={schema} type="gene" facets={geneFacets} />
+      <FilterList schema={schema} type="ssm" facets={ssmFacets} />
     </>
   )
 })
