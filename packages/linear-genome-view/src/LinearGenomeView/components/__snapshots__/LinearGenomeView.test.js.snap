@@ -345,11 +345,11 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       class="MuiPaper-root makeStyles-scaleBarContainer makeStyles-rubberBandControl MuiPaper-outlined MuiPaper-rounded"
       data-testid="rubberBand_controls"
       role="presentation"
-      style="height: 15px;"
+      style="height: 17px; box-sizing: border-box;"
     >
       <div
         class="makeStyles-scaleBar"
-        style="left: -1025px; width: 2148px; height: 15px;"
+        style="left: -1025px; width: 2148px; height: 17px; box-sizing: border-box;"
       >
         <div
           class="makeStyles-boundaryPaddingBlock"
@@ -1300,11 +1300,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       class="MuiPaper-root makeStyles-scaleBarContainer makeStyles-rubberBandControl MuiPaper-outlined MuiPaper-rounded"
       data-testid="rubberBand_controls"
       role="presentation"
-      style="height: 15px;"
+      style="height: 17px; box-sizing: border-box;"
     >
       <div
         class="makeStyles-scaleBar"
-        style="left: -1025px; width: 3150px; height: 15px;"
+        style="left: -1025px; width: 3150px; height: 17px; box-sizing: border-box;"
       >
         <div
           class="makeStyles-boundaryPaddingBlock"

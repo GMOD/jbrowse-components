@@ -2,7 +2,11 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
-import { LinearGenomeViewStateModel, SCALE_BAR_HEIGHT } from '..'
+import {
+  LinearGenomeViewStateModel,
+  RESIZE_HANDLE_HEIGHT,
+  SCALE_BAR_HEIGHT,
+} from '..'
 import RubberBand from './RubberBand'
 import ScaleBar from './ScaleBar'
 import VerticalGuides from './VerticalGuides'
@@ -15,7 +19,7 @@ const useStyles = makeStyles(theme => ({
   },
   spacer: {
     position: 'relative',
-    height: 3,
+    height: RESIZE_HANDLE_HEIGHT,
   },
 }))
 
@@ -118,7 +122,11 @@ function TracksContainer({
         <RubberBand
           model={model}
           ControlComponent={
-            <ScaleBar model={model} style={{ height: SCALE_BAR_HEIGHT }} />
+            // Subtract two from height for ScaleBar borders
+            <ScaleBar
+              model={model}
+              style={{ height: SCALE_BAR_HEIGHT, boxSizing: 'border-box' }}
+            />
           }
         >
           <div className={classes.spacer} />

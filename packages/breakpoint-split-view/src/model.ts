@@ -6,6 +6,8 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import intersection from 'array-intersection'
 import isObject from 'is-object'
 
+export const VIEW_DIVIDER_HEIGHT = 3
+
 export interface Breakend {
   MateDirection: string
   Join: string

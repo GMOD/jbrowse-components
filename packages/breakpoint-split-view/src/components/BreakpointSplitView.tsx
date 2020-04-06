@@ -9,6 +9,7 @@ export default (pluginManager: any) => {
     '@material-ui/core/styles',
   )
 
+  const { VIEW_DIVIDER_HEIGHT } = require('../model')
   const AlignmentConnections = jbrequire(require('./AlignmentConnections'))
   const Breakends = jbrequire(require('./Breakends'))
   const Translocations = jbrequire(require('./Translocations'))
@@ -30,8 +31,9 @@ export default (pluginManager: any) => {
         width: '3px',
         background: 'magenta',
       },
-      viewContainer: {
-        marginTop: '3px',
+      viewDivider: {
+        background: theme.palette.secondary.main,
+        height: VIEW_DIVIDER_HEIGHT,
       },
       container: {
         display: 'grid',
@@ -80,15 +82,23 @@ export default (pluginManager: any) => {
           <div className={classes.container}>
             <div className={classes.content}>
               <div style={{ position: 'relative' }}>
-                {views.map(view => {
+                {views.map((view, idx) => {
                   const { ReactComponent } = pluginManager.getViewType(
                     view.type,
                   )
-                  return (
-                    <div key={view.id} className={classes.viewContainer}>
-                      <ReactComponent model={view} />
-                    </div>
+                  const viewComponent = (
+                    <ReactComponent key={view.id} model={view} />
                   )
+                  if (idx === views.length - 1) {
+                    return viewComponent
+                  }
+                  return [
+                    viewComponent,
+                    <div
+                      key={`${view.id}-divider`}
+                      className={classes.viewDivider}
+                    />,
+                  ]
                 })}
               </div>
             </div>

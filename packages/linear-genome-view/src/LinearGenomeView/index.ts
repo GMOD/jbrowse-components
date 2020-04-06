@@ -57,7 +57,7 @@ const validBpPerPx = [
 ].sort((a, b) => a - b)
 
 export const HEADER_BAR_HEIGHT = 50
-export const SCALE_BAR_HEIGHT = 15
+export const SCALE_BAR_HEIGHT = 17
 export const RESIZE_HANDLE_HEIGHT = 3
 
 export function stateModelFactory(pluginManager: any) {
@@ -92,10 +92,10 @@ export function stateModelFactory(pluginManager: any) {
     }))
     .views(self => ({
       get scaleBarHeight() {
-        return SCALE_BAR_HEIGHT + 1 // 1px border
+        return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
       },
       get headerHeight() {
-        return self.hideHeader ? 0 : HEADER_BAR_HEIGHT + 1 // 1px border
+        return self.hideHeader ? 0 : HEADER_BAR_HEIGHT
       },
       get trackHeights() {
         return self.tracks.map(t => t.height).reduce((a, b) => a + b, 0)

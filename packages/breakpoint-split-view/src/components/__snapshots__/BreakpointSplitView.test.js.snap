@@ -108,280 +108,317 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
       <div
         style="position: relative;"
       >
-        <div
-          class="makeStyles-viewContainer"
-        >
-          <div>
-            <div
-              class="makeStyles-headerBar"
+        <div>
+          <div
+            class="makeStyles-headerBar"
+          >
+            <button
+              class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
+              color="secondary"
+              tabindex="0"
+              title="select tracks"
+              type="button"
+              value="track_select"
             >
-              <button
-                class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
-                color="secondary"
-                tabindex="0"
-                title="select tracks"
-                type="button"
-                value="track_select"
+              <span
+                class="MuiToggleButton-label"
               >
                 <span
-                  class="MuiToggleButton-label"
+                  aria-hidden="true"
+                  class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                >
+                  line_style
+                </span>
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+            <div
+              class="makeStyles-spacer"
+            />
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+              tabindex="0"
+              type="button"
+            >
+              <span
+                class="MuiButton-label"
+              >
+                <span
+                  aria-hidden="true"
+                  class="material-icons MuiIcon-root"
+                >
+                  arrow_back
+                </span>
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+              tabindex="0"
+              type="button"
+            >
+              <span
+                class="MuiButton-label"
+              >
+                <span
+                  aria-hidden="true"
+                  class="material-icons MuiIcon-root"
+                >
+                  arrow_forward
+                </span>
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+            <div
+              aria-expanded="false"
+              class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
+              role="combobox"
+            >
+              <div
+                class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-marginDense MuiFormControl-fullWidth"
+              >
+                <div
+                  class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
+                  style="padding-top: 2px; padding-bottom: 2px; background: rgba(255, 255, 255, 0.8);"
+                >
+                  <input
+                    aria-autocomplete="list"
+                    aria-invalid="false"
+                    autocapitalize="none"
+                    autocomplete="off"
+                    class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
+                    id="refNameAutocomplete-lgv1"
+                    spellcheck="false"
+                    type="text"
+                    value="ctgA"
+                  />
+                  <div
+                    class="MuiAutocomplete-endAdornment"
+                  >
+                    <button
+                      aria-label="Open"
+                      class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
+                      tabindex="-1"
+                      title="Open"
+                      type="button"
+                    >
+                      <span
+                        class="MuiIconButton-label"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root"
+                          focusable="false"
+                          role="presentation"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M7 10l5 5 5-5z"
+                          />
+                        </svg>
+                      </span>
+                      <span
+                        class="MuiTouchRipple-root"
+                      />
+                    </button>
+                  </div>
+                  <fieldset
+                    aria-hidden="true"
+                    class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                    style="padding-left: 8px;"
+                  >
+                    <legend
+                      class="PrivateNotchedOutline-legend"
+                      style="width: 0.01px;"
+                    >
+                      <span>
+                        ​
+                      </span>
+                    </legend>
+                  </fieldset>
+                </div>
+              </div>
+            </div>
+            <form>
+              <div
+                class="MuiFormControl-root MuiTextField-root makeStyles-input MuiFormControl-marginDense"
+              >
+                <div
+                  class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
+                  style="background: rgba(255, 255, 255, 0.8); height: 32px;"
                 >
                   <span
                     aria-hidden="true"
                     class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                   >
-                    line_style
+                    search
                   </span>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-              <div
-                class="makeStyles-spacer"
-              />
-              <button
-                class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
-                tabindex="0"
-                type="button"
-              >
-                <span
-                  class="MuiButton-label"
-                >
-                  <span
-                    aria-hidden="true"
-                    class="material-icons MuiIcon-root"
-                  >
-                    arrow_back
-                  </span>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-              <button
-                class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
-                tabindex="0"
-                type="button"
-              >
-                <span
-                  class="MuiButton-label"
-                >
-                  <span
-                    aria-hidden="true"
-                    class="material-icons MuiIcon-root"
-                  >
-                    arrow_forward
-                  </span>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-              <div
-                aria-expanded="false"
-                class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
-                role="combobox"
-              >
-                <div
-                  class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-marginDense MuiFormControl-fullWidth"
-                >
-                  <div
-                    class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                    style="padding-top: 2px; padding-bottom: 2px; background: rgba(255, 255, 255, 0.8);"
-                  >
-                    <input
-                      aria-autocomplete="list"
-                      aria-invalid="false"
-                      autocapitalize="none"
-                      autocomplete="off"
-                      class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
-                      id="refNameAutocomplete-lgv1"
-                      spellcheck="false"
-                      type="text"
-                      value="ctgA"
-                    />
-                    <div
-                      class="MuiAutocomplete-endAdornment"
-                    >
-                      <button
-                        aria-label="Open"
-                        class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
-                        tabindex="-1"
-                        title="Open"
-                        type="button"
-                      >
-                        <span
-                          class="MuiIconButton-label"
-                        >
-                          <svg
-                            aria-hidden="true"
-                            class="MuiSvgIcon-root"
-                            focusable="false"
-                            role="presentation"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M7 10l5 5 5-5z"
-                            />
-                          </svg>
-                        </span>
-                        <span
-                          class="MuiTouchRipple-root"
-                        />
-                      </button>
-                    </div>
-                    <fieldset
-                      aria-hidden="true"
-                      class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-                      style="padding-left: 8px;"
-                    >
-                      <legend
-                        class="PrivateNotchedOutline-legend"
-                        style="width: 0.01px;"
-                      >
-                        <span>
-                          ​
-                        </span>
-                      </legend>
-                    </fieldset>
-                  </div>
-                </div>
-              </div>
-              <form>
-                <div
-                  class="MuiFormControl-root MuiTextField-root makeStyles-input MuiFormControl-marginDense"
-                >
-                  <div
-                    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                    style="background: rgba(255, 255, 255, 0.8); height: 32px;"
-                  >
-                    <span
-                      aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                    >
-                      search
-                    </span>
-                    <input
-                      aria-invalid="false"
-                      class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
-                      style="padding: 8px;"
-                      type="text"
-                      value="ctgA:1..5"
-                    />
-                    <fieldset
-                      aria-hidden="true"
-                      class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-                      style="padding-left: 8px;"
-                    >
-                      <legend
-                        class="PrivateNotchedOutline-legend"
-                        style="width: 0.01px;"
-                      >
-                        <span>
-                          ​
-                        </span>
-                      </legend>
-                    </fieldset>
-                  </div>
-                </div>
-              </form>
-              <div
-                class="makeStyles-bp"
-              >
-                <p
-                  class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
-                >
-                  5 bp
-                </p>
-              </div>
-              <div
-                class="makeStyles-container"
-              >
-                <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
-                  data-testid="zoom_out"
-                  disabled=""
-                  tabindex="-1"
-                  type="button"
-                >
-                  <span
-                    class="MuiIconButton-label"
-                  >
-                    <span
-                      aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                    >
-                      zoom_out
-                    </span>
-                  </span>
-                </button>
-                <span
-                  class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
-                >
-                  <span
-                    class="MuiSlider-rail"
-                  />
-                  <span
-                    class="MuiSlider-track"
-                  />
                   <input
-                    type="hidden"
-                    value="5.643856189774724"
+                    aria-invalid="false"
+                    class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
+                    style="padding: 8px;"
+                    type="text"
+                    value="ctgA:1..5"
                   />
-                  <span
-                    class="MuiSlider-mark MuiSlider-markActive"
-                  />
-                  <span
+                  <fieldset
                     aria-hidden="true"
-                    class="MuiSlider-markLabel MuiSlider-markLabelActive"
-                  />
-                  <span
-                    aria-orientation="horizontal"
-                    aria-valuemax="5.643856189774724"
-                    aria-valuemin="5.643856189774724"
-                    aria-valuenow="5.643856189774724"
-                    class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
-                    data-index="0"
-                    role="slider"
-                    tabindex="0"
-                  />
-                </span>
-                <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                  data-testid="zoom_in"
-                  tabindex="0"
-                  type="button"
+                    class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                    style="padding-left: 8px;"
+                  >
+                    <legend
+                      class="PrivateNotchedOutline-legend"
+                      style="width: 0.01px;"
+                    >
+                      <span>
+                        ​
+                      </span>
+                    </legend>
+                  </fieldset>
+                </div>
+              </div>
+            </form>
+            <div
+              class="makeStyles-bp"
+            >
+              <p
+                class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
+              >
+                5 bp
+              </p>
+            </div>
+            <div
+              class="makeStyles-container"
+            >
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
+                data-testid="zoom_out"
+                disabled=""
+                tabindex="-1"
+                type="button"
+              >
+                <span
+                  class="MuiIconButton-label"
                 >
                   <span
-                    class="MuiIconButton-label"
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                   >
-                    <span
-                      aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                    >
-                      zoom_in
-                    </span>
+                    zoom_out
                   </span>
+                </span>
+              </button>
+              <span
+                class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
+              >
+                <span
+                  class="MuiSlider-rail"
+                />
+                <span
+                  class="MuiSlider-track"
+                />
+                <input
+                  type="hidden"
+                  value="5.643856189774724"
+                />
+                <span
+                  class="MuiSlider-mark MuiSlider-markActive"
+                />
+                <span
+                  aria-hidden="true"
+                  class="MuiSlider-markLabel MuiSlider-markLabelActive"
+                />
+                <span
+                  aria-orientation="horizontal"
+                  aria-valuemax="5.643856189774724"
+                  aria-valuemin="5.643856189774724"
+                  aria-valuenow="5.643856189774724"
+                  class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
+                  data-index="0"
+                  role="slider"
+                  tabindex="0"
+                />
+              </span>
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                data-testid="zoom_in"
+                tabindex="0"
+                type="button"
+              >
+                <span
+                  class="MuiIconButton-label"
+                >
                   <span
-                    class="MuiTouchRipple-root"
-                  />
-                </button>
-              </div>
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                  >
+                    zoom_in
+                  </span>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
+            </div>
+            <div
+              class="makeStyles-spacer"
+            />
+          </div>
+          <div
+            class="makeStyles-tracksContainer"
+          >
+            <div
+              class="makeStyles-verticalGuidesContainer"
+              style="left: -1024px; width: 2053px;"
+            >
               <div
-                class="makeStyles-spacer"
+                class="makeStyles-boundaryPaddingBlock"
+                style="width: 1024px;"
+              />
+              <div
+                class="makeStyles-elidedBlock"
+                style="width: 5px;"
+              />
+              <div
+                class="makeStyles-boundaryPaddingBlock"
+                style="width: 1024px;"
               />
             </div>
             <div
-              class="makeStyles-tracksContainer"
+              class="makeStyles-rubberBand"
+              style="left: 0px; width: 0px;"
+            >
+              <h6
+                class="MuiTypography-root makeStyles-rubberBandText MuiTypography-h6"
+              >
+                0
+                 bp
+                 
+              </h6>
+            </div>
+            <div
+              class="makeStyles-guide"
+              style="left: 0px;"
+              title="1"
+            />
+            <div
+              class="MuiPaper-root makeStyles-scaleBarContainer makeStyles-rubberBandControl MuiPaper-outlined MuiPaper-rounded"
+              data-testid="rubberBand_controls"
+              role="presentation"
+              style="height: 17px; box-sizing: border-box;"
             >
               <div
-                class="makeStyles-verticalGuidesContainer"
-                style="left: -1024px; width: 2053px;"
+                class="makeStyles-scaleBar"
+                style="left: -1025px; width: 2053px; height: 17px; box-sizing: border-box;"
               >
                 <div
                   class="makeStyles-boundaryPaddingBlock"
-                  style="width: 1024px;"
+                  style="background: none; width: 1024px;"
                 />
                 <div
                   class="makeStyles-elidedBlock"
@@ -389,353 +426,352 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 />
                 <div
                   class="makeStyles-boundaryPaddingBlock"
-                  style="width: 1024px;"
+                  style="background: none; width: 1024px;"
                 />
               </div>
-              <div
-                class="makeStyles-rubberBand"
-                style="left: 0px; width: 0px;"
+            </div>
+            <div
+              class="makeStyles-spacer"
+            />
+            <div
+              class="MuiPaper-root makeStyles-errorMessage MuiPaper-outlined MuiPaper-rounded"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1"
               >
-                <h6
-                  class="MuiTypography-root makeStyles-rubberBandText MuiTypography-h6"
-                >
-                  0
-                   bp
-                   
-                </h6>
-              </div>
-              <div
-                class="makeStyles-guide"
-                style="left: 0px;"
-                title="1"
-              />
-              <div
-                class="MuiPaper-root makeStyles-scaleBarContainer makeStyles-rubberBandControl MuiPaper-outlined MuiPaper-rounded"
-                data-testid="rubberBand_controls"
-                role="presentation"
-                style="height: 15px;"
+                No tracks active.
+              </p>
+              <button
+                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+                tabindex="0"
+                type="button"
               >
-                <div
-                  class="makeStyles-scaleBar"
-                  style="left: -1025px; width: 2053px; height: 15px;"
+                <span
+                  class="MuiButton-label"
                 >
-                  <div
-                    class="makeStyles-boundaryPaddingBlock"
-                    style="background: none; width: 1024px;"
-                  />
-                  <div
-                    class="makeStyles-elidedBlock"
-                    style="width: 5px;"
-                  />
-                  <div
-                    class="makeStyles-boundaryPaddingBlock"
-                    style="background: none; width: 1024px;"
-                  />
-                </div>
-              </div>
-              <div
-                class="makeStyles-spacer"
-              />
-              <div
-                class="MuiPaper-root makeStyles-errorMessage MuiPaper-outlined MuiPaper-rounded"
-              >
-                <p
-                  class="MuiTypography-root MuiTypography-body1"
-                >
-                  No tracks active.
-                </p>
-                <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
-                  tabindex="0"
-                  type="button"
-                >
-                  <span
-                    class="MuiButton-label"
-                  >
-                    Select Tracks
-                  </span>
-                  <span
-                    class="MuiTouchRipple-root"
-                  />
-                </button>
-              </div>
+                  Select Tracks
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
             </div>
           </div>
         </div>
         <div
-          class="makeStyles-viewContainer"
-        >
-          <div>
-            <div
-              class="makeStyles-headerBar"
+          class="makeStyles-viewDivider"
+        />
+        <div>
+          <div
+            class="makeStyles-headerBar"
+          >
+            <button
+              class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
+              color="secondary"
+              tabindex="0"
+              title="select tracks"
+              type="button"
+              value="track_select"
             >
-              <button
-                class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
-                color="secondary"
-                tabindex="0"
-                title="select tracks"
-                type="button"
-                value="track_select"
+              <span
+                class="MuiToggleButton-label"
               >
                 <span
-                  class="MuiToggleButton-label"
+                  aria-hidden="true"
+                  class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                >
+                  line_style
+                </span>
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+            <div
+              class="makeStyles-spacer"
+            />
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+              tabindex="0"
+              type="button"
+            >
+              <span
+                class="MuiButton-label"
+              >
+                <span
+                  aria-hidden="true"
+                  class="material-icons MuiIcon-root"
+                >
+                  arrow_back
+                </span>
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+              tabindex="0"
+              type="button"
+            >
+              <span
+                class="MuiButton-label"
+              >
+                <span
+                  aria-hidden="true"
+                  class="material-icons MuiIcon-root"
+                >
+                  arrow_forward
+                </span>
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+            <div
+              aria-expanded="false"
+              class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
+              role="combobox"
+            >
+              <div
+                class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-marginDense MuiFormControl-fullWidth"
+              >
+                <div
+                  class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
+                  style="padding-top: 2px; padding-bottom: 2px; background: rgba(255, 255, 255, 0.8);"
+                >
+                  <input
+                    aria-autocomplete="list"
+                    aria-invalid="false"
+                    autocapitalize="none"
+                    autocomplete="off"
+                    class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
+                    id="refNameAutocomplete-lgv2"
+                    spellcheck="false"
+                    type="text"
+                    value="ctgA"
+                  />
+                  <div
+                    class="MuiAutocomplete-endAdornment"
+                  >
+                    <button
+                      aria-label="Open"
+                      class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
+                      tabindex="-1"
+                      title="Open"
+                      type="button"
+                    >
+                      <span
+                        class="MuiIconButton-label"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root"
+                          focusable="false"
+                          role="presentation"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M7 10l5 5 5-5z"
+                          />
+                        </svg>
+                      </span>
+                      <span
+                        class="MuiTouchRipple-root"
+                      />
+                    </button>
+                  </div>
+                  <fieldset
+                    aria-hidden="true"
+                    class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                    style="padding-left: 8px;"
+                  >
+                    <legend
+                      class="PrivateNotchedOutline-legend"
+                      style="width: 0.01px;"
+                    >
+                      <span>
+                        ​
+                      </span>
+                    </legend>
+                  </fieldset>
+                </div>
+              </div>
+            </div>
+            <form>
+              <div
+                class="MuiFormControl-root MuiTextField-root makeStyles-input MuiFormControl-marginDense"
+              >
+                <div
+                  class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
+                  style="background: rgba(255, 255, 255, 0.8); height: 32px;"
                 >
                   <span
                     aria-hidden="true"
                     class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                   >
-                    line_style
+                    search
                   </span>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-              <div
-                class="makeStyles-spacer"
-              />
-              <button
-                class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
-                tabindex="0"
-                type="button"
-              >
-                <span
-                  class="MuiButton-label"
-                >
-                  <span
-                    aria-hidden="true"
-                    class="material-icons MuiIcon-root"
-                  >
-                    arrow_back
-                  </span>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-              <button
-                class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
-                tabindex="0"
-                type="button"
-              >
-                <span
-                  class="MuiButton-label"
-                >
-                  <span
-                    aria-hidden="true"
-                    class="material-icons MuiIcon-root"
-                  >
-                    arrow_forward
-                  </span>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-              <div
-                aria-expanded="false"
-                class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
-                role="combobox"
-              >
-                <div
-                  class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-marginDense MuiFormControl-fullWidth"
-                >
-                  <div
-                    class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                    style="padding-top: 2px; padding-bottom: 2px; background: rgba(255, 255, 255, 0.8);"
-                  >
-                    <input
-                      aria-autocomplete="list"
-                      aria-invalid="false"
-                      autocapitalize="none"
-                      autocomplete="off"
-                      class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
-                      id="refNameAutocomplete-lgv2"
-                      spellcheck="false"
-                      type="text"
-                      value="ctgA"
-                    />
-                    <div
-                      class="MuiAutocomplete-endAdornment"
-                    >
-                      <button
-                        aria-label="Open"
-                        class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
-                        tabindex="-1"
-                        title="Open"
-                        type="button"
-                      >
-                        <span
-                          class="MuiIconButton-label"
-                        >
-                          <svg
-                            aria-hidden="true"
-                            class="MuiSvgIcon-root"
-                            focusable="false"
-                            role="presentation"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M7 10l5 5 5-5z"
-                            />
-                          </svg>
-                        </span>
-                        <span
-                          class="MuiTouchRipple-root"
-                        />
-                      </button>
-                    </div>
-                    <fieldset
-                      aria-hidden="true"
-                      class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-                      style="padding-left: 8px;"
-                    >
-                      <legend
-                        class="PrivateNotchedOutline-legend"
-                        style="width: 0.01px;"
-                      >
-                        <span>
-                          ​
-                        </span>
-                      </legend>
-                    </fieldset>
-                  </div>
-                </div>
-              </div>
-              <form>
-                <div
-                  class="MuiFormControl-root MuiTextField-root makeStyles-input MuiFormControl-marginDense"
-                >
-                  <div
-                    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                    style="background: rgba(255, 255, 255, 0.8); height: 32px;"
-                  >
-                    <span
-                      aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                    >
-                      search
-                    </span>
-                    <input
-                      aria-invalid="false"
-                      class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
-                      style="padding: 8px;"
-                      type="text"
-                      value="ctgA:6..10"
-                    />
-                    <fieldset
-                      aria-hidden="true"
-                      class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-                      style="padding-left: 8px;"
-                    >
-                      <legend
-                        class="PrivateNotchedOutline-legend"
-                        style="width: 0.01px;"
-                      >
-                        <span>
-                          ​
-                        </span>
-                      </legend>
-                    </fieldset>
-                  </div>
-                </div>
-              </form>
-              <div
-                class="makeStyles-bp"
-              >
-                <p
-                  class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
-                >
-                  5 bp
-                </p>
-              </div>
-              <div
-                class="makeStyles-container"
-              >
-                <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
-                  data-testid="zoom_out"
-                  disabled=""
-                  tabindex="-1"
-                  type="button"
-                >
-                  <span
-                    class="MuiIconButton-label"
-                  >
-                    <span
-                      aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                    >
-                      zoom_out
-                    </span>
-                  </span>
-                </button>
-                <span
-                  class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
-                >
-                  <span
-                    class="MuiSlider-rail"
-                  />
-                  <span
-                    class="MuiSlider-track"
-                  />
                   <input
-                    type="hidden"
-                    value="5.643856189774724"
+                    aria-invalid="false"
+                    class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
+                    style="padding: 8px;"
+                    type="text"
+                    value="ctgA:6..10"
                   />
-                  <span
-                    class="MuiSlider-mark MuiSlider-markActive"
-                  />
-                  <span
+                  <fieldset
                     aria-hidden="true"
-                    class="MuiSlider-markLabel MuiSlider-markLabelActive"
-                  />
-                  <span
-                    aria-orientation="horizontal"
-                    aria-valuemax="5.643856189774724"
-                    aria-valuemin="5.643856189774724"
-                    aria-valuenow="5.643856189774724"
-                    class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
-                    data-index="0"
-                    role="slider"
-                    tabindex="0"
-                  />
-                </span>
-                <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                  data-testid="zoom_in"
-                  tabindex="0"
-                  type="button"
+                    class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                    style="padding-left: 8px;"
+                  >
+                    <legend
+                      class="PrivateNotchedOutline-legend"
+                      style="width: 0.01px;"
+                    >
+                      <span>
+                        ​
+                      </span>
+                    </legend>
+                  </fieldset>
+                </div>
+              </div>
+            </form>
+            <div
+              class="makeStyles-bp"
+            >
+              <p
+                class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
+              >
+                5 bp
+              </p>
+            </div>
+            <div
+              class="makeStyles-container"
+            >
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
+                data-testid="zoom_out"
+                disabled=""
+                tabindex="-1"
+                type="button"
+              >
+                <span
+                  class="MuiIconButton-label"
                 >
                   <span
-                    class="MuiIconButton-label"
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                   >
-                    <span
-                      aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                    >
-                      zoom_in
-                    </span>
+                    zoom_out
                   </span>
+                </span>
+              </button>
+              <span
+                class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
+              >
+                <span
+                  class="MuiSlider-rail"
+                />
+                <span
+                  class="MuiSlider-track"
+                />
+                <input
+                  type="hidden"
+                  value="5.643856189774724"
+                />
+                <span
+                  class="MuiSlider-mark MuiSlider-markActive"
+                />
+                <span
+                  aria-hidden="true"
+                  class="MuiSlider-markLabel MuiSlider-markLabelActive"
+                />
+                <span
+                  aria-orientation="horizontal"
+                  aria-valuemax="5.643856189774724"
+                  aria-valuemin="5.643856189774724"
+                  aria-valuenow="5.643856189774724"
+                  class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
+                  data-index="0"
+                  role="slider"
+                  tabindex="0"
+                />
+              </span>
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                data-testid="zoom_in"
+                tabindex="0"
+                type="button"
+              >
+                <span
+                  class="MuiIconButton-label"
+                >
                   <span
-                    class="MuiTouchRipple-root"
-                  />
-                </button>
-              </div>
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                  >
+                    zoom_in
+                  </span>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
+            </div>
+            <div
+              class="makeStyles-spacer"
+            />
+          </div>
+          <div
+            class="makeStyles-tracksContainer"
+          >
+            <div
+              class="makeStyles-verticalGuidesContainer"
+              style="left: -1024px; width: 2053px;"
+            >
               <div
-                class="makeStyles-spacer"
+                class="makeStyles-boundaryPaddingBlock"
+                style="width: 1024px;"
+              />
+              <div
+                class="makeStyles-elidedBlock"
+                style="width: 5px;"
+              />
+              <div
+                class="makeStyles-boundaryPaddingBlock"
+                style="width: 1024px;"
               />
             </div>
             <div
-              class="makeStyles-tracksContainer"
+              class="makeStyles-rubberBand"
+              style="left: 0px; width: 0px;"
+            >
+              <h6
+                class="MuiTypography-root makeStyles-rubberBandText MuiTypography-h6"
+              >
+                0
+                 bp
+                 
+              </h6>
+            </div>
+            <div
+              class="makeStyles-guide"
+              style="left: 0px;"
+              title="1"
+            />
+            <div
+              class="MuiPaper-root makeStyles-scaleBarContainer makeStyles-rubberBandControl MuiPaper-outlined MuiPaper-rounded"
+              data-testid="rubberBand_controls"
+              role="presentation"
+              style="height: 17px; box-sizing: border-box;"
             >
               <div
-                class="makeStyles-verticalGuidesContainer"
-                style="left: -1024px; width: 2053px;"
+                class="makeStyles-scaleBar"
+                style="left: -1025px; width: 2053px; height: 17px; box-sizing: border-box;"
               >
                 <div
                   class="makeStyles-boundaryPaddingBlock"
-                  style="width: 1024px;"
+                  style="background: none; width: 1024px;"
                 />
                 <div
                   class="makeStyles-elidedBlock"
@@ -743,76 +779,35 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 />
                 <div
                   class="makeStyles-boundaryPaddingBlock"
-                  style="width: 1024px;"
+                  style="background: none; width: 1024px;"
                 />
               </div>
-              <div
-                class="makeStyles-rubberBand"
-                style="left: 0px; width: 0px;"
+            </div>
+            <div
+              class="makeStyles-spacer"
+            />
+            <div
+              class="MuiPaper-root makeStyles-errorMessage MuiPaper-outlined MuiPaper-rounded"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1"
               >
-                <h6
-                  class="MuiTypography-root makeStyles-rubberBandText MuiTypography-h6"
-                >
-                  0
-                   bp
-                   
-                </h6>
-              </div>
-              <div
-                class="makeStyles-guide"
-                style="left: 0px;"
-                title="1"
-              />
-              <div
-                class="MuiPaper-root makeStyles-scaleBarContainer makeStyles-rubberBandControl MuiPaper-outlined MuiPaper-rounded"
-                data-testid="rubberBand_controls"
-                role="presentation"
-                style="height: 15px;"
+                No tracks active.
+              </p>
+              <button
+                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+                tabindex="0"
+                type="button"
               >
-                <div
-                  class="makeStyles-scaleBar"
-                  style="left: -1025px; width: 2053px; height: 15px;"
+                <span
+                  class="MuiButton-label"
                 >
-                  <div
-                    class="makeStyles-boundaryPaddingBlock"
-                    style="background: none; width: 1024px;"
-                  />
-                  <div
-                    class="makeStyles-elidedBlock"
-                    style="width: 5px;"
-                  />
-                  <div
-                    class="makeStyles-boundaryPaddingBlock"
-                    style="background: none; width: 1024px;"
-                  />
-                </div>
-              </div>
-              <div
-                class="makeStyles-spacer"
-              />
-              <div
-                class="MuiPaper-root makeStyles-errorMessage MuiPaper-outlined MuiPaper-rounded"
-              >
-                <p
-                  class="MuiTypography-root MuiTypography-body1"
-                >
-                  No tracks active.
-                </p>
-                <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
-                  tabindex="0"
-                  type="button"
-                >
-                  <span
-                    class="MuiButton-label"
-                  >
-                    Select Tracks
-                  </span>
-                  <span
-                    class="MuiTouchRipple-root"
-                  />
-                </button>
-              </div>
+                  Select Tracks
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
             </div>
           </div>
         </div>
