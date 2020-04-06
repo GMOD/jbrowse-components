@@ -14,6 +14,12 @@ const useStyles = makeStyles({
     background: 'none',
     zIndex: 2,
   },
+  // -1 offset because of the 1px border of the Paper
+  trackOffsetContainer: {
+    position: 'absolute',
+    left: -1,
+    height: '100%',
+  },
 })
 
 const TrackRenderingContainer: React.FC<{
@@ -47,7 +53,7 @@ const TrackRenderingContainer: React.FC<{
       role="presentation"
       {...other}
     >
-      <div style={{ position: 'absolute', left: -1 }}>{children}</div>
+      <div className={classes.trackOffsetContainer}>{children}</div>
     </Paper>
   )
 }

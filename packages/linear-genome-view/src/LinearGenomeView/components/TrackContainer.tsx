@@ -36,6 +36,11 @@ const useStyles = makeStyles(theme => ({
     position: 'relative',
     height: '100%',
   },
+  trackLabel: {
+    position: 'absolute',
+    zIndex: 3,
+    margin: theme.spacing(1),
+  },
 }))
 
 function TrackContainer(props: {
@@ -66,6 +71,7 @@ function TrackContainer(props: {
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== track.id
   return (
     <div className={classes.root}>
+      <TrackLabel track={track} className={classes.trackLabel} />
       <TrackRenderingContainer
         trackId={track.id}
         trackHeight={track.height}
@@ -77,7 +83,6 @@ function TrackContainer(props: {
           'trackId',
         )}`}
       >
-        <TrackLabel track={track} />
         <div className={classes.renderingComponentContainer}>
           <RenderingComponent
             model={track}

@@ -10,6 +10,7 @@ import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Typography from '@material-ui/core/Typography'
+import clsx from 'clsx'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
@@ -17,10 +18,7 @@ import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
 
 const useStyles = makeStyles(theme => ({
   root: {
-    position: 'absolute',
-    zIndex: 2,
     background: fade(theme.palette.background.paper, 0.8),
-    margin: theme.spacing(1),
     '&:hover': {
       background: theme.palette.background.paper,
     },
@@ -44,10 +42,13 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function TrackLabel(props: { track: Instance<BaseTrackStateModel> }) {
+function TrackLabel(props: {
+  track: Instance<BaseTrackStateModel>
+  className?: string
+}) {
   const classes = useStyles()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-  const { track } = props
+  const { track, className } = props
   const view = getContainingView(track)
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -88,7 +89,7 @@ function TrackLabel(props: { track: Instance<BaseTrackStateModel> }) {
   }
   return (
     <>
-      <Paper className={classes.root}>
+      <Paper className={clsx(className, classes.root)}>
         <Icon
           draggable
           className={classes.dragHandle}

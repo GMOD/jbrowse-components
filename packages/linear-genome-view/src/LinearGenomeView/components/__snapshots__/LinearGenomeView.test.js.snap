@@ -390,72 +390,72 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       class="makeStyles-root"
     >
       <div
+        class="MuiPaper-root makeStyles-trackLabel makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
+      >
+        <span
+          aria-hidden="true"
+          class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
+          data-testid="dragHandle-lgv-testConfig"
+          draggable="true"
+        >
+          drag_indicator
+        </span>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          tabindex="0"
+          title="close this track"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            >
+              close
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+        <span
+          class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+        >
+          Foo Track
+        </span>
+        <button
+          aria-controls="simple-menu"
+          aria-haspopup="true"
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            >
+              more_vert
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+      </div>
+      <div
         class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
         data-testid="trackRenderingContainer-lgv-testConfig"
         role="presentation"
         style="height: 20px;"
       >
         <div
-          style="position: absolute; left: -1px;"
+          class="makeStyles-trackOffsetContainer"
         >
-          <div
-            class="MuiPaper-root makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
-              data-testid="dragHandle-lgv-testConfig"
-              draggable="true"
-            >
-              drag_indicator
-            </span>
-            <button
-              class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-              tabindex="0"
-              title="close this track"
-              type="button"
-            >
-              <span
-                class="MuiIconButton-label"
-              >
-                <span
-                  aria-hidden="true"
-                  class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                >
-                  close
-                </span>
-              </span>
-              <span
-                class="MuiTouchRipple-root"
-              />
-            </button>
-            <span
-              class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
-            >
-              Foo Track
-            </span>
-            <button
-              aria-controls="simple-menu"
-              aria-haspopup="true"
-              class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-              tabindex="0"
-              type="button"
-            >
-              <span
-                class="MuiIconButton-label"
-              >
-                <span
-                  aria-hidden="true"
-                  class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                >
-                  more_vert
-                </span>
-              </span>
-              <span
-                class="MuiTouchRipple-root"
-              />
-            </button>
-          </div>
           <div
             class="makeStyles-renderingComponentContainer"
           >
@@ -1421,72 +1421,72 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       class="makeStyles-root"
     >
       <div
+        class="MuiPaper-root makeStyles-trackLabel makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
+      >
+        <span
+          aria-hidden="true"
+          class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
+          data-testid="dragHandle-lgv-testConfig"
+          draggable="true"
+        >
+          drag_indicator
+        </span>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          tabindex="0"
+          title="close this track"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            >
+              close
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+        <span
+          class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+        >
+          Foo Track
+        </span>
+        <button
+          aria-controls="simple-menu"
+          aria-haspopup="true"
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            >
+              more_vert
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+      </div>
+      <div
         class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
         data-testid="trackRenderingContainer-lgv-testConfig"
         role="presentation"
         style="height: 20px;"
       >
         <div
-          style="position: absolute; left: -1px;"
+          class="makeStyles-trackOffsetContainer"
         >
-          <div
-            class="MuiPaper-root makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
-              data-testid="dragHandle-lgv-testConfig"
-              draggable="true"
-            >
-              drag_indicator
-            </span>
-            <button
-              class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-              tabindex="0"
-              title="close this track"
-              type="button"
-            >
-              <span
-                class="MuiIconButton-label"
-              >
-                <span
-                  aria-hidden="true"
-                  class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                >
-                  close
-                </span>
-              </span>
-              <span
-                class="MuiTouchRipple-root"
-              />
-            </button>
-            <span
-              class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
-            >
-              Foo Track
-            </span>
-            <button
-              aria-controls="simple-menu"
-              aria-haspopup="true"
-              class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-              tabindex="0"
-              type="button"
-            >
-              <span
-                class="MuiIconButton-label"
-              >
-                <span
-                  aria-hidden="true"
-                  class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                >
-                  more_vert
-                </span>
-              </span>
-              <span
-                class="MuiTouchRipple-root"
-              />
-            </button>
-          </div>
           <div
             class="makeStyles-renderingComponentContainer"
           >
@@ -1592,72 +1592,72 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       class="makeStyles-root"
     >
       <div
+        class="MuiPaper-root makeStyles-trackLabel makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
+      >
+        <span
+          aria-hidden="true"
+          class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
+          data-testid="dragHandle-lgv-testConfig2"
+          draggable="true"
+        >
+          drag_indicator
+        </span>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          tabindex="0"
+          title="close this track"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            >
+              close
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+        <span
+          class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+        >
+          Bar Track
+        </span>
+        <button
+          aria-controls="simple-menu"
+          aria-haspopup="true"
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            >
+              more_vert
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+      </div>
+      <div
         class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
         data-testid="trackRenderingContainer-lgv-testConfig2"
         role="presentation"
         style="height: 20px;"
       >
         <div
-          style="position: absolute; left: -1px;"
+          class="makeStyles-trackOffsetContainer"
         >
-          <div
-            class="MuiPaper-root makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
-              data-testid="dragHandle-lgv-testConfig2"
-              draggable="true"
-            >
-              drag_indicator
-            </span>
-            <button
-              class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-              tabindex="0"
-              title="close this track"
-              type="button"
-            >
-              <span
-                class="MuiIconButton-label"
-              >
-                <span
-                  aria-hidden="true"
-                  class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                >
-                  close
-                </span>
-              </span>
-              <span
-                class="MuiTouchRipple-root"
-              />
-            </button>
-            <span
-              class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
-            >
-              Bar Track
-            </span>
-            <button
-              aria-controls="simple-menu"
-              aria-haspopup="true"
-              class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
-              tabindex="0"
-              type="button"
-            >
-              <span
-                class="MuiIconButton-label"
-              >
-                <span
-                  aria-hidden="true"
-                  class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-                >
-                  more_vert
-                </span>
-              </span>
-              <span
-                class="MuiTouchRipple-root"
-              />
-            </button>
-          </div>
           <div
             class="makeStyles-renderingComponentContainer"
           >
