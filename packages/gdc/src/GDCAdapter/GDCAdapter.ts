@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -16,25 +16,21 @@ export default class extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor({
-    filters = '{}',
-    cases = [],
-    size = 100,
-    featureType = 'mutation',
-  }: {
+  public constructor(config: {
     filters?: string
     cases?: string[]
     size?: number
     featureType?: string
   }) {
-    super()
-    this.filters = filters
-    this.cases = cases
-    this.size = size
-    this.featureType = featureType
+    super(config)
+    const { filters, cases, size, featureType } = config
+    this.filters = filters || '{}'
+    this.cases = cases || []
+    this.size = size || 100
+    this.featureType = featureType || 'mutation'
   }
 
-  public async getRefNames() {
+  public async getRefNames(opts?: BaseOptions) {
     return [
       'chr1',
       'chr10',
