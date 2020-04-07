@@ -181,7 +181,10 @@ describe('valid file tests', () => {
 
   it('click and zoom in and back out', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
-    const { getByTestId: byId } = render(<JBrowse initialState={state} />)
+    const { getByTestId: byId, findByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    await findByText('ctgA')
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await waitForElement(() => byId('zoom_in')))
     fireEvent.click(await waitForElement(() => byId('zoom_out')))

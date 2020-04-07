@@ -13,6 +13,7 @@ import { Instance } from 'mobx-state-tree'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { LinearGenomeViewStateModel, HEADER_BAR_HEIGHT } from '..'
 import RefNameAutocomplete from './RefNameAutocomplete'
+import OverviewScaleBar from './OverviewScaleBar'
 import ZoomControls from './ZoomControls'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -246,7 +247,7 @@ function PanControls({ model }: { model: LGV }) {
 export default observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
 
-  return (
+  const controls = (
     <div className={classes.headerBar}>
       <Controls model={model} />
       <div className={classes.spacer} />
@@ -256,4 +257,10 @@ export default observer(({ model }: { model: LGV }) => {
       <div className={classes.spacer} />
     </div>
   )
+
+  if (model.hideHeaderOverview) {
+    return controls
+  }
+
+  return <OverviewScaleBar model={model}>{controls}</OverviewScaleBar>
 })

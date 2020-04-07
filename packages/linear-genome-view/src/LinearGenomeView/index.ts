@@ -57,6 +57,7 @@ const validBpPerPx = [
 ].sort((a, b) => a - b)
 
 export const HEADER_BAR_HEIGHT = 48
+export const HEADER_OVERVIEW_HEIGHT = 20
 export const SCALE_BAR_HEIGHT = 17
 export const RESIZE_HANDLE_HEIGHT = 3
 
@@ -76,6 +77,7 @@ export function stateModelFactory(pluginManager: any) {
       ),
       width: 800,
       hideHeader: false,
+      hideHeaderOverview: false,
       trackSelectorType: types.optional(
         types.enumeration(['hierarchical']),
         'hierarchical',
@@ -95,7 +97,13 @@ export function stateModelFactory(pluginManager: any) {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
       },
       get headerHeight() {
-        return self.hideHeader ? 0 : HEADER_BAR_HEIGHT
+        if (self.hideHeader) {
+          return 0
+        }
+        if (self.hideHeaderOverview) {
+          return HEADER_BAR_HEIGHT
+        }
+        return HEADER_BAR_HEIGHT + HEADER_OVERVIEW_HEIGHT
       },
       get trackHeights() {
         return self.tracks.map(t => t.height).reduce((a, b) => a + b, 0)
@@ -262,6 +270,10 @@ export function stateModelFactory(pluginManager: any) {
 
       toggleHeader() {
         self.hideHeader = !self.hideHeader
+      },
+
+      toggleHeaderOverview() {
+        self.hideHeaderOverview = !self.hideHeaderOverview
       },
 
       horizontallyFlip() {
@@ -612,8 +624,17 @@ export function stateModelFactory(pluginManager: any) {
               onClick: self.showAllRegions,
             },
             {
-              label: self.hideHeader ? 'Show header' : 'Hide header',
+              label: 'Show header',
+              type: 'checkbox',
+              checked: !self.hideHeader,
               onClick: self.toggleHeader,
+            },
+            {
+              label: 'Show header overview',
+              type: 'checkbox',
+              checked: !self.hideHeaderOverview,
+              onClick: self.toggleHeaderOverview,
+              disabled: self.hideHeader,
             },
           ]
         },
