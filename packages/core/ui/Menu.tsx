@@ -45,6 +45,7 @@ interface MenuItemEndDecorationSubMenuProps {
 interface MenuItemEndDecorationSelectorProps {
   type: 'checkbox' | 'radio'
   checked: boolean
+  disabled?: boolean
 }
 
 type MenuItemEndDecorationProps =
@@ -55,21 +56,24 @@ function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
   const classes = useStyles()
   const { type } = props
   let checked
+  let disabled
   if ('checked' in props) {
-    ;({ checked } = props)
+    ;({ checked, disabled } = props)
   }
   let icon
   if (type === 'subMenu') {
     icon = <Icon color="action">arrow_right</Icon>
   } else if (type === 'checkbox') {
     if (checked) {
-      icon = <Icon color="secondary">check_box</Icon>
+      const color = disabled ? 'inherit' : 'secondary'
+      icon = <Icon color={color}>check_box</Icon>
     } else {
       icon = <Icon color="action">check_box_outline_blank</Icon>
     }
   } else if (type === 'radio') {
     if (checked) {
-      icon = <Icon color="secondary">radio_button_checked</Icon>
+      const color = disabled ? 'inherit' : 'secondary'
+      icon = <Icon color={color}>radio_button_checked</Icon>
     } else {
       icon = <Icon color="action">radio_button_unchecked</Icon>
     }
@@ -269,6 +273,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
               <MenuItemEndDecoration
                 type={menuOption.type}
                 checked={menuOption.checked}
+                disabled={menuOption.disabled}
               />
             )
           }
