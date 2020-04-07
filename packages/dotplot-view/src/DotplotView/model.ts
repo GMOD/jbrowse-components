@@ -76,11 +76,11 @@ export default function stateModelFactory(pluginManager: any) {
           self,
           autorun(
             async () => {
-              self.assemblyNames.forEach((name, index) => {
+              self.assemblyNames.forEach(async (name, index) => {
                 const axis = [self.width, self.height]
-                const regions = session.assemblyRegions.get(
+                const regions = (await session.getRegionsForAssemblyName(
                   self.assemblyNames[index],
-                ) as IRegion[] | undefined
+                )) as IRegion[] | undefined
                 if (regions === undefined) {
                   session
                     .getRegionsForAssemblyName(self.assemblyNames[index])
