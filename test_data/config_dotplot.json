@@ -1,0 +1,237 @@
+{
+  "configuration": {
+    "updateUrl": true
+  },
+  "assemblies": [
+    {
+      "name": "grape",
+      "sequence": {
+        "trackId": "grape_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/grape.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
+    },
+    {
+      "name": "peach",
+      "sequence": {
+        "trackId": "peach_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/peach.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "DotplotTrack",
+      "trackId": "dotplot_track",
+      "name": "dotplot",
+      "assemblyNames": [
+        "grape",
+        "peach"
+      ],
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "test_data/peach_grape.paf"
+        },
+        "assemblyNames": [
+          "peach",
+          "grape"
+        ]
+      },
+      "renderer": {
+        "type": "DotplotRenderer"
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "New Session",
+    "menuBars": [
+      {
+        "type": "MainMenuBar"
+      }
+    ]
+  },
+  "savedSessions": [
+    {
+      "name": "Grape vs Peach",
+      "width": 1850,
+      "drawerWidth": 384,
+      "views": [
+        {
+          "id": "MiDMyyWpp",
+          "type": "DotplotView",
+          "assemblyNames": [
+            "peach",
+            "grape"
+          ],
+          "views": [
+            {
+              "displayedRegions": [
+                {
+                  "assemblyName": "peach",
+                  "refName": "Pp01",
+                  "start": 0,
+                  "end": 33000000
+                },
+                {
+                  "assemblyName": "peach",
+                  "refName": "Pp02",
+                  "start": 0,
+                  "end": 20000000
+                },
+                {
+                  "assemblyName": "peach",
+                  "refName": "Pp03",
+                  "start": 0,
+                  "end": 20000000
+                },
+                {
+                  "assemblyName": "peach",
+                  "refName": "Pp04",
+                  "start": 0,
+                  "end": 20000000
+                }
+              ],
+              "bpPerPx": 100000,
+              "offsetPx": 0
+            },
+            {
+              "displayedRegions": [
+                {
+                  "assemblyName": "grape",
+                  "refName": "chr1",
+                  "start": 0,
+                  "end": 22000000
+                },
+                {
+                  "assemblyName": "grape",
+                  "refName": "chr2",
+                  "start": 0,
+                  "end": 22000000
+                },
+                {
+                  "assemblyName": "grape",
+                  "refName": "chr3",
+                  "start": 0,
+                  "end": 22000000
+                },
+                {
+                  "assemblyName": "grape",
+                  "refName": "chr4",
+                  "start": 0,
+                  "end": 22000000
+                }
+              ],
+              "bpPerPx": 200000,
+              "offsetPx": 0
+            }
+          ],
+          "headerHeight": 44,
+          "width": 1850,
+          "height": 800,
+          "displayName": "Grape vs Peach",
+          "trackSelectorType": "hierarchical"
+        }
+      ],
+      "drawerWidgets": {
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "collapsed": {},
+          "filterText": ""
+        },
+        "sessionManager": {
+          "id": "sessionManager",
+          "type": "SessionManager"
+        }
+      },
+      "activeDrawerWidgets": {},
+      "menuBars": [
+        {
+          "id": "aU_iMpOUx4",
+          "type": "MainMenuBar",
+          "menus": [
+            {
+              "name": "File",
+              "menuItems": [
+                {
+                  "name": "New Session",
+                  "icon": "add",
+                  "callback": "function(session) {session.setDefaultSession();}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Open Session...",
+                  "icon": "folder_open",
+                  "callback": "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Duplicate Session",
+                  "icon": "file_copy",
+                  "callback": "function(session) {session.duplicateCurrentSession();}"
+                }
+              ]
+            },
+            {
+              "name": "Admin",
+              "menuItems": [
+                {
+                  "name": "Export configuration",
+                  "icon": "cloud_download",
+                  "callback": "exportConfiguration"
+                },
+                {
+                  "name": "Import configuration",
+                  "icon": "cloud_upload",
+                  "callback": "importConfiguration"
+                }
+              ]
+            },
+            {
+              "name": "Help",
+              "menuItems": [
+                {
+                  "name": "About",
+                  "icon": "info",
+                  "callback": "openAbout"
+                },
+                {
+                  "name": "Help",
+                  "icon": "help",
+                  "callback": "openHelp"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "connections": {}
+    }
+  ]
+}
