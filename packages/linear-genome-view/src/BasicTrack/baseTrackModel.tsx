@@ -123,16 +123,15 @@ const BaseTrack = types
      * renderer
      */
     get rendererType() {
-      const track = getContainingView(self)
       const session: any = getSession(self)
       const RendererType = session.pluginManager.getRendererType(
         self.rendererTypeName,
       )
       if (!RendererType)
-        throw new Error(`renderer "${track.rendererTypeName}" not found`)
+        throw new Error(`renderer "${self.rendererTypeName}" not found`)
       if (!RendererType.ReactComponent)
         throw new Error(
-          `renderer ${track.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
+          `renderer ${self.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
         )
       return RendererType
     },
