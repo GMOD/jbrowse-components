@@ -16,18 +16,19 @@ export default class extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor({
-    filters = '{}',
-    cases = [],
-    size = 100,
-    featureType = 'mutation',
-  }: {
+  public constructor(config: {
     filters?: string
     cases?: string[]
     size?: number
     featureType?: string
   }) {
-    super()
+    super(config)
+    const {
+      filters = '{}',
+      cases = [],
+      size = 100,
+      featureType = 'mutation',
+    } = config
     this.filters = filters
     this.cases = cases
     this.size = size
