@@ -33,9 +33,6 @@ export const sortFeature = (
     }
   })
 
-  console.log(featuresInCenterLine.length)
-
-  // NOTE: is not sorted when the last sort call featuresInCenterLine length > 0, happens at zoom level 0.05
   switch (sortObject.by) {
     case 'Start Location': {
       featuresInCenterLine.sort(
@@ -45,7 +42,6 @@ export const sortFeature = (
       break
     }
 
-    // WORKS UP TO BPPERPX OF 0.1
     case 'Base Pair': {
       // first sort all mismatches, then all reference bases at the end
       const baseSortArray: [string, Mismatch][] = []
@@ -64,31 +60,16 @@ export const sortFeature = (
       featuresInCenterLine.sort((a, b) => {
         const aMismatch = baseMap.get(a[1].id())
         const bMismatch = baseMap.get(b[1].id())
-        const calculation =
-          (aMismatch ? aMismatch.base.charCodeAt(0) : 0) -
-          (bMismatch ? bMismatch.base.charCodeAt(0) : 0)
 
-        // TODOSORT: the call with region overlapping the sort position has the correct order
         return (
           (bMismatch ? bMismatch.base.toUpperCase().charCodeAt(0) : 0) -
           (aMismatch ? aMismatch.base.toUpperCase().charCodeAt(0) : 0)
         )
       })
 
-      if (
-        doesIntersect2(
-          sortObject.position - 1,
-          sortObject.position,
-          region.start,
-          region.end,
-        )
-      )
-        console.log(baseMap, featuresInCenterLine)
-
       break
     }
 
-    // WORKS UP TO BPPERPX OF 0.1
     case 'Read Strand': {
       featuresInCenterLine.sort(
         (a: [string, Feature], b: [string, Feature]) => {
@@ -98,6 +79,10 @@ export const sortFeature = (
       )
       break
     }
+
+    // read group
+    // name before first colon possible read group id and sort on that
+    // https://gatkforums.broadinstitute.org/gatk/discussion/6472/read-groups
     default:
       break
   }

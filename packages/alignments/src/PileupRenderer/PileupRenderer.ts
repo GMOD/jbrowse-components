@@ -104,23 +104,12 @@ export default class extends BoxRendererType {
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const w = Math.max(minFeatWidth, pxPerBp)
 
-    // NOTE: first layout gets drawn and sorts incorrectly and dont get replaced!!
-    if (
-      sortObject.by &&
-      sortObject.by !== '' &&
-      region.end < sortObject.position + 1
-    )
-      return { height: 0, width: 0, maxHeightReached: false }
-
-    // TODOSORT: this is where the layout is generated, feature needs to be sorted before here
-
     const sortedFeatures =
       sortObject.by && sortObject.by !== ''
         ? sortFeature(features, sortObject, bpPerPx, region)
         : null
 
     const featureMap = sortedFeatures || features
-    console.log(featureMap)
     const layoutRecords = iterMap(
       featureMap.values(),
       feature => this.layoutFeature(feature, layout, config, bpPerPx, region),
@@ -150,10 +139,6 @@ export default class extends BoxRendererType {
       const { feature, leftPx, rightPx, topPx, heightPx } = feat
       ctx.fillStyle = readConfObject(config, 'color', [feature])
       ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
-      // TODOSORT: use Mismatch in util function
-      //       Array.from(features)
-      // [...features] transform map -> array then sort the array base on criteria
-      // then turn back into map and pass back into here possibly
       const mismatches: Mismatch[] =
         bpPerPx < 10 ? feature.get('mismatches') : feature.get('skips_and_dels')
       if (mismatches) {
@@ -166,12 +151,6 @@ export default class extends BoxRendererType {
         }
         for (let i = 0; i < mismatches.length; i += 1) {
           const mismatch = mismatches[i]
-
-          // checking mismatch printed
-          const positionOfMismatch = feature.get('start') + mismatch.start + 1
-          if (positionOfMismatch === sortObject.position)
-            console.log(mismatch.base)
-
           const [mismatchLeftPx, mismatchRightPx] = bpSpanPx(
             feature.get('start') + mismatch.start,
             feature.get('start') + mismatch.start + mismatch.length,
@@ -272,6 +251,7 @@ export default class extends BoxRendererType {
       null,
     )
     // TODOSORT: renderProps.layout is not updating with new layout
+    // console.log(renderProps.layout)
     return {
       element,
       imageData,
