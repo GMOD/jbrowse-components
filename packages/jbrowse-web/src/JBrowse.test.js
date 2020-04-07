@@ -290,7 +290,7 @@ test('variant track test - opens feature detail view', async () => {
   await findByText('Help')
   state.session.views[0].setNewView(0.05, 5000)
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
-  fireEvent.click(await findByTestId('vcf-604452'))
+  fireEvent.click(await findByTestId('test-vcf-604452'))
   await expect(findByText('ctgA:277..277')).resolves.toBeTruthy()
 })
 
@@ -326,7 +326,10 @@ describe('test configuration editor', () => {
     const input = await findByDisplayValue('goldenrod')
     fireEvent.change(input, { target: { value: 'green' } })
     await wait(async () => {
-      expect(await findByTestId('vcf-604452')).toHaveAttribute('fill', 'green')
+      expect(await findByTestId('test-vcf-604452')).toHaveAttribute(
+        'fill',
+        'green',
+      )
     })
   }, 10000)
 })

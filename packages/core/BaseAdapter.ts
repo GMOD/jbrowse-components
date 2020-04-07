@@ -1,5 +1,6 @@
 import { Observable, merge } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
+import objectHash from 'object-hash'
 import { IRegion as Region } from './mst-types'
 import { ObservableCreate } from './util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from './util'
@@ -26,6 +27,14 @@ export default abstract class BaseAdapter {
   // 'getRefNameAliases',
   // ]
   public static capabilities: string[]
+
+  public id: string
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(args: any) {
+    this.id =
+      typeof jest === 'undefined' ? objectHash(args).slice(0, 5) : 'test'
+  }
 
   /**
    * Subclasses should override this method. Method signature here for reference.

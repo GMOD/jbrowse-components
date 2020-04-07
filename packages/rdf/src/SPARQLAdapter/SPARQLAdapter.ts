@@ -63,7 +63,7 @@ export default class extends BaseAdapter {
     additionalQueryParams: string[]
     refNames: string[]
   }) {
-    super()
+    super(config)
     const {
       endpoint,
       queryTemplate,

@@ -28,7 +28,7 @@ export default class extends BaseAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: { bigBedLocation: IFileLocation }) {
-    super()
+    super(config)
     this.bigbed = new BigBed({
       filehandle: openLocation(config.bigBedLocation),
     })
@@ -98,7 +98,7 @@ export default class extends BaseAdapter {
                 }
               }
               const f = new SimpleFeature({
-                id: r.uniqueId,
+                id: `${this.id}-${r.uniqueId}`,
                 data: {
                   ...data,
                   start: r.start,

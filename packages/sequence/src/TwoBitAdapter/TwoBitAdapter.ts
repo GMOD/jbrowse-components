@@ -12,7 +12,7 @@ export default class extends BaseAdapter {
   public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
 
   public constructor(config: { twoBitLocation: IFileLocation }) {
-    super()
+    super(config)
     const twoBitOpts = {
       filehandle: openLocation(config.twoBitLocation),
     }
