@@ -30,6 +30,17 @@ export default function stateModelFactory(configSchema) {
         )
         session.showDrawerWidget(editor)
       },
+
+      selectFeature(feature) {
+        const session = getSession(self)
+        const featureWidget = session.addDrawerWidget(
+          'GDCFeatureDrawerWidget',
+          'gdcFeature',
+          { featureData: feature.toJSON() },
+        )
+        session.showDrawerWidget(featureWidget)
+        session.setSelection(feature)
+      },
     }))
 
     .views(self => ({
