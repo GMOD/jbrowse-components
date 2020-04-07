@@ -40,7 +40,7 @@ export default class CramAdapter extends BaseAdapter {
     sequenceAdapter: BaseAdapter
     fetchSizeLimit?: number
   }) {
-    super()
+    super(config)
     const { cramLocation, craiLocation, sequenceAdapter } = config
     if (!cramLocation) {
       throw new Error('missing cramLocation argument')

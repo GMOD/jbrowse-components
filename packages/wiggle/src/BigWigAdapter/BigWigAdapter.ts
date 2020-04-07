@@ -36,7 +36,7 @@ export default class extends BaseAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: { bigWigLocation: IFileLocation }) {
-    super()
+    super(config)
     this.bigwig = new BigWig({
       filehandle: openLocation(config.bigWigLocation),
     })

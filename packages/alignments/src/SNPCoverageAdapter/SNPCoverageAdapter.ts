@@ -75,7 +75,7 @@ export default class extends BaseAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: { subadapter: BaseAdapter }) {
-    super()
+    super(config)
     const { subadapter } = config
     this.subadapter = subadapter
     this.statsCache = new AbortablePromiseCache({

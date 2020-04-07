@@ -31,7 +31,7 @@ export default class extends BaseAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: Config) {
-    super()
+    super(config)
     const { vcfGzLocation, index } = config
     const { location, indexType } = index
 
@@ -61,13 +61,13 @@ export default class extends BaseAdapter {
     return ObservableCreate<Feature>(async observer => {
       const parser = await this.parser
       await this.vcf.getLines(query.refName, query.start, query.end, {
-        lineCallback(line: string, fileOffset: number) {
+        lineCallback: (line: string, fileOffset: number) => {
           const variant = parser.parseLine(line)
 
           const feature = new VcfFeature({
             variant,
             parser,
-            id: `vcf-${fileOffset}`,
+            id: `${this.id}-vcf-${fileOffset}`,
           }) as Feature
           observer.next(feature)
         },
