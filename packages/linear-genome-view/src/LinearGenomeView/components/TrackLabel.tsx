@@ -1,11 +1,9 @@
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
+import { Menu, MenuOptions } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import Menu from '@material-ui/core/Menu'
-import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -87,6 +85,23 @@ function TrackLabel(props: {
         trackName = `Reference Sequence (${readConfObject(assembly, 'name')})`
     })
   }
+
+  function handleMenuItemClick(
+    event: React.MouseEvent<HTMLLIElement, MouseEvent>,
+    callback: () => void,
+  ) {
+    callback()
+    handleClose()
+  }
+
+  const menuItems: MenuOptions[] = [
+    { label: 'Settings', onClick: onConfigureClick, icon: 'settings' },
+  ]
+
+  if (track.menuOptions.length) {
+    menuItems.push({ type: 'divider' }, ...track.menuOptions)
+  }
+
   return (
     <>
       <Paper className={clsx(className, classes.root)}>
@@ -126,19 +141,12 @@ function TrackLabel(props: {
         </IconButton>
       </Paper>
       <Menu
-        id="simple-menu"
         anchorEl={anchorEl}
-        keepMounted
+        onMenuItemClick={handleMenuItemClick}
         open={Boolean(anchorEl)}
         onClose={handleClose}
-      >
-        <MenuItem onClick={onConfigureClick}>
-          <ListItemIcon>
-            <Icon fontSize="small">settings</Icon>
-          </ListItemIcon>
-          Settings
-        </MenuItem>
-      </Menu>
+        menuOptions={menuItems}
+      />
     </>
   )
 }

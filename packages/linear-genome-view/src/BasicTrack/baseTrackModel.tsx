@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
+import { MenuOptions } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
 import {
   getContainingView,
@@ -163,6 +164,10 @@ const BaseTrack = types
      */
     get trackMessageComponent() {
       return undefined
+    },
+
+    get menuOptions(): MenuOptions[] {
+      return []
     },
 
     /**
