@@ -104,10 +104,9 @@ export default class extends BoxRendererType {
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const w = Math.max(minFeatWidth, pxPerBp)
 
-    const sortedFeatures =
-      sortObject.by && sortObject.by !== ''
-        ? sortFeature(features, sortObject, bpPerPx, region)
-        : null
+    const sortedFeatures = sortObject.by
+      ? sortFeature(features, sortObject, bpPerPx, region)
+      : null
 
     const featureMap = sortedFeatures || features
     const layoutRecords = iterMap(

@@ -17,6 +17,7 @@ export const sortFeature = (
   const featuresInCenterLine: typeof featureArray = []
   const featuresOutsideCenter: typeof featureArray = []
 
+  // only sort on features that intersect center line, append those outside post-sort
   featureArray.forEach((innerArray, idx) => {
     const feature = innerArray[1]
     if (
@@ -42,8 +43,8 @@ export const sortFeature = (
       break
     }
 
+    // first sort all mismatches, then all reference bases at the end
     case 'Base Pair': {
-      // first sort all mismatches, then all reference bases at the end
       const baseSortArray: [string, Mismatch][] = []
       featuresInCenterLine.forEach((array, idx) => {
         const feature = array[1]
@@ -70,6 +71,7 @@ export const sortFeature = (
       break
     }
 
+    // sorts positive strands then negative strands
     case 'Read Strand': {
       featuresInCenterLine.sort(
         (a: [string, Feature], b: [string, Feature]) => {
@@ -80,9 +82,30 @@ export const sortFeature = (
       break
     }
 
+    case 'First-of-pair Strand': {
+      featuresInCenterLine.sort(
+        (a: [string, Feature], b: [string, Feature]) => {
+          return 1
+        },
+      )
+      break
+    }
+
     // read group
     // name before first colon possible read group id and sort on that
     // https://gatkforums.broadinstitute.org/gatk/discussion/6472/read-groups
+    case 'Read Group': {
+      //   featuresInCenterLine.map(feature => {
+      //     console.log(feature[1].get('name'))
+      //   })
+      featuresInCenterLine.sort(
+        (a: [string, Feature], b: [string, Feature]) => {
+          return 1
+        },
+      )
+      break
+    }
+
     default:
       break
   }

@@ -66,8 +66,9 @@ export default (pluginManager: any, configSchema: any) => {
         return [
           'Start Location',
           'Read Strand',
-          'First-of-pair strand',
+          'First-of-pair Strand',
           'Base Pair',
+          'Read Group',
           'Clear Sort',
         ]
       },
