@@ -98,16 +98,16 @@ export default class extends BoxRendererType {
       highResolutionScaling = 1,
     } = props
 
-    console.log(props)
     if (!layout) throw new Error(`layout required`)
     if (!layout.addRect) throw new Error('invalid layout object')
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const w = Math.max(minFeatWidth, pxPerBp)
 
-    const sortedFeatures = sortObject.by
-      ? sortFeature(features, sortObject, bpPerPx, region)
-      : null
+    const sortedFeatures =
+      sortObject.by && region.start === sortObject.position // TODOSORT: reduces # of sort calls, not sure if necessary
+        ? sortFeature(features, sortObject, bpPerPx, region)
+        : null
 
     const featureMap = sortedFeatures || features
     const layoutRecords = iterMap(

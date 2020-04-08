@@ -29,13 +29,13 @@ export default (pluginManager: any, configSchema: any) => {
           configuration: ConfigurationReference(configSchema),
           height: 250,
           centerLinePosition: types.maybe(types.number),
-          sortedBy: '',
           showCoverage: true,
           showPileup: true,
           hideHeader: false,
         })
         .volatile(() => ({
           ReactComponent: AlignmentsTrackComponent,
+          sortedBy: '',
         })),
     )
     .views(self => ({
@@ -136,9 +136,9 @@ export default (pluginManager: any, configSchema: any) => {
         self.centerLinePosition = undefined
       },
       sortSelected(selected: string) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { assemblyData, rpcManager } = getSession(self) as any
         const centerLine = getContainingView(self).centerLinePosition
-        // self.applySortSelected(selected)
         const region = {
           refName: centerLine.refName,
           start: centerLine.offset,
@@ -155,6 +155,7 @@ export default (pluginManager: any, configSchema: any) => {
           sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
         }
 
+        // render just the sorted region first
         self.PileupTrack.rendererType
           .renderInClient(rpcManager, {
             assemblyName: region.assemblyName,
