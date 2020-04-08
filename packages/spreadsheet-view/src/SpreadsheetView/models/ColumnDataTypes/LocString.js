@@ -233,7 +233,7 @@ export default pluginManager => {
     }))
     .volatile(() => ({ ReactComponent: FilterReactComponent }))
 
-  // opens a new LGV at the location described in the locstring in the cell text
+  // opens a new LGV at the location described in the locString in the cell text
   async function locationLinkClick(spreadsheet, columnNumber, cell) {
     const loc = parseLocStringAndConvertToInterbase(cell.text)
     if (loc) {

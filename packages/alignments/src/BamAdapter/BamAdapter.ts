@@ -30,7 +30,7 @@ export default class extends BaseAdapter {
     chunkSizeLimit: number
     fetchSizeLimit: number
   }) {
-    super()
+    super(config)
     const {
       bamLocation,
       index: { location, indexType },

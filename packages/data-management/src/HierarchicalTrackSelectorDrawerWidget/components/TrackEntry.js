@@ -79,6 +79,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
           className={classes.configureButton}
           onClick={() => session.editConfiguration(trackConf)}
           color="secondary"
+          data-testid={`htsTrackEntryConfigure-${trackConfigId}`}
         >
           <Icon fontSize="small">settings</Icon>
         </IconButton>

@@ -25,7 +25,6 @@ export default pluginManager => {
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
 
-      hideCloseButton: false,
       hideVerticalResizeHandle: false,
       hideTrackSelectorButton: false,
       lockedFitToWindow: true,

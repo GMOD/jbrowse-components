@@ -97,7 +97,6 @@ export default pluginManager => {
       circularView: types.optional(CircularViewType.stateModel, () =>
         CircularViewType.stateModel.create({
           type: 'CircularView',
-          hideCloseButton: true,
           hideVerticalResizeHandle: true,
           hideTrackSelectorButton: true,
           disableImportForm: true,

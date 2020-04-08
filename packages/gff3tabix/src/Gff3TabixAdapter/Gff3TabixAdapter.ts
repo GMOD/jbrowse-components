@@ -44,7 +44,7 @@ export default class extends BaseAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: Config) {
-    super()
+    super(config)
     const { gffGzLocation, index, dontRedispatch } = config
     const { location, index: indexType } = index
 
@@ -189,7 +189,7 @@ export default class extends BaseAdapter {
       (featureLoc, locIndex) =>
         new SimpleFeature({
           data: this.featureData(featureLoc),
-          id: `offset-${featureLoc.attributes._lineHash[0]}`,
+          id: `${this.id}-offset-${featureLoc.attributes._lineHash[0]}`,
         }),
     )
   }

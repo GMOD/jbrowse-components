@@ -9,12 +9,12 @@ export default (pluginManager: any) => {
     '@material-ui/core/styles',
   )
 
+  const { VIEW_DIVIDER_HEIGHT } = require('../model')
   const AlignmentConnections = jbrequire(require('./AlignmentConnections'))
   const Breakends = jbrequire(require('./Breakends'))
   const Translocations = jbrequire(require('./Translocations'))
 
   const Header = jbrequire(require('./Header'))
-  const { grey } = jbrequire('@material-ui/core/colors')
 
   const useStyles = (jbrequiredMakeStyles as typeof makeStyles)(theme => {
     return {
@@ -30,12 +30,12 @@ export default (pluginManager: any) => {
         width: '3px',
         background: 'magenta',
       },
-      viewContainer: {
-        marginTop: '3px',
+      viewDivider: {
+        background: theme.palette.secondary.main,
+        height: VIEW_DIVIDER_HEIGHT,
       },
       container: {
         display: 'grid',
-        background: grey[300],
       },
       overlay: {
         display: 'flex',
@@ -73,27 +73,34 @@ export default (pluginManager: any) => {
   const BreakpointSplitView = observer(
     ({ model }: { model: BreakpointViewModel }) => {
       const classes = useStyles()
-      const { views, controlsWidth } = model
+      const { views } = model
       return (
         <div>
           <Header model={model} />
           <div className={classes.container}>
             <div className={classes.content}>
               <div style={{ position: 'relative' }}>
-                {views.map(view => {
+                {views.map((view, idx) => {
                   const { ReactComponent } = pluginManager.getViewType(
                     view.type,
                   )
-                  return (
-                    <div key={view.id} className={classes.viewContainer}>
-                      <ReactComponent model={view} />
-                    </div>
+                  const viewComponent = (
+                    <ReactComponent key={view.id} model={view} />
                   )
+                  if (idx === views.length - 1) {
+                    return viewComponent
+                  }
+                  return [
+                    viewComponent,
+                    <div
+                      key={`${view.id}-divider`}
+                      className={classes.viewDivider}
+                    />,
+                  ]
                 })}
               </div>
             </div>
             <div className={classes.overlay}>
-              <div style={{ width: controlsWidth, flexShrink: 0 }} />
               <svg
                 style={{
                   width: '100%',

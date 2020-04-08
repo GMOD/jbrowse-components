@@ -5,6 +5,7 @@ import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Toolbar from '@material-ui/core/Toolbar'
 import { makeStyles } from '@material-ui/core/styles'
+import { fade } from '@material-ui/core/styles/colorManipulator'
 import { observer, PropTypes } from 'mobx-react'
 import React from 'react'
 import Drawer from './Drawer'
@@ -16,6 +17,15 @@ const useStyles = makeStyles(theme => ({
   },
   drawerCloseButton: {
     float: 'right',
+    '&:hover': {
+      backgroundColor: fade(
+        theme.palette.secondary.contrastText,
+        theme.palette.action.hoverOpacity,
+      ),
+      '@media (hover: none)': {
+        backgroundColor: 'transparent',
+      },
+    },
   },
   drawerToolbar: {
     paddingLeft: theme.spacing(2),

@@ -1,0 +1,154 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`five 1`] = `
+Array [
+  ContentBlock {
+    "assemblyName": undefined,
+    "end": 72.4,
+    "isLeftEndOfDisplayedRegion": false,
+    "isRightEndOfDisplayedRegion": false,
+    "key": "ctgA:27.05..72.4",
+    "offsetPx": 521,
+    "parentRegion": Object {
+      "end": 50000,
+      "refName": "ctgA",
+      "reversed": false,
+      "start": 0,
+    },
+    "refName": "ctgA",
+    "reversed": false,
+    "start": 26.05,
+    "widthPx": 927.0000000000001,
+  },
+]
+`;
+
+exports[`four 1`] = `
+Array [
+  InterRegionPaddingBlock {
+    "assemblyName": undefined,
+    "end": undefined,
+    "key": "ctgA:1..250-beforeFirstRegion",
+    "offsetPx": -100,
+    "refName": undefined,
+    "start": undefined,
+    "variant": "boundary",
+    "widthPx": 100,
+  },
+  ContentBlock {
+    "assemblyName": undefined,
+    "end": 250,
+    "isLeftEndOfDisplayedRegion": true,
+    "isRightEndOfDisplayedRegion": false,
+    "key": "ctgA:1..250",
+    "offsetPx": 0,
+    "parentRegion": Object {
+      "end": 50000,
+      "refName": "ctgA",
+      "start": 0,
+    },
+    "refName": "ctgA",
+    "reversed": undefined,
+    "start": 0,
+    "widthPx": 250,
+  },
+]
+`;
+
+exports[`one 1`] = `
+Array [
+  InterRegionPaddingBlock {
+    "assemblyName": undefined,
+    "end": undefined,
+    "key": "ctgA:1..200-beforeFirstRegion",
+    "offsetPx": 0,
+    "refName": undefined,
+    "start": undefined,
+    "variant": "boundary",
+    "widthPx": -0,
+  },
+  ContentBlock {
+    "assemblyName": undefined,
+    "end": 200,
+    "isLeftEndOfDisplayedRegion": true,
+    "isRightEndOfDisplayedRegion": false,
+    "key": "ctgA:1..200",
+    "offsetPx": 0,
+    "parentRegion": Object {
+      "end": 50000,
+      "refName": "ctgA",
+      "start": 0,
+    },
+    "refName": "ctgA",
+    "reversed": undefined,
+    "start": 0,
+    "widthPx": 200,
+  },
+]
+`;
+
+exports[`three 1`] = `
+Array [
+  InterRegionPaddingBlock {
+    "assemblyName": undefined,
+    "end": undefined,
+    "key": "ctgA:49901..50000-reversed-beforeFirstRegion",
+    "offsetPx": -100,
+    "refName": undefined,
+    "start": undefined,
+    "variant": "boundary",
+    "widthPx": 100,
+  },
+  ContentBlock {
+    "assemblyName": undefined,
+    "end": 50000,
+    "isLeftEndOfDisplayedRegion": true,
+    "isRightEndOfDisplayedRegion": false,
+    "key": "ctgA:49901..50000-reversed",
+    "offsetPx": 0,
+    "parentRegion": Object {
+      "end": 50000,
+      "refName": "ctgA",
+      "reversed": true,
+      "start": 0,
+    },
+    "refName": "ctgA",
+    "reversed": true,
+    "start": 49900,
+    "widthPx": 100,
+  },
+]
+`;
+
+exports[`two 1`] = `
+Array [
+  InterRegionPaddingBlock {
+    "assemblyName": undefined,
+    "end": undefined,
+    "key": "ctgA:49801..50000-reversed-beforeFirstRegion",
+    "offsetPx": 0,
+    "refName": undefined,
+    "start": undefined,
+    "variant": "boundary",
+    "widthPx": -0,
+  },
+  ContentBlock {
+    "assemblyName": undefined,
+    "end": 50000,
+    "isLeftEndOfDisplayedRegion": true,
+    "isRightEndOfDisplayedRegion": false,
+    "key": "ctgA:49801..50000-reversed",
+    "offsetPx": 0,
+    "parentRegion": Object {
+      "end": 50000,
+      "refName": "ctgA",
+      "reversed": true,
+      "start": 0,
+    },
+    "refName": "ctgA",
+    "reversed": true,
+    "start": 49800,
+    "widthPx": 200,
+  },
+]
+`;

@@ -31,7 +31,7 @@ Array [
     "supplementary_alignment": false,
     "template_length": 0,
     "type": "match",
-    "uniqueId": 10158054,
+    "uniqueId": "test-10158054",
     "unmapped": false,
   },
   Object {
@@ -63,7 +63,7 @@ Array [
     "supplementary_alignment": false,
     "template_length": 0,
     "type": "match",
-    "uniqueId": 10158322,
+    "uniqueId": "test-10158322",
     "unmapped": false,
   },
   Object {
@@ -95,7 +95,7 @@ Array [
     "supplementary_alignment": false,
     "template_length": 0,
     "type": "match",
-    "uniqueId": 10158581,
+    "uniqueId": "test-10158581",
     "unmapped": false,
   },
   Object {
@@ -127,7 +127,7 @@ Array [
     "supplementary_alignment": false,
     "template_length": 0,
     "type": "match",
-    "uniqueId": 10158847,
+    "uniqueId": "test-10158847",
     "unmapped": false,
   },
   Object {
@@ -159,7 +159,7 @@ Array [
     "supplementary_alignment": false,
     "template_length": 0,
     "type": "match",
-    "uniqueId": 12607066,
+    "uniqueId": "test-12607066",
     "unmapped": false,
   },
   Object {
@@ -191,7 +191,7 @@ Array [
     "supplementary_alignment": false,
     "template_length": 0,
     "type": "match",
-    "uniqueId": 12607328,
+    "uniqueId": "test-12607328",
     "unmapped": false,
   },
   Object {
@@ -223,7 +223,7 @@ Array [
     "supplementary_alignment": false,
     "template_length": 0,
     "type": "match",
-    "uniqueId": 12607590,
+    "uniqueId": "test-12607590",
     "unmapped": false,
   },
   Object {
@@ -255,7 +255,7 @@ Array [
     "supplementary_alignment": false,
     "template_length": 0,
     "type": "match",
-    "uniqueId": 12607851,
+    "uniqueId": "test-12607851",
     "unmapped": false,
   },
   Object {
@@ -287,7 +287,7 @@ Array [
     "supplementary_alignment": false,
     "template_length": 0,
     "type": "match",
-    "uniqueId": 12608107,
+    "uniqueId": "test-12608107",
     "unmapped": false,
   },
   Object {
@@ -319,7 +319,7 @@ Array [
     "supplementary_alignment": false,
     "template_length": 0,
     "type": "match",
-    "uniqueId": 12608367,
+    "uniqueId": "test-12608367",
     "unmapped": false,
   },
 ]

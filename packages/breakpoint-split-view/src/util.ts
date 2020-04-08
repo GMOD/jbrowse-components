@@ -1,7 +1,7 @@
 import { Instance } from 'mobx-state-tree'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { clamp } from '@gmod/jbrowse-core/util'
-import { LayoutRecord } from './model'
+import { LayoutRecord, VIEW_DIVIDER_HEIGHT } from './model'
 
 const [, TOP, , BOTTOM] = [0, 1, 2, 3]
 
@@ -15,7 +15,7 @@ function heightFromSpecificLevel(
 ) {
   const heightUpUntilThisPoint = views
     .slice(0, level)
-    .map(v => v.height + 7)
+    .map(v => v.height + VIEW_DIVIDER_HEIGHT)
     .reduce((a, b) => a + b, 0)
   return (
     heightUpUntilThisPoint +
