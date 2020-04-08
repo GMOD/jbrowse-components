@@ -13,6 +13,7 @@ const useStyles = makeStyles({
     position: 'relative',
     background: 'none',
     zIndex: 2,
+    boxSizing: 'content-box',
   },
   // -1 offset because of the 1px border of the Paper
   trackOffsetContainer: {
