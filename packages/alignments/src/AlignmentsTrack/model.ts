@@ -6,8 +6,9 @@ import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { MenuOptions } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
-import { types, addDisposer } from 'mobx-state-tree'
+import { types, getSnapshot, addDisposer } from 'mobx-state-tree'
 import { autorun } from 'mobx'
+import jsonStableStringify from 'json-stable-stringify'
 import AlignmentsTrackComponent from './components/AlignmentsTrack'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -135,22 +136,33 @@ export default (pluginManager: any, configSchema: any) => {
         self.centerLinePosition = undefined
       },
       sortSelected(selected: string) {
-        const session = getSession(self)
+        const { assemblyData, rpcManager } = getSession(self) as any
         const centerLine = getContainingView(self).centerLinePosition
+        // self.applySortSelected(selected)
         const region = {
           refName: centerLine.refName,
           start: centerLine.offset,
           end: centerLine.offset + 1,
           assemblyName: centerLine.assemblyName,
         }
+        const adapterConfigId = jsonStableStringify(getConf(self, 'adapter'))
+
+        const trackAssemblyData =
+          (assemblyData && assemblyData.get(region.assemblyName)) || {}
+
+        let sequenceConfig: { type?: string } = {}
+        if (trackAssemblyData.sequence) {
+          sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
+        }
+
         self.PileupTrack.rendererType
-          .renderInClient(session.rpcManager, {
+          .renderInClient(rpcManager, {
             assemblyName: region.assemblyName,
             region,
             adapterType: self.PileupTrack.adapterType.name,
             adapterConfig: getConf(self, 'adapter'),
-            // sequenceAdapterType: self.sequenceConfig.type,
-            // sequenceAdapterConfig: self.sequenceConfig,
+            sequenceAdapterType: sequenceConfig.type,
+            sequenceAdapterConfig: sequenceConfig,
             rendererType: self.PileupTrack.rendererType.name,
             renderProps: {
               ...self.PileupTrack.renderProps,
@@ -159,14 +171,14 @@ export default (pluginManager: any, configSchema: any) => {
                 by: selected,
               },
             },
-            sessionId: 'test',
-            blockKey: self.key,
-            timeout: 1000000, // 10000,
+            sessionId: adapterConfigId,
+            timeout: 1000000,
           })
-          .then(() => self.applySortSelected(selected))
+          .then(() => {
+            this.applySortSelected(selected)
+          })
       },
       applySortSelected(selected: string) {
-        console.log('calling')
         self.sortedBy = selected
         self.centerLinePosition = getContainingView(
           self,
