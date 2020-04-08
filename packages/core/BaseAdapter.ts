@@ -33,7 +33,9 @@ export default abstract class BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(args: any) {
     this.id =
-      typeof jest === 'undefined' ? objectHash(args).slice(0, 5) : 'test'
+      typeof jest === 'undefined'
+        ? objectHash(args, { ignoreUnknown: true }).slice(0, 5)
+        : 'test'
   }
 
   /**
