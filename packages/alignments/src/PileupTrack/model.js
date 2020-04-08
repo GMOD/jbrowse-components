@@ -59,11 +59,11 @@ export default (pluginManager, configSchema) =>
 
         // TODOSORT find how to pass the sorted region first using staticblocks
         // temp use dynamic blocks if sorted so the layout is generated correctly
-        get blockType() {
-          if (!isNaN(self.sortObject.position) && self.sortObject.by)
-            return 'dynamicBlocks'
-          return 'staticBlocks'
-        },
+        // get blockType() {
+        //   if (!isNaN(self.sortObject.position) && self.sortObject.by)
+        //     return 'dynamicBlocks'
+        //   return 'staticBlocks'
+        // },
 
         /**
          * the react props that are passed to the Renderer when data

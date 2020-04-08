@@ -49,7 +49,7 @@ function CenterLine({ model }) {
           bottom: headerHeight,
         }}
       >
-        Bp: {model.centerLinePosition}
+        Bp: {model.centerLinePosition.offset}
       </div>
     </div>
   )

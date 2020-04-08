@@ -5,6 +5,7 @@ import {
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { MenuOptions } from '@gmod/jbrowse-core/ui'
+import { getSession } from '@gmod/jbrowse-core/util'
 import { types, addDisposer } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import AlignmentsTrackComponent from './components/AlignmentsTrack'
@@ -134,8 +135,42 @@ export default (pluginManager: any, configSchema: any) => {
         self.centerLinePosition = undefined
       },
       sortSelected(selected: string) {
+        const session = getSession(self)
+        const centerLine = getContainingView(self).centerLinePosition
+        const region = {
+          refName: centerLine.refName,
+          start: centerLine.offset,
+          end: centerLine.offset + 1,
+          assemblyName: centerLine.assemblyName,
+        }
+        self.PileupTrack.rendererType
+          .renderInClient(session.rpcManager, {
+            assemblyName: region.assemblyName,
+            region,
+            adapterType: self.PileupTrack.adapterType.name,
+            adapterConfig: getConf(self, 'adapter'),
+            // sequenceAdapterType: self.sequenceConfig.type,
+            // sequenceAdapterConfig: self.sequenceConfig,
+            rendererType: self.PileupTrack.rendererType.name,
+            renderProps: {
+              ...self.PileupTrack.renderProps,
+              sortObject: {
+                position: centerLine.offset,
+                by: selected,
+              },
+            },
+            sessionId: 'test',
+            blockKey: self.key,
+            timeout: 1000000, // 10000,
+          })
+          .then(() => self.applySortSelected(selected))
+      },
+      applySortSelected(selected: string) {
+        console.log('calling')
         self.sortedBy = selected
-        self.centerLinePosition = getContainingView(self).centerLinePosition
+        self.centerLinePosition = getContainingView(
+          self,
+        ).centerLinePosition.offset
       },
       toggleCoverage() {
         self.showCoverage = !self.showCoverage

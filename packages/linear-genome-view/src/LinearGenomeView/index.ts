@@ -230,8 +230,8 @@ export function stateModelFactory(pluginManager: any) {
       },
       get centerLinePosition() {
         const centerLinePosition = self.displayedRegions.length
-          ? this.pxToBp(this.viewingRegionWidth / 2).offset
-          : 0
+          ? this.pxToBp(this.viewingRegionWidth / 2)
+          : undefined
         return centerLinePosition
       },
     }))
