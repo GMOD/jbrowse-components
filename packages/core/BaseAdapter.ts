@@ -30,8 +30,9 @@ export default abstract class BaseAdapter {
 
   public id: string
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(args: any) {
+  constructor(args: unknown) {
+    // note: we use switch on jest here for more simple feature IDs
+    // in test environment
     this.id =
       typeof jest === 'undefined'
         ? objectHash(args, { ignoreUnknown: true }).slice(0, 5)
