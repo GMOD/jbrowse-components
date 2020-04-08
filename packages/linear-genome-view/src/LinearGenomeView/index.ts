@@ -257,7 +257,7 @@ export function stateModelFactory(pluginManager: any) {
       },
       get centerLinePosition() {
         const centerLinePosition = self.displayedRegions.length
-          ? this.pxToBp(this.viewingRegionWidth / 2)
+          ? this.pxToBp(self.width / 2)
           : undefined
         return centerLinePosition
       },
@@ -658,9 +658,9 @@ export function stateModelFactory(pluginManager: any) {
               disabled: self.hideHeader,
             },
             {
-              label: self.showCenterLine
-                ? 'Hide Center Line'
-                : 'Show Center Line',
+              label: 'Show Center Line',
+              type: 'checkbox',
+              checked: self.showCenterLine,
               onClick: self.toggleCenterLine,
             },
           ]

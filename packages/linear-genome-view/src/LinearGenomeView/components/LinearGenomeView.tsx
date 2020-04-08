@@ -22,7 +22,6 @@ import Header from './Header'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
-import CenterLine from './CenterLine'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -128,7 +127,7 @@ const ImportForm = observer(({ model }) => {
 
 const LinearGenomeView = observer((props: { model: LGV }) => {
   const { model } = props
-  const { displayedRegions, tracks, error, hideHeader, showCenterLine } = model
+  const { displayedRegions, tracks, error, hideHeader } = model
   const classes = useStyles()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -139,7 +138,6 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   return (
     <div>
       {!hideHeader ? <Header model={model} /> : null}
-      {showCenterLine && <CenterLine model={model}></CenterLine>}
       {error ? (
         <Paper variant="outlined" className={classes.errorMessage}>
           <Typography color="error">{error.message}</Typography>

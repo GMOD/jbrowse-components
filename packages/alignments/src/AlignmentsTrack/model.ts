@@ -139,10 +139,12 @@ export default (pluginManager: any, configSchema: any) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { assemblyData, rpcManager } = getSession(self) as any
         const centerLine = getContainingView(self).centerLinePosition
+        const centerBp = Math.round(centerLine.offset) + 1
+
         const region = {
           refName: centerLine.refName,
-          start: centerLine.offset,
-          end: centerLine.offset + 1,
+          start: centerBp,
+          end: centerBp + 1,
           assemblyName: centerLine.assemblyName,
         }
         const adapterConfigId = jsonStableStringify(getConf(self, 'adapter'))
@@ -168,7 +170,7 @@ export default (pluginManager: any, configSchema: any) => {
             renderProps: {
               ...self.PileupTrack.renderProps,
               sortObject: {
-                position: centerLine.offset,
+                position: centerBp,
                 by: selected,
               },
             },
@@ -181,9 +183,8 @@ export default (pluginManager: any, configSchema: any) => {
       },
       applySortSelected(selected: string) {
         self.sortedBy = selected
-        self.centerLinePosition = getContainingView(
-          self,
-        ).centerLinePosition.offset
+        self.centerLinePosition =
+          Math.round(getContainingView(self).centerLinePosition.offset) + 1
       },
       toggleCoverage() {
         self.showCoverage = !self.showCoverage

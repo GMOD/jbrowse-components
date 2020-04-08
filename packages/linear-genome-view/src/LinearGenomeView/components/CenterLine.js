@@ -6,7 +6,7 @@ const useStyles = makeStyles(() => ({
   centerLineContainer: {
     background: 'transparent',
     height: '100%',
-    zIndex: 1,
+    zIndex: 10, // above the track but under menu
     position: 'absolute',
     border: '1px black dashed',
     borderTop: 'none',
@@ -21,10 +21,10 @@ const useStyles = makeStyles(() => ({
 }))
 
 function CenterLine({ model }) {
-  const { bpPerPx, headerHeight, viewingRegionWidth, controlsWidth } = model
+  const { bpPerPx, trackHeights, width } = model
   const ref = useRef()
   const classes = useStyles()
-  const startingPosition = viewingRegionWidth / 2 + controlsWidth
+  const startingPosition = width / 2
 
   return (
     <div
@@ -35,7 +35,6 @@ function CenterLine({ model }) {
       style={{
         left: `${startingPosition}px`,
         width: Math.max(1 / bpPerPx, 1),
-        top: headerHeight,
       }}
     >
       <div
@@ -46,10 +45,10 @@ function CenterLine({ model }) {
         role="presentation"
         style={{
           left: Math.max(1 / bpPerPx, 1) + 5,
-          bottom: headerHeight,
+          top: trackHeights,
         }}
       >
-        Bp: {model.centerLinePosition.offset}
+        Bp: {Math.round(model.centerLinePosition.offset) + 1}
       </div>
     </div>
   )
