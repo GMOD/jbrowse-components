@@ -186,6 +186,10 @@ const ExternalLink = observer(props => {
   )
 })
 
+/**
+ * Create a section for external gene links
+ * @param {*} props
+ */
 function GeneExternalLinks(props) {
   const classes = useStyles()
   const { feature } = props
@@ -201,7 +205,7 @@ function GeneExternalLinks(props) {
       id: feature.geneId,
       name: 'ENSEMBL',
       prettyId: feature.geneId,
-      link: 'https://portal.gdc.cancer.gov/genes/',
+      link: 'http://www.ensembl.org/id/',
     },
     {
       id: feature.canonicalTranscriptId,
@@ -254,12 +258,19 @@ GeneExternalLinks.propTypes = {
   feature: PropTypes.shape().isRequired,
 }
 
+/**
+ * Removes prefix from cosmic ID
+ * @param {*} cosmicId Cosmic ID for a mutation
+ */
 function removeCosmicPrefix(cosmicId) {
   let cosmicIdNoPrefix = cosmicId.replace('COSM', '')
   cosmicIdNoPrefix = cosmicIdNoPrefix.replace('COSN', '')
   return cosmicIdNoPrefix
 }
 
+/**
+ * Creates a row with cosmic links for a mutation
+ */
 const CosmicLinks = observer(props => {
   const classes = useStyles()
   return (
@@ -289,6 +300,10 @@ const CosmicLinks = observer(props => {
   )
 })
 
+/**
+ * Create a section for external mutation links
+ * @param {*} props
+ */
 function SSMExternalLinks(props) {
   const classes = useStyles()
   const { feature } = props
@@ -344,6 +359,7 @@ function VariantFeatureDetails(props) {
       <Divider />
       {feat.geneId && <GeneExternalLinks feature={feat} {...props} />}
       {feat.ssmId && <SSMExternalLinks feature={feat} {...props} />}
+      <Divider />
       {feat.ssmId && <Consequence feature={feat} {...props} />}
     </Paper>
   )

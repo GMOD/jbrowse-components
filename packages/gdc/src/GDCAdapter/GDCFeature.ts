@@ -18,22 +18,6 @@ export default class GDCFeature implements Feature {
 
   private featureType: string
 
-  private GDC_LINK = 'https://portal.gdc.cancer.gov/'
-
-  private ENSEMBL_LINK = 'http://www.ensembl.org/id/'
-
-  private COSMIC_LINK =
-    'https://cancer.sanger.ac.uk/cosmic/mutation/overview?id='
-
-  private NCBI_LINK = 'http://www.ncbi.nlm.nih.gov/gene/'
-
-  private UNI_LINK = 'http://www.uniprot.org/uniprot/'
-
-  private HGNC_LINK =
-    'https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/'
-
-  private OMIM_LINK = 'https://www.omim.org/entry/'
-
   constructor(args: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     gdcObject: any
