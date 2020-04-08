@@ -159,17 +159,192 @@ Consequence.propTypes = {
   feature: PropTypes.shape().isRequired,
 }
 
+/**
+ * A single table row for an external link
+ */
+const ExternalLink = observer(props => {
+  const classes = useStyles()
+  const { id, prettyId, name, link } = props.props
+  return (
+    <>
+      <TableRow key={`${id}-${name}`}>
+        <TableCell component="th" scope="row">
+          {name}
+        </TableCell>
+        <TableCell component="th" scope="row">
+          <Link
+            className={classes.link}
+            target="_blank"
+            rel="noopener"
+            href={`${link}${id}`}
+          >
+            {prettyId}
+          </Link>
+        </TableCell>
+      </TableRow>
+    </>
+  )
+})
+
+function GeneExternalLinks(props) {
+  const classes = useStyles()
+  const { feature } = props
+
+  const externalLinkArray = [
+    {
+      id: feature.geneId,
+      name: 'GDC',
+      prettyId: feature.geneId,
+      link: 'https://portal.gdc.cancer.gov/genes/',
+    },
+    {
+      id: feature.geneId,
+      name: 'ENSEMBL',
+      prettyId: feature.geneId,
+      link: 'https://portal.gdc.cancer.gov/genes/',
+    },
+    {
+      id: feature.canonicalTranscriptId,
+      name: 'Canonical Transcript ID',
+      prettyId: feature.canonicalTranscriptId,
+      link: 'http://www.ensembl.org/id/',
+    },
+    {
+      id: feature.externalDbIds.hgnc[0],
+      name: 'HGNC',
+      prettyId: feature.externalDbIds.hgnc[0],
+      link: 'https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/',
+    },
+    {
+      id: feature.externalDbIds.uniprotkbSwissprot[0],
+      name: 'UniProtKB Swiss-Prot',
+      prettyId: feature.externalDbIds.uniprotkbSwissprot[0],
+      link: 'http://www.uniprot.org/uniprot/',
+    },
+    {
+      id: feature.externalDbIds.entrezGene[0],
+      name: 'NCBI',
+      prettyId: feature.externalDbIds.entrezGene[0],
+      link: 'http://www.ncbi.nlm.nih.gov/gene/',
+    },
+    {
+      id: feature.externalDbIds.omimGene[0],
+      name: 'OMIM',
+      prettyId: feature.externalDbIds.omimGene[0],
+      link: 'https://www.omim.org/entry/',
+    },
+  ]
+
+  return (
+    <BaseCard {...props} title="External Links">
+      <div style={{ width: '100%', maxHeight: 600, overflow: 'auto' }}>
+        <Table className={classes.table}>
+          <TableBody>
+            {externalLinkArray.map((externalLink, key) => (
+              <ExternalLink props={externalLink} key={key}></ExternalLink>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </BaseCard>
+  )
+}
+
+GeneExternalLinks.propTypes = {
+  feature: PropTypes.shape().isRequired,
+}
+
+function removeCosmicPrefix(cosmicId) {
+  let cosmicIdNoPrefix = cosmicId.replace('COSM', '')
+  cosmicIdNoPrefix = cosmicIdNoPrefix.replace('COSN', '')
+  return cosmicIdNoPrefix
+}
+
+const CosmicLinks = observer(props => {
+  const classes = useStyles()
+  return (
+    <>
+      <TableRow key="0">
+        <TableCell component="th" scope="row">
+          Cosmic
+        </TableCell>
+        <TableCell component="th" scope="row">
+          {props.props &&
+            props.props.map((value, key) => (
+              <Link
+                className={classes.link}
+                target="_blank"
+                rel="noopener"
+                href={`https://cancer.sanger.ac.uk/cosmic/mutation/overview?id=${removeCosmicPrefix(
+                  value,
+                )}`}
+                key={value}
+              >
+                {value}
+              </Link>
+            ))}
+        </TableCell>
+      </TableRow>
+    </>
+  )
+})
+
+function SSMExternalLinks(props) {
+  const classes = useStyles()
+  const { feature } = props
+
+  const externalLinkArray = [
+    {
+      id: feature.ssmId,
+      name: 'GDC',
+      prettyId: feature.ssmId,
+      link: 'https://portal.gdc.cancer.gov/ssms/',
+    },
+  ]
+
+  return (
+    <BaseCard {...props} title="External Links">
+      <div style={{ width: '100%', maxHeight: 600, overflow: 'auto' }}>
+        <Table className={classes.table}>
+          <TableBody>
+            {externalLinkArray.map((externalLink, key) => (
+              <ExternalLink props={externalLink} key={key}></ExternalLink>
+            ))}
+            {feature.cosmicId && (
+              <CosmicLinks props={feature.cosmicId}></CosmicLinks>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </BaseCard>
+  )
+}
+
+SSMExternalLinks.propTypes = {
+  feature: PropTypes.shape().isRequired,
+}
+
 function VariantFeatureDetails(props) {
   const classes = useStyles()
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { consequence, ...rest } = feat
+  const {
+    consequence,
+    geneId,
+    ssmId,
+    cosmicId,
+    canonicalTranscriptId,
+    externalDbIds,
+    ...rest
+  } = feat
   return (
     <Paper className={classes.root} data-testid="variant-side-drawer">
       <BaseFeatureDetail feature={rest} {...props} />
       <Divider />
-      <Consequence feature={feat} {...props} />
+      {feat.geneId && <GeneExternalLinks feature={feat} {...props} />}
+      {feat.ssmId && <SSMExternalLinks feature={feat} {...props} />}
+      {feat.ssmId && <Consequence feature={feat} {...props} />}
     </Paper>
   )
 }

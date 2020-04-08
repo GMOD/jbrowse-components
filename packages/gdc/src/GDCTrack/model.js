@@ -24,7 +24,7 @@ export default function stateModelFactory(configSchema) {
       openFilterConfig() {
         const session = getSession(self)
         const editor = session.addDrawerWidget(
-          'GDCFilterConfigurationEditorDrawerWidget',
+          'GDCFilterDrawerWidget',
           'configEditor',
           { target: self.configuration },
         )
