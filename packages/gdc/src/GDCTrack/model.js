@@ -6,7 +6,6 @@ import {
   BlockBasedTrack,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
-import TrackControls from './TrackControls'
 
 export default function stateModelFactory(configSchema) {
   return types
@@ -24,8 +23,8 @@ export default function stateModelFactory(configSchema) {
       openFilterConfig() {
         const session = getSession(self)
         const editor = session.addDrawerWidget(
-          'GDCFilterConfigurationEditorDrawerWidget',
-          'configEditor',
+          'GDCFilterDrawerWidget',
+          'gdcFilter',
           { target: self.configuration },
         )
         session.showDrawerWidget(editor)
@@ -33,10 +32,6 @@ export default function stateModelFactory(configSchema) {
     }))
 
     .views(self => ({
-      get ControlsComponent() {
-        return TrackControls
-      },
-
       get renderProps() {
         return {
           ...self.composedRenderProps,
@@ -47,6 +42,16 @@ export default function stateModelFactory(configSchema) {
 
       get rendererTypeName() {
         return self.configuration.renderer.type
+      },
+
+      get menuOptions() {
+        return [
+          {
+            label: 'Filter',
+            onClick: self.openFilterConfig,
+            icon: 'filter_list',
+          },
+        ]
       },
     }))
     .volatile(() => ({

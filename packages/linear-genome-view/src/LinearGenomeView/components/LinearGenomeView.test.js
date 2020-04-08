@@ -62,7 +62,6 @@ describe('<LinearGenomeView />', () => {
       displayedRegions: [
         { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 100 },
       ],
-      controlsWidth: 100,
       configuration: {},
     })
     const model = session.views[0]
@@ -97,7 +96,7 @@ describe('<LinearGenomeView />', () => {
           assemblyName: 'volMyt1',
           refName: 'ctgB',
           start: 1000,
-          end: 200,
+          end: 2000,
         },
       ],
       tracks: [
@@ -114,7 +113,6 @@ describe('<LinearGenomeView />', () => {
           configuration: 'testConfig2',
         },
       ],
-      controlsWidth: 100,
       configuration: {},
     })
     const model = session.views[0]

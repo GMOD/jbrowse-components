@@ -16,7 +16,7 @@ import { openLocation } from '@gmod/jbrowse-core/util/io'
 // material-ui
 import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
-import { ThemeProvider } from '@material-ui/styles'
+import { ThemeProvider } from '@material-ui/core/styles'
 
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'

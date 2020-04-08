@@ -10,6 +10,7 @@ import MenuList from '@material-ui/core/MenuList'
 import Paper from '@material-ui/core/Paper'
 import Popper from '@material-ui/core/Popper'
 import { makeStyles } from '@material-ui/core/styles'
+import { fade } from '@material-ui/core/styles/colorManipulator'
 import { values } from 'mobx'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
@@ -24,6 +25,17 @@ const useStyles = makeStyles(theme => ({
   },
   grow: {
     transformOrigin: 'left top',
+  },
+  buttonRoot: {
+    '&:hover': {
+      backgroundColor: fade(
+        theme.palette.primary.contrastText,
+        theme.palette.action.hoverOpacity,
+      ),
+      '@media (hover: none)': {
+        backgroundColor: 'transparent',
+      },
+    },
   },
 }))
 
@@ -52,6 +64,7 @@ function DropDownMenu({ menuTitle, menuItems, session }) {
         onClick={handleToggle}
         color="inherit"
         data-testid="dropDownMenuButton"
+        classes={{ root: classes.buttonRoot }}
       >
         {menuTitle}
         <Icon>arrow_drop_down</Icon>

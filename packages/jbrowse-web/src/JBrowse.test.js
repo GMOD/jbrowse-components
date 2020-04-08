@@ -118,15 +118,19 @@ describe('valid file tests', () => {
     expect(end - start).toEqual(150)
   })
 
-  it('click and drag to rubberband', async () => {
+  it('click and drag to rubberBand', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findByTestId } = render(<JBrowse initialState={state} />)
-    const track = await findByTestId('rubberband_container')
+    const { findByTestId, findByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    const track = await findByTestId('rubberBand_controls')
 
     expect(state.session.views[0].bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
     fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
     fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
+    const zoomMenuItem = await findByText('Zoom to region')
+    fireEvent.click(zoomMenuItem)
     expect(state.session.views[0].bpPerPx).toEqual(0.02)
   })
 
@@ -140,8 +144,8 @@ describe('valid file tests', () => {
     const dragHandle0 = await findByTestId(
       'dragHandle-integration_test-volvox_alignments',
     )
-    const trackControls1 = await findByTestId(
-      'trackControls-integration_test-volvox_filtered_vcf',
+    const trackRenderingContainer1 = await findByTestId(
+      'trackRenderingContainer-integration_test-volvox_filtered_vcf',
     )
     const dragStartEvent = createEvent.dragStart(dragHandle0)
     // Have to mock 'dataTransfer' because it's not supported in jsdom
@@ -151,7 +155,7 @@ describe('valid file tests', () => {
     fireEvent.mouseDown(dragHandle0, { clientX: 10, clientY: 100 })
     fireEvent(dragHandle0, dragStartEvent)
     fireEvent.mouseMove(dragHandle0, { clientX: 10, clientY: 220 })
-    fireEvent.dragEnter(trackControls1)
+    fireEvent.dragEnter(trackRenderingContainer1)
     fireEvent.dragEnd(dragHandle0, { clientX: 10, clientY: 220 })
     fireEvent.mouseUp(dragHandle0, { clientX: 10, clientY: 220 })
     await wait(() => expect(state.session.views[0].tracks[0].id).toBe(trackId1))
@@ -159,7 +163,10 @@ describe('valid file tests', () => {
 
   it('click and zoom in and back out', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findByTestId } = render(<JBrowse initialState={state} />)
+    const { findByTestId, findByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    await findByText('ctgA')
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
     fireEvent.click(await findByTestId('zoom_out'))
@@ -306,16 +313,15 @@ describe('nclist track test with long name', () => {
 describe('test configuration editor', () => {
   it('change color on track', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
-    const {
-      findByTestId,
-      findByTitle,
-      findByText,
-      findByDisplayValue,
-    } = render(<JBrowse initialState={state} />)
+    const { findByTestId, findByText, findByDisplayValue } = render(
+      <JBrowse initialState={state} />,
+    )
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
-    fireEvent.click(await findByTitle('configure track'))
+    fireEvent.click(
+      await findByTestId('htsTrackEntryConfigure-volvox_filtered_vcf'),
+    )
     await expect(findByTestId('configEditor')).resolves.toBeTruthy()
     const input = await findByDisplayValue('goldenrod')
     fireEvent.change(input, { target: { value: 'green' } })
