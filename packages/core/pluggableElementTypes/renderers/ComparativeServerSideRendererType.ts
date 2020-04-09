@@ -17,8 +17,7 @@ interface RenderArgs {
   bpPerPx: number
   regions?: any
   config: Record<string, any>
-  renderProps: { trackModel: any }
-  views: any[]
+  renderProps: { views: any[]; trackModel: any }
 }
 
 export default class ComparativeServerSideRenderer extends RendererType {
@@ -36,8 +35,9 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * @returns {object} the same object
    */
   serializeArgsInClient(args: RenderArgs) {
-    const { trackModel } = args.renderProps
+    const { views, trackModel } = args.renderProps
     if (trackModel) {
+      const staticBlocks: any[] = views.map(v => v.staticBlocks)
       args.renderProps = {
         // @ts-ignore
         blockKey: args.blockKey,
@@ -46,7 +46,11 @@ export default class ComparativeServerSideRenderer extends RendererType {
           id: trackModel.id,
           selectedFeatureId: trackModel.selectedFeatureId,
         },
+        views: [...views],
       }
+      args.renderProps.views.forEach((view, index) => {
+        view.staticBlocks = staticBlocks[index]
+      })
     }
 
     return args
@@ -170,10 +174,10 @@ export default class ComparativeServerSideRenderer extends RendererType {
     this.deserializeArgsInWorker(args)
 
     await Promise.all(
-      args.views.map(async view => {
+      args.renderProps.views.map(async view => {
         view.features = await this.getFeatures({
           ...args,
-          regions: view.displayedRegions,
+          regions: view.staticBlocks,
         })
       }),
     )

@@ -75,6 +75,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           horizontalBpPerPx,
           width,
           height,
+          views: getSnapshot(parentView.views),
           borderSize,
           fontSize,
         }
@@ -158,6 +159,7 @@ function renderBlockData(self: DotplotTrack) {
   const track = self
 
   const { renderProps, rendererType } = track
+  console.log(renderProps.views)
 
   // Alternative to readConfObject(config) is below
   // used because renderProps is something under our control.
@@ -173,7 +175,6 @@ function renderBlockData(self: DotplotTrack) {
     rpcManager,
     renderProps,
     renderArgs: {
-      views: getSnapshot(getParent(self, 2).views),
       adapterType: self.adapterType.name,
       adapterConfig,
       sequenceAdapterType: sequenceConfig.type,

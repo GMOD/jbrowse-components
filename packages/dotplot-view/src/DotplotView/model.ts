@@ -8,6 +8,7 @@ import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-v
 
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
+import calculateStaticBlocks from './calculateStaticBlocks'
 
 export type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -24,7 +25,7 @@ export default function stateModelFactory(pluginManager: any) {
   )
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
 
-  const DotplotViewDirection = types
+  const DotplotViewDirection = (jbrequiredTypes as Instance<typeof types>)
     .model('DotplotViewDirection', {
       displayedRegions: types.array(Region),
       bpPerPx: types.number,
@@ -39,6 +40,15 @@ export default function stateModelFactory(pluginManager: any) {
       },
       setBpToPx(val: number) {
         self.bpPerPx = val
+      },
+    }))
+    .views(self => ({
+      get staticBlocks() {
+        console.log('wtf why')
+        return calculateStaticBlocks(cast(self), 1)
+      },
+      get width() {
+        return getParent(self, 2).width
       },
     }))
   return (jbrequiredTypes as Instance<typeof types>)
@@ -91,8 +101,7 @@ export default function stateModelFactory(pluginManager: any) {
                       )
                     })
                 } else {
-                  self.views[index].setDisplayedRegions(regions as IRegion[])
-
+                  self.views[index].setDisplayedRegions(regions)
                   self.views[index].setBpToPx(totalBp(regions) / axis[index])
                 }
               })
