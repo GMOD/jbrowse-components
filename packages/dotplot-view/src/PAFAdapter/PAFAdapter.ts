@@ -24,7 +24,12 @@ interface PafRecord {
 }
 
 export default class extends BaseAdapter {
-  private cache: any
+  private cache = new AbortablePromiseCache({
+    cache: new QuickLRU({ maxSize: 1 }),
+    fill: (data: BaseOptions, signal: AbortSignal) => {
+      return this.setup({ ...data, signal })
+    },
+  })
 
   private assemblyNames: string[]
 
@@ -40,12 +45,6 @@ export default class extends BaseAdapter {
     const { pafLocation, assemblyNames } = config
     this.pafLocation = openLocation(pafLocation)
     this.assemblyNames = assemblyNames
-    this.cache = new AbortablePromiseCache({
-      cache: new QuickLRU({ maxSize: 1 }),
-      fill: (data: any, signal: AbortSignal) => {
-        return this.setup({ ...data, signal })
-      },
-    })
   }
 
   async setup(opts?: BaseOptions) {
