@@ -3,11 +3,12 @@ import IconButton, {
   IconButtonProps as IBP,
 } from '@material-ui/core/IconButton'
 import Paper from '@material-ui/core/Paper'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import { observer } from 'mobx-react'
 import React, { useEffect, useRef, useState } from 'react'
+import { ContentRect, withContentRect } from 'react-measure'
 import EditableTypography from './EditableTypography'
 import Menu, { MenuOptions } from './Menu'
 
@@ -15,6 +16,7 @@ const useStyles = makeStyles(theme => ({
   viewContainer: {
     overflow: 'hidden',
     background: theme.palette.secondary.main,
+    margin: theme.spacing(1),
   },
   icon: {
     color: theme.palette.secondary.contrastText,
@@ -121,84 +123,99 @@ const ViewMenu = observer(
   },
 )
 
-export default observer(
-  ({
-    view,
-    onClose,
-    style,
-    children,
-  }: {
-    view: {
-      menuOptions: MenuOptions[]
-      displayName: string
-      setDisplayName: (displayName: string) => void
-    }
-    onClose: () => void
-    style: React.CSSProperties
-    children: React.ReactNode
-  }) => {
-    const classes = useStyles()
-    const containerNodeRef = useRef<HTMLElement>(null)
+export default withContentRect('bounds')(
+  observer(
+    ({
+      view,
+      onClose,
+      style,
+      children,
+      contentRect,
+      measureRef,
+    }: {
+      view: {
+        menuOptions: MenuOptions[]
+        displayName: string
+        setDisplayName: (displayName: string) => void
+        setWidth: (width: number) => void
+      }
+      onClose: () => void
+      style: React.CSSProperties
+      children: React.ReactNode
+      contentRect: ContentRect
+      measureRef: React.RefObject<HTMLDivElement>
+    }) => {
+      const classes = useStyles()
+      const theme = useTheme()
+      const padWidth = theme.spacing(1)
 
-    // scroll the view into view when first mounted
-    // note that this effect will run only once, because of
-    // the empty array second param
-    useEffect(() => {
-      if (
-        containerNodeRef &&
-        containerNodeRef.current &&
-        containerNodeRef.current.scrollIntoView
+      let width = 0
+      if (contentRect.bounds) {
+        ;({ width } = contentRect.bounds)
+      }
+      useEffect(() => {
+        if (width) {
+          view.setWidth(width - padWidth * 2)
+        }
+      }, [padWidth, view, width])
+
+      const scrollRef = useRef<HTMLDivElement>(null)
+      // scroll the view into view when first mounted
+      // note that this effect will run only once, because of
+      // the empty array second param
+      useEffect(() => {
+        if (scrollRef && scrollRef.current && scrollRef.current.scrollIntoView)
+          scrollRef.current.scrollIntoView({ block: 'center' })
+      }, [])
+
+      return (
+        <Paper
+          elevation={12}
+          ref={measureRef}
+          className={classes.viewContainer}
+          style={{ ...style, padding: `0px ${padWidth}px ${padWidth}px` }}
+        >
+          <div ref={scrollRef} style={{ display: 'flex' }}>
+            <ViewMenu
+              model={view}
+              IconButtonProps={{
+                classes: { root: classes.iconRoot },
+                size: 'small',
+                edge: 'start',
+              }}
+              IconProps={{ fontSize: 'small', className: classes.icon }}
+            />
+            <div className={classes.grow} />
+            {view.displayName ? (
+              <Tooltip title="Rename View" arrow>
+                <EditableTypography
+                  value={view.displayName}
+                  setValue={view.setDisplayName}
+                  variant="body2"
+                  classes={{
+                    input: classes.input,
+                    inputBase: classes.inputBase,
+                    inputRoot: classes.inputRoot,
+                    inputFocused: classes.inputFocused,
+                  }}
+                />
+              </Tooltip>
+            ) : null}
+            <div className={classes.grow} />
+            <IconButton
+              classes={{ root: classes.iconRoot }}
+              size="small"
+              edge="end"
+              onClick={onClose}
+            >
+              <Icon fontSize="small" className={classes.icon}>
+                close
+              </Icon>
+            </IconButton>
+          </div>
+          <Paper>{children}</Paper>
+        </Paper>
       )
-        containerNodeRef.current.scrollIntoView({ block: 'center' })
-    }, [])
-
-    return (
-      <Paper
-        elevation={12}
-        ref={containerNodeRef}
-        className={classes.viewContainer}
-        style={style}
-      >
-        <div style={{ display: 'flex' }}>
-          <ViewMenu
-            model={view}
-            IconButtonProps={{
-              classes: { root: classes.iconRoot },
-              size: 'small',
-              edge: 'start',
-            }}
-            IconProps={{ fontSize: 'small', className: classes.icon }}
-          />
-          <div className={classes.grow} />
-          {view.displayName ? (
-            <Tooltip title="Rename View" arrow>
-              <EditableTypography
-                value={view.displayName}
-                setValue={view.setDisplayName}
-                variant="body2"
-                classes={{
-                  input: classes.input,
-                  inputBase: classes.inputBase,
-                  inputRoot: classes.inputRoot,
-                  inputFocused: classes.inputFocused,
-                }}
-              />
-            </Tooltip>
-          ) : null}
-          <div className={classes.grow} />
-          <IconButton
-            classes={{ root: classes.iconRoot }}
-            size="small"
-            edge="end"
-            onClick={onClose}
-          >
-            <Icon fontSize="small" className={classes.icon}>
-              close
-            </Icon>
-          </IconButton>
-        </div>
-        <Paper>{children}</Paper>
-      </Paper>
-    )
-  },
+    },
+  ),
 )

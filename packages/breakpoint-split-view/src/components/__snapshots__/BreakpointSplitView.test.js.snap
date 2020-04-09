@@ -114,7 +114,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           >
             <div
               class="MuiPaper-root makeStyles-scaleBarContig MuiPaper-outlined MuiPaper-rounded"
-              style="min-width: 1024px;"
+              style="min-width: 800px;"
             >
               <p
                 class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
@@ -123,17 +123,17 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               </p>
               <div
                 class="makeStyles-scaleBarVisibleRegion"
-                style="width: 512px; left: -1px;"
+                style="width: 400px; left: -1px;"
               />
               <div
                 class="makeStyles-scaleBarLabel"
-                style="left: 512px;"
+                style="left: 400px;"
               >
                 5
               </div>
               <div
                 class="makeStyles-scaleBarLabel"
-                style="left: 1024px;"
+                style="left: 800px;"
               >
                 10
               </div>
@@ -149,7 +149,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
             >
               <polygon
                 fill="rgba(121, 134, 203, 0.3)"
-                points="0,48,5,48,513,0,1,0"
+                points="0,48,5,48,401,0,1,0"
                 stroke="rgba(121, 134, 203, 0.8)"
               />
             </svg>
@@ -419,11 +419,11 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           >
             <div
               class="makeStyles-verticalGuidesContainer"
-              style="left: -1024px; width: 2053px;"
+              style="left: -800px; width: 1605px;"
             >
               <div
                 class="makeStyles-boundaryPaddingBlock"
-                style="width: 1024px;"
+                style="width: 800px;"
               />
               <div
                 class="makeStyles-elidedBlock"
@@ -431,7 +431,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               />
               <div
                 class="makeStyles-boundaryPaddingBlock"
-                style="width: 1024px;"
+                style="width: 800px;"
               />
             </div>
             <div
@@ -459,11 +459,11 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
             >
               <div
                 class="makeStyles-scaleBar"
-                style="left: -1025px; width: 2053px; height: 17px; box-sizing: border-box;"
+                style="left: -801px; width: 1605px; height: 17px; box-sizing: border-box;"
               >
                 <div
                   class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 1024px;"
+                  style="background: none; width: 800px;"
                 />
                 <div
                   class="makeStyles-elidedBlock"
@@ -471,7 +471,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 />
                 <div
                   class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 1024px;"
+                  style="background: none; width: 800px;"
                 />
               </div>
             </div>
@@ -512,7 +512,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           >
             <div
               class="MuiPaper-root makeStyles-scaleBarContig MuiPaper-outlined MuiPaper-rounded"
-              style="min-width: 1024px;"
+              style="min-width: 800px;"
             >
               <p
                 class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
@@ -521,17 +521,17 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               </p>
               <div
                 class="makeStyles-scaleBarVisibleRegion"
-                style="width: 512px; left: 511px;"
+                style="width: 400px; left: 399px;"
               />
               <div
                 class="makeStyles-scaleBarLabel"
-                style="left: 512px;"
+                style="left: 400px;"
               >
                 5
               </div>
               <div
                 class="makeStyles-scaleBarLabel"
-                style="left: 1024px;"
+                style="left: 800px;"
               >
                 10
               </div>
@@ -547,7 +547,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
             >
               <polygon
                 fill="rgba(121, 134, 203, 0.3)"
-                points="0,48,5,48,1025,0,513,0"
+                points="0,48,5,48,801,0,401,0"
                 stroke="rgba(121, 134, 203, 0.8)"
               />
             </svg>
@@ -817,11 +817,11 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           >
             <div
               class="makeStyles-verticalGuidesContainer"
-              style="left: -1024px; width: 2053px;"
+              style="left: -800px; width: 1605px;"
             >
               <div
                 class="makeStyles-boundaryPaddingBlock"
-                style="width: 1024px;"
+                style="width: 800px;"
               />
               <div
                 class="makeStyles-elidedBlock"
@@ -829,7 +829,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               />
               <div
                 class="makeStyles-boundaryPaddingBlock"
-                style="width: 1024px;"
+                style="width: 800px;"
               />
             </div>
             <div
@@ -857,11 +857,11 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
             >
               <div
                 class="makeStyles-scaleBar"
-                style="left: -1025px; width: 2053px; height: 17px; box-sizing: border-box;"
+                style="left: -801px; width: 1605px; height: 17px; box-sizing: border-box;"
               >
                 <div
                   class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 1024px;"
+                  style="background: none; width: 800px;"
                 />
                 <div
                   class="makeStyles-elidedBlock"
@@ -869,7 +869,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 />
                 <div
                   class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 1024px;"
+                  style="background: none; width: 800px;"
                 />
               </div>
             </div>

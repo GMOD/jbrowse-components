@@ -1,10 +1,7 @@
-import { makeStyles, useTheme } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 
 import { observer, PropTypes } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
-import ReactPropTypes from 'prop-types'
-import React, { useEffect } from 'react'
-import { withContentRect } from 'react-measure'
+import React from 'react'
 
 import DrawerWidget from './DrawerWidget'
 import Snackbar from './Snackbar'
@@ -36,28 +33,17 @@ const useStyles = makeStyles({
   },
 })
 
-function App({ contentRect, measureRef, session }) {
-  const theme = useTheme()
-  const margin = theme.spacing(1)
+function App({ session }) {
   const classes = useStyles()
   const { pluginManager } = session
-  const { width } = contentRect.bounds
-  useEffect(() => {
-    if (width) {
-      if (isAlive(session)) {
-        session.updateWidth(width, margin * 2)
-      }
-    }
-  }, [session, width, margin])
 
-  const { visibleDrawerWidget, appWidth, drawerWidth } = session
+  const { visibleDrawerWidget, drawerWidth } = session
 
   return (
     <div
-      ref={measureRef}
       className={classes.root}
       style={{
-        gridTemplateColumns: `[main] ${appWidth}px${
+        gridTemplateColumns: `[main] 1fr${
           visibleDrawerWidget ? ` [drawer] ${drawerWidth}px` : ''
         }`,
       }}
@@ -94,12 +80,6 @@ function App({ contentRect, measureRef, session }) {
                 key={`view-${view.id}`}
                 view={view}
                 onClose={() => session.removeView(view)}
-                style={{
-                  margin,
-                  paddingLeft: margin,
-                  paddingRight: margin,
-                  paddingBottom: margin,
-                }}
               >
                 <ReactComponent
                   model={view}
@@ -121,10 +101,6 @@ function App({ contentRect, measureRef, session }) {
 
 App.propTypes = {
   session: PropTypes.observableObject.isRequired,
-  contentRect: ReactPropTypes.shape({
-    bounds: ReactPropTypes.shape({ width: ReactPropTypes.number }),
-  }).isRequired,
-  measureRef: ReactPropTypes.func.isRequired,
 }
 
-export default withContentRect('bounds')(observer(App))
+export default observer(App)
