@@ -170,6 +170,21 @@ export default function stateModelFactory(pluginManager: any) {
         return shownTracks.length
       },
     }))
+    .views(self => ({
+      get menuOptions() {
+        const session: any = getSession(self)
+        return [
+          {
+            label: 'Open track selector',
+            onClick: self.activateTrackSelector,
+            disabled:
+              session.visibleDrawerWidget &&
+              session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
+              session.visibleDrawerWidget.view.id === self.id,
+          },
+        ]
+      },
+    }))
 }
 
 export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>

@@ -36,7 +36,7 @@ export default class extends BaseAdapter {
     pafLocation: IFileLocation
     assemblyNames: string[]
   }) {
-    super()
+    super(config)
     const { pafLocation, assemblyNames } = config
     this.pafLocation = openLocation(pafLocation)
     this.assemblyNames = assemblyNames

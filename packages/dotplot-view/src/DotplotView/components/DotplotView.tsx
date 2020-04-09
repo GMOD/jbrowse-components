@@ -14,9 +14,6 @@ export default (pluginManager: any) => {
     '@material-ui/core/styles',
   )
 
-  const Header = jbrequire(require('./Header'))
-  const { grey } = jbrequire('@material-ui/core/colors')
-
   const useStyles = (jbrequiredMakeStyles as typeof makeStyles)(theme => {
     return {
       root: {
@@ -30,7 +27,6 @@ export default (pluginManager: any) => {
       container: {
         display: 'grid',
         position: 'relative',
-        background: grey[300],
       },
       overlay: {
         pointerEvents: 'none',
@@ -169,7 +165,6 @@ export default (pluginManager: any) => {
     }, [down, current])
     return (
       <div>
-        <Header model={model} />
         <div className={classes.container}>
           <canvas
             style={{ position: 'absolute', left: 0, top: 0, zIndex: 10 }}
