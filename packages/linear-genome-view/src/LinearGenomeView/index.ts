@@ -544,11 +544,10 @@ export function stateModelFactory(pluginManager: any) {
         const viewWidth = self.width
         if (viewWidth > bpSoFar / self.bpPerPx) {
           self.offsetPx = Math.round(
-            (bpToStart - 1) / self.bpPerPx -
-              (viewWidth - bpSoFar / self.bpPerPx) / 2,
+            bpToStart / self.bpPerPx - (viewWidth - bpSoFar / self.bpPerPx) / 2,
           )
         } else {
-          self.offsetPx = Math.round((bpToStart - 1) / self.bpPerPx)
+          self.offsetPx = Math.round(bpToStart / self.bpPerPx)
         }
       },
 
