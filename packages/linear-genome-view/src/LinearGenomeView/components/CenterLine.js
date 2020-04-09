@@ -17,16 +17,21 @@ const useStyles = makeStyles(() => ({
     position: 'absolute',
     pointerEvents: 'none',
     whiteSpace: 'nowrap',
+    fontWeight: 'bold',
+  },
+  sortText: {
+    color: 'green',
+    fontWeight: 'bold',
   },
 }))
 
 function CenterLine({ model }) {
-  const { bpPerPx, trackHeights, width } = model
+  const { bpPerPx, trackHeights, width, tracks } = model
   const ref = useRef()
   const classes = useStyles()
   const startingPosition = width / 2
 
-  return (
+  return tracks.length ? (
     <div
       data-testid="centerline_container"
       className={classes.centerLineContainer}
@@ -45,13 +50,19 @@ function CenterLine({ model }) {
         role="presentation"
         style={{
           left: Math.max(1 / bpPerPx, 1) + 5,
-          top: trackHeights,
+          top: !tracks[0].sortedBy ? trackHeights : trackHeights - 15,
         }}
       >
         Bp: {Math.round(model.centerLinePosition.offset) + 1}
+        {tracks[0].sortedBy ? (
+          <div className={classes.sortText}>
+            Sort: {tracks[0].PileupTrack.sortObject.by.toUpperCase()} at{' '}
+            {tracks[0].PileupTrack.sortObject.position}
+          </div>
+        ) : null}
       </div>
     </div>
-  )
+  ) : null
 }
 
 CenterLine.propTypes = {

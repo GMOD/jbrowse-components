@@ -135,6 +135,8 @@ export default (pluginManager: any, configSchema: any) => {
         self.sortedBy = ''
         self.centerLinePosition = undefined
       },
+
+      // TODOSORT: only fires for the specific pileup track you right click on, want to fire for all
       sortSelected(selected: string) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { assemblyData, rpcManager } = getSession(self) as any
