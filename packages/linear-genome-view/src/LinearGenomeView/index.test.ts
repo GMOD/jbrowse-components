@@ -148,6 +148,7 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
       tracks: [{ name: 'foo track', type: 'PileupTrack' }],
     }),
   )
+  model.setWidth(width)
   model.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
@@ -178,9 +179,9 @@ test('can instantiate a model that >2 regions', () => {
       id: 'test4',
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'PileupTrack' }],
-      width,
     }),
   )
+  model.setWidth(width)
   model.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
