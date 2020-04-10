@@ -170,6 +170,10 @@ const BaseTrack = types
       return []
     },
 
+    get viewMenuActions(): MenuOptions[] {
+      return []
+    },
+
     /**
      * @param {Region} region
      * @returns falsy if the region is fine to try rendering. Otherwise,

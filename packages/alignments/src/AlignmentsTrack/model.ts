@@ -65,14 +65,7 @@ export default (pluginManager: any, configSchema: any) => {
         }
       },
       get sortOptions() {
-        return [
-          'Start Location',
-          'Read Strand',
-          'First-of-pair Strand',
-          'Base Pair',
-          'Read Group',
-          'Clear Sort',
-        ]
+        return ['Start Location', 'Read Strand', 'Base Pair', 'Clear Sort']
       },
       get menuOptions(): MenuOptions[] {
         return [
@@ -90,16 +83,21 @@ export default (pluginManager: any, configSchema: any) => {
             onClick: self.togglePileup,
             disabled: !self.showCoverage,
           },
+        ]
+      },
+
+      get viewMenuActions(): MenuOptions[] {
+        return [
           {
             label: 'Sort by',
             icon: 'sort',
             subMenu: self.sortOptions.map((option: string) => {
               return {
                 label: option,
-                onClick: () => getContainingView(self).sortAll(option),
-                // option === 'Clear Sort'
-                //   ? self.clearSelected
-                //   : () => self.sortSelected(option),
+                onClick:
+                  option === 'Clear Sort'
+                    ? self.clearSelected
+                    : () => self.sortSelected(option),
               }
             }),
           },
