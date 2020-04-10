@@ -19,6 +19,7 @@ interface RenderArgs {
   regions?: any
   config: Record<string, any>
   renderProps: { trackModel: any }
+  views: any[]
 }
 
 export default class ComparativeServerSideRenderer extends RendererType {
@@ -36,20 +37,20 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * @returns {object} the same object
    */
   serializeArgsInClient(args: RenderArgs) {
-    const { views, trackModel } = args.renderProps
+    const { trackModel } = args.renderProps
     if (trackModel) {
       args.renderProps = {
+        ...args.renderProps,
         // @ts-ignore
         blockKey: args.blockKey,
-        ...args.renderProps,
+        // @ts-ignore
         views: args.views.map(view => ({
+          // @ts-ignore
           ...getSnapshot(view),
           staticBlocks: view.staticBlocks.getBlocks(),
         })),
         trackModel: {},
       }
-
-      // args.renderProps = JSON.parse(JSON.stringify(args.renderProps))
     }
 
     return args
