@@ -27,13 +27,12 @@ export default function stateModelFactory(pluginManager: any) {
     addDisposer,
     getPath,
   } = jbrequire('mobx-state-tree')
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const BaseViewModel = jbrequire('@gmod/jbrowse-core/BaseViewModel')
 
   const minHeight = 40
   const defaultHeight = 400
-  const stateModel = (jbrequiredTypes as Instance<typeof types>)
+  const model = (jbrequiredTypes as Instance<typeof types>)
     .model('BreakpointSplitView', {
-      id: ElementId,
       type: types.literal('BreakpointSplitView'),
       headerHeight: 0,
       width: 800,
@@ -45,7 +44,6 @@ export default function stateModelFactory(pluginManager: any) {
         ),
         defaultHeight,
       ),
-      displayName: 'breakpoint detail',
       trackSelectorType: 'hierarchical',
       showIntraviewLinks: true,
       linkViews: false,
@@ -260,10 +258,6 @@ export default function stateModelFactory(pluginManager: any) {
         })
       },
 
-      setDisplayName(name: string) {
-        self.displayName = name
-      },
-
       setWidth(newWidth: number) {
         self.width = newWidth
         self.views.forEach(v => v.setWidth(newWidth))
@@ -291,6 +285,11 @@ export default function stateModelFactory(pluginManager: any) {
         self.linkViews = !self.linkViews
       },
     }))
+
+  const stateModel = (jbrequiredTypes as typeof types).compose(
+    BaseViewModel,
+    model,
+  )
 
   return { stateModel }
 }

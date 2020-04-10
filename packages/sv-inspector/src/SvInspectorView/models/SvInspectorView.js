@@ -4,7 +4,7 @@ export default pluginManager => {
   const { types, getParent, addDisposer, getRoot } = jbrequire(
     'mobx-state-tree',
   )
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const BaseViewModel = jbrequire('@gmod/jbrowse-core/BaseViewModel')
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
 
@@ -63,9 +63,8 @@ export default pluginManager => {
     return undefined
   }
 
-  const stateModel = types
+  const model = types
     .model('SvInspectorView', {
-      id: ElementId,
       type: types.literal('SvInspectorView'),
       width: 800,
       dragHandleHeight: 4,
@@ -334,6 +333,8 @@ export default pluginManager => {
         self.onlyDisplayRelevantRegionsInCircularView = Boolean(val)
       },
     }))
+
+  const stateModel = types.compose(BaseViewModel, model)
 
   return { stateModel }
 }

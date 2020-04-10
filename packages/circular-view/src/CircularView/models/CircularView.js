@@ -4,9 +4,10 @@ export default pluginManager => {
   const { jbrequire } = pluginManager
   const { transaction } = jbrequire('mobx')
   const { types, getParent } = jbrequire('mobx-state-tree')
-  const { ElementId, Region } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const { Region } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
   const { clamp, getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const BaseViewModel = jbrequire('@gmod/jbrowse-core/BaseViewModel')
 
   const { calculateStaticSlices, sliceIsVisible } = jbrequire(
     require('./slices'),
@@ -15,9 +16,8 @@ export default pluginManager => {
   const minHeight = 40
   const minWidth = 100
   const defaultHeight = 400
-  const stateModel = types
+  const model = types
     .model('CircularView', {
-      id: ElementId,
       type: types.literal('CircularView'),
       offsetRadians: -Math.PI / 2,
       bpPerPx: 2000000,
@@ -305,6 +305,8 @@ export default pluginManager => {
         return self.lockedFitToWindow
       },
     }))
+
+  const stateModel = types.compose(BaseViewModel, model)
 
   return { stateModel }
 }

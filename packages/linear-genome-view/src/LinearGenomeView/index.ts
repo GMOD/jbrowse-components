@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
+import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
 import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { MenuOptions } from '@gmod/jbrowse-core/ui'
 import {
@@ -62,14 +63,13 @@ export const SCALE_BAR_HEIGHT = 17
 export const RESIZE_HANDLE_HEIGHT = 3
 
 export function stateModelFactory(pluginManager: any) {
-  return types
+  const model = types
     .model('LinearGenomeView', {
       id: ElementId,
       type: types.literal('LinearGenomeView'),
       offsetPx: 0,
       bpPerPx: 1,
       displayedRegions: types.array(Region),
-      displayName: types.maybe(types.string),
       // we use an array for the tracks because the tracks are displayed in a specific
       // order that we need to keep.
       tracks: types.array(
@@ -262,10 +262,6 @@ export function stateModelFactory(pluginManager: any) {
 
       setError(error: Error | undefined) {
         self.error = error
-      },
-
-      setDisplayName(name: string) {
-        self.displayName = name
       },
 
       toggleHeader() {
@@ -664,5 +660,7 @@ export function stateModelFactory(pluginManager: any) {
         },
       }
     })
+
+  return types.compose(BaseViewModel, model)
 }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>

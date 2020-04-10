@@ -7,10 +7,12 @@ import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import { observer } from 'mobx-react'
+import { isAlive } from 'mobx-state-tree'
 import React, { useEffect, useRef, useState } from 'react'
 import { ContentRect, withContentRect } from 'react-measure'
+import { IBaseViewModel } from '../BaseViewModel'
 import EditableTypography from './EditableTypography'
-import Menu, { MenuOptions } from './Menu'
+import Menu from './Menu'
 
 const useStyles = makeStyles(theme => ({
   viewContainer: {
@@ -74,7 +76,7 @@ const ViewMenu = observer(
     IconButtonProps,
     IconProps,
   }: {
-    model: { menuOptions: MenuOptions[] }
+    model: IBaseViewModel
     IconButtonProps: IBP
     IconProps: IP
   }) => {
@@ -96,7 +98,7 @@ const ViewMenu = observer(
       setAnchorEl(null)
     }
 
-    if (!model.menuOptions) {
+    if (!(model.menuOptions && model.menuOptions.length)) {
       return null
     }
 
@@ -133,12 +135,7 @@ export default withContentRect('bounds')(
       contentRect,
       measureRef,
     }: {
-      view: {
-        menuOptions: MenuOptions[]
-        displayName: string
-        setDisplayName: (displayName: string) => void
-        setWidth: (width: number) => void
-      }
+      view: IBaseViewModel
       onClose: () => void
       style: React.CSSProperties
       children: React.ReactNode
@@ -155,7 +152,9 @@ export default withContentRect('bounds')(
       }
       useEffect(() => {
         if (width) {
-          view.setWidth(width - padWidth * 2)
+          if (isAlive(view)) {
+            view.setWidth(width - padWidth * 2)
+          }
         }
       }, [padWidth, view, width])
 
