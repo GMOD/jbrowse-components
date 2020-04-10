@@ -96,10 +96,10 @@ export default (pluginManager: any, configSchema: any) => {
             subMenu: self.sortOptions.map((option: string) => {
               return {
                 label: option,
-                onClick:
-                  option === 'Clear Sort'
-                    ? self.clearSelected
-                    : () => self.sortSelected(option),
+                onClick: () => getContainingView(self).sortAll(option),
+                // option === 'Clear Sort'
+                //   ? self.clearSelected
+                //   : () => self.sortSelected(option),
               }
             }),
           },
@@ -135,7 +135,6 @@ export default (pluginManager: any, configSchema: any) => {
         self.sortedBy = ''
         self.centerLinePosition = undefined
       },
-
       // TODOSORT: only fires for the specific pileup track you right click on, want to fire for all
       sortSelected(selected: string) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

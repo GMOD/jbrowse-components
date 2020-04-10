@@ -255,6 +255,25 @@ export function stateModelFactory(pluginManager: any) {
         }
         return accum
       },
+
+      sortAll(by: string) {
+        self.tracks
+          .filter(track => track.PileupTrack)
+          .map((track: any) => {
+            return by === 'Clear Sort'
+              ? track.clearSelected()
+              : track.sortSelected(by)
+          })
+        return undefined
+      },
+
+      // clearAll() {
+      //   this.findPileupTracks().map((track: any) => {
+      //     return track.clearSelected()
+      //   })
+      //   return undefined
+      // },
+
       get centerLinePosition() {
         const centerLinePosition = self.displayedRegions.length
           ? this.pxToBp(self.width / 2)

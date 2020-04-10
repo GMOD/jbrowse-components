@@ -6,7 +6,7 @@ const useStyles = makeStyles(() => ({
   centerLineContainer: {
     background: 'transparent',
     height: '100%',
-    zIndex: 10, // above the track but under menu
+    zIndex: 5, // above the track but under menu
     position: 'absolute',
     border: '1px black dashed',
     borderTop: 'none',
@@ -22,6 +22,7 @@ const useStyles = makeStyles(() => ({
   sortText: {
     color: 'green',
     fontWeight: 'bold',
+    pointerEvents: 'none',
   },
 }))
 
