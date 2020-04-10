@@ -213,7 +213,6 @@ export async function render(
 export async function comparativeRender(
   pluginManager,
   {
-    views,
     sessionId,
     adapterType,
     adapterConfig,
@@ -252,7 +251,6 @@ export async function comparativeRender(
     pluginManager,
     sessionId,
     dataAdapter,
-    views,
     signal,
   })
   checkAbortSignal(signal)

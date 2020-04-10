@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderToString } from 'react-dom/server'
 import { filter, distinct, toArray, tap } from 'rxjs/operators'
+import { getSnapshot } from 'mobx-state-tree'
 import BaseAdapter from '../../BaseAdapter'
 import { IRegion } from '../../mst-types'
 import { checkAbortSignal } from '../../util'
@@ -17,7 +18,7 @@ interface RenderArgs {
   bpPerPx: number
   regions?: any
   config: Record<string, any>
-  renderProps: { views: any[]; trackModel: any }
+  renderProps: { trackModel: any }
 }
 
 export default class ComparativeServerSideRenderer extends RendererType {
@@ -37,20 +38,18 @@ export default class ComparativeServerSideRenderer extends RendererType {
   serializeArgsInClient(args: RenderArgs) {
     const { views, trackModel } = args.renderProps
     if (trackModel) {
-      const staticBlocks: any[] = views.map(v => v.staticBlocks)
       args.renderProps = {
         // @ts-ignore
         blockKey: args.blockKey,
         ...args.renderProps,
-        trackModel: {
-          id: trackModel.id,
-          selectedFeatureId: trackModel.selectedFeatureId,
-        },
-        views: [...views],
+        views: args.views.map(view => ({
+          ...getSnapshot(view),
+          staticBlocks: view.staticBlocks.getBlocks(),
+        })),
+        trackModel: {},
       }
-      args.renderProps.views.forEach((view, index) => {
-        view.staticBlocks = staticBlocks[index]
-      })
+
+      // args.renderProps = JSON.parse(JSON.stringify(args.renderProps))
     }
 
     return args
@@ -174,7 +173,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
     this.deserializeArgsInWorker(args)
 
     await Promise.all(
-      args.renderProps.views.map(async view => {
+      args.views.map(async view => {
         view.features = await this.getFeatures({
           ...args,
           regions: view.staticBlocks,

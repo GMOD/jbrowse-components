@@ -44,8 +44,9 @@ export default function stateModelFactory(pluginManager: any) {
     }))
     .views(self => ({
       get staticBlocks() {
-        console.log('wtf why')
-        return calculateStaticBlocks(cast(self), 1)
+        const ret = calculateStaticBlocks(cast(self), 1)
+        console.log('test', ret)
+        return ret
       },
       get width() {
         return getParent(self, 2).width
@@ -56,7 +57,6 @@ export default function stateModelFactory(pluginManager: any) {
       id: ElementId,
       type: types.literal('DotplotView'),
       headerHeight: 0,
-      width: 800,
       height: 600,
       borderSize: 20,
       fontSize: 15,
@@ -71,7 +71,13 @@ export default function stateModelFactory(pluginManager: any) {
         ) as BaseTrackStateModel,
       ),
     })
+    .volatile(() => ({
+      width: 800,
+    }))
     .views(self => ({
+      get initialized() {
+        return self.views.every(view => view.displayedRegions.length > 0)
+      },
       get viewingRegionWidth() {
         return self.width - self.borderSize * 2
       },
@@ -177,6 +183,9 @@ export default function stateModelFactory(pluginManager: any) {
         )
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
+      },
+      setAssemblyNames(assemblyNames: string[]) {
+        self.assemblyNames = cast(assemblyNames)
       },
     }))
     .views(self => ({

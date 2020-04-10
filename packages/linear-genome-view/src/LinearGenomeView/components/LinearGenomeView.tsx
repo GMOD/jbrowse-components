@@ -39,17 +39,12 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const ImportForm = observer(({ model }) => {
+const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<IRegion | undefined>()
   const [error, setError] = useState('')
-  const {
-    assemblyNames,
-  }: {
-    assemblyNames: string[]
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } = getSession(model) as any
+  const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
   if (!error && !assemblyNames.length) {
     setError('No configured assemblies')
   }
@@ -127,15 +122,14 @@ const ImportForm = observer(({ model }) => {
 
 const LinearGenomeView = observer((props: { model: LGV }) => {
   const { model } = props
-  const { displayedRegions, tracks, error, hideHeader } = model
+  const { tracks, error, hideHeader, initialized } = model
   const classes = useStyles()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const session: any = getSession(model)
-  const initialized = !!displayedRegions.length
+  const session = getSession(model) as any
 
-  if (!initialized) return <ImportForm model={model} />
-  return (
+  return !initialized ? (
+    <ImportForm model={model} />
+  ) : (
     <div>
       {!hideHeader ? <Header model={model} /> : null}
       {error ? (

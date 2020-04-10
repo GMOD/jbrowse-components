@@ -11,14 +11,7 @@ const interRegionPaddingWidth = 2
 
 export default function calculateBlocks(self: any, extra = 0) {
   const { offsetPx, bpPerPx, width, displayedRegions, minimumBlockWidth } = self
-  console.log(
-    'wtf',
-    offsetPx,
-    bpPerPx,
-    width,
-    displayedRegions,
-    minimumBlockWidth,
-  )
+
   if (!width)
     throw new Error('view has no width, cannot calculate displayed blocks')
   const windowLeftBp = offsetPx * bpPerPx

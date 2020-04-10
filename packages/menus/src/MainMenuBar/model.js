@@ -148,6 +148,12 @@ export default types
                 "function(session) { session.addView('SpreadsheetView', {})}",
             },
             {
+              name: 'New dotplot view',
+              icon: 'line_style',
+              callback:
+                "function(session) { session.addView('DotplotView', {})}",
+            },
+            {
               name: 'Open new track',
               icon: 'note_add',
               callback: `function(session) {
