@@ -1,13 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { makeStyles } from '@material-ui/core/styles'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { useState as useStateTS } from 'react'
 import { DotplotViewModel } from '../model'
 
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
-  const { getSnapshot } = jbrequire('mobx-state-tree')
   const React = jbrequire('react')
   const { useRef, useEffect, useState } = React
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')

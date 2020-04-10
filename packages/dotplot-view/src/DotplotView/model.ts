@@ -44,9 +44,7 @@ export default function stateModelFactory(pluginManager: any) {
     }))
     .views(self => ({
       get staticBlocks() {
-        const ret = calculateStaticBlocks(cast(self), 1)
-        console.log('test', ret)
-        return ret
+        return calculateStaticBlocks(cast(self), 1)
       },
       get width() {
         return getParent(self, 2).width

@@ -1,5 +1,5 @@
 import { assembleLocString } from '@gmod/jbrowse-core/util'
-import { Instance } from 'mobx-state-tree'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import {
   BlockSet,
   ContentBlock,
@@ -9,6 +9,7 @@ import {
 
 const interRegionPaddingWidth = 2
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function calculateBlocks(self: any, extra = 0) {
   const { offsetPx, bpPerPx, width, displayedRegions, minimumBlockWidth } = self
 
@@ -21,7 +22,8 @@ export default function calculateBlocks(self: any, extra = 0) {
   // for each displayed region
   let regionBpOffset = 0
   const blocks = new BlockSet()
-  displayedRegions.forEach((region: any, index: number) => {
+
+  displayedRegions.forEach((region: IRegion, index: number) => {
     // find the block numbers of the left and right window sides,
     // clamp those to the region range, and then make blocks for that range
     const {
@@ -128,6 +130,5 @@ export default function calculateBlocks(self: any, extra = 0) {
     regionBpOffset += interRegionPaddingWidth * bpPerPx
     regionBpOffset += regionEnd - regionStart
   })
-  console.log('test', blocks)
   return blocks
 }
