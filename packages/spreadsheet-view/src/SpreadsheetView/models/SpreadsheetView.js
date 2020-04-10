@@ -15,7 +15,6 @@ export default pluginManager => {
     .model('SpreadsheetView', {
       type: types.literal('SpreadsheetView'),
       offsetPx: 0,
-      width: 400,
       height: types.optional(
         types.refinement(
           'SpreadsheetViewHeight',
@@ -43,6 +42,9 @@ export default pluginManager => {
       ),
       spreadsheet: types.maybe(SpreadsheetModel),
     })
+    .volatile(() => ({
+      width: 400,
+    }))
     .views(self => ({
       get readyToDisplay() {
         return !!self.spreadsheet

@@ -6,8 +6,10 @@ const BaseViewModel = types
   .model('BaseView', {
     id: ElementId,
     displayName: types.maybe(types.string),
-    width: 800,
   })
+  .volatile((/* self */) => ({
+    width: 800,
+  }))
   .views((/* self */) => ({
     get menuOptions(): MenuOptions[] {
       return []

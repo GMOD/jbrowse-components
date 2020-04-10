@@ -75,7 +75,6 @@ export function stateModelFactory(pluginManager: any) {
       tracks: types.array(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
-      width: 800,
       hideHeader: false,
       hideHeaderOverview: false,
       trackSelectorType: types.optional(
@@ -85,6 +84,7 @@ export function stateModelFactory(pluginManager: any) {
       minimumBlockWidth: 20,
     })
     .volatile(() => ({
+      width: 800,
       draggingTrackId: undefined as undefined | string,
       error: undefined as undefined | Error,
 

@@ -66,7 +66,6 @@ export default pluginManager => {
   const model = types
     .model('SvInspectorView', {
       type: types.literal('SvInspectorView'),
-      width: 800,
       dragHandleHeight: 4,
       height: types.optional(
         types.refinement(
@@ -102,6 +101,9 @@ export default pluginManager => {
         }),
       ),
     })
+    .volatile(() => ({
+      width: 800,
+    }))
     .views(self => ({
       get selectedRows() {
         return self.spreadsheetView.rowSet.selectedRows

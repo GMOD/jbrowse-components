@@ -35,7 +35,6 @@ export default function stateModelFactory(pluginManager: any) {
     .model('BreakpointSplitView', {
       type: types.literal('BreakpointSplitView'),
       headerHeight: 0,
-      width: 800,
       height: types.optional(
         types.refinement(
           'viewHeight',
@@ -53,6 +52,9 @@ export default function stateModelFactory(pluginManager: any) {
           .stateModel as LinearGenomeViewStateModel,
       ),
     })
+    .volatile(() => ({
+      width: 800,
+    }))
     .views(self => ({
       // Find all track ids that match across multiple views
       get matchedTracks(): string[] {

@@ -30,7 +30,6 @@ export default pluginManager => {
       lockedFitToWindow: true,
       disableImportForm: false,
 
-      width: 800,
       height: types.optional(
         types.refinement('trackHeight', types.number, n => n >= minHeight),
         defaultHeight,
@@ -46,6 +45,9 @@ export default pluginManager => {
       scrollY: 0,
       trackSelectorType: 'hierarchical',
     })
+    .volatile(() => ({
+      width: 800,
+    }))
     .views(self => ({
       get staticSlices() {
         return calculateStaticSlices(self)
