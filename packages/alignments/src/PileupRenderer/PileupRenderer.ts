@@ -20,7 +20,6 @@ interface PileupRenderProps {
   bpPerPx: number
   height: number
   width: number
-  horizontallyFlipped: boolean
   highResolutionScaling: number
 }
 
@@ -45,14 +44,12 @@ export default class PileupRenderer extends BoxRendererType {
     config: AnyConfigurationModel,
     bpPerPx: number,
     region: IRegion,
-    horizontallyFlipped = false,
   ): LayoutRecord | null {
     const [leftPx, rightPx] = bpSpanPx(
       feature.get('start'),
       feature.get('end'),
       region,
       bpPerPx,
-      horizontallyFlipped,
     )
 
     let heightPx = readConfObject(config, 'height', [feature])
@@ -92,7 +89,6 @@ export default class PileupRenderer extends BoxRendererType {
       config,
       regions,
       bpPerPx,
-      horizontallyFlipped,
       highResolutionScaling = 1,
     } = props
     const [region] = regions
@@ -108,15 +104,7 @@ export default class PileupRenderer extends BoxRendererType {
 
     const layoutRecords = iterMap(
       features.values(),
-      feature =>
-        this.layoutFeature(
-          feature,
-          layout,
-          config,
-          bpPerPx,
-          region,
-          horizontallyFlipped,
-        ),
+      feature => this.layoutFeature(feature, layout, config, bpPerPx, region),
       features.size,
     )
 
@@ -159,7 +147,6 @@ export default class PileupRenderer extends BoxRendererType {
             feature.get('start') + mismatch.start + mismatch.length,
             region,
             bpPerPx,
-            horizontallyFlipped,
           )
           const mismatchWidthPx = Math.max(
             minFeatWidth,

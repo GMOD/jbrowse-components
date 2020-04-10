@@ -115,7 +115,7 @@ export function convertTrackConfig(
       else adapter.index = { location: { uri: `${urlTemplate}.bai` } }
       return {
         ...jb2TrackConfig,
-        type: 'AlignmentsTrack',
+        type: 'PileupTrack',
         adapter,
       }
     }
@@ -131,7 +131,7 @@ export function convertTrackConfig(
       else adapter.craiLocation = { uri: `${urlTemplate}.crai` }
       return {
         ...jb2TrackConfig,
-        type: 'AlignmentsTrack',
+        type: 'PileupTrack',
         adapter,
       }
     }
@@ -412,8 +412,9 @@ export async function createRefSeqsAdapter(
     return refSeqAdapterFromConfig(refSeqs.data || [])
   }
   throw new Error(
-    `Could not determine adapter for JBrowse1 refSeqs: ${refSeqs.url ||
-      JSON.stringify(refSeqs)}`,
+    `Could not determine adapter for JBrowse1 refSeqs: ${
+      refSeqs.url || JSON.stringify(refSeqs)
+    }`,
   )
 }
 

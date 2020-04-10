@@ -15,7 +15,7 @@ export default class extends BaseFeatureDataAdapter {
   protected source: string
 
   public constructor(config: Instance<typeof MyConfigSchema>) {
-    super()
+    super(config)
     const chromSizesLocation = readConfObject(config, 'chromSizesLocation')
     if (!chromSizesLocation) {
       throw new Error('must provide chromSizesLocation')

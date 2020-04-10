@@ -57,7 +57,7 @@ function makeTrackConfig(track, trackDbUrl) {
           ? { localPath: track.bigDataIndex }
           : { localPath: `${track.bigDataUrl}.bai` }
       return {
-        type: 'AlignmentsTrack',
+        type: 'PileupTrack',
         name: track.shortLabel,
         description: track.longLabel,
         category: categories,

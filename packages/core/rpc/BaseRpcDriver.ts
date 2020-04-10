@@ -111,8 +111,9 @@ export default abstract class BaseRpcDriver {
     ): void => {
       watchWorker(worker, WORKER_MAX_PING_TIME).catch(() => {
         console.warn(
-          `worker ${workerIndex +
-            1} did not respond within ${WORKER_MAX_PING_TIME} ms, terminating and replacing.`,
+          `worker ${
+            workerIndex + 1
+          } did not respond within ${WORKER_MAX_PING_TIME} ms, terminating and replacing.`,
         )
         worker.destroy()
         workerHandles[workerIndex] = this.makeWorker()

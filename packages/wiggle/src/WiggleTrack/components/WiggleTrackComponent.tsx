@@ -11,7 +11,7 @@ const powersOfTen: number[] = []
 for (let i = -20; i < 20; i += 1) {
   powersOfTen.push(10 ** i)
 }
-const YScaleBar = observer(
+export const YScaleBar = observer(
   ({ model }: { model: Instance<WiggleTrackModel> }) => {
     const { domain, height } = model
     const scaleType = getConf(model, 'scaleType')
@@ -21,11 +21,13 @@ const YScaleBar = observer(
       range: [height, 0],
       inverted: getConf(model, 'inverted'),
     })
-    const axisProps = axisPropsFromTickScale(scale, 4)
+    const ticks = height < 50 ? 2 : 4
+    const axisProps = axisPropsFromTickScale(scale, ticks)
     const values =
       scaleType === 'log'
         ? axisProps.values.filter((s: number) => powersOfTen.includes(s))
         : axisProps.values
+
     return (
       <svg
         style={{

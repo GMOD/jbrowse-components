@@ -1,11 +1,12 @@
 import { Observable, merge } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
-import { IRegion as Region } from '../mst-types'
+import objectHash from 'object-hash'
 import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
+import { IRegion as Region } from '../mst-types'
 
 export interface BaseOptions {
   signal?: AbortSignal
@@ -33,6 +34,14 @@ export type AnyDataAdapter = BaseFeatureDataAdapter | BaseRefNameAliasAdapter
  * implement.
  */
 export abstract class BaseFeatureDataAdapter {
+  public id: string
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(args: any) {
+    this.id =
+      typeof jest === 'undefined' ? objectHash(args).slice(0, 5) : 'test'
+  }
+
   /**
    * Subclasses should override this method. Method signature here for reference.
    * @returns {Promise<string[]>} Array of reference sequence names used by the

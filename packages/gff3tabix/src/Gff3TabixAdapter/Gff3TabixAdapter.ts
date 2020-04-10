@@ -45,7 +45,7 @@ export default class extends BaseFeatureDataAdapter {
   protected dontRedispatch: string[]
 
   public constructor(config: Config) {
-    super()
+    super(config)
     const { gffGzLocation, index, dontRedispatch } = config
     const { location, index: indexType } = index
 
@@ -190,7 +190,7 @@ export default class extends BaseFeatureDataAdapter {
       (featureLoc, locIndex) =>
         new SimpleFeature({
           data: this.featureData(featureLoc),
-          id: `offset-${featureLoc.attributes._lineHash[0]}`,
+          id: `${this.id}-offset-${featureLoc.attributes._lineHash[0]}`,
         }),
     )
   }

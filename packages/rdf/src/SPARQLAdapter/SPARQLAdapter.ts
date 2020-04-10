@@ -62,7 +62,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
   private refNames: string[] | undefined
 
   public constructor(config: Instance<typeof MyConfigSchema>) {
-    super()
+    super(config)
     this.endpoint = readConfObject(config, 'endpoint').uri
     this.queryTemplate = readConfObject(config, 'queryTemplate')
     this.additionalQueryParams = readConfObject(config, 'additionalQueryParams')

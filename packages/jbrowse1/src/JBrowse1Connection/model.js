@@ -10,7 +10,7 @@ import configSchema from './configSchema'
 import { fetchJb1 } from './jb1ConfigLoad'
 import { convertTrackConfig } from './jb1ToJb2'
 
-export default function(pluginManager) {
+export default function (pluginManager) {
   return types.compose(
     'JBrowse1Connection',
     connectionModelFactory(pluginManager),

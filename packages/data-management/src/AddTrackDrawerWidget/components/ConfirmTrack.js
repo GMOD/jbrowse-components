@@ -1,7 +1,7 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import {
   guessAdapter,
-  guessSNPCoverageSubadapter,
+  guessSubadapter,
   guessTrackType,
   UNKNOWN,
   UNSUPPORTED,
@@ -139,10 +139,6 @@ function ConfirmTrack({
             <code>{trackAdapter.type}</code> with subadapter{' '}
             <code>{trackAdapter.subadapter.type}</code>. Please enter a track
             name and, if necessary, update the track type.
-            {/* Using adapter <code>{trackAdapter.type}</code> with subadapter{' '}
-              <code>{trackAdapter.subadapter.type}</code> and guessing track
-              type <code>{trackType}</code>. Please enter a track name and, if
-              necessary, update the track type. */}
           </Typography>
         ) : (
           <Typography className={classes.spacing}>
@@ -179,14 +175,19 @@ function ConfirmTrack({
           fullWidth
           onChange={event => {
             setTrackType(event.target.value)
-            // selecting SNPCoverageTrack sets up SNPCoverage adapter. If
-            // switching from SNP to non-SNP, restore old adapter
+            // selecting SNPCoverageTrack sets up SNPCoverage adapter.
+            // In future make generic for others with subadapter
+            // If switching from track w sub to non-sub, restore old adapter
             if (event.target.value === 'SNPCoverageTrack') {
               const adapter = trackData.uri
-                ? guessSNPCoverageSubadapter(trackData.uri, 'uri')
-                : guessSNPCoverageSubadapter(trackData.localPath, 'localPath')
+                ? guessSubadapter(trackData.uri, 'uri', 'SNPCoverageAdapter')
+                : guessSubadapter(
+                    trackData.localPath,
+                    'localPath',
+                    'SNPCoverageAdapter',
+                  )
               setTrackAdapter(adapter)
-            } else if (trackAdapter.type === 'SNPCoverageAdapter') {
+            } else if (trackAdapter.subadapter) {
               setTrackAdapter(trackAdapter.subadapter)
             }
           }}

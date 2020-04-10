@@ -41,7 +41,7 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   public constructor(config: Instance<typeof configSchema>) {
-    super()
+    super(config)
     this.bigwig = new BigWig({
       filehandle: openLocation(readConfObject(config, 'bigWigLocation')),
     })

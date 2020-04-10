@@ -8,6 +8,45 @@ import Lollipop from './Lollipop'
 import Stick from './Stick'
 
 class LollipopRendering extends Component {
+  static propTypes = {
+    layout: ReactPropTypes.shape({
+      getLayout: ReactPropTypes.func.isRequired,
+      add: ReactPropTypes.func.isRequired,
+      getTotalHeight: ReactPropTypes.func.isRequired,
+    }).isRequired,
+
+    region: CommonPropTypes.Region.isRequired,
+    bpPerPx: ReactPropTypes.number.isRequired,
+    features: ReactPropTypes.instanceOf(Map),
+    config: CommonPropTypes.ConfigSchema.isRequired,
+    trackModel: ReactPropTypes.shape({
+      /** id of the currently selected feature, if any */
+      selectedFeatureId: ReactPropTypes.string,
+    }),
+
+    onMouseDown: ReactPropTypes.func,
+    onMouseUp: ReactPropTypes.func,
+    onMouseEnter: ReactPropTypes.func,
+    onMouseLeave: ReactPropTypes.func,
+    onMouseOver: ReactPropTypes.func,
+    onMouseOut: ReactPropTypes.func,
+    onClick: ReactPropTypes.func,
+  }
+
+  static defaultProps = {
+    trackModel: {},
+
+    features: new Map(),
+
+    onMouseDown: undefined,
+    onMouseUp: undefined,
+    onMouseEnter: undefined,
+    onMouseLeave: undefined,
+    onMouseOver: undefined,
+    onMouseOut: undefined,
+    onClick: undefined,
+  }
+
   onMouseDown = event => {
     const { onMouseDown: handler } = this.props
     if (!handler) return undefined
@@ -51,10 +90,10 @@ class LollipopRendering extends Component {
   }
 
   layout(args) {
-    const { feature, bpPerPx, region, layout, horizontallyFlipped } = args
+    const { feature, bpPerPx, region, layout } = args
 
     const centerBp = Math.abs(feature.get('end') + feature.get('start')) / 2
-    const centerPx = bpToPx(centerBp, region, bpPerPx, horizontallyFlipped)
+    const centerPx = bpToPx(centerBp, region, bpPerPx)
     const radiusPx = readConfObject(args.config, 'radius', [feature])
 
     if (!radiusPx)
@@ -76,7 +115,6 @@ class LollipopRendering extends Component {
       region,
       bpPerPx,
       layout,
-      horizontallyFlipped,
       config,
       features,
       trackModel: { selectedFeatureId },
@@ -87,7 +125,6 @@ class LollipopRendering extends Component {
     for (const feature of features.values()) {
       this.layout({
         feature,
-        horizontallyFlipped,
         bpPerPx,
         region,
         config,
@@ -149,45 +186,4 @@ class LollipopRendering extends Component {
   }
 }
 
-LollipopRendering.propTypes = {
-  layout: ReactPropTypes.shape({
-    getLayout: ReactPropTypes.func.isRequired,
-    add: ReactPropTypes.func.isRequired,
-    getTotalHeight: ReactPropTypes.func.isRequired,
-  }).isRequired,
-
-  region: CommonPropTypes.Region.isRequired,
-  bpPerPx: ReactPropTypes.number.isRequired,
-  horizontallyFlipped: ReactPropTypes.bool,
-  features: ReactPropTypes.instanceOf(Map),
-  config: CommonPropTypes.ConfigSchema.isRequired,
-  trackModel: ReactPropTypes.shape({
-    /** id of the currently selected feature, if any */
-    selectedFeatureId: ReactPropTypes.string,
-  }),
-
-  onMouseDown: ReactPropTypes.func,
-  onMouseUp: ReactPropTypes.func,
-  onMouseEnter: ReactPropTypes.func,
-  onMouseLeave: ReactPropTypes.func,
-  onMouseOver: ReactPropTypes.func,
-  onMouseOut: ReactPropTypes.func,
-  onClick: ReactPropTypes.func,
-}
-
-LollipopRendering.defaultProps = {
-  horizontallyFlipped: false,
-
-  trackModel: {},
-
-  features: new Map(),
-
-  onMouseDown: undefined,
-  onMouseUp: undefined,
-  onMouseEnter: undefined,
-  onMouseLeave: undefined,
-  onMouseOver: undefined,
-  onMouseOut: undefined,
-  onClick: undefined,
-}
 export default observer(LollipopRendering)

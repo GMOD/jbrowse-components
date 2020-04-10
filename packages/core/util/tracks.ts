@@ -228,10 +228,14 @@ export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
   }
 }
 
-export function guessSNPCoverageSubadapter(fileName: string, protocol: string) {
+export function guessSubadapter(
+  fileName: string,
+  protocol: string,
+  mainAdapter: string,
+) {
   if (/\.bam$/i.test(fileName))
     return {
-      type: 'SNPCoverageAdapter',
+      type: mainAdapter,
       subadapter: {
         type: 'BamAdapter',
         bamLocation: { [protocol]: fileName },
@@ -240,7 +244,7 @@ export function guessSNPCoverageSubadapter(fileName: string, protocol: string) {
     }
   if (/\.bai$/i.test(fileName))
     return {
-      type: 'SNPCoverageAdapter',
+      type: mainAdapter,
       subadapter: {
         type: 'BamAdapter',
         bamLocation: { [protocol]: fileName.replace(/\.bai$/i, '') },
@@ -249,7 +253,7 @@ export function guessSNPCoverageSubadapter(fileName: string, protocol: string) {
     }
   if (/\.bam.csi$/i.test(fileName))
     return {
-      type: 'SNPCoverageAdapter',
+      type: mainAdapter,
       subadapter: {
         type: 'BamAdapter',
         bamLocation: { [protocol]: fileName.replace(/\.csi$/i, '') },
@@ -259,7 +263,7 @@ export function guessSNPCoverageSubadapter(fileName: string, protocol: string) {
 
   if (/\.cram$/i.test(fileName))
     return {
-      type: 'SNPCoverageAdapter',
+      type: mainAdapter,
       subadapter: {
         type: 'CramAdapter',
         cramLocation: { [protocol]: fileName },
@@ -268,7 +272,7 @@ export function guessSNPCoverageSubadapter(fileName: string, protocol: string) {
     }
   if (/\.crai$/i.test(fileName))
     return {
-      type: 'SNPCoverageAdapter',
+      type: mainAdapter,
       subadapter: {
         type: 'CramAdapter',
         cramLocation: { [protocol]: fileName.replace(/\.crai$/i, '') },

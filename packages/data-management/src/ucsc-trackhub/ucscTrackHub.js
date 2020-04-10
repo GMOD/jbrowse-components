@@ -69,10 +69,7 @@ function makeTrackConfig(track, categories, trackDbFileLocation, trackDb) {
   let baseTrackType = trackType.split(' ')[0]
   if (
     baseTrackType === 'bam' &&
-    track
-      .get('bigDataUrl')
-      .toLowerCase()
-      .endsWith('cram')
+    track.get('bigDataUrl').toLowerCase().endsWith('cram')
   )
     baseTrackType = 'cram'
   let bigDataLocation
@@ -101,7 +98,7 @@ function makeTrackConfig(track, categories, trackDbFileLocation, trackDb) {
           ? { localPath: track.get('bigDataIndex') }
           : { localPath: `${track.get('bigDataUrl')}.bai` }
       return {
-        type: 'AlignmentsTrack',
+        type: 'PileupTrack',
         name: track.get('shortLabel'),
         description: track.get('longLabel'),
         category: categories,
@@ -220,7 +217,7 @@ function makeTrackConfig(track, categories, trackDbFileLocation, trackDb) {
           ? { localPath: track.get('bigDataIndex') }
           : { localPath: `${track.get('bigDataUrl')}.crai` }
       return {
-        type: 'AlignmentsTrack',
+        type: 'PileupTrack',
         name: track.get('shortLabel'),
         description: track.get('longLabel'),
         category: categories,

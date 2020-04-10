@@ -40,6 +40,13 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   configuration: AnyConfigurationModel
   pluginManager: PluginManager
   rpcManager: any
+  addDrawerWidget(
+    typeName: string,
+    id: string,
+    initialState: Record<string, unknown>,
+    configuration?: { type: string },
+  ): void
+  showDrawerWidget(drawerWidget: unknown): void
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (

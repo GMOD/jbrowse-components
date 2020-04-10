@@ -29,14 +29,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   private samHeader: Header = {}
 
-  public constructor(
-    config: Instance<typeof MyConfigSchema>,
-    // bamLocation: IFileLocation
-    // index: { location: IFileLocation; indexType: string }
-    // chunkSizeLimit: number
-    // fetchSizeLimit: number
-  ) {
-    super()
+  public constructor(config: Instance<typeof MyConfigSchema>) {
+    super(config)
     const bamLocation = readConfObject(config, 'bamLocation')
     const location = readConfObject(config, ['index', 'location'])
     const indexType = readConfObject(config, ['index', 'indexType'])

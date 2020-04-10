@@ -5,14 +5,18 @@ import Plugin from '@gmod/jbrowse-core/Plugin'
 import { lazy } from 'react'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
+  configSchemaFactory as alignmentsTrackConfigSchemaFactory,
+  modelFactory as alignmentsTrackModelFactory,
+} from './AlignmentsTrack'
+import {
   configSchema as alignmentsFeatureDetailConfigSchema,
   ReactComponent as AlignmentsFeatureDetailReactComponent,
   stateModel as alignmentsFeatureDetailStateModel,
 } from './AlignmentsFeatureDetail'
 import {
-  configSchemaFactory as alignmentsTrackConfigSchemaFactory,
-  modelFactory as alignmentsTrackModelFactory,
-} from './AlignmentsTrack'
+  configSchemaFactory as pileupTrackConfigSchemaFactory,
+  modelFactory as pileupTrackModelFactory,
+} from './PileupTrack'
 import {
   configSchemaFactory as snpCoverageTrackConfigSchemaFactory,
   modelFactory as snpCoverageTrackModelFactory,
@@ -35,15 +39,14 @@ import CramAdapterF from './CramAdapter'
 export default class AlignmentsPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     pluginManager.addTrackType(() => {
-      const configSchema = alignmentsTrackConfigSchemaFactory(pluginManager)
+      const configSchema = pileupTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
-        name: 'AlignmentsTrack',
+        name: 'PileupTrack',
         compatibleView: 'LinearGenomeView',
         configSchema,
-        stateModel: alignmentsTrackModelFactory(pluginManager, configSchema),
+        stateModel: pileupTrackModelFactory(pluginManager, configSchema),
       })
     })
-
     pluginManager.addDrawerWidgetType(
       () =>
         new DrawerWidgetType({
@@ -61,6 +64,15 @@ export default class AlignmentsPlugin extends Plugin {
         compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: snpCoverageTrackModelFactory(configSchema),
+      })
+    })
+    pluginManager.addTrackType(() => {
+      const configSchema = alignmentsTrackConfigSchemaFactory(pluginManager)
+      return new TrackType({
+        name: 'AlignmentsTrack',
+        compatibleView: 'LinearGenomeView',
+        configSchema,
+        stateModel: alignmentsTrackModelFactory(pluginManager, configSchema),
       })
     })
     pluginManager.addAdapterType(

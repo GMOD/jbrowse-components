@@ -56,7 +56,16 @@ describe('HierarchicalTrackSelector drawer widget', () => {
       type: 'BasicTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
-    const firstView = session.addLinearGenomeViewOfAssembly('volMyt1')
+    const firstView = session.addView('LinearGenomeView', {
+      displayedRegions: [
+        {
+          assemblyName: 'volMyt1',
+          refName: 'ctgA',
+          start: 0,
+          end: 1000,
+        },
+      ],
+    })
     firstView.showTrack(session.tracks[0])
     firstView.showTrack(session.tracks[1])
     const model = firstView.activateTrackSelector()
@@ -102,7 +111,16 @@ describe('HierarchicalTrackSelector drawer widget', () => {
       type: 'BasicTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
-    const firstView = session.addLinearGenomeViewOfAssembly('volMyt1')
+    const firstView = session.addView('LinearGenomeView', {
+      displayedRegions: [
+        {
+          assemblyName: 'volMyt1',
+          refName: 'ctgA',
+          start: 0,
+          end: 1000,
+        },
+      ],
+    })
     firstView.showTrack(session.tracks[0])
     firstView.showTrack(session.tracks[1])
     firstView.tracks[0].configuration.category.set(['Foo Category'])

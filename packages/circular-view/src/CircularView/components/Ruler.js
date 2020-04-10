@@ -131,8 +131,9 @@ export default pluginManager => {
             className={classes.rulerLabel}
             textAnchor="end"
             dominantBaseline="middle"
-            transform={`translate(${textXY}) rotate(${radToDeg(radians) +
-              180})`}
+            transform={`translate(${textXY}) rotate(${
+              radToDeg(radians) + 180
+            })`}
           >
             {text}
             <title>{title || text}</title>

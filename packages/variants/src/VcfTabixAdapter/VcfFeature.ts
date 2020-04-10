@@ -220,12 +220,7 @@ export default class VCFFeature implements Feature {
       return ['SNV', this._makeDescriptionString('SNV', ref, alt)]
     }
     if (ref.length === alt.length)
-      if (
-        ref
-          .split('')
-          .reverse()
-          .join('') === alt
-      )
+      if (ref.split('').reverse().join('') === alt)
         return ['inversion', this._makeDescriptionString('inversion', ref, alt)]
       else
         return [

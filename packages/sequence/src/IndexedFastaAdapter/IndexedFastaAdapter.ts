@@ -11,7 +11,7 @@ export default class extends BaseFeatureDataAdapter {
   protected fasta: typeof IndexedFasta
 
   public constructor(config: AnyConfigurationModel) {
-    super()
+    super(config)
     const fastaLocation = readConfObject(config, 'fastaLocation')
     const faiLocation = readConfObject(config, 'faiLocation')
     if (!fastaLocation) {

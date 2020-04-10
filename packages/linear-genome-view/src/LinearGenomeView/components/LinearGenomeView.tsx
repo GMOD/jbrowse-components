@@ -1,40 +1,30 @@
-import { ResizeHandle } from '@gmod/jbrowse-core/ui'
-import {
-  generateLocString,
-  useDebouncedCallback,
-} from '@gmod/jbrowse-core/util'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { ResizeHandle, Menu } from '@gmod/jbrowse-core/ui'
+import { getSession, useDebouncedCallback } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
 // material ui things
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
-import Checkbox from '@material-ui/core/Checkbox'
 import Container from '@material-ui/core/Container'
-import FormControl from '@material-ui/core/FormControl'
-import FormLabel from '@material-ui/core/FormLabel'
-import FormGroup from '@material-ui/core/FormGroup'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Grid from '@material-ui/core/Grid'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputBase from '@material-ui/core/InputBase'
-import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
-import Select from '@material-ui/core/Select'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 
 // misc
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
-import { Instance, getRoot, isAlive } from 'mobx-state-tree'
+import { Instance, isAlive } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useState } from 'react'
 
 // locals
 import buttonStyles from './buttonStyles'
+import RefNameAutocomplete from './RefNameAutocomplete'
 import Rubberband from './Rubberband'
 import ScaleBar from './ScaleBar'
 import TrackRenderingContainer from './TrackRenderingContainer'
@@ -119,6 +109,14 @@ const useStyles = makeStyles(theme => ({
   importFormContainer: {
     marginBottom: theme.spacing(4),
   },
+  importFormEntry: {
+    minWidth: 180,
+  },
+  headerRefName: {
+    minWidth: 140,
+    margin: theme.spacing(0.5),
+    background: theme.palette.background.default,
+  },
   noTracksMessage: {
     gridArea: 'auto/1/auto/3',
     background: theme.palette.background.default,
@@ -198,10 +196,17 @@ const TrackContainer = observer(
 const LongMenu = observer(
   ({ model, className }: { model: LGV; className: string }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-    const open = Boolean(anchorEl)
 
     function handleClick(event: React.MouseEvent<HTMLElement>) {
       setAnchorEl(event.currentTarget)
+    }
+
+    const handleMenuItemClick = (
+      event: React.MouseEvent<HTMLLIElement, MouseEvent>,
+      callback: () => void,
+    ) => {
+      callback()
+      setAnchorEl(null)
     }
 
     function handleClose() {
@@ -221,41 +226,12 @@ const LongMenu = observer(
           <Icon>more_vert</Icon>
         </IconButton>
         <Menu
-          id="long-menu"
           anchorEl={anchorEl}
-          keepMounted
-          open={open}
+          open={Boolean(anchorEl)}
+          onMenuItemClick={handleMenuItemClick}
           onClose={handleClose}
-        >
-          {model.menuOptions.map(option => {
-            return option.isCheckbox ? (
-              <MenuItem key={option.key}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={option.checked}
-                      onChange={() => {
-                        option.callback()
-                        handleClose()
-                      }}
-                    />
-                  }
-                  label={option.title}
-                />
-              </MenuItem>
-            ) : (
-              <MenuItem
-                key={option.key}
-                onClick={() => {
-                  option.callback()
-                  handleClose()
-                }}
-              >
-                {option.title}
-              </MenuItem>
-            )
-          })}
-        </Menu>
+          menuOptions={model.menuOptions}
+        />
       </>
     )
   },
@@ -263,7 +239,7 @@ const LongMenu = observer(
 
 const TextFieldOrTypography = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
-  const name = model.displayName || model.displayRegionsFromAssemblyName
+  const name = model.displayName
   const [edit, setEdit] = useState(false)
   const [hover, setHover] = useState(false)
   return edit ? (
@@ -347,44 +323,38 @@ Search.propTypes = {
   error: ReactPropTypes.string, // eslint-disable-line react/require-default-props
 }
 
-const RefSeqDropdown = observer(
-  ({ model, onSubmit }: { model: LGV; onSubmit: (arg: string) => void }) => {
-    const tied = !!model.displayRegionsFromAssemblyName
-    return (
-      <Select
-        name="refseq"
-        value=""
-        onChange={event => {
-          if (event.target.value !== '') {
-            onSubmit(event.target.value as string)
-          }
-        }}
-      >
-        {model.displayedRegions.map((r: IRegion) => {
-          const l = generateLocString(r, tied)
-          return (
-            <MenuItem key={l} value={l}>
-              {l}
-            </MenuItem>
-          )
-        })}
-      </Select>
-    )
-  },
-)
-
 const Header = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
+
+  function setDisplayedRegions(region: IRegion | undefined) {
+    if (region) {
+      model.setDisplayedRegions([region])
+    }
+  }
+
   return (
     <div className={classes.headerBar}>
       {model.hideControls ? null : <Controls model={model} />}
       <TextFieldOrTypography model={model} />
       <div className={classes.spacer} />
 
-      <Search onSubmit={value => model.navToLocstring(value)} error="" />
-      <RefSeqDropdown
-        onSubmit={value => model.navToLocstring(value)}
+      <Search onSubmit={model.navToLocstring} error="" />
+      <RefNameAutocomplete
         model={model}
+        onSelect={setDisplayedRegions}
+        assemblyName={model.displayedRegions[0].assemblyName}
+        defaultRegionName={model.displayedRegions[0].refName}
+        TextFieldProps={{
+          variant: 'outlined',
+          margin: 'none',
+          className: classes.headerRefName,
+          InputProps: {
+            style: {
+              paddingTop: 2,
+              paddingBottom: 2,
+            },
+          },
+        }}
       />
 
       <ZoomControls model={model} />
@@ -419,30 +389,32 @@ const Controls = observer(({ model }: { model: LGV }) => {
   )
 })
 
-// note: as of writing, this is identifical (except with typescript) to circularview's copy
-// if modified, consider refactoring or updating circularview's copy
-// not extracted to a separate component just yet...
 const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
-  const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState('')
-  const { assemblies } = getRoot(model).jbrowse
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const assemblyChoices = assemblies.map((assembly: any) =>
-    readConfObject(assembly, 'name'),
-  )
-  function openButton() {
-    if (parseInt(selectedAssemblyIdx, 10) >= 0) {
-      const assemblyName = assemblyChoices[Number(selectedAssemblyIdx)]
-      if (
-        assemblyName &&
-        assemblyName !== model.displayRegionsFromAssemblyName
-      ) {
-        model.setDisplayedRegionsFromAssemblyName(assemblyName)
-        return
-      }
+  const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
+  const [selectedRegion, setSelectedRegion] = useState<IRegion | undefined>()
+  const [error, setError] = useState('')
+  const {
+    assemblyNames,
+  }: {
+    assemblyNames: string[]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } = getSession(model) as any
+  if (!error && !assemblyNames.length) {
+    setError('No configured assemblies')
+  }
+
+  function onAssemblyChange(
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) {
+    setSelectedAssemblyIdx(Number(event.target.value))
+  }
+
+  function onOpenClick() {
+    if (selectedRegion) {
+      model.setDisplayedRegions([selectedRegion])
+      model.setDisplayName(selectedRegion.assemblyName)
     }
-    model.setDisplayedRegions([])
-    model.setDisplayedRegionsFromAssemblyName(undefined)
   }
 
   return (
@@ -460,36 +432,51 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
         </div>
       )}
       <Container className={classes.importFormContainer}>
-        <Grid
-          style={{ width: '25rem', margin: '0 auto' }}
-          container
-          spacing={1}
-          direction="row"
-          alignItems="flex-start"
-        >
+        <Grid container spacing={1} justify="center" alignItems="center">
           <Grid item>
-            <FormControl component="fieldset">
-              <FormLabel component="legend">Select assembly to view</FormLabel>
-              <FormGroup>
-                <Select
-                  value={selectedAssemblyIdx}
-                  onChange={event => {
-                    setSelectedAssemblyIdx(String(event.target.value))
-                  }}
-                >
-                  {assemblyChoices.map((name: string, idx: number) => (
-                    <MenuItem key={name} value={idx}>
-                      {name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormGroup>
-            </FormControl>
+            <TextField
+              select
+              variant="outlined"
+              value={
+                assemblyNames[selectedAssemblyIdx] && !error
+                  ? selectedAssemblyIdx
+                  : ''
+              }
+              onChange={onAssemblyChange}
+              label="Assembly"
+              helperText={error || 'Select assembly to view'}
+              error={!!error}
+              disabled={!!error}
+              margin="normal"
+              className={classes.importFormEntry}
+            >
+              {assemblyNames.map((name, idx) => (
+                <MenuItem key={name} value={idx}>
+                  {name}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+          <Grid item>
+            <RefNameAutocomplete
+              model={model}
+              assemblyName={
+                error ? undefined : assemblyNames[selectedAssemblyIdx]
+              }
+              onSelect={setSelectedRegion}
+              TextFieldProps={{
+                margin: 'normal',
+                variant: 'outlined',
+                label: 'Sequence',
+                className: classes.importFormEntry,
+                helperText: 'Select sequence to view',
+              }}
+            />
           </Grid>
           <Grid item>
             <Button
-              disabled={selectedAssemblyIdx === undefined}
-              onClick={openButton}
+              disabled={!selectedRegion}
+              onClick={onOpenClick}
               variant="contained"
               color="primary"
             >
@@ -506,8 +493,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { tracks, controlsWidth, error } = model
   const classes = useStyles()
 
-  const initialized =
-    !!model.displayedRegions.length || !!model.displayRegionsFromAssemblyName
+  const initialized = !!model.displayedRegions.length
   const style = (initialized
     ? {
         display: 'grid',

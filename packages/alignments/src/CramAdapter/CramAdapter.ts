@@ -44,7 +44,7 @@ export default (pluginManager: PluginManager) => {
       config: AnyConfigurationModel,
       getSubAdapter: getSubAdapterType,
     ) {
-      super()
+      super(config)
 
       const cramLocation = readConfObject(config, 'cramLocation')
       const craiLocation = readConfObject(config, 'craiLocation')

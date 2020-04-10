@@ -30,7 +30,7 @@ describe('ScaleBar genome view component', () => {
       ],
     }) as any
     session.addAssemblyConf({
-      assemblyName: 'volMyt1',
+      name: 'volMyt1',
       sequence: {
         trackId: 'ref0',
         adapter: {

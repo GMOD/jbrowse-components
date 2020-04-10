@@ -1,7 +1,6 @@
 import { assembleLocString } from '@gmod/jbrowse-core/util'
 import { Instance } from 'mobx-state-tree'
 import {
-  BaseBlock,
   BlockSet,
   ContentBlock,
   ElidedBlock,
@@ -14,46 +13,8 @@ const interRegionPaddingWidth = 2
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
-export function calculateBlocksReversed(self: LGV, extra = 0) {
-  return new BlockSet(
-    calculateBlocksForward(self, extra).map<BaseBlock>(
-      (fwdBlock: BaseBlock) => {
-        const { parentRegion } = fwdBlock
-
-        const args = {
-          ...fwdBlock,
-        }
-        if (parentRegion) {
-          args.start = parentRegion.start + parentRegion.end - fwdBlock.end
-          args.end = parentRegion.start + parentRegion.end - fwdBlock.start
-        }
-        let block
-
-        if (fwdBlock instanceof ElidedBlock) {
-          block = new ElidedBlock(args)
-          block.key = assembleLocString(block)
-        } else if (fwdBlock instanceof InterRegionPaddingBlock) {
-          block = new InterRegionPaddingBlock(args)
-        } else {
-          block = new ContentBlock(args)
-          block.key = assembleLocString(block)
-        }
-
-        block.key += '-reversed'
-        return block
-      },
-    ),
-  )
-}
-
-export function calculateBlocksForward(self: LGV, extra = 0) {
-  const {
-    offsetPx,
-    bpPerPx,
-    width,
-    displayedRegionsInOrder,
-    minimumBlockWidth,
-  } = self
+export default function calculateBlocks(self: LGV, extra = 0) {
+  const { offsetPx, bpPerPx, width, displayedRegions, minimumBlockWidth } = self
   if (!width)
     throw new Error('view has no width, cannot calculate displayed blocks')
   const windowLeftBp = offsetPx * bpPerPx
@@ -63,12 +24,17 @@ export function calculateBlocksForward(self: LGV, extra = 0) {
   // for each displayed region
   let regionBpOffset = 0
   const blocks = new BlockSet()
-  displayedRegionsInOrder.forEach((region, regionNumber) => {
+  displayedRegions.forEach((region, regionNumber) => {
     // find the block numbers of the left and right window sides,
     // clamp those to the region range, and then make blocks for that range
-    const regionBlockCount = Math.ceil(
-      (region.end - region.start) / blockSizeBp,
-    )
+    const {
+      assemblyName,
+      refName,
+      start: regionStart,
+      end: regionEnd,
+      reversed,
+    } = region
+    const regionBlockCount = Math.ceil((regionEnd - regionStart) / blockSizeBp)
 
     let windowRightBlockNum =
       Math.floor((windowRightBp - regionBpOffset) / blockSizeBp) + extra
@@ -79,42 +45,56 @@ export function calculateBlocksForward(self: LGV, extra = 0) {
       Math.floor((windowLeftBp - regionBpOffset) / blockSizeBp) - extra
     if (windowLeftBlockNum < 0) windowLeftBlockNum = 0
 
+    const regionWidthPx = (regionEnd - regionStart) / bpPerPx
+
     for (
       let blockNum = windowLeftBlockNum;
       blockNum <= windowRightBlockNum;
       blockNum += 1
     ) {
-      const start = region.start + blockNum * blockSizeBp
-      const end = Math.min(
-        region.end,
-        region.start + (blockNum + 1) * blockSizeBp,
-      )
-      const widthPx = Math.abs(end - start) / bpPerPx
-      const regionWidthPx = Math.abs(region.end - region.start) / bpPerPx
+      let start
+      let end
+      let isLeftEndOfDisplayedRegion
+      let isRightEndOfDisplayedRegion
+      if (reversed) {
+        start = Math.max(regionStart, regionEnd - (blockNum + 1) * blockSizeBp)
+        end = regionEnd - blockNum * blockSizeBp
+        isLeftEndOfDisplayedRegion = end === regionEnd
+        isRightEndOfDisplayedRegion = start === regionStart
+      } else {
+        start = regionStart + blockNum * blockSizeBp
+        end = Math.min(regionEnd, regionStart + (blockNum + 1) * blockSizeBp)
+        isLeftEndOfDisplayedRegion = start === regionStart
+        isRightEndOfDisplayedRegion = end === regionEnd
+      }
+      const widthPx = (end - start) / bpPerPx
       const blockData = {
-        assemblyName: region.assemblyName,
-        refName: region.refName,
+        assemblyName,
+        refName,
         start,
         end,
+        reversed,
         offsetPx: (regionBpOffset + blockNum * blockSizeBp) / bpPerPx,
         parentRegion: region,
         widthPx,
-        isLeftEndOfDisplayedRegion: start === region.start,
-        isRightEndOfDisplayedRegion: end === region.end,
+        isLeftEndOfDisplayedRegion,
+        isRightEndOfDisplayedRegion,
         key: '',
       }
-      blockData.key = assembleLocString(blockData)
+      blockData.key = `${assembleLocString(blockData)}${
+        reversed ? '-reversed' : ''
+      }`
       if (regionWidthPx < minimumBlockWidth) {
         blocks.push(new ElidedBlock(blockData))
       } else {
         blocks.push(new ContentBlock(blockData))
       }
 
-      // insert a inter-region padding block if we are crossing a displayed
+      // insert a inter-region padding block if we are crossing a displayed region
       if (
         regionWidthPx >= minimumBlockWidth &&
         blockData.isRightEndOfDisplayedRegion &&
-        regionNumber < displayedRegionsInOrder.length - 1
+        regionNumber < displayedRegions.length - 1
       ) {
         blocks.push(
           new InterRegionPaddingBlock({
@@ -125,20 +105,8 @@ export function calculateBlocksForward(self: LGV, extra = 0) {
         )
       }
     }
-
     regionBpOffset += interRegionPaddingWidth * bpPerPx
-    regionBpOffset += region.end - region.start
+    regionBpOffset += regionEnd - regionStart
   })
-
   return blocks
-}
-
-export default function calculateBlocks(
-  view: LGV,
-  reversed: boolean,
-  extra = 0,
-) {
-  return reversed
-    ? calculateBlocksReversed(view, extra)
-    : calculateBlocksForward(view, extra)
 }

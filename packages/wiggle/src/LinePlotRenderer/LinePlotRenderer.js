@@ -5,15 +5,7 @@ import WiggleBaseRenderer from '../WiggleBaseRenderer'
 
 export default class extends WiggleBaseRenderer {
   draw(ctx, props) {
-    const {
-      features,
-      region,
-      bpPerPx,
-      scaleOpts,
-      height,
-      config,
-      horizontallyFlipped,
-    } = props
+    const { features, region, bpPerPx, scaleOpts, height, config } = props
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')
@@ -32,12 +24,7 @@ export default class extends WiggleBaseRenderer {
     let lastVal
 
     for (const feature of features.values()) {
-      const [leftPx, rightPx] = featureSpanPx(
-        feature,
-        region,
-        bpPerPx,
-        horizontallyFlipped,
-      )
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const score = feature.get('score')
       const lowClipping = score < niceMin
       const highClipping = score > niceMax
@@ -47,7 +34,7 @@ export default class extends WiggleBaseRenderer {
 
       ctx.strokeStyle = c
       ctx.beginPath()
-      if (!horizontallyFlipped) {
+      if (!region.reversed) {
         ctx.moveTo(
           leftPx,
           toY(typeof lastVal !== 'undefined' ? lastVal : score),

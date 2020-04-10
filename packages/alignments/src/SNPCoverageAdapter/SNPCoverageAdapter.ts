@@ -87,7 +87,7 @@ export default (pluginManager: PluginManager) => {
       config: Instance<typeof MyConfigSchema>,
       getSubAdapter: getSubAdapterType,
     ) {
-      super()
+      super(config)
 
       const subadapter = getSubAdapter(
         config.subadapter.type,

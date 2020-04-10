@@ -54,7 +54,7 @@ const RenderedScaleBar = observer(
                     start={block.start}
                     end={block.end}
                     bpPerPx={model.bpPerPx}
-                    flipped={model.horizontallyFlipped}
+                    reversed={block.reversed}
                   />
                 </svg>
               </Block>

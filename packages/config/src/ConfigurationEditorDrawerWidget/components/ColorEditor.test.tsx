@@ -1,13 +1,14 @@
 import React from 'react'
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { render, fireEvent } from '@testing-library/react'
 
-import { ColorPicker } from './ColorEditor'
+import { ColorSlot } from './ColorEditor'
 
 describe('ColorPicker widget', () => {
   it('can change value via the text field', () => {
     const myfn = jest.fn()
     const { getByDisplayValue } = render(
-      <ColorPicker value="green" onChange={myfn} />,
+      <ColorSlot value="green" onChange={myfn} />,
     )
     const ret = getByDisplayValue('green')
     fireEvent.change(ret, { target: { value: 'red' } })

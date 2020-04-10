@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 const useStyles = makeStyles({
   horizontalHandle: {
@@ -21,7 +21,7 @@ const useStyles = makeStyles({
 })
 
 interface ResizeHandleProps {
-  onDrag: Function
+  onDrag: (arg: number) => number
   vertical?: boolean
   flexbox?: boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,7 +35,7 @@ function ResizeHandle({
   ...props
 }: ResizeHandleProps) {
   const [mouseDragging, setMouseDragging] = useState(false)
-  const prevPos: React.MutableRefObject<number | undefined> = useRef()
+  const [prevPos, setPrevPos] = useState(0)
   const classes = useStyles()
 
   useEffect(() => {
@@ -44,15 +44,14 @@ function ResizeHandle({
     function mouseMove(event: MouseEvent) {
       event.preventDefault()
       const pos = event[vertical ? 'clientX' : 'clientY']
-      const distance = prevPos.current && pos - prevPos.current
+      const distance = pos - prevPos
       if (distance) {
         const actualDistance = onDrag(distance)
-        prevPos.current += actualDistance
+        setPrevPos(prevState => prevState + actualDistance)
       }
     }
 
     function mouseUp() {
-      prevPos.current = undefined
       setMouseDragging(false)
     }
 
@@ -65,12 +64,12 @@ function ResizeHandle({
       }
     }
     return cleanup
-  }, [mouseDragging, onDrag, vertical])
+  }, [mouseDragging, onDrag, prevPos, vertical])
 
   function mouseDown(event: React.MouseEvent) {
     event.preventDefault()
     const pos = event[vertical ? 'clientX' : 'clientY']
-    prevPos.current = pos
+    setPrevPos(pos)
     setMouseDragging(true)
   }
 
@@ -80,10 +79,16 @@ function ResizeHandle({
 
   let className
   if (flexbox) {
-    if (vertical) className = classes.flexbox_verticalHandle
-    else className = classes.flexbox_horizontalHandle
-  } else if (vertical) className = classes.verticalHandle
-  else className = classes.horizontalHandle
+    if (vertical) {
+      className = classes.flexbox_verticalHandle
+    } else {
+      className = classes.flexbox_horizontalHandle
+    }
+  } else if (vertical) {
+    className = classes.verticalHandle
+  } else {
+    className = classes.horizontalHandle
+  }
 
   return (
     <div

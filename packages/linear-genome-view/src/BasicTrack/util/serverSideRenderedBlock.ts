@@ -148,10 +148,15 @@ const blockState = types
         const { rpcManager } = getSession(view)
         const { rendererType } = track
         const { renderArgs } = renderBlockData(cast(self))
-        rendererType.freeResourcesInClient(
-          rpcManager,
-          JSON.parse(JSON.stringify(renderArgs)),
-        )
+        rendererType
+          .freeResourcesInClient(
+            rpcManager,
+            JSON.parse(JSON.stringify(renderArgs)),
+          )
+          .catch((e: Error) => {
+            // just console.error if it's something while it's being destroyed
+            console.warn('Error while destroying block', e)
+          })
       },
     }
   })
@@ -177,8 +182,9 @@ function renderBlockData(self: Instance<BlockStateModel>) {
         if (trackAssemblyAliases.includes(self.region.assemblyName))
           matchFound = true
       })
-      if (!matchFound)
+      if (!matchFound) {
         cannotBeRenderedReason = `region assembly (${self.region.assemblyName}) does not match track assemblies (${assemblyNames})`
+      }
     }
     if (!cannotBeRenderedReason)
       cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
@@ -196,7 +202,13 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
     }
     const adapterConfig = getConf(track, 'adapter')
-    const adapterConfigId = jsonStableStringify(adapterConfig)
+    // Only subtracks will have parent tracks with configs
+    // They use parent's adapter config for matching sessionId
+    const parentTrack = getParent(track)
+    const adapterConfigId = parentTrack.configuration
+      ? jsonStableStringify(getConf(parentTrack, 'adapter'))
+      : jsonStableStringify(adapterConfig)
+
     return {
       rendererType,
       rpcManager,

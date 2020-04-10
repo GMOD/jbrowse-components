@@ -11,15 +11,16 @@ import { types } from 'mobx-state-tree'
 const rendererTypes = new Map([
   ['pileup', 'PileupRenderer'],
   ['svg', 'SvgFeatureRenderer'],
+  ['snpcoverage', 'SNPCoverageRenderer'],
 ])
 
 export default (pluginManager, configSchema) =>
   types.compose(
-    'AlignmentsTrack',
+    'PileupTrack',
     blockBasedTrackModel,
     types
       .model({
-        type: types.literal('AlignmentsTrack'),
+        type: types.literal('PileupTrack'),
         configuration: ConfigurationReference(configSchema),
       })
       .actions(self => ({

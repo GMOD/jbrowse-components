@@ -14,6 +14,7 @@
     "abortable-promise-cache": "^1.0.1",
     "color": "^3.1.1",
     "d3-scale": "^3.0.0",
+    "json-stable-stringify": "^1.0.1",
     "react-d3-axis": "^0.1.2"
   },
   "peerDependencies": {

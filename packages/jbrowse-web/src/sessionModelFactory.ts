@@ -89,6 +89,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       get assemblies() {
         return getParent(self).jbrowse.assemblies
       },
+      get assemblyNames() {
+        return getParent(self).jbrowse.assemblyNames
+      },
       get tracks() {
         return getParent(self).jbrowse.tracks
       },
@@ -154,55 +157,18 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             })
           }),
         )
-
-        // views with have displayRegionsFromAssemblyName will have their
-        // displayed regions set to the refs in an assembly
-        addDisposer(
-          self,
-          autorun(() => {
-            self.views.forEach(view => {
-              const assemblyName = view.displayRegionsFromAssemblyName
-              if (
-                assemblyName &&
-                self.assemblyData.get(assemblyName) &&
-                self.assemblyData.get(assemblyName).sequence
-              ) {
-                this.getRegionsForAssembly(assemblyName, self.assemblyData)
-                  .then((displayedRegions: any) => {
-                    // remember nothing inside here is tracked by the autorun
-                    if (isAlive(self)) {
-                      getParent(self).history.withoutUndo(() => {
-                        if (
-                          JSON.stringify(view.displayedRegions) !==
-                          JSON.stringify(displayedRegions)
-                        )
-                          view.setDisplayedRegions(displayedRegions, true)
-                      })
-                      view.setError && view.setError(undefined)
-                    }
-                  })
-                  .catch((error: Error) => {
-                    console.error(error)
-                    if (isAlive(self)) {
-                      view.setError && view.setError(error)
-                    }
-                  })
-              }
-            })
-          }),
-        )
       },
 
       setSnackbarMessage(str: string | undefined) {
         self.snackbarMessage = str
       },
 
-      getRegionsForAssembly(
+      getRegionsForAssemblyName(
         assemblyName: string,
-        assemblyData: any,
         opts: { signal?: AbortSignal } = {},
       ) {
-        const assembly = assemblyData.get(assemblyName)
+        if (!assemblyName) throw new TypeError('assemblyName is required')
+        const assembly = self.assemblyData.get(assemblyName)
         if (assembly) {
           const adapterConfig = readConfObject(assembly.sequence, 'adapter')
           const adapterConfigId = jsonStableStringify(adapterConfig)
@@ -227,24 +193,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
               )
               return adapterRegionsWithAssembly
             })
-        }
-        return Promise.resolve(undefined)
-      },
-
-      getRegionsForAssemblyName(
-        assemblyName: string,
-        opts: { signal?: AbortSignal } = {},
-      ) {
-        if (
-          assemblyName &&
-          self.assemblyData.get(assemblyName) &&
-          self.assemblyData.get(assemblyName).sequence
-        ) {
-          return this.getRegionsForAssembly(
-            assemblyName,
-            self.assemblyData,
-            opts,
-          )
         }
         return Promise.resolve(undefined)
       },
@@ -424,20 +372,12 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       addViewFromAnotherView(
-        viewType: any,
+        viewType: string,
         otherView: any,
-        initialState: {
-          displayedRegions?: IRegion[]
-          displayRegionsFromAssemblyName?: boolean
-        } = {},
+        initialState: { displayedRegions?: IRegion[] } = {},
       ) {
         const state = { ...initialState }
-        if (otherView.displayRegionsFromAssemblyName) {
-          state.displayRegionsFromAssemblyName =
-            otherView.displayRegionsFromAssemblyName
-        } else {
-          state.displayedRegions = otherView.displayedRegions
-        }
+        state.displayedRegions = getSnapshot(otherView.displayedRegions)
         return this.addView(viewType, state)
       },
 

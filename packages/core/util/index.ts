@@ -37,10 +37,7 @@ export function toUrlSafeB64(str: string): string {
   const encoded = fromByteArray(deflated)
   const pos = encoded.indexOf('=')
   return pos > 0
-    ? encoded
-        .slice(0, pos)
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
+    ? encoded.slice(0, pos).replace(/\+/g, '-').replace(/\//g, '_')
     : encoded.replace(/\+/g, '-').replace(/\//g, '_')
 }
 
@@ -285,16 +282,13 @@ function roundToNearestPointOne(num: number): number {
  * @param {number} bp
  * @param {IRegion} region
  * @param {number} bpPerPx
- * @param {boolean} [flipped] whether the current region
- *  is displayed flipped horizontally.  default false.
  */
 export function bpToPx(
   bp: number,
-  region: { start: number; end: number },
+  region: { start: number; end: number; reversed?: boolean },
   bpPerPx: number,
-  flipped = false,
 ): number {
-  if (flipped) {
+  if (region.reversed) {
     return roundToNearestPointOne((region.end - bp) / bpPerPx)
   }
   return roundToNearestPointOne((bp - region.start) / bpPerPx)
@@ -329,29 +323,21 @@ export function cartesianToPolar(x: number, y: number): [number, number] {
 
 export function featureSpanPx(
   feature: Feature,
-  region: { start: number; end: number },
+  region: { start: number; end: number; reversed?: boolean },
   bpPerPx: number,
-  flipped = false,
 ): [number, number] {
-  return bpSpanPx(
-    feature.get('start'),
-    feature.get('end'),
-    region,
-    bpPerPx,
-    flipped,
-  )
+  return bpSpanPx(feature.get('start'), feature.get('end'), region, bpPerPx)
 }
 
 export function bpSpanPx(
   leftBp: number,
   rightBp: number,
-  region: { start: number; end: number },
+  region: { start: number; end: number; reversed?: boolean },
   bpPerPx: number,
-  flipped = false,
 ): [number, number] {
-  const start = bpToPx(leftBp, region, bpPerPx, flipped)
-  const end = bpToPx(rightBp, region, bpPerPx, flipped)
-  return flipped ? [end, start] : [start, end]
+  const start = bpToPx(leftBp, region, bpPerPx)
+  const end = bpToPx(rightBp, region, bpPerPx)
+  return region.reversed ? [end, start] : [start, end]
 }
 
 export const objectFromEntries = Object.fromEntries.bind(Object)
@@ -373,12 +359,8 @@ export function iterMap<T, U>(
 
 export function generateLocString(
   r: IRegion,
-  tied: boolean,
   includeAssemblyName = true,
 ): string {
-  if (tied) {
-    return r.refName
-  }
   let s = ''
   if (includeAssemblyName && r.assemblyName) {
     s = `${r.assemblyName}:`
@@ -466,4 +448,27 @@ export function mergeConfigs(A: Config, B: Config) {
   if (B.defaultSession) merged.defaultSession = B.defaultSession
   else if (A.defaultSession) merged.defaultSession = A.defaultSession
   return merged
+}
+
+// https://stackoverflow.com/a/53187807
+/**
+ * Returns the index of the last element in the array where predicate is true,
+ * and -1 otherwise.
+ * @param array The source array to search in
+ * @param predicate find calls predicate once for each element of the array, in
+ * descending order, until it finds one where predicate returns true. If such an
+ * element is found, findLastIndex immediately returns that element index.
+ * Otherwise, findLastIndex returns -1.
+ */
+export function findLastIndex<T>(
+  array: Array<T>,
+  predicate: (value: T, index: number, obj: T[]) => boolean,
+): number {
+  let l = array.length
+  while ((l -= 1)) {
+    if (predicate(array[l], l, array)) {
+      return l
+    }
+  }
+  return -1
 }

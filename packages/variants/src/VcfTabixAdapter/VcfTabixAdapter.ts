@@ -28,7 +28,7 @@ export default class extends BaseFeatureDataAdapter {
   protected parser: any
 
   public constructor(config: Instance<typeof MyConfigSchema>) {
-    super()
+    super(config)
     const vcfGzLocation = readConfObject(config, 'vcfGzLocation')
     const location = readConfObject(config, ['index', 'location'])
     const indexType = readConfObject(config, ['index', 'indexType'])
@@ -65,13 +65,13 @@ export default class extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const parser = await this.parser
       await this.vcf.getLines(query.refName, query.start, query.end, {
-        lineCallback(line: string, fileOffset: number) {
+        lineCallback: (line: string, fileOffset: number) => {
           const variant = parser.parseLine(line)
 
           const feature = new VcfFeature({
             variant,
             parser,
-            id: `vcf-${fileOffset}`,
+            id: `${this.id}-vcf-${fileOffset}`,
           }) as Feature
           observer.next(feature)
         },

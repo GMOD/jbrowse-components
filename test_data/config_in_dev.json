@@ -202,30 +202,6 @@
       }
     },
     {
-      "type": "SNPCoverageTrack",
-      "trackId": "nanopore_targetted_snpcoverage_0.1",
-      "name": "Nanopore amplicon SNPCoverage 0.1x (chr7:55,000,000-56,000,000)",
-      "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "CramAdapter",
-          "cramLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram"
-          },
-          "craiLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram.crai"
-          }
-        }
-      }
-    },
-    {
       "type": "AlignmentsTrack",
       "trackId": "nanopore_targetted_alignments",
       "name": "Nanopore amplicon (chr7:55,000,000-56,000,000) [causes out-of-memory]",
@@ -243,30 +219,6 @@
         },
         "craiLocation": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.cram.crai"
-        }
-      }
-    },
-    {
-      "type": "SNPCoverageTrack",
-      "trackId": "nanopore_targetted_snpcoverage",
-      "name": "Nanopore amplicon SNPCoverage (chr7:55,000,000-56,000,000) [causes out-of-memory]",
-      "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "CramAdapter",
-          "cramLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.cram"
-          },
-          "craiLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.cram.crai"
-          }
         }
       }
     },
@@ -293,31 +245,6 @@
       }
     },
     {
-      "type": "SNPCoverageTrack",
-      "trackId": "deep_hg19_bam_snpcoverage",
-      "name": "Deep sequence chr17:41195312..41276764 (SNPCoverage)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam.bai"
-            }
-          }
-        }
-      }
-    },
-    {
       "type": "AlignmentsTrack",
       "trackId": "amplicon_alignments",
       "name": "Amplicon alignments (chr3:178,916,000-178,918,000)",
@@ -336,32 +263,6 @@
         "index": {
           "location": {
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam.bai"
-          }
-        }
-      }
-    },
-    {
-      "type": "SNPCoverageTrack",
-      "trackId": "amplicon_snpcoverage",
-      "name": "Amplicon SNPCoverage (chr3:178,916,000-178,918,000)",
-      "description": "Source https://github.com/umich-brcf-bioinf/Connor/tree/master/examples",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam.bai"
-            }
           }
         }
       }
@@ -415,31 +316,6 @@
         },
         "SvgFeatureRenderer": {
           "type": "SvgFeatureRenderer"
-        }
-      }
-    },
-    {
-      "type": "SNPCoverageTrack",
-      "trackId": "ngmlr_splitters_snp",
-      "name": "SKBR3 pacbio (NGMLR) splitters only (SNPCoverage)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "SKBR3"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.splitters.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.splitters.bam.bai"
-            }
-          }
         }
       }
     },
@@ -704,31 +580,6 @@
         },
         "SvgFeatureRenderer": {
           "type": "SvgFeatureRenderer"
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "nanopore_ultralong_snpcoverage",
-      "name": "HG002 Nanopore ultralong (BAM SNPCoverage)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.bai"
-            }
-          }
         }
       }
     },
@@ -1115,29 +966,6 @@
     },
     {
       "type": "AlignmentsTrack",
-      "trackId": "hg002_cram_snpcoverage",
-      "name": "HG002 CRAM nanopore+whatshap",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "CramAdapter",
-          "cramLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram"
-          },
-          "craiLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.crai"
-          }
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
       "trackId": "hg002_bai",
       "name": "HG002 BAM nanopore+whatshap",
       "assemblyNames": [
@@ -1154,31 +982,6 @@
         "index": {
           "location": {
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam.bai"
-          }
-        }
-      }
-    },
-    {
-      "type": "SNPCoverageTrack",
-      "trackId": "hg002_bai_whatshap_snpcoverage",
-      "name": "HG002 BAM nanopore+whatshap (SNPCoverage)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam.bai"
-            }
           }
         }
       }
@@ -1680,6 +1483,42 @@
         },
         "SvgFeatureRenderer": {
           "type": "SvgFeatureRenderer"
+        },
+        "SNPCoverageRenderer": {
+          "type": "SNPCoverageRenderer"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_bam_new_config",
+      "name": "volvox-combo new config",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "category": [
+        "Combo"
+      ],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "test_data/volvox-sorted.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/volvox-sorted.bam.bai"
+          }
+        }
+      },
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer"
+        },
+        "SNPCoverageRenderer": {
+          "type": "SNPCoverageRenderer"
         }
       }
     },
@@ -1727,6 +1566,32 @@
         "type": "BigBedAdapter",
         "bigBedLocation": {
           "uri": "test_data/volvox.bb"
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "bedtabix_genes",
+      "name": "BedTabix genes",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "category": [
+        "Miscellaneous"
+      ],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "test_data/volvox-bed12.bed.gz"
+        },
+        "index": {
+          "type": "TBI",
+          "location": {
+            "uri": "test_data/volvox-bed12.bed.gz.tbi"
+          }
         }
       },
       "renderer": {
@@ -2073,54 +1938,6 @@
         },
         "LinePlotRenderer": {
           "type": "LinePlotRenderer"
-        }
-      }
-    },
-    {
-      "type": "SNPCoverageTrack",
-      "trackId": "volvox-short-reads-snp-bam",
-      "name": "volvox-SNP (bam)",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "BamAdapter",
-          "bamLocation": {
-            "uri": "test_data/volvox-sorted.bam"
-          },
-          "index": {
-            "location": {
-              "uri": "test_data/volvox-sorted.bam.bai"
-            }
-          }
-        }
-      }
-    },
-    {
-      "type": "SNPCoverageTrack",
-      "trackId": "volvox-short-reads-snp-cram",
-      "name": "volvox-SNP (cram)",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
-      "adapter": {
-        "type": "SNPCoverageAdapter",
-        "subadapter": {
-          "type": "CramAdapter",
-          "cramLocation": {
-            "uri": "test_data/volvox-sorted.cram"
-          },
-          "craiLocation": {
-            "uri": "test_data/volvox-sorted.cram.crai"
-          }
         }
       }
     }

@@ -36,7 +36,7 @@ export function chooseGlyphComponent(feature: Feature): Glyph {
 interface BaseLayOutArgs {
   layout: SceneGraph
   bpPerPx: number
-  horizontallyFlipped: boolean
+  reversed: boolean
   config: AnyConfigurationModel
 }
 
@@ -52,7 +52,7 @@ export function layOut({
   layout,
   feature,
   bpPerPx,
-  horizontallyFlipped,
+  reversed,
   config,
 }: FeatureLayOutArgs): SceneGraph {
   const displayMode = readConfObject(config, 'displayMode')
@@ -60,7 +60,7 @@ export function layOut({
     layout,
     feature,
     bpPerPx,
-    horizontallyFlipped,
+    reversed,
     config,
   })
   if (displayMode !== 'reducedRepresentation') {
@@ -68,7 +68,7 @@ export function layOut({
       layout: subLayout,
       subfeatures: feature.get('subfeatures') || [],
       bpPerPx,
-      horizontallyFlipped,
+      reversed,
       config,
     })
   }
@@ -76,7 +76,7 @@ export function layOut({
 }
 
 export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
-  const { layout, feature, bpPerPx, horizontallyFlipped, config } = args
+  const { layout, feature, bpPerPx, reversed, config } = args
   const displayMode = readConfObject(config, 'displayMode')
   const GlyphComponent =
     displayMode === 'reducedRepresentation'
@@ -85,7 +85,7 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
   const parentFeature = feature.parent()
   let x = 0
   if (parentFeature)
-    x = horizontallyFlipped
+    x = reversed
       ? (parentFeature.get('end') - feature.get('end')) / bpPerPx
       : (feature.get('start') - parentFeature.get('start')) / bpPerPx
   const height = readConfObject(config, 'height', [feature])
@@ -104,20 +104,14 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
 }
 
 export function layOutSubfeatures(args: SubfeatureLayOutArgs): void {
-  const {
-    layout: subLayout,
-    subfeatures,
-    bpPerPx,
-    horizontallyFlipped,
-    config,
-  } = args
+  const { layout: subLayout, subfeatures, bpPerPx, reversed, config } = args
   subfeatures.forEach((subfeature: Feature) => {
     const SubfeatureGlyphComponent = chooseGlyphComponent(subfeature)
     ;(SubfeatureGlyphComponent.layOut || layOut)({
       layout: subLayout,
       feature: subfeature,
       bpPerPx,
-      horizontallyFlipped,
+      reversed,
       config,
     })
   })

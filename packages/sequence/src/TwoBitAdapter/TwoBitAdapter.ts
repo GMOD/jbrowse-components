@@ -14,7 +14,7 @@ export default class TwoBitAdapter extends BaseFeatureDataAdapter {
   private twobit: any
 
   constructor(config: Instance<typeof configSchema>) {
-    super()
+    super(config)
     const twoBitOpts = {
       filehandle: openLocation(readConfObject(config, 'twoBitLocation')),
     }

@@ -1,564 +1,564 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`can render a single region with Pileup + BamAdapter 1`] = `"<div class=\\"PileupRendering\\" style=\\"position:relative;width:800px;height:216px\\"><canvas data-testid=\\"prerendered_canvas\\" width=\\"800\\" height=\\"216\\" style=\\"width:800px;height:216px;position:absolute;left:0;top:0\\"></canvas><canvas width=\\"800\\" height=\\"216\\" style=\\"position:absolute;left:0;top:0\\" class=\\"highlightOverlayCanvas\\"></canvas></div>"`;
+exports[`can render a single region with Pileup + BamAdapter 1`] = `"<div class=\\"PileupRendering\\" style=\\"position:relative;width:800px;height:216px\\"><canvas data-testid=\\"prerendered_canvas_PileupRenderer\\" width=\\"800\\" height=\\"216\\" style=\\"width:800px;height:216px;position:absolute;left:0;top:0\\"></canvas><canvas width=\\"800\\" height=\\"216\\" style=\\"position:absolute;left:0;top:0\\" class=\\"highlightOverlayCanvas\\"></canvas></div>"`;
 
 exports[`can render a single region with Pileup + BamAdapter 2`] = `
 Object {
   "maxHeightReached": false,
   "rectangles": Object {
-    "2501248": Array [
+    "test-2501248": Array [
       2,
       0,
       102,
       7,
     ],
-    "2501501": Array [
+    "test-2501501": Array [
       7,
       9,
       107,
       16,
     ],
-    "2501764": Array [
+    "test-2501764": Array [
       15,
       18,
       115,
       25,
     ],
-    "2502026": Array [
+    "test-2502026": Array [
       16,
       27,
       116,
       34,
     ],
-    "2502287": Array [
+    "test-2502287": Array [
       17,
       36,
       117,
       43,
     ],
-    "2502547": Array [
+    "test-2502547": Array [
       42,
       45,
       142,
       52,
     ],
-    "2502802": Array [
+    "test-2502802": Array [
       43,
       54,
       143,
       61,
     ],
-    "2503059": Array [
+    "test-2503059": Array [
       47,
       63,
       147,
       70,
     ],
-    "2503316": Array [
+    "test-2503316": Array [
       55,
       72,
       155,
       79,
     ],
-    "2503571": Array [
+    "test-2503571": Array [
       65,
       81,
       165,
       88,
     ],
-    "2503826": Array [
+    "test-2503826": Array [
       76,
       90,
       176,
       97,
     ],
-    "2504079": Array [
+    "test-2504079": Array [
       90,
       99,
       190,
       106,
     ],
-    "2504332": Array [
+    "test-2504332": Array [
       94,
       108,
       194,
       115,
     ],
-    "2504586": Array [
+    "test-2504586": Array [
       109,
       0,
       209,
       7,
     ],
-    "2504840": Array [
+    "test-2504840": Array [
       123,
       9,
       223,
       16,
     ],
-    "2505099": Array [
+    "test-2505099": Array [
       125,
       18,
       225,
       25,
     ],
-    "2505355": Array [
+    "test-2505355": Array [
       132,
       27,
       232,
       34,
     ],
-    "2505620": Array [
+    "test-2505620": Array [
       140,
       36,
       240,
       43,
     ],
-    "2505877": Array [
+    "test-2505877": Array [
       147,
       45,
       247,
       52,
     ],
-    "2506133": Array [
+    "test-2506133": Array [
       149,
       54,
       249,
       61,
     ],
-    "2506393": Array [
+    "test-2506393": Array [
       152,
       63,
       252,
       70,
     ],
-    "2506648": Array [
+    "test-2506648": Array [
       186,
       72,
       286,
       79,
     ],
-    "2506908": Array [
+    "test-2506908": Array [
       237,
       0,
       337,
       7,
     ],
-    "2507164": Array [
+    "test-2507164": Array [
       258,
       9,
       358,
       16,
     ],
-    "2507422": Array [
+    "test-2507422": Array [
       291,
       18,
       391,
       25,
     ],
-    "2507679": Array [
+    "test-2507679": Array [
       301,
       27,
       401,
       34,
     ],
-    "2507938": Array [
+    "test-2507938": Array [
       302,
       36,
       402,
       43,
     ],
-    "2508199": Array [
+    "test-2508199": Array [
       311,
       45,
       411,
       52,
     ],
-    "2508453": Array [
+    "test-2508453": Array [
       321,
       54,
       421,
       61,
     ],
-    "2508710": Array [
+    "test-2508710": Array [
       325,
       63,
       425,
       70,
     ],
-    "2508968": Array [
+    "test-2508968": Array [
       327,
       72,
       427,
       79,
     ],
-    "2509224": Array [
+    "test-2509224": Array [
       338,
       0,
       438,
       7,
     ],
-    "2509482": Array [
+    "test-2509482": Array [
       354,
       81,
       454,
       88,
     ],
-    "2509743": Array [
+    "test-2509743": Array [
       390,
       9,
       490,
       16,
     ],
-    "2510000": Array [
+    "test-2510000": Array [
       399,
       18,
       499,
       25,
     ],
-    "2510260": Array [
+    "test-2510260": Array [
       413,
       27,
       513,
       34,
     ],
-    "2510517": Array [
+    "test-2510517": Array [
       413,
       36,
       513,
       43,
     ],
-    "2510775": Array [
+    "test-2510775": Array [
       422,
       45,
       522,
       52,
     ],
-    "2511032": Array [
+    "test-2511032": Array [
       431,
       54,
       531,
       61,
     ],
-    "2511287": Array [
+    "test-2511287": Array [
       432,
       63,
       532,
       70,
     ],
-    "2511547": Array [
+    "test-2511547": Array [
       453,
       0,
       553,
       7,
     ],
-    "2511806": Array [
+    "test-2511806": Array [
       461,
       72,
       561,
       79,
     ],
-    "2512059": Array [
+    "test-2512059": Array [
       467,
       81,
       567,
       88,
     ],
-    "2512317": Array [
+    "test-2512317": Array [
       481,
       90,
       581,
       97,
     ],
-    "2512577": Array [
+    "test-2512577": Array [
       485,
       99,
       585,
       106,
     ],
-    "2512839": Array [
+    "test-2512839": Array [
       487,
       108,
       587,
       115,
     ],
-    "2513098": Array [
+    "test-2513098": Array [
       495,
       9,
       595,
       16,
     ],
-    "2513364": Array [
+    "test-2513364": Array [
       509,
       18,
       609,
       25,
     ],
-    "2513626": Array [
+    "test-2513626": Array [
       513,
       117,
       613,
       124,
     ],
-    "2513885": Array [
+    "test-2513885": Array [
       540,
       27,
       640,
       34,
     ],
-    "2514141": Array [
+    "test-2514141": Array [
       545,
       36,
       645,
       43,
     ],
-    "2514398": Array [
+    "test-2514398": Array [
       556,
       0,
       656,
       7,
     ],
-    "2514658": Array [
+    "test-2514658": Array [
       562,
       45,
       662,
       52,
     ],
-    "2514915": Array [
+    "test-2514915": Array [
       564,
       54,
       664,
       61,
     ],
-    "2515170": Array [
+    "test-2515170": Array [
       564,
       63,
       664,
       70,
     ],
-    "2515429": Array [
+    "test-2515429": Array [
       564,
       72,
       664,
       79,
     ],
-    "2515687": Array [
+    "test-2515687": Array [
       566,
       126,
       666,
       133,
     ],
-    "2515953": Array [
+    "test-2515953": Array [
       570,
       81,
       670,
       88,
     ],
-    "2516216": Array [
+    "test-2516216": Array [
       574,
       135,
       674,
       142,
     ],
-    "2516478": Array [
+    "test-2516478": Array [
       574,
       144,
       674,
       151,
     ],
-    "2516735": Array [
+    "test-2516735": Array [
       577,
       153,
       677,
       160,
     ],
-    "2516992": Array [
+    "test-2516992": Array [
       579,
       162,
       679,
       169,
     ],
-    "2517248": Array [
+    "test-2517248": Array [
       582,
       90,
       682,
       97,
     ],
-    "2517504": Array [
+    "test-2517504": Array [
       593,
       99,
       693,
       106,
     ],
-    "2517760": Array [
+    "test-2517760": Array [
       595,
       108,
       695,
       115,
     ],
-    "2518017": Array [
+    "test-2518017": Array [
       611,
       9,
       711,
       16,
     ],
-    "2518282": Array [
+    "test-2518282": Array [
       611,
       18,
       711,
       25,
     ],
-    "2518538": Array [
+    "test-2518538": Array [
       612,
       171,
       712,
       178,
     ],
-    "2518795": Array [
+    "test-2518795": Array [
       618,
       117,
       718,
       124,
     ],
-    "2519057": Array [
+    "test-2519057": Array [
       625,
       180,
       725,
       187,
     ],
-    "2519318": Array [
+    "test-2519318": Array [
       626,
       189,
       726,
       196,
     ],
-    "2519582": Array [
+    "test-2519582": Array [
       630,
       198,
       730,
       205,
     ],
-    "2519836": Array [
+    "test-2519836": Array [
       630,
       207,
       730,
       214,
     ],
-    "2520099": Array [
+    "test-2520099": Array [
       652,
       27,
       752,
       34,
     ],
-    "2520359": Array [
+    "test-2520359": Array [
       660,
       0,
       760,
       7,
     ],
-    "2520620": Array [
+    "test-2520620": Array [
       661,
       36,
       761,
       43,
     ],
-    "2520878": Array [
+    "test-2520878": Array [
       664,
       45,
       764,
       52,
     ],
-    "2521140": Array [
+    "test-2521140": Array [
       679,
       54,
       779,
       61,
     ],
-    "2521395": Array [
+    "test-2521395": Array [
       685,
       63,
       785,
       70,
     ],
-    "2521654": Array [
+    "test-2521654": Array [
       690,
       72,
       790,
       79,
     ],
-    "2521909": Array [
+    "test-2521909": Array [
       713,
       9,
       813,
       16,
     ],
-    "2522171": Array [
+    "test-2522171": Array [
       715,
       18,
       815,
       25,
     ],
-    "2522430": Array [
+    "test-2522430": Array [
       720,
       81,
       820,
       88,
     ],
-    "2522689": Array [
+    "test-2522689": Array [
       725,
       90,
       825,
       97,
     ],
-    "2522945": Array [
+    "test-2522945": Array [
       727,
       99,
       827,
       106,
     ],
-    "2523207": Array [
+    "test-2523207": Array [
       729,
       108,
       829,
       115,
     ],
-    "2523464": Array [
+    "test-2523464": Array [
       730,
       117,
       830,
       124,
     ],
-    "2523725": Array [
+    "test-2523725": Array [
       747,
       126,
       847,
       133,
     ],
-    "2523980": Array [
+    "test-2523980": Array [
       764,
       0,
       864,
       7,
     ],
-    "2524238": Array [
+    "test-2524238": Array [
       766,
       27,
       866,
       34,
     ],
-    "2524497": Array [
+    "test-2524497": Array [
       775,
       36,
       875,
       43,
     ],
-    "2524760": Array [
+    "test-2524760": Array [
       786,
       45,
       886,
       52,
     ],
-    "2525016": Array [
+    "test-2525016": Array [
       797,
       54,
       897,
@@ -569,565 +569,565 @@ Object {
 }
 `;
 
-exports[`can render a single region with SvgFeatures + BamAdapter (larger maxHeight) 1`] = `"<div style=\\"position:relative\\"><svg class=\\"SvgFeatureRendering\\" width=\\"300px\\" height=\\"0px\\" style=\\"display:block\\"><g><polygon data-testid=\\"2501248\\" fill=\\"goldenrod\\" points=\\"2,0,97,0,102,5,97,10,2,10\\"></polygon><text x=\\"2\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_3_555_0:0:0_2:0:0_102d</text></g><g><polygon data-testid=\\"2501501\\" fill=\\"goldenrod\\" points=\\"7,27,102,27,107,32,102,37,7,37\\"></polygon><text x=\\"7\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_8_507_4:0:0_2:0:0_10e6</text></g><g><polygon data-testid=\\"2501764\\" fill=\\"goldenrod\\" points=\\"15,54,110,54,115,59,110,64,15,64\\"></polygon><text x=\\"15\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_16_523_3:0:0_0:0:0_1a75</text></g><g><polygon data-testid=\\"2502026\\" fill=\\"goldenrod\\" points=\\"16,81,111,81,116,86,111,91,16,91\\"></polygon><text x=\\"16\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_17_531_4:0:0_2:0:0_b65</text></g><g><polygon data-testid=\\"2502287\\" fill=\\"goldenrod\\" points=\\"17,108,112,108,117,113,112,118,17,118\\"></polygon><text x=\\"17\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_18_445_3:0:0_2:0:0_22df</text></g><g><polygon data-testid=\\"2502547\\" fill=\\"goldenrod\\" points=\\"42,135,137,135,142,140,137,145,42,145\\"></polygon><text x=\\"42\\" y=\\"147\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_43_557_1:0:0_2:0:0_5b3</text></g><g><polygon data-testid=\\"2502802\\" fill=\\"goldenrod\\" points=\\"43,162,138,162,143,167,138,172,43,172\\"></polygon><text x=\\"43\\" y=\\"174\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_44_560_2:0:0_5:0:0_2524</text></g><g><polygon data-testid=\\"2503059\\" fill=\\"goldenrod\\" points=\\"47,189,142,189,147,194,142,199,47,199\\"></polygon><text x=\\"47\\" y=\\"201\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_48_502_2:0:0_1:0:0_1513</text></g><g><polygon data-testid=\\"2503316\\" fill=\\"goldenrod\\" points=\\"55,216,150,216,155,221,150,226,55,226\\"></polygon><text x=\\"55\\" y=\\"228\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_56_576_1:0:0_2:0:0_191d</text></g><g><polygon data-testid=\\"2503571\\" fill=\\"goldenrod\\" points=\\"65,243,160,243,165,248,160,253,65,253\\"></polygon><text x=\\"65\\" y=\\"255\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_66_630_1:0:0_3:0:0_ce5</text></g><g><polygon data-testid=\\"2503826\\" fill=\\"goldenrod\\" points=\\"76,270,171,270,176,275,171,280,76,280\\"></polygon><text x=\\"76\\" y=\\"282\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_77_676_0:0:0_3:0:0_764</text></g><g><polygon data-testid=\\"2504079\\" fill=\\"goldenrod\\" points=\\"90,297,185,297,190,302,185,307,90,307\\"></polygon><text x=\\"90\\" y=\\"309\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_91_656_0:0:0_2:0:0_8f0</text></g><g><polygon data-testid=\\"2504332\\" fill=\\"goldenrod\\" points=\\"94,324,189,324,194,329,189,334,94,334\\"></polygon><text x=\\"94\\" y=\\"336\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_95_545_0:0:0_1:0:0_1ecb</text></g><g><polygon data-testid=\\"2504586\\" fill=\\"goldenrod\\" points=\\"109,351,204,351,209,356,204,361,109,361\\"></polygon><text x=\\"109\\" y=\\"363\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_110_638_0:0:0_3:0:0_15b</text></g><g><polygon data-testid=\\"2504840\\" fill=\\"goldenrod\\" points=\\"123,378,218,378,223,383,218,388,123,388\\"></polygon><text x=\\"123\\" y=\\"390\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_124_679_2:0:0_0:0:0_17d4</text></g><g><polygon data-testid=\\"2505099\\" fill=\\"goldenrod\\" points=\\"125,405,220,405,225,410,220,415,125,415\\"></polygon><text x=\\"125\\" y=\\"417\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_126_596_1:0:0_1:0:0_641</text></g><g><polygon data-testid=\\"2505355\\" fill=\\"goldenrod\\" points=\\"132,432,227,432,232,437,227,442,132,442\\"></polygon><text x=\\"132\\" y=\\"444\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_133_707_5:0:0_4:0:0_1062</text></g><g><polygon data-testid=\\"2505620\\" fill=\\"goldenrod\\" points=\\"140,459,235,459,240,464,235,469,140,469\\"></polygon><text x=\\"140\\" y=\\"471\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_141_644_1:0:0_0:0:0_2461</text></g><g><polygon data-testid=\\"2505877\\" fill=\\"goldenrod\\" points=\\"147,486,242,486,247,491,242,496,147,496\\"></polygon><text x=\\"147\\" y=\\"498\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_148_699_1:0:0_2:0:0_64d</text></g><g><polygon data-testid=\\"2506133\\" fill=\\"goldenrod\\" points=\\"149,513,244,513,249,518,244,523,149,523\\"></polygon><text x=\\"149\\" y=\\"525\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_150_624_3:0:0_3:0:0_2e</text></g><g><polygon data-testid=\\"2506393\\" fill=\\"goldenrod\\" points=\\"152,540,247,540,252,545,247,550,152,550\\"></polygon><text x=\\"152\\" y=\\"552\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_153_667_0:0:0_6:0:0_1f51</text></g><g><polygon data-testid=\\"2506648\\" fill=\\"goldenrod\\" points=\\"186,567,281,567,286,572,281,577,186,577\\"></polygon><text x=\\"186\\" y=\\"579\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_187_683_2:1:0_7:0:0_9e1</text></g><g><polygon data-testid=\\"2506908\\" fill=\\"goldenrod\\" points=\\"237,0,332,0,337,5,332,10,237,10\\"></polygon><text x=\\"237\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_238_789_0:1:0_1:0:0_e0d</text></g><g><polygon data-testid=\\"2507164\\" fill=\\"goldenrod\\" points=\\"258,27,353,27,358,32,353,37,258,37\\"></polygon><text x=\\"258\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_259_775_1:1:0_2:0:0_5fc</text></g><g><polygon data-testid=\\"2507422\\" fill=\\"goldenrod\\" points=\\"291,54,386,54,391,59,386,64,291,64\\"></polygon><text x=\\"291\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_292_745_1:0:0_2:0:0_17f9</text></g><g><polygon data-testid=\\"2507679\\" fill=\\"goldenrod\\" points=\\"301,81,396,81,401,86,396,91,301,91\\"></polygon><text x=\\"301\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_302_714_2:0:0_0:0:0_138f</text></g><g><polygon data-testid=\\"2507938\\" fill=\\"goldenrod\\" points=\\"302,108,397,108,402,113,397,118,302,118\\"></polygon><text x=\\"302\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_303_810_3:0:0_1:0:0_3cf</text></g><g><polygon data-testid=\\"2508199\\" fill=\\"goldenrod\\" points=\\"311,135,406,135,411,140,406,145,311,145\\"></polygon><text x=\\"311\\" y=\\"147\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_312_797_0:0:0_1:0:0_81b</text></g><g><polygon data-testid=\\"2508453\\" fill=\\"goldenrod\\" points=\\"321,162,416,162,421,167,416,172,321,172\\"></polygon><text x=\\"321\\" y=\\"174\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_322_853_1:0:0_2:0:0_1539</text></g><g><polygon data-testid=\\"2508710\\" fill=\\"goldenrod\\" points=\\"325,189,420,189,425,194,420,199,325,199\\"></polygon><text x=\\"325\\" y=\\"201\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_326_893_2:0:0_3:0:0_ee5</text></g><g><polygon data-testid=\\"2508968\\" fill=\\"goldenrod\\" points=\\"327,216,422,216,427,221,422,226,327,226\\"></polygon><text x=\\"327\\" y=\\"228\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_328_822_1:0:0_1:0:0_58e</text></g><g><polygon data-testid=\\"2509224\\" fill=\\"goldenrod\\" points=\\"338,243,433,243,438,248,433,253,338,253\\"></polygon><text x=\\"338\\" y=\\"255\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_339_818_2:0:0_6:0:0_a01</text></g><g><polygon data-testid=\\"2509482\\" fill=\\"goldenrod\\" points=\\"354,270,449,270,454,275,449,280,354,280\\"></polygon><text x=\\"354\\" y=\\"282\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_355_922_3:0:0_5:0:0_8c4</text></g><g><polygon data-testid=\\"2509743\\" fill=\\"goldenrod\\" points=\\"390,297,485,297,490,302,485,307,390,307\\"></polygon><text x=\\"390\\" y=\\"309\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_391_921_1:0:0_1:0:0_2708</text></g><g><polygon data-testid=\\"2510000\\" transform=\\"rotate(180,449,329)\\" fill=\\"goldenrod\\" points=\\"399,324,494,324,499,329,494,334,399,334\\"></polygon><text x=\\"399\\" y=\\"336\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_25_499_4:0:0_3:0:0_1e25</text></g><g><polygon data-testid=\\"2510260\\" fill=\\"goldenrod\\" points=\\"413,351,508,351,513,356,508,361,413,361\\"></polygon><text x=\\"413\\" y=\\"363\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_414_950_1:0:0_2:0:0_1ef5</text></g><g><polygon data-testid=\\"2510517\\" transform=\\"rotate(180,463,383)\\" fill=\\"goldenrod\\" points=\\"413,378,508,378,513,383,508,388,413,388\\"></polygon><text x=\\"413\\" y=\\"390\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_1_513_0:0:0_2:0:0_2272</text></g><g><polygon data-testid=\\"2510775\\" fill=\\"goldenrod\\" points=\\"422,405,517,405,522,410,517,415,422,415\\"></polygon><text x=\\"422\\" y=\\"417\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_423_904_1:0:0_0:0:0_1b24</text></g><g><polygon data-testid=\\"2511032\\" transform=\\"rotate(180,481,437)\\" fill=\\"goldenrod\\" points=\\"431,432,526,432,531,437,526,442,431,442\\"></polygon><text x=\\"431\\" y=\\"444\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_46_531_0:0:0_1:0:0_db0</text></g><g><polygon data-testid=\\"2511287\\" transform=\\"rotate(180,482,464)\\" fill=\\"goldenrod\\" points=\\"432,459,527,459,532,464,527,469,432,469\\"></polygon><text x=\\"432\\" y=\\"471\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_70_532_1:0:0_3:0:0_db3</text></g><g><polygon data-testid=\\"2511547\\" transform=\\"rotate(180,503,491)\\" fill=\\"goldenrod\\" points=\\"453,486,548,486,553,491,548,496,453,496\\"></polygon><text x=\\"453\\" y=\\"498\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_30_553_3:0:0_2:0:0_16ec</text></g><g><polygon data-testid=\\"2511806\\" transform=\\"rotate(180,511,5)\\" fill=\\"goldenrod\\" points=\\"461,0,556,0,561,5,556,10,461,10\\"></polygon><text x=\\"461\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_61_561_1:0:0_1:0:0_fc</text></g><g><polygon data-testid=\\"2512059\\" fill=\\"goldenrod\\" points=\\"467,513,562,513,567,518,562,523,467,523\\"></polygon><text x=\\"467\\" y=\\"525\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_468_995_2:0:0_1:0:0_34c</text></g><g><polygon data-testid=\\"2512317\\" transform=\\"rotate(180,531,32)\\" fill=\\"goldenrod\\" points=\\"481,27,576,27,581,32,576,37,481,37\\"></polygon><text x=\\"481\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_142_581_1:0:0_3:0:0_53</text></g><g><polygon data-testid=\\"2512577\\" transform=\\"rotate(180,535,545)\\" fill=\\"goldenrod\\" points=\\"485,540,580,540,585,545,580,550,485,550\\"></polygon><text x=\\"485\\" y=\\"552\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_96_585_4:0:0_4:0:0_1b88</text></g><g><polygon data-testid=\\"2512839\\" fill=\\"goldenrod\\" points=\\"487,567,582,567,587,572,582,577,487,577\\"></polygon><text x=\\"487\\" y=\\"579\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_488_927_2:0:0_0:0:0_ab2</text></g><g><polygon data-testid=\\"2513098\\" transform=\\"rotate(180,545,599)\\" fill=\\"goldenrod\\" points=\\"495,594,590,594,595,599,590,604,495,604\\"></polygon><text x=\\"495\\" y=\\"606\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_114_595_2:0:0_4:0:0_21c6</text></g><g><polygon data-testid=\\"2513364\\" fill=\\"goldenrod\\" points=\\"509,621,604,621,609,626,604,631,509,631\\"></polygon><text x=\\"509\\" y=\\"633\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_510_969_3:0:0_1:0:0_244d</text></g><g><polygon data-testid=\\"2513626\\" transform=\\"rotate(180,563,653)\\" fill=\\"goldenrod\\" points=\\"513,648,608,648,613,653,608,658,513,658\\"></polygon><text x=\\"513\\" y=\\"660\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_43_613_1:0:0_2:0:0_1341</text></g><g><polygon data-testid=\\"2513885\\" fill=\\"goldenrod\\" points=\\"540,54,635,54,640,59,635,64,540,64\\"></polygon><text x=\\"540\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_541_1090_1:0:0_3:0:0_e42</text></g><g><polygon data-testid=\\"2514141\\" transform=\\"rotate(180,595,86)\\" fill=\\"goldenrod\\" points=\\"545,81,640,81,645,86,640,91,545,91\\"></polygon><text x=\\"545\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_174_645_3:0:0_1:0:0_1f41</text></g><g><polygon data-testid=\\"2514398\\" transform=\\"rotate(180,606,113)\\" fill=\\"goldenrod\\" points=\\"556,108,651,108,656,113,651,118,556,118\\"></polygon><text x=\\"556\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_124_656_0:0:0_2:0:0_1726</text></g><g><polygon data-testid=\\"2514658\\" fill=\\"goldenrod\\" points=\\"562,135,657,135,662,140,657,145,562,145\\"></polygon><text x=\\"562\\" y=\\"147\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_563_997_1:0:0_3:0:0_127d</text></g><g><polygon data-testid=\\"2514915\\" transform=\\"rotate(180,614,167)\\" fill=\\"goldenrod\\" points=\\"564,162,659,162,664,167,659,172,564,172\\"></polygon><text x=\\"564\\" y=\\"174\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_137_664_2:0:0_1:0:0_5b</text></g><g><polygon data-testid=\\"2515170\\" fill=\\"goldenrod\\" points=\\"564,189,659,189,664,194,659,199,564,199\\"></polygon><text x=\\"564\\" y=\\"201\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_565_1155_2:0:0_2:0:0_fc8</text></g><g><polygon data-testid=\\"2515429\\" fill=\\"goldenrod\\" points=\\"564,216,659,216,664,221,659,226,564,226\\"></polygon><text x=\\"564\\" y=\\"228\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_565_1134_1:0:0_1:0:0_14da</text></g><g><polygon data-testid=\\"2515687\\" transform=\\"rotate(180,616,248)\\" fill=\\"goldenrod\\" points=\\"566,243,661,243,666,248,661,253,566,253\\"></polygon><text x=\\"566\\" y=\\"255\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_175_666_2:0:0_5:0:0_9bf</text></g><g><polygon data-testid=\\"2515953\\" fill=\\"goldenrod\\" points=\\"570,675,665,675,670,680,665,685,570,685\\"></polygon><text x=\\"570\\" y=\\"687\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_571_996_4:0:0_3:0:0_23a9</text></g><g><polygon data-testid=\\"2516216\\" fill=\\"goldenrod\\" points=\\"574,270,669,270,674,275,669,280,574,280\\"></polygon><text x=\\"574\\" y=\\"282\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_575_1006_3:0:0_5:0:0_fc0</text></g><g><polygon data-testid=\\"2516478\\" fill=\\"goldenrod\\" points=\\"574,702,669,702,674,707,669,712,574,712\\"></polygon><text x=\\"574\\" y=\\"714\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_575_1070_1:0:0_2:0:0_19d5</text></g><g><polygon data-testid=\\"2516735\\" transform=\\"rotate(180,627,734)\\" fill=\\"goldenrod\\" points=\\"577,729,672,729,677,734,672,739,577,739\\"></polygon><text x=\\"577\\" y=\\"741\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_104_677_2:0:0_1:0:0_10b5</text></g><g><polygon data-testid=\\"2516992\\" transform=\\"rotate(180,629,761)\\" fill=\\"goldenrod\\" points=\\"579,756,674,756,679,761,674,766,579,766\\"></polygon><text x=\\"579\\" y=\\"768\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_203_679_1:1:0_1:0:0_a36</text></g><g><polygon data-testid=\\"2517248\\" fill=\\"goldenrod\\" points=\\"582,783,677,783,682,788,677,793,582,793\\"></polygon><text x=\\"582\\" y=\\"795\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_583_1070_0:0:0_3:0:0_11b4</text></g><g><polygon data-testid=\\"2517504\\" transform=\\"rotate(180,643,815)\\" fill=\\"goldenrod\\" points=\\"593,810,688,810,693,815,688,820,593,820\\"></polygon><text x=\\"593\\" y=\\"822\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_168_693_3:0:0_1:0:0_dd0</text></g><g><polygon data-testid=\\"2517760\\" fill=\\"goldenrod\\" points=\\"595,837,690,837,695,842,690,847,595,847\\"></polygon><text x=\\"595\\" y=\\"849\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_596_1032_1:0:0_3:0:0_edd</text></g><g><polygon data-testid=\\"2518017\\" fill=\\"goldenrod\\" points=\\"611,864,706,864,711,869,706,874,611,874\\"></polygon><text x=\\"611\\" y=\\"876\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_612_1140_4:0:0_1:0:0_1a3c</text></g><g><polygon data-testid=\\"2518282\\" fill=\\"goldenrod\\" points=\\"611,891,706,891,711,896,706,901,611,901\\"></polygon><text x=\\"611\\" y=\\"903\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_612_1076_0:0:0_1:0:0_1d48</text></g><g><polygon data-testid=\\"2518538\\" transform=\\"rotate(180,662,923)\\" fill=\\"goldenrod\\" points=\\"612,918,707,918,712,923,707,928,612,928\\"></polygon><text x=\\"612\\" y=\\"930\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_254_712_3:1:0_1:0:0_1fe3</text></g><g><polygon data-testid=\\"2518795\\" transform=\\"rotate(180,668,302)\\" fill=\\"goldenrod\\" points=\\"618,297,713,297,718,302,713,307,618,307\\"></polygon><text x=\\"618\\" y=\\"309\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_309_718_1:0:0_3:0:0_bc6</text></g><g><polygon data-testid=\\"2519057\\" transform=\\"rotate(180,675,329)\\" fill=\\"goldenrod\\" points=\\"625,324,720,324,725,329,720,334,625,334\\"></polygon><text x=\\"625\\" y=\\"336\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_150_725_4:0:0_3:0:0_51b</text></g><g><polygon data-testid=\\"2519318\\" fill=\\"goldenrod\\" points=\\"626,378,721,378,726,383,721,388,626,388\\"></polygon><text x=\\"626\\" y=\\"390\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_627_1115_3:0:0_2:0:0_1085</text></g><g><polygon data-testid=\\"2519582\\" fill=\\"goldenrod\\" points=\\"630,945,725,945,730,950,725,955,630,955\\"></polygon><text x=\\"630\\" y=\\"957\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_631_1107_0:0:0_3:0:0_7b</text></g><g><polygon data-testid=\\"2519836\\" transform=\\"rotate(180,680,977)\\" fill=\\"goldenrod\\" points=\\"630,972,725,972,730,977,725,982,630,982\\"></polygon><text x=\\"630\\" y=\\"984\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_215_730_0:1:0_4:0:0_2de</text></g><g><polygon data-testid=\\"2520099\\" transform=\\"rotate(180,702,356)\\" fill=\\"goldenrod\\" points=\\"652,351,747,351,752,356,747,361,652,361\\"></polygon><text x=\\"652\\" y=\\"363\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_297_752_2:0:0_2:0:0_265e</text></g><g><polygon data-testid=\\"2520359\\" fill=\\"goldenrod\\" points=\\"660,405,755,405,760,410,755,415,660,415\\"></polygon><text x=\\"660\\" y=\\"417\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_661_1079_2:0:0_1:0:0_1e8c</text></g><g><polygon data-testid=\\"2520620\\" fill=\\"goldenrod\\" points=\\"661,432,756,432,761,437,756,442,661,442\\"></polygon><text x=\\"661\\" y=\\"444\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_662_1265_1:0:0_5:0:0_1e50</text></g><g><polygon data-testid=\\"2520878\\" transform=\\"rotate(180,714,464)\\" fill=\\"goldenrod\\" points=\\"664,459,759,459,764,464,759,469,664,469\\"></polygon><text x=\\"664\\" y=\\"471\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_293_764_5:0:0_4:0:0_1edb</text></g><g><polygon data-testid=\\"2521140\\" transform=\\"rotate(180,729,5)\\" fill=\\"goldenrod\\" points=\\"679,0,774,0,779,5,774,10,679,10\\"></polygon><text x=\\"679\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_263_779_3:1:0_0:0:0_236d</text></g><g><polygon data-testid=\\"2521395\\" transform=\\"rotate(180,735,491)\\" fill=\\"goldenrod\\" points=\\"685,486,780,486,785,491,780,496,685,496\\"></polygon><text x=\\"685\\" y=\\"498\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_380_785_3:0:0_2:0:0_672</text></g><g><polygon data-testid=\\"2521654\\" transform=\\"rotate(180,740,518)\\" fill=\\"goldenrod\\" points=\\"690,513,785,513,790,518,785,523,690,523\\"></polygon><text x=\\"690\\" y=\\"525\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_392_790_5:0:0_1:0:0_2b5</text></g><g><polygon data-testid=\\"2521909\\" transform=\\"rotate(180,763,32)\\" fill=\\"goldenrod\\" points=\\"713,27,808,27,813,32,808,37,713,37\\"></polygon><text x=\\"713\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_287_813_0:0:0_3:0:0_2227</text></g><g><polygon data-testid=\\"2522171\\" fill=\\"goldenrod\\" points=\\"715,540,810,540,815,545,810,550,715,550\\"></polygon><text x=\\"715\\" y=\\"552\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_716_1139_2:0:0_2:0:0_ada</text></g><g><polygon data-testid=\\"2522430\\" transform=\\"rotate(180,770,572)\\" fill=\\"goldenrod\\" points=\\"720,567,815,567,820,572,815,577,720,577\\"></polygon><text x=\\"720\\" y=\\"579\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_392_820_2:0:0_2:0:0_26c3</text></g><g><polygon data-testid=\\"2522689\\" fill=\\"goldenrod\\" points=\\"725,594,820,594,825,599,820,604,725,604\\"></polygon><text x=\\"725\\" y=\\"606\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_726_1261_0:0:0_0:0:0_1126</text></g><g><polygon data-testid=\\"2522945\\" fill=\\"goldenrod\\" points=\\"727,999,822,999,827,1004,822,1009,727,1009\\"></polygon><text x=\\"727\\" y=\\"1011\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_728_1282_3:0:0_3:0:0_276</text></g><g><polygon data-testid=\\"2523207\\" transform=\\"rotate(180,779,1031)\\" fill=\\"goldenrod\\" points=\\"729,1026,824,1026,829,1031,824,1036,729,1036\\"></polygon><text x=\\"729\\" y=\\"1038\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_341_829_2:0:0_1:0:0_18ea</text></g><g><polygon data-testid=\\"2523464\\" transform=\\"rotate(180,780,1058)\\" fill=\\"goldenrod\\" points=\\"730,1053,825,1053,830,1058,825,1063,730,1063\\"></polygon><text x=\\"730\\" y=\\"1065\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_349_830_3:0:0_3:0:0_c0a</text></g><g><polygon data-testid=\\"2523725\\" transform=\\"rotate(180,797,626)\\" fill=\\"goldenrod\\" points=\\"747,621,842,621,847,626,842,631,747,631\\"></polygon><text x=\\"747\\" y=\\"633\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_311_847_0:0:0_0:0:0_151e</text></g><g><polygon data-testid=\\"2523980\\" transform=\\"rotate(180,814,653)\\" fill=\\"goldenrod\\" points=\\"764,648,859,648,864,653,859,658,764,658\\"></polygon><text x=\\"764\\" y=\\"660\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_388_864_3:0:0_2:0:0_505</text></g><g><polygon data-testid=\\"2524238\\" fill=\\"goldenrod\\" points=\\"766,1080,861,1080,866,1085,861,1090,766,1090\\"></polygon><text x=\\"766\\" y=\\"1092\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_767_1276_2:0:0_1:0:0_c2f</text></g><g><polygon data-testid=\\"2524497\\" fill=\\"goldenrod\\" points=\\"775,54,870,54,875,59,870,64,775,64\\"></polygon><text x=\\"775\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_776_1182_3:0:0_2:0:0_26b4</text></g><g><polygon data-testid=\\"2524760\\" fill=\\"goldenrod\\" points=\\"786,81,881,81,886,86,881,91,786,91\\"></polygon><text x=\\"786\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_787_1190_0:0:0_4:0:0_2070</text></g><g><polygon data-testid=\\"2525016\\" transform=\\"rotate(180,847,113)\\" fill=\\"goldenrod\\" points=\\"797,108,892,108,897,113,892,118,797,118\\"></polygon><text x=\\"797\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_464_897_0:0:0_1:0:0_1eab</text></g></svg></div>"`;
+exports[`can render a single region with SvgFeatures + BamAdapter (larger maxHeight) 1`] = `"<div style=\\"position:relative\\"><svg class=\\"SvgFeatureRendering\\" width=\\"300px\\" height=\\"0px\\" style=\\"display:block\\"><g><polygon data-testid=\\"test-2501248\\" fill=\\"goldenrod\\" points=\\"2,0,97,0,102,5,97,10,2,10\\"></polygon><text x=\\"2\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_3_555_0:0:0_2:0:0_102d</text></g><g><polygon data-testid=\\"test-2501501\\" fill=\\"goldenrod\\" points=\\"7,27,102,27,107,32,102,37,7,37\\"></polygon><text x=\\"7\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_8_507_4:0:0_2:0:0_10e6</text></g><g><polygon data-testid=\\"test-2501764\\" fill=\\"goldenrod\\" points=\\"15,54,110,54,115,59,110,64,15,64\\"></polygon><text x=\\"15\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_16_523_3:0:0_0:0:0_1a75</text></g><g><polygon data-testid=\\"test-2502026\\" fill=\\"goldenrod\\" points=\\"16,81,111,81,116,86,111,91,16,91\\"></polygon><text x=\\"16\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_17_531_4:0:0_2:0:0_b65</text></g><g><polygon data-testid=\\"test-2502287\\" fill=\\"goldenrod\\" points=\\"17,108,112,108,117,113,112,118,17,118\\"></polygon><text x=\\"17\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_18_445_3:0:0_2:0:0_22df</text></g><g><polygon data-testid=\\"test-2502547\\" fill=\\"goldenrod\\" points=\\"42,135,137,135,142,140,137,145,42,145\\"></polygon><text x=\\"42\\" y=\\"147\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_43_557_1:0:0_2:0:0_5b3</text></g><g><polygon data-testid=\\"test-2502802\\" fill=\\"goldenrod\\" points=\\"43,162,138,162,143,167,138,172,43,172\\"></polygon><text x=\\"43\\" y=\\"174\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_44_560_2:0:0_5:0:0_2524</text></g><g><polygon data-testid=\\"test-2503059\\" fill=\\"goldenrod\\" points=\\"47,189,142,189,147,194,142,199,47,199\\"></polygon><text x=\\"47\\" y=\\"201\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_48_502_2:0:0_1:0:0_1513</text></g><g><polygon data-testid=\\"test-2503316\\" fill=\\"goldenrod\\" points=\\"55,216,150,216,155,221,150,226,55,226\\"></polygon><text x=\\"55\\" y=\\"228\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_56_576_1:0:0_2:0:0_191d</text></g><g><polygon data-testid=\\"test-2503571\\" fill=\\"goldenrod\\" points=\\"65,243,160,243,165,248,160,253,65,253\\"></polygon><text x=\\"65\\" y=\\"255\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_66_630_1:0:0_3:0:0_ce5</text></g><g><polygon data-testid=\\"test-2503826\\" fill=\\"goldenrod\\" points=\\"76,270,171,270,176,275,171,280,76,280\\"></polygon><text x=\\"76\\" y=\\"282\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_77_676_0:0:0_3:0:0_764</text></g><g><polygon data-testid=\\"test-2504079\\" fill=\\"goldenrod\\" points=\\"90,297,185,297,190,302,185,307,90,307\\"></polygon><text x=\\"90\\" y=\\"309\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_91_656_0:0:0_2:0:0_8f0</text></g><g><polygon data-testid=\\"test-2504332\\" fill=\\"goldenrod\\" points=\\"94,324,189,324,194,329,189,334,94,334\\"></polygon><text x=\\"94\\" y=\\"336\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_95_545_0:0:0_1:0:0_1ecb</text></g><g><polygon data-testid=\\"test-2504586\\" fill=\\"goldenrod\\" points=\\"109,351,204,351,209,356,204,361,109,361\\"></polygon><text x=\\"109\\" y=\\"363\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_110_638_0:0:0_3:0:0_15b</text></g><g><polygon data-testid=\\"test-2504840\\" fill=\\"goldenrod\\" points=\\"123,378,218,378,223,383,218,388,123,388\\"></polygon><text x=\\"123\\" y=\\"390\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_124_679_2:0:0_0:0:0_17d4</text></g><g><polygon data-testid=\\"test-2505099\\" fill=\\"goldenrod\\" points=\\"125,405,220,405,225,410,220,415,125,415\\"></polygon><text x=\\"125\\" y=\\"417\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_126_596_1:0:0_1:0:0_641</text></g><g><polygon data-testid=\\"test-2505355\\" fill=\\"goldenrod\\" points=\\"132,432,227,432,232,437,227,442,132,442\\"></polygon><text x=\\"132\\" y=\\"444\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_133_707_5:0:0_4:0:0_1062</text></g><g><polygon data-testid=\\"test-2505620\\" fill=\\"goldenrod\\" points=\\"140,459,235,459,240,464,235,469,140,469\\"></polygon><text x=\\"140\\" y=\\"471\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_141_644_1:0:0_0:0:0_2461</text></g><g><polygon data-testid=\\"test-2505877\\" fill=\\"goldenrod\\" points=\\"147,486,242,486,247,491,242,496,147,496\\"></polygon><text x=\\"147\\" y=\\"498\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_148_699_1:0:0_2:0:0_64d</text></g><g><polygon data-testid=\\"test-2506133\\" fill=\\"goldenrod\\" points=\\"149,513,244,513,249,518,244,523,149,523\\"></polygon><text x=\\"149\\" y=\\"525\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_150_624_3:0:0_3:0:0_2e</text></g><g><polygon data-testid=\\"test-2506393\\" fill=\\"goldenrod\\" points=\\"152,540,247,540,252,545,247,550,152,550\\"></polygon><text x=\\"152\\" y=\\"552\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_153_667_0:0:0_6:0:0_1f51</text></g><g><polygon data-testid=\\"test-2506648\\" fill=\\"goldenrod\\" points=\\"186,567,281,567,286,572,281,577,186,577\\"></polygon><text x=\\"186\\" y=\\"579\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_187_683_2:1:0_7:0:0_9e1</text></g><g><polygon data-testid=\\"test-2506908\\" fill=\\"goldenrod\\" points=\\"237,0,332,0,337,5,332,10,237,10\\"></polygon><text x=\\"237\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_238_789_0:1:0_1:0:0_e0d</text></g><g><polygon data-testid=\\"test-2507164\\" fill=\\"goldenrod\\" points=\\"258,27,353,27,358,32,353,37,258,37\\"></polygon><text x=\\"258\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_259_775_1:1:0_2:0:0_5fc</text></g><g><polygon data-testid=\\"test-2507422\\" fill=\\"goldenrod\\" points=\\"291,54,386,54,391,59,386,64,291,64\\"></polygon><text x=\\"291\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_292_745_1:0:0_2:0:0_17f9</text></g><g><polygon data-testid=\\"test-2507679\\" fill=\\"goldenrod\\" points=\\"301,81,396,81,401,86,396,91,301,91\\"></polygon><text x=\\"301\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_302_714_2:0:0_0:0:0_138f</text></g><g><polygon data-testid=\\"test-2507938\\" fill=\\"goldenrod\\" points=\\"302,108,397,108,402,113,397,118,302,118\\"></polygon><text x=\\"302\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_303_810_3:0:0_1:0:0_3cf</text></g><g><polygon data-testid=\\"test-2508199\\" fill=\\"goldenrod\\" points=\\"311,135,406,135,411,140,406,145,311,145\\"></polygon><text x=\\"311\\" y=\\"147\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_312_797_0:0:0_1:0:0_81b</text></g><g><polygon data-testid=\\"test-2508453\\" fill=\\"goldenrod\\" points=\\"321,162,416,162,421,167,416,172,321,172\\"></polygon><text x=\\"321\\" y=\\"174\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_322_853_1:0:0_2:0:0_1539</text></g><g><polygon data-testid=\\"test-2508710\\" fill=\\"goldenrod\\" points=\\"325,189,420,189,425,194,420,199,325,199\\"></polygon><text x=\\"325\\" y=\\"201\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_326_893_2:0:0_3:0:0_ee5</text></g><g><polygon data-testid=\\"test-2508968\\" fill=\\"goldenrod\\" points=\\"327,216,422,216,427,221,422,226,327,226\\"></polygon><text x=\\"327\\" y=\\"228\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_328_822_1:0:0_1:0:0_58e</text></g><g><polygon data-testid=\\"test-2509224\\" fill=\\"goldenrod\\" points=\\"338,243,433,243,438,248,433,253,338,253\\"></polygon><text x=\\"338\\" y=\\"255\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_339_818_2:0:0_6:0:0_a01</text></g><g><polygon data-testid=\\"test-2509482\\" fill=\\"goldenrod\\" points=\\"354,270,449,270,454,275,449,280,354,280\\"></polygon><text x=\\"354\\" y=\\"282\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_355_922_3:0:0_5:0:0_8c4</text></g><g><polygon data-testid=\\"test-2509743\\" fill=\\"goldenrod\\" points=\\"390,297,485,297,490,302,485,307,390,307\\"></polygon><text x=\\"390\\" y=\\"309\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_391_921_1:0:0_1:0:0_2708</text></g><g><polygon data-testid=\\"test-2510000\\" transform=\\"rotate(180,449,329)\\" fill=\\"goldenrod\\" points=\\"399,324,494,324,499,329,494,334,399,334\\"></polygon><text x=\\"399\\" y=\\"336\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_25_499_4:0:0_3:0:0_1e25</text></g><g><polygon data-testid=\\"test-2510260\\" fill=\\"goldenrod\\" points=\\"413,351,508,351,513,356,508,361,413,361\\"></polygon><text x=\\"413\\" y=\\"363\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_414_950_1:0:0_2:0:0_1ef5</text></g><g><polygon data-testid=\\"test-2510517\\" transform=\\"rotate(180,463,383)\\" fill=\\"goldenrod\\" points=\\"413,378,508,378,513,383,508,388,413,388\\"></polygon><text x=\\"413\\" y=\\"390\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_1_513_0:0:0_2:0:0_2272</text></g><g><polygon data-testid=\\"test-2510775\\" fill=\\"goldenrod\\" points=\\"422,405,517,405,522,410,517,415,422,415\\"></polygon><text x=\\"422\\" y=\\"417\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_423_904_1:0:0_0:0:0_1b24</text></g><g><polygon data-testid=\\"test-2511032\\" transform=\\"rotate(180,481,437)\\" fill=\\"goldenrod\\" points=\\"431,432,526,432,531,437,526,442,431,442\\"></polygon><text x=\\"431\\" y=\\"444\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_46_531_0:0:0_1:0:0_db0</text></g><g><polygon data-testid=\\"test-2511287\\" transform=\\"rotate(180,482,464)\\" fill=\\"goldenrod\\" points=\\"432,459,527,459,532,464,527,469,432,469\\"></polygon><text x=\\"432\\" y=\\"471\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_70_532_1:0:0_3:0:0_db3</text></g><g><polygon data-testid=\\"test-2511547\\" transform=\\"rotate(180,503,491)\\" fill=\\"goldenrod\\" points=\\"453,486,548,486,553,491,548,496,453,496\\"></polygon><text x=\\"453\\" y=\\"498\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_30_553_3:0:0_2:0:0_16ec</text></g><g><polygon data-testid=\\"test-2511806\\" transform=\\"rotate(180,511,5)\\" fill=\\"goldenrod\\" points=\\"461,0,556,0,561,5,556,10,461,10\\"></polygon><text x=\\"461\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_61_561_1:0:0_1:0:0_fc</text></g><g><polygon data-testid=\\"test-2512059\\" fill=\\"goldenrod\\" points=\\"467,513,562,513,567,518,562,523,467,523\\"></polygon><text x=\\"467\\" y=\\"525\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_468_995_2:0:0_1:0:0_34c</text></g><g><polygon data-testid=\\"test-2512317\\" transform=\\"rotate(180,531,32)\\" fill=\\"goldenrod\\" points=\\"481,27,576,27,581,32,576,37,481,37\\"></polygon><text x=\\"481\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_142_581_1:0:0_3:0:0_53</text></g><g><polygon data-testid=\\"test-2512577\\" transform=\\"rotate(180,535,545)\\" fill=\\"goldenrod\\" points=\\"485,540,580,540,585,545,580,550,485,550\\"></polygon><text x=\\"485\\" y=\\"552\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_96_585_4:0:0_4:0:0_1b88</text></g><g><polygon data-testid=\\"test-2512839\\" fill=\\"goldenrod\\" points=\\"487,567,582,567,587,572,582,577,487,577\\"></polygon><text x=\\"487\\" y=\\"579\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_488_927_2:0:0_0:0:0_ab2</text></g><g><polygon data-testid=\\"test-2513098\\" transform=\\"rotate(180,545,599)\\" fill=\\"goldenrod\\" points=\\"495,594,590,594,595,599,590,604,495,604\\"></polygon><text x=\\"495\\" y=\\"606\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_114_595_2:0:0_4:0:0_21c6</text></g><g><polygon data-testid=\\"test-2513364\\" fill=\\"goldenrod\\" points=\\"509,621,604,621,609,626,604,631,509,631\\"></polygon><text x=\\"509\\" y=\\"633\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_510_969_3:0:0_1:0:0_244d</text></g><g><polygon data-testid=\\"test-2513626\\" transform=\\"rotate(180,563,653)\\" fill=\\"goldenrod\\" points=\\"513,648,608,648,613,653,608,658,513,658\\"></polygon><text x=\\"513\\" y=\\"660\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_43_613_1:0:0_2:0:0_1341</text></g><g><polygon data-testid=\\"test-2513885\\" fill=\\"goldenrod\\" points=\\"540,54,635,54,640,59,635,64,540,64\\"></polygon><text x=\\"540\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_541_1090_1:0:0_3:0:0_e42</text></g><g><polygon data-testid=\\"test-2514141\\" transform=\\"rotate(180,595,86)\\" fill=\\"goldenrod\\" points=\\"545,81,640,81,645,86,640,91,545,91\\"></polygon><text x=\\"545\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_174_645_3:0:0_1:0:0_1f41</text></g><g><polygon data-testid=\\"test-2514398\\" transform=\\"rotate(180,606,113)\\" fill=\\"goldenrod\\" points=\\"556,108,651,108,656,113,651,118,556,118\\"></polygon><text x=\\"556\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_124_656_0:0:0_2:0:0_1726</text></g><g><polygon data-testid=\\"test-2514658\\" fill=\\"goldenrod\\" points=\\"562,135,657,135,662,140,657,145,562,145\\"></polygon><text x=\\"562\\" y=\\"147\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_563_997_1:0:0_3:0:0_127d</text></g><g><polygon data-testid=\\"test-2514915\\" transform=\\"rotate(180,614,167)\\" fill=\\"goldenrod\\" points=\\"564,162,659,162,664,167,659,172,564,172\\"></polygon><text x=\\"564\\" y=\\"174\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_137_664_2:0:0_1:0:0_5b</text></g><g><polygon data-testid=\\"test-2515170\\" fill=\\"goldenrod\\" points=\\"564,189,659,189,664,194,659,199,564,199\\"></polygon><text x=\\"564\\" y=\\"201\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_565_1155_2:0:0_2:0:0_fc8</text></g><g><polygon data-testid=\\"test-2515429\\" fill=\\"goldenrod\\" points=\\"564,216,659,216,664,221,659,226,564,226\\"></polygon><text x=\\"564\\" y=\\"228\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_565_1134_1:0:0_1:0:0_14da</text></g><g><polygon data-testid=\\"test-2515687\\" transform=\\"rotate(180,616,248)\\" fill=\\"goldenrod\\" points=\\"566,243,661,243,666,248,661,253,566,253\\"></polygon><text x=\\"566\\" y=\\"255\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_175_666_2:0:0_5:0:0_9bf</text></g><g><polygon data-testid=\\"test-2515953\\" fill=\\"goldenrod\\" points=\\"570,675,665,675,670,680,665,685,570,685\\"></polygon><text x=\\"570\\" y=\\"687\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_571_996_4:0:0_3:0:0_23a9</text></g><g><polygon data-testid=\\"test-2516216\\" fill=\\"goldenrod\\" points=\\"574,270,669,270,674,275,669,280,574,280\\"></polygon><text x=\\"574\\" y=\\"282\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_575_1006_3:0:0_5:0:0_fc0</text></g><g><polygon data-testid=\\"test-2516478\\" fill=\\"goldenrod\\" points=\\"574,702,669,702,674,707,669,712,574,712\\"></polygon><text x=\\"574\\" y=\\"714\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_575_1070_1:0:0_2:0:0_19d5</text></g><g><polygon data-testid=\\"test-2516735\\" transform=\\"rotate(180,627,734)\\" fill=\\"goldenrod\\" points=\\"577,729,672,729,677,734,672,739,577,739\\"></polygon><text x=\\"577\\" y=\\"741\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_104_677_2:0:0_1:0:0_10b5</text></g><g><polygon data-testid=\\"test-2516992\\" transform=\\"rotate(180,629,761)\\" fill=\\"goldenrod\\" points=\\"579,756,674,756,679,761,674,766,579,766\\"></polygon><text x=\\"579\\" y=\\"768\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_203_679_1:1:0_1:0:0_a36</text></g><g><polygon data-testid=\\"test-2517248\\" fill=\\"goldenrod\\" points=\\"582,783,677,783,682,788,677,793,582,793\\"></polygon><text x=\\"582\\" y=\\"795\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_583_1070_0:0:0_3:0:0_11b4</text></g><g><polygon data-testid=\\"test-2517504\\" transform=\\"rotate(180,643,815)\\" fill=\\"goldenrod\\" points=\\"593,810,688,810,693,815,688,820,593,820\\"></polygon><text x=\\"593\\" y=\\"822\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_168_693_3:0:0_1:0:0_dd0</text></g><g><polygon data-testid=\\"test-2517760\\" fill=\\"goldenrod\\" points=\\"595,837,690,837,695,842,690,847,595,847\\"></polygon><text x=\\"595\\" y=\\"849\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_596_1032_1:0:0_3:0:0_edd</text></g><g><polygon data-testid=\\"test-2518017\\" fill=\\"goldenrod\\" points=\\"611,864,706,864,711,869,706,874,611,874\\"></polygon><text x=\\"611\\" y=\\"876\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_612_1140_4:0:0_1:0:0_1a3c</text></g><g><polygon data-testid=\\"test-2518282\\" fill=\\"goldenrod\\" points=\\"611,891,706,891,711,896,706,901,611,901\\"></polygon><text x=\\"611\\" y=\\"903\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_612_1076_0:0:0_1:0:0_1d48</text></g><g><polygon data-testid=\\"test-2518538\\" transform=\\"rotate(180,662,923)\\" fill=\\"goldenrod\\" points=\\"612,918,707,918,712,923,707,928,612,928\\"></polygon><text x=\\"612\\" y=\\"930\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_254_712_3:1:0_1:0:0_1fe3</text></g><g><polygon data-testid=\\"test-2518795\\" transform=\\"rotate(180,668,302)\\" fill=\\"goldenrod\\" points=\\"618,297,713,297,718,302,713,307,618,307\\"></polygon><text x=\\"618\\" y=\\"309\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_309_718_1:0:0_3:0:0_bc6</text></g><g><polygon data-testid=\\"test-2519057\\" transform=\\"rotate(180,675,329)\\" fill=\\"goldenrod\\" points=\\"625,324,720,324,725,329,720,334,625,334\\"></polygon><text x=\\"625\\" y=\\"336\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_150_725_4:0:0_3:0:0_51b</text></g><g><polygon data-testid=\\"test-2519318\\" fill=\\"goldenrod\\" points=\\"626,378,721,378,726,383,721,388,626,388\\"></polygon><text x=\\"626\\" y=\\"390\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_627_1115_3:0:0_2:0:0_1085</text></g><g><polygon data-testid=\\"test-2519582\\" fill=\\"goldenrod\\" points=\\"630,945,725,945,730,950,725,955,630,955\\"></polygon><text x=\\"630\\" y=\\"957\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_631_1107_0:0:0_3:0:0_7b</text></g><g><polygon data-testid=\\"test-2519836\\" transform=\\"rotate(180,680,977)\\" fill=\\"goldenrod\\" points=\\"630,972,725,972,730,977,725,982,630,982\\"></polygon><text x=\\"630\\" y=\\"984\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_215_730_0:1:0_4:0:0_2de</text></g><g><polygon data-testid=\\"test-2520099\\" transform=\\"rotate(180,702,356)\\" fill=\\"goldenrod\\" points=\\"652,351,747,351,752,356,747,361,652,361\\"></polygon><text x=\\"652\\" y=\\"363\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_297_752_2:0:0_2:0:0_265e</text></g><g><polygon data-testid=\\"test-2520359\\" fill=\\"goldenrod\\" points=\\"660,405,755,405,760,410,755,415,660,415\\"></polygon><text x=\\"660\\" y=\\"417\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_661_1079_2:0:0_1:0:0_1e8c</text></g><g><polygon data-testid=\\"test-2520620\\" fill=\\"goldenrod\\" points=\\"661,432,756,432,761,437,756,442,661,442\\"></polygon><text x=\\"661\\" y=\\"444\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_662_1265_1:0:0_5:0:0_1e50</text></g><g><polygon data-testid=\\"test-2520878\\" transform=\\"rotate(180,714,464)\\" fill=\\"goldenrod\\" points=\\"664,459,759,459,764,464,759,469,664,469\\"></polygon><text x=\\"664\\" y=\\"471\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_293_764_5:0:0_4:0:0_1edb</text></g><g><polygon data-testid=\\"test-2521140\\" transform=\\"rotate(180,729,5)\\" fill=\\"goldenrod\\" points=\\"679,0,774,0,779,5,774,10,679,10\\"></polygon><text x=\\"679\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_263_779_3:1:0_0:0:0_236d</text></g><g><polygon data-testid=\\"test-2521395\\" transform=\\"rotate(180,735,491)\\" fill=\\"goldenrod\\" points=\\"685,486,780,486,785,491,780,496,685,496\\"></polygon><text x=\\"685\\" y=\\"498\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_380_785_3:0:0_2:0:0_672</text></g><g><polygon data-testid=\\"test-2521654\\" transform=\\"rotate(180,740,518)\\" fill=\\"goldenrod\\" points=\\"690,513,785,513,790,518,785,523,690,523\\"></polygon><text x=\\"690\\" y=\\"525\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_392_790_5:0:0_1:0:0_2b5</text></g><g><polygon data-testid=\\"test-2521909\\" transform=\\"rotate(180,763,32)\\" fill=\\"goldenrod\\" points=\\"713,27,808,27,813,32,808,37,713,37\\"></polygon><text x=\\"713\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_287_813_0:0:0_3:0:0_2227</text></g><g><polygon data-testid=\\"test-2522171\\" fill=\\"goldenrod\\" points=\\"715,540,810,540,815,545,810,550,715,550\\"></polygon><text x=\\"715\\" y=\\"552\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_716_1139_2:0:0_2:0:0_ada</text></g><g><polygon data-testid=\\"test-2522430\\" transform=\\"rotate(180,770,572)\\" fill=\\"goldenrod\\" points=\\"720,567,815,567,820,572,815,577,720,577\\"></polygon><text x=\\"720\\" y=\\"579\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_392_820_2:0:0_2:0:0_26c3</text></g><g><polygon data-testid=\\"test-2522689\\" fill=\\"goldenrod\\" points=\\"725,594,820,594,825,599,820,604,725,604\\"></polygon><text x=\\"725\\" y=\\"606\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_726_1261_0:0:0_0:0:0_1126</text></g><g><polygon data-testid=\\"test-2522945\\" fill=\\"goldenrod\\" points=\\"727,999,822,999,827,1004,822,1009,727,1009\\"></polygon><text x=\\"727\\" y=\\"1011\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_728_1282_3:0:0_3:0:0_276</text></g><g><polygon data-testid=\\"test-2523207\\" transform=\\"rotate(180,779,1031)\\" fill=\\"goldenrod\\" points=\\"729,1026,824,1026,829,1031,824,1036,729,1036\\"></polygon><text x=\\"729\\" y=\\"1038\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_341_829_2:0:0_1:0:0_18ea</text></g><g><polygon data-testid=\\"test-2523464\\" transform=\\"rotate(180,780,1058)\\" fill=\\"goldenrod\\" points=\\"730,1053,825,1053,830,1058,825,1063,730,1063\\"></polygon><text x=\\"730\\" y=\\"1065\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_349_830_3:0:0_3:0:0_c0a</text></g><g><polygon data-testid=\\"test-2523725\\" transform=\\"rotate(180,797,626)\\" fill=\\"goldenrod\\" points=\\"747,621,842,621,847,626,842,631,747,631\\"></polygon><text x=\\"747\\" y=\\"633\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_311_847_0:0:0_0:0:0_151e</text></g><g><polygon data-testid=\\"test-2523980\\" transform=\\"rotate(180,814,653)\\" fill=\\"goldenrod\\" points=\\"764,648,859,648,864,653,859,658,764,658\\"></polygon><text x=\\"764\\" y=\\"660\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_388_864_3:0:0_2:0:0_505</text></g><g><polygon data-testid=\\"test-2524238\\" fill=\\"goldenrod\\" points=\\"766,1080,861,1080,866,1085,861,1090,766,1090\\"></polygon><text x=\\"766\\" y=\\"1092\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_767_1276_2:0:0_1:0:0_c2f</text></g><g><polygon data-testid=\\"test-2524497\\" fill=\\"goldenrod\\" points=\\"775,54,870,54,875,59,870,64,775,64\\"></polygon><text x=\\"775\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_776_1182_3:0:0_2:0:0_26b4</text></g><g><polygon data-testid=\\"test-2524760\\" fill=\\"goldenrod\\" points=\\"786,81,881,81,886,86,881,91,786,91\\"></polygon><text x=\\"786\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_787_1190_0:0:0_4:0:0_2070</text></g><g><polygon data-testid=\\"test-2525016\\" transform=\\"rotate(180,847,113)\\" fill=\\"goldenrod\\" points=\\"797,108,892,108,897,113,892,118,797,118\\"></polygon><text x=\\"797\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_464_897_0:0:0_1:0:0_1eab</text></g></svg></div>"`;
 
 exports[`can render a single region with SvgFeatures + BamAdapter (larger maxHeight) 2`] = `
 Object {
   "maxHeightReached": false,
   "rectangles": Object {
-    "2501248": Array [
+    "test-2501248": Array [
       2,
       0,
       213,
       25,
     ],
-    "2501501": Array [
+    "test-2501501": Array [
       7,
       27,
       218,
       52,
     ],
-    "2501764": Array [
+    "test-2501764": Array [
       15,
       54,
       233,
       79,
     ],
-    "2502026": Array [
+    "test-2502026": Array [
       16,
       81,
       227,
       106,
     ],
-    "2502287": Array [
+    "test-2502287": Array [
       17,
       108,
       235,
       133,
     ],
-    "2502547": Array [
+    "test-2502547": Array [
       42,
       135,
       253,
       160,
     ],
-    "2502802": Array [
+    "test-2502802": Array [
       43,
       162,
       261,
       187,
     ],
-    "2503059": Array [
+    "test-2503059": Array [
       47,
       189,
       265,
       214,
     ],
-    "2503316": Array [
+    "test-2503316": Array [
       55,
       216,
       273,
       241,
     ],
-    "2503571": Array [
+    "test-2503571": Array [
       65,
       243,
       276,
       268,
     ],
-    "2503826": Array [
+    "test-2503826": Array [
       76,
       270,
       287,
       295,
     ],
-    "2504079": Array [
+    "test-2504079": Array [
       90,
       297,
       301,
       322,
     ],
-    "2504332": Array [
+    "test-2504332": Array [
       94,
       324,
       312,
       349,
     ],
-    "2504586": Array [
+    "test-2504586": Array [
       109,
       351,
       327,
       376,
     ],
-    "2504840": Array [
+    "test-2504840": Array [
       123,
       378,
       349,
       403,
     ],
-    "2505099": Array [
+    "test-2505099": Array [
       125,
       405,
       343,
       430,
     ],
-    "2505355": Array [
+    "test-2505355": Array [
       132,
       432,
       358,
       457,
     ],
-    "2505620": Array [
+    "test-2505620": Array [
       140,
       459,
       366,
       484,
     ],
-    "2505877": Array [
+    "test-2505877": Array [
       147,
       486,
       365,
       511,
     ],
-    "2506133": Array [
+    "test-2506133": Array [
       149,
       513,
       360,
       538,
     ],
-    "2506393": Array [
+    "test-2506393": Array [
       152,
       540,
       378,
       565,
     ],
-    "2506648": Array [
+    "test-2506648": Array [
       186,
       567,
       404,
       592,
     ],
-    "2506908": Array [
+    "test-2506908": Array [
       237,
       0,
       455,
       25,
     ],
-    "2507164": Array [
+    "test-2507164": Array [
       258,
       27,
       476,
       52,
     ],
-    "2507422": Array [
+    "test-2507422": Array [
       291,
       54,
       517,
       79,
     ],
-    "2507679": Array [
+    "test-2507679": Array [
       301,
       81,
       527,
       106,
     ],
-    "2507938": Array [
+    "test-2507938": Array [
       302,
       108,
       520,
       133,
     ],
-    "2508199": Array [
+    "test-2508199": Array [
       311,
       135,
       529,
       160,
     ],
-    "2508453": Array [
+    "test-2508453": Array [
       321,
       162,
       547,
       187,
     ],
-    "2508710": Array [
+    "test-2508710": Array [
       325,
       189,
       543,
       214,
     ],
-    "2508968": Array [
+    "test-2508968": Array [
       327,
       216,
       545,
       241,
     ],
-    "2509224": Array [
+    "test-2509224": Array [
       338,
       243,
       556,
       268,
     ],
-    "2509482": Array [
+    "test-2509482": Array [
       354,
       270,
       572,
       295,
     ],
-    "2509743": Array [
+    "test-2509743": Array [
       390,
       297,
       616,
       322,
     ],
-    "2510000": Array [
+    "test-2510000": Array [
       399,
       324,
       617,
       349,
     ],
-    "2510260": Array [
+    "test-2510260": Array [
       413,
       351,
       639,
       376,
     ],
-    "2510517": Array [
+    "test-2510517": Array [
       413,
       378,
       624,
       403,
     ],
-    "2510775": Array [
+    "test-2510775": Array [
       422,
       405,
       648,
       430,
     ],
-    "2511032": Array [
+    "test-2511032": Array [
       431,
       432,
       642,
       457,
     ],
-    "2511287": Array [
+    "test-2511287": Array [
       432,
       459,
       643,
       484,
     ],
-    "2511547": Array [
+    "test-2511547": Array [
       453,
       486,
       671,
       511,
     ],
-    "2511806": Array [
+    "test-2511806": Array [
       461,
       0,
       664,
       25,
     ],
-    "2512059": Array [
+    "test-2512059": Array [
       467,
       513,
       685,
       538,
     ],
-    "2512317": Array [
+    "test-2512317": Array [
       481,
       27,
       692,
       52,
     ],
-    "2512577": Array [
+    "test-2512577": Array [
       485,
       540,
       703,
       565,
     ],
-    "2512839": Array [
+    "test-2512839": Array [
       487,
       567,
       705,
       592,
     ],
-    "2513098": Array [
+    "test-2513098": Array [
       495,
       594,
       721,
       619,
     ],
-    "2513364": Array [
+    "test-2513364": Array [
       509,
       621,
       735,
       646,
     ],
-    "2513626": Array [
+    "test-2513626": Array [
       513,
       648,
       731,
       673,
     ],
-    "2513885": Array [
+    "test-2513885": Array [
       540,
       54,
       766,
       79,
     ],
-    "2514141": Array [
+    "test-2514141": Array [
       545,
       81,
       771,
       106,
     ],
-    "2514398": Array [
+    "test-2514398": Array [
       556,
       108,
       782,
       133,
     ],
-    "2514658": Array [
+    "test-2514658": Array [
       562,
       135,
       788,
       160,
     ],
-    "2514915": Array [
+    "test-2514915": Array [
       564,
       162,
       775,
       187,
     ],
-    "2515170": Array [
+    "test-2515170": Array [
       564,
       189,
       790,
       214,
     ],
-    "2515429": Array [
+    "test-2515429": Array [
       564,
       216,
       798,
       241,
     ],
-    "2515687": Array [
+    "test-2515687": Array [
       566,
       243,
       784,
       268,
     ],
-    "2515953": Array [
+    "test-2515953": Array [
       570,
       675,
       796,
       700,
     ],
-    "2516216": Array [
+    "test-2516216": Array [
       574,
       270,
       800,
       295,
     ],
-    "2516478": Array [
+    "test-2516478": Array [
       574,
       702,
       808,
       727,
     ],
-    "2516735": Array [
+    "test-2516735": Array [
       577,
       729,
       803,
       754,
     ],
-    "2516992": Array [
+    "test-2516992": Array [
       579,
       756,
       797,
       781,
     ],
-    "2517248": Array [
+    "test-2517248": Array [
       582,
       783,
       816,
       808,
     ],
-    "2517504": Array [
+    "test-2517504": Array [
       593,
       810,
       811,
       835,
     ],
-    "2517760": Array [
+    "test-2517760": Array [
       595,
       837,
       821,
       862,
     ],
-    "2518017": Array [
+    "test-2518017": Array [
       611,
       864,
       845,
       889,
     ],
-    "2518282": Array [
+    "test-2518282": Array [
       611,
       891,
       845,
       916,
     ],
-    "2518538": Array [
+    "test-2518538": Array [
       612,
       918,
       838,
       943,
     ],
-    "2518795": Array [
+    "test-2518795": Array [
       618,
       297,
       836,
       322,
     ],
-    "2519057": Array [
+    "test-2519057": Array [
       625,
       324,
       843,
       349,
     ],
-    "2519318": Array [
+    "test-2519318": Array [
       626,
       378,
       860,
       403,
     ],
-    "2519582": Array [
+    "test-2519582": Array [
       630,
       945,
       848,
       970,
     ],
-    "2519836": Array [
+    "test-2519836": Array [
       630,
       972,
       848,
       997,
     ],
-    "2520099": Array [
+    "test-2520099": Array [
       652,
       351,
       878,
       376,
     ],
-    "2520359": Array [
+    "test-2520359": Array [
       660,
       405,
       894,
       430,
     ],
-    "2520620": Array [
+    "test-2520620": Array [
       661,
       432,
       895,
       457,
     ],
-    "2520878": Array [
+    "test-2520878": Array [
       664,
       459,
       890,
       484,
     ],
-    "2521140": Array [
+    "test-2521140": Array [
       679,
       0,
       905,
       25,
     ],
-    "2521395": Array [
+    "test-2521395": Array [
       685,
       486,
       903,
       511,
     ],
-    "2521654": Array [
+    "test-2521654": Array [
       690,
       513,
       908,
       538,
     ],
-    "2521909": Array [
+    "test-2521909": Array [
       713,
       27,
       939,
       52,
     ],
-    "2522171": Array [
+    "test-2522171": Array [
       715,
       540,
       941,
       565,
     ],
-    "2522430": Array [
+    "test-2522430": Array [
       720,
       567,
       946,
       592,
     ],
-    "2522689": Array [
+    "test-2522689": Array [
       725,
       594,
       959,
       619,
     ],
-    "2522945": Array [
+    "test-2522945": Array [
       727,
       999,
       953,
       1024,
     ],
-    "2523207": Array [
+    "test-2523207": Array [
       729,
       1026,
       955,
       1051,
     ],
-    "2523464": Array [
+    "test-2523464": Array [
       730,
       1053,
       948,
       1078,
     ],
-    "2523725": Array [
+    "test-2523725": Array [
       747,
       621,
       973,
       646,
     ],
-    "2523980": Array [
+    "test-2523980": Array [
       764,
       648,
       982,
       673,
     ],
-    "2524238": Array [
+    "test-2524238": Array [
       766,
       1080,
       992,
       1105,
     ],
-    "2524497": Array [
+    "test-2524497": Array [
       775,
       54,
       1009,
       79,
     ],
-    "2524760": Array [
+    "test-2524760": Array [
       786,
       81,
       1020,
       106,
     ],
-    "2525016": Array [
+    "test-2525016": Array [
       797,
       108,
       1023,
@@ -1138,433 +1138,433 @@ Object {
 }
 `;
 
-exports[`can render a single region with SvgFeatures + BamAdapter 1`] = `"<div style=\\"position:relative\\"><svg class=\\"SvgFeatureRendering\\" width=\\"300px\\" height=\\"0px\\" style=\\"display:block\\"><g><polygon data-testid=\\"2501248\\" fill=\\"goldenrod\\" points=\\"2,0,97,0,102,5,97,10,2,10\\"></polygon><text x=\\"2\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_3_555_0:0:0_2:0:0_102d</text></g><g><polygon data-testid=\\"2501501\\" fill=\\"goldenrod\\" points=\\"7,27,102,27,107,32,102,37,7,37\\"></polygon><text x=\\"7\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_8_507_4:0:0_2:0:0_10e6</text></g><g><polygon data-testid=\\"2501764\\" fill=\\"goldenrod\\" points=\\"15,54,110,54,115,59,110,64,15,64\\"></polygon><text x=\\"15\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_16_523_3:0:0_0:0:0_1a75</text></g><g><polygon data-testid=\\"2502026\\" fill=\\"goldenrod\\" points=\\"16,81,111,81,116,86,111,91,16,91\\"></polygon><text x=\\"16\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_17_531_4:0:0_2:0:0_b65</text></g><g><polygon data-testid=\\"2502287\\" fill=\\"goldenrod\\" points=\\"17,108,112,108,117,113,112,118,17,118\\"></polygon><text x=\\"17\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_18_445_3:0:0_2:0:0_22df</text></g><g><polygon data-testid=\\"2502547\\" fill=\\"goldenrod\\" points=\\"42,135,137,135,142,140,137,145,42,145\\"></polygon><text x=\\"42\\" y=\\"147\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_43_557_1:0:0_2:0:0_5b3</text></g><g><polygon data-testid=\\"2502802\\" fill=\\"goldenrod\\" points=\\"43,162,138,162,143,167,138,172,43,172\\"></polygon><text x=\\"43\\" y=\\"174\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_44_560_2:0:0_5:0:0_2524</text></g><g><polygon data-testid=\\"2503059\\" fill=\\"goldenrod\\" points=\\"47,189,142,189,147,194,142,199,47,199\\"></polygon><text x=\\"47\\" y=\\"201\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_48_502_2:0:0_1:0:0_1513</text></g><g><polygon data-testid=\\"2503316\\" fill=\\"goldenrod\\" points=\\"55,216,150,216,155,221,150,226,55,226\\"></polygon><text x=\\"55\\" y=\\"228\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_56_576_1:0:0_2:0:0_191d</text></g><g><polygon data-testid=\\"2503571\\" fill=\\"goldenrod\\" points=\\"65,243,160,243,165,248,160,253,65,253\\"></polygon><text x=\\"65\\" y=\\"255\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_66_630_1:0:0_3:0:0_ce5</text></g><g><polygon data-testid=\\"2503826\\" fill=\\"goldenrod\\" points=\\"76,270,171,270,176,275,171,280,76,280\\"></polygon><text x=\\"76\\" y=\\"282\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_77_676_0:0:0_3:0:0_764</text></g><g><polygon data-testid=\\"2504079\\" fill=\\"goldenrod\\" points=\\"90,297,185,297,190,302,185,307,90,307\\"></polygon><text x=\\"90\\" y=\\"309\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_91_656_0:0:0_2:0:0_8f0</text></g><g><polygon data-testid=\\"2504332\\" fill=\\"goldenrod\\" points=\\"94,324,189,324,194,329,189,334,94,334\\"></polygon><text x=\\"94\\" y=\\"336\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_95_545_0:0:0_1:0:0_1ecb</text></g><g><polygon data-testid=\\"2504586\\" fill=\\"goldenrod\\" points=\\"109,351,204,351,209,356,204,361,109,361\\"></polygon><text x=\\"109\\" y=\\"363\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_110_638_0:0:0_3:0:0_15b</text></g><g><polygon data-testid=\\"2504840\\" fill=\\"goldenrod\\" points=\\"123,378,218,378,223,383,218,388,123,388\\"></polygon><text x=\\"123\\" y=\\"390\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_124_679_2:0:0_0:0:0_17d4</text></g><g><polygon data-testid=\\"2505099\\" fill=\\"goldenrod\\" points=\\"125,405,220,405,225,410,220,415,125,415\\"></polygon><text x=\\"125\\" y=\\"417\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_126_596_1:0:0_1:0:0_641</text></g><g><polygon data-testid=\\"2505355\\" fill=\\"goldenrod\\" points=\\"132,432,227,432,232,437,227,442,132,442\\"></polygon><text x=\\"132\\" y=\\"444\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_133_707_5:0:0_4:0:0_1062</text></g><g><polygon data-testid=\\"2505620\\" fill=\\"goldenrod\\" points=\\"140,459,235,459,240,464,235,469,140,469\\"></polygon><text x=\\"140\\" y=\\"471\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_141_644_1:0:0_0:0:0_2461</text></g><g><polygon data-testid=\\"2505877\\" fill=\\"goldenrod\\" points=\\"147,486,242,486,247,491,242,496,147,496\\"></polygon><text x=\\"147\\" y=\\"498\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_148_699_1:0:0_2:0:0_64d</text></g><g><polygon data-testid=\\"2506133\\" fill=\\"goldenrod\\" points=\\"149,513,244,513,249,518,244,523,149,523\\"></polygon><text x=\\"149\\" y=\\"525\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_150_624_3:0:0_3:0:0_2e</text></g><g><polygon data-testid=\\"2506393\\" fill=\\"goldenrod\\" points=\\"152,540,247,540,252,545,247,550,152,550\\"></polygon><text x=\\"152\\" y=\\"552\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_153_667_0:0:0_6:0:0_1f51</text></g><g><polygon data-testid=\\"2506648\\" fill=\\"goldenrod\\" points=\\"186,567,281,567,286,572,281,577,186,577\\"></polygon><text x=\\"186\\" y=\\"579\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_187_683_2:1:0_7:0:0_9e1</text></g><g><polygon data-testid=\\"2506908\\" fill=\\"goldenrod\\" points=\\"237,0,332,0,337,5,332,10,237,10\\"></polygon><text x=\\"237\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_238_789_0:1:0_1:0:0_e0d</text></g><g><polygon data-testid=\\"2507164\\" fill=\\"goldenrod\\" points=\\"258,27,353,27,358,32,353,37,258,37\\"></polygon><text x=\\"258\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_259_775_1:1:0_2:0:0_5fc</text></g><g><polygon data-testid=\\"2507422\\" fill=\\"goldenrod\\" points=\\"291,54,386,54,391,59,386,64,291,64\\"></polygon><text x=\\"291\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_292_745_1:0:0_2:0:0_17f9</text></g><g><polygon data-testid=\\"2507679\\" fill=\\"goldenrod\\" points=\\"301,81,396,81,401,86,396,91,301,91\\"></polygon><text x=\\"301\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_302_714_2:0:0_0:0:0_138f</text></g><g><polygon data-testid=\\"2507938\\" fill=\\"goldenrod\\" points=\\"302,108,397,108,402,113,397,118,302,118\\"></polygon><text x=\\"302\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_303_810_3:0:0_1:0:0_3cf</text></g><g><polygon data-testid=\\"2508199\\" fill=\\"goldenrod\\" points=\\"311,135,406,135,411,140,406,145,311,145\\"></polygon><text x=\\"311\\" y=\\"147\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_312_797_0:0:0_1:0:0_81b</text></g><g><polygon data-testid=\\"2508453\\" fill=\\"goldenrod\\" points=\\"321,162,416,162,421,167,416,172,321,172\\"></polygon><text x=\\"321\\" y=\\"174\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_322_853_1:0:0_2:0:0_1539</text></g><g><polygon data-testid=\\"2508710\\" fill=\\"goldenrod\\" points=\\"325,189,420,189,425,194,420,199,325,199\\"></polygon><text x=\\"325\\" y=\\"201\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_326_893_2:0:0_3:0:0_ee5</text></g><g><polygon data-testid=\\"2508968\\" fill=\\"goldenrod\\" points=\\"327,216,422,216,427,221,422,226,327,226\\"></polygon><text x=\\"327\\" y=\\"228\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_328_822_1:0:0_1:0:0_58e</text></g><g><polygon data-testid=\\"2509224\\" fill=\\"goldenrod\\" points=\\"338,243,433,243,438,248,433,253,338,253\\"></polygon><text x=\\"338\\" y=\\"255\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_339_818_2:0:0_6:0:0_a01</text></g><g><polygon data-testid=\\"2509482\\" fill=\\"goldenrod\\" points=\\"354,270,449,270,454,275,449,280,354,280\\"></polygon><text x=\\"354\\" y=\\"282\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_355_922_3:0:0_5:0:0_8c4</text></g><g><polygon data-testid=\\"2509743\\" fill=\\"goldenrod\\" points=\\"390,297,485,297,490,302,485,307,390,307\\"></polygon><text x=\\"390\\" y=\\"309\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_391_921_1:0:0_1:0:0_2708</text></g><g><polygon data-testid=\\"2510000\\" transform=\\"rotate(180,449,329)\\" fill=\\"goldenrod\\" points=\\"399,324,494,324,499,329,494,334,399,334\\"></polygon><text x=\\"399\\" y=\\"336\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_25_499_4:0:0_3:0:0_1e25</text></g><g><polygon data-testid=\\"2510260\\" fill=\\"goldenrod\\" points=\\"413,351,508,351,513,356,508,361,413,361\\"></polygon><text x=\\"413\\" y=\\"363\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_414_950_1:0:0_2:0:0_1ef5</text></g><g><polygon data-testid=\\"2510517\\" transform=\\"rotate(180,463,383)\\" fill=\\"goldenrod\\" points=\\"413,378,508,378,513,383,508,388,413,388\\"></polygon><text x=\\"413\\" y=\\"390\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_1_513_0:0:0_2:0:0_2272</text></g><g><polygon data-testid=\\"2510775\\" fill=\\"goldenrod\\" points=\\"422,405,517,405,522,410,517,415,422,415\\"></polygon><text x=\\"422\\" y=\\"417\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_423_904_1:0:0_0:0:0_1b24</text></g><g><polygon data-testid=\\"2511032\\" transform=\\"rotate(180,481,437)\\" fill=\\"goldenrod\\" points=\\"431,432,526,432,531,437,526,442,431,442\\"></polygon><text x=\\"431\\" y=\\"444\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_46_531_0:0:0_1:0:0_db0</text></g><g><polygon data-testid=\\"2511287\\" transform=\\"rotate(180,482,464)\\" fill=\\"goldenrod\\" points=\\"432,459,527,459,532,464,527,469,432,469\\"></polygon><text x=\\"432\\" y=\\"471\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_70_532_1:0:0_3:0:0_db3</text></g><g><polygon data-testid=\\"2511547\\" transform=\\"rotate(180,503,491)\\" fill=\\"goldenrod\\" points=\\"453,486,548,486,553,491,548,496,453,496\\"></polygon><text x=\\"453\\" y=\\"498\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_30_553_3:0:0_2:0:0_16ec</text></g><g><polygon data-testid=\\"2511806\\" transform=\\"rotate(180,511,5)\\" fill=\\"goldenrod\\" points=\\"461,0,556,0,561,5,556,10,461,10\\"></polygon><text x=\\"461\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_61_561_1:0:0_1:0:0_fc</text></g><g><polygon data-testid=\\"2512059\\" fill=\\"goldenrod\\" points=\\"467,513,562,513,567,518,562,523,467,523\\"></polygon><text x=\\"467\\" y=\\"525\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_468_995_2:0:0_1:0:0_34c</text></g><g><polygon data-testid=\\"2512317\\" transform=\\"rotate(180,531,32)\\" fill=\\"goldenrod\\" points=\\"481,27,576,27,581,32,576,37,481,37\\"></polygon><text x=\\"481\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_142_581_1:0:0_3:0:0_53</text></g><g><polygon data-testid=\\"2512577\\" transform=\\"rotate(180,535,545)\\" fill=\\"goldenrod\\" points=\\"485,540,580,540,585,545,580,550,485,550\\"></polygon><text x=\\"485\\" y=\\"552\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_96_585_4:0:0_4:0:0_1b88</text></g><g><polygon data-testid=\\"2512839\\" fill=\\"goldenrod\\" points=\\"487,567,582,567,587,572,582,577,487,577\\"></polygon><text x=\\"487\\" y=\\"579\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_488_927_2:0:0_0:0:0_ab2</text></g><g><polygon data-testid=\\"2513885\\" fill=\\"goldenrod\\" points=\\"540,54,635,54,640,59,635,64,540,64\\"></polygon><text x=\\"540\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_541_1090_1:0:0_3:0:0_e42</text></g><g><polygon data-testid=\\"2514141\\" transform=\\"rotate(180,595,86)\\" fill=\\"goldenrod\\" points=\\"545,81,640,81,645,86,640,91,545,91\\"></polygon><text x=\\"545\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_174_645_3:0:0_1:0:0_1f41</text></g><g><polygon data-testid=\\"2514398\\" transform=\\"rotate(180,606,113)\\" fill=\\"goldenrod\\" points=\\"556,108,651,108,656,113,651,118,556,118\\"></polygon><text x=\\"556\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_124_656_0:0:0_2:0:0_1726</text></g><g><polygon data-testid=\\"2514658\\" fill=\\"goldenrod\\" points=\\"562,135,657,135,662,140,657,145,562,145\\"></polygon><text x=\\"562\\" y=\\"147\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_563_997_1:0:0_3:0:0_127d</text></g><g><polygon data-testid=\\"2514915\\" transform=\\"rotate(180,614,167)\\" fill=\\"goldenrod\\" points=\\"564,162,659,162,664,167,659,172,564,172\\"></polygon><text x=\\"564\\" y=\\"174\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_137_664_2:0:0_1:0:0_5b</text></g><g><polygon data-testid=\\"2515170\\" fill=\\"goldenrod\\" points=\\"564,189,659,189,664,194,659,199,564,199\\"></polygon><text x=\\"564\\" y=\\"201\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_565_1155_2:0:0_2:0:0_fc8</text></g><g><polygon data-testid=\\"2515429\\" fill=\\"goldenrod\\" points=\\"564,216,659,216,664,221,659,226,564,226\\"></polygon><text x=\\"564\\" y=\\"228\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_565_1134_1:0:0_1:0:0_14da</text></g><g><polygon data-testid=\\"2515687\\" transform=\\"rotate(180,616,248)\\" fill=\\"goldenrod\\" points=\\"566,243,661,243,666,248,661,253,566,253\\"></polygon><text x=\\"566\\" y=\\"255\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_175_666_2:0:0_5:0:0_9bf</text></g><g><polygon data-testid=\\"2516216\\" fill=\\"goldenrod\\" points=\\"574,270,669,270,674,275,669,280,574,280\\"></polygon><text x=\\"574\\" y=\\"282\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_575_1006_3:0:0_5:0:0_fc0</text></g><g><polygon data-testid=\\"2518795\\" transform=\\"rotate(180,668,302)\\" fill=\\"goldenrod\\" points=\\"618,297,713,297,718,302,713,307,618,307\\"></polygon><text x=\\"618\\" y=\\"309\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_309_718_1:0:0_3:0:0_bc6</text></g><g><polygon data-testid=\\"2519057\\" transform=\\"rotate(180,675,329)\\" fill=\\"goldenrod\\" points=\\"625,324,720,324,725,329,720,334,625,334\\"></polygon><text x=\\"625\\" y=\\"336\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_150_725_4:0:0_3:0:0_51b</text></g><g><polygon data-testid=\\"2519318\\" fill=\\"goldenrod\\" points=\\"626,378,721,378,726,383,721,388,626,388\\"></polygon><text x=\\"626\\" y=\\"390\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_627_1115_3:0:0_2:0:0_1085</text></g><g><polygon data-testid=\\"2520099\\" transform=\\"rotate(180,702,356)\\" fill=\\"goldenrod\\" points=\\"652,351,747,351,752,356,747,361,652,361\\"></polygon><text x=\\"652\\" y=\\"363\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_297_752_2:0:0_2:0:0_265e</text></g><g><polygon data-testid=\\"2520359\\" fill=\\"goldenrod\\" points=\\"660,405,755,405,760,410,755,415,660,415\\"></polygon><text x=\\"660\\" y=\\"417\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_661_1079_2:0:0_1:0:0_1e8c</text></g><g><polygon data-testid=\\"2520620\\" fill=\\"goldenrod\\" points=\\"661,432,756,432,761,437,756,442,661,442\\"></polygon><text x=\\"661\\" y=\\"444\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_662_1265_1:0:0_5:0:0_1e50</text></g><g><polygon data-testid=\\"2520878\\" transform=\\"rotate(180,714,464)\\" fill=\\"goldenrod\\" points=\\"664,459,759,459,764,464,759,469,664,469\\"></polygon><text x=\\"664\\" y=\\"471\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_293_764_5:0:0_4:0:0_1edb</text></g><g><polygon data-testid=\\"2521140\\" transform=\\"rotate(180,729,5)\\" fill=\\"goldenrod\\" points=\\"679,0,774,0,779,5,774,10,679,10\\"></polygon><text x=\\"679\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_263_779_3:1:0_0:0:0_236d</text></g><g><polygon data-testid=\\"2521395\\" transform=\\"rotate(180,735,491)\\" fill=\\"goldenrod\\" points=\\"685,486,780,486,785,491,780,496,685,496\\"></polygon><text x=\\"685\\" y=\\"498\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_380_785_3:0:0_2:0:0_672</text></g><g><polygon data-testid=\\"2521654\\" transform=\\"rotate(180,740,518)\\" fill=\\"goldenrod\\" points=\\"690,513,785,513,790,518,785,523,690,523\\"></polygon><text x=\\"690\\" y=\\"525\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_392_790_5:0:0_1:0:0_2b5</text></g><g><polygon data-testid=\\"2521909\\" transform=\\"rotate(180,763,32)\\" fill=\\"goldenrod\\" points=\\"713,27,808,27,813,32,808,37,713,37\\"></polygon><text x=\\"713\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_287_813_0:0:0_3:0:0_2227</text></g><g><polygon data-testid=\\"2522171\\" fill=\\"goldenrod\\" points=\\"715,540,810,540,815,545,810,550,715,550\\"></polygon><text x=\\"715\\" y=\\"552\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_716_1139_2:0:0_2:0:0_ada</text></g><g><polygon data-testid=\\"2522430\\" transform=\\"rotate(180,770,572)\\" fill=\\"goldenrod\\" points=\\"720,567,815,567,820,572,815,577,720,577\\"></polygon><text x=\\"720\\" y=\\"579\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_392_820_2:0:0_2:0:0_26c3</text></g><g><polygon data-testid=\\"2524497\\" fill=\\"goldenrod\\" points=\\"775,54,870,54,875,59,870,64,775,64\\"></polygon><text x=\\"775\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_776_1182_3:0:0_2:0:0_26b4</text></g><g><polygon data-testid=\\"2524760\\" fill=\\"goldenrod\\" points=\\"786,81,881,81,886,86,881,91,786,91\\"></polygon><text x=\\"786\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_787_1190_0:0:0_4:0:0_2070</text></g><g><polygon data-testid=\\"2525016\\" transform=\\"rotate(180,847,113)\\" fill=\\"goldenrod\\" points=\\"797,108,892,108,897,113,892,118,797,118\\"></polygon><text x=\\"797\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_464_897_0:0:0_1:0:0_1eab</text></g></svg></div>"`;
+exports[`can render a single region with SvgFeatures + BamAdapter 1`] = `"<div style=\\"position:relative\\"><svg class=\\"SvgFeatureRendering\\" width=\\"300px\\" height=\\"0px\\" style=\\"display:block\\"><g><polygon data-testid=\\"test-2501248\\" fill=\\"goldenrod\\" points=\\"2,0,97,0,102,5,97,10,2,10\\"></polygon><text x=\\"2\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_3_555_0:0:0_2:0:0_102d</text></g><g><polygon data-testid=\\"test-2501501\\" fill=\\"goldenrod\\" points=\\"7,27,102,27,107,32,102,37,7,37\\"></polygon><text x=\\"7\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_8_507_4:0:0_2:0:0_10e6</text></g><g><polygon data-testid=\\"test-2501764\\" fill=\\"goldenrod\\" points=\\"15,54,110,54,115,59,110,64,15,64\\"></polygon><text x=\\"15\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_16_523_3:0:0_0:0:0_1a75</text></g><g><polygon data-testid=\\"test-2502026\\" fill=\\"goldenrod\\" points=\\"16,81,111,81,116,86,111,91,16,91\\"></polygon><text x=\\"16\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_17_531_4:0:0_2:0:0_b65</text></g><g><polygon data-testid=\\"test-2502287\\" fill=\\"goldenrod\\" points=\\"17,108,112,108,117,113,112,118,17,118\\"></polygon><text x=\\"17\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_18_445_3:0:0_2:0:0_22df</text></g><g><polygon data-testid=\\"test-2502547\\" fill=\\"goldenrod\\" points=\\"42,135,137,135,142,140,137,145,42,145\\"></polygon><text x=\\"42\\" y=\\"147\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_43_557_1:0:0_2:0:0_5b3</text></g><g><polygon data-testid=\\"test-2502802\\" fill=\\"goldenrod\\" points=\\"43,162,138,162,143,167,138,172,43,172\\"></polygon><text x=\\"43\\" y=\\"174\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_44_560_2:0:0_5:0:0_2524</text></g><g><polygon data-testid=\\"test-2503059\\" fill=\\"goldenrod\\" points=\\"47,189,142,189,147,194,142,199,47,199\\"></polygon><text x=\\"47\\" y=\\"201\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_48_502_2:0:0_1:0:0_1513</text></g><g><polygon data-testid=\\"test-2503316\\" fill=\\"goldenrod\\" points=\\"55,216,150,216,155,221,150,226,55,226\\"></polygon><text x=\\"55\\" y=\\"228\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_56_576_1:0:0_2:0:0_191d</text></g><g><polygon data-testid=\\"test-2503571\\" fill=\\"goldenrod\\" points=\\"65,243,160,243,165,248,160,253,65,253\\"></polygon><text x=\\"65\\" y=\\"255\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_66_630_1:0:0_3:0:0_ce5</text></g><g><polygon data-testid=\\"test-2503826\\" fill=\\"goldenrod\\" points=\\"76,270,171,270,176,275,171,280,76,280\\"></polygon><text x=\\"76\\" y=\\"282\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_77_676_0:0:0_3:0:0_764</text></g><g><polygon data-testid=\\"test-2504079\\" fill=\\"goldenrod\\" points=\\"90,297,185,297,190,302,185,307,90,307\\"></polygon><text x=\\"90\\" y=\\"309\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_91_656_0:0:0_2:0:0_8f0</text></g><g><polygon data-testid=\\"test-2504332\\" fill=\\"goldenrod\\" points=\\"94,324,189,324,194,329,189,334,94,334\\"></polygon><text x=\\"94\\" y=\\"336\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_95_545_0:0:0_1:0:0_1ecb</text></g><g><polygon data-testid=\\"test-2504586\\" fill=\\"goldenrod\\" points=\\"109,351,204,351,209,356,204,361,109,361\\"></polygon><text x=\\"109\\" y=\\"363\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_110_638_0:0:0_3:0:0_15b</text></g><g><polygon data-testid=\\"test-2504840\\" fill=\\"goldenrod\\" points=\\"123,378,218,378,223,383,218,388,123,388\\"></polygon><text x=\\"123\\" y=\\"390\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_124_679_2:0:0_0:0:0_17d4</text></g><g><polygon data-testid=\\"test-2505099\\" fill=\\"goldenrod\\" points=\\"125,405,220,405,225,410,220,415,125,415\\"></polygon><text x=\\"125\\" y=\\"417\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_126_596_1:0:0_1:0:0_641</text></g><g><polygon data-testid=\\"test-2505355\\" fill=\\"goldenrod\\" points=\\"132,432,227,432,232,437,227,442,132,442\\"></polygon><text x=\\"132\\" y=\\"444\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_133_707_5:0:0_4:0:0_1062</text></g><g><polygon data-testid=\\"test-2505620\\" fill=\\"goldenrod\\" points=\\"140,459,235,459,240,464,235,469,140,469\\"></polygon><text x=\\"140\\" y=\\"471\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_141_644_1:0:0_0:0:0_2461</text></g><g><polygon data-testid=\\"test-2505877\\" fill=\\"goldenrod\\" points=\\"147,486,242,486,247,491,242,496,147,496\\"></polygon><text x=\\"147\\" y=\\"498\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_148_699_1:0:0_2:0:0_64d</text></g><g><polygon data-testid=\\"test-2506133\\" fill=\\"goldenrod\\" points=\\"149,513,244,513,249,518,244,523,149,523\\"></polygon><text x=\\"149\\" y=\\"525\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_150_624_3:0:0_3:0:0_2e</text></g><g><polygon data-testid=\\"test-2506393\\" fill=\\"goldenrod\\" points=\\"152,540,247,540,252,545,247,550,152,550\\"></polygon><text x=\\"152\\" y=\\"552\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_153_667_0:0:0_6:0:0_1f51</text></g><g><polygon data-testid=\\"test-2506648\\" fill=\\"goldenrod\\" points=\\"186,567,281,567,286,572,281,577,186,577\\"></polygon><text x=\\"186\\" y=\\"579\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_187_683_2:1:0_7:0:0_9e1</text></g><g><polygon data-testid=\\"test-2506908\\" fill=\\"goldenrod\\" points=\\"237,0,332,0,337,5,332,10,237,10\\"></polygon><text x=\\"237\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_238_789_0:1:0_1:0:0_e0d</text></g><g><polygon data-testid=\\"test-2507164\\" fill=\\"goldenrod\\" points=\\"258,27,353,27,358,32,353,37,258,37\\"></polygon><text x=\\"258\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_259_775_1:1:0_2:0:0_5fc</text></g><g><polygon data-testid=\\"test-2507422\\" fill=\\"goldenrod\\" points=\\"291,54,386,54,391,59,386,64,291,64\\"></polygon><text x=\\"291\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_292_745_1:0:0_2:0:0_17f9</text></g><g><polygon data-testid=\\"test-2507679\\" fill=\\"goldenrod\\" points=\\"301,81,396,81,401,86,396,91,301,91\\"></polygon><text x=\\"301\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_302_714_2:0:0_0:0:0_138f</text></g><g><polygon data-testid=\\"test-2507938\\" fill=\\"goldenrod\\" points=\\"302,108,397,108,402,113,397,118,302,118\\"></polygon><text x=\\"302\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_303_810_3:0:0_1:0:0_3cf</text></g><g><polygon data-testid=\\"test-2508199\\" fill=\\"goldenrod\\" points=\\"311,135,406,135,411,140,406,145,311,145\\"></polygon><text x=\\"311\\" y=\\"147\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_312_797_0:0:0_1:0:0_81b</text></g><g><polygon data-testid=\\"test-2508453\\" fill=\\"goldenrod\\" points=\\"321,162,416,162,421,167,416,172,321,172\\"></polygon><text x=\\"321\\" y=\\"174\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_322_853_1:0:0_2:0:0_1539</text></g><g><polygon data-testid=\\"test-2508710\\" fill=\\"goldenrod\\" points=\\"325,189,420,189,425,194,420,199,325,199\\"></polygon><text x=\\"325\\" y=\\"201\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_326_893_2:0:0_3:0:0_ee5</text></g><g><polygon data-testid=\\"test-2508968\\" fill=\\"goldenrod\\" points=\\"327,216,422,216,427,221,422,226,327,226\\"></polygon><text x=\\"327\\" y=\\"228\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_328_822_1:0:0_1:0:0_58e</text></g><g><polygon data-testid=\\"test-2509224\\" fill=\\"goldenrod\\" points=\\"338,243,433,243,438,248,433,253,338,253\\"></polygon><text x=\\"338\\" y=\\"255\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_339_818_2:0:0_6:0:0_a01</text></g><g><polygon data-testid=\\"test-2509482\\" fill=\\"goldenrod\\" points=\\"354,270,449,270,454,275,449,280,354,280\\"></polygon><text x=\\"354\\" y=\\"282\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_355_922_3:0:0_5:0:0_8c4</text></g><g><polygon data-testid=\\"test-2509743\\" fill=\\"goldenrod\\" points=\\"390,297,485,297,490,302,485,307,390,307\\"></polygon><text x=\\"390\\" y=\\"309\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_391_921_1:0:0_1:0:0_2708</text></g><g><polygon data-testid=\\"test-2510000\\" transform=\\"rotate(180,449,329)\\" fill=\\"goldenrod\\" points=\\"399,324,494,324,499,329,494,334,399,334\\"></polygon><text x=\\"399\\" y=\\"336\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_25_499_4:0:0_3:0:0_1e25</text></g><g><polygon data-testid=\\"test-2510260\\" fill=\\"goldenrod\\" points=\\"413,351,508,351,513,356,508,361,413,361\\"></polygon><text x=\\"413\\" y=\\"363\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_414_950_1:0:0_2:0:0_1ef5</text></g><g><polygon data-testid=\\"test-2510517\\" transform=\\"rotate(180,463,383)\\" fill=\\"goldenrod\\" points=\\"413,378,508,378,513,383,508,388,413,388\\"></polygon><text x=\\"413\\" y=\\"390\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_1_513_0:0:0_2:0:0_2272</text></g><g><polygon data-testid=\\"test-2510775\\" fill=\\"goldenrod\\" points=\\"422,405,517,405,522,410,517,415,422,415\\"></polygon><text x=\\"422\\" y=\\"417\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_423_904_1:0:0_0:0:0_1b24</text></g><g><polygon data-testid=\\"test-2511032\\" transform=\\"rotate(180,481,437)\\" fill=\\"goldenrod\\" points=\\"431,432,526,432,531,437,526,442,431,442\\"></polygon><text x=\\"431\\" y=\\"444\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_46_531_0:0:0_1:0:0_db0</text></g><g><polygon data-testid=\\"test-2511287\\" transform=\\"rotate(180,482,464)\\" fill=\\"goldenrod\\" points=\\"432,459,527,459,532,464,527,469,432,469\\"></polygon><text x=\\"432\\" y=\\"471\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_70_532_1:0:0_3:0:0_db3</text></g><g><polygon data-testid=\\"test-2511547\\" transform=\\"rotate(180,503,491)\\" fill=\\"goldenrod\\" points=\\"453,486,548,486,553,491,548,496,453,496\\"></polygon><text x=\\"453\\" y=\\"498\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_30_553_3:0:0_2:0:0_16ec</text></g><g><polygon data-testid=\\"test-2511806\\" transform=\\"rotate(180,511,5)\\" fill=\\"goldenrod\\" points=\\"461,0,556,0,561,5,556,10,461,10\\"></polygon><text x=\\"461\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_61_561_1:0:0_1:0:0_fc</text></g><g><polygon data-testid=\\"test-2512059\\" fill=\\"goldenrod\\" points=\\"467,513,562,513,567,518,562,523,467,523\\"></polygon><text x=\\"467\\" y=\\"525\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_468_995_2:0:0_1:0:0_34c</text></g><g><polygon data-testid=\\"test-2512317\\" transform=\\"rotate(180,531,32)\\" fill=\\"goldenrod\\" points=\\"481,27,576,27,581,32,576,37,481,37\\"></polygon><text x=\\"481\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_142_581_1:0:0_3:0:0_53</text></g><g><polygon data-testid=\\"test-2512577\\" transform=\\"rotate(180,535,545)\\" fill=\\"goldenrod\\" points=\\"485,540,580,540,585,545,580,550,485,550\\"></polygon><text x=\\"485\\" y=\\"552\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_96_585_4:0:0_4:0:0_1b88</text></g><g><polygon data-testid=\\"test-2512839\\" fill=\\"goldenrod\\" points=\\"487,567,582,567,587,572,582,577,487,577\\"></polygon><text x=\\"487\\" y=\\"579\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_488_927_2:0:0_0:0:0_ab2</text></g><g><polygon data-testid=\\"test-2513885\\" fill=\\"goldenrod\\" points=\\"540,54,635,54,640,59,635,64,540,64\\"></polygon><text x=\\"540\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_541_1090_1:0:0_3:0:0_e42</text></g><g><polygon data-testid=\\"test-2514141\\" transform=\\"rotate(180,595,86)\\" fill=\\"goldenrod\\" points=\\"545,81,640,81,645,86,640,91,545,91\\"></polygon><text x=\\"545\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_174_645_3:0:0_1:0:0_1f41</text></g><g><polygon data-testid=\\"test-2514398\\" transform=\\"rotate(180,606,113)\\" fill=\\"goldenrod\\" points=\\"556,108,651,108,656,113,651,118,556,118\\"></polygon><text x=\\"556\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_124_656_0:0:0_2:0:0_1726</text></g><g><polygon data-testid=\\"test-2514658\\" fill=\\"goldenrod\\" points=\\"562,135,657,135,662,140,657,145,562,145\\"></polygon><text x=\\"562\\" y=\\"147\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_563_997_1:0:0_3:0:0_127d</text></g><g><polygon data-testid=\\"test-2514915\\" transform=\\"rotate(180,614,167)\\" fill=\\"goldenrod\\" points=\\"564,162,659,162,664,167,659,172,564,172\\"></polygon><text x=\\"564\\" y=\\"174\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_137_664_2:0:0_1:0:0_5b</text></g><g><polygon data-testid=\\"test-2515170\\" fill=\\"goldenrod\\" points=\\"564,189,659,189,664,194,659,199,564,199\\"></polygon><text x=\\"564\\" y=\\"201\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_565_1155_2:0:0_2:0:0_fc8</text></g><g><polygon data-testid=\\"test-2515429\\" fill=\\"goldenrod\\" points=\\"564,216,659,216,664,221,659,226,564,226\\"></polygon><text x=\\"564\\" y=\\"228\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_565_1134_1:0:0_1:0:0_14da</text></g><g><polygon data-testid=\\"test-2515687\\" transform=\\"rotate(180,616,248)\\" fill=\\"goldenrod\\" points=\\"566,243,661,243,666,248,661,253,566,253\\"></polygon><text x=\\"566\\" y=\\"255\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_175_666_2:0:0_5:0:0_9bf</text></g><g><polygon data-testid=\\"test-2516216\\" fill=\\"goldenrod\\" points=\\"574,270,669,270,674,275,669,280,574,280\\"></polygon><text x=\\"574\\" y=\\"282\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_575_1006_3:0:0_5:0:0_fc0</text></g><g><polygon data-testid=\\"test-2518795\\" transform=\\"rotate(180,668,302)\\" fill=\\"goldenrod\\" points=\\"618,297,713,297,718,302,713,307,618,307\\"></polygon><text x=\\"618\\" y=\\"309\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_309_718_1:0:0_3:0:0_bc6</text></g><g><polygon data-testid=\\"test-2519057\\" transform=\\"rotate(180,675,329)\\" fill=\\"goldenrod\\" points=\\"625,324,720,324,725,329,720,334,625,334\\"></polygon><text x=\\"625\\" y=\\"336\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_150_725_4:0:0_3:0:0_51b</text></g><g><polygon data-testid=\\"test-2519318\\" fill=\\"goldenrod\\" points=\\"626,378,721,378,726,383,721,388,626,388\\"></polygon><text x=\\"626\\" y=\\"390\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_627_1115_3:0:0_2:0:0_1085</text></g><g><polygon data-testid=\\"test-2520099\\" transform=\\"rotate(180,702,356)\\" fill=\\"goldenrod\\" points=\\"652,351,747,351,752,356,747,361,652,361\\"></polygon><text x=\\"652\\" y=\\"363\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_297_752_2:0:0_2:0:0_265e</text></g><g><polygon data-testid=\\"test-2520359\\" fill=\\"goldenrod\\" points=\\"660,405,755,405,760,410,755,415,660,415\\"></polygon><text x=\\"660\\" y=\\"417\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_661_1079_2:0:0_1:0:0_1e8c</text></g><g><polygon data-testid=\\"test-2520620\\" fill=\\"goldenrod\\" points=\\"661,432,756,432,761,437,756,442,661,442\\"></polygon><text x=\\"661\\" y=\\"444\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_662_1265_1:0:0_5:0:0_1e50</text></g><g><polygon data-testid=\\"test-2520878\\" transform=\\"rotate(180,714,464)\\" fill=\\"goldenrod\\" points=\\"664,459,759,459,764,464,759,469,664,469\\"></polygon><text x=\\"664\\" y=\\"471\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_293_764_5:0:0_4:0:0_1edb</text></g><g><polygon data-testid=\\"test-2521140\\" transform=\\"rotate(180,729,5)\\" fill=\\"goldenrod\\" points=\\"679,0,774,0,779,5,774,10,679,10\\"></polygon><text x=\\"679\\" y=\\"12\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_263_779_3:1:0_0:0:0_236d</text></g><g><polygon data-testid=\\"test-2521395\\" transform=\\"rotate(180,735,491)\\" fill=\\"goldenrod\\" points=\\"685,486,780,486,785,491,780,496,685,496\\"></polygon><text x=\\"685\\" y=\\"498\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_380_785_3:0:0_2:0:0_672</text></g><g><polygon data-testid=\\"test-2521654\\" transform=\\"rotate(180,740,518)\\" fill=\\"goldenrod\\" points=\\"690,513,785,513,790,518,785,523,690,523\\"></polygon><text x=\\"690\\" y=\\"525\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_392_790_5:0:0_1:0:0_2b5</text></g><g><polygon data-testid=\\"test-2521909\\" transform=\\"rotate(180,763,32)\\" fill=\\"goldenrod\\" points=\\"713,27,808,27,813,32,808,37,713,37\\"></polygon><text x=\\"713\\" y=\\"39\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_287_813_0:0:0_3:0:0_2227</text></g><g><polygon data-testid=\\"test-2522171\\" fill=\\"goldenrod\\" points=\\"715,540,810,540,815,545,810,550,715,550\\"></polygon><text x=\\"715\\" y=\\"552\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_716_1139_2:0:0_2:0:0_ada</text></g><g><polygon data-testid=\\"test-2522430\\" transform=\\"rotate(180,770,572)\\" fill=\\"goldenrod\\" points=\\"720,567,815,567,820,572,815,577,720,577\\"></polygon><text x=\\"720\\" y=\\"579\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_392_820_2:0:0_2:0:0_26c3</text></g><g><polygon data-testid=\\"test-2524497\\" fill=\\"goldenrod\\" points=\\"775,54,870,54,875,59,870,64,775,64\\"></polygon><text x=\\"775\\" y=\\"66\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_776_1182_3:0:0_2:0:0_26b4</text></g><g><polygon data-testid=\\"test-2524760\\" fill=\\"goldenrod\\" points=\\"786,81,881,81,886,86,881,91,786,91\\"></polygon><text x=\\"786\\" y=\\"93\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_787_1190_0:0:0_4:0:0_2070</text></g><g><polygon data-testid=\\"test-2525016\\" transform=\\"rotate(180,847,113)\\" fill=\\"goldenrod\\" points=\\"797,108,892,108,897,113,892,118,797,118\\"></polygon><text x=\\"797\\" y=\\"120\\" style=\\"font-size:13px;fill:black;cursor:default\\" dominant-baseline=\\"hanging\\">ctgA_464_897_0:0:0_1:0:0_1eab</text></g></svg></div>"`;
 
 exports[`can render a single region with SvgFeatures + BamAdapter 2`] = `
 Object {
   "maxHeightReached": true,
   "rectangles": Object {
-    "2501248": Array [
+    "test-2501248": Array [
       2,
       0,
       213,
       25,
     ],
-    "2501501": Array [
+    "test-2501501": Array [
       7,
       27,
       218,
       52,
     ],
-    "2501764": Array [
+    "test-2501764": Array [
       15,
       54,
       233,
       79,
     ],
-    "2502026": Array [
+    "test-2502026": Array [
       16,
       81,
       227,
       106,
     ],
-    "2502287": Array [
+    "test-2502287": Array [
       17,
       108,
       235,
       133,
     ],
-    "2502547": Array [
+    "test-2502547": Array [
       42,
       135,
       253,
       160,
     ],
-    "2502802": Array [
+    "test-2502802": Array [
       43,
       162,
       261,
       187,
     ],
-    "2503059": Array [
+    "test-2503059": Array [
       47,
       189,
       265,
       214,
     ],
-    "2503316": Array [
+    "test-2503316": Array [
       55,
       216,
       273,
       241,
     ],
-    "2503571": Array [
+    "test-2503571": Array [
       65,
       243,
       276,
       268,
     ],
-    "2503826": Array [
+    "test-2503826": Array [
       76,
       270,
       287,
       295,
     ],
-    "2504079": Array [
+    "test-2504079": Array [
       90,
       297,
       301,
       322,
     ],
-    "2504332": Array [
+    "test-2504332": Array [
       94,
       324,
       312,
       349,
     ],
-    "2504586": Array [
+    "test-2504586": Array [
       109,
       351,
       327,
       376,
     ],
-    "2504840": Array [
+    "test-2504840": Array [
       123,
       378,
       349,
       403,
     ],
-    "2505099": Array [
+    "test-2505099": Array [
       125,
       405,
       343,
       430,
     ],
-    "2505355": Array [
+    "test-2505355": Array [
       132,
       432,
       358,
       457,
     ],
-    "2505620": Array [
+    "test-2505620": Array [
       140,
       459,
       366,
       484,
     ],
-    "2505877": Array [
+    "test-2505877": Array [
       147,
       486,
       365,
       511,
     ],
-    "2506133": Array [
+    "test-2506133": Array [
       149,
       513,
       360,
       538,
     ],
-    "2506393": Array [
+    "test-2506393": Array [
       152,
       540,
       378,
       565,
     ],
-    "2506648": Array [
+    "test-2506648": Array [
       186,
       567,
       404,
       592,
     ],
-    "2506908": Array [
+    "test-2506908": Array [
       237,
       0,
       455,
       25,
     ],
-    "2507164": Array [
+    "test-2507164": Array [
       258,
       27,
       476,
       52,
     ],
-    "2507422": Array [
+    "test-2507422": Array [
       291,
       54,
       517,
       79,
     ],
-    "2507679": Array [
+    "test-2507679": Array [
       301,
       81,
       527,
       106,
     ],
-    "2507938": Array [
+    "test-2507938": Array [
       302,
       108,
       520,
       133,
     ],
-    "2508199": Array [
+    "test-2508199": Array [
       311,
       135,
       529,
       160,
     ],
-    "2508453": Array [
+    "test-2508453": Array [
       321,
       162,
       547,
       187,
     ],
-    "2508710": Array [
+    "test-2508710": Array [
       325,
       189,
       543,
       214,
     ],
-    "2508968": Array [
+    "test-2508968": Array [
       327,
       216,
       545,
       241,
     ],
-    "2509224": Array [
+    "test-2509224": Array [
       338,
       243,
       556,
       268,
     ],
-    "2509482": Array [
+    "test-2509482": Array [
       354,
       270,
       572,
       295,
     ],
-    "2509743": Array [
+    "test-2509743": Array [
       390,
       297,
       616,
       322,
     ],
-    "2510000": Array [
+    "test-2510000": Array [
       399,
       324,
       617,
       349,
     ],
-    "2510260": Array [
+    "test-2510260": Array [
       413,
       351,
       639,
       376,
     ],
-    "2510517": Array [
+    "test-2510517": Array [
       413,
       378,
       624,
       403,
     ],
-    "2510775": Array [
+    "test-2510775": Array [
       422,
       405,
       648,
       430,
     ],
-    "2511032": Array [
+    "test-2511032": Array [
       431,
       432,
       642,
       457,
     ],
-    "2511287": Array [
+    "test-2511287": Array [
       432,
       459,
       643,
       484,
     ],
-    "2511547": Array [
+    "test-2511547": Array [
       453,
       486,
       671,
       511,
     ],
-    "2511806": Array [
+    "test-2511806": Array [
       461,
       0,
       664,
       25,
     ],
-    "2512059": Array [
+    "test-2512059": Array [
       467,
       513,
       685,
       538,
     ],
-    "2512317": Array [
+    "test-2512317": Array [
       481,
       27,
       692,
       52,
     ],
-    "2512577": Array [
+    "test-2512577": Array [
       485,
       540,
       703,
       565,
     ],
-    "2512839": Array [
+    "test-2512839": Array [
       487,
       567,
       705,
       592,
     ],
-    "2513885": Array [
+    "test-2513885": Array [
       540,
       54,
       766,
       79,
     ],
-    "2514141": Array [
+    "test-2514141": Array [
       545,
       81,
       771,
       106,
     ],
-    "2514398": Array [
+    "test-2514398": Array [
       556,
       108,
       782,
       133,
     ],
-    "2514658": Array [
+    "test-2514658": Array [
       562,
       135,
       788,
       160,
     ],
-    "2514915": Array [
+    "test-2514915": Array [
       564,
       162,
       775,
       187,
     ],
-    "2515170": Array [
+    "test-2515170": Array [
       564,
       189,
       790,
       214,
     ],
-    "2515429": Array [
+    "test-2515429": Array [
       564,
       216,
       798,
       241,
     ],
-    "2515687": Array [
+    "test-2515687": Array [
       566,
       243,
       784,
       268,
     ],
-    "2516216": Array [
+    "test-2516216": Array [
       574,
       270,
       800,
       295,
     ],
-    "2518795": Array [
+    "test-2518795": Array [
       618,
       297,
       836,
       322,
     ],
-    "2519057": Array [
+    "test-2519057": Array [
       625,
       324,
       843,
       349,
     ],
-    "2519318": Array [
+    "test-2519318": Array [
       626,
       378,
       860,
       403,
     ],
-    "2520099": Array [
+    "test-2520099": Array [
       652,
       351,
       878,
       376,
     ],
-    "2520359": Array [
+    "test-2520359": Array [
       660,
       405,
       894,
       430,
     ],
-    "2520620": Array [
+    "test-2520620": Array [
       661,
       432,
       895,
       457,
     ],
-    "2520878": Array [
+    "test-2520878": Array [
       664,
       459,
       890,
       484,
     ],
-    "2521140": Array [
+    "test-2521140": Array [
       679,
       0,
       905,
       25,
     ],
-    "2521395": Array [
+    "test-2521395": Array [
       685,
       486,
       903,
       511,
     ],
-    "2521654": Array [
+    "test-2521654": Array [
       690,
       513,
       908,
       538,
     ],
-    "2521909": Array [
+    "test-2521909": Array [
       713,
       27,
       939,
       52,
     ],
-    "2522171": Array [
+    "test-2522171": Array [
       715,
       540,
       941,
       565,
     ],
-    "2522430": Array [
+    "test-2522430": Array [
       720,
       567,
       946,
       592,
     ],
-    "2524497": Array [
+    "test-2524497": Array [
       775,
       54,
       1009,
       79,
     ],
-    "2524760": Array [
+    "test-2524760": Array [
       786,
       81,
       1020,
       106,
     ],
-    "2525016": Array [
+    "test-2525016": Array [
       797,
       108,
       1023,

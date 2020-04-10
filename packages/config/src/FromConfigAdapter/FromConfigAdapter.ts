@@ -21,7 +21,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   constructor(
     config: ConfigurationModel<typeof FromConfigAdapterConfigSchema>,
   ) {
-    super()
+    super(config)
     const features = readConfObject(
       config,
       'features',

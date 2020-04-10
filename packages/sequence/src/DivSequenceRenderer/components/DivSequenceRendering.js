@@ -38,7 +38,7 @@ export function featuresToSequence(region, features) {
   return sequence
 }
 
-function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
+function SequenceDivs({ features, region, bpPerPx }) {
   let s = ''
   for (const seq of features.values()) {
     const seqString = seq.get('seq')
@@ -56,7 +56,7 @@ function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
   }
 
   s = s.split('')
-  if (horizontallyFlipped) s = s.reverse()
+  if (region.reversed) s = s.reverse()
 
   return (
     <div style={{ display: 'flex' }}>
@@ -78,11 +78,9 @@ SequenceDivs.propTypes = {
   region: CommonPropTypes.Region.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
   features: ReactPropTypes.instanceOf(Map),
-  horizontallyFlipped: ReactPropTypes.bool,
 }
 SequenceDivs.defaultProps = {
   features: new Map(),
-  horizontallyFlipped: false,
 }
 
 function DivSequenceRendering(props) {

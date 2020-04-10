@@ -9,13 +9,7 @@ import { isUTR } from './util'
 const utrHeightFraction = 0.65
 
 function Chevron(props) {
-  const {
-    feature,
-    config,
-    featureLayout,
-    selected,
-    horizontallyFlipped,
-  } = props
+  const { feature, config, featureLayout, selected, reversed } = props
 
   const width = Math.max(featureLayout.absolute.width, 1)
   const { left } = featureLayout.absolute
@@ -26,7 +20,7 @@ function Chevron(props) {
   }
 
   const strand = feature.get('strand')
-  const direction = strand * (horizontallyFlipped ? -1 : 1)
+  const direction = strand * (reversed ? -1 : 1)
 
   const shapeProps = {
     'data-testid': feature.id(),
@@ -102,12 +96,12 @@ Chevron.propTypes = {
   }).isRequired,
   selected: ReactPropTypes.bool,
   config: CommonPropTypes.ConfigSchema.isRequired,
-  horizontallyFlipped: ReactPropTypes.bool,
+  reversed: ReactPropTypes.bool,
 }
 
 Chevron.defaultProps = {
   selected: false,
-  horizontallyFlipped: false,
+  reversed: false,
 }
 
 export default observer(Chevron)
