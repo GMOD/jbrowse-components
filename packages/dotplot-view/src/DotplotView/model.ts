@@ -36,7 +36,6 @@ export default function stateModelFactory(pluginManager: any) {
     }))
     .actions(self => ({
       setDisplayedRegions(regions: IRegion[]) {
-        console.log('wtf', regions)
         self.displayedRegions = cast(regions)
       },
       setBpToPx(val: number) {
@@ -96,7 +95,6 @@ export default function stateModelFactory(pluginManager: any) {
                 const regions = (await session.getRegionsForAssemblyName(
                   self.assemblyNames[index],
                 )) as IRegion[] | undefined
-                console.log('here', self.width, self.height, regions)
                 if (regions !== undefined) {
                   self.views[index].setDisplayedRegions(regions)
                   self.views[index].setBpToPx(totalBp(regions) / axis[index])

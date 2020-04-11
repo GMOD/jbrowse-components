@@ -54,7 +54,6 @@ PrerenderedCanvas.defaultProps = {
   imageData: undefined,
   highResolutionScaling: 1,
   style: {},
-  config: {},
 }
 
 export default PrerenderedCanvas
