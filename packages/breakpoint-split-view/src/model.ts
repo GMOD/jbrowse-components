@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { MenuOptions } from '@gmod/jbrowse-core/ui'
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { types, Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import intersection from 'array-intersection'
 import isObject from 'is-object'
+
+export const VIEW_DIVIDER_HEIGHT = 3
 
 export interface Breakend {
   MateDirection: string
@@ -24,16 +27,14 @@ export default function stateModelFactory(pluginManager: any) {
     addDisposer,
     getPath,
   } = jbrequire('mobx-state-tree')
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const BaseViewModel = jbrequire('@gmod/jbrowse-core/BaseViewModel')
 
   const minHeight = 40
   const defaultHeight = 400
-  const stateModel = (jbrequiredTypes as Instance<typeof types>)
+  const model = (jbrequiredTypes as Instance<typeof types>)
     .model('BreakpointSplitView', {
-      id: ElementId,
       type: types.literal('BreakpointSplitView'),
       headerHeight: 0,
-      width: 800,
       height: types.optional(
         types.refinement(
           'viewHeight',
@@ -42,7 +43,6 @@ export default function stateModelFactory(pluginManager: any) {
         ),
         defaultHeight,
       ),
-      displayName: 'breakpoint detail',
       trackSelectorType: 'hierarchical',
       showIntraviewLinks: true,
       linkViews: false,
@@ -52,17 +52,33 @@ export default function stateModelFactory(pluginManager: any) {
           .stateModel as LinearGenomeViewStateModel,
       ),
     })
+    .volatile(() => ({
+      width: 800,
+    }))
     .views(self => ({
-      get controlsWidth() {
-        return self.views.length ? self.views[0].controlsWidth : 0
-      },
-
       // Find all track ids that match across multiple views
       get matchedTracks(): string[] {
         const viewTracks = self.views.map(view =>
           view.tracks.map(t => t.configuration.trackId),
         )
         return intersection(...viewTracks)
+      },
+
+      get menuOptions(): MenuOptions[] {
+        const menuOptions: MenuOptions[] = []
+        self.views.forEach((view, idx) => {
+          if (view.menuOptions) {
+            menuOptions.push({
+              label: `View ${idx + 1} Menu`,
+              subMenu: view.menuOptions,
+            })
+          }
+        })
+        return menuOptions
+      },
+
+      get viewDividerHeight() {
+        return VIEW_DIVIDER_HEIGHT
       },
 
       // Get tracks with a given trackId across multiple views
@@ -244,10 +260,6 @@ export default function stateModelFactory(pluginManager: any) {
         })
       },
 
-      setDisplayName(name: string) {
-        self.displayName = name
-      },
-
       setWidth(newWidth: number) {
         self.width = newWidth
         self.views.forEach(v => v.setWidth(newWidth))
@@ -275,6 +287,11 @@ export default function stateModelFactory(pluginManager: any) {
         self.linkViews = !self.linkViews
       },
     }))
+
+  const stateModel = (jbrequiredTypes as typeof types).compose(
+    BaseViewModel,
+    model,
+  )
 
   return { stateModel }
 }

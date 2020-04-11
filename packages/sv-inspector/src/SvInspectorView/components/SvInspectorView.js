@@ -63,16 +63,6 @@ export default pluginManager => {
       >
         <Grid item>
           <IconButton
-            onClick={model.closeView}
-            className={classes.iconButton}
-            title="close this view"
-            data-testid="sv_inspector_view_close"
-            color="secondary"
-          >
-            <Icon fontSize="small">close</Icon>
-          </IconButton>
-
-          <IconButton
             onClick={() => model.setImportMode()}
             className={classes.iconButton}
             title="open a tabular file"

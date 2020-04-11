@@ -9,6 +9,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import Autocomplete from '@material-ui/lab/Autocomplete'
+import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
 import { ListChildComponentProps, VariableSizeList } from 'react-window'
@@ -90,7 +91,7 @@ const useStyles = makeStyles({
   },
 })
 
-export default function RefNameAutocomplete({
+function RefNameAutocomplete({
   model,
   onSelect,
   assemblyName,
@@ -123,7 +124,7 @@ export default function RefNameAutocomplete({
     setRegions([])
     onSelect(undefined)
     setError('')
-    if (defaultRegionName) {
+    if (defaultRegionName !== undefined) {
       setSelectedRegionName(defaultRegionName)
     } else {
       setSelectedRegionName(undefined)
@@ -142,7 +143,7 @@ export default function RefNameAutocomplete({
           })
           if (mounted) {
             setRegions(fetchedRegions)
-            if (!defaultRegionName) {
+            if (defaultRegionName === undefined) {
               setSelectedRegionName(fetchedRegions[0].refName)
               onSelect(fetchedRegions[0])
             }
@@ -223,3 +224,5 @@ export default function RefNameAutocomplete({
     />
   )
 }
+
+export default observer(RefNameAutocomplete)

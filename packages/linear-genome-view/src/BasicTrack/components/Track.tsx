@@ -10,7 +10,6 @@ const useStyles = makeStyles(theme => ({
     whiteSpace: 'nowrap',
     textAlign: 'left',
     width: '100%',
-    background: theme.palette.grey[600],
     minHeight: '100%',
   },
 }))

@@ -5,7 +5,7 @@ Object {
   "bpPerRadian": 1591.5494309189535,
   "endRadians": 6.283185307179586,
   "flipped": false,
-  "key": "toast:1-10000",
+  "key": "toast:1..10000",
   "offsetRadians": 0,
   "radianWidth": 6.288185307179586,
   "region": Object {
@@ -24,7 +24,7 @@ Array [
     "bpPerRadian": 3183.098861837907,
     "endRadians": 3.141592653589793,
     "flipped": false,
-    "key": "toast:1-10000",
+    "key": "toast:1..10000",
     "offsetRadians": 0,
     "radianWidth": 3.146592653589793,
     "region": Object {
@@ -39,7 +39,7 @@ Array [
     "bpPerRadian": 3183.098861837907,
     "endRadians": 6.288185307179586,
     "flipped": false,
-    "key": "teest:1-10000",
+    "key": "teest:1..10000",
     "offsetRadians": 3.146592653589793,
     "radianWidth": 3.146592653589793,
     "region": Object {
@@ -59,7 +59,7 @@ Array [
     "bpPerRadian": 8925.40920859349,
     "endRadians": 5.602096086738348,
     "flipped": false,
-    "key": "volvox:ctgA:1-50001",
+    "key": "volvox:ctgA:1..50001",
     "offsetRadians": 0,
     "radianWidth": 5.6070960867383475,
     "region": Object {
@@ -75,7 +75,7 @@ Array [
     "bpPerRadian": 8925.40920859349,
     "endRadians": 6.288185307179587,
     "flipped": false,
-    "key": "volvox:ctgB:1-6079",
+    "key": "volvox:ctgB:1..6079",
     "offsetRadians": 5.6070960867383475,
     "radianWidth": 0.6860892204412394,
     "region": Object {

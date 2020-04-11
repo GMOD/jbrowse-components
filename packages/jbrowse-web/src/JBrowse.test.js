@@ -5,6 +5,7 @@ import {
   fireEvent,
   render,
   wait,
+  within,
 } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 import React from 'react'
@@ -118,15 +119,19 @@ describe('valid file tests', () => {
     expect(end - start).toEqual(150)
   })
 
-  it('click and drag to rubberband', async () => {
+  it('click and drag to rubberBand', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findByTestId } = render(<JBrowse initialState={state} />)
-    const track = await findByTestId('rubberband_container')
+    const { findByTestId, findByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    const track = await findByTestId('rubberBand_controls')
 
     expect(state.session.views[0].bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
     fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
     fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
+    const zoomMenuItem = await findByText('Zoom to region')
+    fireEvent.click(zoomMenuItem)
     expect(state.session.views[0].bpPerPx).toEqual(0.02)
   })
 
@@ -140,8 +145,8 @@ describe('valid file tests', () => {
     const dragHandle0 = await findByTestId(
       'dragHandle-integration_test-volvox_alignments',
     )
-    const trackControls1 = await findByTestId(
-      'trackControls-integration_test-volvox_filtered_vcf',
+    const trackRenderingContainer1 = await findByTestId(
+      'trackRenderingContainer-integration_test-volvox_filtered_vcf',
     )
     const dragStartEvent = createEvent.dragStart(dragHandle0)
     // Have to mock 'dataTransfer' because it's not supported in jsdom
@@ -151,7 +156,7 @@ describe('valid file tests', () => {
     fireEvent.mouseDown(dragHandle0, { clientX: 10, clientY: 100 })
     fireEvent(dragHandle0, dragStartEvent)
     fireEvent.mouseMove(dragHandle0, { clientX: 10, clientY: 220 })
-    fireEvent.dragEnter(trackControls1)
+    fireEvent.dragEnter(trackRenderingContainer1)
     fireEvent.dragEnd(dragHandle0, { clientX: 10, clientY: 220 })
     fireEvent.mouseUp(dragHandle0, { clientX: 10, clientY: 220 })
     await wait(() => expect(state.session.views[0].tracks[0].id).toBe(trackId1))
@@ -159,7 +164,10 @@ describe('valid file tests', () => {
 
   it('click and zoom in and back out', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findByTestId } = render(<JBrowse initialState={state} />)
+    const { findByTestId, findByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    await findByText('ctgA')
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
     fireEvent.click(await findByTestId('zoom_out'))
@@ -207,16 +215,16 @@ describe('some error state', () => {
 describe('test renamed refs', () => {
   it('open a cram with alternate renamed ref', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findByTestId, findAllByTestId, findByText } = render(
+    const { findByTestId, findByText } = render(
       <JBrowse initialState={state} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_alignments'))
 
-    const canvas = await findAllByTestId('prerendered_canvas_PileupRenderer')
+    const canvas = await findByTestId('prerendered_canvas')
 
-    const img = canvas[0].toDataURL()
+    const img = canvas.toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
     // this is needed to do a fuzzy image comparison because
@@ -247,9 +255,7 @@ describe('test renamed refs', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_microarray_density_altname'),
     )
-    await expect(
-      findAllByTestId('prerendered_canvas_XYPlotRenderer'),
-    ).resolves.toBeTruthy()
+    await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
   })
 })
 
@@ -306,16 +312,15 @@ describe('nclist track test with long name', () => {
 describe('test configuration editor', () => {
   it('change color on track', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
-    const {
-      findByTestId,
-      findByTitle,
-      findByText,
-      findByDisplayValue,
-    } = render(<JBrowse initialState={state} />)
+    const { findByTestId, findByText, findByDisplayValue } = render(
+      <JBrowse initialState={state} />,
+    )
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
-    fireEvent.click(await findByTitle('configure track'))
+    fireEvent.click(
+      await findByTestId('htsTrackEntryConfigure-volvox_filtered_vcf'),
+    )
     await expect(findByTestId('configEditor')).resolves.toBeTruthy()
     const input = await findByDisplayValue('goldenrod')
     fireEvent.change(input, { target: { value: 'green' } })
@@ -332,7 +337,7 @@ describe('alignments track', () => {
   // if pileup rendering is disabled then snp coverage will run
   it('opens an alignments track', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findAllByTestId, findByTestId, findByText } = render(
+    const { findByTestId, findByText } = render(
       <JBrowse initialState={state} />,
     )
     await findByText('Help')
@@ -341,12 +346,10 @@ describe('alignments track', () => {
       await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
     )
 
-    /* Since alignments track has subtracks, need to look for both
-    prerendered canvases. PrerenderedCanvas data-test id now appends
-    rendererType so both can be found and not stopped prematurely */
-    const pileupCanvas = await findAllByTestId(
-      'prerendered_canvas_PileupRenderer',
+    const { findAllByTestId: findAllByTestId1 } = within(
+      await findByTestId('Blockset-pileup'),
     )
+    const pileupCanvas = await findAllByTestId1('prerendered_canvas')
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
@@ -355,18 +358,21 @@ describe('alignments track', () => {
       failureThresholdType: 'percent',
     })
 
-    const snpCovCanvas = await findAllByTestId(
-      'prerendered_canvas_SNPCoverageRenderer',
+    const { findAllByTestId: findAllByTestId2 } = within(
+      await findByTestId('Blockset-snpcoverage'),
     )
-    // snpCov image
-    const snpCovImg = snpCovCanvas[0].toDataURL()
-    const snpCovData = snpCovImg.replace(/^data:image\/\w+;base64,/, '')
-    const snpCovBuf = Buffer.from(snpCovData, 'base64')
-    expect(snpCovBuf).toMatchImageSnapshot({
+    const snpCoverageCanvas = await findAllByTestId2('prerendered_canvas')
+    const snpCoverageImg = snpCoverageCanvas[0].toDataURL()
+    const snpCoverageData = snpCoverageImg.replace(
+      /^data:image\/\w+;base64,/,
+      '',
+    )
+    const snpCoverageBuf = Buffer.from(snpCoverageData, 'base64')
+    expect(snpCoverageBuf).toMatchImageSnapshot({
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
-  })
+  }, 10000)
 })
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
@@ -377,9 +383,7 @@ describe('bigwig', () => {
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray'))
-    await expect(
-      findAllByTestId('prerendered_canvas_XYPlotRenderer'),
-    ).resolves.toBeTruthy()
+    await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
   })
   it('open a bigwig line track', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
@@ -389,9 +393,7 @@ describe('bigwig', () => {
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray_line'))
-    await expect(
-      findAllByTestId('prerendered_canvas_LinePlotRenderer'),
-    ).resolves.toBeTruthy()
+    await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
   })
   it('open a bigwig density track', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
@@ -403,9 +405,7 @@ describe('bigwig', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_microarray_density'),
     )
-    await expect(
-      findAllByTestId('prerendered_canvas_DensityRenderer'),
-    ).resolves.toBeTruthy()
+    await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
   })
 })
 

@@ -6,9 +6,9 @@ Object {
   "connectionInstances": Object {},
   "drawerWidgets": Object {},
   "drawerWidth": 384,
+  "margin": 0,
   "menuBars": Array [],
   "name": "testSession",
   "views": Array [],
-  "width": 1024,
 }
 `;

@@ -140,6 +140,70 @@ export function findParentThat(
   throw new Error('no matching node found')
 }
 
+interface Animation {
+  lastPosition: number
+  lastTime?: number
+  lastVelocity?: number
+}
+
+// based on https://github.com/react-spring/react-spring/blob/cd5548a987383b8023efd620f3726a981f9e18ea/src/animated/FrameLoop.ts
+export function springAnimate(
+  fromValue: number,
+  toValue: number,
+  setValue: (value: number) => void,
+  precision = 0,
+  tension = 170,
+  friction = 26,
+) {
+  const mass = 1
+  if (!precision) {
+    precision = Math.abs(toValue - fromValue) / 1000
+  }
+
+  let animationFrameId: number
+
+  function update(animation: Animation) {
+    const time = Date.now()
+    let position = animation.lastPosition
+    let lastTime = animation.lastTime || time
+    let velocity = animation.lastVelocity || 0
+    // If we lost a lot of frames just jump to the end.
+    if (time > lastTime + 64) {
+      lastTime = time
+    }
+    // http://gafferongames.com/game-physics/fix-your-timestep/
+    const numSteps = Math.floor(time - lastTime)
+    for (let i = 0; i < numSteps; ++i) {
+      const force = -tension * (position - toValue)
+      const damping = -friction * velocity
+      const acceleration = (force + damping) / mass
+      velocity += (acceleration * 1) / 1000
+      position += (velocity * 1) / 1000
+    }
+    const isVelocity = Math.abs(velocity) <= precision
+    const isDisplacement =
+      tension !== 0 ? Math.abs(toValue - position) <= precision : true
+    const endOfAnimation = isVelocity && isDisplacement
+    if (endOfAnimation) {
+      setValue(toValue)
+    } else {
+      setValue(position)
+      animationFrameId = requestAnimationFrame(() =>
+        update({
+          lastPosition: position,
+          lastTime: time,
+          lastVelocity: velocity,
+        }),
+      )
+    }
+  }
+
+  return [
+    () => update({ lastPosition: fromValue }),
+    () => cancelAnimationFrame(animationFrameId),
+  ]
+}
+
 /** find the first node in the hierarchy that matches the given 'is' typescript type guard predicate */
 export function findParentThatIs<
   PREDICATE extends (thing: IAnyStateTreeNode) => boolean
@@ -170,20 +234,20 @@ export function getContainingView(node: IAnyStateTreeNode) {
 }
 
 /**
- * Assemble a "locstring" from a location, like "ctgA:20-30".
- * The locstring uses 1-based coordinates.
+ * Assemble a "locString" from a location, like "ctgA:20-30".
+ * The locString uses 1-based coordinates.
  *
  * @param {string} args.refName reference sequence name
  * @param {number} args.start start coordinate
  * @param {number} args.end end coordinate
- * @returns {string} the locstring
+ * @returns {string} the locString
  */
 export function assembleLocString(region: IRegion | INoAssemblyRegion): string {
   const { refName, start, end } = region
   let assemblyName
   if ((region as IRegion).assemblyName) ({ assemblyName } = region as IRegion)
-  if (assemblyName) return `${assemblyName}:${refName}:${start + 1}-${end}`
-  return `${refName}:${start + 1}-${end}`
+  if (assemblyName) return `${assemblyName}:${refName}:${start + 1}..${end}`
+  return `${refName}:${start + 1}..${end}`
 }
 
 export interface ParsedLocString {
@@ -193,43 +257,52 @@ export interface ParsedLocString {
   end?: number
 }
 
-export function parseLocString(locstring: string): ParsedLocString {
-  const ret = locstring.split(':')
+export function parseLocString(locString: string): ParsedLocString {
+  if (!locString)
+    throw new Error('no location string provided, could not parse')
+  // remove any whitespace
+  locString = locString.replace(/\s/, '')
+  const ret = locString.split(':')
   let refName = ''
   let assemblyName
   let rest
-  if (ret.length >= 3) {
+  if (ret.length > 3) {
+    throw new Error(`too many ":", could not parse location "${locString}"`)
+  } else if (ret.length === 3) {
     ;[assemblyName, refName, rest] = ret
   } else if (ret.length === 2) {
     ;[refName, rest] = ret
-  } else if (ret.length === 1) {
+  } else {
     ;[refName] = ret
   }
   if (rest) {
-    // remove any whitespace
-    rest = rest.replace(/\s/, '')
     // see if it's a range
     const rangeMatch = rest.match(/^(-?\d+)(\.\.|-)(-?\d+)$/)
+    // see if it's a single point
+    const singleMatch = rest.match(/^(-?\d+)(\.\.|-)?$/)
     if (rangeMatch) {
       const [, start, , end] = rangeMatch
       if (start !== undefined && end !== undefined) {
         return { assemblyName, refName, start: +start, end: +end }
       }
-    }
-    // see if it's a single point
-    const singleMatch = rest.match(/^(-?\d+)$/)
-    if (singleMatch) {
-      const [, start] = singleMatch
+    } else if (singleMatch) {
+      const [, start, separator] = singleMatch
       if (start !== undefined) {
+        if (separator) {
+          // indefinite end
+          return { assemblyName, refName, start: +start }
+        }
         return { assemblyName, refName, start: +start, end: +start }
       }
+    } else {
+      throw new Error(`could not parse range "${rest}" on refName "${refName}"`)
     }
   }
   return { assemblyName, refName }
 }
 
-export function parseLocStringAndConvertToInterbase(locstring: string) {
-  const parsed = parseLocString(locstring)
+export function parseLocStringAndConvertToInterbase(locString: string) {
+  const parsed = parseLocString(locString)
   if (typeof parsed.start === 'number') parsed.start -= 1
   return parsed
 }
@@ -355,17 +428,6 @@ export function iterMap<T, U>(
     counter += 1
   }
   return results
-}
-
-export function generateLocString(
-  r: IRegion,
-  includeAssemblyName = true,
-): string {
-  let s = ''
-  if (includeAssemblyName && r.assemblyName) {
-    s = `${r.assemblyName}:`
-  }
-  return `${s}${r.refName}:${r.start}..${r.end}`
 }
 
 class AbortError extends Error {

@@ -14,7 +14,7 @@ export function getTrackAssemblyNames(
   if (!trackAssemblyNames) {
     // Check if it's an assembly sequence track
     const parent = getParent(track.configuration)
-    if (parent.sequence) return readConfObject(parent, 'name')
+    if (parent.sequence) return [readConfObject(parent, 'name')]
   }
   return trackAssemblyNames
 }

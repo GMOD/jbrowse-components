@@ -1,28 +1,34 @@
 /* eslint-disable react/require-default-props */
 import { makeStyles } from '@material-ui/core/styles'
+import Paper from '@material-ui/core/Paper'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React, { ReactNode, useEffect, useState } from 'react'
+import React, { ReactNode } from 'react'
 
 const useStyles = makeStyles({
   trackRenderingContainer: {
     overflowY: 'auto',
     overflowX: 'hidden',
-    background: '#555',
     whiteSpace: 'nowrap',
+    position: 'relative',
+    background: 'none',
+    zIndex: 2,
+    boxSizing: 'content-box',
+  },
+  // -1 offset because of the 1px border of the Paper
+  trackOffsetContainer: {
+    position: 'absolute',
+    left: -1,
+    height: '100%',
   },
 })
 
-/**
- * mostly does UI gestures: drag scrolling, etc
- */
 const TrackRenderingContainer: React.FC<{
   onHorizontalScroll: Function
   setScrollTop: Function
   children?: ReactNode
   trackId: string
   trackHeight: number
-  dimmed?: boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any
 }> = props => {
@@ -32,121 +38,24 @@ const TrackRenderingContainer: React.FC<{
     trackId,
     trackHeight,
     children,
-    dimmed,
     ...other
   } = props
   const classes = useStyles()
-  const [scheduled, setScheduled] = useState(false)
-  const [delta, setDelta] = useState(0)
-  const [mouseDragging, setMouseDragging] = useState(false)
-  const [prevX, setPrevX] = useState<number | undefined>()
 
-  useEffect(() => {
-    let cleanup = () => {}
-
-    function globalMouseMove(event: MouseEvent) {
-      event.preventDefault()
-      if (prevX !== undefined) {
-        const distance = event.clientX - prevX
-        if (distance) {
-          if (!scheduled) {
-            // use rAF to make it so multiple event handlers aren't fired per-frame
-            // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-            window.requestAnimationFrame(() => {
-              onHorizontalScroll(-distance)
-              setScheduled(false)
-              setPrevX(event.clientX)
-            })
-            setScheduled(true)
-          }
-        }
-      } else {
-        setPrevX(event.clientX)
-      }
-    }
-
-    function globalMouseUp() {
-      setPrevX(undefined)
-      setMouseDragging(false)
-    }
-
-    if (mouseDragging) {
-      window.addEventListener('mousemove', globalMouseMove, true)
-      window.addEventListener('mouseup', globalMouseUp, true)
-      cleanup = () => {
-        window.removeEventListener('mousemove', globalMouseMove, true)
-        window.removeEventListener('mouseup', globalMouseUp, true)
-      }
-    }
-    return cleanup
-  }, [delta, mouseDragging, onHorizontalScroll, prevX, scheduled])
-
-  function mouseDown(event: React.MouseEvent) {
-    if (event.button === 0) {
-      event.preventDefault()
-      setPrevX(event.clientX)
-      setMouseDragging(true)
-    }
-  }
-
-  // this local mouseup is used in addition to the global because sometimes
-  // the global add/remove are not called in time, resulting in issue #533
-  function mouseUp(event: React.MouseEvent) {
-    event.preventDefault()
-    setMouseDragging(false)
-  }
-
-  function mouseLeave(event: React.MouseEvent) {
-    event.preventDefault()
-  }
   return (
-    <>
-      <div
-        className={classes.trackRenderingContainer}
-        onWheel={event => {
-          const { deltaX, deltaMode } = event
-          if (scheduled) {
-            setDelta(delta + deltaX)
-          } else {
-            // use rAF to make it so multiple event handlers aren't fired per-frame
-            // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-            window.requestAnimationFrame(() => {
-              onHorizontalScroll((delta + deltaX) * (1 + 50 * deltaMode))
-              setScheduled(false)
-            })
-            setScheduled(true)
-            setDelta(0)
-          }
-        }}
-        style={{
-          gridRow: `track-${trackId}`,
-          gridColumn: 'blocks',
-        }}
-        onScroll={event => {
-          const target = event.target as HTMLDivElement
-          setScrollTop(target.scrollTop, target.clientHeight)
-        }}
-        onMouseDown={mouseDown}
-        onMouseUp={mouseUp}
-        onMouseLeave={mouseLeave}
-        role="presentation"
-        {...other}
-      >
-        {children}
-      </div>
-      {dimmed ? (
-        <div
-          style={{
-            gridRow: `track-${trackId}`,
-            gridColumn: 'blocks',
-            height: trackHeight,
-            background: 'rgba(0, 0, 0, 0.4)',
-            zIndex: 2,
-          }}
-          {...other}
-        />
-      ) : null}
-    </>
+    <Paper
+      variant="outlined"
+      className={classes.trackRenderingContainer}
+      style={{ height: trackHeight }}
+      onScroll={event => {
+        const target = event.target as HTMLDivElement
+        setScrollTop(target.scrollTop, target.clientHeight)
+      }}
+      role="presentation"
+      {...other}
+    >
+      <div className={classes.trackOffsetContainer}>{children}</div>
+    </Paper>
   )
 }
 
@@ -156,7 +65,6 @@ TrackRenderingContainer.propTypes = {
   setScrollTop: PropTypes.func.isRequired,
   onHorizontalScroll: PropTypes.func.isRequired,
   trackHeight: PropTypes.number.isRequired,
-  dimmed: PropTypes.bool.isRequired,
 }
 
 export default observer(TrackRenderingContainer)

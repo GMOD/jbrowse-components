@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
   elidedBlock: {
     minHeight: '100%',
     boxSizing: 'border-box',
@@ -12,9 +12,13 @@ const useStyles = makeStyles({
   },
   interRegionPaddingBlock: {
     minHeight: '100%',
-    backgroundColor: '#333',
+    backgroundColor: theme.palette.text.primary,
   },
-})
+  boundaryPaddingBlock: {
+    minHeight: '100%',
+    backgroundColor: theme.palette.action.disabledBackground,
+  },
+}))
 
 export const ElidedBlockMarker = ({ width }) => {
   const classes = useStyles()
@@ -24,17 +28,29 @@ ElidedBlockMarker.propTypes = {
   width: ReactPropTypes.number.isRequired,
 }
 
-export const InterRegionPaddingBlockMarker = ({ width }) => {
+export const InterRegionPaddingBlockMarker = ({ boundary, width, style }) => {
   const classes = useStyles()
   return (
     <div
       style={{
+        ...style,
         width: `${width}px`,
       }}
-      className={classes.interRegionPaddingBlock}
+      className={
+        boundary
+          ? classes.boundaryPaddingBlock
+          : classes.interRegionPaddingBlock
+      }
     />
   )
 }
 InterRegionPaddingBlockMarker.propTypes = {
+  boundary: ReactPropTypes.bool,
   width: ReactPropTypes.number.isRequired,
+  style: ReactPropTypes.shape(),
+}
+
+InterRegionPaddingBlockMarker.defaultProps = {
+  boundary: false,
+  style: {},
 }

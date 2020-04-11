@@ -57,6 +57,7 @@ import * as coreUtil from './util'
 import * as trackUtils from './util/tracks'
 import * as coreIo from './util/io'
 import * as coreMstReflection from './util/mst-reflection'
+import BaseViewModel from './BaseViewModel'
 
 import * as MUIColors from './ReExports/material-ui-colors'
 
@@ -122,6 +123,7 @@ const libs = {
   '@gmod/jbrowse-core/util/tracks': trackUtils,
   '@gmod/jbrowse-core/util/io': coreIo,
   '@gmod/jbrowse-core/util/mst-reflection': coreMstReflection,
+  '@gmod/jbrowse-core/BaseViewModel': BaseViewModel,
 }
 
 export default libs

@@ -7,7 +7,7 @@ exports[`one 1`] = `
   style="overflow: visible; position: relative; height: 500px;"
 >
   <canvas
-    data-testid="prerendered_canvas_DummyRenderer"
+    data-testid="prerendered_canvas"
     height="500"
     style="width: 500px; height: 500px;"
     width="500"

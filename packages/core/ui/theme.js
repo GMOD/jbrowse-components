@@ -27,6 +27,7 @@ export default createMuiTheme({
       mainApp: grey[700],
     },
   },
+  spacing: 4,
   overrides: {
     MuiIconButton: {
       colorSecondary: {

@@ -3,6 +3,7 @@ import Grow from '@material-ui/core/Grow'
 import Icon from '@material-ui/core/Icon'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
+import ListSubheader from '@material-ui/core/ListSubheader'
 import { MenuProps as MUIMenuProps } from '@material-ui/core/Menu'
 import MenuItem, { MenuItemProps } from '@material-ui/core/MenuItem'
 import MenuList from '@material-ui/core/MenuList'
@@ -45,6 +46,7 @@ interface MenuItemEndDecorationSubMenuProps {
 interface MenuItemEndDecorationSelectorProps {
   type: 'checkbox' | 'radio'
   checked: boolean
+  disabled?: boolean
 }
 
 type MenuItemEndDecorationProps =
@@ -55,21 +57,24 @@ function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
   const classes = useStyles()
   const { type } = props
   let checked
+  let disabled
   if ('checked' in props) {
-    ;({ checked } = props)
+    ;({ checked, disabled } = props)
   }
   let icon
   if (type === 'subMenu') {
     icon = <Icon color="action">arrow_right</Icon>
   } else if (type === 'checkbox') {
     if (checked) {
-      icon = <Icon color="secondary">check_box</Icon>
+      const color = disabled ? 'inherit' : 'secondary'
+      icon = <Icon color={color}>check_box</Icon>
     } else {
       icon = <Icon color="action">check_box_outline_blank</Icon>
     }
   } else if (type === 'radio') {
     if (checked) {
-      icon = <Icon color="secondary">radio_button_checked</Icon>
+      const color = disabled ? 'inherit' : 'secondary'
+      icon = <Icon color={color}>radio_button_checked</Icon>
     } else {
       icon = <Icon color="action">radio_button_unchecked</Icon>
     }
@@ -79,6 +84,11 @@ function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
 
 interface MenuDivider {
   type: 'divider'
+}
+
+interface MenuSubHeader {
+  type: 'subHeader'
+  label: string
 }
 
 interface BaseMenuItem {
@@ -112,14 +122,13 @@ interface SubMenuItem extends BaseMenuItem {
 
 export type MenuOptions =
   | MenuDivider
+  | MenuSubHeader
   | NormalMenuItem
   | CheckboxMenuItem
   | RadioMenuItem
   | SubMenuItem
 
 type AnchorElProp = MUIMenuProps['anchorEl']
-type AnchorReferenceProp = MUIMenuProps['anchorReference']
-type AnchorPositionProp = MUIMenuProps['anchorPosition']
 type OpenProp = MUIMenuProps['open']
 type OnCloseProp = MUIMenuProps['onClose']
 
@@ -141,7 +150,10 @@ function findNextValidIdx(menuOptions: MenuOptions[], currentIdx: number) {
   const idx = menuOptions
     .slice(currentIdx + 1)
     .findIndex(
-      menuOption => menuOption.type !== 'divider' && !menuOption.disabled,
+      menuOption =>
+        menuOption.type !== 'divider' &&
+        menuOption.type !== 'subHeader' &&
+        !menuOption.disabled,
     )
   if (idx === -1) {
     return idx
@@ -152,7 +164,10 @@ function findNextValidIdx(menuOptions: MenuOptions[], currentIdx: number) {
 function findPreviousValidIdx(menuOptions: MenuOptions[], currentIdx: number) {
   return findLastIndex(
     menuOptions.slice(0, currentIdx),
-    menuOption => menuOption.type !== 'divider' && !menuOption.disabled,
+    menuOption =>
+      menuOption.type !== 'divider' &&
+      menuOption.type !== 'subHeader' &&
+      !menuOption.disabled,
   )
 }
 
@@ -250,6 +265,13 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
           if (menuOption.type === 'divider') {
             return <Divider key={`divider-${idx}`} component="li" />
           }
+          if (menuOption.type === 'subHeader') {
+            return (
+              <ListSubheader key={`subHeader-${menuOption.label}-${idx}`}>
+                {menuOption.label}
+              </ListSubheader>
+            )
+          }
           let icon = null
           let endDecoration = null
           if (menuOption.icon) {
@@ -269,6 +291,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
               <MenuItemEndDecoration
                 type={menuOption.type}
                 checked={menuOption.checked}
+                disabled={menuOption.disabled}
               />
             )
           }

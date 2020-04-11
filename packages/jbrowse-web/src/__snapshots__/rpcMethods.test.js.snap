@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`can render a single region with Pileup + BamAdapter 1`] = `"<div class=\\"PileupRendering\\" style=\\"position:relative;width:800px;height:216px\\"><canvas data-testid=\\"prerendered_canvas_PileupRenderer\\" width=\\"800\\" height=\\"216\\" style=\\"width:800px;height:216px;position:absolute;left:0;top:0\\"></canvas><canvas width=\\"800\\" height=\\"216\\" style=\\"position:absolute;left:0;top:0\\" class=\\"highlightOverlayCanvas\\"></canvas></div>"`;
+exports[`can render a single region with Pileup + BamAdapter 1`] = `"<div class=\\"PileupRendering\\" style=\\"position:relative;width:800px;height:216px\\"><canvas data-testid=\\"prerendered_canvas\\" width=\\"800\\" height=\\"216\\" style=\\"width:800px;height:216px;position:absolute;left:0;top:0\\"></canvas><canvas width=\\"800\\" height=\\"216\\" style=\\"position:absolute;left:0;top:0\\" class=\\"highlightOverlayCanvas\\"></canvas></div>"`;
 
 exports[`can render a single region with Pileup + BamAdapter 2`] = `
 Object {

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
-import { TrackControls } from '@gmod/jbrowse-core/ui'
+import { MenuOptions } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { types } from 'mobx-state-tree'
@@ -86,9 +86,6 @@ const BaseTrack = types
     get name() {
       return getConf(self, 'name')
     },
-    get ControlsComponent() {
-      return TrackControls
-    },
 
     get RenderingComponent(): React.FC<{
       model: typeof self
@@ -163,6 +160,10 @@ const BaseTrack = types
      */
     get trackMessageComponent() {
       return undefined
+    },
+
+    get menuOptions(): MenuOptions[] {
+      return []
     },
 
     /**
