@@ -26,6 +26,10 @@ interface BpOffset {
   start?: number
   end?: number
 }
+
+interface ViewActions {
+  [key: string]: MenuOptions[]
+}
 const validBpPerPx = [
   1 / 50,
   1 / 20,
@@ -260,11 +264,29 @@ export function stateModelFactory(pluginManager: any) {
         self.tracks
           .filter(track => track.PileupTrack)
           .map((track: any) => {
+            console.log(track)
             return by === 'Clear Sort'
               ? track.clearSelected()
               : track.sortSelected(by)
           })
         return undefined
+      },
+
+      get trackTypeActions() {
+        const allActions: Map<string, MenuOptions[]> = new Map()
+        // const allActions: ViewActions[] = []
+        self.tracks.forEach((track: any) => {
+          // allActions.push({ [track.type]: track.viewMenuActions })
+          const trackInMap = allActions.get(track.type)
+          console.log(trackInMap)
+          if (!trackInMap) allActions.set(track.type, track.viewMenuActions)
+          else {
+            // same type track exists here, code to bind existing menu to other track probably goes here
+            console.log('copy')
+          }
+        })
+
+        return allActions
       },
 
       // clearAll() {
@@ -645,10 +667,11 @@ export function stateModelFactory(pluginManager: any) {
       return {
         get menuOptions(): MenuOptions[] {
           const session: any = getSession(self)
-          return [
+          const menuOptions: MenuOptions[] = [
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
+              icon: 'line_style',
               disabled:
                 session.visibleDrawerWidget &&
                 session.visibleDrawerWidget.id ===
@@ -657,20 +680,24 @@ export function stateModelFactory(pluginManager: any) {
             },
             {
               label: 'Horizontally flip',
+              icon: 'sync_alt',
               onClick: self.horizontallyFlip,
             },
             {
               label: 'Show all regions',
+              icon: 'visibility',
               onClick: self.showAllRegions,
             },
             {
               label: 'Show header',
+              icon: 'visibility',
               type: 'checkbox',
               checked: !self.hideHeader,
               onClick: self.toggleHeader,
             },
             {
               label: 'Show header overview',
+              icon: 'visibility',
               type: 'checkbox',
               checked: !self.hideHeaderOverview,
               onClick: self.toggleHeaderOverview,
@@ -678,11 +705,36 @@ export function stateModelFactory(pluginManager: any) {
             },
             {
               label: 'Show Center Line',
+              icon: 'visibility',
               type: 'checkbox',
               checked: self.showCenterLine,
               onClick: self.toggleCenterLine,
             },
           ]
+
+          // test.forEach((actions: ViewActions) => {
+          //   const trackType = Object.keys(actions)[0]
+          //   const viewMenuActions = actions[trackType]
+          //   viewMenuActions.forEach(action => {
+          //     menuOptions.push(action)
+          //   })
+          // })
+
+          // TODOSORT: make the onclick apply to all tracks of that type
+          for (const [key, value] of self.trackTypeActions.entries()) {
+            // TODOSORT: temp til subHeader merged
+            if (value.length) {
+              menuOptions.push({
+                label: key,
+                onClick: () => {},
+              })
+              value.forEach(action => {
+                menuOptions.push(action)
+              })
+            }
+          }
+
+          return menuOptions
         },
 
         get staticBlocks() {

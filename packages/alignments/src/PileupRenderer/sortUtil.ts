@@ -82,29 +82,29 @@ export const sortFeature = (
       break
     }
 
-    case 'First-of-pair Strand': {
-      featuresInCenterLine.sort(
-        (a: [string, Feature], b: [string, Feature]) => {
-          return 1
-        },
-      )
-      break
-    }
+    // case 'First-of-pair Strand': {
+    //   featuresInCenterLine.sort(
+    //     (a: [string, Feature], b: [string, Feature]) => {
+    //       return 1
+    //     },
+    //   )
+    //   break
+    // }
 
-    // read group
-    // name before first colon possible read group id and sort on that
-    // https://gatkforums.broadinstitute.org/gatk/discussion/6472/read-groups
-    case 'Read Group': {
-      //   featuresInCenterLine.map(feature => {
-      //     console.log(feature[1].get('name'))
-      //   })
-      featuresInCenterLine.sort(
-        (a: [string, Feature], b: [string, Feature]) => {
-          return 1
-        },
-      )
-      break
-    }
+    // // read group
+    // // name before first colon possible read group id and sort on that
+    // // https://gatkforums.broadinstitute.org/gatk/discussion/6472/read-groups
+    // case 'Read Group': {
+    //   //   featuresInCenterLine.map(feature => {
+    //   //     console.log(feature[1].get('name'))
+    //   //   })
+    //   featuresInCenterLine.sort(
+    //     (a: [string, Feature], b: [string, Feature]) => {
+    //       return 1
+    //     },
+    //   )
+    //   break
+    // }
 
     default:
       break
