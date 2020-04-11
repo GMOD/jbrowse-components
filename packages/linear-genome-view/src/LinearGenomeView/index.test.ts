@@ -148,6 +148,7 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
       tracks: [{ name: 'foo track', type: 'PileupTrack' }],
     }),
   )
+  model.setWidth(width)
   model.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
@@ -161,7 +162,7 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
   ).rejects.toThrow(/could not find a region/)
   expect(model.bpPerPx).toEqual(model.constrainBpPerPx(100 / width)) // did nothing
   await model.navTo({ refName: 'ctgA' })
-  expect(model.offsetPx).toEqual(-0)
+  expect(model.offsetPx).toEqual(0)
   expect(model.bpPerPx).toEqual(model.constrainBpPerPx(10000 / width))
   await model.navTo({ refName: 'contigA', start: 0, end: 100 })
   expect(model.bpPerPx).toEqual(model.constrainBpPerPx(100 / width))
@@ -178,9 +179,9 @@ test('can instantiate a model that >2 regions', () => {
       id: 'test4',
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'PileupTrack' }],
-      width,
     }),
   )
+  model.setWidth(width)
   model.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
