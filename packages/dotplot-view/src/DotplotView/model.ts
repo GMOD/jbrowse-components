@@ -74,7 +74,10 @@ export default function stateModelFactory(pluginManager: any) {
     }))
     .views(self => ({
       get initialized() {
-        return self.views.every(view => view.displayedRegions.length > 0)
+        return (
+          self.views.length > 0 &&
+          self.views.every(view => view.displayedRegions.length > 0)
+        )
       },
       get viewingRegionWidth() {
         return self.width - self.borderSize * 2

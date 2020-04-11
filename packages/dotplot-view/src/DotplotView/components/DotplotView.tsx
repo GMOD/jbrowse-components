@@ -245,12 +245,14 @@ export default (pluginManager: any) => {
       if (ref.current) {
         const ctx = ref.current.getContext('2d')
         ctx.clearRect(0, 0, width, height)
-        DrawLabels(model, ctx)
-        DrawGrid(model, ctx)
+        if (initialized) {
+          DrawLabels(model, ctx)
+          DrawGrid(model, ctx)
+        }
 
         ctx.restore()
       }
-    }, [borderSize, fontSize, height, model, viewSnap, width])
+    }, [borderSize, fontSize, height, initialized, model, viewSnap, width])
 
     // allow click and drag over the dotplot view
     useEffect(() => {
