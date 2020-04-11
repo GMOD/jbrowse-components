@@ -40,6 +40,8 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   configuration: AnyConfigurationModel
   pluginManager: PluginManager
   rpcManager: any
+  assemblyNames: string[]
+  visibleDrawerWidget?: { id: string }
   addDrawerWidget(
     typeName: string,
     id: string,
