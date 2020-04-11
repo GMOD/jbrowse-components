@@ -84,6 +84,10 @@ export default (pluginManager: any) => {
     }
 
     function onOpenClick() {
+      model.setViews([
+        { bpPerPx: 0.1, offsetPx: 0 },
+        { bpPerPx: 0.1, offsetPx: 0 },
+      ])
       model.setAssemblyNames([
         assemblyNames[selectedAssemblyIdx1],
         assemblyNames[selectedAssemblyIdx2],

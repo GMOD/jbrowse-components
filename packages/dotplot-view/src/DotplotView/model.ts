@@ -183,6 +183,9 @@ export default function stateModelFactory(pluginManager: any) {
       setAssemblyNames(assemblyNames: string[]) {
         self.assemblyNames = cast(assemblyNames)
       },
+      setViews(arr: any[]) {
+        self.views = cast(arr)
+      },
     }))
     .views(self => ({
       get menuOptions() {
