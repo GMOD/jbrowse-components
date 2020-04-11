@@ -1,9 +1,7 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import { types } from 'mobx-state-tree'
 
-export { default as AdapterClass } from './BedTabixAdapter.ts'
-
-export const configSchema = ConfigurationSchema(
+export default ConfigurationSchema(
   'BedTabixAdapter',
   {
     bedGzLocation: {
@@ -22,6 +20,12 @@ export const configSchema = ConfigurationSchema(
         defaultValue: { uri: '/path/to/my.bed.gz.tbi' },
       },
     }),
+
+    autoSql: {
+      type: 'string',
+      description: 'The autoSql definition for the data fields in the file',
+      defaultValue: '',
+    },
   },
   { explicitlyTyped: true },
 )

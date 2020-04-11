@@ -16,7 +16,7 @@ describe('base data adapter', () => {
         )
       }
     }
-    const adapter = new Adapter()
+    const adapter = new Adapter({})
     const features = adapter.getFeaturesInRegion({
       assemblyName: 'volvox',
       refName: 'ctgA',
@@ -46,7 +46,7 @@ describe('base data adapter', () => {
         })
       }
     }
-    const adapter = new Adapter()
+    const adapter = new Adapter({})
     const features = adapter.getFeaturesInRegion({
       assemblyName: 'volvox',
       refName: 'ctgA',

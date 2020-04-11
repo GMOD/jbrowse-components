@@ -8,45 +8,6 @@ import Lollipop from './Lollipop'
 import Stick from './Stick'
 
 class LollipopRendering extends Component {
-  static propTypes = {
-    layout: ReactPropTypes.shape({
-      getLayout: ReactPropTypes.func.isRequired,
-      add: ReactPropTypes.func.isRequired,
-      getTotalHeight: ReactPropTypes.func.isRequired,
-    }).isRequired,
-
-    region: CommonPropTypes.Region.isRequired,
-    bpPerPx: ReactPropTypes.number.isRequired,
-    features: ReactPropTypes.instanceOf(Map),
-    config: CommonPropTypes.ConfigSchema.isRequired,
-    trackModel: ReactPropTypes.shape({
-      /** id of the currently selected feature, if any */
-      selectedFeatureId: ReactPropTypes.string,
-    }),
-
-    onMouseDown: ReactPropTypes.func,
-    onMouseUp: ReactPropTypes.func,
-    onMouseEnter: ReactPropTypes.func,
-    onMouseLeave: ReactPropTypes.func,
-    onMouseOver: ReactPropTypes.func,
-    onMouseOut: ReactPropTypes.func,
-    onClick: ReactPropTypes.func,
-  }
-
-  static defaultProps = {
-    trackModel: {},
-
-    features: new Map(),
-
-    onMouseDown: undefined,
-    onMouseUp: undefined,
-    onMouseEnter: undefined,
-    onMouseLeave: undefined,
-    onMouseOver: undefined,
-    onMouseOut: undefined,
-    onClick: undefined,
-  }
-
   onMouseDown = event => {
     const { onMouseDown: handler } = this.props
     if (!handler) return undefined
@@ -184,6 +145,45 @@ class LollipopRendering extends Component {
       </svg>
     )
   }
+}
+
+LollipopRendering.propTypes = {
+  layout: ReactPropTypes.shape({
+    getLayout: ReactPropTypes.func.isRequired,
+    add: ReactPropTypes.func.isRequired,
+    getTotalHeight: ReactPropTypes.func.isRequired,
+  }).isRequired,
+
+  region: CommonPropTypes.Region.isRequired,
+  bpPerPx: ReactPropTypes.number.isRequired,
+  features: ReactPropTypes.instanceOf(Map),
+  config: CommonPropTypes.ConfigSchema.isRequired,
+  trackModel: ReactPropTypes.shape({
+    /** id of the currently selected feature, if any */
+    selectedFeatureId: ReactPropTypes.string,
+  }),
+
+  onMouseDown: ReactPropTypes.func,
+  onMouseUp: ReactPropTypes.func,
+  onMouseEnter: ReactPropTypes.func,
+  onMouseLeave: ReactPropTypes.func,
+  onMouseOver: ReactPropTypes.func,
+  onMouseOut: ReactPropTypes.func,
+  onClick: ReactPropTypes.func,
+}
+
+LollipopRendering.defaultProps = {
+  trackModel: {},
+
+  features: new Map(),
+
+  onMouseDown: undefined,
+  onMouseUp: undefined,
+  onMouseEnter: undefined,
+  onMouseLeave: undefined,
+  onMouseOver: undefined,
+  onMouseOut: undefined,
+  onClick: undefined,
 }
 
 export default observer(LollipopRendering)

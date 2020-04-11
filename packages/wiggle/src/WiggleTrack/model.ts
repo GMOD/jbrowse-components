@@ -199,7 +199,9 @@ const stateModelFactory = (configSchema: any) =>
                   const aborter = new AbortController()
                   self.setLoading(aborter)
 
-                  const { dynamicBlocks } = getContainingView(self)
+                  const { dynamicBlocks } = getContainingView(self) as Instance<
+                    LinearGenomeViewStateModel
+                  >
                   if (!dynamicBlocks.contentBlocks.length && !self.ready) {
                     return
                   }

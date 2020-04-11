@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import GDCFeature from './GDCFeature'
 
-export default class extends BaseAdapter {
+export default class extends BaseFeatureDataAdapter {
   private filters: string
 
   private cases: string[]

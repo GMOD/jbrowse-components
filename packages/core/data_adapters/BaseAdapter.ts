@@ -36,8 +36,7 @@ export type AnyDataAdapter = BaseFeatureDataAdapter | BaseRefNameAliasAdapter
 export abstract class BaseFeatureDataAdapter {
   public id: string
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(args: any) {
+  constructor(args: unknown) {
     this.id =
       typeof jest === 'undefined' ? objectHash(args).slice(0, 5) : 'test'
   }

@@ -11,7 +11,7 @@ test('no features', () => {
     <Rendering
       width={500}
       height={500}
-      region={{ refName: 'zonk', start: 0, end: 300 }}
+      regions={[{ refName: 'zonk', start: 0, end: 300 }]}
       layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
       config={{}}
       bpPerPx={3}
@@ -26,7 +26,7 @@ test('one feature', () => {
     <Rendering
       width={500}
       height={500}
-      region={{ refName: 'zonk', start: 0, end: 1000 }}
+      regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
       features={
         new Map([
@@ -48,7 +48,7 @@ test('one feature (compact mode)', () => {
     <Rendering
       width={500}
       height={500}
-      region={{ refName: 'zonk', start: 0, end: 1000 }}
+      regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
       features={
         new Map([
@@ -209,7 +209,7 @@ test('processed transcript (reducedRepresentation mode)', () => {
     <Rendering
       width={500}
       height={500}
-      region={{ refName: 'zonk', start: 0, end: 1000 }}
+      regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
       features={
         new Map([
@@ -229,7 +229,7 @@ test('processed transcript', () => {
     <Rendering
       width={500}
       height={500}
-      region={{ refName: 'zonk', start: 0, end: 1000 }}
+      regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
       features={
         new Map([

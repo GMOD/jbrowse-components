@@ -165,9 +165,14 @@ export default function RefNameAutocomplete({
 
   const regionNames = regions.map(region => region.refName)
 
-  function onChange(event: React.ChangeEvent<{}>, newRegionName: string) {
-    setSelectedRegionName(newRegionName)
-    onSelect(regions.find(region => region.refName === newRegionName))
+  function onChange(
+    event: React.ChangeEvent<{}>,
+    newRegionName: string | null,
+  ) {
+    if (newRegionName) {
+      setSelectedRegionName(newRegionName)
+      onSelect(regions.find(region => region.refName === newRegionName))
+    }
   }
 
   return (
@@ -196,12 +201,12 @@ export default function RefNameAutocomplete({
           ...params.InputProps,
           ...((TextFieldProps && TextFieldProps.InputProps) || {}),
           endAdornment: (
-            <React.Fragment>
+            <>
               {loading && !error ? (
                 <CircularProgress color="inherit" size={20} />
               ) : null}
               {params.InputProps.endAdornment}
-            </React.Fragment>
+            </>
           ),
         }
         return (

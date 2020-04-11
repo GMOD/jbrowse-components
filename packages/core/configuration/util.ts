@@ -99,16 +99,15 @@ export function readConfObject(
  * @param {any} args extra arguments e.g. for a feature callback,
  *   will be sent to each of the slotNames
  */
-type ThingWithConfigurationMember = { configuration: unknown }
 export function getConf(
   model: unknown,
-  slotName: string | string[],
+  slotPath: string[] | string | undefined = undefined,
   args: unknown[] = [],
 ) {
   if (!model) throw new TypeError('must provide a model object')
-  const { configuration } = model as ThingWithConfigurationMember
+  const { configuration } = model as { configuration: unknown }
   if (isConfigurationModel(configuration)) {
-    return readConfObject(configuration, slotName, args)
+    return readConfObject(configuration, slotPath, args)
   }
   throw new TypeError('cannot getConf on this model, it has no configuration')
 }
