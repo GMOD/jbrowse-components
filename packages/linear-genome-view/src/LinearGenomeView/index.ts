@@ -260,41 +260,21 @@ export function stateModelFactory(pluginManager: any) {
         return accum
       },
 
-      sortAll(by: string) {
-        self.tracks
-          .filter(track => track.PileupTrack)
-          .map((track: any) => {
-            console.log(track)
-            return by === 'Clear Sort'
-              ? track.clearSelected()
-              : track.sortSelected(by)
-          })
-        return undefined
-      },
-
       get trackTypeActions() {
         const allActions: Map<string, MenuOptions[]> = new Map()
         // const allActions: ViewActions[] = []
         self.tracks.forEach((track: any) => {
           // allActions.push({ [track.type]: track.viewMenuActions })
           const trackInMap = allActions.get(track.type)
-          console.log(trackInMap)
           if (!trackInMap) allActions.set(track.type, track.viewMenuActions)
           else {
             // same type track exists here, code to bind existing menu to other track probably goes here
-            console.log('copy')
+            console.log(trackInMap)
           }
         })
 
         return allActions
       },
-
-      // clearAll() {
-      //   this.findPileupTracks().map((track: any) => {
-      //     return track.clearSelected()
-      //   })
-      //   return undefined
-      // },
 
       get centerLinePosition() {
         const centerLinePosition = self.displayedRegions.length
