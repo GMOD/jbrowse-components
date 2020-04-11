@@ -149,7 +149,7 @@ export default types
             },
             {
               name: 'New dotplot view',
-              icon: 'line_style',
+              icon: 'timeline',
               callback:
                 "function(session) { session.addView('DotplotView', {})}",
             },
