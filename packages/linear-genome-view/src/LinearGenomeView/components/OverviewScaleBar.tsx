@@ -102,7 +102,7 @@ function OverviewScaleBar({
     let aborter: AbortController
     let mounted = true
     async function fetchRegions() {
-      if (mounted && assemblyNames.length) {
+      if (assemblyNames.length) {
         const fetchedAssemblyRegions = new Map() as Map<string, IRegion[]>
         for (const assemblyName of assemblyNames) {
           try {
@@ -119,7 +119,9 @@ function OverviewScaleBar({
             }
           }
         }
-        setAssemblyRegions(fetchedAssemblyRegions)
+        if (mounted) {
+          setAssemblyRegions(fetchedAssemblyRegions)
+        }
       }
     }
     fetchRegions()
