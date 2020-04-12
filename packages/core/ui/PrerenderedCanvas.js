@@ -34,7 +34,7 @@ function PrerenderedCanvas(props) {
   // appends renderertype for testing multiple subtracks (multiple canvases) loading
   return (
     <canvas
-      data-testid={`prerendered_canvas`}
+      data-testid="prerendered_canvas"
       ref={featureCanvas}
       width={width * highResolutionScaling}
       height={height * highResolutionScaling}
@@ -49,12 +49,13 @@ PrerenderedCanvas.propTypes = {
   highResolutionScaling: ReactPropTypes.number,
   style: ReactPropTypes.objectOf(ReactPropTypes.any),
   imageData: ReactPropTypes.any,
+  // config: ReactPropTypes.objectOf(ReactPropTypes.any),
 }
 PrerenderedCanvas.defaultProps = {
   imageData: undefined,
   highResolutionScaling: 1,
   style: {},
-  config: {},
+  // config: {},
 }
 
 export default PrerenderedCanvas
