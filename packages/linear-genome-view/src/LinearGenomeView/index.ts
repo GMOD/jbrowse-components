@@ -315,7 +315,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
       },
-
+    }))
+    .actions(self => ({
       moveTrack(movingTrackId: string, targetTrackId: string) {
         const oldIndex = self.tracks.findIndex(
           track => track.id === movingTrackId,
@@ -336,18 +337,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const parent = getContainingView(self)
         if (parent) {
           // I am embedded in a some other view
-          if (isViewContainer(parent)) parent.removeView(this)
+          if (isViewContainer(parent)) parent.removeView(self)
         } else {
           // I am part of a session
-          getSession(self).removeView(this)
+          getSession(self).removeView(self)
         }
       },
 
       toggleTrack(configuration: AnyConfigurationModel) {
         // if we have any tracks with that configuration, turn them off
-        const hiddenCount = this.hideTrack(configuration)
+        const hiddenCount = self.hideTrack(configuration)
         // if none had that configuration, turn one on
-        if (!hiddenCount) this.showTrack(configuration)
+        if (!hiddenCount) self.showTrack(configuration)
       },
 
       setDisplayedRegions(regions: IRegion[]) {

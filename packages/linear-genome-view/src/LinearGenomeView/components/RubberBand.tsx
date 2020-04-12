@@ -68,8 +68,8 @@ function RubberBand({
   ControlComponent?: React.ReactElement
   children: React.ReactNode
 }) {
-  const [startX, setStartX] = useState()
-  const [currentX, setCurrentX] = useState()
+  const [startX, setStartX] = useState<number>()
+  const [currentX, setCurrentX] = useState<number>()
   const [mouseDragging, setMouseDragging] = useState(false)
   const [anchorPosition, setAnchorPosition] = useState<
     | {
@@ -125,7 +125,12 @@ function RubberBand({
   }, [mouseDragging])
 
   useEffect(() => {
-    if (!mouseDragging && Math.abs(currentX - startX) <= 3) {
+    if (
+      !mouseDragging &&
+      currentX !== undefined &&
+      startX !== undefined &&
+      Math.abs(currentX - startX) <= 3
+    ) {
       handleClose()
     }
   })
@@ -155,6 +160,7 @@ function RubberBand({
   }
 
   function zoomToRegion() {
+    if (startX === undefined || currentX === undefined) return
     let leftPx = startX
     let rightPx = currentX
     if (rightPx < leftPx) {

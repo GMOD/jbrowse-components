@@ -41,6 +41,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   pluginManager: PluginManager
   rpcManager: any
   assemblyNames: string[]
+  assemblies: AnyConfigurationModel[]
   visibleDrawerWidget?: { id: string }
   addDrawerWidget(
     typeName: string,
@@ -61,6 +62,7 @@ export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
 
 /** minimum interface that all view state models must implement */
 export interface AbstractViewModel {
+  id: string
   showTrack(configuration: AnyConfigurationModel): void
   hideTrack(configuration: AnyConfigurationModel): void
 }

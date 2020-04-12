@@ -49,10 +49,9 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const Controls = observer(({ model }) => {
+const Controls = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const session: any = getSession(model)
+  const session = getSession(model)
   return (
     <ToggleButton
       onChange={model.activateTrackSelector}
@@ -63,6 +62,7 @@ const Controls = observer(({ model }) => {
       selected={
         session.visibleDrawerWidget &&
         session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
+        // @ts-ignore
         session.visibleDrawerWidget.view.id === model.id
       }
     >
@@ -158,9 +158,9 @@ const Search = observer(({ model }: { model: LGV }) => {
         style: {
           background: fade(theme.palette.background.paper, 0.8),
           height: 32,
+          padding: theme.spacing(),
         },
       }}
-      inputProps={{ style: { padding: theme.spacing() } }}
       disabled={disabled}
     />
   )
