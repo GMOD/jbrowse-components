@@ -331,6 +331,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
   </div>
   <div
     class="makeStyles-tracksContainer"
+    role="presentation"
   >
     <div
       class="makeStyles-verticalGuidesContainer"
@@ -1114,6 +1115,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
   </div>
   <div
     class="makeStyles-tracksContainer"
+    role="presentation"
   >
     <div
       class="makeStyles-verticalGuidesContainer"

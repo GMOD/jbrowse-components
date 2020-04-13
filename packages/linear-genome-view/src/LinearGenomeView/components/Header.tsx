@@ -158,9 +158,10 @@ const Search = observer(({ model }: { model: LGV }) => {
         style: {
           background: fade(theme.palette.background.paper, 0.8),
           height: 32,
-          padding: theme.spacing(),
         },
       }}
+      // eslint-disable-next-line react/jsx-no-duplicate-props
+      inputProps={{ style: { padding: theme.spacing() } }}
       disabled={disabled}
     />
   )
