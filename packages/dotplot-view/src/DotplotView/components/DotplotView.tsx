@@ -6,6 +6,7 @@ export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const { getSnapshot } = jbrequire('mobx-state-tree')
+  const { transaction } = jbrequire('mobx')
   const React = jbrequire('react')
   const { useRef, useEffect, useState } = React
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
@@ -397,12 +398,10 @@ export default (pluginManager: any) => {
 
               const y1 = model.views[1].pxToBp(py1)
               const y2 = model.views[1].pxToBp(py2)
-              console.log('x1', x1)
-              console.log('x2', x2)
-              console.log('y1', y1)
-              console.log('y2', y2)
-              model.views[0].moveTo(x1, x2)
-              model.views[1].moveTo(y1, y2)
+              transaction(() => {
+                model.views[0].moveTo(x1, x2)
+                model.views[1].moveTo(y1, y2)
+              })
             }}
             onMouseLeave={event => {
               setDown(undefined)
