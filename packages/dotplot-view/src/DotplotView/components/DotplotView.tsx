@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { makeStyles } from '@material-ui/core/styles'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { DotplotViewModel } from '../model'
 
 export default (pluginManager: any) => {
@@ -163,13 +162,14 @@ export default (pluginManager: any) => {
       height,
       borderSize,
     } = model
-    let currWidth = 0
     ctx.strokeRect(
       borderSize,
       borderSize,
       viewingRegionWidth,
       viewingRegionHeight,
     )
+    // draw bars going vertically
+    let currWidth = 0
     views[0].displayedRegions.forEach(region => {
       const len = region.end - region.start
 
@@ -182,6 +182,7 @@ export default (pluginManager: any) => {
       ctx.stroke()
       currWidth += len
     })
+    // draw bars going horizontally
     let currHeight = 0
     views[1].displayedRegions.forEach(region => {
       const len = region.end - region.start
@@ -189,11 +190,15 @@ export default (pluginManager: any) => {
       ctx.beginPath()
       ctx.moveTo(
         viewingRegionWidth + borderSize,
-        height - (currHeight + len) / views[1].bpPerPx + borderSize,
+        viewingRegionHeight -
+          (currHeight + len) / views[1].bpPerPx +
+          borderSize,
       )
       ctx.lineTo(
         borderSize,
-        height - (currHeight + len) / views[1].bpPerPx + borderSize,
+        viewingRegionHeight -
+          (currHeight + len) / views[1].bpPerPx +
+          borderSize,
       )
       ctx.stroke()
       currHeight += len

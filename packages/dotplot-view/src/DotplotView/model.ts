@@ -14,10 +14,6 @@ export type LGV = Instance<LinearGenomeViewStateModel>
 
 type ConfigRelationship = { type: string; target: string }
 
-function totalBp(regions: IRegion[]) {
-  return regions.map(a => a.end - a.start).reduce((a, b) => a + b, 0)
-}
-
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
   const { cast, types: jbrequiredTypes, getParent, addDisposer } = jbrequire(
@@ -30,6 +26,7 @@ export default function stateModelFactory(pluginManager: any) {
       displayedRegions: types.array(Region),
       bpPerPx: types.number,
       offsetPx: types.number,
+      horizontallyFlipped: false,
     })
     .volatile(() => ({
       features: undefined as undefined | Feature[],
@@ -48,6 +45,30 @@ export default function stateModelFactory(pluginManager: any) {
       },
       get width() {
         return getParent(self, 2).width
+      },
+      get totalBp() {
+        return self.displayedRegions
+          .map(a => a.end - a.start)
+          .reduce((a, b) => a + b, 0)
+      },
+      bpToPx(refName: string, coord: number) {
+        let offsetBp = 0
+
+        const index = self.displayedRegions.findIndex(r => {
+          if (refName === r.refName && coord >= r.start && coord <= r.end) {
+            offsetBp += self.horizontallyFlipped
+              ? r.end - coord
+              : coord - r.start
+            return true
+          }
+          offsetBp += r.end - r.start
+          return false
+        })
+        const foundRegion = self.displayedRegions[index]
+        if (foundRegion) {
+          return Math.round(offsetBp / self.bpPerPx)
+        }
+        return undefined
       },
     }))
   return (jbrequiredTypes as Instance<typeof types>)
@@ -100,7 +121,9 @@ export default function stateModelFactory(pluginManager: any) {
                 )) as IRegion[] | undefined
                 if (regions !== undefined) {
                   self.views[index].setDisplayedRegions(regions)
-                  self.views[index].setBpPerPx(totalBp(regions) / axis[index])
+                  self.views[index].setBpPerPx(
+                    self.views[index].totalBp / axis[index],
+                  )
                 } else {
                   console.error(
                     `failed to get regions for assembly ${self.assemblyNames[index]}`,
