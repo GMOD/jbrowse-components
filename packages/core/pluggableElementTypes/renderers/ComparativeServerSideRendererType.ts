@@ -175,6 +175,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
 
     await Promise.all(
       args.views.map(async view => {
+        console.log('getFeatures', view.staticBlocks)
         view.features = await this.getFeatures({
           ...args,
           regions: view.staticBlocks,

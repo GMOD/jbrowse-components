@@ -344,8 +344,8 @@ export default (pluginManager: any) => {
       if (down) {
         ctx.fillStyle = 'rgba(255,0,0,0.3)'
         ctx.fillRect(
-          down[0] - rect.left,
-          down[1] - rect.top,
+          down[0],
+          down[1],
           current[0] - down[0],
           current[1] - down[1],
         )
@@ -372,22 +372,35 @@ export default (pluginManager: any) => {
             style={{ position: 'absolute', left: 0, top: 0, zIndex: 10 }}
             ref={highlightOverlayCanvas}
             onMouseDown={event => {
-              setDown([event.clientX, event.clientY])
-              setCurrent([event.clientX, event.clientY])
+              setDown([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
+              setCurrent([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
             }}
             onMouseUp={event => {
               setDown(undefined)
-              const curr = [event.clientX, event.clientY]
+              const curr = [
+                event.nativeEvent.offsetX,
+                event.nativeEvent.offsetY,
+              ]
               const start = down
-              const x1 = model.views[0].pxToBp(curr[0] - borderSize)
-              const x2 = model.views[0].pxToBp(start[0] - borderSize)
-              const y1 = model.views[1].pxToBp(
-                viewingRegionHeight - (curr[1] - borderSize),
-              )
-              const y2 = model.views[1].pxToBp(
-                viewingRegionHeight - (start[1] - borderSize),
-              )
-              console.log(x1, x2, y1, y2)
+              let px1 = curr[0] - borderSize
+              let px2 = start[0] - borderSize
+              if (px1 > px2) {
+                ;[px2, px1] = [px1, px2]
+              }
+              let py1 = viewingRegionHeight - (curr[1] - borderSize)
+              let py2 = viewingRegionHeight - (start[1] - borderSize)
+              if (py1 > py2) {
+                ;[py2, py1] = [py1, py2]
+              }
+              const x1 = model.views[0].pxToBp(px1)
+              const x2 = model.views[0].pxToBp(px2)
+
+              const y1 = model.views[1].pxToBp(py1)
+              const y2 = model.views[1].pxToBp(py2)
+              console.log('x1', x1)
+              console.log('x2', x2)
+              console.log('y1', y1)
+              console.log('y2', y2)
               model.views[0].moveTo(x1, x2)
               model.views[1].moveTo(y1, y2)
             }}
@@ -395,7 +408,7 @@ export default (pluginManager: any) => {
               setDown(undefined)
             }}
             onMouseMove={event => {
-              setCurrent([event.clientX, event.clientY])
+              setCurrent([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
             }}
             width={width}
             height={height}
