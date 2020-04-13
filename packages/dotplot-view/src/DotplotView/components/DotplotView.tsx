@@ -170,7 +170,7 @@ export default (pluginManager: any) => {
       viewingRegionWidth,
       viewingRegionHeight,
     )
-    views[0].displayedRegions.forEach((region: IRegion) => {
+    views[0].displayedRegions.forEach(region => {
       const len = region.end - region.start
 
       ctx.beginPath()

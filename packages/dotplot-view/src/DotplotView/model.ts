@@ -38,7 +38,7 @@ export default function stateModelFactory(pluginManager: any) {
       setDisplayedRegions(regions: IRegion[]) {
         self.displayedRegions = cast(regions)
       },
-      setBpToPx(val: number) {
+      setBpPerPx(val: number) {
         self.bpPerPx = val
       },
     }))
@@ -94,13 +94,13 @@ export default function stateModelFactory(pluginManager: any) {
           autorun(
             async () => {
               self.assemblyNames.forEach(async (name, index) => {
-                const axis = [self.width, self.height]
+                const axis = [self.viewingRegionWidth, self.viewingRegionHeight]
                 const regions = (await session.getRegionsForAssemblyName(
                   self.assemblyNames[index],
                 )) as IRegion[] | undefined
                 if (regions !== undefined) {
                   self.views[index].setDisplayedRegions(regions)
-                  self.views[index].setBpToPx(totalBp(regions) / axis[index])
+                  self.views[index].setBpPerPx(totalBp(regions) / axis[index])
                 } else {
                   console.error(
                     `failed to get regions for assembly ${self.assemblyNames[index]}`,
