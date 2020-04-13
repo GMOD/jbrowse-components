@@ -5,7 +5,7 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
-import { types, getParent, Instance } from 'mobx-state-tree'
+import { types, getParent, getSnapshot, Instance } from 'mobx-state-tree'
 import {
   BaseTrackConfig,
   BaseTrack,
@@ -155,6 +155,7 @@ function renderBlockData(self: DotplotTrack) {
   const { adapterConfig } = self
   const adapterConfigId = jsonStableStringify(adapterConfig)
   const { views, width, height, borderSize } = getParent(self, 2)
+  getSnapshot(views)
   return {
     rendererType,
     rpcManager,

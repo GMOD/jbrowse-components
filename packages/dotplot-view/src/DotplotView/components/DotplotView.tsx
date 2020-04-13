@@ -239,7 +239,15 @@ export default (pluginManager: any) => {
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
     const ref = useRef()
-    const { borderSize, initialized, fontSize, views, width, height } = model
+    const {
+      borderSize,
+      viewingRegionHeight,
+      initialized,
+      fontSize,
+      views,
+      width,
+      height,
+    } = model
     const highlightOverlayCanvas = useRef(null)
     const [down, setDown] = useState()
     const [current, setCurrent] = useState([0, 0])
@@ -302,10 +310,15 @@ export default (pluginManager: any) => {
               setDown(undefined)
               const curr = [event.clientX, event.clientY]
               const start = down
-              const x1 = model.views[0].pxToBp(curr[0])
-              const x2 = model.views[1].pxToBp(start[0])
-              const y1 = model.views[0].pxToBp(curr[1])
-              const y2 = model.views[1].pxToBp(start[1])
+              const x1 = model.views[0].pxToBp(curr[0] - borderSize)
+              const x2 = model.views[1].pxToBp(start[0] - borderSize)
+              const y1 = model.views[0].pxToBp(
+                viewingRegionHeight - (curr[1] - borderSize),
+              )
+              const y2 = model.views[1].pxToBp(
+                viewingRegionHeight - (start[1] - borderSize),
+              )
+              console.log(x1, x2, y1, y2)
               model.views[0].moveTo(x1, x2)
               model.views[1].moveTo(y1, y2)
             }}
