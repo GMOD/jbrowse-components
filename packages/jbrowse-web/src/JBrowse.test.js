@@ -5,6 +5,7 @@ import {
   fireEvent,
   render,
   wait,
+  within,
 } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 import React from 'react'
@@ -214,16 +215,16 @@ describe('some error state', () => {
 describe('test renamed refs', () => {
   it('open a cram with alternate renamed ref', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findByTestId, findAllByTestId, findByText } = render(
+    const { findByTestId, findByText } = render(
       <JBrowse initialState={state} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_alignments'))
 
-    const canvas = await findAllByTestId('prerendered_canvas_PileupRenderer')
+    const canvas = await findByTestId('prerendered_canvas')
 
-    const img = canvas[0].toDataURL()
+    const img = canvas.toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
     // this is needed to do a fuzzy image comparison because
@@ -254,9 +255,7 @@ describe('test renamed refs', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_microarray_density_altname'),
     )
-    await expect(
-      findAllByTestId('prerendered_canvas_XYPlotRenderer'),
-    ).resolves.toBeTruthy()
+    await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
   })
 })
 
@@ -338,7 +337,7 @@ describe('alignments track', () => {
   // if pileup rendering is disabled then snp coverage will run
   it('opens an alignments track', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findAllByTestId, findByTestId, findByText } = render(
+    const { findByTestId, findByText } = render(
       <JBrowse initialState={state} />,
     )
     await findByText('Help')
@@ -347,12 +346,10 @@ describe('alignments track', () => {
       await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
     )
 
-    /* Since alignments track has subtracks, need to look for both
-    prerendered canvases. PrerenderedCanvas data-test id now appends
-    rendererType so both can be found and not stopped prematurely */
-    const pileupCanvas = await findAllByTestId(
-      'prerendered_canvas_PileupRenderer',
+    const { findAllByTestId: findAllByTestId1 } = within(
+      await findByTestId('Blockset-pileup'),
     )
+    const pileupCanvas = await findAllByTestId1('prerendered_canvas')
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
@@ -361,18 +358,21 @@ describe('alignments track', () => {
       failureThresholdType: 'percent',
     })
 
-    const snpCovCanvas = await findAllByTestId(
-      'prerendered_canvas_SNPCoverageRenderer',
+    const { findAllByTestId: findAllByTestId2 } = within(
+      await findByTestId('Blockset-snpcoverage'),
     )
-    // snpCov image
-    const snpCovImg = snpCovCanvas[0].toDataURL()
-    const snpCovData = snpCovImg.replace(/^data:image\/\w+;base64,/, '')
-    const snpCovBuf = Buffer.from(snpCovData, 'base64')
-    expect(snpCovBuf).toMatchImageSnapshot({
+    const snpCoverageCanvas = await findAllByTestId2('prerendered_canvas')
+    const snpCoverageImg = snpCoverageCanvas[0].toDataURL()
+    const snpCoverageData = snpCoverageImg.replace(
+      /^data:image\/\w+;base64,/,
+      '',
+    )
+    const snpCoverageBuf = Buffer.from(snpCoverageData, 'base64')
+    expect(snpCoverageBuf).toMatchImageSnapshot({
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
-  })
+  }, 10000)
 })
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
@@ -383,9 +383,7 @@ describe('bigwig', () => {
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray'))
-    await expect(
-      findAllByTestId('prerendered_canvas_XYPlotRenderer'),
-    ).resolves.toBeTruthy()
+    await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
   })
   it('open a bigwig line track', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
@@ -395,9 +393,7 @@ describe('bigwig', () => {
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray_line'))
-    await expect(
-      findAllByTestId('prerendered_canvas_LinePlotRenderer'),
-    ).resolves.toBeTruthy()
+    await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
   })
   it('open a bigwig density track', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
@@ -409,9 +405,7 @@ describe('bigwig', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_microarray_density'),
     )
-    await expect(
-      findAllByTestId('prerendered_canvas_DensityRenderer'),
-    ).resolves.toBeTruthy()
+    await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
   })
 })
 

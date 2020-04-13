@@ -3,6 +3,7 @@ import Grow from '@material-ui/core/Grow'
 import Icon from '@material-ui/core/Icon'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
+import ListSubheader from '@material-ui/core/ListSubheader'
 import { MenuProps as MUIMenuProps } from '@material-ui/core/Menu'
 import MenuItem, { MenuItemProps } from '@material-ui/core/MenuItem'
 import MenuList from '@material-ui/core/MenuList'
@@ -85,6 +86,11 @@ interface MenuDivider {
   type: 'divider'
 }
 
+interface MenuSubHeader {
+  type: 'subHeader'
+  label: string
+}
+
 interface BaseMenuItem {
   label: string
   subLabel?: string
@@ -116,14 +122,13 @@ interface SubMenuItem extends BaseMenuItem {
 
 export type MenuOptions =
   | MenuDivider
+  | MenuSubHeader
   | NormalMenuItem
   | CheckboxMenuItem
   | RadioMenuItem
   | SubMenuItem
 
 type AnchorElProp = MUIMenuProps['anchorEl']
-type AnchorReferenceProp = MUIMenuProps['anchorReference']
-type AnchorPositionProp = MUIMenuProps['anchorPosition']
 type OpenProp = MUIMenuProps['open']
 type OnCloseProp = MUIMenuProps['onClose']
 
@@ -145,7 +150,10 @@ function findNextValidIdx(menuOptions: MenuOptions[], currentIdx: number) {
   const idx = menuOptions
     .slice(currentIdx + 1)
     .findIndex(
-      menuOption => menuOption.type !== 'divider' && !menuOption.disabled,
+      menuOption =>
+        menuOption.type !== 'divider' &&
+        menuOption.type !== 'subHeader' &&
+        !menuOption.disabled,
     )
   if (idx === -1) {
     return idx
@@ -156,7 +164,10 @@ function findNextValidIdx(menuOptions: MenuOptions[], currentIdx: number) {
 function findPreviousValidIdx(menuOptions: MenuOptions[], currentIdx: number) {
   return findLastIndex(
     menuOptions.slice(0, currentIdx),
-    menuOption => menuOption.type !== 'divider' && !menuOption.disabled,
+    menuOption =>
+      menuOption.type !== 'divider' &&
+      menuOption.type !== 'subHeader' &&
+      !menuOption.disabled,
   )
 }
 
@@ -253,6 +264,13 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
         {menuOptions.map((menuOption, idx) => {
           if (menuOption.type === 'divider') {
             return <Divider key={`divider-${idx}`} component="li" />
+          }
+          if (menuOption.type === 'subHeader') {
+            return (
+              <ListSubheader key={`subHeader-${menuOption.label}-${idx}`}>
+                {menuOption.label}
+              </ListSubheader>
+            )
           }
           let icon = null
           let endDecoration = null

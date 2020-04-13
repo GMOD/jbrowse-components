@@ -34,7 +34,7 @@ function AlignmentsTrackBlocks({
       {/* {SNPCoverageTrack && showSNPCoverage && ( */}
       {SNPCoverageTrack && (
         <div
-          data-testid="Blockset"
+          data-testid="Blockset-snpcoverage"
           className={classes.trackBlocks}
           style={{
             left:
@@ -61,7 +61,7 @@ function AlignmentsTrackBlocks({
       />
       {PileupTrack && (
         <div
-          data-testid="Blockset"
+          data-testid="Blockset-pileup"
           className={classes.trackBlocks}
           style={{
             left: PileupTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
