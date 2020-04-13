@@ -416,6 +416,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           </div>
           <div
             class="makeStyles-tracksContainer"
+            role="presentation"
           >
             <div
               class="makeStyles-verticalGuidesContainer"
@@ -814,6 +815,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           </div>
           <div
             class="makeStyles-tracksContainer"
+            role="presentation"
           >
             <div
               class="makeStyles-verticalGuidesContainer"
