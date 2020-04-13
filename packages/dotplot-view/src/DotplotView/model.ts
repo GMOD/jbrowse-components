@@ -90,7 +90,7 @@ export default function stateModelFactory(pluginManager: any) {
           return {
             ...r,
             offset: bp,
-            index: 0,
+            index: -1,
           }
         }
         for (let index = 0; index < self.displayedRegions.length; index += 1) {
@@ -104,7 +104,7 @@ export default function stateModelFactory(pluginManager: any) {
         return {
           ...r,
           offset: bp - bpSoFar,
-          index: self.displayedRegions.length,
+          index: -1,
         }
       },
     }))
