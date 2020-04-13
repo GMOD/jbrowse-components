@@ -84,13 +84,14 @@ export default function stateModelFactory(pluginManager: any) {
        */
       pxToBp(px: number) {
         const bp = (self.offsetPx + px) * self.bpPerPx
+        console.log(px, bp, self.offsetPx, self.bpPerPx)
         let bpSoFar = 0
         let r = self.displayedRegions[0]
         if (bp < 0) {
           return {
             ...r,
             offset: bp,
-            index: -1,
+            index: 0,
           }
         }
         for (let index = 0; index < self.displayedRegions.length; index += 1) {
@@ -104,11 +105,18 @@ export default function stateModelFactory(pluginManager: any) {
         return {
           ...r,
           offset: bp - bpSoFar,
-          index: -1,
+          index: self.displayedRegions.length - 1,
         }
       },
     }))
     .actions(self => ({
+      zoomInButton() {
+        self.setBpPerPx(self.bpPerPx / 1.4)
+      },
+
+      zoomOutButton() {
+        self.setBpPerPx(self.bpPerPx * 1.4)
+      },
       moveTo(start: BpOffset, end: BpOffset) {
         // find locations in the modellist
         let bpSoFar = 0
@@ -229,6 +237,14 @@ export default function stateModelFactory(pluginManager: any) {
         self.headerHeight = height
       },
 
+      zoomOutButton() {
+        self.views[0].zoomOutButton()
+        self.views[1].zoomOutButton()
+      },
+      zoomInButton() {
+        self.views[0].zoomInButton()
+        self.views[1].zoomInButton()
+      },
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
           const session: any = getSession(self)
