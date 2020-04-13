@@ -63,7 +63,9 @@ function TracksContainer({
 
     function globalMouseUp() {
       prevX.current = null
-      setMouseDragging(false)
+      if (mouseDragging) {
+        setMouseDragging(false)
+      }
     }
 
     if (mouseDragging) {
