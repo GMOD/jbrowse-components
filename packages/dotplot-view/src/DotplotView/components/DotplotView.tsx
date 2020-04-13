@@ -300,6 +300,14 @@ export default (pluginManager: any) => {
             }}
             onMouseUp={event => {
               setDown(undefined)
+              const curr = [event.clientX, event.clientY]
+              const start = down
+              const x1 = model.views[0].pxToBp(curr[0])
+              const x2 = model.views[1].pxToBp(start[0])
+              const y1 = model.views[0].pxToBp(curr[1])
+              const y2 = model.views[1].pxToBp(start[1])
+              model.views[0].moveTo(x1, x2)
+              model.views[1].moveTo(y1, y2)
             }}
             onMouseLeave={event => {
               setDown(undefined)

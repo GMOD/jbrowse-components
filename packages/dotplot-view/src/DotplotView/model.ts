@@ -76,6 +76,37 @@ export default function stateModelFactory(pluginManager: any) {
         }
         return undefined
       },
+
+      /**
+       *
+       * @param {number} px px in the view area, return value is the displayed regions
+       * @returns {BpOffset} of the displayed region that it lands in
+       */
+      pxToBp(px: number) {
+        const bp = (self.offsetPx + px) * self.bpPerPx
+        let bpSoFar = 0
+        let r = self.displayedRegions[0]
+        if (bp < 0) {
+          return {
+            ...r,
+            offset: bp,
+            index: 0,
+          }
+        }
+        for (let index = 0; index < self.displayedRegions.length; index += 1) {
+          r = self.displayedRegions[index]
+          if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
+            return { ...r, offset: bp - bpSoFar, index }
+          }
+          bpSoFar += r.end - r.start
+        }
+
+        return {
+          ...r,
+          offset: bp - bpSoFar,
+          index: self.displayedRegions.length,
+        }
+      },
     }))
     .actions(self => ({
       moveTo(start: BpOffset, end: BpOffset) {
