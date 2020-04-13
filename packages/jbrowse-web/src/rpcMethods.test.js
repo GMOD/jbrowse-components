@@ -7,7 +7,7 @@ beforeAll(() => {
 })
 
 const baseprops = {
-  region: { refName: 'ctgA', start: 0, end: 800 },
+  regions: [{ refName: 'ctgA', start: 0, end: 800 }],
   sessionId: 'knickers the cow',
   adapterType: 'BamAdapter',
   adapterConfig: {
@@ -67,7 +67,7 @@ test('can render a single region with SvgFeatures + BamAdapter', async () => {
   const testprops = {
     ...baseprops,
     rendererType: 'SvgFeatureRenderer',
-    region: { refName: 'ctgA', start: 0, end: 300 },
+    regions: [{ refName: 'ctgA', start: 0, end: 300 }],
   }
 
   const result = await render(pluginManager, testprops)
@@ -107,7 +107,7 @@ test('can render a single region with SvgFeatures + BamAdapter (larger maxHeight
   const testprops = {
     ...baseprops,
     rendererType: 'SvgFeatureRenderer',
-    region: { refName: 'ctgA', start: 0, end: 300 },
+    regions: [{ refName: 'ctgA', start: 0, end: 300 }],
   }
   testprops.renderProps.config = { maxHeight: 5000 }
 
