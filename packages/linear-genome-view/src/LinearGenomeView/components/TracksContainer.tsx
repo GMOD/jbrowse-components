@@ -39,7 +39,6 @@ function TracksContainer({
 
   const [mouseDragging, setMouseDragging] = useState(false)
   const prevX = useRef<number | null>(null)
-  useState()
 
   useEffect(() => {
     let cleanup = () => {}
