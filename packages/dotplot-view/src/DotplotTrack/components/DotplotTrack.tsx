@@ -9,10 +9,10 @@ const DotplotTrack: React.FC<{
 }> = props => {
   const { model, children } = props
   return (
-    <div>
+    <>
       <model.ReactComponent2 {...props} />
       {children}
-    </div>
+    </>
   )
 }
 DotplotTrack.propTypes = {

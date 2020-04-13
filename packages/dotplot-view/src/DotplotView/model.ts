@@ -183,6 +183,9 @@ export default function stateModelFactory(pluginManager: any) {
           self.views.every(view => view.displayedRegions.length > 0)
         )
       },
+      get loading() {
+        return self.assemblyNames.length > 0 && !this.initialized
+      },
       get viewingRegionWidth() {
         return self.width - self.borderSize * 2
       },

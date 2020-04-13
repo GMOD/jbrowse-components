@@ -18,6 +18,7 @@ export default (pluginManager: any) => {
   const MenuItem = jbrequire('@material-ui/core/MenuItem')
   const Button = jbrequire('@material-ui/core/Button')
   const TextField = jbrequire('@material-ui/core/TextField')
+  const LinearProgress = jbrequire('@material-ui/core/LinearProgress')
   const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
   const useStyles = (jbMakeStyles as typeof makeStyles)(theme => {
     return {
@@ -299,6 +300,7 @@ export default (pluginManager: any) => {
       borderSize,
       viewingRegionHeight,
       initialized,
+      loading,
       fontSize,
       views,
       width,
@@ -350,9 +352,19 @@ export default (pluginManager: any) => {
       }
     }, [down, current])
 
-    return !initialized ? (
-      <ImportForm model={model} />
-    ) : (
+    if (!initialized && !loading) {
+      return <ImportForm model={model} />
+    }
+    if (loading) {
+      return (
+        <div>
+          <p>Loading...</p>
+          <LinearProgress />
+        </div>
+      )
+    }
+
+    return (
       <div style={{ position: 'relative' }}>
         <Controls model={model} />
         <div className={classes.container}>
