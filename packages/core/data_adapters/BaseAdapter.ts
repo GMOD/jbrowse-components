@@ -7,6 +7,7 @@ import { Feature } from '../util/simpleFeature'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
 import { IRegion as Region } from '../mst-types'
+import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 
 export interface BaseOptions {
   signal?: AbortSignal
@@ -39,10 +40,12 @@ export abstract class BaseFeatureDataAdapter {
   constructor(args: unknown) {
     // note: we use switch on jest here for more simple feature IDs
     // in test environment
-    this.id =
-      typeof jest === 'undefined'
-        ? objectHash(args, { ignoreUnknown: true }).slice(0, 5)
-        : 'test'
+    if (typeof jest === 'undefined') {
+      const data = isStateTreeNode(args) ? getSnapshot(args) : args
+      this.id = objectHash(data, { ignoreUnknown: true }).slice(0, 5)
+    } else {
+      this.id = 'test'
+    }
   }
 
   /**
