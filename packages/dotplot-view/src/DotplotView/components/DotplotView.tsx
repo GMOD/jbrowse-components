@@ -49,13 +49,14 @@ export default (pluginManager: any) => {
       },
       controls: {
         overflow: 'hidden',
+        background: 'white',
         whiteSpace: 'nowrap',
         position: 'absolute',
         boxSizing: 'border-box',
-        borderRight: '1px solid #a2a2a2',
-        borderBottom: '1px solid #a2a2a2',
-        left: 0,
+        border: '1px solid #a2a2a2',
+        right: 0,
         top: 0,
+        zIndex: 100,
       },
       importFormContainer: {
         marginBottom: theme.spacing(4),
