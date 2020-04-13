@@ -13,7 +13,13 @@ import calculateStaticBlocks from './calculateStaticBlocks'
 export type LGV = Instance<LinearGenomeViewStateModel>
 
 type ConfigRelationship = { type: string; target: string }
-
+interface BpOffset {
+  refName?: string
+  index: number
+  offset: number
+  start?: number
+  end?: number
+}
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
   const { cast, types: jbrequiredTypes, getParent, addDisposer } = jbrequire(
@@ -69,6 +75,44 @@ export default function stateModelFactory(pluginManager: any) {
           return Math.round(offsetBp / self.bpPerPx)
         }
         return undefined
+      },
+    }))
+    .actions(self => ({
+      moveTo(start: BpOffset, end: BpOffset) {
+        // find locations in the modellist
+        let bpSoFar = 0
+        if (start.index === end.index) {
+          bpSoFar += end.offset - start.offset
+        } else {
+          const s = self.displayedRegions[start.index]
+          bpSoFar += (s.reversed ? s.start : s.end) - start.offset
+          if (end.index - start.index >= 2) {
+            for (let i = start.index + 1; i < end.index; i += 1) {
+              bpSoFar +=
+                self.displayedRegions[i].end - self.displayedRegions[i].start
+            }
+          }
+          bpSoFar += end.offset
+        }
+        let bpToStart = 0
+        for (let i = 0; i < self.displayedRegions.length; i += 1) {
+          const region = self.displayedRegions[i]
+          if (start.index === i) {
+            bpToStart += start.offset
+            break
+          } else {
+            bpToStart += region.end - region.start
+          }
+        }
+        self.bpPerPx = bpSoFar / self.width
+        const viewWidth = self.width
+        if (viewWidth > bpSoFar / self.bpPerPx) {
+          self.offsetPx = Math.round(
+            bpToStart / self.bpPerPx - (viewWidth - bpSoFar / self.bpPerPx) / 2,
+          )
+        } else {
+          self.offsetPx = Math.round(bpToStart / self.bpPerPx)
+        }
       },
     }))
   return (jbrequiredTypes as Instance<typeof types>)

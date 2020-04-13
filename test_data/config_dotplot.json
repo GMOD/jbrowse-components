@@ -1,7 +1,4 @@
 {
-  "configuration": {
-    "updateUrl": true
-  },
   "assemblies": [
     {
       "name": "grape",
