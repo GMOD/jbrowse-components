@@ -20,9 +20,12 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
     this.maxHeightReached = maxHeightReached
   }
 
-  addRect(id: string): number {
+  addRect(id: string) {
     const rect = this.rectangles.get(id)
     if (!rect) {
+      if (this.maxHeightReached) {
+        return null
+      }
       throw new Error(`id ${id} not found in precomputed feature layout`)
     }
     // left, top, right, bottom
