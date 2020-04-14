@@ -14,6 +14,7 @@ import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
 import { getParent, getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
 
+import clone from 'clone'
 import { BlockSet } from '../BasicTrack/util/blockTypes'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
@@ -260,16 +261,30 @@ export function stateModelFactory(pluginManager: any) {
         return accum
       },
 
+      // modifies view menu action onClick to apply to all tracks of same type
+      rewriteOnClicks(trackType: string, viewMenuActions: MenuOptions[] | any) {
+        viewMenuActions.forEach((action: MenuOptions | any) => {
+          // go to lowest level menu
+          if (action.subMenu) this.rewriteOnClicks(trackType, action.subMenu)
+          const holdOnClick = action.onClick
+          action.onClick = (...args: any[]) => {
+            self.tracks.forEach(track => {
+              if (track.type === trackType) {
+                holdOnClick.apply(track, [track, ...args])
+              }
+            })
+          }
+        })
+      },
+
       get trackTypeActions() {
         const allActions: Map<string, MenuOptions[]> = new Map()
-        // const allActions: ViewActions[] = []
         self.tracks.forEach((track: any) => {
-          // allActions.push({ [track.type]: track.viewMenuActions })
           const trackInMap = allActions.get(track.type)
-          if (!trackInMap) allActions.set(track.type, track.viewMenuActions)
-          else {
-            // same type track exists here, code to bind existing menu to other track probably goes here
-            console.log(trackInMap)
+          if (!trackInMap) {
+            const viewMenuActions = clone(track.viewMenuActions)
+            this.rewriteOnClicks(track.type, viewMenuActions)
+            allActions.set(track.type, viewMenuActions)
           }
         })
 
@@ -687,22 +702,12 @@ export function stateModelFactory(pluginManager: any) {
             },
           ]
 
-          // test.forEach((actions: ViewActions) => {
-          //   const trackType = Object.keys(actions)[0]
-          //   const viewMenuActions = actions[trackType]
-          //   viewMenuActions.forEach(action => {
-          //     menuOptions.push(action)
-          //   })
-          // })
-
-          // TODOSORT: make the onclick apply to all tracks of that type
           for (const [key, value] of self.trackTypeActions.entries()) {
-            // TODOSORT: temp til subHeader merged
             if (value.length) {
-              menuOptions.push({
-                label: key,
-                onClick: () => {},
-              })
+              menuOptions.push(
+                { type: 'divider' },
+                { type: 'subHeader', label: key },
+              )
               value.forEach(action => {
                 menuOptions.push(action)
               })

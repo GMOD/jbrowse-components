@@ -35,14 +35,12 @@ export class LayoutSession {
   }
 
   get layout() {
-    // TODOSORT: decide whether to deepEqual sortObject or just the sortedBy string
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
       this.cachedLayout = {
         layout: this.makeLayout(),
         config: readConfObject(this.config),
         filters: this.filters,
         sortObject: this.sortObject,
-        // sortedBy: this.sortObject.by,
       }
     }
     return this.cachedLayout.layout

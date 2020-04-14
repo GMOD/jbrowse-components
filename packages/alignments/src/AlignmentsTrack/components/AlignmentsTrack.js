@@ -5,8 +5,6 @@ import { Menu } from '@gmod/jbrowse-core/ui'
 import { useTheme } from '@material-ui/core/styles'
 import AlignmentsBlockBasedTrack from './AlignmentsBlockBasedTrack'
 
-// import ContextMenu from '@gmod/jbrowse-core/ui/ContextMenu'
-
 const initialState = {
   mouseX: null,
   mouseY: null,
@@ -38,7 +36,7 @@ function AlignmentsTrackComponent(props) {
     })
   }
   const ref = useRef()
-  const zIndex = useTheme().zIndex.tooltip // zIndex matches tooltip zindex to bring to front
+  const zIndex = useTheme().zIndex.tooltip
 
   const handleMenuItemClick = (
     event,

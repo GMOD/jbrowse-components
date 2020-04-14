@@ -85,8 +85,6 @@ export default class extends BoxRendererType {
     }
   }
 
-  // TODOSORT: write sorting inside here and util, props should contain a sort by this time
-  // look at logic related to filter to see if any special logic is necessary
   async makeImageData(props: PileupRenderProps) {
     const {
       features,
@@ -249,8 +247,7 @@ export default class extends BoxRendererType {
       { ...renderProps, height, width, imageData },
       null,
     )
-    // TODOSORT: renderProps.layout is not updating with new layout
-    // console.log(renderProps.layout)
+
     return {
       element,
       imageData,

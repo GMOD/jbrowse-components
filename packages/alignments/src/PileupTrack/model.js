@@ -48,22 +48,12 @@ export default (pluginManager, configSchema) =>
           return rendererType
         },
 
-        // TODOSORT think about changing by, moving sortedBy to PileupTrack
-        // do when track specific menus are implemented
         get sortObject() {
           return {
             position: getParentRenderProps(self).trackModel.centerLinePosition,
             by: getParentRenderProps(self).trackModel.sortedBy,
           }
         },
-
-        // TODOSORT find how to pass the sorted region first using staticblocks
-        // temp use dynamic blocks if sorted so the layout is generated correctly
-        // get blockType() {
-        //   if (!isNaN(self.sortObject.position) && self.sortObject.by)
-        //     return 'dynamicBlocks'
-        //   return 'staticBlocks'
-        // },
 
         /**
          * the react props that are passed to the Renderer when data

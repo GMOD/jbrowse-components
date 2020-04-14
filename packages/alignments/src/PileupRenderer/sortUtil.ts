@@ -13,7 +13,7 @@ export const sortFeature = (
   bpPerPx: number,
   region: IRegion,
 ) => {
-  const featureArray = Array.from(features) // this is an array of arrays
+  const featureArray = Array.from(features)
   const featuresInCenterLine: typeof featureArray = []
   const featuresOutsideCenter: typeof featureArray = []
 
@@ -75,36 +75,11 @@ export const sortFeature = (
     case 'Read Strand': {
       featuresInCenterLine.sort(
         (a: [string, Feature], b: [string, Feature]) => {
-          if (a[1].get('strand') < b[1].get('strand')) return 1
-          return -1
+          return a[1].get('strand') < b[1].get('strand') ? 1 : -1
         },
       )
       break
     }
-
-    // case 'First-of-pair Strand': {
-    //   featuresInCenterLine.sort(
-    //     (a: [string, Feature], b: [string, Feature]) => {
-    //       return 1
-    //     },
-    //   )
-    //   break
-    // }
-
-    // // read group
-    // // name before first colon possible read group id and sort on that
-    // // https://gatkforums.broadinstitute.org/gatk/discussion/6472/read-groups
-    // case 'Read Group': {
-    //   //   featuresInCenterLine.map(feature => {
-    //   //     console.log(feature[1].get('name'))
-    //   //   })
-    //   featuresInCenterLine.sort(
-    //     (a: [string, Feature], b: [string, Feature]) => {
-    //       return 1
-    //     },
-    //   )
-    //   break
-    // }
 
     default:
       break
