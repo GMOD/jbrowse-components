@@ -332,7 +332,6 @@ export default (pluginManager: any) => {
         return
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-      const rect = canvas.getBoundingClientRect()
       if (down) {
         ctx.fillStyle = 'rgba(255,0,0,0.3)'
         ctx.fillRect(
@@ -368,32 +367,33 @@ export default (pluginManager: any) => {
               setCurrent([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
             }}
             onMouseUp={event => {
-              setDown(undefined)
-              const curr = [
-                event.nativeEvent.offsetX,
-                event.nativeEvent.offsetY,
-              ]
-              const start = down
-              let px1 = curr[0] - borderSize
-              let px2 = start[0] - borderSize
-              if (px1 > px2) {
-                ;[px2, px1] = [px1, px2]
-              }
-              let py1 = viewingRegionHeight - (curr[1] - borderSize)
-              let py2 = viewingRegionHeight - (start[1] - borderSize)
-              if (py1 > py2) {
-                ;[py2, py1] = [py1, py2]
-              }
-              const x1 = model.hview.pxToBp(px1)
-              const x2 = model.hview.pxToBp(px2)
+              if (down) {
+                const curr = [
+                  event.nativeEvent.offsetX,
+                  event.nativeEvent.offsetY,
+                ]
+                const start = down
+                let px1 = curr[0] - borderSize
+                let px2 = start[0] - borderSize
+                if (px1 > px2) {
+                  ;[px2, px1] = [px1, px2]
+                }
+                let py1 = viewingRegionHeight - (curr[1] - borderSize)
+                let py2 = viewingRegionHeight - (start[1] - borderSize)
+                if (py1 > py2) {
+                  ;[py2, py1] = [py1, py2]
+                }
+                const x1 = model.hview.pxToBp(px1)
+                const x2 = model.hview.pxToBp(px2)
 
-              const y1 = model.vview.pxToBp(py1)
-              const y2 = model.vview.pxToBp(py2)
-              console.log(x1, x2, y1, y2)
-              transaction(() => {
-                model.hview.moveTo(x1, x2)
-                model.vview.moveTo(y1, y2)
-              })
+                const y1 = model.vview.pxToBp(py1)
+                const y2 = model.vview.pxToBp(py2)
+                transaction(() => {
+                  model.hview.moveTo(x1, x2)
+                  model.vview.moveTo(y1, y2)
+                })
+                setDown(undefined)
+              }
             }}
             onMouseLeave={event => {
               setDown(undefined)

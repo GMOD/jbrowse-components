@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { intersection2 } from '@gmod/jbrowse-core/util/range'
 import { assembleLocString } from '@gmod/jbrowse-core/util'
 import {

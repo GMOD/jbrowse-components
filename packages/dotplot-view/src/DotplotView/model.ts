@@ -47,6 +47,10 @@ export default function stateModelFactory(pluginManager: any) {
       },
     }))
     .views(self => ({
+      get width() {
+        /* replace me */
+        return 0
+      },
       get dynamicBlocks() {
         return calculateDynamicBlocks(cast(self))
       },
@@ -116,6 +120,17 @@ export default function stateModelFactory(pluginManager: any) {
 
       zoomOutButton() {
         self.setBpPerPx(self.bpPerPx * 1.4)
+      },
+      zoomTo(newBpPerPx: number) {
+        const bpPerPx = newBpPerPx
+        if (bpPerPx === self.bpPerPx) return
+        const oldBpPerPx = self.bpPerPx
+        self.bpPerPx = bpPerPx
+        const viewWidth = self.width
+        self.offsetPx = Math.round(
+          ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
+            viewWidth / 2,
+        )
       },
       moveTo(start: BpOffset, end: BpOffset) {
         // find locations in the modellist

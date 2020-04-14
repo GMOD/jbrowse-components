@@ -39,7 +39,6 @@ export default class ComparativeServerSideRenderer extends RendererType {
   serializeArgsInClient(args: RenderArgs) {
     const { trackModel } = args.renderProps
     if (trackModel) {
-      console.log('views', args.views)
       args.renderProps = {
         ...args.renderProps,
         // @ts-ignore
@@ -178,7 +177,6 @@ export default class ComparativeServerSideRenderer extends RendererType {
 
     await Promise.all(
       args.views.map(async view => {
-        console.log('worker', view.dynamicBlocks)
         view.features = await this.getFeatures({
           ...args,
           regions: view.dynamicBlocks,
