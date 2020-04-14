@@ -12,6 +12,7 @@ import React from 'react'
 interface ReducedView {
   features: Feature[]
   displayedRegions: IRegion[]
+  dynamicBlocks: IRegion[]
   horizontallyFlipped: boolean
   bpPerPx: number
 }
@@ -41,7 +42,7 @@ interface DotplotImageData {
 function bpToPx(self: ReducedView, refName: string, coord: number) {
   let offsetBp = 0
 
-  const index = self.displayedRegions.findIndex((r: IRegion) => {
+  const index = self.dynamicBlocks.findIndex((r: IRegion) => {
     if (refName === r.refName && coord >= r.start && coord <= r.end) {
       offsetBp += self.horizontallyFlipped ? r.end - coord : coord - r.start
       return true
@@ -49,7 +50,7 @@ function bpToPx(self: ReducedView, refName: string, coord: number) {
     offsetBp += r.end - r.start
     return false
   })
-  const foundRegion = self.displayedRegions[index]
+  const foundRegion = self.dynamicBlocks[index]
   if (foundRegion) {
     return Math.round(offsetBp / self.bpPerPx)
   }

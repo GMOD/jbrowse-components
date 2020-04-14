@@ -216,41 +216,37 @@ export default (pluginManager: any) => {
     const {
       hview,
       vview,
-      viewingRegionWidth,
-      viewingRegionHeight,
-      height,
+      viewingRegionWidth: width,
+      viewingRegionHeight: height,
       borderSize,
     } = model
-    ctx.strokeRect(
-      borderSize,
-      borderSize,
-      viewingRegionWidth,
-      viewingRegionHeight,
-    )
+    ctx.strokeRect(borderSize, borderSize, width, height)
     // draw bars going vertically
+    const l = (hview.dynamicBlocks.blocks[0] || {}).offsetPx
     hview.dynamicBlocks.forEach(region => {
       if (region.refName) {
         const len = region.widthPx
 
         ctx.beginPath()
-        ctx.moveTo(region.offsetPx + len + borderSize, height - borderSize)
-        ctx.lineTo(region.offsetPx + len + borderSize, borderSize)
+        ctx.moveTo(region.offsetPx - l + len + borderSize, height + borderSize)
+        ctx.lineTo(region.offsetPx - l + len + borderSize, borderSize)
         ctx.stroke()
       }
     })
     // draw bars going horizontally
+    const t = (vview.dynamicBlocks.blocks[0] || {}).offsetPx
     vview.dynamicBlocks.forEach(region => {
       if (region.refName) {
         const len = region.widthPx
 
         ctx.beginPath()
         ctx.moveTo(
-          viewingRegionWidth + borderSize,
-          viewingRegionHeight - (region.offsetPx + len) + borderSize,
+          width + borderSize,
+          height - (region.offsetPx - t + len) + borderSize,
         )
         ctx.lineTo(
           borderSize,
-          viewingRegionHeight - (region.offsetPx + len) + borderSize,
+          height - (region.offsetPx - t + len) + borderSize,
         )
         ctx.stroke()
       }
@@ -259,12 +255,13 @@ export default (pluginManager: any) => {
 
   function DrawLabels(model: DotplotViewModel, ctx: CanvasRenderingContext2D) {
     const { hview, vview, fontSize, height, borderSize } = model
+    const l = (hview.dynamicBlocks.blocks[0] || {}).offsetPx
     hview.dynamicBlocks.forEach(region => {
       if (region.refName) {
         const len = region.widthPx
         ctx.fillText(
           region.refName,
-          region.offsetPx + len / 2,
+          region.offsetPx - l + len / 2,
           height - borderSize + fontSize,
         )
       }
@@ -273,10 +270,15 @@ export default (pluginManager: any) => {
     ctx.save()
     ctx.translate(0, height)
     ctx.rotate(-Math.PI / 2)
+    const v = (vview.dynamicBlocks.blocks[0] || {}).offsetPx
     vview.dynamicBlocks.forEach(region => {
       if (region.refName) {
         const len = region.widthPx
-        ctx.fillText(region.refName, region.offsetPx + len / 2, borderSize - 10)
+        ctx.fillText(
+          region.refName,
+          region.offsetPx - v + len / 2,
+          borderSize - 10,
+        )
       }
     })
     ctx.restore()
@@ -317,7 +319,7 @@ export default (pluginManager: any) => {
 
         ctx.restore()
       }
-    }, [borderSize, fontSize, height, initialized, model, width])
+    }, [borderSize, fontSize, height, initialized, viewSnap, model, width])
 
     // allow click and drag over the dotplot view
     useEffect(() => {
@@ -387,6 +389,7 @@ export default (pluginManager: any) => {
 
               const y1 = model.vview.pxToBp(py1)
               const y2 = model.vview.pxToBp(py2)
+              console.log(x1, x2, y1, y2)
               transaction(() => {
                 model.hview.moveTo(x1, x2)
                 model.vview.moveTo(y1, y2)

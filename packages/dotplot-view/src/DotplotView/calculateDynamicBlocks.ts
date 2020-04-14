@@ -1,6 +1,5 @@
 import { intersection2 } from '@gmod/jbrowse-core/util/range'
 import { assembleLocString } from '@gmod/jbrowse-core/util'
-import { Instance } from 'mobx-state-tree'
 import {
   BlockSet,
   ContentBlock,
@@ -41,7 +40,7 @@ export default function calculateDynamicBlocks(model: any) {
   let displayedRegionLeftPx = 0
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
-  displayedRegions.forEach((region, regionNumber) => {
+  displayedRegions.forEach((region: any, regionNumber: any) => {
     const {
       assemblyName,
       refName,

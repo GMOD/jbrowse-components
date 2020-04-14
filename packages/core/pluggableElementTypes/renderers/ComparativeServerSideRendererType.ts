@@ -39,19 +39,21 @@ export default class ComparativeServerSideRenderer extends RendererType {
   serializeArgsInClient(args: RenderArgs) {
     const { trackModel } = args.renderProps
     if (trackModel) {
+      console.log('views', args.views)
       args.renderProps = {
         ...args.renderProps,
         // @ts-ignore
         blockKey: args.blockKey,
         // @ts-ignore
-        views: args.views.map(view => ({
-          // @ts-ignore
-          ...getSnapshot(view),
-          dynamicBlocks: view.dynamicBlocks.getBlocks(),
-        })),
+        views: args.views.map(view => {
+          return {
+            // @ts-ignore
+            ...getSnapshot(view),
+            dynamicBlocks: view.dynamicBlocks.contentBlocks,
+          }
+        }),
         trackModel: {},
       }
-      console.log(args.renderProps)
     }
 
     return args
@@ -176,6 +178,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
 
     await Promise.all(
       args.views.map(async view => {
+        console.log('worker', view.dynamicBlocks)
         view.features = await this.getFeatures({
           ...args,
           regions: view.dynamicBlocks,

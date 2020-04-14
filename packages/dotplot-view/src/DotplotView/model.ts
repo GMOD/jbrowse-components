@@ -37,7 +37,6 @@ export default function stateModelFactory(pluginManager: any) {
     })
     .volatile(() => ({
       features: undefined as undefined | Feature[],
-      width: 0 as number,
     }))
     .actions(self => ({
       setDisplayedRegions(regions: IRegion[]) {
@@ -45,9 +44,6 @@ export default function stateModelFactory(pluginManager: any) {
       },
       setBpPerPx(val: number) {
         self.bpPerPx = val
-      },
-      setWidth(val: number) {
-        self.width = val
       },
     }))
     .views(self => ({
@@ -169,8 +165,20 @@ export default function stateModelFactory(pluginManager: any) {
       displayName: 'dotplot',
       trackSelectorType: 'hierarchical',
       assemblyNames: types.array(types.string),
-      hview: DotplotViewDirection,
-      vview: DotplotViewDirection,
+      hview: DotplotViewDirection.extend(self => ({
+        views: {
+          get width() {
+            return getParent(self).width
+          },
+        },
+      })),
+      vview: DotplotViewDirection.extend(self => ({
+        views: {
+          get width() {
+            return getParent(self).height
+          },
+        },
+      })),
       tracks: types.array(
         pluginManager.pluggableMstType(
           'track',
@@ -210,20 +218,21 @@ export default function stateModelFactory(pluginManager: any) {
             async () => {
               const axis = [self.viewingRegionWidth, self.viewingRegionHeight]
               const views = [self.hview, self.vview]
-              self.assemblyNames.forEach(async (name, index) => {
-                const regions = (await session.getRegionsForAssemblyName(
-                  self.assemblyNames[index],
-                )) as IRegion[] | undefined
-                if (regions !== undefined) {
-                  views[index].setDisplayedRegions(regions)
-                  views[index].setBpPerPx(views[index].totalBp / axis[index])
-                  views[index].setWidth(axis[index])
-                } else {
-                  console.error(
-                    `failed to get regions for assembly ${self.assemblyNames[index]}`,
-                  )
-                }
-              })
+              if (!self.initialized) {
+                self.assemblyNames.forEach(async (name, index) => {
+                  const regions = (await session.getRegionsForAssemblyName(
+                    self.assemblyNames[index],
+                  )) as IRegion[] | undefined
+                  if (regions !== undefined) {
+                    views[index].setDisplayedRegions(regions)
+                    views[index].setBpPerPx(views[index].totalBp / axis[index])
+                  } else {
+                    console.error(
+                      `failed to get regions for assembly ${self.assemblyNames[index]}`,
+                    )
+                  }
+                })
+              }
             },
             { delay: 1000 },
           ),
