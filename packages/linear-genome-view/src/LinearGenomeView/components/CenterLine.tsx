@@ -1,6 +1,16 @@
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useRef } from 'react'
+import { Instance } from 'mobx-state-tree'
+import { LinearGenomeViewStateModel } from '..'
+import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
+
+type LGV = Instance<LinearGenomeViewStateModel>
+
+interface BaseTrackWithSort extends Instance<BaseTrackStateModel> {
+  sortedBy: string
+  centerLinePosition: number
+}
 
 const useStyles = makeStyles(() => ({
   centerLineContainer: {
@@ -26,15 +36,15 @@ const useStyles = makeStyles(() => ({
   },
 }))
 
-function CenterLine({ model }) {
+function CenterLine({ model }: { model: LGV }) {
   const { bpPerPx, centerLinePosition, trackHeights, tracks, width } = model
-  const ref = useRef()
+  const ref = useRef<HTMLDivElement>(null)
   const classes = useStyles()
   const startingPosition = width / 2
+  let activeSortedTrack: BaseTrackWithSort | undefined
 
-  let activeSortedTrack = null
-
-  tracks.forEach(track => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tracks.forEach((track: any) => {
     if (track.sortedBy) activeSortedTrack = track
   })
 
@@ -60,7 +70,9 @@ function CenterLine({ model }) {
           top: activeSortedTrack ? trackHeights - 15 : trackHeights,
         }}
       >
-        Bp: {Math.max(Math.round(centerLinePosition.offset) + 1, 0)}
+        Bp:{' '}
+        {centerLinePosition &&
+          Math.max(Math.round(centerLinePosition.offset) + 1, 0)}
         {activeSortedTrack && (
           <div className={classes.sortText}>
             Sort: {activeSortedTrack.sortedBy.toUpperCase()} at{' '}
