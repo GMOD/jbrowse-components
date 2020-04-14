@@ -27,10 +27,16 @@ const useStyles = makeStyles(() => ({
 }))
 
 function CenterLine({ model }) {
-  const { bpPerPx, trackHeights, width, tracks } = model
+  const { bpPerPx, centerLinePosition, trackHeights, tracks, width } = model
   const ref = useRef()
   const classes = useStyles()
   const startingPosition = width / 2
+
+  let activeSortedTrack = null
+
+  tracks.forEach(track => {
+    if (track.sortedBy) activeSortedTrack = track
+  })
 
   return tracks.length ? (
     <div
@@ -51,16 +57,16 @@ function CenterLine({ model }) {
         role="presentation"
         style={{
           left: Math.max(1 / bpPerPx, 1) + 5,
-          top: !tracks[0].sortedBy ? trackHeights : trackHeights - 15,
+          top: activeSortedTrack ? trackHeights - 15 : trackHeights,
         }}
       >
-        Bp: {Math.round(model.centerLinePosition.offset) + 1}
-        {tracks[0].sortedBy ? (
+        Bp: {Math.max(Math.round(centerLinePosition.offset) + 1, 0)}
+        {activeSortedTrack && (
           <div className={classes.sortText}>
-            Sort: {tracks[0].PileupTrack.sortObject.by.toUpperCase()} at{' '}
-            {tracks[0].PileupTrack.sortObject.position}
+            Sort: {activeSortedTrack.sortedBy.toUpperCase()} at{' '}
+            {activeSortedTrack.centerLinePosition}
           </div>
-        ) : null}
+        )}
       </div>
     </div>
   ) : null
