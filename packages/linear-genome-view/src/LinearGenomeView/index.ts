@@ -262,7 +262,7 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       // modifies view menu action onClick to apply to all tracks of same type
-      rewriteOnClicks(trackType: string, viewMenuActions: MenuOptions[] | any) {
+      rewriteOnClicks(trackType: string, viewMenuActions: MenuOptions[]) {
         viewMenuActions.forEach((action: MenuOptions | any) => {
           // go to lowest level menu
           if (action.subMenu) this.rewriteOnClicks(trackType, action.subMenu)
@@ -702,6 +702,7 @@ export function stateModelFactory(pluginManager: any) {
             },
           ]
 
+          // add track's view level menu options
           for (const [key, value] of self.trackTypeActions.entries()) {
             if (value.length) {
               menuOptions.push(

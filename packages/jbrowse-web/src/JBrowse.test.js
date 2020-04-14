@@ -135,6 +135,10 @@ describe('valid file tests', () => {
     expect(state.session.views[0].bpPerPx).toEqual(0.02)
   })
 
+  // TODO: write a right click integration test
+  // TODO: write a centerline integration test
+  // TODO: write a sorting test
+  
   it('click and drag to reorder tracks', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { findByTestId } = render(<JBrowse initialState={state} />)

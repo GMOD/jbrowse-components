@@ -31,7 +31,6 @@ function AlignmentsTrackBlocks({
 
   return (
     <>
-      {/* {SNPCoverageTrack && showSNPCoverage && ( */}
       {SNPCoverageTrack && (
         <div
           data-testid="Blockset-snpcoverage"

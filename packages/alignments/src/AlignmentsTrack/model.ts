@@ -139,6 +139,8 @@ export default (pluginManager: any, configSchema: any) => {
         const centerLine = getContainingView(self).centerLinePosition
         const centerBp = Math.round(centerLine.offset) + 1
 
+        if (centerBp < 0) return
+
         const region = {
           refName: centerLine.refName,
           start: centerBp,
@@ -176,13 +178,12 @@ export default (pluginManager: any, configSchema: any) => {
             timeout: 1000000,
           })
           .then(() => {
-            this.applySortSelected(selected)
+            this.applySortSelected(selected, centerBp)
           })
       },
-      applySortSelected(selected: string) {
+      applySortSelected(selected: string, centerBp: number) {
         self.sortedBy = selected
-        self.centerLinePosition =
-          Math.round(getContainingView(self).centerLinePosition.offset) + 1
+        self.centerLinePosition = centerBp
       },
       toggleCoverage() {
         self.showCoverage = !self.showCoverage
