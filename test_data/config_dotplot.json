@@ -78,18 +78,16 @@
             "peach",
             "grape"
           ],
-          "views": [
-            {
-              "displayedRegions": [],
-              "bpPerPx": 100000,
-              "offsetPx": 0
-            },
-            {
-              "displayedRegions": [],
-              "bpPerPx": 200000,
-              "offsetPx": 0
-            }
-          ],
+          "hview": {
+            "displayedRegions": [],
+            "bpPerPx": 100000,
+            "offsetPx": 0
+          },
+          "vview": {
+            "displayedRegions": [],
+            "bpPerPx": 200000,
+            "offsetPx": 0
+          },
           "headerHeight": 44,
           "width": 1850,
           "height": 600,

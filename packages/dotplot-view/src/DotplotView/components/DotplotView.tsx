@@ -214,7 +214,8 @@ export default (pluginManager: any) => {
 
   function DrawGrid(model: DotplotViewModel, ctx: CanvasRenderingContext2D) {
     const {
-      views,
+      hview,
+      vview,
       viewingRegionWidth,
       viewingRegionHeight,
       height,
@@ -227,69 +228,56 @@ export default (pluginManager: any) => {
       viewingRegionHeight,
     )
     // draw bars going vertically
-    let currWidth = 0
-    views[0].displayedRegions.forEach(region => {
-      const len = region.end - region.start
+    hview.dynamicBlocks.forEach(region => {
+      if (region.refName) {
+        const len = region.widthPx
 
-      ctx.beginPath()
-      ctx.moveTo(
-        (currWidth + len) / views[0].bpPerPx + borderSize,
-        height - borderSize,
-      )
-      ctx.lineTo((currWidth + len) / views[0].bpPerPx + borderSize, borderSize)
-      ctx.stroke()
-      currWidth += len
+        ctx.beginPath()
+        ctx.moveTo(region.offsetPx + len + borderSize, height - borderSize)
+        ctx.lineTo(region.offsetPx + len + borderSize, borderSize)
+        ctx.stroke()
+      }
     })
     // draw bars going horizontally
-    let currHeight = 0
-    views[1].displayedRegions.forEach(region => {
-      const len = region.end - region.start
+    vview.dynamicBlocks.forEach(region => {
+      if (region.refName) {
+        const len = region.widthPx
 
-      ctx.beginPath()
-      ctx.moveTo(
-        viewingRegionWidth + borderSize,
-        viewingRegionHeight -
-          (currHeight + len) / views[1].bpPerPx +
+        ctx.beginPath()
+        ctx.moveTo(
+          viewingRegionWidth + borderSize,
+          viewingRegionHeight - (region.offsetPx + len) + borderSize,
+        )
+        ctx.lineTo(
           borderSize,
-      )
-      ctx.lineTo(
-        borderSize,
-        viewingRegionHeight -
-          (currHeight + len) / views[1].bpPerPx +
-          borderSize,
-      )
-      ctx.stroke()
-      currHeight += len
+          viewingRegionHeight - (region.offsetPx + len) + borderSize,
+        )
+        ctx.stroke()
+      }
     })
   }
 
   function DrawLabels(model: DotplotViewModel, ctx: CanvasRenderingContext2D) {
-    const { views, fontSize, height, borderSize } = model
-    let currHeight = 0
-    views[0].displayedRegions.forEach(region => {
-      const len = region.end - region.start
-      ctx.fillText(
-        region.refName,
-        (currHeight + len / 2) / views[0].bpPerPx,
-        height - borderSize + fontSize,
-      )
-
-      currHeight += len
+    const { hview, vview, fontSize, height, borderSize } = model
+    hview.dynamicBlocks.forEach(region => {
+      if (region.refName) {
+        const len = region.widthPx
+        ctx.fillText(
+          region.refName,
+          region.offsetPx + len / 2,
+          height - borderSize + fontSize,
+        )
+      }
     })
 
     ctx.save()
     ctx.translate(0, height)
     ctx.rotate(-Math.PI / 2)
-    let currWidth = 0
-    views[1].displayedRegions.forEach(region => {
-      const len = region.end - region.start
-      ctx.fillText(
-        region.refName,
-        (currWidth + len / 2) / views[1].bpPerPx + borderSize,
-        borderSize - 10,
-      )
-
-      currWidth += len
+    vview.dynamicBlocks.forEach(region => {
+      if (region.refName) {
+        const len = region.widthPx
+        ctx.fillText(region.refName, region.offsetPx + len / 2, borderSize - 10)
+      }
     })
     ctx.restore()
   }
@@ -303,7 +291,8 @@ export default (pluginManager: any) => {
       initialized,
       loading,
       fontSize,
-      views,
+      hview,
+      vview,
       width,
       height,
     } = model
@@ -314,7 +303,7 @@ export default (pluginManager: any) => {
     // note, the snapshot is needed to force the useEffect canvas re-render
     // because the canvas re-render isn't really an observable component a la
     // mobx-react
-    const viewSnap = getSnapshot(views)
+    const viewSnap = [getSnapshot(hview), getSnapshot(vview)]
 
     // draw grid
     useEffect(() => {
@@ -328,7 +317,7 @@ export default (pluginManager: any) => {
 
         ctx.restore()
       }
-    }, [borderSize, fontSize, height, initialized, model, viewSnap, width])
+    }, [borderSize, fontSize, height, initialized, model, width])
 
     // allow click and drag over the dotplot view
     useEffect(() => {
@@ -393,14 +382,14 @@ export default (pluginManager: any) => {
               if (py1 > py2) {
                 ;[py2, py1] = [py1, py2]
               }
-              const x1 = model.views[0].pxToBp(px1)
-              const x2 = model.views[0].pxToBp(px2)
+              const x1 = model.hview.pxToBp(px1)
+              const x2 = model.hview.pxToBp(px2)
 
-              const y1 = model.views[1].pxToBp(py1)
-              const y2 = model.views[1].pxToBp(py2)
+              const y1 = model.vview.pxToBp(py1)
+              const y2 = model.vview.pxToBp(py2)
               transaction(() => {
-                model.views[0].moveTo(x1, x2)
-                model.views[1].moveTo(y1, y2)
+                model.hview.moveTo(x1, x2)
+                model.vview.moveTo(y1, y2)
               })
             }}
             onMouseLeave={event => {

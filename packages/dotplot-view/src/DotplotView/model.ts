@@ -8,6 +8,7 @@ import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-v
 
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
+import calculateDynamicBlocks from './calculateDynamicBlocks'
 import calculateStaticBlocks from './calculateStaticBlocks'
 
 export type LGV = Instance<LinearGenomeViewStateModel>
@@ -36,6 +37,7 @@ export default function stateModelFactory(pluginManager: any) {
     })
     .volatile(() => ({
       features: undefined as undefined | Feature[],
+      width: 0 as number,
     }))
     .actions(self => ({
       setDisplayedRegions(regions: IRegion[]) {
@@ -44,13 +46,16 @@ export default function stateModelFactory(pluginManager: any) {
       setBpPerPx(val: number) {
         self.bpPerPx = val
       },
+      setWidth(val: number) {
+        self.width = val
+      },
     }))
     .views(self => ({
-      get staticBlocks() {
-        return calculateStaticBlocks(cast(self), 1)
+      get dynamicBlocks() {
+        return calculateDynamicBlocks(cast(self))
       },
-      get width() {
-        return getParent(self, 2).width
+      get staticBlocks() {
+        return calculateStaticBlocks(cast(self))
       },
       get totalBp() {
         return self.displayedRegions
@@ -84,7 +89,6 @@ export default function stateModelFactory(pluginManager: any) {
        */
       pxToBp(px: number) {
         const bp = (self.offsetPx + px) * self.bpPerPx
-        console.log(px, bp, self.offsetPx, self.bpPerPx)
         let bpSoFar = 0
         let r = self.displayedRegions[0]
         if (bp < 0) {
@@ -165,7 +169,8 @@ export default function stateModelFactory(pluginManager: any) {
       displayName: 'dotplot',
       trackSelectorType: 'hierarchical',
       assemblyNames: types.array(types.string),
-      views: types.array(DotplotViewDirection),
+      hview: DotplotViewDirection,
+      vview: DotplotViewDirection,
       tracks: types.array(
         pluginManager.pluggableMstType(
           'track',
@@ -179,8 +184,8 @@ export default function stateModelFactory(pluginManager: any) {
     .views(self => ({
       get initialized() {
         return (
-          self.views.length > 0 &&
-          self.views.every(view => view.displayedRegions.length > 0)
+          self.hview.displayedRegions.length > 0 &&
+          self.vview.displayedRegions.length > 0
         )
       },
       get loading() {
@@ -192,6 +197,9 @@ export default function stateModelFactory(pluginManager: any) {
       get viewingRegionHeight() {
         return self.height - self.borderSize * 2
       },
+      get views() {
+        return [self.hview, self.vview]
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -200,16 +208,16 @@ export default function stateModelFactory(pluginManager: any) {
           self,
           autorun(
             async () => {
+              const axis = [self.viewingRegionWidth, self.viewingRegionHeight]
+              const views = [self.hview, self.vview]
               self.assemblyNames.forEach(async (name, index) => {
-                const axis = [self.viewingRegionWidth, self.viewingRegionHeight]
                 const regions = (await session.getRegionsForAssemblyName(
                   self.assemblyNames[index],
                 )) as IRegion[] | undefined
                 if (regions !== undefined) {
-                  self.views[index].setDisplayedRegions(regions)
-                  self.views[index].setBpPerPx(
-                    self.views[index].totalBp / axis[index],
-                  )
+                  views[index].setDisplayedRegions(regions)
+                  views[index].setBpPerPx(views[index].totalBp / axis[index])
+                  views[index].setWidth(axis[index])
                 } else {
                   console.error(
                     `failed to get regions for assembly ${self.assemblyNames[index]}`,
@@ -241,12 +249,12 @@ export default function stateModelFactory(pluginManager: any) {
       },
 
       zoomOutButton() {
-        self.views[0].zoomOutButton()
-        self.views[1].zoomOutButton()
+        self.hview.zoomOutButton()
+        self.vview.zoomOutButton()
       },
       zoomInButton() {
-        self.views[0].zoomInButton()
-        self.views[1].zoomInButton()
+        self.hview.zoomInButton()
+        self.vview.zoomInButton()
       },
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
@@ -301,7 +309,8 @@ export default function stateModelFactory(pluginManager: any) {
         self.assemblyNames = cast(assemblyNames)
       },
       setViews(arr: any[]) {
-        self.views = cast(arr)
+        self.hview = cast(arr[0])
+        self.vview = cast(arr[1])
       },
     }))
     .views(self => ({

@@ -47,10 +47,11 @@ export default class ComparativeServerSideRenderer extends RendererType {
         views: args.views.map(view => ({
           // @ts-ignore
           ...getSnapshot(view),
-          staticBlocks: view.staticBlocks.getBlocks(),
+          dynamicBlocks: view.dynamicBlocks.getBlocks(),
         })),
         trackModel: {},
       }
+      console.log(args.renderProps)
     }
 
     return args
@@ -175,10 +176,9 @@ export default class ComparativeServerSideRenderer extends RendererType {
 
     await Promise.all(
       args.views.map(async view => {
-        console.log('getFeatures', view.staticBlocks)
         view.features = await this.getFeatures({
           ...args,
-          regions: view.staticBlocks,
+          regions: view.dynamicBlocks,
         })
       }),
     )

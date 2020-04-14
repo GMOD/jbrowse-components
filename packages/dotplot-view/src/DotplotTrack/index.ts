@@ -154,8 +154,7 @@ function renderBlockData(self: DotplotTrack) {
 
   const { adapterConfig } = self
   const adapterConfigId = jsonStableStringify(adapterConfig)
-  const { views, initialized, width, height, borderSize } = getParent(self, 2)
-  console.log('t1', getSnapshot(views)[0], getSnapshot(views)[1])
+  const { views, width, height, borderSize } = getParent(self, 2)
   return {
     rendererType,
     rpcManager,
