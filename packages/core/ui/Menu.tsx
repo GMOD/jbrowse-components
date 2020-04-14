@@ -117,10 +117,10 @@ interface RadioMenuItem extends BaseMenuItem {
 
 interface SubMenuItem extends BaseMenuItem {
   type?: 'subMenu'
-  subMenu: MenuOptions[]
+  subMenu: MenuOption[]
 }
 
-export type MenuOptions =
+export type MenuOption =
   | MenuDivider
   | MenuSubHeader
   | NormalMenuItem
@@ -133,7 +133,7 @@ type OpenProp = MUIMenuProps['open']
 type OnCloseProp = MUIMenuProps['onClose']
 
 interface MenuPageProps {
-  menuOptions: MenuOptions[]
+  menuOptions: MenuOption[]
   onMenuItemClick: (
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
     callback: () => void,
@@ -146,7 +146,7 @@ interface MenuPageProps {
 
 type MenuItemStyleProp = MenuItemProps['style']
 
-function findNextValidIdx(menuOptions: MenuOptions[], currentIdx: number) {
+function findNextValidIdx(menuOptions: MenuOption[], currentIdx: number) {
   const idx = menuOptions
     .slice(currentIdx + 1)
     .findIndex(
@@ -161,7 +161,7 @@ function findNextValidIdx(menuOptions: MenuOptions[], currentIdx: number) {
   return currentIdx + 1 + idx
 }
 
-function findPreviousValidIdx(menuOptions: MenuOptions[], currentIdx: number) {
+function findPreviousValidIdx(menuOptions: MenuOption[], currentIdx: number) {
   return findLastIndex(
     menuOptions.slice(0, currentIdx),
     menuOption =>
@@ -390,7 +390,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
 })
 
 interface MenuProps extends PopoverProps {
-  menuOptions: MenuOptions[]
+  menuOptions: MenuOption[]
   onMenuItemClick: (
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
     callback: () => void,

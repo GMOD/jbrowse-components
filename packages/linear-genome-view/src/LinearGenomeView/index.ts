@@ -2,7 +2,7 @@
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
 import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
-import { MenuOptions } from '@gmod/jbrowse-core/ui'
+import { MenuOption } from '@gmod/jbrowse-core/ui'
 import {
   clamp,
   getContainingView,
@@ -608,7 +608,7 @@ export function stateModelFactory(pluginManager: any) {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
-        get menuOptions(): MenuOptions[] {
+        get menuOptions(): MenuOption[] {
           const session: any = getSession(self)
           return [
             {

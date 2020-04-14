@@ -1,5 +1,5 @@
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import { Menu, MenuOptions } from '@gmod/jbrowse-core/ui'
+import { Menu, MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 import Icon from '@material-ui/core/Icon'
@@ -94,7 +94,7 @@ function TrackLabel(props: {
     handleClose()
   }
 
-  const menuItems: MenuOptions[] = [
+  const menuItems: MenuOption[] = [
     { label: 'Settings', onClick: onConfigureClick, icon: 'settings' },
   ]
 
