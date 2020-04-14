@@ -183,14 +183,14 @@ export default function stateModelFactory(pluginManager: any) {
       hview: DotplotViewDirection.extend(self => ({
         views: {
           get width() {
-            return getParent(self).width
+            return getParent(self).viewingRegionWidth
           },
         },
       })),
       vview: DotplotViewDirection.extend(self => ({
         views: {
           get width() {
-            return getParent(self).height
+            return getParent(self).viewingRegionHeight
           },
         },
       })),
