@@ -75,7 +75,7 @@ export const sortFeature = (
     case 'Read Strand': {
       featuresInCenterLine.sort(
         (a: [string, Feature], b: [string, Feature]) => {
-          return a[1].get('strand') < b[1].get('strand') ? 1 : -1
+          return a[1].get('strand') <= b[1].get('strand') ? 1 : -1
         },
       )
       break
