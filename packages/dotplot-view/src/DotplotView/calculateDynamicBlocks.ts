@@ -3,7 +3,7 @@ import { intersection2 } from '@gmod/jbrowse-core/util/range'
 import { assembleLocString } from '@gmod/jbrowse-core/util'
 import { BlockSet, ContentBlock } from './blockTypes'
 
-const interRegionPaddingWidth = 2
+const interRegionPaddingWidth = 0
 
 /**
  * returns a BlockSet of which the `blocks` attribute is an array of 'dynamic
