@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { makeStyles } from '@material-ui/core/styles'
+// @ts-ignore
+import { Text, Surface, Shape, Path, Transform, Group } from 'react-art'
+
 import { DotplotViewModel } from '../model'
 
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
-  const { getSnapshot } = jbrequire('mobx-state-tree')
-  const { transaction } = jbrequire('mobx')
   const React = jbrequire('react')
-  const { useRef, useEffect, useState } = React
-  const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
+  const { useRef, useState } = React
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { makeStyles: jbMakeStyles } = jbrequire('@material-ui/core/styles')
   const Container = jbrequire('@material-ui/core/Container')
@@ -212,7 +212,8 @@ export default (pluginManager: any) => {
     )
   })
 
-  function DrawGrid(model: DotplotViewModel, ctx: CanvasRenderingContext2D) {
+  const DrawGrid = observer((props: { model: DotplotViewModel }) => {
+    const { model } = props
     const {
       hview,
       vview,
@@ -220,129 +221,50 @@ export default (pluginManager: any) => {
       viewingRegionHeight: height,
       borderSize,
     } = model
-    ctx.strokeRect(borderSize, borderSize, width, height)
-    // draw bars going vertically
     const l = (hview.dynamicBlocks.blocks[0] || {}).offsetPx
-    hview.dynamicBlocks.forEach(region => {
-      if (region.refName) {
-        const len = region.widthPx
-
-        ctx.beginPath()
-        ctx.moveTo(region.offsetPx - l + len + borderSize, height + borderSize)
-        ctx.lineTo(region.offsetPx - l + len + borderSize, borderSize)
-        ctx.stroke()
-      }
-    })
-    // draw bars going horizontally
-    const t = (vview.dynamicBlocks.blocks[0] || {}).offsetPx
-    vview.dynamicBlocks.forEach(region => {
-      if (region.refName) {
-        const len = region.widthPx
-
-        ctx.beginPath()
-        ctx.moveTo(
-          width + borderSize,
-          height - (region.offsetPx - t + len) + borderSize,
-        )
-        ctx.lineTo(
-          borderSize,
-          height - (region.offsetPx - t + len) + borderSize,
-        )
-        ctx.stroke()
-      }
-    })
-  }
-
-  function DrawLabels(model: DotplotViewModel, ctx: CanvasRenderingContext2D) {
-    const { hview, vview, fontSize, height, borderSize } = model
-    const l = (hview.dynamicBlocks.blocks[0] || {}).offsetPx
-    hview.dynamicBlocks.forEach(region => {
-      if (region.refName) {
-        const len = region.widthPx
-        ctx.fillText(
-          region.refName,
-          region.offsetPx - l + len / 2,
-          height - borderSize + fontSize,
-        )
-      }
-    })
-
-    ctx.save()
-    ctx.translate(0, height)
-    ctx.rotate(-Math.PI / 2)
     const v = (vview.dynamicBlocks.blocks[0] || {}).offsetPx
-    vview.dynamicBlocks.forEach(region => {
-      if (region.refName) {
-        const len = region.widthPx
-        ctx.fillText(
-          region.refName,
-          region.offsetPx - v + len / 2,
-          borderSize - 10,
-        )
-      }
-    })
-    ctx.restore()
-  }
+    return (
+      <>
+        <Group x={borderSize} y={borderSize}>
+          {hview.dynamicBlocks.blocks
+            .filter(region => region.refName)
+            .map(region => {
+              const x = region.offsetPx - l + region.widthPx
+              return (
+                <Shape
+                  d={new Path().moveTo(x, 0).lineTo(x, height)}
+                  stroke="#000000"
+                />
+              )
+            })}
+          <Shape
+            d={new Path().moveTo(0, height).lineTo(0, 0)}
+            stroke="#000000"
+          />
+          {vview.dynamicBlocks.blocks
+            .filter(region => region.refName)
+            .map(region => {
+              const y = height - (region.offsetPx - v + region.widthPx)
+              return (
+                <Shape
+                  d={new Path().moveTo(0, y).lineTo(width, y)}
+                  stroke="#000000"
+                />
+              )
+            })}
+          <Shape
+            d={new Path().moveTo(0, height).lineTo(width, height)}
+            stroke="#000000"
+          />
+        </Group>
+      </>
+    )
+  })
 
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
     const ref = useRef()
-    const {
-      borderSize,
-      viewingRegionHeight,
-      initialized,
-      loading,
-      fontSize,
-      hview,
-      vview,
-      width,
-      height,
-    } = model
-    const highlightOverlayCanvas = useRef(null)
-    const [down, setDown] = useState()
-    const [current, setCurrent] = useState([0, 0])
-
-    // note, the snapshot is needed to force the useEffect canvas re-render
-    // because the canvas re-render isn't really an observable component a la
-    // mobx-react
-    const viewSnap = [getSnapshot(hview), getSnapshot(vview)]
-
-    // draw grid
-    useEffect(() => {
-      if (ref.current) {
-        const ctx = ref.current.getContext('2d')
-        ctx.clearRect(0, 0, width, height)
-        if (initialized) {
-          DrawLabels(model, ctx)
-          DrawGrid(model, ctx)
-        }
-
-        ctx.restore()
-      }
-    }, [borderSize, fontSize, height, initialized, viewSnap, model, width])
-
-    // allow click and drag over the dotplot view
-    useEffect(() => {
-      const canvas = highlightOverlayCanvas.current
-      if (!canvas) {
-        return
-      }
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        return
-      }
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      if (down) {
-        ctx.fillStyle = 'rgba(255,0,0,0.3)'
-        ctx.fillRect(
-          down[0],
-          down[1],
-          current[0] - down[0],
-          current[1] - down[1],
-        )
-      }
-    }, [down, current])
-
+    const { initialized, loading, fontSize, width, height } = model
     if (!initialized && !loading) {
       return <ImportForm model={model} />
     }
@@ -359,71 +281,148 @@ export default (pluginManager: any) => {
       <div style={{ position: 'relative' }}>
         <Controls model={model} />
         <div className={classes.container}>
-          <canvas
-            style={{ position: 'absolute', left: 0, top: 0, zIndex: 10 }}
-            ref={highlightOverlayCanvas}
-            onMouseDown={event => {
-              setDown([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
-              setCurrent([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
-            }}
-            onMouseUp={event => {
-              if (down) {
-                const curr = [
-                  event.nativeEvent.offsetX,
-                  event.nativeEvent.offsetY,
-                ]
-                const start = down
-                let px1 = curr[0] - borderSize
-                let px2 = start[0] - borderSize
-                if (px1 > px2) {
-                  ;[px2, px1] = [px1, px2]
-                }
-                let py1 = viewingRegionHeight - (curr[1] - borderSize)
-                let py2 = viewingRegionHeight - (start[1] - borderSize)
-                if (py1 > py2) {
-                  ;[py2, py1] = [py1, py2]
-                }
-                const x1 = model.hview.pxToBp(px1)
-                const x2 = model.hview.pxToBp(px2)
-
-                const y1 = model.vview.pxToBp(py1)
-                const y2 = model.vview.pxToBp(py2)
-                transaction(() => {
-                  model.hview.moveTo(x1, x2)
-                  model.vview.moveTo(y1, y2)
-                })
-                setDown(undefined)
-              }
-            }}
-            onMouseLeave={event => {
-              setDown(undefined)
-            }}
-            onMouseMove={event => {
-              setCurrent([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
-            }}
-            width={width}
-            height={height}
-          />
-          <canvas
-            className={classes.content}
-            ref={ref}
-            width={width}
-            height={height}
-          />
-          <div className={classes.overlay}>
-            {model.tracks.map((track: any) => {
-              const { ReactComponent } = track
-
-              return ReactComponent ? (
-                <ReactComponent key={getConf(track, 'trackId')} model={track} />
-              ) : null
-            })}
-          </div>
+          <Surface width={width} height={height}>
+            <DrawLabels model={model} />
+            <DrawGrid model={model} />
+          </Surface>
         </div>
       </div>
     )
   })
 
+  const DrawLabels = observer((props: { model: DotplotViewModel }) => {
+    const { model } = props
+    const {
+      hview,
+      vview,
+      viewingRegionHeight,
+      fontSize,
+      height,
+      borderSize,
+    } = model
+    const l = (hview.dynamicBlocks.blocks[0] || {}).offsetPx
+    const v = (vview.dynamicBlocks.blocks[0] || {}).offsetPx
+    return (
+      <>
+        <Group>
+          {hview.dynamicBlocks.blocks
+            .filter(region => region.refName)
+            .map(region => {
+              const len = region.widthPx
+              const x = region.offsetPx - l + len / 2
+              const y = height - borderSize + fontSize
+              return (
+                <Text
+                  key={region.refName}
+                  x={x}
+                  y={y - 13}
+                  font={`13px "Helvetica Neue", "Helvetica", Arial`}
+                  fill="#000000"
+                >
+                  {region.refName}
+                </Text>
+              )
+            })}
+        </Group>
+
+        <Group>
+          {vview.dynamicBlocks.blocks
+            .filter(region => region.refName)
+            .map(region => {
+              console.log(region.refName)
+              const len = region.widthPx
+              const x = borderSize
+              const y = viewingRegionHeight - region.offsetPx - v + len / 2
+              return (
+                <Text
+                  transform={new Transform().rotate(-25)}
+                  key={region.refName}
+                  x={x}
+                  y={y - 13}
+                  font={`13px "Helvetica Neue", "Helvetica", Arial`}
+                  fill="#000000"
+                >
+                  {region.refName}
+                </Text>
+              )
+            })}
+        </Group>
+      </>
+    )
+
+    //       ctx.save()
+    //       ctx.translate(0, height)
+    //       ctx.rotate(-Math.PI / 2)
+    //       const v = (vview.dynamicBlocks.blocks[0] || {}).offsetPx
+    //       vview.dynamicBlocks.forEach(region => {
+    //         if (region.refName) {
+    //           const len = region.widthPx
+    //           ctx.fillText(
+    //             region.refName,
+    //             region.offsetPx - v + len / 2,
+    //             borderSize - 10,
+    //           )
+    //         }
+    //       })
+    //       ctx.restore()
+  })
+
+  // {initialized ? <DrawLabels model={model} forwardRef={ref} /> : null}
+  // {initialized ? <DrawGrid model={model} forwardRef={ref} /> : null}
+  // <div className={classes.overlay}>
+  //   {model.tracks.map((track: any) => {
+  //     const { ReactComponent } = track
+
+  //     return ReactComponent ? (
+  //       <ReactComponent key={getConf(track, 'trackId')} model={track} />
+  //     ) : null
+  //   })}
+  // </div>
+  // <canvas
+  //   style={{ position: 'absolute', left: 0, top: 0, zIndex: 10 }}
+  //   ref={highlightOverlayCanvas}
+  //   onMouseDown={event => {
+  //     setDown([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
+  //     setCurrent([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
+  //   }}
+  //   onMouseUp={event => {
+  //     if (down) {
+  //       const curr = [
+  //         event.nativeEvent.offsetX,
+  //         event.nativeEvent.offsetY,
+  //       ]
+  //       const start = down
+  //       let px1 = curr[0] - borderSize
+  //       let px2 = start[0] - borderSize
+  //       if (px1 > px2) {
+  //         ;[px2, px1] = [px1, px2]
+  //       }
+  //       let py1 = viewingRegionHeight - (curr[1] - borderSize)
+  //       let py2 = viewingRegionHeight - (start[1] - borderSize)
+  //       if (py1 > py2) {
+  //         ;[py2, py1] = [py1, py2]
+  //       }
+  //       const x1 = model.hview.pxToBp(px1)
+  //       const x2 = model.hview.pxToBp(px2)
+
+  //       const y1 = model.vview.pxToBp(py1)
+  //       const y2 = model.vview.pxToBp(py2)
+  //       transaction(() => {
+  //         model.hview.moveTo(x1, x2)
+  //         model.vview.moveTo(y1, y2)
+  //       })
+  //       setDown(undefined)
+  //     }
+  //   }}
+  //   onMouseLeave={event => {
+  //     setDown(undefined)
+  //   }}
+  //   onMouseMove={event => {
+  //     setCurrent([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
+  //   }}
+  //   width={width}
+  //   height={height}
+  // />
   DotplotView.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
