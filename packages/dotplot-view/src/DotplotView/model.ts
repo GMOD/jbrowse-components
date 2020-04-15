@@ -61,9 +61,6 @@ export default function stateModelFactory(pluginManager: any) {
       get staticBlocks() {
         return calculateStaticBlocks(cast(self))
       },
-      get refNames() {
-        return this.dynamicBlocks.blocks.map(r => r.refName)
-      },
       get totalBp() {
         return self.displayedRegions
           .map(a => a.end - a.start)
@@ -282,18 +279,19 @@ export default function stateModelFactory(pluginManager: any) {
         addDisposer(
           self,
           autorun(async () => {
+            const padding = 4
             // these are set via autorun to avoid dependency cycle
-            this.setBorderX(
-              self.hview.refNames.reduce(
-                (a, b) => Math.max(a, approxPixelStringLen(b)),
-                0,
-              ),
-            )
             this.setBorderY(
-              self.vview.refNames.reduce(
-                (a, b) => Math.max(a, approxPixelStringLen(b)),
+              self.hview.dynamicBlocks.blocks.reduce(
+                (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
                 0,
-              ),
+              ) + padding,
+            )
+            this.setBorderX(
+              self.vview.dynamicBlocks.blocks.reduce(
+                (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
+                0,
+              ) + padding,
             )
           }),
         )

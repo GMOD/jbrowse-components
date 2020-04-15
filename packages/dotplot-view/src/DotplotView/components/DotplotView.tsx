@@ -276,16 +276,12 @@ export default (pluginManager: any) => {
     const v = (vview.dynamicBlocks.blocks[0] || {}).offsetPx || 0
     return (
       <>
-        <g
-          transform={`translate(${borderX},${
-            borderSize + tickSize + viewHeight
-          })`}
-        >
+        <g transform={`translate(${borderX},${borderSize + viewHeight})`}>
           {hview.dynamicBlocks.blocks
             .filter(region => region.refName)
             .map(region => {
               const x = region.offsetPx - l
-              const y = 1
+              const y = tickSize
               return (
                 <text
                   transform={`rotate(${htextRotation},${x},${y})`}
@@ -306,7 +302,7 @@ export default (pluginManager: any) => {
           {vview.dynamicBlocks.blocks
             .filter(region => region.refName)
             .map(region => {
-              const x = borderX
+              const x = borderX - tickSize
               const y = viewHeight - (region.offsetPx - v)
               return (
                 <text
@@ -390,7 +386,6 @@ export default (pluginManager: any) => {
 
                 const y1 = model.vview.pxToBp(py1)
                 const y2 = model.vview.pxToBp(py2)
-                console.log(x1, x2, y1, y2)
                 model.hview.moveTo(x1, x2)
                 model.vview.moveTo(y1, y2)
                 setDown(undefined)
