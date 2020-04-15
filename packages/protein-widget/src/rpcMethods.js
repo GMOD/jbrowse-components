@@ -22,7 +22,6 @@ export async function render(
   pluginManager,
   {
     regions,
-    region,
     sessionId,
     adapterType,
     adapterConfig,
@@ -57,7 +56,6 @@ export async function render(
     sessionId,
     dataAdapter,
     regions,
-    region,
     signal,
   })
   checkAbortSignal(signal)

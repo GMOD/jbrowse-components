@@ -10,11 +10,11 @@ import React from 'react'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { ScaleOpts } from './util'
 
-interface WiggleBaseRendererProps {
+export interface WiggleBaseRendererProps {
   features: Map<string, Feature>
   layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
   config: AnyConfigurationModel
-  region: IRegion
+  regions: IRegion[]
   bpPerPx: number
   height: number
   width: number
@@ -31,7 +31,8 @@ interface WiggleBaseRendererProps {
 
 export default class extends ServerSideRendererType {
   async makeImageData(props: WiggleBaseRendererProps) {
-    const { height, region, bpPerPx, highResolutionScaling = 1 } = props
+    const { height, regions, bpPerPx, highResolutionScaling = 1 } = props
+    const [region] = regions
     const width = (region.end - region.start) / bpPerPx
     if (!(width > 0) || !(height > 0)) {
       return { height: 0, width: 0 }

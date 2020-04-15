@@ -1,12 +1,16 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import Color from 'color'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getOrigin, getScale } from '../util'
-import WiggleBaseRenderer from '../WiggleBaseRenderer'
+import WiggleBaseRenderer, {
+  WiggleBaseRendererProps,
+} from '../WiggleBaseRenderer'
 
 export default class XYPlotRenderer extends WiggleBaseRenderer {
-  draw(ctx, props) {
-    const { features, region, bpPerPx, scaleOpts, height, config } = props
+  draw(ctx: CanvasRenderingContext2D, props: WiggleBaseRendererProps) {
+    const { features, bpPerPx, regions, scaleOpts, height, config } = props
+    const [region] = regions
 
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
@@ -18,14 +22,15 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     const scale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = scale.domain()
-    const toY = rawscore => height - scale(rawscore)
-    const toHeight = rawscore => toY(originY) - toY(rawscore)
+    const toY = (rawscore: number) => height - scale(rawscore)
+    const toHeight = (rawscore: number) => toY(originY) - toY(rawscore)
     let colorCallback
     if (readConfObject(config, 'color') === '#f0f') {
-      colorCallback = feature =>
+      colorCallback = (feature: Feature) =>
         feature.get('score') < pivotValue ? negColor : posColor
     } else {
-      colorCallback = feature => readConfObject(config, 'color', [feature])
+      colorCallback = (feature: Feature) =>
+        readConfObject(config, 'color', [feature])
     }
 
     for (const feature of features.values()) {

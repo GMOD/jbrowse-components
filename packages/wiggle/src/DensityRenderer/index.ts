@@ -3,22 +3,26 @@ import {
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
 import { featureSpanPx } from '@gmod/jbrowse-core/util'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getScale } from '../util'
 
 import ConfigSchema from '../configSchema'
-import WiggleBaseRenderer from '../WiggleBaseRenderer'
+import WiggleBaseRenderer, {
+  WiggleBaseRendererProps,
+} from '../WiggleBaseRenderer'
 
 export { default as ReactComponent } from '../WiggleRendering'
 
 export default class extends WiggleBaseRenderer {
-  draw(ctx, props) {
-    const { features, region, bpPerPx, scaleOpts, height, config } = props
+  draw(ctx: CanvasRenderingContext2D, props: WiggleBaseRendererProps) {
+    const { features, regions, bpPerPx, scaleOpts, height, config } = props
+    const [region] = regions
     const pivot = readConfObject(config, 'bicolorPivot')
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')
     let colorCallback
-    let colorScale
+    let colorScale: ReturnType<typeof getScale>
     if (readConfObject(config, 'color') === '#f0f') {
       // default color, use posColor/negColor instead
       colorScale =
@@ -29,9 +33,10 @@ export default class extends WiggleBaseRenderer {
               range: [negColor, 'white', posColor],
             })
           : getScale({ ...scaleOpts, range: ['white', posColor] })
-      colorCallback = feature => colorScale(feature.get('score'))
+      colorCallback = (feature: Feature) => colorScale(feature.get('score'))
     } else {
-      colorCallback = feature => readConfObject(config, 'color', [feature])
+      colorCallback = (feature: Feature) =>
+        readConfObject(config, 'color', [feature])
     }
 
     for (const feature of features.values()) {

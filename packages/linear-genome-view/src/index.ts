@@ -1,3 +1,4 @@
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import ViewType from '@gmod/jbrowse-core/pluggableElementTypes/ViewType'
 import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
@@ -23,11 +24,12 @@ import {
 } from './LinearGenomeView'
 
 export default class extends Plugin {
-  install(pluginManager) {
+  install(pluginManager: PluginManager) {
     pluginManager.addTrackType(() => {
       const configSchema = basicTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
         name: 'BasicTrack',
+        compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: basicTrackStateModelFactory(configSchema),
       })
@@ -37,6 +39,7 @@ export default class extends Plugin {
       const configSchema = dynamicTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
         name: 'DynamicTrack',
+        compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: dynamicTrackStateModelFactory(configSchema),
       })

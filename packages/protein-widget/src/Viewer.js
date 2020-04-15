@@ -207,7 +207,7 @@ const FeatureRendering = ({ features, region, width, height }) => (
   <Rendering
     width={width}
     height={height}
-    region={region}
+    regions={[region]}
     layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
     features={features}
     config={SvgRendererConfigSchema.create({})}

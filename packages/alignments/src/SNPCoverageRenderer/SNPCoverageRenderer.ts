@@ -14,7 +14,7 @@ interface SNPCoverageRendererProps {
   features: Map<string, Feature>
   layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
   config: AnyConfigurationModel
-  region: IRegion
+  regions: IRegion[]
   bpPerPx: number
   height: number
   width: number
@@ -39,8 +39,8 @@ interface BaseInfo {
 
 export default class SNPCoverageRenderer extends WiggleBaseRenderer {
   draw(ctx: CanvasRenderingContext2D, props: SNPCoverageRendererProps) {
-    const { features, region, bpPerPx, scaleOpts, height } = props
-
+    const { features, regions, bpPerPx, scaleOpts, height } = props
+    const [region] = regions
     const viewScale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
     const toY = (rawscore: number, curr = 0) =>

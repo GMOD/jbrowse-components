@@ -1,13 +1,13 @@
 import { Observable, merge } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
 import objectHash from 'object-hash'
+import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
 import { IRegion as Region } from '../mst-types'
-import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 
 export interface BaseOptions {
   signal?: AbortSignal

@@ -1,15 +1,16 @@
 import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
-import { AnyReactComponentType } from '../util'
+
+type ViewReactComponent = React.ComponentType<{ model: never }>
 
 export default class ViewType extends PluggableElementBase {
-  ReactComponent: AnyReactComponentType
+  ReactComponent: ViewReactComponent
 
   stateModel: IAnyModelType
 
   constructor(stuff: {
     name: string
-    ReactComponent: AnyReactComponentType
+    ReactComponent: ViewReactComponent
     stateModel: IAnyModelType
   }) {
     super(stuff)
