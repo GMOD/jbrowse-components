@@ -12,7 +12,7 @@ import Link from '@material-ui/core/Link'
 import Icon from '@material-ui/core/Icon'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import BaseFeatureDetail, {
   BaseCard,
 } from '@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail'
@@ -332,6 +332,352 @@ SSMExternalLinks.propTypes = {
 }
 
 /**
+ * A table row for a project related to the mutation
+ * @param {*} props
+ */
+function SSMProject(props) {
+  const classes = useStyles()
+  const { key, doc_count } = props.props
+  const projectInfo = props.allProjects.find(x => x.node.project_id === key)
+  const totalProject = props.totalProjects.find(x => x.key === key)
+
+  return (
+    <>
+      <TableRow key={key}>
+        <TableCell component="th" scope="row">
+          <Link
+            className={classes.link}
+            target="_blank"
+            rel="noopener"
+            href={`https://portal.gdc.cancer.gov/projects/${key}`}
+          >
+            {key}
+          </Link>
+        </TableCell>
+        <TableCell component="th" scope="row">
+          {projectInfo.node.disease_type}
+        </TableCell>
+        <TableCell component="th" scope="row">
+          {projectInfo.node.primary_site}
+        </TableCell>
+        <TableCell component="th" scope="row">
+          {doc_count} / {totalProject.doc_count}
+        </TableCell>
+      </TableRow>
+    </>
+  )
+}
+
+/**
+ * Create a table of projects based on the selected mutation feature
+ * @param {*} props
+ */
+function SSMProjects(props) {
+  const classes = useStyles()
+  const { featureId } = props
+
+  const [filteredProjects, setFilteredProjects] = useState([])
+  const [allProjects, setAllProjects] = useState([])
+  const [totalProjects, setTotalProjects] = useState([])
+
+  useEffect(() => {
+    getSSMProjectsAsync(featureId).then(data => {
+      setAllProjects(data.data.projects.hits.edges)
+      setTotalProjects(
+        data.data.viewer.explore.cases.total.project__project_id.buckets,
+      )
+      setFilteredProjects(
+        data.data.viewer.explore.cases.filtered.project__project_id.buckets,
+      )
+    })
+  }, [featureId])
+
+  return (
+    <BaseCard {...props} title="Projects">
+      <div style={{ width: '100%', maxHeight: 600, overflow: 'auto' }}>
+        <Table className={classes.table}>
+          <TableHead>
+            <TableRow>
+              <TableCell>Project</TableCell>
+              <TableCell>Disease Type</TableCell>
+              <TableCell>Site</TableCell>
+              <TableCell># Mutation Affected Cases</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredProjects &&
+              allProjects &&
+              totalProjects &&
+              filteredProjects.map((project, key) => (
+                <SSMProject
+                  props={project}
+                  allProjects={allProjects}
+                  totalProjects={totalProjects}
+                  key={key}
+                ></SSMProject>
+              ))}
+          </TableBody>
+        </Table>
+      </div>
+    </BaseCard>
+  )
+}
+
+/**
+ * Query the GDC API for project information related to the given mutation
+ * @param {String} featureId Mutation ID
+ */
+async function getSSMProjectsAsync(featureId) {
+  const query = {
+    query: `query projectsTable($ssmTested: FiltersArgument, $caseAggsFilter: FiltersArgument, $projectCount: Int) { viewer { explore { cases { filtered: aggregations(filters: $caseAggsFilter) { project__project_id { buckets { doc_count key } } } total: aggregations(filters: $ssmTested) { project__project_id { buckets { doc_count key } } } } } } projects { hits(first: $projectCount) { edges { node { primary_site disease_type project_id id } } } } }`,
+    variables: {
+      ssmTested: {
+        op: 'and',
+        content: [
+          {
+            op: 'in',
+            content: {
+              field: 'cases.available_variation_data',
+              value: ['ssm'],
+            },
+          },
+        ],
+      },
+      caseAggsFilter: {
+        op: 'and',
+        content: [
+          { op: 'in', content: { field: 'ssms.ssm_id', value: [featureId] } },
+          {
+            op: 'in',
+            content: {
+              field: 'cases.available_variation_data',
+              value: ['ssm'],
+            },
+          },
+        ],
+      },
+      projectCount: 100,
+    },
+  }
+
+  const response = await fetch('https://api.gdc.cancer.gov/v0/graphql', {
+    method: 'POST',
+    body: JSON.stringify(query),
+  })
+  const result = await response.json()
+  return result
+}
+
+SSMProjects.propTypes = {
+  featureId: PropTypes.string.isRequired,
+}
+
+/**
+ * A table row for a project related to the gene
+ * @param {*} props
+ */
+function GeneProject(props) {
+  const classes = useStyles()
+  const { key, doc_count } = props.props
+  const projectInfo = props.allProjects.find(x => x.node.project_id === key)
+  const totalProject = props.cases.total.project__project_id.buckets.find(
+    x => x.key === key,
+  )
+  const cnvGain = props.cases.gain.project__project_id.buckets.find(
+    x => x.key === key,
+  )
+  const cnvLoss = props.cases.loss.project__project_id.buckets.find(
+    x => x.key === key,
+  )
+  const cnvTotal = props.cases.cnvTotal.project__project_id.buckets.find(
+    x => x.key === key,
+  )
+
+  return (
+    <>
+      <TableRow key={key}>
+        <TableCell component="th" scope="row">
+          <Link
+            className={classes.link}
+            target="_blank"
+            rel="noopener"
+            href={`https://portal.gdc.cancer.gov/projects/${key}`}
+          >
+            {key}
+          </Link>
+        </TableCell>
+        <TableCell component="th" scope="row">
+          {projectInfo.node.disease_type}
+        </TableCell>
+        <TableCell component="th" scope="row">
+          {projectInfo.node.primary_site}
+        </TableCell>
+        <TableCell component="th" scope="row">
+          {doc_count} / {totalProject.doc_count}
+        </TableCell>
+        <TableCell component="th" scope="row">
+          {cnvGain ? cnvGain.doc_count : '0'} / {cnvTotal.doc_count}
+        </TableCell>
+        <TableCell component="th" scope="row">
+          {cnvLoss ? cnvLoss.doc_count : '0'} / {cnvTotal.doc_count}
+        </TableCell>
+      </TableRow>
+    </>
+  )
+}
+
+/**
+ * Create a table of projects based on the selected gene feature
+ * @param {*} props
+ */
+function GeneProjects(props) {
+  const classes = useStyles()
+  const { featureId } = props
+
+  const [allProjects, setAllProjects] = useState([])
+  const [filteredProjects, setFilteredProjects] = useState([])
+  const [cases, setCases] = useState([])
+
+  useEffect(() => {
+    getGeneProjectsAsync(featureId).then(data => {
+      setAllProjects(data.data.projects.hits.edges)
+      setCases(data.data.viewer.explore.cases)
+      setFilteredProjects(
+        data.data.viewer.explore.cases.filtered.project__project_id.buckets,
+      )
+    })
+  }, [featureId])
+
+  return (
+    <BaseCard {...props} title="Projects">
+      <div style={{ width: '100%', maxHeight: 600, overflow: 'auto' }}>
+        <Table className={classes.table}>
+          <TableHead>
+            <TableRow>
+              <TableCell>Project</TableCell>
+              <TableCell>Disease Type</TableCell>
+              <TableCell>Site</TableCell>
+              <TableCell># Mutation Affected Cases</TableCell>
+              <TableCell># CNV Gains</TableCell>
+              <TableCell># CNV Losses</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {cases &&
+              allProjects &&
+              filteredProjects &&
+              filteredProjects.map((project, key) => (
+                <GeneProject
+                  props={project}
+                  cases={cases}
+                  allProjects={allProjects}
+                  key={key}
+                ></GeneProject>
+              ))}
+          </TableBody>
+        </Table>
+      </div>
+    </BaseCard>
+  )
+}
+
+GeneProjects.propTypes = {
+  featureId: PropTypes.string.isRequired,
+}
+
+/**
+ * Query the GDC API for project information related to the given gene
+ * @param {String} featureId Gene ID
+ */
+async function getGeneProjectsAsync(featureId) {
+  const query = {
+    query: `query ProjectTable( $caseAggsFilters: FiltersArgument $ssmTested: FiltersArgument $cnvGain: FiltersArgument $cnvLoss: FiltersArgument $cnvTested: FiltersArgument $projectCount: Int ) { viewer { explore { cases { gain: aggregations(filters: $cnvGain) { project__project_id { buckets { doc_count key } } } loss: aggregations(filters: $cnvLoss) { project__project_id { buckets { doc_count key } } } cnvTotal: aggregations(filters: $cnvTested) { project__project_id { buckets { doc_count key } } } filtered: aggregations(filters: $caseAggsFilters) { project__project_id { buckets { doc_count key } } } total: aggregations(filters: $ssmTested) { project__project_id { buckets { doc_count key } } } } } } projects { hits(first: $projectCount) { edges { node { primary_site disease_type project_id id } } } } }`,
+    variables: {
+      caseAggsFilters: {
+        op: 'and',
+        content: [
+          {
+            op: 'in',
+            content: {
+              field: 'cases.available_variation_data',
+              value: ['ssm'],
+            },
+          },
+          {
+            op: 'NOT',
+            content: {
+              field: 'cases.gene.ssm.observation.observation_id',
+              value: 'MISSING',
+            },
+          },
+          { op: 'in', content: { field: 'genes.gene_id', value: [featureId] } },
+        ],
+      },
+      ssmTested: {
+        op: 'and',
+        content: [
+          {
+            op: 'in',
+            content: {
+              field: 'cases.available_variation_data',
+              value: ['ssm'],
+            },
+          },
+        ],
+      },
+      cnvGain: {
+        op: 'and',
+        content: [
+          {
+            op: 'in',
+            content: {
+              field: 'cases.available_variation_data',
+              value: ['cnv'],
+            },
+          },
+          { op: 'in', content: { field: 'cnvs.cnv_change', value: ['Gain'] } },
+          { op: 'in', content: { field: 'genes.gene_id', value: [featureId] } },
+        ],
+      },
+      cnvLoss: {
+        op: 'and',
+        content: [
+          {
+            op: 'in',
+            content: {
+              field: 'cases.available_variation_data',
+              value: ['cnv'],
+            },
+          },
+          { op: 'in', content: { field: 'cnvs.cnv_change', value: ['Loss'] } },
+          { op: 'in', content: { field: 'genes.gene_id', value: [featureId] } },
+        ],
+      },
+      cnvTested: {
+        op: 'and',
+        content: [
+          {
+            op: 'in',
+            content: {
+              field: 'cases.available_variation_data',
+              value: ['cnv'],
+            },
+          },
+        ],
+      },
+      projectCount: 100,
+    },
+  }
+
+  const response = await fetch('https://api.gdc.cancer.gov/v0/graphql', {
+    method: 'POST',
+    body: JSON.stringify(query),
+  })
+  const result = await response.json()
+  return result
+}
+
+/**
  * Extended feature detail drawer for GDC features
  * @param {*} props
  */
@@ -358,6 +704,9 @@ function GDCFeatureDetails(props) {
       {feat.ssmId && <SSMExternalLinks feature={feat} {...props} />}
       <Divider />
       {feat.ssmId && <Consequence feature={feat} {...props} />}
+      <Divider />
+      {feat.geneId && <GeneProjects featureId={feat.geneId} />}
+      {feat.ssmId && <SSMProjects featureId={feat.ssmId} />}
     </Paper>
   )
 }
