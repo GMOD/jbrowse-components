@@ -1,3 +1,4 @@
+// library
 import {
   act,
   cleanup,
@@ -12,6 +13,9 @@ import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
+import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
+
+// locals
 import JBrowse from './JBrowse'
 import config from '../test_data/config_integration_test.json'
 import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
@@ -29,6 +33,9 @@ Storage.prototype.getItem = jest.fn(() => null)
 Storage.prototype.setItem = jest.fn()
 Storage.prototype.removeItem = jest.fn()
 Storage.prototype.clear = jest.fn()
+
+if (!window.TextDecoder) window.TextDecoder = TextDecoder
+if (!window.TextEncoder) window.TextEncoder = TextEncoder
 
 const getFile = url => new LocalFile(require.resolve(`../${url}`))
 // fakes server responses from local file object with fetchMock
@@ -495,9 +502,7 @@ test('404 sequence file', async () => {
 describe('dotplot view', () => {
   it('open a dotplot view', async () => {
     const state = JBrowseRootModel.create({ jbrowse: dotplotConfig })
-    const { findByTestId } = render(
-      <JBrowse initialState={state} />,
-    )
+    const { findByTestId } = render(<JBrowse initialState={state} />)
 
     const canvas = await findByTestId('prerendered_canvas')
 

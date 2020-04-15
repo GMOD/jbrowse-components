@@ -88,6 +88,12 @@
             "bpPerPx": 200000,
             "offsetPx": 0
           },
+          "tracks": [
+            {
+              "type": "DotplotTrack",
+              "configuration": "dotplot_track"
+            }
+          ],
           "headerHeight": 44,
           "width": 1850,
           "height": 600,
