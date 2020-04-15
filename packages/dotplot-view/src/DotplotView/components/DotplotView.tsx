@@ -9,7 +9,7 @@ export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useRef, useState } = React
+  const { useState } = React
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { makeStyles: jbMakeStyles } = jbrequire('@material-ui/core/styles')
   const Container = jbrequire('@material-ui/core/Container')
@@ -128,18 +128,6 @@ export default (pluginManager: any) => {
       setError('No configured assemblies')
     }
 
-    function onAssemblyChange1(
-      event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    ) {
-      setSelectedAssemblyIdx1(Number(event.target.value))
-    }
-
-    function onAssemblyChange2(
-      event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    ) {
-      setSelectedAssemblyIdx2(Number(event.target.value))
-    }
-
     function onOpenClick() {
       model.setViews([
         { bpPerPx: 0.1, offsetPx: 0 },
@@ -163,7 +151,13 @@ export default (pluginManager: any) => {
                   ? selectedAssemblyIdx1
                   : ''
               }
-              onChange={onAssemblyChange1}
+              onChange={(
+                event: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement
+                >,
+              ) => {
+                setSelectedAssemblyIdx1(Number(event.target.value))
+              }}
               label="Assembly"
               helperText={error || 'Select assembly to view'}
               error={!!error}
@@ -187,7 +181,13 @@ export default (pluginManager: any) => {
                   ? selectedAssemblyIdx2
                   : ''
               }
-              onChange={onAssemblyChange2}
+              onChange={(
+                event: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement
+                >,
+              ) => {
+                setSelectedAssemblyIdx2(Number(event.target.value))
+              }}
               label="Assembly"
               helperText={error || 'Select assembly to view'}
               error={!!error}
@@ -220,51 +220,51 @@ export default (pluginManager: any) => {
       viewingRegionWidth: width,
       viewingRegionHeight: height,
       borderSize,
+      borderX,
     } = model
     const l = (hview.dynamicBlocks.blocks[0] || {}).offsetPx
     const v = (vview.dynamicBlocks.blocks[0] || {}).offsetPx
     return (
-      <>
-        <Group x={borderSize} y={borderSize}>
-          {hview.dynamicBlocks.blocks
-            .filter(region => region.refName)
-            .map(region => {
-              const x = region.offsetPx - l + region.widthPx
-              return (
-                <Shape
-                  d={new Path().moveTo(x, 0).lineTo(x, height)}
-                  stroke="#000000"
-                />
-              )
-            })}
-          <Shape
-            d={new Path().moveTo(0, height).lineTo(0, 0)}
-            stroke="#000000"
-          />
-          {vview.dynamicBlocks.blocks
-            .filter(region => region.refName)
-            .map(region => {
-              const y = height - (region.offsetPx - v + region.widthPx)
-              return (
-                <Shape
-                  d={new Path().moveTo(0, y).lineTo(width, y)}
-                  stroke="#000000"
-                />
-              )
-            })}
-          <Shape
-            d={new Path().moveTo(0, height).lineTo(width, height)}
-            stroke="#000000"
-          />
-        </Group>
-      </>
+      <g transform={`translate(${borderX},${borderSize})`}>
+        {hview.dynamicBlocks.blocks
+          .filter(region => region.refName)
+          .map(region => {
+            const x = region.offsetPx - l + region.widthPx
+            return (
+              <line
+                key={JSON.stringify(region)}
+                x1={x}
+                y1={0}
+                x2={x}
+                y2={height}
+                stroke="#000000"
+              />
+            )
+          })}
+        <line x1={0} y1={height} x2={0} height={0} stroke="#000000" />
+        {vview.dynamicBlocks.blocks
+          .filter(region => region.refName)
+          .map(region => {
+            const y = height - (region.offsetPx - v + region.widthPx)
+            return (
+              <line
+                key={JSON.stringify(region)}
+                x1={0}
+                y1={y}
+                x2={width}
+                y2={y}
+                stroke="#000000"
+              />
+            )
+          })}
+        <line x1={0} y1={height} x2={width} y2={height} stroke="#000000" />
+      </g>
     )
   })
 
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const ref = useRef()
-    const { initialized, loading, fontSize, width, height } = model
+    const { initialized, loading, width, height } = model
     if (!initialized && !loading) {
       return <ImportForm model={model} />
     }
@@ -281,10 +281,10 @@ export default (pluginManager: any) => {
       <div style={{ position: 'relative' }}>
         <Controls model={model} />
         <div className={classes.container}>
-          <Surface width={width} height={height}>
+          <svg width={width} height={height}>
             <DrawLabels model={model} />
             <DrawGrid model={model} />
-          </Surface>
+          </svg>
         </div>
       </div>
     )
@@ -295,89 +295,69 @@ export default (pluginManager: any) => {
     const {
       hview,
       vview,
-      viewingRegionHeight,
-      fontSize,
       height,
+      borderX,
+      borderY,
+      viewingRegionHeight,
+      vtextRotation,
+      htextRotation,
       borderSize,
     } = model
     const l = (hview.dynamicBlocks.blocks[0] || {}).offsetPx
     const v = (vview.dynamicBlocks.blocks[0] || {}).offsetPx
     return (
       <>
-        <Group>
+        <g transform={`translate(${borderX},${borderY + viewingRegionHeight})`}>
           {hview.dynamicBlocks.blocks
             .filter(region => region.refName)
             .map(region => {
-              const len = region.widthPx
-              const x = region.offsetPx - l + len / 2
-              const y = height - borderSize + fontSize
+              const x = region.offsetPx - l
+              const y = 1
               return (
-                <Text
+                <text
+                  transform={`rotate(${htextRotation},${x},${y})`}
                   key={region.refName}
                   x={x}
-                  y={y - 13}
-                  font={`13px "Helvetica Neue", "Helvetica", Arial`}
+                  y={y}
                   fill="#000000"
+                  dominantBaseline="hanging"
+                  textAnchor="center"
                 >
                   {region.refName}
-                </Text>
+                </text>
               )
             })}
-        </Group>
+        </g>
 
-        <Group>
+        <g>
           {vview.dynamicBlocks.blocks
             .filter(region => region.refName)
             .map(region => {
-              console.log(region.refName)
-              const len = region.widthPx
-              const x = borderSize
-              const y = viewingRegionHeight - region.offsetPx - v + len / 2
+              const x = borderX
+              const y =
+                viewingRegionHeight - region.offsetPx - v + region.widthPx / 2
               return (
-                <Text
-                  transform={new Transform().rotate(-25)}
-                  key={region.refName}
-                  x={x}
-                  y={y - 13}
-                  font={`13px "Helvetica Neue", "Helvetica", Arial`}
-                  fill="#000000"
-                >
-                  {region.refName}
-                </Text>
+                <React.Fragment key={`${region.refName}frag`}>
+                  <text
+                    transform={`rotate(${vtextRotation},${x},${y})`}
+                    key={region.refName}
+                    x={borderX}
+                    y={y}
+                    fill="#000000"
+                    dominantBaseline="baseline"
+                    textAnchor="end"
+                  >
+                    {region.refName}
+                  </text>
+                  <rect x={0} y={y} width={3} height={3} fill="#000" />
+                </React.Fragment>
               )
             })}
-        </Group>
+        </g>
       </>
     )
-
-    //       ctx.save()
-    //       ctx.translate(0, height)
-    //       ctx.rotate(-Math.PI / 2)
-    //       const v = (vview.dynamicBlocks.blocks[0] || {}).offsetPx
-    //       vview.dynamicBlocks.forEach(region => {
-    //         if (region.refName) {
-    //           const len = region.widthPx
-    //           ctx.fillText(
-    //             region.refName,
-    //             region.offsetPx - v + len / 2,
-    //             borderSize - 10,
-    //           )
-    //         }
-    //       })
-    //       ctx.restore()
   })
 
-  // {initialized ? <DrawLabels model={model} forwardRef={ref} /> : null}
-  // {initialized ? <DrawGrid model={model} forwardRef={ref} /> : null}
-  // <div className={classes.overlay}>
-  //   {model.tracks.map((track: any) => {
-  //     const { ReactComponent } = track
-
-  //     return ReactComponent ? (
-  //       <ReactComponent key={getConf(track, 'trackId')} model={track} />
-  //     ) : null
-  //   })}
-  // </div>
   // <canvas
   //   style={{ position: 'absolute', left: 0, top: 0, zIndex: 10 }}
   //   ref={highlightOverlayCanvas}

@@ -21,6 +21,10 @@ interface BpOffset {
   start?: number
   end?: number
 }
+
+function approxPixelStringLen(str: string) {
+  return str.length * 0.45 * 12
+}
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
   const { cast, types: jbrequiredTypes, getParent, addDisposer } = jbrequire(
@@ -176,6 +180,8 @@ export default function stateModelFactory(pluginManager: any) {
       headerHeight: 0,
       height: 600,
       borderSize: 20,
+      vtextRotation: 0,
+      htextRotation: -90,
       fontSize: 15,
       displayName: 'dotplot',
       trackSelectorType: 'hierarchical',
@@ -211,14 +217,26 @@ export default function stateModelFactory(pluginManager: any) {
           self.vview.displayedRegions.length > 0
         )
       },
+      get borderX() {
+        return self.vview.displayedRegions.reduce(
+          (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
+          0,
+        )
+      },
+      get borderY() {
+        return self.hview.displayedRegions.reduce(
+          (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
+          0,
+        )
+      },
       get loading() {
         return self.assemblyNames.length > 0 && !this.initialized
       },
       get viewingRegionWidth() {
-        return self.width - self.borderSize * 2
+        return self.width - self.borderSize - this.borderX
       },
       get viewingRegionHeight() {
-        return self.height - self.borderSize * 2
+        return self.height - self.borderSize - this.borderY
       },
       get views() {
         return [self.hview, self.vview]
