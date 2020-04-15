@@ -1,4 +1,4 @@
-/* eslint-disable no-underscore-dangle,@typescript-eslint/no-explicit-any */
+/* eslint-disable no-underscore-dangle */
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -12,16 +12,21 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import gff from '@gmod/gff'
 import { Observer } from 'rxjs'
 
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import MyConfigSchema from './configSchema'
+
 type Strand = '+' | '-' | '.' | '?'
 interface FeatureLoc {
+  [key: string]: unknown
   start: number
   end: number
   strand: Strand
   seq_id: string
-  child_features: any[]
-  data: any
-  derived_features: any
-  attributes: { [key: string]: any }
+  child_features: FeatureLoc[][]
+  data: unknown
+  derived_features: unknown
+  attributes: { [key: string]: unknown[] }
 }
 
 interface LineFeature {
@@ -44,9 +49,11 @@ export default class extends BaseFeatureDataAdapter {
 
   protected dontRedispatch: string[]
 
-  public constructor(config: Config) {
+  public constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
-    const { gffGzLocation, index, dontRedispatch } = config
+    const gffGzLocation = readConfObject(config, 'gffGzLocation')
+    const index = readConfObject(config, 'index')
+    const dontRedispatch = readConfObject(config, 'dontRedispatch')
     const { location, index: indexType } = index
 
     this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
@@ -147,9 +154,9 @@ export default class extends BaseFeatureDataAdapter {
         parseComments: false,
         parseDirectives: false,
         parseSequences: false,
-      })
+      }) as FeatureLoc[][]
 
-      features.forEach((featureLocs: any) =>
+      features.forEach(featureLocs =>
         this.formatFeatures(featureLocs).forEach(f => {
           if (
             doesIntersect2(
@@ -196,16 +203,16 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   private featureData(data: FeatureLoc) {
-    const f = { ...data } as any
+    const f: Record<string, unknown> = { ...data }
 
-    f.start -= 1 // convert to interbase
-    f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[f.strand as Strand] // convert strand
-    f.phase = +f.phase
-    f.refName = f.seq_id
-    if (f.score === null) {
+    ;(f.start as number) -= 1 // convert to interbase
+    f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[data.strand] // convert strand
+    f.phase = Number(data.phase)
+    f.refName = data.seq_id
+    if (data.score === null) {
       delete f.score
     }
-    if (f.phase === null) {
+    if (data.phase === null) {
       delete f.score
     }
     const defaultFields = [
@@ -226,11 +233,11 @@ export default class extends BaseFeatureDataAdapter {
         b += '2'
       }
       if (data.attributes[a] !== null) {
-        f[b] = data.attributes[a]
-        if (f[b].length === 1) {
-          // eslint-disable-next-line prefer-destructuring
-          f[b] = f[b][0]
+        let attr = data.attributes[a]
+        if (Array.isArray(attr) && attr.length === 1) {
+          ;[attr] = attr
         }
+        f[b] = attr
       }
     })
     f.refName = f.seq_id
@@ -238,9 +245,7 @@ export default class extends BaseFeatureDataAdapter {
     // the SimpleFeature constructor takes care of recursively inflating subfeatures
     if (data.child_features && data.child_features.length) {
       f.subfeatures = data.child_features
-        .map(childLocs =>
-          childLocs.map((childLoc: any) => this.featureData(childLoc)),
-        )
+        .map(childLocs => childLocs.map(childLoc => this.featureData(childLoc)))
         .flat()
     }
 
@@ -258,5 +263,5 @@ export default class extends BaseFeatureDataAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    */
-  public freeResources(/* { region } */): void {}
+  public freeResources(/* { region } */) {}
 }

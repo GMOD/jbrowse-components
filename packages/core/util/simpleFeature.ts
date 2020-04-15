@@ -43,8 +43,7 @@ export interface Feature {
 
 // difficult to formalize type but see comments in constructor
 export interface SimpleFeatureArgs {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: Record<string, any>
+  data: Record<string, unknown>
   parent?: Feature
   id: string | number // thing that can be stringified easily
 }

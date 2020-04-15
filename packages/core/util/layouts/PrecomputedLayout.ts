@@ -26,7 +26,6 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
       // if (this.maxHeightReached) {
       //   return null
       // }
-      debugger
       throw new Error(`id ${id} not found in precomputed feature layout`)
     }
     // left, top, right, bottom

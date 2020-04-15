@@ -1,9 +1,7 @@
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 
-export { default as AdapterClass } from './Gff3TabixAdapter'
-
-export const configSchema = ConfigurationSchema(
+export default ConfigurationSchema(
   'Gff3TabixAdapter',
   {
     gffGzLocation: {

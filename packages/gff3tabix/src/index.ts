@@ -1,4 +1,5 @@
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import {
   AdapterClass as Gff3TabixAdapterClass,
@@ -6,7 +7,7 @@ import {
 } from './Gff3TabixAdapter'
 
 export default class extends Plugin {
-  install(pluginManager) {
+  install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
