@@ -156,7 +156,17 @@ function renderBlockData(self: DotplotTrack) {
   const adapterConfigId = jsonStableStringify(adapterConfig)
   const parent = getParent(self, 2)
   getSnapshot(parent)
-  const { views, width, height, borderSize } = parent
+  const {
+    views,
+    width,
+    height,
+    viewWidth,
+    viewHeight,
+    borderSize,
+    borderX,
+    borderY,
+  } = parent
+
   return {
     rendererType,
     rpcManager,
@@ -172,7 +182,11 @@ function renderBlockData(self: DotplotTrack) {
         ...renderProps,
         width,
         height,
+        viewWidth,
+        viewHeight,
         borderSize,
+        borderX,
+        borderY,
       },
       sessionId: adapterConfigId,
       timeout: 1000000, // 10000,

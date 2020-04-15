@@ -7,8 +7,9 @@ export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useState } = React
+  const { useState, useRef } = React
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { makeStyles: jbMakeStyles } = jbrequire('@material-ui/core/styles')
   const Container = jbrequire('@material-ui/core/Container')
   const Grid = jbrequire('@material-ui/core/Grid')
@@ -212,15 +213,7 @@ export default (pluginManager: any) => {
 
   const DrawGrid = observer((props: { model: DotplotViewModel }) => {
     const { model } = props
-    const {
-      hview,
-      vview,
-      viewingRegionWidth: width,
-      viewingRegionHeight: height,
-      borderSize,
-      tickSize,
-      borderX,
-    } = model
+    const { hview, vview, viewWidth, viewHeight, borderSize, borderX } = model
     const l = (hview.dynamicBlocks.blocks[0] || {}).offsetPx || 0
     const v = (vview.dynamicBlocks.blocks[0] || {}).offsetPx || 0
     return (
@@ -235,57 +228,35 @@ export default (pluginManager: any) => {
                 x1={x}
                 y1={0}
                 x2={x}
-                y2={height + tickSize}
+                y2={viewHeight}
                 stroke="#000000"
               />
             )
           })}
-        <line x1={0} y1={height} x2={0} height={0} stroke="#000000" />
+        <line x1={0} y1={viewHeight} x2={0} height={0} stroke="#000000" />
         {vview.dynamicBlocks.blocks
           .filter(region => region.refName)
           .map(region => {
-            const y = height - (region.offsetPx - v + region.widthPx)
+            const y = viewHeight - (region.offsetPx - v + region.widthPx)
             return (
               <line
                 key={JSON.stringify(region)}
-                x1={-tickSize}
+                x1={0}
                 y1={y}
-                x2={width}
+                x2={viewWidth}
                 y2={y}
                 stroke="#000000"
               />
             )
           })}
-        <line x1={0} y1={height} x2={width} y2={height} stroke="#000000" />
+        <line
+          x1={0}
+          y1={viewHeight}
+          x2={viewWidth}
+          y2={viewHeight}
+          stroke="#000000"
+        />
       </g>
-    )
-  })
-
-  const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
-    const classes = useStyles()
-    const { initialized, loading, width, height } = model
-    if (!initialized && !loading) {
-      return <ImportForm model={model} />
-    }
-    if (loading) {
-      return (
-        <div>
-          <p>Loading...</p>
-          <LinearProgress />
-        </div>
-      )
-    }
-
-    return (
-      <div style={{ position: 'relative' }}>
-        <Controls model={model} />
-        <div className={classes.container}>
-          <svg width={width} height={height}>
-            <DrawLabels model={model} />
-            <DrawGrid model={model} />
-          </svg>
-        </div>
-      </div>
     )
   })
 
@@ -295,7 +266,7 @@ export default (pluginManager: any) => {
       hview,
       vview,
       borderX,
-      viewingRegionHeight,
+      viewHeight,
       vtextRotation,
       htextRotation,
       borderSize,
@@ -307,7 +278,7 @@ export default (pluginManager: any) => {
       <>
         <g
           transform={`translate(${borderX},${
-            borderSize + tickSize + viewingRegionHeight
+            borderSize + tickSize + viewHeight
           })`}
         >
           {hview.dynamicBlocks.blocks
@@ -336,7 +307,7 @@ export default (pluginManager: any) => {
             .filter(region => region.refName)
             .map(region => {
               const x = borderX
-              const y = viewingRegionHeight - (region.offsetPx - v)
+              const y = viewHeight - (region.offsetPx - v)
               return (
                 <text
                   transform={`rotate(${vtextRotation},${x},${y})`}
@@ -356,51 +327,108 @@ export default (pluginManager: any) => {
     )
   })
 
-  // <canvas
-  //   style={{ position: 'absolute', left: 0, top: 0, zIndex: 10 }}
-  //   ref={highlightOverlayCanvas}
-  //   onMouseDown={event => {
-  //     setDown([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
-  //     setCurrent([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
-  //   }}
-  //   onMouseUp={event => {
-  //     if (down) {
-  //       const curr = [
-  //         event.nativeEvent.offsetX,
-  //         event.nativeEvent.offsetY,
-  //       ]
-  //       const start = down
-  //       let px1 = curr[0] - borderSize
-  //       let px2 = start[0] - borderSize
-  //       if (px1 > px2) {
-  //         ;[px2, px1] = [px1, px2]
-  //       }
-  //       let py1 = viewingRegionHeight - (curr[1] - borderSize)
-  //       let py2 = viewingRegionHeight - (start[1] - borderSize)
-  //       if (py1 > py2) {
-  //         ;[py2, py1] = [py1, py2]
-  //       }
-  //       const x1 = model.hview.pxToBp(px1)
-  //       const x2 = model.hview.pxToBp(px2)
+  const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
+    const classes = useStyles()
+    const highlightOverlayCanvas = useRef()
+    const [down, setDown] = useState()
+    const [current, setCurrent] = useState([0, 0])
 
-  //       const y1 = model.vview.pxToBp(py1)
-  //       const y2 = model.vview.pxToBp(py2)
-  //       transaction(() => {
-  //         model.hview.moveTo(x1, x2)
-  //         model.vview.moveTo(y1, y2)
-  //       })
-  //       setDown(undefined)
-  //     }
-  //   }}
-  //   onMouseLeave={event => {
-  //     setDown(undefined)
-  //   }}
-  //   onMouseMove={event => {
-  //     setCurrent([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
-  //   }}
-  //   width={width}
-  //   height={height}
-  // />
+    const {
+      viewHeight,
+      borderX,
+      borderSize,
+      initialized,
+      loading,
+      width,
+      height,
+    } = model
+    if (!initialized && !loading) {
+      return <ImportForm model={model} />
+    }
+    if (loading) {
+      return (
+        <div>
+          <p>Loading...</p>
+          <LinearProgress />
+        </div>
+      )
+    }
+
+    return (
+      <div style={{ position: 'relative' }}>
+        <Controls model={model} />
+        <div className={classes.container}>
+          <svg
+            className={classes.content}
+            width={width}
+            height={height}
+            ref={highlightOverlayCanvas}
+            onMouseDown={event => {
+              setDown([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
+              setCurrent([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
+              event.preventDefault()
+            }}
+            onMouseUp={event => {
+              if (down) {
+                const curr = [
+                  event.nativeEvent.offsetX,
+                  event.nativeEvent.offsetY,
+                ]
+                const start = down
+                let px1 = curr[0] - borderX
+                let px2 = start[0] - borderX
+                if (px1 > px2) {
+                  ;[px2, px1] = [px1, px2]
+                }
+                let py1 = viewHeight - (curr[1] - borderSize)
+                let py2 = viewHeight - (start[1] - borderSize)
+                if (py1 > py2) {
+                  ;[py2, py1] = [py1, py2]
+                }
+                const x1 = model.hview.pxToBp(px1)
+                const x2 = model.hview.pxToBp(px2)
+
+                const y1 = model.vview.pxToBp(py1)
+                const y2 = model.vview.pxToBp(py2)
+                model.hview.moveTo(x1, x2)
+                model.vview.moveTo(y1, y2)
+                setDown(undefined)
+              }
+            }}
+            onMouseLeave={event => {
+              setDown(undefined)
+            }}
+            onMouseMove={event => {
+              setCurrent([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
+            }}
+          >
+            <DrawLabels model={model} />
+            <DrawGrid model={model} />
+            {down ? (
+              <rect
+                fill="rgba(255,0,0,0.3)"
+                x={Math.min(current[0], down[0])}
+                y={Math.min(current[1], down[1])}
+                width={Math.abs(current[0] - down[0])}
+                height={Math.abs(current[1] - down[1])}
+              />
+            ) : null}
+          </svg>
+
+          <div className={classes.overlay}>
+            {model.tracks.map((track: any) => {
+              const { ReactComponent } = track
+
+              return ReactComponent ? (
+                <ReactComponent key={getConf(track, 'trackId')} model={track} />
+              ) : null
+            })}
+          </div>
+        </div>
+      </div>
+    )
+  })
+
   DotplotView.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }

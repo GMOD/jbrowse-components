@@ -3,6 +3,7 @@ import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableEleme
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { inDevelopment } from '@gmod/jbrowse-core/util'
 import {
   createCanvas,
   createImageBitmap,
@@ -22,6 +23,10 @@ export interface DotplotRenderProps {
   height: number
   width: number
   borderSize: number
+  borderX: number
+  borderY: number
+  viewWidth: number
+  viewHeight: number
   fontSize: number
   highResolutionScaling: number
   pluginManager: any
@@ -63,25 +68,32 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       highResolutionScaling: scale = 1,
       width,
       height,
+      viewHeight,
       borderSize,
       config,
       views,
+      borderX,
     } = props
 
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d')
     ctx.scale(scale, scale)
+    ctx.translate(borderX, borderSize)
 
     ctx.fillStyle = 'black'
 
-    // clip method avoids drawing outside box
-    ctx.rect(
-      borderSize,
-      borderSize,
-      width - borderSize * 2,
-      height - borderSize * 2,
-    )
-    ctx.clip()
+    // don't clip in development, so we can see accidentally drawing
+    // outside of clip boundary
+    if (inDevelopment) {
+      // clip method avoids drawing outside box
+      ctx.rect(
+        borderSize,
+        borderSize,
+        width - borderSize * 2,
+        height - borderSize * 2,
+      )
+      ctx.clip()
+    }
 
     ctx.lineWidth = 3
     ctx.fillStyle = readConfObject(config, 'color')
@@ -99,7 +111,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const e2 = bpToPx(views[1], mate.refName, mate.end)
       if (b1 && b2 && e1 && e2) {
         if (b1 - b2 < 3 && e1 - e2 < 3) {
-          ctx.fillRect(b1 + borderSize, height - borderSize - e1, 3, 3)
+          ctx.fillRect(b1, viewHeight - e1, 3, 3)
         } else {
           ctx.beginPath()
           ctx.moveTo(b1, height - e1)

@@ -124,11 +124,11 @@ export default function stateModelFactory(pluginManager: any) {
     }))
     .actions(self => ({
       zoomInButton() {
-        self.setBpPerPx(self.bpPerPx / 1.4)
+        this.zoomTo(self.bpPerPx / 1.4)
       },
 
       zoomOutButton() {
-        self.setBpPerPx(self.bpPerPx * 1.4)
+        this.zoomTo(self.bpPerPx * 1.4)
       },
       zoomTo(newBpPerPx: number) {
         const bpPerPx = newBpPerPx
@@ -195,14 +195,14 @@ export default function stateModelFactory(pluginManager: any) {
       hview: DotplotViewDirection.extend(self => ({
         views: {
           get width() {
-            return getParent(self).viewingRegionWidth
+            return getParent(self).viewWidth
           },
         },
       })),
       vview: DotplotViewDirection.extend(self => ({
         views: {
           get width() {
-            return getParent(self).viewingRegionHeight
+            return getParent(self).viewHeight
           },
         },
       })),
@@ -239,10 +239,10 @@ export default function stateModelFactory(pluginManager: any) {
       get loading() {
         return self.assemblyNames.length > 0 && !this.initialized
       },
-      get viewingRegionWidth() {
+      get viewWidth() {
         return self.width - self.borderSize - this.borderX
       },
-      get viewingRegionHeight() {
+      get viewHeight() {
         return self.height - self.borderSize - this.borderY
       },
       get views() {
@@ -256,7 +256,7 @@ export default function stateModelFactory(pluginManager: any) {
           self,
           autorun(
             async () => {
-              const axis = [self.viewingRegionWidth, self.viewingRegionHeight]
+              const axis = [self.viewWidth, self.viewHeight]
               const views = [self.hview, self.vview]
               if (!self.initialized) {
                 self.assemblyNames.forEach(async (name, index) => {
