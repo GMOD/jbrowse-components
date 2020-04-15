@@ -23,7 +23,7 @@ interface BpOffset {
 }
 
 function approxPixelStringLen(str: string) {
-  return str.length * 0.45 * 12
+  return str.length * 0.7 * 12
 }
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
@@ -52,7 +52,7 @@ export default function stateModelFactory(pluginManager: any) {
     }))
     .views(self => ({
       get width() {
-        /* replace me */
+        /* this is replaced by usage of this model */
         return 0
       },
       get dynamicBlocks() {
@@ -63,6 +63,11 @@ export default function stateModelFactory(pluginManager: any) {
       },
       get totalBp() {
         return self.displayedRegions
+          .map(a => a.end - a.start)
+          .reduce((a, b) => a + b, 0)
+      },
+      get currBp() {
+        return this.dynamicBlocks
           .map(a => a.end - a.start)
           .reduce((a, b) => a + b, 0)
       },
@@ -180,6 +185,7 @@ export default function stateModelFactory(pluginManager: any) {
       headerHeight: 0,
       height: 600,
       borderSize: 20,
+      tickSize: 5,
       vtextRotation: 0,
       htextRotation: -90,
       fontSize: 15,
@@ -209,6 +215,7 @@ export default function stateModelFactory(pluginManager: any) {
     })
     .volatile(() => ({
       width: 800,
+      error: undefined as Error | undefined,
     }))
     .views(self => ({
       get initialized() {
@@ -218,13 +225,13 @@ export default function stateModelFactory(pluginManager: any) {
         )
       },
       get borderX() {
-        return self.vview.displayedRegions.reduce(
+        return self.hview.displayedRegions.reduce(
           (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
           0,
         )
       },
       get borderY() {
-        return self.hview.displayedRegions.reduce(
+        return self.vview.displayedRegions.reduce(
           (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
           0,
         )
@@ -253,17 +260,25 @@ export default function stateModelFactory(pluginManager: any) {
               const views = [self.hview, self.vview]
               if (!self.initialized) {
                 self.assemblyNames.forEach(async (name, index) => {
-                  const regions = (await session.getRegionsForAssemblyName(
-                    self.assemblyNames[index],
-                  )) as IRegion[] | undefined
-                  if (regions !== undefined) {
-                    views[index].setDisplayedRegions(regions)
-                    views[index].setBpPerPx(views[index].totalBp / axis[index])
-                  } else {
-                    console.error(
-                      `failed to get regions for assembly ${self.assemblyNames[index]}`,
-                    )
-                  }
+                  session
+                    .getRegionsForAssemblyName(self.assemblyNames[index])
+                    .then((regions: IRegion[] | undefined) => {
+                      if (regions !== undefined) {
+                        views[index].setDisplayedRegions(regions)
+                        views[index].setBpPerPx(
+                          views[index].totalBp / axis[index],
+                        )
+                      } else {
+                        this.setError(
+                          new Error(
+                            `failed to get regions for assembly ${self.assemblyNames[index]}`,
+                          ),
+                        )
+                      }
+                    })
+                    .catch((e: Error) => {
+                      this.setError(e)
+                    })
                 })
               }
             },
@@ -280,6 +295,10 @@ export default function stateModelFactory(pluginManager: any) {
       },
       setHeight(newHeight: number) {
         self.height = newHeight
+      },
+
+      setError(e: Error) {
+        self.error = e
       },
 
       closeView() {

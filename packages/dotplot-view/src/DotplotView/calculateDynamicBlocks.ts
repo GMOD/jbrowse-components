@@ -1,12 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { intersection2 } from '@gmod/jbrowse-core/util/range'
 import { assembleLocString } from '@gmod/jbrowse-core/util'
-import {
-  BlockSet,
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
-} from './blockTypes'
+import { BlockSet, ContentBlock } from './blockTypes'
 
 const interRegionPaddingWidth = 2
 
@@ -30,13 +25,7 @@ const interRegionPaddingWidth = 2
  * @returns {BlockSet} of ` { refName, startBp, end, offset, reversed? }`
  */
 export default function calculateDynamicBlocks(model: any) {
-  const {
-    offsetPx,
-    width,
-    displayedRegions,
-    bpPerPx,
-    minimumBlockWidth,
-  } = model
+  const { offsetPx, width, displayedRegions, bpPerPx } = model
   const blocks = new BlockSet()
   let displayedRegionLeftPx = 0
   const windowLeftPx = offsetPx
@@ -51,8 +40,6 @@ export default function calculateDynamicBlocks(model: any) {
     } = region
     const displayedRegionRightPx =
       displayedRegionLeftPx + (regionEnd - regionStart) / bpPerPx
-
-    const regionWidthPx = (regionEnd - regionStart) / bpPerPx
 
     if (
       displayedRegionLeftPx < windowRightPx &&
@@ -100,50 +87,8 @@ export default function calculateDynamicBlocks(model: any) {
       blockData.key = `${assembleLocString(blockData)}${
         reversed ? '-reversed' : ''
       }`
-      if (blocks.length === 0 && isLeftEndOfDisplayedRegion) {
-        blocks.push(
-          new InterRegionPaddingBlock({
-            key: `${blockData.key}-beforeFirstRegion`,
-            widthPx: -offsetPx,
-            offsetPx: blockData.offsetPx + offsetPx,
-            variant: 'boundary',
-          }),
-        )
-      }
-      if (regionWidthPx < minimumBlockWidth) {
-        blocks.push(new ElidedBlock(blockData))
-      } else {
-        blocks.push(new ContentBlock(blockData))
-      }
 
-      // insert a inter-region padding block if we are crossing a displayed region
-      if (
-        regionWidthPx >= minimumBlockWidth &&
-        blockData.isRightEndOfDisplayedRegion &&
-        regionNumber < displayedRegions.length - 1
-      ) {
-        blocks.push(
-          new InterRegionPaddingBlock({
-            key: `${blockData.key}-${regionNumber}-rightpad`,
-            widthPx: interRegionPaddingWidth,
-            offsetPx: blockData.offsetPx + blockData.widthPx,
-          }),
-        )
-      }
-      if (
-        regionNumber === displayedRegions.length - 1 &&
-        blockData.isRightEndOfDisplayedRegion
-      ) {
-        blockOffsetPx = blockData.offsetPx + blockData.widthPx
-        blocks.push(
-          new InterRegionPaddingBlock({
-            key: `${blockData.key}-afterLastRegion`,
-            widthPx: width - blockOffsetPx + offsetPx,
-            offsetPx: blockOffsetPx,
-            variant: 'boundary',
-          }),
-        )
-      }
+      blocks.push(new ContentBlock(blockData))
     }
     displayedRegionLeftPx += interRegionPaddingWidth
     displayedRegionLeftPx += (regionEnd - regionStart) / bpPerPx

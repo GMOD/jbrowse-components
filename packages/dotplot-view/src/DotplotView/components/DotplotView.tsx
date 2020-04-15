@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { makeStyles } from '@material-ui/core/styles'
-// @ts-ignore
-import { Text, Surface, Shape, Path, Transform, Group } from 'react-art'
 
 import { DotplotViewModel } from '../model'
 
@@ -220,10 +218,11 @@ export default (pluginManager: any) => {
       viewingRegionWidth: width,
       viewingRegionHeight: height,
       borderSize,
+      tickSize,
       borderX,
     } = model
-    const l = (hview.dynamicBlocks.blocks[0] || {}).offsetPx
-    const v = (vview.dynamicBlocks.blocks[0] || {}).offsetPx
+    const l = (hview.dynamicBlocks.blocks[0] || {}).offsetPx || 0
+    const v = (vview.dynamicBlocks.blocks[0] || {}).offsetPx || 0
     return (
       <g transform={`translate(${borderX},${borderSize})`}>
         {hview.dynamicBlocks.blocks
@@ -236,7 +235,7 @@ export default (pluginManager: any) => {
                 x1={x}
                 y1={0}
                 x2={x}
-                y2={height}
+                y2={height + tickSize}
                 stroke="#000000"
               />
             )
@@ -249,7 +248,7 @@ export default (pluginManager: any) => {
             return (
               <line
                 key={JSON.stringify(region)}
-                x1={0}
+                x1={-tickSize}
                 y1={y}
                 x2={width}
                 y2={y}
@@ -295,19 +294,22 @@ export default (pluginManager: any) => {
     const {
       hview,
       vview,
-      height,
       borderX,
-      borderY,
       viewingRegionHeight,
       vtextRotation,
       htextRotation,
       borderSize,
+      tickSize,
     } = model
-    const l = (hview.dynamicBlocks.blocks[0] || {}).offsetPx
-    const v = (vview.dynamicBlocks.blocks[0] || {}).offsetPx
+    const l = (hview.dynamicBlocks.blocks[0] || {}).offsetPx || 0
+    const v = (vview.dynamicBlocks.blocks[0] || {}).offsetPx || 0
     return (
       <>
-        <g transform={`translate(${borderX},${borderY + viewingRegionHeight})`}>
+        <g
+          transform={`translate(${borderX},${
+            borderSize + tickSize + viewingRegionHeight
+          })`}
+        >
           {hview.dynamicBlocks.blocks
             .filter(region => region.refName)
             .map(region => {
@@ -320,8 +322,8 @@ export default (pluginManager: any) => {
                   x={x}
                   y={y}
                   fill="#000000"
-                  dominantBaseline="hanging"
-                  textAnchor="center"
+                  dominantBaseline="middle"
+                  textAnchor="end"
                 >
                   {region.refName}
                 </text>
@@ -329,28 +331,24 @@ export default (pluginManager: any) => {
             })}
         </g>
 
-        <g>
+        <g transform={`translate(0,${borderSize})`}>
           {vview.dynamicBlocks.blocks
             .filter(region => region.refName)
             .map(region => {
               const x = borderX
-              const y =
-                viewingRegionHeight - region.offsetPx - v + region.widthPx / 2
+              const y = viewingRegionHeight - (region.offsetPx - v)
               return (
-                <React.Fragment key={`${region.refName}frag`}>
-                  <text
-                    transform={`rotate(${vtextRotation},${x},${y})`}
-                    key={region.refName}
-                    x={borderX}
-                    y={y}
-                    fill="#000000"
-                    dominantBaseline="baseline"
-                    textAnchor="end"
-                  >
-                    {region.refName}
-                  </text>
-                  <rect x={0} y={y} width={3} height={3} fill="#000" />
-                </React.Fragment>
+                <text
+                  transform={`rotate(${vtextRotation},${x},${y})`}
+                  key={region.refName}
+                  x={x}
+                  y={y}
+                  fill="#000000"
+                  dominantBaseline="middle"
+                  textAnchor="end"
+                >
+                  {region.refName}
+                </text>
               )
             })}
         </g>
