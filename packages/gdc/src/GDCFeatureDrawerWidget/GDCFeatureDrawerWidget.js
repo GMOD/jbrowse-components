@@ -337,35 +337,42 @@ SSMExternalLinks.propTypes = {
  */
 function SSMProject(props) {
   const classes = useStyles()
-  const { key, doc_count } = props.props
-  const projectInfo = props.allProjects.find(x => x.node.project_id === key)
-  const totalProject = props.totalProjects.find(x => x.key === key)
+  const { projectId, docCount, allProjects, totalProjects } = props
+  const projectInfo = allProjects.find(x => x.node.project_id === projectId)
+  const totalProject = totalProjects.find(x => x.projectId === projectId)
 
   return (
     <>
-      <TableRow key={key}>
+      <TableRow key={projectId}>
         <TableCell component="th" scope="row">
           <Link
             className={classes.link}
             target="_blank"
             rel="noopener"
-            href={`https://portal.gdc.cancer.gov/projects/${key}`}
+            href={`https://portal.gdc.cancer.gov/projects/${projectId}`}
           >
-            {key}
+            {projectId}
           </Link>
         </TableCell>
         <TableCell component="th" scope="row">
-          {projectInfo.node.disease_type}
+          {projectInfo.node.disease_type.join(', ')}
         </TableCell>
         <TableCell component="th" scope="row">
-          {projectInfo.node.primary_site}
+          {projectInfo.node.primary_site.join(', ')}
         </TableCell>
         <TableCell component="th" scope="row">
-          {doc_count} / {totalProject.doc_count}
+          {docCount} / {totalProject.docCount}
         </TableCell>
       </TableRow>
     </>
   )
+}
+
+SSMProject.propTypes = {
+  projectId: PropTypes.string.isRequired,
+  docCount: PropTypes.number.isRequired,
+  allProjects: PropTypes.array.isRequired,
+  totalProjects: PropTypes.array.isRequired,
 }
 
 /**
@@ -410,10 +417,10 @@ function SSMProjects(props) {
               totalProjects &&
               filteredProjects.map((project, key) => (
                 <SSMProject
-                  props={project}
                   allProjects={allProjects}
                   totalProjects={totalProjects}
-                  key={key}
+                  key={`${key}-${project.projectId}`}
+                  {...project}
                 ></SSMProject>
               ))}
           </TableBody>
@@ -429,7 +436,7 @@ function SSMProjects(props) {
  */
 async function getSSMProjectsAsync(featureId) {
   const query = {
-    query: `query projectsTable($ssmTested: FiltersArgument, $caseAggsFilter: FiltersArgument, $projectCount: Int) { viewer { explore { cases { filtered: aggregations(filters: $caseAggsFilter) { project__project_id { buckets { doc_count key } } } total: aggregations(filters: $ssmTested) { project__project_id { buckets { doc_count key } } } } } } projects { hits(first: $projectCount) { edges { node { primary_site disease_type project_id id } } } } }`,
+    query: `query projectsTable($ssmTested: FiltersArgument, $caseAggsFilter: FiltersArgument, $projectCount: Int) { viewer { explore { cases { filtered: aggregations(filters: $caseAggsFilter) { project__project_id { buckets { docCount: doc_count projectId: key } } } total: aggregations(filters: $ssmTested) { project__project_id { buckets { docCount: doc_count projectId: key } } } } } } projects { hits(first: $projectCount) { edges { node { primary_site disease_type project_id id } } } } }`,
     variables: {
       ssmTested: {
         op: 'and',
@@ -478,52 +485,60 @@ SSMProjects.propTypes = {
  */
 function GeneProject(props) {
   const classes = useStyles()
-  const { key, doc_count } = props.props
-  const projectInfo = props.allProjects.find(x => x.node.project_id === key)
-  const totalProject = props.cases.total.project__project_id.buckets.find(
-    x => x.key === key,
+  const { projectId, docCount, allProjects, cases } = props
+
+  const projectInfo = allProjects.find(x => x.node.project_id === projectId)
+  const totalProject = cases.total.project__project_id.buckets.find(
+    x => x.projectId === projectId,
   )
-  const cnvGain = props.cases.gain.project__project_id.buckets.find(
-    x => x.key === key,
+  const cnvGain = cases.gain.project__project_id.buckets.find(
+    x => x.projectId === projectId,
   )
-  const cnvLoss = props.cases.loss.project__project_id.buckets.find(
-    x => x.key === key,
+  const cnvLoss = cases.loss.project__project_id.buckets.find(
+    x => x.projectId === projectId,
   )
-  const cnvTotal = props.cases.cnvTotal.project__project_id.buckets.find(
-    x => x.key === key,
+  const cnvTotal = cases.cnvTotal.project__project_id.buckets.find(
+    x => x.projectId === projectId,
   )
 
   return (
     <>
-      <TableRow key={key}>
+      <TableRow key={projectId}>
         <TableCell component="th" scope="row">
           <Link
             className={classes.link}
             target="_blank"
             rel="noopener"
-            href={`https://portal.gdc.cancer.gov/projects/${key}`}
+            href={`https://portal.gdc.cancer.gov/projects/${projectId}`}
           >
-            {key}
+            {projectId}
           </Link>
         </TableCell>
         <TableCell component="th" scope="row">
-          {projectInfo.node.disease_type}
+          {projectInfo.node.disease_type.join(', ')}
         </TableCell>
         <TableCell component="th" scope="row">
-          {projectInfo.node.primary_site}
+          {projectInfo.node.primary_site.join(', ')}
         </TableCell>
         <TableCell component="th" scope="row">
-          {doc_count} / {totalProject.doc_count}
+          {docCount} / {totalProject.docCount}
         </TableCell>
         <TableCell component="th" scope="row">
-          {cnvGain ? cnvGain.doc_count : '0'} / {cnvTotal.doc_count}
+          {cnvGain ? cnvGain.docCount : '0'} / {cnvTotal.docCount}
         </TableCell>
         <TableCell component="th" scope="row">
-          {cnvLoss ? cnvLoss.doc_count : '0'} / {cnvTotal.doc_count}
+          {cnvLoss ? cnvLoss.docCount : '0'} / {cnvTotal.docCount}
         </TableCell>
       </TableRow>
     </>
   )
+}
+
+GeneProject.propTypes = {
+  projectId: PropTypes.string.isRequired,
+  docCount: PropTypes.number.isRequired,
+  allProjects: PropTypes.array.isRequired,
+  cases: PropTypes.object.isRequired,
 }
 
 /**
@@ -568,10 +583,10 @@ function GeneProjects(props) {
               filteredProjects &&
               filteredProjects.map((project, key) => (
                 <GeneProject
-                  props={project}
                   cases={cases}
                   allProjects={allProjects}
-                  key={key}
+                  key={`${key}-${project.projectId}`}
+                  {...project}
                 ></GeneProject>
               ))}
           </TableBody>
@@ -591,7 +606,7 @@ GeneProjects.propTypes = {
  */
 async function getGeneProjectsAsync(featureId) {
   const query = {
-    query: `query ProjectTable( $caseAggsFilters: FiltersArgument $ssmTested: FiltersArgument $cnvGain: FiltersArgument $cnvLoss: FiltersArgument $cnvTested: FiltersArgument $projectCount: Int ) { viewer { explore { cases { gain: aggregations(filters: $cnvGain) { project__project_id { buckets { doc_count key } } } loss: aggregations(filters: $cnvLoss) { project__project_id { buckets { doc_count key } } } cnvTotal: aggregations(filters: $cnvTested) { project__project_id { buckets { doc_count key } } } filtered: aggregations(filters: $caseAggsFilters) { project__project_id { buckets { doc_count key } } } total: aggregations(filters: $ssmTested) { project__project_id { buckets { doc_count key } } } } } } projects { hits(first: $projectCount) { edges { node { primary_site disease_type project_id id } } } } }`,
+    query: `query ProjectTable( $caseAggsFilters: FiltersArgument $ssmTested: FiltersArgument $cnvGain: FiltersArgument $cnvLoss: FiltersArgument $cnvTested: FiltersArgument $projectCount: Int ) { viewer { explore { cases { gain: aggregations(filters: $cnvGain) { project__project_id { buckets { docCount: doc_count projectId: key } } } loss: aggregations(filters: $cnvLoss) { project__project_id { buckets { docCount: doc_count projectId: key } } } cnvTotal: aggregations(filters: $cnvTested) { project__project_id { buckets { docCount: doc_count projectId: key } } } filtered: aggregations(filters: $caseAggsFilters) { project__project_id { buckets { docCount: doc_count projectId: key } } } total: aggregations(filters: $ssmTested) { project__project_id { buckets { docCount: doc_count projectId: key } } } } } } projects { hits(first: $projectCount) { edges { node { primary_site disease_type project_id id } } } } }`,
     variables: {
       caseAggsFilters: {
         op: 'and',
