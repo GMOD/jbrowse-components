@@ -15,6 +15,7 @@ import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import JBrowse from './JBrowse'
 import config from '../test_data/config_integration_test.json'
 import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
+import dotplotConfig from '../test_data/config_dotplot.json'
 import JBrowseRootModel from './rootModel'
 
 expect.extend({ toMatchImageSnapshot })
@@ -489,4 +490,25 @@ test('404 sequence file', async () => {
     <JBrowse config={{ uri: 'test_data/config_chrom_sizes_test.json' }} />,
   )
   await findAllByText(/HTTP 404/)
+})
+
+describe('dotplot view', () => {
+  it('open a dotplot view', async () => {
+    const state = JBrowseRootModel.create({ jbrowse: dotplotConfig })
+    const { findByTestId } = render(
+      <JBrowse initialState={state} />,
+    )
+
+    const canvas = await findByTestId('prerendered_canvas')
+
+    const img = canvas.toDataURL()
+    const data = img.replace(/^data:image\/\w+;base64,/, '')
+    const buf = Buffer.from(data, 'base64')
+    // this is needed to do a fuzzy image comparison because
+    // the travis-ci was 2 pixels different for some reason, see PR #710
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
+  })
 })
