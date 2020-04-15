@@ -263,16 +263,20 @@ export function stateModelFactory(pluginManager: any) {
 
       // modifies view menu action onClick to apply to all tracks of same type
       rewriteOnClicks(trackType: string, viewMenuActions: MenuOptions[]) {
-        viewMenuActions.forEach((action: MenuOptions | any) => {
+        viewMenuActions.forEach((action: MenuOptions) => {
           // go to lowest level menu
-          if (action.subMenu) this.rewriteOnClicks(trackType, action.subMenu)
-          const holdOnClick = action.onClick
-          action.onClick = (...args: any[]) => {
-            self.tracks.forEach(track => {
-              if (track.type === trackType) {
-                holdOnClick.apply(track, [track, ...args])
-              }
-            })
+          if ('subMenu' in action)
+            this.rewriteOnClicks(trackType, action.subMenu)
+          if ('onClick' in action) {
+            const holdOnClick = action.onClick
+            action.onClick = (...args: any[]) => {
+              self.tracks.forEach(track => {
+                if (track.type === trackType) {
+                  // @ts-ignore
+                  holdOnClick.apply(track, [track, ...args])
+                }
+              })
+            }
           }
         })
       },
@@ -694,7 +698,7 @@ export function stateModelFactory(pluginManager: any) {
               disabled: self.hideHeader,
             },
             {
-              label: 'Show Center Line',
+              label: 'Show center line',
               icon: 'visibility',
               type: 'checkbox',
               checked: self.showCenterLine,

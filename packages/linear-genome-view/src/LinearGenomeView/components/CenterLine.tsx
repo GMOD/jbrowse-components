@@ -59,27 +59,29 @@ function CenterLine({ model }: { model: LGV }) {
         width: Math.max(1 / bpPerPx, 1),
       }}
     >
-      <div
-        // text that indicates what bp is center, positioned
-        // at the bottom right of the center line
-        data-testid="centerline_text"
-        className={classes.centerLineText}
-        role="presentation"
-        style={{
-          left: Math.max(1 / bpPerPx, 1) + 5,
-          top: activeSortedTrack ? trackHeights - 15 : trackHeights,
-        }}
-      >
-        Bp:{' '}
-        {centerLinePosition &&
-          Math.max(Math.round(centerLinePosition.offset) + 1, 0)}
-        {activeSortedTrack && (
-          <div className={classes.sortText}>
-            Sort: {activeSortedTrack.sortedBy.toUpperCase()} at{' '}
-            {activeSortedTrack.centerLinePosition}
-          </div>
-        )}
-      </div>
+      {centerLinePosition && (
+        <div
+          // text that indicates what bp is center, positioned
+          // at the bottom right of the center line
+          data-testid="centerline_text"
+          className={classes.centerLineText}
+          role="presentation"
+          style={{
+            left: Math.max(1 / bpPerPx, 1) + 5,
+            top: activeSortedTrack ? trackHeights - 15 : trackHeights,
+          }}
+        >
+          {/* change bp to refName */}
+          {centerLinePosition.refName}:{' '}
+          {Math.max(Math.round(centerLinePosition.offset) + 1, 0)}
+          {activeSortedTrack && (
+            <div className={classes.sortText}>
+              Sort: {activeSortedTrack.sortedBy.toUpperCase()} at{' '}
+              {activeSortedTrack.centerLinePosition}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   ) : null
 }
