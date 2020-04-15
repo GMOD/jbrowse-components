@@ -390,6 +390,7 @@ export default (pluginManager: any) => {
 
                 const y1 = model.vview.pxToBp(py1)
                 const y2 = model.vview.pxToBp(py2)
+                console.log(x1, x2, y1, y2)
                 model.hview.moveTo(x1, x2)
                 model.vview.moveTo(y1, y2)
                 setDown(undefined)

@@ -61,6 +61,9 @@ export default function stateModelFactory(pluginManager: any) {
       get staticBlocks() {
         return calculateStaticBlocks(cast(self))
       },
+      get refNames() {
+        return this.dynamicBlocks.blocks.map(r => r.refName)
+      },
       get totalBp() {
         return self.displayedRegions
           .map(a => a.end - a.start)
@@ -216,6 +219,8 @@ export default function stateModelFactory(pluginManager: any) {
     .volatile(() => ({
       width: 800,
       error: undefined as Error | undefined,
+      borderX: 0,
+      borderY: 0,
     }))
     .views(self => ({
       get initialized() {
@@ -224,26 +229,15 @@ export default function stateModelFactory(pluginManager: any) {
           self.vview.displayedRegions.length > 0
         )
       },
-      get borderX() {
-        return self.hview.displayedRegions.reduce(
-          (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
-          0,
-        )
-      },
-      get borderY() {
-        return self.vview.displayedRegions.reduce(
-          (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
-          0,
-        )
-      },
+
       get loading() {
         return self.assemblyNames.length > 0 && !this.initialized
       },
       get viewWidth() {
-        return self.width - self.borderSize - this.borderX
+        return self.width - self.borderSize - self.borderX
       },
       get viewHeight() {
-        return self.height - self.borderSize - this.borderY
+        return self.height - self.borderSize - self.borderY
       },
       get views() {
         return [self.hview, self.vview]
@@ -285,9 +279,33 @@ export default function stateModelFactory(pluginManager: any) {
             { delay: 1000 },
           ),
         )
+        addDisposer(
+          self,
+          autorun(async () => {
+            // these are set via autorun to avoid dependency cycle
+            this.setBorderX(
+              self.hview.refNames.reduce(
+                (a, b) => Math.max(a, approxPixelStringLen(b)),
+                0,
+              ),
+            )
+            this.setBorderY(
+              self.vview.refNames.reduce(
+                (a, b) => Math.max(a, approxPixelStringLen(b)),
+                0,
+              ),
+            )
+          }),
+        )
       },
       setDisplayName(name: string) {
         self.displayName = name
+      },
+      setBorderX(n: number) {
+        self.borderX = n
+      },
+      setBorderY(n: number) {
+        self.borderY = n
       },
 
       setWidth(newWidth: number) {
