@@ -111,7 +111,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const e2 = bpToPx(views[1], mate.refName, mate.end)
       if (b1 && b2 && e1 && e2) {
         if (b1 - b2 < 3 && e1 - e2 < 3) {
-          ctx.fillRect(b1, viewHeight - e1, 3, 3)
+          ctx.fillRect(b1 - 1, viewHeight - e1 - 1, 3, 3)
         } else {
           ctx.beginPath()
           ctx.moveTo(b1, height - e1)
