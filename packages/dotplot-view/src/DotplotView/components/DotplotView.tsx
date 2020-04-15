@@ -338,6 +338,7 @@ export default (pluginManager: any) => {
       width,
       height,
     } = model
+
     if (!initialized && !loading) {
       return <ImportForm model={model} />
     }

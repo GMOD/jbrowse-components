@@ -252,7 +252,7 @@ export default function stateModelFactory(pluginManager: any) {
               if (!self.initialized) {
                 self.assemblyNames.forEach(async (name, index) => {
                   session
-                    .getRegionsForAssemblyName(self.assemblyNames[index])
+                    .getRegionsForAssemblyName(name)
                     .then((regions: IRegion[] | undefined) => {
                       if (regions !== undefined) {
                         views[index].setDisplayedRegions(regions)

@@ -48,7 +48,9 @@ export default class ComparativeServerSideRenderer extends RendererType {
           return {
             // @ts-ignore
             ...getSnapshot(view),
-            dynamicBlocks: view.dynamicBlocks.contentBlocks,
+            dynamicBlocks: JSON.parse(
+              JSON.stringify(view.dynamicBlocks.contentBlocks),
+            ),
           }
         }),
         trackModel: {},
@@ -101,7 +103,6 @@ export default class ComparativeServerSideRenderer extends RendererType {
       'comparativeRender',
       serializedArgs,
     )
-    // const result = await renderRegionWithWorker(session, serializedArgs)
 
     this.deserializeResultsInClient(result, args)
     return result
