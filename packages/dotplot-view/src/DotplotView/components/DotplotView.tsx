@@ -329,8 +329,9 @@ export default (pluginManager: any) => {
       (event: WheelEvent) => {
         const { deltaY } = event
         const { offsetX, offsetY } = event
+        const height = event.target ? event.target.clientHeight : 0
         const factor = 1 + deltaY / 500
-        model.vview.zoomTo(model.vview.bpPerPx * factor, offsetY)
+        model.vview.zoomTo(model.vview.bpPerPx * factor, height - offsetY)
         model.hview.zoomTo(model.hview.bpPerPx * factor, offsetX)
         event.preventDefault()
       },
