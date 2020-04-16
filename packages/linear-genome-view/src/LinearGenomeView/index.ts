@@ -295,11 +295,11 @@ export function stateModelFactory(pluginManager: any) {
         return allActions
       },
 
-      get centerLinePosition() {
-        const centerLinePosition = self.displayedRegions.length
+      get centerLineInfo() {
+        const centerLineInfo = self.displayedRegions.length
           ? this.pxToBp(self.width / 2)
           : undefined
-        return centerLinePosition
+        return centerLineInfo
       },
     }))
     .actions(self => ({

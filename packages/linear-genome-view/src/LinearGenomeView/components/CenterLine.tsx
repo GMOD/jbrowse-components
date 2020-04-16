@@ -37,7 +37,7 @@ const useStyles = makeStyles(() => ({
 }))
 
 function CenterLine({ model }: { model: LGV }) {
-  const { bpPerPx, centerLinePosition, trackHeights, tracks, width } = model
+  const { bpPerPx, centerLineInfo, trackHeights, tracks, width } = model
   const ref = useRef<HTMLDivElement>(null)
   const classes = useStyles()
   const startingPosition = width / 2
@@ -59,7 +59,7 @@ function CenterLine({ model }: { model: LGV }) {
         width: Math.max(1 / bpPerPx, 1),
       }}
     >
-      {centerLinePosition && (
+      {centerLineInfo && (
         <div
           // text that indicates what bp is center, positioned
           // at the bottom right of the center line
@@ -72,8 +72,7 @@ function CenterLine({ model }: { model: LGV }) {
           }}
         >
           {/* change bp to refName */}
-          {centerLinePosition.refName}:{' '}
-          {Math.max(Math.round(centerLinePosition.offset) + 1, 0)}
+          {centerLineInfo.refName}: {Math.max(Math.round(centerLineInfo.offset) + 1, 0)}
           {activeSortedTrack && (
             <div className={classes.sortText}>
               Sort: {activeSortedTrack.sortedBy.toUpperCase()} at{' '}

@@ -35,7 +35,7 @@ export const sortFeature = (
   })
 
   switch (sortObject.by) {
-    case 'Start Location': {
+    case 'Start location': {
       featuresInCenterLine.sort(
         (a: [string, Feature], b: [string, Feature]) =>
           a[1].get('start') - b[1].get('start'),
@@ -44,7 +44,7 @@ export const sortFeature = (
     }
 
     // first sort all mismatches, then all reference bases at the end
-    case 'Base Pair': {
+    case 'Base pair': {
       const baseSortArray: [string, Mismatch][] = []
       featuresInCenterLine.forEach((array, idx) => {
         const feature = array[1]
@@ -72,7 +72,7 @@ export const sortFeature = (
     }
 
     // sorts positive strands then negative strands
-    case 'Read Strand': {
+    case 'Read strand': {
       featuresInCenterLine.sort(
         (a: [string, Feature], b: [string, Feature]) => {
           return a[1].get('strand') <= b[1].get('strand') ? 1 : -1

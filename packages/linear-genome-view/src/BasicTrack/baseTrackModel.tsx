@@ -170,7 +170,7 @@ const BaseTrack = types
       return []
     },
 
-    get viewMenuActions(): MenuOptions[] {
+    get viewMenuActions(): MenuOption[] {
       return []
     },
 

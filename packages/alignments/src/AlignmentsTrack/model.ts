@@ -65,14 +65,14 @@ export default (pluginManager: any, configSchema: any) => {
         }
       },
       get sortOptions() {
-        return ['Start Location', 'Read Strand', 'Base Pair', 'Clear Sort']
+        return ['Start location', 'Read strand', 'Base pair', 'Clear sort']
       },
       get menuOptions(): MenuOption[] {
         return [
           {
             label: self.showCoverage
-              ? 'Hide Coverage Track'
-              : 'Show Coverage Track',
+              ? 'Hide coverage track'
+              : 'Show coverage track',
             icon: self.showCoverage ? 'visibility_off' : 'visibility',
             onClick: self.toggleCoverage,
             disabled: !self.showPileup,
@@ -95,7 +95,7 @@ export default (pluginManager: any, configSchema: any) => {
               return {
                 label: option,
                 onClick: (object: typeof self) =>
-                  option === 'Clear Sort'
+                  option === 'Clear sort'
                     ? object.clearSelected()
                     : object.sortSelected(option),
               }
@@ -136,16 +136,16 @@ export default (pluginManager: any, configSchema: any) => {
       sortSelected(selected: string) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { assemblyData, rpcManager } = getSession(self) as any
-        const centerLine = getContainingView(self).centerLinePosition
-        const centerBp = Math.round(centerLine.offset) + 1
+        const { centerLineInfo } = getContainingView(self)
+        const centerBp = Math.round(centerLineInfo.offset) + 1
 
         if (centerBp < 0) return
 
         const region = {
-          refName: centerLine.refName,
+          refName: centerLineInfo.refName,
           start: centerBp,
           end: centerBp + 1,
-          assemblyName: centerLine.assemblyName,
+          assemblyName: centerLineInfo.assemblyName,
         }
         const adapterConfigId = jsonStableStringify(getConf(self, 'adapter'))
 
