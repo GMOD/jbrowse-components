@@ -8,7 +8,7 @@ export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useRef, useEffect, useCallback, useState } = React
+  const { useRef, useEffect, useState } = React
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { makeStyles: jbMakeStyles } = jbrequire('@material-ui/core/styles')
@@ -318,67 +318,25 @@ export default (pluginManager: any) => {
 
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const prevX = (useRef as typeof reactUseRef)<number | null>(null)
-    const prevY = (useRef as typeof reactUseRef)<number | null>(null)
-    const scheduled = (useRef as typeof reactUseRef)(false)
-    const [mouseDragging, setMouseDragging] = useState(false)
+    const ref = (useRef as typeof reactUseRef)<SVGSVGElement | null>(null)
+    const [current, setCurrent] = useState()
+    const [down, setDown] = useState()
 
     const { initialized, loading, width, height } = model
-
-    const wheel = useCallback(
-      (event: WheelEvent) => {
-        const { deltaY } = event
-        const { offsetX, offsetY } = event
-        const height = event.target ? event.target.clientHeight : 0
-        const factor = 1 + deltaY / 500
-        model.vview.zoomTo(model.vview.bpPerPx * factor, height - offsetY)
-        model.hview.zoomTo(model.hview.bpPerPx * factor, offsetX)
-        event.preventDefault()
-      },
-      [model.hview, model.vview],
-    )
-
-    const setRef = useCallback(
-      (currRef: SVGElement) => {
-        if (currRef) {
-          currRef.addEventListener('wheel', wheel, { passive: false })
-        }
-      },
-      [wheel],
-    )
 
     useEffect(() => {
       let cleanup = () => {}
 
       function globalMouseMove(event: MouseEvent) {
+        setCurrent([event.clientX, event.clientY])
         event.preventDefault()
-        const xdistance =
-          prevX.current !== null ? event.clientX - prevX.current : event.clientX
-        const ydistance =
-          prevY.current !== null ? event.clientY - prevY.current : event.clientY
-        // use rAF to make it so multiple event handlers aren't fired per-frame
-        // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-        if (!scheduled.current) {
-          scheduled.current = true
-          window.requestAnimationFrame(() => {
-            model.hview.horizontalScroll(-xdistance)
-            model.vview.horizontalScroll(ydistance)
-            scheduled.current = false
-            prevX.current = event.clientX
-            prevY.current = event.clientY
-          })
-        }
       }
 
       function globalMouseUp() {
-        prevX.current = null
-        prevY.current = null
-        if (mouseDragging) {
-          setMouseDragging(false)
-        }
+        setDown(undefined)
       }
 
-      if (mouseDragging) {
+      if (down) {
         window.addEventListener('mousemove', globalMouseMove, true)
         window.addEventListener('mouseup', globalMouseUp, true)
         cleanup = () => {
@@ -387,7 +345,7 @@ export default (pluginManager: any) => {
         }
       }
       return cleanup
-    }, [model, mouseDragging, prevX, prevY, scheduled])
+    }, [down, model])
 
     if (!initialized && !loading) {
       return <ImportForm model={model} />
@@ -401,6 +359,14 @@ export default (pluginManager: any) => {
       )
     }
 
+    let left = 0
+    let top = 0
+    if (ref.current) {
+      const bounds = ref.current.getBoundingClientRect()
+      left = bounds.left
+      top = bounds.top
+    }
+
     return (
       <div style={{ position: 'relative' }}>
         <Controls model={model} />
@@ -409,24 +375,34 @@ export default (pluginManager: any) => {
             className={classes.content}
             width={width}
             height={height}
-            ref={setRef}
+            ref={ref}
             onMouseDown={event => {
               if (event.button === 0) {
-                prevX.current = event.clientX
-                prevY.current = event.clientY
-                setMouseDragging(true)
+                setDown([event.clientX, event.clientY])
+                setCurrent([event.clientX, event.clientY])
               }
             }}
           >
             <DrawLabels model={model} />
             <DrawGrid model={model} />
+
+            {down ? (
+              <rect
+                fill="rgba(255,0,0,0.3)"
+                x={Math.min(current[0], down[0]) - left}
+                y={Math.min(current[1], down[1]) - top}
+                width={Math.abs(current[0] - down[0])}
+                height={Math.abs(current[1] - down[1])}
+              />
+            ) : null}
           </svg>
 
           <div className={classes.overlay}>
-            {model.tracks.map((track: any) => {
+            {model.tracks.map(track => {
               const { ReactComponent } = track
 
               return ReactComponent ? (
+                // @ts-ignore
                 <ReactComponent key={getConf(track, 'trackId')} model={track} />
               ) : null
             })}
