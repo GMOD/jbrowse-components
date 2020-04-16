@@ -103,7 +103,7 @@ export default class extends BoxRendererType {
     const w = Math.max(minFeatWidth, pxPerBp)
 
     const sortedFeatures =
-      sortObject.by && region.start === sortObject.position // TODOSORT: reduces # of sort calls, not sure if necessary
+      sortObject && sortObject.by && region.start === sortObject.position
         ? sortFeature(features, sortObject, bpPerPx, region)
         : null
 

@@ -84,6 +84,7 @@ function AlignmentsTrackComponent(props) {
         }
         style={{ zIndex }}
         menuOptions={model.menuOptions}
+        data-testid="alignments_context_menu"
       />
     </div>
   )

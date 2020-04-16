@@ -138,6 +138,17 @@ describe('valid file tests', () => {
   // TODO: write a right click integration test
   // TODO: write a centerline integration test
   // TODO: write a sorting test
+  it('right click menu opens', async () => {
+    const state = JBrowseRootModel.create({ jbrowse: config })
+    const { findByTestId } = render(<JBrowse initialState={state} />)
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+    const track = await findByTestId('track-volvox_alignments')
+
+    const rightClick = { button: 2 }
+    fireEvent.click(track, rightClick)
+
+    expect(await findByTestId('alignments_context_menu')).toBeTruthy()
+  }, 10000)
 
   it('click and drag to reorder tracks', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
