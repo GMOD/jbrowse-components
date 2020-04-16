@@ -7,7 +7,7 @@ export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useState, useRef } = React
+  const { useEffect, useCallback, useState, useRef } = React
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { makeStyles: jbMakeStyles } = jbrequire('@material-ui/core/styles')
@@ -221,8 +221,7 @@ export default (pluginManager: any) => {
         {hview.dynamicBlocks.blocks
           .filter(region => region.refName)
           .map(region => {
-            const x = region.offsetPx + region.widthPx
-            console.log(x)
+            const x = region.offsetPx - l + region.widthPx
             return (
               <line
                 key={JSON.stringify(region)}
@@ -326,7 +325,6 @@ export default (pluginManager: any) => {
 
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const highlightOverlayCanvas = useRef()
     const [down, setDown] = useState()
     const [current, setCurrent] = useState([0, 0])
 
@@ -339,6 +337,24 @@ export default (pluginManager: any) => {
       width,
       height,
     } = model
+    const wheel = useCallback(
+      (event: WheelEvent) => {
+        const { deltaY } = event
+        const { offsetX, offsetY } = event
+        const factor = 1 + deltaY / 500
+        model.vview.zoomTo(model.vview.bpPerPx * factor, offsetY)
+        model.hview.zoomTo(model.hview.bpPerPx * factor, offsetX)
+        event.preventDefault()
+      },
+      [model.hview, model.vview],
+    )
+
+    useEffect(() => {
+      window.addEventListener('wheel', wheel, { passive: false })
+      return () => {
+        window.removeEventListener('wheel', wheel)
+      }
+    }, [wheel])
 
     if (!initialized && !loading) {
       return <ImportForm model={model} />
@@ -360,7 +376,6 @@ export default (pluginManager: any) => {
             className={classes.content}
             width={width}
             height={height}
-            ref={highlightOverlayCanvas}
             onMouseDown={event => {
               setDown([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
               setCurrent([event.nativeEvent.offsetX, event.nativeEvent.offsetY])

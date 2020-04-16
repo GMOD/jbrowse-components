@@ -130,15 +130,13 @@ export default function stateModelFactory(pluginManager: any) {
       zoomOutButton() {
         this.zoomTo(self.bpPerPx * 1.4)
       },
-      zoomTo(newBpPerPx: number) {
+      zoomTo(newBpPerPx: number, offset: number = self.width / 2) {
         const bpPerPx = newBpPerPx
         if (bpPerPx === self.bpPerPx) return
         const oldBpPerPx = self.bpPerPx
         self.bpPerPx = bpPerPx
-        const viewWidth = self.width
         self.offsetPx = Math.round(
-          ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
-            viewWidth / 2,
+          ((self.offsetPx + offset) * oldBpPerPx) / bpPerPx - offset,
         )
       },
       moveTo(start: BpOffset, end: BpOffset) {
