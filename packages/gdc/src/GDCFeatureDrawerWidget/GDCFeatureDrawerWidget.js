@@ -164,7 +164,7 @@ Consequence.propTypes = {
  */
 const ExternalLink = observer(props => {
   const classes = useStyles()
-  const { id, name, link } = props.props
+  const { id, name, link } = props
   return (
     <>
       <TableRow key={`${id}-${name}`}>
@@ -238,7 +238,7 @@ function GeneExternalLinks(props) {
         <Table className={classes.table}>
           <TableBody>
             {externalLinkArray.map((externalLink, key) => (
-              <ExternalLink props={externalLink} key={key}></ExternalLink>
+              <ExternalLink {...externalLink} key={key}></ExternalLink>
             ))}
           </TableBody>
         </Table>
@@ -266,6 +266,7 @@ function removeCosmicPrefix(cosmicId) {
  */
 const CosmicLinks = observer(props => {
   const classes = useStyles()
+  const { cosmicId } = props
   return (
     <>
       <TableRow key="0">
@@ -273,8 +274,8 @@ const CosmicLinks = observer(props => {
           Cosmic
         </TableCell>
         <TableCell component="th" scope="row">
-          {props.props &&
-            props.props.map(value => (
+          {cosmicId &&
+            cosmicId.map(value => (
               <Link
                 className={classes.link}
                 target="_blank"
@@ -315,10 +316,10 @@ function SSMExternalLinks(props) {
         <Table className={classes.table}>
           <TableBody>
             {externalLinkArray.map((externalLink, key) => (
-              <ExternalLink props={externalLink} key={key}></ExternalLink>
+              <ExternalLink {...externalLink} key={key}></ExternalLink>
             ))}
             {feature.cosmicId && (
-              <CosmicLinks props={feature.cosmicId}></CosmicLinks>
+              <CosmicLinks cosmicId={feature.cosmicId}></CosmicLinks>
             )}
           </TableBody>
         </Table>
@@ -488,16 +489,16 @@ function GeneProject(props) {
   const { projectId, docCount, allProjects, cases } = props
 
   const projectInfo = allProjects.find(x => x.node.project_id === projectId)
-  const totalProject = cases.total.project__project_id.buckets.find(
+  const totalProjectCaseCount = cases.total.project__project_id.buckets.find(
     x => x.projectId === projectId,
   )
-  const cnvGain = cases.gain.project__project_id.buckets.find(
+  const cnvGainCaseCount = cases.gain.project__project_id.buckets.find(
     x => x.projectId === projectId,
   )
-  const cnvLoss = cases.loss.project__project_id.buckets.find(
+  const cnvLossCaseCount = cases.loss.project__project_id.buckets.find(
     x => x.projectId === projectId,
   )
-  const cnvTotal = cases.cnvTotal.project__project_id.buckets.find(
+  const cnvTotalCaseCount = cases.cnvTotal.project__project_id.buckets.find(
     x => x.projectId === projectId,
   )
 
@@ -521,13 +522,15 @@ function GeneProject(props) {
           {projectInfo.node.primary_site.join(', ')}
         </TableCell>
         <TableCell component="th" scope="row">
-          {docCount} / {totalProject.docCount}
+          {docCount} / {totalProjectCaseCount.docCount}
         </TableCell>
         <TableCell component="th" scope="row">
-          {cnvGain ? cnvGain.docCount : '0'} / {cnvTotal.docCount}
+          {cnvGainCaseCount ? cnvGainCaseCount.docCount : '0'} /{' '}
+          {cnvTotalCaseCount.docCount}
         </TableCell>
         <TableCell component="th" scope="row">
-          {cnvLoss ? cnvLoss.docCount : '0'} / {cnvTotal.docCount}
+          {cnvLossCaseCount ? cnvLossCaseCount.docCount : '0'} /{' '}
+          {cnvTotalCaseCount.docCount}
         </TableCell>
       </TableRow>
     </>
@@ -700,7 +703,7 @@ function GDCFeatureDetails(props) {
   const classes = useStyles()
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
-  /* eslint-disable @typescript-eslint/no-unused-vars*/
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const {
     consequence,
     geneId,
@@ -710,15 +713,15 @@ function GDCFeatureDetails(props) {
     externalDbIds,
     ...rest
   } = feat
-  /* eslint-disable @typescript-eslint/no-unused-vars*/
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   return (
     <Paper className={classes.root} data-testid="variant-side-drawer">
       <BaseFeatureDetail feature={rest} {...props} />
       <Divider />
-      {feat.geneId && <GeneExternalLinks feature={feat} {...props} />}
-      {feat.ssmId && <SSMExternalLinks feature={feat} {...props} />}
+      {feat.geneId && <GeneExternalLinks feature={feat} />}
+      {feat.ssmId && <SSMExternalLinks feature={feat} />}
       <Divider />
-      {feat.ssmId && <Consequence feature={feat} {...props} />}
+      {feat.ssmId && <Consequence feature={feat} />}
       <Divider />
       {feat.geneId && <GeneProjects featureId={feat.geneId} />}
       {feat.ssmId && <SSMProjects featureId={feat.ssmId} />}
