@@ -221,7 +221,8 @@ export default (pluginManager: any) => {
         {hview.dynamicBlocks.blocks
           .filter(region => region.refName)
           .map(region => {
-            const x = region.offsetPx - l + region.widthPx
+            const x = region.offsetPx + region.widthPx
+            console.log(x)
             return (
               <line
                 key={JSON.stringify(region)}
@@ -387,13 +388,11 @@ export default (pluginManager: any) => {
 
                 const y1 = model.vview.pxToBp(py1)
                 const y2 = model.vview.pxToBp(py2)
+                console.log(x1, y1, '_', x2, y2)
                 model.hview.moveTo(x1, x2)
                 model.vview.moveTo(y1, y2)
                 setDown(undefined)
               }
-            }}
-            onMouseLeave={event => {
-              setDown(undefined)
             }}
             onMouseMove={event => {
               setCurrent([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
