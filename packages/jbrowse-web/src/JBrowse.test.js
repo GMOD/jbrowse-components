@@ -62,26 +62,26 @@ const readBuffer = async (url, args) => {
   try {
     const file = getFile(url)
     const maxRangeRequest = 1000000 // kind of arbitrary, part of the rangeParser
-    if (args.headers.range) {
+    if (args.headers && 'range' in args.headers) {
       const range = rangeParser(maxRangeRequest, args.headers.range)
+      if (range === -2 || range === -1) {
+        throw new Error(`Error parsing range "${args.headers.range}"`)
+      }
       const { start, end } = range[0]
       const len = end - start + 1
       const buf = Buffer.alloc(len)
       const { bytesRead } = await file.read(buf, 0, len, start)
       const stat = await file.stat()
-      return {
+      return new Response(buf.slice(0, bytesRead), {
         status: 206,
-        buffer: () => buf.slice(0, bytesRead),
-        arrayBuffer: () => buf.slice(0, bytesRead),
-        text: () => buf.slice(0, bytesRead),
-        headers: new Map([['content-range', `${start}-${end}/${stat.size}`]]),
-      }
+        headers: [['content-range', `${start}-${end}/${stat.size}`]],
+      })
     }
     const body = await file.readFile()
-    return { status: 200, text: () => body.toString(), buffer: () => body }
+    return new Response(body, { status: 200 })
   } catch (e) {
     console.error(e)
-    return { status: 404, buffer: () => {} }
+    return new Response(undefined, { status: 404 })
   }
 }
 
@@ -100,26 +100,6 @@ describe('<JBrowse />', () => {
     const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
     expect(await findByText('Help')).toBeTruthy()
   })
-
-  // it('can use config from a url', async () => {
-  //   const { findByText } = render(
-  //     <JBrowse config={{ uri: 'test_data/config_integration_test.json' }} />,
-  //   )
-  //   expect(await findByText('Help')).toBeTruthy()
-  // })
-
-  // it('can use config from a local file', async () => {
-  //   const { findByText } = render(
-  //     <JBrowse
-  //       config={{
-  //         localPath: require.resolve(
-  //           '../test_data/config_integration_test.json',
-  //         ),
-  //       }}
-  //     />,
-  //   )
-  //   expect(await findByText('Help')).toBeTruthy()
-  // })
 })
 
 describe('valid file tests', () => {
@@ -510,32 +490,6 @@ describe('breakpoint split view', () => {
     expect(await findByTestId('pacbio_vcf-loaded')).toMatchSnapshot()
   }, 10000)
 })
-
-// describe('Fatal error', () => {
-//   it('occurs when given an invalid snapshot', () => {
-//     const pluginManager = getPluginManager()
-//     const { findByTestId, queryAllByTestId } = render(
-//       <JBrowse pluginManager={pluginManager} />,
-//     )
-//     const { getByText } = render(
-//       <JBrowse configSnapshot={{ configuration: [] }} />,
-//     )
-//     expect(getByText('Fatal error')).toBeTruthy()
-//   })
-//   it('occurs when multiple assemblies have the same name', async () => {
-//     const newConfig = JSON.parse(JSON.stringify(config))
-//     newConfig.assemblies.push({
-//       name: 'volvox',
-//       aliases: [],
-//     })
-//     const { findByText } = render(<JBrowse configSnapshot={newConfig} />)
-//     expect(
-//       await findByText('Found two assemblies with the same name: volvox', {
-//         exact: false,
-//       }),
-//     ).toBeTruthy()
-//   })
-// })
 
 test('404 sequence file', async () => {
   console.error = jest.fn()
