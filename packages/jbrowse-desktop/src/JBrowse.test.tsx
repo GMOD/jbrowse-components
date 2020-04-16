@@ -2,9 +2,7 @@
 
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import fs from 'fs'
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { ipcMain, ipcRenderer } from 'electron'
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { render, waitForElement } from '@testing-library/react'
 import { SnapshotIn } from 'mobx-state-tree'
 import React from 'react'

@@ -97,7 +97,8 @@
   "overrides": [
     {
       "files": [
-        "**/*.test.[t,j]s"
+        "**/*.test.[t,j]s",
+        "**/*.test.[t,j]sx"
       ],
       "env": {
         "jest": true
