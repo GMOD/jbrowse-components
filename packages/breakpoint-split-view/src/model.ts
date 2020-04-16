@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MenuOptions } from '@gmod/jbrowse-core/ui'
+import { MenuOption } from '@gmod/jbrowse-core/ui'
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { types, Instance } from 'mobx-state-tree'
@@ -64,8 +64,8 @@ export default function stateModelFactory(pluginManager: any) {
         return intersection(...viewTracks)
       },
 
-      get menuOptions(): MenuOptions[] {
-        const menuOptions: MenuOptions[] = []
+      get menuOptions(): MenuOption[] {
+        const menuOptions: MenuOption[] = []
         self.views.forEach((view, idx) => {
           if (view.menuOptions) {
             menuOptions.push({
