@@ -713,7 +713,7 @@ function GDCFeatureDetails(props) {
     externalDbIds,
     ...rest
   } = feat
-  /* eslint-disable @typescript-eslint/no-unused-vars */
+  /* eslint-enable @typescript-eslint/no-unused-vars */
   return (
     <Paper className={classes.root} data-testid="variant-side-drawer">
       <BaseFeatureDetail feature={rest} {...props} />
