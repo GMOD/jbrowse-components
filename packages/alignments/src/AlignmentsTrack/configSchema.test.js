@@ -69,7 +69,9 @@ test('has a viewType attr', () => {
       new PileupRendererPlugin(),
       new SvgFeatureRendererPlugin(),
       new SNPCoverageRendererPlugin(),
-    ]).configure(),
+    ])
+      .createPluggableElements()
+      .configure(),
   )
   const config = configSchema.create({
     type: 'AlignmentsTrack',

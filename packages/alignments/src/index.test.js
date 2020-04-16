@@ -1,6 +1,7 @@
-import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import SVG from '@gmod/jbrowse-plugin-svg'
 import { getSnapshot, types } from 'mobx-state-tree'
-import MyPlugin from '.'
+import ThisPlugin from '.'
 
 const createMockTrackStateModel = (track, trackTwo, trackThree) =>
   types
@@ -54,14 +55,19 @@ const createMockTrack = (track, pileup, snpcoverage) =>
   })
 
 test('create bam adapter config', () => {
-  const { pluginManager } = createTestSession()
+  const pluginManager = new PluginManager([new ThisPlugin(), new SVG()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+
   const BamAdapter = pluginManager.getAdapterType('BamAdapter')
   const config = BamAdapter.configSchema.create({ type: 'BamAdapter' })
   expect(getSnapshot(config)).toMatchSnapshot()
 })
 
 test('create track config', async () => {
-  const { pluginManager } = createTestSession()
+  const pluginManager = new PluginManager([new ThisPlugin(), new SVG()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
 
   const AlignmentsTrack = pluginManager.getTrackType('AlignmentsTrack')
   const config2 = AlignmentsTrack.configSchema.create({
@@ -72,8 +78,9 @@ test('create track config', async () => {
 })
 
 test('has pileup and alignment tracks', async () => {
-  const session = createTestSession()
-  const { pluginManager } = session
+  const pluginManager = new PluginManager([new ThisPlugin(), new SVG()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
 
   const sessionModel = createMockTrack(
     pluginManager.getTrackType('AlignmentsTrack'),
@@ -86,8 +93,9 @@ test('has pileup and alignment tracks', async () => {
 })
 
 test('test selection in alignments track model with mock session', async () => {
-  const session = createTestSession()
-  const { pluginManager } = session
+  const pluginManager = new PluginManager([new ThisPlugin(), new SVG()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
 
   const sessionModel = createMockTrack(
     pluginManager.getTrackType('AlignmentsTrack'),
@@ -107,8 +115,10 @@ test('test selection in alignments track model with mock session', async () => {
 })
 
 test('plugin in a stock JBrowse', () => {
-  const { pluginManager } = createTestSession()
-  expect(() => pluginManager.addPlugin(new MyPlugin())).toThrow(
+  const pluginManager = new PluginManager([new ThisPlugin(), new SVG()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  expect(() => pluginManager.addPlugin(new ThisPlugin())).toThrow(
     /JBrowse already configured, cannot add plugins/,
   )
 

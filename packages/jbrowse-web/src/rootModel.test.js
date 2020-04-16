@@ -1,7 +1,18 @@
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { getSnapshot } from 'mobx-state-tree'
-import rootModel from './rootModel'
+import corePlugins from './corePlugins'
+import rootModelFactory from './rootModel'
 
 describe('Root MST model', () => {
+  let rootModel
+
+  beforeAll(() => {
+    const pluginManager = new PluginManager(corePlugins.map(P => new P()))
+    pluginManager.createPluggableElements()
+    pluginManager.configure()
+    rootModel = rootModelFactory(pluginManager)
+  })
+
   it('creates with defaults', () => {
     const root = rootModel.create({
       jbrowse: {

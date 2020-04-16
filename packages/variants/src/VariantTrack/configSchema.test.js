@@ -51,7 +51,9 @@ test('has a viewType attr', () => {
     new PluginManager([
       new PileupRendererPlugin(),
       new SvgFeatureRendererPlugin(),
-    ]).configure(),
+    ])
+      .createPluggableElements()
+      .configure(),
   )
   const config = configSchema.create({
     type: 'VariantTrack',

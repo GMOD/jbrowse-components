@@ -204,15 +204,23 @@ export default class PluginManager {
       .filter(m => !!m)
   }
 
-  configure() {
-    if (this.configured) throw new Error('already configured')
-
+  createPluggableElements() {
     // run the creation callbacks for each element type in order.
     // see elementCreationSchedule above for the creation order
     this.elementCreationSchedule.run()
     delete this.elementCreationSchedule
 
-    this.plugins.forEach(plugin => plugin.configure())
+    return this
+  }
+
+  setRootModel(rootModel) {
+    this.rootModel = rootModel
+  }
+
+  configure() {
+    if (this.configured) throw new Error('already configured')
+
+    this.plugins.forEach(plugin => plugin.configure(this))
 
     this.configured = true
 
