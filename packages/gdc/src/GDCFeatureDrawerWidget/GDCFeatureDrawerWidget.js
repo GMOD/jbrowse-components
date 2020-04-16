@@ -294,6 +294,10 @@ const CosmicLinks = observer(props => {
   )
 })
 
+CosmicLinks.propTypes = {
+  cosmicId: PropTypes.array.isRequired,
+}
+
 /**
  * Create a section for external mutation links
  * @param {*} props
