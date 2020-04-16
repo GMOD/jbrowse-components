@@ -30,7 +30,7 @@ interface BpOffset {
 }
 
 interface ViewActions {
-  [key: string]: MenuOptions[]
+  [key: string]: MenuOption[]
 }
 const validBpPerPx = [
   1 / 50,
@@ -262,8 +262,8 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       // modifies view menu action onClick to apply to all tracks of same type
-      rewriteOnClicks(trackType: string, viewMenuActions: MenuOptions[]) {
-        viewMenuActions.forEach((action: MenuOptions) => {
+      rewriteOnClicks(trackType: string, viewMenuActions: MenuOption[]) {
+        viewMenuActions.forEach((action: MenuOption) => {
           // go to lowest level menu
           if ('subMenu' in action)
             this.rewriteOnClicks(trackType, action.subMenu)
@@ -282,7 +282,7 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       get trackTypeActions() {
-        const allActions: Map<string, MenuOptions[]> = new Map()
+        const allActions: Map<string, MenuOption[]> = new Map()
         self.tracks.forEach((track: any) => {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
@@ -661,7 +661,7 @@ export function stateModelFactory(pluginManager: any) {
       return {
         get menuOptions(): MenuOption[] {
           const session: any = getSession(self)
-          const menuOptions: MenuOptions[] = [
+          const menuOptions: MenuOption[] = [
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,

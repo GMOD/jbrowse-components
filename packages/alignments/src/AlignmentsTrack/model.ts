@@ -4,7 +4,7 @@ import {
 } from '@gmod/jbrowse-core/configuration'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { MenuOptions } from '@gmod/jbrowse-core/ui'
+import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { types, getSnapshot, addDisposer } from 'mobx-state-tree'
 import { autorun } from 'mobx'
@@ -67,7 +67,7 @@ export default (pluginManager: any, configSchema: any) => {
       get sortOptions() {
         return ['Start Location', 'Read Strand', 'Base Pair', 'Clear Sort']
       },
-      get menuOptions(): MenuOptions[] {
+      get menuOptions(): MenuOption[] {
         return [
           {
             label: self.showCoverage
@@ -86,7 +86,7 @@ export default (pluginManager: any, configSchema: any) => {
         ]
       },
 
-      get viewMenuActions(): MenuOptions[] {
+      get viewMenuActions(): MenuOption[] {
         return [
           {
             label: 'Sort by',
