@@ -340,7 +340,9 @@ export default (pluginManager: any) => {
 
     const setRef = useCallback(
       (currRef: SVGElement) => {
-        currRef.addEventListener('wheel', wheel, { passive: false })
+        if (currRef) {
+          currRef.addEventListener('wheel', wheel, { passive: false })
+        }
       },
       [wheel],
     )

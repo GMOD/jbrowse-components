@@ -217,20 +217,24 @@ export default function stateModelFactory(pluginManager: any) {
       displayName: 'dotplot',
       trackSelectorType: 'hierarchical',
       assemblyNames: types.array(types.string),
-      hview: DotplotViewDirection.extend(self => ({
-        views: {
-          get width() {
-            return getParent(self).viewWidth
+      hview: types.maybe(
+        DotplotViewDirection.extend(self => ({
+          views: {
+            get width() {
+              return getParent(self).viewWidth
+            },
           },
-        },
-      })),
-      vview: DotplotViewDirection.extend(self => ({
-        views: {
-          get width() {
-            return getParent(self).viewHeight
+        })),
+      ),
+      vview: types.maybe(
+        DotplotViewDirection.extend(self => ({
+          views: {
+            get width() {
+              return getParent(self).viewHeight
+            },
           },
-        },
-      })),
+        })),
+      ),
       tracks: types.array(
         pluginManager.pluggableMstType(
           'track',
@@ -247,7 +251,9 @@ export default function stateModelFactory(pluginManager: any) {
     .views(self => ({
       get initialized() {
         return (
+          self.hview &&
           self.hview.displayedRegions.length > 0 &&
+          self.vview &&
           self.vview.displayedRegions.length > 0
         )
       },
@@ -306,18 +312,22 @@ export default function stateModelFactory(pluginManager: any) {
           autorun(async () => {
             const padding = 4
             // these are set via autorun to avoid dependency cycle
-            this.setBorderY(
-              self.hview.dynamicBlocks.blocks.reduce(
-                (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
-                0,
-              ) + padding,
-            )
-            this.setBorderX(
-              self.vview.dynamicBlocks.blocks.reduce(
-                (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
-                0,
-              ) + padding,
-            )
+            if (self.hview) {
+              this.setBorderY(
+                self.hview.dynamicBlocks.blocks.reduce(
+                  (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
+                  0,
+                ) + padding,
+              )
+            }
+            if (self.vview) {
+              this.setBorderX(
+                self.vview.dynamicBlocks.blocks.reduce(
+                  (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
+                  0,
+                ) + padding,
+              )
+            }
           }),
         )
       },
