@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getSession } from '@gmod/jbrowse-core/util'
+import { getSession, clamp } from '@gmod/jbrowse-core/util'
 import { Region, IRegion } from '@gmod/jbrowse-core/mst-types'
 
 import { types, Instance } from 'mobx-state-tree'
@@ -54,6 +54,22 @@ export default function stateModelFactory(pluginManager: any) {
       get width() {
         /* this is replaced by usage of this model */
         return 0
+      },
+
+      get displayedRegionsTotalPx() {
+        return this.totalBp / self.bpPerPx
+      },
+
+      get maxOffset() {
+        // objectively determined to keep the linear genome on the main screen
+        const leftPadding = 10
+        return this.displayedRegionsTotalPx - leftPadding
+      },
+
+      get minOffset() {
+        // objectively determined to keep the linear genome on the main screen
+        const rightPadding = 30
+        return -this.width + rightPadding
       },
       get dynamicBlocks() {
         return calculateDynamicBlocks(cast(self))
@@ -138,6 +154,17 @@ export default function stateModelFactory(pluginManager: any) {
         self.offsetPx = Math.round(
           ((self.offsetPx + offset) * oldBpPerPx) / bpPerPx - offset,
         )
+      },
+      horizontalScroll(distance: number) {
+        const oldOffsetPx = self.offsetPx
+        // the scroll is clamped to keep the linear genome on the main screen
+        const newOffsetPx = clamp(
+          self.offsetPx + distance,
+          self.minOffset,
+          self.maxOffset,
+        )
+        self.offsetPx = newOffsetPx
+        return newOffsetPx - oldOffsetPx
       },
       moveTo(start: BpOffset, end: BpOffset) {
         // find locations in the modellist

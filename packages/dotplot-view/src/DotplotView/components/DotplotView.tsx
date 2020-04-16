@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { makeStyles } from '@material-ui/core/styles'
+import { useRef as reactUseRef } from 'react'
 
 import { DotplotViewModel } from '../model'
 
@@ -7,7 +8,7 @@ export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useEffect, useCallback, useState, useRef } = React
+  const { useRef, useEffect, useCallback, useState } = React
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { makeStyles: jbMakeStyles } = jbrequire('@material-ui/core/styles')
@@ -233,7 +234,6 @@ export default (pluginManager: any) => {
               />
             )
           })}
-        <line x1={0} y1={viewHeight} x2={0} height={0} stroke="#000000" />
         {vview.dynamicBlocks.blocks
           .filter(region => region.refName)
           .map(region => {
@@ -249,13 +249,6 @@ export default (pluginManager: any) => {
               />
             )
           })}
-        <line
-          x1={0}
-          y1={viewHeight}
-          x2={viewWidth}
-          y2={viewHeight}
-          stroke="#000000"
-        />
       </g>
     )
   })
@@ -325,18 +318,13 @@ export default (pluginManager: any) => {
 
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const [down, setDown] = useState()
-    const [current, setCurrent] = useState([0, 0])
+    const prevX = (useRef as typeof reactUseRef)<number | null>(null)
+    const prevY = (useRef as typeof reactUseRef)<number | null>(null)
+    const scheduled = (useRef as typeof reactUseRef)(false)
+    const [mouseDragging, setMouseDragging] = useState(false)
 
-    const {
-      viewHeight,
-      borderX,
-      borderSize,
-      initialized,
-      loading,
-      width,
-      height,
-    } = model
+    const { initialized, loading, width, height } = model
+
     const wheel = useCallback(
       (event: WheelEvent) => {
         const { deltaY } = event
@@ -349,12 +337,54 @@ export default (pluginManager: any) => {
       [model.hview, model.vview],
     )
 
+    const setRef = useCallback(
+      (currRef: SVGElement) => {
+        currRef.addEventListener('wheel', wheel, { passive: false })
+      },
+      [wheel],
+    )
+
     useEffect(() => {
-      window.addEventListener('wheel', wheel, { passive: false })
-      return () => {
-        window.removeEventListener('wheel', wheel)
+      let cleanup = () => {}
+
+      function globalMouseMove(event: MouseEvent) {
+        event.preventDefault()
+        const xdistance =
+          prevX.current !== null ? event.clientX - prevX.current : event.clientX
+        const ydistance =
+          prevY.current !== null ? event.clientY - prevY.current : event.clientY
+        // use rAF to make it so multiple event handlers aren't fired per-frame
+        // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
+        if (!scheduled.current) {
+          scheduled.current = true
+          window.requestAnimationFrame(() => {
+            model.hview.horizontalScroll(-xdistance)
+            model.vview.horizontalScroll(ydistance)
+            scheduled.current = false
+            prevX.current = event.clientX
+            prevY.current = event.clientY
+          })
+        }
       }
-    }, [wheel])
+
+      function globalMouseUp() {
+        prevX.current = null
+        prevY.current = null
+        if (mouseDragging) {
+          setMouseDragging(false)
+        }
+      }
+
+      if (mouseDragging) {
+        window.addEventListener('mousemove', globalMouseMove, true)
+        window.addEventListener('mouseup', globalMouseUp, true)
+        cleanup = () => {
+          window.removeEventListener('mousemove', globalMouseMove, true)
+          window.removeEventListener('mouseup', globalMouseUp, true)
+        }
+      }
+      return cleanup
+    }, [model, mouseDragging, prevX, prevY, scheduled])
 
     if (!initialized && !loading) {
       return <ImportForm model={model} />
@@ -376,54 +406,17 @@ export default (pluginManager: any) => {
             className={classes.content}
             width={width}
             height={height}
+            ref={setRef}
             onMouseDown={event => {
-              setDown([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
-              setCurrent([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
-              event.preventDefault()
-            }}
-            onMouseUp={event => {
-              if (down) {
-                const curr = [
-                  event.nativeEvent.offsetX,
-                  event.nativeEvent.offsetY,
-                ]
-                const start = down
-                let px1 = curr[0] - borderX
-                let px2 = start[0] - borderX
-                if (px1 > px2) {
-                  ;[px2, px1] = [px1, px2]
-                }
-                let py1 = viewHeight - (curr[1] - borderSize)
-                let py2 = viewHeight - (start[1] - borderSize)
-                if (py1 > py2) {
-                  ;[py2, py1] = [py1, py2]
-                }
-                const x1 = model.hview.pxToBp(px1)
-                const x2 = model.hview.pxToBp(px2)
-
-                const y1 = model.vview.pxToBp(py1)
-                const y2 = model.vview.pxToBp(py2)
-                console.log(x1, y1, '_', x2, y2)
-                model.hview.moveTo(x1, x2)
-                model.vview.moveTo(y1, y2)
-                setDown(undefined)
+              if (event.button === 0) {
+                prevX.current = event.clientX
+                prevY.current = event.clientY
+                setMouseDragging(true)
               }
-            }}
-            onMouseMove={event => {
-              setCurrent([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
             }}
           >
             <DrawLabels model={model} />
             <DrawGrid model={model} />
-            {down ? (
-              <rect
-                fill="rgba(255,0,0,0.3)"
-                x={Math.min(current[0], down[0])}
-                y={Math.min(current[1], down[1])}
-                width={Math.abs(current[0] - down[0])}
-                height={Math.abs(current[1] - down[1])}
-              />
-            ) : null}
           </svg>
 
           <div className={classes.overlay}>
