@@ -72,7 +72,8 @@ function CenterLine({ model }: { model: LGV }) {
           }}
         >
           {/* change bp to refName */}
-          {centerLineInfo.refName}: {Math.max(Math.round(centerLineInfo.offset) + 1, 0)}
+          {centerLineInfo.refName}:{' '}
+          {Math.max(Math.round(centerLineInfo.offset) + 1, 0)}
           {activeSortedTrack && (
             <div className={classes.sortText}>
               Sort: {activeSortedTrack.sortedBy.toUpperCase()} at{' '}

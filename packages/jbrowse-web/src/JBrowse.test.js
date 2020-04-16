@@ -6,6 +6,7 @@ import {
   render,
   wait,
   within,
+  waitForElement,
 } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 import React from 'react'
@@ -135,21 +136,6 @@ describe('valid file tests', () => {
     expect(state.session.views[0].bpPerPx).toEqual(0.02)
   })
 
-  // TODO: write a right click integration test
-  // TODO: write a centerline integration test
-  // TODO: write a sorting test
-  it('right click menu opens', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findByTestId } = render(<JBrowse initialState={state} />)
-    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
-    const track = await findByTestId('track-volvox_alignments')
-
-    const rightClick = { button: 2 }
-    fireEvent.click(track, rightClick)
-
-    expect(await findByTestId('alignments_context_menu')).toBeTruthy()
-  }, 10000)
-
   it('click and drag to reorder tracks', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { findByTestId } = render(<JBrowse initialState={state} />)
@@ -208,6 +194,25 @@ describe('valid file tests', () => {
     state.session.views[0].setNewView(20, 0)
     await findByTestId('track-volvox_refseq')
     expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
+  })
+
+  it('click to display center line with correct value', async () => {
+    const state = JBrowseRootModel.create({ jbrowse: config })
+    const { findByTestId, getByText } = render(<JBrowse initialState={state} />)
+
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+    await findByTestId('track-volvox_alignments')
+
+    // opens the view menu and selects show center line
+    const viewMenu = await findByTestId('view_menu')
+    fireEvent.click(viewMenu)
+    await waitForElement(() => getByText('Show center line'))
+    fireEvent.click(getByText('Show center line'))
+    expect(state.session.views[0].showCenterLine).toBe(true)
+
+    const { centerLineInfo } = state.session.views[0]
+    expect(centerLineInfo.refName).toBe('ctgA')
+    expect(centerLineInfo.offset).toEqual(120)
   })
 })
 
@@ -388,7 +393,59 @@ describe('alignments track', () => {
       failureThresholdType: 'percent',
     })
   }, 10000)
-})
+
+  it('access alignments context menu', async () => {
+    const state = JBrowseRootModel.create({ jbrowse: config })
+    const { findByTestId } = render(<JBrowse initialState={state} />)
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+    const track = await findByTestId('track-volvox_alignments')
+
+    fireEvent.contextMenu(track, { clientX: 250, clientY: 20 })
+
+    expect(await findByTestId('alignments_context_menu')).toBeTruthy()
+  })
+
+  // TODO: write a sorting test
+  it('selects a sort, updates object and layout', async () => {
+    jest.setTimeout(10000)
+    const state = JBrowseRootModel.create({ jbrowse: config })
+    const { findByTestId, findByText, getByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(5, 100)
+
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+    await findByTestId('track-volvox_alignments')
+    expect(state.session.views[0].tracks[0]).toBeTruthy()
+    const alignmentsTrack = state.session.views[0].tracks[0]
+
+    const viewMenu = await findByTestId('view_menu')
+    fireEvent.click(viewMenu)
+
+    await waitForElement(() => getByText('Sort by'))
+    fireEvent.click(getByText('Sort by'))
+
+    await waitForElement(() => getByText('Read strand'))
+    fireEvent.click(getByText('Read strand'))
+
+    // setTimeout(() => {
+    //   expect(alignmentsTrack.sortedBy).toBe('Read strand')
+    // }, 5000)
+
+    const { findAllByTestId: findAllByTestId1 } = within(
+      await findByTestId('Blockset-pileup'),
+    )
+    const pileupCanvas = await findAllByTestId1('prerendered_canvas')
+    const pileupImg = pileupCanvas[0].toDataURL()
+    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
+    const pileupBuf = Buffer.from(pileupData, 'base64')
+    expect(pileupBuf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
+  })
+}, 10000)
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
