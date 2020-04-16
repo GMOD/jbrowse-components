@@ -151,7 +151,7 @@ export default types
               name: 'New dotplot view',
               icon: 'timeline',
               callback:
-                "function(session) { session.addView('DotplotView', {})}",
+                "function(session) { session.addView('DotplotView', { hview: {}, vview: {}})}",
             },
             {
               name: 'Open new track',
