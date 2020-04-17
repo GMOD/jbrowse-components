@@ -54,7 +54,8 @@ describe('GDCTrack drawer widget', () => {
         ncbiBuild: 'GRCh38',
         referenceAllele: 'G',
         score: 3,
-        ssmId: '0208efeb-f1e8-57e4-8447-299c5f050380',
+        // Prevent from trying project fetch
+        // ssmId: '0208efeb-f1e8-57e4-8447-299c5f050380',
         startPosition: 377918,
       },
     })
@@ -84,7 +85,8 @@ describe('GDCTrack drawer widget', () => {
         },
         geneChromosome: '3',
         geneEnd: 409417,
-        geneId: 'ENSG00000134121',
+        // Prevent from trying project fetch
+        // geneId: 'ENSG00000134121',
         geneStart: 196596,
         geneStrand: 1,
         id:

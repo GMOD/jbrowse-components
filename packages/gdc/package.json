@@ -4,7 +4,7 @@
   "description": "JBrowse 2 GDC plugin",
   "main": "src/index.js",
   "scripts": {
-    "test": "cd ../..; jest packages/filtering"
+    "test": "cd ../..; jest packages/gdc"
   },
   "author": "Andrew Duncan",
   "license": "MIT",
