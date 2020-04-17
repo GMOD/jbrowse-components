@@ -4,9 +4,8 @@ import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configura
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 import jsonStableStringify from 'json-stable-stringify'
-import { autorun } from 'mobx'
+import { observable } from 'mobx'
 import {
-  addDisposer,
   getMembers,
   getParent,
   getSnapshot,
@@ -26,15 +25,11 @@ declare interface ReferringNode {
 }
 
 export default function sessionModelFactory(pluginManager: any) {
-  const minWidth = 384
   const minDrawerWidth = 128
   return types
     .model('JBrowseWebSessionModel', {
       name: types.identifier,
-      width: types.optional(
-        types.refinement(types.integer, width => width >= minWidth),
-        1024,
-      ),
+      margin: 0,
       drawerWidth: types.optional(
         types.refinement(types.integer, width => width >= minDrawerWidth),
         384,
@@ -69,8 +64,6 @@ export default function sessionModelFactory(pluginManager: any) {
        * { taskName: "configure", target: thing_being_configured }
        */
       task: undefined,
-
-      snackbarMessage: undefined as string | undefined,
     }))
     .views(self => ({
       get rpcManager() {
@@ -102,13 +95,6 @@ export default function sessionModelFactory(pluginManager: any) {
       },
       get history() {
         return getParent(self).history
-      },
-      get viewsWidth() {
-        // TODO: when drawer is permanent, subtract its width
-        return self.width - (this.visibleDrawerWidget ? self.drawerWidth : 0)
-      },
-      get maxDrawerWidth() {
-        return self.width - 256
       },
 
       get visibleDrawerWidget() {
@@ -143,22 +129,6 @@ export default function sessionModelFactory(pluginManager: any) {
       },
     }))
     .actions(self => ({
-      afterCreate() {
-        // bind our views widths to our self.viewsWidth member
-        addDisposer(
-          self,
-          autorun(() => {
-            self.views.forEach(view => {
-              view.setWidth(self.viewsWidth)
-            })
-          }),
-        )
-      },
-
-      setSnackbarMessage(str: string | undefined) {
-        self.snackbarMessage = str
-      },
-
       getRegionsForAssemblyName(
         assemblyName: string,
         opts: { signal?: AbortSignal } = {},
@@ -269,21 +239,10 @@ export default function sessionModelFactory(pluginManager: any) {
         connectionInstances.remove(connection)
       },
 
-      updateWidth(width: number) {
-        let newWidth = Math.floor(width)
-        if (newWidth === self.width) return
-        if (newWidth < minWidth) newWidth = minWidth
-        self.width = newWidth
-        if (self.drawerWidth > self.maxDrawerWidth)
-          self.drawerWidth = self.maxDrawerWidth
-      },
-
       updateDrawerWidth(drawerWidth: number) {
         if (drawerWidth === self.drawerWidth) return self.drawerWidth
         let newDrawerWidth = drawerWidth
         if (newDrawerWidth < minDrawerWidth) newDrawerWidth = minDrawerWidth
-        if (newDrawerWidth > self.maxDrawerWidth)
-          newDrawerWidth = self.maxDrawerWidth
         self.drawerWidth = newDrawerWidth
         return newDrawerWidth
       },
@@ -459,6 +418,26 @@ export default function sessionModelFactory(pluginManager: any) {
         return getParent(self).setDefaultSession()
       },
     }))
+    .extend(() => {
+      const snackbarMessages = observable.array()
+
+      return {
+        views: {
+          get snackbarMessages() {
+            return snackbarMessages
+          },
+        },
+        actions: {
+          pushSnackbarMessage(message: string) {
+            return snackbarMessages.push(message)
+          },
+
+          popSnackbarMessage() {
+            return snackbarMessages.pop()
+          },
+        },
+      }
+    })
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

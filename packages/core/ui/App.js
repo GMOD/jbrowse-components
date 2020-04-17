@@ -1,15 +1,13 @@
 import { makeStyles } from '@material-ui/core/styles'
 
 import { observer, PropTypes } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
-import ReactPropTypes from 'prop-types'
-import React, { useEffect, useRef } from 'react'
-import { withContentRect } from 'react-measure'
+import React from 'react'
 
 import DrawerWidget from './DrawerWidget'
 import Snackbar from './Snackbar'
+import ViewContainer from './ViewContainer'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles({
   '@global': {
     html: {
       'font-family': 'Roboto',
@@ -30,66 +28,22 @@ const useStyles = makeStyles(theme => ({
     gridRow: 'menubars',
   },
   components: {
-    background: theme.palette.background.mainApp,
     overflowY: 'auto',
     gridRow: 'components',
   },
-  viewContainer: { marginTop: 8 },
-}))
+})
 
-function ViewContainer({ session, view }) {
-  const { pluginManager } = session
-  const classes = useStyles()
-  const viewType = pluginManager.getViewType(view.type)
-  if (!viewType) {
-    throw new Error(`unknown view type ${view.type}`)
-  }
-  const { ReactComponent } = viewType
-  const containerNodeRef = useRef()
-
-  // scroll the view into view when first mounted
-  // note that this effect will run only once, because of
-  // the empty array second param
-  useEffect(() => {
-    if (containerNodeRef.current.scrollIntoView)
-      containerNodeRef.current.scrollIntoView({ block: 'center' })
-  }, [])
-
-  return (
-    <div ref={containerNodeRef} className={classes.viewContainer}>
-      <ReactComponent
-        model={view}
-        session={session}
-        getTrackType={pluginManager.getTrackType}
-      />
-    </div>
-  )
-}
-
-ViewContainer.propTypes = {
-  session: PropTypes.observableObject.isRequired,
-  view: PropTypes.objectOrObservableObject.isRequired,
-}
-
-function App({ contentRect, measureRef, session }) {
+function App({ session }) {
   const classes = useStyles()
   const { pluginManager } = session
-  useEffect(() => {
-    if (contentRect.bounds.width) {
-      if (isAlive(session)) {
-        session.updateWidth(contentRect.bounds.width)
-      }
-    }
-  }, [session, contentRect])
 
-  const { visibleDrawerWidget, viewsWidth, drawerWidth } = session
+  const { visibleDrawerWidget, drawerWidth } = session
 
   return (
     <div
-      ref={measureRef}
       className={classes.root}
       style={{
-        gridTemplateColumns: `[main] ${viewsWidth}px${
+        gridTemplateColumns: `[main] 1fr${
           visibleDrawerWidget ? ` [drawer] ${drawerWidth}px` : ''
         }`,
       }}
@@ -115,29 +69,38 @@ function App({ contentRect, measureRef, session }) {
           })}
         </div>
         <div className={classes.components}>
-          {session.views.map(view => (
-            <ViewContainer
-              key={`view-${view.id}`}
-              session={session}
-              view={view}
-            />
-          ))}
+          {session.views.map(view => {
+            const viewType = pluginManager.getViewType(view.type)
+            if (!viewType) {
+              throw new Error(`unknown view type ${view.type}`)
+            }
+            const { ReactComponent } = viewType
+            return (
+              <ViewContainer
+                key={`view-${view.id}`}
+                view={view}
+                onClose={() => session.removeView(view)}
+              >
+                <ReactComponent
+                  model={view}
+                  session={session}
+                  getTrackType={pluginManager.getTrackType}
+                />
+              </ViewContainer>
+            )
+          })}
           <div style={{ height: 300 }} />
         </div>
       </div>
 
       {visibleDrawerWidget ? <DrawerWidget session={session} /> : null}
-      {session.snackbarMessage ? <Snackbar session={session} /> : null}
+      <Snackbar session={session} />
     </div>
   )
 }
 
 App.propTypes = {
   session: PropTypes.observableObject.isRequired,
-  contentRect: ReactPropTypes.shape({
-    bounds: ReactPropTypes.shape({ width: ReactPropTypes.number }),
-  }).isRequired,
-  measureRef: ReactPropTypes.func.isRequired,
 }
 
-export default withContentRect('bounds')(observer(App))
+export default observer(App)

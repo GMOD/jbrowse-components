@@ -23,11 +23,16 @@ export default class extends BaseAdapter {
     featureType?: string
   }) {
     super(config)
-    const { filters, cases, size, featureType } = config
-    this.filters = filters || '{}'
-    this.cases = cases || []
-    this.size = size || 100
-    this.featureType = featureType || 'mutation'
+    const {
+      filters = '{}',
+      cases = [],
+      size = 100,
+      featureType = 'mutation',
+    } = config
+    this.filters = filters
+    this.cases = cases
+    this.size = size
+    this.featureType = featureType
   }
 
   public async getRefNames(opts?: BaseOptions) {

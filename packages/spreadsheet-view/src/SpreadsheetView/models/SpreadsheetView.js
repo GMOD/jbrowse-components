@@ -3,7 +3,7 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { types, getParent, getRoot, getEnv } = jbrequire('mobx-state-tree')
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const BaseViewModel = jbrequire('@gmod/jbrowse-core/BaseViewModel')
 
   const SpreadsheetModel = jbrequire(require('./Spreadsheet'))
   const ImportWizardModel = jbrequire(require('./ImportWizard'))
@@ -11,12 +11,10 @@ export default pluginManager => {
 
   const minHeight = 40
   const defaultHeight = 440
-  const stateModel = types
+  const model = types
     .model('SpreadsheetView', {
-      id: ElementId,
       type: types.literal('SpreadsheetView'),
       offsetPx: 0,
-      width: 400,
       height: types.optional(
         types.refinement(
           'SpreadsheetViewHeight',
@@ -44,6 +42,9 @@ export default pluginManager => {
       ),
       spreadsheet: types.maybe(SpreadsheetModel),
     })
+    .volatile(() => ({
+      width: 400,
+    }))
     .views(self => ({
       get readyToDisplay() {
         return !!self.spreadsheet
@@ -116,6 +117,8 @@ export default pluginManager => {
         getParent(self, 2).removeView(self)
       },
     }))
+
+  const stateModel = types.compose(BaseViewModel, model)
 
   return { stateModel }
 }
