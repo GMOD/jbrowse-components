@@ -603,3 +603,7 @@ export function makeAbortableReaction<T, U>(
     }
   })
 }
+
+export function minmax(a: number, b: number) {
+  return [Math.min(a, b), Math.max(a, b)]
+}

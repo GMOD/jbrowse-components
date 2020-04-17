@@ -156,16 +156,7 @@ function renderBlockData(self: DotplotTrack) {
   const adapterConfigId = jsonStableStringify(adapterConfig)
   const parent = getParent(self, 2)
   getSnapshot(parent)
-  const {
-    views,
-    width,
-    height,
-    viewWidth,
-    viewHeight,
-    borderSize,
-    borderX,
-    borderY,
-  } = parent
+  const { views, viewWidth, viewHeight, borderSize, borderX, borderY } = parent
 
   return {
     rendererType,
@@ -180,10 +171,8 @@ function renderBlockData(self: DotplotTrack) {
       views,
       renderProps: {
         ...renderProps,
-        width,
-        height,
-        viewWidth,
-        viewHeight,
+        width: viewWidth,
+        height: viewHeight,
         borderSize,
         borderX,
         borderY,
