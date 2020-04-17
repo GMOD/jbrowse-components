@@ -48,7 +48,7 @@ import stateModelFactory, { Dotplot1DViewModel } from './Dotplot1DViewModel'
 const { pluginManager } = createTestSession() as any
 test('test', () => {
   const view = stateModelFactory(pluginManager).create({
-    bpPerPx: 0.01,
+    bpPerPx: 1,
     offsetPx: 1,
     displayedRegions: [
       { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
@@ -56,6 +56,8 @@ test('test', () => {
     ],
   })
   expect(view.totalBp).toBe(2000)
+  expect(view.dynamicBlocks).toMatchSnapshot()
+  view.setBpPerPx(10)
   expect(view.dynamicBlocks).toMatchSnapshot()
 })
 // test('can instantiate a mostly empty model and read a default configuration value', () => {

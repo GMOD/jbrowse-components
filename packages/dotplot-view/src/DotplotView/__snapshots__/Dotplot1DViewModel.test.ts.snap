@@ -5,10 +5,10 @@ BlockSet {
   "blocks": Array [
     ContentBlock {
       "assemblyName": "volvox",
-      "end": 8.01,
+      "end": 801,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
-      "key": "volvox:ctgA:1.01..8.01",
+      "key": "volvox:ctgA:2..801",
       "offsetPx": 1,
       "parentRegion": Object {
         "assemblyName": "volvox",
@@ -19,8 +19,53 @@ BlockSet {
       },
       "refName": "ctgA",
       "reversed": false,
-      "start": 0.01,
+      "start": 1,
       "widthPx": 800,
+    },
+  ],
+}
+`;
+
+exports[`test 2`] = `
+BlockSet {
+  "blocks": Array [
+    ContentBlock {
+      "assemblyName": "volvox",
+      "end": 1000,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": true,
+      "key": "volvox:ctgA:11..1000",
+      "offsetPx": 1,
+      "parentRegion": Object {
+        "assemblyName": "volvox",
+        "end": 1000,
+        "refName": "ctgA",
+        "reversed": false,
+        "start": 0,
+      },
+      "refName": "ctgA",
+      "reversed": false,
+      "start": 10,
+      "widthPx": 99,
+    },
+    ContentBlock {
+      "assemblyName": "volvox",
+      "end": 1000,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": true,
+      "key": "volvox:ctgB:1..1000",
+      "offsetPx": 100,
+      "parentRegion": Object {
+        "assemblyName": "volvox",
+        "end": 1000,
+        "refName": "ctgB",
+        "reversed": false,
+        "start": 0,
+      },
+      "refName": "ctgB",
+      "reversed": false,
+      "start": 0,
+      "widthPx": 100,
     },
   ],
 }
