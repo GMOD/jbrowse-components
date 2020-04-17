@@ -18,7 +18,7 @@ export default function stateModelFactory(pluginManager: any) {
   const { cast, types: jbrequiredTypes } = jbrequire('mobx-state-tree')
 
   return (jbrequiredTypes as Instance<typeof types>)
-    .model('DotplotViewDirection', {
+    .model('Dotplot1DView', {
       displayedRegions: types.array(Region),
       bpPerPx: types.number,
       offsetPx: types.number,
@@ -38,7 +38,7 @@ export default function stateModelFactory(pluginManager: any) {
     .views(self => ({
       get width() {
         /* this is replaced by usage of this model */
-        return 0
+        return 800
       },
 
       get displayedRegionsTotalPx() {
@@ -190,9 +190,5 @@ export default function stateModelFactory(pluginManager: any) {
     }))
 }
 
-export type Dotplot1DViewDirectionStateModel = ReturnType<
-  typeof stateModelFactory
->
-export type Dotplot1DViewDirectionModel = Instance<
-  Dotplot1DViewDirectionStateModel
->
+export type Dotplot1DViewStateModel = ReturnType<typeof stateModelFactory>
+export type Dotplot1DViewModel = Instance<Dotplot1DViewStateModel>
