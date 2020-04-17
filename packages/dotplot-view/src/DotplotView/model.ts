@@ -14,13 +14,9 @@ function approxPixelStringLen(str: string) {
 }
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
-  const {
-    onAction,
-    cast,
-    types: jbrequiredTypes,
-    getParent,
-    addDisposer,
-  } = jbrequire('mobx-state-tree')
+  const { cast, types: jbrequiredTypes, getParent, addDisposer } = jbrequire(
+    'mobx-state-tree',
+  )
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
   const Dotplot1DViewModel = jbrequire(require('./Dotplot1DViewModel'))
 
@@ -91,24 +87,6 @@ export default function stateModelFactory(pluginManager: any) {
         const session = getSession(self) as any
         addDisposer(
           self,
-          onAction(
-            self,
-            ({
-              name,
-              path,
-              args,
-            }: {
-              name: string
-              path: string
-              args: any[]
-            }) => {
-              console.log('name', name, args)
-            },
-          ),
-        )
-
-        addDisposer(
-          self,
           autorun(
             async () => {
               const axis = [self.viewWidth, self.viewHeight]
@@ -121,9 +99,9 @@ export default function stateModelFactory(pluginManager: any) {
                       if (regions !== undefined) {
                         transaction(() => {
                           views[index].setDisplayedRegions(regions)
-                          // views[index].setBpPerPx(
-                          //   views[index].totalBp / axis[index],
-                          // )
+                          views[index].setBpPerPx(
+                            views[index].totalBp / axis[index],
+                          )
                         })
                       } else {
                         this.setError(
@@ -142,25 +120,25 @@ export default function stateModelFactory(pluginManager: any) {
             { delay: 1000 },
           ),
         )
-        // addDisposer(
-        //   self,
-        //   autorun(async () => {
-        //     const padding = 4
-        //     // these are set via autorun to avoid dependency cycle
-        //     this.setBorderY(
-        //       self.hview.dynamicBlocks.blocks.reduce(
-        //         (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
-        //         0,
-        //       ) + padding,
-        //     )
-        //     this.setBorderX(
-        //       self.vview.dynamicBlocks.blocks.reduce(
-        //         (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
-        //         0,
-        //       ) + padding,
-        //     )
-        //   }),
-        // )
+        addDisposer(
+          self,
+          autorun(async () => {
+            const padding = 4
+            // these are set via autorun to avoid dependency cycle
+            this.setBorderY(
+              self.hview.dynamicBlocks.blocks.reduce(
+                (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
+                0,
+              ) + padding,
+            )
+            this.setBorderX(
+              self.vview.dynamicBlocks.blocks.reduce(
+                (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
+                0,
+              ) + padding,
+            )
+          }),
+        )
       },
       setDisplayName(name: string) {
         self.displayName = name

@@ -87,12 +87,12 @@
           "hview": {
             "displayedRegions": [],
             "bpPerPx": 100000,
-            "offsetPx": 500
+            "offsetPx": 0
           },
           "vview": {
             "displayedRegions": [],
             "bpPerPx": 100000,
-            "offsetPx": 500
+            "offsetPx": 0
           },
           "tracks": [
             {

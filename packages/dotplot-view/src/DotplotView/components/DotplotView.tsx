@@ -165,12 +165,9 @@ export default (pluginManager: any) => {
 
           const y1 = model.vview.pxToBp(viewHeight - ymin)
           const y2 = model.vview.pxToBp(viewHeight - ymax)
-          // console.log(x1, x2, y1, y2)
 
           model.hview.moveTo(x1, x2)
           model.vview.moveTo(y2, y1)
-          // console.log('hview', model.hview.dynamicBlocks)
-          // console.log('vview', model.vview.dynamicBlocks)
         }
       }
 
@@ -195,9 +192,6 @@ export default (pluginManager: any) => {
     }
 
     const tickSize = 0
-    // console.log('hh', model.hview.offsetPx, model.hview.bpPerPx)
-    // console.log('h', model.hview.dynamicBlocks)
-    // console.log('v', model.vview.dynamicBlocks)
 
     return (
       <div style={{ position: 'relative' }}>
@@ -210,7 +204,7 @@ export default (pluginManager: any) => {
                   .filter(region => region.refName)
                   .map(region => {
                     const y =
-                      viewHeight - region.offsetPx - model.vview.offsetPx
+                      viewHeight - region.offsetPx + model.vview.offsetPx
                     const x = borderX
                     return (
                       <text
