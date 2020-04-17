@@ -1,5 +1,4 @@
 import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
-import MenuBarType from '@gmod/jbrowse-core/pluggableElementTypes/MenuBarType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import { lazy } from 'react'
 import {
@@ -17,11 +16,6 @@ import {
   ReactComponent as ImportConfigurationReactComponent,
   stateModel as importConfigurationStateModel,
 } from './ImportConfigurationDrawerWidget'
-import {
-  configSchema as mainMenuBarConfigSchema,
-  ReactComponent as MainMenuBarReactComponent,
-  stateModel as mainMenuBarStateModel,
-} from './MainMenuBar'
 import {
   configSchema as sessionManagerConfigSchema,
   ReactComponent as SessionManagerReactComponent,
@@ -67,15 +61,6 @@ export default class extends Plugin {
         configSchema: sessionManagerConfigSchema,
         stateModel: sessionManagerStateModel,
         LazyReactComponent: lazy(() => SessionManagerReactComponent),
-      })
-    })
-
-    pluginManager.addMenuBarType(() => {
-      return new MenuBarType({
-        name: 'MainMenuBar',
-        configSchema: mainMenuBarConfigSchema,
-        stateModel: mainMenuBarStateModel,
-        LazyReactComponent: lazy(() => MainMenuBarReactComponent),
       })
     })
   }

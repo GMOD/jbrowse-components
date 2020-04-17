@@ -1,13 +1,17 @@
+import AppBar from '@material-ui/core/AppBar'
 import { makeStyles } from '@material-ui/core/styles'
-
+import Toolbar from '@material-ui/core/Toolbar'
+import Tooltip from '@material-ui/core/Tooltip'
 import { observer, PropTypes } from 'mobx-react'
 import React from 'react'
 
 import DrawerWidget from './DrawerWidget'
+import EditableTypography from './EditableTypography'
+import LogoFull from './LogoFull'
 import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
   '@global': {
     html: {
       'font-family': 'Roboto',
@@ -18,26 +22,57 @@ const useStyles = makeStyles({
     height: '100vh',
     width: '100%',
   },
-  menuBarsAndComponents: {
+  menuBarAndComponents: {
     gridColumn: 'main',
     display: 'grid',
-    gridTemplateRows: '[menubars] min-content [components] auto',
+    gridTemplateRows: '[menubar] min-content [components] auto',
     height: '100vh',
   },
-  menuBars: {
-    gridRow: 'menubars',
+  menuBar: {
+    gridRow: 'menubar',
   },
   components: {
     overflowY: 'auto',
     gridRow: 'components',
   },
-})
+  appBar: {
+    flexGrow: 1,
+  },
+  grow: {
+    flexGrow: 1,
+  },
+  inputBase: {
+    color: theme.palette.primary.contrastText,
+  },
+  inputRoot: {
+    '&:hover': {
+      backgroundColor: theme.palette.primary.light,
+    },
+  },
+  inputFocused: {
+    borderColor: theme.palette.secondary.main,
+    backgroundColor: theme.palette.primary.light,
+  },
+}))
 
 function App({ session }) {
   const classes = useStyles()
   const { pluginManager } = session
 
   const { visibleDrawerWidget, drawerWidth } = session
+
+  function handleNameChange(newName) {
+    if (
+      session.savedSessionNames &&
+      session.savedSessionNames.includes(newName)
+    ) {
+      session.pushSnackbarMessage(
+        `Cannot rename session to "${newName}", a saved session with that name already exists`,
+      )
+    } else {
+      session.renameCurrentSession(newName)
+    }
+  }
 
   return (
     <div
@@ -48,25 +83,30 @@ function App({ session }) {
         }`,
       }}
     >
-      <div className={classes.menuBarsAndComponents}>
-        <div className={classes.menuBars}>
-          {session.menuBars.map(menuBar => {
-            const {
-              LazyReactComponent: MenuBarLazyReactComponent,
-            } = pluginManager.getMenuBarType(menuBar.type)
-            return (
-              <React.Suspense
-                key={`view-${menuBar.id}`}
-                fallback={<div>Loading...</div>}
-              >
-                <MenuBarLazyReactComponent
-                  key={`view-${menuBar.id}`}
-                  model={menuBar}
-                  session={session}
+      <div className={classes.menuBarAndComponents}>
+        <div className={classes.menuBar}>
+          <AppBar className={classes.appBar} position="static">
+            <Toolbar variant="dense">
+              Help
+              <div className={classes.grow} />
+              <Tooltip title="Rename Session" arrow>
+                <EditableTypography
+                  value={session.name}
+                  setValue={handleNameChange}
+                  variant="body1"
+                  classes={{
+                    inputBase: classes.inputBase,
+                    inputRoot: classes.inputRoot,
+                    inputFocused: classes.inputFocused,
+                  }}
                 />
-              </React.Suspense>
-            )
-          })}
+              </Tooltip>
+              <div className={classes.grow} />
+              <div style={{ width: 150, maxHeight: 48 }}>
+                <LogoFull variant="white" />
+              </div>
+            </Toolbar>
+          </AppBar>
         </div>
         <div className={classes.components}>
           {session.views.map(view => {

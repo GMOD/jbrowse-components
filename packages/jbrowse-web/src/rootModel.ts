@@ -84,7 +84,6 @@ export function createTestSession(snapshot = {}) {
   })
   root.setSession({
     name: 'testSession',
-    menuBars: [{ type: 'MainMenuBar' }],
     ...snapshot,
   })
   root.setHistory(UndoManager.create({}, { targetStore: root.session }))

@@ -47,7 +47,6 @@ export default function JBrowseWeb(pluginManager, Session) {
         ),
         defaultSession: types.optional(types.frozen(Session), {
           name: `New Session`,
-          menuBars: [{ type: 'MainMenuBar' }],
         }),
         savedSessions: types.array(types.frozen(Session)),
       })

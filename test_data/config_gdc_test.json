@@ -104,12 +104,7 @@
     }
   ],
   "defaultSession": {
-    "name": "New Session",
-    "menuBars": [
-      {
-        "type": "MainMenuBar"
-      }
-    ]
+    "name": "New Session"
   },
   "savedSessions": [
     {
@@ -148,11 +143,6 @@
           ],
           "controlsWidth": 120,
           "minimumBlockWidth": 20
-        }
-      ],
-      "menuBars": [
-        {
-          "type": "MainMenuBar"
         }
       ]
     }

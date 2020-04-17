@@ -50,7 +50,6 @@ export default function JBrowseDesktop(pluginManager, Session) {
         ),
         defaultSession: types.optional(types.frozen(Session), {
           name: `New Session`,
-          menuBars: [{ type: 'MainMenuBar' }],
         }),
       })
       .actions(self => ({

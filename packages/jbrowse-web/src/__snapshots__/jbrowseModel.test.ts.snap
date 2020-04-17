@@ -6,11 +6,6 @@ Object {
   "configuration": Object {},
   "connections": Array [],
   "defaultSession": Object {
-    "menuBars": Array [
-      Object {
-        "type": "MainMenuBar",
-      },
-    ],
     "name": "New Session",
   },
   "savedSessions": Array [],
@@ -72,11 +67,6 @@ Object {
   },
   "connections": Array [],
   "defaultSession": Object {
-    "menuBars": Array [
-      Object {
-        "type": "MainMenuBar",
-      },
-    ],
     "name": "New Session",
   },
   "savedSessions": Array [
@@ -92,28 +82,6 @@ Object {
           "view": "integration_test",
         },
       },
-      "menuBars": Array [
-        Object {
-          "menus": Array [
-            Object {
-              "menuItems": Array [
-                Object {
-                  "callback": "exportConfiguration",
-                  "icon": "cloud_download",
-                  "name": "Export configuration",
-                },
-                Object {
-                  "callback": "importConfiguration",
-                  "icon": "cloud_upload",
-                  "name": "Import configuration",
-                },
-              ],
-              "name": "Admin",
-            },
-          ],
-          "type": "MainMenuBar",
-        },
-      ],
       "name": "Integration test example",
       "views": Array [
         Object {
