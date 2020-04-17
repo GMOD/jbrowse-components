@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getSession } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
-import { types, Instance } from 'mobx-state-tree'
+import { types, Instance, SnapshotIn } from 'mobx-state-tree'
 import { autorun, transaction } from 'mobx'
 
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -12,6 +11,7 @@ import { Dotplot1DViewStateModel } from './Dotplot1DViewModel'
 function approxPixelStringLen(str: string) {
   return str.length * 0.7 * 12
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
   const { cast, types: jbrequiredTypes, getParent, addDisposer } = jbrequire(
@@ -84,6 +84,7 @@ export default function stateModelFactory(pluginManager: any) {
     }))
     .actions(self => ({
       afterAttach() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const session = getSession(self) as any
         addDisposer(
           self,
@@ -179,6 +180,7 @@ export default function stateModelFactory(pluginManager: any) {
       },
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const session: any = getSession(self)
           const selector = session.addDrawerWidget(
             'HierarchicalTrackSelectorDrawerWidget',
@@ -191,6 +193,7 @@ export default function stateModelFactory(pluginManager: any) {
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       toggleTrack(configuration: any) {
         // if we have any tracks with that configuration, turn them off
         const hiddenCount = this.hideTrack(configuration)
@@ -198,6 +201,7 @@ export default function stateModelFactory(pluginManager: any) {
         if (!hiddenCount) this.showTrack(configuration)
       },
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       showTrack(configuration: any, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) {
@@ -218,6 +222,7 @@ export default function stateModelFactory(pluginManager: any) {
         })
       },
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       hideTrack(configuration: any) {
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(
@@ -229,13 +234,14 @@ export default function stateModelFactory(pluginManager: any) {
       setAssemblyNames(assemblyNames: string[]) {
         self.assemblyNames = cast(assemblyNames)
       },
-      setViews(arr: any[]) {
+      setViews(arr: SnapshotIn<Dotplot1DViewStateModel>[]) {
         self.hview = cast(arr[0])
         self.vview = cast(arr[1])
       },
     }))
     .views(self => ({
       get menuOptions() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const session: any = getSession(self)
         return [
           {

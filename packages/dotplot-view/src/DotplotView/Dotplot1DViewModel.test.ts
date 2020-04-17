@@ -1,8 +1,9 @@
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import stateModelFactory from './Dotplot1DViewModel'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { pluginManager } = createTestSession() as any
-test('test', () => {
+test('setBpPerPx', () => {
   const view = stateModelFactory(pluginManager).create({
     bpPerPx: 1,
     offsetPx: 1,
@@ -31,4 +32,3 @@ test('moveTo', () => {
   view.moveTo(x1, x2)
   expect(view.dynamicBlocks).toMatchSnapshot()
 })
-

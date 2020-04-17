@@ -13,6 +13,7 @@ interface BpOffset {
   end?: number
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
   const { cast, types: jbrequiredTypes } = jbrequire('mobx-state-tree')

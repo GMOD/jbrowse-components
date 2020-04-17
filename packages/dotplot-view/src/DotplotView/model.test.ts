@@ -1,10 +1,13 @@
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 
-const { pluginManager } = createTestSession()
+const { pluginManager } = createTestSession() as any
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 describe('dotplot state model', () => {
   test('can instantiate from an empty object', () => {
     const DotplotModel = pluginManager.jbrequire(require('./model'))
-    const model = DotplotModel.create({ type: 'DotplotView' })
+    expect(() =>
+      DotplotModel.create({ type: 'DotplotView', hview: {}, vview: {} }),
+    ).not.toThrow()
   })
 })

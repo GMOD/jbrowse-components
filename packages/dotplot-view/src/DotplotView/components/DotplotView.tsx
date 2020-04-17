@@ -7,7 +7,6 @@ import { DotplotViewModel } from '../model'
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
-  const { transaction } = jbrequire('mobx')
   const React = jbrequire('react')
   const { useRef, useEffect, useState } = React
   const { getSession, minmax } = jbrequire('@gmod/jbrowse-core/util')
