@@ -7,6 +7,7 @@ import { DotplotViewModel } from '../model'
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
+  const { transaction } = jbrequire('mobx')
   const React = jbrequire('react')
   const { useRef, useEffect, useState } = React
   const { getSession, minmax } = jbrequire('@gmod/jbrowse-core/util')
@@ -124,7 +125,6 @@ export default (pluginManager: any) => {
     const ref = (useRef as typeof reactUseRef)<SVGSVGElement | null>(null)
     const [curr, setCurr] = useState()
     const [down, setDown] = useState()
-    const [x, setX] = useState()
 
     const {
       initialized,
@@ -168,19 +168,21 @@ export default (pluginManager: any) => {
           const y2 = model.vview.pxToBp(viewHeight - ymax)
           console.log(x1, x2, y1, y2)
 
-          // const xx = [
-          //   [
-          //     model.hview.bpToPx(x1.refName, x1.offset),
-          //     model.vview.bpToPx(y1.refName, y1.offset),
-          //   ],
-          //   [
-          //     model.hview.bpToPx(x2.refName, x2.offset),
-          //     model.vview.bpToPx(y2.refName, y2.offset),
-          //   ],
-          // ]
-          // setX(xx)
-          model.hview.moveTo(x1, x2)
-          model.vview.moveTo(y1, y2)
+          //           const xx = [
+          //             [
+          //               model.hview.bpToPx(x1.refName, x1.offset),
+          //               model.vview.bpToPx(y1.refName, y1.offset),
+          //             ],
+          //             [
+          //               model.hview.bpToPx(x2.refName, x2.offset),
+          //               model.vview.bpToPx(y2.refName, y2.offset),
+          //             ],
+          //           ]
+          //           setX(xx)
+          //           transaction(() => {
+          //             model.hview.moveTo(x1, x2)
+          //             model.vview.moveTo(y1, y2)
+          //           })
         }
       }
 
@@ -205,6 +207,8 @@ export default (pluginManager: any) => {
     }
 
     const tickSize = 0
+    console.log('h', model.hview.dynamicBlocks)
+    console.log('v', model.vview.dynamicBlocks)
 
     return (
       <div style={{ position: 'relative' }}>
@@ -216,14 +220,17 @@ export default (pluginManager: any) => {
                 {vview.dynamicBlocks.blocks
                   .filter(region => region.refName)
                   .map(region => {
-                    const x = viewHeight - region.offsetPx
-                    const y = tickSize
+                    const y =
+                      viewHeight -
+                      region.offsetPx +
+                      vview.dynamicBlocks.blocks[0].offsetPx
+                    const x = borderX
                     return (
                       <text
                         transform={`rotate(${vtextRotation},${x},${y})`}
                         key={region.refName}
                         x={borderX}
-                        y={x}
+                        y={y}
                         fill="#000000"
                         textAnchor="end"
                       >
@@ -256,12 +263,16 @@ export default (pluginManager: any) => {
                 {hview.dynamicBlocks.blocks
                   .filter(region => region.refName)
                   .map(region => {
+                    const x =
+                      region.offsetPx +
+                      region.widthPx +
+                      hview.dynamicBlocks.blocks[0].offsetPx
                     return (
                       <line
                         key={JSON.stringify(region)}
-                        x1={region.offsetPx + region.widthPx}
+                        x1={x}
                         y1={0}
-                        x2={region.offsetPx + region.widthPx}
+                        x2={x}
                         y2={viewHeight}
                         stroke="#000000"
                       />
@@ -270,7 +281,10 @@ export default (pluginManager: any) => {
                 {vview.dynamicBlocks.blocks
                   .filter(region => region.refName)
                   .map(region => {
-                    const y = viewHeight - (region.offsetPx + region.widthPx)
+                    const y =
+                      viewHeight -
+                      (region.offsetPx + region.widthPx) +
+                      vview.dynamicBlocks.blocks[0].offsetPx
                     return (
                       <line
                         key={JSON.stringify(region)}
@@ -292,24 +306,6 @@ export default (pluginManager: any) => {
                   height={Math.abs(curr[1] - down[1])}
                 />
               ) : null}
-              {x ? (
-                <>
-                  <rect
-                    fill="rgba(255,0,0)"
-                    x={x[0][0]}
-                    y={viewHeight - x[0][1]}
-                    width={10}
-                    height={10}
-                  />
-                  <rect
-                    fill="rgba(255,0,0)"
-                    x={x[1][0]}
-                    y={viewHeight - x[1][1]}
-                    width={10}
-                    height={10}
-                  />
-                </>
-              ) : null}
             </svg>
             <div className={classes.spacer} />
             <svg width={viewWidth} height={borderY} className={classes.htext}>
@@ -317,7 +313,10 @@ export default (pluginManager: any) => {
                 {hview.dynamicBlocks.blocks
                   .filter(region => region.refName)
                   .map(region => {
-                    const x = region.offsetPx + 1
+                    const x =
+                      region.offsetPx +
+                      1 +
+                      hview.dynamicBlocks.blocks[0].offsetPx
                     const y = tickSize
                     return (
                       <text
@@ -353,22 +352,19 @@ export default (pluginManager: any) => {
       </div>
     )
   })
-  // <DrawLabels model={model} />
-  //               <DrawGrid model={model} />
-  //
-  //               {x ? (
+  // {x ? (
   //                 <>
   //                   <rect
   //                     fill="rgba(255,0,0)"
-  //                     x={x[0][0] + borderX}
-  //                     y={viewHeight - x[0][1] - borderSize}
+  //                     x={x[0][0]}
+  //                     y={viewHeight - x[0][1]}
   //                     width={10}
   //                     height={10}
   //                   />
   //                   <rect
   //                     fill="rgba(255,0,0)"
-  //                     x={x[1][0] + borderX}
-  //                     y={viewHeight - x[1][1] - borderSize}
+  //                     x={x[1][0]}
+  //                     y={viewHeight - x[1][1]}
   //                     width={10}
   //                     height={10}
   //                   />
