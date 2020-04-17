@@ -4,20 +4,23 @@ import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
 import { types, Instance } from 'mobx-state-tree'
 import { autorun, transaction } from 'mobx'
-import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
-import { Dotplot1DViewDirectionStateModel } from './Dotplot1DViewModel'
+import { Dotplot1DViewStateModel } from './Dotplot1DViewModel'
 
 function approxPixelStringLen(str: string) {
   return str.length * 0.7 * 12
 }
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
-  const { cast, types: jbrequiredTypes, getParent, addDisposer } = jbrequire(
-    'mobx-state-tree',
-  )
+  const {
+    onAction,
+    cast,
+    types: jbrequiredTypes,
+    getParent,
+    addDisposer,
+  } = jbrequire('mobx-state-tree')
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
   const Dotplot1DViewModel = jbrequire(require('./Dotplot1DViewModel'))
 
@@ -35,24 +38,20 @@ export default function stateModelFactory(pluginManager: any) {
       displayName: 'dotplot',
       trackSelectorType: 'hierarchical',
       assemblyNames: types.array(types.string),
-      hview: (Dotplot1DViewModel as Dotplot1DViewDirectionStateModel).extend(
-        self => ({
-          views: {
-            get width() {
-              return getParent(self).viewWidth
-            },
+      hview: (Dotplot1DViewModel as Dotplot1DViewStateModel).extend(self => ({
+        views: {
+          get width() {
+            return getParent(self).viewWidth
           },
-        }),
-      ),
-      vview: (Dotplot1DViewModel as Dotplot1DViewDirectionStateModel).extend(
-        self => ({
-          views: {
-            get width() {
-              return getParent(self).viewHeight
-            },
+        },
+      })),
+      vview: (Dotplot1DViewModel as Dotplot1DViewStateModel).extend(self => ({
+        views: {
+          get width() {
+            return getParent(self).viewHeight
           },
-        }),
-      ),
+        },
+      })),
       tracks: types.array(
         pluginManager.pluggableMstType(
           'track',
@@ -63,8 +62,8 @@ export default function stateModelFactory(pluginManager: any) {
     .volatile(() => ({
       width: 800,
       error: undefined as Error | undefined,
-      borderX: 0,
-      borderY: 0,
+      borderX: 100,
+      borderY: 100,
     }))
     .views(self => ({
       get initialized() {
@@ -78,10 +77,10 @@ export default function stateModelFactory(pluginManager: any) {
         return self.assemblyNames.length > 0 && !this.initialized
       },
       get viewWidth() {
-        return self.width - self.borderSize - self.borderX
+        return self.width - self.borderX
       },
       get viewHeight() {
-        return self.height - self.borderSize - self.borderY
+        return self.height - self.borderY
       },
       get views() {
         return [self.hview, self.vview]
@@ -90,6 +89,24 @@ export default function stateModelFactory(pluginManager: any) {
     .actions(self => ({
       afterAttach() {
         const session = getSession(self) as any
+        addDisposer(
+          self,
+          onAction(
+            self,
+            ({
+              name,
+              path,
+              args,
+            }: {
+              name: string
+              path: string
+              args: any[]
+            }) => {
+              console.log('name', name, args)
+            },
+          ),
+        )
+
         addDisposer(
           self,
           autorun(
@@ -102,10 +119,12 @@ export default function stateModelFactory(pluginManager: any) {
                     .getRegionsForAssemblyName(name)
                     .then((regions: IRegion[] | undefined) => {
                       if (regions !== undefined) {
-                        views[index].setDisplayedRegions(regions)
-                        views[index].setBpPerPx(
-                          views[index].totalBp / axis[index],
-                        )
+                        transaction(() => {
+                          views[index].setDisplayedRegions(regions)
+                          // views[index].setBpPerPx(
+                          //   views[index].totalBp / axis[index],
+                          // )
+                        })
                       } else {
                         this.setError(
                           new Error(
@@ -123,25 +142,25 @@ export default function stateModelFactory(pluginManager: any) {
             { delay: 1000 },
           ),
         )
-        addDisposer(
-          self,
-          autorun(async () => {
-            const padding = 4
-            // these are set via autorun to avoid dependency cycle
-            this.setBorderY(
-              self.hview.dynamicBlocks.blocks.reduce(
-                (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
-                0,
-              ) + padding,
-            )
-            this.setBorderX(
-              self.vview.dynamicBlocks.blocks.reduce(
-                (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
-                0,
-              ) + padding,
-            )
-          }),
-        )
+        // addDisposer(
+        //   self,
+        //   autorun(async () => {
+        //     const padding = 4
+        //     // these are set via autorun to avoid dependency cycle
+        //     this.setBorderY(
+        //       self.hview.dynamicBlocks.blocks.reduce(
+        //         (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
+        //         0,
+        //       ) + padding,
+        //     )
+        //     this.setBorderX(
+        //       self.vview.dynamicBlocks.blocks.reduce(
+        //         (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
+        //         0,
+        //       ) + padding,
+        //     )
+        //   }),
+        // )
       },
       setDisplayName(name: string) {
         self.displayName = name

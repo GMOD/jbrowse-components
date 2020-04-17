@@ -2,49 +2,6 @@ import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import { types, getSnapshot } from 'mobx-state-tree'
 import stateModelFactory, { Dotplot1DViewModel } from './Dotplot1DViewModel'
 
-// a stub linear genome view state model that only accepts base track types.
-// used in unit tests.
-// const stubManager = new PluginManager()
-// stubManager.addTrackType(
-//   () =>
-//     new TrackType({
-//       name: 'Base',
-//       configSchema: ConfigurationSchema(
-//         'BaseTrack',
-//         {},
-//         { explicitlyTyped: true },
-//       ),
-//       stateModel: BaseTrack,
-//       RenderingComponent: true,
-//     }),
-// )
-// stubManager.configure()
-// const Dotplot1DView = stateModelFactory(stubManager)
-// const JBrowse = types.model({}).actions(self => ({
-//   getCanonicalRefName(refName: string, assemblyName: string) {
-//     if (refName === 'contigA') {
-//       return 'ctgA'
-//     }
-
-//     return refName
-//   },
-// }))
-
-// const Session = types
-//   .model({
-//     name: 'testSession',
-//     pluginManager: 'pluginManagerExists',
-//     view: types.maybe(Dotplot1DView),
-//     configuration: types.map(types.string),
-//     jbrowse: types.maybe(JBrowse),
-//   })
-//   .actions(self => ({
-//     setView(view: Dotplot1DViewModel) {
-//       self.view = view
-//       return view
-//     },
-//   }))
-
 const { pluginManager } = createTestSession() as any
 test('test', () => {
   const view = stateModelFactory(pluginManager).create({
@@ -58,6 +15,24 @@ test('test', () => {
   expect(view.totalBp).toBe(2000)
   expect(view.dynamicBlocks).toMatchSnapshot()
   view.setBpPerPx(10)
+  expect(view.dynamicBlocks).toMatchSnapshot()
+})
+test('moveTo', () => {
+  const view = stateModelFactory(pluginManager).create({
+    bpPerPx: 1,
+    offsetPx: 1,
+    displayedRegions: [
+      { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
+      { refName: 'ctgB', start: 0, end: 1000, assemblyName: 'volvox' },
+    ],
+  })
+  const x1 = view.pxToBp(400)
+  const x2 = view.pxToBp(600)
+  console.log(x1.offset)
+  console.log(x2.offset)
+  expect(view.dynamicBlocks).toMatchSnapshot()
+  view.moveTo(x1, x2)
+  console.log(view.offsetPx)
   expect(view.dynamicBlocks).toMatchSnapshot()
 })
 // test('can instantiate a mostly empty model and read a default configuration value', () => {

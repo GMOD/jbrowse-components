@@ -1,5 +1,57 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`moveTo 1`] = `
+BlockSet {
+  "blocks": Array [
+    ContentBlock {
+      "assemblyName": "volvox",
+      "end": 801,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "volvox:ctgA:2..801",
+      "offsetPx": 1,
+      "parentRegion": Object {
+        "assemblyName": "volvox",
+        "end": 1000,
+        "refName": "ctgA",
+        "reversed": false,
+        "start": 0,
+      },
+      "refName": "ctgA",
+      "reversed": false,
+      "start": 1,
+      "widthPx": 800,
+    },
+  ],
+}
+`;
+
+exports[`moveTo 2`] = `
+BlockSet {
+  "blocks": Array [
+    ContentBlock {
+      "assemblyName": "volvox",
+      "end": 601,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "volvox:ctgA:402..601",
+      "offsetPx": 1604,
+      "parentRegion": Object {
+        "assemblyName": "volvox",
+        "end": 1000,
+        "refName": "ctgA",
+        "reversed": false,
+        "start": 0,
+      },
+      "refName": "ctgA",
+      "reversed": false,
+      "start": 401,
+      "widthPx": 800,
+    },
+  ],
+}
+`;
+
 exports[`test 1`] = `
 BlockSet {
   "blocks": Array [

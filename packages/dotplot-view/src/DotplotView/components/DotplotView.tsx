@@ -165,12 +165,12 @@ export default (pluginManager: any) => {
 
           const y1 = model.vview.pxToBp(viewHeight - ymin)
           const y2 = model.vview.pxToBp(viewHeight - ymax)
-          console.log(x1, x2, y1, y2)
+          // console.log(x1, x2, y1, y2)
 
-          transaction(() => {
-            model.hview.moveTo(x1, x2)
-            model.vview.moveTo(y1, y2)
-          })
+          model.hview.moveTo(x1, x2)
+          model.vview.moveTo(y2, y1)
+          // console.log('hview', model.hview.dynamicBlocks)
+          // console.log('vview', model.vview.dynamicBlocks)
         }
       }
 
