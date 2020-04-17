@@ -32,7 +32,7 @@ const useStyles = makeStyles(() => ({
 
 /**
  * Render the consequence table for a simple somatic mutation
- * @param {*} props Properties
+ * @param {*} props
  */
 function Consequence(props) {
   const classes = useStyles()
@@ -44,7 +44,7 @@ function Consequence(props) {
   const consequences = feature.consequence.hits.edges
 
   return (
-    <BaseCard {...props} title="Consequence">
+    <BaseCard title="Consequence">
       <div style={{ width: '100%', maxHeight: 600, overflow: 'auto' }}>
         <Table className={classes.table}>
           <TableHead>
@@ -160,7 +160,7 @@ Consequence.propTypes = {
 }
 
 /**
- * A single table row for an external link
+ * Render a single table row for an external link
  */
 const ExternalLink = observer(props => {
   const classes = useStyles()
@@ -187,7 +187,7 @@ const ExternalLink = observer(props => {
 })
 
 /**
- * Create a section for external gene links
+ * Render a section for external gene links
  * @param {*} props
  */
 function GeneExternalLinks(props) {
@@ -233,7 +233,7 @@ function GeneExternalLinks(props) {
   ]
 
   return (
-    <BaseCard {...props} title="External Links">
+    <BaseCard title="External Links">
       <div style={{ width: '100%', maxHeight: 600, overflow: 'auto' }}>
         <Table className={classes.table}>
           <TableBody>
@@ -262,7 +262,7 @@ function removeCosmicPrefix(cosmicId) {
 }
 
 /**
- * Creates a row with cosmic links for a mutation
+ * Render a row with cosmic links for a mutation
  */
 const CosmicLinks = observer(props => {
   const classes = useStyles()
@@ -299,7 +299,7 @@ CosmicLinks.propTypes = {
 }
 
 /**
- * Create a section for external mutation links
+ * Render a section for external mutation links
  * @param {*} props
  */
 function SSMExternalLinks(props) {
@@ -315,7 +315,7 @@ function SSMExternalLinks(props) {
   ]
 
   return (
-    <BaseCard {...props} title="External Links">
+    <BaseCard title="External Links">
       <div style={{ width: '100%', maxHeight: 600, overflow: 'auto' }}>
         <Table className={classes.table}>
           <TableBody>
@@ -337,14 +337,16 @@ SSMExternalLinks.propTypes = {
 }
 
 /**
- * A table row for a project related to the mutation
+ * Render a table row for a project related to the mutation
  * @param {*} props
  */
 function SSMProject(props) {
   const classes = useStyles()
-  const { projectId, docCount, allProjects, totalProjects } = props
-  const projectInfo = allProjects.find(x => x.node.project_id === projectId)
-  const totalProject = totalProjects.find(x => x.projectId === projectId)
+  const { projectId, docCount, projectsInformation, gdcProjectsCounts } = props
+  const projectInfo = projectsInformation.find(
+    x => x.node.project_id === projectId,
+  )
+  const gdcProjectCount = gdcProjectsCounts.find(x => x.projectId === projectId)
 
   return (
     <>
@@ -366,7 +368,7 @@ function SSMProject(props) {
           {projectInfo.node.primary_site.join(', ')}
         </TableCell>
         <TableCell component="th" scope="row">
-          {docCount} / {totalProject.docCount}
+          {docCount} / {gdcProjectCount.docCount}
         </TableCell>
       </TableRow>
     </>
@@ -376,36 +378,36 @@ function SSMProject(props) {
 SSMProject.propTypes = {
   projectId: PropTypes.string.isRequired,
   docCount: PropTypes.number.isRequired,
-  allProjects: PropTypes.array.isRequired,
-  totalProjects: PropTypes.array.isRequired,
+  projectsInformation: PropTypes.array.isRequired,
+  gdcProjectsCounts: PropTypes.array.isRequired,
 }
 
 /**
- * Create a table of projects based on the selected mutation feature
+ * Render a table of projects based on the selected mutation feature
  * @param {*} props
  */
 function SSMProjects(props) {
   const classes = useStyles()
   const { featureId } = props
 
-  const [filteredProjects, setFilteredProjects] = useState([])
-  const [allProjects, setAllProjects] = useState([])
-  const [totalProjects, setTotalProjects] = useState([])
+  const [mutationProjectsCounts, setMutationProjectsCounts] = useState([]) // Case counts for projects associated with the given mutation
+  const [projectsInformation, setProjectsInformation] = useState([]) // General information regarding all projects
+  const [gdcProjectsCounts, setGdcProjectsCounts] = useState([]) // Case counts for projects across the GDC
 
   useEffect(() => {
     getSSMProjectsAsync(featureId).then(data => {
-      setAllProjects(data.data.projects.hits.edges)
-      setTotalProjects(
+      setProjectsInformation(data.data.projects.hits.edges)
+      setGdcProjectsCounts(
         data.data.viewer.explore.cases.total.project__project_id.buckets,
       )
-      setFilteredProjects(
+      setMutationProjectsCounts(
         data.data.viewer.explore.cases.filtered.project__project_id.buckets,
       )
     })
   }, [featureId])
 
   return (
-    <BaseCard {...props} title="Projects">
+    <BaseCard title="Projects">
       <div style={{ width: '100%', maxHeight: 600, overflow: 'auto' }}>
         <Table className={classes.table}>
           <TableHead>
@@ -417,13 +419,13 @@ function SSMProjects(props) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredProjects &&
-              allProjects &&
-              totalProjects &&
-              filteredProjects.map((project, key) => (
+            {mutationProjectsCounts &&
+              projectsInformation &&
+              gdcProjectsCounts &&
+              mutationProjectsCounts.map((project, key) => (
                 <SSMProject
-                  allProjects={allProjects}
-                  totalProjects={totalProjects}
+                  projectsInformation={projectsInformation}
+                  gdcProjectsCounts={gdcProjectsCounts}
                   key={`${key}-${project.projectId}`}
                   {...project}
                 ></SSMProject>
@@ -472,10 +474,13 @@ async function getSSMProjectsAsync(featureId) {
     },
   }
 
-  const response = await fetch('https://api.gdc.cancer.gov/v0/graphql', {
-    method: 'POST',
-    body: JSON.stringify(query),
-  })
+  const response = await fetch(
+    'https://api.gdc.cancer.gov/v0/graphql/mutationProjects',
+    {
+      method: 'POST',
+      body: JSON.stringify(query),
+    },
+  )
   const result = await response.json()
   return result
 }
@@ -485,14 +490,16 @@ SSMProjects.propTypes = {
 }
 
 /**
- * A table row for a project related to the gene
+ * Render a table row for a project related to the gene
  * @param {*} props
  */
 function GeneProject(props) {
   const classes = useStyles()
-  const { projectId, docCount, allProjects, cases } = props
+  const { projectId, docCount, projectsInformation, cases } = props
 
-  const projectInfo = allProjects.find(x => x.node.project_id === projectId)
+  const projectInfo = projectsInformation.find(
+    x => x.node.project_id === projectId,
+  )
   const totalProjectCaseCount = cases.total.project__project_id.buckets.find(
     x => x.projectId === projectId,
   )
@@ -544,27 +551,27 @@ function GeneProject(props) {
 GeneProject.propTypes = {
   projectId: PropTypes.string.isRequired,
   docCount: PropTypes.number.isRequired,
-  allProjects: PropTypes.array.isRequired,
+  projectsInformation: PropTypes.array.isRequired,
   cases: PropTypes.object.isRequired,
 }
 
 /**
- * Create a table of projects based on the selected gene feature
+ * Render a table of projects based on the selected gene feature
  * @param {*} props
  */
 function GeneProjects(props) {
   const classes = useStyles()
   const { featureId } = props
 
-  const [allProjects, setAllProjects] = useState([])
-  const [filteredProjects, setFilteredProjects] = useState([])
-  const [cases, setCases] = useState([])
+  const [projectsInformation, setProjectsInformation] = useState([]) // General information regarding all projects
+  const [geneProjectsCounts, setGeneProjectsCounts] = useState([]) // Case counts for projects associated with the given gene
+  const [cases, setCases] = useState([]) // Case counts for various projects and filters
 
   useEffect(() => {
     getGeneProjectsAsync(featureId).then(data => {
-      setAllProjects(data.data.projects.hits.edges)
+      setProjectsInformation(data.data.projects.hits.edges)
       setCases(data.data.viewer.explore.cases)
-      setFilteredProjects(
+      setGeneProjectsCounts(
         data.data.viewer.explore.cases.filtered.project__project_id.buckets,
       )
     })
@@ -586,12 +593,12 @@ function GeneProjects(props) {
           </TableHead>
           <TableBody>
             {cases &&
-              allProjects &&
-              filteredProjects &&
-              filteredProjects.map((project, key) => (
+              projectsInformation &&
+              geneProjectsCounts &&
+              geneProjectsCounts.map((project, key) => (
                 <GeneProject
                   cases={cases}
-                  allProjects={allProjects}
+                  projectsInformation={projectsInformation}
                   key={`${key}-${project.projectId}`}
                   {...project}
                 ></GeneProject>
@@ -691,10 +698,13 @@ async function getGeneProjectsAsync(featureId) {
     },
   }
 
-  const response = await fetch('https://api.gdc.cancer.gov/v0/graphql', {
-    method: 'POST',
-    body: JSON.stringify(query),
-  })
+  const response = await fetch(
+    'https://api.gdc.cancer.gov/v0/graphql/geneProjects',
+    {
+      method: 'POST',
+      body: JSON.stringify(query),
+    },
+  )
   const result = await response.json()
   return result
 }
