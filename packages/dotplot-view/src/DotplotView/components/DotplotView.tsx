@@ -319,33 +319,67 @@ export default (pluginManager: any) => {
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
     const ref = (useRef as typeof reactUseRef)<SVGSVGElement | null>(null)
-    const [current, setCurrent] = useState()
+    const [curr, setCurr] = useState()
     const [down, setDown] = useState()
 
-    const { initialized, loading, width, height } = model
+    const {
+      initialized,
+      loading,
+      width,
+      height,
+      borderX,
+      borderSize,
+      viewHeight,
+    } = model
 
+    let left = 0
+    let top = 0
+    if (ref.current) {
+      const bounds = ref.current.getBoundingClientRect()
+      left = bounds.left
+      top = bounds.top
+    }
     useEffect(() => {
-      let cleanup = () => {}
+      const cleanup = () => {}
 
       function globalMouseMove(event: MouseEvent) {
-        setCurrent([event.clientX, event.clientY])
+        setCurr([event.offsetX, event.offsetY])
         event.preventDefault()
       }
 
-      function globalMouseUp() {
-        setDown(undefined)
-      }
+      function globalMouseUp(event: MouseEvent) {
+        if (down) {
+          setDown(undefined)
 
-      if (down) {
-        window.addEventListener('mousemove', globalMouseMove, true)
-        window.addEventListener('mouseup', globalMouseUp, true)
-        cleanup = () => {
-          window.removeEventListener('mousemove', globalMouseMove, true)
-          window.removeEventListener('mouseup', globalMouseUp, true)
+          const [currX, currY] = [event.offsetX, event.offsetY]
+          const [downX, downY] = down
+          let px1 = currX - borderX
+          let px2 = downX - borderX
+          if (px1 > px2) {
+            ;[px2, px1] = [px1, px2]
+          }
+          let py1 = viewHeight - (currY - borderSize)
+          let py2 = viewHeight - (downY - borderSize)
+          if (py1 > py2) {
+            ;[py2, py1] = [py1, py2]
+          }
+          const x1 = model.hview.pxToBp(px1)
+          const x2 = model.hview.pxToBp(px2)
+
+          const y1 = model.vview.pxToBp(py1)
+          const y2 = model.vview.pxToBp(py2)
+          model.hview.moveTo(x1, x2)
+          model.vview.moveTo(y1, y2)
         }
       }
-      return cleanup
-    }, [down, model])
+
+      window.addEventListener('mousemove', globalMouseMove)
+      window.addEventListener('mouseup', globalMouseUp)
+      return () => {
+        window.removeEventListener('mousemove', globalMouseMove)
+        window.removeEventListener('mouseup', globalMouseUp)
+      }
+    }, [borderSize, borderX, down, left, model, top, viewHeight])
 
     if (!initialized && !loading) {
       return <ImportForm model={model} />
@@ -359,14 +393,6 @@ export default (pluginManager: any) => {
       )
     }
 
-    let left = 0
-    let top = 0
-    if (ref.current) {
-      const bounds = ref.current.getBoundingClientRect()
-      left = bounds.left
-      top = bounds.top
-    }
-
     return (
       <div style={{ position: 'relative' }}>
         <Controls model={model} />
@@ -378,8 +404,8 @@ export default (pluginManager: any) => {
             ref={ref}
             onMouseDown={event => {
               if (event.button === 0) {
-                setDown([event.clientX, event.clientY])
-                setCurrent([event.clientX, event.clientY])
+                setDown([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
+                setCurr([event.nativeEvent.offsetX, event.nativeEvent.offsetY])
               }
             }}
           >
@@ -389,10 +415,10 @@ export default (pluginManager: any) => {
             {down ? (
               <rect
                 fill="rgba(255,0,0,0.3)"
-                x={Math.min(current[0], down[0]) - left}
-                y={Math.min(current[1], down[1]) - top}
-                width={Math.abs(current[0] - down[0])}
-                height={Math.abs(current[1] - down[1])}
+                x={Math.min(curr[0], down[0])}
+                y={Math.min(curr[1], down[1])}
+                width={Math.abs(curr[0] - down[0])}
+                height={Math.abs(curr[1] - down[1])}
               />
             ) : null}
           </svg>
