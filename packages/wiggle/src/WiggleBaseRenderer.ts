@@ -12,7 +12,6 @@ import { ScaleOpts } from './util'
 
 export interface WiggleBaseRendererProps {
   features: Map<string, Feature>
-  layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
   config: AnyConfigurationModel
   regions: IRegion[]
   bpPerPx: number
