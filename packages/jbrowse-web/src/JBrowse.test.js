@@ -405,7 +405,6 @@ describe('alignments track', () => {
     expect(await findByTestId('alignments_context_menu')).toBeTruthy()
   })
 
-  // TODO: write a sorting test
   it('selects a sort, updates object and layout', async () => {
     jest.setTimeout(10000)
     const state = JBrowseRootModel.create({ jbrowse: config })
@@ -415,29 +414,39 @@ describe('alignments track', () => {
     await findByText('Help')
     state.session.views[0].setNewView(5, 100)
 
-    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
-    await findByTestId('track-volvox_alignments')
+    // load track
+    fireEvent.click(
+      await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+    )
+    await findByTestId('track-volvox_alignments_pileup_coverage')
     expect(state.session.views[0].tracks[0]).toBeTruthy()
     const alignmentsTrack = state.session.views[0].tracks[0]
 
+    // open view level menu
     const viewMenu = await findByTestId('view_menu')
     fireEvent.click(viewMenu)
-
     await waitForElement(() => getByText('Sort by'))
     fireEvent.click(getByText('Sort by'))
 
+    // choose option to be sorted by
     await waitForElement(() => getByText('Read strand'))
     fireEvent.click(getByText('Read strand'))
 
-    // setTimeout(() => {
-    //   expect(alignmentsTrack.sortedBy).toBe('Read strand')
-    // }, 5000)
-
+    // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
-    const pileupCanvas = await findAllByTestId1('prerendered_canvas')
-    const pileupImg = pileupCanvas[0].toDataURL()
+    await findAllByTestId1('prerendered_canvas')
+
+    // check if sort is complete
+    expect(alignmentsTrack.sortedBy).toBe('Read strand')
+
+    // get the new track render
+    const { findAllByTestId: findAllByTestId2 } = within(
+      await findByTestId('Blockset-pileup'),
+    )
+    const pileupCanvas2 = await findAllByTestId2('prerendered_canvas')
+    const pileupImg = pileupCanvas2[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
     expect(pileupBuf).toMatchImageSnapshot({
