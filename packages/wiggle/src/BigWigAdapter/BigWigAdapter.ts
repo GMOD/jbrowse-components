@@ -146,7 +146,7 @@ export default class extends BaseFeatureDataAdapter {
         mergeAll(),
         map((record: BBIFeature) => {
           return new SimpleFeature({
-            id: record.start + 1,
+            uniqueId: String(record.start + 1),
             data: record,
           })
         }),
