@@ -32,7 +32,7 @@ export default (pluginManager: any) => {
     },
   }))
 
-  return observer(({ model }: { model: DotplotViewModel }) => {
+  const ImportForm = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
     const [selectedAssemblyIdx1, setSelectedAssemblyIdx1] = useState(0)
     const [selectedAssemblyIdx2, setSelectedAssemblyIdx2] = useState(0)
@@ -117,4 +117,5 @@ export default (pluginManager: any) => {
       </Container>
     )
   })
+  return ImportForm
 }

@@ -127,13 +127,13 @@ export default function stateModelFactory(pluginManager: any) {
             const padding = 4
             // these are set via autorun to avoid dependency cycle
             this.setBorderY(
-              self.hview.dynamicBlocks.blocks.reduce(
+              self.hview.dynamicBlocks.contentBlocks.reduce(
                 (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
                 0,
               ) + padding,
             )
             this.setBorderX(
-              self.vview.dynamicBlocks.blocks.reduce(
+              self.vview.dynamicBlocks.contentBlocks.reduce(
                 (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
                 0,
               ) + padding,

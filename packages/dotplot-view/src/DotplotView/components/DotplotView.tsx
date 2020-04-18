@@ -17,6 +17,7 @@ export default (pluginManager: any) => {
   const LinearProgress = jbrequire('@material-ui/core/LinearProgress')
   const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
   const ImportForm = jbrequire(require('./ImportForm'))
+  const useEventListener = jbrequire(require('./useEventListener'))
 
   const useStyles = (jbMakeStyles as typeof makeStyles)(theme => {
     return {
@@ -125,6 +126,14 @@ export default (pluginManager: any) => {
     const [curr, setCurr] = useState()
     const [down, setDown] = useState()
 
+    function wheel(event: WheelEvent) {
+      model.hview.horizontalScroll(event.deltaX)
+      model.vview.horizontalScroll(event.deltaY)
+      event.preventDefault()
+    }
+
+    useEventListener('wheel', wheel, ref.current)
+
     const {
       initialized,
       loading,
@@ -159,14 +168,16 @@ export default (pluginManager: any) => {
           const [downX, downY] = down
           const [xmin, xmax] = minmax(currX - left, downX)
           const [ymin, ymax] = minmax(currY - top, downY)
-          const x1 = model.hview.pxToBp(xmin)
-          const x2 = model.hview.pxToBp(xmax)
+          if (Math.abs(xmax - xmin) > 3 && Math.abs(ymax - ymin) > 3) {
+            const x1 = model.hview.pxToBp(xmin)
+            const x2 = model.hview.pxToBp(xmax)
 
-          const y1 = model.vview.pxToBp(viewHeight - ymin)
-          const y2 = model.vview.pxToBp(viewHeight - ymax)
+            const y1 = model.vview.pxToBp(viewHeight - ymin)
+            const y2 = model.vview.pxToBp(viewHeight - ymax)
 
-          model.hview.moveTo(x1, x2)
-          model.vview.moveTo(y2, y1)
+            model.hview.moveTo(x1, x2)
+            model.vview.moveTo(y2, y1)
+          }
         }
       }
 
@@ -191,7 +202,6 @@ export default (pluginManager: any) => {
     }
 
     const tickSize = 0
-
     return (
       <div style={{ position: 'relative' }}>
         <Controls model={model} />
@@ -202,8 +212,7 @@ export default (pluginManager: any) => {
                 {vview.dynamicBlocks.blocks
                   .filter(region => region.refName)
                   .map(region => {
-                    const y =
-                      viewHeight - region.offsetPx + model.vview.offsetPx
+                    const y = viewHeight - (region.offsetPx - vview.offsetPx)
                     const x = borderX
                     return (
                       <text
@@ -243,8 +252,7 @@ export default (pluginManager: any) => {
                 {hview.dynamicBlocks.blocks
                   .filter(region => region.refName)
                   .map(region => {
-                    const x =
-                      region.offsetPx + region.widthPx - model.hview.offsetPx
+                    const x = region.offsetPx - hview.offsetPx
                     return (
                       <line
                         key={JSON.stringify(region)}
@@ -259,9 +267,8 @@ export default (pluginManager: any) => {
                 {vview.dynamicBlocks.blocks
                   .filter(region => region.refName)
                   .map(region => {
-                    const y =
-                      viewHeight -
-                      (region.offsetPx + region.widthPx - model.vview.offsetPx)
+                    const y = viewHeight - (region.offsetPx - vview.offsetPx)
+
                     return (
                       <line
                         key={JSON.stringify(region)}
@@ -290,7 +297,7 @@ export default (pluginManager: any) => {
                 {hview.dynamicBlocks.blocks
                   .filter(region => region.refName)
                   .map(region => {
-                    const x = region.offsetPx + 1 - model.hview.offsetPx
+                    const x = region.offsetPx - hview.offsetPx
                     const y = tickSize
                     return (
                       <text
