@@ -39,19 +39,22 @@ interface DotplotImageData {
 }
 
 function bpToPx(self: ReducedView, refName: string, coord: number) {
-  let offsetBp = 0
+  let offset = 0
 
   const index = self.dynamicBlocks.findIndex((r: IRegion) => {
     if (refName === r.refName && coord >= r.start && coord <= r.end) {
-      offsetBp += self.horizontallyFlipped ? r.end - coord : coord - r.start
+      offset +=
+        (self.horizontallyFlipped ? r.end - coord : coord - r.start) /
+        self.bpPerPx
       return true
     }
-    offsetBp += r.end - r.start
+    // @ts-ignore
+    offset += r.widthPx
     return false
   })
   const foundRegion = self.dynamicBlocks[index]
   if (foundRegion) {
-    return Math.round(offsetBp / self.bpPerPx)
+    return Math.round(offset)
   }
   return undefined
 }

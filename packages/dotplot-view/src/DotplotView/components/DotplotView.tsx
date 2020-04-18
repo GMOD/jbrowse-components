@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { makeStyles } from '@material-ui/core/styles'
 import { useRef as reactUseRef } from 'react'
-
 import { DotplotViewModel } from '../model'
 
 export default (pluginManager: any) => {

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { intersection2 } from '@gmod/jbrowse-core/util/range'
 import { assembleLocString } from '@gmod/jbrowse-core/util'
-import { BlockSet, ContentBlock } from './blockTypes'
+import { BlockSet, ContentBlock, InterRegionPaddingBlock } from './blockTypes'
 
 const interRegionPaddingWidth = 0
 
@@ -87,6 +87,16 @@ export default function calculateDynamicBlocks(model: any) {
       blockData.key = `${assembleLocString(blockData)}${
         reversed ? '-reversed' : ''
       }`
+      if (blocks.length === 0 && isLeftEndOfDisplayedRegion) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${blockData.key}-beforeFirstRegion`,
+            widthPx: -offsetPx,
+            offsetPx: blockData.offsetPx + offsetPx,
+            variant: 'boundary',
+          }),
+        )
+      }
 
       blocks.push(new ContentBlock(blockData))
     }

@@ -49,7 +49,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
             // @ts-ignore
             ...getSnapshot(view),
             dynamicBlocks: JSON.parse(
-              JSON.stringify(view.dynamicBlocks.contentBlocks),
+              JSON.stringify(view.dynamicBlocks.getBlocks()),
             ),
           }
         }),
@@ -180,7 +180,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
       args.views.map(async view => {
         view.features = await this.getFeatures({
           ...args,
-          regions: view.dynamicBlocks,
+          regions: view.dynamicBlocks.filter(f => !!f.refName),
         })
       }),
     )
