@@ -180,7 +180,9 @@ export default class ComparativeServerSideRenderer extends RendererType {
       args.views.map(async view => {
         view.features = await this.getFeatures({
           ...args,
-          regions: view.dynamicBlocks.filter(f => !!f.refName),
+          regions: view.dynamicBlocks.filter(
+            (f: { refName: string }) => !!f.refName,
+          ),
         })
       }),
     )
