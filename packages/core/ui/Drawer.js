@@ -8,6 +8,7 @@ import ResizeHandle from './ResizeHandle'
 
 const useStyles = makeStyles(theme => ({
   paper: {
+    overflowY: 'auto',
     height: '100%',
     zIndex: theme.zIndex.drawer,
     outline: 'none',
