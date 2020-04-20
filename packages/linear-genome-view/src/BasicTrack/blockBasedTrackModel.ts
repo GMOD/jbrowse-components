@@ -227,6 +227,7 @@ const blockBasedTrack = types
       return {
         ...getParentRenderProps(self),
         trackModel: self,
+        // TODORIGHTCLICK: on feature click is here. will need a onFeatureRightClick
         onFeatureClick(event: any, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {

@@ -230,6 +230,9 @@ PileupRendering.propTypes = {
   // synthesized from mouseup and mousedown
   onFeatureClick: ReactPropTypes.func,
 
+  // TODORIGHTCLICK: will need to synthesize from mousecontextmenu
+  onFeatureRightClick: ReactPropTypes.func,
+
   onMouseDown: ReactPropTypes.func,
   onMouseUp: ReactPropTypes.func,
   onMouseEnter: ReactPropTypes.func,
@@ -253,6 +256,7 @@ PileupRendering.defaultProps = {
   onFeatureMouseLeave: undefined,
   onFeatureMouseMove: undefined,
   onFeatureClick: undefined,
+  onFeatureRightClick: undefined,
   onMouseDown: undefined,
   onMouseUp: undefined,
   onMouseEnter: undefined,

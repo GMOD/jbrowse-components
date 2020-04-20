@@ -346,6 +346,7 @@ function SvgFeatureRendering(props) {
     ],
   )
 
+  // TODORIGHTCLICK: probably need to do something similar to below but on right click only
   const click = useCallback(
     event => {
       // don't select a feature if we are clicking and dragging
