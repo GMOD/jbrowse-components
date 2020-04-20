@@ -55,7 +55,7 @@ export default createMuiTheme({
         },
         margin: 0,
         minHeight: 0,
-        padding: '0px 8px',
+        padding: '0px 12px',
       },
       content: {
         '&$expanded': {
