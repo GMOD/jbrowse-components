@@ -265,8 +265,10 @@ export function stateModelFactory(pluginManager: any) {
       rewriteOnClicks(trackType: string, viewMenuActions: MenuOption[]) {
         viewMenuActions.forEach((action: MenuOption) => {
           // go to lowest level menu
-          if ('subMenu' in action)
+          if ('subMenu' in action) {
+            // @ts-ignore
             this.rewriteOnClicks(trackType, action.subMenu)
+          }
           if ('onClick' in action) {
             const holdOnClick = action.onClick
             action.onClick = (...args: any[]) => {
@@ -287,6 +289,7 @@ export function stateModelFactory(pluginManager: any) {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
             const viewMenuActions = clone(track.viewMenuActions)
+            // @ts-ignore
             this.rewriteOnClicks(track.type, viewMenuActions)
             allActions.set(track.type, viewMenuActions)
           }

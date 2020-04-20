@@ -406,7 +406,6 @@ describe('alignments track', () => {
   })
 
   it('selects a sort, updates object and layout', async () => {
-    jest.setTimeout(10000)
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { findByTestId, findByText, getByText } = render(
       <JBrowse initialState={state} />,
@@ -432,21 +431,17 @@ describe('alignments track', () => {
     await waitForElement(() => getByText('Read strand'))
     fireEvent.click(getByText('Read strand'))
 
+    // wait til sort is complete
+    await wait(() => {
+      expect(alignmentsTrack.sortedBy).toBe('Read strand')
+    })
+
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
-    await findAllByTestId1('prerendered_canvas')
-
-    // check if sort is complete
-    expect(alignmentsTrack.sortedBy).toBe('Read strand')
-
-    // get the new track render
-    const { findAllByTestId: findAllByTestId2 } = within(
-      await findByTestId('Blockset-pileup'),
-    )
-    const pileupCanvas2 = await findAllByTestId2('prerendered_canvas')
-    const pileupImg = pileupCanvas2[0].toDataURL()
+    const pileupCanvas = await findAllByTestId1('prerendered_canvas')
+    const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
     expect(pileupBuf).toMatchImageSnapshot({
@@ -454,7 +449,7 @@ describe('alignments track', () => {
       failureThresholdType: 'percent',
     })
   })
-}, 10000)
+})
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })

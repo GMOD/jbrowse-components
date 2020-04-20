@@ -49,10 +49,16 @@ export default (pluginManager, configSchema) =>
         },
 
         get sortObject() {
-          return {
-            position: getParentRenderProps(self).trackModel.centerLinePosition,
-            by: getParentRenderProps(self).trackModel.sortedBy,
-          }
+          return getParentRenderProps(self).trackModel
+            ? {
+                position: getParentRenderProps(self).trackModel
+                  .centerLinePosition,
+                by: getParentRenderProps(self).trackModel.sortedBy,
+              }
+            : {
+                position: 0,
+                by: '',
+              }
         },
 
         /**
