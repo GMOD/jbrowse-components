@@ -174,8 +174,9 @@ class LayoutRow<T> {
     // if (oRight > this.rowState.bits.length) debugger
     if (oRight - oLeft > maxFeaturePitchWidth) {
       console.warn(
-        `Layout X pitch set too low, feature spans ${oRight -
-          oLeft} bits in a single row.`,
+        `Layout X pitch set too low, feature spans ${
+          oRight - oLeft
+        } bits in a single row.`,
         rect,
         data,
       )
@@ -419,8 +420,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     if (!row) {
       if (y > this.hardRowLimit) {
         throw new Error(
-          `layout hard limit (${this.hardRowLimit *
-            this.pitchY}px) exceeded, aborting layout`,
+          `layout hard limit (${
+            this.hardRowLimit * this.pitchY
+          }px) exceeded, aborting layout`,
         )
       }
       row = new LayoutRow(y)
