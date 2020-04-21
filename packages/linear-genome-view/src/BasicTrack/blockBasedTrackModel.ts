@@ -236,6 +236,7 @@ const blockBasedTrack = types
             const feature = self.features.get(f)
             self.selectFeature(feature as Feature)
           }
+          // TODO: onfeatureRightClick
         },
         onClick() {
           self.clearFeatureSelection()

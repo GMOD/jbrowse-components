@@ -9,6 +9,12 @@ import {
   ReactComponent,
   stateModelFactory as filterDrawerStateModelFactory,
 } from './GDCFilterDrawerWidget'
+
+import {
+  configSchema as gdcFeatureDrawerWidgetConfigSchema,
+  ReactComponent as GDCFeatureDrawerWidgetReactComponent,
+  stateModel as gdcFeatureDrawerWidgetStateModel,
+} from './GDCFeatureDrawerWidget'
 import {
   configSchemaFactory as gdcTrackConfigSchemaFactory,
   modelFactory as gdcTrackModelFactory,
@@ -48,5 +54,16 @@ export default class extends Plugin {
         LazyReactComponent: lazy(() => ReactComponent),
       })
     })
+
+    pluginManager.addDrawerWidgetType(
+      () =>
+        new DrawerWidgetType({
+          name: 'GDCFeatureDrawerWidget',
+          heading: 'Feature Details',
+          configSchema: gdcFeatureDrawerWidgetConfigSchema,
+          stateModel: gdcFeatureDrawerWidgetStateModel,
+          LazyReactComponent: lazy(() => GDCFeatureDrawerWidgetReactComponent),
+        }),
+    )
   }
 }
