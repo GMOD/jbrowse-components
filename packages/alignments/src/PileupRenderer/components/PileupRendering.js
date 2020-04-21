@@ -111,6 +111,11 @@ function PileupRendering(props) {
     setLocalFeatureIdUnderMouse(undefined)
   }
 
+  // TODORIGHTCLICK write this function
+  function onContextMenu(event) {
+    callMouseHandler('ContextMenu', event)
+  }
+
   function onMouseMove(event) {
     if (mouseIsDown) setMovedDuringLastMouseDown(true)
     let offsetX = 0
@@ -183,6 +188,7 @@ function PileupRendering(props) {
         onMouseUp={event => runner(() => onMouseUp(event))}
         onMouseLeave={event => runner(() => onMouseLeave(event))}
         onMouseMove={event => runner(() => onMouseMove(event))}
+        onContextMenu={event => runner(() => onContextMenu(event))}
         onClick={event => runner(() => onClick(event))}
         onFocus={() => {}}
         onBlur={() => {}}
@@ -231,7 +237,7 @@ PileupRendering.propTypes = {
   onFeatureClick: ReactPropTypes.func,
 
   // TODORIGHTCLICK: will need to synthesize from mousecontextmenu
-  onFeatureRightClick: ReactPropTypes.func,
+  onFeatureContextMenu: ReactPropTypes.func,
 
   onMouseDown: ReactPropTypes.func,
   onMouseUp: ReactPropTypes.func,
@@ -239,6 +245,7 @@ PileupRendering.propTypes = {
   onMouseLeave: ReactPropTypes.func,
   onMouseOver: ReactPropTypes.func,
   onMouseOut: ReactPropTypes.func,
+  onContextMenu: ReactPropTypes.func,
   onClick: ReactPropTypes.func,
 }
 
@@ -256,13 +263,14 @@ PileupRendering.defaultProps = {
   onFeatureMouseLeave: undefined,
   onFeatureMouseMove: undefined,
   onFeatureClick: undefined,
-  onFeatureRightClick: undefined,
+  onFeatureContextMenu: undefined,
   onMouseDown: undefined,
   onMouseUp: undefined,
   onMouseEnter: undefined,
   onMouseLeave: undefined,
   onMouseOver: undefined,
   onMouseOut: undefined,
+  onContextMenu: undefined,
   onClick: undefined,
 }
 
