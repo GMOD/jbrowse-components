@@ -21,12 +21,8 @@ const useStyles = makeStyles(() => ({
   table: {
     padding: 0,
   },
-  title: {
-    fontSize: '1em',
-  },
   link: {
     color: 'rgb(0, 0, 238)',
-    'text-decoration': 'underline',
   },
 }))
 
@@ -63,26 +59,25 @@ function Consequence(props) {
               ([key, value]) =>
                 value && (
                   <TableRow key={key}>
-                    <TableCell component="th" scope="row">
+                    <TableCell>
                       <Link
                         className={classes.link}
                         target="_blank"
                         rel="noopener"
                         href={`https://portal.gdc.cancer.gov/genes/${value.node.transcript.gene.gene_id}`}
+                        underline="always"
                       >
                         {value.node.transcript.gene.symbol}
                       </Link>
                     </TableCell>
-                    <TableCell component="th" scope="row">
-                      {value.node.transcript.aa_change}
-                    </TableCell>
-                    <TableCell component="th" scope="row">
+                    <TableCell>{value.node.transcript.aa_change}</TableCell>
+                    <TableCell>
                       {value.node.transcript.consequence_type}
                     </TableCell>
-                    <TableCell component="th" scope="row">
+                    <TableCell>
                       {value.node.transcript.annotation.hgvsc}
                     </TableCell>
-                    <TableCell component="th" scope="row">
+                    <TableCell>
                       {value.node.transcript.annotation.vep_impact && (
                         <Tooltip
                           title={`VEP ${value.node.transcript.annotation.vep_impact}`}
@@ -119,19 +114,20 @@ function Consequence(props) {
                         </Tooltip>
                       )}
                     </TableCell>
-                    <TableCell component="th" scope="row">
+                    <TableCell>
                       {value.node.transcript.gene.gene_strand === 1 ? (
                         <Icon>add</Icon>
                       ) : (
                         <Icon>remove</Icon>
                       )}
                     </TableCell>
-                    <TableCell component="th" scope="row">
+                    <TableCell>
                       <Link
                         className={classes.link}
                         target="_blank"
                         rel="noopener"
                         href={`http://may2015.archive.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=${value.node.transcript.transcript_id}`}
+                        underline="always"
                       >
                         {value.node.transcript.transcript_id}
                       </Link>
@@ -168,15 +164,14 @@ const ExternalLink = observer(props => {
   return (
     <>
       <TableRow key={`${id}-${name}`}>
-        <TableCell component="th" scope="row">
-          {name}
-        </TableCell>
-        <TableCell component="th" scope="row">
+        <TableCell>{name}</TableCell>
+        <TableCell>
           <Link
             className={classes.link}
             target="_blank"
             rel="noopener"
             href={`${link}${id}`}
+            underline="always"
           >
             {id}
           </Link>
@@ -270,10 +265,8 @@ const CosmicLinks = observer(props => {
   return (
     <>
       <TableRow key="0">
-        <TableCell component="th" scope="row">
-          Cosmic
-        </TableCell>
-        <TableCell component="th" scope="row">
+        <TableCell>Cosmic</TableCell>
+        <TableCell>
           {cosmicId &&
             cosmicId.map(value => (
               <Link
@@ -284,6 +277,7 @@ const CosmicLinks = observer(props => {
                   value,
                 )}`}
                 key={value}
+                underline="always"
               >
                 {value}
               </Link>
@@ -351,23 +345,20 @@ function SSMProject(props) {
   return (
     <>
       <TableRow key={projectId}>
-        <TableCell component="th" scope="row">
+        <TableCell>
           <Link
             className={classes.link}
             target="_blank"
             rel="noopener"
             href={`https://portal.gdc.cancer.gov/projects/${projectId}`}
+            underline="always"
           >
             {projectId}
           </Link>
         </TableCell>
-        <TableCell component="th" scope="row">
-          {projectInfo.node.disease_type.join(', ')}
-        </TableCell>
-        <TableCell component="th" scope="row">
-          {projectInfo.node.primary_site.join(', ')}
-        </TableCell>
-        <TableCell component="th" scope="row">
+        <TableCell>{projectInfo.node.disease_type.join(', ')}</TableCell>
+        <TableCell>{projectInfo.node.primary_site.join(', ')}</TableCell>
+        <TableCell>
           {docCount} / {gdcProjectCount.docCount}
         </TableCell>
       </TableRow>
@@ -516,30 +507,27 @@ function GeneProject(props) {
   return (
     <>
       <TableRow key={projectId}>
-        <TableCell component="th" scope="row">
+        <TableCell>
           <Link
             className={classes.link}
             target="_blank"
             rel="noopener"
             href={`https://portal.gdc.cancer.gov/projects/${projectId}`}
+            underline="always"
           >
             {projectId}
           </Link>
         </TableCell>
-        <TableCell component="th" scope="row">
-          {projectInfo.node.disease_type.join(', ')}
-        </TableCell>
-        <TableCell component="th" scope="row">
-          {projectInfo.node.primary_site.join(', ')}
-        </TableCell>
-        <TableCell component="th" scope="row">
+        <TableCell>{projectInfo.node.disease_type.join(', ')}</TableCell>
+        <TableCell>{projectInfo.node.primary_site.join(', ')}</TableCell>
+        <TableCell>
           {docCount} / {totalProjectCaseCount.docCount}
         </TableCell>
-        <TableCell component="th" scope="row">
+        <TableCell>
           {cnvGainCaseCount ? cnvGainCaseCount.docCount : '0'} /{' '}
           {cnvTotalCaseCount.docCount}
         </TableCell>
-        <TableCell component="th" scope="row">
+        <TableCell>
           {cnvLossCaseCount ? cnvLossCaseCount.docCount : '0'} /{' '}
           {cnvTotalCaseCount.docCount}
         </TableCell>
