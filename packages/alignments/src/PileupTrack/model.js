@@ -48,6 +48,19 @@ export default (pluginManager, configSchema) =>
           return rendererType
         },
 
+        get sortObject() {
+          return getParentRenderProps(self).trackModel
+            ? {
+                position: getParentRenderProps(self).trackModel
+                  .centerLinePosition,
+                by: getParentRenderProps(self).trackModel.sortedBy,
+              }
+            : {
+                position: 0,
+                by: '',
+              }
+        },
+
         /**
          * the react props that are passed to the Renderer when data
          * is rendered in this track
@@ -61,6 +74,7 @@ export default (pluginManager, configSchema) =>
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
             trackModel: self,
+            sortObject: self.sortObject,
             config,
           }
         },

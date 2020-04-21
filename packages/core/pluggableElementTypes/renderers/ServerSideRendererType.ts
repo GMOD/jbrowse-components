@@ -14,6 +14,10 @@ interface BaseRenderArgs {
   sessionId: string
   signal?: AbortSignal
   filters?: any
+  sortObject?: {
+    position: number
+    by: string
+  }
   dataAdapter: BaseAdapter
   bpPerPx: number
   config: Record<string, any>
