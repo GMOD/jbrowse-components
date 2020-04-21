@@ -9,13 +9,16 @@ import ResizeHandle from './ResizeHandle'
 const useStyles = makeStyles(theme => ({
   paper: {
     overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
     height: '100%',
-    flex: '1 0 auto',
     zIndex: theme.zIndex.drawer,
     outline: 'none',
     background: theme.palette.background.default,
+  },
+  resizeHandle: {
+    width: 4,
+    position: 'fixed',
+    top: 0,
+    zIndex: theme.zIndex.drawer + 1,
   },
 }))
 
@@ -24,19 +27,10 @@ function Drawer({ children, open, session }) {
 
   return (
     <Slide in={open} direction="left">
-      <Paper
-        style={{ width: open ? session.drawerWidth : 0 }}
-        className={classes.paper}
-        elevation={16}
-        square
-      >
+      <Paper className={classes.paper} elevation={16} square>
         <ResizeHandle
           onDrag={session.resizeDrawer}
-          style={{
-            width: 4,
-            position: 'fixed',
-            top: 0,
-          }}
+          className={classes.resizeHandle}
           vertical
         />
         {children}
