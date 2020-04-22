@@ -8,6 +8,7 @@ import { autorun } from 'mobx'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { addDisposer, types, Instance } from 'mobx-state-tree'
+import { MenuOption } from '@gmod/jbrowse-core/ui'
 import RBush from 'rbush'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import BlockState, { BlockStateModel } from './util/serverSideRenderedBlock'
@@ -25,6 +26,8 @@ const blockBasedTrack = types
         blockState: types.map(BlockState),
       })
       .volatile(() => ({
+        // TODORIGHTCLICK: add menu to volatile for track.tsx to check the state
+        contextMenu: [] as any[] | MenuOption[],
         featureIdUnderMouse: undefined as undefined | string,
         ReactComponent: BlockBasedTrack,
       })),
@@ -213,22 +216,14 @@ const blockBasedTrack = types
     },
 
     contextMenuFeature(feature: Feature) {
-      const session = getSession(self) as any
-      // add a context menu to the session
-      // session.setSelection(feature)
-      // tie the onClick of the first menu item to onFeatureClick()
-      // menu will look like
-      //   [
-      //     label: Open feature Drawer
-      //     icon: open
-      //     onClick: if closed ? self.onFeatureClick() : self.clearFeatureSelection()
-      //   ],
-      //   [
-      //     label: copy feature info
-      //     icon: copy
-      //     onClick: copy the info to clipboard
-      //   ],
-      //   etc
+      const menuOptions: MenuOption[] = [
+        {
+          label: 'Open feature drawer',
+          icon: 'menu_open',
+          onClick: () => this.selectFeature(feature),
+        },
+      ]
+      self.contextMenu = menuOptions
     },
 
     clearFeatureSelection() {
@@ -268,7 +263,7 @@ const blockBasedTrack = types
             self.clearFeatureSelection()
           } else {
             const feature = self.features.get(f)
-            self.selectFeature(feature as Feature)
+            self.contextMenuFeature(feature as Feature)
           }
         },
         onContextMenu() {

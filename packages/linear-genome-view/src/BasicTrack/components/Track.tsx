@@ -14,10 +14,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-/**
- * mostly does UI gestures: drag scrolling, etc
- */
-
+// TODORIGHTCLICK: here could be a place to render the menu logic
 const Track: React.FC<{
   onHorizontalScroll: Function
   trackId: string
@@ -31,6 +28,7 @@ const Track: React.FC<{
       role="presentation"
     >
       {children}
+      {/* {check the model contextmenu state and if it is not undefined render the menu} */}
     </div>
   )
 }

@@ -28,8 +28,17 @@ function AlignmentsTrackComponent(props) {
 
   // Set up context menu
   const [state, setState] = useState(initialState)
+  const [contextMenu, setContextMenu] = useState(model.menuOptions)
   const handleRightClick = e => {
     e.preventDefault()
+    PileupTrack.featureIdUnderMouse
+      ? console.log('menu should be ', PileupTrack.contextMenu)
+      : console.log('menu should be ', model.menuOptions)
+    setContextMenu(
+      PileupTrack.featureIdUnderMouse
+        ? PileupTrack.contextMenu
+        : model.menuOptions,
+    )
     setState({
       mouseX: e.clientX - 2,
       mouseY: e.clientY - 4,
@@ -83,7 +92,7 @@ function AlignmentsTrackComponent(props) {
             : undefined
         }
         style={{ zIndex }}
-        menuOptions={model.menuOptions}
+        menuOptions={contextMenu}
         data-testid="alignments_context_menu"
       />
     </div>
