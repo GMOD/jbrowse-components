@@ -26,7 +26,7 @@ import 'typeface-roboto'
 
 import JBrowseRootModel from './rootModel'
 
-const MAX_SESSION_SIZE_IN_URL = 10000
+const MAX_SESSION_SIZE_IN_URL = 100000
 
 async function parseConfig(configLoc) {
   let config = JSON.parse(await openLocation(configLoc).readFile('utf8'))

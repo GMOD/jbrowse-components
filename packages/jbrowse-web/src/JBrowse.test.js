@@ -1,3 +1,4 @@
+// library
 import {
   act,
   cleanup,
@@ -13,9 +14,13 @@ import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
+import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
+
+// locals
 import JBrowse from './JBrowse'
 import config from '../test_data/config_integration_test.json'
 import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
+import dotplotConfig from '../test_data/config_dotplot.json'
 import JBrowseRootModel from './rootModel'
 
 expect.extend({ toMatchImageSnapshot })
@@ -29,6 +34,9 @@ Storage.prototype.getItem = jest.fn(() => null)
 Storage.prototype.setItem = jest.fn()
 Storage.prototype.removeItem = jest.fn()
 Storage.prototype.clear = jest.fn()
+
+if (!window.TextDecoder) window.TextDecoder = TextDecoder
+if (!window.TextEncoder) window.TextEncoder = TextEncoder
 
 const getFile = url => new LocalFile(require.resolve(`../${url}`))
 // fakes server responses from local file object with fetchMock
@@ -565,4 +573,23 @@ test('404 sequence file', async () => {
     <JBrowse config={{ uri: 'test_data/config_chrom_sizes_test.json' }} />,
   )
   await findAllByText(/HTTP 404/)
+})
+
+describe('dotplot view', () => {
+  it('open a dotplot view', async () => {
+    const state = JBrowseRootModel.create({ jbrowse: dotplotConfig })
+    const { findByTestId } = render(<JBrowse initialState={state} />)
+
+    const canvas = await findByTestId('prerendered_canvas')
+
+    const img = canvas.toDataURL()
+    const data = img.replace(/^data:image\/\w+;base64,/, '')
+    const buf = Buffer.from(data, 'base64')
+    // this is needed to do a fuzzy image comparison because
+    // the travis-ci was 2 pixels different for some reason, see PR #710
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
+  })
 })

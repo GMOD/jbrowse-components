@@ -1,13 +1,22 @@
-import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect } from 'react'
-import { ImageBitmapType } from '../util/offscreenCanvasPonyfill'
+import { observer, PropTypes } from 'mobx-react'
+import { ImageBitmapType } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 
-function PrerenderedCanvas(props) {
-  const { width, height, highResolutionScaling, style, imageData } = props
+/**
+ * A block whose content is rendered outside of the main thread and hydrated by this
+ * component.
+ */
+function ServerSideSyntenyRendering(props) {
+  const { model } = props
+  const { imageData, style, renderProps } = model
+  const { width, height, highResolutionScaling = 1 } = renderProps
+
   const featureCanvas = useRef()
 
   useEffect(() => {
-    if (!imageData) return
+    if (!imageData) {
+      return
+    }
     const canvas = featureCanvas.current
     const context = canvas.getContext('2d')
     if (imageData.commands) {
@@ -29,11 +38,11 @@ function PrerenderedCanvas(props) {
       img.onload = () => context.drawImage(img, 0, 0)
       img.src = imageData.dataURL
     }
-  }, [imageData])
+  }, [height, imageData, width])
 
   return (
     <canvas
-      data-testid={`prerendered_canvas`}
+      data-testid="prerendered_canvas"
       ref={featureCanvas}
       width={width * highResolutionScaling}
       height={height * highResolutionScaling}
@@ -42,17 +51,8 @@ function PrerenderedCanvas(props) {
   )
 }
 
-PrerenderedCanvas.propTypes = {
-  height: ReactPropTypes.number.isRequired,
-  width: ReactPropTypes.number.isRequired,
-  highResolutionScaling: ReactPropTypes.number,
-  style: ReactPropTypes.objectOf(ReactPropTypes.any),
-  imageData: ReactPropTypes.any,
-}
-PrerenderedCanvas.defaultProps = {
-  imageData: undefined,
-  highResolutionScaling: 1,
-  style: {},
+ServerSideSyntenyRendering.propTypes = {
+  model: PropTypes.observableObject.isRequired,
 }
 
-export default PrerenderedCanvas
+export default observer(ServerSideSyntenyRendering)

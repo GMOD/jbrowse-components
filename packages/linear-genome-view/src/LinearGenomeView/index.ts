@@ -99,6 +99,9 @@ export function stateModelFactory(pluginManager: any) {
       afterDisplayedRegionsSetCallbacks: [] as Function[],
     }))
     .views(self => ({
+      get initialized() {
+        return self.displayedRegions.length > 0
+      },
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
       },
