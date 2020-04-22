@@ -1,5 +1,9 @@
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { assembleLocString, getSession } from '@gmod/jbrowse-core/util'
+import {
+  assembleLocString,
+  getSession,
+  isSessionModelWithDrawerWidgets,
+} from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import Icon from '@material-ui/core/Icon'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
@@ -60,6 +64,7 @@ const Controls = observer(({ model }: { model: LGV }) => {
       value="track_select"
       color="secondary"
       selected={
+        isSessionModelWithDrawerWidgets(session) &&
         session.visibleDrawerWidget &&
         session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
         // @ts-ignore

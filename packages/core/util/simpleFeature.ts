@@ -41,9 +41,18 @@ export interface Feature {
   toJSON(): SimpleFeatureSerialized
 }
 
+export function isFeature(thing: unknown): thing is Feature {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    typeof (thing as Feature).get === 'function' &&
+    typeof (thing as Feature).id === 'function'
+  )
+}
+
 // difficult to formalize type but see comments in constructor
 export interface SimpleFeatureArgs {
-  data: Record<string, unknown>
+  data: {}
   parent?: Feature
   id: string | number // thing that can be stringified easily
 }

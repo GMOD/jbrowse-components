@@ -42,7 +42,20 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   rpcManager: any
   assemblyNames: string[]
   assemblies: AnyConfigurationModel[]
+  selection?: unknown
+}
+export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'pluginManager' in thing &&
+    'configuration' in thing
+  )
+}
+
+export interface SessionWithDrawerWidgets extends AbstractSessionModel {
   visibleDrawerWidget?: { id: string }
+  drawerWidgets?: unknown[]
   addDrawerWidget(
     typeName: string,
     id: string,
@@ -51,12 +64,24 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   ): void
   showDrawerWidget(drawerWidget: unknown): void
 }
-export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
+export function isSessionModelWithDrawerWidgets(
+  thing: unknown,
+): thing is SessionWithDrawerWidgets {
+  return isSessionModel(thing) && 'drawerWidgets' in thing
+}
+
+export interface SelectionContainer {
+  selection?: unknown
+  setSelection: (thing: unknown) => void
+}
+export function isSelectionContainer(
+  thing: unknown,
+): thing is SelectionContainer {
   return (
     typeof thing === 'object' &&
     thing !== null &&
-    'pluginManager' in thing &&
-    'configuration' in thing
+    'selection' in thing &&
+    'setSelection' in thing
   )
 }
 

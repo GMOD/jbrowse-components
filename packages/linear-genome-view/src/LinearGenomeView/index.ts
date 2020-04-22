@@ -9,6 +9,7 @@ import {
   isViewContainer,
   parseLocStringAndConvertToInterbase,
   springAnimate,
+  isSessionModelWithDrawerWidgets,
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
@@ -359,13 +360,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
-          const selector = session.addDrawerWidget(
-            'HierarchicalTrackSelectorDrawerWidget',
-            'hierarchicalTrackSelector',
-            { view: self },
-          )
-          session.showDrawerWidget(selector)
-          return selector
+          if (isSessionModelWithDrawerWidgets(session)) {
+            const selector = session.addDrawerWidget(
+              'HierarchicalTrackSelectorDrawerWidget',
+              'hierarchicalTrackSelector',
+              { view: self },
+            )
+            session.showDrawerWidget(selector)
+            return selector
+          }
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
@@ -626,6 +629,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
               disabled:
+                isSessionModelWithDrawerWidgets(session) &&
                 session.visibleDrawerWidget &&
                 session.visibleDrawerWidget.id ===
                   'hierarchicalTrackSelector' &&

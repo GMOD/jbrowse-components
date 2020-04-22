@@ -133,7 +133,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: INoAssemblyRegion) {
     const { refName, start, end } = region
 
-    return ObservableCreate<SimpleFeature>(async observer => {
+    return ObservableCreate<Feature>(async observer => {
       const features = this.features.get(refName) || []
       for (let i = 0; i < features.length; i += 1) {
         const f = features[i]

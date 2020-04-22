@@ -1,12 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { autorun } from 'mobx'
-import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
+import {
+  getSession,
+  getContainingView,
+  isSessionModelWithDrawerWidgets,
+  isSelectionContainer,
+} from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { addDisposer, types, Instance } from 'mobx-state-tree'
 import RBush from 'rbush'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { Feature, isFeature } from '@gmod/jbrowse-core/util/simpleFeature'
 import BlockState from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
 import { BaseBlock, ContentBlock } from './util/blockTypes'
@@ -148,16 +152,11 @@ const blockBasedTrack = types
        * is probably a feature
        */
       get selectedFeatureId() {
-        const session = getSession(self) as any
-        if (!session) return undefined
+        const session = getSession(self)
+        if (!session) throw new Error('no session found in state tree!')
         const { selection } = session
         // does it quack like a feature?
-        if (
-          selection &&
-          typeof selection.get === 'function' &&
-          typeof selection.id === 'function'
-        ) {
-          // probably is a feature
+        if (isFeature(selection)) {
           return selection.id()
         }
         return undefined
@@ -171,7 +170,7 @@ const blockBasedTrack = types
       const blockWatchDisposer = autorun(() => {
         // create any blocks that we need to create
         const blocksPresent: { [key: string]: boolean } = {}
-        self.blockDefinitions.forEach((block: any) => {
+        self.blockDefinitions.forEach(block => {
           if (!(block instanceof ContentBlock)) return
           blocksPresent[block.key] = true
           if (!self.blockState.has(block.key)) {
@@ -202,8 +201,8 @@ const blockBasedTrack = types
     },
 
     selectFeature(feature: Feature) {
-      const session = getSession(self) as any
-      if (session.drawerWidgets) {
+      const session = getSession(self)
+      if (isSessionModelWithDrawerWidgets(session)) {
         const featureWidget = session.addDrawerWidget(
           'BaseFeatureDrawerWidget',
           'baseFeature',
@@ -211,7 +210,9 @@ const blockBasedTrack = types
         )
         session.showDrawerWidget(featureWidget)
       }
-      session.setSelection(feature)
+      if (isSelectionContainer(session)) {
+        session.setSelection(feature)
+      }
     },
 
     clearFeatureSelection() {
@@ -229,7 +230,7 @@ const blockBasedTrack = types
       return {
         ...getParentRenderProps(self),
         trackModel: self,
-        onFeatureClick(event: any, featureId: string | undefined) {
+        onFeatureClick(event: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
             self.clearFeatureSelection()

@@ -137,7 +137,7 @@ function makeConfigurationSchemaModel<
       volatileConstants[slotName] = slotDefinition
     } else if (typeof slotDefinition === 'object') {
       // this is a slot definition
-      if (!('type' in slotDefinition) || !slotDefinition.type) {
+      if (!slotDefinition.type) {
         throw new Error(`no type set for config slot ${modelName}.${slotName}`)
       }
       try {
