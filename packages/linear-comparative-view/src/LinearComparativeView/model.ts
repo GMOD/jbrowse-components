@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
+
+import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { types, Instance } from 'mobx-state-tree'
@@ -49,10 +51,6 @@ export default function stateModelFactory(pluginManager: any) {
       ),
     })
     .views(self => ({
-      get controlsWidth() {
-        return self.views.length ? self.views[0].controlsWidth : 0
-      },
-
       get refNames() {
         return (self.views || []).map(v => [
           ...new Set(v.staticBlocks.map(m => m.refName)),
@@ -180,6 +178,30 @@ export default function stateModelFactory(pluginManager: any) {
         )
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
+      },
+    }))
+    .views(self => ({
+      get menuOptions(): MenuOption[] {
+        const session = getSession(self) as any
+        const menuOptions: MenuOption[] = []
+        self.views.forEach((view, idx) => {
+          if (view.menuOptions) {
+            menuOptions.push({
+              label: `View ${idx + 1} Menu`,
+              subMenu: view.menuOptions,
+            })
+          }
+        })
+        menuOptions.push({
+          label: 'Open track selector',
+          onClick: self.activateTrackSelector,
+          icon: 'line_style',
+          disabled:
+            session.visibleDrawerWidget &&
+            session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
+            session.visibleDrawerWidget.view.id === self.id,
+        })
+        return menuOptions
       },
     }))
 }

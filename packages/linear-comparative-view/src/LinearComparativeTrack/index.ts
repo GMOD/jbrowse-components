@@ -148,6 +148,8 @@ function renderBlockData(self: LinearComparativeTrack) {
     const { adapterConfig } = self
     const adapterConfigId = jsonStableStringify(adapterConfig)
     const parentView = getParent(self, 2)
+    const { views, width, height } = parentView
+    console.log(width, height)
     return {
       rendererType,
       rpcManager,
@@ -158,31 +160,12 @@ function renderBlockData(self: LinearComparativeTrack) {
         sequenceAdapterType: sequenceConfig.type,
         sequenceAdapterConfig: sequenceConfig,
         rendererType: rendererType.name,
-        views: parentView.views.map((view: any) => {
-          return {
-            ...(getSnapshot(view) as any),
-            regions: view.staticBlocks.getRegions(),
-            staticBlocks: view.staticBlocks.getRegions(),
-            dynamicBlocks: view.dynamicBlocks.getRegions(),
-            displayedRegions: view.displayedRegions,
-            features: JSON.stringify(view.features),
-            // important params for overlays
-            headerHeight: view.headerHeight,
-            height: view.height,
-            scaleBarHeight: view.scaleBarHeight,
-            // details about inner tracks such as layoutFeatures for overlays
-            tracks: view.tracks.map((t: any) => {
-              return {
-                ...(getSnapshot(t) as any),
-                layoutFeatures: Array.from(t.layoutFeatures.entries()),
-                height: t.height,
-                scrollTop: t.scrollTop,
-                skip: t.SNPCoverageTrack ? t.SNPCoverageTrack.height + 5 : 0,
-              }
-            }),
-          }
-        }),
-        renderProps,
+        views,
+        renderProps: {
+          ...renderProps,
+          width,
+          height,
+        },
         sessionId: adapterConfigId,
         timeout: 1000000, // 10000,
       },
@@ -208,6 +191,7 @@ async function renderBlockEffect(
   }
 
   const { rendererType, rpcManager, renderArgs } = props
+  console.log(renderArgs)
 
   const { html, ...data } = await rendererType.renderInClient(
     rpcManager,

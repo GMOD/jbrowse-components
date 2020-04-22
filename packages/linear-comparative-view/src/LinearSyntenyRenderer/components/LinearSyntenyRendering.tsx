@@ -10,13 +10,9 @@ import { LinearSyntenyRenderingProps } from '../LinearSyntenyRenderer'
  * component.
  */
 function LinearSyntenyRendering(props: LinearSyntenyRenderingProps) {
-  const {
-    trackModel = {},
-    width,
-    height,
-    highResolutionScaling = 1,
-    imageData,
-  } = props
+  const { trackModel = {}, highResolutionScaling = 1, imageData } = props
+  const { width, height } = imageData
+  console.log(width, height)
   let voffs = [0, 0]
   if (trackModel && isStateTreeNode(trackModel)) {
     // @ts-ignore

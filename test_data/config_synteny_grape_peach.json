@@ -208,12 +208,6 @@
         "peach"
       ],
       "name": "mcscan",
-      "configRelationships": [
-        {
-          "type": "syntenyGroup",
-          "target": "group2"
-        }
-      ],
       "category": [
         "Annotation"
       ],
@@ -232,12 +226,6 @@
         "peach"
       ],
       "name": "mcscan2",
-      "configRelationships": [
-        {
-          "type": "syntenyGroup",
-          "target": "group3"
-        }
-      ],
       "category": [
         "Annotation"
       ],
@@ -256,12 +244,6 @@
       "assemblyNames": [
         "grape"
       ],
-      "configRelationships": [
-        {
-          "type": "syntenyGroup",
-          "target": "group2"
-        }
-      ],
       "category": [
         "Annotation"
       ],
@@ -277,12 +259,6 @@
       "trackId": "grape_genes2",
       "type": "BasicTrack",
       "name": "mcscan2",
-      "configRelationships": [
-        {
-          "type": "syntenyGroup",
-          "target": "group3"
-        }
-      ],
       "category": [
         "Annotation"
       ],

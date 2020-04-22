@@ -40,7 +40,7 @@ export default class extends BaseAdapter {
     subadapters: BaseAdapter[] | any // todo remove any
     assemblyNames: string[]
   }) {
-    super()
+    super(config)
     const { mcscanSimpleAnchorsLocation, subadapters, assemblyNames } = config
     this.mcscanSimpleAnchorsLocation = openLocation(mcscanSimpleAnchorsLocation)
 

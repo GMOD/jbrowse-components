@@ -72,7 +72,7 @@ export default (pluginManager: any) => {
   const MiddleComparativeView = observer(
     ({ model }: { model: LinearComparativeViewModel }) => {
       const classes = useStyles()
-      const { views, controlsWidth } = model
+      const { views } = model
       const { ReactComponent } = pluginManager.getViewType(views[0].type)
       model.setHeight(100)
       return (
@@ -85,7 +85,6 @@ export default (pluginManager: any) => {
                   <ReactComponent model={views[0]} />
                 </div>
                 <div style={{ display: 'flex' }}>
-                  <div style={{ width: controlsWidth, flexShrink: 0 }} />
                   <Overlays model={model} />
                 </div>
                 <div className={classes.viewContainer}>
@@ -101,7 +100,7 @@ export default (pluginManager: any) => {
   const OverlayComparativeView = observer(
     ({ model }: { model: LinearComparativeViewModel }) => {
       const classes = useStyles()
-      const { views, controlsWidth } = model
+      const { views } = model
       const ref = useRef(null)
       const size = useComponentSize(ref)
       model.setHeight(size.height - 20)
@@ -124,7 +123,6 @@ export default (pluginManager: any) => {
               </div>
             </div>
             <div className={classes.overlay}>
-              <div style={{ width: controlsWidth, flexShrink: 0 }} />
               <Overlays model={model} />
             </div>
           </div>

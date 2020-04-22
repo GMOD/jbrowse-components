@@ -38,24 +38,24 @@ export default class ComparativeServerSideRenderer extends RendererType {
    */
   serializeArgsInClient(args: RenderArgs) {
     const { trackModel } = args.renderProps
-    if (trackModel) {
-      args.renderProps = {
-        ...args.renderProps,
-        // @ts-ignore
-        blockKey: args.blockKey,
-        // @ts-ignore
-        views: args.views.map(view => {
-          return {
-            // @ts-ignore
-            ...getSnapshot(view),
-            dynamicBlocks: JSON.parse(
-              JSON.stringify(view.dynamicBlocks.contentBlocks),
-            ),
-          }
-        }),
-        trackModel: {},
-      }
+    console.log(args.renderProps)
+    args.renderProps = {
+      ...args.renderProps,
+      // @ts-ignore
+      blockKey: args.blockKey,
+      // @ts-ignore
+      views: args.views.map(view => {
+        return {
+          // @ts-ignore
+          ...getSnapshot(view),
+          dynamicBlocks: JSON.parse(
+            JSON.stringify(view.dynamicBlocks.contentBlocks),
+          ),
+        }
+      }),
+      trackModel: {},
     }
+    delete args.views
 
     return args
   }
