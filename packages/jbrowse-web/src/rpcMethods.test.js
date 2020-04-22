@@ -75,7 +75,7 @@ test('can render a single region with SvgFeatures + BamAdapter', async () => {
     new Set(['html', 'features', 'layout', 'maxHeightReached']),
   )
   expect(result.maxHeightReached).toBe(true)
-  expect(result.features.length).toBe(71)
+  expect(result.features.length).toBe(93)
   expect(result.html).toMatchSnapshot()
   expect(result.layout).toMatchSnapshot()
 
@@ -103,6 +103,7 @@ test('throws if no session ID', async () => {
     /must pass a unique session id/,
   )
 })
+
 test('can render a single region with SvgFeatures + BamAdapter (larger maxHeight)', async () => {
   const testprops = {
     ...baseprops,
