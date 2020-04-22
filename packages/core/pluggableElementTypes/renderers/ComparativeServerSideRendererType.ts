@@ -49,7 +49,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
             // @ts-ignore
             ...getSnapshot(view),
             dynamicBlocks: JSON.parse(
-              JSON.stringify(view.dynamicBlocks.getBlocks()),
+              JSON.stringify(view.dynamicBlocks.contentBlocks),
             ),
           }
         }),

@@ -9,10 +9,15 @@ import {
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
 
+interface Block extends IRegion {
+  offsetPx: number
+  widthPx: number
+}
+
 interface ReducedView {
   features: Feature[]
   displayedRegions: IRegion[]
-  dynamicBlocks: IRegion[]
+  dynamicBlocks: Block[]
   horizontallyFlipped: boolean
   bpPerPx: number
 }
@@ -41,14 +46,13 @@ interface DotplotImageData {
 function bpToPx(self: ReducedView, refName: string, coord: number) {
   let offset = 0
 
-  const index = self.dynamicBlocks.findIndex((r: IRegion) => {
+  const index = self.dynamicBlocks.findIndex(r => {
     if (refName === r.refName && coord >= r.start && coord <= r.end) {
       offset +=
         (self.horizontallyFlipped ? r.end - coord : coord - r.start) /
         self.bpPerPx
       return true
     }
-    // @ts-ignore
     offset += r.widthPx
     return false
   })
@@ -143,11 +147,15 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       null,
     )
 
+    const { views } = renderProps
+
     return {
       element,
       imageData,
       height,
       width,
+      offsetX: views[0].dynamicBlocks[0].offsetPx,
+      offsetY: views[1].dynamicBlocks[0].offsetPx,
     }
   }
 }
