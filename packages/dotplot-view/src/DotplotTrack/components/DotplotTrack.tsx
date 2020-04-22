@@ -10,6 +10,7 @@ const DotplotTrack: React.FC<{
 }> = props => {
   const { model, children } = props
   const { offsetX = 0, offsetY = 0 } = model.data || {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const view = getContainingView(model) as any
   const top = view.vview.offsetPx - offsetY
   const left = -(view.hview.offsetPx - offsetX)
