@@ -9,6 +9,7 @@ import {
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
+import { sortFeature } from './sortUtil'
 
 interface PileupRenderProps {
   features: Map<string, Feature>
@@ -19,6 +20,10 @@ interface PileupRenderProps {
   height: number
   width: number
   highResolutionScaling: number
+  sortObject: {
+    position: number
+    by: string
+  }
 }
 
 interface PileupImageData {
@@ -87,6 +92,7 @@ export default class extends BoxRendererType {
       config,
       region,
       bpPerPx,
+      sortObject,
       highResolutionScaling = 1,
     } = props
 
@@ -96,10 +102,16 @@ export default class extends BoxRendererType {
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const w = Math.max(minFeatWidth, pxPerBp)
 
+    const sortedFeatures =
+      sortObject && sortObject.by && region.start === sortObject.position
+        ? sortFeature(features, sortObject, bpPerPx, region)
+        : null
+
+    const featureMap = sortedFeatures || features
     const layoutRecords = iterMap(
-      features.values(),
+      featureMap.values(),
       feature => this.layoutFeature(feature, layout, config, bpPerPx, region),
-      features.size,
+      featureMap.size,
     )
 
     const width = (region.end - region.start) / bpPerPx
@@ -121,6 +133,7 @@ export default class extends BoxRendererType {
       if (feat === null) {
         return
       }
+
       const { feature, leftPx, rightPx, topPx, heightPx } = feat
       ctx.fillStyle = readConfObject(config, 'color', [feature])
       ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
@@ -235,6 +248,7 @@ export default class extends BoxRendererType {
       { ...renderProps, height, width, imageData },
       null,
     )
+
     return {
       element,
       imageData,

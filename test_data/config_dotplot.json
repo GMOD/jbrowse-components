@@ -1,0 +1,131 @@
+{
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    },
+    "updateUrl": true
+  },
+  "assemblies": [
+    {
+      "name": "grape",
+      "sequence": {
+        "trackId": "grape_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/grape.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
+    },
+    {
+      "name": "peach",
+      "sequence": {
+        "trackId": "peach_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/peach.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "DotplotTrack",
+      "trackId": "dotplot_track",
+      "name": "dotplot",
+      "assemblyNames": [
+        "grape",
+        "peach"
+      ],
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "test_data/peach_grape.paf"
+        },
+        "assemblyNames": [
+          "peach",
+          "grape"
+        ]
+      },
+      "renderer": {
+        "type": "DotplotRenderer"
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "New Session",
+    "menuBars": [
+      {
+        "type": "MainMenuBar"
+      }
+    ]
+  },
+  "savedSessions": [
+    {
+      "name": "Grape vs Peach",
+      "width": 1850,
+      "drawerWidth": 384,
+      "views": [
+        {
+          "id": "MiDMyyWpp",
+          "type": "DotplotView",
+          "assemblyNames": [
+            "peach",
+            "grape"
+          ],
+          "hview": {
+            "displayedRegions": [],
+            "bpPerPx": 100000,
+            "offsetPx": 0
+          },
+          "vview": {
+            "displayedRegions": [],
+            "bpPerPx": 100000,
+            "offsetPx": 0
+          },
+          "tracks": [
+            {
+              "type": "DotplotTrack",
+              "configuration": "dotplot_track"
+            }
+          ],
+          "headerHeight": 44,
+          "width": 1850,
+          "height": 600,
+          "displayName": "Grape vs Peach dotplot",
+          "trackSelectorType": "hierarchical"
+        }
+      ],
+      "drawerWidgets": {
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "collapsed": {},
+          "filterText": ""
+        },
+        "sessionManager": {
+          "id": "sessionManager",
+          "type": "SessionManager"
+        }
+      },
+      "activeDrawerWidgets": {},
+      "menuBars": [
+        {
+          "type": "MainMenuBar"
+        }
+      ],
+      "connections": {}
+    }
+  ]
+}

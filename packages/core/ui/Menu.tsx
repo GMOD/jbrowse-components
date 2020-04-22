@@ -295,10 +295,10 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
               />
             )
           }
-          let onClick
-          if ('onClick' in menuOption) {
-            onClick = handleClick(menuOption.onClick)
-          }
+          const onClick =
+            'onClick' in menuOption
+              ? handleClick(menuOption.onClick)
+              : undefined
           return (
             <MenuItem
               key={menuOption.label}

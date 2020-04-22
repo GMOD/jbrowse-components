@@ -14,6 +14,7 @@ import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
 import { getParent, getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
 
+import clone from 'clone'
 import { BlockSet } from '../BasicTrack/util/blockTypes'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
@@ -26,6 +27,10 @@ interface BpOffset {
   offset: number
   start?: number
   end?: number
+}
+
+interface ViewActions {
+  [key: string]: MenuOption[]
 }
 const validBpPerPx = [
   1 / 50,
@@ -82,6 +87,7 @@ export function stateModelFactory(pluginManager: any) {
         'hierarchical',
       ),
       minimumBlockWidth: 20,
+      showCenterLine: false,
     })
     .volatile(() => ({
       width: 800,
@@ -93,6 +99,9 @@ export function stateModelFactory(pluginManager: any) {
       afterDisplayedRegionsSetCallbacks: [] as Function[],
     }))
     .views(self => ({
+      get initialized() {
+        return self.displayedRegions.length > 0
+      },
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
       },
@@ -254,6 +263,50 @@ export function stateModelFactory(pluginManager: any) {
         }
         return accum
       },
+
+      // modifies view menu action onClick to apply to all tracks of same type
+      rewriteOnClicks(trackType: string, viewMenuActions: MenuOption[]) {
+        viewMenuActions.forEach((action: MenuOption) => {
+          // go to lowest level menu
+          if ('subMenu' in action) {
+            // @ts-ignore
+            this.rewriteOnClicks(trackType, action.subMenu)
+          }
+          if ('onClick' in action) {
+            const holdOnClick = action.onClick
+            action.onClick = (...args: any[]) => {
+              self.tracks.forEach(track => {
+                if (track.type === trackType) {
+                  // @ts-ignore
+                  holdOnClick.apply(track, [track, ...args])
+                }
+              })
+            }
+          }
+        })
+      },
+
+      get trackTypeActions() {
+        const allActions: Map<string, MenuOption[]> = new Map()
+        self.tracks.forEach((track: any) => {
+          const trackInMap = allActions.get(track.type)
+          if (!trackInMap) {
+            const viewMenuActions = clone(track.viewMenuActions)
+            // @ts-ignore
+            this.rewriteOnClicks(track.type, viewMenuActions)
+            allActions.set(track.type, viewMenuActions)
+          }
+        })
+
+        return allActions
+      },
+
+      get centerLineInfo() {
+        const centerLineInfo = self.displayedRegions.length
+          ? this.pxToBp(self.width / 2)
+          : undefined
+        return centerLineInfo
+      },
     }))
     .actions(self => ({
       setWidth(newWidth: number) {
@@ -338,6 +391,10 @@ export function stateModelFactory(pluginManager: any) {
         const hiddenCount = this.hideTrack(configuration)
         // if none had that configuration, turn one on
         if (!hiddenCount) this.showTrack(configuration)
+      },
+
+      toggleCenterLine() {
+        self.showCenterLine = !self.showCenterLine
       },
 
       setDisplayedRegions(regions: IRegion[]) {
@@ -610,10 +667,11 @@ export function stateModelFactory(pluginManager: any) {
       return {
         get menuOptions(): MenuOption[] {
           const session: any = getSession(self)
-          return [
+          const menuOptions: MenuOption[] = [
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
+              icon: 'line_style',
               disabled:
                 session.visibleDrawerWidget &&
                 session.visibleDrawerWidget.id ===
@@ -622,26 +680,52 @@ export function stateModelFactory(pluginManager: any) {
             },
             {
               label: 'Horizontally flip',
+              icon: 'sync_alt',
               onClick: self.horizontallyFlip,
             },
             {
               label: 'Show all regions',
+              icon: 'visibility',
               onClick: self.showAllRegions,
             },
             {
               label: 'Show header',
+              icon: 'visibility',
               type: 'checkbox',
               checked: !self.hideHeader,
               onClick: self.toggleHeader,
             },
             {
               label: 'Show header overview',
+              icon: 'visibility',
               type: 'checkbox',
               checked: !self.hideHeaderOverview,
               onClick: self.toggleHeaderOverview,
               disabled: self.hideHeader,
             },
+            {
+              label: 'Show center line',
+              icon: 'visibility',
+              type: 'checkbox',
+              checked: self.showCenterLine,
+              onClick: self.toggleCenterLine,
+            },
           ]
+
+          // add track's view level menu options
+          for (const [key, value] of self.trackTypeActions.entries()) {
+            if (value.length) {
+              menuOptions.push(
+                { type: 'divider' },
+                { type: 'subHeader', label: key },
+              )
+              value.forEach(action => {
+                menuOptions.push(action)
+              })
+            }
+          }
+
+          return menuOptions
         },
 
         get staticBlocks() {

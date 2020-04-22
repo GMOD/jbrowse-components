@@ -1,3 +1,4 @@
+// library
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import '@testing-library/jest-dom/extend-expect'
 import {
@@ -7,6 +8,7 @@ import {
   fireEvent,
   render,
   wait,
+  waitForElement,
   within,
 } from '@testing-library/react'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
@@ -14,8 +16,11 @@ import { LocalFile } from 'generic-filehandle'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import rangeParser from 'range-parser'
 import React from 'react'
+
+// locals
 import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
 import chromeSizesConfig from '../test_data/config_chrom_sizes_test.json'
+import dotplotConfig from '../test_data/config_dotplot.json'
 import configSnapshot from '../test_data/config_integration_test.json'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
@@ -209,6 +214,28 @@ describe('valid file tests', () => {
     await findByTestId('track-volvox_refseq')
     expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
   })
+
+  it('click to display center line with correct value', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, getByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+    await findByTestId('track-volvox_alignments')
+
+    // opens the view menu and selects show center line
+    const viewMenu = await findByTestId('view_menu')
+    fireEvent.click(viewMenu)
+    await waitForElement(() => getByText('Show center line'))
+    fireEvent.click(getByText('Show center line'))
+    expect(state.session.views[0].showCenterLine).toBe(true)
+
+    const { centerLineInfo } = state.session.views[0]
+    expect(centerLineInfo.refName).toBe('ctgA')
+    expect(centerLineInfo.offset).toEqual(120)
+  })
 })
 
 describe('some error state', () => {
@@ -399,6 +426,63 @@ describe('alignments track', () => {
       failureThresholdType: 'percent',
     })
   }, 10000)
+
+  it('access alignments context menu', async () => {
+    const pluginManager = getPluginManager()
+    const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+    const track = await findByTestId('track-volvox_alignments')
+
+    fireEvent.contextMenu(track, { clientX: 250, clientY: 20 })
+
+    expect(await findByTestId('alignments_context_menu')).toBeTruthy()
+  })
+
+  it('selects a sort, updates object and layout', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText, getByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(5, 100)
+
+    // load track
+    fireEvent.click(
+      await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+    )
+    await findByTestId('track-volvox_alignments_pileup_coverage')
+    expect(state.session.views[0].tracks[0]).toBeTruthy()
+    const alignmentsTrack = state.session.views[0].tracks[0]
+
+    // open view level menu
+    const viewMenu = await findByTestId('view_menu')
+    fireEvent.click(viewMenu)
+    await waitForElement(() => getByText('Sort by'))
+    fireEvent.click(getByText('Sort by'))
+
+    // choose option to be sorted by
+    await waitForElement(() => getByText('Read strand'))
+    fireEvent.click(getByText('Read strand'))
+
+    // wait til sort is complete
+    await wait(() => {
+      expect(alignmentsTrack.sortedBy).toBe('Read strand')
+    })
+
+    // wait for pileup track to render
+    const { findAllByTestId: findAllByTestId1 } = within(
+      await findByTestId('Blockset-pileup'),
+    )
+    const pileupCanvas = await findAllByTestId1('prerendered_canvas')
+    const pileupImg = pileupCanvas[0].toDataURL()
+    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
+    const pileupBuf = Buffer.from(pileupData, 'base64')
+    expect(pileupBuf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
+  })
 })
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
@@ -496,4 +580,23 @@ test('404 sequence file', async () => {
   const pluginManager = getPluginManager(chromeSizesConfig)
   const { findAllByText } = render(<JBrowse pluginManager={pluginManager} />)
   await findAllByText(/HTTP 404/)
+})
+
+describe('dotplot view', () => {
+  it('open a dotplot view', async () => {
+    const pluginManager = getPluginManager(dotplotConfig)
+    const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
+
+    const canvas = await findByTestId('prerendered_canvas')
+
+    const img = canvas.toDataURL()
+    const data = img.replace(/^data:image\/\w+;base64,/, '')
+    const buf = Buffer.from(data, 'base64')
+    // this is needed to do a fuzzy image comparison because
+    // the travis-ci was 2 pixels different for some reason, see PR #710
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
+  })
 })

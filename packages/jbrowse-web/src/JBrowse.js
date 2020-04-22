@@ -9,7 +9,7 @@ import { getSnapshot, onSnapshot } from 'mobx-state-tree'
 import queryString from 'query-string'
 import React, { useEffect, useState } from 'react'
 
-const MAX_SESSION_SIZE_IN_URL = 10000
+const MAX_SESSION_SIZE_IN_URL = 100000
 
 const JBrowse = observer(({ pluginManager }) => {
   const [urlSnapshot, setUrlSnapshot] = useState()

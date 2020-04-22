@@ -3,10 +3,7 @@ import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
-import {
-  getContainingView,
-  getParentRenderProps,
-} from '@gmod/jbrowse-core/util/tracks'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { types } from 'mobx-state-tree'
 import React from 'react'
 
@@ -123,16 +120,15 @@ const BaseTrack = types
      * renderer
      */
     get rendererType() {
-      const track = getContainingView(self)
       const session: any = getSession(self)
       const RendererType = session.pluginManager.getRendererType(
         self.rendererTypeName,
       )
       if (!RendererType)
-        throw new Error(`renderer "${track.rendererTypeName}" not found`)
+        throw new Error(`renderer "${self.rendererTypeName}" not found`)
       if (!RendererType.ReactComponent)
         throw new Error(
-          `renderer ${track.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
+          `renderer ${self.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
         )
       return RendererType
     },
@@ -167,6 +163,10 @@ const BaseTrack = types
     },
 
     get menuOptions(): MenuOption[] {
+      return []
+    },
+
+    get viewMenuActions(): MenuOption[] {
       return []
     },
 

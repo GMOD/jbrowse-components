@@ -10,6 +10,7 @@ import {
 import RubberBand from './RubberBand'
 import ScaleBar from './ScaleBar'
 import VerticalGuides from './VerticalGuides'
+import CenterLine from './CenterLine'
 
 const useStyles = makeStyles(theme => ({
   tracksContainer: {
@@ -123,6 +124,7 @@ function TracksContainer({
       onMouseLeave={mouseLeave}
     >
       <VerticalGuides model={model}>
+        {model.showCenterLine && <CenterLine model={model}></CenterLine>}
         <RubberBand
           model={model}
           ControlComponent={
