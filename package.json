@@ -85,7 +85,7 @@
     "lerna": "^3.4.1",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
-    "mobx-state-tree": "3.15.0",
+    "mobx-state-tree": "3.14.1",
     "node-sass": "^4.9.3",
     "open-cli": "^5.0.0",
     "postcss-flexbugs-fixes": "^4.1.0",
