@@ -4,8 +4,8 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Tooltip from '@material-ui/core/Tooltip'
 import { observer, PropTypes } from 'mobx-react'
 import React from 'react'
-
 import DrawerWidget from './DrawerWidget'
+import DropDownMenu from './DropDownMenu'
 import EditableTypography from './EditableTypography'
 import LogoFull from './LogoFull'
 import Snackbar from './Snackbar'
@@ -87,7 +87,14 @@ function App({ session }) {
         <div className={classes.menuBar}>
           <AppBar className={classes.appBar} position="static">
             <Toolbar variant="dense">
-              Help
+              {session.menus.map(menu => (
+                <DropDownMenu
+                  key={menu.label}
+                  menuTitle={menu.label}
+                  menuItems={menu.menuItems}
+                  session={session}
+                />
+              ))}
               <div className={classes.grow} />
               <Tooltip title="Rename Session" arrow>
                 <EditableTypography

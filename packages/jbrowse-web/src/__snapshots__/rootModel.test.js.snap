@@ -1,5 +1,65 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Root MST model adds menus 1`] = `
+Array [
+  Object {
+    "label": "File",
+    "menuItems": Array [
+      Object {
+        "icon": "add",
+        "label": "New Session",
+        "onClick": [Function],
+      },
+    ],
+  },
+]
+`;
+
+exports[`Root MST model adds menus 2`] = `
+Array [
+  Object {
+    "label": "File",
+    "menuItems": Array [
+      Object {
+        "icon": "add",
+        "label": "New Session",
+        "onClick": [Function],
+      },
+    ],
+  },
+  Object {
+    "label": "Second Menu",
+    "menuItems": Array [
+      Object {
+        "label": "First Menu Item",
+        "onClick": [Function],
+      },
+      Object {
+        "label": "Second Menu Item",
+        "onClick": [Function],
+      },
+      Object {
+        "label": "First Sub Menu",
+        "subMenu": Array [
+          Object {
+            "label": "First Sub Menu Item",
+            "onClick": [Function],
+          },
+          Object {
+            "label": "Second Sub Menu Item",
+            "onClick": [Function],
+          },
+        ],
+      },
+    ],
+  },
+  Object {
+    "label": "Third Menu",
+    "menuItems": Array [],
+  },
+]
+`;
+
 exports[`Root MST model adds track and connection configs to an assembly 1`] = `
 Object {
   "aliases": Array [

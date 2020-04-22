@@ -103,7 +103,7 @@ describe('<JBrowse />', () => {
 })
 
 describe('valid file tests', () => {
-  xit('access about menu', async () => {
+  it('access about menu', async () => {
     const pluginManager = getPluginManager()
     const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
 

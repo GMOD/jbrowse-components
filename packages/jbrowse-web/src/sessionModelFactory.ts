@@ -93,6 +93,9 @@ export default function sessionModelFactory(pluginManager: any) {
       get history() {
         return getParent(self).history
       },
+      get menus() {
+        return getParent(self).menus
+      },
 
       get visibleDrawerWidget() {
         if (isAlive(self))

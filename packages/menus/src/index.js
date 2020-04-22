@@ -64,4 +64,57 @@ export default class extends Plugin {
       })
     })
   }
+
+  configure(pluginManager) {
+    if (pluginManager.rootModel && pluginManager.rootModel.menus) {
+      pluginManager.rootModel.appendToMenu('Help', {
+        label: 'About',
+        icon: 'info',
+        onClick: session => {
+          const drawerWidget = session.addDrawerWidget(
+            'AboutDrawerWidget',
+            'aboutDrawerWidget',
+          )
+          session.showDrawerWidget(drawerWidget)
+        },
+      })
+      pluginManager.rootModel.appendToMenu('Help', {
+        label: 'Help',
+        icon: 'help',
+        onClick: session => {
+          const drawerWidget = session.addDrawerWidget(
+            'HelpDrawerWidget',
+            'helpDrawerWidget',
+          )
+          session.showDrawerWidget(drawerWidget)
+        },
+      })
+      pluginManager.rootModel.insertInMenu(
+        'File',
+        {
+          label: 'Open Session…',
+          icon: 'folder_open',
+          onClick: session => {
+            const drawerWidget = session.addDrawerWidget(
+              'SessionManager',
+              'sessionManager',
+            )
+            session.showDrawerWidget(drawerWidget)
+          },
+        },
+        1,
+      )
+      pluginManager.rootModel.insertInMenu(
+        'File',
+        {
+          label: 'Duplicate Session',
+          icon: 'file_copy',
+          onClick: session => {
+            session.duplicateCurrentSession()
+          },
+        },
+        1,
+      )
+    }
+  }
 }
