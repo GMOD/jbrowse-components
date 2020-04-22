@@ -1,4 +1,6 @@
 // library
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import '@testing-library/jest-dom/extend-expect'
 import {
   act,
   cleanup,
@@ -6,22 +8,26 @@ import {
   fireEvent,
   render,
   wait,
-  within,
   waitForElement,
+  within,
 } from '@testing-library/react'
-import '@testing-library/jest-dom/extend-expect'
-import React from 'react'
-import { LocalFile } from 'generic-filehandle'
-import rangeParser from 'range-parser'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
+import { LocalFile } from 'generic-filehandle'
+import { toMatchImageSnapshot } from 'jest-image-snapshot'
+import rangeParser from 'range-parser'
+import React from 'react'
 
 // locals
-import JBrowse from './JBrowse'
-import config from '../test_data/config_integration_test.json'
 import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
+import chromeSizesConfig from '../test_data/config_chrom_sizes_test.json'
 import dotplotConfig from '../test_data/config_dotplot.json'
-import JBrowseRootModel from './rootModel'
+import configSnapshot from '../test_data/config_integration_test.json'
+import corePlugins from './corePlugins'
+import JBrowse from './JBrowse'
+import JBrowseRootModelFactory from './rootModel'
+
+if (!window.TextEncoder) window.TextEncoder = TextEncoder
+if (!window.TextDecoder) window.TextDecoder = TextDecoder
 
 expect.extend({ toMatchImageSnapshot })
 
@@ -35,8 +41,25 @@ Storage.prototype.setItem = jest.fn()
 Storage.prototype.removeItem = jest.fn()
 Storage.prototype.clear = jest.fn()
 
-if (!window.TextDecoder) window.TextDecoder = TextDecoder
-if (!window.TextEncoder) window.TextEncoder = TextEncoder
+function getPluginManager(initialState) {
+  const pluginManager = new PluginManager(corePlugins.map(P => new P()))
+  pluginManager.createPluggableElements()
+
+  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
+  const rootModel = JBrowseRootModel.create({
+    jbrowse: initialState || configSnapshot,
+  })
+  if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
+    const { name } = rootModel.jbrowse.savedSessions[0]
+    rootModel.activateSession(name)
+  } else {
+    rootModel.setDefaultSession()
+  }
+  pluginManager.setRootModel(rootModel)
+
+  pluginManager.configure()
+  return pluginManager
+}
 
 const getFile = url => new LocalFile(require.resolve(`../${url}`))
 // fakes server responses from local file object with fetchMock
@@ -44,26 +67,26 @@ const readBuffer = async (url, args) => {
   try {
     const file = getFile(url)
     const maxRangeRequest = 1000000 // kind of arbitrary, part of the rangeParser
-    if (args.headers.range) {
+    if (args.headers && 'range' in args.headers) {
       const range = rangeParser(maxRangeRequest, args.headers.range)
+      if (range === -2 || range === -1) {
+        throw new Error(`Error parsing range "${args.headers.range}"`)
+      }
       const { start, end } = range[0]
       const len = end - start + 1
       const buf = Buffer.alloc(len)
       const { bytesRead } = await file.read(buf, 0, len, start)
       const stat = await file.stat()
-      return {
+      return new Response(buf.slice(0, bytesRead), {
         status: 206,
-        buffer: () => buf.slice(0, bytesRead),
-        arrayBuffer: () => buf.slice(0, bytesRead),
-        text: () => buf.slice(0, bytesRead),
-        headers: new Map([['content-range', `${start}-${end}/${stat.size}`]]),
-      }
+        headers: [['content-range', `${start}-${end}/${stat.size}`]],
+      })
     }
     const body = await file.readFile()
-    return { status: 200, text: () => body.toString(), buffer: () => body }
+    return new Response(body, { status: 200 })
   } catch (e) {
     console.error(e)
-    return { status: 404, buffer: () => {} }
+    return new Response(undefined, { status: 404 })
   }
 }
 
@@ -73,39 +96,21 @@ jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
 
 describe('<JBrowse />', () => {
   it('renders with an empty config', async () => {
-    const { findByText } = render(<JBrowse configSnapshot={{}} />)
+    const pluginManager = getPluginManager({})
+    const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
     expect(await findByText('Help')).toBeTruthy()
   })
   it('renders with an initialState', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findByText } = render(<JBrowse initialState={state} />)
-    expect(await findByText('Help')).toBeTruthy()
-  })
-
-  it('can use config from a url', async () => {
-    const { findByText } = render(
-      <JBrowse config={{ uri: 'test_data/config_integration_test.json' }} />,
-    )
-    expect(await findByText('Help')).toBeTruthy()
-  })
-
-  it('can use config from a local file', async () => {
-    const { findByText } = render(
-      <JBrowse
-        config={{
-          localPath: require.resolve(
-            '../test_data/config_integration_test.json',
-          ),
-        }}
-      />,
-    )
+    const pluginManager = getPluginManager()
+    const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
     expect(await findByText('Help')).toBeTruthy()
   })
 })
 
 describe('valid file tests', () => {
   it('access about menu', async () => {
-    const { findByText } = render(<JBrowse configSnapshot={config} />)
+    const pluginManager = getPluginManager()
+    const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
 
     fireEvent.click(await findByText('Help'))
     fireEvent.click(await findByText('About'))
@@ -115,8 +120,9 @@ describe('valid file tests', () => {
   })
 
   it('click and drag to move sideways', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findByTestId } = render(<JBrowse initialState={state} />)
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
 
     const start = state.session.views[0].offsetPx
@@ -129,9 +135,10 @@ describe('valid file tests', () => {
   })
 
   it('click and drag to rubberBand', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
     const { findByTestId, findByText } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     const track = await findByTestId('rubberBand_controls')
 
@@ -145,8 +152,9 @@ describe('valid file tests', () => {
   })
 
   it('click and drag to reorder tracks', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findByTestId } = render(<JBrowse initialState={state} />)
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
 
@@ -172,9 +180,10 @@ describe('valid file tests', () => {
   })
 
   it('click and zoom in and back out', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
     const { findByTestId, findByText } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('ctgA')
     const before = state.session.views[0].bpPerPx
@@ -184,8 +193,9 @@ describe('valid file tests', () => {
   })
 
   it('opens track selector', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findByTestId } = render(<JBrowse initialState={state} />)
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
 
     await findByTestId('htsTrackEntry-volvox_alignments')
     expect(state.session.views[0].tracks.length).toBe(0)
@@ -194,9 +204,10 @@ describe('valid file tests', () => {
   })
 
   it('opens reference sequence track and expects zoom in message', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
     const { getAllByText, findByTestId } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_refseq'))
     state.session.views[0].setNewView(20, 0)
@@ -205,8 +216,11 @@ describe('valid file tests', () => {
   })
 
   it('click to display center line with correct value', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findByTestId, getByText } = render(<JBrowse initialState={state} />)
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, getByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
 
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
     await findByTestId('track-volvox_alignments')
@@ -227,9 +241,9 @@ describe('valid file tests', () => {
 describe('some error state', () => {
   it('test that BAI with 404 file displays error', async () => {
     console.error = jest.fn()
-    const state = JBrowseRootModel.create({ jbrowse: config })
+    const pluginManager = getPluginManager()
     const { findByTestId, findAllByText } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_alignments_bai_nonexist'),
@@ -242,9 +256,10 @@ describe('some error state', () => {
 
 describe('test renamed refs', () => {
   it('open a cram with alternate renamed ref', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
     const { findByTestId, findByText } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
@@ -263,9 +278,9 @@ describe('test renamed refs', () => {
     })
   }, 10000 /* this test needs more time to run */)
   it('test that bam with contigA instead of ctgA displays', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
+    const pluginManager = getPluginManager()
     const { findByTestId, findAllByText } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_bam_altname'))
     await expect(
@@ -274,9 +289,10 @@ describe('test renamed refs', () => {
   })
 
   it('open a bigwig with a renamed reference', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
@@ -289,9 +305,9 @@ describe('test renamed refs', () => {
 
 describe('max height test', () => {
   it('test that bam with small max height displays message', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
+    const pluginManager = getPluginManager()
     const { findByTestId, findAllByText } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
@@ -301,8 +317,11 @@ describe('max height test', () => {
 })
 
 test('lollipop track test', async () => {
-  const state = JBrowseRootModel.create({ jbrowse: config })
-  const { findByTestId, findByText } = render(<JBrowse initialState={state} />)
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByTestId, findByText } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
   await findByText('Help')
   state.session.views[0].setNewView(1, 150)
   fireEvent.click(await findByTestId('htsTrackEntry-lollipop_track'))
@@ -312,8 +331,11 @@ test('lollipop track test', async () => {
 })
 
 test('variant track test - opens feature detail view', async () => {
-  const state = JBrowseRootModel.create({ jbrowse: config })
-  const { findByTestId, findByText } = render(<JBrowse initialState={state} />)
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByTestId, findByText } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
   await findByText('Help')
   state.session.views[0].setNewView(0.05, 5000)
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
@@ -323,9 +345,10 @@ test('variant track test - opens feature detail view', async () => {
 
 describe('nclist track test with long name', () => {
   it('see that a feature gets ellipses', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
     const { findByTestId, findByText } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(1, -539)
@@ -339,9 +362,10 @@ describe('nclist track test with long name', () => {
 })
 describe('test configuration editor', () => {
   it('change color on track', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
     const { findByTestId, findByText, findByDisplayValue } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
@@ -364,9 +388,10 @@ describe('alignments track', () => {
   // improve this, currently renders the pileup and stops
   // if pileup rendering is disabled then snp coverage will run
   it('opens an alignments track', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
     const { findByTestId, findByText } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(5, 100)
@@ -403,8 +428,8 @@ describe('alignments track', () => {
   }, 10000)
 
   it('access alignments context menu', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findByTestId } = render(<JBrowse initialState={state} />)
+    const pluginManager = getPluginManager()
+    const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
     const track = await findByTestId('track-volvox_alignments')
 
@@ -414,9 +439,10 @@ describe('alignments track', () => {
   })
 
   it('selects a sort, updates object and layout', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
     const { findByTestId, findByText, getByText } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(5, 100)
@@ -460,9 +486,10 @@ describe('alignments track', () => {
 })
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
@@ -470,9 +497,10 @@ describe('bigwig', () => {
     await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
   })
   it('open a bigwig line track', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
@@ -480,9 +508,10 @@ describe('bigwig', () => {
     await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
   })
   it('open a bigwig density track', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
@@ -496,9 +525,10 @@ describe('bigwig', () => {
 describe('circular views', () => {
   it('open a circular view', async () => {
     console.warn = jest.fn()
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { findByTestId, findByText, findAllByTestId } = render(
-      <JBrowse initialState={state} />,
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findAllByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
     )
     // wait for the UI to be loaded
     await findByText('Help')
@@ -529,9 +559,9 @@ describe('circular views', () => {
 describe('breakpoint split view', () => {
   it('open a split view', async () => {
     console.warn = jest.fn()
-    const state = JBrowseRootModel.create({ jbrowse: breakpointConfig })
+    const pluginManager = getPluginManager(breakpointConfig)
     const { findByTestId, queryAllByTestId } = render(
-      <JBrowse initialState={state} />,
+      <JBrowse pluginManager={pluginManager} />,
     )
     await wait(() => {
       const r = queryAllByTestId('r1')
@@ -545,40 +575,17 @@ describe('breakpoint split view', () => {
   }, 10000)
 })
 
-describe('Fatal error', () => {
-  it('occurs when given an invalid snapshot', () => {
-    const { getByText } = render(
-      <JBrowse configSnapshot={{ configuration: [] }} />,
-    )
-    expect(getByText('Fatal error')).toBeTruthy()
-  })
-  it('occurs when multiple assemblies have the same name', async () => {
-    const newConfig = JSON.parse(JSON.stringify(config))
-    newConfig.assemblies.push({
-      name: 'volvox',
-      aliases: [],
-    })
-    const { findByText } = render(<JBrowse configSnapshot={newConfig} />)
-    expect(
-      await findByText('Found two assemblies with the same name: volvox', {
-        exact: false,
-      }),
-    ).toBeTruthy()
-  })
-})
-
 test('404 sequence file', async () => {
   console.error = jest.fn()
-  const { findAllByText } = render(
-    <JBrowse config={{ uri: 'test_data/config_chrom_sizes_test.json' }} />,
-  )
+  const pluginManager = getPluginManager(chromeSizesConfig)
+  const { findAllByText } = render(<JBrowse pluginManager={pluginManager} />)
   await findAllByText(/HTTP 404/)
 })
 
 describe('dotplot view', () => {
   it('open a dotplot view', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: dotplotConfig })
-    const { findByTestId } = render(<JBrowse initialState={state} />)
+    const pluginManager = getPluginManager(dotplotConfig)
+    const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
 
     const canvas = await findByTestId('prerendered_canvas')
 

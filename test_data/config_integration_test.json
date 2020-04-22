@@ -477,38 +477,11 @@
     }
   ],
   "defaultSession": {
-    "name": "New Session",
-    "menuBars": [
-      {
-        "type": "MainMenuBar"
-      }
-    ]
+    "name": "New Session"
   },
   "savedSessions": [
     {
       "name": "Integration test example",
-      "menuBars": [
-        {
-          "type": "MainMenuBar",
-          "menus": [
-            {
-              "name": "Admin",
-              "menuItems": [
-                {
-                  "name": "Export configuration",
-                  "icon": "cloud_download",
-                  "callback": "exportConfiguration"
-                },
-                {
-                  "name": "Import configuration",
-                  "icon": "cloud_upload",
-                  "callback": "importConfiguration"
-                }
-              ]
-            }
-          ]
-        }
-      ],
       "views": [
         {
           "id": "integration_test",

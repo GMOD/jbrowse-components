@@ -37,6 +37,7 @@
         "@types/long": "^4.0.0",
         "@types/node": "12.7.5",
         "@types/pako": "^1.0.1",
+        "@types/range-parser": "^1.2.3",
         "@types/react": "16.9.2",
         "@types/react-color": "^3.0.1",
         "@types/react-dom": "^16.9.1",

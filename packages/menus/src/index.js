@@ -1,5 +1,4 @@
 import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
-import MenuBarType from '@gmod/jbrowse-core/pluggableElementTypes/MenuBarType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import { lazy } from 'react'
 import {
@@ -17,11 +16,6 @@ import {
   ReactComponent as ImportConfigurationReactComponent,
   stateModel as importConfigurationStateModel,
 } from './ImportConfigurationDrawerWidget'
-import {
-  configSchema as mainMenuBarConfigSchema,
-  ReactComponent as MainMenuBarReactComponent,
-  stateModel as mainMenuBarStateModel,
-} from './MainMenuBar'
 import {
   configSchema as sessionManagerConfigSchema,
   ReactComponent as SessionManagerReactComponent,
@@ -69,14 +63,58 @@ export default class extends Plugin {
         LazyReactComponent: lazy(() => SessionManagerReactComponent),
       })
     })
+  }
 
-    pluginManager.addMenuBarType(() => {
-      return new MenuBarType({
-        name: 'MainMenuBar',
-        configSchema: mainMenuBarConfigSchema,
-        stateModel: mainMenuBarStateModel,
-        LazyReactComponent: lazy(() => MainMenuBarReactComponent),
+  configure(pluginManager) {
+    if (pluginManager.rootModel && pluginManager.rootModel.menus) {
+      pluginManager.rootModel.appendToMenu('Help', {
+        label: 'About',
+        icon: 'info',
+        onClick: session => {
+          const drawerWidget = session.addDrawerWidget(
+            'AboutDrawerWidget',
+            'aboutDrawerWidget',
+          )
+          session.showDrawerWidget(drawerWidget)
+        },
       })
-    })
+      pluginManager.rootModel.appendToMenu('Help', {
+        label: 'Help',
+        icon: 'help',
+        onClick: session => {
+          const drawerWidget = session.addDrawerWidget(
+            'HelpDrawerWidget',
+            'helpDrawerWidget',
+          )
+          session.showDrawerWidget(drawerWidget)
+        },
+      })
+      pluginManager.rootModel.insertInMenu(
+        'File',
+        {
+          label: 'Open Session…',
+          icon: 'folder_open',
+          onClick: session => {
+            const drawerWidget = session.addDrawerWidget(
+              'SessionManager',
+              'sessionManager',
+            )
+            session.showDrawerWidget(drawerWidget)
+          },
+        },
+        1,
+      )
+      pluginManager.rootModel.insertInMenu(
+        'File',
+        {
+          label: 'Duplicate Session',
+          icon: 'file_copy',
+          onClick: session => {
+            session.duplicateCurrentSession()
+          },
+        },
+        1,
+      )
+    }
   }
 }

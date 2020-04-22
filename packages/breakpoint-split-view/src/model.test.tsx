@@ -52,6 +52,7 @@ const getView = () => {
       }),
   )
 
+  stubManager.createPluggableElements()
   stubManager.configure()
   return stateModelFactory(stubManager)
 }
