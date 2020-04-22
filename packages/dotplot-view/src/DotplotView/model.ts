@@ -34,20 +34,26 @@ export default function stateModelFactory(pluginManager: any) {
       displayName: 'dotplot',
       trackSelectorType: 'hierarchical',
       assemblyNames: types.array(types.string),
-      hview: (Dotplot1DViewModel as Dotplot1DViewStateModel).extend(self => ({
-        views: {
-          get width() {
-            return getParent(self).viewWidth
+      hview: types.optional(
+        (Dotplot1DViewModel as Dotplot1DViewStateModel).extend(self => ({
+          views: {
+            get width() {
+              return getParent(self).viewWidth
+            },
           },
-        },
-      })),
-      vview: (Dotplot1DViewModel as Dotplot1DViewStateModel).extend(self => ({
-        views: {
-          get width() {
-            return getParent(self).viewHeight
+        })),
+        {},
+      ),
+      vview: types.optional(
+        (Dotplot1DViewModel as Dotplot1DViewStateModel).extend(self => ({
+          views: {
+            get width() {
+              return getParent(self).viewHeight
+            },
           },
-        },
-      })),
+        })),
+        {},
+      ),
       tracks: types.array(
         pluginManager.pluggableMstType(
           'track',

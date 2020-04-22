@@ -9,8 +9,6 @@ describe('dotplot state model', () => {
     expect(() =>
       DotplotModel.create({
         type: 'DotplotView',
-        hview: { bpPerPx: 0, offsetPx: 0 },
-        vview: { bpPerPx: 0, offsetPx: 0 },
       }),
     ).not.toThrow()
   })
