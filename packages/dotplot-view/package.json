@@ -23,9 +23,6 @@
     "rxjs": "^6.0.0"
   },
   "dependencies": {
-    "clsx": "^1.1.0",
-    "json-stable-stringify": "^1.0.1",
-    "react-art": "^16.13.1",
-    "react-sizeme": "^2.6.12"
+    "json-stable-stringify": "^1.0.1"
   }
 }
