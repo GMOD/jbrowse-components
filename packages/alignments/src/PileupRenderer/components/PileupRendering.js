@@ -113,7 +113,7 @@ function PileupRendering(props) {
 
   // TODORIGHTCLICK write this function
   function onContextMenu(event) {
-    callMouseHandler('ContextMenu', event)
+    if (!movedDuringLastMouseDown) callMouseHandler('ContextMenu', event, true)
   }
 
   function onMouseMove(event) {

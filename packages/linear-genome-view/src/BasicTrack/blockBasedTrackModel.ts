@@ -212,6 +212,25 @@ const blockBasedTrack = types
       session.setSelection(feature)
     },
 
+    contextMenuFeature(feature: Feature) {
+      const session = getSession(self) as any
+      // add a context menu to the session
+      // session.setSelection(feature)
+      // tie the onClick of the first menu item to onFeatureClick()
+      // menu will look like
+      //   [
+      //     label: Open feature Drawer
+      //     icon: open
+      //     onClick: if closed ? self.onFeatureClick() : self.clearFeatureSelection()
+      //   ],
+      //   [
+      //     label: copy feature info
+      //     icon: copy
+      //     onClick: copy the info to clipboard
+      //   ],
+      //   etc
+    },
+
     clearFeatureSelection() {
       const session = getSession(self) as any
       session.clearSelection()
@@ -227,8 +246,8 @@ const blockBasedTrack = types
       return {
         ...getParentRenderProps(self),
         trackModel: self,
-        // TODORIGHTCLICK: on feature click is here. will need a onFeatureRightClick
         onFeatureClick(event: any, featureId: string | undefined) {
+          console.log('here left click')
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
             self.clearFeatureSelection()
@@ -239,6 +258,20 @@ const blockBasedTrack = types
           // TODO: onfeatureRightClick
         },
         onClick() {
+          self.clearFeatureSelection()
+        },
+        // TODORIGHTCLICK: make this open a special right click menu, where one of the options calls on feature click
+        onFeatureContextMenu(event: any, featureId: string | undefined) {
+          console.log('here right click')
+          const f = featureId || self.featureIdUnderMouse
+          if (!f) {
+            self.clearFeatureSelection()
+          } else {
+            const feature = self.features.get(f)
+            self.selectFeature(feature as Feature)
+          }
+        },
+        onContextMenu() {
           self.clearFeatureSelection()
         },
       }
