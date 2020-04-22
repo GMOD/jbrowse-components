@@ -15,7 +15,7 @@ const DotplotTrack: React.FC<{
   const top = view.vview.offsetPx - offsetY
   const left = -(view.hview.offsetPx - offsetX)
   return (
-    <div style={{ position: 'relative', overflow: 'none' }}>
+    <div style={{ position: 'relative' }}>
       <div
         style={{
           position: 'absolute',

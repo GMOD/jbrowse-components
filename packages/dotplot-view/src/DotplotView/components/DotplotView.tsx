@@ -35,6 +35,7 @@ export default (pluginManager: any) => {
       },
       overlay: {
         pointerEvents: 'none',
+        overflow: 'hidden',
         display: 'flex',
         width: '100%',
         gridRow: '1/2',
