@@ -1,10 +1,12 @@
-import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { getSnapshot } from 'mobx-state-tree'
-import MyPlugin from './index'
+import ThisPlugin from './index'
 
 test('plugin in a stock JBrowse', () => {
-  const { pluginManager } = createTestSession()
-  expect(() => pluginManager.addPlugin(new MyPlugin())).toThrow(
+  const pluginManager = new PluginManager([new ThisPlugin()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  expect(() => pluginManager.addPlugin(new ThisPlugin())).toThrow(
     /JBrowse already configured, cannot add plugins/,
   )
 

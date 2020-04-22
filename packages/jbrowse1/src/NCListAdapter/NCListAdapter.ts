@@ -5,11 +5,10 @@ import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
-import objectHash from 'object-hash'
 
 import NCListFeature from './NCListFeature'
 
-export default class extends BaseAdapter {
+export default class NCListAdapter extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private nclist: any
 
@@ -17,13 +16,10 @@ export default class extends BaseAdapter {
 
   static capabilities = ['getFeatures']
 
-  private id: string
-
   constructor(args: { refNames?: string[]; rootUrlTemplate: string }) {
-    super()
+    super(args)
     const { refNames, rootUrlTemplate } = args
     this.configRefNames = refNames
-    this.id = objectHash(args)
 
     this.nclist = new NCListStore({
       baseUrl: '',

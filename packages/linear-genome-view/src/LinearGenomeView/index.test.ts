@@ -21,6 +21,7 @@ stubManager.addTrackType(
       RenderingComponent: true,
     }),
 )
+stubManager.createPluggableElements()
 stubManager.configure()
 const LinearGenomeModel = stateModelFactory(stubManager)
 const JBrowse = types.model({}).actions(self => ({
@@ -73,7 +74,6 @@ test('can instantiate a model that lets you navigate', () => {
       id: 'test1',
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'PileupTrack' }],
-      controlsWidth: 0,
     }),
   )
   model.setDisplayedRegions([
@@ -88,25 +88,25 @@ test('can instantiate a model that lets you navigate', () => {
 
   // test some sanity values from zooming around
   model.setNewView(0.02, 0)
-  expect(model.pxToBp(10).offset).toEqual(1)
+  expect(model.pxToBp(10).offset).toEqual(0.2)
   model.setNewView(0.1, 0)
-  expect(model.pxToBp(100).offset).toEqual(11)
+  expect(model.pxToBp(100).offset).toEqual(10)
   model.setNewView(1, 0)
-  expect(model.pxToBp(100).offset).toEqual(101)
+  expect(model.pxToBp(100).offset).toEqual(100)
   model.setNewView(10, 0)
-  expect(model.pxToBp(100).offset).toEqual(1001)
+  expect(model.pxToBp(100).offset).toEqual(1000)
 
   model.horizontallyFlip()
 
   // this is actually the same in reverse mode, the offset is a representation of linear bp offset not actual bp
   model.setNewView(0.02, 0)
-  expect(model.pxToBp(10).offset).toEqual(1)
+  expect(model.pxToBp(10).offset).toEqual(0.2)
   model.setNewView(0.1, 0)
-  expect(model.pxToBp(100).offset).toEqual(11)
+  expect(model.pxToBp(100).offset).toEqual(10)
   model.setNewView(1, 0)
-  expect(model.pxToBp(100).offset).toEqual(101)
+  expect(model.pxToBp(100).offset).toEqual(100)
   model.setNewView(10, 0)
-  expect(model.pxToBp(100).offset).toEqual(1001)
+  expect(model.pxToBp(100).offset).toEqual(1000)
 })
 
 test('can instantiate a model that has multiple displayed regions', () => {
@@ -119,7 +119,6 @@ test('can instantiate a model that has multiple displayed regions', () => {
       id: 'test2',
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'PileupTrack' }],
-      controlsWidth: 0,
     }),
   )
   model.setDisplayedRegions([
@@ -130,11 +129,11 @@ test('can instantiate a model that has multiple displayed regions', () => {
   model.setNewView(0.02, 0)
 
   model.moveTo({ index: 0, offset: 100 }, { index: 0, offset: 200 })
-  expect(model.bpPerPx).toEqual(0.125)
+  expect(model.bpPerPx).toEqual(model.constrainBpPerPx(0.125))
   model.moveTo({ index: 0, offset: 9950 }, { index: 1, offset: 50 })
-  expect(model.bpPerPx).toEqual(0.125)
+  expect(model.bpPerPx).toEqual(model.constrainBpPerPx(0.125))
   model.moveTo({ index: 0, offset: 9000 }, { index: 1, offset: 1000 })
-  expect(model.bpPerPx).toEqual(2.5)
+  expect(model.bpPerPx).toEqual(model.constrainBpPerPx(2.5))
 })
 
 test('can instantiate a model that tests navTo/moveTo', async () => {
@@ -142,14 +141,15 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
     jbrowse: {},
     configuration: {},
   })
+  const width = 800
   const model = session.setView(
     LinearGenomeModel.create({
       id: 'test3',
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'PileupTrack' }],
-      controlsWidth: 0,
     }),
   )
+  model.setWidth(width)
   model.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
@@ -157,14 +157,16 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
   expect(model.maxBpPerPx).toEqual(20)
 
   await model.navTo({ refName: 'ctgA', start: 0, end: 100 })
-  expect(model.bpPerPx).toEqual(100 / 800)
-  await model.navTo({ refName: 'ctgA', start: 0, end: 20000 })
-  expect(model.bpPerPx).toEqual(100 / 800) // did nothing
+  expect(model.bpPerPx).toEqual(model.constrainBpPerPx(100 / width))
+  await expect(
+    model.navTo({ refName: 'ctgA', start: 0, end: 20000 }),
+  ).rejects.toThrow(/could not find a region/)
+  expect(model.bpPerPx).toEqual(model.constrainBpPerPx(100 / width)) // did nothing
   await model.navTo({ refName: 'ctgA' })
   expect(model.offsetPx).toEqual(0)
-  expect(model.bpPerPx).toEqual(10000 / 800)
+  expect(model.bpPerPx).toEqual(model.constrainBpPerPx(10000 / width))
   await model.navTo({ refName: 'contigA', start: 0, end: 100 })
-  expect(model.bpPerPx).toEqual(100 / 800)
+  expect(model.bpPerPx).toEqual(model.constrainBpPerPx(100 / width))
 })
 
 test('can instantiate a model that >2 regions', () => {
@@ -172,21 +174,22 @@ test('can instantiate a model that >2 regions', () => {
     jbrowse: {},
     configuration: {},
   })
+  const width = 800
   const model = session.setView(
     LinearGenomeModel.create({
       id: 'test4',
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'PileupTrack' }],
-      controlsWidth: 0,
     }),
   )
+  model.setWidth(width)
   model.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgC' },
   ])
   model.moveTo({ index: 0, offset: 100 }, { index: 2, offset: 100 })
-  expect(model.bpPerPx).toEqual(20000 / 800)
+  expect(model.bpPerPx).toEqual(model.constrainBpPerPx(20000 / width))
   model.setNewView(1, 0)
 
   // extending in the minus gives us first displayed region
@@ -203,25 +206,25 @@ test('can instantiate a model that >2 regions', () => {
     { refName: 'ctgA', index: 0, offset: 0, start: 0, end: 10000 },
     { refName: 'ctgC', index: 2, offset: 0, start: 0, end: 10000 },
   )
-  expect(model.bpPerPx).toEqual(20000 / 800)
+  expect(model.bpPerPx).toEqual(model.constrainBpPerPx(20000 / width))
   model.moveTo(
     { refName: 'ctgB', index: 1, offset: 0, start: 0, end: 10000 },
     { refName: 'ctgC', index: 2, offset: 0, start: 0, end: 10000 },
   )
-  expect(model.bpPerPx).toEqual(10000 / 800)
+  expect(model.bpPerPx).toEqual(model.constrainBpPerPx(10000 / width))
   expect(model.offsetPx).toEqual(10000 / model.bpPerPx)
-  expect(model.displayedRegionsTotalPx).toEqual(2400)
+  expect(model.displayedRegionsTotalPx).toEqual(30000 / model.bpPerPx)
   model.showAllRegions()
-  expect(model.bpPerPx).toEqual(30000 / 800)
+  expect(model.bpPerPx).toEqual(model.constrainBpPerPx(30000 / width))
   expect(model.offsetPx).toEqual(0)
 
   expect(model.bpToPx({ refName: 'ctgA', coord: 100 })).toEqual({
     index: 0,
-    offsetPx: 3,
+    offsetPx: 100 / model.bpPerPx,
   })
 
   expect(model.bpToPx({ refName: 'ctgB', coord: 100 })).toEqual({
     index: 1,
-    offsetPx: 269,
+    offsetPx: 10100 / model.bpPerPx,
   })
 })

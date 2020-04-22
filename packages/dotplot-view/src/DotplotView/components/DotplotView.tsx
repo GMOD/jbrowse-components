@@ -1,23 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { makeStyles } from '@material-ui/core/styles'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { useRef as reactUseRef } from 'react'
 import { DotplotViewModel } from '../model'
 
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
-  const { getSnapshot } = jbrequire('mobx-state-tree')
   const React = jbrequire('react')
   const { useRef, useEffect, useState } = React
+  const { minmax } = jbrequire('@gmod/jbrowse-core/util')
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
-  const { makeStyles: jbrequiredMakeStyles } = jbrequire(
-    '@material-ui/core/styles',
-  )
+  const { makeStyles: jbMakeStyles } = jbrequire('@material-ui/core/styles')
+  const LinearProgress = jbrequire('@material-ui/core/LinearProgress')
+  const ImportForm = jbrequire(require('./ImportForm'))
+  const Controls = jbrequire(require('./Controls'))
+  const useEventListener = jbrequire(require('./useEventListener'))
 
-  const Header = jbrequire(require('./Header'))
-  const { grey } = jbrequire('@material-ui/core/colors')
-
-  const useStyles = (jbrequiredMakeStyles as typeof makeStyles)(theme => {
+  const useStyles = (jbMakeStyles as typeof makeStyles)(theme => {
     return {
       root: {
         position: 'relative',
@@ -29,181 +28,249 @@ export default (pluginManager: any) => {
       },
       container: {
         display: 'grid',
+        padding: 5,
         position: 'relative',
-        background: grey[300],
       },
       overlay: {
         pointerEvents: 'none',
+        overflow: 'hidden',
         display: 'flex',
         width: '100%',
-        gridArea: '1/1',
-        zIndex: 100,
+        gridRow: '1/2',
+        gridColumn: '2/2',
+        zIndex: 100, // needs to be below controls
         '& path': {
           cursor: 'crosshair',
           fill: 'none',
         },
       },
+      vtext: {
+        gridColumn: '1/2',
+        gridRow: '1/2',
+      },
       content: {
-        gridArea: '1/1',
+        gridColumn: '2/2',
+        gridRow: '1/2',
+      },
+      spacer: {
+        gridColumn: '1/2',
+        gridRow: '2/2',
+      },
+      htext: {
+        gridColumn: '2/2',
+        gridRow: '2/2',
       },
     }
   })
 
-  function DrawGrid(model: DotplotViewModel, ctx: CanvasRenderingContext2D) {
-    const {
-      views,
-      viewingRegionWidth,
-      viewingRegionHeight,
-      height,
-      borderSize,
-    } = model
-    let currWidth = 0
-    ctx.strokeRect(
-      borderSize,
-      borderSize,
-      viewingRegionWidth,
-      viewingRegionHeight,
-    )
-    views[0].displayedRegions.forEach((region: IRegion) => {
-      const len = region.end - region.start
-
-      ctx.beginPath()
-      ctx.moveTo(
-        (currWidth + len) / views[0].bpPerPx + borderSize,
-        height - borderSize,
-      )
-      ctx.lineTo((currWidth + len) / views[0].bpPerPx + borderSize, borderSize)
-      ctx.stroke()
-      currWidth += len
-    })
-    let currHeight = 0
-    views[1].displayedRegions.forEach(region => {
-      const len = region.end - region.start
-
-      ctx.beginPath()
-      ctx.moveTo(
-        viewingRegionWidth + borderSize,
-        height - (currHeight + len) / views[1].bpPerPx + borderSize,
-      )
-      ctx.lineTo(
-        borderSize,
-        height - (currHeight + len) / views[1].bpPerPx + borderSize,
-      )
-      ctx.stroke()
-      currHeight += len
-    })
-  }
-
-  function DrawLabels(model: DotplotViewModel, ctx: CanvasRenderingContext2D) {
-    const { views, fontSize, height, borderSize } = model
-    let currHeight = 0
-    views[0].displayedRegions.forEach(region => {
-      const len = region.end - region.start
-      ctx.fillText(
-        region.refName,
-        (currHeight + len / 2) / views[0].bpPerPx,
-        height - borderSize + fontSize,
-      )
-
-      currHeight += len
-    })
-
-    ctx.save()
-    ctx.translate(0, height)
-    ctx.rotate(-Math.PI / 2)
-    let currWidth = 0
-    views[1].displayedRegions.forEach(region => {
-      const len = region.end - region.start
-      ctx.fillText(
-        region.refName,
-        (currWidth + len / 2) / views[1].bpPerPx + borderSize,
-        borderSize - 10,
-      )
-
-      currWidth += len
-    })
-    ctx.restore()
-  }
-
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const ref = useRef()
-    const { borderSize, fontSize, views, width, height } = model
-    const highlightOverlayCanvas = useRef(null)
+    const ref = (useRef as typeof reactUseRef)<SVGSVGElement | null>(null)
+    const [curr, setCurr] = useState()
     const [down, setDown] = useState()
-    const [current, setCurrent] = useState([0, 0])
 
-    const view0 = getSnapshot(views[0].displayedRegions)
-    const view1 = getSnapshot(views[1].displayedRegions)
+    function wheel(event: WheelEvent) {
+      model.hview.horizontalScroll(event.deltaX)
+      model.vview.horizontalScroll(event.deltaY)
+      event.preventDefault()
+    }
+
+    useEventListener('wheel', wheel, ref.current)
+
+    const {
+      initialized,
+      loading,
+      hview,
+      vview,
+      borderY,
+      borderX,
+      viewHeight,
+      viewWidth,
+      htextRotation,
+      vtextRotation,
+    } = model
+
+    let left = 0
+    let top = 0
+    if (ref.current) {
+      const bounds = ref.current.getBoundingClientRect()
+      left = bounds.left
+      top = bounds.top
+    }
     useEffect(() => {
-      if (ref.current) {
-        const ctx = ref.current.getContext('2d')
-        ctx.clearRect(0, 0, width, height)
-        DrawLabels(model, ctx)
-        DrawGrid(model, ctx)
+      function globalMouseMove(event: MouseEvent) {
+        setCurr([event.offsetX, event.offsetY])
+        event.preventDefault()
+      }
 
-        ctx.restore()
-      }
-    }, [borderSize, fontSize, height, model, views, width, view0, view1])
+      function globalMouseUp(event: MouseEvent) {
+        if (down) {
+          setDown(undefined)
 
-    useEffect(() => {
-      const canvas = highlightOverlayCanvas.current
-      if (!canvas) {
-        return
+          const [currX, currY] = [event.clientX, event.clientY]
+          const [downX, downY] = down
+          const [xmin, xmax] = minmax(currX - left, downX)
+          const [ymin, ymax] = minmax(currY - top, downY)
+          if (Math.abs(xmax - xmin) > 3 && Math.abs(ymax - ymin) > 3) {
+            const x1 = model.hview.pxToBp(xmin)
+            const x2 = model.hview.pxToBp(xmax)
+
+            const y1 = model.vview.pxToBp(viewHeight - ymin)
+            const y2 = model.vview.pxToBp(viewHeight - ymax)
+
+            model.hview.moveTo(x1, x2)
+            model.vview.moveTo(y2, y1)
+          }
+        }
       }
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        return
+
+      window.addEventListener('mousemove', globalMouseMove)
+      window.addEventListener('mouseup', globalMouseUp)
+      return () => {
+        window.removeEventListener('mousemove', globalMouseMove)
+        window.removeEventListener('mouseup', globalMouseUp)
       }
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      const rect = canvas.getBoundingClientRect()
-      if (down) {
-        ctx.fillStyle = 'rgba(255,0,0,0.3)'
-        ctx.fillRect(
-          down[0] - rect.left,
-          down[1] - rect.top,
-          current[0] - down[0],
-          current[1] - down[1],
-        )
-      }
-    }, [down, current])
+    }, [down, left, model, top, viewHeight])
+
+    if (!initialized && !loading) {
+      return <ImportForm model={model} />
+    }
+    if (loading) {
+      return (
+        <div>
+          <p>Loading...</p>
+          <LinearProgress />
+        </div>
+      )
+    }
+
+    const tickSize = 0
     return (
-      <div>
-        <Header model={model} />
+      <div style={{ position: 'relative' }}>
+        <Controls model={model} />
         <div className={classes.container}>
-          <canvas
-            style={{ position: 'absolute', left: 0, top: 0, zIndex: 10 }}
-            ref={highlightOverlayCanvas}
-            onMouseDown={event => {
-              setDown([event.clientX, event.clientY])
-              setCurrent([event.clientX, event.clientY])
-            }}
-            onMouseUp={event => {
-              setDown(undefined)
-            }}
-            onMouseLeave={event => {
-              setDown(undefined)
-            }}
-            onMouseMove={event => {
-              setCurrent([event.clientX, event.clientY])
-            }}
-            width={width}
-            height={height}
-          />
-          <canvas
-            className={classes.content}
-            ref={ref}
-            width={width}
-            height={height}
-          />
-          <div className={classes.overlay}>
-            {model.tracks.map((track: any) => {
-              const { ReactComponent } = track
+          <div style={{ display: 'grid' }}>
+            <svg className={classes.vtext} width={borderX} height={viewHeight}>
+              <g>
+                {vview.dynamicBlocks.blocks
+                  .filter(region => region.refName)
+                  .map(region => {
+                    const y = viewHeight - (region.offsetPx - vview.offsetPx)
+                    const x = borderX
+                    return (
+                      <text
+                        transform={`rotate(${vtextRotation},${x},${y})`}
+                        key={region.refName}
+                        x={borderX}
+                        y={y}
+                        fill="#000000"
+                        textAnchor="end"
+                      >
+                        {region.refName}
+                      </text>
+                    )
+                  })}
+              </g>
+            </svg>
 
-              return ReactComponent ? (
-                <ReactComponent key={getConf(track, 'trackId')} model={track} />
-              ) : null
-            })}
+            <svg
+              className={classes.content}
+              width={viewWidth}
+              height={viewHeight}
+              ref={ref}
+              onMouseDown={event => {
+                if (event.button === 0) {
+                  setDown([
+                    event.nativeEvent.offsetX,
+                    event.nativeEvent.offsetY,
+                  ])
+                  setCurr([
+                    event.nativeEvent.offsetX,
+                    event.nativeEvent.offsetY,
+                  ])
+                }
+              }}
+            >
+              <g>
+                {hview.dynamicBlocks.blocks
+                  .filter(region => region.refName)
+                  .map(region => {
+                    const x = region.offsetPx - hview.offsetPx
+                    return (
+                      <line
+                        key={JSON.stringify(region)}
+                        x1={x}
+                        y1={0}
+                        x2={x}
+                        y2={viewHeight}
+                        stroke="#000000"
+                      />
+                    )
+                  })}
+                {vview.dynamicBlocks.blocks
+                  .filter(region => region.refName)
+                  .map(region => {
+                    const y = viewHeight - (region.offsetPx - vview.offsetPx)
+
+                    return (
+                      <line
+                        key={JSON.stringify(region)}
+                        x1={0}
+                        y1={y}
+                        x2={viewWidth}
+                        y2={y}
+                        stroke="#000000"
+                      />
+                    )
+                  })}
+              </g>
+              {down ? (
+                <rect
+                  fill="rgba(255,0,0,0.3)"
+                  x={Math.min(curr[0], down[0])}
+                  y={Math.min(curr[1], down[1])}
+                  width={Math.abs(curr[0] - down[0])}
+                  height={Math.abs(curr[1] - down[1])}
+                />
+              ) : null}
+            </svg>
+            <div className={classes.spacer} />
+            <svg width={viewWidth} height={borderY} className={classes.htext}>
+              <g>
+                {hview.dynamicBlocks.blocks
+                  .filter(region => region.refName)
+                  .map(region => {
+                    const x = region.offsetPx - hview.offsetPx
+                    const y = tickSize
+                    return (
+                      <text
+                        transform={`rotate(${htextRotation},${x},${y})`}
+                        key={region.refName}
+                        x={x}
+                        y={y}
+                        fill="#000000"
+                        dominantBaseline="hanging"
+                        textAnchor="end"
+                      >
+                        {region.refName}
+                      </text>
+                    )
+                  })}
+              </g>
+            </svg>
+            <div className={classes.overlay}>
+              {model.tracks.map(track => {
+                const { ReactComponent } = track
+
+                return ReactComponent ? (
+                  // @ts-ignore
+                  <ReactComponent
+                    key={getConf(track, 'trackId')}
+                    model={track}
+                  />
+                ) : null
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -213,5 +280,6 @@ export default (pluginManager: any) => {
   DotplotView.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
+
   return DotplotView
 }

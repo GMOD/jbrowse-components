@@ -130,9 +130,9 @@ export default class implements Feature {
 
   _get_next_segment_position(): string | undefined {
     return this.record.isPaired()
-      ? `${this.adapter.refIdToName(
-          this.record._next_refid(),
-        )}:${this.record._next_pos() + 1}`
+      ? `${this.adapter.refIdToName(this.record._next_refid())}:${
+          this.record._next_pos() + 1
+        }`
       : undefined
   }
 
@@ -155,7 +155,7 @@ export default class implements Feature {
   }
 
   id(): string {
-    return `${this.record.id()}`
+    return `${this.adapter.id}-${this.record.id()}`
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -405,7 +405,7 @@ export default class implements Feature {
 
     const seq = this.get('seq')
 
-      // now actually parse the MD string
+    // now actually parse the MD string
     ;(mdstring.match(/(\d+|\^[a-z]+|[a-z])/gi) || []).forEach(token => {
       if (token.match(/^\d/)) {
         // matching bases

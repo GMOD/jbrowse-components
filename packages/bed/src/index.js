@@ -4,6 +4,10 @@ import {
   AdapterClass as BigBedAdapterClass,
   configSchema as bigBedAdapterConfigSchema,
 } from './BigBedAdapter'
+import {
+  AdapterClass as BedTabixAdapterClass,
+  configSchema as bedTabixAdapterConfigSchema,
+} from './BedTabixAdapter'
 
 export default class extends Plugin {
   install(pluginManager) {
@@ -13,6 +17,14 @@ export default class extends Plugin {
           name: 'BigBedAdapter',
           configSchema: bigBedAdapterConfigSchema,
           AdapterClass: BigBedAdapterClass,
+        }),
+    )
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'BedTabixAdapter',
+          configSchema: bedTabixAdapterConfigSchema,
+          AdapterClass: BedTabixAdapterClass,
         }),
     )
   }

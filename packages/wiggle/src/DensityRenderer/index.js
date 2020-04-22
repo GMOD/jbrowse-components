@@ -12,15 +12,7 @@ export { default as ReactComponent } from '../WiggleRendering'
 
 export default class extends WiggleBaseRenderer {
   draw(ctx, props) {
-    const {
-      features,
-      region,
-      bpPerPx,
-      scaleOpts,
-      height,
-      config,
-      horizontallyFlipped,
-    } = props
+    const { features, region, bpPerPx, scaleOpts, height, config } = props
     const pivot = readConfObject(config, 'bicolorPivot')
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
@@ -43,12 +35,7 @@ export default class extends WiggleBaseRenderer {
     }
 
     for (const feature of features.values()) {
-      const [leftPx, rightPx] = featureSpanPx(
-        feature,
-        region,
-        bpPerPx,
-        horizontallyFlipped,
-      )
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
       ctx.fillStyle = colorCallback(feature)
       ctx.fillRect(leftPx, 0, w, height)

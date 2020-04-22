@@ -9,6 +9,7 @@ import {
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
+import { sortFeature } from './sortUtil'
 
 export interface PileupRenderProps {
   // trackModel can be a model or a serialized reduced object
@@ -21,8 +22,11 @@ export interface PileupRenderProps {
   bpPerPx: number
   height: number
   width: number
-  horizontallyFlipped: boolean
   highResolutionScaling: number
+  sortObject: {
+    position: number
+    by: string
+  }
 }
 
 interface PileupImageData {
@@ -46,14 +50,12 @@ export default class extends BoxRendererType {
     config: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     bpPerPx: number,
     region: IRegion,
-    horizontallyFlipped = false,
   ): LayoutRecord | null {
     const [leftPx, rightPx] = bpSpanPx(
       feature.get('start'),
       feature.get('end'),
       region,
       bpPerPx,
-      horizontallyFlipped,
     )
 
     let heightPx = readConfObject(config, 'height', [feature])
@@ -93,7 +95,7 @@ export default class extends BoxRendererType {
       config,
       region,
       bpPerPx,
-      horizontallyFlipped,
+      sortObject,
       highResolutionScaling = 1,
     } = props
 
@@ -103,18 +105,16 @@ export default class extends BoxRendererType {
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const w = Math.max(minFeatWidth, pxPerBp)
 
+    const sortedFeatures =
+      sortObject && sortObject.by && region.start === sortObject.position
+        ? sortFeature(features, sortObject, bpPerPx, region)
+        : null
+
+    const featureMap = sortedFeatures || features
     const layoutRecords = iterMap(
-      features.values(),
-      feature =>
-        this.layoutFeature(
-          feature,
-          layout,
-          config,
-          bpPerPx,
-          region,
-          horizontallyFlipped,
-        ),
-      features.size,
+      featureMap.values(),
+      feature => this.layoutFeature(feature, layout, config, bpPerPx, region),
+      featureMap.size,
     )
 
     const width = (region.end - region.start) / bpPerPx
@@ -136,6 +136,7 @@ export default class extends BoxRendererType {
       if (feat === null) {
         return
       }
+
       const { feature, leftPx, rightPx, topPx, heightPx } = feat
       ctx.fillStyle = readConfObject(config, 'color', [feature])
       ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
@@ -156,7 +157,6 @@ export default class extends BoxRendererType {
             feature.get('start') + mismatch.start + mismatch.length,
             region,
             bpPerPx,
-            horizontallyFlipped,
           )
           const mismatchWidthPx = Math.max(
             minFeatWidth,
@@ -251,6 +251,7 @@ export default class extends BoxRendererType {
       { ...renderProps, height, width, imageData },
       null,
     )
+
     return {
       element,
       imageData,

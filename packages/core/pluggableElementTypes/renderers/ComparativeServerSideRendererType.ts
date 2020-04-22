@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderToString } from 'react-dom/server'
 import { filter, distinct, toArray, tap } from 'rxjs/operators'
+import { getSnapshot } from 'mobx-state-tree'
 import BaseAdapter from '../../BaseAdapter'
 import { IRegion } from '../../mst-types'
 import { checkAbortSignal } from '../../util'
@@ -39,13 +40,20 @@ export default class ComparativeServerSideRenderer extends RendererType {
     const { trackModel } = args.renderProps
     if (trackModel) {
       args.renderProps = {
+        ...args.renderProps,
         // @ts-ignore
         blockKey: args.blockKey,
-        ...args.renderProps,
-        trackModel: {
-          id: trackModel.id,
-          selectedFeatureId: trackModel.selectedFeatureId,
-        },
+        // @ts-ignore
+        views: args.views.map(view => {
+          return {
+            // @ts-ignore
+            ...getSnapshot(view),
+            dynamicBlocks: JSON.parse(
+              JSON.stringify(view.dynamicBlocks.contentBlocks),
+            ),
+          }
+        }),
+        trackModel: {},
       }
     }
 
@@ -95,7 +103,6 @@ export default class ComparativeServerSideRenderer extends RendererType {
       'comparativeRender',
       serializedArgs,
     )
-    // const result = await renderRegionWithWorker(session, serializedArgs)
 
     this.deserializeResultsInClient(result, args)
     return result
@@ -173,7 +180,9 @@ export default class ComparativeServerSideRenderer extends RendererType {
       args.views.map(async view => {
         view.features = await this.getFeatures({
           ...args,
-          regions: view.staticBlocks,
+          regions: view.dynamicBlocks.filter(
+            (f: { refName: string }) => !!f.refName,
+          ),
         })
       }),
     )

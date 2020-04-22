@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
-import { TrackControls } from '@gmod/jbrowse-core/ui'
+import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { types } from 'mobx-state-tree'
@@ -75,16 +75,8 @@ const BaseTrack = types
       defaultTrackHeight,
     ),
   })
-  .volatile(self => ({
-    ReactComponent: undefined as
-      | React.FC<{
-          model: typeof self
-          offsetPx: number
-          bpPerPx: number
-          onHorizontalScroll: Function
-          blockState: Record<string, any>
-        }>
-      | undefined,
+  .volatile(() => ({
+    ReactComponent: undefined,
     rendererTypeName: undefined,
     ready: false,
     scrollTop: 0,
@@ -94,8 +86,22 @@ const BaseTrack = types
     get name() {
       return getConf(self, 'name')
     },
-    get ControlsComponent() {
-      return TrackControls
+
+    get RenderingComponent(): React.FC<{
+      model: typeof self
+      offsetPx: number
+      bpPerPx: number
+      onHorizontalScroll: Function
+      blockState: Record<string, any>
+    }> {
+      return (
+        self.ReactComponent ||
+        (() => (
+          <div className="TrackRenderingNotImplemented">
+            Rendering not implemented for {self.type} tracks
+          </div>
+        ))
+      )
     },
 
     /**
@@ -114,7 +120,7 @@ const BaseTrack = types
      * renderer
      */
     get rendererType() {
-      const session = getSession(self) as any
+      const session: any = getSession(self)
       const RendererType = session.pluginManager.getRendererType(
         self.rendererTypeName,
       )
@@ -154,6 +160,14 @@ const BaseTrack = types
      */
     get trackMessageComponent() {
       return undefined
+    },
+
+    get menuOptions(): MenuOption[] {
+      return []
+    },
+
+    get viewMenuActions(): MenuOption[] {
+      return []
     },
 
     /**
@@ -199,29 +213,6 @@ const BaseTrackWithReferences = types
     activateConfigurationUI() {
       const session: any = getSession(self)
       session.editConfiguration(self.configuration)
-    },
-  }))
-  .volatile(self => ({
-    ReactComponent: undefined as
-      | React.FC<{
-          model: unknown
-          offsetPx?: number
-          bpPerPx?: number
-          onHorizontalScroll?: Function
-          blockState?: Record<string, any>
-        }>
-      | undefined,
-  }))
-  .views(self => ({
-    get RenderingComponent() {
-      return (
-        self.ReactComponent ||
-        (() => (
-          <div className="TrackRenderingNotImplemented">
-            Rendering not implemented for {self.type} tracks
-          </div>
-        ))
-      )
     },
   }))
 

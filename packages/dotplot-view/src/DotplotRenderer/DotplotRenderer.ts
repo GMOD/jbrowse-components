@@ -9,9 +9,15 @@ import {
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
 
+interface Block extends IRegion {
+  offsetPx: number
+  widthPx: number
+}
+
 interface ReducedView {
   features: Feature[]
   displayedRegions: IRegion[]
+  dynamicBlocks: Block[]
   horizontallyFlipped: boolean
   bpPerPx: number
 }
@@ -20,7 +26,6 @@ export interface DotplotRenderProps {
   config: any
   height: number
   width: number
-  borderSize: number
   fontSize: number
   highResolutionScaling: number
   pluginManager: any
@@ -39,19 +44,21 @@ interface DotplotImageData {
 }
 
 function bpToPx(self: ReducedView, refName: string, coord: number) {
-  let offsetBp = 0
+  let offset = 0
 
-  const index = self.displayedRegions.findIndex((r: IRegion) => {
+  const index = self.dynamicBlocks.findIndex(r => {
     if (refName === r.refName && coord >= r.start && coord <= r.end) {
-      offsetBp += self.horizontallyFlipped ? r.end - coord : coord - r.start
+      offset +=
+        (self.horizontallyFlipped ? r.end - coord : coord - r.start) /
+        self.bpPerPx
       return true
     }
-    offsetBp += r.end - r.start
+    offset += r.widthPx
     return false
   })
-  const foundRegion = self.displayedRegions[index]
+  const foundRegion = self.dynamicBlocks[index]
   if (foundRegion) {
-    return Math.round(offsetBp / self.bpPerPx)
+    return Math.round(offset)
   }
   return undefined
 }
@@ -62,7 +69,6 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       highResolutionScaling: scale = 1,
       width,
       height,
-      borderSize,
       config,
       views,
     } = props
@@ -72,15 +78,6 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     ctx.scale(scale, scale)
 
     ctx.fillStyle = 'black'
-
-    // clip method avoids drawing outside box
-    ctx.rect(
-      borderSize,
-      borderSize,
-      width - borderSize * 2,
-      height - borderSize * 2,
-    )
-    ctx.clip()
 
     ctx.lineWidth = 3
     ctx.fillStyle = readConfObject(config, 'color')
@@ -98,7 +95,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const e2 = bpToPx(views[1], mate.refName, mate.end)
       if (b1 && b2 && e1 && e2) {
         if (b1 - b2 < 3 && e1 - e2 < 3) {
-          ctx.fillRect(b1 + borderSize, height - borderSize - e1, 3, 3)
+          ctx.fillRect(b1 - 1, height - e1 - 1, 3, 3)
         } else {
           ctx.beginPath()
           ctx.moveTo(b1, height - e1)
@@ -150,11 +147,15 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       null,
     )
 
+    const { views } = renderProps
+
     return {
       element,
       imageData,
       height,
       width,
+      offsetX: views[0].dynamicBlocks[0].offsetPx,
+      offsetY: views[1].dynamicBlocks[0].offsetPx,
     }
   }
 }

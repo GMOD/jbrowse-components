@@ -1490,39 +1490,6 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
-      "trackId": "volvox_bam_new_config",
-      "name": "volvox-combo new config",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Combo"
-      ],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "test_data/volvox-sorted.bam"
-        },
-        "index": {
-          "location": {
-            "uri": "test_data/volvox-sorted.bam.bai"
-          }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        },
-        "SNPCoverageRenderer": {
-          "type": "SNPCoverageRenderer"
-        }
-      }
-    },
-    {
       "type": "VariantTrack",
       "trackId": "TBggZ1Rwy_p",
       "name": "volvox filtered vcf",
@@ -1566,6 +1533,32 @@
         "type": "BigBedAdapter",
         "bigBedLocation": {
           "uri": "test_data/volvox.bb"
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "bedtabix_genes",
+      "name": "BedTabix genes",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "category": [
+        "Miscellaneous"
+      ],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "test_data/volvox-bed12.bed.gz"
+        },
+        "index": {
+          "type": "TBI",
+          "location": {
+            "uri": "test_data/volvox-bed12.bed.gz.tbi"
+          }
         }
       },
       "renderer": {
@@ -1937,12 +1930,7 @@
     }
   ],
   "defaultSession": {
-    "name": "New Session",
-    "menuBars": [
-      {
-        "type": "MainMenuBar"
-      }
-    ]
+    "name": "New Session"
   },
   "savedSessions": []
 }

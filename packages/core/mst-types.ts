@@ -1,5 +1,5 @@
 import shortid from 'shortid'
-import { types, SnapshotOut } from 'mobx-state-tree'
+import { types, SnapshotOut, SnapshotIn } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import { PropTypes as MxPropTypes } from 'mobx-react'
 
@@ -24,6 +24,7 @@ export const NoAssemblyRegion = types
     refName: types.string,
     start: types.number,
     end: types.number,
+    reversed: types.optional(types.boolean, false),
   })
   .actions(self => ({
     setRefName(newRefName: string): void {
@@ -31,7 +32,7 @@ export const NoAssemblyRegion = types
     },
   }))
 
-type TNoAssemblyRegion = SnapshotOut<typeof NoAssemblyRegion>
+type TNoAssemblyRegion = SnapshotIn<typeof NoAssemblyRegion>
 export type INoAssemblyRegion = TNoAssemblyRegion
 
 export const Region = types.compose(
@@ -41,7 +42,7 @@ export const Region = types.compose(
   }),
 )
 
-export type IRegion = SnapshotOut<typeof Region>
+export type IRegion = SnapshotIn<typeof Region>
 
 export const LocalPathLocation = types.model('LocalPathLocation', {
   localPath: types.string, // TODO: refine

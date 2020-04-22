@@ -10,6 +10,8 @@ import { GenericFilehandle } from 'generic-filehandle'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import AbortablePromiseCache from 'abortable-promise-cache'
+import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
 
 interface PafRecord {
   records: INoAssemblyRegion[]
@@ -22,9 +24,12 @@ interface PafRecord {
 }
 
 export default class extends BaseAdapter {
-  private initialized = false
-
-  private pafRecords: PafRecord[] = []
+  private cache = new AbortablePromiseCache({
+    cache: new QuickLRU({ maxSize: 1 }),
+    fill: (data: BaseOptions, signal: AbortSignal) => {
+      return this.setup({ ...data, signal })
+    },
+  })
 
   private assemblyNames: string[]
 
@@ -36,51 +41,51 @@ export default class extends BaseAdapter {
     pafLocation: IFileLocation
     assemblyNames: string[]
   }) {
-    super()
+    super(config)
     const { pafLocation, assemblyNames } = config
     this.pafLocation = openLocation(pafLocation)
     this.assemblyNames = assemblyNames
   }
 
   async setup(opts?: BaseOptions) {
-    if (!this.initialized) {
-      const text = (await this.pafLocation.readFile('utf8')) as string
-      console.log('ere', text)
-      text.split('\n').forEach((line: string, index: number) => {
-        if (line.length) {
-          const [
-            chr1,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            queryRefSeqLen,
-            start1,
-            end1,
+    const text = (await this.pafLocation.readFile({
+      encoding: 'utf8',
+      ...opts,
+    })) as string
+    const pafRecords: PafRecord[] = []
+    text.split('\n').forEach((line: string, index: number) => {
+      if (line.length) {
+        const [
+          chr1,
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          queryRefSeqLen,
+          start1,
+          end1,
+          strand,
+          chr2,
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          targetRefSeqLen,
+          start2,
+          end2,
+          numMatches,
+          blockLen,
+          mappingQual,
+        ] = line.split('\t')
+        pafRecords[index] = {
+          records: [
+            { refName: chr1, start: +start1, end: +end1 },
+            { refName: chr2, start: +start2, end: +end2 },
+          ],
+          extra: {
+            numMatches: +numMatches,
+            blockLen: +blockLen,
             strand,
-            chr2,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            targetRefSeqLen,
-            start2,
-            end2,
-            numMatches,
-            blockLen,
-            mappingQual,
-          ] = line.split('\t')
-          this.pafRecords[index] = {
-            records: [
-              { refName: chr1, start: +start1, end: +end1 },
-              { refName: chr2, start: +start2, end: +end2 },
-            ],
-            extra: {
-              numMatches: +numMatches,
-              blockLen: +blockLen,
-              strand,
-              mappingQual: +mappingQual,
-            },
-          }
+            mappingQual: +mappingQual,
+          },
         }
-      })
-
-      this.initialized = true
-    }
+      }
+    })
+    return pafRecords
   }
 
   async hasDataForRefName() {
@@ -105,16 +110,14 @@ export default class extends BaseAdapter {
    */
   getFeatures(region: IRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      await this.setup(opts)
+      const pafRecords = await this.cache.get('initialize', opts, opts.signal)
 
       // The index of the assembly name in the region list corresponds to
       // the adapter in the subadapters list
       const index = this.assemblyNames.indexOf(region.assemblyName)
-      console.log('ere2', index, region.assemblyName)
       if (index !== -1) {
-        for (let i = 0; i < this.pafRecords.length; i++) {
-          const { extra, records } = this.pafRecords[i]
-          console.log(records[index].refName, region.refName)
+        for (let i = 0; i < pafRecords.length; i++) {
+          const { extra, records } = pafRecords[i]
           if (records[index].refName === region.refName) {
             if (
               doesIntersect2(

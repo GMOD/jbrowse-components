@@ -3,20 +3,11 @@ import { PrerenderedCanvas, Tooltip } from '@gmod/jbrowse-core/ui'
 import { bpSpanPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useRef, useState, useEffect, MouseEvent } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import runner from 'mobx-run-in-reactive-context'
-import { PileupRenderProps } from '../PileupRenderer'
 
-function PileupRendering(props: PileupRenderProps) {
-  const {
-    blockKey,
-    trackModel,
-    width,
-    height,
-    region,
-    bpPerPx,
-    horizontallyFlipped,
-  } = props
+function PileupRendering(props) {
+  const { blockKey, trackModel, width, height, region, bpPerPx } = props
   const {
     selectedFeatureId,
     featureIdUnderMouse,
@@ -25,7 +16,7 @@ function PileupRendering(props: PileupRenderProps) {
     configuration,
   } = trackModel
 
-  const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
+  const highlightOverlayCanvas = useRef()
   const [mouseIsDown, setMouseIsDown] = useState(false)
   const [localFeatureIdUnderMouse, setLocalFeatureIdUnderMouse] = useState()
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
@@ -35,9 +26,7 @@ function PileupRendering(props: PileupRenderProps) {
   useEffect(() => {
     const canvas = highlightOverlayCanvas.current
     if (!canvas) return
-
     const ctx = canvas.getContext('2d')
-    if (!ctx) return
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     let rect
     let blockLayout
@@ -48,13 +37,7 @@ function PileupRendering(props: PileupRenderProps) {
       (rect = blockLayout.get(selectedFeatureId))
     ) {
       const [leftBp, topPx, rightBp, bottomPx] = rect
-      const [leftPx, rightPx] = bpSpanPx(
-        leftBp,
-        rightBp,
-        region,
-        bpPerPx,
-        horizontallyFlipped,
-      )
+      const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
       const rectTop = Math.round(topPx)
       const rectHeight = Math.round(bottomPx - topPx)
       ctx.shadowColor = '#222266'
@@ -76,13 +59,7 @@ function PileupRendering(props: PileupRenderProps) {
       (rect = blockLayout.get(featureIdUnderMouse))
     ) {
       const [leftBp, topPx, rightBp, bottomPx] = rect
-      const [leftPx, rightPx] = bpSpanPx(
-        leftBp,
-        rightBp,
-        region,
-        bpPerPx,
-        horizontallyFlipped,
-      )
+      const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
       const rectTop = Math.round(topPx)
       const rectHeight = Math.round(bottomPx - topPx)
       ctx.fillStyle = '#0003'
@@ -90,7 +67,6 @@ function PileupRendering(props: PileupRenderProps) {
     }
   }, [
     bpPerPx,
-    horizontallyFlipped,
     region,
     selectedFeatureId,
     featureIdUnderMouse,
@@ -98,44 +74,44 @@ function PileupRendering(props: PileupRenderProps) {
     blockLayoutFeatures,
   ])
 
-  function onMouseDown(event: MouseEvent) {
+  function onMouseDown(event) {
     setMouseIsDown(true)
     setMovedDuringLastMouseDown(false)
     callMouseHandler('MouseDown', event)
   }
 
-  function onMouseEnter(event: MouseEvent) {
+  function onMouseEnter(event) {
     callMouseHandler('MouseEnter', event)
   }
 
-  function onMouseOut(event: MouseEvent) {
+  function onMouseOut(event) {
     callMouseHandler('MouseOut', event)
     callMouseHandler('MouseLeave', event)
     trackModel.setFeatureIdUnderMouse(undefined)
     setLocalFeatureIdUnderMouse(undefined)
   }
 
-  function onMouseOver(event: MouseEvent) {
+  function onMouseOver(event) {
     callMouseHandler('MouseOver', event)
   }
 
-  function onMouseUp(event: MouseEvent) {
+  function onMouseUp(event) {
     setMouseIsDown(false)
     callMouseHandler('MouseUp', event)
   }
 
-  function onClick(event: MouseEvent) {
+  function onClick(event) {
     if (!movedDuringLastMouseDown) callMouseHandler('Click', event, true)
   }
 
-  function onMouseLeave(event: MouseEvent) {
+  function onMouseLeave(event) {
     callMouseHandler('MouseOut', event)
     callMouseHandler('MouseLeave', event)
     trackModel.setFeatureIdUnderMouse(undefined)
     setLocalFeatureIdUnderMouse(undefined)
   }
 
-  function onMouseMove(event: MouseEvent) {
+  function onMouseMove(event) {
     if (mouseIsDown) setMovedDuringLastMouseDown(true)
     let offsetX = 0
     let offsetY = 0
@@ -145,7 +121,7 @@ function PileupRendering(props: PileupRenderProps) {
     }
     offsetX = event.clientX - offsetX
     offsetY = event.clientY - offsetY
-    const px = horizontallyFlipped ? width - offsetX : offsetX
+    const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
 
     const feats = trackModel.getFeatureOverlapping(blockKey, clientBp, offsetY)
@@ -173,14 +149,8 @@ function PileupRendering(props: PileupRenderProps) {
    * @param {*} event - the actual mouse event
    * @param {bool} always - call this handler even if there is no feature
    */
-  function callMouseHandler(
-    handlerName: string,
-    event: MouseEvent,
-    always = false,
-  ) {
-    // @ts-ignore
+  function callMouseHandler(handlerName, event, always = false) {
     const featureHandler = props[`onFeature${handlerName}`]
-    // @ts-ignore
     const canvasHandler = props[`on${handlerName}`]
     if (featureHandler && (always || featureIdUnderMouse)) {
       featureHandler(event, featureIdUnderMouse)
@@ -237,7 +207,6 @@ PileupRendering.propTypes = {
   width: ReactPropTypes.number.isRequired,
   region: CommonPropTypes.Region.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
-  horizontallyFlipped: ReactPropTypes.bool,
   blockKey: ReactPropTypes.string,
 
   trackModel: ReactPropTypes.shape({
@@ -272,7 +241,6 @@ PileupRendering.propTypes = {
 
 PileupRendering.defaultProps = {
   blockKey: undefined,
-  horizontallyFlipped: false,
   trackModel: {
     configuration: {},
     setFeatureIdUnderMouse: () => {},

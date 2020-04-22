@@ -20,7 +20,7 @@ export default class FromConfigAdapter extends BaseAdapter {
   ]
 
   constructor(config: { features: Feature[]; refNameAliases?: [] }) {
-    super()
+    super(config)
     const { features } = config
     this.features = this.makeFeatures(features || [])
   }

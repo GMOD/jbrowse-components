@@ -5,7 +5,6 @@ import AdapterType from './pluggableElementTypes/AdapterType'
 import TrackType from './pluggableElementTypes/TrackType'
 import ViewType from './pluggableElementTypes/ViewType'
 import DrawerWidgetType from './pluggableElementTypes/DrawerWidgetType'
-import MenuBarType from './pluggableElementTypes/MenuBarType'
 import ConnectionType from './pluggableElementTypes/ConnectionType'
 
 import { ConfigurationSchema } from './configuration'
@@ -50,7 +49,6 @@ export default class PluginManager {
     'connection',
     'view',
     'drawer widget',
-    'menu bar',
   )
 
   typeBaseClasses = {
@@ -60,7 +58,6 @@ export default class PluginManager {
     connection: ConnectionType,
     view: ViewType,
     'drawer widget': DrawerWidgetType,
-    'menu bar': MenuBarType,
   }
 
   constructor(initialPlugins = []) {
@@ -71,14 +68,12 @@ export default class PluginManager {
     this.getTrackType = this.getElementType.bind(this, 'track')
     this.getViewType = this.getElementType.bind(this, 'view')
     this.getDrawerWidgetType = this.getElementType.bind(this, 'drawer widget')
-    this.getMenuBarType = this.getElementType.bind(this, 'menu bar')
     this.getConnectionType = this.getElementType.bind(this, 'connection')
     this.addRendererType = this.addElementType.bind(this, 'renderer')
     this.addAdapterType = this.addElementType.bind(this, 'adapter')
     this.addTrackType = this.addElementType.bind(this, 'track')
     this.addViewType = this.addElementType.bind(this, 'view')
     this.addDrawerWidgetType = this.addElementType.bind(this, 'drawer widget')
-    this.addMenuBarType = this.addElementType.bind(this, 'menu bar')
     this.addConnectionType = this.addElementType.bind(this, 'connection')
 
     // add all the initial plugins
@@ -204,15 +199,23 @@ export default class PluginManager {
       .filter(m => !!m)
   }
 
-  configure() {
-    if (this.configured) throw new Error('already configured')
-
+  createPluggableElements() {
     // run the creation callbacks for each element type in order.
     // see elementCreationSchedule above for the creation order
     this.elementCreationSchedule.run()
     delete this.elementCreationSchedule
 
-    this.plugins.forEach(plugin => plugin.configure())
+    return this
+  }
+
+  setRootModel(rootModel) {
+    this.rootModel = rootModel
+  }
+
+  configure() {
+    if (this.configured) throw new Error('already configured')
+
+    this.plugins.forEach(plugin => plugin.configure(this))
 
     this.configured = true
 

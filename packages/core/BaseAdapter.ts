@@ -1,5 +1,6 @@
 import { Observable, merge } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
+import objectHash from 'object-hash'
 import { IRegion as Region } from './mst-types'
 import { ObservableCreate } from './util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from './util'
@@ -26,6 +27,17 @@ export default abstract class BaseAdapter {
   // 'getRefNameAliases',
   // ]
   public static capabilities: string[]
+
+  public id: string
+
+  constructor(args: unknown) {
+    // note: we use switch on jest here for more simple feature IDs
+    // in test environment
+    this.id =
+      typeof jest === 'undefined'
+        ? objectHash(args, { ignoreUnknown: true }).slice(0, 5)
+        : 'test'
+  }
 
   /**
    * Subclasses should override this method. Method signature here for reference.

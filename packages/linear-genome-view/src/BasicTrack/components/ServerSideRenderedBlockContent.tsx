@@ -1,33 +1,36 @@
 import { makeStyles } from '@material-ui/core/styles'
 import LinearProgress from '@material-ui/core/LinearProgress'
+import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import ServerSideRenderedContent from '../../LinearGenomeView/components/ServerSideRenderedContent'
 import BlockError from '../../LinearGenomeView/components/BlockError'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
   loading: {
     paddingLeft: '0.6em',
-    backgroundColor: '#f1f1f1',
+    backgroundColor: theme.palette.action.disabledBackground,
     backgroundImage:
       'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',
     height: '100%',
     width: '100%',
     textAlign: 'center',
+    pointerEvents: 'none',
   },
   error: {
     display: 'block',
-    color: 'red',
+    color: theme.palette.error.main,
     width: '30em',
     wordWrap: 'normal',
     whiteSpace: 'normal',
   },
   blockMessage: {
-    background: '#f1f1f1',
-    padding: '10px',
+    background: theme.palette.action.disabledBackground,
+    padding: theme.spacing(2),
+    pointerEvents: 'none',
   },
-})
+}))
 
 function LoadingMessage() {
   // only show the loading message after 300ms to prevent excessive flickering
@@ -48,7 +51,11 @@ function LoadingMessage() {
 
 function BlockMessage({ messageText }: { messageText: string }) {
   const classes = useStyles()
-  return <div className={classes.blockMessage}>{messageText}</div>
+  return (
+    <Typography variant="body2" className={classes.blockMessage}>
+      {messageText}
+    </Typography>
+  )
 }
 BlockMessage.propTypes = {
   messageText: PropTypes.string.isRequired,

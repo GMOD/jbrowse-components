@@ -28,7 +28,9 @@ export class LayoutSession {
       cachedLayout &&
       cachedLayout.layout.subLayoutConstructorArgs.pitchX === this.bpPerPx &&
       deepEqual(readConfObject(this.config), cachedLayout.config) &&
-      deepEqual(this.filters, cachedLayout.filters)
+      deepEqual(this.filters, cachedLayout.filters) &&
+      deepEqual(this.sortObject, cachedLayout.sortObject)
+      // deepEqual(this.sortObject.by, cachedLayout.sortedBy)
     )
   }
 
@@ -38,6 +40,7 @@ export class LayoutSession {
         layout: this.makeLayout(),
         config: readConfObject(this.config),
         filters: this.filters,
+        sortObject: this.sortObject,
       }
     }
     return this.cachedLayout.layout

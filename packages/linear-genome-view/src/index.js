@@ -61,6 +61,18 @@ export default class extends Plugin {
         }),
     )
   }
+
+  configure(pluginManager) {
+    if (pluginManager.rootModel && pluginManager.rootModel.menus) {
+      pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
+        label: 'Linear genome view',
+        icon: 'line_style',
+        onClick: session => {
+          session.addView('LinearGenomeView', {})
+        },
+      })
+    }
+  }
 }
 
 export {

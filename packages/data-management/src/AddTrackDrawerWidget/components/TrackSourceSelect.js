@@ -105,6 +105,7 @@ function TrackSourceSelect({
           aria-label="Data location"
           value={trackSource}
           onChange={event => handleChange(event, setTrackSource, setTrackData)}
+          name="TrackSourceSelectRadioGroup"
         >
           <FormControlLabel
             value="fromFile"

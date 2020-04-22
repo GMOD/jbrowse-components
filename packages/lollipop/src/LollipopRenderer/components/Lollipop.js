@@ -55,7 +55,6 @@ class Lollipop extends Component {
       id: ReactPropTypes.func.isRequired,
       get: ReactPropTypes.func.isRequired,
     }).isRequired,
-    // horizontallyFlipped: ReactPropTypes.bool,
     // bpPerPx: ReactPropTypes.number.isRequired,
     // region: CommonPropTypes.Region.isRequired,
     // config: CommonPropTypes.ConfigSchema.isRequired,
@@ -89,8 +88,6 @@ class Lollipop extends Component {
   }
 
   static defaultProps = {
-    // horizontallyFlipped: false,
-
     selectedFeatureId: undefined,
 
     onFeatureMouseDown: undefined,

@@ -128,12 +128,7 @@
     }
   ],
   "defaultSession": {
-    "name": "New Session",
-    "menuBars": [
-      {
-        "type": "MainMenuBar"
-      }
-    ]
+    "name": "New Session"
   },
   "savedSessions": [
     {
@@ -169,7 +164,6 @@
                   "assemblyName": "hg19"
                 }
               ],
-              "horizontallyFlipped": false,
               "tracks": [
                 {
                   "type": "AlignmentsTrack",
@@ -184,11 +178,9 @@
                   "selectedRendering": ""
                 }
               ],
-              "controlsWidth": 120,
               "width": 800,
               "hideControls": false,
               "hideHeader": true,
-              "hideCloseButton": true,
               "trackSelectorType": "hierarchical",
               "minimumBlockWidth": 20
             },
@@ -211,7 +203,6 @@
                   "assemblyName": "hg19"
                 }
               ],
-              "horizontallyFlipped": false,
               "tracks": [
                 {
                   "type": "AlignmentsTrack",
@@ -226,11 +217,10 @@
                   "selectedRendering": ""
                 }
               ],
-              "controlsWidth": 120,
               "width": 800,
               "hideControls": false,
               "hideHeader": true,
-              "hideCloseButton": true,
+              "": true,
               "trackSelectorType": "hierarchical",
               "minimumBlockWidth": 20
             }
@@ -250,74 +240,6 @@
         }
       },
       "activeDrawerWidgets": {},
-      "menuBars": [
-        {
-          "id": "aU_iMpOUx4",
-          "type": "MainMenuBar",
-          "menus": [
-            {
-              "name": "File",
-              "menuItems": [
-                {
-                  "name": "New Session",
-                  "icon": "add",
-                  "callback": "function(session) {session.setDefaultSession();}"
-                },
-                {
-                  "name": "divider",
-                  "icon": "",
-                  "callback": "function(model){console.log(model)}"
-                },
-                {
-                  "name": "Open Session...",
-                  "icon": "folder_open",
-                  "callback": "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}"
-                },
-                {
-                  "name": "divider",
-                  "icon": "",
-                  "callback": "function(model){console.log(model)}"
-                },
-                {
-                  "name": "Duplicate Session",
-                  "icon": "file_copy",
-                  "callback": "function(session) {session.duplicateCurrentSession();}"
-                }
-              ]
-            },
-            {
-              "name": "Admin",
-              "menuItems": [
-                {
-                  "name": "Export configuration",
-                  "icon": "cloud_download",
-                  "callback": "exportConfiguration"
-                },
-                {
-                  "name": "Import configuration",
-                  "icon": "cloud_upload",
-                  "callback": "importConfiguration"
-                }
-              ]
-            },
-            {
-              "name": "Help",
-              "menuItems": [
-                {
-                  "name": "About",
-                  "icon": "info",
-                  "callback": "openAbout"
-                },
-                {
-                  "name": "Help",
-                  "icon": "help",
-                  "callback": "openHelp"
-                }
-              ]
-            }
-          ]
-        }
-      ],
       "connections": {}
     }
   ]

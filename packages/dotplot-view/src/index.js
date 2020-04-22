@@ -48,4 +48,16 @@ export default class extends Plugin {
         }),
     )
   }
+
+  configure(pluginManager) {
+    if (pluginManager.rootModel && pluginManager.rootModel.menus) {
+      pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
+        label: 'Dotplot view',
+        icon: 'timeline',
+        onClick: session => {
+          session.addView('DotplotView', {})
+        },
+      })
+    }
+  }
 }

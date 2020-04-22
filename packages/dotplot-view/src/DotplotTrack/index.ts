@@ -61,22 +61,8 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         return getConf(self, 'adapter')
       },
       get renderProps() {
-        const parentView = getParent(self, 2)
-        const {
-          width,
-          height,
-          borderSize,
-          fontSize,
-          verticalBpPerPx,
-          horizontalBpPerPx,
-        } = parentView
         return {
-          verticalBpPerPx,
-          horizontalBpPerPx,
-          width,
-          height,
-          borderSize,
-          fontSize,
+          trackModel: self,
         }
       },
     }))
@@ -168,18 +154,29 @@ function renderBlockData(self: DotplotTrack) {
 
   const { adapterConfig } = self
   const adapterConfigId = jsonStableStringify(adapterConfig)
+  const parent = getParent(self, 2)
+  getSnapshot(parent)
+  const { views, viewWidth, viewHeight, borderSize, borderX, borderY } = parent
+
   return {
     rendererType,
     rpcManager,
     renderProps,
     renderArgs: {
-      views: getSnapshot(getParent(self, 2).views),
       adapterType: self.adapterType.name,
       adapterConfig,
       sequenceAdapterType: sequenceConfig.type,
       sequenceAdapterConfig: sequenceConfig,
       rendererType: rendererType.name,
-      renderProps,
+      views,
+      renderProps: {
+        ...renderProps,
+        width: viewWidth,
+        height: viewHeight,
+        borderSize,
+        borderX,
+        borderY,
+      },
       sessionId: adapterConfigId,
       timeout: 1000000, // 10000,
     },

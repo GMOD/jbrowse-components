@@ -17,7 +17,7 @@ export default class extends BaseAdapter {
   public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
 
   public constructor(config: { chromSizesLocation: IFileLocation }) {
-    super()
+    super(config)
     const { chromSizesLocation } = config
     if (!chromSizesLocation) {
       throw new Error('must provide chromSizesLocation')

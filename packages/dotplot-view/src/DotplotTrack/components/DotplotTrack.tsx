@@ -1,6 +1,7 @@
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
+import { getContainingView } from '@gmod/jbrowse-core/util'
 import { DotplotTrack as DotplotTrackModel } from '..'
 
 const DotplotTrack: React.FC<{
@@ -8,10 +9,23 @@ const DotplotTrack: React.FC<{
   children?: React.ReactNode
 }> = props => {
   const { model, children } = props
+  const { offsetX = 0, offsetY = 0 } = model.data || {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const view = getContainingView(model) as any
+  const top = view.vview.offsetPx - offsetY
+  const left = -(view.hview.offsetPx - offsetX)
   return (
-    <div>
-      <model.ReactComponent2 {...props} />
-      {children}
+    <div style={{ position: 'relative' }}>
+      <div
+        style={{
+          position: 'absolute',
+          top,
+          left,
+        }}
+      >
+        <model.ReactComponent2 {...props} />
+        {children}
+      </div>
     </div>
   )
 }
