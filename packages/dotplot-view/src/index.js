@@ -55,7 +55,7 @@ export default class extends Plugin {
         label: 'Dotplot view',
         icon: 'timeline',
         onClick: session => {
-          session.addView('DotplotView', { hview: {}, vview: {} })
+          session.addView('DotplotView', {})
         },
       })
     }

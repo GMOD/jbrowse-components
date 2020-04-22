@@ -21,8 +21,8 @@ export default function stateModelFactory(pluginManager: any) {
   return (jbrequiredTypes as Instance<typeof types>)
     .model('Dotplot1DView', {
       displayedRegions: types.array(Region),
-      bpPerPx: types.number,
-      offsetPx: types.number,
+      bpPerPx: 0,
+      offsetPx: 0,
       horizontallyFlipped: false,
     })
     .volatile(() => ({
