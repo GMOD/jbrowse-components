@@ -198,10 +198,10 @@ export default class BoxRendererType extends ServerSideRendererType {
     serialized.layout = args.layout.serializeRegion(
       this.getExpandedGlyphRegion(region, args),
     )
-    for (const [k] of features) {
-      if (serialized.layout.rectangles && !serialized.layout.rectangles[k]) {
-        features.delete(k)
-      }
+    if (serialized.layout.rectangles) {
+      serialized.features = serialized.features.filter(f => {
+        return Boolean(serialized.layout.rectangles[f.uniqueId])
+      })
     }
 
     serialized.maxHeightReached = serialized.layout.maxHeightReached
