@@ -508,61 +508,57 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         style="height: 20px;"
       >
         <div
-          class="makeStyles-trackOffsetContainer"
+          class="makeStyles-renderingComponentContainer"
         >
           <div
-            class="makeStyles-renderingComponentContainer"
+            class="makeStyles-track"
+            data-testid="track-testConfig"
+            role="presentation"
           >
             <div
-              class="makeStyles-track"
-              data-testid="track-testConfig"
-              role="presentation"
+              class="makeStyles-trackBlocks"
+              data-testid="Blockset"
+              style="left: -800px;"
             >
               <div
-                class="makeStyles-trackBlocks"
-                data-testid="Blockset"
-                style="left: -800px;"
+                class="makeStyles-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
+              <div
+                class="makeStyles-block"
+                style="width: 100px;"
               >
                 <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
-                <div
-                  class="makeStyles-block"
-                  style="width: 100px;"
+                  class="ssr-container"
+                  data-html-size="313"
                 >
                   <div
-                    class="ssr-container"
-                    data-html-size="313"
+                    classname="ssr-container-inner"
                   >
                     <div
-                      classname="ssr-container-inner"
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
                     >
-                      <div
-                        class="PileupRendering"
-                        style="position:relative;width:0;height:0"
-                      >
-                        <canvas
-                          data-testid="prerendered_canvas"
-                          height="0"
-                          style="width:0;height:0;position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                        <canvas
-                          class="highlightOverlayCanvas"
-                          height="0"
-                          style="position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                      </div>
+                      <canvas
+                        data-testid="prerendered_canvas"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
                     </div>
                   </div>
                 </div>
-                <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
               </div>
+              <div
+                class="makeStyles-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
             </div>
           </div>
         </div>
@@ -1612,127 +1608,123 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         style="height: 20px;"
       >
         <div
-          class="makeStyles-trackOffsetContainer"
+          class="makeStyles-renderingComponentContainer"
         >
           <div
-            class="makeStyles-renderingComponentContainer"
+            class="makeStyles-track"
+            data-testid="track-testConfig"
+            role="presentation"
           >
             <div
-              class="makeStyles-track"
-              data-testid="track-testConfig"
-              role="presentation"
+              class="makeStyles-trackBlocks"
+              data-testid="Blockset"
+              style="left: -800px;"
             >
               <div
-                class="makeStyles-trackBlocks"
-                data-testid="Blockset"
-                style="left: -800px;"
+                class="makeStyles-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
+              <div
+                class="makeStyles-block"
+                style="width: 100px;"
               >
                 <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
-                <div
-                  class="makeStyles-block"
-                  style="width: 100px;"
+                  class="ssr-container"
+                  data-html-size="313"
                 >
                   <div
-                    class="ssr-container"
-                    data-html-size="313"
+                    classname="ssr-container-inner"
                   >
                     <div
-                      classname="ssr-container-inner"
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
                     >
-                      <div
-                        class="PileupRendering"
-                        style="position:relative;width:0;height:0"
-                      >
-                        <canvas
-                          data-testid="prerendered_canvas"
-                          height="0"
-                          style="width:0;height:0;position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                        <canvas
-                          class="highlightOverlayCanvas"
-                          height="0"
-                          style="position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                      </div>
+                      <canvas
+                        data-testid="prerendered_canvas"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
                     </div>
                   </div>
                 </div>
-                <div
-                  class="makeStyles-interRegionPaddingBlock"
-                  style="background: none; width: 2px;"
-                />
-                <div
-                  class="makeStyles-block"
-                  style="width: 800px;"
-                >
-                  <div
-                    class="ssr-container"
-                    data-html-size="313"
-                  >
-                    <div
-                      classname="ssr-container-inner"
-                    >
-                      <div
-                        class="PileupRendering"
-                        style="position:relative;width:0;height:0"
-                      >
-                        <canvas
-                          data-testid="prerendered_canvas"
-                          height="0"
-                          style="width:0;height:0;position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                        <canvas
-                          class="highlightOverlayCanvas"
-                          height="0"
-                          style="position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-block"
-                  style="width: 200px;"
-                >
-                  <div
-                    class="ssr-container"
-                    data-html-size="313"
-                  >
-                    <div
-                      classname="ssr-container-inner"
-                    >
-                      <div
-                        class="PileupRendering"
-                        style="position:relative;width:0;height:0"
-                      >
-                        <canvas
-                          data-testid="prerendered_canvas"
-                          height="0"
-                          style="width:0;height:0;position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                        <canvas
-                          class="highlightOverlayCanvas"
-                          height="0"
-                          style="position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
               </div>
+              <div
+                class="makeStyles-interRegionPaddingBlock"
+                style="background: none; width: 2px;"
+              />
+              <div
+                class="makeStyles-block"
+                style="width: 800px;"
+              >
+                <div
+                  class="ssr-container"
+                  data-html-size="313"
+                >
+                  <div
+                    classname="ssr-container-inner"
+                  >
+                    <div
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
+                    >
+                      <canvas
+                        data-testid="prerendered_canvas"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="makeStyles-block"
+                style="width: 200px;"
+              >
+                <div
+                  class="ssr-container"
+                  data-html-size="313"
+                >
+                  <div
+                    classname="ssr-container-inner"
+                  >
+                    <div
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
+                    >
+                      <canvas
+                        data-testid="prerendered_canvas"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="makeStyles-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
             </div>
           </div>
         </div>
@@ -1814,127 +1806,123 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         style="height: 20px;"
       >
         <div
-          class="makeStyles-trackOffsetContainer"
+          class="makeStyles-renderingComponentContainer"
         >
           <div
-            class="makeStyles-renderingComponentContainer"
+            class="makeStyles-track"
+            data-testid="track-testConfig2"
+            role="presentation"
           >
             <div
-              class="makeStyles-track"
-              data-testid="track-testConfig2"
-              role="presentation"
+              class="makeStyles-trackBlocks"
+              data-testid="Blockset"
+              style="left: -800px;"
             >
               <div
-                class="makeStyles-trackBlocks"
-                data-testid="Blockset"
-                style="left: -800px;"
+                class="makeStyles-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
+              <div
+                class="makeStyles-block"
+                style="width: 100px;"
               >
                 <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
-                <div
-                  class="makeStyles-block"
-                  style="width: 100px;"
+                  class="ssr-container"
+                  data-html-size="313"
                 >
                   <div
-                    class="ssr-container"
-                    data-html-size="313"
+                    classname="ssr-container-inner"
                   >
                     <div
-                      classname="ssr-container-inner"
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
                     >
-                      <div
-                        class="PileupRendering"
-                        style="position:relative;width:0;height:0"
-                      >
-                        <canvas
-                          data-testid="prerendered_canvas"
-                          height="0"
-                          style="width:0;height:0;position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                        <canvas
-                          class="highlightOverlayCanvas"
-                          height="0"
-                          style="position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                      </div>
+                      <canvas
+                        data-testid="prerendered_canvas"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
                     </div>
                   </div>
                 </div>
-                <div
-                  class="makeStyles-interRegionPaddingBlock"
-                  style="background: none; width: 2px;"
-                />
-                <div
-                  class="makeStyles-block"
-                  style="width: 800px;"
-                >
-                  <div
-                    class="ssr-container"
-                    data-html-size="313"
-                  >
-                    <div
-                      classname="ssr-container-inner"
-                    >
-                      <div
-                        class="PileupRendering"
-                        style="position:relative;width:0;height:0"
-                      >
-                        <canvas
-                          data-testid="prerendered_canvas"
-                          height="0"
-                          style="width:0;height:0;position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                        <canvas
-                          class="highlightOverlayCanvas"
-                          height="0"
-                          style="position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-block"
-                  style="width: 200px;"
-                >
-                  <div
-                    class="ssr-container"
-                    data-html-size="313"
-                  >
-                    <div
-                      classname="ssr-container-inner"
-                    >
-                      <div
-                        class="PileupRendering"
-                        style="position:relative;width:0;height:0"
-                      >
-                        <canvas
-                          data-testid="prerendered_canvas"
-                          height="0"
-                          style="width:0;height:0;position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                        <canvas
-                          class="highlightOverlayCanvas"
-                          height="0"
-                          style="position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
               </div>
+              <div
+                class="makeStyles-interRegionPaddingBlock"
+                style="background: none; width: 2px;"
+              />
+              <div
+                class="makeStyles-block"
+                style="width: 800px;"
+              >
+                <div
+                  class="ssr-container"
+                  data-html-size="313"
+                >
+                  <div
+                    classname="ssr-container-inner"
+                  >
+                    <div
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
+                    >
+                      <canvas
+                        data-testid="prerendered_canvas"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="makeStyles-block"
+                style="width: 200px;"
+              >
+                <div
+                  class="ssr-container"
+                  data-html-size="313"
+                >
+                  <div
+                    classname="ssr-container-inner"
+                  >
+                    <div
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
+                    >
+                      <canvas
+                        data-testid="prerendered_canvas"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="makeStyles-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
             </div>
           </div>
         </div>
