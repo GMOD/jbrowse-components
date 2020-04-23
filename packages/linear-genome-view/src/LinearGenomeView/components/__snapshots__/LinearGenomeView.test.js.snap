@@ -445,6 +445,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
     >
       <div
         class="MuiPaper-root makeStyles-trackLabel makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
+        style="webkit-transform: none; transform: none; webkit-transition: -webkit-transform 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms; transition: transform 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms;"
       >
         <span
           aria-hidden="true"
@@ -1549,6 +1550,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
     >
       <div
         class="MuiPaper-root makeStyles-trackLabel makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
+        style="webkit-transform: none; transform: none; webkit-transition: -webkit-transform 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms; transition: transform 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms;"
       >
         <span
           aria-hidden="true"
@@ -1751,6 +1753,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
     >
       <div
         class="MuiPaper-root makeStyles-trackLabel makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
+        style="webkit-transform: none; transform: none; webkit-transition: -webkit-transform 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms; transition: transform 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms;"
       >
         <span
           aria-hidden="true"
