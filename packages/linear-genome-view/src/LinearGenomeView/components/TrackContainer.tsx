@@ -37,6 +37,7 @@ const useStyles = makeStyles(theme => ({
     // -1 offset because of the 1px border of the Paper
     left: -1,
     height: '100%',
+    width: '100%',
   },
   trackLabel: {
     position: 'absolute',
@@ -98,7 +99,10 @@ function TrackContainer(props: {
         )}`}
         role="presentation"
       >
-        <div className={classes.renderingComponentContainer}>
+        <div
+          className={classes.renderingComponentContainer}
+          style={{ transform: `scaleX(${model.scaleFactor})` }}
+        >
           <RenderingComponent
             model={track}
             offsetPx={offsetPx}

@@ -136,6 +136,7 @@ export function springAnimate(
   fromValue: number,
   toValue: number,
   setValue: (value: number) => void,
+  onFinish = () => {},
   precision = 0,
   tension = 170,
   friction = 26,
@@ -171,6 +172,7 @@ export function springAnimate(
     const endOfAnimation = isVelocity && isDisplacement
     if (endOfAnimation) {
       setValue(toValue)
+      onFinish()
     } else {
       setValue(position)
       animationFrameId = requestAnimationFrame(() =>

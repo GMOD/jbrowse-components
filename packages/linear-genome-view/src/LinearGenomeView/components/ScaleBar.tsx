@@ -159,15 +159,17 @@ const ScaleBar = React.forwardRef(
         style={style}
         {...other}
       >
-        <div
-          className={classes.scaleBar}
-          style={{
-            left: offsetLeft - 1,
-            width: model.staticBlocks.totalWidthPx,
-            ...style,
-          }}
-        >
-          {rulerLabels}
+        <div style={{ transform: `scaleX(${model.scaleFactor})` }}>
+          <div
+            className={classes.scaleBar}
+            style={{
+              left: offsetLeft - 1,
+              width: model.staticBlocks.totalWidthPx,
+              ...style,
+            }}
+          >
+            {rulerLabels}
+          </div>
         </div>
         {refNameLabels}
       </Paper>
