@@ -7,6 +7,7 @@ import React, { useRef, useState, useEffect } from 'react'
 import runner from 'mobx-run-in-reactive-context'
 
 function PileupRendering(props) {
+  console.log(props)
   const { blockKey, trackModel, width, height, region, bpPerPx } = props
   const {
     selectedFeatureId,

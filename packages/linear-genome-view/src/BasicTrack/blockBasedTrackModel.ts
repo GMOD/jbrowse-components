@@ -215,12 +215,26 @@ const blockBasedTrack = types
       session.setSelection(feature)
     },
 
+    // TODORIGHTCLICK: notification that it was copied to clipboard
+    copyFeatureToClipboard(feature: Feature) {
+      navigator.clipboard.writeText(JSON.stringify(feature, null, 4))
+    },
+
+    // TODORIGHTCLICK: opens another track drawer instead of replacing the current one
     contextMenuFeature(feature: Feature) {
       const menuOptions: MenuOption[] = [
         {
           label: 'Open feature drawer',
           icon: 'menu_open',
-          onClick: () => this.selectFeature(feature),
+          onClick: () => {
+            this.clearFeatureSelection()
+            this.selectFeature(feature)
+          },
+        },
+        {
+          label: 'Copy info to clipboard',
+          icon: 'content_copy',
+          onClick: () => this.copyFeatureToClipboard(feature),
         },
       ]
       self.contextMenu = menuOptions
@@ -242,7 +256,6 @@ const blockBasedTrack = types
         ...getParentRenderProps(self),
         trackModel: self,
         onFeatureClick(event: any, featureId: string | undefined) {
-          console.log('here left click')
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
             self.clearFeatureSelection()
@@ -250,14 +263,11 @@ const blockBasedTrack = types
             const feature = self.features.get(f)
             self.selectFeature(feature as Feature)
           }
-          // TODO: onfeatureRightClick
         },
         onClick() {
           self.clearFeatureSelection()
         },
-        // TODORIGHTCLICK: make this open a special right click menu, where one of the options calls on feature click
         onFeatureContextMenu(event: any, featureId: string | undefined) {
-          console.log('here right click')
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
             self.clearFeatureSelection()

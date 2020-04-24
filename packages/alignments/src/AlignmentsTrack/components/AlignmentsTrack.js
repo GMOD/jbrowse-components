@@ -31,11 +31,8 @@ function AlignmentsTrackComponent(props) {
   const [contextMenu, setContextMenu] = useState(model.menuOptions)
   const handleRightClick = e => {
     e.preventDefault()
-    PileupTrack.featureIdUnderMouse
-      ? console.log('menu should be ', PileupTrack.contextMenu)
-      : console.log('menu should be ', model.menuOptions)
     setContextMenu(
-      PileupTrack.featureIdUnderMouse
+      PileupTrack && PileupTrack.featureIdUnderMouse
         ? PileupTrack.contextMenu
         : model.menuOptions,
     )
