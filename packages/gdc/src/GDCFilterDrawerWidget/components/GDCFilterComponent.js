@@ -71,12 +71,22 @@ function loadFilters(schema) {
   }
 }
 
+function loadColour(schema) {
+  try {
+    const colourBy = JSON.parse(schema.target.adapter.colourBy.value)
+    schema.setColourBy(colourBy)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 /**
  * Creates the form for interacting with the track filters
  */
 const GDCQueryBuilder = observer(({ schema }) => {
   schema.clearFilters()
   loadFilters(schema)
+  loadColour(schema)
 
   const classes = useStyles()
   return (

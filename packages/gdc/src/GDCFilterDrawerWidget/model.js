@@ -18,6 +18,11 @@ const Filter = types
     },
   }))
 
+const ColourBy = types.model({
+  id: types.identifier,
+  value: types.string,
+})
+
 export default pluginManager =>
   types
     .model('GDCFilterDrawerWidget', {
@@ -27,6 +32,7 @@ export default pluginManager =>
         pluginManager.pluggableConfigSchemaType('track'),
       ),
       filters: types.array(Filter),
+      colourBy: types.map(ColourBy),
     })
     .actions(self => ({
       setTarget(newTarget) {
@@ -49,5 +55,11 @@ export default pluginManager =>
         self.filters = self.filters.filter(f => {
           return f.filter.length === 0
         })
+      },
+      setColourBy(newColourBy) {
+        self.colourBy[0] = newColourBy
+      },
+      getColourBy() {
+        return self.colourBy[0] ? self.colourBy[0] : {}
       },
     }))

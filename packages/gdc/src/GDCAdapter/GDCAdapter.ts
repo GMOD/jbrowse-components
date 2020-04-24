@@ -14,6 +14,8 @@ export default class extends BaseAdapter {
 
   private featureType: string
 
+  private colourBy: string
+
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: {
@@ -21,6 +23,7 @@ export default class extends BaseAdapter {
     cases?: string[]
     size?: number
     featureType?: string
+    colourBy?: string
   }) {
     super(config)
     const {
@@ -28,11 +31,13 @@ export default class extends BaseAdapter {
       cases = [],
       size = 100,
       featureType = 'mutation',
+      colourBy = '{}',
     } = config
     this.filters = filters
     this.cases = cases
     this.size = size
     this.featureType = featureType
+    this.colourBy = colourBy
   }
 
   public async getRefNames(opts?: BaseOptions) {

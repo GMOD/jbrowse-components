@@ -426,7 +426,7 @@ const mutationHighlightFeatures = [
     name: 'VEP',
     attributeName: 'vep_impact',
     type: 'category',
-    description: 'Colour by VEP impact.',
+    description: 'Colour by VEP impact (canonical transcript).',
     values: [
       { name: 'LOW', colour: 'blue' },
       { name: 'MODIFIER', colour: 'goldenrod' },
@@ -439,7 +439,7 @@ const mutationHighlightFeatures = [
     name: 'PolyPhen',
     type: 'category',
     attributeName: 'polyphen_impact',
-    description: 'Colour by PolyPhen impact.',
+    description: 'Colour by PolyPhen impact (canonical transcript).',
     values: [
       { name: 'benign', colour: 'green' },
       { name: 'possibly_damaging', colour: 'orange' },
@@ -452,7 +452,7 @@ const mutationHighlightFeatures = [
     name: 'SIFT',
     type: 'category',
     attributeName: 'sift_impact',
-    description: 'Colour by SIFT impact.',
+    description: 'Colour by SIFT impact (canonical transcript).',
     values: [
       { name: 'deleterious', colour: 'red' },
       { name: 'tolerated', colour: 'green' },

@@ -35,19 +35,13 @@ const useStyles = makeStyles(theme => ({
  */
 export const MutationHighlightFeature = observer(({ schema }) => {
   const classes = useStyles()
-  const [highlightBy, setHighlightBy] = useState({})
-
+  const [colourBy, setColourBy] = useState(schema.getColourBy())
   const handleChangeHighlightBy = event => {
     const hlBy = event.target.value
-    setHighlightBy(hlBy)
     setColourBy(hlBy)
-  }
-
-  const setColourBy = hlBy => {
+    let colourFunction = ''
     if (hlBy.type === 'splitCount') {
-      schema.target.renderer.color1.set(
-        `function(feature) { if (feature.get('${hlBy.attributeName}') > ${hlBy.values[0].splitBy}) {return '${hlBy.values[0].colour1}'; } else {return '${hlBy.values[0].colour2}'; } }`,
-      )
+      colourFunction = `function(feature) { if (feature.get('${hlBy.attributeName}') > ${hlBy.values[0].splitBy}) {return '${hlBy.values[0].colour1}'; } else {return '${hlBy.values[0].colour2}'; } }`
     } else if (hlBy.type === 'category') {
       if (
         hlBy.name === 'VEP' ||
@@ -59,20 +53,24 @@ export const MutationHighlightFeature = observer(({ schema }) => {
           switchStatement += `case '${element.name}': return '${element.colour}'; break;`
         })
         switchStatement += '}'
-        schema.target.renderer.color1.set(
-          `function(feature) { const filteredConsequences = feature.get('consequence').hits.edges.filter(cons => cons.node.transcript.is_canonical); const impact = filteredConsequences[0].node.transcript.annotation.${hlBy.attributeName}; ${switchStatement}}`,
-        )
+        colourFunction = `function(feature) { const filteredConsequences = feature.get('consequence').hits.edges.filter(cons => cons.node.transcript.is_canonical); const impact = filteredConsequences[0].node.transcript.annotation.${hlBy.attributeName}; ${switchStatement}}`
       } else {
         let switchStatement = `switch(attrValue) {`
         hlBy.values.forEach(element => {
           switchStatement += `case '${element.name}': return '${element.colour}'; break;`
         })
         switchStatement += '}'
-        schema.target.renderer.color1.set(
-          `function(feature) { const attrValue = feature.get('${hlBy.attributeName}'); ${switchStatement}}`,
-        )
+        colourFunction = `function(feature) { const attrValue = feature.get('${hlBy.attributeName}'); ${switchStatement}}`
       }
+    } else {
+      colourFunction = `function(feature) { return 'goldenrod' }`
     }
+    // Set to function
+    schema.target.renderer.color1.set(colourFunction)
+
+    // Set to colour array element
+    schema.setColourBy(JSON.stringify(hlBy))
+    schema.target.adapter.colourBy.set(JSON.stringify(hlBy))
   }
 
   return (
@@ -91,7 +89,7 @@ export const MutationHighlightFeature = observer(({ schema }) => {
         <Select
           labelId="category-select-label"
           id="category-select"
-          value={highlightBy}
+          value={colourBy}
           onChange={handleChangeHighlightBy}
         >
           <MenuItem disabled value="">
@@ -106,12 +104,12 @@ export const MutationHighlightFeature = observer(({ schema }) => {
           })}
         </Select>
       </FormControl>
-      {highlightBy && highlightBy.values && (
+      {colourBy && colourBy.values && (
         <div>
           <Typography variant="subtitle2" className={classes.text}>
-            {highlightBy.description}
+            {colourBy.description}
           </Typography>
-          {highlightBy.values && highlightBy.type === 'category' && (
+          {colourBy.values && colourBy.type === 'category' && (
             <Table>
               <TableHead>
                 <TableRow>
@@ -120,8 +118,8 @@ export const MutationHighlightFeature = observer(({ schema }) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {highlightBy.values &&
-                  highlightBy.values.map(value => {
+                {colourBy.values &&
+                  colourBy.values.map(value => {
                     return (
                       <TableRow key={value.name}>
                         <TableCell>
@@ -135,7 +133,7 @@ export const MutationHighlightFeature = observer(({ schema }) => {
             </Table>
           )}
 
-          {highlightBy.values && highlightBy.type === 'splitCount' && (
+          {colourBy.values && colourBy.type === 'splitCount' && (
             <Table>
               <TableHead>
                 <TableRow>
@@ -146,8 +144,8 @@ export const MutationHighlightFeature = observer(({ schema }) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {highlightBy.values &&
-                  highlightBy.values.map(value => {
+                {colourBy.values &&
+                  colourBy.values.map(value => {
                     return (
                       <TableRow key={value.name}>
                         <TableCell>

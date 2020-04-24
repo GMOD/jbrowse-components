@@ -12,6 +12,12 @@ export const configSchema = ConfigurationSchema(
       description:
         'The filters to be applied to the track. Only edit if you know what you are doing.',
     },
+    colourBy: {
+      type: 'string',
+      defaultValue: '{}',
+      description:
+        'Colour features based on track attributes. Only edit if you know what you are doing.',
+    },
     featureType: {
       type: 'stringEnum',
       model: types.enumeration('Feature Type', ['mutation', 'gene']),
