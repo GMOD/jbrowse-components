@@ -429,10 +429,11 @@ const mutationHighlightFeatures = [
     type: 'category',
     description: 'Colour by VEP impact.',
     values: [
-      { name: 'LOW', colour: 'grey' },
-      { name: 'MODIFIER', colour: 'yellow' },
+      { name: 'LOW', colour: 'blue' },
+      { name: 'MODIFIER', colour: 'goldenrod' },
       { name: 'MODERATE', colour: 'orange' },
       { name: 'HIGH', colour: 'red' },
+      { name: '', colour: 'lightgrey' },
     ],
   },
   {
@@ -445,6 +446,7 @@ const mutationHighlightFeatures = [
       { name: 'possibly_damaging', colour: 'orange' },
       { name: 'probably_damaging', colour: 'red' },
       { name: 'unknown', colour: 'grey' },
+      { name: '', colour: 'lightgrey' },
     ],
   },
   {
@@ -455,8 +457,9 @@ const mutationHighlightFeatures = [
     values: [
       { name: 'deleterious', colour: 'red' },
       { name: 'tolerated', colour: 'green' },
-      { name: 'deleterious_low_confidence', colour: 'lightred' },
+      { name: 'deleterious_low_confidence', colour: 'lightcoral' },
       { name: 'tolerated_low_confidence', colour: 'lightgreen' },
+      { name: '', colour: 'lightgrey' },
     ],
   },
   {
