@@ -33,13 +33,16 @@ const useStyles = makeStyles(theme => ({
 let isValidGDCFilter = true
 let validationMessage = ''
 
+let isValidColourBy = true
+let colourValidationMessage = ''
+
 /**
  * Creates corresponding filter models for existing filters from track
  * Assumes that the track filters are in a specific format
  * @param {*} schema schema
  */
 function loadFilters(schema) {
-  setValidationMessage('', true)
+  setFilterValidationMessage('', true)
   try {
     const filters = JSON.parse(schema.target.adapter.filters.value)
     if (filters.content && filters.content.length > 0) {
@@ -52,7 +55,7 @@ function loadFilters(schema) {
         } else if (filter.content.field.startsWith('genes.')) {
           type = 'gene'
         } else {
-          setValidationMessage(
+          setFilterValidationMessage(
             `The filter ${filter.content.field} is missing a type prefix and is invalid. Any changes on this panel will overwrite invalid filters.`,
             false,
           )
@@ -64,19 +67,49 @@ function loadFilters(schema) {
       }
     }
   } catch (error) {
-    setValidationMessage(
+    setFilterValidationMessage(
       'The current filters are not in the expected format. Any changes on this panel will overwrite invalid filters.',
       false,
     )
   }
 }
 
+/**
+ * Creates a corresponding colour by model for existing colour options
+ * Assumes that the track colour by is in a specific format
+ * @param {*} schema
+ */
 function loadColour(schema) {
+  setColourValidationMessage('', true)
   try {
     const colourBy = JSON.parse(schema.target.adapter.colourBy.value)
-    schema.setColourBy(colourBy)
+    const expectedAttributes = [
+      'name',
+      'type',
+      'attributeName',
+      'values',
+      'description',
+    ]
+
+    let matchingKeys = true
+    expectedAttributes.forEach(key => {
+      if (!(key in colourBy)) {
+        matchingKeys = false
+      }
+    })
+    if (matchingKeys || Object.keys(colourBy).length === 0) {
+      schema.setColourBy(colourBy)
+    } else {
+      setColourValidationMessage(
+        'The current colour by option is not in the expected format. Any changes on this panel will overwrite the invalid selection.',
+        false,
+      )
+    }
   } catch (error) {
-    console.log(error)
+    setColourValidationMessage(
+      'The current colour by option is not in the expected format. Any changes on this panel will overwrite the invalid selection.',
+      false,
+    )
   }
 }
 
@@ -106,6 +139,9 @@ const GDCQueryBuilder = observer(({ schema }) => {
       <FilterList schema={schema} type="case" facets={caseFacets} />
       <FilterList schema={schema} type="gene" facets={geneFacets} />
       <FilterList schema={schema} type="ssm" facets={ssmFacets} />
+      {!isValidColourBy && (
+        <Alert severity="info">{colourValidationMessage}</Alert>
+      )}
       {schema.target.adapter.featureType.value === 'mutation' && (
         <MutationHighlightFeature schema={schema} />
       )}
@@ -135,9 +171,19 @@ ConfigurationEditor.propTypes = {
  * @param {*} msg Message to display if invalid
  * @param {*} isValid Do not display if valid
  */
-function setValidationMessage(msg, isValid) {
+function setFilterValidationMessage(msg, isValid) {
   validationMessage = msg
   isValidGDCFilter = isValid
+}
+
+/**
+ * Updates the validation message for colours
+ * @param {*} msg Message to display if invalid
+ * @param {*} isValid Do not display if valid
+ */
+function setColourValidationMessage(msg, isValid) {
+  colourValidationMessage = msg
+  isValidColourBy = isValid
 }
 
 export default observer(ConfigurationEditor)

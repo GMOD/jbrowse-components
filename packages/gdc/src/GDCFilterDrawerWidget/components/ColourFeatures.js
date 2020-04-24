@@ -138,9 +138,9 @@ export const MutationHighlightFeature = observer(({ schema }) => {
               <TableHead>
                 <TableRow>
                   <TableCell>Value</TableCell>
-                  <TableCell>Split By</TableCell>
-                  <TableCell>Lower Colour</TableCell>
-                  <TableCell>Higher Colour</TableCell>
+                  <TableCell>Threshold</TableCell>
+                  <TableCell>Below</TableCell>
+                  <TableCell>Equal or Above</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -151,7 +151,7 @@ export const MutationHighlightFeature = observer(({ schema }) => {
                         <TableCell>
                           {value.name !== '' ? value.name : 'n/a'}
                         </TableCell>
-                        <TableCell>{value.splitBy}</TableCell>
+                        <TableCell>{value.threshold}</TableCell>
                         <TableCell>{value.colour1}</TableCell>
                         <TableCell>{value.colour2}</TableCell>
                       </TableRow>

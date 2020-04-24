@@ -478,7 +478,7 @@ const mutationHighlightFeatures = [
     type: 'splitCount',
     description: 'Colour by mutation recurrence across the GDC.',
     attributeName: 'score',
-    values: [{ name: 'low', colour1: 'red', colour2: 'blue', splitBy: 2 }],
+    values: [{ name: 'low', colour1: 'red', colour2: 'blue', threshold: 2 }],
   },
 ]
 
