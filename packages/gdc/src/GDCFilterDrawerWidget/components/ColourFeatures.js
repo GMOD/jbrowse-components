@@ -40,8 +40,8 @@ export const MutationHighlightFeature = observer(({ schema }) => {
     const hlBy = event.target.value
     setColourBy(hlBy)
     let colourFunction = ''
-    if (hlBy.type === 'splitCount') {
-      colourFunction = `function(feature) { if (feature.get('${hlBy.attributeName}') > ${hlBy.values[0].splitBy}) {return '${hlBy.values[0].colour1}'; } else {return '${hlBy.values[0].colour2}'; } }`
+    if (hlBy.type === 'threshold') {
+      colourFunction = `function(feature) { if (feature.get('${hlBy.attributeName}') >= ${hlBy.values[0].threshold}) {return '${hlBy.values[0].colour1}'; } else {return '${hlBy.values[0].colour2}'; } }`
     } else if (hlBy.type === 'category') {
       if (
         hlBy.name === 'VEP' ||
@@ -133,7 +133,7 @@ export const MutationHighlightFeature = observer(({ schema }) => {
             </Table>
           )}
 
-          {colourBy.values && colourBy.type === 'splitCount' && (
+          {colourBy.values && colourBy.type === 'threshold' && (
             <Table>
               <TableHead>
                 <TableRow>
