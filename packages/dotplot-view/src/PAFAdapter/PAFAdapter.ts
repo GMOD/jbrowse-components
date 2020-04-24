@@ -70,7 +70,18 @@ export default class extends BaseAdapter {
           numMatches,
           blockLen,
           mappingQual,
+          ...fields
         ] = line.split('\t')
+
+        const rest = Object.fromEntries(
+          fields.map(field => {
+            const r = field.indexOf(':')
+            const fieldName = field.slice(0, r)
+            const fieldValue = field.slice(r + 3)
+            return [fieldName, fieldValue]
+          }),
+        )
+
         pafRecords[index] = {
           records: [
             { refName: chr1, start: +start1, end: +end1 },
@@ -81,6 +92,7 @@ export default class extends BaseAdapter {
             blockLen: +blockLen,
             strand,
             mappingQual: +mappingQual,
+            ...rest,
           },
         }
       }

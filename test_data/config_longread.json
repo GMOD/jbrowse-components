@@ -3,7 +3,7 @@
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"
     },
-    "updateUrl": true
+    "updateUrl": false
   },
   "assemblies": [
     {
@@ -40,7 +40,7 @@
       }
     },
     {
-      "name": "m150119_155609_00118_c100767352550000001823169407221597_s1_p0/48046/0_23941",
+      "name": "longread",
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "longread",
@@ -68,17 +68,17 @@
       "trackId": "dotplot_track",
       "name": "dotplot",
       "assemblyNames": [
-        "grape",
-        "peach"
+        "longread",
+        "hg19"
       ],
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
-          "uri": "test_data/peach_grape.paf"
+          "uri": "test_data/longread_vs_ref.paf"
         },
         "assemblyNames": [
-          "peach",
-          "grape"
+          "longread",
+          "hg19"
         ]
       },
       "renderer": {
@@ -96,7 +96,7 @@
   },
   "savedSessions": [
     {
-      "name": "Grape vs Peach",
+      "name": "SKBR3 PacBio vs Ref",
       "width": 1850,
       "drawerWidth": 384,
       "views": [
@@ -104,17 +104,37 @@
           "id": "MiDMyyWpp",
           "type": "DotplotView",
           "assemblyNames": [
-            "peach",
-            "grape"
+            "longread",
+            "hg19"
           ],
           "hview": {
-            "displayedRegions": [],
-            "bpPerPx": 100000,
+            "displayedRegions": [
+              {
+                "refName": "m150119_155609_00118_c100767352550000001823169407221597_s1_p0/48046/0_23941",
+                "start": 0,
+                "end": 24000,
+                "assemblyName": "longread"
+              }
+            ],
+            "bpPerPx": 30,
             "offsetPx": 0
           },
           "vview": {
-            "displayedRegions": [],
-            "bpPerPx": 100000,
+            "displayedRegions": [
+              {
+                "refName": "chr5",
+                "start": 70166510,
+                "end": 70177159,
+                "assemblyName": "hg19"
+              },
+              {
+                "refName": "chr1",
+                "start": 858506,
+                "end": 881099,
+                "assemblyName": "hg19"
+              }
+            ],
+            "bpPerPx": 100,
             "offsetPx": 0
           },
           "tracks": [
@@ -124,9 +144,8 @@
             }
           ],
           "headerHeight": 44,
-          "width": 1850,
-          "height": 600,
-          "displayName": "Grape vs Peach dotplot",
+          "height": 500,
+          "name": "SKBR3 PacBio vs Ref",
           "trackSelectorType": "hierarchical"
         }
       ],
