@@ -9,7 +9,6 @@ const ssmFacets = [
     name: 'consequence.transcript.annotation.sift_impact',
     prettyName: 'sift impact',
     values: [
-      '',
       'deleterious',
       'tolerated',
       'deleterious_low_confidence',
@@ -459,6 +458,18 @@ const mutationHighlightFeatures = [
       { name: 'tolerated', colour: 'green' },
       { name: 'deleterious_low_confidence', colour: 'lightcoral' },
       { name: 'tolerated_low_confidence', colour: 'lightgreen' },
+      { name: '', colour: 'lightgrey' },
+    ],
+  },
+  {
+    name: 'Mutation Subtype',
+    type: 'category',
+    attributeName: 'mutationSubtype',
+    description: 'Colour by the type of mutation.',
+    values: [
+      { name: 'Single base substitution', colour: 'green' },
+      { name: 'Small deletion', colour: 'red' },
+      { name: 'Small insertion', colour: 'blue' },
       { name: '', colour: 'lightgrey' },
     ],
   },

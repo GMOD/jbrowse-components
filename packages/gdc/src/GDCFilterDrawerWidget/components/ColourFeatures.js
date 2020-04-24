@@ -62,6 +62,15 @@ export const MutationHighlightFeature = observer(({ schema }) => {
         schema.target.renderer.color1.set(
           `function(feature) { const filteredConsequences = feature.get('consequence').hits.edges.filter(cons => cons.node.transcript.is_canonical); const impact = filteredConsequences[0].node.transcript.annotation.${hlBy.attributeName}; ${switchStatement}}`,
         )
+      } else {
+        let switchStatement = `switch(attrValue) {`
+        hlBy.values.forEach(element => {
+          switchStatement += `case '${element.name}': return '${element.colour}'; break;`
+        })
+        switchStatement += '}'
+        schema.target.renderer.color1.set(
+          `function(feature) { const attrValue = feature.get('${hlBy.attributeName}'); ${switchStatement}}`,
+        )
       }
     }
   }
