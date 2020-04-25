@@ -2,7 +2,9 @@ import React from 'react'
 import { render } from '@testing-library/react'
 
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import Alignments from '@gmod/jbrowse-plugin-alignments'
+import SVG from '@gmod/jbrowse-plugin-svg'
 import PileupTrackSchemaFactory from '@gmod/jbrowse-plugin-alignments/src/PileupTrack/configSchema'
 import ConfigurationEditor from './ConfigurationEditor'
 
@@ -80,7 +82,9 @@ describe('ConfigurationEditor drawer widget', () => {
   })
 
   it('renders with defaults of the PileupTrack schema', () => {
-    const { pluginManager } = createTestSession()
+    const pluginManager = new PluginManager([new Alignments(), new SVG()])
+    pluginManager.createPluggableElements()
+    pluginManager.configure()
     const PileupTrackSchema = PileupTrackSchemaFactory(pluginManager)
     const { container } = render(
       <ConfigurationEditor model={{ target: PileupTrackSchema.create() }} />,

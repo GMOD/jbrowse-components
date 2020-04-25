@@ -1,7 +1,7 @@
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
 import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
-import { MenuOptions } from '@gmod/jbrowse-core/ui'
+import { MenuOption } from '@gmod/jbrowse-core/ui'
 import {
   clamp,
   getContainingView,
@@ -17,6 +17,7 @@ import { getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
 
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import clone from 'clone'
 import { BlockSet } from '../BasicTrack/util/blockTypes'
 
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
@@ -37,6 +38,10 @@ interface BpOffset {
   offset: number
   start?: number
   end?: number
+}
+
+interface ViewActions {
+  [key: string]: MenuOption[]
 }
 const validBpPerPx = [
   1 / 50,
@@ -93,6 +98,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         'hierarchical',
       ),
       minimumBlockWidth: 20,
+      showCenterLine: false,
     })
     .volatile(() => ({
       width: 800,
@@ -102,8 +108,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // array of callbacks to run after the next set of the displayedRegions,
       // which is basically like an onLoad
       afterDisplayedRegionsSetCallbacks: [] as Function[],
+      scaleFactor: 1,
     }))
     .views(self => ({
+      get initialized() {
+        return self.displayedRegions.length > 0
+      },
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
       },
@@ -265,6 +275,50 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         return accum
       },
+
+      // modifies view menu action onClick to apply to all tracks of same type
+      rewriteOnClicks(trackType: string, viewMenuActions: MenuOption[]) {
+        viewMenuActions.forEach((action: MenuOption) => {
+          // go to lowest level menu
+          if ('subMenu' in action) {
+            // @ts-ignore
+            this.rewriteOnClicks(trackType, action.subMenu)
+          }
+          if ('onClick' in action) {
+            const holdOnClick = action.onClick
+            action.onClick = (...args: unknown[]) => {
+              self.tracks.forEach(track => {
+                if (track.type === trackType) {
+                  // @ts-ignore
+                  holdOnClick.apply(track, [track, ...args])
+                }
+              })
+            }
+          }
+        })
+      },
+
+      get trackTypeActions() {
+        const allActions: Map<string, MenuOption[]> = new Map()
+        self.tracks.forEach(track => {
+          const trackInMap = allActions.get(track.type)
+          if (!trackInMap) {
+            const viewMenuActions = clone(track.viewMenuActions)
+            // @ts-ignore
+            this.rewriteOnClicks(track.type, viewMenuActions)
+            allActions.set(track.type, viewMenuActions)
+          }
+        })
+
+        return allActions
+      },
+
+      get centerLineInfo() {
+        const centerLineInfo = self.displayedRegions.length
+          ? this.pxToBp(self.width / 2)
+          : undefined
+        return centerLineInfo
+      },
     }))
     .actions(self => ({
       setWidth(newWidth: number) {
@@ -352,6 +406,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (!hiddenCount) self.showTrack(configuration)
       },
 
+      toggleCenterLine() {
+        self.showCenterLine = !self.showCenterLine
+      },
+
       setDisplayedRegions(regions: IRegion[]) {
         self.displayedRegions = cast(regions)
         this.zoomTo(self.bpPerPx)
@@ -371,30 +429,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
-      },
-
-      zoom(levels: number) {
-        this.zoomTo(self.bpPerPx)
-        if (
-          // no zoom
-          levels === 0 ||
-          // already zoomed all the way in
-          (levels > 0 && self.bpPerPx === self.minBpPerPx) ||
-          // already zoomed all the way out
-          (levels < 0 && self.bpPerPx === self.maxBpPerPx)
-        ) {
-          return
-        }
-        const currentIndex = self.zoomLevels.findIndex(
-          zoomLevel => zoomLevel === self.bpPerPx,
-        )
-        const targetIndex = clamp(
-          currentIndex - levels,
-          0,
-          self.zoomLevels.length - 1,
-        )
-        const targetBpPerPx = self.zoomLevels[targetIndex]
-        this.zoomTo(targetBpPerPx)
       },
 
       zoomTo(newBpPerPx: number, constrain = true) {
@@ -601,6 +635,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setDraggingTrackId(idx?: string) {
         self.draggingTrackId = idx
       },
+
+      setScaleFactor(factor: number) {
+        self.scaleFactor = factor
+      },
     }))
     .actions(self => {
       let cancelLastAnimation = () => {}
@@ -618,16 +656,58 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       return { slide }
     })
+    .actions(self => {
+      let cancelLastAnimation = () => {}
+
+      function zoom(levels: number) {
+        self.zoomTo(self.bpPerPx)
+        if (
+          // no zoom
+          levels === 0 ||
+          // already zoomed all the way in
+          (levels > 0 && self.bpPerPx === self.minBpPerPx) ||
+          // already zoomed all the way out
+          (levels < 0 && self.bpPerPx === self.maxBpPerPx)
+        ) {
+          return
+        }
+        const currentIndex = self.zoomLevels.findIndex(
+          zoomLevel => zoomLevel === self.bpPerPx,
+        )
+        const targetIndex = clamp(
+          currentIndex - levels,
+          0,
+          self.zoomLevels.length - 1,
+        )
+        const targetBpPerPx = self.zoomLevels[targetIndex]
+        const factor = self.bpPerPx / targetBpPerPx
+        const [animate, cancelAnimation] = springAnimate(
+          1,
+          factor,
+          self.setScaleFactor,
+          () => {
+            self.zoomTo(targetBpPerPx)
+            self.setScaleFactor(1)
+          },
+        )
+        cancelLastAnimation()
+        cancelLastAnimation = cancelAnimation
+        animate()
+      }
+
+      return { zoom }
+    })
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
-        get menuOptions(): MenuOptions[] {
+        get menuOptions(): MenuOption[] {
           const session = getSession(self)
-          return [
+          const menuOptions: MenuOption[] = [
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
+              icon: 'line_style',
               disabled:
                 isSessionModelWithDrawerWidgets(session) &&
                 session.visibleDrawerWidget &&
@@ -638,26 +718,52 @@ export function stateModelFactory(pluginManager: PluginManager) {
             },
             {
               label: 'Horizontally flip',
+              icon: 'sync_alt',
               onClick: self.horizontallyFlip,
             },
             {
               label: 'Show all regions',
+              icon: 'visibility',
               onClick: self.showAllRegions,
             },
             {
               label: 'Show header',
+              icon: 'visibility',
               type: 'checkbox',
               checked: !self.hideHeader,
               onClick: self.toggleHeader,
             },
             {
               label: 'Show header overview',
+              icon: 'visibility',
               type: 'checkbox',
               checked: !self.hideHeaderOverview,
               onClick: self.toggleHeaderOverview,
               disabled: self.hideHeader,
             },
+            {
+              label: 'Show center line',
+              icon: 'visibility',
+              type: 'checkbox',
+              checked: self.showCenterLine,
+              onClick: self.toggleCenterLine,
+            },
           ]
+
+          // add track's view level menu options
+          for (const [key, value] of self.trackTypeActions.entries()) {
+            if (value.length) {
+              menuOptions.push(
+                { type: 'divider' },
+                { type: 'subHeader', label: key },
+              )
+              value.forEach(action => {
+                menuOptions.push(action)
+              })
+            }
+          }
+
+          return menuOptions
         },
 
         get staticBlocks() {

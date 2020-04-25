@@ -47,9 +47,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           pluginManager.pluggableMstType('drawer widget', 'stateModel'),
         ),
       ),
-      menuBars: types.array(
-        pluginManager.pluggableMstType('menu bar', 'stateModel'),
-      ),
       connectionInstances: types.map(
         types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
       ),
@@ -99,6 +96,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
       get history() {
         return getParent(self).history
+      },
+      get menus() {
+        return getParent(self).menus
       },
 
       get visibleDrawerWidget() {
@@ -378,19 +378,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       hideAllDrawerWidgets() {
         self.activeDrawerWidgets.clear()
-      },
-
-      addMenuBar(
-        typeName: string,
-        initialState = {},
-        configuration = { type: typeName },
-      ) {
-        const typeDefinition = pluginManager.getMenuBarType(typeName)
-        if (!typeDefinition)
-          throw new Error(`unknown menu bar type ${typeName}`)
-        const data = { ...initialState, type: typeName, configuration }
-        const model = typeDefinition.stateModel.create(data)
-        self.menuBars.push(model)
       },
 
       /**

@@ -1,9 +1,13 @@
-import { createTestSession } from './rootModel'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import Alignments from '@gmod/jbrowse-plugin-alignments'
+import SVG from '@gmod/jbrowse-plugin-svg'
 import { render, freeResources } from './rpcMethods'
 
 let pluginManager
 beforeAll(() => {
-  ;({ pluginManager } = createTestSession())
+  pluginManager = new PluginManager([new Alignments(), new SVG()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
 })
 
 const baseprops = {

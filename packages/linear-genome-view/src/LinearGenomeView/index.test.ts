@@ -21,6 +21,7 @@ stubManager.addTrackType(
       stateModel: BaseTrack,
     }),
 )
+stubManager.createPluggableElements()
 stubManager.configure()
 const LinearGenomeModel = stateModelFactory(stubManager)
 const JBrowse = types.model({}).actions(self => ({

@@ -4,11 +4,13 @@ import ReactPropTypes from 'prop-types'
 import React, { useState, useRef } from 'react'
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
+import { useTheme } from '@material-ui/core/styles'
 import './WiggleRendering.scss'
 
 const toP = s => parseFloat(s.toPrecision(6))
 
 function Tooltip({ offsetX, feature }) {
+  const theme = useTheme()
   const info = feature.get('snpinfo') ? feature.get('snpinfo') : null
   const total = info ? info[info.map(e => e.base).indexOf('total')].score : 0
   const condId = info && info.length >= 5 ? 'smallInfo' : 'info' // readjust table size to fit all
@@ -42,7 +44,7 @@ function Tooltip({ offsetX, feature }) {
     <>
       <div
         className="hoverLabel"
-        style={{ left: `${offsetX}px`, zIndex: 10000 }}
+        style={{ left: `${offsetX}px`, zIndex: theme.zIndex.tooltip }}
       >
         {info ? (
           <div id="info">

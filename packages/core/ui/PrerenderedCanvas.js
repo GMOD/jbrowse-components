@@ -31,7 +31,6 @@ function PrerenderedCanvas(props) {
     }
   }, [imageData])
 
-  // appends renderertype for testing multiple subtracks (multiple canvases) loading
   return (
     <canvas
       data-testid="prerendered_canvas"

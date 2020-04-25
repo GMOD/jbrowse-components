@@ -12,25 +12,6 @@
     "prettier/react",
     "react-app"
   ],
-  "overrides": [
-    {
-      "env": {
-        "jest": true
-      },
-      "files": [
-        "**/*.test.[t,j]s"
-      ],
-      "globals": {
-        "describe": true,
-        "document": true,
-        "it": true,
-        "test": true
-      },
-      "rules": {
-        "import/no-extraneous-dependencies": "off"
-      }
-    }
-  ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaFeatures": {
@@ -123,5 +104,25 @@
         ]
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.test.[t,j]s",
+        "**/*.test.[t,j]sx"
+      ],
+      "env": {
+        "jest": true
+      },
+      "globals": {
+        "document": true,
+        "it": true,
+        "describe": true,
+        "test": true
+      },
+      "rules": {
+        "import/no-extraneous-dependencies": "off"
+      }
+    }
+  ]
 }

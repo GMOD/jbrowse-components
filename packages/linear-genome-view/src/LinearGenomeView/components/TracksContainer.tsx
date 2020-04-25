@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   LinearGenomeViewStateModel,
   RESIZE_HANDLE_HEIGHT,
@@ -10,6 +10,7 @@ import {
 import RubberBand from './RubberBand'
 import ScaleBar from './ScaleBar'
 import VerticalGuides from './VerticalGuides'
+import CenterLine from './CenterLine'
 
 const useStyles = makeStyles(theme => ({
   tracksContainer: {
@@ -33,36 +34,39 @@ function TracksContainer({
   model: LGV
 }) {
   const classes = useStyles()
-  const [scheduled, setScheduled] = useState(false)
-  const [delta, setDelta] = useState(0)
+  // refs are to store these variables to avoid repeated rerenders associated with useState/setState
+  const delta = useRef(0)
+  const scheduled = useRef(false)
+
   const [mouseDragging, setMouseDragging] = useState(false)
-  const [prevX, setPrevX] = useState<number>()
+  const prevX = useRef<number | null>(null)
 
   useEffect(() => {
     let cleanup = () => {}
 
     function globalMouseMove(event: MouseEvent) {
       event.preventDefault()
-      if (prevX !== undefined) {
-        const distance = event.clientX - prevX
-        if (distance) {
-          if (!scheduled) {
-            // use rAF to make it so multiple event handlers aren't fired per-frame
-            // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-            window.requestAnimationFrame(() => {
-              model.horizontalScroll(-distance)
-              setScheduled(false)
-              setPrevX(event.clientX)
-            })
-            setScheduled(true)
-          }
+      const distance =
+        prevX.current !== null ? event.clientX - prevX.current : event.clientX
+      if (distance) {
+        // use rAF to make it so multiple event handlers aren't fired per-frame
+        // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
+        if (!scheduled.current) {
+          scheduled.current = true
+          window.requestAnimationFrame(() => {
+            model.horizontalScroll(-distance)
+            scheduled.current = false
+            prevX.current = event.clientX
+          })
         }
       }
     }
 
     function globalMouseUp() {
-      setPrevX(undefined)
-      setMouseDragging(false)
+      prevX.current = null
+      if (mouseDragging) {
+        setMouseDragging(false)
+      }
     }
 
     if (mouseDragging) {
@@ -74,21 +78,20 @@ function TracksContainer({
       }
     }
     return cleanup
-  }, [delta, model, mouseDragging, prevX, scheduled])
+  }, [model, mouseDragging, prevX])
 
   function onWheel(event: React.WheelEvent) {
     const { deltaX, deltaMode } = event
-    if (scheduled) {
-      setDelta(delta + deltaX)
-    } else {
+    delta.current += deltaX
+    if (!scheduled.current) {
       // use rAF to make it so multiple event handlers aren't fired per-frame
       // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
+      scheduled.current = true
       window.requestAnimationFrame(() => {
-        model.horizontalScroll((delta + deltaX) * (1 + 50 * deltaMode))
-        setScheduled(false)
+        model.horizontalScroll(delta.current * (1 + 50 * deltaMode))
+        delta.current = 0
+        scheduled.current = false
       })
-      setScheduled(true)
-      setDelta(0)
     }
   }
 
@@ -96,7 +99,7 @@ function TracksContainer({
     if ((event.target as HTMLElement).draggable) return
     if (event.button === 0) {
       event.preventDefault()
-      setPrevX(event.clientX)
+      prevX.current = event.clientX
       setMouseDragging(true)
     }
   }
@@ -122,6 +125,7 @@ function TracksContainer({
       onMouseLeave={mouseLeave}
     >
       <VerticalGuides model={model}>
+        {model.showCenterLine && <CenterLine model={model} />}
         <RubberBand
           model={model}
           ControlComponent={

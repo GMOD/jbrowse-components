@@ -1,6 +1,6 @@
 import { types, Instance } from 'mobx-state-tree'
 import { ElementId } from './mst-types'
-import { MenuOptions } from './ui'
+import { MenuOption } from './ui'
 
 const BaseViewModel = types
   .model('BaseView', {
@@ -11,7 +11,7 @@ const BaseViewModel = types
     width: 800,
   }))
   .views((/* self */) => ({
-    get menuOptions(): MenuOptions[] {
+    get menuOptions(): MenuOption[] {
       return []
     },
   }))

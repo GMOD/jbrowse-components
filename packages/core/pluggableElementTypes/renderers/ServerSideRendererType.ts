@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderToString } from 'react-dom/server'
 import { filter, ignoreElements, tap } from 'rxjs/operators'
 import {
@@ -26,8 +25,15 @@ interface BaseRenderArgs {
   sessionId: string
   signal?: AbortSignal
   dataAdapter: BaseFeatureDataAdapter
+  sortObject?: {
+    position: number
+    by: string
+  }
   bpPerPx: number
-  renderProps: { trackModel: any; blockKey: string }
+  renderProps: {
+    trackModel: { id: string; selectedFeatureId?: string }
+    blockKey: string
+  }
   regions: IRegion[]
   originalRegions?: IRegion[]
 }
@@ -102,7 +108,7 @@ export default class ServerSideRenderer extends RendererType {
     // deserialize some of the results that came back from the worker
     const deserialized = ({ ...result } as unknown) as ResultsDeserialized
     const featuresMap = new Map<string, SimpleFeature>()
-    result.features.forEach((j: any) => {
+    result.features.forEach(j => {
       const f = SimpleFeature.fromJSON(j)
       featuresMap.set(String(f.id()), f)
     })
@@ -282,7 +288,7 @@ export default class ServerSideRenderer extends RendererType {
     return rpcManager.call(stateGroupName, 'freeResources', serializedArgs)
   }
 
-  freeResourcesInWorker(args: Record<string, any>) {
+  freeResourcesInWorker(args: Record<string, unknown>) {
     /* stub method */
   }
 }

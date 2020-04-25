@@ -66,4 +66,31 @@ export default class extends Plugin {
       })
     })
   }
+
+  configure(pluginManager) {
+    if (pluginManager.rootModel && pluginManager.rootModel.menus) {
+      pluginManager.rootModel.appendToMenu('File', {
+        label: 'Open new track',
+        icon: 'note_add',
+        onClick: session => {
+          const drawerWidget = session.addDrawerWidget(
+            'AddTrackDrawerWidget',
+            'addTrackDrawerWidget',
+          )
+          session.showDrawerWidget(drawerWidget)
+        },
+      })
+      pluginManager.rootModel.appendToMenu('File', {
+        label: 'Open new connection',
+        icon: 'input',
+        onClick: session => {
+          const drawerWidget = session.addDrawerWidget(
+            'AddConnectionDrawerWidget',
+            'addConnectionDrawerWidget',
+          )
+          session.showDrawerWidget(drawerWidget)
+        },
+      })
+    }
+  }
 }

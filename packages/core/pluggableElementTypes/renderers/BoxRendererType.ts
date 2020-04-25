@@ -21,6 +21,7 @@ interface LayoutSessionProps {
   config: AnyConfigurationModel
   bpPerPx: number
   filters: SerializableFilterChain
+  sortObject: unknown
 }
 
 type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
@@ -28,6 +29,7 @@ interface CachedLayout {
   layout: MyMultiLayout
   config: AnyConfigurationModel
   filters: SerializableFilterChain
+  sortObject: unknown
 }
 
 export class LayoutSession implements LayoutSessionProps {
@@ -36,6 +38,8 @@ export class LayoutSession implements LayoutSessionProps {
   bpPerPx: number
 
   filters: SerializableFilterChain
+
+  sortObject: unknown
 
   constructor(args: LayoutSessionProps) {
     this.config = args.config
@@ -69,7 +73,9 @@ export class LayoutSession implements LayoutSessionProps {
       cachedLayout &&
       cachedLayout.layout.subLayoutConstructorArgs.pitchX === this.bpPerPx &&
       deepEqual(readConfObject(this.config), cachedLayout.config) &&
-      deepEqual(this.filters, cachedLayout.filters)
+      deepEqual(this.filters, cachedLayout.filters) &&
+      deepEqual(this.sortObject, cachedLayout.sortObject)
+      // deepEqual(this.sortObject.by, cachedLayout.sortedBy)
     )
   }
 
@@ -81,6 +87,7 @@ export class LayoutSession implements LayoutSessionProps {
         layout: this.makeLayout(),
         config: readConfObject(this.config),
         filters: this.filters,
+        sortObject: this.sortObject,
       }
     }
     return this.cachedLayout.layout

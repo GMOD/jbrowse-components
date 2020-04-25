@@ -122,15 +122,15 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
 
 const LinearGenomeView = observer((props: { model: LGV }) => {
   const { model } = props
-  const { displayedRegions, tracks, error, hideHeader } = model
+  const { tracks, error, hideHeader, initialized } = model
   const classes = useStyles()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const session: any = getSession(model)
-  const initialized = !!displayedRegions.length
+  const session = getSession(model) as any
 
-  if (!initialized) return <ImportForm model={model} />
-  return (
+  return !initialized ? (
+    <ImportForm model={model} />
+  ) : (
     <div>
       {!hideHeader ? <Header model={model} /> : null}
       {error ? (

@@ -12,7 +12,6 @@ import AdapterType from './pluggableElementTypes/AdapterType'
 import TrackType from './pluggableElementTypes/TrackType'
 import ViewType from './pluggableElementTypes/ViewType'
 import DrawerWidgetType from './pluggableElementTypes/DrawerWidgetType'
-import MenuBarType from './pluggableElementTypes/MenuBarType'
 import ConnectionType from './pluggableElementTypes/ConnectionType'
 
 import {
@@ -113,7 +112,6 @@ export default class PluginManager {
     'connection',
     'view',
     'drawer widget',
-    'menu bar',
   )
 
   rendererTypes = new TypeRecord(RendererType)
@@ -128,11 +126,11 @@ export default class PluginManager {
 
   drawerWidgetTypes = new TypeRecord(DrawerWidgetType)
 
-  menuBarTypes = new TypeRecord(MenuBarType)
-
   configured = false
 
-  constructor(initialPlugins = []) {
+  rootModel: unknown
+
+  constructor(initialPlugins: Plugin[] = []) {
     // add all the initial plugins
     initialPlugins.forEach(plugin => {
       this.addPlugin(plugin)
@@ -152,13 +150,20 @@ export default class PluginManager {
     return this
   }
 
-  configure() {
-    if (this.configured) throw new Error('already configured')
-
+  createPluggableElements() {
     // run the creation callbacks for each element type in order.
     // see elementCreationSchedule above for the creation order
     this.elementCreationSchedule.run()
     delete this.elementCreationSchedule
+    return this
+  }
+
+  setRootModel(rootModel: unknown) {
+    this.rootModel = rootModel
+  }
+
+  configure() {
+    if (this.configured) throw new Error('already configured')
 
     this.plugins.forEach(plugin => plugin.configure(this))
 
@@ -179,8 +184,6 @@ export default class PluginManager {
         return this.connectionTypes
       case 'drawer widget':
         return this.drawerWidgetTypes
-      case 'menu bar':
-        return this.menuBarTypes
       case 'renderer':
         return this.rendererTypes
       case 'track':
@@ -330,10 +333,6 @@ export default class PluginManager {
     return this.drawerWidgetTypes.get(typeName)
   }
 
-  getMenuBarType(typeName: string): MenuBarType {
-    return this.menuBarTypes.get(typeName)
-  }
-
   getConnectionType(typeName: string): ConnectionType {
     return this.connectionTypes.get(typeName)
   }
@@ -366,12 +365,6 @@ export default class PluginManager {
     creationCallback: (pluginManager: PluginManager) => DrawerWidgetType,
   ): this {
     return this.addElementType('drawer widget', creationCallback)
-  }
-
-  addMenuBarType(
-    creationCallback: (pluginManager: PluginManager) => MenuBarType,
-  ): this {
-    return this.addElementType('menu bar', creationCallback)
   }
 
   addConnectionType(

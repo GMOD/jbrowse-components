@@ -110,6 +110,7 @@ const ViewMenu = observer(
           aria-controls="view-menu"
           aria-haspopup="true"
           onClick={handleClick}
+          data-testid="view_menu"
         >
           <Icon {...IconProps}>menu</Icon>
         </IconButton>
