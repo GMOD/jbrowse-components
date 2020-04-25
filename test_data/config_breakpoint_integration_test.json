@@ -100,12 +100,7 @@
     }
   ],
   "defaultSession": {
-    "name": "New Session",
-    "menuBars": [
-      {
-        "type": "MainMenuBar"
-      }
-    ]
+    "name": "New Session"
   },
   "savedSessions": [
     {
@@ -217,11 +212,6 @@
         }
       },
       "activeDrawerWidgets": {},
-      "menuBars": [
-        {
-          "type": "MainMenuBar"
-        }
-      ],
       "connections": {}
     }
   ]

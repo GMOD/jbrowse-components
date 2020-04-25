@@ -3,7 +3,7 @@
  *
  * assumes left <= right for both ranges
  *
- * @returns {Array[number]} array of [left, right], or undefined if the ranges do not intersect
+ * @returns {Array[number]} array of [left, right], or [] if the ranges do not intersect. the choice of [] is because it allows destructuring array assignment without check for undefined return
  */
 export function intersection2(left1, right1, left2, right2) {
   // this code is verbose because "if" statements are faster than Math.min and Math.max
@@ -27,7 +27,7 @@ export function intersection2(left1, right1, left2, right2) {
     //         |-------|
     return [left2, right2]
   }
-  return undefined
+  return []
 }
 
 /**
