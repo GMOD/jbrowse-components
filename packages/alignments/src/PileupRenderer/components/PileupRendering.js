@@ -231,6 +231,7 @@ PileupRendering.propTypes = {
     features: ReactPropTypes.shape({ get: ReactPropTypes.func }),
     blockLayoutFeatures: ReactPropTypes.shape({ get: ReactPropTypes.func }),
     setFeatureIdUnderMouse: ReactPropTypes.func,
+    copiedToClipboard: ReactPropTypes.bool,
   }),
 
   onFeatureMouseDown: ReactPropTypes.func,
@@ -262,6 +263,7 @@ PileupRendering.defaultProps = {
   trackModel: {
     configuration: {},
     setFeatureIdUnderMouse: () => {},
+    copiedToClipboard: false,
   },
   onFeatureMouseDown: undefined,
   onFeatureMouseEnter: undefined,
