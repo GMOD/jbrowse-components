@@ -3,11 +3,11 @@ import { PrerenderedCanvas, Tooltip } from '@gmod/jbrowse-core/ui'
 import { bpSpanPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
+import Typography from '@material-ui/core/Typography'
 import React, { useRef, useState, useEffect } from 'react'
 import runner from 'mobx-run-in-reactive-context'
 
 function PileupRendering(props) {
-  console.log(props)
   const { blockKey, trackModel, width, height, region, bpPerPx } = props
   const {
     selectedFeatureId,
@@ -15,6 +15,7 @@ function PileupRendering(props) {
     blockLayoutFeatures,
     features,
     configuration,
+    copiedToClipboard,
   } = trackModel
 
   const highlightOverlayCanvas = useRef()
@@ -114,7 +115,7 @@ function PileupRendering(props) {
 
   // TODORIGHTCLICK write this function
   function onContextMenu(event) {
-    if (!movedDuringLastMouseDown) callMouseHandler('ContextMenu', event, true)
+    if (!movedDuringLastMouseDown) callMouseHandler('ContextMenu', event)
   }
 
   function onMouseMove(event) {
@@ -201,6 +202,12 @@ function PileupRendering(props) {
           offsetX={offset[0]}
           offsetY={offset[1]}
         />
+      ) : null}
+      {/* TODOSORT some sort of tooltip to tell user it's copied goes here*/}
+      {copiedToClipboard ? (
+        <Tooltip configuration={configuration} offsetX={50} offsetY={50}>
+          <Typography>Copied</Typography>
+        </Tooltip>
       ) : null}
     </div>
   )

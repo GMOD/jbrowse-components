@@ -11,6 +11,7 @@ import { addDisposer, types, Instance } from 'mobx-state-tree'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import RBush from 'rbush'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import copy from 'copy-to-clipboard'
 import BlockState, { BlockStateModel } from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
 import { BaseBlock, ContentBlock } from './util/blockTypes'
@@ -29,6 +30,7 @@ const blockBasedTrack = types
         // TODORIGHTCLICK: add menu to volatile for track.tsx to check the state
         contextMenu: [] as any[] | MenuOption[],
         featureIdUnderMouse: undefined as undefined | string,
+        copiedToClipboard: undefined as undefined | boolean,
         ReactComponent: BlockBasedTrack,
       })),
   )
@@ -215,9 +217,12 @@ const blockBasedTrack = types
       session.setSelection(feature)
     },
 
-    // TODORIGHTCLICK: notification that it was copied to clipboard
     copyFeatureToClipboard(feature: Feature) {
-      navigator.clipboard.writeText(JSON.stringify(feature, null, 4))
+      copy(JSON.stringify(feature, null, 4), {
+        onCopy: () => {
+          self.copiedToClipboard = true
+        }, // TODORIGHTCLICK: notification that it was copied to clipboard
+      })
     },
 
     // TODORIGHTCLICK: opens another track drawer instead of replacing the current one
@@ -235,6 +240,11 @@ const blockBasedTrack = types
           label: 'Copy info to clipboard',
           icon: 'content_copy',
           onClick: () => this.copyFeatureToClipboard(feature),
+        },
+        {
+          label: 'View dotpot',
+          icon: 'scatter_plot',
+          onClick: () => {},
         },
       ]
       self.contextMenu = menuOptions
