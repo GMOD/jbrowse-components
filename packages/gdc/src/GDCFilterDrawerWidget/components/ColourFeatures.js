@@ -152,8 +152,8 @@ export const MutationHighlightFeature = observer(({ schema }) => {
                           {value.name !== '' ? value.name : 'n/a'}
                         </TableCell>
                         <TableCell>{value.threshold}</TableCell>
-                        <TableCell>{value.colour1}</TableCell>
                         <TableCell>{value.colour2}</TableCell>
+                        <TableCell>{value.colour1}</TableCell>
                       </TableRow>
                     )
                   })}
