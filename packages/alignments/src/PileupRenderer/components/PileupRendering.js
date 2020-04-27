@@ -229,7 +229,7 @@ PileupRendering.propTypes = {
     features: ReactPropTypes.shape({ get: ReactPropTypes.func }),
     blockLayoutFeatures: ReactPropTypes.shape({ get: ReactPropTypes.func }),
     setFeatureIdUnderMouse: ReactPropTypes.func,
-    featureCopied: ReactPropTypes.bool,
+    featureCopied: ReactPropTypes.string,
   }),
 
   onFeatureMouseDown: ReactPropTypes.func,
