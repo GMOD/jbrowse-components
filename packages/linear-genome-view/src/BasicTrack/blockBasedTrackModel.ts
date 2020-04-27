@@ -218,11 +218,8 @@ const blockBasedTrack = types
     },
 
     copyFeatureToClipboard(feature: Feature) {
-      copy(JSON.stringify(feature, null, 4), {
-        onCopy: () => {
-          self.featureCopied = feature.get('uniqueId')
-        },
-      })
+      copy(JSON.stringify(feature, null, 4))
+      self.featureCopied = feature.get('uniqueId')
     },
 
     // TODORIGHTCLICK: opens another track drawer instead of replacing the current one
