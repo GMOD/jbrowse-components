@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
   configSchema as alignmentsFeatureDetailConfigSchema,
   ReactComponent as AlignmentsFeatureDetailReactComponent,
@@ -7,7 +8,7 @@ import {
 } from './BreakpointAlignmentsFeatureDetail'
 
 export default class BreakpointSplitViewPlugin {
-  install(pluginManager) {
+  install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(require('./BreakpointSplitView')),
     )

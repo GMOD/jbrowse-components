@@ -1,15 +1,17 @@
 import ConnectionType from '@gmod/jbrowse-core/pluggableElementTypes/ConnectionType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { configSchema, modelFactory } from './trackhub-registry'
 import TrackHubRegistrySelect from './trackhub-registry/TrackHubRegistrySelect'
 
-export default class extends Plugin {
-  install(pluginManager) {
+export default class TrackHubRegistryPlugin extends Plugin {
+  install(pluginManager: PluginManager) {
     pluginManager.addConnectionType(
       () =>
         new ConnectionType({
           name: 'TheTrackHubRegistryConnection',
           configSchema,
+          // @ts-ignore
           configEditorComponent: TrackHubRegistrySelect,
           stateModel: modelFactory(pluginManager),
           displayName: 'The Track Hub Registry',

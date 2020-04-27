@@ -2,6 +2,8 @@ import Plugin from '@gmod/jbrowse-core/Plugin'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { AbstractViewContainer } from '@gmod/jbrowse-core/util'
 import {
   configSchemaFactory as dotplotTrackConfigSchemaFactory,
   stateModelFactory as dotplotTrackStateModelFactory,
@@ -16,8 +18,8 @@ import {
   AdapterClass as PAFAdapter,
 } from './PAFAdapter'
 
-export default class extends Plugin {
-  install(pluginManager) {
+export default class DotplotPlugin extends Plugin {
+  install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(require('./DotplotView')),
     )
@@ -25,6 +27,7 @@ export default class extends Plugin {
       const configSchema = dotplotTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
         name: 'DotplotTrack',
+        compatibleView: 'DotplotView',
         configSchema,
         stateModel: dotplotTrackStateModelFactory(pluginManager, configSchema),
       })
@@ -49,12 +52,12 @@ export default class extends Plugin {
     )
   }
 
-  configure(pluginManager) {
+  configure(pluginManager: PluginManager) {
     if (pluginManager.rootModel && pluginManager.rootModel.menus) {
       pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
         label: 'Dotplot view',
         icon: 'timeline',
-        onClick: session => {
+        onClick: (session: AbstractViewContainer) => {
           session.addView('DotplotView', {})
         },
       })

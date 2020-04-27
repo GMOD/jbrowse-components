@@ -1,4 +1,5 @@
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
@@ -26,7 +27,7 @@ import {
 } from './GDCAdapter'
 
 export default class extends Plugin {
-  install(pluginManager) {
+  install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
@@ -40,6 +41,7 @@ export default class extends Plugin {
       const configSchema = gdcTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
         name: 'GDCTrack',
+        compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: gdcTrackModelFactory(configSchema),
       })

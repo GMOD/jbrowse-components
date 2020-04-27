@@ -26,6 +26,7 @@ export type TypeTestedByPredicate<
 
 export interface AbstractViewContainer {
   removeView(view: AbstractViewModel): void
+  addView(typeName: string, initialState: Record<string, unknown>): void
 }
 export function isViewContainer(
   thing: unknown,
@@ -59,7 +60,7 @@ export interface SessionWithDrawerWidgets extends AbstractSessionModel {
   addDrawerWidget(
     typeName: string,
     id: string,
-    initialState: Record<string, unknown>,
+    initialState?: Record<string, unknown>,
     configuration?: { type: string },
   ): void
   showDrawerWidget(drawerWidget: unknown): void

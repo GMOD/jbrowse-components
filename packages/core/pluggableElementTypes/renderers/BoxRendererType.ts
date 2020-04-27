@@ -21,7 +21,7 @@ interface LayoutSessionProps {
   config: AnyConfigurationModel
   bpPerPx: number
   filters: SerializableFilterChain
-  sortObject: unknown
+  sortObject?: unknown
 }
 
 type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
@@ -29,7 +29,7 @@ interface CachedLayout {
   layout: MyMultiLayout
   config: AnyConfigurationModel
   filters: SerializableFilterChain
-  sortObject: unknown
+  sortObject?: unknown
 }
 
 export class LayoutSession implements LayoutSessionProps {

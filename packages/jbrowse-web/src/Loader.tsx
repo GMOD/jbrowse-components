@@ -91,8 +91,7 @@ export default function Loader() {
     )
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const pluginManager = new PluginManager(plugins.map((P: any) => new P()))
+  const pluginManager = new PluginManager(plugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)

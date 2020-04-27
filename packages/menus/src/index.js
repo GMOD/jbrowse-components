@@ -65,12 +65,12 @@ export default class extends Plugin {
     })
   }
 
-  configure(pluginManager) {
+  configure(pluginManager: PluginManager) {
     if (pluginManager.rootModel && pluginManager.rootModel.menus) {
       pluginManager.rootModel.appendToMenu('Help', {
         label: 'About',
         icon: 'info',
-        onClick: session => {
+        onClick: (session: AbstractViewContainer) => {
           const drawerWidget = session.addDrawerWidget(
             'AboutDrawerWidget',
             'aboutDrawerWidget',
@@ -81,7 +81,7 @@ export default class extends Plugin {
       pluginManager.rootModel.appendToMenu('Help', {
         label: 'Help',
         icon: 'help',
-        onClick: session => {
+        onClick: (session: AbstractViewContainer) => {
           const drawerWidget = session.addDrawerWidget(
             'HelpDrawerWidget',
             'helpDrawerWidget',
@@ -94,7 +94,7 @@ export default class extends Plugin {
         {
           label: 'Open Session…',
           icon: 'folder_open',
-          onClick: session => {
+          onClick: (session: AbstractViewContainer) => {
             const drawerWidget = session.addDrawerWidget(
               'SessionManager',
               'sessionManager',
@@ -109,7 +109,7 @@ export default class extends Plugin {
         {
           label: 'Duplicate Session',
           icon: 'file_copy',
-          onClick: session => {
+          onClick: (session: AbstractViewContainer) => {
             session.duplicateCurrentSession()
           },
         },

@@ -2,6 +2,8 @@ import { lazy } from 'react'
 import ConnectionType from '@gmod/jbrowse-core/pluggableElementTypes/ConnectionType'
 import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { SessionWithDrawerWidgets } from '@gmod/jbrowse-core/util'
 import {
   configSchema as ucscConfigSchema,
   modelFactory as ucscModelFactory,
@@ -23,7 +25,7 @@ import {
 } from './HierarchicalTrackSelectorDrawerWidget'
 
 export default class extends Plugin {
-  install(pluginManager) {
+  install(pluginManager: PluginManager) {
     pluginManager.addConnectionType(
       () =>
         new ConnectionType({
@@ -67,12 +69,12 @@ export default class extends Plugin {
     })
   }
 
-  configure(pluginManager) {
+  configure(pluginManager: PluginManager) {
     if (pluginManager.rootModel && pluginManager.rootModel.menus) {
       pluginManager.rootModel.appendToMenu('File', {
         label: 'Open new track',
         icon: 'note_add',
-        onClick: session => {
+        onClick: (session: SessionWithDrawerWidgets) => {
           const drawerWidget = session.addDrawerWidget(
             'AddTrackDrawerWidget',
             'addTrackDrawerWidget',
@@ -83,7 +85,7 @@ export default class extends Plugin {
       pluginManager.rootModel.appendToMenu('File', {
         label: 'Open new connection',
         icon: 'input',
-        onClick: session => {
+        onClick: (session: SessionWithDrawerWidgets) => {
           const drawerWidget = session.addDrawerWidget(
             'AddConnectionDrawerWidget',
             'addConnectionDrawerWidget',

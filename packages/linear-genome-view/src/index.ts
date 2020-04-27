@@ -22,6 +22,7 @@ import {
   ReactComponent as LinearGenomeViewReactComponent,
   stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView'
+import { AbstractViewContainer } from '@gmod/jbrowse-core/util'
 
 export default class extends Plugin {
   install(pluginManager: PluginManager) {
@@ -65,12 +66,12 @@ export default class extends Plugin {
     )
   }
 
-  configure(pluginManager) {
+  configure(pluginManager: PluginManager) {
     if (pluginManager.rootModel && pluginManager.rootModel.menus) {
       pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
         label: 'Linear genome view',
         icon: 'line_style',
-        onClick: session => {
+        onClick: (session: AbstractViewContainer) => {
           session.addView('LinearGenomeView', {})
         },
       })
