@@ -3,7 +3,6 @@ import { PrerenderedCanvas, Tooltip } from '@gmod/jbrowse-core/ui'
 import { bpSpanPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import Typography from '@material-ui/core/Typography'
 import React, { useRef, useState, useEffect } from 'react'
 import runner from 'mobx-run-in-reactive-context'
 
@@ -230,7 +229,7 @@ PileupRendering.propTypes = {
     features: ReactPropTypes.shape({ get: ReactPropTypes.func }),
     blockLayoutFeatures: ReactPropTypes.shape({ get: ReactPropTypes.func }),
     setFeatureIdUnderMouse: ReactPropTypes.func,
-    copiedToClipboard: ReactPropTypes.bool,
+    featureCopied: ReactPropTypes.bool,
   }),
 
   onFeatureMouseDown: ReactPropTypes.func,
@@ -262,7 +261,7 @@ PileupRendering.defaultProps = {
   trackModel: {
     configuration: {},
     setFeatureIdUnderMouse: () => {},
-    copiedToClipboard: false,
+    featureCopied: '',
   },
   onFeatureMouseDown: undefined,
   onFeatureMouseEnter: undefined,

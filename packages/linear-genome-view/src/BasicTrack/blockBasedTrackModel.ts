@@ -221,7 +221,7 @@ const blockBasedTrack = types
       copy(JSON.stringify(feature, null, 4), {
         onCopy: () => {
           self.featureCopied = feature.get('uniqueId')
-        }, // TODORIGHTCLICK: notification that it was copied to clipboard
+        },
       })
     },
 

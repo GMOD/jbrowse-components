@@ -47,8 +47,12 @@ const Tooltip = ({
         style={{ left: offsetX, top: offsetY }}
       >
         {text}
-        <br/>
-        {additionalText} {/* TODORIGHTCLICK get this on a new line */}
+        {additionalText ? (
+          <>
+            <br />
+            {additionalText}
+          </>
+        ) : null}
       </div>
     )
   }
@@ -61,6 +65,7 @@ Tooltip.propTypes = {
   offsetY: ReactPropTypes.number.isRequired,
   feature: ReactPropTypes.shape({}),
   timeout: ReactPropTypes.number,
+  additionalText: ReactPropTypes.string,
 }
 
 Tooltip.defaultProps = {
