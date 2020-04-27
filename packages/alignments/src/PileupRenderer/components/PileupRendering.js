@@ -15,7 +15,7 @@ function PileupRendering(props) {
     blockLayoutFeatures,
     features,
     configuration,
-    copiedToClipboard,
+    featureCopied,
   } = trackModel
 
   const highlightOverlayCanvas = useRef()
@@ -201,13 +201,12 @@ function PileupRendering(props) {
           feature={features.get(localFeatureIdUnderMouse)}
           offsetX={offset[0]}
           offsetY={offset[1]}
+          additionalText={
+            featureCopied === localFeatureIdUnderMouse
+              ? 'Copied to clipboard'
+              : ''
+          }
         />
-      ) : null}
-      {/* TODOSORT some sort of tooltip to tell user it's copied goes here*/}
-      {copiedToClipboard ? (
-        <Tooltip configuration={configuration} offsetX={50} offsetY={50}>
-          <Typography>Copied</Typography>
-        </Tooltip>
       ) : null}
     </div>
   )

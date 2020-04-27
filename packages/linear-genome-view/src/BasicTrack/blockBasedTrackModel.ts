@@ -30,7 +30,7 @@ const blockBasedTrack = types
         // TODORIGHTCLICK: add menu to volatile for track.tsx to check the state
         contextMenu: [] as any[] | MenuOption[],
         featureIdUnderMouse: undefined as undefined | string,
-        copiedToClipboard: undefined as undefined | boolean,
+        featureCopied: undefined as undefined | string,
         ReactComponent: BlockBasedTrack,
       })),
   )
@@ -220,7 +220,7 @@ const blockBasedTrack = types
     copyFeatureToClipboard(feature: Feature) {
       copy(JSON.stringify(feature, null, 4), {
         onCopy: () => {
-          self.copiedToClipboard = true
+          self.featureCopied = feature.get('uniqueId')
         }, // TODORIGHTCLICK: notification that it was copied to clipboard
       })
     },
