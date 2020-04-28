@@ -93,10 +93,6 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const b2 = bpToPx(views[0], refName, end)
       const e1 = bpToPx(views[1], mate.refName, mate.start)
       const e2 = bpToPx(views[1], mate.refName, mate.end)
-      // console.log('refs', b1, b2, e1, e2)
-      // console.log('ref', refName, start, end)
-      console.log('mate', mate.refName, mate.start, mate.end)
-      console.log(b1, b2, e1, e2, height)
       if (
         typeof b1 !== 'undefined' &&
         typeof b2 !== 'undefined' &&
@@ -104,7 +100,6 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         typeof e2 !== 'undefined'
       ) {
         if (Math.abs(b1 - b2) < 3 && Math.abs(e1 - e2) < 3) {
-          console.log('here', b1 - b2, e1 - e2)
           ctx.fillRect(b1 - 1, height - e1 - 1, 3, 3)
         } else {
           let currX = b1
@@ -116,10 +111,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
                 // @ts-ignore
                 return [op.match(/\D/)[0], parseInt(op, 10)]
               })
-              .forEach(([op, val]) => {
+              .forEach(([op, val]: [string, number]) => {
                 const prevX = currX
                 const prevY = currY
-                console.log(op, val)
 
                 if (op === 'M') {
                   currX += val / views[0].bpPerPx - 0.01
@@ -134,10 +128,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
                 ctx.lineTo(currX, height - currY)
                 ctx.stroke()
               })
-
-            console.log(cigar)
           } else {
-            console.log('here2', b1, height - e1, b2, height - e2)
             ctx.beginPath()
             ctx.moveTo(b1, height - e1)
             ctx.lineTo(b2, height - e2)
