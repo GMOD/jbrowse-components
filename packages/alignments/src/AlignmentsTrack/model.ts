@@ -52,6 +52,10 @@ export default (pluginManager: any, configSchema: any) => {
         return self.PileupTrack.layoutFeatures
       },
 
+      get features() {
+        return self.PileupTrack.features
+      },
+
       get snpCoverageTrackConfig() {
         return {
           ...getConf(self),
