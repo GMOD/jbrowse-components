@@ -1,5 +1,5 @@
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import { Menu } from '@gmod/jbrowse-core/ui'
+import { Menu, MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'

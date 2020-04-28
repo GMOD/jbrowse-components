@@ -22,7 +22,7 @@ export default function RootModel(pluginManager) {
             {
               label: 'New Session',
               icon: 'add',
-              onClick: (session: AbstractViewContainer) => {
+              onClick: session => {
                 session.setDefaultSession()
               },
             },

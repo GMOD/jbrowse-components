@@ -1,7 +1,8 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import Plugin from '@gmod/jbrowse-core/Plugin'
 import { AbstractViewContainer } from '@gmod/jbrowse-core/util/types'
 
-export default class SvInspectorViewPlugin {
+export default class SvInspectorViewPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(require('./SvInspectorView/SvInspectorViewType')),

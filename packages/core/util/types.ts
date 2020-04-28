@@ -17,7 +17,7 @@ export type ClassReturnedBy<
 > = InstanceTypeRestrictive<ReturnType<FACT>>
 
 /** A react component with any props. Consider using something more specific if possible */
-export type AnyReactComponentType = React.ComponentType<Record<string, unknown>>
+export type AnyReactComponentType = React.ComponentType<any>
 
 /** get the type that a predicate asserts */
 export type TypeTestedByPredicate<
@@ -44,6 +44,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   assemblyNames: string[]
   assemblies: AnyConfigurationModel[]
   selection?: unknown
+  duplicateCurrentSession(): void
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (

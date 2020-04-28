@@ -1,5 +1,6 @@
 import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { lazy } from 'react'
 import {
   configSchema as aboutConfigSchema,
@@ -21,9 +22,10 @@ import {
   ReactComponent as SessionManagerReactComponent,
   stateModel as sessionManagerStateModel,
 } from './SessionManager'
+import { AbstractSessionModel, SessionWithDrawerWidgets } from '@gmod/jbrowse-core/util'
 
 export default class extends Plugin {
-  install(pluginManager) {
+  install(pluginManager: PluginManager) {
     pluginManager.addDrawerWidgetType(() => {
       return new DrawerWidgetType({
         name: 'AboutDrawerWidget',
@@ -70,7 +72,7 @@ export default class extends Plugin {
       pluginManager.rootModel.appendToMenu('Help', {
         label: 'About',
         icon: 'info',
-        onClick: (session: AbstractViewContainer) => {
+        onClick: (session: SessionWithDrawerWidgets) => {
           const drawerWidget = session.addDrawerWidget(
             'AboutDrawerWidget',
             'aboutDrawerWidget',
@@ -81,7 +83,7 @@ export default class extends Plugin {
       pluginManager.rootModel.appendToMenu('Help', {
         label: 'Help',
         icon: 'help',
-        onClick: (session: AbstractViewContainer) => {
+        onClick: (session: SessionWithDrawerWidgets) => {
           const drawerWidget = session.addDrawerWidget(
             'HelpDrawerWidget',
             'helpDrawerWidget',
@@ -94,7 +96,7 @@ export default class extends Plugin {
         {
           label: 'Open Session…',
           icon: 'folder_open',
-          onClick: (session: AbstractViewContainer) => {
+          onClick: (session: SessionWithDrawerWidgets) => {
             const drawerWidget = session.addDrawerWidget(
               'SessionManager',
               'sessionManager',
@@ -109,7 +111,7 @@ export default class extends Plugin {
         {
           label: 'Duplicate Session',
           icon: 'file_copy',
-          onClick: (session: AbstractViewContainer) => {
+          onClick: (session: AbstractSessionModel) => {
             session.duplicateCurrentSession()
           },
         },

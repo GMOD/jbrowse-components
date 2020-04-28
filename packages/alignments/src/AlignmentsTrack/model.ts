@@ -2,13 +2,13 @@ import {
   getConf,
   ConfigurationReference,
 } from '@gmod/jbrowse-core/configuration'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
-import { getSession } from '@gmod/jbrowse-core/util'
-import { types, getSnapshot, addDisposer } from 'mobx-state-tree'
+import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
+import { types, getSnapshot, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import jsonStableStringify from 'json-stable-stringify'
+import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import AlignmentsTrackComponent from './components/AlignmentsTrack'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -136,7 +136,10 @@ export default (pluginManager: any, configSchema: any) => {
       sortSelected(selected: string) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { assemblyData, rpcManager } = getSession(self) as any
-        const { centerLineInfo } = getContainingView(self)
+        const { centerLineInfo } = getContainingView(self) as Instance<
+          LinearGenomeViewStateModel
+        >
+        if (!centerLineInfo) return
         const centerBp = Math.round(centerLineInfo.offset) + 1
 
         if (centerBp < 0) return

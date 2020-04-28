@@ -13,3 +13,5 @@ export default class Plugin {
     this.configured = true
   }
 }
+
+export type PluginConstructor = new (...args: unknown[]) => Plugin

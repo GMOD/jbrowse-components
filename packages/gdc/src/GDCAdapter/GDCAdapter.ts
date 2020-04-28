@@ -5,7 +5,10 @@ import {
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import GDCFeature from './GDCFeature'
+import MyConfigSchema from './configSchema'
 
 export default class extends BaseFeatureDataAdapter {
   private filters: string
@@ -18,19 +21,12 @@ export default class extends BaseFeatureDataAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: {
-    filters?: string
-    cases?: string[]
-    size?: number
-    featureType?: string
-  }) {
+  public constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
-    const {
-      filters = '{}',
-      cases = [],
-      size = 100,
-      featureType = 'mutation',
-    } = config
+    const filters = readConfObject(config, 'filters') as string
+    const cases = readConfObject(config, 'cases') as string[]
+    const size = readConfObject(config, 'size') as number
+    const featureType = readConfObject(config, 'featureType') as string
     this.filters = filters
     this.cases = cases
     this.size = size

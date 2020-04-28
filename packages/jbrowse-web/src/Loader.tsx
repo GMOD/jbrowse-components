@@ -10,6 +10,9 @@ import { makeStyles } from '@material-ui/core/styles'
 import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
 import { StringParam, useQueryParam } from 'use-query-params'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { SnapshotOut } from 'mobx-state-tree'
+import { PluginConstructor } from '@gmod/jbrowse-core/Plugin'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
@@ -25,8 +28,10 @@ const useStyles = makeStyles({
 })
 
 export default function Loader() {
-  const [configSnapshot, setConfigSnapshot] = useState()
-  const [plugins, setPlugins] = useState()
+  const [configSnapshot, setConfigSnapshot] = useState<
+    SnapshotOut<AnyConfigurationModel>
+  >()
+  const [plugins, setPlugins] = useState<PluginConstructor[]>()
 
   const [configQueryParam] = useQueryParam('config', StringParam)
   const [sessionQueryParam] = useQueryParam('session', StringParam)
