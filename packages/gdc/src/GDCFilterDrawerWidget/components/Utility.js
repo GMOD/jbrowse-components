@@ -484,7 +484,20 @@ const mutationHighlightFeatures = [
   },
 ]
 
+const geneHighlightFeatures = [
+  {
+    name: 'Is Cancer Gene Census',
+    attributeName: 'isCancerGeneCensus',
+    type: 'boolean',
+    description: 'Colour by cancer gene census status.',
+    values: [
+      { name: 'Is Cancer Gene Census', colour1: 'red', colour2: 'blue' },
+    ],
+  },
+]
+
 module.exports.ssmFacets = ssmFacets
 module.exports.geneFacets = geneFacets
 module.exports.caseFacets = caseFacets
 module.exports.mutationHighlightFeatures = mutationHighlightFeatures
+module.exports.geneHighlightFeatures = geneHighlightFeatures

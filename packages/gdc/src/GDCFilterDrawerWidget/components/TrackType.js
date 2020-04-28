@@ -29,13 +29,24 @@ const useStyles = makeStyles(theme => ({
 /**
  * A component for changing the track type
  */
-export const TrackType = observer(props => {
+export const TrackType = observer(schema => {
   const classes = useStyles()
-  const [trackType, setTrackType] = useState(props.adapter.featureType.value)
+  const [trackType, setTrackType] = useState(
+    schema.schema.target.adapter.featureType.value,
+  )
 
   const handleChange = event => {
     setTrackType(event.target.value)
-    props.adapter.featureType.set(event.target.value)
+    schema.schema.target.adapter.featureType.set(event.target.value)
+
+    // Set to function
+    schema.schema.target.renderer.color1.set(
+      `function(feature) { return 'goldenrod' }`,
+    )
+
+    // Set to colour array element
+    schema.schema.setColourBy('{}')
+    schema.schema.target.adapter.colourBy.set('{}')
   }
   return (
     <>

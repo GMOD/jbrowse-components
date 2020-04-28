@@ -9,7 +9,7 @@ import Tooltip from '@material-ui/core/Tooltip'
 import { ssmFacets, geneFacets, caseFacets } from './Utility'
 import { TrackType } from './TrackType'
 import { FilterList } from './Filters'
-import { MutationHighlightFeature } from './ColourFeatures'
+import { HighlightFeature } from './ColourFeatures'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -125,7 +125,7 @@ const GDCQueryBuilder = observer(({ schema }) => {
   return (
     <>
       {!isValidGDCFilter && <Alert severity="info">{validationMessage}</Alert>}
-      <TrackType {...schema.target} />
+      <TrackType schema={schema} />
       <Typography variant="h6" className={classes.text}>
         Filters
         <Tooltip
@@ -143,7 +143,11 @@ const GDCQueryBuilder = observer(({ schema }) => {
         <Alert severity="info">{colourValidationMessage}</Alert>
       )}
       {schema.target.adapter.featureType.value === 'mutation' && (
-        <MutationHighlightFeature schema={schema} />
+        <HighlightFeature schema={schema} type="mutation" />
+      )}
+
+      {schema.target.adapter.featureType.value === 'gene' && (
+        <HighlightFeature schema={schema} type="gene" />
       )}
     </>
   )

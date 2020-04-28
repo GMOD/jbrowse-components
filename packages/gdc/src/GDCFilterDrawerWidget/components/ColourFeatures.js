@@ -12,7 +12,7 @@ import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
 import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
-import { mutationHighlightFeatures } from './Utility'
+import { mutationHighlightFeatures, geneHighlightFeatures } from './Utility'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -33,9 +33,12 @@ const useStyles = makeStyles(theme => ({
 /**
  * Render a highlight/colour by element for colouring features
  */
-export const MutationHighlightFeature = observer(({ schema }) => {
+export const HighlightFeature = observer(({ schema, type }) => {
   const classes = useStyles()
   const [colourBy, setColourBy] = useState(schema.getColourBy())
+  const highlightFeatures =
+    type === 'mutation' ? mutationHighlightFeatures : geneHighlightFeatures
+
   const handleChangeHighlightBy = event => {
     const hlBy = event.target.value
     setColourBy(hlBy)
@@ -62,6 +65,8 @@ export const MutationHighlightFeature = observer(({ schema }) => {
         switchStatement += '}'
         colourFunction = `function(feature) { const attrValue = feature.get('${hlBy.attributeName}'); ${switchStatement}}`
       }
+    } else if (hlBy.type === 'boolean') {
+      colourFunction = `function(feature) { if (feature.get('${hlBy.attributeName}')) {return '${hlBy.values[0].colour1}'; } else {return '${hlBy.values[0].colour2}'; } }`
     } else {
       colourFunction = `function(feature) { return 'goldenrod' }`
     }
@@ -95,7 +100,7 @@ export const MutationHighlightFeature = observer(({ schema }) => {
           <MenuItem disabled value="">
             <em>Attribute</em>
           </MenuItem>
-          {mutationHighlightFeatures.map(element => {
+          {highlightFeatures.map(element => {
             return (
               <MenuItem value={element} key={element.name}>
                 {element.name}
@@ -154,6 +159,32 @@ export const MutationHighlightFeature = observer(({ schema }) => {
                         <TableCell>{value.threshold}</TableCell>
                         <TableCell>{value.colour2}</TableCell>
                         <TableCell>{value.colour1}</TableCell>
+                      </TableRow>
+                    )
+                  })}
+              </TableBody>
+            </Table>
+          )}
+
+          {colourBy.values && colourBy.type === 'boolean' && (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Value</TableCell>
+                  <TableCell>True</TableCell>
+                  <TableCell>False</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {colourBy.values &&
+                  colourBy.values.map(value => {
+                    return (
+                      <TableRow key={value.name}>
+                        <TableCell>
+                          {value.name !== '' ? value.name : 'n/a'}
+                        </TableCell>
+                        <TableCell>{value.colour1}</TableCell>
+                        <TableCell>{value.colour2}</TableCell>
                       </TableRow>
                     )
                   })}
