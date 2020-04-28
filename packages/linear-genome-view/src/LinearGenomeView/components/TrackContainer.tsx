@@ -2,6 +2,7 @@ import { getConf } from '@gmod/jbrowse-core/configuration'
 import { ResizeHandle } from '@gmod/jbrowse-core/ui'
 import { useDebouncedCallback } from '@gmod/jbrowse-core/util'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { Instance, isAlive } from 'mobx-state-tree'
@@ -9,7 +10,6 @@ import React from 'react'
 import { LinearGenomeViewStateModel, RESIZE_HANDLE_HEIGHT } from '..'
 import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
 import TrackLabel from './TrackLabel'
-import TrackRenderingContainer from './TrackRenderingContainer'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -33,13 +33,25 @@ const useStyles = makeStyles(theme => ({
     borderRadius: theme.shape.borderRadius,
   },
   renderingComponentContainer: {
-    position: 'relative',
+    position: 'absolute',
+    // -1 offset because of the 1px border of the Paper
+    left: -1,
     height: '100%',
+    width: '100%',
   },
   trackLabel: {
     position: 'absolute',
     zIndex: 3,
     margin: theme.spacing(1),
+  },
+  trackRenderingContainer: {
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    whiteSpace: 'nowrap',
+    position: 'relative',
+    background: 'none',
+    zIndex: 2,
+    boxSizing: 'content-box',
   },
 }))
 
@@ -72,18 +84,25 @@ function TrackContainer(props: {
   return (
     <div className={classes.root}>
       <TrackLabel track={track} className={classes.trackLabel} />
-      <TrackRenderingContainer
-        trackId={track.id}
-        trackHeight={track.height}
-        onHorizontalScroll={horizontalScroll}
-        setScrollTop={track.setScrollTop}
+      <Paper
+        variant="outlined"
+        className={classes.trackRenderingContainer}
+        style={{ height: track.height }}
+        onScroll={event => {
+          const target = event.target as HTMLDivElement
+          track.setScrollTop(target.scrollTop)
+        }}
         onDragEnter={debouncedOnDragEnter}
         data-testid={`trackRenderingContainer-${view.id}-${getConf(
           track,
           'trackId',
         )}`}
+        role="presentation"
       >
-        <div className={classes.renderingComponentContainer}>
+        <div
+          className={classes.renderingComponentContainer}
+          style={{ transform: `scaleX(${model.scaleFactor})` }}
+        >
           <RenderingComponent
             model={track}
             offsetPx={offsetPx}
@@ -92,7 +111,7 @@ function TrackContainer(props: {
             onHorizontalScroll={horizontalScroll}
           />
         </div>
-      </TrackRenderingContainer>
+      </Paper>
       <div
         className={classes.overlay}
         style={{

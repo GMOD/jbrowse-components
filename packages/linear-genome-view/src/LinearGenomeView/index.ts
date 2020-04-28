@@ -97,6 +97,7 @@ export function stateModelFactory(pluginManager: any) {
       // array of callbacks to run after the next set of the displayedRegions,
       // which is basically like an onLoad
       afterDisplayedRegionsSetCallbacks: [] as Function[],
+      scaleFactor: 1,
     }))
     .views(self => ({
       get initialized() {
@@ -416,30 +417,6 @@ export function stateModelFactory(pluginManager: any) {
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
-      zoom(levels: number) {
-        this.zoomTo(self.bpPerPx)
-        if (
-          // no zoom
-          levels === 0 ||
-          // already zoomed all the way in
-          (levels > 0 && self.bpPerPx === self.minBpPerPx) ||
-          // already zoomed all the way out
-          (levels < 0 && self.bpPerPx === self.maxBpPerPx)
-        ) {
-          return
-        }
-        const currentIndex = self.zoomLevels.findIndex(
-          zoomLevel => zoomLevel === self.bpPerPx,
-        )
-        const targetIndex = clamp(
-          currentIndex - levels,
-          0,
-          self.zoomLevels.length - 1,
-        )
-        const targetBpPerPx = self.zoomLevels[targetIndex]
-        this.zoomTo(targetBpPerPx)
-      },
-
       zoomTo(newBpPerPx: number, constrain = true) {
         let bpPerPx = newBpPerPx
         if (constrain) {
@@ -644,6 +621,10 @@ export function stateModelFactory(pluginManager: any) {
       setDraggingTrackId(idx?: string) {
         self.draggingTrackId = idx
       },
+
+      setScaleFactor(factor: number) {
+        self.scaleFactor = factor
+      },
     }))
     .actions(self => {
       let cancelLastAnimation = () => {}
@@ -660,6 +641,47 @@ export function stateModelFactory(pluginManager: any) {
       }
 
       return { slide }
+    })
+    .actions(self => {
+      let cancelLastAnimation = () => {}
+
+      function zoom(levels: number) {
+        self.zoomTo(self.bpPerPx)
+        if (
+          // no zoom
+          levels === 0 ||
+          // already zoomed all the way in
+          (levels > 0 && self.bpPerPx === self.minBpPerPx) ||
+          // already zoomed all the way out
+          (levels < 0 && self.bpPerPx === self.maxBpPerPx)
+        ) {
+          return
+        }
+        const currentIndex = self.zoomLevels.findIndex(
+          zoomLevel => zoomLevel === self.bpPerPx,
+        )
+        const targetIndex = clamp(
+          currentIndex - levels,
+          0,
+          self.zoomLevels.length - 1,
+        )
+        const targetBpPerPx = self.zoomLevels[targetIndex]
+        const factor = self.bpPerPx / targetBpPerPx
+        const [animate, cancelAnimation] = springAnimate(
+          1,
+          factor,
+          self.setScaleFactor,
+          () => {
+            self.zoomTo(targetBpPerPx)
+            self.setScaleFactor(1)
+          },
+        )
+        cancelLastAnimation()
+        cancelLastAnimation = cancelAnimation
+        animate()
+      }
+
+      return { zoom }
     })
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined

@@ -33,7 +33,7 @@ expect.extend({ toMatchImageSnapshot })
 
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
-window.requestAnimationFrame = cb => cb()
+window.requestAnimationFrame = cb => setTimeout(cb)
 window.cancelAnimationFrame = () => {}
 
 Storage.prototype.getItem = jest.fn(() => null)
@@ -130,6 +130,8 @@ describe('valid file tests', () => {
     fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
     fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
     fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
+    // wait for requestAnimationFrame
+    await wait(() => {})
     const end = state.session.views[0].offsetPx
     expect(end - start).toEqual(150)
   })
