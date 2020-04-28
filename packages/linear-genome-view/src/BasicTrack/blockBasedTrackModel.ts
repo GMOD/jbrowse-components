@@ -27,7 +27,6 @@ const blockBasedTrack = types
         blockState: types.map(BlockState),
       })
       .volatile(() => ({
-        // TODORIGHTCLICK: add menu to volatile for track.tsx to check the state
         contextMenu: [] as any[] | MenuOption[],
         featureIdUnderMouse: undefined as undefined | string,
         featureCopied: undefined as undefined | string,

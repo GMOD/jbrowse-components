@@ -112,7 +112,6 @@ function PileupRendering(props) {
     setLocalFeatureIdUnderMouse(undefined)
   }
 
-  // TODORIGHTCLICK write this function
   function onContextMenu(event) {
     if (!movedDuringLastMouseDown) callMouseHandler('ContextMenu', event)
   }

@@ -243,6 +243,7 @@ function SvgFeatureRendering(props) {
     onMouseMove,
     onMouseUp,
     onFeatureClick,
+    onFeatureContextMenu,
   } = props
 
   const mouseDown = useCallback(
@@ -346,7 +347,6 @@ function SvgFeatureRendering(props) {
     ],
   )
 
-  // TODORIGHTCLICK: probably need to do something similar to below but on right click only
   const click = useCallback(
     event => {
       // don't select a feature if we are clicking and dragging
@@ -355,6 +355,14 @@ function SvgFeatureRendering(props) {
       onFeatureClick && onFeatureClick(event)
     },
     [movedDuringLastMouseDown, onFeatureClick],
+  )
+
+  const contextMenu = useCallback(
+    event => {
+      if (movedDuringLastMouseDown) return
+      onFeatureContextMenu && onFeatureContextMenu(event)
+    },
+    [movedDuringLastMouseDown, onFeatureContextMenu],
   )
 
   return (
@@ -374,6 +382,7 @@ function SvgFeatureRendering(props) {
         onFocus={mouseEnter}
         onBlur={mouseLeave}
         onClick={click}
+        onContextMenu={contextMenu}
         style={{ display: 'block' }}
       >
         <RenderedFeatures
@@ -426,7 +435,9 @@ SvgFeatureRendering.propTypes = {
   onMouseOut: ReactPropTypes.func,
   onMouseMove: ReactPropTypes.func,
   onClick: ReactPropTypes.func,
+  onContextMenu: ReactPropTypes.func,
   onFeatureClick: ReactPropTypes.func,
+  onFeatureContextMenu: ReactPropTypes.func,
   blockKey: ReactPropTypes.string,
 }
 
@@ -444,7 +455,9 @@ SvgFeatureRendering.defaultProps = {
   onMouseOut: undefined,
   onMouseMove: undefined,
   onClick: undefined,
+  onContextMenu: undefined,
   onFeatureClick: undefined,
+  onFeatureContextMenu: undefined,
 }
 
 export default observer(SvgFeatureRendering)
