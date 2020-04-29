@@ -1,19 +1,42 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+
+interface LayoutItem {
+  uniqueId: string
+  anchorLocation: number
+  width: number
+  height: number
+  data: { score: number }
+}
+
+type LayoutEntry = LayoutItem & { x: number; y: number }
+
+type LayoutMap = Map<string, LayoutEntry>
 
 export class FloatingLayout {
-  constructor({ width }) {
+  width: number
+
+  totalHeight = 0
+
+  constructor({ width }: { width: number }) {
     if (!width) throw new Error('width required to make a new FloatingLayout')
     this.width = width
   }
 
-  items = []
+  items: LayoutItem[] = []
 
-  layout = new Map()
+  layout: LayoutMap = new Map()
 
   layoutDirty = false
 
-  add(uniqueId, anchorLocation, width, height, data) {
+  add(
+    uniqueId: string,
+    anchorLocation: number,
+    width: number,
+    height: number,
+    data: { score: number },
+  ) {
     this.items.push({ uniqueId, anchorLocation, width, height, data })
     this.layoutDirty = true
   }
@@ -21,7 +44,7 @@ export class FloatingLayout {
   /**
    * @returns {Map} of uniqueId => {x,y,anchorLocation,width,height,data}
    */
-  getLayout(configuration) {
+  getLayout(configuration?: AnyConfigurationModel) {
     if (!this.layoutDirty) return this.layout
     if (!configuration) throw new Error('configuration object required')
 
@@ -33,7 +56,7 @@ export class FloatingLayout {
 
     // bump them
     let maxBottom = 0
-    const layoutEntries = Array(sorted.length)
+    const layoutEntries: [string, LayoutEntry][] = Array(sorted.length)
     for (let i = 0; i < sorted.length; i += 1) {
       const currentItem = sorted[i]
       const { anchorLocation, width, height } = currentItem
@@ -81,7 +104,8 @@ export class FloatingLayout {
   }
 
   getTotalHeight() {
-    if (this.layoutDirty) this.getLayout()
+    if (this.layoutDirty)
+      throw new Error('getTotalHeight does not work when the layout is dirty.')
     return this.totalHeight
   }
 
@@ -90,6 +114,8 @@ export class FloatingLayout {
   }
 
   toJSON() {
+    if (this.layoutDirty)
+      throw new Error('toJSON does not work when the layout is dirty.')
     return { pairs: [...this.getLayout()], totalHeight: this.getTotalHeight() }
   }
 
@@ -99,12 +125,22 @@ export class FloatingLayout {
 }
 
 export class PrecomputedFloatingLayout {
-  constructor({ pairs, totalHeight }) {
+  layout: LayoutMap
+
+  totalHeight: number
+
+  constructor({
+    pairs,
+    totalHeight,
+  }: {
+    pairs: [string, LayoutEntry][]
+    totalHeight: number
+  }) {
     this.layout = new Map(pairs)
     this.totalHeight = totalHeight
   }
 
-  add(uniqueId) {
+  add(uniqueId: string) {
     if (!this.layout.has(uniqueId))
       throw new Error(`layout error, precomputed layout is missing ${uniqueId}`)
   }
@@ -117,7 +153,9 @@ export class PrecomputedFloatingLayout {
     return this.totalHeight
   }
 
-  static fromJSON(json) {
+  static fromJSON(
+    json: ConstructorParameters<typeof PrecomputedFloatingLayout>[0],
+  ) {
     return new PrecomputedFloatingLayout(json)
   }
 }

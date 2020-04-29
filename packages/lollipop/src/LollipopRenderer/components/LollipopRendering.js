@@ -73,7 +73,7 @@ class LollipopRendering extends Component {
 
   render() {
     const {
-      region,
+      regions,
       bpPerPx,
       layout,
       config,
@@ -81,6 +81,7 @@ class LollipopRendering extends Component {
       trackModel: { selectedFeatureId },
     } = this.props
 
+    const [region] = regions
     const sticksRendered = []
     const lollipopsRendered = []
     for (const feature of features.values()) {
@@ -154,7 +155,7 @@ LollipopRendering.propTypes = {
     getTotalHeight: ReactPropTypes.func.isRequired,
   }).isRequired,
 
-  region: CommonPropTypes.Region.isRequired,
+  regions: ReactPropTypes.arrayOf(CommonPropTypes.Region).isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
   features: ReactPropTypes.instanceOf(Map),
   config: CommonPropTypes.ConfigSchema.isRequired,
