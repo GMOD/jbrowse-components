@@ -1,83 +1,172 @@
-/* eslint-disable react/require-default-props */
+/* eslint-disable no-plusplus */
 import React, { useRef, useEffect } from 'react'
-import { getParent, isStateTreeNode } from 'mobx-state-tree'
-import { observer, PropTypes } from 'mobx-react'
-import { ImageBitmapType } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
-import { LinearSyntenyRenderingProps } from '../LinearSyntenyRenderer'
+import { observer } from 'mobx-react'
+import { getParent } from 'mobx-state-tree'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { getConf } from '@gmod/jbrowse-core/configuration'
+import { getPxFromCoordinate, interstitialYPos, overlayYPos } from '../../util'
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const [LEFT, TOP, RIGHT, BOTTOM] = [0, 1, 2, 3]
+export type LayoutTuple = [number, number, number, number]
+interface LayoutMatch {
+  level: number
+  layout: LayoutTuple
+  feature: Feature
+  refName: string
+}
+
+function* generateMatches(l1: Feature[], l2: Feature[]) {
+  let i = 0
+  let j = 0
+  while (i < l1.length && j < l2.length) {
+    const a = l1[i].get('syntenyId')
+    const b = l2[j].get('syntenyId')
+    if (a < b) {
+      i++
+    } else if (b < a) {
+      j++
+    } else {
+      yield [l1[i], l2[j]]
+      i++
+      j++
+    }
+  }
+}
+
+function layoutMatchesFromViews(views: any[]) {
+  const layoutMatches = []
+  for (let i = 0; i < views.length; i++) {
+    for (let j = i; j < views.length; j++) {
+      if (i !== j) {
+        // NOTE: we might need intra-view "synteny" e.g. ortholog?
+        // similar to breakpoint squiggles in a single LGV, so may not want
+        // the check for i != j
+        for (const match of generateMatches(
+          views[i].features,
+          views[j].features,
+        )) {
+          const [l1, l2] = match
+          layoutMatches.push([
+            {
+              feature: l1,
+              level: i,
+              refName: l1.get('refName'),
+              layout: [l1.get('start'), 0, l1.get('end'), 10] as LayoutTuple,
+            },
+            {
+              feature: l2,
+              level: j,
+              refName: l2.get('refName'),
+              layout: [l2.get('start'), 0, l2.get('end'), 10] as LayoutTuple,
+            },
+          ])
+        }
+      }
+    }
+  }
+  return layoutMatches
+}
 
 /**
  * A block whose content is rendered outside of the main thread and hydrated by this
  * component.
  */
-function LinearSyntenyRendering(props: LinearSyntenyRenderingProps) {
-  const { trackModel = {}, highResolutionScaling = 1, imageData } = props
-  const { width, height } = imageData
-  console.log(width, height)
-  let voffs = [0, 0]
-  if (trackModel && isStateTreeNode(trackModel)) {
-    // @ts-ignore
-    const { viewOffsets } = trackModel
-    const { views } = getParent(trackModel, 2)
-    voffs = []
-    for (let i = 0; i < views.length; i++) {
-      voffs.push(views[i].offsetPx - viewOffsets[i])
-    }
-  }
+function LinearSyntenyRendering(props: any) {
+  const {
+    width,
+    height,
+    trackModel = {},
+    highResolutionScaling = 1,
+    views,
+    trackIds,
+  } = props
+  const ref = useRef<HTMLCanvasElement>(null)
 
-  const featureCanvas = useRef<HTMLCanvasElement>(null)
+  views.forEach((view: any) => {
+    view.features.sort(
+      (a: any, b: any) => a.get('syntenyId') - b.get('syntenyId'),
+    )
+  })
+  const layoutMatches = layoutMatchesFromViews(views)
 
   useEffect(() => {
-    if (!imageData) {
-      return
-    }
-    const canvas = featureCanvas.current
-    if (!canvas) {
-      return
-    }
-    const context = canvas.getContext('2d')
-    if (!context) {
-      return
-    }
-    context.clearRect(0, 0, width, height)
-    context.resetTransform()
-    // see https://en.wikipedia.org/wiki/Transformation_matrix#/media/File:2D_affine_transformation_matrix.svg
-    context.transform(1, 0, -(voffs[1] - voffs[0]) / height, 1, -voffs[0], 0)
-    if (imageData.commands) {
-      imageData.commands.forEach(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (command: { style: string; type: string; args: any[] }) => {
-          if (command.type === 'strokeStyle') {
-            context.strokeStyle = command.style
-          } else if (command.type === 'fillStyle') {
-            context.fillStyle = command.style
-          } else if (command.type === 'font') {
-            context.font = command.style
-          } else {
-            // @ts-ignore
-            context[command.type](...command.args)
-          }
-        },
-      )
-    } else if (imageData instanceof ImageBitmapType) {
-      context.drawImage(imageData, 0, 0)
-    } else if (imageData.dataURL) {
-      const img = new Image()
-      img.onload = () => context.drawImage(img, 0, 0)
-      img.src = imageData.dataURL
-    }
-  }, [height, imageData, voffs, width])
+    if (!ref.current) return
+    const ctx = ref.current.getContext('2d')
+    if (!ctx) return
+    console.log('here')
+    ctx.fillStyle = getConf(trackModel, 'color')
+    const showIntraviewLinks = false
+    const middle = true
+    const hideTiny = false
+    console.log(layoutMatches)
+    layoutMatches.forEach(chunk => {
+      // we follow a path in the list of chunks, not from top to bottom, just in series
+      // following x1,y1 -> x2,y2
+      for (let i = 0; i < chunk.length - 1; i += 1) {
+        const { layout: c1, feature: f1, level: level1, refName: ref1 } = chunk[
+          i
+        ]
+        const { layout: c2, feature: f2, level: level2, refName: ref2 } = chunk[
+          i + 1
+        ]
+        const v1 = views[level1]
+        const v2 = views[level2]
 
+        if (!c1 || !c2) {
+          console.warn('received null layout for a overlay feature')
+          return
+        }
+
+        // disable rendering connections in a single level
+        if (!showIntraviewLinks && level1 === level2) {
+          return
+        }
+        const length1 = f1.get('end') - f1.get('start')
+        const length2 = f2.get('end') - f2.get('start')
+
+        if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
+          if (hideTiny) {
+            continue
+          }
+        }
+        // if (
+        //   !v1.staticBlocks.find(region => region.refName === ref1) ||
+        //   !v2.staticBlocks.find(region => region.refName === ref2)
+        // ) {
+        //   continue
+        // }
+
+        const x11 = getPxFromCoordinate(v1, ref1, c1[LEFT])
+        const x12 = getPxFromCoordinate(v1, ref1, c1[RIGHT])
+        const x21 = getPxFromCoordinate(v2, ref2, c2[LEFT])
+        const x22 = getPxFromCoordinate(v2, ref2, c2[RIGHT])
+
+        const y1 = middle
+          ? interstitialYPos(level1 < level2, height)
+          : overlayYPos(trackIds[0], level1, views, c1, level1 < level2)
+        const y2 = middle
+          ? interstitialYPos(level2 < level1, height)
+          : overlayYPos(trackIds[1], level2, views, c2, level2 < level1)
+
+        ctx.beginPath()
+        ctx.moveTo(x11, y1)
+        ctx.lineTo(x12, y1)
+        ctx.lineTo(x22, y2)
+        ctx.lineTo(x21, y2)
+        ctx.closePath()
+        ctx.fill()
+      }
+    })
+  })
   return (
     <canvas
+      ref={ref}
       data-testid="prerendered_canvas"
-      ref={featureCanvas}
-      width={width * highResolutionScaling}
-      height={height * highResolutionScaling}
-      style={{ width, height }}
+      width={800}
+      height={200}
     />
   )
 }
-
-LinearSyntenyRendering.propTypes = {}
 
 export default observer(LinearSyntenyRendering)

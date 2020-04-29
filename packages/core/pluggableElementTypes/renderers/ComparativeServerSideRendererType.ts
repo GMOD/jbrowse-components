@@ -5,7 +5,7 @@ import { getSnapshot } from 'mobx-state-tree'
 import BaseAdapter from '../../BaseAdapter'
 import { IRegion } from '../../mst-types'
 import { checkAbortSignal } from '../../util'
-import { Feature } from '../../util/simpleFeature'
+import SimpleFeature, { Feature } from '../../util/simpleFeature'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
 
@@ -38,7 +38,6 @@ export default class ComparativeServerSideRenderer extends RendererType {
    */
   serializeArgsInClient(args: RenderArgs) {
     const { trackModel } = args.renderProps
-    console.log(args.renderProps)
     args.renderProps = {
       ...args.renderProps,
       // @ts-ignore
@@ -62,6 +61,16 @@ export default class ComparativeServerSideRenderer extends RendererType {
 
   // deserialize some of the results that came back from the worker
   deserializeResultsInClient(result: { features: any }, args: RenderArgs) {
+    console.log('deserialize', result, args)
+    if (result.views) {
+      result.views.forEach(view => {
+        if (view.features) {
+          view.features = view.features.map(
+            feature => new SimpleFeature(feature),
+          )
+        }
+      })
+    }
     // @ts-ignore
     result.blockKey = args.blockKey
     return result
@@ -103,6 +112,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
       'comparativeRender',
       serializedArgs,
     )
+    console.log('called comparativeRender', result)
 
     this.deserializeResultsInClient(result, args)
     return result
