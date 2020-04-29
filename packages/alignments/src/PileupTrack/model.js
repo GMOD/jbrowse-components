@@ -6,6 +6,7 @@ import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
+import copy from 'copy-to-clipboard'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -33,6 +34,39 @@ export default (pluginManager, configSchema) =>
           )
           session.showDrawerWidget(featureWidget)
           session.setSelection(feature)
+        },
+
+        copyFeatureToClipboard(feature) {
+          const copiedFeature = feature
+          delete copiedFeature.uniqueId
+          // TODORIGHTCLICK: see if other lines need to be deleted before copied to clipboard
+          const session = getSession(self)
+          copy(JSON.stringify(copiedFeature, null, 4))
+          session.pushSnackbarMessage('Copied to clipboard')
+        },
+
+        contextMenuFeature(feature) {
+          const menuOptions = [
+            {
+              label: 'Open feature drawer',
+              icon: 'menu_open',
+              onClick: () => {
+                self.clearFeatureSelection()
+                self.selectFeature(feature)
+              },
+            },
+            {
+              label: 'Copy info to clipboard',
+              icon: 'content_copy',
+              onClick: () => self.copyFeatureToClipboard(feature),
+            },
+            {
+              label: 'View dotpot',
+              icon: 'scatter_plot',
+              onClick: () => {},
+            },
+          ]
+          self.contextMenu = menuOptions
         },
       }))
       .views(self => ({

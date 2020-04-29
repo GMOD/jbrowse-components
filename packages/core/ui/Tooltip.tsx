@@ -22,7 +22,6 @@ const Tooltip = ({
   configuration,
   feature,
   timeout = 300,
-  additionalText = '',
 }: {
   offsetX: number
   offsetY: number
@@ -30,7 +29,6 @@ const Tooltip = ({
   configuration: any
   feature?: Feature
   timeout: number
-  additionalText: string
 }) => {
   const classes = useStyles()
   // only show the loading message after 400ms to prevent excessive flickering
@@ -47,12 +45,6 @@ const Tooltip = ({
         style={{ left: offsetX, top: offsetY }}
       >
         {text}
-        {additionalText ? (
-          <>
-            <br />
-            {additionalText}
-          </>
-        ) : null}
       </div>
     )
   }
@@ -65,7 +57,6 @@ Tooltip.propTypes = {
   offsetY: ReactPropTypes.number.isRequired,
   feature: ReactPropTypes.shape({}),
   timeout: ReactPropTypes.number,
-  additionalText: ReactPropTypes.string,
 }
 
 Tooltip.defaultProps = {

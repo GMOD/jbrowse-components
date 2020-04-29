@@ -14,7 +14,6 @@ function PileupRendering(props) {
     blockLayoutFeatures,
     features,
     configuration,
-    featureCopied,
   } = trackModel
 
   const highlightOverlayCanvas = useRef()
@@ -199,11 +198,6 @@ function PileupRendering(props) {
           feature={features.get(localFeatureIdUnderMouse)}
           offsetX={offset[0]}
           offsetY={offset[1]}
-          additionalText={
-            featureCopied === localFeatureIdUnderMouse
-              ? 'Copied to clipboard'
-              : ''
-          }
         />
       ) : null}
     </div>
@@ -228,7 +222,6 @@ PileupRendering.propTypes = {
     features: ReactPropTypes.shape({ get: ReactPropTypes.func }),
     blockLayoutFeatures: ReactPropTypes.shape({ get: ReactPropTypes.func }),
     setFeatureIdUnderMouse: ReactPropTypes.func,
-    featureCopied: ReactPropTypes.string,
   }),
 
   onFeatureMouseDown: ReactPropTypes.func,
@@ -260,7 +253,6 @@ PileupRendering.defaultProps = {
   trackModel: {
     configuration: {},
     setFeatureIdUnderMouse: () => {},
-    featureCopied: '',
   },
   onFeatureMouseDown: undefined,
   onFeatureMouseEnter: undefined,

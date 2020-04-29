@@ -11,7 +11,6 @@ import { addDisposer, types, Instance } from 'mobx-state-tree'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import RBush from 'rbush'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import copy from 'copy-to-clipboard'
 import BlockState, { BlockStateModel } from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
 import { BaseBlock, ContentBlock } from './util/blockTypes'
@@ -27,9 +26,8 @@ const blockBasedTrack = types
         blockState: types.map(BlockState),
       })
       .volatile(() => ({
-        contextMenu: [] as any[] | MenuOption[],
+        contextMenu: [] as MenuOption[],
         featureIdUnderMouse: undefined as undefined | string,
-        featureCopied: undefined as undefined | string,
         ReactComponent: BlockBasedTrack,
       })),
   )
@@ -216,34 +214,8 @@ const blockBasedTrack = types
       session.setSelection(feature)
     },
 
-    copyFeatureToClipboard(feature: Feature) {
-      copy(JSON.stringify(feature, null, 4))
-      self.featureCopied = feature.get('uniqueId')
-    },
-
-    // TODORIGHTCLICK: opens another track drawer instead of replacing the current one
     contextMenuFeature(feature: Feature) {
-      const menuOptions: MenuOption[] = [
-        {
-          label: 'Open feature drawer',
-          icon: 'menu_open',
-          onClick: () => {
-            this.clearFeatureSelection()
-            this.selectFeature(feature)
-          },
-        },
-        {
-          label: 'Copy info to clipboard',
-          icon: 'content_copy',
-          onClick: () => this.copyFeatureToClipboard(feature),
-        },
-        {
-          label: 'View dotpot',
-          icon: 'scatter_plot',
-          onClick: () => {},
-        },
-      ]
-      self.contextMenu = menuOptions
+      self.contextMenu = []
     },
 
     clearFeatureSelection() {
