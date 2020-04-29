@@ -6,7 +6,6 @@ labels: question
 assignees: ''
 ---
 
-<!-- prettier-ignore -->
 **Describe the question or help you need**
 
 <!--

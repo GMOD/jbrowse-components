@@ -6,7 +6,6 @@ labels: enhancement
 assignees: ''
 ---
 
-<!-- prettier-ignore -->
 **Is your feature request related to a problem? Please describe.**
 
 <!--

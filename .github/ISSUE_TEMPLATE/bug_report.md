@@ -6,7 +6,6 @@ labels: bug
 assignees: ''
 ---
 
-<!-- prettier-ignore -->
 <!-- Please fill out as much of the template as you can. -->
 
 **Describe the bug**

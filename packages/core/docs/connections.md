@@ -77,13 +77,13 @@ function modelFactory(pluginManager) {
   return types.compose(
     'MyConnection',
     connectionModelFactory(pluginManager),
-    types.model().actions(self => ({
+    types.model().actions((self) => ({
       // `connectionConf` contains the configuration defined for this connection
       connect(connectionConf) {
         // Here is an example of how to read data from a configuration
         const dataLocation = readConfObject(connectionConf, 'dataLocation')
         // Now fetch the data.
-        fetchData(dataLocation).then(data => {
+        fetchData(dataLocation).then((data) => {
           // Now do something with the data to convert it to JBrowse tracks
           const tracks = transformData(data)
           // All tracks must be added under an assembly. This assembly might be
@@ -92,7 +92,7 @@ function modelFactory(pluginManager) {
           setTrackConfs(tracks)
 
           // If necessary, the tracks can be added incrementally
-          tracks.forEach(track => {
+          tracks.forEach((track) => {
             addTrackConf(track)
           })
         })
