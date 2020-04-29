@@ -997,18 +997,18 @@
         },
         "craiLocation": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.crai"
-        }
-      },
-      "sequenceAdapter": {
-        "type": "BgzipFastaAdapter",
-        "fastaLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
         },
-        "faiLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
-        },
-        "gziLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
         }
       }
     },
