@@ -23,7 +23,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   clearSelection(): void
   configuration: AnyConfigurationModel
   pluginManager: PluginManager
-  rpcManager: any
+  rpcManager: { call: Function }
   assemblyNames: string[]
   assemblies: AnyConfigurationModel[]
   selection?: unknown

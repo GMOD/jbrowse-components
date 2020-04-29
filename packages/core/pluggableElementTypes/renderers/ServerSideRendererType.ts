@@ -152,7 +152,7 @@ export default class ServerSideRenderer extends RendererType {
    * Render method called on the client. Serializes args, then
    * calls `render` with the RPC manager.
    */
-  async renderInClient(rpcManager: any, args: RenderArgs) {
+  async renderInClient(rpcManager: { call: Function }, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
     const stateGroupName = args.sessionId
@@ -281,7 +281,7 @@ export default class ServerSideRenderer extends RendererType {
     )
   }
 
-  freeResourcesInClient(rpcManager: any, args: RenderArgs) {
+  freeResourcesInClient(rpcManager: { call: Function }, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
     const stateGroupName = args.sessionId

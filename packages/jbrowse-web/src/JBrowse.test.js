@@ -33,6 +33,7 @@ expect.extend({ toMatchImageSnapshot })
 
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
+// eslint-disable-next-line @typescript-eslint/no-implied-eval
 window.requestAnimationFrame = cb => setTimeout(cb)
 window.cancelAnimationFrame = () => {}
 
