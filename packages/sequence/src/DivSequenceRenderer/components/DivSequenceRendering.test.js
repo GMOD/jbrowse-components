@@ -79,7 +79,7 @@ describe('<DivSequenceRendering />', () => {
       <Rendering
         width={500}
         height={500}
-        region={{ refName: 'zonk', start: 0, end: 300 }}
+        regions={[{ refName: 'zonk', start: 0, end: 300 }]}
         layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
         config={DivRenderingConfigSchema.create()}
         bpPerPx={3}
@@ -94,7 +94,7 @@ describe('<DivSequenceRendering />', () => {
       <Rendering
         width={500}
         height={500}
-        region={{ refName: 'zonk', start: 0, end: 1000 }}
+        regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
         features={
           new Map([
             [
@@ -122,7 +122,7 @@ describe('<DivSequenceRendering />', () => {
         <Rendering
           width={500}
           height={500}
-          region={{ refName: 'zonk', start: 0, end: 1000 }}
+          regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
           features={
             new Map([
               ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
@@ -143,7 +143,7 @@ describe('<DivSequenceRendering />', () => {
         <Rendering
           width={500}
           height={500}
-          region={{ refName: 'zonk', start: 0, end: 1000 }}
+          regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
           features={
             new Map([
               [
@@ -171,7 +171,7 @@ describe('<DivSequenceRendering />', () => {
       <Rendering
         width={500}
         height={500}
-        region={{ refName: 'zonk', start: 0, end: 1000 }}
+        regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
         features={
           new Map([
             [
