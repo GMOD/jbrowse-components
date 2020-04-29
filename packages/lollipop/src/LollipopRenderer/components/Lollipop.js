@@ -5,7 +5,6 @@ import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
 
-// TODORIGHTCLICK: ask if needed for lollipop, stick, featureglyph
 function ScoreText({
   feature,
   config,

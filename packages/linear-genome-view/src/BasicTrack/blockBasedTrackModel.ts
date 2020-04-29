@@ -218,6 +218,10 @@ const blockBasedTrack = types
       self.contextMenu = []
     },
 
+    contextMenuNoFeature() {
+      self.contextMenu = []
+    },
+
     clearFeatureSelection() {
       const session = getSession(self) as any
       session.clearSelection()
@@ -255,6 +259,7 @@ const blockBasedTrack = types
           }
         },
         onContextMenu() {
+          self.contextMenuNoFeature()
           self.clearFeatureSelection()
         },
       }

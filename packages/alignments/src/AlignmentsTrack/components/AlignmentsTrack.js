@@ -1,14 +1,7 @@
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { YScaleBar } from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
-import { Menu } from '@gmod/jbrowse-core/ui'
-import { useTheme } from '@material-ui/core/styles'
 import AlignmentsBlockBasedTrack from './AlignmentsBlockBasedTrack'
-
-const initialState = {
-  mouseX: null,
-  mouseY: null,
-}
 
 function AlignmentsTrackComponent(props) {
   const { model } = props
@@ -26,35 +19,7 @@ function AlignmentsTrackComponent(props) {
     if (ready && stats && needsScalebar) showScalebar = true
   }
 
-  // Set up context menu
-  const [state, setState] = useState(initialState)
-  const [contextMenu, setContextMenu] = useState(model.menuOptions)
-  const handleRightClick = e => {
-    e.preventDefault()
-    setContextMenu(
-      PileupTrack && PileupTrack.featureIdUnderMouse
-        ? PileupTrack.contextMenu
-        : model.menuOptions,
-    )
-    setState({
-      mouseX: e.clientX - 2,
-      mouseY: e.clientY - 4,
-    })
-  }
   const ref = useRef()
-  const zIndex = useTheme().zIndex.tooltip
-
-  const handleMenuItemClick = (
-    event,
-    callback, // : () => void,
-  ) => {
-    callback()
-    handleClose()
-  }
-
-  const handleClose = () => {
-    setState(initialState)
-  }
 
   // determine height of the model when toggling pileuptrack
   useEffect(() => {
@@ -62,11 +27,7 @@ function AlignmentsTrackComponent(props) {
   }, [SNPCoverageTrack, model, showPileup])
 
   return (
-    <div
-      onContextMenu={handleRightClick}
-      style={{ position: 'relative', height, width: '100%' }}
-      ref={ref}
-    >
+    <div style={{ position: 'relative', height, width: '100%' }} ref={ref}>
       <AlignmentsBlockBasedTrack
         {...props}
         {...PileupTrack}
@@ -78,20 +39,6 @@ function AlignmentsTrackComponent(props) {
           <YScaleBar model={SNPCoverageTrack} />
         ) : null}
       </AlignmentsBlockBasedTrack>
-      <Menu
-        open={state.mouseY !== null}
-        onMenuItemClick={handleMenuItemClick}
-        onClose={handleClose}
-        anchorReference="anchorPosition"
-        anchorPosition={
-          state.mouseY !== null && state.mouseX !== null
-            ? { top: state.mouseY, left: state.mouseX }
-            : undefined
-        }
-        style={{ zIndex }}
-        menuOptions={contextMenu}
-        data-testid="alignments_context_menu"
-      />
     </div>
   )
 }

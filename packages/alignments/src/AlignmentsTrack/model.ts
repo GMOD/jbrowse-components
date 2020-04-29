@@ -82,7 +82,7 @@ export default (pluginManager: any, configSchema: any) => {
             disabled: !self.showPileup,
           },
           {
-            label: self.showPileup ? 'Hide Pileup Track' : 'Show Pileup Track',
+            label: self.showPileup ? 'Hide pileup track' : 'Show pileup track',
             icon: self.showPileup ? 'visibility_off' : 'visibility',
             onClick: self.togglePileup,
             disabled: !self.showCoverage,

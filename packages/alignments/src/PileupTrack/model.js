@@ -39,11 +39,14 @@ export default (pluginManager, configSchema) =>
         copyFeatureToClipboard(feature) {
           const copiedFeature = feature
           delete copiedFeature.uniqueId
-          // TODORIGHTCLICK: see if other lines need to be deleted before copied to clipboard
           const session = getSession(self)
           copy(JSON.stringify(copiedFeature, null, 4))
           session.pushSnackbarMessage('Copied to clipboard')
         },
+
+        // contextMenuNoFeature() {
+        //   self.contextMenu = getParentRenderProps(self).trackModel.menuOptions
+        // },
 
         contextMenuFeature(feature) {
           const menuOptions = [
@@ -60,11 +63,11 @@ export default (pluginManager, configSchema) =>
               icon: 'content_copy',
               onClick: () => self.copyFeatureToClipboard(feature),
             },
-            {
-              label: 'View dotpot',
-              icon: 'scatter_plot',
-              onClick: () => {},
-            },
+            // {
+            //   label: 'View dotpot',
+            //   icon: 'scatter_plot',
+            //   onClick: () => {},
+            // },
           ]
           self.contextMenu = menuOptions
         },

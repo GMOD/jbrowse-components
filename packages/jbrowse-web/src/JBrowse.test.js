@@ -429,16 +429,16 @@ describe('alignments track', () => {
     })
   }, 10000)
 
-  it('access alignments context menu', async () => {
-    const pluginManager = getPluginManager()
-    const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
-    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
-    const track = await findByTestId('track-volvox_alignments')
+  // it('access alignments context menu', async () => {
+  //   const pluginManager = getPluginManager()
+  //   const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
+  //   fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+  //   const track = await findByTestId('track-volvox_alignments')
 
-    fireEvent.contextMenu(track, { clientX: 250, clientY: 20 })
+  //   fireEvent.contextMenu(track, { clientX: 250, clientY: 20 })
 
-    expect(await findByTestId('alignments_context_menu')).toBeTruthy()
-  })
+  //   expect(await findByTestId('alignments_context_menu')).toBeTruthy()
+  // })
 
   it('selects a sort, updates object and layout', async () => {
     const pluginManager = getPluginManager()
