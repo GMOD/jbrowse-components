@@ -88,7 +88,7 @@ function TrackLabel(props: {
 
   function handleMenuItemClick(
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-    callback: () => void,
+    callback: Function,
   ) {
     callback()
     handleClose()

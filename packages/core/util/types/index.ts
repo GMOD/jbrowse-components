@@ -1,29 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { isStateTreeNode } from 'mobx-state-tree'
-import PluginManager from '../PluginManager'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
+import PluginManager from '../../PluginManager'
+import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
-/**
- * Obtain the return type of a constructor function type.
- * Differs from core Typescript InstanceType in that it returns never if not matched.
- */
-export type InstanceTypeRestrictive<
-  CONSTRUCTOR extends new (...args: any[]) => any
-> = CONSTRUCTOR extends new (...args: any[]) => infer CLASS ? CLASS : never
+import { MenuOption } from '../../ui'
 
-/** extracts the class type from a factory function that returns a constructor */
-export type ClassReturnedBy<
-  FACT extends (pm: PluginManager) => any
-> = InstanceTypeRestrictive<ReturnType<FACT>>
+export * from './util'
 
-/** A react component with any props. Consider using something more specific if possible */
-export type AnyReactComponentType = React.ComponentType<any>
-
-/** get the type that a predicate asserts */
-export type TypeTestedByPredicate<
-  PREDICATE extends (thing: any) => boolean
-> = PREDICATE extends (thing: any) => thing is infer TYPE ? TYPE : never
-
+/** abstract type for a model that contains multiple views */
 export interface AbstractViewContainer {
   removeView(view: AbstractViewModel): void
   addView(typeName: string, initialState: Record<string, unknown>): void
@@ -55,6 +38,7 @@ export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   )
 }
 
+/** abstract interface for a session that manages drawer widgets */
 export interface SessionWithDrawerWidgets extends AbstractSessionModel {
   visibleDrawerWidget?: { id: string }
   drawerWidgets?: unknown[]
@@ -72,6 +56,7 @@ export function isSessionModelWithDrawerWidgets(
   return isSessionModel(thing) && 'drawerWidgets' in thing
 }
 
+/** abstract interface for a session that manages a global selection */
 export interface SelectionContainer {
   selection?: unknown
   setSelection: (thing: unknown) => void
@@ -99,5 +84,36 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
     thing !== null &&
     'showTrack' in thing &&
     'hideTrack' in thing
+  )
+}
+
+/** minimum interface for the root MST model of a JBrowse app */
+export interface AbstractRootModel {
+  jbrowse: unknown
+  session?: AbstractSessionModel
+  setDefaultSession(): void
+}
+
+/** a root model that manages global menus */
+export interface AbstractMenuManager {
+  appendMenu(menuName: string): void
+  insertMenu(menuName: string, position: number): number
+  insertInMenu(menuName: string, menuItem: MenuOption, position: number): number
+  appendToMenu(menuName: string, menuItem: MenuOption): number
+  appendToSubMenu(menuPath: string[], menuItem: MenuOption): number
+  insertInSubMenu(
+    menuPath: string[],
+    menuItem: MenuOption,
+    position: number,
+  ): number
+}
+export function isAbstractMenuManager(
+  thing: unknown,
+): thing is AbstractMenuManager {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'appendMenu' in thing &&
+    'appendToSubMenu' in thing
   )
 }

@@ -45,7 +45,7 @@ function DropDownMenu({
   function handleMenuItemClick(
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    callback: (session: any) => void,
+    callback: Function,
   ) {
     callback(session)
     handleClose()

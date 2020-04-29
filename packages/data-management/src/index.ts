@@ -3,7 +3,10 @@ import ConnectionType from '@gmod/jbrowse-core/pluggableElementTypes/ConnectionT
 import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { SessionWithDrawerWidgets } from '@gmod/jbrowse-core/util'
+import {
+  SessionWithDrawerWidgets,
+  isAbstractMenuManager,
+} from '@gmod/jbrowse-core/util'
 import {
   configSchema as ucscConfigSchema,
   modelFactory as ucscModelFactory,
@@ -70,7 +73,7 @@ export default class extends Plugin {
   }
 
   configure(pluginManager: PluginManager) {
-    if (pluginManager.rootModel && pluginManager.rootModel.menus) {
+    if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToMenu('File', {
         label: 'Open new track',
         icon: 'note_add',

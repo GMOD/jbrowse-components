@@ -89,15 +89,17 @@ export default function Loader() {
     throw new Error(e.message.slice(0, 10000) + additionalMsg)
   }
 
-  // make some things available globally for testing
-  // e.g. window.MODEL.views[0] in devtools
-  // @ts-ignore
-  window.MODEL = rootModel.session
-  // @ts-ignore
-  window.ROOTMODEL = rootModel
-  pluginManager.setRootModel(rootModel)
+  if (rootModel) {
+    // make some things available globally for testing
+    // e.g. window.MODEL.views[0] in devtools
+    // @ts-ignore
+    window.MODEL = rootModel.session
+    // @ts-ignore
+    window.ROOTMODEL = rootModel
+    pluginManager.setRootModel(rootModel)
 
-  pluginManager.configure()
+    pluginManager.configure()
+  }
 
   return <JBrowse pluginManager={pluginManager} />
 }

@@ -3,6 +3,11 @@ import Plugin from '@gmod/jbrowse-core/Plugin'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { lazy } from 'react'
 import {
+  AbstractSessionModel,
+  SessionWithDrawerWidgets,
+  isAbstractMenuManager,
+} from '@gmod/jbrowse-core/util'
+import {
   configSchema as aboutConfigSchema,
   ReactComponent as AboutReactComponent,
   stateModel as aboutStateModel,
@@ -22,7 +27,6 @@ import {
   ReactComponent as SessionManagerReactComponent,
   stateModel as sessionManagerStateModel,
 } from './SessionManager'
-import { AbstractSessionModel, SessionWithDrawerWidgets } from '@gmod/jbrowse-core/util'
 
 export default class extends Plugin {
   install(pluginManager: PluginManager) {
@@ -68,7 +72,7 @@ export default class extends Plugin {
   }
 
   configure(pluginManager: PluginManager) {
-    if (pluginManager.rootModel && pluginManager.rootModel.menus) {
+    if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToMenu('Help', {
         label: 'About',
         icon: 'info',

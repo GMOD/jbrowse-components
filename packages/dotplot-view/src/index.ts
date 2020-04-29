@@ -3,7 +3,10 @@ import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { AbstractViewContainer } from '@gmod/jbrowse-core/util'
+import {
+  AbstractViewContainer,
+  isAbstractMenuManager,
+} from '@gmod/jbrowse-core/util'
 import {
   configSchemaFactory as dotplotTrackConfigSchemaFactory,
   stateModelFactory as dotplotTrackStateModelFactory,
@@ -53,7 +56,7 @@ export default class DotplotPlugin extends Plugin {
   }
 
   configure(pluginManager: PluginManager) {
-    if (pluginManager.rootModel && pluginManager.rootModel.menus) {
+    if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
         label: 'Dotplot view',
         icon: 'timeline',

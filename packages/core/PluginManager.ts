@@ -27,6 +27,7 @@ import {
   PluggableElementMember,
 } from './pluggableElementTypes'
 import { AnyConfigurationSchemaType } from './configuration/configurationSchema'
+import { AbstractRootModel } from './util'
 
 /** little helper class that keeps groups of callbacks that are
 then run in a specified order by group */
@@ -128,7 +129,7 @@ export default class PluginManager {
 
   configured = false
 
-  rootModel: unknown
+  rootModel?: AbstractRootModel
 
   constructor(initialPlugins: Plugin[] = []) {
     // add all the initial plugins
@@ -158,7 +159,7 @@ export default class PluginManager {
     return this
   }
 
-  setRootModel(rootModel: unknown) {
+  setRootModel(rootModel: AbstractRootModel) {
     this.rootModel = rootModel
   }
 

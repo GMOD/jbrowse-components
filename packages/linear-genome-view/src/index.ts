@@ -11,6 +11,10 @@ import {
   stateModel as baseFeatureDrawerWidgetStateModel,
 } from '@gmod/jbrowse-core/BaseFeatureDrawerWidget'
 import {
+  AbstractViewContainer,
+  isAbstractMenuManager,
+} from '@gmod/jbrowse-core/util'
+import {
   configSchemaFactory as basicTrackConfigSchemaFactory,
   stateModelFactory as basicTrackStateModelFactory,
 } from './BasicTrack'
@@ -22,7 +26,6 @@ import {
   ReactComponent as LinearGenomeViewReactComponent,
   stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView'
-import { AbstractViewContainer } from '@gmod/jbrowse-core/util'
 
 export default class extends Plugin {
   install(pluginManager: PluginManager) {
@@ -67,7 +70,7 @@ export default class extends Plugin {
   }
 
   configure(pluginManager: PluginManager) {
-    if (pluginManager.rootModel && pluginManager.rootModel.menus) {
+    if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
         label: 'Linear genome view',
         icon: 'line_style',
