@@ -86,7 +86,7 @@ export default (pluginManager: PluginManager) => {
 
       const refSeqStore = this.sequenceAdapter
       if (!refSeqStore) return undefined
-      const refName = this.refIdToOriginalName(seqId)
+      const refName = this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
       if (!refName) return undefined
 
       const features = await refSeqStore.getFeatures(
@@ -208,8 +208,13 @@ export default (pluginManager: PluginManager) => {
         }
         const refId = this.refNameToId(refName)
         if (refId !== undefined) {
-          this.seqIdToOriginalRefName[refId] =
-            (opts.originalRegion || {}).refName || refName
+          if (
+            opts.originalRegions &&
+            opts.originalRegions[0] &&
+            opts.originalRegions[0].refName
+          ) {
+            this.seqIdToOriginalRefName[refId] = opts.originalRegions[0].refName
+          }
           const records = await this.cram.getRecordsForRange(
             refId,
             start,
