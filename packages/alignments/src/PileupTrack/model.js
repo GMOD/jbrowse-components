@@ -36,6 +36,7 @@ export default (pluginManager, configSchema) =>
           session.setSelection(feature)
         },
 
+        // uses copy-to-clipboard and generates notification
         copyFeatureToClipboard(feature) {
           const copiedFeature = feature
           delete copiedFeature.uniqueId
@@ -44,10 +45,12 @@ export default (pluginManager, configSchema) =>
           session.pushSnackbarMessage('Copied to clipboard')
         },
 
+        // returned if there is no feature id under mouse
         // contextMenuNoFeature() {
         //   self.contextMenuOptions = getParentRenderProps(self).trackModel.menuOptions
         // },
 
+        // returned if there is a feature id under mouse
         contextMenuFeature(feature) {
           const menuOptions = [
             {

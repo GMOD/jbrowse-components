@@ -429,6 +429,7 @@ describe('alignments track', () => {
     })
   }, 10000)
 
+  // TODO: uncomment out test if general context menu is added back in
   // it('access alignments context menu', async () => {
   //   const pluginManager = getPluginManager()
   //   const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)

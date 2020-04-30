@@ -249,6 +249,7 @@ const blockBasedTrack = types
         onClick() {
           self.clearFeatureSelection()
         },
+        // similar to click but opens a menu with further options
         onFeatureContextMenu(event: any, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
