@@ -75,6 +75,11 @@ export function getAdapter(
   return cacheEntry
 }
 
+/**
+ * this is a callback that is passed to adapters that
+ * allows them to get any sub-adapters that they need
+ * internally, staying with the same worker session ID
+ */
 export type getSubAdapterType = (
   adapterType: string,
   adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,

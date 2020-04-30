@@ -16,11 +16,6 @@ export interface BaseOptions {
   [key: string]: any
 }
 
-/**
- * this is a callback that is passed to adapters that
- * allows them to get any sub-adapters that they need
- * internally, staying with the same worker session ID
- */
 export interface AdapterConstructor {
   new (
     config: AnyConfigurationModel,
