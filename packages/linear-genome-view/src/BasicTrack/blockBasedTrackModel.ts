@@ -260,7 +260,7 @@ const blockBasedTrack = types
           }
         },
         onContextMenu() {
-          // self.contextMenuNoFeature()
+          self.contextMenuNoFeature()
           self.clearFeatureSelection()
         },
       }
