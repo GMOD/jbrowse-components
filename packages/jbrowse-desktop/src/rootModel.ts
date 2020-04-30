@@ -1,12 +1,20 @@
-import { getSnapshot, types } from 'mobx-state-tree'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { MenuOption } from '@gmod/jbrowse-core/ui'
+import { getSnapshot, types, cast, SnapshotIn } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import JBrowseDesktop from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
 
 const { electronBetterIpc = {} } = window
-const { ipcRenderer } = electronBetterIpc
+const ipcRenderer = (electronBetterIpc && electronBetterIpc.ipcRenderer) || {
+  invoke: () => {},
+}
+interface Menu {
+  label: string
+  menuItems: MenuOption[]
+}
 
-export default function RootModel(pluginManager) {
+export default function RootModel(pluginManager: PluginManager) {
   const Session = sessionModelFactory(pluginManager)
   return types
     .model('Root', {
@@ -14,7 +22,48 @@ export default function RootModel(pluginManager) {
       session: types.maybe(Session),
       savedSessionNames: types.maybe(types.array(types.string)),
     })
-    .volatile(() => ({
+    .actions(self => ({
+      setSavedSessionNames(sessionNames: string[]) {
+        self.savedSessionNames = cast(sessionNames)
+      },
+      setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
+        self.session = cast(sessionSnapshot)
+      },
+      setDefaultSession() {
+        this.setSession({
+          ...self.jbrowse.defaultSession,
+          name: `${self.jbrowse.defaultSession.name} ${new Date(
+            Date.now(),
+          ).toISOString()}`,
+        })
+      },
+      renameCurrentSession(sessionName: string) {
+        if (self.session) {
+          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+          const oldName = snapshot.name
+          snapshot.name = sessionName
+          this.setSession(snapshot)
+          ipcRenderer.invoke('renameSession', oldName, sessionName)
+        }
+      },
+      duplicateCurrentSession() {
+        if (self.session) {
+          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+          let newSnapshotName = `${self.session.name} (copy)`
+          if (self.jbrowse.savedSessionNames.includes(newSnapshotName)) {
+            let newSnapshotCopyNumber = 2
+            do {
+              newSnapshotName = `${self.session.name} (copy ${newSnapshotCopyNumber})`
+              newSnapshotCopyNumber += 1
+            } while (self.jbrowse.savedSessionNames.includes(newSnapshotName))
+          }
+          snapshot.name = newSnapshotName
+          this.setSession(snapshot)
+        }
+      },
+    }))
+    .volatile((/* self */) => ({
+      history: {},
       menus: [
         {
           label: 'File',
@@ -22,59 +71,27 @@ export default function RootModel(pluginManager) {
             {
               label: 'New Session',
               icon: 'add',
-              onClick: session => {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onClick: (session: any) => {
                 session.setDefaultSession()
               },
             },
           ],
         },
-      ],
+      ] as Menu[],
     }))
     .actions(self => ({
-      setSavedSessionNames(sessionNames) {
-        self.savedSessionNames = sessionNames
-      },
-      setSession(sessionSnapshot) {
-        self.session = sessionSnapshot
-      },
-      setDefaultSession() {
-        self.setSession({
-          ...self.jbrowse.defaultSession,
-          name: `${self.jbrowse.defaultSession.name} ${new Date(
-            Date.now(),
-          ).toISOString()}`,
-        })
-      },
-      renameCurrentSession(sessionName) {
-        const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-        const oldName = snapshot.name
-        snapshot.name = sessionName
-        self.setSession(snapshot)
-        ipcRenderer.invoke('renameSession', oldName, sessionName)
-      },
-      duplicateCurrentSession() {
-        const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-        let newSnapshotName = `${self.session.name} (copy)`
-        if (self.jbrowse.savedSessionNames.includes(newSnapshotName)) {
-          let newSnapshotCopyNumber = 2
-          do {
-            newSnapshotName = `${self.session.name} (copy ${newSnapshotCopyNumber})`
-            newSnapshotCopyNumber += 1
-          } while (self.jbrowse.savedSessionNames.includes(newSnapshotName))
-        }
-        snapshot.name = newSnapshotName
-        self.setSession(snapshot)
-      },
-      activateSession(sessionSnapshot) {
+      activateSession(sessionSnapshot: SnapshotIn<typeof Session>) {
         self.setSession(sessionSnapshot)
         if (sessionSnapshot)
-          self.setHistory(UndoManager.create({}, { targetStore: self.session }))
-        else self.setHistory(undefined)
+          this.setHistory(UndoManager.create({}, { targetStore: self.session }))
+        else this.setHistory(undefined)
       },
-      setHistory(history) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setHistory(history: any) {
         self.history = history
       },
-      setMenus(newMenus) {
+      setMenus(newMenus: Menu[]) {
         self.menus = newMenus
       },
       /**
@@ -82,7 +99,7 @@ export default function RootModel(pluginManager) {
        * @param menuName Name of the menu to insert.
        * @returns The new length of the top-level menus array
        */
-      appendMenu(menuName) {
+      appendMenu(menuName: string) {
         return self.menus.push({ label: menuName, menuItems: [] })
       },
       /**
@@ -93,7 +110,7 @@ export default function RootModel(pluginManager) {
        * second-to-last one.
        * @returns The new length of the top-level menus array
        */
-      insertMenu(menuName, position) {
+      insertMenu(menuName: string, position: number) {
         const insertPosition =
           position < 0 ? self.menus.length + position : position
         self.menus.splice(insertPosition, 0, { label: menuName, menuItems: [] })
@@ -105,7 +122,7 @@ export default function RootModel(pluginManager) {
        * @param menuItem Menu item to append.
        * @returns The new length of the menu
        */
-      appendToMenu(menuName, menuItem) {
+      appendToMenu(menuName: string, menuItem: MenuOption) {
         const menu = self.menus.find(m => m.label === menuName)
         if (!menu) {
           self.menus.push({ label: menuName, menuItems: [menuItem] })
@@ -122,7 +139,7 @@ export default function RootModel(pluginManager) {
        * second-to-last one.
        * @returns The new length of the menu
        */
-      insertInMenu(menuName, menuItem, position) {
+      insertInMenu(menuName: string, menuItem: MenuOption, position: number) {
         const menu = self.menus.find(m => m.label === menuName)
         if (!menu) {
           self.menus.push({ label: menuName, menuItems: [menuItem] })
@@ -140,7 +157,7 @@ export default function RootModel(pluginManager) {
        * @param menuItem Menu item to append.
        * @returns The new length of the sub-menu
        */
-      appendToSubMenu(menuPath, menuItem) {
+      appendToSubMenu(menuPath: string[], menuItem: MenuOption) {
         let topMenu = self.menus.find(m => m.label === menuPath[0])
         if (!topMenu) {
           const idx = this.appendMenu(menuPath[0])
@@ -174,7 +191,11 @@ export default function RootModel(pluginManager) {
        * second-to-last one.
        * @returns The new length of the sub-menu
        */
-      insertInSubMenu(menuPath, menuItem, position) {
+      insertInSubMenu(
+        menuPath: string[],
+        menuItem: MenuOption,
+        position: number,
+      ) {
         let topMenu = self.menus.find(m => m.label === menuPath[0])
         if (!topMenu) {
           const idx = this.appendMenu(menuPath[0])
@@ -199,8 +220,5 @@ export default function RootModel(pluginManager) {
         subMenu.splice(position, 0, menuItem)
         return subMenu.length
       },
-    }))
-    .volatile((/* self */) => ({
-      history: {},
     }))
 }

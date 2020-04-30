@@ -1,8 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  readConfObject,
-  isConfigurationModel,
-} from '@gmod/jbrowse-core/configuration'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { getContainingView } from '@gmod/jbrowse-core/util'
 import jsonStableStringify from 'json-stable-stringify'
@@ -20,14 +17,18 @@ import {
   types,
   walk,
 } from 'mobx-state-tree'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import {
+  readConfObject,
+  isConfigurationModel,
+} from '@gmod/jbrowse-core/configuration'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
   key: string
 }
 
-export default function sessionModelFactory(pluginManager: any) {
+export default function sessionModelFactory(pluginManager: PluginManager) {
   const minDrawerWidth = 128
   return types
     .model('JBrowseWebSessionModel', {
@@ -136,6 +137,7 @@ export default function sessionModelFactory(pluginManager: any) {
         assemblyName: string,
         opts: { signal?: AbortSignal } = {},
       ) {
+        if (!assemblyName) throw new TypeError('assemblyName is required')
         const assembly = self.assemblyData.get(assemblyName)
         if (assembly) {
           const adapterConfig = readConfObject(assembly.sequence, 'adapter')
@@ -190,7 +192,7 @@ export default function sessionModelFactory(pluginManager: any) {
         return assemblyConnections[length - 1]
       },
 
-      prepareToBreakConnection(configuration: any) {
+      prepareToBreakConnection(configuration: AnyConfigurationModel) {
         const name = readConfObject(configuration, 'name')
         const assemblyName = readConfObject(configuration, 'assemblyName')
         const assemblyConnections =

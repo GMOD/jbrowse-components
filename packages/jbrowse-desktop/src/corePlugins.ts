@@ -3,6 +3,7 @@ import Bed from '@gmod/jbrowse-plugin-bed'
 import CircularView from '@gmod/jbrowse-plugin-circular-view'
 import Config from '@gmod/jbrowse-plugin-config'
 import DataManagement from '@gmod/jbrowse-plugin-data-management'
+import DotplotView from '@gmod/jbrowse-plugin-dotplot-view'
 import Filtering from '@gmod/jbrowse-plugin-filtering'
 import Gff3Tabix from '@gmod/jbrowse-plugin-gff3tabix'
 import JBrowse1 from '@gmod/jbrowse-plugin-jbrowse1'
@@ -18,6 +19,7 @@ import Wiggle from '@gmod/jbrowse-plugin-wiggle'
 import SpreadsheetViewPlugin from '@gmod/jbrowse-plugin-spreadsheet-view'
 import BreakpointSplitView from '@gmod/jbrowse-plugin-breakpoint-split-view'
 import SvInspectorPlugin from '@gmod/jbrowse-plugin-sv-inspector'
+import GDCPlugin from '@gmod/jbrowse-plugin-gdc'
 
 export default [
   Alignments,
@@ -25,6 +27,7 @@ export default [
   CircularView,
   Config,
   DataManagement,
+  DotplotView,
   Filtering,
   Gff3Tabix,
   JBrowse1,
@@ -40,4 +43,5 @@ export default [
   SpreadsheetViewPlugin,
   BreakpointSplitView,
   SvInspectorPlugin,
+  GDCPlugin,
 ]
