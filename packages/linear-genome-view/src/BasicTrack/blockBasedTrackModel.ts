@@ -218,9 +218,9 @@ const blockBasedTrack = types
       self.contextMenuOptions = []
     },
 
-    // contextMenuNoFeature() {
-    //   self.contextMenuOptions = []
-    // },
+    contextMenuNoFeature() {
+      self.contextMenuOptions = []
+    },
 
     clearFeatureSelection() {
       const session = getSession(self) as any
