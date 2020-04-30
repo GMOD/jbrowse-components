@@ -30,6 +30,8 @@ const createMockTrackStateModel = (
         clearSelection() {
           self.selection = undefined
         },
+        showTrack() {},
+        hideTrack() {},
       }
     })
 

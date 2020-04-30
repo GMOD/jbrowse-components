@@ -152,7 +152,6 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                     aria-hidden="true"
                     class="MuiSvgIcon-root"
                     focusable="false"
-                    role="presentation"
                     viewBox="0 0 24 24"
                   >
                     <path
@@ -266,29 +265,17 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           />
           <span
             class="MuiSlider-mark MuiSlider-markActive"
-            style="left: 0%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel MuiSlider-markLabelActive"
+            data-index="0"
             style="left: 0%;"
           />
           <span
             class="MuiSlider-mark"
-            style="left: 43.06765580733933%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel"
+            data-index="1"
             style="left: 43.06765580733933%;"
           />
           <span
             class="MuiSlider-mark"
-            style="left: 100%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel"
+            data-index="2"
             style="left: 100%;"
           />
           <span
@@ -611,7 +598,6 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
         >
           <div
             aria-haspopup="listbox"
-            aria-labelledby=" "
             class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input"
             role="button"
             tabindex="0"
@@ -626,7 +612,6 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
             aria-hidden="true"
             class="MuiSvgIcon-root MuiSelect-icon MuiSelect-iconOutlined"
             focusable="false"
-            role="presentation"
             viewBox="0 0 24 24"
           >
             <path
@@ -704,7 +689,6 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
                     aria-hidden="true"
                     class="MuiSvgIcon-root"
                     focusable="false"
-                    role="presentation"
                     viewBox="0 0 24 24"
                   >
                     <path
@@ -913,7 +897,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                     aria-hidden="true"
                     class="MuiSvgIcon-root"
                     focusable="false"
-                    role="presentation"
                     viewBox="0 0 24 24"
                   >
                     <path
@@ -1029,56 +1012,32 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           />
           <span
             class="MuiSlider-mark MuiSlider-markActive"
-            style="left: 0%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel MuiSlider-markLabelActive"
+            data-index="0"
             style="left: 0%;"
           />
           <span
             class="MuiSlider-mark"
-            style="left: 17.718382013555793%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel"
+            data-index="1"
             style="left: 17.718382013555793%;"
           />
           <span
             class="MuiSlider-mark"
-            style="left: 41.14080899322211%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel"
+            data-index="2"
             style="left: 41.14080899322211%;"
           />
           <span
             class="MuiSlider-mark"
-            style="left: 58.85919100677789%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel"
+            data-index="3"
             style="left: 58.85919100677789%;"
           />
           <span
             class="MuiSlider-mark"
-            style="left: 76.5775730203337%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel"
+            data-index="4"
             style="left: 76.5775730203337%;"
           />
           <span
             class="MuiSlider-mark"
-            style="left: 100%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel"
+            data-index="5"
             style="left: 100%;"
           />
           <span

@@ -20,7 +20,6 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
             aria-hidden="true"
             class="MuiSvgIcon-root MuiStepIcon-root MuiStepIcon-active"
             focusable="false"
-            role="presentation"
             viewBox="0 0 24 24"
           >
             <circle
@@ -79,7 +78,6 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                   >
                     <div
                       aria-haspopup="listbox"
-                      aria-labelledby=" "
                       class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
                       role="button"
                       tabindex="0"
@@ -97,7 +95,6 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                       aria-hidden="true"
                       class="MuiSvgIcon-root MuiSelect-icon"
                       focusable="false"
-                      role="presentation"
                       viewBox="0 0 24 24"
                     >
                       <path
@@ -125,7 +122,6 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                   >
                     <div
                       aria-haspopup="listbox"
-                      aria-labelledby=" "
                       class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
                       role="button"
                       tabindex="0"
@@ -142,7 +138,6 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                       aria-hidden="true"
                       class="MuiSvgIcon-root MuiSelect-icon"
                       focusable="false"
-                      role="presentation"
                       viewBox="0 0 24 24"
                     >
                       <path
@@ -206,7 +201,6 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
             aria-hidden="true"
             class="MuiSvgIcon-root MuiStepIcon-root"
             focusable="false"
-            role="presentation"
             viewBox="0 0 24 24"
           >
             <circle

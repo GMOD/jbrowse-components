@@ -805,7 +805,6 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                 aria-hidden="true"
                 class="MuiSvgIcon-root"
                 focusable="false"
-                role="presentation"
                 viewBox="0 0 24 24"
               >
                 <path
@@ -1350,7 +1349,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
             aria-hidden="true"
             class="MuiSvgIcon-root"
             focusable="false"
-            role="presentation"
             viewBox="0 0 24 24"
           >
             <path
@@ -1501,7 +1499,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
           >
             <div
               aria-haspopup="listbox"
-              aria-labelledby=" "
               class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
               role="button"
               tabindex="0"
@@ -1516,7 +1513,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
               aria-hidden="true"
               class="MuiSvgIcon-root MuiSelect-icon"
               focusable="false"
-              role="presentation"
               viewBox="0 0 24 24"
             >
               <path
@@ -1672,7 +1668,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 >
                   <div
                     aria-haspopup="listbox"
-                    aria-labelledby=" "
                     class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
                     role="button"
                     tabindex="0"
@@ -1687,7 +1682,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                     aria-hidden="true"
                     class="MuiSvgIcon-root MuiSelect-icon"
                     focusable="false"
-                    role="presentation"
                     viewBox="0 0 24 24"
                   >
                     <path
@@ -1959,7 +1953,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
         >
           <div
             aria-haspopup="listbox"
-            aria-labelledby=" "
             class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
             role="button"
             tabindex="0"
@@ -1974,7 +1967,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
             aria-hidden="true"
             class="MuiSvgIcon-root MuiSelect-icon"
             focusable="false"
-            role="presentation"
             viewBox="0 0 24 24"
           >
             <path
@@ -2251,7 +2243,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                     aria-hidden="true"
                     class="MuiSvgIcon-root"
                     focusable="false"
-                    role="presentation"
                     viewBox="0 0 24 24"
                   >
                     <path
@@ -2285,7 +2276,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 >
                   <div
                     aria-haspopup="listbox"
-                    aria-labelledby=" "
                     class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
                     role="button"
                     tabindex="0"
@@ -2300,7 +2290,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                     aria-hidden="true"
                     class="MuiSvgIcon-root MuiSelect-icon"
                     focusable="false"
-                    role="presentation"
                     viewBox="0 0 24 24"
                   >
                     <path
@@ -2981,7 +2970,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                         aria-hidden="true"
                         class="MuiSvgIcon-root"
                         focusable="false"
-                        role="presentation"
                         viewBox="0 0 24 24"
                       >
                         <path
@@ -3241,7 +3229,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                         aria-hidden="true"
                         class="MuiSvgIcon-root"
                         focusable="false"
-                        role="presentation"
                         viewBox="0 0 24 24"
                       >
                         <path
@@ -3392,7 +3379,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 >
                   <div
                     aria-haspopup="listbox"
-                    aria-labelledby=" "
                     class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
                     role="button"
                     tabindex="0"
@@ -3407,7 +3393,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                     aria-hidden="true"
                     class="MuiSvgIcon-root MuiSelect-icon"
                     focusable="false"
-                    role="presentation"
                     viewBox="0 0 24 24"
                   >
                     <path
