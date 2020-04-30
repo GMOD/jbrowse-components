@@ -29,8 +29,8 @@ function ConfirmTrack({
   trackType,
   setTrackType,
   trackAdapter,
-  assemblyName,
-  setAssemblyName,
+  assembly,
+  setAssembly,
   session,
 }) {
   const classes = useStyles()
@@ -47,6 +47,19 @@ function ConfirmTrack({
     }
     if (trackData.config) setTrackAdapter({ type: 'FromConfigAdapter' })
   }, [trackData, setTrackAdapter, setTrackType])
+
+  function handleAssemblyChange(event) {
+    setAssembly(event.target.value)
+    if (trackAdapter.type === 'CramAdapter') {
+      setTrackAdapter({
+        ...trackAdapter,
+        sequenceAdapter: readConfObject(event.target.value, [
+          'sequence',
+          'adapter',
+        ]),
+      })
+    }
+  }
 
   if (trackAdapter.type === UNSUPPORTED)
     return (
@@ -207,21 +220,21 @@ function ConfirmTrack({
             ))}
         </TextField>
         <TextField
-          value={assemblyName}
+          value={assembly}
           label="assemblyName"
           helperText="Assembly to which the track will be added"
           select
           fullWidth
-          onChange={event => setAssemblyName(event.target.value)}
+          onChange={handleAssemblyChange}
           SelectProps={{
             SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
           }}
         >
-          {session.assemblies.map(assembly => {
-            const newAssemblyName = readConfObject(assembly, 'name')
+          {session.assemblies.map(assemblyConf => {
+            const assemblyName = readConfObject(assemblyConf, 'name')
             return (
-              <MenuItem key={newAssemblyName} value={newAssemblyName}>
-                {newAssemblyName}
+              <MenuItem key={assemblyName} value={assemblyConf}>
+                {assemblyName}
               </MenuItem>
             )
           })}
@@ -233,8 +246,11 @@ function ConfirmTrack({
 }
 
 ConfirmTrack.propTypes = {
-  assemblyName: PropTypes.string.isRequired,
-  setAssemblyName: PropTypes.func.isRequired,
+  assembly: PropTypes.oneOfType([
+    PropTypes.string,
+    MobxPropTypes.observableObject,
+  ]),
+  setAssembly: PropTypes.func.isRequired,
   trackData: PropTypes.shape({
     uri: PropTypes.string,
     localPath: PropTypes.string,
@@ -255,6 +271,7 @@ ConfirmTrack.propTypes = {
 }
 
 ConfirmTrack.defaultProps = {
+  assembly: '',
   trackType: '',
 }
 
