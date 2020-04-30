@@ -26,7 +26,7 @@ const blockBasedTrack = types
         blockState: types.map(BlockState),
       })
       .volatile(() => ({
-        contextMenu: [] as MenuOption[],
+        contextMenuOptions: [] as MenuOption[],
         featureIdUnderMouse: undefined as undefined | string,
         ReactComponent: BlockBasedTrack,
       })),
@@ -215,12 +215,12 @@ const blockBasedTrack = types
     },
 
     contextMenuFeature(feature: Feature) {
-      self.contextMenu = []
+      self.contextMenuOptions = []
     },
 
-    contextMenuNoFeature() {
-      self.contextMenu = []
-    },
+    // contextMenuNoFeature() {
+    //   self.contextMenuOptions = []
+    // },
 
     clearFeatureSelection() {
       const session = getSession(self) as any
@@ -259,7 +259,7 @@ const blockBasedTrack = types
           }
         },
         onContextMenu() {
-          self.contextMenuNoFeature()
+          // self.contextMenuNoFeature()
           self.clearFeatureSelection()
         },
       }

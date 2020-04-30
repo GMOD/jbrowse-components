@@ -18,7 +18,7 @@ const stateModelFactory = (configSchema: any) =>
       get needsScalebar() {
         return true
       },
-      // get contextMenu() {
+      // get contextMenuOptions() {
       //   return getParentRenderProps(self).trackModel.menuOptions
       // },
     })),

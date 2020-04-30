@@ -45,7 +45,7 @@ export default (pluginManager, configSchema) =>
         },
 
         // contextMenuNoFeature() {
-        //   self.contextMenu = getParentRenderProps(self).trackModel.menuOptions
+        //   self.contextMenuOptions = getParentRenderProps(self).trackModel.menuOptions
         // },
 
         contextMenuFeature(feature) {
@@ -69,7 +69,7 @@ export default (pluginManager, configSchema) =>
             //   onClick: () => {},
             // },
           ]
-          self.contextMenu = menuOptions
+          self.contextMenuOptions = menuOptions
         },
       }))
       .views(self => ({
