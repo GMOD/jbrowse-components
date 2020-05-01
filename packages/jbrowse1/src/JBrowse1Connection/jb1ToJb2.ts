@@ -36,6 +36,7 @@ interface Jb2Adapter {
   vcfGzLocation?: Jb2Location
   index?: { location: Jb2Location; indexType?: string }
   rootUrlTemplate?: string
+  sequenceAdapter?: Jb2Adapter
 }
 
 interface Jb2Renderer {
@@ -58,6 +59,7 @@ interface Jb2Location {
 export function convertTrackConfig(
   jb1TrackConfig: Track,
   dataRoot: string,
+  sequenceAdapter: Jb2Adapter,
 ): Jb2Track {
   const jb2TrackConfig: Jb2Track = {
     trackId: objectHash(jb1TrackConfig),
@@ -123,6 +125,7 @@ export function convertTrackConfig(
       const adapter: Jb2Adapter = {
         type: 'CramAdapter',
         cramLocation: { uri: urlTemplate },
+        sequenceAdapter,
       }
       if (jb1TrackConfig.craiUrlTemplate)
         adapter.craiLocation = {

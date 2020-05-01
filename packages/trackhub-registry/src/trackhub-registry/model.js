@@ -3,6 +3,7 @@ import {
   readConfObject,
 } from '@gmod/jbrowse-core/configuration'
 import connectionModelFactory from '@gmod/jbrowse-core/BaseConnectionModel'
+import { getSession } from '@gmod/jbrowse-core/util'
 import { types } from 'mobx-state-tree'
 import configSchema from './configSchema'
 import { generateTracks } from './tracks'
@@ -29,7 +30,17 @@ export default function (pluginManager) {
                 self.configuration,
                 'assemblyName',
               )
-              self.setTrackConfs(generateTracks(trackDb, assemblyName))
+              const session = getSession(self)
+              const assemblyConf = session.assemblies.find(
+                assembly => readConfObject(assembly, 'name') === assemblyName,
+              )
+              const sequenceAdapter = readConfObject(assemblyConf, [
+                'sequence',
+                'adapter',
+              ])
+              self.setTrackConfs(
+                generateTracks(trackDb, assemblyName, sequenceAdapter),
+              )
             })
             .catch(error => {
               console.error(error)
