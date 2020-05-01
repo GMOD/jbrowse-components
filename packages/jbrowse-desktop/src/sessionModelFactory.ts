@@ -68,34 +68,34 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get rpcManager() {
-        return getParent<any>(self).jbrowse.rpcManager
+        return getParent(self).jbrowse.rpcManager
       },
       get assemblyData() {
-        return getParent<any>(self).jbrowse.assemblyData
+        return getParent(self).jbrowse.assemblyData
       },
       get configuration() {
-        return getParent<any>(self).jbrowse.configuration
+        return getParent(self).jbrowse.configuration
       },
       get assemblies() {
-        return getParent<any>(self).jbrowse.assemblies
+        return getParent(self).jbrowse.assemblies
       },
       get assemblyNames() {
-        return getParent<any>(self).jbrowse.assemblyNames
+        return getParent(self).jbrowse.assemblyNames
       },
       get tracks() {
-        return getParent<any>(self).jbrowse.tracks
+        return getParent(self).jbrowse.tracks
       },
       get connections() {
-        return getParent<any>(self).jbrowse.connections
+        return getParent(self).jbrowse.connections
       },
       get savedSessions() {
-        return getParent<any>(self).jbrowse.savedSessions
+        return getParent(self).jbrowse.savedSessions
       },
       get savedSessionNames() {
-        return getParent<any>(self).jbrowse.savedSessionNames
+        return getParent(self).jbrowse.savedSessionNames
       },
       get history() {
-        return getParent<any>(self).history
+        return getParent(self).history
       },
       get menus() {
         return getParent(self).menus
@@ -291,15 +291,15 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       addAssemblyConf(assemblyConf: any) {
-        return getParent<any>(self).jbrowse.addAssemblyConf(assemblyConf)
+        return getParent(self).jbrowse.addAssemblyConf(assemblyConf)
       },
 
       addTrackConf(trackConf: any) {
-        return getParent<any>(self).jbrowse.addTrackConf(trackConf)
+        return getParent(self).jbrowse.addTrackConf(trackConf)
       },
 
       addConnectionConf(connectionConf: any) {
-        return getParent<any>(self).jbrowse.addConnectionConf(connectionConf)
+        return getParent(self).jbrowse.addConnectionConf(connectionConf)
       },
 
       addLinearGenomeViewOfAssembly(assemblyName: string, initialState = {}) {
@@ -420,27 +420,27 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        return getParent<any>(self).jbrowse.addSavedSession(sessionSnapshot)
+        return getParent(self).jbrowse.addSavedSession(sessionSnapshot)
       },
 
       removeSavedSession(sessionSnapshot: any) {
-        return getParent<any>(self).jbrowse.removeSavedSession(sessionSnapshot)
+        return getParent(self).jbrowse.removeSavedSession(sessionSnapshot)
       },
 
       renameCurrentSession(sessionName: string) {
-        return getParent<any>(self).renameCurrentSession(sessionName)
+        return getParent(self).renameCurrentSession(sessionName)
       },
 
       duplicateCurrentSession() {
-        return getParent<any>(self).duplicateCurrentSession()
+        return getParent(self).duplicateCurrentSession()
       },
 
       activateSession(sessionName: any) {
-        return getParent<any>(self).activateSession(sessionName)
+        return getParent(self).activateSession(sessionName)
       },
 
       setDefaultSession() {
-        return getParent<any>(self).setDefaultSession()
+        return getParent(self).setDefaultSession()
       },
     }))
     .extend(() => {
