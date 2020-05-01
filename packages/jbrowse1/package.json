@@ -17,7 +17,7 @@
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",
-    "mobx-state-tree": "3.14.1",
+    "mobx-state-tree": "^3.14.1",
     "rxjs": "^6.0.0"
   }
 }

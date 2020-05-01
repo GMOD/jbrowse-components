@@ -17,10 +17,10 @@
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",
     "@material-ui/core": "^4.0.0",
-    "@material-ui/lab": "^4.0.0",
+    "@material-ui/lab": "^4.0.0-alpha",
     "mobx-react": "^6.0.0",
-    "mobx-state-tree": "3.14.1",
-    "generic-filehandle": "^1.0.0",
+    "mobx-state-tree": "^3.14.1",
+    "generic-filehandle": "^2.0.0",
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "rxjs": "^6.0.0"

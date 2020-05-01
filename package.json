@@ -32,6 +32,7 @@
         "@testing-library/react": "^9.0.0",
         "@types/base64-js": "^1.2.5",
         "@types/color": "^3.0.1",
+        "@types/d3-scale": "^2.2.0",
         "@types/deep-equal": "^1.0.1",
         "@types/get-value": "^3.0.1",
         "@types/is-object": "^1.0.0",

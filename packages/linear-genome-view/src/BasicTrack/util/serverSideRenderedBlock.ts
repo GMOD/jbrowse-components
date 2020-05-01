@@ -50,7 +50,7 @@ const blockState = types
     let renderInProgress: undefined | AbortController
     return {
       afterAttach() {
-        const track = getParent(self, 2)
+        const track = getParent<any>(self, 2)
         const renderDisposer = reaction(
           () => renderBlockData(self as any),
           data => (renderBlockEffect(cast(self), data) as unknown) as void, // reaction doesn't expect async here
@@ -143,7 +143,7 @@ const blockState = types
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
         }
-        const track = getParent(self, 2)
+        const track = getParent<any>(self, 2)
         const view = getContainingView(track)
         const { rpcManager } = getSession(view)
         const { rendererType } = track
@@ -170,7 +170,7 @@ export type BlockStateModel = typeof blockState
 function renderBlockData(self: Instance<BlockStateModel>) {
   try {
     const { assemblyData, rpcManager } = getSession(self) as any
-    const track = getParent(self, 2)
+    const track = getParent<any>(self, 2)
     const assemblyNames = getTrackAssemblyNames(track)
     let cannotBeRenderedReason
     if (!assemblyNames.includes(self.region.assemblyName)) {
@@ -204,7 +204,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     const adapterConfig = getConf(track, 'adapter')
     // Only subtracks will have parent tracks with configs
     // They use parent's adapter config for matching sessionId
-    const parentTrack = getParent(track)
+    const parentTrack = getParent<any>(track)
     const adapterConfigId = parentTrack.configuration
       ? jsonStableStringify(getConf(parentTrack, 'adapter'))
       : jsonStableStringify(adapterConfig)
@@ -301,7 +301,7 @@ async function renderBlockEffect(
   } catch (error) {
     if (isAbortException(error) && !aborter.signal.aborted) {
       // there is a bug in the underlying code and something is caching aborts. try to refetch once
-      const track = getParent(self, 2)
+      const track = getParent<any>(self, 2)
       if (allowRefetch) {
         console.warn(`cached abort detected, refetching "${track.name}"`)
         renderBlockEffect(self, props, false)
