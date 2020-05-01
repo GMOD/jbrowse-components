@@ -34,7 +34,6 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * @returns {object} the same object
    */
   serializeArgsInClient(args: RenderArgs) {
-    console.log(args.renderProps)
     args.renderProps = {
       ...args.renderProps,
       // @ts-ignore
