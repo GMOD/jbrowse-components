@@ -21,7 +21,6 @@ function AlignmentsTrackComponent(props: AlignmentsTrackProps) {
     showCoverage,
   } = model
 
-  console.log(model)
   let showScalebar = false
   if (SNPCoverageTrack) {
     const { ready, stats, needsScalebar } = SNPCoverageTrack
