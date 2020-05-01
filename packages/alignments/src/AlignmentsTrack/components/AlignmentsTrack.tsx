@@ -1,9 +1,17 @@
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect } from 'react'
 import { YScaleBar } from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
 import AlignmentsBlockBasedTrack from './AlignmentsBlockBasedTrack'
 
-function AlignmentsTrackComponent(props) {
+interface AlignmentsTrackProps {
+  blockState: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+  model: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  offsetPx: number
+  bpPerPx: number
+  onHorizontalScroll: Function
+}
+
+function AlignmentsTrackComponent(props: AlignmentsTrackProps) {
   const { model } = props
   const {
     PileupTrack,
@@ -13,13 +21,12 @@ function AlignmentsTrackComponent(props) {
     showCoverage,
   } = model
 
+  console.log(model)
   let showScalebar = false
   if (SNPCoverageTrack) {
     const { ready, stats, needsScalebar } = SNPCoverageTrack
     if (ready && stats && needsScalebar) showScalebar = true
   }
-
-  const ref = useRef()
 
   // determine height of the model when toggling pileuptrack
   useEffect(() => {
@@ -27,7 +34,7 @@ function AlignmentsTrackComponent(props) {
   }, [SNPCoverageTrack, model, showPileup])
 
   return (
-    <div style={{ position: 'relative', height, width: '100%' }} ref={ref}>
+    <div style={{ position: 'relative', height, width: '100%' }}>
       <AlignmentsBlockBasedTrack
         {...props}
         {...PileupTrack}

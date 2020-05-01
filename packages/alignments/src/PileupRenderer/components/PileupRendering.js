@@ -235,6 +235,7 @@ PileupRendering.propTypes = {
   // synthesized from mouseup and mousedown
   onFeatureClick: ReactPropTypes.func,
 
+  // synthesized from contextmenu
   onFeatureContextMenu: ReactPropTypes.func,
 
   onMouseDown: ReactPropTypes.func,

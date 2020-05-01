@@ -54,7 +54,10 @@ export default (pluginManager, configSchema) =>
         contextMenuFeature(feature) {
           const menuOptions = [
             {
-              label: 'Open feature drawer',
+              label: 'Open feature details',
+              // getSession(self).visibleDrawerWidget && getSession(self).visibleDrawerWidget.id === 'alignmentFeature'
+              //   ? 'Update feature details'
+              //   : 'Open feature details',
               icon: 'menu_open',
               onClick: () => {
                 self.clearFeatureSelection()
@@ -71,6 +74,8 @@ export default (pluginManager, configSchema) =>
             //   icon: 'scatter_plot',
             //   onClick: () => {},
             // },
+
+            // any custom right click can be appended to self.contextMenuOptions
           ]
           self.contextMenuOptions = menuOptions
         },
