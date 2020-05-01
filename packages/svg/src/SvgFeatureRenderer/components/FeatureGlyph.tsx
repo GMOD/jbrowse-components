@@ -2,10 +2,15 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { MouseEvent } from 'react'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { BaseLayout } from '@gmod/jbrowse-core/util/layouts/BaseLayout'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import FeatureLabel from './FeatureLabel'
+import { SvgFeatureRenderingProps } from './SvgFeatureRendering'
 
-function FeatureGlyph(props) {
+function FeatureGlyph(props: SvgFeatureRenderingProps) {
+  // {feature:Feature,rootLayout:BaseLayout<string>,selected:unknown,config:AnyConfigurationModel,name:string,shouldShowName:boolean,shouldShowDescription:boolean, description:string,allowedWidthExpansion:number,fontHeight:number,reversed:boolean,onFeatureMouseDown,on}) {
   const {
     feature,
     rootLayout,
@@ -20,49 +25,49 @@ function FeatureGlyph(props) {
     reversed,
   } = props
 
-  function onFeatureMouseDown(event) {
+  function onFeatureMouseDown(event: MouseEvent) {
     const { onFeatureMouseDown: handler } = props
     if (!handler) return undefined
     return handler(event, feature.id())
   }
 
-  function onFeatureMouseEnter(event) {
+  function onFeatureMouseEnter(event: MouseEvent) {
     const { onFeatureMouseEnter: handler } = props
     if (!handler) return undefined
     return handler(event, feature.id())
   }
 
-  function onFeatureMouseOut(event) {
+  function onFeatureMouseOut(event: MouseEvent) {
     const { onFeatureMouseOut: handler } = props
     if (!handler) return undefined
     return handler(event, feature.id())
   }
 
-  function onFeatureMouseOver(event) {
+  function onFeatureMouseOver(event: MouseEvent) {
     const { onFeatureMouseOver: handler } = props
     if (!handler) return undefined
     return handler(event, feature.id())
   }
 
-  function onFeatureMouseUp(event) {
+  function onFeatureMouseUp(event: MouseEvent) {
     const { onFeatureMouseUp: handler } = props
     if (!handler) return undefined
     return handler(event, feature.id())
   }
 
-  function onFeatureMouseLeave(event) {
+  function onFeatureMouseLeave(event: MouseEvent) {
     const { onFeatureMouseLeave: handler } = props
     if (!handler) return undefined
     return handler(event, feature.id())
   }
 
-  function onFeatureMouseMove(event) {
+  function onFeatureMouseMove(event: MouseEvent) {
     const { onFeatureMouseMove: handler } = props
     if (!handler) return undefined
     return handler(event, feature.id())
   }
 
-  function onFeatureClick(event) {
+  function onFeatureClick(event: MouseEvent) {
     const { onFeatureClick: handler } = props
     if (!handler) return undefined
     event.stopPropagation()
@@ -128,7 +133,9 @@ function FeatureGlyph(props) {
       onMouseLeave={onFeatureMouseLeave}
       onMouseMove={onFeatureMouseMove}
       onClick={onFeatureClick}
+      // @ts-ignore
       onFocus={onFeatureMouseOver}
+      // @ts-ignore
       onBlur={onFeatureMouseOut}
     >
       {glyphComponents}

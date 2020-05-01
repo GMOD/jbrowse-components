@@ -12,7 +12,9 @@ export function generateTracks(trackDb, assemblyName, sequenceAdapter) {
       trackDb._source.hub.url,
       sequenceAdapter,
     )
+    // @ts-ignore
     ret.trackId = `trackhub-registry-${objectHash(ret)}`
+    // @ts-ignore
     ret.assemblyNames = [assemblyName]
     return ret
   })
