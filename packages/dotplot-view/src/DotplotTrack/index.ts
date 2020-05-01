@@ -171,6 +171,7 @@ function renderBlockData(self: DotplotTrack) {
       views,
       renderProps: {
         ...renderProps,
+        parentView: getSnapshot(parent),
         width: viewWidth,
         height: viewHeight,
         borderSize,

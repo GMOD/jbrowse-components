@@ -46,7 +46,7 @@ interface DotplotImageData {
 function bpToPx(self: ReducedView, refName: string, coord: number) {
   let offset = 0
 
-  const index = self.dynamicBlocks.findIndex(r => {
+  const index = self.dynamicBlocks.blocks.findIndex(r => {
     if (refName === r.refName && coord >= r.start && coord <= r.end) {
       offset +=
         (self.horizontallyFlipped ? r.end - coord : coord - r.start) /
@@ -56,7 +56,7 @@ function bpToPx(self: ReducedView, refName: string, coord: number) {
     offset += r.widthPx
     return false
   })
-  const foundRegion = self.dynamicBlocks[index]
+  const foundRegion = self.dynamicBlocks.blocks[index]
   if (foundRegion) {
     return Math.round(offset)
   }
@@ -81,6 +81,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
 
     ctx.lineWidth = 3
     ctx.fillStyle = readConfObject(config, 'color')
+    console.time('render1')
     views[0].features.forEach(feature => {
       const start = feature.get('start')
       const end = feature.get('end')
@@ -104,6 +105,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         }
       }
     })
+    console.timeEnd('render1')
     // views[1].features.forEach(feature => {
     //   const start = feature.get('start')
     //   const end = feature.get('end')
@@ -154,8 +156,8 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       imageData,
       height,
       width,
-      offsetX: views[0].dynamicBlocks[0].offsetPx,
-      offsetY: views[1].dynamicBlocks[0].offsetPx,
+      offsetX: views[0].dynamicBlocks.blocks[0].offsetPx,
+      offsetY: views[1].dynamicBlocks.blocks[0].offsetPx,
     }
   }
 }
