@@ -191,7 +191,7 @@ function OverviewScaleBar({
         {wholeRefSeqs.map((seq, idx) => {
           const regionLength = seq.end - seq.start
           const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
-          const labels = []
+          const labels: number[] = []
           for (let index = 0; index < numLabels; index++) {
             labels.push((index + 1) * gridPitch.majorPitch)
           }

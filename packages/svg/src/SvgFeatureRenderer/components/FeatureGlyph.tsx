@@ -9,12 +9,23 @@ import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configur
 import FeatureLabel from './FeatureLabel'
 import { SvgFeatureRenderingProps } from './SvgFeatureRendering'
 
-function FeatureGlyph(props: SvgFeatureRenderingProps) {
-  // {feature:Feature,rootLayout:BaseLayout<string>,selected:unknown,config:AnyConfigurationModel,name:string,shouldShowName:boolean,shouldShowDescription:boolean, description:string,allowedWidthExpansion:number,fontHeight:number,reversed:boolean,onFeatureMouseDown,on}) {
+function FeatureGlyph(
+  props: SvgFeatureRenderingProps & {
+    feature: Feature
+    rootLayout: any
+    config: AnyConfigurationModel
+    name: string
+    shouldShowName: boolean
+    shouldShowDescription: boolean
+    description: string
+    allowedWidthExpansion: number
+    fontHeight: number
+  },
+) {
   const {
+    regions,
     feature,
     rootLayout,
-    selected,
     config,
     name,
     shouldShowName,
@@ -22,8 +33,9 @@ function FeatureGlyph(props: SvgFeatureRenderingProps) {
     shouldShowDescription,
     fontHeight,
     allowedWidthExpansion,
-    reversed,
   } = props
+  const [region] = regions || []
+  const { reversed } = region
 
   function onFeatureMouseDown(event: MouseEvent) {
     const { onFeatureMouseDown: handler } = props
@@ -83,20 +95,19 @@ function FeatureGlyph(props: SvgFeatureRenderingProps) {
       {...props}
       feature={feature}
       featureLayout={featureLayout}
-      selected={selected}
     />,
   ]
 
   if (shouldShowName) {
     glyphComponents.push(
       <FeatureLabel
+        reversed={reversed}
         key={`glyph-name-${feature.id()}`}
         text={name}
         x={rootLayout.getSubRecord('nameLabel').absolute.left}
         y={rootLayout.getSubRecord('nameLabel').absolute.top}
         color={readConfObject(config, ['labels', 'nameColor'], [feature])}
         fontHeight={fontHeight}
-        reversed={reversed}
         featureWidth={featureLayout.width}
         allowedWidthExpansion={allowedWidthExpansion}
       />,
@@ -106,6 +117,7 @@ function FeatureGlyph(props: SvgFeatureRenderingProps) {
   if (shouldShowDescription) {
     glyphComponents.push(
       <FeatureLabel
+        reversed={reversed}
         key={`glyph-description-${feature.id()}`}
         text={description}
         x={rootLayout.getSubRecord('descriptionLabel').absolute.left}
@@ -117,7 +129,6 @@ function FeatureGlyph(props: SvgFeatureRenderingProps) {
         )}
         fontHeight={fontHeight}
         featureWidth={featureLayout.width}
-        reversed={reversed}
         allowedWidthExpansion={allowedWidthExpansion}
       />,
     )
@@ -141,64 +152,6 @@ function FeatureGlyph(props: SvgFeatureRenderingProps) {
       {glyphComponents}
     </g>
   )
-}
-
-FeatureGlyph.propTypes = {
-  feature: PropTypes.shape({
-    id: PropTypes.func.isRequired,
-    get: PropTypes.func.isRequired,
-  }).isRequired,
-  layout: PropTypes.shape({
-    addRect: PropTypes.func.isRequired,
-    getTotalHeight: PropTypes.func.isRequired,
-  }).isRequired,
-  rootLayout: PropTypes.shape({
-    addChild: PropTypes.func.isRequired,
-    getSubRecord: PropTypes.func.isRequired,
-  }).isRequired,
-  region: CommonPropTypes.Region.isRequired,
-  bpPerPx: PropTypes.number.isRequired,
-  reversed: PropTypes.bool,
-  selected: PropTypes.bool,
-  config: CommonPropTypes.ConfigSchema.isRequired,
-  name: PropTypes.string,
-  shouldShowName: PropTypes.bool,
-  description: PropTypes.string,
-  shouldShowDescription: PropTypes.bool,
-  fontHeight: PropTypes.number,
-  allowedWidthExpansion: PropTypes.number,
-
-  onFeatureMouseDown: PropTypes.func,
-  onFeatureMouseEnter: PropTypes.func,
-  onFeatureMouseOut: PropTypes.func,
-  onFeatureMouseOver: PropTypes.func,
-  onFeatureMouseUp: PropTypes.func,
-  onFeatureMouseLeave: PropTypes.func,
-  onFeatureMouseMove: PropTypes.func,
-
-  // synthesized from mouseup and mousedown
-  onFeatureClick: PropTypes.func,
-}
-
-FeatureGlyph.defaultProps = {
-  reversed: false,
-  selected: false,
-  name: '',
-  shouldShowName: false,
-  description: '',
-  shouldShowDescription: false,
-
-  onFeatureMouseDown: undefined,
-  onFeatureMouseEnter: undefined,
-  onFeatureMouseOut: undefined,
-  onFeatureMouseOver: undefined,
-  onFeatureMouseUp: undefined,
-  onFeatureMouseLeave: undefined,
-  onFeatureMouseMove: undefined,
-
-  onFeatureClick: undefined,
-  fontHeight: undefined,
-  allowedWidthExpansion: undefined,
 }
 
 export default observer(FeatureGlyph)

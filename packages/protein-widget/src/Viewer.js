@@ -22,7 +22,10 @@ import GranularRectLayout from '@gmod/jbrowse-core/util/layouts/GranularRectLayo
 import Rendering from '@gmod/jbrowse-plugin-svg/src/SvgFeatureRenderer/components/SvgFeatureRendering'
 import SvgRendererConfigSchema from '@gmod/jbrowse-plugin-svg/src/SvgFeatureRenderer/configSchema'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
-import { AdapterClass } from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
+import {
+  AdapterClass,
+  configSchema,
+} from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
 import Ruler from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView/components/Ruler'
 import * as rpcFuncs from './rpcMethods'
 
@@ -112,6 +115,7 @@ function(feature) {
         },
       })
 
+    // @ts-ignore
     this.update(initialState)
 
     this.model.view.showTrack(this.model.configuration.sequenceTrack)
@@ -204,9 +208,8 @@ export function ProteinViewerRender(domElement, widget) {
 }
 
 const FeatureRendering = ({ features, region, width, height }) => (
+  // @ts-ignore
   <Rendering
-    width={width}
-    height={height}
     regions={[region]}
     layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
     features={features}
@@ -215,8 +218,8 @@ const FeatureRendering = ({ features, region, width, height }) => (
   />
 )
 FeatureRendering.propTypes = {
-  features: PropTypes.arrayOf(PropTypes.shape()).isRequired,
-  region: PropTypes.shape().isRequired,
+  features: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  region: PropTypes.shape({}).isRequired,
   width: PropTypes.number.isRequired,
   height: PropTypes.number.isRequired,
 }
@@ -248,9 +251,9 @@ export function ExampleFeatureRendering(domElement) {
 
   ReactDOM.render(
     <FeatureRendering
-      features={[feat1, feat2]}
       width={800}
       height={200}
+      features={[feat1, feat2]}
       region={region}
     />,
     domElement,
@@ -264,9 +267,11 @@ export async function NclistFeatureRendering(domElement) {
     start: 41190000,
     end: 41280000,
   }
-  const adapter = new AdapterClass({
-    rootUrlTemplate: 'test_data/brca_nclist/{refseq}/trackData.json',
-  })
+  const adapter = new AdapterClass(
+    configSchema.create({
+      rootUrlTemplate: 'test_data/brca_nclist/{refseq}/trackData.json',
+    }),
+  )
   const ret = adapter.getFeatures(region)
   const feats = await ret.pipe(toArray()).toPromise()
   const width = 800

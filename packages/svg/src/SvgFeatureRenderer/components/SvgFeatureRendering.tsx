@@ -43,6 +43,13 @@ export interface SvgFeatureRenderingProps {
   onMouseMove?: Function
   onMouseUp?: Function
   onFeatureClick?: Function
+  onFeatureMouseDown?: Function
+  onFeatureMouseEnter?: Function
+  onFeatureMouseOut?: Function
+  onFeatureMouseUp?: Function
+  onFeatureMouseOver?: Function
+  onFeatureMouseLeave?: Function
+  onFeatureMouseMove?: Function
 }
 export const SvgSelected = observer((props: SvgFeatureRenderingProps) => {
   const {
@@ -130,8 +137,8 @@ function RenderedFeatureGlyph(
     reversed,
     config,
   })
-  let shouldShowName
-  let shouldShowDescription
+  let shouldShowName = false
+  let shouldShowDescription = false
   let name
   let description
   let fontHeight

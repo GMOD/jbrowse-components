@@ -9,14 +9,16 @@ import Rendering, { SvgMouseover, SvgSelected } from './SvgFeatureRendering'
 test('no features', () => {
   const { container } = render(
     <Rendering
-      width={500}
       height={500}
       regions={[
         { refName: 'zonk', start: 0, end: 300, assemblyName: 'volvox' },
       ]}
       layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
-      config={{}}
+      config={SvgRendererConfigSchema.create({})}
       bpPerPx={3}
+      blockKey="block1"
+      // @ts-ignore
+      trackModel={{}}
     />,
   )
 
@@ -26,8 +28,6 @@ test('no features', () => {
 test('one feature', () => {
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -39,6 +39,9 @@ test('one feature', () => {
       }
       config={SvgRendererConfigSchema.create({})}
       bpPerPx={3}
+      blockKey="block1"
+      // @ts-ignore
+      trackModel={{}}
     />,
   )
 
@@ -50,8 +53,6 @@ test('one feature (compact mode)', () => {
 
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -198,6 +199,9 @@ test('one feature (compact mode)', () => {
           ],
         ])
       }
+      blockKey="block1"
+      // @ts-ignore
+      trackModel={{}}
       config={config}
       bpPerPx={3}
     />,
@@ -213,9 +217,9 @@ test('processed transcript (reducedRepresentation mode)', () => {
   })
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
       features={
         new Map([
@@ -223,6 +227,9 @@ test('processed transcript (reducedRepresentation mode)', () => {
         ])
       }
       config={config}
+      blockKey="block1"
+      // @ts-ignore
+      trackModel={{}}
       bpPerPx={3}
     />,
   )
@@ -233,9 +240,9 @@ test('processed transcript (reducedRepresentation mode)', () => {
 test('processed transcript', () => {
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
       features={
         new Map([
@@ -381,6 +388,9 @@ test('processed transcript', () => {
       }
       config={SvgRendererConfigSchema.create({})}
       bpPerPx={3}
+      blockKey="block1"
+      // @ts-ignore
+      trackModel={{}}
     />,
   )
 
@@ -396,7 +406,6 @@ test('svg selected', () => {
   const { container } = render(
     <svg>
       <SvgMouseover
-        width={500}
         height={500}
         blockKey="block1"
         region={{
@@ -405,15 +414,16 @@ test('svg selected', () => {
           end: 1000,
           assemblyName: 'volvox',
         }}
+        // @ts-ignore
         trackModel={{ blockLayoutFeatures, featureIdUnderMouse: 'one' }}
         config={SvgRendererConfigSchema.create({})}
         bpPerPx={3}
       />
       <SvgSelected
-        width={500}
         height={500}
         blockKey="block1"
         region={{ refName: 'zonk', start: 0, end: 1000 }}
+        // @ts-ignore
         trackModel={{ blockLayoutFeatures, selectedFeatureId: 'one' }}
         config={SvgRendererConfigSchema.create({})}
         bpPerPx={3}

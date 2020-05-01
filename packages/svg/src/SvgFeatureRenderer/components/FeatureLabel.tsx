@@ -18,7 +18,7 @@ export default function Label(props: {
     color = 'black',
     fontHeight = 13,
     featureWidth,
-    reversed,
+    reversed = false,
     allowedWidthExpansion,
     fontWidthScaleFactor = 0.6,
   } = props

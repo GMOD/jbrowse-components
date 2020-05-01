@@ -56,10 +56,17 @@ export interface SimpleFeatureArgs {
   parent?: Feature
   id: string | number // thing that can be stringified easily
 }
-export interface SimpleFeatureSerialized {
+
+// subfeatures do not have to have uniqueId
+interface SimpleFeatureSerializedNoId {
   [key: string]: unknown
   parentId?: string
-  subfeatures?: SimpleFeatureSerialized[]
+  subfeatures?: SimpleFeatureSerializedNoId[]
+}
+
+// base serialized feature has to have a uniqueId
+export interface SimpleFeatureSerialized extends SimpleFeatureSerializedNoId {
+  subfeatures?: SimpleFeatureSerializedNoId[]
   uniqueId: string
 }
 

@@ -160,7 +160,9 @@ function RubberBand({
   }
 
   function zoomToRegion() {
-    if (startX === undefined || currentX === undefined) return
+    if (startX === undefined || currentX === undefined) {
+      return
+    }
     let leftPx = startX
     let rightPx = currentX
     if (rightPx < leftPx) {

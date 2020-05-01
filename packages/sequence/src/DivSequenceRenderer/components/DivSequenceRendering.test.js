@@ -1,7 +1,6 @@
 import React from 'react'
 import ReactPropTypes from 'prop-types'
 import { render } from '@testing-library/react'
-import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import Rendering, { featuresToSequence } from './DivSequenceRendering'
 import DivRenderingConfigSchema from '../configSchema'
@@ -77,12 +76,10 @@ describe('<DivSequenceRendering />', () => {
   it('renders with no features', () => {
     const { container } = render(
       <Rendering
-        width={500}
-        height={500}
+        features={new Map()}
         regions={[
           { refName: 'zonk', assemblyName: 'volvox', start: 0, end: 300 },
         ]}
-        layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
         config={DivRenderingConfigSchema.create()}
         bpPerPx={3}
       />,
@@ -94,8 +91,6 @@ describe('<DivSequenceRendering />', () => {
   it('renders with one, zoomed way out', () => {
     const { container } = render(
       <Rendering
-        width={500}
-        height={500}
         regions={[
           { refName: 'zonk', assemblyName: 'volvox', start: 0, end: 1000 },
         ]}
@@ -124,8 +119,6 @@ describe('<DivSequenceRendering />', () => {
     const { container } = render(
       <ErrorCatcher>
         <Rendering
-          width={500}
-          height={500}
           regions={[
             { refName: 'zonk', assemblyName: 'volvox', start: 0, end: 1000 },
           ]}
@@ -147,8 +140,6 @@ describe('<DivSequenceRendering />', () => {
     const { container } = render(
       <ErrorCatcher>
         <Rendering
-          width={500}
-          height={500}
           regions={[
             { refName: 'zonk', assemblyName: 'volvox', start: 0, end: 1000 },
           ]}
@@ -177,8 +168,6 @@ describe('<DivSequenceRendering />', () => {
   it('renders with one feature with a correct seq, zoomed in, should render nicely', () => {
     const { container } = render(
       <Rendering
-        width={500}
-        height={500}
         regions={[
           { refName: 'zonk', assemblyName: 'volvox', start: 0, end: 1000 },
         ]}

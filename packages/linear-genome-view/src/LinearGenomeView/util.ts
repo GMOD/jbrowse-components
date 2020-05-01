@@ -62,7 +62,7 @@ export function makeTicks(
 
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
   let index = 0
-  const ticks = []
+  const ticks: { type: string; base: number; index: number }[] = []
   for (
     let base = Math.ceil(minBase / iterPitch) * iterPitch;
     base < maxBase;
