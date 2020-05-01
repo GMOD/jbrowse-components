@@ -7,7 +7,12 @@ import {
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
-import { Base1DViewModel } from '@gmod/jbrowse-core/util/Base1DViewModel'
+import Base1DView, {
+  Base1DViewModel,
+} from '@gmod/jbrowse-core/util/Base1DViewModel'
+import { checkAbortSignal } from '@gmod/jbrowse-core/util'
+import { tap, filter, distinct, toArray } from 'rxjs/operators'
+import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 
 interface Block extends IRegion {
   offsetPx: number
@@ -15,6 +20,8 @@ interface Block extends IRegion {
 }
 
 export interface DotplotRenderProps {
+  dataAdapter: BaseAdapter
+  signal?: AbortSignal
   config: any
   height: number
   width: number
@@ -22,17 +29,6 @@ export interface DotplotRenderProps {
   highResolutionScaling: number
   pluginManager: any
   views: Base1DViewModel[]
-}
-
-interface DotplotRenderingProps extends DotplotRenderProps {
-  imageData: any
-}
-
-interface DotplotImageData {
-  imageData?: ImageBitmap
-  height: number
-  width: number
-  maxHeightReached: boolean
 }
 
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
@@ -83,16 +79,29 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         }
       }
     })
-    const imageData = await createImageBitmap(canvas)
-    return {
-      imageData,
-      height,
-      width,
-    }
+    return createImageBitmap(canvas)
   }
 
   async render(renderProps: DotplotRenderProps) {
-    const { height, width, imageData } = await this.makeImageData(renderProps)
+    const { width, height, views } = renderProps
+    const dimensions = [width, height]
+    const realizedViews = views.map((view, idx) =>
+      Base1DView.create({ ...view, width: dimensions[idx] }),
+    )
+    await Promise.all(
+      realizedViews.map(async view => {
+        view.setFeatures(
+          await this.getFeatures({
+            ...renderProps,
+            regions: view.dynamicBlocks.contentBlocks,
+          }),
+        )
+      }),
+    )
+    const imageData = await this.makeImageData({
+      ...renderProps,
+      views: realizedViews,
+    })
 
     const element = React.createElement(
       // @ts-ignore
@@ -101,15 +110,63 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       null,
     )
 
-    const { views } = renderProps
-
     return {
       element,
       imageData,
       height,
       width,
-      offsetX: views[0].dynamicBlocks.blocks[0].offsetPx,
-      offsetY: views[1].dynamicBlocks.blocks[0].offsetPx,
+      offsetX: realizedViews[0].dynamicBlocks.blocks[0].offsetPx,
+      offsetY: realizedViews[1].dynamicBlocks.blocks[0].offsetPx,
     }
+  }
+
+  /**
+   * use the dataAdapter to fetch the features to be rendered
+   *
+   * @param {object} renderArgs
+   * @returns {Map} of features as { id => feature, ... }
+   */
+  async getFeatures(renderArgs: DotplotRenderProps & { regions: IRegion[] }) {
+    const { dataAdapter, signal } = renderArgs
+
+    let regions = [] as IRegion[]
+
+    // @ts-ignore this is instantiated by the getFeatures call
+    regions = renderArgs.regions
+
+    if (!regions || regions.length === 0) {
+      console.warn('no regions supplied to comparative renderer')
+      return []
+    }
+
+    const requestRegions = regions.map((r: IRegion) => {
+      // make sure the requested region's start and end are integers, if
+      // there is a region specification.
+      const requestRegion = { ...r }
+      if (requestRegion.start) {
+        requestRegion.start = Math.floor(requestRegion.start)
+      }
+      if (requestRegion.end) {
+        requestRegion.end = Math.floor(requestRegion.end)
+      }
+      return requestRegion
+    })
+
+    // note that getFeaturesInMultipleRegions does not do glyph expansion
+    const featureObservable = dataAdapter.getFeaturesInMultipleRegions(
+      requestRegions,
+      {
+        signal,
+      },
+    )
+
+    return featureObservable
+      .pipe(
+        tap(() => checkAbortSignal(signal)),
+        filter(feature => this.featurePassesFilters(renderArgs, feature)),
+        distinct(feature => feature.id()),
+        toArray(),
+      )
+      .toPromise()
   }
 }
