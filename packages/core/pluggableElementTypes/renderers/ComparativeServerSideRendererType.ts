@@ -60,8 +60,6 @@ const model = types
       return -self.width + rightPadding
     },
     get dynamicBlocks() {
-      console.log('here')
-      trace()
       return calculateDynamicBlocks(self)
     },
     get staticBlocks() {
@@ -147,7 +145,6 @@ export default class ComparativeServerSideRenderer extends RendererType {
    */
   serializeArgsInClient(args: RenderArgs) {
     const { trackModel } = args.renderProps
-    console.log(args.renderProps)
     args.renderProps = {
       ...args.renderProps,
       // @ts-ignore
@@ -283,9 +280,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
     const realizedViews = args.views.map((view, idx) =>
       model.create({ ...view, width: width[idx] }),
     )
-    console.log(realizedViews.map(view => view.dynamicBlocks.contentBlocks))
 
-    console.time('start')
     await Promise.all(
       realizedViews.map(async view => {
         view.setFeatures(
@@ -296,13 +291,10 @@ export default class ComparativeServerSideRenderer extends RendererType {
         )
       }),
     )
-    console.timeEnd('start')
 
     checkAbortSignal(args.signal)
 
-    console.time('render')
     const results = await this.render({ ...args, views: realizedViews })
-    console.timeEnd('render')
     checkAbortSignal(args.signal)
     // @ts-ignore
     results.html = renderToString(results.element)

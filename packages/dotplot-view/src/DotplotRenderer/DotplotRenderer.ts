@@ -43,10 +43,15 @@ interface DotplotImageData {
   maxHeightReached: boolean
 }
 
-function bpToPx(self: ReducedView, refName: string, coord: number) {
+function bpToPx(
+  self: ReducedView,
+  dynamicBlocks: Block[],
+  refName: string,
+  coord: number,
+) {
   let offset = 0
 
-  const index = self.dynamicBlocks.blocks.findIndex(r => {
+  const index = dynamicBlocks.findIndex(r => {
     if (refName === r.refName && coord >= r.start && coord <= r.end) {
       offset +=
         (self.horizontallyFlipped ? r.end - coord : coord - r.start) /
@@ -56,7 +61,7 @@ function bpToPx(self: ReducedView, refName: string, coord: number) {
     offset += r.widthPx
     return false
   })
-  const foundRegion = self.dynamicBlocks.blocks[index]
+  const foundRegion = dynamicBlocks[index]
   if (foundRegion) {
     return Math.round(offset)
   }
@@ -81,7 +86,8 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
 
     ctx.lineWidth = 3
     ctx.fillStyle = readConfObject(config, 'color')
-    console.time('render1')
+    const db1 = views[0].dynamicBlocks.contentBlocks
+    const db2 = views[1].dynamicBlocks.contentBlocks
     views[0].features.forEach(feature => {
       const start = feature.get('start')
       const end = feature.get('end')
@@ -90,10 +96,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       // const identity = feature.get('numMatches') / feature.get('blockLen')
       // ctx.fillStyle = `hsl(${identity * 150},50%,50%)`
       ctx.fillStyle = 'black'
-      const b1 = bpToPx(views[0], refName, start)
-      const b2 = bpToPx(views[0], refName, end)
-      const e1 = bpToPx(views[1], mate.refName, mate.start)
-      const e2 = bpToPx(views[1], mate.refName, mate.end)
+      const b1 = views[0].bpToPx(refName, start) - db1[0].offsetPx
+      const b2 = views[0].bpToPx(refName, end) - db1[0].offsetPx
+      const e1 = views[1].bpToPx(mate.refName, mate.start) - db2[0].offsetPx
+      const e2 = views[1].bpToPx(mate.refName, mate.end) - db2[0].offsetPx
       if (b1 && b2 && e1 && e2) {
         if (b1 - b2 < 3 && e1 - e2 < 3) {
           ctx.fillRect(b1 - 1, height - e1 - 1, 3, 3)
@@ -105,7 +111,6 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         }
       }
     })
-    console.timeEnd('render1')
     // views[1].features.forEach(feature => {
     //   const start = feature.get('start')
     //   const end = feature.get('end')
