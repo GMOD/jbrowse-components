@@ -46,18 +46,17 @@ export default (pluginManager, configSchema) =>
         },
 
         // returned if there is no feature id under mouse
-        // contextMenuNoFeature() {
-        //   self.contextMenuOptions = getParentRenderProps(self).trackModel.menuOptions
-        // },
+        contextMenuNoFeature() {
+          self.contextMenuOptions = getParentRenderProps(
+            self,
+          ).trackModel.menuOptions
+        },
 
         // returned if there is a feature id under mouse
         contextMenuFeature(feature) {
           const menuOptions = [
             {
               label: 'Open feature details',
-              // getSession(self).visibleDrawerWidget && getSession(self).visibleDrawerWidget.id === 'alignmentFeature'
-              //   ? 'Update feature details'
-              //   : 'Open feature details',
               icon: 'menu_open',
               onClick: () => {
                 self.clearFeatureSelection()

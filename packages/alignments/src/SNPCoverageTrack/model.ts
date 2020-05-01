@@ -1,6 +1,6 @@
 import { types } from 'mobx-state-tree'
 import wiggleStateModelFactory from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/model'
-// import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
@@ -18,9 +18,9 @@ const stateModelFactory = (configSchema: any) =>
       get needsScalebar() {
         return true
       },
-      // get contextMenuOptions() {
-      //   return getParentRenderProps(self).trackModel.menuOptions
-      // },
+      get contextMenuOptions() {
+        return getParentRenderProps(self).trackModel.menuOptions
+      },
     })),
   )
 
