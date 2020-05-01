@@ -6,6 +6,7 @@ import {
   ElidedBlock,
   InterRegionPaddingBlock,
 } from './blockTypes'
+
 import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
 
 const interRegionPaddingWidth = 2
@@ -83,6 +84,16 @@ export default function calculateBlocks(self: LGV, extra = 0) {
       blockData.key = `${assembleLocString(blockData)}${
         reversed ? '-reversed' : ''
       }`
+      if (regionNumber === 0 && blockNum === 0) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${blockData.key}-beforeFirstRegion`,
+            widthPx: width,
+            offsetPx: blockData.offsetPx - width,
+            variant: 'boundary',
+          }),
+        )
+      }
       if (regionWidthPx < minimumBlockWidth) {
         blocks.push(new ElidedBlock(blockData))
       } else {
@@ -97,9 +108,22 @@ export default function calculateBlocks(self: LGV, extra = 0) {
       ) {
         blocks.push(
           new InterRegionPaddingBlock({
-            key: `${blockData.key}-rightpad`,
+            key: `${blockData.key}-${regionNumber}-rightpad`,
             widthPx: interRegionPaddingWidth,
             offsetPx: blockData.offsetPx + blockData.widthPx,
+          }),
+        )
+      }
+      if (
+        regionNumber === displayedRegions.length - 1 &&
+        blockData.isRightEndOfDisplayedRegion
+      ) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${blockData.key}-afterLastRegion`,
+            widthPx: width,
+            offsetPx: blockData.offsetPx + blockData.widthPx,
+            variant: 'boundary',
           }),
         )
       }

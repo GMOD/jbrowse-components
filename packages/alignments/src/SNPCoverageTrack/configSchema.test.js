@@ -30,7 +30,9 @@ class SNPCoverageRendererPlugin extends Plugin {
 
 test('has a viewType attr', () => {
   const configSchema = configSchemaFactory(
-    new PluginManager([new SNPCoverageRendererPlugin()]).configure(),
+    new PluginManager([new SNPCoverageRendererPlugin()])
+      .createPluggableElements()
+      .configure(),
   )
   const config = configSchema.create({
     type: 'SNPCoverageTrack',

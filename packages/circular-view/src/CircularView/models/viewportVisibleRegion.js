@@ -83,7 +83,10 @@ export function viewportVisibleSection(viewSides, circleCenter, circleRadius) {
       const rho = Math.sqrt(x * x + y * y)
       if (rho > maxRho) maxRho = rho
     }
-    return { rho: [0, Math.min(circleRadius, maxRho)], theta: [0, 2 * Math.PI] }
+    return {
+      rho: [0, Math.min(circleRadius, maxRho)],
+      theta: [0, 2 * Math.PI],
+    }
   }
   // const viewportCompletelyContainsCircle =
   //   circleCenter[0] - viewL >= circleRadius &&

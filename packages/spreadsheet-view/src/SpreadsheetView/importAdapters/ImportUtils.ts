@@ -43,8 +43,13 @@ function guessColumnType(rowSet: RowSet, columnNumber: number) {
 
   let guessedType = 'Text'
 
-  const parsedLoc = parseLocString(text)
-  if (parsedLoc.refName && typeof parsedLoc.start === 'number') {
+  let parsedLoc
+  try {
+    parsedLoc = parseLocString(text)
+  } catch (error) {
+    //
+  }
+  if (parsedLoc && parsedLoc.refName && typeof parsedLoc.start === 'number') {
     guessedType = 'LocString'
   } else if (/^\d+(\.\d+)?$/.test(text)) {
     guessedType = 'Number'
@@ -56,7 +61,7 @@ function guessColumnType(rowSet: RowSet, columnNumber: number) {
   return guessedType
 }
 
-async function dataToSpreadsheetSnapshot(
+function dataToSpreadsheetSnapshot(
   rows: string[][],
   options: ParseOptions = {
     hasColumnNameLine: false,

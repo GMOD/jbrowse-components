@@ -29,7 +29,14 @@ export default function (pluginManager) {
             self.configuration,
             'hubTxtLocation',
           )
+          const assemblyName = readConfObject(
+            self.configuration,
+            'assemblyName',
+          )
           const session = getSession(self)
+          const assemblyConf = session.assemblies.find(
+            assembly => readConfObject(assembly, 'name') === assemblyName,
+          )
           fetchHubFile(hubFileLocation)
             .then(hubFile => {
               let genomesFileLocation
@@ -46,10 +53,6 @@ export default function (pluginManager) {
               ])
             })
             .then(([hubFile, genomesFile]) => {
-              const assemblyName = readConfObject(
-                self.configuration,
-                'assemblyName',
-              )
               if (!genomesFile.has(assemblyName))
                 throw new Error(
                   `Assembly "${assemblyName}" not in genomes file from connection "${connectionName}"`,
@@ -73,20 +76,21 @@ export default function (pluginManager) {
               ])
             })
             .then(([trackDbFileLocation, trackDbFile]) => {
-              const assemblyName = readConfObject(
-                self.configuration,
-                'assemblyName',
-              )
+              const sequenceAdapter = readConfObject(assemblyConf, [
+                'sequence',
+                'adapter',
+              ])
               const tracks = generateTracks(
                 trackDbFile,
                 trackDbFileLocation,
                 assemblyName,
+                sequenceAdapter,
               )
               self.setTrackConfs(tracks)
             })
             .catch(error => {
               console.error(error)
-              session.setSnackbarMessage(
+              session.pushSnackbarMessage(
                 `There was a problem connecting to the UCSC Track Hub "${self.name}". Please make sure you have entered a valid hub.txt file. The error that was thrown is: "${error}"`,
               )
               session.breakConnection(self.configuration)

@@ -1,7 +1,7 @@
 import VcfParser from '@gmod/vcf'
 import VcfFeature from './VcfFeature'
 
-test('test usage of the VcfFeature', async () => {
+test('test usage of the VcfFeature', () => {
   const parser = new VcfParser({
     header: `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam`,
   })

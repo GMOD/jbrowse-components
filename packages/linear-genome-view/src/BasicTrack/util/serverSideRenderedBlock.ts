@@ -19,11 +19,9 @@ import {
   checkAbortSignal,
   isAbortException,
   getSession,
-} from '@gmod/jbrowse-core/util'
-import {
   getContainingView,
-  getTrackAssemblyNames,
-} from '@gmod/jbrowse-core/util/tracks'
+} from '@gmod/jbrowse-core/util'
+import { getTrackAssemblyNames } from '@gmod/jbrowse-core/util/tracks'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
@@ -55,7 +53,7 @@ const blockState = types
         const track = getParent<any>(self, 2)
         const renderDisposer = reaction(
           () => renderBlockData(self as any),
-          data => renderBlockEffect(cast(self), data),
+          data => (renderBlockEffect(cast(self), data) as unknown) as void, // reaction doesn't expect async here
           {
             name: `${track.id}/${assembleLocString(self.region)} rendering`,
             delay: track.renderDelay,
@@ -147,7 +145,7 @@ const blockState = types
         }
         const track = getParent<any>(self, 2)
         const view = getContainingView(track)
-        const { rpcManager } = getSession(view) as any
+        const { rpcManager } = getSession(view)
         const { rendererType } = track
         const { renderArgs } = renderBlockData(cast(self))
         rendererType
@@ -219,7 +217,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       trackError: track.error,
       renderArgs: {
         assemblyName: self.region.assemblyName,
-        region: self.region,
+        regions: [self.region],
         adapterType: track.adapterType.name,
         adapterConfig,
         sequenceAdapterType: sequenceConfig.type,

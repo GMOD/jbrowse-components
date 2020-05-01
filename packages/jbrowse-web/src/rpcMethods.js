@@ -2,7 +2,7 @@ import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import {
   freeAdapterResources,
   getAdapter,
-} from '@gmod/jbrowse-core/util/dataAdapterCache'
+} from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import {
   deserializeAbortSignal,
   isRemoteAbortSignal,
@@ -78,14 +78,7 @@ export async function getRegions(
 
 export async function getRefNames(
   pluginManager,
-  {
-    sessionId,
-    signal,
-    adapterType,
-    adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
-  },
+  { sessionId, signal, adapterType, adapterConfig },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
@@ -96,8 +89,6 @@ export async function getRefNames(
     sessionId,
     adapterType,
     adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
   )
   return dataAdapter.getRefNames({ signal })
 }
@@ -155,9 +146,58 @@ export async function render(
   pluginManager,
   {
     regions,
-    region,
-    originalRegion,
     originalRegions,
+    sessionId,
+    adapterType,
+    adapterConfig,
+    rendererType,
+    renderProps,
+    signal,
+  },
+) {
+  if (!sessionId) {
+    throw new Error('must pass a unique session id')
+  }
+
+  if (isRemoteAbortSignal(signal)) {
+    signal = deserializeAbortSignal(signal)
+  }
+  checkAbortSignal(signal)
+
+  const { dataAdapter } = getAdapter(
+    pluginManager,
+    sessionId,
+    adapterType,
+    adapterConfig,
+  )
+
+  const RendererType = pluginManager.getRendererType(rendererType)
+  if (!RendererType) throw new Error(`renderer "${rendererType}" not found`)
+  if (!RendererType.ReactComponent)
+    throw new Error(
+      `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
+    )
+
+  const result = await RendererType.renderInWorker({
+    ...renderProps,
+    sessionId,
+    dataAdapter,
+    regions,
+    originalRegions,
+    signal,
+  })
+  checkAbortSignal(signal)
+  return result
+}
+
+/**
+ * call a synteny renderer with the given args
+ * param views: a set of views that each contain a set of regions
+ * used instead of passing regions directly as in render()
+ */
+export async function comparativeRender(
+  pluginManager,
+  {
     sessionId,
     adapterType,
     adapterConfig,
@@ -193,12 +233,9 @@ export async function render(
 
   const result = await RendererType.renderInWorker({
     ...renderProps,
+    pluginManager,
     sessionId,
     dataAdapter,
-    regions,
-    region,
-    originalRegions,
-    originalRegion,
     signal,
   })
   checkAbortSignal(signal)

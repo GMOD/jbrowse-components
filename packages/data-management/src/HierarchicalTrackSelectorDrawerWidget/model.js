@@ -60,13 +60,7 @@ export default pluginManager =>
       },
 
       get assemblyNames() {
-        if (!self.view) return []
-        const assemblyNames = []
-        self.view.displayedRegions.forEach(displayedRegion => {
-          if (!assemblyNames.includes(displayedRegion.assemblyName))
-            assemblyNames.push(displayedRegion.assemblyName)
-        })
-        return assemblyNames
+        return self.view ? self.view.assemblyNames : []
       },
 
       connectionTrackConfigurations(connection) {

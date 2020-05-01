@@ -146,6 +146,7 @@ export default ({ jbrequire }) => {
     return (
       <g id={trackStyleId}>
         <style
+          // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
             __html: `
           #${trackStyleId} > path {

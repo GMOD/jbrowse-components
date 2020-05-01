@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import { getContainingView } from '@gmod/jbrowse-core/util'
 import jsonStableStringify from 'json-stable-stringify'
-import { autorun } from 'mobx'
+import { observable } from 'mobx'
 import {
-  addDisposer,
   getMembers,
   getParent,
   getSnapshot,
@@ -19,22 +17,23 @@ import {
   types,
   walk,
 } from 'mobx-state-tree'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import {
+  readConfObject,
+  isConfigurationModel,
+} from '@gmod/jbrowse-core/configuration'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
   key: string
 }
 
-export default function sessionModelFactory(pluginManager: any) {
-  const minWidth = 384
+export default function sessionModelFactory(pluginManager: PluginManager) {
   const minDrawerWidth = 128
   return types
     .model('JBrowseWebSessionModel', {
       name: types.identifier,
-      width: types.optional(
-        types.refinement(types.integer, width => width >= minWidth),
-        1024,
-      ),
+      margin: 0,
       drawerWidth: types.optional(
         types.refinement(types.integer, width => width >= minDrawerWidth),
         384,
@@ -47,9 +46,6 @@ export default function sessionModelFactory(pluginManager: any) {
         types.safeReference(
           pluginManager.pluggableMstType('drawer widget', 'stateModel'),
         ),
-      ),
-      menuBars: types.array(
-        pluginManager.pluggableMstType('menu bar', 'stateModel'),
       ),
       connectionInstances: types.map(
         types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
@@ -69,8 +65,6 @@ export default function sessionModelFactory(pluginManager: any) {
        * { taskName: "configure", target: thing_being_configured }
        */
       task: undefined,
-
-      snackbarMessage: undefined as string | undefined,
     }))
     .views(self => ({
       get rpcManager() {
@@ -103,12 +97,8 @@ export default function sessionModelFactory(pluginManager: any) {
       get history() {
         return getParent<any>(self).history
       },
-      get viewsWidth() {
-        // TODO: when drawer is permanent, subtract its width
-        return self.width - (this.visibleDrawerWidget ? self.drawerWidth : 0)
-      },
-      get maxDrawerWidth() {
-        return self.width - 256
+      get menus() {
+        return getParent(self).menus
       },
 
       get visibleDrawerWidget() {
@@ -143,26 +133,11 @@ export default function sessionModelFactory(pluginManager: any) {
       },
     }))
     .actions(self => ({
-      afterCreate() {
-        // bind our views widths to our self.viewsWidth member
-        addDisposer(
-          self,
-          autorun(() => {
-            self.views.forEach(view => {
-              view.setWidth(self.viewsWidth)
-            })
-          }),
-        )
-      },
-
-      setSnackbarMessage(str: string | undefined) {
-        self.snackbarMessage = str
-      },
-
       getRegionsForAssemblyName(
         assemblyName: string,
         opts: { signal?: AbortSignal } = {},
       ) {
+        if (!assemblyName) throw new TypeError('assemblyName is required')
         const assembly = self.assemblyData.get(assemblyName)
         if (assembly) {
           const adapterConfig = readConfObject(assembly.sequence, 'adapter')
@@ -192,14 +167,22 @@ export default function sessionModelFactory(pluginManager: any) {
         return Promise.resolve(undefined)
       },
 
-      makeConnection(configuration: any, initialSnapshot = {}) {
+      makeConnection(
+        configuration: AnyConfigurationModel,
+        initialSnapshot = {},
+      ) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')
         const name = readConfObject(configuration, 'name')
         const connectionType = pluginManager.getConnectionType(type)
         if (!connectionType) throw new Error(`unknown connection type ${type}`)
         const assemblyName = readConfObject(configuration, 'assemblyName')
-        const connectionData = { ...initialSnapshot, name, type, configuration }
+        const connectionData = {
+          ...initialSnapshot,
+          name,
+          type,
+          configuration,
+        }
         if (!self.connectionInstances.has(assemblyName))
           self.connectionInstances.set(assemblyName, [])
         const assemblyConnections = self.connectionInstances.get(assemblyName)
@@ -209,7 +192,7 @@ export default function sessionModelFactory(pluginManager: any) {
         return assemblyConnections[length - 1]
       },
 
-      prepareToBreakConnection(configuration: any) {
+      prepareToBreakConnection(configuration: AnyConfigurationModel) {
         const name = readConfObject(configuration, 'name')
         const assemblyName = readConfObject(configuration, 'assemblyName')
         const assemblyConnections =
@@ -259,7 +242,7 @@ export default function sessionModelFactory(pluginManager: any) {
         return [safelyBreakConnection, dereferenceTypeCount]
       },
 
-      breakConnection(configuration: any) {
+      breakConnection(configuration: AnyConfigurationModel) {
         const name = readConfObject(configuration, 'name')
         const assemblyName = readConfObject(configuration, 'assemblyName')
         const connectionInstances = self.connectionInstances.get(assemblyName)
@@ -269,21 +252,10 @@ export default function sessionModelFactory(pluginManager: any) {
         connectionInstances.remove(connection)
       },
 
-      updateWidth(width: number) {
-        let newWidth = Math.floor(width)
-        if (newWidth === self.width) return
-        if (newWidth < minWidth) newWidth = minWidth
-        self.width = newWidth
-        if (self.drawerWidth > self.maxDrawerWidth)
-          self.drawerWidth = self.maxDrawerWidth
-      },
-
       updateDrawerWidth(drawerWidth: number) {
         if (drawerWidth === self.drawerWidth) return self.drawerWidth
         let newDrawerWidth = drawerWidth
         if (newDrawerWidth < minDrawerWidth) newDrawerWidth = minDrawerWidth
-        if (newDrawerWidth > self.maxDrawerWidth)
-          newDrawerWidth = self.maxDrawerWidth
         self.drawerWidth = newDrawerWidth
         return newDrawerWidth
       },
@@ -328,6 +300,34 @@ export default function sessionModelFactory(pluginManager: any) {
 
       addConnectionConf(connectionConf: any) {
         return getParent<any>(self).jbrowse.addConnectionConf(connectionConf)
+      },
+
+      addLinearGenomeViewOfAssembly(assemblyName: string, initialState = {}) {
+        return this.addViewOfAssembly(
+          'LinearGenomeView',
+          assemblyName,
+          initialState,
+        )
+      },
+
+      addViewOfAssembly(
+        viewType: any,
+        assemblyName: string,
+        initialState: any = {},
+      ) {
+        const assembly = self.assemblies.find(
+          (s: AnyConfigurationModel) =>
+            readConfObject(s, 'name') === assemblyName,
+        )
+        if (!assembly)
+          throw new Error(
+            `Could not add view of assembly "${assemblyName}", assembly name not found`,
+          )
+        initialState.displayRegionsFromAssemblyName = readConfObject(
+          assembly,
+          'name',
+        )
+        return this.addView(viewType, initialState)
       },
 
       addViewFromAnotherView(
@@ -380,22 +380,6 @@ export default function sessionModelFactory(pluginManager: any) {
         self.activeDrawerWidgets.clear()
       },
 
-      addMenuBar(
-        typeName: string,
-        initialState = {},
-        configuration = { type: typeName },
-      ) {
-        const typeDefinition = pluginManager.getElementType(
-          'menu bar',
-          typeName,
-        )
-        if (!typeDefinition)
-          throw new Error(`unknown menu bar type ${typeName}`)
-        const data = { ...initialState, type: typeName, configuration }
-        const model = typeDefinition.stateModel.create(data)
-        self.menuBars.push(model)
-      },
-
       /**
        * set the global selection, i.e. the globally-selected object.
        * can be a feature, a view, just about anything
@@ -417,7 +401,7 @@ export default function sessionModelFactory(pluginManager: any) {
        * and sets the current task to be configuring it
        * @param {*} configuration
        */
-      editConfiguration(configuration: any) {
+      editConfiguration(configuration: AnyConfigurationModel) {
         if (!isConfigurationModel(configuration)) {
           throw new Error(
             'must pass a configuration model to editConfiguration',
@@ -459,6 +443,26 @@ export default function sessionModelFactory(pluginManager: any) {
         return getParent<any>(self).setDefaultSession()
       },
     }))
+    .extend(() => {
+      const snackbarMessages = observable.array()
+
+      return {
+        views: {
+          get snackbarMessages() {
+            return snackbarMessages
+          },
+        },
+        actions: {
+          pushSnackbarMessage(message: string) {
+            return snackbarMessages.push(message)
+          },
+
+          popSnackbarMessage() {
+            return snackbarMessages.pop()
+          },
+        },
+      }
+    })
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

@@ -32,9 +32,9 @@ const plugins = [Config, LinearGenomeView, Protein, Lollipop, SVG, Filtering]
 // and a variants track
 export class ProteinWidget {
   constructor(initialState = {}) {
-    this.pluginManager = new PluginManager(
-      plugins.map(P => new P()),
-    ).configure()
+    this.pluginManager = new PluginManager(plugins.map(P => new P()))
+      .createPluggableElements()
+      .configure()
     const LinearGenomeViewType = this.pluginManager.getViewType(
       'LinearGenomeView',
     )
@@ -207,7 +207,7 @@ const FeatureRendering = ({ features, region, width, height }) => (
   <Rendering
     width={width}
     height={height}
-    region={region}
+    regions={[region]}
     layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
     features={features}
     config={SvgRendererConfigSchema.create({})}

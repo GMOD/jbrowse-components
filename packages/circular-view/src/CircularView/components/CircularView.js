@@ -99,18 +99,6 @@ export default pluginManager => {
     const session = getSession(model)
     return (
       <div className={classes.controls}>
-        {model.hideCloseButton ? null : (
-          <IconButton
-            onClick={model.closeView}
-            className={classes.iconButton}
-            title="close this view"
-            data-testid="circular_view_close"
-            color="secondary"
-          >
-            <Icon fontSize="small">close</Icon>
-          </IconButton>
-        )}
-
         <IconButton
           onClick={model.zoomOutButton}
           className={classes.iconButton}
@@ -229,7 +217,7 @@ export default pluginManager => {
 
       return () => {
         mounted = false
-        aborter && aborter.abort()
+        if (aborter) aborter.abort()
       }
     }, [
       assemblyError,
@@ -250,18 +238,6 @@ export default pluginManager => {
 
     return (
       <>
-        {model.hideCloseButton ? null : (
-          <div style={{ height: 40 }}>
-            <IconButton
-              onClick={model.closeView}
-              className={classes.iconButton}
-              title="close this view"
-              color="secondary"
-            >
-              <Icon>close</Icon>
-            </IconButton>
-          </div>
-        )}
         <Container className={classes.importFormContainer}>
           <Grid container spacing={1} justify="center" alignItems="center">
             <Grid item>

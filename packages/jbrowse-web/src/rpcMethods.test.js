@@ -1,13 +1,17 @@
-import { createTestSession } from './rootModel'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import Alignments from '@gmod/jbrowse-plugin-alignments'
+import SVG from '@gmod/jbrowse-plugin-svg'
 import { render, freeResources } from './rpcMethods'
 
 let pluginManager
 beforeAll(() => {
-  ;({ pluginManager } = createTestSession())
+  pluginManager = new PluginManager([new Alignments(), new SVG()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
 })
 
 const baseprops = {
-  region: { refName: 'ctgA', start: 0, end: 800 },
+  regions: [{ refName: 'ctgA', start: 0, end: 800 }],
   sessionId: 'knickers the cow',
   adapterType: 'BamAdapter',
   adapterConfig: {
@@ -67,7 +71,7 @@ test('can render a single region with SvgFeatures + BamAdapter', async () => {
   const testprops = {
     ...baseprops,
     rendererType: 'SvgFeatureRenderer',
-    region: { refName: 'ctgA', start: 0, end: 300 },
+    regions: [{ refName: 'ctgA', start: 0, end: 300 }],
   }
 
   const result = await render(pluginManager, testprops)
@@ -103,11 +107,12 @@ test('throws if no session ID', async () => {
     /must pass a unique session id/,
   )
 })
+
 test('can render a single region with SvgFeatures + BamAdapter (larger maxHeight)', async () => {
   const testprops = {
     ...baseprops,
     rendererType: 'SvgFeatureRenderer',
-    region: { refName: 'ctgA', start: 0, end: 300 },
+    regions: [{ refName: 'ctgA', start: 0, end: 300 }],
   }
   testprops.renderProps.config = { maxHeight: 5000 }
 

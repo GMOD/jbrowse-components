@@ -46,10 +46,10 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const DeleteSessionDialog = ({
-  sessionNameToDelete,
+  sessionToDelete,
   onClose,
 }: {
-  sessionNameToDelete?: string
+  sessionToDelete?: string
   onClose: (arg0: boolean) => void
 }) => {
   const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
@@ -59,7 +59,7 @@ const DeleteSessionDialog = ({
       try {
         if (deleteSession) {
           setDeleteSession(false)
-          await ipcRenderer.invoke('deleteSession', sessionNameToDelete)
+          await ipcRenderer.invoke('deleteSession', sessionToDelete)
           onClose(true)
         }
       } catch (e) {
@@ -68,12 +68,12 @@ const DeleteSessionDialog = ({
         })
       }
     })()
-  }, [deleteSession, ipcRenderer, onClose, sessionNameToDelete])
+  }, [deleteSession, ipcRenderer, onClose, sessionToDelete])
 
   return (
-    <Dialog open={!!sessionNameToDelete} onClose={() => onClose(false)}>
+    <Dialog open={!!sessionToDelete} onClose={() => onClose(false)}>
       <DialogTitle id="alert-dialog-title">
-        {`Delete session "${sessionNameToDelete}"?`}
+        {`Delete session "${sessionToDelete}"?`}
       </DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
@@ -101,16 +101,16 @@ const DeleteSessionDialog = ({
 
 const RenameSessionDialog = ({
   sessionNames,
-  sessionNameToRename,
+  sessionToRename,
   onClose,
 }: {
   sessionNames: string[]
-  sessionNameToRename?: string
+  sessionToRename?: string
   onClose: (arg0: boolean) => void
 }) => {
   const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
-  const [newSessionName, setNewSessionName] = useState()
-  const [renameSession, setRenameSession] = useState()
+  const [newSessionName, setNewSessionName] = useState('')
+  const [renameSession, setRenameSession] = useState(false)
   useEffect(() => {
     ;(async () => {
       try {
@@ -118,7 +118,7 @@ const RenameSessionDialog = ({
           setRenameSession(false)
           await ipcRenderer.invoke(
             'renameSession',
-            sessionNameToRename,
+            sessionToRename,
             newSessionName,
           )
           onClose(true)
@@ -129,10 +129,10 @@ const RenameSessionDialog = ({
         })
       }
     })()
-  }, [ipcRenderer, newSessionName, onClose, renameSession, sessionNameToRename])
+  }, [ipcRenderer, newSessionName, onClose, renameSession, sessionToRename])
 
   return (
-    <Dialog open={!!sessionNameToRename} onClose={() => onClose(false)}>
+    <Dialog open={!!sessionToRename} onClose={() => onClose(false)}>
       <DialogTitle id="alert-dialog-title">Rename</DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
@@ -140,12 +140,12 @@ const RenameSessionDialog = ({
         </DialogContentText>
         {sessionNames.includes(newSessionName) ? (
           <DialogContentText color="error">
-            There is already a session named "{newSessionName}"
+            There is already a session named &quot;{newSessionName}&quot;
           </DialogContentText>
         ) : null}
         <Input
           autoFocus
-          defaultValue={sessionNameToRename}
+          defaultValue={sessionToRename}
           onChange={event => {
             setNewSessionName(event.target.value)
           }}
@@ -180,31 +180,31 @@ export default function StartScreen({
   onFactoryReset: Function
 }) {
   const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
-  const [sessions, setSessions] = useState()
-  const [sessionNameToDelete, setSessionNameToDelete] = useState()
-  const [sessionNameToRename, setSessionNameToRename] = useState()
-  const [sessionNameToLoad, setSessionNameToLoad] = useState()
+  const [sessions, setSessions] = useState<Record<string, any> | undefined>()
+  const [sessionToDelete, setSessionToDelete] = useState<string | undefined>()
+  const [sessionToRename, setSessionToRename] = useState<string | undefined>()
+  const [sessionToLoad, setSessionToLoad] = useState<string | undefined>()
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
   const [reset, setReset] = useState(false)
   const classes = useStyles()
 
-  const sessionNames = sessions && Object.keys(sessions)
-  if (sessionNames) root.setSavedSessionNames(sessionNames)
+  const sessionNames = sessions !== undefined ? Object.keys(sessions) : []
+  root.setSavedSessionNames(sessionNames)
 
-  const sortedSessions =
-    sessions &&
-    Object.entries(sessions)
-      .filter(([, sessionData]: [unknown, any]) => sessionData.stats)
-      .sort((a: any, b: any) => b[1].stats.mtimeMs - a[1].stats.mtimeMs)
+  const sortedSessions = sessions
+    ? Object.entries(sessions)
+        .filter(([, sessionData]: [unknown, any]) => sessionData.stats)
+        .sort((a: any, b: any) => b[1].stats.mtimeMs - a[1].stats.mtimeMs)
+    : []
 
   useEffect(() => {
     ;(async () => {
       try {
         const load =
-          bypass && inDevelopment && sortedSessions && sortedSessions.length
+          bypass && inDevelopment && sortedSessions.length
             ? sortedSessions[0][0]
-            : sessionNameToLoad
+            : sessionToLoad
         if (load) {
           root.activateSession(
             JSON.parse(await ipcRenderer.invoke('loadSession', load)),
@@ -216,7 +216,7 @@ export default function StartScreen({
         })
       }
     })()
-  }, [bypass, ipcRenderer, root, sessionNameToLoad, sortedSessions])
+  }, [bypass, ipcRenderer, root, sessionToLoad, sortedSessions])
 
   useEffect(() => {
     ;(async () => {
@@ -257,17 +257,17 @@ export default function StartScreen({
         }}
       />
       <RenameSessionDialog
-        sessionNameToRename={sessionNameToRename}
+        sessionToRename={sessionToRename}
         sessionNames={sessionNames}
         onClose={(update: boolean) => {
-          setSessionNameToRename(undefined)
+          setSessionToRename(undefined)
           setUpdateSessionsList(update)
         }}
       />
       <DeleteSessionDialog
-        sessionNameToDelete={sessionNameToDelete}
+        sessionToDelete={sessionToDelete}
         onClose={update => {
-          setSessionNameToDelete(undefined)
+          setSessionToDelete(undefined)
           setUpdateSessionsList(update)
         }}
       />
@@ -302,24 +302,28 @@ export default function StartScreen({
           Recent sessions
         </Typography>
         <Grid container spacing={4}>
-          {sortedSessions.map(([sessionName, sessionData]: [string, any]) => (
-            <Grid item key={sessionName}>
-              <RecentSessionCard
-                sessionName={sessionName}
-                sessionStats={sessionData.stats}
-                sessionScreenshot={sessionData.screenshot}
-                onClick={() => {
-                  setSessionNameToLoad(sessionName)
-                }}
-                onDelete={() => {
-                  setSessionNameToDelete(sessionName)
-                }}
-                onRename={() => {
-                  setSessionNameToRename(sessionName)
-                }}
-              />
-            </Grid>
-          ))}
+          {sortedSessions
+            ? sortedSessions.map(
+                ([sessionName, sessionData]: [string, any]) => (
+                  <Grid item key={sessionName}>
+                    <RecentSessionCard
+                      sessionName={sessionName}
+                      sessionStats={sessionData.stats}
+                      sessionScreenshot={sessionData.screenshot}
+                      onClick={() => {
+                        setSessionToLoad(sessionName)
+                      }}
+                      onDelete={() => {
+                        setSessionToDelete(sessionName)
+                      }}
+                      onRename={() => {
+                        setSessionToRename(sessionName)
+                      }}
+                    />
+                  </Grid>
+                ),
+              )
+            : null}
         </Grid>
       </Container>
 

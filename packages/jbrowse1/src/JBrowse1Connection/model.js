@@ -32,8 +32,19 @@ export default function (pluginManager) {
                 self.configuration,
                 'assemblyName',
               )
+              const assemblyConf = session.assemblies.find(
+                assembly => readConfObject(assembly, 'name') === assemblyName,
+              )
+              const sequenceAdapter = readConfObject(assemblyConf, [
+                'sequence',
+                'adapter',
+              ])
               const jb2Tracks = config.tracks.map(jb1Track => {
-                const jb2Track = convertTrackConfig(jb1Track, config.dataRoot)
+                const jb2Track = convertTrackConfig(
+                  jb1Track,
+                  config.dataRoot,
+                  sequenceAdapter,
+                )
                 jb2Track.assemblyNames = [assemblyName]
                 return jb2Track
               })
@@ -41,7 +52,7 @@ export default function (pluginManager) {
             })
             .catch(error => {
               console.error(error)
-              session.setSnackbarMessage(
+              session.pushSnackbarMessage(
                 `There was a problem connecting to the JBrowse 1 data directory "${self.name}. Please make sure you have entered a valid location. The error that was thrown is: "${error}"`,
               )
               session.breakConnection(self.configuration)

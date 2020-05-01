@@ -11,28 +11,34 @@ import {
 
 interface AlignmentsBlockBasedTrackStateModel
   extends Instance<BlockBasedTrackStateModel> {
-  PileupTrack?: Instance<BlockBasedTrackStateModel>
-  SNPCoverageTrack?: Instance<BlockBasedTrackStateModel>
+  PileupTrack: Instance<BlockBasedTrackStateModel>
+  SNPCoverageTrack: Instance<BlockBasedTrackStateModel>
 }
 
 function AlignmentsTrackBlocks({
   model,
   viewModel,
+  showPileup,
+  showSNPCoverage,
 }: {
   model: AlignmentsBlockBasedTrackStateModel
   viewModel: Instance<LinearGenomeViewStateModel>
+  showPileup: boolean
+  showSNPCoverage: boolean
 }) {
   const classes = useStyles()
   const { PileupTrack, SNPCoverageTrack } = model
+
   return (
     <>
       {SNPCoverageTrack && (
         <div
-          data-testid="Blockset"
+          data-testid="Blockset-snpcoverage"
           className={classes.trackBlocks}
           style={{
             left:
               SNPCoverageTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
+            display: showSNPCoverage ? 'flex' : 'none',
           }}
         >
           <RenderedBlocks model={SNPCoverageTrack} />
@@ -54,11 +60,15 @@ function AlignmentsTrackBlocks({
       />
       {PileupTrack && (
         <div
-          data-testid="Blockset"
+          data-testid="Blockset-pileup"
           className={classes.trackBlocks}
           style={{
             left: PileupTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
-            top: SNPCoverageTrack ? SNPCoverageTrack.height + 5 : 0,
+            top:
+              SNPCoverageTrack && showSNPCoverage
+                ? SNPCoverageTrack.height + 5
+                : 0,
+            display: showPileup ? 'flex' : 'none',
           }}
         >
           <RenderedBlocks model={PileupTrack} />

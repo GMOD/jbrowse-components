@@ -4,18 +4,16 @@
   font-style: normal;
   font-display: swap;
   font-weight: 400;
-  src:
-    local('Material Icons Regular '),
-    local('MaterialIcons-Regular'),
-    url('./material-icons-400.woff2') format('woff2'), /* Super Modern Browsers */
-    url('./material-icons-400.woff') format('woff'); /* Modern Browsers */
+  src: local('Material Icons Regular '), local('MaterialIcons-Regular'),
+    url('./material-icons-400.woff2') format('woff2'),
+    /* Super Modern Browsers */ url('./material-icons-400.woff') format('woff'); /* Modern Browsers */
 }
 
 .material-icons {
   font-family: 'Material Icons';
   font-weight: normal;
   font-style: normal;
-  font-size: 24px;  /* Preferred icon size */
+  font-size: 24px; /* Preferred icon size */
   display: inline-block;
   line-height: 1;
   text-transform: none;

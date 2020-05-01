@@ -11,4 +11,5 @@ lint.log
 **/umd
 yalc.lock
 .yalc
-*.package-lock.json
+**/package-lock.json
+**/__diff_output__/

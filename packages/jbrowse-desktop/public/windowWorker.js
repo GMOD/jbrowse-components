@@ -13,8 +13,23 @@ const {
 // eslint-disable-next-line react-hooks/rules-of-hooks
 useStaticRendering(true)
 
-const jbPluginManager = new PluginManager(corePlugins.map(P => new P()))
-jbPluginManager.configure()
+let jbPluginManager
+
+async function getPluginManager() {
+  if (jbPluginManager) {
+    return jbPluginManager
+  }
+  // TODO: Runtime plugins
+  // Loading runtime plugins will look something like this
+  // const pluginLoader = new PluginLoader(config.plugins)
+  // const runtimePlugins = await pluginLoader.load()
+  // const plugins = [...corePlugins, ...runtimePlugins]
+  const pluginManager = new PluginManager(corePlugins.map(P => new P()))
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  jbPluginManager = pluginManager
+  return pluginManager
+}
 
 const logBuffer = []
 function flushLog() {
@@ -22,7 +37,7 @@ function flushLog() {
     for (const l of logBuffer) {
       const [head, ...rest] = l
       if (head === 'rpc-error') {
-        // console.error(head, ...rest)
+        console.error(head, ...rest)
       } else {
         // eslint-disable-next-line no-console
         console.log(head, ...rest)
@@ -40,7 +55,8 @@ function wrapForRpc(func) {
     const myId = callCounter
     // logBuffer.push(['rpc-call', myId, func.name, args])
     const retP = Promise.resolve()
-      .then(() => func(jbPluginManager, args))
+      .then(() => getPluginManager())
+      .then(pluginManager => func(pluginManager, args))
       .catch(error => {
         if (isAbortException(error)) {
           // logBuffer.push(['rpc-abort', myId, func.name, args])
@@ -67,9 +83,9 @@ Object.keys(rpcMethods).forEach(key => {
   wrappedRpcMethods[key] = wrapForRpc(rpcMethods[key])
 })
 
-ipcRenderer.answerRenderer('ready', async () => true)
+ipcRenderer.answerRenderer('ready', () => true)
 
-ipcRenderer.answerRenderer('call', async (functionName, args /* , opts */) => {
+ipcRenderer.answerRenderer('call', (functionName, args /* , opts */) => {
   // TODO: implement opts.timeout
   return { ...wrappedRpcMethods, ...remoteAbortRpcHandler(), ping: () => {} }[
     functionName

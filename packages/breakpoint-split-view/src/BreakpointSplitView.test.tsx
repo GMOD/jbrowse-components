@@ -48,10 +48,10 @@ const getView = () => {
             },
           })),
         ReactComponent,
-        RenderingComponent: true,
       }),
   )
 
+  stubManager.createPluggableElements()
   stubManager.configure()
   return stateModelFactory(stubManager)
 }

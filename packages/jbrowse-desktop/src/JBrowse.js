@@ -1,66 +1,30 @@
 import '@gmod/jbrowse-core/fonts/material-icons.css'
 import { useDebounce } from '@gmod/jbrowse-core/util'
-import {
-  App,
-  FatalErrorDialog,
-  StartScreen,
-  theme,
-} from '@gmod/jbrowse-core/ui'
+import { App, StartScreen, theme } from '@gmod/jbrowse-core/ui'
 
-import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
 
-import { ThemeProvider } from '@material-ui/styles'
+import { ThemeProvider } from '@material-ui/core/styles'
 
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
-import ErrorBoundary from 'react-error-boundary'
 import React, { useEffect, useState } from 'react'
-import rootModel from './rootModel'
 import factoryReset from './factoryReset'
-import 'typeface-roboto'
 
 const debounceMs = 1000
 
-function useJBrowseDesktop() {
+const JBrowse = observer(({ pluginManager }) => {
   const { electron = {} } = window
   const { desktopCapturer, ipcRenderer } = electron
-  const [loaded, setLoaded] = useState(false)
-  const [root, setRoot] = useState({})
   const [firstLoad, setFirstLoad] = useState(true)
   const [sessionSnapshot, setSessionSnapshot] = useState()
   const [configSnapshot, setConfigSnapshot] = useState()
   const debouncedSessionSnapshot = useDebounce(sessionSnapshot, debounceMs)
   const debouncedConfigSnapshot = useDebounce(configSnapshot, debounceMs)
 
-  const { session, jbrowse } = root
+  const { rootModel } = pluginManager
+  const { session, jbrowse } = rootModel
   if (firstLoad && session) setFirstLoad(false)
-
-  useEffect(() => {
-    async function loadConfig() {
-      try {
-        setRoot(
-          rootModel.create({
-            jbrowse: Object.assign(await ipcRenderer.invoke('loadConfig'), {
-              configuration: {
-                rpc: {
-                  defaultDriver: 'ElectronRpcDriver',
-                },
-              },
-            }),
-          }),
-        )
-        setLoaded(true)
-      } catch (e) {
-        setLoaded(() => {
-          // throw to error boundary
-          throw e
-        })
-      }
-    }
-
-    loadConfig()
-  }, [ipcRenderer])
 
   useEffect(() => {
     return jbrowse
@@ -96,57 +60,23 @@ function useJBrowseDesktop() {
       ipcRenderer.send('saveConfig', debouncedConfigSnapshot)
     }
   }, [debouncedConfigSnapshot, ipcRenderer])
-  return [root, loaded, firstLoad]
-}
 
-const JBrowse = observer(() => {
-  const [root, loaded, firstLoad] = useJBrowseDesktop()
-  const debouncedLoaded = useDebounce(loaded, 400)
-  useEffect(() => {
-    if (root) {
-      window.MODEL = root.session
-      window.ROOTMODEL = root
-    }
-  }, [root, root.session])
-
-  // Use a debounce loaded here to let the circle spinner give a tiny more turn
-  // which looks better
-  if (debouncedLoaded) {
-    return root.session ? (
-      <App session={root.session} />
-    ) : (
-      <StartScreen
-        root={root}
-        bypass={firstLoad}
-        onFactoryReset={factoryReset}
-      />
-    )
-  }
-  return (
-    <CircularProgress
-      style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        marginTop: -25,
-        marginLeft: -25,
-      }}
-      size={50}
+  return rootModel.session ? (
+    <App session={rootModel.session} />
+  ) : (
+    <StartScreen
+      root={rootModel}
+      bypass={firstLoad}
+      onFactoryReset={factoryReset}
     />
   )
 })
-
-const PlatformSpecificFatalErrorDialog = props => {
-  return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
-}
 
 export default props => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
-        <JBrowse {...props} />
-      </ErrorBoundary>
+      <JBrowse {...props} />
     </ThemeProvider>
   )
 }

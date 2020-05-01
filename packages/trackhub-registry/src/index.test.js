@@ -1,15 +1,20 @@
-import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
-import MyPlugin from '.'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import ThisPlugin from '.'
 
 describe('Data management', () => {
   let pluginManager
 
   beforeAll(() => {
-    ;({ pluginManager } = createTestSession())
+    const originalConsoleWarn = console.warn
+    console.warn = jest.fn()
+    pluginManager = new PluginManager([new ThisPlugin()])
+    pluginManager.createPluggableElements()
+    pluginManager.configure()
+    console.warn = originalConsoleWarn
   })
 
   it("won't add if already added", () => {
-    expect(() => pluginManager.addPlugin(new MyPlugin())).toThrow(
+    expect(() => pluginManager.addPlugin(new ThisPlugin())).toThrow(
       /JBrowse already configured, cannot add plugins/,
     )
   })

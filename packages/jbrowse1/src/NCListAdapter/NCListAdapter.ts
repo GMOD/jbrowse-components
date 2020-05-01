@@ -1,29 +1,30 @@
 import NCListStore from '@gmod/nclist'
 import { openUrl } from '@gmod/jbrowse-core/util/io'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
-import objectHash from 'object-hash'
 
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import NCListFeature from './NCListFeature'
+import MyConfigSchema from './configSchema'
 
-export default class extends BaseAdapter {
+export default class NCListAdapter extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private nclist: any
 
   private configRefNames?: string[]
 
-  static capabilities = ['getFeatures']
-
-  private id: string
-
-  constructor(args: { refNames?: string[]; rootUrlTemplate: string }) {
-    super()
-    const { refNames, rootUrlTemplate } = args
+  constructor(config: Instance<typeof MyConfigSchema>) {
+    super(config)
+    const refNames = readConfObject(config, 'refNames')
+    const rootUrlTemplate = readConfObject(config, 'rootUrlTemplate')
     this.configRefNames = refNames
-    this.id = objectHash(args)
 
     this.nclist = new NCListStore({
       baseUrl: '',
@@ -69,8 +70,8 @@ export default class extends BaseAdapter {
    * NCList is unable to get list of ref names so returns empty
    * @return Promise<string[]> of empty list
    */
-  async getRefNames() {
-    return this.configRefNames || []
+  getRefNames() {
+    return Promise.resolve(this.configRefNames || [])
   }
 
   /**

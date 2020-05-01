@@ -1,13 +1,17 @@
 import objectHash from 'object-hash'
 import { generateUnsupportedTrackConf } from '@gmod/jbrowse-core/util/tracks'
 
-export function generateTracks(trackDb, assemblyName) {
+export function generateTracks(trackDb, assemblyName, sequenceAdapter) {
   // eslint-disable-next-line no-underscore-dangle
   const { configuration } = trackDb._source
   const subTracks = getSubtracks({ members: configuration })
   return subTracks.map(subTrack => {
-    // eslint-disable-next-line no-underscore-dangle
-    const ret = makeTrackConfig(subTrack, trackDb._source.hub.url)
+    const ret = makeTrackConfig(
+      subTrack,
+      // eslint-disable-next-line no-underscore-dangle
+      trackDb._source.hub.url,
+      sequenceAdapter,
+    )
     ret.trackId = `trackhub-registry-${objectHash(ret)}`
     ret.assemblyNames = [assemblyName]
     return ret
@@ -28,7 +32,7 @@ export function generateTracks(trackDb, assemblyName) {
   }
 }
 
-function makeTrackConfig(track, trackDbUrl) {
+function makeTrackConfig(track, trackDbUrl, sequenceAdapter) {
   const trackType = track.type
   let baseTrackType = trackType.split(' ')[0].toLowerCase()
   if (
@@ -159,11 +163,30 @@ function makeTrackConfig(track, trackDbUrl) {
         categories,
       )
     case 'cram':
-      return generateUnsupportedTrackConf(
-        track.shortLabel,
-        baseTrackType,
-        categories,
-      )
+      if (trackDbUrl)
+        bigDataIndexLocation = track.bigDataIndex
+          ? {
+              uri: new URL(track.bigDataIndex, trackDbUrl).href,
+            }
+          : {
+              uri: new URL(`${track.bigDataUrl}.bai`, trackDbUrl).href,
+            }
+      else
+        bigDataIndexLocation = track.bigDataIndex
+          ? { localPath: track.bigDataIndex }
+          : { localPath: `${track.bigDataUrl}.bai` }
+      return {
+        type: 'PileupTrack',
+        name: track.shortLabel,
+        description: track.longLabel,
+        category: categories,
+        adapter: {
+          type: 'CramAdapter',
+          bamLocation: bigDataLocation,
+          index: { location: bigDataIndexLocation },
+          sequenceAdapter,
+        },
+      }
     case 'gvf':
       return generateUnsupportedTrackConf(
         track.shortLabel,

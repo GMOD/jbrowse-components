@@ -87,7 +87,7 @@ describe('block calculation', () => {
       ],
     })
     expect(blockSet).toMatchSnapshot()
-    expect(blockSet.blocks[0].offsetPx).toBe(0)
+    expect(blockSet.blocks[1].offsetPx).toBe(0)
   })
 
   it('can calculate some blocks 7', () => {
@@ -143,7 +143,7 @@ describe('block calculation', () => {
       configuration: 'fakeReference',
     })
     // console.log(JSON.stringify(blockSet.blocks, null, '  '))
-    expect(blockSet.blocks[0].offsetPx).toBe(0)
+    expect(blockSet.blocks[1].offsetPx).toBe(0)
     expect(blockSet.blocks).toMatchSnapshot()
   })
 })

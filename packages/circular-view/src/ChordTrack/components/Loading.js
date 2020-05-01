@@ -80,7 +80,7 @@ export default ({ jbrequire }) => {
               cx="0"
               cy="0"
               r="60"
-            ></circle>
+            />
           </g>
         </>
       )

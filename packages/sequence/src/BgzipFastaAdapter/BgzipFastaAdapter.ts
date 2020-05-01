@@ -1,16 +1,17 @@
 import { BgzipIndexedFasta } from '@gmod/indexedfasta'
 import { IFileLocation } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import IndexedFasta from '../IndexedFastaAdapter/IndexedFastaAdapter'
+import MyConfigSchema from './configSchema'
 
 export default class extends IndexedFasta {
-  public constructor(config: {
-    fastaLocation: IFileLocation
-    faiLocation: IFileLocation
-    gziLocation: IFileLocation
-  }) {
+  public constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
-    const { fastaLocation, faiLocation, gziLocation } = config
+    const fastaLocation = readConfObject(config, 'fastaLocation')
+    const faiLocation = readConfObject(config, 'faiLocation')
+    const gziLocation = readConfObject(config, 'gziLocation')
     if (!fastaLocation) {
       throw new Error('must provide fastaLocation')
     }
@@ -21,9 +22,9 @@ export default class extends IndexedFasta {
       throw new Error('must provide gziLocation')
     }
     const fastaOpts = {
-      fasta: openLocation(fastaLocation),
-      fai: openLocation(faiLocation),
-      gzi: openLocation(gziLocation),
+      fasta: openLocation(fastaLocation as IFileLocation),
+      fai: openLocation(faiLocation as IFileLocation),
+      gzi: openLocation(gziLocation as IFileLocation),
     }
 
     this.fasta = new BgzipIndexedFasta(fastaOpts)

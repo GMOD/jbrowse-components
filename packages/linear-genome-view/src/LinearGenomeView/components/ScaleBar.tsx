@@ -1,135 +1,180 @@
+import Paper from '@material-ui/core/Paper'
+import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import clsx from 'clsx'
+import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import PropTypes from 'prop-types'
 import React from 'react'
-import Block from '../../BasicTrack/components/Block'
-import Ruler from './Ruler'
 import { LinearGenomeViewStateModel } from '..'
+import Block from '../../BasicTrack/components/Block'
+import {
+  ElidedBlockMarker,
+  InterRegionPaddingBlockMarker,
+} from '../../BasicTrack/components/MarkerBlocks'
 import {
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
 } from '../../BasicTrack/util/blockTypes'
+import { makeTicks } from '../util'
 
-import {
-  ElidedBlockMarker,
-  InterRegionPaddingBlockMarker,
-} from '../../BasicTrack/components/MarkerBlocks'
+type LGV = Instance<LinearGenomeViewStateModel>
 
-const useStyles = makeStyles((/* theme */) => ({
+const useStyles = makeStyles(theme => ({
   scaleBarContainer: {
+    overflow: 'hidden',
     position: 'relative',
-    display: 'block',
   },
   scaleBar: {
-    whiteSpace: 'nowrap',
-    textAlign: 'left',
-    width: '100%',
     position: 'absolute',
     display: 'flex',
-    overflow: 'hidden',
+    pointerEvents: 'none',
+  },
+  majorTickLabel: {
+    fontSize: '11px',
+    zIndex: 1,
+    background: theme.palette.background.paper,
+    lineHeight: 'normal',
+    pointerEvents: 'none',
+  },
+  tick: {
+    position: 'absolute',
+    width: 0,
+    display: 'flex',
+    justifyContent: 'center',
+    pointerEvents: 'none',
   },
   refLabel: {
-    fontSize: '16px',
+    fontSize: '11px',
     position: 'absolute',
     left: '2px',
     top: '-1px',
     fontWeight: 'bold',
-    background: 'white',
+    lineHeight: 'normal',
+    pointerEvents: 'none',
+    background: theme.palette.background.paper,
   },
 }))
 
-type LGV = Instance<LinearGenomeViewStateModel>
-const RenderedScaleBar = observer(
-  ({ model, height }: { model: LGV; height: number }) => {
+const ScaleBar = React.forwardRef(
+  (
+    {
+      model,
+      style,
+      className,
+      ...other
+    }: { model: LGV; style?: React.CSSProperties; className?: string },
+    ref,
+  ) => {
+    const classes = useStyles()
+
+    // find the block that needs pinning to the left side for context
+    let lastLeftBlock = 0
+    model.staticBlocks.forEach((block, i) => {
+      if (block.offsetPx - model.offsetPx < 0) {
+        lastLeftBlock = i
+      }
+    })
+    const rulerLabels: JSX.Element[] = []
+    const refNameLabels: JSX.Element[] = []
+    model.staticBlocks.forEach((block, index) => {
+      if (block instanceof ContentBlock) {
+        const ticks = makeTicks(
+          block.start,
+          block.end,
+          model.bpPerPx,
+          true,
+          false,
+        )
+        rulerLabels.push(
+          <Block key={`${block.key}-${index}`} block={block}>
+            {ticks.map(tick => {
+              if (tick.type === 'labeledMajor') {
+                const x =
+                  (block.reversed
+                    ? block.end - tick.base
+                    : tick.base - block.start) / model.bpPerPx
+                const baseNumber = (tick.base + 1).toLocaleString()
+                return (
+                  <div
+                    key={tick.base}
+                    className={classes.tick}
+                    style={{ left: x }}
+                  >
+                    {baseNumber ? (
+                      <Typography className={classes.majorTickLabel}>
+                        {baseNumber}
+                      </Typography>
+                    ) : null}
+                  </div>
+                )
+              }
+              return null
+            })}
+          </Block>,
+        )
+        if (block.isLeftEndOfDisplayedRegion || index === lastLeftBlock) {
+          refNameLabels.push(
+            <Typography
+              key={`refLabel-${block.key}-${index}`}
+              style={{
+                left:
+                  index === lastLeftBlock
+                    ? Math.max(0, -model.offsetPx)
+                    : block.offsetPx - model.offsetPx - 1,
+                paddingLeft: index === lastLeftBlock ? 0 : 1,
+                zIndex: index,
+              }}
+              className={classes.refLabel}
+              data-testid={`refLabel-${block.refName}`}
+            >
+              {block.refName}
+            </Typography>,
+          )
+        }
+      }
+      if (block instanceof ElidedBlock) {
+        rulerLabels.push(
+          <ElidedBlockMarker key={block.key} width={block.widthPx} />,
+        )
+      }
+      if (block instanceof InterRegionPaddingBlock) {
+        rulerLabels.push(
+          <InterRegionPaddingBlockMarker
+            key={block.key}
+            width={block.widthPx}
+            style={{ background: 'none' }}
+            boundary={block.variant === 'boundary'}
+          />,
+        )
+      }
+    })
+
+    const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
     return (
-      <>
-        {model.staticBlocks.map((block, index) => {
-          if (block instanceof ContentBlock) {
-            return (
-              <Block key={block.key} block={block}>
-                <svg height={height} width={block.widthPx}>
-                  <Ruler
-                    start={block.start}
-                    end={block.end}
-                    bpPerPx={model.bpPerPx}
-                    reversed={block.reversed}
-                  />
-                </svg>
-              </Block>
-            )
-          }
-          if (block instanceof ElidedBlock) {
-            return <ElidedBlockMarker key={block.key} width={block.widthPx} />
-          }
-          if (block instanceof InterRegionPaddingBlock) {
-            return (
-              <InterRegionPaddingBlockMarker
-                key={block.key}
-                width={block.widthPx}
-              />
-            )
-          }
-          return null
-        })}
-      </>
+      <Paper
+        className={clsx(classes.scaleBarContainer, className)}
+        variant="outlined"
+        ref={ref}
+        style={style}
+        {...other}
+      >
+        <div style={{ transform: `scaleX(${model.scaleFactor})` }}>
+          <div
+            className={classes.scaleBar}
+            style={{
+              left: offsetLeft - 1,
+              width: model.staticBlocks.totalWidthPx,
+              ...style,
+            }}
+          >
+            {rulerLabels}
+          </div>
+        </div>
+        {refNameLabels}
+      </Paper>
     )
   },
 )
-function ScaleBar({ model, height }: { model: LGV; height: number }) {
-  const classes = useStyles()
-
-  // find the block that needs pinning to the left side for context
-  let lastLeftBlock = 0
-  model.staticBlocks.forEach((block, i) => {
-    if (block.offsetPx - model.offsetPx < 0) lastLeftBlock = i
-  })
-  const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
-  return (
-    <div className={classes.scaleBarContainer}>
-      <div
-        className={classes.scaleBar}
-        style={{
-          left: offsetLeft,
-          width: model.staticBlocks.totalWidthPx,
-          height,
-        }}
-      >
-        <RenderedScaleBar model={model} height={height} />
-      </div>
-      {model.staticBlocks.map((block, index) => {
-        if (block instanceof ContentBlock) {
-          if (block.isLeftEndOfDisplayedRegion || index === lastLeftBlock) {
-            return (
-              <div
-                key={`refLabel-${block.key}`}
-                style={{
-                  left:
-                    index === lastLeftBlock
-                      ? Math.max(0, -model.offsetPx)
-                      : block.offsetPx - model.offsetPx,
-                  zIndex: index,
-                }}
-                className={classes.refLabel}
-                data-testid={`refLabel-${block.refName}`}
-              >
-                {block.refName}
-              </div>
-            )
-          }
-        }
-        return null
-      })}
-    </div>
-  )
-}
-ScaleBar.defaultProps = {
-  style: {},
-}
-ScaleBar.propTypes = {
-  model: MobxPropTypes.objectOrObservableObject.isRequired,
-  height: PropTypes.number.isRequired,
-}
 
 export default observer(ScaleBar)

@@ -1,28 +1,26 @@
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { GenericFilehandle } from 'generic-filehandle'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { Instance } from 'mobx-state-tree'
+import MyConfigSchema from './configSchema'
 
-export default class extends BaseAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected data: any
-
+export default class extends BaseFeatureDataAdapter {
   // the map of refSeq to length
-  protected refSeqs: Promise<{ [key: string]: number }>
+  protected refSeqs: Promise<Record<string, number>>
 
   protected source: string
 
-  public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
-
-  public constructor(config: { chromSizesLocation: IFileLocation }) {
-    super()
-    const { chromSizesLocation } = config
+  public constructor(config: Instance<typeof MyConfigSchema>) {
+    super(config)
+    const chromSizesLocation = readConfObject(config, 'chromSizesLocation')
     if (!chromSizesLocation) {
       throw new Error('must provide chromSizesLocation')
     }
-    const file = openLocation(chromSizesLocation)
+    const file = openLocation(chromSizesLocation as IFileLocation)
     this.source = file.toString()
     this.refSeqs = this.init(file)
   }
@@ -61,7 +59,7 @@ export default class extends BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   public getFeatures({ refName, start, end }: INoAssemblyRegion) {
-    return ObservableCreate<Feature>(async observer => {
+    return ObservableCreate<Feature>(observer => {
       // provides no sequence
       observer.complete()
     })

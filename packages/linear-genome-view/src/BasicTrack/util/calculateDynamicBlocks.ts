@@ -35,7 +35,7 @@ type LGV = Instance<LinearGenomeViewStateModel>
 export default function calculateDynamicBlocks(model: LGV) {
   const {
     offsetPx,
-    viewingRegionWidth: width,
+    width,
     displayedRegions,
     bpPerPx,
     minimumBlockWidth,
@@ -103,6 +103,16 @@ export default function calculateDynamicBlocks(model: LGV) {
       blockData.key = `${assembleLocString(blockData)}${
         reversed ? '-reversed' : ''
       }`
+      if (blocks.length === 0 && isLeftEndOfDisplayedRegion) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${blockData.key}-beforeFirstRegion`,
+            widthPx: -offsetPx,
+            offsetPx: blockData.offsetPx + offsetPx,
+            variant: 'boundary',
+          }),
+        )
+      }
       if (regionWidthPx < minimumBlockWidth) {
         blocks.push(new ElidedBlock(blockData))
       } else {
@@ -117,9 +127,23 @@ export default function calculateDynamicBlocks(model: LGV) {
       ) {
         blocks.push(
           new InterRegionPaddingBlock({
-            key: `${blockData.key}-rightpad`,
+            key: `${blockData.key}-${regionNumber}-rightpad`,
             widthPx: interRegionPaddingWidth,
             offsetPx: blockData.offsetPx + blockData.widthPx,
+          }),
+        )
+      }
+      if (
+        regionNumber === displayedRegions.length - 1 &&
+        blockData.isRightEndOfDisplayedRegion
+      ) {
+        blockOffsetPx = blockData.offsetPx + blockData.widthPx
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${blockData.key}-afterLastRegion`,
+            widthPx: width - blockOffsetPx + offsetPx,
+            offsetPx: blockOffsetPx,
+            variant: 'boundary',
           }),
         )
       }
