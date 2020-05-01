@@ -2,24 +2,16 @@
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import {
   createCanvas,
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
+import { Base1DModel } from '@gmod/jbrowse-core/util/Base1DViewModel'
 
 interface Block extends IRegion {
   offsetPx: number
   widthPx: number
-}
-
-interface ReducedView {
-  features: Feature[]
-  displayedRegions: IRegion[]
-  dynamicBlocks: Block[]
-  horizontallyFlipped: boolean
-  bpPerPx: number
 }
 
 export interface DotplotRenderProps {
@@ -29,7 +21,7 @@ export interface DotplotRenderProps {
   fontSize: number
   highResolutionScaling: number
   pluginManager: any
-  views: ReducedView[]
+  views: Base1DModel[]
 }
 
 interface DotplotRenderingProps extends DotplotRenderProps {
@@ -44,7 +36,7 @@ interface DotplotImageData {
 }
 
 function bpToPx(
-  self: ReducedView,
+  self: Base1DModel,
   dynamicBlocks: Block[],
   refName: string,
   coord: number,

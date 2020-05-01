@@ -1,16 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderToString } from 'react-dom/server'
 import { filter, distinct, toArray, tap } from 'rxjs/operators'
-import { types, getSnapshot, cast } from 'mobx-state-tree'
-import { trace } from 'mobx'
+import { getSnapshot } from 'mobx-state-tree'
 import BaseAdapter from '../../BaseAdapter'
-import { IRegion, Region } from '../../mst-types'
+import { IRegion } from '../../mst-types'
 import { checkAbortSignal } from '../../util'
 import { Feature } from '../../util/simpleFeature'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
-import calculateDynamicBlocks from '../../util/calculateDynamicBlocks'
-import calculateStaticBlocks from '../../util/calculateStaticBlocks'
+import Base1DView, { Base1DViewModel } from '../../util/Base1DViewModel'
 
 interface RenderArgs {
   blockKey: string
@@ -22,113 +20,11 @@ interface RenderArgs {
   regions?: any
   config: Record<string, any>
   renderProps: { trackModel: any }
-  views: any[]
+  views: Base1DViewModel[]
+  width: number
+  height: number
 }
-const model = types
-  .model('1DView', {
-    displayedRegions: types.array(Region),
-    bpPerPx: 0,
-    offsetPx: 0,
-    horizontallyFlipped: false,
-    width: 0,
-  })
-  .volatile(() => ({
-    features: undefined as undefined | Feature[],
-  }))
-  .actions(self => ({
-    setDisplayedRegions(regions: IRegion[]) {
-      self.displayedRegions = cast(regions)
-    },
-    setBpPerPx(val: number) {
-      self.bpPerPx = val
-    },
-  }))
-  .views(self => ({
-    get displayedRegionsTotalPx() {
-      return this.totalBp / self.bpPerPx
-    },
 
-    get maxOffset() {
-      // objectively determined to keep the linear genome on the main screen
-      const leftPadding = 10
-      return this.displayedRegionsTotalPx - leftPadding
-    },
-
-    get minOffset() {
-      // objectively determined to keep the linear genome on the main screen
-      const rightPadding = 30
-      return -self.width + rightPadding
-    },
-    get dynamicBlocks() {
-      return calculateDynamicBlocks(self)
-    },
-    get staticBlocks() {
-      return calculateStaticBlocks(cast(self))
-    },
-    get totalBp() {
-      return self.displayedRegions
-        .map(a => a.end - a.start)
-        .reduce((a, b) => a + b, 0)
-    },
-    get currBp() {
-      return this.dynamicBlocks
-        .map(a => a.end - a.start)
-        .reduce((a, b) => a + b, 0)
-    },
-    bpToPx(refName: string, coord: number) {
-      let offsetBp = 0
-
-      const index = self.displayedRegions.findIndex(r => {
-        if (refName === r.refName && coord >= r.start && coord <= r.end) {
-          offsetBp += self.horizontallyFlipped ? r.end - coord : coord - r.start
-          return true
-        }
-        offsetBp += r.end - r.start
-        return false
-      })
-      const foundRegion = self.displayedRegions[index]
-      if (foundRegion) {
-        return Math.round(offsetBp / self.bpPerPx)
-      }
-      return undefined
-    },
-
-    /**
-     *
-     * @param {number} px px in the view area, return value is the displayed regions
-     * @returns {BpOffset} of the displayed region that it lands in
-     */
-    pxToBp(px: number) {
-      const bp = (self.offsetPx + px) * self.bpPerPx
-      let bpSoFar = 0
-      let r = self.displayedRegions[0]
-      if (bp < 0) {
-        return {
-          ...r,
-          offset: bp,
-          index: 0,
-        }
-      }
-      for (let index = 0; index < self.displayedRegions.length; index += 1) {
-        r = self.displayedRegions[index]
-        if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
-          return { ...r, offset: bp - bpSoFar, index }
-        }
-        bpSoFar += r.end - r.start
-      }
-
-      return {
-        ...r,
-        offset: bp - bpSoFar,
-        index: self.displayedRegions.length - 1,
-      }
-    },
-  }))
-  .actions(self => ({
-    setFeatures(features: Feature[]) {
-      self.features = features
-    },
-  }))
 export default class ComparativeServerSideRenderer extends RendererType {
   /**
    * directly modifies the render arguments to prepare
@@ -144,7 +40,6 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * @returns {object} the same object
    */
   serializeArgsInClient(args: RenderArgs) {
-    const { trackModel } = args.renderProps
     args.renderProps = {
       ...args.renderProps,
       // @ts-ignore
@@ -278,7 +173,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
     const width = [args.width, args.height]
 
     const realizedViews = args.views.map((view, idx) =>
-      model.create({ ...view, width: width[idx] }),
+      Base1DView.create({ ...view, width: width[idx] }),
     )
 
     await Promise.all(
