@@ -2,7 +2,6 @@
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { getContainingView } from '@gmod/jbrowse-core/util'
-import { AbstractRootModel } from '@gmod/jbrowse-core/util/types'
 import jsonStableStringify from 'json-stable-stringify'
 import { observable } from 'mobx'
 import {
@@ -87,7 +86,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return getParent(self).jbrowse.tracks
       },
       get connections() {
-        const root = getParent(self)
         return getParent(self).jbrowse.connections
       },
       get savedSessions() {
