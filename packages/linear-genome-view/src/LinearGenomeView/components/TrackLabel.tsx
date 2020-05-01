@@ -1,7 +1,6 @@
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import { Menu, MenuOption } from '@gmod/jbrowse-core/ui'
-import { getSession } from '@gmod/jbrowse-core/util'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Paper from '@material-ui/core/Paper'
@@ -13,6 +12,7 @@ import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
 import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
+import { LinearGenomeViewStateModel } from '..'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -51,7 +51,9 @@ const TrackLabel = React.forwardRef(
     const classes = useStyles()
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
     const { track, className } = props
-    const view = getContainingView(track)
+    const view = (getContainingView(track) as unknown) as Instance<
+      LinearGenomeViewStateModel
+    >
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       setAnchorEl(event.currentTarget)
@@ -82,13 +84,11 @@ const TrackLabel = React.forwardRef(
       view.setDraggingTrackId(undefined)
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const session = getSession(view) as any
+    const session = getSession(view)
     let trackName = getConf(track, 'name')
     if (getConf(track, 'type') === 'ReferenceSequenceTrack') {
       trackName = 'Reference Sequence'
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      session.assemblies.forEach((assembly: any) => {
+      session.assemblies.forEach(assembly => {
         if (assembly.sequence === track.configuration)
           trackName = `Reference Sequence (${readConfObject(assembly, 'name')})`
       })
@@ -96,7 +96,7 @@ const TrackLabel = React.forwardRef(
 
     function handleMenuItemClick(
       event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-      callback: () => void,
+      callback: Function,
     ) {
       callback()
       handleClose()

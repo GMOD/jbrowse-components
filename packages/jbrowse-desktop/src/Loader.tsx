@@ -2,6 +2,9 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { makeStyles } from '@material-ui/core/styles'
 import React, { useEffect, useState } from 'react'
+import { PluginConstructor } from '@gmod/jbrowse-core/Plugin'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { SnapshotIn } from 'mobx-state-tree'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
@@ -19,8 +22,10 @@ const useStyles = makeStyles({
 })
 
 export default function Loader() {
-  const [configSnapshot, setConfigSnapshot] = useState()
-  const [plugins, setPlugins] = useState()
+  const [configSnapshot, setConfigSnapshot] = useState<
+    SnapshotIn<AnyConfigurationModel>
+  >()
+  const [plugins, setPlugins] = useState<PluginConstructor[]>()
 
   const classes = useStyles()
 
@@ -68,8 +73,7 @@ export default function Loader() {
     )
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const pluginManager = new PluginManager(plugins.map((P: any) => new P()))
+  const pluginManager = new PluginManager(plugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
@@ -85,15 +89,17 @@ export default function Loader() {
     throw new Error(e.message.slice(0, 10000) + additionalMsg)
   }
 
-  // make some things available globally for testing
-  // e.g. window.MODEL.views[0] in devtools
-  // @ts-ignore
-  window.MODEL = rootModel.session
-  // @ts-ignore
-  window.ROOTMODEL = rootModel
-  pluginManager.setRootModel(rootModel)
+  if (rootModel) {
+    // make some things available globally for testing
+    // e.g. window.MODEL.views[0] in devtools
+    // @ts-ignore
+    window.MODEL = rootModel.session
+    // @ts-ignore
+    window.ROOTMODEL = rootModel
+    pluginManager.setRootModel(rootModel)
 
-  pluginManager.configure()
+    pluginManager.configure()
+  }
 
   return <JBrowse pluginManager={pluginManager} />
 }

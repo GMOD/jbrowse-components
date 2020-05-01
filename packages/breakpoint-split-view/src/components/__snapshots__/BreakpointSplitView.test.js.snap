@@ -259,7 +259,6 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                             aria-hidden="true"
                             class="MuiSvgIcon-root"
                             focusable="false"
-                            role="presentation"
                             viewBox="0 0 24 24"
                           >
                             <path
@@ -372,10 +371,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   />
                   <span
                     class="MuiSlider-mark MuiSlider-markActive"
-                  />
-                  <span
-                    aria-hidden="true"
-                    class="MuiSlider-markLabel MuiSlider-markLabelActive"
+                    data-index="0"
                   />
                   <span
                     aria-orientation="horizontal"
@@ -416,23 +412,29 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           </div>
           <div
             class="makeStyles-tracksContainer"
+            role="presentation"
           >
             <div
-              class="makeStyles-verticalGuidesContainer"
-              style="left: -800px; width: 1605px;"
+              class="makeStyles-verticalGuidesZoomContainer"
+              style="transform: scaleX(1);"
             >
               <div
-                class="makeStyles-boundaryPaddingBlock"
-                style="width: 800px;"
-              />
-              <div
-                class="makeStyles-elidedBlock"
-                style="width: 5px;"
-              />
-              <div
-                class="makeStyles-boundaryPaddingBlock"
-                style="width: 800px;"
-              />
+                class="makeStyles-verticalGuidesContainer"
+                style="left: -800px; width: 1605px;"
+              >
+                <div
+                  class="makeStyles-boundaryPaddingBlock"
+                  style="width: 800px;"
+                />
+                <div
+                  class="makeStyles-elidedBlock"
+                  style="width: 5px;"
+                />
+                <div
+                  class="makeStyles-boundaryPaddingBlock"
+                  style="width: 800px;"
+                />
+              </div>
             </div>
             <div
               class="makeStyles-rubberBand"
@@ -458,21 +460,25 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               style="height: 17px; box-sizing: border-box;"
             >
               <div
-                class="makeStyles-scaleBar"
-                style="left: -801px; width: 1605px; height: 17px; box-sizing: border-box;"
+                style="transform: scaleX(1);"
               >
                 <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
-                <div
-                  class="makeStyles-elidedBlock"
-                  style="width: 5px;"
-                />
-                <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
+                  class="makeStyles-scaleBar"
+                  style="left: -801px; width: 1605px; height: 17px; box-sizing: border-box;"
+                >
+                  <div
+                    class="makeStyles-boundaryPaddingBlock"
+                    style="background: none; width: 800px;"
+                  />
+                  <div
+                    class="makeStyles-elidedBlock"
+                    style="width: 5px;"
+                  />
+                  <div
+                    class="makeStyles-boundaryPaddingBlock"
+                    style="background: none; width: 800px;"
+                  />
+                </div>
               </div>
             </div>
             <div
@@ -657,7 +663,6 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                             aria-hidden="true"
                             class="MuiSvgIcon-root"
                             focusable="false"
-                            role="presentation"
                             viewBox="0 0 24 24"
                           >
                             <path
@@ -770,10 +775,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   />
                   <span
                     class="MuiSlider-mark MuiSlider-markActive"
-                  />
-                  <span
-                    aria-hidden="true"
-                    class="MuiSlider-markLabel MuiSlider-markLabelActive"
+                    data-index="0"
                   />
                   <span
                     aria-orientation="horizontal"
@@ -814,23 +816,29 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           </div>
           <div
             class="makeStyles-tracksContainer"
+            role="presentation"
           >
             <div
-              class="makeStyles-verticalGuidesContainer"
-              style="left: -800px; width: 1605px;"
+              class="makeStyles-verticalGuidesZoomContainer"
+              style="transform: scaleX(1);"
             >
               <div
-                class="makeStyles-boundaryPaddingBlock"
-                style="width: 800px;"
-              />
-              <div
-                class="makeStyles-elidedBlock"
-                style="width: 5px;"
-              />
-              <div
-                class="makeStyles-boundaryPaddingBlock"
-                style="width: 800px;"
-              />
+                class="makeStyles-verticalGuidesContainer"
+                style="left: -800px; width: 1605px;"
+              >
+                <div
+                  class="makeStyles-boundaryPaddingBlock"
+                  style="width: 800px;"
+                />
+                <div
+                  class="makeStyles-elidedBlock"
+                  style="width: 5px;"
+                />
+                <div
+                  class="makeStyles-boundaryPaddingBlock"
+                  style="width: 800px;"
+                />
+              </div>
             </div>
             <div
               class="makeStyles-rubberBand"
@@ -856,21 +864,25 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               style="height: 17px; box-sizing: border-box;"
             >
               <div
-                class="makeStyles-scaleBar"
-                style="left: -801px; width: 1605px; height: 17px; box-sizing: border-box;"
+                style="transform: scaleX(1);"
               >
                 <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
-                <div
-                  class="makeStyles-elidedBlock"
-                  style="width: 5px;"
-                />
-                <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
+                  class="makeStyles-scaleBar"
+                  style="left: -801px; width: 1605px; height: 17px; box-sizing: border-box;"
+                >
+                  <div
+                    class="makeStyles-boundaryPaddingBlock"
+                    style="background: none; width: 800px;"
+                  />
+                  <div
+                    class="makeStyles-elidedBlock"
+                    style="width: 5px;"
+                  />
+                  <div
+                    class="makeStyles-boundaryPaddingBlock"
+                    style="background: none; width: 800px;"
+                  />
+                </div>
               </div>
             </div>
             <div

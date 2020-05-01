@@ -1,11 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import GDCFeature from './GDCFeature'
+import MyConfigSchema from './configSchema'
 
-export default class extends BaseAdapter {
+export default class extends BaseFeatureDataAdapter {
   private filters: string
 
   private cases: string[]
@@ -16,19 +21,12 @@ export default class extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: {
-    filters?: string
-    cases?: string[]
-    size?: number
-    featureType?: string
-  }) {
+  public constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
-    const {
-      filters = '{}',
-      cases = [],
-      size = 100,
-      featureType = 'mutation',
-    } = config
+    const filters = readConfObject(config, 'filters') as string
+    const cases = readConfObject(config, 'cases') as string[]
+    const size = readConfObject(config, 'size') as number
+    const featureType = readConfObject(config, 'featureType') as string
     this.filters = filters
     this.cases = cases
     this.size = size
@@ -194,7 +192,7 @@ export default class extends BaseAdapter {
    * @param end end position
    */
   private addLocationAndCasesToFilter(chr: string, start: number, end: number) {
-    let locationFilter: any
+    let locationFilter
 
     switch (this.featureType) {
       case 'mutation': {
@@ -228,6 +226,8 @@ export default class extends BaseAdapter {
         }
         break
       }
+      default:
+        throw new Error(`invalid featureType ${this.featureType}`)
     }
 
     if (this.cases && this.cases.length > 0) {

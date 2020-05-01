@@ -33,6 +33,7 @@ Subfeatures.propTypes = {
     getSubRecord: PropTypes.func.isRequired,
   }).isRequired,
   selected: PropTypes.bool,
+  reversed: PropTypes.bool,
 }
 
 Subfeatures.defaultProps = {

@@ -10,7 +10,7 @@ test('one', () => {
       height={500}
       features={new Map()}
       highResolutionScaling={1}
-      region={{ refName: 'chr1', start: 1, end: 3 }}
+      regions={[{ refName: 'chr1', start: 1, end: 3 }]}
       bpPerPx={3}
       config={{ type: 'DummyRenderer' }}
     />,

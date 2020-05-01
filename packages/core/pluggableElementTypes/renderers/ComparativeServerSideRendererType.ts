@@ -2,19 +2,19 @@
 import { renderToString } from 'react-dom/server'
 import { filter, distinct, toArray, tap } from 'rxjs/operators'
 import { getSnapshot } from 'mobx-state-tree'
-import BaseAdapter from '../../BaseAdapter'
 import { IRegion } from '../../mst-types'
 import { checkAbortSignal } from '../../util'
 import { Feature } from '../../util/simpleFeature'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
+import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 
 interface RenderArgs {
   blockKey: string
   sessionId: string
   signal?: AbortSignal
   filters?: any
-  dataAdapter: BaseAdapter
+  dataAdapter: BaseFeatureDataAdapter
   bpPerPx: number
   regions?: any
   config: Record<string, any>

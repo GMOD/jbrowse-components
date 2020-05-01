@@ -1,15 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import BED from '@gmod/bed'
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
 import { GenericFilehandle } from 'generic-filehandle'
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ucscProcessedTranscript } from '../util'
+import MyConfigSchema from './configSchema'
 
-export default class BedTabixAdapter extends BaseAdapter {
+export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   private parser: any
 
   protected bed: TabixIndexedFile
@@ -18,17 +24,17 @@ export default class BedTabixAdapter extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: {
-    bedGzLocation: IFileLocation
-
-    index: {
+  public constructor(config: Instance<typeof MyConfigSchema>) {
+    super(config)
+    const bedGzLocation = readConfObject(
+      config,
+      'bedGzLocation',
+    ) as IFileLocation
+    const index = readConfObject(config, 'index') as {
       indexType?: string
       location: IFileLocation
     }
-    autoSql?: string
-  }) {
-    super(config)
-    const { bedGzLocation, index, autoSql } = config
+    const autoSql = readConfObject(config, 'autoSql') as string
     const { location, indexType } = index
 
     this.filehandle = openLocation(bedGzLocation)
@@ -87,13 +93,10 @@ export default class BedTabixAdapter extends BaseAdapter {
           delete data.chromStart
           delete data.chromEnd
           const f = new SimpleFeature({
-            id: data.uniqueId,
-            data: {
-              ...data,
-              start,
-              end,
-              refName,
-            },
+            ...data,
+            start,
+            end,
+            refName,
           })
           const r = f.get('thickStart') ? ucscProcessedTranscript(f) : f
           observer.next(r)

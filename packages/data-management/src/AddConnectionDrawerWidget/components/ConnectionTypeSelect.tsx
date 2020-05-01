@@ -4,16 +4,7 @@ import MenuItem from '@material-ui/core/MenuItem'
 import TextField from '@material-ui/core/TextField'
 import React from 'react'
 
-interface ConnectionType {
-  name: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  stateModel: Record<string, any>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  configSchema: Record<string, any>
-  displayName?: string
-  description?: string
-  url?: string
-}
+import ConnectionType from '@gmod/jbrowse-core/pluggableElementTypes/ConnectionType'
 
 function ConnectionTypeSelect(props: {
   connectionTypeChoices: ConnectionType[]

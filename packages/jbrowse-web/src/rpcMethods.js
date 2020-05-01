@@ -2,7 +2,7 @@ import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import {
   freeAdapterResources,
   getAdapter,
-} from '@gmod/jbrowse-core/util/dataAdapterCache'
+} from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import {
   deserializeAbortSignal,
   isRemoteAbortSignal,
@@ -78,14 +78,7 @@ export async function getRegions(
 
 export async function getRefNames(
   pluginManager,
-  {
-    sessionId,
-    signal,
-    adapterType,
-    adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
-  },
+  { sessionId, signal, adapterType, adapterConfig },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
@@ -96,8 +89,6 @@ export async function getRefNames(
     sessionId,
     adapterType,
     adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
   )
   return dataAdapter.getRefNames({ signal })
 }
@@ -155,20 +146,18 @@ export async function render(
   pluginManager,
   {
     regions,
-    region,
-    originalRegion,
     originalRegions,
     sessionId,
     adapterType,
     adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
     rendererType,
     renderProps,
     signal,
   },
 ) {
-  if (!sessionId) throw new Error('must pass a unique session id')
+  if (!sessionId) {
+    throw new Error('must pass a unique session id')
+  }
 
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
@@ -180,8 +169,6 @@ export async function render(
     sessionId,
     adapterType,
     adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
   )
 
   const RendererType = pluginManager.getRendererType(rendererType)
@@ -196,9 +183,7 @@ export async function render(
     sessionId,
     dataAdapter,
     regions,
-    region,
     originalRegions,
-    originalRegion,
     signal,
   })
   checkAbortSignal(signal)

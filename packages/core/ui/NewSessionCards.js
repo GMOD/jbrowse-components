@@ -73,7 +73,7 @@ export function NewEmptySession({ root }) {
   function onClick() {
     root.activateSession(emptySessionSnapshot)
   }
-  return <NewSessionCard name={'Empty'} onClick={onClick} image={emptyIcon} />
+  return <NewSessionCard name="Empty" onClick={onClick} image={emptyIcon} />
 }
 
 NewEmptySession.propTypes = {
@@ -94,10 +94,10 @@ export function NewLinearGenomeViewSession({ root }) {
 
   return (
     <NewSessionCard
-      name={'Linear Genome View'}
+      name="Linear Genome View"
       onClick={launchLGVSession}
       image={linearGenomeViewIcon}
-    ></NewSessionCard>
+    />
   )
 }
 

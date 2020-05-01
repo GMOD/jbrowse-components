@@ -9,10 +9,6 @@ import BlockError from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenome
 // doesn't have special handling for serializing region!
 //
 class RenderErrorBoundary extends Component {
-  static propTypes = {
-    children: ReactPropTypes.node.isRequired,
-  }
-
   constructor(props) {
     super(props)
     this.state = { hasError: false }
@@ -39,15 +35,15 @@ class RenderErrorBoundary extends Component {
   }
 }
 
+RenderErrorBoundary.propTypes = {
+  children: ReactPropTypes.node.isRequired,
+}
+
 /**
  * A block whose content is rendered outside of the main thread and hydrated by this
  * component.
  */
 class ServerSideRenderedContent extends Component {
-  static propTypes = {
-    model: PropTypes.observableObject.isRequired,
-  }
-
   constructor(props) {
     super(props)
     this.ssrContainerNode = React.createRef()
@@ -119,6 +115,10 @@ class ServerSideRenderedContent extends Component {
       />
     )
   }
+}
+
+ServerSideRenderedContent.propTypes = {
+  model: PropTypes.observableObject.isRequired,
 }
 
 export default observer(ServerSideRenderedContent)

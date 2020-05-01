@@ -281,11 +281,14 @@ function OverviewScaleBar({
             return (
               <polygon
                 key={`${region.key}-${idx}`}
-                // @ts-ignore
                 points={[
+                  // @ts-ignore
                   [startPx, HEADER_BAR_HEIGHT],
+                  // @ts-ignore
                   [endPx, HEADER_BAR_HEIGHT],
+                  // @ts-ignore
                   [topRight, 0],
+                  // @ts-ignore
                   [topLeft, 0],
                 ]}
                 fill={fade(polygonColor, 0.3)}

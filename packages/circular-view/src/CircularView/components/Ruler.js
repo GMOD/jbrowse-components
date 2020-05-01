@@ -51,7 +51,7 @@ export default pluginManager => {
       region.regions.length,
     ).toLocaleString()}]`
     return (
-      <React.Fragment key={assembleLocString(region.regions[0])}>
+      <>
         <RulerLabel
           text={regionCountString}
           view={model}
@@ -78,7 +78,7 @@ export default pluginManager => {
           strokeDasharray="2,2"
           fill="none"
         />
-      </React.Fragment>
+      </>
     )
   })
 
@@ -154,7 +154,7 @@ export default pluginManager => {
 
     // TODO: slice flipping
     return (
-      <React.Fragment>
+      <>
         <RulerLabel
           text={region.refName}
           view={model}
@@ -162,16 +162,14 @@ export default pluginManager => {
           radians={centerRadians}
           radiusPx={radiusPx}
         />
-        {
-          <path
-            d={sliceArcPath(slice, radiusPx, region.start, region.end)}
-            stroke="black"
-            fill="none"
-          >
-            <title>{region.refName}</title>
-          </path>
-        }
-      </React.Fragment>
+        <path
+          d={sliceArcPath(slice, radiusPx, region.start, region.end)}
+          stroke="black"
+          fill="none"
+        >
+          <title>{region.refName}</title>
+        </path>
+      </>
     )
   })
 

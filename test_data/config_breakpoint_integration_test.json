@@ -68,7 +68,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "pacbio_hg002_breakpoints",
       "name": "HG002.hs37d5.11kb",
       "assemblyNames": [
@@ -138,7 +138,7 @@
               ],
               "tracks": [
                 {
-                  "type": "PileupTrack",
+                  "type": "AlignmentsTrack",
                   "height": 100,
                   "configuration": "pacbio_hg002_breakpoints",
                   "selectedRendering": ""
@@ -177,7 +177,7 @@
               ],
               "tracks": [
                 {
-                  "type": "PileupTrack",
+                  "type": "AlignmentsTrack",
                   "height": 100,
                   "configuration": "pacbio_hg002_breakpoints",
                   "selectedRendering": ""

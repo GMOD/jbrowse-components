@@ -117,6 +117,7 @@ function TracksContainer({
 
   return (
     <div
+      role="presentation"
       className={classes.tracksContainer}
       onWheel={onWheel}
       onMouseDown={mouseDown}
@@ -124,7 +125,7 @@ function TracksContainer({
       onMouseLeave={mouseLeave}
     >
       <VerticalGuides model={model}>
-        {model.showCenterLine && <CenterLine model={model}></CenterLine>}
+        {model.showCenterLine && <CenterLine model={model} />}
         <RubberBand
           model={model}
           ControlComponent={

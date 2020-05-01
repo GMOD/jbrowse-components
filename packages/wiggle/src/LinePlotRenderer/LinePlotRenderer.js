@@ -5,7 +5,8 @@ import WiggleBaseRenderer from '../WiggleBaseRenderer'
 
 export default class extends WiggleBaseRenderer {
   draw(ctx, props) {
-    const { features, region, bpPerPx, scaleOpts, height, config } = props
+    const { features, regions, bpPerPx, scaleOpts, height, config } = props
+    const [region] = regions
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')

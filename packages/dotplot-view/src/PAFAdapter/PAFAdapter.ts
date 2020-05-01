@@ -1,5 +1,7 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import {
   IFileLocation,
   INoAssemblyRegion,
@@ -12,6 +14,9 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import MyConfigSchema from './configSchema'
 
 interface PafRecord {
   records: INoAssemblyRegion[]
@@ -23,7 +28,7 @@ interface PafRecord {
   }
 }
 
-export default class extends BaseAdapter {
+export default class PAFAdapter extends BaseFeatureDataAdapter {
   private cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 1 }),
     fill: (data: BaseOptions, signal: AbortSignal) => {
@@ -37,12 +42,10 @@ export default class extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: {
-    pafLocation: IFileLocation
-    assemblyNames: string[]
-  }) {
+  public constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
-    const { pafLocation, assemblyNames } = config
+    const pafLocation = readConfObject(config, 'pafLocation') as IFileLocation
+    const assemblyNames = readConfObject(config, 'assemblyNames') as string[]
     this.pafLocation = openLocation(pafLocation)
     this.assemblyNames = assemblyNames
   }
@@ -129,19 +132,17 @@ export default class extends BaseAdapter {
             ) {
               observer.next(
                 new SimpleFeature({
-                  data: {
-                    uniqueId: `row_${i}`,
-                    syntenyId: i,
-                    start: records[index].start,
-                    end: records[index].end,
-                    refName: records[index].refName,
-                    mate: {
-                      start: records[+!index].start,
-                      end: records[+!index].end,
-                      refName: records[+!index].refName,
-                    },
-                    ...extra,
+                  uniqueId: `row_${i}`,
+                  syntenyId: i,
+                  start: records[index].start,
+                  end: records[index].end,
+                  refName: records[index].refName,
+                  mate: {
+                    start: records[+!index].start,
+                    end: records[+!index].end,
+                    refName: records[+!index].refName,
                   },
+                  ...extra,
                 }),
               )
             }

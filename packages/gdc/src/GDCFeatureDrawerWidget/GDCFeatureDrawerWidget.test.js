@@ -6,7 +6,6 @@ import GDCFeatureDetails from './GDCFeatureDrawerWidget'
 
 describe('GDCTrack drawer widget', () => {
   it('renders mutation with just the required model elements', () => {
-    /* eslint-disable @typescript-eslint/camelcase */
     const f = observable({
       featureData: {
         uniqueId: '0208efeb-f1e8-57e4-8447-299c5f050380',

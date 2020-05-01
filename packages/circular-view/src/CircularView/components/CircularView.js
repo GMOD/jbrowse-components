@@ -217,7 +217,7 @@ export default pluginManager => {
 
       return () => {
         mounted = false
-        aborter && aborter.abort()
+        if (aborter) aborter.abort()
       }
     }, [
       assemblyError,

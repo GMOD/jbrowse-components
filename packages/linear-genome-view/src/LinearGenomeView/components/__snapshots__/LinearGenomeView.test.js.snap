@@ -152,7 +152,6 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                     aria-hidden="true"
                     class="MuiSvgIcon-root"
                     focusable="false"
-                    role="presentation"
                     viewBox="0 0 24 24"
                   >
                     <path
@@ -266,29 +265,17 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           />
           <span
             class="MuiSlider-mark MuiSlider-markActive"
-            style="left: 0%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel MuiSlider-markLabelActive"
+            data-index="0"
             style="left: 0%;"
           />
           <span
             class="MuiSlider-mark"
-            style="left: 43.06765580733933%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel"
+            data-index="1"
             style="left: 43.06765580733933%;"
           />
           <span
             class="MuiSlider-mark"
-            style="left: 100%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel"
+            data-index="2"
             style="left: 100%;"
           />
           <span
@@ -331,52 +318,58 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
   </div>
   <div
     class="makeStyles-tracksContainer"
+    role="presentation"
   >
     <div
-      class="makeStyles-verticalGuidesContainer"
-      style="left: -800px; width: 1700px;"
+      class="makeStyles-verticalGuidesZoomContainer"
+      style="transform: scaleX(1);"
     >
       <div
-        class="makeStyles-boundaryPaddingBlock"
-        style="width: 800px;"
-      />
-      <div
-        class="makeStyles-block"
-        style="width: 100px;"
+        class="makeStyles-verticalGuidesContainer"
+        style="left: -800px; width: 1700px;"
       >
         <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: -1px;"
+          class="makeStyles-boundaryPaddingBlock"
+          style="width: 800px;"
         />
         <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 19px;"
-        />
+          class="makeStyles-block"
+          style="width: 100px;"
+        >
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: -1px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 19px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 39px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 59px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 79px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: 99px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 119px;"
+          />
+        </div>
         <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 39px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 59px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 79px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: 99px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 119px;"
+          class="makeStyles-boundaryPaddingBlock"
+          style="width: 800px;"
         />
       </div>
-      <div
-        class="makeStyles-boundaryPaddingBlock"
-        style="width: 800px;"
-      />
     </div>
     <div
       class="makeStyles-rubberBand"
@@ -402,32 +395,36 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       style="height: 17px; box-sizing: border-box;"
     >
       <div
-        class="makeStyles-scaleBar"
-        style="left: -801px; width: 1700px; height: 17px; box-sizing: border-box;"
+        style="transform: scaleX(1);"
       >
         <div
-          class="makeStyles-boundaryPaddingBlock"
-          style="background: none; width: 800px;"
-        />
-        <div
-          class="makeStyles-block"
-          style="width: 100px;"
+          class="makeStyles-scaleBar"
+          style="left: -801px; width: 1700px; height: 17px; box-sizing: border-box;"
         >
           <div
-            class="makeStyles-tick"
-            style="left: -1px;"
+            class="makeStyles-boundaryPaddingBlock"
+            style="background: none; width: 800px;"
+          />
+          <div
+            class="makeStyles-block"
+            style="width: 100px;"
           >
-            <p
-              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+            <div
+              class="makeStyles-tick"
+              style="left: -1px;"
             >
-              0
-            </p>
+              <p
+                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+              >
+                0
+              </p>
+            </div>
           </div>
+          <div
+            class="makeStyles-boundaryPaddingBlock"
+            style="background: none; width: 800px;"
+          />
         </div>
-        <div
-          class="makeStyles-boundaryPaddingBlock"
-          style="background: none; width: 800px;"
-        />
       </div>
       <p
         class="MuiTypography-root makeStyles-refLabel MuiTypography-body1"
@@ -509,61 +506,58 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         style="height: 20px;"
       >
         <div
-          class="makeStyles-trackOffsetContainer"
+          class="makeStyles-renderingComponentContainer"
+          style="transform: scaleX(1);"
         >
           <div
-            class="makeStyles-renderingComponentContainer"
+            class="makeStyles-track"
+            data-testid="track-testConfig"
+            role="presentation"
           >
             <div
-              class="makeStyles-track"
-              data-testid="track-testConfig"
-              role="presentation"
+              class="makeStyles-trackBlocks"
+              data-testid="Blockset"
+              style="left: -800px;"
             >
               <div
-                class="makeStyles-trackBlocks"
-                data-testid="Blockset"
-                style="left: -800px;"
+                class="makeStyles-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
+              <div
+                class="makeStyles-block"
+                style="width: 100px;"
               >
                 <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
-                <div
-                  class="makeStyles-block"
-                  style="width: 100px;"
+                  class="ssr-container"
+                  data-html-size="313"
                 >
                   <div
-                    class="ssr-container"
-                    data-html-size="313"
+                    classname="ssr-container-inner"
                   >
                     <div
-                      classname="ssr-container-inner"
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
                     >
-                      <div
-                        class="PileupRendering"
-                        style="position:relative;width:0;height:0"
-                      >
-                        <canvas
-                          data-testid="prerendered_canvas"
-                          height="0"
-                          style="width:0;height:0;position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                        <canvas
-                          class="highlightOverlayCanvas"
-                          height="0"
-                          style="position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                      </div>
+                      <canvas
+                        data-testid="prerendered_canvas"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
                     </div>
                   </div>
                 </div>
-                <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
               </div>
+              <div
+                class="makeStyles-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
             </div>
           </div>
         </div>
@@ -605,7 +599,6 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
         >
           <div
             aria-haspopup="listbox"
-            aria-labelledby=" "
             class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input"
             role="button"
             tabindex="0"
@@ -620,7 +613,6 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
             aria-hidden="true"
             class="MuiSvgIcon-root MuiSelect-icon MuiSelect-iconOutlined"
             focusable="false"
-            role="presentation"
             viewBox="0 0 24 24"
           >
             <path
@@ -698,7 +690,6 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
                     aria-hidden="true"
                     class="MuiSvgIcon-root"
                     focusable="false"
-                    role="presentation"
                     viewBox="0 0 24 24"
                   >
                     <path
@@ -907,7 +898,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                     aria-hidden="true"
                     class="MuiSvgIcon-root"
                     focusable="false"
-                    role="presentation"
                     viewBox="0 0 24 24"
                   >
                     <path
@@ -1023,56 +1013,32 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           />
           <span
             class="MuiSlider-mark MuiSlider-markActive"
-            style="left: 0%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel MuiSlider-markLabelActive"
+            data-index="0"
             style="left: 0%;"
           />
           <span
             class="MuiSlider-mark"
-            style="left: 17.718382013555793%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel"
+            data-index="1"
             style="left: 17.718382013555793%;"
           />
           <span
             class="MuiSlider-mark"
-            style="left: 41.14080899322211%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel"
+            data-index="2"
             style="left: 41.14080899322211%;"
           />
           <span
             class="MuiSlider-mark"
-            style="left: 58.85919100677789%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel"
+            data-index="3"
             style="left: 58.85919100677789%;"
           />
           <span
             class="MuiSlider-mark"
-            style="left: 76.5775730203337%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel"
+            data-index="4"
             style="left: 76.5775730203337%;"
           />
           <span
             class="MuiSlider-mark"
-            style="left: 100%;"
-          />
-          <span
-            aria-hidden="true"
-            class="MuiSlider-markLabel"
+            data-index="5"
             style="left: 100%;"
           />
           <span
@@ -1115,282 +1081,288 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
   </div>
   <div
     class="makeStyles-tracksContainer"
+    role="presentation"
   >
     <div
-      class="makeStyles-verticalGuidesContainer"
-      style="left: -800px; width: 2702px;"
+      class="makeStyles-verticalGuidesZoomContainer"
+      style="transform: scaleX(1);"
     >
       <div
-        class="makeStyles-boundaryPaddingBlock"
-        style="width: 800px;"
-      />
-      <div
-        class="makeStyles-block"
-        style="width: 100px;"
+        class="makeStyles-verticalGuidesContainer"
+        style="left: -800px; width: 2702px;"
       >
         <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: -1px;"
+          class="makeStyles-boundaryPaddingBlock"
+          style="width: 800px;"
         />
         <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 19px;"
+          class="makeStyles-block"
+          style="width: 100px;"
+        >
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: -1px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 19px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 39px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 59px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 79px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: 99px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 119px;"
+          />
+        </div>
+        <div
+          class="makeStyles-interRegionPaddingBlock"
+          style="width: 2px;"
         />
         <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 39px;"
-        />
+          class="makeStyles-block"
+          style="width: 800px;"
+        >
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: -1px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 19px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 39px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 59px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 79px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: 99px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 119px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 139px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 159px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 179px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: 199px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 219px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 239px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 259px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 279px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: 299px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 319px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 339px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 359px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 379px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: 399px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 419px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 439px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 459px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 479px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: 499px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 519px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 539px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 559px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 579px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: 599px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 619px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 639px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 659px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 679px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: 699px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 719px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 739px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 759px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 779px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: 799px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 819px;"
+          />
+        </div>
         <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 59px;"
-        />
+          class="makeStyles-block"
+          style="width: 200px;"
+        >
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: -1px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 19px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 39px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 59px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 79px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: 99px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 119px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 139px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 159px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 179px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-majorTick"
+            style="left: 199px;"
+          />
+          <div
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 219px;"
+          />
+        </div>
         <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 79px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: 99px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 119px;"
+          class="makeStyles-boundaryPaddingBlock"
+          style="width: 800px;"
         />
       </div>
-      <div
-        class="makeStyles-interRegionPaddingBlock"
-        style="width: 2px;"
-      />
-      <div
-        class="makeStyles-block"
-        style="width: 800px;"
-      >
-        <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: -1px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 19px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 39px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 59px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 79px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: 99px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 119px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 139px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 159px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 179px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: 199px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 219px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 239px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 259px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 279px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: 299px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 319px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 339px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 359px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 379px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: 399px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 419px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 439px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 459px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 479px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: 499px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 519px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 539px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 559px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 579px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: 599px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 619px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 639px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 659px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 679px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: 699px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 719px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 739px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 759px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 779px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: 799px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 819px;"
-        />
-      </div>
-      <div
-        class="makeStyles-block"
-        style="width: 200px;"
-      >
-        <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: -1px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 19px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 39px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 59px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 79px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: 99px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 119px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 139px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 159px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 179px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-majorTick"
-          style="left: 199px;"
-        />
-        <div
-          class="makeStyles-tick makeStyles-minorTick"
-          style="left: 219px;"
-        />
-      </div>
-      <div
-        class="makeStyles-boundaryPaddingBlock"
-        style="width: 800px;"
-      />
     </div>
     <div
       class="makeStyles-rubberBand"
@@ -1416,116 +1388,120 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       style="height: 17px; box-sizing: border-box;"
     >
       <div
-        class="makeStyles-scaleBar"
-        style="left: -801px; width: 2702px; height: 17px; box-sizing: border-box;"
+        style="transform: scaleX(1);"
       >
         <div
-          class="makeStyles-boundaryPaddingBlock"
-          style="background: none; width: 800px;"
-        />
-        <div
-          class="makeStyles-block"
-          style="width: 100px;"
+          class="makeStyles-scaleBar"
+          style="left: -801px; width: 2702px; height: 17px; box-sizing: border-box;"
         >
           <div
-            class="makeStyles-tick"
-            style="left: -1px;"
+            class="makeStyles-boundaryPaddingBlock"
+            style="background: none; width: 800px;"
+          />
+          <div
+            class="makeStyles-block"
+            style="width: 100px;"
           >
-            <p
-              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+            <div
+              class="makeStyles-tick"
+              style="left: -1px;"
             >
-              0
-            </p>
+              <p
+                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+              >
+                0
+              </p>
+            </div>
           </div>
+          <div
+            class="makeStyles-interRegionPaddingBlock"
+            style="background: none; width: 2px;"
+          />
+          <div
+            class="makeStyles-block"
+            style="width: 800px;"
+          >
+            <div
+              class="makeStyles-tick"
+              style="left: -1px;"
+            >
+              <p
+                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+              >
+                1,000
+              </p>
+            </div>
+            <div
+              class="makeStyles-tick"
+              style="left: 199px;"
+            >
+              <p
+                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+              >
+                1,200
+              </p>
+            </div>
+            <div
+              class="makeStyles-tick"
+              style="left: 399px;"
+            >
+              <p
+                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+              >
+                1,400
+              </p>
+            </div>
+            <div
+              class="makeStyles-tick"
+              style="left: 599px;"
+            >
+              <p
+                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+              >
+                1,600
+              </p>
+            </div>
+            <div
+              class="makeStyles-tick"
+              style="left: 799px;"
+            >
+              <p
+                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+              >
+                1,800
+              </p>
+            </div>
+          </div>
+          <div
+            class="makeStyles-block"
+            style="width: 200px;"
+          >
+            <div
+              class="makeStyles-tick"
+              style="left: -1px;"
+            >
+              <p
+                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+              >
+                1,800
+              </p>
+            </div>
+            <div
+              class="makeStyles-tick"
+              style="left: 199px;"
+            >
+              <p
+                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+              >
+                2,000
+              </p>
+            </div>
+          </div>
+          <div
+            class="makeStyles-boundaryPaddingBlock"
+            style="background: none; width: 800px;"
+          />
         </div>
-        <div
-          class="makeStyles-interRegionPaddingBlock"
-          style="background: none; width: 2px;"
-        />
-        <div
-          class="makeStyles-block"
-          style="width: 800px;"
-        >
-          <div
-            class="makeStyles-tick"
-            style="left: -1px;"
-          >
-            <p
-              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-            >
-              1,000
-            </p>
-          </div>
-          <div
-            class="makeStyles-tick"
-            style="left: 199px;"
-          >
-            <p
-              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-            >
-              1,200
-            </p>
-          </div>
-          <div
-            class="makeStyles-tick"
-            style="left: 399px;"
-          >
-            <p
-              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-            >
-              1,400
-            </p>
-          </div>
-          <div
-            class="makeStyles-tick"
-            style="left: 599px;"
-          >
-            <p
-              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-            >
-              1,600
-            </p>
-          </div>
-          <div
-            class="makeStyles-tick"
-            style="left: 799px;"
-          >
-            <p
-              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-            >
-              1,800
-            </p>
-          </div>
-        </div>
-        <div
-          class="makeStyles-block"
-          style="width: 200px;"
-        >
-          <div
-            class="makeStyles-tick"
-            style="left: -1px;"
-          >
-            <p
-              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-            >
-              1,800
-            </p>
-          </div>
-          <div
-            class="makeStyles-tick"
-            style="left: 199px;"
-          >
-            <p
-              class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-            >
-              2,000
-            </p>
-          </div>
-        </div>
-        <div
-          class="makeStyles-boundaryPaddingBlock"
-          style="background: none; width: 800px;"
-        />
       </div>
       <p
         class="MuiTypography-root makeStyles-refLabel MuiTypography-body1"
@@ -1614,127 +1590,124 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         style="height: 20px;"
       >
         <div
-          class="makeStyles-trackOffsetContainer"
+          class="makeStyles-renderingComponentContainer"
+          style="transform: scaleX(1);"
         >
           <div
-            class="makeStyles-renderingComponentContainer"
+            class="makeStyles-track"
+            data-testid="track-testConfig"
+            role="presentation"
           >
             <div
-              class="makeStyles-track"
-              data-testid="track-testConfig"
-              role="presentation"
+              class="makeStyles-trackBlocks"
+              data-testid="Blockset"
+              style="left: -800px;"
             >
               <div
-                class="makeStyles-trackBlocks"
-                data-testid="Blockset"
-                style="left: -800px;"
+                class="makeStyles-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
+              <div
+                class="makeStyles-block"
+                style="width: 100px;"
               >
                 <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
-                <div
-                  class="makeStyles-block"
-                  style="width: 100px;"
+                  class="ssr-container"
+                  data-html-size="313"
                 >
                   <div
-                    class="ssr-container"
-                    data-html-size="313"
+                    classname="ssr-container-inner"
                   >
                     <div
-                      classname="ssr-container-inner"
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
                     >
-                      <div
-                        class="PileupRendering"
-                        style="position:relative;width:0;height:0"
-                      >
-                        <canvas
-                          data-testid="prerendered_canvas"
-                          height="0"
-                          style="width:0;height:0;position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                        <canvas
-                          class="highlightOverlayCanvas"
-                          height="0"
-                          style="position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                      </div>
+                      <canvas
+                        data-testid="prerendered_canvas"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
                     </div>
                   </div>
                 </div>
-                <div
-                  class="makeStyles-interRegionPaddingBlock"
-                  style="background: none; width: 2px;"
-                />
-                <div
-                  class="makeStyles-block"
-                  style="width: 800px;"
-                >
-                  <div
-                    class="ssr-container"
-                    data-html-size="313"
-                  >
-                    <div
-                      classname="ssr-container-inner"
-                    >
-                      <div
-                        class="PileupRendering"
-                        style="position:relative;width:0;height:0"
-                      >
-                        <canvas
-                          data-testid="prerendered_canvas"
-                          height="0"
-                          style="width:0;height:0;position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                        <canvas
-                          class="highlightOverlayCanvas"
-                          height="0"
-                          style="position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-block"
-                  style="width: 200px;"
-                >
-                  <div
-                    class="ssr-container"
-                    data-html-size="313"
-                  >
-                    <div
-                      classname="ssr-container-inner"
-                    >
-                      <div
-                        class="PileupRendering"
-                        style="position:relative;width:0;height:0"
-                      >
-                        <canvas
-                          data-testid="prerendered_canvas"
-                          height="0"
-                          style="width:0;height:0;position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                        <canvas
-                          class="highlightOverlayCanvas"
-                          height="0"
-                          style="position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
               </div>
+              <div
+                class="makeStyles-interRegionPaddingBlock"
+                style="background: none; width: 2px;"
+              />
+              <div
+                class="makeStyles-block"
+                style="width: 800px;"
+              >
+                <div
+                  class="ssr-container"
+                  data-html-size="313"
+                >
+                  <div
+                    classname="ssr-container-inner"
+                  >
+                    <div
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
+                    >
+                      <canvas
+                        data-testid="prerendered_canvas"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="makeStyles-block"
+                style="width: 200px;"
+              >
+                <div
+                  class="ssr-container"
+                  data-html-size="313"
+                >
+                  <div
+                    classname="ssr-container-inner"
+                  >
+                    <div
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
+                    >
+                      <canvas
+                        data-testid="prerendered_canvas"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="makeStyles-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
             </div>
           </div>
         </div>
@@ -1817,127 +1790,124 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         style="height: 20px;"
       >
         <div
-          class="makeStyles-trackOffsetContainer"
+          class="makeStyles-renderingComponentContainer"
+          style="transform: scaleX(1);"
         >
           <div
-            class="makeStyles-renderingComponentContainer"
+            class="makeStyles-track"
+            data-testid="track-testConfig2"
+            role="presentation"
           >
             <div
-              class="makeStyles-track"
-              data-testid="track-testConfig2"
-              role="presentation"
+              class="makeStyles-trackBlocks"
+              data-testid="Blockset"
+              style="left: -800px;"
             >
               <div
-                class="makeStyles-trackBlocks"
-                data-testid="Blockset"
-                style="left: -800px;"
+                class="makeStyles-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
+              <div
+                class="makeStyles-block"
+                style="width: 100px;"
               >
                 <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
-                <div
-                  class="makeStyles-block"
-                  style="width: 100px;"
+                  class="ssr-container"
+                  data-html-size="313"
                 >
                   <div
-                    class="ssr-container"
-                    data-html-size="313"
+                    classname="ssr-container-inner"
                   >
                     <div
-                      classname="ssr-container-inner"
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
                     >
-                      <div
-                        class="PileupRendering"
-                        style="position:relative;width:0;height:0"
-                      >
-                        <canvas
-                          data-testid="prerendered_canvas"
-                          height="0"
-                          style="width:0;height:0;position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                        <canvas
-                          class="highlightOverlayCanvas"
-                          height="0"
-                          style="position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                      </div>
+                      <canvas
+                        data-testid="prerendered_canvas"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
                     </div>
                   </div>
                 </div>
-                <div
-                  class="makeStyles-interRegionPaddingBlock"
-                  style="background: none; width: 2px;"
-                />
-                <div
-                  class="makeStyles-block"
-                  style="width: 800px;"
-                >
-                  <div
-                    class="ssr-container"
-                    data-html-size="313"
-                  >
-                    <div
-                      classname="ssr-container-inner"
-                    >
-                      <div
-                        class="PileupRendering"
-                        style="position:relative;width:0;height:0"
-                      >
-                        <canvas
-                          data-testid="prerendered_canvas"
-                          height="0"
-                          style="width:0;height:0;position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                        <canvas
-                          class="highlightOverlayCanvas"
-                          height="0"
-                          style="position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-block"
-                  style="width: 200px;"
-                >
-                  <div
-                    class="ssr-container"
-                    data-html-size="313"
-                  >
-                    <div
-                      classname="ssr-container-inner"
-                    >
-                      <div
-                        class="PileupRendering"
-                        style="position:relative;width:0;height:0"
-                      >
-                        <canvas
-                          data-testid="prerendered_canvas"
-                          height="0"
-                          style="width:0;height:0;position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                        <canvas
-                          class="highlightOverlayCanvas"
-                          height="0"
-                          style="position:absolute;left:0;top:0"
-                          width="0"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
               </div>
+              <div
+                class="makeStyles-interRegionPaddingBlock"
+                style="background: none; width: 2px;"
+              />
+              <div
+                class="makeStyles-block"
+                style="width: 800px;"
+              >
+                <div
+                  class="ssr-container"
+                  data-html-size="313"
+                >
+                  <div
+                    classname="ssr-container-inner"
+                  >
+                    <div
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
+                    >
+                      <canvas
+                        data-testid="prerendered_canvas"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="makeStyles-block"
+                style="width: 200px;"
+              >
+                <div
+                  class="ssr-container"
+                  data-html-size="313"
+                >
+                  <div
+                    classname="ssr-container-inner"
+                  >
+                    <div
+                      class="PileupRendering"
+                      style="position:relative;width:0;height:0"
+                    >
+                      <canvas
+                        data-testid="prerendered_canvas"
+                        height="0"
+                        style="width:0;height:0;position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                      <canvas
+                        class="highlightOverlayCanvas"
+                        height="0"
+                        style="position:absolute;left:0;top:0"
+                        width="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="makeStyles-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
             </div>
           </div>
         </div>
