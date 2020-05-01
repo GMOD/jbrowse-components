@@ -11,10 +11,8 @@ export default pluginManager => {
     '@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType',
   )
 
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const { getParentRenderProps, getContainingView } = jbrequire(
-    '@gmod/jbrowse-core/util/tracks',
-  )
+  const { getSession, getContainingView } = jbrequire('@gmod/jbrowse-core/util')
+  const { getParentRenderProps } = jbrequire('@gmod/jbrowse-core/util/tracks')
 
   const configSchema = ConfigurationSchema(
     'ChordTrack',

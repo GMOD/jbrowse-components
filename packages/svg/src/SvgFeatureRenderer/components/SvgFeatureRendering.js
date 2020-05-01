@@ -221,8 +221,9 @@ RenderedFeatures.defaultProps = {
 }
 
 function SvgFeatureRendering(props) {
-  const { blockKey, region, bpPerPx, features, trackModel, config } = props
+  const { blockKey, regions, bpPerPx, features, trackModel, config } = props
   const { configuration } = trackModel
+  const [region] = regions || []
   const width = (region.end - region.start) / bpPerPx
   const displayMode = readConfObject(config, 'displayMode')
 
@@ -349,9 +350,12 @@ function SvgFeatureRendering(props) {
   const click = useCallback(
     event => {
       // don't select a feature if we are clicking and dragging
-      if (movedDuringLastMouseDown) return
-
-      onFeatureClick && onFeatureClick(event)
+      if (movedDuringLastMouseDown) {
+        return
+      }
+      if (onFeatureClick) {
+        onFeatureClick(event)
+      }
     },
     [movedDuringLastMouseDown, onFeatureClick],
   )
@@ -380,9 +384,10 @@ function SvgFeatureRendering(props) {
           setHeight={setHeight}
           displayMode={displayMode}
           {...props}
+          region={region}
         />
-        <SvgSelected {...props} />
-        <SvgMouseover {...props} />
+        <SvgSelected {...props} region={region} />
+        <SvgMouseover {...props} region={region} />
       </svg>
       {localFeatureIdUnderMouse ? (
         <Tooltip
@@ -402,7 +407,7 @@ SvgFeatureRendering.propTypes = {
     getTotalHeight: ReactPropTypes.func.isRequired,
   }).isRequired,
 
-  region: CommonPropTypes.Region.isRequired,
+  regions: ReactPropTypes.arrayOf(CommonPropTypes.Region).isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
   features: ReactPropTypes.oneOfType([
     ReactPropTypes.instanceOf(Map),

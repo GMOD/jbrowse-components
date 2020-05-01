@@ -43,7 +43,11 @@ export function ColorPicker(props: {
     <div>
       {displayColorPicker ? (
         <div className={classes.popover}>
-          <div className={classes.cover} onClick={handleClose} />
+          <div
+            role="presentation"
+            className={classes.cover}
+            onClick={handleClose}
+          />
           <ChromePicker color={color} onChange={onChange} />
         </div>
       ) : null}

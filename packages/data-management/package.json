@@ -2,7 +2,7 @@
   "name": "@gmod/jbrowse-plugin-data-management",
   "version": "2.0.0",
   "description": "JBrowse 2 track and assembly data management",
-  "main": "src/index.js",
+  "main": "src/index.ts",
   "scripts": {
     "test": "cd ../..; jest packages/data-management"
   },

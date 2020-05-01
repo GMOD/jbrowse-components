@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/camelcase,no-underscore-dangle */
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import {
+  Feature,
+  SimpleFeatureSerialized,
+} from '@gmod/jbrowse-core/util/simpleFeature'
+
 import BamAdapter from './BamAdapter'
 
 export interface Mismatch {
@@ -181,19 +185,20 @@ export default class implements Feature {
     return false
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  toJSON(): Record<string, any> {
+  toJSON(): SimpleFeatureSerialized {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const plain: any = {}
+    const tags: Record<string, any> = {}
     this.tags().forEach((t: string) => {
-      plain[t] = this.get(t)
+      tags[t] = this.get(t)
     })
-    plain.refName = this.get('refName')
-    plain.name = this.get('name')
-    plain.type = this.get('type')
-    plain.uniqueId = this.id()
-    plain.clipPos = this._get_clippos()
-    return plain
+    return {
+      ...tags,
+      refName: this.get('refName'),
+      name: this.get('name'),
+      type: this.get('type'),
+      uniqueId: this.id(),
+      clipPos: this._get_clippos(),
+    }
   }
 
   _get_skips_and_dels(

@@ -1,18 +1,22 @@
-import { BaseRefNameAliasAdapter, Alias } from '@gmod/jbrowse-core/BaseAdapter'
-import { IFileLocation } from '@gmod/jbrowse-core/mst-types'
+import {
+  BaseRefNameAliasAdapter,
+  Alias,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { GenericFilehandle } from 'generic-filehandle'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+
+import { ConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import MyConfigAdapterSchema from './configSchema'
 
 export default class RefNameAliasAdapter extends BaseRefNameAliasAdapter {
-  public static capabilities = ['getRefNameAliases']
-
   private location: GenericFilehandle
 
   private promise: Promise<Alias[]>
 
-  constructor(config: { location: IFileLocation }) {
+  constructor(config: ConfigurationModel<typeof MyConfigAdapterSchema>) {
     super()
-    this.location = openLocation(config.location)
+    this.location = openLocation(readConfObject(config, 'location'))
     this.promise = this.downloadResults()
   }
 

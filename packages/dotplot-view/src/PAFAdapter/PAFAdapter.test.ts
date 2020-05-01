@@ -1,13 +1,16 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './PAFAdapter'
+import MyConfigSchema from './configSchema'
 
 test('adapter can fetch features from peach_grape.paf', async () => {
-  const adapter = new Adapter({
-    pafLocation: {
-      localPath: require.resolve('./test_data/peach_grape.paf'),
-    },
-    assemblyNames: ['peach', 'grape'],
-  })
+  const adapter = new Adapter(
+    MyConfigSchema.create({
+      pafLocation: {
+        localPath: require.resolve('./test_data/peach_grape.paf'),
+      },
+      assemblyNames: ['peach', 'grape'],
+    }),
+  )
 
   const features1 = await adapter.getFeatures({
     refName: 'Pp01',

@@ -95,7 +95,7 @@ function VerticalGuides({
                             : classes.minorTick,
                         )}
                         style={{ left: x }}
-                      ></div>
+                      />
                     )
                   })}
                 </Block>

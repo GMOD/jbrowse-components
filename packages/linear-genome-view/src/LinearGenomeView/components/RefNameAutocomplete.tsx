@@ -190,7 +190,7 @@ function RefNameAutocomplete({
       options={regionNames}
       value={
         !assemblyName || loading || !selectedRegionName
-          ? ''
+          ? null
           : selectedRegionName
       }
       disabled={!assemblyName || loading}
@@ -202,12 +202,12 @@ function RefNameAutocomplete({
           ...params.InputProps,
           ...((TextFieldProps && TextFieldProps.InputProps) || {}),
           endAdornment: (
-            <React.Fragment>
+            <>
               {loading && !error ? (
                 <CircularProgress color="inherit" size={20} />
               ) : null}
               {params.InputProps.endAdornment}
-            </React.Fragment>
+            </>
           ),
         }
         return (

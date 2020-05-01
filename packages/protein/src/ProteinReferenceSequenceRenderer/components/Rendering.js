@@ -109,7 +109,8 @@ const bpColors = objectFromEntries(
 )
 
 function Rendering(props) {
-  const { bpPerPx, config, region, features } = props
+  const { bpPerPx, config, regions, features } = props
+  const [region] = regions
 
   if (bpPerPx > 1) {
     return (
@@ -141,6 +142,7 @@ function Rendering(props) {
       {showDnaSequence ? (
         <Sequence
           {...props}
+          region={region}
           lettersPerBp={3}
           height={height}
           sequence={dnaSequence}
@@ -149,6 +151,7 @@ function Rendering(props) {
       ) : null}
       <Sequence
         {...props}
+        region={region}
         y={showDnaSequence ? height : 0}
         height={height}
         sequence={proteinSequence}
@@ -161,10 +164,12 @@ function Rendering(props) {
 Rendering.propTypes = {
   config: CommonPropTypes.ConfigSchema.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
-  region: ReactPropTypes.shape({
-    end: ReactPropTypes.number.isRequired,
-    start: ReactPropTypes.number.isRequired,
-  }).isRequired,
+  regions: ReactPropTypes.arrayOf(
+    ReactPropTypes.shape({
+      end: ReactPropTypes.number.isRequired,
+      start: ReactPropTypes.number.isRequired,
+    }),
+  ).isRequired,
   features: ReactPropTypes.instanceOf(Map).isRequired,
 }
 

@@ -9,7 +9,7 @@ test('one', () => {
     <PileupRendering
       width={500}
       height={500}
-      region={{ refName: 'zonk', start: 1, end: 3 }}
+      regions={[{ refName: 'zonk', start: 1, end: 3 }]}
       layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
       bpPerPx={3}
       config={{ type: 'DummyRenderer' }}

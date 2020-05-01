@@ -132,6 +132,12 @@ Object {
         "cramLocation": Object {
           "uri": "test_data/volvox-sorted-altname.cram",
         },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "test_data/volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
         "type": "CramAdapter",
       },
       "assemblyNames": Array [
