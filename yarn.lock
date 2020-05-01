@@ -2886,7 +2886,7 @@
   dependencies:
     "@types/color-convert" "*"
 
-"@types/d3-scale@^2.1.1":
+"@types/d3-scale@^2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@types/d3-scale/-/d3-scale-2.2.0.tgz#e5987a2857365823eb26ed5eb21bc566c4dcf1c0"
   integrity sha512-oQFanN0/PiR2oySHfj+zAAkK1/p4LD32Nt1TMVmzk+bYHk7vgIg/iTXQWitp1cIkDw4LMdcgvO63wL+mNs47YA==

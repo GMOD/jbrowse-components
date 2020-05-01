@@ -10,7 +10,6 @@
   "license": "MIT",
   "dependencies": {
     "@gmod/bbi": "^1.0.29",
-    "@types/d3-scale": "^2.1.1",
     "abortable-promise-cache": "^1.0.1",
     "color": "^3.1.1",
     "d3-scale": "^3.0.0",
