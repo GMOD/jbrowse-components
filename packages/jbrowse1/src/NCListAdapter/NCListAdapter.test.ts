@@ -25,7 +25,6 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
   const adapter = new Adapter(configSchema.create(args))
 
   const features = await adapter.getFeatures({
-    assemblyName: 'volvox',
     refName: '21',
     start: 34960388,
     end: 35960388,

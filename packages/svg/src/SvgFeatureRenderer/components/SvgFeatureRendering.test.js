@@ -11,7 +11,9 @@ test('no features', () => {
     <Rendering
       width={500}
       height={500}
-      regions={[{ refName: 'zonk', start: 0, end: 300, assemblyName: 'volvox'  }]}
+      regions={[
+        { refName: 'zonk', start: 0, end: 300, assemblyName: 'volvox' },
+      ]}
       layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
       config={{}}
       bpPerPx={3}
@@ -26,7 +28,9 @@ test('one feature', () => {
     <Rendering
       width={500}
       height={500}
-      regions={[{ refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox'  }]}
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
       features={
         new Map([
@@ -48,7 +52,9 @@ test('one feature (compact mode)', () => {
     <Rendering
       width={500}
       height={500}
-      regions={[{ refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox'  }]}
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
       features={
         new Map([
@@ -393,7 +399,12 @@ test('svg selected', () => {
         width={500}
         height={500}
         blockKey="block1"
-        region={{ refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox'  }}
+        region={{
+          refName: 'zonk',
+          start: 0,
+          end: 1000,
+          assemblyName: 'volvox',
+        }}
         trackModel={{ blockLayoutFeatures, featureIdUnderMouse: 'one' }}
         config={SvgRendererConfigSchema.create({})}
         bpPerPx={3}

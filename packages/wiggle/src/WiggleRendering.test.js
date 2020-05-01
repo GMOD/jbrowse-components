@@ -1,5 +1,6 @@
 import React from 'react'
 import { render } from '@testing-library/react'
+import { types } from 'mobx-state-tree'
 import WiggleRendering from './WiggleRendering'
 
 // these tests do very little, let's try to expand them at some point
@@ -9,10 +10,8 @@ test('one', () => {
       width={500}
       height={500}
       features={new Map()}
-      highResolutionScaling={1}
       regions={[{ refName: 'chr1', start: 1, end: 3, assemblyName: 'volvox' }]}
       bpPerPx={3}
-      config={{ type: 'DummyRenderer' }}
     />,
   )
 

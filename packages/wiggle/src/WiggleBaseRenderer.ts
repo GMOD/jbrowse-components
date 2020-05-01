@@ -16,16 +16,9 @@ export interface WiggleBaseRendererProps {
   regions: IRegion[]
   bpPerPx: number
   height: number
-  width: number
   highResolutionScaling: number
-  blockKey: string
-  dataAdapter: BaseFeatureDataAdapter
-  notReady: boolean
-  originalRegions: IRegion[]
   scaleOpts: ScaleOpts
-  sessionId: string
-  signal: AbortSignal
-  trackModel: unknown
+  signal?: AbortSignal
 }
 
 export default class extends ServerSideRendererType {

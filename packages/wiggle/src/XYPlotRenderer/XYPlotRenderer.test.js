@@ -27,6 +27,8 @@ test('several features', async () => {
       {
         end: 100,
         start: 1,
+        refName: 'ctgA',
+        assemblyName: 'volvox',
       },
     ],
     scaleOpts: {
@@ -34,7 +36,7 @@ test('several features', async () => {
       range: [0, 100],
       scaleType: 'linear',
     },
-    config: {},
+    config: configSchema.create({}),
     bpPerPx: 3,
     highResolutionScaling: 1,
     height: 100,

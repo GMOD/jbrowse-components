@@ -19,18 +19,36 @@ test('empty', async () => {
         assemblyName: 'volvox',
       },
     ],
-    scaleOpts: {},
-    config: {},
+    features: new Map(),
+    bpPerPx: 3,
+    height: 100,
+    highResolutionScaling: 1,
+    scaleOpts: {
+      domain: [0, 100],
+      range: [0, 100],
+      inverted: true,
+      scaleType: 'linear',
+    },
+    config: configSchema.create({}),
   })
   expect(result).toEqual({ width: 0, height: 0 })
 })
 
 test('inverted mode and reversed', async () => {
   const result = await DensityRendererPlugin().makeImageData({
-    features: [
-      new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
-      new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
-    ],
+    features: new Map([
+      [
+        't1',
+        new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
+      ],
+      [
+        't2',
+        new SimpleFeature({
+          id: 't2',
+          data: { start: 101, end: 200, score: 2 },
+        }),
+      ],
+    ]),
     regions: [
       {
         end: 100,
@@ -42,12 +60,13 @@ test('inverted mode and reversed', async () => {
     ],
     scaleOpts: {
       domain: [0, 100],
+      range: [0, 100],
       inverted: true,
       scaleType: 'linear',
     },
     bpPerPx: 3,
     highResolutionScaling: 1,
-    config: {},
+    config: configSchema.create({}),
     height: 100,
   })
 
