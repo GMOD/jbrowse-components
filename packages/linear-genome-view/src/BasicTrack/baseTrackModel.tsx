@@ -1,12 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
-import { TrackControls } from '@gmod/jbrowse-core/ui'
+import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
-import {
-  getContainingView,
-  getParentRenderProps,
-} from '@gmod/jbrowse-core/util/tracks'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { types } from 'mobx-state-tree'
 import React from 'react'
 
@@ -89,9 +86,6 @@ const BaseTrack = types
     get name() {
       return getConf(self, 'name')
     },
-    get ControlsComponent() {
-      return TrackControls
-    },
 
     get RenderingComponent(): React.FC<{
       model: typeof self
@@ -126,16 +120,15 @@ const BaseTrack = types
      * renderer
      */
     get rendererType() {
-      const track = getContainingView(self)
       const session: any = getSession(self)
       const RendererType = session.pluginManager.getRendererType(
         self.rendererTypeName,
       )
       if (!RendererType)
-        throw new Error(`renderer "${track.rendererTypeName}" not found`)
+        throw new Error(`renderer "${self.rendererTypeName}" not found`)
       if (!RendererType.ReactComponent)
         throw new Error(
-          `renderer ${track.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
+          `renderer ${self.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
         )
       return RendererType
     },
@@ -145,7 +138,7 @@ const BaseTrack = types
      */
     get adapterType() {
       const adapterConfig = getConf(self, 'adapter')
-      const session: any = getSession(self)
+      const session = getSession(self)
       if (!adapterConfig)
         throw new Error(`no adapter configuration provided for ${self.type}`)
       const adapterType = session.pluginManager.getAdapterType(
@@ -157,8 +150,8 @@ const BaseTrack = types
     },
 
     get showConfigurationButton() {
-      const session: any = getSession(self)
-      return !!session.editConfiguration
+      const session = getSession(self)
+      return Boolean(session.editConfiguration)
     },
 
     /**
@@ -167,6 +160,14 @@ const BaseTrack = types
      */
     get trackMessageComponent() {
       return undefined
+    },
+
+    get menuOptions(): MenuOption[] {
+      return []
+    },
+
+    get viewMenuActions(): MenuOption[] {
+      return []
     },
 
     /**
@@ -210,7 +211,7 @@ const BaseTrackWithReferences = types
   )
   .actions(self => ({
     activateConfigurationUI() {
-      const session: any = getSession(self)
+      const session = getSession(self)
       session.editConfiguration(self.configuration)
     },
   }))

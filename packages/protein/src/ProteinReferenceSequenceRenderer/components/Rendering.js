@@ -16,13 +16,12 @@ function Sequence({
   region,
   height,
   bpPerPx,
-  horizontallyFlipped,
   sequence,
   lettersPerBp,
   y,
 }) {
   let s = sequence.split('')
-  if (horizontallyFlipped) s = s.reverse()
+  if (region.reversed) s = s.reverse()
   const letterWidth = 1 / bpPerPx / lettersPerBp
   return (
     <g transform={`translate(0 ${y})`}>
@@ -56,7 +55,6 @@ function Sequence({
 Sequence.propTypes = {
   region: CommonPropTypes.Region.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
-  horizontallyFlipped: ReactPropTypes.bool,
   y: ReactPropTypes.number,
   getTitleForLetter: ReactPropTypes.func,
   getColorForLetter: ReactPropTypes.func,
@@ -66,7 +64,6 @@ Sequence.propTypes = {
 }
 Sequence.defaultProps = {
   y: 0,
-  horizontallyFlipped: false,
   getTitleForLetter: () => undefined,
   getColorForLetter: () => '#ffffff',
   lettersPerBp: 1,
@@ -112,7 +109,8 @@ const bpColors = objectFromEntries(
 )
 
 function Rendering(props) {
-  const { bpPerPx, config, region, features } = props
+  const { bpPerPx, config, regions, features } = props
+  const [region] = regions
 
   if (bpPerPx > 1) {
     return (
@@ -144,6 +142,7 @@ function Rendering(props) {
       {showDnaSequence ? (
         <Sequence
           {...props}
+          region={region}
           lettersPerBp={3}
           height={height}
           sequence={dnaSequence}
@@ -152,6 +151,7 @@ function Rendering(props) {
       ) : null}
       <Sequence
         {...props}
+        region={region}
         y={showDnaSequence ? height : 0}
         height={height}
         sequence={proteinSequence}
@@ -164,10 +164,12 @@ function Rendering(props) {
 Rendering.propTypes = {
   config: CommonPropTypes.ConfigSchema.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
-  region: ReactPropTypes.shape({
-    end: ReactPropTypes.number.isRequired,
-    start: ReactPropTypes.number.isRequired,
-  }).isRequired,
+  regions: ReactPropTypes.arrayOf(
+    ReactPropTypes.shape({
+      end: ReactPropTypes.number.isRequired,
+      start: ReactPropTypes.number.isRequired,
+    }),
+  ).isRequired,
   features: ReactPropTypes.instanceOf(Map).isRequired,
 }
 

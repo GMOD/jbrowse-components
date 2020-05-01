@@ -1,21 +1,34 @@
+import { FatalErrorDialog } from '@gmod/jbrowse-core/ui'
+import 'core-js/stable'
+import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
+import 'mobx-react/batchingForReactDom'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { useQueryParam, StringParam } from 'use-query-params'
-import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
-import JBrowse from './JBrowse'
-import * as serviceWorker from './serviceWorker'
+import ErrorBoundary from 'react-error-boundary'
 import 'requestidlecallback-polyfill'
-import 'core-js/stable'
+import 'typeface-roboto'
+import Loader from './Loader'
+import * as serviceWorker from './serviceWorker'
 
 if (!window.TextEncoder) window.TextEncoder = TextEncoder
 if (!window.TextDecoder) window.TextDecoder = TextDecoder
 
-const App = () => {
-  const [config] = useQueryParam('config', StringParam)
-  return <JBrowse config={{ uri: config || 'test_data/config.json' }} />
-}
-
 // this is the main process, so start and register our service worker and web workers
 serviceWorker.register()
 
-ReactDOM.render(<App />, document.getElementById('root'))
+async function factoryReset() {
+  localStorage.removeItem('jbrowse-web-data')
+  localStorage.removeItem('jbrowse-web-session')
+  window.location.reload()
+}
+
+const PlatformSpecificFatalErrorDialog = props => {
+  return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
+}
+
+ReactDOM.render(
+  <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
+    <Loader />
+  </ErrorBoundary>,
+  document.getElementById('root'),
+)

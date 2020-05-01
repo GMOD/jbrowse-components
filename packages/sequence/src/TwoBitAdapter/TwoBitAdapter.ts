@@ -1,26 +1,28 @@
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
-import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { TwoBitFile } from '@gmod/twobit'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { Instance } from 'mobx-state-tree'
 
-export default class extends BaseAdapter {
+import configSchema from './configSchema'
+
+export default class TwoBitAdapter extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private twobit: any
 
-  public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
-
-  public constructor(config: { twoBitLocation: IFileLocation }) {
-    super()
+  constructor(config: Instance<typeof configSchema>) {
+    super(config)
     const twoBitOpts = {
-      filehandle: openLocation(config.twoBitLocation),
+      filehandle: openLocation(readConfObject(config, 'twoBitLocation')),
     }
 
     this.twobit = new TwoBitFile(twoBitOpts)
   }
 
-  public async getRefNames(): Promise<string[]> {
+  public getRefNames() {
     return this.twobit.getSequenceNames()
   }
 

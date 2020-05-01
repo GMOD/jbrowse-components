@@ -1,18 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`empty 1`] = `
-Object {
-  "height": 100,
-  "imageData": Image {
-    "_originalSource": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACEAAABkCAYAAAAIcVmwAAAABmJLR0QA/wD/AP+gvaeTAAAAJElEQVRoge3BMQEAAADCoPVPbQ0PoAAAAAAAAAAAAAAAAIAnAzP0AAFFmOl4AAAAAElFTkSuQmCC",
-    "onerror": [Function],
-    "onload": [Function],
-  },
-  "width": 33,
-}
-`;
-
-exports[`inverted mode and horizontally flipped 1`] = `
+exports[`inverted mode and reversed 1`] = `
 Object {
   "height": 100,
   "imageData": Any<Object>,

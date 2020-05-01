@@ -1,29 +1,47 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
+import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
 import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
-import { MenuOptions } from '@gmod/jbrowse-core/ui'
+import { MenuOption } from '@gmod/jbrowse-core/ui'
 import {
   clamp,
   getContainingView,
   getSession,
-  parseLocString,
+  isViewContainer,
+  parseLocStringAndConvertToInterbase,
+  springAnimate,
+  isSessionModelWithDrawerWidgets,
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
-import { getParent, getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
+import { getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
 
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import clone from 'clone'
 import { BlockSet } from '../BasicTrack/util/blockTypes'
+
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
+export interface LGVMenuOption {
+  title: string
+  key: string
+  callback: Function
+  checked?: boolean
+  isCheckbox: boolean
+}
 interface BpOffset {
   refName?: string
   index: number
   offset: number
   start?: number
   end?: number
+}
+
+interface ViewActions {
+  [key: string]: MenuOption[]
 }
 const validBpPerPx = [
   1 / 50,
@@ -53,69 +71,66 @@ const validBpPerPx = [
   2000000,
   5000000,
   10000000,
-]
+].sort((a, b) => a - b)
 
-export const HEADER_BAR_HEIGHT = 50
-export const SCALE_BAR_HEIGHT = 40
+export const HEADER_BAR_HEIGHT = 48
+export const HEADER_OVERVIEW_HEIGHT = 20
+export const SCALE_BAR_HEIGHT = 17
+export const RESIZE_HANDLE_HEIGHT = 3
 
-function constrainBpPerPx(newBpPerPx: number): number {
-  // find the closest valid zoom level and return it
-  // might consider reimplementing this later using a more efficient algorithm
-  return validBpPerPx.sort(
-    (a, b) => Math.abs(a - newBpPerPx) - Math.abs(b - newBpPerPx),
-  )[0]
-}
-
-export function stateModelFactory(pluginManager: any) {
-  return types
+export function stateModelFactory(pluginManager: PluginManager) {
+  const model = types
     .model('LinearGenomeView', {
       id: ElementId,
       type: types.literal('LinearGenomeView'),
       offsetPx: 0,
       bpPerPx: 1,
       displayedRegions: types.array(Region),
-      displayName: types.maybe(types.string),
-      horizontallyFlipped: false,
       // we use an array for the tracks because the tracks are displayed in a specific
       // order that we need to keep.
       tracks: types.array(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
-      controlsWidth: 120,
-      width: 800,
-      // set this to true to hide the close, config, and tracksel buttons
-      hideControls: false,
       hideHeader: false,
-      hideCloseButton: false,
+      hideHeaderOverview: false,
       trackSelectorType: types.optional(
         types.enumeration(['hierarchical']),
         'hierarchical',
       ),
       minimumBlockWidth: 20,
+      showCenterLine: false,
     })
     .volatile(() => ({
+      width: 800,
       draggingTrackId: undefined as undefined | string,
       error: undefined as undefined | Error,
 
       // array of callbacks to run after the next set of the displayedRegions,
       // which is basically like an onLoad
       afterDisplayedRegionsSetCallbacks: [] as Function[],
+      scaleFactor: 1,
     }))
     .views(self => ({
-      get viewingRegionWidth() {
-        return self.width - self.controlsWidth
+      get initialized() {
+        return self.displayedRegions.length > 0
       },
       get scaleBarHeight() {
-        return SCALE_BAR_HEIGHT + 1 // 1px border
+        return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
       },
       get headerHeight() {
-        return self.hideHeader ? 0 : HEADER_BAR_HEIGHT + 1 // 1px border
+        if (self.hideHeader) {
+          return 0
+        }
+        if (self.hideHeaderOverview) {
+          return HEADER_BAR_HEIGHT
+        }
+        return HEADER_BAR_HEIGHT + HEADER_OVERVIEW_HEIGHT
       },
       get trackHeights() {
         return self.tracks.map(t => t.height).reduce((a, b) => a + b, 0)
       },
       get trackHeightsWithResizeHandles() {
-        return this.trackHeights + self.tracks.length * 3
+        return this.trackHeights + self.tracks.length * RESIZE_HANDLE_HEIGHT
       },
       get height() {
         return (
@@ -132,12 +147,44 @@ export function stateModelFactory(pluginManager: any) {
         return totalbp
       },
 
+      get zoomLevels() {
+        const zoomLevels = validBpPerPx.filter(
+          val => val <= this.totalBp / self.width && val >= 0,
+        )
+        if (!zoomLevels.length) {
+          zoomLevels.push(validBpPerPx[0])
+        }
+        return zoomLevels
+      },
+
       get maxBpPerPx() {
-        return constrainBpPerPx(this.totalBp / this.viewingRegionWidth)
+        return this.zoomLevels[this.zoomLevels.length - 1]
       },
 
       get minBpPerPx() {
-        return constrainBpPerPx(0)
+        return this.zoomLevels[0]
+      },
+
+      constrainBpPerPx(newBpPerPx: number): number {
+        // find the closest valid zoom level and return it
+        // might consider reimplementing this later using a more efficient algorithm
+        return this.zoomLevels
+          .slice()
+          .sort(
+            (a, b) => Math.abs(a - newBpPerPx) - Math.abs(b - newBpPerPx),
+          )[0]
+      },
+
+      get maxOffset() {
+        // objectively determined to keep the linear genome on the main screen
+        const leftPadding = 10
+        return this.displayedRegionsTotalPx - leftPadding
+      },
+
+      get minOffset() {
+        // objectively determined to keep the linear genome on the main screen
+        const rightPadding = 30
+        return -self.width + rightPadding
       },
 
       get displayedRegionsTotalPx() {
@@ -152,7 +199,6 @@ export function stateModelFactory(pluginManager: any) {
             getSession(self),
             'highResolutionScaling',
           ),
-          horizontallyFlipped: self.horizontallyFlipped,
         }
       },
       get assemblyNames() {
@@ -169,9 +215,7 @@ export function stateModelFactory(pluginManager: any) {
 
         const index = self.displayedRegions.findIndex(r => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
-            offsetBp += self.horizontallyFlipped
-              ? r.end - coord
-              : coord - r.start
+            offsetBp += r.reversed ? r.end - coord : coord - r.start
             return true
           }
           offsetBp += r.end - r.start
@@ -189,30 +233,30 @@ export function stateModelFactory(pluginManager: any) {
       /**
        *
        * @param {number} px px in the view area, return value is the displayed regions
-       * @returns {Array} of the displayed region that it lands in
+       * @returns {BpOffset} of the displayed region that it lands in
        */
       pxToBp(px: number) {
-        const bp = (self.offsetPx + px) * self.bpPerPx + 1
+        const bp = (self.offsetPx + px) * self.bpPerPx
         let bpSoFar = 0
         let r = self.displayedRegions[0]
         if (bp < 0) {
           return {
             ...r,
-            offset: Math.round(bp),
+            offset: bp,
             index: 0,
           }
         }
         for (let index = 0; index < self.displayedRegions.length; index += 1) {
           r = self.displayedRegions[index]
           if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
-            return { ...r, offset: Math.round(bp - bpSoFar), index }
+            return { ...r, offset: bp - bpSoFar, index }
           }
           bpSoFar += r.end - r.start
         }
 
         return {
           ...r,
-          offset: Math.round(bp - bpSoFar),
+          offset: bp - bpSoFar,
           index: self.displayedRegions.length,
         }
       },
@@ -227,9 +271,53 @@ export function stateModelFactory(pluginManager: any) {
         )
         let accum = 0
         for (let i = 0; i < idx; i += 1) {
-          accum += self.tracks[i].height + 3 // +1px for trackresizehandle
+          accum += self.tracks[i].height + RESIZE_HANDLE_HEIGHT
         }
         return accum
+      },
+
+      // modifies view menu action onClick to apply to all tracks of same type
+      rewriteOnClicks(trackType: string, viewMenuActions: MenuOption[]) {
+        viewMenuActions.forEach((action: MenuOption) => {
+          // go to lowest level menu
+          if ('subMenu' in action) {
+            // @ts-ignore
+            this.rewriteOnClicks(trackType, action.subMenu)
+          }
+          if ('onClick' in action) {
+            const holdOnClick = action.onClick
+            action.onClick = (...args: unknown[]) => {
+              self.tracks.forEach(track => {
+                if (track.type === trackType) {
+                  // @ts-ignore
+                  holdOnClick.apply(track, [track, ...args])
+                }
+              })
+            }
+          }
+        })
+      },
+
+      get trackTypeActions() {
+        const allActions: Map<string, MenuOption[]> = new Map()
+        self.tracks.forEach(track => {
+          const trackInMap = allActions.get(track.type)
+          if (!trackInMap) {
+            const viewMenuActions = clone(track.viewMenuActions)
+            // @ts-ignore
+            this.rewriteOnClicks(track.type, viewMenuActions)
+            allActions.set(track.type, viewMenuActions)
+          }
+        })
+
+        return allActions
+      },
+
+      get centerLineInfo() {
+        const centerLineInfo = self.displayedRegions.length
+          ? this.pxToBp(self.width / 2)
+          : undefined
+        return centerLineInfo
       },
     }))
     .actions(self => ({
@@ -241,21 +329,25 @@ export function stateModelFactory(pluginManager: any) {
         self.error = error
       },
 
-      setDisplayName(name: string) {
-        self.displayName = name
-      },
-
       toggleHeader() {
         self.hideHeader = !self.hideHeader
       },
 
+      toggleHeaderOverview() {
+        self.hideHeaderOverview = !self.hideHeaderOverview
+      },
+
       horizontallyFlip() {
-        self.horizontallyFlipped = !self.horizontallyFlipped
-        self.displayedRegions = cast(self.displayedRegions.slice().reverse())
+        self.displayedRegions = cast(
+          self.displayedRegions
+            .slice()
+            .reverse()
+            .map(region => ({ ...region, reversed: !region.reversed })),
+        )
         self.offsetPx = self.totalBp / self.bpPerPx - self.offsetPx - self.width
       },
 
-      showTrack(configuration: any, initialSnapshot = {}) {
+      showTrack(configuration: AnyConfigurationModel, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')
         const name = readConfObject(configuration, 'name')
@@ -270,7 +362,7 @@ export function stateModelFactory(pluginManager: any) {
         self.tracks.push(track)
       },
 
-      hideTrack(configuration: any) {
+      hideTrack(configuration: AnyConfigurationModel) {
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(
           t => t.configuration === configuration,
@@ -278,7 +370,8 @@ export function stateModelFactory(pluginManager: any) {
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
       },
-
+    }))
+    .actions(self => ({
       moveTrack(movingTrackId: string, targetTrackId: string) {
         const oldIndex = self.tracks.findIndex(
           track => track.id === movingTrackId,
@@ -296,119 +389,161 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       closeView() {
-        const parent = getContainingView(self) as any
+        const parent = getContainingView(self)
         if (parent) {
-          // I am embedded in a higher order view
-          parent.removeView(self)
+          // I am embedded in a some other view
+          if (isViewContainer(parent)) parent.removeView(self)
         } else {
           // I am part of a session
-          getParent(self, 2).removeView(self)
+          getSession(self).removeView(self)
         }
       },
 
-      toggleTrack(configuration: any) {
+      toggleTrack(configuration: AnyConfigurationModel) {
         // if we have any tracks with that configuration, turn them off
-        const hiddenCount = this.hideTrack(configuration)
+        const hiddenCount = self.hideTrack(configuration)
         // if none had that configuration, turn one on
-        if (!hiddenCount) this.showTrack(configuration)
+        if (!hiddenCount) self.showTrack(configuration)
+      },
+
+      toggleCenterLine() {
+        self.showCenterLine = !self.showCenterLine
       },
 
       setDisplayedRegions(regions: IRegion[]) {
         self.displayedRegions = cast(regions)
+        this.zoomTo(self.bpPerPx)
       },
 
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
-          const session: any = getSession(self)
-          const selector = session.addDrawerWidget(
-            'HierarchicalTrackSelectorDrawerWidget',
-            'hierarchicalTrackSelector',
-            { view: self },
-          )
-          session.showDrawerWidget(selector)
-          return selector
+          const session = getSession(self)
+          if (isSessionModelWithDrawerWidgets(session)) {
+            const selector = session.addDrawerWidget(
+              'HierarchicalTrackSelectorDrawerWidget',
+              'hierarchicalTrackSelector',
+              { view: self },
+            )
+            session.showDrawerWidget(selector)
+            return selector
+          }
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
-      zoomTo(newBpPerPx: number) {
-        let bpPerPx = clamp(newBpPerPx, self.minBpPerPx, self.maxBpPerPx)
-        bpPerPx = constrainBpPerPx(newBpPerPx)
+      zoomTo(newBpPerPx: number, constrain = true) {
+        let bpPerPx = newBpPerPx
+        if (constrain) {
+          bpPerPx = self.constrainBpPerPx(newBpPerPx)
+        }
         if (bpPerPx === self.bpPerPx) return
         const oldBpPerPx = self.bpPerPx
         self.bpPerPx = bpPerPx
 
         // tweak the offset so that the center of the view remains at the same coordinate
-        const viewWidth = self.viewingRegionWidth
-        self.offsetPx = Math.round(
-          ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
-            viewWidth / 2,
+        const viewWidth = self.width
+        self.offsetPx = clamp(
+          Math.round(
+            ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
+              viewWidth / 2,
+          ),
+          self.minOffset,
+          self.maxOffset,
         )
       },
 
-      navToLocstring(locstring: string) {
-        return this.navTo(parseLocString(locstring))
+      async navToLocString(locString: string) {
+        await this.navTo(parseLocStringAndConvertToInterbase(locString))
       },
 
-      /*
-       * navTo navigates to a simple refName:start..end type object as input
-       * can handle if there are multiple displayedRegions from same chr
-       * only navigates to a locstring if it is entirely within a displayedRegion
+      /**
+       * navTo navigates to a simple refName:start..end type object as input.
+       * can handle if there are multiple displayedRegions from same chr.
+       * only navigates to a locString if it is entirely within a
+       * displayedRegion.
        *
-       * @param {refName,start,end,assemblyName?} is a proposed location to navigate to
-       * returns true if navigation was successful, false if not
+       * @param {refName,start?,end?,assemblyName?} location - a proposed
+       * location to navigate to
+       * throws an error if navigation was unsuccessful
        */
       async navTo(query: {
-        refName?: string
+        refName: string
         start?: number
         end?: number
         assemblyName?: string
       }) {
-        try {
-          // eslint-disable-next-line prefer-const
-          let { refName = '', start, end, assemblyName } = query
-          if (refName) {
+        let { refName } = query
+        const { start, end, assemblyName } = query
+        if (refName) {
+          try {
             const root = getRoot(self)
-            refName = await root.jbrowse.getCanonicalRefName(
+            const canonicalRefName = await root.jbrowse.getCanonicalRefName(
               refName,
               assemblyName || self.assemblyNames[0],
             )
-          }
-
-          // get the proper displayedRegion that is relevant for the nav command
-          // assumes that a single displayedRegion will satisfy the query
-          // TODO: may not necessarily be true?
-          const index = self.displayedRegions.findIndex(region => {
-            if (refName === region.refName) {
-              if (start === undefined) {
-                start = region.start
-              }
-              if (end === undefined) {
-                end = region.end
-              }
-              if (start >= region.start && end <= region.end) {
-                return true
-              }
+            if (canonicalRefName) {
+              refName = canonicalRefName
             }
-            return false
-          })
-
-          if (start === undefined || end === undefined) {
-            return false
-          }
-          if (index !== -1) {
-            const result = self.displayedRegions[index]
-            this.moveTo(
-              { index, offset: start - result.start },
-              { index, offset: end - result.start },
+          } catch (error) {
+            console.warn(
+              `wasn't able to look up canonical ref name for ${refName}`,
+              error,
             )
-            return true
+          }
+        }
+
+        let s = start
+        let e = end
+        let refNameMatched = false
+
+        // get the proper displayedRegion that is relevant for the nav command
+        // assumes that a single displayedRegion will satisfy the query
+        // TODO: may not necessarily be true?
+        const index = self.displayedRegions.findIndex(r => {
+          if (refName === r.refName) {
+            refNameMatched = true
+            if (s === undefined) {
+              s = r.start
+            }
+            if (e === undefined) {
+              e = r.end
+            }
+            if (s >= r.start && s <= r.end && e <= r.end && e >= r.start) {
+              return true
+            }
+            s = start
+            e = end
           }
           return false
-        } catch (e) {
-          this.setError(e)
-          return false
+        })
+        if (!refNameMatched) {
+          throw new Error(`could not find a region with refName "${refName}"`)
         }
+        if (s !== undefined && e === undefined) {
+          throw new Error(`could not find a region that contained ${s + 1}`)
+        }
+        if (s === undefined) {
+          throw new Error(
+            `could not find a region with refName "${refName}" that contained an end position ${e}`,
+          )
+        }
+        if (e === undefined) {
+          throw new Error(
+            `could not find a region with refName "${refName}" that contained a start position ${s}`,
+          )
+        }
+        if (index === -1) {
+          throw new Error(
+            `could not find a region that completely contained "${refName}:${
+              start !== undefined ? start + 1 : start
+            }..${end}"`,
+          )
+        }
+        const f = self.displayedRegions[index]
+        this.moveTo(
+          { index, offset: s - f.start },
+          { index, offset: e - f.start },
+        )
       },
 
       // schedule something to be run after the next time displayedRegions is set
@@ -430,7 +565,7 @@ export function stateModelFactory(pluginManager: any) {
           bpSoFar += end.offset - start.offset
         } else {
           const s = self.displayedRegions[start.index]
-          bpSoFar += s.end - start.offset
+          bpSoFar += (s.reversed ? s.start : s.end) - start.offset
           if (end.index - start.index >= 2) {
             for (let i = start.index + 1; i < end.index; i += 1) {
               bpSoFar +=
@@ -449,29 +584,32 @@ export function stateModelFactory(pluginManager: any) {
             bpToStart += region.end - region.start
           }
         }
-        self.bpPerPx = clamp(
-          bpSoFar / self.width,
-          self.minBpPerPx,
-          self.maxBpPerPx,
-        )
-        self.offsetPx = bpToStart / self.bpPerPx
+        self.bpPerPx = self.constrainBpPerPx(bpSoFar / self.width)
+        const viewWidth = self.width
+        if (viewWidth > bpSoFar / self.bpPerPx) {
+          self.offsetPx = Math.round(
+            bpToStart / self.bpPerPx - (viewWidth - bpSoFar / self.bpPerPx) / 2,
+          )
+        } else {
+          self.offsetPx = Math.round(bpToStart / self.bpPerPx)
+        }
       },
 
       horizontalScroll(distance: number) {
         const oldOffsetPx = self.offsetPx
-        // objectively determined to keep the linear genome on the main screen
-        const leftPadding = 10
-        const rightPadding = 30
-        const maxOffset = self.displayedRegionsTotalPx - leftPadding
-        const minOffset = -self.viewingRegionWidth + rightPadding
         // the scroll is clamped to keep the linear genome on the main screen
         const newOffsetPx = clamp(
           self.offsetPx + distance,
-          minOffset,
-          maxOffset,
+          self.minOffset,
+          self.maxOffset,
         )
         self.offsetPx = newOffsetPx
         return newOffsetPx - oldOffsetPx
+      },
+
+      scrollTo(offsetPx: number) {
+        const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
+        self.offsetPx = newOffsetPx
       },
 
       /**
@@ -490,43 +628,146 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       showAllRegions() {
-        self.bpPerPx = self.totalBp / self.viewingRegionWidth
+        self.bpPerPx = self.constrainBpPerPx(self.totalBp / self.width)
         self.offsetPx = 0
       },
 
       setDraggingTrackId(idx?: string) {
         self.draggingTrackId = idx
       },
+
+      setScaleFactor(factor: number) {
+        self.scaleFactor = factor
+      },
     }))
+    .actions(self => {
+      let cancelLastAnimation = () => {}
+
+      function slide(viewWidths: number) {
+        const [animate, cancelAnimation] = springAnimate(
+          self.offsetPx,
+          self.offsetPx + self.width * viewWidths,
+          self.scrollTo,
+        )
+        cancelLastAnimation()
+        cancelLastAnimation = cancelAnimation
+        animate()
+      }
+
+      return { slide }
+    })
+    .actions(self => {
+      let cancelLastAnimation = () => {}
+
+      function zoom(levels: number) {
+        self.zoomTo(self.bpPerPx)
+        if (
+          // no zoom
+          levels === 0 ||
+          // already zoomed all the way in
+          (levels > 0 && self.bpPerPx === self.minBpPerPx) ||
+          // already zoomed all the way out
+          (levels < 0 && self.bpPerPx === self.maxBpPerPx)
+        ) {
+          return
+        }
+        const currentIndex = self.zoomLevels.findIndex(
+          zoomLevel => zoomLevel === self.bpPerPx,
+        )
+        const targetIndex = clamp(
+          currentIndex - levels,
+          0,
+          self.zoomLevels.length - 1,
+        )
+        const targetBpPerPx = self.zoomLevels[targetIndex]
+        const factor = self.bpPerPx / targetBpPerPx
+        const [animate, cancelAnimation] = springAnimate(
+          1,
+          factor,
+          self.setScaleFactor,
+          () => {
+            self.zoomTo(targetBpPerPx)
+            self.setScaleFactor(1)
+          },
+        )
+        cancelLastAnimation()
+        cancelLastAnimation = cancelAnimation
+        animate()
+      }
+
+      return { zoom }
+    })
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
-        get menuOptions(): MenuOptions[] {
-          return [
+        get menuOptions(): MenuOption[] {
+          const session = getSession(self)
+          const menuOptions: MenuOption[] = [
+            {
+              label: 'Open track selector',
+              onClick: self.activateTrackSelector,
+              icon: 'line_style',
+              disabled:
+                isSessionModelWithDrawerWidgets(session) &&
+                session.visibleDrawerWidget &&
+                session.visibleDrawerWidget.id ===
+                  'hierarchicalTrackSelector' &&
+                // @ts-ignore
+                session.visibleDrawerWidget.view.id === self.id,
+            },
             {
               label: 'Horizontally flip',
-              type: 'checkbox',
-              checked: self.horizontallyFlipped,
+              icon: 'sync_alt',
               onClick: self.horizontallyFlip,
             },
             {
               label: 'Show all regions',
+              icon: 'visibility',
               onClick: self.showAllRegions,
             },
             {
-              label: self.hideHeader ? 'Show header' : 'Hide header',
+              label: 'Show header',
+              icon: 'visibility',
+              type: 'checkbox',
+              checked: !self.hideHeader,
               onClick: self.toggleHeader,
             },
+            {
+              label: 'Show header overview',
+              icon: 'visibility',
+              type: 'checkbox',
+              checked: !self.hideHeaderOverview,
+              onClick: self.toggleHeaderOverview,
+              disabled: self.hideHeader,
+            },
+            {
+              label: 'Show center line',
+              icon: 'visibility',
+              type: 'checkbox',
+              checked: self.showCenterLine,
+              onClick: self.toggleCenterLine,
+            },
           ]
+
+          // add track's view level menu options
+          for (const [key, value] of self.trackTypeActions.entries()) {
+            if (value.length) {
+              menuOptions.push(
+                { type: 'divider' },
+                { type: 'subHeader', label: key },
+              )
+              value.forEach(action => {
+                menuOptions.push(action)
+              })
+            }
+          }
+
+          return menuOptions
         },
 
         get staticBlocks() {
-          const ret = calculateStaticBlocks(
-            cast(self),
-            self.horizontallyFlipped,
-            1,
-          )
+          const ret = calculateStaticBlocks(cast(self), 1)
           const sret = JSON.stringify(ret)
           if (stringifiedCurrentlyCalculatedStaticBlocks !== sret) {
             currentlyCalculatedStaticBlocks = ret
@@ -536,9 +777,11 @@ export function stateModelFactory(pluginManager: any) {
         },
 
         get dynamicBlocks() {
-          return calculateDynamicBlocks(cast(self), self.horizontallyFlipped)
+          return calculateDynamicBlocks(cast(self))
         },
       }
     })
+
+  return types.compose(BaseViewModel, model)
 }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>

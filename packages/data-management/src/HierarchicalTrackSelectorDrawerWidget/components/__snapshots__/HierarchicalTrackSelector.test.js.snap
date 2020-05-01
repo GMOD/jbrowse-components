@@ -80,7 +80,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
               aria-hidden="true"
               class="MuiSvgIcon-root"
               focusable="false"
-              role="presentation"
               viewBox="0 0 24 24"
             >
               <path
@@ -100,6 +99,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
       </label>
       <button
         class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
+        data-testid="htsTrackEntryConfigure-sequenceConfigId"
         tabindex="0"
         type="button"
       >
@@ -211,7 +211,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                           aria-hidden="true"
                           class="MuiSvgIcon-root"
                           focusable="false"
-                          role="presentation"
                           viewBox="0 0 24 24"
                         >
                           <path
@@ -231,6 +230,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                   </label>
                   <button
                     class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
+                    data-testid="htsTrackEntryConfigure-fooC"
                     tabindex="0"
                     type="button"
                   >
@@ -336,7 +336,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                                       aria-hidden="true"
                                       class="MuiSvgIcon-root"
                                       focusable="false"
-                                      role="presentation"
                                       viewBox="0 0 24 24"
                                     >
                                       <path
@@ -356,6 +355,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                               </label>
                               <button
                                 class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
+                                data-testid="htsTrackEntryConfigure-barC"
                                 tabindex="0"
                                 type="button"
                               >
@@ -490,7 +490,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
               aria-hidden="true"
               class="MuiSvgIcon-root"
               focusable="false"
-              role="presentation"
               viewBox="0 0 24 24"
             >
               <path
@@ -510,6 +509,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
       </label>
       <button
         class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
+        data-testid="htsTrackEntryConfigure-sequenceConfigId"
         tabindex="0"
         type="button"
       >
@@ -562,7 +562,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
               aria-hidden="true"
               class="MuiSvgIcon-root"
               focusable="false"
-              role="presentation"
               viewBox="0 0 24 24"
             >
               <path
@@ -582,6 +581,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
       </label>
       <button
         class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
+        data-testid="htsTrackEntryConfigure-fooC"
         tabindex="0"
         type="button"
       >
@@ -627,7 +627,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
               aria-hidden="true"
               class="MuiSvgIcon-root"
               focusable="false"
-              role="presentation"
               viewBox="0 0 24 24"
             >
               <path
@@ -647,6 +646,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
       </label>
       <button
         class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
+        data-testid="htsTrackEntryConfigure-barC"
         tabindex="0"
         type="button"
       >

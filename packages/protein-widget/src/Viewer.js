@@ -31,10 +31,10 @@ const plugins = [Config, LinearGenomeView, Protein, Lollipop, SVG, Filtering]
 // want a lineargenomeview with a sequence track
 // and a variants track
 export class ProteinWidget {
-  constructor(initialState) {
-    this.pluginManager = new PluginManager(
-      plugins.map(P => new P()),
-    ).configure()
+  constructor(initialState = {}) {
+    this.pluginManager = new PluginManager(plugins.map(P => new P()))
+      .createPluggableElements()
+      .configure()
     const LinearGenomeViewType = this.pluginManager.getViewType(
       'LinearGenomeView',
     )
@@ -203,9 +203,11 @@ export function ProteinViewerRender(domElement, widget) {
   ReactDOM.render(<ProteinViewer widget={widget} />, domElement)
 }
 
-const FeatureRendering = ({ features, region, width }) => (
+const FeatureRendering = ({ features, region, width, height }) => (
   <Rendering
-    region={region}
+    width={width}
+    height={height}
+    regions={[region]}
     layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
     features={features}
     config={SvgRendererConfigSchema.create({})}
@@ -213,10 +215,10 @@ const FeatureRendering = ({ features, region, width }) => (
   />
 )
 FeatureRendering.propTypes = {
-  features: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  region: PropTypes.shape({ start: PropTypes.number, end: PropTypes.number })
-    .isRequired,
+  features: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  region: PropTypes.shape().isRequired,
   width: PropTypes.number.isRequired,
+  height: PropTypes.number.isRequired,
 }
 
 export function ExampleFeatureRendering(domElement) {

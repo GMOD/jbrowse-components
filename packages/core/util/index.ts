@@ -1,5 +1,12 @@
 import { toByteArray, fromByteArray } from 'base64-js'
-import { getParent, isAlive, IAnyStateTreeNode, getType } from 'mobx-state-tree'
+import {
+  getParent,
+  isAlive,
+  IAnyStateTreeNode,
+  hasParent,
+  addDisposer,
+} from 'mobx-state-tree'
+import { reaction, IReactionPublic } from 'mobx'
 import { inflate, deflate } from 'pako'
 import { Observable, fromEvent } from 'rxjs'
 import fromEntries from 'object.fromentries'
@@ -7,6 +14,9 @@ import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
+import { TypeTestedByPredicate, isSessionModel, isViewModel } from './types'
+
+export * from './types'
 
 if (!Object.fromEntries) {
   fromEntries.shim()
@@ -118,39 +128,130 @@ export function useDebouncedCallback<A extends any[]>(
   }
 }
 
-export function getSession(node: IAnyStateTreeNode): IAnyStateTreeNode {
-  let currentNode = node
-  // @ts-ignore
-  while (isAlive(currentNode) && currentNode.pluginManager === undefined)
-    currentNode = getParent(currentNode)
-  return currentNode
+/** find the first node in the hierarchy that matches the given predicate */
+export function findParentThat(
+  node: IAnyStateTreeNode,
+  predicate: (thing: IAnyStateTreeNode) => boolean,
+) {
+  let currentNode: IAnyStateTreeNode | undefined = node
+  while (currentNode && isAlive(currentNode)) {
+    if (predicate(currentNode)) return currentNode
+    if (hasParent(currentNode)) currentNode = getParent(currentNode)
+    else break
+  }
+  throw new Error('no matching node found')
 }
 
-export function getContainingView(
-  node: IAnyStateTreeNode,
-): IAnyStateTreeNode | undefined {
-  const currentNode = getParent(node, 2)
-  if (getType(currentNode).name.includes('View')) {
-    return currentNode
+interface Animation {
+  lastPosition: number
+  lastTime?: number
+  lastVelocity?: number
+}
+
+// based on https://github.com/react-spring/react-spring/blob/cd5548a987383b8023efd620f3726a981f9e18ea/src/animated/FrameLoop.ts
+export function springAnimate(
+  fromValue: number,
+  toValue: number,
+  setValue: (value: number) => void,
+  onFinish = () => {},
+  precision = 0,
+  tension = 170,
+  friction = 26,
+) {
+  const mass = 1
+  if (!precision) {
+    precision = Math.abs(toValue - fromValue) / 1000
   }
-  return undefined
+
+  let animationFrameId: number
+
+  function update(animation: Animation) {
+    const time = Date.now()
+    let position = animation.lastPosition
+    let lastTime = animation.lastTime || time
+    let velocity = animation.lastVelocity || 0
+    // If we lost a lot of frames just jump to the end.
+    if (time > lastTime + 64) {
+      lastTime = time
+    }
+    // http://gafferongames.com/game-physics/fix-your-timestep/
+    const numSteps = Math.floor(time - lastTime)
+    for (let i = 0; i < numSteps; ++i) {
+      const force = -tension * (position - toValue)
+      const damping = -friction * velocity
+      const acceleration = (force + damping) / mass
+      velocity += (acceleration * 1) / 1000
+      position += (velocity * 1) / 1000
+    }
+    const isVelocity = Math.abs(velocity) <= precision
+    const isDisplacement =
+      tension !== 0 ? Math.abs(toValue - position) <= precision : true
+    const endOfAnimation = isVelocity && isDisplacement
+    if (endOfAnimation) {
+      setValue(toValue)
+      onFinish()
+    } else {
+      setValue(position)
+      animationFrameId = requestAnimationFrame(() =>
+        update({
+          lastPosition: position,
+          lastTime: time,
+          lastVelocity: velocity,
+        }),
+      )
+    }
+  }
+
+  return [
+    () => update({ lastPosition: fromValue }),
+    () => cancelAnimationFrame(animationFrameId),
+  ]
+}
+
+/** find the first node in the hierarchy that matches the given 'is' typescript type guard predicate */
+export function findParentThatIs<
+  PREDICATE extends (thing: IAnyStateTreeNode) => boolean
+>(
+  node: IAnyStateTreeNode,
+  predicate: PREDICATE,
+): TypeTestedByPredicate<PREDICATE> & IAnyStateTreeNode {
+  return findParentThat(node, predicate) as TypeTestedByPredicate<PREDICATE> &
+    IAnyStateTreeNode
+}
+
+/** get the current JBrowse session model, starting at any node in the state tree */
+export function getSession(node: IAnyStateTreeNode) {
+  try {
+    return findParentThatIs(node, isSessionModel)
+  } catch (e) {
+    throw new Error('no session model found!')
+  }
+}
+
+/** get the state model of the view in the state tree that contains the given node */
+export function getContainingView(node: IAnyStateTreeNode) {
+  try {
+    return findParentThatIs(node, isViewModel)
+  } catch (e) {
+    throw new Error('no containing view found')
+  }
 }
 
 /**
- * Assemble a "locstring" from a location, like "ctgA:20-30".
- * The locstring uses 1-based coordinates.
+ * Assemble a "locString" from a location, like "ctgA:20-30".
+ * The locString uses 1-based coordinates.
  *
  * @param {string} args.refName reference sequence name
  * @param {number} args.start start coordinate
  * @param {number} args.end end coordinate
- * @returns {string} the locstring
+ * @returns {string} the locString
  */
 export function assembleLocString(region: IRegion | INoAssemblyRegion): string {
   const { refName, start, end } = region
   let assemblyName
   if ((region as IRegion).assemblyName) ({ assemblyName } = region as IRegion)
-  if (assemblyName) return `${assemblyName}:${refName}:${start + 1}-${end}`
-  return `${refName}:${start + 1}-${end}`
+  if (assemblyName) return `${assemblyName}:${refName}:${start + 1}..${end}`
+  return `${refName}:${start + 1}..${end}`
 }
 
 export interface ParsedLocString {
@@ -160,43 +261,52 @@ export interface ParsedLocString {
   end?: number
 }
 
-export function parseLocString(locstring: string): ParsedLocString {
-  const ret = locstring.split(':')
+export function parseLocString(locString: string): ParsedLocString {
+  if (!locString)
+    throw new Error('no location string provided, could not parse')
+  // remove any whitespace
+  locString = locString.replace(/\s/, '')
+  const ret = locString.split(':')
   let refName = ''
   let assemblyName
   let rest
-  if (ret.length >= 3) {
+  if (ret.length > 3) {
+    throw new Error(`too many ":", could not parse location "${locString}"`)
+  } else if (ret.length === 3) {
     ;[assemblyName, refName, rest] = ret
   } else if (ret.length === 2) {
     ;[refName, rest] = ret
-  } else if (ret.length === 1) {
+  } else {
     ;[refName] = ret
   }
   if (rest) {
-    // remove any whitespace
-    rest = rest.replace(/\s/, '')
     // see if it's a range
     const rangeMatch = rest.match(/^(-?\d+)(\.\.|-)(-?\d+)$/)
+    // see if it's a single point
+    const singleMatch = rest.match(/^(-?\d+)(\.\.|-)?$/)
     if (rangeMatch) {
       const [, start, , end] = rangeMatch
       if (start !== undefined && end !== undefined) {
         return { assemblyName, refName, start: +start, end: +end }
       }
-    }
-    // see if it's a single point
-    const singleMatch = rest.match(/^(-?\d+)$/)
-    if (singleMatch) {
-      const [, start] = singleMatch
+    } else if (singleMatch) {
+      const [, start, separator] = singleMatch
       if (start !== undefined) {
+        if (separator) {
+          // indefinite end
+          return { assemblyName, refName, start: +start }
+        }
         return { assemblyName, refName, start: +start, end: +start }
       }
+    } else {
+      throw new Error(`could not parse range "${rest}" on refName "${refName}"`)
     }
   }
   return { assemblyName, refName }
 }
 
-export function parseLocStringAndConvertToInterbase(locstring: string) {
-  const parsed = parseLocString(locstring)
+export function parseLocStringAndConvertToInterbase(locString: string) {
+  const parsed = parseLocString(locString)
   if (typeof parsed.start === 'number') parsed.start -= 1
   return parsed
 }
@@ -249,16 +359,13 @@ function roundToNearestPointOne(num: number): number {
  * @param {number} bp
  * @param {IRegion} region
  * @param {number} bpPerPx
- * @param {boolean} [flipped] whether the current region
- *  is displayed flipped horizontally.  default false.
  */
 export function bpToPx(
   bp: number,
-  region: { start: number; end: number },
+  region: { start: number; end: number; reversed?: boolean },
   bpPerPx: number,
-  flipped = false,
 ): number {
-  if (flipped) {
+  if (region.reversed) {
     return roundToNearestPointOne((region.end - bp) / bpPerPx)
   }
   return roundToNearestPointOne((bp - region.start) / bpPerPx)
@@ -293,29 +400,21 @@ export function cartesianToPolar(x: number, y: number): [number, number] {
 
 export function featureSpanPx(
   feature: Feature,
-  region: { start: number; end: number },
+  region: { start: number; end: number; reversed?: boolean },
   bpPerPx: number,
-  flipped = false,
 ): [number, number] {
-  return bpSpanPx(
-    feature.get('start'),
-    feature.get('end'),
-    region,
-    bpPerPx,
-    flipped,
-  )
+  return bpSpanPx(feature.get('start'), feature.get('end'), region, bpPerPx)
 }
 
 export function bpSpanPx(
   leftBp: number,
   rightBp: number,
-  region: { start: number; end: number },
+  region: { start: number; end: number; reversed?: boolean },
   bpPerPx: number,
-  flipped = false,
 ): [number, number] {
-  const start = bpToPx(leftBp, region, bpPerPx, flipped)
-  const end = bpToPx(rightBp, region, bpPerPx, flipped)
-  return flipped ? [end, start] : [start, end]
+  const start = bpToPx(leftBp, region, bpPerPx)
+  const end = bpToPx(rightBp, region, bpPerPx)
+  return region.reversed ? [end, start] : [start, end]
 }
 
 export const objectFromEntries = Object.fromEntries.bind(Object)
@@ -333,17 +432,6 @@ export function iterMap<T, U>(
     counter += 1
   }
   return results
-}
-
-export function generateLocString(
-  r: IRegion,
-  includeAssemblyName = true,
-): string {
-  let s = ''
-  if (includeAssemblyName && r.assemblyName) {
-    s = `${r.assemblyName}:`
-  }
-  return `${s}${r.refName}:${r.start}..${r.end}`
 }
 
 class AbortError extends Error {
@@ -370,6 +458,7 @@ export function checkAbortSignal(signal?: AbortSignal): void {
 
   if (signal.aborted) {
     if (typeof DOMException !== 'undefined') {
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
       throw new DOMException('aborted', 'AbortError')
     } else {
       const e = new AbortError('aborted')
@@ -389,12 +478,12 @@ export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
  * @param {Error} exception
  * @returns {boolean}
  */
-export function isAbortException(exception: AbortError): boolean {
+export function isAbortException(exception: Error): boolean {
   return (
     // DOMException
     exception.name === 'AbortError' ||
     // standard-ish non-DOM abort exception
-    exception.code === 'ERR_ABORTED' ||
+    (exception as AbortError).code === 'ERR_ABORTED' ||
     // message contains aborted for bubbling through RPC
     // things we have seen that we want to catch here
     // Error: aborted
@@ -448,4 +537,104 @@ export function findLastIndex<T>(
     }
   }
   return -1
+}
+
+/**
+ * makes a mobx reaction with the given functions, that calls actions
+ * on the model for each stage of execution, and to abort the reaction function when the
+ * model is destroyed.
+ *
+ * Will call flowNameStarted(signal), flowNameSuccess(result), and
+ * flowNameError(error) actions on the given state tree model when the
+ * async reaction function starts, completes, and errors respectively.
+ *
+ * @param {StateTreeNode} self
+ * @param {string} flowName
+ * @param {function} dataFunction -> data
+ * @param {async_function} asyncReactionFunction(data, signal) -> result
+ * @param {object} reactionOptions
+ */
+export function makeAbortableReaction<T, U>(
+  self: T,
+  flowName: string,
+  dataFunction: (arg: T, name: string) => U,
+  asyncReactionFunction: (
+    arg: U | undefined,
+    signal: AbortSignal,
+    model: T,
+    handle: IReactionPublic,
+  ) => Promise<void>,
+  reactionOptions: { name: string; fireImmediately: boolean; delay: number },
+  startedFunction: (aborter: AbortController) => void,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  successFunction: (arg: any) => void,
+  errorFunction: (err: Error) => void,
+) {
+  let inProgress: AbortController | undefined
+
+  function handleError(error: Error) {
+    if (!isAbortException(error)) {
+      if (isAlive(self)) {
+        errorFunction(error)
+      } else {
+        console.error(error)
+      }
+    }
+  }
+
+  const reactionDisposer = reaction(
+    () => {
+      try {
+        return dataFunction(self, flowName)
+      } catch (error) {
+        handleError(error)
+        return undefined
+      }
+    },
+    (data, mobxReactionHandle) => {
+      if (inProgress && !inProgress.signal.aborted) {
+        inProgress.abort()
+      }
+
+      if (!isAlive(self)) {
+        return
+      }
+      inProgress = new AbortController()
+
+      const thisInProgress = inProgress
+      startedFunction(thisInProgress)
+      Promise.resolve()
+        .then(() =>
+          asyncReactionFunction(
+            data,
+            thisInProgress.signal,
+            self,
+            mobxReactionHandle,
+          ),
+        )
+        .then(result => {
+          checkAbortSignal(thisInProgress.signal)
+          if (isAlive(self)) {
+            successFunction(result)
+          }
+        })
+        .catch(error => {
+          if (thisInProgress && !thisInProgress.signal.aborted)
+            thisInProgress.abort()
+          handleError(error)
+        })
+    },
+    reactionOptions,
+  )
+
+  addDisposer(self, reactionDisposer)
+  addDisposer(self, () => {
+    if (inProgress && !inProgress.signal.aborted) {
+      inProgress.abort()
+    }
+  })
+}
+
+export function minmax(a: number, b: number) {
+  return [Math.min(a, b), Math.max(a, b)]
 }

@@ -5,57 +5,6 @@ import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
 
 class Stick extends Component {
-  static propTypes = {
-    feature: ReactPropTypes.shape({
-      id: ReactPropTypes.func.isRequired,
-      get: ReactPropTypes.func.isRequired,
-    }).isRequired,
-    // horizontallyFlipped: ReactPropTypes.bool,
-    // bpPerPx: ReactPropTypes.number.isRequired,
-    // region: CommonPropTypes.Region.isRequired,
-    // config: CommonPropTypes.ConfigSchema.isRequired,
-    layoutRecord: ReactPropTypes.shape({
-      x: ReactPropTypes.number.isRequired,
-      y: ReactPropTypes.number.isRequired,
-      width: ReactPropTypes.number.isRequired,
-      height: ReactPropTypes.number.isRequired,
-      anchorLocation: ReactPropTypes.number.isRequired,
-      data: ReactPropTypes.shape({ radiusPx: ReactPropTypes.number.isRequired })
-        .isRequired,
-    }).isRequired,
-
-    selectedFeatureId: ReactPropTypes.string,
-
-    config: CommonPropTypes.ConfigSchema.isRequired,
-
-    onFeatureMouseDown: ReactPropTypes.func,
-    onFeatureMouseEnter: ReactPropTypes.func,
-    onFeatureMouseOut: ReactPropTypes.func,
-    onFeatureMouseOver: ReactPropTypes.func,
-    onFeatureMouseUp: ReactPropTypes.func,
-    onFeatureMouseLeave: ReactPropTypes.func,
-    onFeatureMouseMove: ReactPropTypes.func,
-
-    // synthesized from mouseup and mousedown
-    onFeatureClick: ReactPropTypes.func,
-  }
-
-  static defaultProps = {
-    // horizontallyFlipped: false,
-
-    selectedFeatureId: undefined,
-
-    onFeatureMouseDown: undefined,
-    onFeatureMouseEnter: undefined,
-    onFeatureMouseOut: undefined,
-    onFeatureMouseOver: undefined,
-    onFeatureMouseUp: undefined,
-    onFeatureMouseLeave: undefined,
-    onFeatureMouseMove: undefined,
-
-    onFeatureClick: undefined,
-  }
-
   onFeatureMouseDown = event => {
     const { onFeatureMouseDown: handler, feature } = this.props
     if (!handler) return undefined
@@ -133,5 +82,54 @@ class Stick extends Component {
     )
   }
 }
+Stick.propTypes = {
+  feature: ReactPropTypes.shape({
+    id: ReactPropTypes.func.isRequired,
+    get: ReactPropTypes.func.isRequired,
+  }).isRequired,
+  // horizontallyFlipped: ReactPropTypes.bool,
+  // bpPerPx: ReactPropTypes.number.isRequired,
+  // region: CommonPropTypes.Region.isRequired,
+  // config: CommonPropTypes.ConfigSchema.isRequired,
+  layoutRecord: ReactPropTypes.shape({
+    x: ReactPropTypes.number.isRequired,
+    y: ReactPropTypes.number.isRequired,
+    width: ReactPropTypes.number.isRequired,
+    height: ReactPropTypes.number.isRequired,
+    anchorLocation: ReactPropTypes.number.isRequired,
+    data: ReactPropTypes.shape({ radiusPx: ReactPropTypes.number.isRequired })
+      .isRequired,
+  }).isRequired,
 
+  selectedFeatureId: ReactPropTypes.string,
+
+  config: CommonPropTypes.ConfigSchema.isRequired,
+
+  onFeatureMouseDown: ReactPropTypes.func,
+  onFeatureMouseEnter: ReactPropTypes.func,
+  onFeatureMouseOut: ReactPropTypes.func,
+  onFeatureMouseOver: ReactPropTypes.func,
+  onFeatureMouseUp: ReactPropTypes.func,
+  onFeatureMouseLeave: ReactPropTypes.func,
+  onFeatureMouseMove: ReactPropTypes.func,
+
+  // synthesized from mouseup and mousedown
+  onFeatureClick: ReactPropTypes.func,
+}
+
+Stick.defaultProps = {
+  // horizontallyFlipped: false,
+
+  selectedFeatureId: undefined,
+
+  onFeatureMouseDown: undefined,
+  onFeatureMouseEnter: undefined,
+  onFeatureMouseOut: undefined,
+  onFeatureMouseOver: undefined,
+  onFeatureMouseUp: undefined,
+  onFeatureMouseLeave: undefined,
+  onFeatureMouseMove: undefined,
+
+  onFeatureClick: undefined,
+}
 export default observer(Stick)

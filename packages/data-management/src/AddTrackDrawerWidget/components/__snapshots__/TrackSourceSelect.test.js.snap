@@ -26,6 +26,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
               checked=""
               class="PrivateSwitchBase-input"
               data-testid="addTrackFromFileRadio"
+              name="TrackSourceSelectRadioGroup"
               type="radio"
               value="fromFile"
             />
@@ -36,7 +37,6 @@ exports[`<TrackSourceSelect /> renders 1`] = `
                 aria-hidden="true"
                 class="MuiSvgIcon-root"
                 focusable="false"
-                role="presentation"
                 viewBox="0 0 24 24"
               >
                 <path
@@ -47,7 +47,6 @@ exports[`<TrackSourceSelect /> renders 1`] = `
                 aria-hidden="true"
                 class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
                 focusable="false"
-                role="presentation"
                 viewBox="0 0 24 24"
               >
                 <path
@@ -79,6 +78,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
             <input
               class="PrivateSwitchBase-input"
               data-testid="addTrackFromConfigRadio"
+              name="TrackSourceSelectRadioGroup"
               type="radio"
               value="fromConfig"
             />
@@ -89,7 +89,6 @@ exports[`<TrackSourceSelect /> renders 1`] = `
                 aria-hidden="true"
                 class="MuiSvgIcon-root"
                 focusable="false"
-                role="presentation"
                 viewBox="0 0 24 24"
               >
                 <path
@@ -100,7 +99,6 @@ exports[`<TrackSourceSelect /> renders 1`] = `
                 aria-hidden="true"
                 class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
                 focusable="false"
-                role="presentation"
                 viewBox="0 0 24 24"
               >
                 <path

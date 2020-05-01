@@ -1,12 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import fs from 'fs'
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { ipcMain, ipcRenderer } from 'electron'
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { render, waitForElement } from '@testing-library/react'
+import { SnapshotIn } from 'mobx-state-tree'
 import React from 'react'
+import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
+import JBrowseRootModelFactory from './rootModel'
+
+type JBrowseRootModel = ReturnType<typeof JBrowseRootModelFactory>
 
 declare global {
   interface Window {
@@ -35,6 +39,20 @@ window.electron = {
   },
 } as any
 
+function getPluginManager(initialState?: SnapshotIn<JBrowseRootModel>) {
+  const pluginManager = new PluginManager(corePlugins.map(P => new P()))
+  pluginManager.createPluggableElements()
+
+  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
+  const rootModel = JBrowseRootModel.create({
+    jbrowse: initialState || {},
+  })
+  pluginManager.setRootModel(rootModel)
+
+  pluginManager.configure()
+  return pluginManager
+}
+
 test('basic test of electron-mock-ipc', async () => {
   const testMessage = 'test'
   ipcMain.once('test-event', (ev: Event, obj: string) => {
@@ -58,7 +76,7 @@ describe('main jbrowse app render', () => {
       return {}
     })
 
-    const { getByText } = render(<JBrowse />)
+    const { getByText } = render(<JBrowse pluginManager={getPluginManager()} />)
     expect(
       await waitForElement(() => getByText('Start a new session')),
     ).toBeTruthy()

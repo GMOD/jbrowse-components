@@ -29,7 +29,12 @@ export async function fetchTrackDbFile(trackDbFileLocation) {
   return new TrackDbFile(trackDbFileText)
 }
 
-export function generateTracks(trackDb, trackDbFileLocation, assemblyName) {
+export function generateTracks(
+  trackDb,
+  trackDbFileLocation,
+  assemblyName,
+  sequenceAdapter,
+) {
   const tracks = []
 
   trackDb.forEach((track, trackName) => {
@@ -54,7 +59,13 @@ export function generateTracks(trackDb, trackDbFileLocation, assemblyName) {
     const categories = parentTracks.map(parentTrack =>
       parentTrack.get('shortLabel'),
     )
-    const res = makeTrackConfig(track, categories, trackDbFileLocation, trackDb)
+    const res = makeTrackConfig(
+      track,
+      categories,
+      trackDbFileLocation,
+      trackDb,
+      sequenceAdapter,
+    )
     res.trackId = `ucsc-trackhub-${objectHash(res)}`
     res.assemblyNames = [assemblyName]
     tracks.push(res)
@@ -63,7 +74,13 @@ export function generateTracks(trackDb, trackDbFileLocation, assemblyName) {
   return tracks
 }
 
-function makeTrackConfig(track, categories, trackDbFileLocation, trackDb) {
+function makeTrackConfig(
+  track,
+  categories,
+  trackDbFileLocation,
+  trackDb,
+  sequenceAdapter,
+) {
   let trackType = track.get('type')
   if (!trackType) trackType = trackDb.get(track.get('parent')).get('type')
   let baseTrackType = trackType.split(' ')[0]
@@ -225,6 +242,7 @@ function makeTrackConfig(track, categories, trackDbFileLocation, trackDb) {
           type: 'CramAdapter',
           cramLocation: bigDataLocation,
           craiLocation: bigDataIndexLocation,
+          sequenceAdapter,
         },
       }
     case 'gvf':

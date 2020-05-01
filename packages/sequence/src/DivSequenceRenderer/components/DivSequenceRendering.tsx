@@ -1,17 +1,11 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { observer } from 'mobx-react'
 import React from 'react'
 import './DivSequenceRendering.scss'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
-interface Props {
-  config: unknown
-  features: Map<string, Feature>
-  region: IRegion
-  bpPerPx: number
-  horizontallyFlipped: boolean
-}
 // given the displayed region and a Map of id => feature, assemble the region's
 // sequence from the sequences returned by each feature.
 export function featuresToSequence(
@@ -48,12 +42,15 @@ export function featuresToSequence(
   return sequence
 }
 
-function SequenceDivs({
-  features,
-  region,
-  bpPerPx,
-  horizontallyFlipped,
-}: Props) {
+interface MyProps {
+  features: Map<string, Feature>
+  regions: IRegion[]
+  bpPerPx: number
+  config: AnyConfigurationModel
+}
+
+function SequenceDivs({ features, regions, bpPerPx }: MyProps) {
+  const [region] = regions
   let s = ''
   for (const seq of features.values()) {
     const seqString = seq.get('seq')
@@ -69,9 +66,8 @@ function SequenceDivs({
       )
     if (seqString) s += seq.get('seq')
   }
-
   let letters = s.split('')
-  if (horizontallyFlipped) {
+  if (region.reversed) {
     letters = letters.reverse()
   }
 
@@ -91,7 +87,11 @@ function SequenceDivs({
   )
 }
 
-function DivSequenceRendering(props: Props) {
+SequenceDivs.defaultProps = {
+  features: new Map(),
+}
+
+function DivSequenceRendering(props: MyProps) {
   const { config } = props
   const height = readConfObject(config, 'height')
   return (

@@ -105,7 +105,6 @@ function VariantFeatureDetails(props) {
   const classes = useStyles()
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { samples, ...rest } = feat
   return (
     <Paper className={classes.root} data-testid="variant-side-drawer">

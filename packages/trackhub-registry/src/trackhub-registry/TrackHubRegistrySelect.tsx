@@ -98,7 +98,6 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     const response = await doPost(
       'https://www.trackhubregistry.org/api/search',
       { assembly: selectedAssembly },
-      // eslint-disable-next-line @typescript-eslint/camelcase
       { page, entries_per_page: entriesPerPage },
     )
     if (response) {
@@ -136,7 +135,7 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     setAllHubsRetrieved(false)
   }
 
-  async function handleSelectHub(event) {
+  function handleSelectHub(event) {
     const newHub = event.target.value
     setSelectedHub(newHub)
     model.target.name.set(hubs.get(newHub).hub.shortLabel)

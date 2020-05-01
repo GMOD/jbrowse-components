@@ -1,28 +1,28 @@
 import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import {
   getOrigin,
   getScale,
   ScaleOpts,
 } from '@gmod/jbrowse-plugin-wiggle/src/util'
 import WiggleBaseRenderer from '@gmod/jbrowse-plugin-wiggle/src/WiggleBaseRenderer'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
 interface SNPCoverageRendererProps {
   features: Map<string, Feature>
   layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  config: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  region: IRegion
+  config: AnyConfigurationModel
+  regions: IRegion[]
   bpPerPx: number
   height: number
   width: number
-  horizontallyFlipped: boolean
   highResolutionScaling: number
   blockKey: string
-  dataAdapter: BaseAdapter
+  dataAdapter: BaseFeatureDataAdapter
   notReady: boolean
-  originalRegion: IRegion
+  originalRegions: IRegion[]
   scaleOpts: ScaleOpts
   sessionId: string
   signal: AbortSignal
@@ -39,15 +39,8 @@ interface BaseInfo {
 
 export default class SNPCoverageRenderer extends WiggleBaseRenderer {
   draw(ctx: CanvasRenderingContext2D, props: SNPCoverageRendererProps) {
-    const {
-      features,
-      region,
-      bpPerPx,
-      scaleOpts,
-      height,
-      horizontallyFlipped,
-    } = props
-
+    const { features, regions, bpPerPx, scaleOpts, height } = props
+    const [region] = regions
     const viewScale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
     const toY = (rawscore: number, curr = 0) =>
@@ -69,12 +62,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     // Second pass: draw the SNP data, and add a minimum feature width of 1px which can be wider than the actual bpPerPx
     // This reduces overdrawing of the grey background over the SNPs
     for (const feature of features.values()) {
-      const [leftPx, rightPx] = featureSpanPx(
-        feature,
-        region,
-        bpPerPx,
-        horizontallyFlipped,
-      )
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const score = feature.get('score')
 
       // draw total
@@ -83,12 +71,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
     }
     for (const feature of features.values()) {
-      const [leftPx, rightPx] = featureSpanPx(
-        feature,
-        region,
-        bpPerPx,
-        horizontallyFlipped,
-      )
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = Math.max(rightPx - leftPx + 0.3, 1)
       // grab array with nestedtable's info, draw mismatches
       const infoArray = feature.get('snpinfo') || []

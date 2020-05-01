@@ -1,5 +1,5 @@
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
-import { getAdapter } from '@gmod/jbrowse-core/util/dataAdapterCache'
+import { getAdapter } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import {
   deserializeAbortSignal,
   isRemoteAbortSignal,
@@ -23,7 +23,6 @@ export async function render(
   pluginManager,
   {
     regions,
-    region,
     sessionId,
     adapterType,
     adapterConfig,
@@ -58,7 +57,6 @@ export async function render(
     sessionId,
     dataAdapter,
     regions,
-    region,
     signal,
   })
   checkAbortSignal(signal)

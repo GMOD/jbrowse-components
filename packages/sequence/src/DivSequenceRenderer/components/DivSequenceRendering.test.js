@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactPropTypes from 'prop-types'
 import { render } from '@testing-library/react'
+import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import Rendering, { featuresToSequence } from './DivSequenceRendering'
 import DivRenderingConfigSchema from '../configSchema'
@@ -13,12 +14,10 @@ test('features to sequence function', () => {
         [
           'one',
           new SimpleFeature({
-            data: {
-              uniqueId: 'foo',
-              start: 10,
-              end: 25,
-              seq: '123456789012345',
-            },
+            uniqueId: 'foo',
+            start: 10,
+            end: 25,
+            seq: '123456789012345',
           }),
         ],
       ]),
@@ -27,8 +26,6 @@ test('features to sequence function', () => {
 })
 
 class ErrorCatcher extends React.Component {
-  static propTypes = { children: ReactPropTypes.node.isRequired }
-
   constructor(props) {
     super(props)
     this.state = { hasError: false, errorText: '' }
@@ -49,6 +46,7 @@ class ErrorCatcher extends React.Component {
     return children
   }
 }
+ErrorCatcher.propTypes = { children: ReactPropTypes.node.isRequired }
 
 describe('<DivSequenceRendering />', () => {
   // This just keeps our testing logs clean by not displaying `console.error`s
@@ -59,8 +57,12 @@ describe('<DivSequenceRendering />', () => {
   beforeAll(() => {
     console.error = (...args) => {
       if (
-        /feature one did not contain a valid `seq` attribute/.test(args[0]) ||
-        /The above error occurred in the <SequenceDivs> component/.test(args[0])
+        args[0].includes(
+          'feature one did not contain a valid `seq` attribute',
+        ) ||
+        args[0].includes(
+          'The above error occurred in the <SequenceDivs> component',
+        )
       )
         return
       originalError.call(console, ...args)
@@ -75,9 +77,10 @@ describe('<DivSequenceRendering />', () => {
   it('renders with no features', () => {
     const { container } = render(
       <Rendering
-        region={{ refName: 'zonk', assemblyName: 'volvox', start: 0, end: 300 }}
-        features={new Map()}
-        horizontallyFlipped={false}
+        width={500}
+        height={500}
+        regions={[{ refName: 'zonk', assemblyName: 'volvox',start: 0, end: 300 }]}
+        layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
         config={DivRenderingConfigSchema.create()}
         bpPerPx={3}
       />,
@@ -89,24 +92,18 @@ describe('<DivSequenceRendering />', () => {
   it('renders with one, zoomed way out', () => {
     const { container } = render(
       <Rendering
-        horizontallyFlipped={false}
-        region={{
-          refName: 'zonk',
-          assemblyName: 'volvox',
-          start: 0,
-          end: 1000,
-        }}
+        width={500}
+        height={500}
+        regions={[{ refName: 'zonk', assemblyName: 'volvox',start: 0, end: 1000 }]}
         features={
           new Map([
             [
               'one',
               new SimpleFeature({
-                data: {
-                  uniqueId: 'one',
-                  start: 1,
-                  end: 3,
-                  seq: 'AB',
-                },
+                uniqueId: 'one',
+                start: 1,
+                end: 3,
+                seq: 'AB',
               }),
             ],
           ])
@@ -123,21 +120,12 @@ describe('<DivSequenceRendering />', () => {
     const { container } = render(
       <ErrorCatcher>
         <Rendering
-          horizontallyFlipped={false}
-          region={{
-            refName: 'zonk',
-            assemblyName: 'volvox',
-            start: 0,
-            end: 300,
-          }}
+          width={500}
+          height={500}
+          regions={[{ refName: 'zonk', assemblyName: 'volvox',start: 0, end: 1000 }]}
           features={
             new Map([
-              [
-                'one',
-                new SimpleFeature({
-                  data: { uniqueId: 'one', start: 1, end: 3 },
-                }),
-              ],
+              ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
             ])
           }
           config={DivRenderingConfigSchema.create({})}
@@ -153,24 +141,18 @@ describe('<DivSequenceRendering />', () => {
     const { container } = render(
       <ErrorCatcher>
         <Rendering
-          horizontallyFlipped={false}
-          region={{
-            refName: 'zonk',
-            assemblyName: 'volvox',
-            start: 0,
-            end: 300,
-          }}
+          width={500}
+          height={500}
+          regions={[{ refName: 'zonk', assemblyName: 'volvox',start: 0, end: 1000 }]}
           features={
             new Map([
               [
                 'one',
                 new SimpleFeature({
-                  data: {
-                    uniqueId: 'one',
-                    start: 1,
-                    end: 3,
-                    seq: 'ABC',
-                  },
+                  uniqueId: 'one',
+                  start: 1,
+                  end: 3,
+                  seq: 'ABC',
                 }),
               ],
             ])
@@ -187,19 +169,18 @@ describe('<DivSequenceRendering />', () => {
   it('renders with one feature with a correct seq, zoomed in, should render nicely', () => {
     const { container } = render(
       <Rendering
-        horizontallyFlipped={false}
-        region={{ refName: 'zonk', assemblyName: 'volvox', start: 0, end: 300 }}
+        width={500}
+        height={500}
+        regions={[{ refName: 'zonk', assemblyName: 'volvox',start: 0, end: 1000 }]}
         features={
           new Map([
             [
               'one',
               new SimpleFeature({
-                data: {
-                  uniqueId: 'one',
-                  start: 1,
-                  end: 10,
-                  seq: 'ABCDEFGHI',
-                },
+                uniqueId: 'one',
+                start: 1,
+                end: 10,
+                seq: 'ABCDEFGHI',
               }),
             ],
           ])

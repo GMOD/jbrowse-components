@@ -1,5 +1,4 @@
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
-import Layout from '@gmod/jbrowse-core/util/layouts/GranularRectLayout'
 import XYPlotRenderer, { configSchema, ReactComponent } from '.'
 
 function XYPlotRendererPlugin() {
@@ -11,7 +10,6 @@ function XYPlotRendererPlugin() {
 }
 test('several features', async () => {
   const result = await XYPlotRendererPlugin().makeImageData({
-    layout: new Layout(),
     features: new Map([
       [
         't1',
@@ -25,12 +23,12 @@ test('several features', async () => {
         }),
       ],
     ]),
-    region: {
-      end: 100,
-      start: 1,
-      refName: 'ctgA',
-      assemblyName: 'volvox',
-    },
+    regions: [
+      {
+        end: 100,
+        start: 1,
+      },
+    ],
     scaleOpts: {
       domain: [0, 100],
       range: [0, 100],
@@ -39,10 +37,7 @@ test('several features', async () => {
     config: {},
     bpPerPx: 3,
     highResolutionScaling: 1,
-    horizontallyFlipped: false,
     height: 100,
-    width: 800,
-    blockKey: 'test',
   })
 
   expect(result).toMatchSnapshot({

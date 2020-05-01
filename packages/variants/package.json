@@ -2,7 +2,7 @@
   "name": "@gmod/jbrowse-plugin-variants",
   "version": "2.0.0",
   "description": "JBrowse 2 variant adapters, tracks, etc.",
-  "main": "src/index.js",
+  "main": "src/index.ts",
   "scripts": {
     "test": "cd ../..; jest packages/variants"
   },
@@ -19,7 +19,7 @@
     "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
     "@material-ui/core": "^4.0.0",
     "mobx-react": "^6.0.0",
-    "mobx-state-tree": "3.14.1",
+    "mobx-state-tree": "^3.14.1",
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "rxjs": "^6.0.0"

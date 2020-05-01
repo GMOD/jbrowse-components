@@ -7,15 +7,8 @@ import React, { useRef, useState, useEffect } from 'react'
 import runner from 'mobx-run-in-reactive-context'
 
 function PileupRendering(props) {
-  const {
-    blockKey,
-    trackModel,
-    width,
-    height,
-    region,
-    bpPerPx,
-    horizontallyFlipped,
-  } = props
+  const { blockKey, trackModel, width, height, regions, bpPerPx } = props
+  const [region] = regions
   const {
     selectedFeatureId,
     featureIdUnderMouse,
@@ -45,13 +38,7 @@ function PileupRendering(props) {
       (rect = blockLayout.get(selectedFeatureId))
     ) {
       const [leftBp, topPx, rightBp, bottomPx] = rect
-      const [leftPx, rightPx] = bpSpanPx(
-        leftBp,
-        rightBp,
-        region,
-        bpPerPx,
-        horizontallyFlipped,
-      )
+      const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
       const rectTop = Math.round(topPx)
       const rectHeight = Math.round(bottomPx - topPx)
       ctx.shadowColor = '#222266'
@@ -73,13 +60,7 @@ function PileupRendering(props) {
       (rect = blockLayout.get(featureIdUnderMouse))
     ) {
       const [leftBp, topPx, rightBp, bottomPx] = rect
-      const [leftPx, rightPx] = bpSpanPx(
-        leftBp,
-        rightBp,
-        region,
-        bpPerPx,
-        horizontallyFlipped,
-      )
+      const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
       const rectTop = Math.round(topPx)
       const rectHeight = Math.round(bottomPx - topPx)
       ctx.fillStyle = '#0003'
@@ -87,7 +68,6 @@ function PileupRendering(props) {
     }
   }, [
     bpPerPx,
-    horizontallyFlipped,
     region,
     selectedFeatureId,
     featureIdUnderMouse,
@@ -142,7 +122,7 @@ function PileupRendering(props) {
     }
     offsetX = event.clientX - offsetX
     offsetY = event.clientY - offsetY
-    const px = horizontallyFlipped ? width - offsetX : offsetX
+    const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
 
     const feats = trackModel.getFeatureOverlapping(blockKey, clientBp, offsetY)
@@ -226,9 +206,8 @@ PileupRendering.propTypes = {
   }).isRequired,
   height: ReactPropTypes.number.isRequired,
   width: ReactPropTypes.number.isRequired,
-  region: CommonPropTypes.Region.isRequired,
+  regions: ReactPropTypes.arrayOf(CommonPropTypes.Region).isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
-  horizontallyFlipped: ReactPropTypes.bool,
   blockKey: ReactPropTypes.string,
 
   trackModel: ReactPropTypes.shape({
@@ -263,7 +242,6 @@ PileupRendering.propTypes = {
 
 PileupRendering.defaultProps = {
   blockKey: undefined,
-  horizontallyFlipped: false,
   trackModel: {
     configuration: {},
     setFeatureIdUnderMouse: () => {},

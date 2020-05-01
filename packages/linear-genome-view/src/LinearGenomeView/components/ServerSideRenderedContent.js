@@ -7,10 +7,6 @@ import { isAlive, isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import BlockError from './BlockError'
 
 class RenderErrorBoundary extends Component {
-  static propTypes = {
-    children: ReactPropTypes.node.isRequired,
-  }
-
   constructor(props) {
     super(props)
     this.state = { hasError: false }
@@ -42,10 +38,6 @@ class RenderErrorBoundary extends Component {
  * component.
  */
 class ServerSideRenderedContent extends Component {
-  static propTypes = {
-    model: PropTypes.observableObject.isRequired,
-  }
-
   constructor(props) {
     super(props)
     this.ssrContainerNode = React.createRef()
@@ -90,7 +82,7 @@ class ServerSideRenderedContent extends Component {
             renderingComponent,
             {
               ...data,
-              region: serializedRegion,
+              regions: [serializedRegion],
               ...renderProps,
             },
             null,
@@ -119,5 +111,10 @@ class ServerSideRenderedContent extends Component {
     )
   }
 }
-
+ServerSideRenderedContent.propTypes = {
+  model: PropTypes.observableObject.isRequired,
+}
+RenderErrorBoundary.propTypes = {
+  children: ReactPropTypes.node.isRequired,
+}
 export default observer(ServerSideRenderedContent)

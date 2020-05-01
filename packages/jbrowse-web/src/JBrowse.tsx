@@ -1,60 +1,21 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import '@gmod/jbrowse-core/fonts/material-icons.css'
-import { App, theme, FatalErrorDialog } from '@gmod/jbrowse-core/ui'
-import {
-  toUrlSafeB64,
-  fromUrlSafeB64,
-  useDebounce,
-  inDevelopment,
-  mergeConfigs,
-} from '@gmod/jbrowse-core/util'
-import ErrorBoundary from 'react-error-boundary'
-import queryString from 'query-string'
-
-import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { IFileLocation } from '@gmod/jbrowse-core/mst-types'
-
-// material-ui
-import CircularProgress from '@material-ui/core/CircularProgress'
+import { App, theme } from '@gmod/jbrowse-core/ui'
+import { toUrlSafeB64, useDebounce } from '@gmod/jbrowse-core/util'
 import CssBaseline from '@material-ui/core/CssBaseline'
-import { ThemeProvider } from '@material-ui/styles'
-
+import { ThemeProvider } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
-import { onSnapshot } from 'mobx-state-tree'
-import { UndoManager } from 'mst-middlewares'
+import { getSnapshot, onSnapshot } from 'mobx-state-tree'
+import queryString from 'query-string'
 import React, { useEffect, useState } from 'react'
-import 'typeface-roboto'
 
-import JBrowseRootModel from './rootModel'
+const MAX_SESSION_SIZE_IN_URL = 100000
 
-const MAX_SESSION_SIZE_IN_URL = 10000
-
-async function parseConfig(configLoc: IFileLocation) {
-  const data = await openLocation(configLoc).readFile('utf8')
-  let config = JSON.parse(data as string)
-  // @ts-ignore
-  if (configLoc.uri === 'test_data/config.json' && inDevelopment) {
-    const extra = await openLocation({
-      uri: 'test_data/config_in_dev.json',
-    }).readFile('utf8')
-    config = mergeConfigs(config, JSON.parse(extra as string))
-  }
-  return config
-}
-
-function useJBrowseWeb(
-  config: IFileLocation,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  initialState: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  initialConfigSnapshot: any,
-) {
-  const [loaded, setLoaded] = useState(false)
-  const [rootModel, setRootModel] = useState(initialState || {})
+const JBrowse = observer(({ pluginManager }) => {
   const [urlSnapshot, setUrlSnapshot] = useState()
-  const [configSnapshot, setConfigSnapshot] = useState(initialConfigSnapshot)
   const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
 
+  const { rootModel } = pluginManager
   const { session, jbrowse } = rootModel || {}
   const useLocalStorage = jbrowse
     ? readConfObject(jbrowse.configuration, 'useLocalStorage')
@@ -81,7 +42,7 @@ function useJBrowseWeb(
         `${urlSplit[0]}?${queryString.stringify(parsed)}`,
       )
     }
-  }, [config, debouncedUrlSnapshot])
+  }, [debouncedUrlSnapshot])
 
   // This updates savedSession list on the rootModel
   useEffect(() => {
@@ -89,119 +50,11 @@ function useJBrowseWeb(
       rootModel.jbrowse.updateSavedSession(debouncedUrlSnapshot)
     }
   }, [debouncedUrlSnapshot, rootModel])
-  useEffect(() => {
-    try {
-      if (configSnapshot) {
-        setRootModel(JBrowseRootModel.create({ jbrowse: configSnapshot }))
-      }
-    } catch (error) {
-      // if it failed to load, it's probably a problem with the saved sessions,
-      // so just delete them and try again
-      try {
-        console.error(error)
-        console.warn(
-          'deleting saved sessions and re-trying after receiving the above error',
-        )
-        setRootModel(
-          JBrowseRootModel.create({
-            jbrowse: { ...configSnapshot, savedSessions: [] },
-          }),
-        )
-      } catch (e) {
-        console.error(e)
-        const additionalMsg =
-          e.message.length > 10000 ? '... see console for more' : ''
-        throw new Error(e.message.slice(0, 10000) + additionalMsg)
-      }
-    }
-  }, [configSnapshot])
-
-  // This loads a config from localStorage or a configSnapshot or a config.json file
-  useEffect(() => {
-    ;(async () => {
-      try {
-        if (initialState) {
-          setRootModel(initialState)
-        } else {
-          const localStorageConfig =
-            useLocalStorage && localStorage.getItem('jbrowse-web-data')
-
-          if (localStorageConfig) {
-            setConfigSnapshot(JSON.parse(localStorageConfig))
-          }
-          if (config) {
-            setConfigSnapshot(await parseConfig(config))
-          }
-        }
-      } catch (e) {
-        setLoaded(() => {
-          // throw to error boundary
-          throw e
-        })
-      }
-    })()
-  }, [config, initialState, useLocalStorage])
-
-  // finalize rootModel and setLoaded
-  useEffect(() => {
-    try {
-      const params = new URL(document.location.toString()).searchParams
-      const urlSession = params.get('session')
-      if (rootModel && rootModel.jbrowse) {
-        if (urlSession) {
-          const savedSessionIndex = rootModel.jbrowse.savedSessionNames.indexOf(
-            urlSession,
-          )
-          if (savedSessionIndex !== -1) {
-            rootModel.setSession(
-              rootModel.jbrowse.savedSessions[savedSessionIndex],
-            )
-          } else {
-            rootModel.setSession(JSON.parse(fromUrlSafeB64(urlSession)))
-          }
-        } else {
-          const localStorageSession = localStorage.getItem(
-            'jbrowse-web-session',
-          )
-          if (localStorageSession) {
-            rootModel.setSession(JSON.parse(localStorageSession))
-          }
-        }
-        if (!rootModel.session) {
-          if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
-            const { name } = rootModel.jbrowse.savedSessions[0]
-            rootModel.activateSession(name)
-          } else {
-            rootModel.setDefaultSession()
-          }
-        }
-
-        rootModel.setHistory(
-          UndoManager.create({}, { targetStore: rootModel.session }),
-        )
-        setLoaded(true)
-      }
-    } catch (e) {
-      console.error(e)
-      throw new Error(e.message.slice(0, 10000))
-    }
-  }, [rootModel])
-
-  // make some things available globally for testing
-  // e.g. window.MODEL.views[0] in devtools
-  useEffect(() => {
-    if (loaded) {
-      // @ts-ignore
-      window.MODEL = rootModel.session
-      // @ts-ignore
-      window.ROOTMODEL = rootModel
-    }
-  }, [loaded, rootModel])
 
   // set session in localstorage
   useEffect(
     () =>
-      useLocalStorage && loaded
+      useLocalStorage
         ? onSnapshot(rootModel.session, snapshot => {
             localStorage.setItem(
               'jbrowse-web-session',
@@ -209,19 +62,14 @@ function useJBrowseWeb(
             )
           })
         : () => {},
-    [loaded, rootModel, useLocalStorage],
+    [rootModel, useLocalStorage],
   )
 
-  // set jbrowse-web data in localstorage
-  useEffect(
-    () =>
-      useLocalStorage && loaded
-        ? onSnapshot(rootModel.jbrowse, snapshot => {
-            localStorage.setItem('jbrowse-web-data', JSON.stringify(snapshot))
-          })
-        : () => {},
-    [loaded, rootModel, useLocalStorage],
-  )
+  // Set session URL on first render only, before `onSnapshot` has fired
+  useEffect(() => {
+    setUrlSnapshot(getSnapshot(session))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(
     () =>
@@ -233,49 +81,14 @@ function useJBrowseWeb(
     [useUpdateUrl, session],
   )
 
-  return [loaded, rootModel]
-}
-
-const JBrowse = observer(({ config, initialState, configSnapshot }) => {
-  const [loaded, root] = useJBrowseWeb(config, initialState, configSnapshot)
-  const debouncedLoaded = useDebounce(loaded, 400)
-  // Use a debounce loaded here to let the circle spinner give a tiny more turn
-  // which looks better
-  return !debouncedLoaded ? (
-    <CircularProgress
-      style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        marginTop: -25,
-        marginLeft: -25,
-      }}
-      size={50}
-    />
-  ) : (
-    <App session={root.session} />
-  )
+  return <App session={rootModel.session} />
 })
 
-async function factoryReset() {
-  localStorage.removeItem('jbrowse-web-data')
-  localStorage.removeItem('jbrowse-web-session')
-  window.location.reload()
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const PlatformSpecificFatalErrorDialog = (props: any) => {
-  return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default (props: any) => {
+export default props => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
-        <JBrowse {...props} />
-      </ErrorBoundary>
+      <JBrowse {...props} />
     </ThemeProvider>
   )
 }

@@ -1,22 +1,19 @@
 import { IndexedFasta } from '@gmod/indexedfasta'
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
-export default class extends BaseAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected fasta: any
+export default class extends BaseFeatureDataAdapter {
+  protected fasta: typeof IndexedFasta
 
-  public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
-
-  public constructor(config: {
-    fastaLocation: IFileLocation
-    faiLocation: IFileLocation
-  }) {
-    super()
-    const { fastaLocation, faiLocation } = config
+  public constructor(config: AnyConfigurationModel) {
+    super(config)
+    const fastaLocation = readConfObject(config, 'fastaLocation')
+    const faiLocation = readConfObject(config, 'faiLocation')
     if (!fastaLocation) {
       throw new Error('must provide fastaLocation')
     }
@@ -24,14 +21,14 @@ export default class extends BaseAdapter {
       throw new Error('must provide faiLocation')
     }
     const fastaOpts = {
-      fasta: openLocation(fastaLocation),
-      fai: openLocation(faiLocation),
+      fasta: openLocation(fastaLocation as IFileLocation),
+      fai: openLocation(faiLocation as IFileLocation),
     }
 
     this.fasta = new IndexedFasta(fastaOpts)
   }
 
-  public async getRefNames(): Promise<string[]> {
+  public getRefNames() {
     return this.fasta.getSequenceList()
   }
 

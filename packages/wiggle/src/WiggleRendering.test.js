@@ -9,8 +9,10 @@ test('one', () => {
       width={500}
       height={500}
       features={new Map()}
-      region={{ refName: 'chr1', start: 1, end: 3, assemblyName: 'volvox' }}
+      highResolutionScaling={1}
+      regions={[{ refName: 'chr1', start: 1, end: 3, assemblyName: 'volvox' }]}
       bpPerPx={3}
+      config={{ type: 'DummyRenderer' }}
     />,
   )
 

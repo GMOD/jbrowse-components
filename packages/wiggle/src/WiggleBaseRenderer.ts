@@ -4,27 +4,34 @@ import {
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import React from 'react'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { ScaleOpts } from './util'
 
-interface WiggleBaseRendererProps {
+export interface WiggleBaseRendererProps {
   features: Map<string, Feature>
-  layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  config: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  region: IRegion
+  config: AnyConfigurationModel
+  regions: IRegion[]
   bpPerPx: number
   height: number
   width: number
-  horizontallyFlipped: boolean
   highResolutionScaling: number
   blockKey: string
+  dataAdapter: BaseFeatureDataAdapter
+  notReady: boolean
+  originalRegions: IRegion[]
   scaleOpts: ScaleOpts
+  sessionId: string
+  signal: AbortSignal
+  trackModel: unknown
 }
 
 export default class extends ServerSideRendererType {
   async makeImageData(props: WiggleBaseRendererProps) {
-    const { height, region, bpPerPx, highResolutionScaling = 1 } = props
+    const { height, regions, bpPerPx, highResolutionScaling = 1 } = props
+    const [region] = regions
     const width = (region.end - region.start) / bpPerPx
     if (!(width > 0) || !(height > 0)) {
       return { height: 0, width: 0 }
@@ -45,11 +52,9 @@ export default class extends ServerSideRendererType {
     /* draw features to context given props */
   }
 
-  // @ts-ignore
   async render(renderProps: WiggleBaseRendererProps) {
     const { height, width, imageData } = await this.makeImageData(renderProps)
     const element = React.createElement(
-      // @ts-ignore
       this.ReactComponent,
       { ...renderProps, height, width, imageData },
       null,

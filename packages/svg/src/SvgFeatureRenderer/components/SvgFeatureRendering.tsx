@@ -1,45 +1,24 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 import { bpToPx, bpSpanPx } from '@gmod/jbrowse-core/util'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
+import ReactPropTypes from 'prop-types'
 import React, { useRef, useState, useCallback } from 'react'
 import { Tooltip } from '@gmod/jbrowse-core/ui'
 import FeatureGlyph from './FeatureGlyph'
 import { chooseGlyphComponent, layOut } from './util'
 
 const fontWidthScaleFactor = 0.6
-interface Layout {
-  getTotalHeight: () => number
-  addRect: (
-    featId: string,
-    start: number,
-    end: number,
-    height: number,
-  ) => number
+const renderingStyle = {
+  position: 'relative',
 }
 
-interface BaseTrackModel {
-  configuration: unknown
-  blockLayoutFeatures: unknown
-  featureIdCurrentlyUnderMouse: unknown
-  setFeatureIdUnderMouse: (arg0: string | undefined) => void
-  getFeatureOverlapping: (
-    blockKey: string,
-    bp: number,
-    y: number,
-  ) => { name: string }[]
-}
 export const SvgSelected = observer(
   ({
     region,
-    trackModel: {
-      blockLayoutFeatures = undefined,
-      selectedFeatureId = undefined,
-    } = {},
+    trackModel: { blockLayoutFeatures, selectedFeatureId },
     bpPerPx,
-    horizontallyFlipped,
     blockKey,
   }) => {
     if (selectedFeatureId && blockLayoutFeatures) {
@@ -48,13 +27,7 @@ export const SvgSelected = observer(
         const rect = blockLayout.get(selectedFeatureId)
         if (rect) {
           const [leftBp, topPx, rightBp, bottomPx] = rect
-          const [leftPx, rightPx] = bpSpanPx(
-            leftBp,
-            rightBp,
-            region,
-            bpPerPx,
-            horizontallyFlipped,
-          )
+          const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
           const rectTop = Math.round(topPx)
           const rectHeight = Math.round(bottomPx - topPx)
 
@@ -77,13 +50,9 @@ export const SvgSelected = observer(
 
 export const SvgMouseover = observer(
   ({
-    trackModel: {
-      blockLayoutFeatures = undefined,
-      featureIdUnderMouse = undefined,
-    } = {},
+    trackModel: { blockLayoutFeatures, featureIdUnderMouse },
     region,
     bpPerPx,
-    horizontallyFlipped,
     blockKey,
   }) => {
     if (featureIdUnderMouse && blockLayoutFeatures) {
@@ -92,13 +61,7 @@ export const SvgMouseover = observer(
         const rect = blockLayout.get(featureIdUnderMouse)
         if (rect) {
           const [leftBp, topPx, rightBp, bottomPx] = rect
-          const [leftPx, rightPx] = bpSpanPx(
-            leftBp,
-            rightBp,
-            region,
-            bpPerPx,
-            horizontallyFlipped,
-          )
+          const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
           const rectTop = Math.round(topPx)
           const rectHeight = Math.round(bottomPx - topPx)
           return (
@@ -118,26 +81,11 @@ export const SvgMouseover = observer(
   },
 )
 
-function RenderedFeatureGlyph(props: {
-  feature: Feature
-  horizontallyFlipped: boolean
-  bpPerPx: number
-  region: IRegion
-  config: unknown
-  displayMode: string
-  layout: Layout
-}) {
-  const {
-    feature,
-    horizontallyFlipped,
-    bpPerPx,
-    region,
-    config,
-    displayMode,
-    layout,
-  } = props
-  const start = feature.get(horizontallyFlipped ? 'end' : 'start')
-  const startPx = bpToPx(start, region, bpPerPx, horizontallyFlipped)
+function RenderedFeatureGlyph(props) {
+  const { feature, bpPerPx, region, config, displayMode, layout } = props
+  const { reversed } = region
+  const start = feature.get(reversed ? 'end' : 'start')
+  const startPx = bpToPx(start, region, bpPerPx)
   const labelsAllowed = displayMode !== 'compact' && displayMode !== 'collapsed'
 
   const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
@@ -146,7 +94,7 @@ function RenderedFeatureGlyph(props: {
     layout: rootLayout,
     feature,
     bpPerPx,
-    horizontallyFlipped,
+    reversed,
     config,
   })
   let shouldShowName
@@ -224,14 +172,31 @@ function RenderedFeatureGlyph(props: {
       shouldShowDescription={shouldShowDescription}
       fontHeight={fontHeight}
       allowedWidthExpansion={expansion}
+      reversed={region.reversed}
       {...props}
     />
   )
 }
 
+RenderedFeatureGlyph.propTypes = {
+  layout: ReactPropTypes.shape({
+    addRect: ReactPropTypes.func.isRequired,
+    getTotalHeight: ReactPropTypes.func.isRequired,
+  }).isRequired,
+
+  displayMode: ReactPropTypes.string.isRequired,
+  region: CommonPropTypes.Region.isRequired,
+  bpPerPx: ReactPropTypes.number.isRequired,
+  feature: ReactPropTypes.shape({
+    id: ReactPropTypes.func.isRequired,
+    get: ReactPropTypes.func.isRequired,
+  }).isRequired,
+  config: CommonPropTypes.ConfigSchema.isRequired,
+}
+
 const RenderedFeatures = observer(props => {
   const { layout, setHeight, features } = props
-  const featuresRendered: JSX.Element[] = []
+  const featuresRendered = []
   for (const feature of features.values()) {
     featuresRendered.push(
       <RenderedFeatureGlyph key={feature.id()} feature={feature} {...props} />,
@@ -240,39 +205,37 @@ const RenderedFeatures = observer(props => {
   setHeight(layout.getTotalHeight())
   return <>{featuresRendered}</>
 })
+RenderedFeatures.propTypes = {
+  features: ReactPropTypes.oneOfType([
+    ReactPropTypes.instanceOf(Map),
+    ReactPropTypes.arrayOf(ReactPropTypes.shape()),
+  ]),
+  layout: ReactPropTypes.shape({
+    addRect: ReactPropTypes.func.isRequired,
+    getTotalHeight: ReactPropTypes.func.isRequired,
+  }).isRequired,
+}
 
-function SvgFeatureRendering(props: {
-  blockKey?: string
-  region: IRegion
-  bpPerPx: number
-  horizontallyFlipped?: boolean
-  features: Map<string, Feature>
-  trackModel?: BaseTrackModel
-  layout: Layout
-  config: unknown
-  onMouseOut?: Function
-  onMouseDown?: Function
-  onMouseLeave?: Function
-  onMouseEnter?: Function
-  onMouseOver?: Function
-  onMouseMove?: Function
-  onMouseUp?: Function
-  onFeatureClick?: Function
-}) {
+RenderedFeatures.defaultProps = {
+  features: [],
+}
+
+function SvgFeatureRendering(props) {
+  const { blockKey, regions, bpPerPx, features, trackModel, config } = props
+  const { configuration } = trackModel
+  const [region] = regions || []
+  const width = (region.end - region.start) / bpPerPx
+  const displayMode = readConfObject(config, 'displayMode')
+
+  const ref = useRef()
+  const [mouseIsDown, setMouseIsDown] = useState(false)
+  const [localFeatureIdUnderMouse, setLocalFeatureIdUnderMouse] = useState()
+  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
+    false,
+  )
+  const [tooltipCoord, setTooltipCoord] = useState([0, 0])
+  const [height, setHeight] = useState(0)
   const {
-    blockKey = '',
-    region,
-    bpPerPx,
-    horizontallyFlipped = false,
-    features,
-    trackModel = {
-      getFeatureOverlapping: () => {
-        return []
-      },
-      setFeatureIdUnderMouse: () => {},
-      configuration: {},
-    },
-    config,
     onMouseOut,
     onMouseDown,
     onMouseLeave,
@@ -282,20 +245,6 @@ function SvgFeatureRendering(props: {
     onMouseUp,
     onFeatureClick,
   } = props
-  const { configuration } = trackModel
-  const width = (region.end - region.start) / bpPerPx
-  const displayMode = readConfObject(config, 'displayMode')
-
-  const ref = useRef<SVGSVGElement>(null)
-  const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [localFeatureIdUnderMouse, setLocalFeatureIdUnderMouse] = useState<
-    undefined | string
-  >()
-  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
-    false,
-  )
-  const [tooltipCoord, setTooltipCoord] = useState([0, 0])
-  const [height, setHeight] = useState(0)
 
   const mouseDown = useCallback(
     event => {
@@ -368,7 +317,7 @@ function SvgFeatureRendering(props: {
       }
       offsetX = event.clientX - offsetX
       offsetY = event.clientY - offsetY
-      const px = horizontallyFlipped ? width - offsetX : offsetX
+      const px = region.reversed ? width - offsetX : offsetX
       const clientBp = region.start + bpPerPx * px
 
       const feats = trackModel.getFeatureOverlapping(
@@ -389,9 +338,9 @@ function SvgFeatureRendering(props: {
     [
       blockKey,
       bpPerPx,
-      horizontallyFlipped,
       mouseIsDown,
       onMouseMove,
+      region.reversed,
       region.start,
       trackModel,
       width,
@@ -401,15 +350,18 @@ function SvgFeatureRendering(props: {
   const click = useCallback(
     event => {
       // don't select a feature if we are clicking and dragging
-      if (movedDuringLastMouseDown) return
-
-      onFeatureClick && onFeatureClick(event)
+      if (movedDuringLastMouseDown) {
+        return
+      }
+      if (onFeatureClick) {
+        onFeatureClick(event)
+      }
     },
     [movedDuringLastMouseDown, onFeatureClick],
   )
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={renderingStyle}>
       <svg
         ref={ref}
         className="SvgFeatureRendering"
@@ -432,9 +384,10 @@ function SvgFeatureRendering(props: {
           setHeight={setHeight}
           displayMode={displayMode}
           {...props}
+          region={region}
         />
-        <SvgSelected {...props} />
-        <SvgMouseover {...props} />
+        <SvgSelected {...props} region={region} />
+        <SvgMouseover {...props} region={region} />
       </svg>
       {localFeatureIdUnderMouse ? (
         <Tooltip
@@ -446,6 +399,56 @@ function SvgFeatureRendering(props: {
       ) : null}
     </div>
   )
+}
+
+SvgFeatureRendering.propTypes = {
+  layout: ReactPropTypes.shape({
+    addRect: ReactPropTypes.func.isRequired,
+    getTotalHeight: ReactPropTypes.func.isRequired,
+  }).isRequired,
+
+  regions: ReactPropTypes.arrayOf(CommonPropTypes.Region).isRequired,
+  bpPerPx: ReactPropTypes.number.isRequired,
+  features: ReactPropTypes.oneOfType([
+    ReactPropTypes.instanceOf(Map),
+    ReactPropTypes.arrayOf(ReactPropTypes.shape()),
+  ]),
+  config: CommonPropTypes.ConfigSchema.isRequired,
+  trackModel: ReactPropTypes.shape({
+    configuration: ReactPropTypes.shape({}),
+    setFeatureIdUnderMouse: ReactPropTypes.func,
+    getFeatureOverlapping: ReactPropTypes.func,
+    selectedFeatureId: ReactPropTypes.string,
+    featureIdUnderMouse: ReactPropTypes.string,
+  }),
+
+  onMouseDown: ReactPropTypes.func,
+  onMouseUp: ReactPropTypes.func,
+  onMouseEnter: ReactPropTypes.func,
+  onMouseLeave: ReactPropTypes.func,
+  onMouseOver: ReactPropTypes.func,
+  onMouseOut: ReactPropTypes.func,
+  onMouseMove: ReactPropTypes.func,
+  onClick: ReactPropTypes.func,
+  onFeatureClick: ReactPropTypes.func,
+  blockKey: ReactPropTypes.string,
+}
+
+SvgFeatureRendering.defaultProps = {
+  trackModel: {},
+
+  features: new Map(),
+  blockKey: undefined,
+
+  onMouseDown: undefined,
+  onMouseUp: undefined,
+  onMouseEnter: undefined,
+  onMouseLeave: undefined,
+  onMouseOver: undefined,
+  onMouseOut: undefined,
+  onMouseMove: undefined,
+  onClick: undefined,
+  onFeatureClick: undefined,
 }
 
 export default observer(SvgFeatureRendering)

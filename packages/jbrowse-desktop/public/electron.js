@@ -155,7 +155,11 @@ function createWindow() {
   ]
   const mainMenu = Menu.buildFromTemplate(template)
 
-  isMac ? Menu.setApplicationMenu(mainMenu) : Menu.setApplicationMenu(null)
+  if (isMac) {
+    Menu.setApplicationMenu(mainMenu)
+  } else {
+    Menu.setApplicationMenu(null)
+  }
   // if (isDev) {
   // Open the DevTools.
   // BrowserWindow.addDevToolsExtension('<location to your react chrome extension>');

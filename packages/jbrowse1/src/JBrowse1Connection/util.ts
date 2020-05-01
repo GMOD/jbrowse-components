@@ -1,5 +1,6 @@
 import getValue from 'get-value'
 import objectHash from 'object-hash'
+import { Track, Source, Config } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isTrack(arg: any): arg is Track {

@@ -3,6 +3,7 @@ import Grow from '@material-ui/core/Grow'
 import Icon from '@material-ui/core/Icon'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
+import ListSubheader from '@material-ui/core/ListSubheader'
 import { MenuProps as MUIMenuProps } from '@material-ui/core/Menu'
 import MenuItem, { MenuItemProps } from '@material-ui/core/MenuItem'
 import MenuList from '@material-ui/core/MenuList'
@@ -45,6 +46,7 @@ interface MenuItemEndDecorationSubMenuProps {
 interface MenuItemEndDecorationSelectorProps {
   type: 'checkbox' | 'radio'
   checked: boolean
+  disabled?: boolean
 }
 
 type MenuItemEndDecorationProps =
@@ -55,21 +57,24 @@ function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
   const classes = useStyles()
   const { type } = props
   let checked
+  let disabled
   if ('checked' in props) {
-    ;({ checked } = props)
+    ;({ checked, disabled } = props)
   }
   let icon
   if (type === 'subMenu') {
     icon = <Icon color="action">arrow_right</Icon>
   } else if (type === 'checkbox') {
     if (checked) {
-      icon = <Icon color="secondary">check_box</Icon>
+      const color = disabled ? 'inherit' : 'secondary'
+      icon = <Icon color={color}>check_box</Icon>
     } else {
       icon = <Icon color="action">check_box_outline_blank</Icon>
     }
   } else if (type === 'radio') {
     if (checked) {
-      icon = <Icon color="secondary">radio_button_checked</Icon>
+      const color = disabled ? 'inherit' : 'secondary'
+      icon = <Icon color={color}>radio_button_checked</Icon>
     } else {
       icon = <Icon color="action">radio_button_unchecked</Icon>
     }
@@ -81,6 +86,11 @@ interface MenuDivider {
   type: 'divider'
 }
 
+interface MenuSubHeader {
+  type: 'subHeader'
+  label: string
+}
+
 interface BaseMenuItem {
   label: string
   subLabel?: string
@@ -90,44 +100,43 @@ interface BaseMenuItem {
 
 interface NormalMenuItem extends BaseMenuItem {
   type?: 'normal'
-  onClick: () => void
+  onClick: Function
 }
 
 interface CheckboxMenuItem extends BaseMenuItem {
   type: 'checkbox'
   checked: boolean
-  onClick: () => void
+  onClick: Function
 }
 
 interface RadioMenuItem extends BaseMenuItem {
   type: 'radio'
   checked: boolean
-  onClick: () => void
+  onClick: Function
 }
 
 interface SubMenuItem extends BaseMenuItem {
   type?: 'subMenu'
-  subMenu: MenuOptions[]
+  subMenu: MenuOption[]
 }
 
-export type MenuOptions =
+export type MenuOption =
   | MenuDivider
+  | MenuSubHeader
   | NormalMenuItem
   | CheckboxMenuItem
   | RadioMenuItem
   | SubMenuItem
 
 type AnchorElProp = MUIMenuProps['anchorEl']
-type AnchorReferenceProp = MUIMenuProps['anchorReference']
-type AnchorPositionProp = MUIMenuProps['anchorPosition']
 type OpenProp = MUIMenuProps['open']
 type OnCloseProp = MUIMenuProps['onClose']
 
 interface MenuPageProps {
-  menuOptions: MenuOptions[]
+  menuOptions: MenuOption[]
   onMenuItemClick: (
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-    callback: () => void,
+    callback: Function,
   ) => void
   anchorEl?: AnchorElProp
   open: OpenProp
@@ -137,11 +146,14 @@ interface MenuPageProps {
 
 type MenuItemStyleProp = MenuItemProps['style']
 
-function findNextValidIdx(menuOptions: MenuOptions[], currentIdx: number) {
+function findNextValidIdx(menuOptions: MenuOption[], currentIdx: number) {
   const idx = menuOptions
     .slice(currentIdx + 1)
     .findIndex(
-      menuOption => menuOption.type !== 'divider' && !menuOption.disabled,
+      menuOption =>
+        menuOption.type !== 'divider' &&
+        menuOption.type !== 'subHeader' &&
+        !menuOption.disabled,
     )
   if (idx === -1) {
     return idx
@@ -149,10 +161,13 @@ function findNextValidIdx(menuOptions: MenuOptions[], currentIdx: number) {
   return currentIdx + 1 + idx
 }
 
-function findPreviousValidIdx(menuOptions: MenuOptions[], currentIdx: number) {
+function findPreviousValidIdx(menuOptions: MenuOption[], currentIdx: number) {
   return findLastIndex(
     menuOptions.slice(0, currentIdx),
-    menuOption => menuOption.type !== 'divider' && !menuOption.disabled,
+    menuOption =>
+      menuOption.type !== 'divider' &&
+      menuOption.type !== 'subHeader' &&
+      !menuOption.disabled,
   )
 }
 
@@ -237,7 +252,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
     menuItemStyle.paddingRight = 48
   }
 
-  function handleClick(callback: () => void) {
+  function handleClick(callback: Function) {
     return (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
       onMenuItemClick(event, callback)
     }
@@ -249,6 +264,13 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
         {menuOptions.map((menuOption, idx) => {
           if (menuOption.type === 'divider') {
             return <Divider key={`divider-${idx}`} component="li" />
+          }
+          if (menuOption.type === 'subHeader') {
+            return (
+              <ListSubheader key={`subHeader-${menuOption.label}-${idx}`}>
+                {menuOption.label}
+              </ListSubheader>
+            )
           }
           let icon = null
           let endDecoration = null
@@ -269,13 +291,14 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
               <MenuItemEndDecoration
                 type={menuOption.type}
                 checked={menuOption.checked}
+                disabled={menuOption.disabled}
               />
             )
           }
-          let onClick
-          if ('onClick' in menuOption) {
-            onClick = handleClick(menuOption.onClick)
-          }
+          const onClick =
+            'onClick' in menuOption
+              ? handleClick(menuOption.onClick)
+              : undefined
           return (
             <MenuItem
               key={menuOption.label}
@@ -367,10 +390,10 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
 })
 
 interface MenuProps extends PopoverProps {
-  menuOptions: MenuOptions[]
+  menuOptions: MenuOption[]
   onMenuItemClick: (
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-    callback: () => void,
+    callback: Function,
   ) => void
 }
 

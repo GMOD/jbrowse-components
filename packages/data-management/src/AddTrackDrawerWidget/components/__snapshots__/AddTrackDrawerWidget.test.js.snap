@@ -20,7 +20,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
             aria-hidden="true"
             class="MuiSvgIcon-root MuiStepIcon-root MuiStepIcon-active"
             focusable="false"
-            role="presentation"
             viewBox="0 0 24 24"
           >
             <circle
@@ -87,6 +86,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                             checked=""
                             class="PrivateSwitchBase-input"
                             data-testid="addTrackFromFileRadio"
+                            name="TrackSourceSelectRadioGroup"
                             type="radio"
                             value="fromFile"
                           />
@@ -97,7 +97,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                               aria-hidden="true"
                               class="MuiSvgIcon-root"
                               focusable="false"
-                              role="presentation"
                               viewBox="0 0 24 24"
                             >
                               <path
@@ -108,7 +107,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                               aria-hidden="true"
                               class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
                               focusable="false"
-                              role="presentation"
                               viewBox="0 0 24 24"
                             >
                               <path
@@ -140,6 +138,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                           <input
                             class="PrivateSwitchBase-input"
                             data-testid="addTrackFromConfigRadio"
+                            name="TrackSourceSelectRadioGroup"
                             type="radio"
                             value="fromConfig"
                           />
@@ -150,7 +149,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                               aria-hidden="true"
                               class="MuiSvgIcon-root"
                               focusable="false"
-                              role="presentation"
                               viewBox="0 0 24 24"
                             >
                               <path
@@ -161,7 +159,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                               aria-hidden="true"
                               class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
                               focusable="false"
-                              role="presentation"
                               viewBox="0 0 24 24"
                             >
                               <path
@@ -315,7 +312,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
             aria-hidden="true"
             class="MuiSvgIcon-root MuiStepIcon-root"
             focusable="false"
-            role="presentation"
             viewBox="0 0 24 24"
           >
             <circle

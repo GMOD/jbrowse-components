@@ -1,134 +1,54 @@
 import calculateVisibleRegions from './calculateDynamicBlocks'
 
-const ctgA = { refName: 'ctgA', start: 0, end: 50000 }
+const ctgA = { refName: 'ctgA', start: 0, end: 50000, assemblyName: 'volvox' }
 
 test('one', () => {
   expect(
-    calculateVisibleRegions(
-      {
-        offsetPx: 0,
-        viewingRegionWidth: 200,
-        // @ts-ignore
-        displayedRegions: [ctgA],
-        bpPerPx: 1,
-      },
-      false,
-    ).getBlocks(),
-  ).toEqual([
-    {
-      end: 200,
+    calculateVisibleRegions({
       offsetPx: 0,
-      refName: 'ctgA',
-      start: 0,
-      parentRegion: ctgA,
-      isLeftEndOfDisplayedRegion: true,
-      isRightEndOfDisplayedRegion: false,
-      key: 'ctgA:1-200',
-      widthPx: 200,
-    },
-  ])
+      width: 200,
+      displayedRegions: [ctgA],
+      bpPerPx: 1,
+    }).getBlocks(),
+  ).toMatchSnapshot()
 })
 test('two', () => {
   expect(
-    calculateVisibleRegions(
-      {
-        offsetPx: 0,
-        viewingRegionWidth: 200,
-        // @ts-ignore
-        displayedRegions: [ctgA],
-        bpPerPx: 1,
-      },
-      true,
-    ).getBlocks(),
-  ).toEqual([
-    {
-      end: 50000,
+    calculateVisibleRegions({
       offsetPx: 0,
-      refName: 'ctgA',
-      start: 49800,
-      parentRegion: ctgA,
-      isLeftEndOfDisplayedRegion: true,
-      isRightEndOfDisplayedRegion: false,
-      key: 'ctgA:49801-50000',
-      widthPx: 200,
-    },
-  ])
+      width: 200,
+      displayedRegions: [{ ...ctgA, reversed: true }],
+      bpPerPx: 1,
+    }).getBlocks(),
+  ).toMatchSnapshot()
 })
 test('three', () => {
   expect(
-    calculateVisibleRegions(
-      {
-        offsetPx: -100,
-        viewingRegionWidth: 200,
-        // @ts-ignore
-        displayedRegions: [ctgA],
-        bpPerPx: 1,
-      },
-      true,
-    ).getBlocks(),
-  ).toEqual([
-    {
-      end: 50000,
-      offsetPx: 0,
-      refName: 'ctgA',
-      start: 49900,
-      parentRegion: ctgA,
-      isLeftEndOfDisplayedRegion: true,
-      isRightEndOfDisplayedRegion: false,
-      key: 'ctgA:49901-50000',
-      widthPx: 100,
-    },
-  ])
+    calculateVisibleRegions({
+      offsetPx: -100,
+      width: 200,
+      displayedRegions: [{ ...ctgA, reversed: true }],
+      bpPerPx: 1,
+    }).getBlocks(),
+  ).toMatchSnapshot()
 })
 test('four', () => {
   expect(
-    calculateVisibleRegions(
-      {
-        offsetPx: -100,
-        viewingRegionWidth: 350,
-        // @ts-ignore
-        displayedRegions: [ctgA],
-        bpPerPx: 1,
-      },
-      false,
-    ).getBlocks(),
-  ).toEqual([
-    {
-      end: 250,
-      offsetPx: 0,
-      refName: 'ctgA',
-      start: 0,
-      parentRegion: ctgA,
-      isLeftEndOfDisplayedRegion: true,
-      isRightEndOfDisplayedRegion: false,
-      key: 'ctgA:1-250',
-      widthPx: 250,
-    },
-  ])
+    calculateVisibleRegions({
+      offsetPx: -100,
+      width: 350,
+      displayedRegions: [ctgA],
+      bpPerPx: 1,
+    }).getBlocks(),
+  ).toMatchSnapshot()
 })
 test('five', () => {
   expect(
-    calculateVisibleRegions(
-      {
-        offsetPx: 521,
-        viewingRegionWidth: 927,
-        // @ts-ignore
-        displayedRegions: [ctgA],
-        bpPerPx: 0.05,
-      },
-      false,
-    ).getBlocks(),
-  ).toEqual([
-    {
-      end: 72.4,
+    calculateVisibleRegions({
       offsetPx: 521,
-      refName: 'ctgA',
-      start: 26.05,
-      parentRegion: ctgA,
-      isLeftEndOfDisplayedRegion: false,
-      isRightEndOfDisplayedRegion: false,
-      key: 'ctgA:27.05-72.4',
-      widthPx: 927.0000000000001,
-    },
-  ])
+      width: 927,
+      displayedRegions: [{ ...ctgA, reversed: false }],
+      bpPerPx: 0.05,
+    }).getBlocks(),
+  ).toMatchSnapshot()
 })

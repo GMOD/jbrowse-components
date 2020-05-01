@@ -11,7 +11,7 @@ test('no features', () => {
     <Rendering
       width={500}
       height={500}
-      region={{ refName: 'zonk', start: 0, end: 300 }}
+      regions={[{ refName: 'zonk', start: 0, end: 300 }]}
       layout={new PrecomputedFloatingLayout({ pairs: [], totalHeight: 20 })}
       config={{}}
       bpPerPx={3}
@@ -26,19 +26,13 @@ test('one feature', () => {
     <Rendering
       width={500}
       height={500}
-      region={{
-        refName: 'zonk',
-        start: 0,
-        end: 1000,
-      }}
+      regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
       layout={new FloatingLayout({ width: 100 })}
       features={
         new Map([
           [
             'one',
-            new SimpleFeature({
-              data: { uniqueId: 'one', score: 10, start: 1, end: 3 },
-            }),
+            new SimpleFeature({ uniqueId: 'one', score: 10, start: 1, end: 3 }),
           ],
         ])
       }

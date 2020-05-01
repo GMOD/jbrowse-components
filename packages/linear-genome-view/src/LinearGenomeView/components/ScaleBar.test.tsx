@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { render } from '@testing-library/react'
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import ScaleBar from './ScaleBar'
 
@@ -24,7 +22,6 @@ describe('ScaleBar genome view component', () => {
             },
           ],
           tracks: [],
-          controlsWidth: 100,
           configuration: {},
         },
       ],
@@ -48,11 +45,11 @@ describe('ScaleBar genome view component', () => {
       },
     })
     const model = session.views[0]
-    const { getByTestId } = render(<ScaleBar height={32} model={model} />)
+    const { getByTestId } = render(<ScaleBar model={model} />)
     const ret1 = getByTestId('refLabel-ctgA')
     const ret2 = getByTestId('refLabel-ctgB')
-    expect(ret1.style.left).toBe('0px')
-    expect(ret2.style.left).toBe('102px')
+    expect(ret1.style.left).toBe('-1px')
+    expect(ret2.style.left).toBe('101px')
   })
   it('renders two regions when scrolled to the left, the label is ctgA to the actual blocks', () => {
     const session = createTestSession({
@@ -66,7 +63,6 @@ describe('ScaleBar genome view component', () => {
             { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 100 },
           ],
           tracks: [],
-          controlsWidth: 100,
           configuration: {},
         },
       ],
@@ -90,11 +86,11 @@ describe('ScaleBar genome view component', () => {
       },
     })
     const model = session.views[0]
-    const { getByTestId } = render(<ScaleBar height={32} model={model} />)
+    const { getByTestId } = render(<ScaleBar model={model} />)
     const ret1 = getByTestId('refLabel-ctgA')
     const ret2 = getByTestId('refLabel-ctgB')
-    expect(ret1.style.left).toBe('100px')
-    expect(ret2.style.left).toBe('202px')
+    expect(ret1.style.left).toBe('99px')
+    expect(ret2.style.left).toBe('201px')
   })
 
   it('renders two regions when scrolled to the left, the label is ctgA to the actual blocks', () => {
@@ -111,7 +107,6 @@ describe('ScaleBar genome view component', () => {
             { assemblyName: 'volvox', refName: 'ctgD', start: 0, end: 1 },
           ],
           tracks: [],
-          controlsWidth: 100,
           configuration: {},
         },
       ],
@@ -135,7 +130,7 @@ describe('ScaleBar genome view component', () => {
       },
     })
     const model = session.views[0]
-    const { queryByTestId } = render(<ScaleBar height={32} model={model} />)
+    const { queryByTestId } = render(<ScaleBar model={model} />)
     const ret2 = queryByTestId('refLabel-ctgB')
     const ret3 = queryByTestId('refLabel-ctgC')
     const ret4 = queryByTestId('refLabel-ctgD')

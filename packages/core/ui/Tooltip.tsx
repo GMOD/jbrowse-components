@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react'
 import ReactPropTypes from 'prop-types'
 import { Feature } from '../util/simpleFeature'
 import { readConfObject } from '../configuration'
+import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 const useStyles = makeStyles({
   hoverLabel: {
@@ -25,7 +26,7 @@ const Tooltip = ({
 }: {
   offsetX: number
   offsetY: number
-  configuration: unknown
+  configuration: AnyConfigurationModel
   feature?: Feature
   timeout?: number
 }) => {

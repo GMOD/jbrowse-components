@@ -1,60 +1,50 @@
 /* eslint-disable no-nested-ternary */
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useState, useRef, MouseEvent } from 'react'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import {
-  IRegion,
-  PropTypes as CommonPropTypes,
-} from '@gmod/jbrowse-core/mst-types'
+import React, { useState, useRef } from 'react'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
+import { useTheme } from '@material-ui/core/styles'
 import './WiggleRendering.scss'
 
-const toP = (s: number) => parseFloat(s.toPrecision(6))
+const toP = s => parseFloat(s.toPrecision(6))
 
-function Tooltip({ offsetX, feature }: { offsetX: number; feature: Feature }) {
+function Tooltip({ offsetX, feature }) {
+  const theme = useTheme()
   const info = feature.get('snpinfo') ? feature.get('snpinfo') : null
-  const total = info
-    ? info[info.map((e: { base: string }) => e.base).indexOf('total')].score
-    : 0
+  const total = info ? info[info.map(e => e.base).indexOf('total')].score : 0
   const condId = info && info.length >= 5 ? 'smallInfo' : 'info' // readjust table size to fit all
 
   // construct a table with all relevant information
   const renderTableData = info
-    ? info.map(
-        (mismatch: {
-          base: string
-          score: number
-          strands: { '+': number; '-': number }
-        }) => {
-          const { base, score, strands } = mismatch
-          return (
-            <tr key={base}>
-              <td id={condId}>{base.toUpperCase()}</td>
-              <td id={condId}>{score}</td>
-              <td id={condId}>
-                {base === 'total'
-                  ? '---'
-                  : `${Math.floor((score / total) * 100)}%`}
-              </td>
-              <td id={condId}>
-                {base === 'total'
-                  ? '---'
-                  : (strands['+']
-                      ? `+:${strands['+']} ${strands['-'] ? `,\t` : `\t`} `
-                      : ``) + (strands['-'] ? `-:${strands['-']}` : ``)}
-              </td>
-            </tr>
-          )
-        },
-      )
+    ? info.map(mismatch => {
+        const { base, score, strands } = mismatch
+        return (
+          <tr key={base}>
+            <td id={condId}>{base.toUpperCase()}</td>
+            <td id={condId}>{score}</td>
+            <td id={condId}>
+              {base === 'total'
+                ? '---'
+                : `${Math.floor((score / total) * 100)}%`}
+            </td>
+            <td id={condId}>
+              {base === 'total'
+                ? '---'
+                : (strands['+']
+                    ? `+:${strands['+']} ${strands['-'] ? `,\t` : `\t`} `
+                    : ``) + (strands['-'] ? `-:${strands['-']}` : ``)}
+            </td>
+          </tr>
+        )
+      })
     : null
 
   return (
     <>
       <div
         className="hoverLabel"
-        style={{ left: `${offsetX}px`, zIndex: 10000 }}
+        style={{ left: `${offsetX}px`, zIndex: theme.zIndex.tooltip }}
       >
         {info ? (
           <div id="info">
@@ -91,41 +81,23 @@ function Tooltip({ offsetX, feature }: { offsetX: number; feature: Feature }) {
 
 Tooltip.propTypes = {
   offsetX: ReactPropTypes.number.isRequired,
-  feature: ReactPropTypes.object,
-}
-Tooltip.defaultProps = {
-  feature: {},
+  feature: ReactPropTypes.object.isRequired,
 }
 
-function WiggleRendering(props: {
-  region: IRegion
-  features: Map<string, Feature>
-  bpPerPx: number
-  horizontallyFlipped: boolean
-  width: number
-  height: number
-}) {
-  const {
-    region,
-    features,
-    bpPerPx,
-    horizontallyFlipped,
-    width,
-    height,
-  } = props
-  const ref = useRef<HTMLDivElement>(null)
-  const [featureUnderMouse, setFeatureUnderMouse] = useState<
-    Feature | undefined
-  >()
-  const [clientX, setClientX] = useState(0)
+function WiggleRendering(props) {
+  const { regions, features, bpPerPx, width, height } = props
+  const [region] = regions
+  const ref = useRef()
+  const [featureUnderMouse, setFeatureUnderMouse] = useState()
+  const [clientX, setClientX] = useState()
 
   let offset = 0
   if (ref.current) {
     offset = ref.current.getBoundingClientRect().left
   }
-  function onMouseMove(evt: MouseEvent) {
+  function onMouseMove(evt) {
     const offsetX = evt.clientX - offset
-    const px = horizontallyFlipped ? width - offsetX : offsetX
+    const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
     for (const feature of features.values()) {
       if (clientBp <= feature.get('end') && clientBp >= feature.get('start')) {
@@ -165,10 +137,9 @@ function WiggleRendering(props: {
 WiggleRendering.propTypes = {
   height: ReactPropTypes.number.isRequired,
   width: ReactPropTypes.number.isRequired,
-  region: CommonPropTypes.Region.isRequired,
+  regions: ReactPropTypes.arrayOf(CommonPropTypes.Region).isRequired,
   features: ReactPropTypes.instanceOf(Map).isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
-  horizontallyFlipped: ReactPropTypes.bool,
   trackModel: ReactPropTypes.shape({
     /** id of the currently selected feature, if any */
     selectedFeatureId: ReactPropTypes.string,
@@ -176,7 +147,6 @@ WiggleRendering.propTypes = {
 }
 
 WiggleRendering.defaultProps = {
-  horizontallyFlipped: false,
   trackModel: {},
 }
 

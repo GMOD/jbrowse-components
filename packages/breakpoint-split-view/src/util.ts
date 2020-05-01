@@ -1,7 +1,7 @@
 import { Instance } from 'mobx-state-tree'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { clamp } from '@gmod/jbrowse-core/util'
-import { LayoutRecord } from './model'
+import { LayoutRecord, VIEW_DIVIDER_HEIGHT } from './model'
 
 const [, TOP, , BOTTOM] = [0, 1, 2, 3]
 
@@ -13,10 +13,12 @@ function heightFromSpecificLevel(
   trackConfigId: string,
   level: number,
 ) {
-  const heightUpUntilThisPoint = views
-    .slice(0, level)
-    .map(v => v.height + 7)
-    .reduce((a, b) => a + b, 0)
+  const heightUpUntilThisPoint =
+    views
+      .slice(0, level)
+      .map(v => v.height + VIEW_DIVIDER_HEIGHT)
+      .reduce((a, b) => a + b, 0) +
+    level * 3
   return (
     heightUpUntilThisPoint +
     views[level].headerHeight +
@@ -46,6 +48,12 @@ export function yPos(
   const max = tracks[level].height
   return (
     clamp(c[TOP] - tracks[level].scrollTop + cheight(c) / 2, min, max) +
-    heightFromSpecificLevel(views, trackConfigId, level)
+    heightFromSpecificLevel(views, trackConfigId, level) +
+    // @ts-ignore
+    (tracks[level].SNPCoverageTrack
+      ? // prettier-ignore
+        // @ts-ignore
+        tracks[level].SNPCoverageTrack.height + 5
+      : 0)
   )
 }

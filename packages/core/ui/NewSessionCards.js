@@ -66,83 +66,6 @@ NewSessionCard.defaultProps = {
 
 const emptySessionSnapshot = {
   name: `New Session ${new Date(Date.now()).toISOString()}`,
-  menuBars: [
-    {
-      type: 'MainMenuBar',
-      menus: [
-        {
-          name: 'File',
-          menuItems: [
-            {
-              name: 'Back to Welcome Screen',
-              icon: 'arrow_back',
-              callback:
-                'function(session) {session.activateSession(undefined)}',
-            },
-            {
-              name: 'New linear genome view',
-              icon: 'line_style',
-              callback:
-                "function(session) { session.addView('LinearGenomeView', {})}",
-            },
-            {
-              name: 'New circular view',
-              icon: 'data_usage',
-              callback:
-                "function(session) { session.addView('CircularView', {})}",
-            },
-            {
-              name: 'New SV inspector',
-              icon: 'table_chart',
-              callback:
-                "function(session) { session.addView('SvInspectorView', {})}",
-            },
-            {
-              name: 'Open tabular data',
-              icon: 'view_comfy',
-              callback:
-                "function(session) { session.addView('SpreadsheetView', {})}",
-            },
-            {
-              name: 'Open new track',
-              icon: 'note_add',
-              callback: `function(session) {
-const drawerWidget = session.addDrawerWidget(
-      'AddTrackDrawerWidget',
-      'addTrackDrawerWidget',
-    )
-    session.showDrawerWidget(drawerWidget)`,
-            },
-            {
-              name: 'Open new connection',
-              icon: 'input',
-              callback: `function(session) {
-const drawerWidget = session.addDrawerWidget(
-      'AddConnectionDrawerWidget',
-      'addConnectionDrawerWidget',
-    )
-    session.showDrawerWidget(drawerWidget)`,
-            },
-          ],
-        },
-        {
-          name: 'Help',
-          menuItems: [
-            {
-              name: 'About',
-              icon: 'info',
-              callback: 'openAbout',
-            },
-            {
-              name: 'Help',
-              icon: 'help',
-              callback: 'openHelp',
-            },
-          ],
-        },
-      ],
-    },
-  ],
   connections: {},
 }
 
@@ -150,7 +73,7 @@ export function NewEmptySession({ root }) {
   function onClick() {
     root.activateSession(emptySessionSnapshot)
   }
-  return <NewSessionCard name={'Empty'} onClick={onClick} image={emptyIcon} />
+  return <NewSessionCard name="Empty" onClick={onClick} image={emptyIcon} />
 }
 
 NewEmptySession.propTypes = {
@@ -171,10 +94,10 @@ export function NewLinearGenomeViewSession({ root }) {
 
   return (
     <NewSessionCard
-      name={'Linear Genome View'}
+      name="Linear Genome View"
       onClick={launchLGVSession}
       image={linearGenomeViewIcon}
-    ></NewSessionCard>
+    />
   )
 }
 

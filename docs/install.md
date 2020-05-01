@@ -1,6 +1,4 @@
-
 # Desktop Install
-
 
 ```
 git clone https://github.com/gmod/jbrowse-components
@@ -25,9 +23,7 @@ cp -R build/* <web-sharable directory>
 
 Point web browser to where index.html is shown.
 
-
 # Web Development Install
-
 
 ```
 git clone https://github.com/gmod/jbrowse-components
@@ -38,4 +34,3 @@ yarn start
 ```
 
 Open http://localhost:3000
-

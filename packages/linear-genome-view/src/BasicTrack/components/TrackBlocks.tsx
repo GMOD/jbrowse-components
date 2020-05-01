@@ -21,7 +21,6 @@ const useStyles = makeStyles({
   trackBlocks: {
     whiteSpace: 'nowrap',
     textAlign: 'left',
-    background: '#404040',
     position: 'absolute',
     display: 'flex',
     minHeight: '100%',
@@ -46,11 +45,11 @@ const RenderedBlocks = observer(
     const { blockDefinitions, blockState } = model
     return (
       <>
-        {blockDefinitions.map((block: BaseBlock) => {
+        {blockDefinitions.map((block: BaseBlock, idx: number) => {
           if (block instanceof ContentBlock) {
             const state = blockState.get(block.key)
             return (
-              <Block block={block} key={`${model.id}-${block.key}`}>
+              <Block block={block} key={`${model.id}-${block.key}-${idx}`}>
                 {state && state.ReactComponent ? (
                   <state.ReactComponent model={state} />
                 ) : null}
@@ -82,6 +81,8 @@ const RenderedBlocks = observer(
               <InterRegionPaddingBlockMarker
                 key={block.key}
                 width={block.widthPx}
+                style={{ background: 'none' }}
+                boundary={block.variant === 'boundary'}
               />
             )
           }

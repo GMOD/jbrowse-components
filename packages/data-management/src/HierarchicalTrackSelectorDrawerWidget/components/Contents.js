@@ -6,7 +6,6 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import propTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
-// eslint-disable-next-line import/no-cycle
 import Category from './Category'
 import TrackEntry from './TrackEntry'
 

@@ -1,4 +1,7 @@
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import {
   IFileLocation,
   INoAssemblyRegion,
@@ -11,16 +14,12 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import { GenericFilehandle } from 'generic-filehandle'
 import VcfParser from '@gmod/vcf'
 import { Observer } from 'rxjs'
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import VcfFeature from './VcfFeature'
+import MyConfigSchema from './configSchema'
 
-interface Config {
-  vcfGzLocation: IFileLocation
-  index: {
-    indexType: string
-    location: IFileLocation
-  }
-}
-export default class extends BaseAdapter {
+export default class extends BaseFeatureDataAdapter {
   protected vcf: TabixIndexedFile
 
   protected filehandle: GenericFilehandle
@@ -28,18 +27,23 @@ export default class extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected parser: any
 
-  public static capabilities = ['getFeatures', 'getRefNames']
+  public constructor(config: Instance<typeof MyConfigSchema>) {
+    super(config)
+    const vcfGzLocation = readConfObject(config, 'vcfGzLocation')
+    const location = readConfObject(config, ['index', 'location'])
+    const indexType = readConfObject(config, ['index', 'indexType'])
 
-  public constructor(config: Config) {
-    super()
-    const { vcfGzLocation, index } = config
-    const { location, indexType } = index
-
-    this.filehandle = openLocation(vcfGzLocation)
+    this.filehandle = openLocation(vcfGzLocation as IFileLocation)
     this.vcf = new TabixIndexedFile({
       filehandle: this.filehandle,
-      csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
-      tbiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
+      csiFilehandle:
+        indexType === 'CSI'
+          ? openLocation(location as IFileLocation)
+          : undefined,
+      tbiFilehandle:
+        indexType !== 'CSI'
+          ? openLocation(location as IFileLocation)
+          : undefined,
       chunkCacheSize: 50 * 2 ** 20,
     })
 
@@ -61,13 +65,13 @@ export default class extends BaseAdapter {
     return ObservableCreate<Feature>(async observer => {
       const parser = await this.parser
       await this.vcf.getLines(query.refName, query.start, query.end, {
-        lineCallback(line: string, fileOffset: number) {
+        lineCallback: (line: string, fileOffset: number) => {
           const variant = parser.parseLine(line)
 
           const feature = new VcfFeature({
             variant,
             parser,
-            id: `vcf-${fileOffset}`,
+            id: `${this.id}-vcf-${fileOffset}`,
           }) as Feature
           observer.next(feature)
         },

@@ -37,7 +37,7 @@ describe('vcf file splitter', () => {
 test('vcf file import', async () => {
   const filepath = `${process.cwd()}/packages/spreadsheet-view/src/SpreadsheetView/test_data/1801160099-N32519_26611_S51_56704.hard-filtered.vcf`
   const buf = await fsPromises.readFile(filepath)
-  const spreadsheetSnap = await parseVcfBuffer(buf)
+  const spreadsheetSnap = parseVcfBuffer(buf)
   expect(spreadsheetSnap).toMatchSnapshot()
   const spreadsheet = SpreadsheetModel.create(spreadsheetSnap)
   expect(spreadsheet.rowSet.rows.length).toBe(101)
