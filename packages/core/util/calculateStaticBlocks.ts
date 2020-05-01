@@ -1,5 +1,5 @@
-import { assembleLocString } from '@gmod/jbrowse-core/util'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { assembleLocString } from '.'
+import { IRegion } from '../mst-types'
 import {
   BlockSet,
   ContentBlock,

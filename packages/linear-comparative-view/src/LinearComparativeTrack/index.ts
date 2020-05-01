@@ -4,7 +4,7 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
-import { types, Instance, getParent, getSnapshot } from 'mobx-state-tree'
+import { types, Instance, getParent } from 'mobx-state-tree'
 import {
   BaseTrackConfig,
   BaseTrack,
@@ -149,7 +149,6 @@ function renderBlockData(self: LinearComparativeTrack) {
     const adapterConfigId = jsonStableStringify(adapterConfig)
     const parentView = getParent(self, 2)
     const { views, width, height } = parentView
-    console.log(width, height)
     return {
       rendererType,
       rpcManager,
@@ -191,7 +190,6 @@ async function renderBlockEffect(
   }
 
   const { rendererType, rpcManager, renderArgs } = props
-  console.log(renderArgs)
 
   const { html, ...data } = await rendererType.renderInClient(
     rpcManager,

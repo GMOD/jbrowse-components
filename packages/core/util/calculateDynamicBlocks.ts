@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { intersection2 } from '@gmod/jbrowse-core/util/range'
-import { assembleLocString } from '@gmod/jbrowse-core/util'
+import { intersection2 } from './range'
+import { assembleLocString } from '.'
 import { BlockSet, ContentBlock } from './blockTypes'
 
 const interRegionPaddingWidth = 0

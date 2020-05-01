@@ -1,9 +1,9 @@
-/* eslint-disable no-plusplus */
+/* eslint-disable no-plusplus,no-continue */
 import React, { useRef, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import { getParent } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getConf } from '@gmod/jbrowse-core/configuration'
+import { Base1DViewModel } from '@gmod/jbrowse-core/util/Base1DViewModel'
 import { getPxFromCoordinate, interstitialYPos, overlayYPos } from '../../util'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -16,7 +16,7 @@ interface LayoutMatch {
   refName: string
 }
 
-function* generateMatches(l1: Feature[], l2: Feature[]) {
+function* generateMatches(l1: Feature[] = [], l2: Feature[] = []) {
   let i = 0
   let j = 0
   while (i < l1.length && j < l2.length) {
@@ -34,7 +34,7 @@ function* generateMatches(l1: Feature[], l2: Feature[]) {
   }
 }
 
-function layoutMatchesFromViews(views: any[]) {
+function layoutMatchesFromViews(views: Base1DViewModel[]) {
   const layoutMatches = []
   for (let i = 0; i < views.length; i++) {
     for (let j = i; j < views.length; j++) {
@@ -72,9 +72,16 @@ function layoutMatchesFromViews(views: any[]) {
  * A block whose content is rendered outside of the main thread and hydrated by this
  * component.
  */
-function LinearSyntenyRendering(props: any) {
+function LinearSyntenyRendering(props: {
+  width: number
+  height: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  trackModel: any
+  highResolutionScaling: number
+  views: Base1DViewModel[]
+  trackIds: string[]
+}) {
   const {
-    width,
     height,
     trackModel = {},
     highResolutionScaling = 1,
@@ -83,10 +90,10 @@ function LinearSyntenyRendering(props: any) {
   } = props
   const ref = useRef<HTMLCanvasElement>(null)
 
-  views.forEach((view: any) => {
-    view.features.sort(
-      (a: any, b: any) => a.get('syntenyId') - b.get('syntenyId'),
-    )
+  views.forEach(view => {
+    if (view.features) {
+      view.features.sort((a, b) => a.get('syntenyId') - b.get('syntenyId'))
+    }
   })
   const layoutMatches = layoutMatchesFromViews(views)
 
@@ -94,12 +101,11 @@ function LinearSyntenyRendering(props: any) {
     if (!ref.current) return
     const ctx = ref.current.getContext('2d')
     if (!ctx) return
-    console.log('here')
+    ctx.scale(highResolutionScaling, highResolutionScaling)
     ctx.fillStyle = getConf(trackModel, 'color')
     const showIntraviewLinks = false
     const middle = true
     const hideTiny = false
-    console.log(layoutMatches)
     layoutMatches.forEach(chunk => {
       // we follow a path in the list of chunks, not from top to bottom, just in series
       // following x1,y1 -> x2,y2
@@ -137,17 +143,25 @@ function LinearSyntenyRendering(props: any) {
         //   continue
         // }
 
+        // @ts-ignore
         const x11 = getPxFromCoordinate(v1, ref1, c1[LEFT])
+        // @ts-ignore
         const x12 = getPxFromCoordinate(v1, ref1, c1[RIGHT])
+        // @ts-ignore
         const x21 = getPxFromCoordinate(v2, ref2, c2[LEFT])
+        // @ts-ignore
         const x22 = getPxFromCoordinate(v2, ref2, c2[RIGHT])
 
         const y1 = middle
           ? interstitialYPos(level1 < level2, height)
-          : overlayYPos(trackIds[0], level1, views, c1, level1 < level2)
+          : // prettier-ignore
+            // @ts-ignore
+            overlayYPos(trackIds[0], level1, views, c1, level1 < level2)
         const y2 = middle
           ? interstitialYPos(level2 < level1, height)
-          : overlayYPos(trackIds[1], level2, views, c2, level2 < level1)
+          : // prettier-ignore
+            // @ts-ignore
+            overlayYPos(trackIds[1], level2, views, c2, level2 < level1)
 
         ctx.beginPath()
         ctx.moveTo(x11, y1)
