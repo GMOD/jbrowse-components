@@ -1,5 +1,5 @@
 import { withSize } from 'react-sizeme'
-import { BreakpointViewModel } from '../model'
+import { LinearComparativeViewModel } from '../model'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default ({ jbrequire }: { jbrequire: any }) => {
@@ -46,7 +46,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   }))
 
   const InteractWithSquiggles = observer(
-    ({ model }: { model: BreakpointViewModel }) => {
+    ({ model }: { model: LinearComparativeViewModel }) => {
       const classes = useStyles()
       return (
         <IconButton
@@ -64,25 +64,27 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   InteractWithSquiggles.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
-  const LinkViews = observer(({ model }: { model: BreakpointViewModel }) => {
-    const classes = useStyles()
-    const title = model.linkViews ? 'link' : 'link_off'
-    return (
-      <IconButton
-        onClick={model.toggleLinkViews}
-        className={classes.iconButton}
-        title="Toggle linked scrolls and behavior across views"
-      >
-        <Icon color="secondary" fontSize="small">
-          {title}
-        </Icon>
-      </IconButton>
-    )
-  })
+  const LinkViews = observer(
+    ({ model }: { model: LinearComparativeViewModel }) => {
+      const classes = useStyles()
+      const title = model.linkViews ? 'link' : 'link_off'
+      return (
+        <IconButton
+          onClick={model.toggleLinkViews}
+          className={classes.iconButton}
+          title="Toggle linked scrolls and behavior across views"
+        >
+          <Icon color="secondary" fontSize="small">
+            {title}
+          </Icon>
+        </IconButton>
+      )
+    },
+  )
   LinkViews.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
-  const Sync = observer(({ model }: { model: BreakpointViewModel }) => {
+  const Sync = observer(({ model }: { model: LinearComparativeViewModel }) => {
     const classes = useStyles()
     const title = model.showIntraviewLinks ? 'leak_add' : 'leak_remove'
     return (
@@ -105,7 +107,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
       model,
       size,
     }: {
-      model: BreakpointViewModel
+      model: LinearComparativeViewModel
       size: { height: number }
     }) => {
       const classes = useStyles()

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   PropTypes as CommonPropTypes,
   IRegion,
@@ -166,9 +165,7 @@ function PileupRendering(props: {
     event: MouseEvent,
     always = false,
   ) {
-    // @ts-ignore
     const featureHandler = props[`onFeature${handlerName}`]
-    // @ts-ignore
     const canvasHandler = props[`on${handlerName}`]
     if (featureHandler && (always || featureIdUnderMouse)) {
       featureHandler(event, featureIdUnderMouse)

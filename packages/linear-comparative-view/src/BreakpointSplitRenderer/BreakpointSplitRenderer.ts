@@ -93,7 +93,9 @@ function* generateLayoutMatches(
       return view.features.map(feature => {
         const layout =
           track && !middle
-            ? track.layoutFeatures.get(String(feature.id()))
+            ? // prettier-ignore
+              // @ts-ignore
+              track.layoutFeatures.get(String(feature.id()))
             : ([feature.get('start'), 0, feature.get('end'), 0] as LayoutRecord)
         return {
           feature,

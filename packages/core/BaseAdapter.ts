@@ -30,7 +30,7 @@ export default abstract class BaseAdapter {
 
   public id: string
 
-  constructor(args: unknown) {
+  constructor(args: unknown = {}) {
     // note: we use switch on jest here for more simple feature IDs
     // in test environment
     this.id =

@@ -1,17 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect } from 'react'
 import { ImageBitmapType } from '../util/offscreenCanvasPonyfill'
 
-function PrerenderedCanvas(props) {
+function PrerenderedCanvas(props: {
+  width: number
+  height: number
+  highResolutionScaling: number
+  style: any
+  imageData: any
+}) {
   const { width, height, highResolutionScaling, style, imageData } = props
-  const featureCanvas = useRef()
+  const featureCanvas = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     if (!imageData) return
     const canvas = featureCanvas.current
+    if (!canvas) return
     const context = canvas.getContext('2d')
+    if (!context) return
     if (imageData.commands) {
-      imageData.commands.forEach(command => {
+      imageData.commands.forEach((command: any) => {
         if (command.type === 'strokeStyle') {
           context.strokeStyle = command.style
         } else if (command.type === 'fillStyle') {
@@ -19,6 +28,7 @@ function PrerenderedCanvas(props) {
         } else if (command.type === 'font') {
           context.font = command.style
         } else {
+          // @ts-ignore
           context[command.type](...command.args)
         }
       })
