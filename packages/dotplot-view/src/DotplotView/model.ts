@@ -82,6 +82,7 @@ export default function stateModelFactory(pluginManager: any) {
         return self.width - self.borderX
       },
       get viewHeight() {
+        // console.log('height', self.height, 'borderY', self.borderY)
         return self.height - self.borderY
       },
       get views() {
@@ -134,7 +135,8 @@ export default function stateModelFactory(pluginManager: any) {
             // these are set via autorun to avoid dependency cycle
             this.setBorderY(
               self.hview.dynamicBlocks.contentBlocks.reduce(
-                (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
+                (a, b) =>
+                  Math.max(a, approxPixelStringLen(b.refName.slice(0, 10))),
                 0,
               ) + padding,
             )

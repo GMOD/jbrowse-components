@@ -1,2 +1,3 @@
 export { default as AdapterClass } from './FromConfigAdapter'
-export { default as configSchema } from './configSchema'
+export { default as SequenceAdapterClass } from './FromConfigSequenceAdapter'
+export { configSchema, sequenceConfigSchema } from './configSchema'

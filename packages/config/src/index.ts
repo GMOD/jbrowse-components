@@ -11,7 +11,9 @@ import {
 } from './ConfigurationEditorDrawerWidget'
 import {
   AdapterClass as FromConfigAdapterClass,
+  SequenceAdapterClass as FromConfigSequenceAdapterClass,
   configSchema as fromConfigAdapterConfigSchema,
+  sequenceConfigSchema as fromConfigSequenceAdapterConfigSchema,
 } from './FromConfigAdapter'
 import {
   AdapterClass as RefNameAliasAdapterClass,
@@ -26,6 +28,14 @@ export default class extends Plugin {
           name: 'FromConfigAdapter',
           configSchema: fromConfigAdapterConfigSchema,
           AdapterClass: FromConfigAdapterClass,
+        }),
+    )
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'FromConfigSequenceAdapter',
+          configSchema: fromConfigSequenceAdapterConfigSchema,
+          AdapterClass: FromConfigSequenceAdapterClass,
         }),
     )
     pluginManager.addAdapterType(
