@@ -98,6 +98,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         'hierarchical',
       ),
       minimumBlockWidth: 20,
+      showTrackLabels: true,
       showCenterLine: false,
     })
     .volatile(() => ({
@@ -404,6 +405,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const hiddenCount = self.hideTrack(configuration)
         // if none had that configuration, turn one on
         if (!hiddenCount) self.showTrack(configuration)
+      },
+
+      toggleTrackLabels() {
+        self.showTrackLabels = !self.showTrackLabels
       },
 
       toggleCenterLine() {
@@ -740,6 +745,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
               checked: !self.hideHeaderOverview,
               onClick: self.toggleHeaderOverview,
               disabled: self.hideHeader,
+            },
+            {
+              label: 'Show track labels',
+              icon: 'visibility',
+              type: 'checkbox',
+              checked: self.showTrackLabels,
+              onClick: self.toggleTrackLabels,
             },
             {
               label: 'Show center line',
