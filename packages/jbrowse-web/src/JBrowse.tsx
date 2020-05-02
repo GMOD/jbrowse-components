@@ -75,6 +75,7 @@ const JBrowse = observer(({ pluginManager }) => {
     () =>
       session && useUpdateUrl
         ? onSnapshot(session, snapshot => {
+  //@ts-ignore unclear what this error is
             setUrlSnapshot(snapshot)
           })
         : () => {},

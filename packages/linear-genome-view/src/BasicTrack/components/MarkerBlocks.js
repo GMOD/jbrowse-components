@@ -47,7 +47,7 @@ export const InterRegionPaddingBlockMarker = ({ boundary, width, style }) => {
 InterRegionPaddingBlockMarker.propTypes = {
   boundary: ReactPropTypes.bool,
   width: ReactPropTypes.number.isRequired,
-  style: ReactPropTypes.shape(),
+  style: ReactPropTypes.shape({}),
 }
 
 InterRegionPaddingBlockMarker.defaultProps = {

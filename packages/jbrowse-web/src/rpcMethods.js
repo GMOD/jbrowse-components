@@ -22,6 +22,7 @@ export async function getGlobalStats(
     adapterType,
     adapterConfig,
   )
+  //@ts-ignore
   return dataAdapter.getGlobalStats({ signal })
 }
 
@@ -39,6 +40,7 @@ export async function getRegionStats(
     adapterType,
     adapterConfig,
   )
+  //@ts-ignore
   return dataAdapter.getRegionStats(region, { signal, bpPerPx })
 }
 
@@ -56,6 +58,7 @@ export async function getMultiRegionStats(
     adapterType,
     adapterConfig,
   )
+  //@ts-ignore
   return dataAdapter.getMultiRegionStats(regions, { signal, bpPerPx })
 }
 
@@ -73,6 +76,7 @@ export async function getRegions(
     adapterType,
     adapterConfig,
   )
+  //@ts-ignore
   return dataAdapter.getRegions({ signal })
 }
 
@@ -90,6 +94,7 @@ export async function getRefNames(
     adapterType,
     adapterConfig,
   )
+  //@ts-ignore
   return dataAdapter.getRefNames({ signal })
 }
 
@@ -106,6 +111,8 @@ export async function getRefNameAliases(
     adapterType,
     adapterConfig,
   )
+
+  //@ts-ignore
   return dataAdapter.getRefNameAliases({ signal })
 }
 
@@ -143,8 +150,6 @@ export function freeResources(pluginManager, specification) {
  * @param {object} args.renderProps
  * @param {object} [args.originalRegion]
  * @param {object} [args.originalRegions]
- * @param {object} [args.sequenceAdapterConfig]
- * @param {object} [args.sequenceAdapterType]
  * @param {object} [args.signal]
  */
 export async function render(
@@ -206,8 +211,6 @@ export async function comparativeRender(
     sessionId,
     adapterType,
     adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
     rendererType,
     renderProps,
     signal,
@@ -225,8 +228,6 @@ export async function comparativeRender(
     sessionId,
     adapterType,
     adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
   )
 
   const RendererType = pluginManager.getRendererType(rendererType)

@@ -7,6 +7,8 @@ import { getSnapshot, resolveIdentifier, types } from 'mobx-state-tree'
 import assemblyManager from '@gmod/jbrowse-core/assemblyManager'
 import * as rpcFuncs from './rpcMethods'
 import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
+
+// @ts-ignore
 import RenderWorker from './rpc.worker'
 
 // poke some things for testing (this stuff will eventually be removed)

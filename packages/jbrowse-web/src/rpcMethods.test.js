@@ -103,6 +103,7 @@ test('throws if no session ID', async () => {
     sessionId: undefined,
   }
 
+  // @ts-ignore specifically testing error condition of type
   await expect(render(pluginManager, testprops)).rejects.toThrow(
     /must pass a unique session id/,
   )
@@ -138,17 +139,6 @@ test('can render a single region with SvgFeatures + BamAdapter (larger maxHeight
   ).toBe(0)
 })
 
-test('throws if no session ID', async () => {
-  const testprops = {
-    ...baseprops,
-    rendererType: 'PileupRenderer',
-    sessionId: undefined,
-  }
-
-  await expect(render(pluginManager, testprops)).rejects.toThrow(
-    /must pass a unique session id/,
-  )
-})
 test('throws on unrecoginze worker', async () => {
   const testprops = {
     ...baseprops,

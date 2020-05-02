@@ -14,6 +14,7 @@ import {
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import { LocalFile } from 'generic-filehandle'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
+// @ts-ignore
 import rangeParser from 'range-parser'
 import React from 'react'
 
@@ -31,6 +32,7 @@ if (!window.TextDecoder) window.TextDecoder = TextDecoder
 
 expect.extend({ toMatchImageSnapshot })
 
+// @ts-ignore
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
 window.requestAnimationFrame = cb => setTimeout(cb)
@@ -41,7 +43,7 @@ Storage.prototype.setItem = jest.fn()
 Storage.prototype.removeItem = jest.fn()
 Storage.prototype.clear = jest.fn()
 
-function getPluginManager(initialState) {
+function getPluginManager(initialState: any = {}) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
@@ -61,15 +63,17 @@ function getPluginManager(initialState) {
   return pluginManager
 }
 
-const getFile = url => new LocalFile(require.resolve(`../${url}`))
+const getFile = (url: string) => new LocalFile(require.resolve(`../${url}`))
 // fakes server responses from local file object with fetchMock
-const readBuffer = async (url, args) => {
+const readBuffer = async (url: string, args: { headers?: Headers }) => {
   try {
     const file = getFile(url)
     const maxRangeRequest = 1000000 // kind of arbitrary, part of the rangeParser
     if (args.headers && 'range' in args.headers) {
+      // @ts-ignore
       const range = rangeParser(maxRangeRequest, args.headers.range)
       if (range === -2 || range === -1) {
+        // @ts-ignore
         throw new Error(`Error parsing range "${args.headers.range}"`)
       }
       const { start, end } = range[0]
@@ -91,12 +95,12 @@ const readBuffer = async (url, args) => {
 }
 
 afterEach(cleanup)
-
+// @ts-ignore
 jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
 
 describe('<JBrowse />', () => {
   it('renders with an empty config', async () => {
-    const pluginManager = getPluginManager({})
+    const pluginManager = getPluginManager()
     const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
     expect(await findByText('Help')).toBeTruthy()
   })
@@ -125,6 +129,7 @@ describe('valid file tests', () => {
     const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
 
+    // @ts-ignore
     const start = state.session.views[0].offsetPx
     const track = await findByTestId('track-volvox_alignments')
     fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
@@ -132,6 +137,7 @@ describe('valid file tests', () => {
     fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
     // wait for requestAnimationFrame
     await wait(() => {})
+    // @ts-ignore
     const end = state.session.views[0].offsetPx
     expect(end - start).toEqual(150)
   })
@@ -144,12 +150,14 @@ describe('valid file tests', () => {
     )
     const track = await findByTestId('rubberBand_controls')
 
+    // @ts-ignore
     expect(state.session.views[0].bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
     fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
     fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
     const zoomMenuItem = await findByText('Zoom to region')
     fireEvent.click(zoomMenuItem)
+    // @ts-ignore
     expect(state.session.views[0].bpPerPx).toEqual(0.02)
   })
 
@@ -160,6 +168,7 @@ describe('valid file tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
 
+    // @ts-ignore
     const trackId1 = state.session.views[0].tracks[1].id
     const dragHandle0 = await findByTestId(
       'dragHandle-integration_test-volvox_alignments',
@@ -178,6 +187,7 @@ describe('valid file tests', () => {
     fireEvent.dragEnter(trackRenderingContainer1)
     fireEvent.dragEnd(dragHandle0, { clientX: 10, clientY: 220 })
     fireEvent.mouseUp(dragHandle0, { clientX: 10, clientY: 220 })
+    // @ts-ignore
     await wait(() => expect(state.session.views[0].tracks[0].id).toBe(trackId1))
   })
 
@@ -188,9 +198,11 @@ describe('valid file tests', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('ctgA')
+    // @ts-ignore
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
     fireEvent.click(await findByTestId('zoom_out'))
+    // @ts-ignore
     expect(state.session.views[0].bpPerPx).toEqual(before)
   })
 
@@ -200,8 +212,10 @@ describe('valid file tests', () => {
     const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
 
     await findByTestId('htsTrackEntry-volvox_alignments')
+    // @ts-ignore
     expect(state.session.views[0].tracks.length).toBe(0)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+    // @ts-ignore
     expect(state.session.views[0].tracks.length).toBe(1)
   })
 
@@ -212,6 +226,7 @@ describe('valid file tests', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_refseq'))
+    // @ts-ignore
     state.session.views[0].setNewView(20, 0)
     await findByTestId('track-volvox_refseq')
     expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
@@ -232,8 +247,10 @@ describe('valid file tests', () => {
     fireEvent.click(viewMenu)
     await waitForElement(() => getByText('Show center line'))
     fireEvent.click(getByText('Show center line'))
+    // @ts-ignore
     expect(state.session.views[0].showCenterLine).toBe(true)
 
+    // @ts-ignore
     const { centerLineInfo } = state.session.views[0]
     expect(centerLineInfo.refName).toBe('ctgA')
     expect(centerLineInfo.offset).toEqual(120)
@@ -264,16 +281,19 @@ describe('test renamed refs', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
+    // @ts-ignore
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_alignments'))
 
     const canvas = await findByTestId('prerendered_canvas')
 
+    // @ts-ignore
     const img = canvas.toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
     // this is needed to do a fuzzy image comparison because
     // the travis-ci was 2 pixels different for some reason, see PR #710
+    // @ts-ignore
     expect(buf).toMatchImageSnapshot({
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
@@ -297,6 +317,7 @@ describe('test renamed refs', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
+    // @ts-ignore
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_microarray_density_altname'),
@@ -325,6 +346,7 @@ test('lollipop track test', async () => {
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
+  // @ts-ignore
   state.session.views[0].setNewView(1, 150)
   fireEvent.click(await findByTestId('htsTrackEntry-lollipop_track'))
 
@@ -339,6 +361,7 @@ test('variant track test - opens feature detail view', async () => {
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
+  // @ts-ignore
   state.session.views[0].setNewView(0.05, 5000)
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
   fireEvent.click(await findByTestId('test-vcf-604452'))
@@ -353,6 +376,7 @@ describe('nclist track test with long name', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
+    // @ts-ignore
     state.session.views[0].setNewView(1, -539)
     fireEvent.click(await findByTestId('htsTrackEntry-nclist_long_names'))
     await expect(
@@ -370,6 +394,7 @@ describe('test configuration editor', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
+    // @ts-ignore
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
     fireEvent.click(
@@ -396,6 +421,7 @@ describe('alignments track', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
+    // @ts-ignore
     state.session.views[0].setNewView(5, 100)
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
@@ -405,9 +431,11 @@ describe('alignments track', () => {
       await findByTestId('Blockset-pileup'),
     )
     const pileupCanvas = await findAllByTestId1('prerendered_canvas')
+    // @ts-ignore
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
+    // @ts-ignore
     expect(pileupBuf).toMatchImageSnapshot({
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
@@ -417,12 +445,14 @@ describe('alignments track', () => {
       await findByTestId('Blockset-snpcoverage'),
     )
     const snpCoverageCanvas = await findAllByTestId2('prerendered_canvas')
+    // @ts-ignore
     const snpCoverageImg = snpCoverageCanvas[0].toDataURL()
     const snpCoverageData = snpCoverageImg.replace(
       /^data:image\/\w+;base64,/,
       '',
     )
     const snpCoverageBuf = Buffer.from(snpCoverageData, 'base64')
+    // @ts-ignore
     expect(snpCoverageBuf).toMatchImageSnapshot({
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
@@ -447,6 +477,7 @@ describe('alignments track', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
+    // @ts-ignore
     state.session.views[0].setNewView(5, 100)
 
     // load track
@@ -454,7 +485,9 @@ describe('alignments track', () => {
       await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
     )
     await findByTestId('track-volvox_alignments_pileup_coverage')
+    // @ts-ignore
     expect(state.session.views[0].tracks[0]).toBeTruthy()
+    // @ts-ignore
     const alignmentsTrack = state.session.views[0].tracks[0]
 
     // open view level menu
@@ -477,9 +510,11 @@ describe('alignments track', () => {
       await findByTestId('Blockset-pileup'),
     )
     const pileupCanvas = await findAllByTestId1('prerendered_canvas')
+    // @ts-ignore
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
+    // @ts-ignore
     expect(pileupBuf).toMatchImageSnapshot({
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
@@ -494,6 +529,7 @@ describe('bigwig', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
+    // @ts-ignore
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray'))
     await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
@@ -505,6 +541,7 @@ describe('bigwig', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
+    // @ts-ignore
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray_line'))
     await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
@@ -516,6 +553,7 @@ describe('bigwig', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
+    // @ts-ignore
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_microarray_density'),
@@ -536,9 +574,12 @@ describe('circular views', () => {
     await findByText('Help')
 
     // open a new circular view on the same assembly as the test linear view
+    // @ts-ignore
     const regions = await state.session.getRegionsForAssemblyName('volvox')
     act(() => {
+      // @ts-ignore
       const circularView = state.session.addView('CircularView')
+      // @ts-ignore
       circularView.setDisplayedRegions(regions)
     })
 
@@ -591,11 +632,13 @@ describe('dotplot view', () => {
 
     const canvas = await findByTestId('prerendered_canvas')
 
+    // @ts-ignore
     const img = canvas.toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
     // this is needed to do a fuzzy image comparison because
     // the travis-ci was 2 pixels different for some reason, see PR #710
+    // @ts-ignore
     expect(buf).toMatchImageSnapshot({
       failureThreshold: 0.5,
       failureThresholdType: 'percent',

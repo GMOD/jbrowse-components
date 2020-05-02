@@ -3,15 +3,6 @@ import { getSnapshot } from 'mobx-state-tree'
 import { createTestSession } from './rootModel'
 import sessionModelFactory from './sessionModelFactory'
 
-// mock warnings to avoid unnecessary outputs
-beforeEach(() => {
-  jest.spyOn(console, 'warn').mockImplementation(() => {})
-})
-
-afterEach(() => {
-  console.warn.mockRestore()
-})
-
 describe('JBrowseWebSessionModel', () => {
   it('creates with no parent and just a name', () => {
     const pluginManager = new PluginManager()
@@ -23,6 +14,7 @@ describe('JBrowseWebSessionModel', () => {
 
   it('accepts a custom drawer width', () => {
     const session = createTestSession({ drawerWidth: 256 })
+    //@ts-ignore
     expect(session.drawerWidth).toBe(256)
   })
 })

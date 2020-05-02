@@ -24,6 +24,7 @@ test('config schema renderer type', () => {
     },
   }
 
+      // @ts-ignore
   const configSchema = configSchemaFactory(stubPluginManager)
   const instance = configSchema.create({
     type: 'BasicTrack',
