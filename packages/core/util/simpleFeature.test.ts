@@ -17,8 +17,8 @@ test('can create a simple with subfeatures', () => {
     start: 100,
     end: 500,
     subfeatures: [
-      { start: 100, end: 200, uniqueId: 'test-one' },
-      { start: 400, end: 500, uniqueId: 'test-two' },
+      { start: 100, end: 200 },
+      { start: 400, end: 500 },
     ],
   })
   expect(f.id()).toEqual('test')
