@@ -28,7 +28,7 @@ const Tooltip = ({
   offsetY: number
   configuration: AnyConfigurationModel
   feature?: Feature
-  timeout: number
+  timeout?: number
 }) => {
   const classes = useStyles()
   // only show the loading message after 400ms to prevent excessive flickering
