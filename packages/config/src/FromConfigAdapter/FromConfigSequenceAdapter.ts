@@ -18,12 +18,10 @@ export default class FromSequenceConfigAdapter extends FromConfigAdapter {
       const feat = feats[0]
       observer.next(
         new SimpleFeature({
-          data: {
-            ...feat.toJSON(),
-            seq: feat.get('seq').slice(start, end),
-            end,
-            start,
-          },
+          ...feat.toJSON(),
+          seq: feat.get('seq').slice(start, end),
+          end,
+          start,
         }),
       )
       observer.complete()

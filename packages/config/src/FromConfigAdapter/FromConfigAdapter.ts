@@ -7,7 +7,7 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import FromConfigAdapterConfigSchema from './configSchema'
+import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration
@@ -29,7 +29,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
     this.features = this.makeFeatures(features || [])
   }
 
-  makeFeatures(fdata: Feature[]) {
+  makeFeatures(fdata: SimpleFeatureSerialized[]) {
     const features = new Map<string, Feature[]>()
     for (let i = 0; i < fdata.length; i += 1) {
       if (fdata[i]) {
