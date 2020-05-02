@@ -1,9 +1,10 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import {
+  readConfObject,
   getTypeNamesFromExplicitlyTypedUnion,
   isConfigurationSchemaType,
   isConfigurationSlotType,
-} from '@gmod/jbrowse-core/configuration/configurationSchema'
+} from '@gmod/jbrowse-core/configuration'
+
 import { iterMap } from '@gmod/jbrowse-core/util'
 import FormGroup from '@material-ui/core/FormGroup'
 import FormLabel from '@material-ui/core/FormLabel'
@@ -11,7 +12,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getMembers } from 'mobx-state-tree'
 import { singular } from 'pluralize'
-import React, { Fragment } from 'react'
+import React from 'react'
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
 
@@ -31,12 +32,12 @@ const Member = observer(props => {
   if (isConfigurationSchemaType(slotSchema)) {
     if (slot.length) {
       return (
-        <Fragment>
+        <>
           {slot.map((subslot, slotIndex) => {
             const key = `${singular(slotName)} ${slotIndex + 1}`
             return <Member {...props} key={key} slot={subslot} slotName={key} />
           })}
-        </Fragment>
+        </>
       )
     }
     // if this is an explicitly typed schema, make a type-selecting dropdown

@@ -1,32 +1,37 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './VcfTabixAdapter'
+import configSchema from './configSchema'
 
 test('adapter can fetch variants from volvox.vcf.gz', async () => {
-  const adapter = new Adapter({
-    vcfGzLocation: {
-      localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
-    },
-    index: {
-      indexType: 'TBI',
-      location: {
-        localPath: require.resolve('./test_data/volvox.filtered.vcf.gz.tbi'),
+  const adapter = new Adapter(
+    configSchema.create({
+      vcfGzLocation: {
+        localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
       },
-    },
-  })
-
-  const csiAdapter = new Adapter({
-    vcfGzLocation: {
-      localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
-    },
-    index: {
-      indexType: 'CSI',
-      location: {
-        localPath: require.resolve('./test_data/volvox.filtered.vcf.gz.csi'),
+      index: {
+        indexType: 'TBI',
+        location: {
+          localPath: require.resolve('./test_data/volvox.filtered.vcf.gz.tbi'),
+        },
       },
-    },
-  })
+    }),
+  )
 
-  const csiFeatures = await csiAdapter.getFeatures({
+  const csiAdapter = new Adapter(
+    configSchema.create({
+      vcfGzLocation: {
+        localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
+      },
+      index: {
+        indexType: 'CSI',
+        location: {
+          localPath: require.resolve('./test_data/volvox.filtered.vcf.gz.csi'),
+        },
+      },
+    }),
+  )
+
+  const csiFeatures = csiAdapter.getFeatures({
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -37,7 +42,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   expect(names).toEqual(csiNames)
   expect(names).toMatchSnapshot()
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -48,7 +53,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   expect(featuresArray.slice(0, 5)).toMatchSnapshot()
   expect(csiFeaturesArray.slice(0, 5)).toEqual(featuresArray.slice(0, 5))
 
-  const featuresNonExist = await adapter.getFeatures({
+  const featuresNonExist = adapter.getFeatures({
     refName: 'ctgC',
     start: 0,
     end: 20000,

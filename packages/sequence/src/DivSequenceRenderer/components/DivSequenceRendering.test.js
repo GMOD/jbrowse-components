@@ -26,8 +26,6 @@ test('features to sequence function', () => {
 })
 
 class ErrorCatcher extends React.Component {
-  static propTypes = { children: ReactPropTypes.node.isRequired }
-
   constructor(props) {
     super(props)
     this.state = { hasError: false, errorText: '' }
@@ -48,6 +46,7 @@ class ErrorCatcher extends React.Component {
     return children
   }
 }
+ErrorCatcher.propTypes = { children: ReactPropTypes.node.isRequired }
 
 describe('<DivSequenceRendering />', () => {
   // This just keeps our testing logs clean by not displaying `console.error`s
@@ -58,8 +57,12 @@ describe('<DivSequenceRendering />', () => {
   beforeAll(() => {
     console.error = (...args) => {
       if (
-        /feature one did not contain a valid `seq` attribute/.test(args[0]) ||
-        /The above error occurred in the <SequenceDivs> component/.test(args[0])
+        args[0].includes(
+          'feature one did not contain a valid `seq` attribute',
+        ) ||
+        args[0].includes(
+          'The above error occurred in the <SequenceDivs> component',
+        )
       )
         return
       originalError.call(console, ...args)
@@ -76,7 +79,7 @@ describe('<DivSequenceRendering />', () => {
       <Rendering
         width={500}
         height={500}
-        region={{ refName: 'zonk', start: 0, end: 300 }}
+        regions={[{ refName: 'zonk', start: 0, end: 300 }]}
         layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
         config={DivRenderingConfigSchema.create()}
         bpPerPx={3}
@@ -91,7 +94,7 @@ describe('<DivSequenceRendering />', () => {
       <Rendering
         width={500}
         height={500}
-        region={{ refName: 'zonk', start: 0, end: 1000 }}
+        regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
         features={
           new Map([
             [
@@ -119,7 +122,7 @@ describe('<DivSequenceRendering />', () => {
         <Rendering
           width={500}
           height={500}
-          region={{ refName: 'zonk', start: 0, end: 1000 }}
+          regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
           features={
             new Map([
               ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
@@ -140,7 +143,7 @@ describe('<DivSequenceRendering />', () => {
         <Rendering
           width={500}
           height={500}
-          region={{ refName: 'zonk', start: 0, end: 1000 }}
+          regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
           features={
             new Map([
               [
@@ -168,7 +171,7 @@ describe('<DivSequenceRendering />', () => {
       <Rendering
         width={500}
         height={500}
-        region={{ refName: 'zonk', start: 0, end: 1000 }}
+        regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
         features={
           new Map([
             [

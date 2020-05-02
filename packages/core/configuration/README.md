@@ -8,15 +8,15 @@ Each "configuration variable" is held in a ConfigurationSlot, which has a string
 
 These types are specific to configuration schemas.
 
-* `string`
-* `number`
-* `integer`
-* `boolean`
-* `color` - a color, usually used in renderer configs
-* `stringArray` - an array of strings
-* `stringArrayMap` - map of string -> array[string]
-* `numberMap` - map of string -> number
-* `fileLocation` of the form
+- `string`
+- `number`
+- `integer`
+- `boolean`
+- `color` - a color, usually used in renderer configs
+- `stringArray` - an array of strings
+- `stringArrayMap` - map of string -> array[string]
+- `numberMap` - map of string -> number
+- `fileLocation` of the form
   ```
   { uri: 'http://example.com/path/to/resource.file' }
   ```
@@ -24,7 +24,7 @@ These types are specific to configuration schemas.
   ```
   { localPath: '/filesystem/path/to/resource.file' }
   ```
-* `frozen` - any data structure. assumed to be immutable; internal changes to it will not be noticed by any mobx observers
+- `frozen` - any data structure. assumed to be immutable; internal changes to it will not be noticed by any mobx observers
 
 ## Configuration Layers
 

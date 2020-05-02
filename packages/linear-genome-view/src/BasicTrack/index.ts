@@ -4,12 +4,13 @@ import {
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { types } from 'mobx-state-tree'
+import { AnyConfigurationSchemaType } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { BaseTrackConfig } from './baseTrackModel'
 import BlockBasedTrackComponent from './components/BlockBasedTrack'
 import blockBasedTrack from './blockBasedTrackModel'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function configSchemaFactory(pluginManager: any) {
+export function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'BasicTrack',
     {
@@ -23,8 +24,7 @@ export function configSchemaFactory(pluginManager: any) {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function stateModelFactory(configSchema: any) {
+export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'BasicTrack',

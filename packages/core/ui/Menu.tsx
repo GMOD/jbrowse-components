@@ -100,19 +100,19 @@ interface BaseMenuItem {
 
 interface NormalMenuItem extends BaseMenuItem {
   type?: 'normal'
-  onClick: () => void
+  onClick: Function
 }
 
 interface CheckboxMenuItem extends BaseMenuItem {
   type: 'checkbox'
   checked: boolean
-  onClick: () => void
+  onClick: Function
 }
 
 interface RadioMenuItem extends BaseMenuItem {
   type: 'radio'
   checked: boolean
-  onClick: () => void
+  onClick: Function
 }
 
 interface SubMenuItem extends BaseMenuItem {
@@ -136,7 +136,7 @@ interface MenuPageProps {
   menuOptions: MenuOption[]
   onMenuItemClick: (
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-    callback: () => void,
+    callback: Function,
   ) => void
   anchorEl?: AnchorElProp
   open: OpenProp
@@ -252,7 +252,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
     menuItemStyle.paddingRight = 48
   }
 
-  function handleClick(callback: () => void) {
+  function handleClick(callback: Function) {
     return (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
       onMenuItemClick(event, callback)
     }
@@ -393,7 +393,7 @@ interface MenuProps extends PopoverProps {
   menuOptions: MenuOption[]
   onMenuItemClick: (
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-    callback: () => void,
+    callback: Function,
   ) => void
 }
 

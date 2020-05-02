@@ -27,5 +27,7 @@ export interface BaseLayout<T> {
   getRectangles(): Map<string, RectTuple>
   discardRange(left: number, right: number): void
   serializeRegion(region: { start: number; end: number }): SerializedLayout
+  getTotalHeight(): number
+  maxHeightReached: boolean
   toJSON(): SerializedLayout
 }

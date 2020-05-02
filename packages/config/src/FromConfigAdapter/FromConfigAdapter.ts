@@ -1,7 +1,13 @@
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import SimpleFeature, {
+  Feature,
+  SimpleFeatureSerialized,
+} from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { ConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import FromConfigAdapterConfigSchema from './configSchema'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration
@@ -9,19 +15,17 @@ import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
  *   "features": [ { "refName": "ctgA", "start":1, "end":20 }, ... ]
  */
 
-export default class FromConfigAdapter extends BaseAdapter {
-  protected features: Map<string, Feature[]>
+export default class FromConfigAdapter extends BaseFeatureDataAdapter {
+  private features: Map<string, Feature[]>
 
-  public static capabilities = [
-    'getFeatures',
-    'getRefNames',
-    'getRegions',
-    'getRefNameAliases',
-  ]
-
-  constructor(config: { features: Feature[]; refNameAliases?: [] }) {
+  constructor(
+    config: ConfigurationModel<typeof FromConfigAdapterConfigSchema>,
+  ) {
     super(config)
-    const { features } = config
+    const features = readConfObject(
+      config,
+      'features',
+    ) as SimpleFeatureSerialized[]
     this.features = this.makeFeatures(features || [])
   }
 
@@ -49,8 +53,8 @@ export default class FromConfigAdapter extends BaseAdapter {
     return features
   }
 
-  makeFeature(data: Feature): SimpleFeature {
-    return new SimpleFeature({ data })
+  makeFeature(data: SimpleFeatureSerialized): SimpleFeature {
+    return new SimpleFeature(data)
   }
 
   async getRefNames() {

@@ -85,7 +85,8 @@ Tooltip.propTypes = {
 }
 
 function WiggleRendering(props) {
-  const { region, features, bpPerPx, width, height } = props
+  const { regions, features, bpPerPx, width, height } = props
+  const [region] = regions
   const ref = useRef()
   const [featureUnderMouse, setFeatureUnderMouse] = useState()
   const [clientX, setClientX] = useState()
@@ -136,7 +137,7 @@ function WiggleRendering(props) {
 WiggleRendering.propTypes = {
   height: ReactPropTypes.number.isRequired,
   width: ReactPropTypes.number.isRequired,
-  region: CommonPropTypes.Region.isRequired,
+  regions: ReactPropTypes.arrayOf(CommonPropTypes.Region).isRequired,
   features: ReactPropTypes.instanceOf(Map).isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
   trackModel: ReactPropTypes.shape({

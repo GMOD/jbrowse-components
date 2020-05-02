@@ -2,19 +2,28 @@ import {
   ConfigurationReference,
   getConf,
 } from '@gmod/jbrowse-core/configuration'
-import { isAbortException, getSession } from '@gmod/jbrowse-core/util'
 import {
+  isAbortException,
+  getSession,
   getContainingView,
+} from '@gmod/jbrowse-core/util'
+import {
   getParentRenderProps,
   getTrackAssemblyNames,
 } from '@gmod/jbrowse-core/util/tracks'
-import blockBasedTrackModel, {
-  BlockBasedTrackStateModel,
-} from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
+import blockBasedTrackModel from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
 import { autorun, observable } from 'mobx'
-import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
+import {
+  addDisposer,
+  getSnapshot,
+  isAlive,
+  types,
+  Instance,
+} from 'mobx-state-tree'
 import React from 'react'
+import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { getNiceDomain } from '../util'
+
 import WiggleTrackComponent from './components/WiggleTrackComponent'
 
 // using a map because it preserves order
@@ -29,7 +38,7 @@ const stateModelFactory = (configSchema: any) =>
   types
     .compose(
       'WiggleTrack',
-      blockBasedTrackModel as BlockBasedTrackStateModel,
+      blockBasedTrackModel,
       types
         .model({
           type: types.literal('WiggleTrack'),
@@ -120,11 +129,11 @@ const stateModelFactory = (configSchema: any) =>
     })
     .actions(self => {
       async function getStats(signal: AbortSignal) {
-        const { rpcManager } = getSession(self) as {
+        const { rpcManager } = (getSession(self) as unknown) as {
           rpcManager: { call: Function }
         }
         const nd = getConf(self, 'numStdDev')
-        const autoscaleType = getConf(self, 'autoscale', {})
+        const autoscaleType = getConf(self, 'autoscale', [])
         const { adapter } = self.configuration
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
           const r = await rpcManager.call('statsGathering', 'getGlobalStats', {
@@ -144,7 +153,9 @@ const stateModelFactory = (configSchema: any) =>
             : r
         }
         if (autoscaleType === 'local' || autoscaleType === 'localsd') {
-          const { dynamicBlocks, bpPerPx } = getContainingView(self)
+          const { dynamicBlocks, bpPerPx } = getContainingView(
+            self,
+          ) as Instance<LinearGenomeViewStateModel>
           const r = await rpcManager.call(
             'statsGathering',
             'getMultiRegionStats',
@@ -188,7 +199,9 @@ const stateModelFactory = (configSchema: any) =>
                   const aborter = new AbortController()
                   self.setLoading(aborter)
 
-                  const { dynamicBlocks } = getContainingView(self)
+                  const { dynamicBlocks } = getContainingView(self) as Instance<
+                    LinearGenomeViewStateModel
+                  >
                   if (!dynamicBlocks.contentBlocks.length && !self.ready) {
                     return
                   }

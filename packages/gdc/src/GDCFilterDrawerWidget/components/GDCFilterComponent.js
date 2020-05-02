@@ -499,8 +499,8 @@ const TrackType = observer(props => {
               <MenuItem disabled value="">
                 <em>Track type</em>
               </MenuItem>
-              <MenuItem value={'mutation'}>Mutation</MenuItem>
-              <MenuItem value={'gene'}>Gene</MenuItem>
+              <MenuItem value="mutation">Mutation</MenuItem>
+              <MenuItem value="gene">Gene</MenuItem>
             </Select>
           </FormControl>
         </ListItem>

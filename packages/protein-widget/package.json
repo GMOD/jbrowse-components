@@ -33,7 +33,7 @@
     "prop-types": "^15.7.2",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
-    "rxjs": "6.5.2",
+    "rxjs": "^6.5.2",
     "typeface-roboto": "^0.0.54"
   }
 }

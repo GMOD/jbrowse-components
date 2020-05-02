@@ -1,4 +1,3 @@
-
 # Tutorial
 
 We just want to point out that you can add a view from empty data.
@@ -14,6 +13,3 @@ and then simply add the view from the File Menu:
 ![alt text](images/AddNewViews.png)
 
 for the view you want and follow the relevant instructions.
-
-
-

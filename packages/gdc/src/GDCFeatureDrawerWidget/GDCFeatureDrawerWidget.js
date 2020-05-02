@@ -233,7 +233,7 @@ function GeneExternalLinks(props) {
         <Table className={classes.table}>
           <TableBody>
             {externalLinkArray.map((externalLink, key) => (
-              <ExternalLink {...externalLink} key={key}></ExternalLink>
+              <ExternalLink {...externalLink} key={key} />
             ))}
           </TableBody>
         </Table>
@@ -314,11 +314,9 @@ function SSMExternalLinks(props) {
         <Table className={classes.table}>
           <TableBody>
             {externalLinkArray.map((externalLink, key) => (
-              <ExternalLink {...externalLink} key={key}></ExternalLink>
+              <ExternalLink {...externalLink} key={key} />
             ))}
-            {feature.cosmicId && (
-              <CosmicLinks cosmicId={feature.cosmicId}></CosmicLinks>
-            )}
+            {feature.cosmicId && <CosmicLinks cosmicId={feature.cosmicId} />}
           </TableBody>
         </Table>
       </div>
@@ -419,7 +417,7 @@ function SSMProjects(props) {
                   gdcProjectsCounts={gdcProjectsCounts}
                   key={`${key}-${project.projectId}`}
                   {...project}
-                ></SSMProject>
+                />
               ))}
           </TableBody>
         </Table>
@@ -589,7 +587,7 @@ function GeneProjects(props) {
                   projectsInformation={projectsInformation}
                   key={`${key}-${project.projectId}`}
                   {...project}
-                ></GeneProject>
+                />
               ))}
           </TableBody>
         </Table>
@@ -705,7 +703,6 @@ function GDCFeatureDetails(props) {
   const classes = useStyles()
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
-  /* eslint-disable @typescript-eslint/no-unused-vars */
   const {
     consequence,
     geneId,
@@ -715,7 +712,6 @@ function GDCFeatureDetails(props) {
     externalDbIds,
     ...rest
   } = feat
-  /* eslint-enable @typescript-eslint/no-unused-vars */
   return (
     <Paper className={classes.root} data-testid="variant-side-drawer">
       <BaseFeatureDetail feature={rest} {...props} />

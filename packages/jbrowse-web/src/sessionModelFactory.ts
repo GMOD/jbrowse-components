@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import { getContainingView } from '@gmod/jbrowse-core/util'
 import jsonStableStringify from 'json-stable-stringify'
 import { observable } from 'mobx'
 import {
@@ -18,13 +17,18 @@ import {
   types,
   walk,
 } from 'mobx-state-tree'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import {
+  readConfObject,
+  isConfigurationModel,
+} from '@gmod/jbrowse-core/configuration'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
   key: string
 }
 
-export default function sessionModelFactory(pluginManager: any) {
+export default function sessionModelFactory(pluginManager: PluginManager) {
   const minDrawerWidth = 128
   return types
     .model('JBrowseWebSessionModel', {
@@ -133,6 +137,7 @@ export default function sessionModelFactory(pluginManager: any) {
         assemblyName: string,
         opts: { signal?: AbortSignal } = {},
       ) {
+        if (!assemblyName) throw new TypeError('assemblyName is required')
         const assembly = self.assemblyData.get(assemblyName)
         if (assembly) {
           const adapterConfig = readConfObject(assembly.sequence, 'adapter')
@@ -162,14 +167,22 @@ export default function sessionModelFactory(pluginManager: any) {
         return Promise.resolve(undefined)
       },
 
-      makeConnection(configuration: any, initialSnapshot = {}) {
+      makeConnection(
+        configuration: AnyConfigurationModel,
+        initialSnapshot = {},
+      ) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')
         const name = readConfObject(configuration, 'name')
         const connectionType = pluginManager.getConnectionType(type)
         if (!connectionType) throw new Error(`unknown connection type ${type}`)
         const assemblyName = readConfObject(configuration, 'assemblyName')
-        const connectionData = { ...initialSnapshot, name, type, configuration }
+        const connectionData = {
+          ...initialSnapshot,
+          name,
+          type,
+          configuration,
+        }
         if (!self.connectionInstances.has(assemblyName))
           self.connectionInstances.set(assemblyName, [])
         const assemblyConnections = self.connectionInstances.get(assemblyName)
@@ -179,7 +192,7 @@ export default function sessionModelFactory(pluginManager: any) {
         return assemblyConnections[length - 1]
       },
 
-      prepareToBreakConnection(configuration: any) {
+      prepareToBreakConnection(configuration: AnyConfigurationModel) {
         const name = readConfObject(configuration, 'name')
         const assemblyName = readConfObject(configuration, 'assemblyName')
         const assemblyConnections =
@@ -229,7 +242,7 @@ export default function sessionModelFactory(pluginManager: any) {
         return [safelyBreakConnection, dereferenceTypeCount]
       },
 
-      breakConnection(configuration: any) {
+      breakConnection(configuration: AnyConfigurationModel) {
         const name = readConfObject(configuration, 'name')
         const assemblyName = readConfObject(configuration, 'assemblyName')
         const connectionInstances = self.connectionInstances.get(assemblyName)
@@ -287,6 +300,34 @@ export default function sessionModelFactory(pluginManager: any) {
 
       addConnectionConf(connectionConf: any) {
         return getParent(self).jbrowse.addConnectionConf(connectionConf)
+      },
+
+      addLinearGenomeViewOfAssembly(assemblyName: string, initialState = {}) {
+        return this.addViewOfAssembly(
+          'LinearGenomeView',
+          assemblyName,
+          initialState,
+        )
+      },
+
+      addViewOfAssembly(
+        viewType: any,
+        assemblyName: string,
+        initialState: any = {},
+      ) {
+        const assembly = self.assemblies.find(
+          (s: AnyConfigurationModel) =>
+            readConfObject(s, 'name') === assemblyName,
+        )
+        if (!assembly)
+          throw new Error(
+            `Could not add view of assembly "${assemblyName}", assembly name not found`,
+          )
+        initialState.displayRegionsFromAssemblyName = readConfObject(
+          assembly,
+          'name',
+        )
+        return this.addView(viewType, initialState)
       },
 
       addViewFromAnotherView(
@@ -360,7 +401,7 @@ export default function sessionModelFactory(pluginManager: any) {
        * and sets the current task to be configuring it
        * @param {*} configuration
        */
-      editConfiguration(configuration: any) {
+      editConfiguration(configuration: AnyConfigurationModel) {
         if (!isConfigurationModel(configuration)) {
           throw new Error(
             'must pass a configuration model to editConfiguration',

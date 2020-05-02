@@ -1,5 +1,9 @@
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { assembleLocString, getSession } from '@gmod/jbrowse-core/util'
+import {
+  assembleLocString,
+  getSession,
+  isSessionModelWithDrawerWidgets,
+} from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import Icon from '@material-ui/core/Icon'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
@@ -49,10 +53,9 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const Controls = observer(({ model }) => {
+const Controls = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const session: any = getSession(model)
+  const session = getSession(model)
   return (
     <ToggleButton
       onChange={model.activateTrackSelector}
@@ -61,8 +64,10 @@ const Controls = observer(({ model }) => {
       value="track_select"
       color="secondary"
       selected={
+        isSessionModelWithDrawerWidgets(session) &&
         session.visibleDrawerWidget &&
         session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
+        // @ts-ignore
         session.visibleDrawerWidget.view.id === model.id
       }
     >
@@ -160,6 +165,7 @@ const Search = observer(({ model }: { model: LGV }) => {
           height: 32,
         },
       }}
+      // eslint-disable-next-line react/jsx-no-duplicate-props
       inputProps={{ style: { padding: theme.spacing() } }}
       disabled={disabled}
     />

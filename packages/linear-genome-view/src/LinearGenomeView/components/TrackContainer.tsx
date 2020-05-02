@@ -1,8 +1,11 @@
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { ResizeHandle } from '@gmod/jbrowse-core/ui'
-import { useDebouncedCallback } from '@gmod/jbrowse-core/util'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import {
+  useDebouncedCallback,
+  getContainingView,
+} from '@gmod/jbrowse-core/util'
 import Paper from '@material-ui/core/Paper'
+import Slide from '@material-ui/core/Slide'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { Instance, isAlive } from 'mobx-state-tree'
@@ -83,7 +86,9 @@ function TrackContainer(props: {
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== track.id
   return (
     <div className={classes.root}>
-      <TrackLabel track={track} className={classes.trackLabel} />
+      <Slide direction="right" in={model.showTrackLabels}>
+        <TrackLabel track={track} className={classes.trackLabel} />
+      </Slide>
       <Paper
         variant="outlined"
         className={classes.trackRenderingContainer}
