@@ -129,16 +129,20 @@ export default class BoxRendererType extends ServerSideRendererType {
 
   freeResourcesInWorker(args: {
     sessionId: string
-    region: IRegion | undefined
+    regions: IRegion[] | undefined
   }) {
-    const { sessionId, region } = args
+    const { sessionId, regions } = args
     const session = this.sessions[sessionId]
-    if (!region && session) {
+    if (!regions && session) {
       delete this.sessions[sessionId]
       return 1
     }
-    if (session && region) {
-      session.layout.discardRange(region.refName, region.start, region.end)
+    if (session && regions) {
+      session.layout.discardRange(
+        regions[0].refName,
+        regions[0].start,
+        regions[0].end,
+      )
     }
     return 0
   }
