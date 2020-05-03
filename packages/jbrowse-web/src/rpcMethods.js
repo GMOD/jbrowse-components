@@ -197,16 +197,7 @@ export async function render(
  */
 export async function comparativeRender(
   pluginManager,
-  {
-    sessionId,
-    adapterType,
-    adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
-    rendererType,
-    renderProps,
-    signal,
-  },
+  { sessionId, adapterType, adapterConfig, rendererType, renderProps, signal },
 ) {
   if (!sessionId) throw new Error('must pass a unique session id')
 
@@ -220,16 +211,18 @@ export async function comparativeRender(
     sessionId,
     adapterType,
     adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
   )
 
   const RendererType = pluginManager.getRendererType(rendererType)
-  if (!RendererType) throw new Error(`renderer "${rendererType}" not found`)
-  if (!RendererType.ReactComponent)
+
+  if (!RendererType) {
+    throw new Error(`renderer "${rendererType}" not found`)
+  }
+  if (!RendererType.ReactComponent) {
     throw new Error(
       `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
     )
+  }
 
   const result = await RendererType.renderInWorker({
     ...renderProps,
