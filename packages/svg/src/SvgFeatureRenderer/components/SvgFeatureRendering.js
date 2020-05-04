@@ -244,6 +244,7 @@ function SvgFeatureRendering(props) {
     onMouseMove,
     onMouseUp,
     onFeatureClick,
+    onFeatureContextMenu,
   } = props
 
   const mouseDown = useCallback(
@@ -360,6 +361,18 @@ function SvgFeatureRendering(props) {
     [movedDuringLastMouseDown, onFeatureClick],
   )
 
+  const contextMenu = useCallback(
+    event => {
+      if (movedDuringLastMouseDown) {
+        return
+      }
+      if (onFeatureContextMenu) {
+        onFeatureContextMenu(event)
+      }
+    },
+    [movedDuringLastMouseDown, onFeatureContextMenu],
+  )
+
   return (
     <div style={renderingStyle}>
       <svg
@@ -377,6 +390,7 @@ function SvgFeatureRendering(props) {
         onFocus={mouseEnter}
         onBlur={mouseLeave}
         onClick={click}
+        onContextMenu={contextMenu}
         style={{ display: 'block' }}
       >
         <RenderedFeatures
@@ -430,7 +444,9 @@ SvgFeatureRendering.propTypes = {
   onMouseOut: ReactPropTypes.func,
   onMouseMove: ReactPropTypes.func,
   onClick: ReactPropTypes.func,
+  onContextMenu: ReactPropTypes.func,
   onFeatureClick: ReactPropTypes.func,
+  onFeatureContextMenu: ReactPropTypes.func,
   blockKey: ReactPropTypes.string,
 }
 
@@ -448,7 +464,9 @@ SvgFeatureRendering.defaultProps = {
   onMouseOut: undefined,
   onMouseMove: undefined,
   onClick: undefined,
+  onContextMenu: undefined,
   onFeatureClick: undefined,
+  onFeatureContextMenu: undefined,
 }
 
 export default observer(SvgFeatureRendering)

@@ -9,6 +9,7 @@ import {
 } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { addDisposer, types, Instance } from 'mobx-state-tree'
+import { MenuOption } from '@gmod/jbrowse-core/ui'
 import RBush from 'rbush'
 import { Feature, isFeature } from '@gmod/jbrowse-core/util/simpleFeature'
 import BlockState from './util/serverSideRenderedBlock'
@@ -27,6 +28,7 @@ const blockBasedTrack = types
         blockState: types.map(BlockState),
       })
       .volatile(() => ({
+        contextMenuOptions: [] as MenuOption[],
         featureIdUnderMouse: undefined as undefined | string,
         ReactComponent: BlockBasedTrack,
       })),
@@ -215,6 +217,14 @@ const blockBasedTrack = types
       }
     },
 
+    contextMenuFeature(feature: Feature) {
+      self.contextMenuOptions = []
+    },
+
+    contextMenuNoFeature() {
+      self.contextMenuOptions = []
+    },
+
     clearFeatureSelection() {
       const session = getSession(self)
       session.clearSelection()
@@ -238,9 +248,22 @@ const blockBasedTrack = types
             const feature = self.features.get(f)
             self.selectFeature(feature as Feature)
           }
-          // TODO: onfeatureRightClick
         },
         onClick() {
+          self.clearFeatureSelection()
+        },
+        // similar to click but opens a menu with further options
+        onFeatureContextMenu(event: unknown, featureId: string | undefined) {
+          const f = featureId || self.featureIdUnderMouse
+          if (!f) {
+            self.clearFeatureSelection()
+          } else {
+            const feature = self.features.get(f)
+            self.contextMenuFeature(feature as Feature)
+          }
+        },
+        onContextMenu() {
+          self.contextMenuNoFeature()
           self.clearFeatureSelection()
         },
       }
