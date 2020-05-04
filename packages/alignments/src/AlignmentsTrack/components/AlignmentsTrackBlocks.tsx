@@ -62,7 +62,7 @@ function AlignmentsTrackBlocks({
 
   const handleMenuItemClick = (
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-    callback: () => void,
+    callback: Function,
   ) => {
     callback()
     handleClose()
