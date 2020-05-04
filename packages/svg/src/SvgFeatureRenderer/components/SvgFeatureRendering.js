@@ -363,8 +363,12 @@ function SvgFeatureRendering(props) {
 
   const contextMenu = useCallback(
     event => {
-      if (movedDuringLastMouseDown) return
-      onFeatureContextMenu && onFeatureContextMenu(event)
+      if (movedDuringLastMouseDown) {
+        return
+      }
+      if (onFeatureContextMenu) {
+        onFeatureContextMenu(event)
+      }
     },
     [movedDuringLastMouseDown, onFeatureContextMenu],
   )
