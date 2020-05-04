@@ -12,13 +12,13 @@ stubManager.addTrackType(
   () =>
     new TrackType({
       name: 'Base',
+      compatibleView: 'LinearGenomeView',
       configSchema: ConfigurationSchema(
         'BaseTrack',
         {},
         { explicitlyTyped: true },
       ),
       stateModel: BaseTrack,
-      RenderingComponent: true,
     }),
 )
 stubManager.createPluggableElements()

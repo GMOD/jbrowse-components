@@ -41,7 +41,7 @@ export const InterRegionPaddingBlockMarker = ({ boundary, width, style }) => {
           ? classes.boundaryPaddingBlock
           : classes.interRegionPaddingBlock
       }
-    ></div>
+    />
   )
 }
 InterRegionPaddingBlockMarker.propTypes = {

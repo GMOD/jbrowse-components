@@ -2,6 +2,7 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSnapshot, types, cast, SnapshotIn } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
+import { AbstractSessionModel } from '@gmod/jbrowse-core/util'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
@@ -11,8 +12,7 @@ interface Menu {
   menuItems: MenuOption[]
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function RootModel(pluginManager: any) {
+export default function RootModel(pluginManager: PluginManager) {
   const Session = sessionModelFactory(pluginManager)
   return types
     .model('Root', {
@@ -240,5 +240,5 @@ export function createTestSession(snapshot = {}) {
   pluginManager.setRootModel(root)
 
   pluginManager.configure()
-  return root.session
+  return root.session as AbstractSessionModel
 }

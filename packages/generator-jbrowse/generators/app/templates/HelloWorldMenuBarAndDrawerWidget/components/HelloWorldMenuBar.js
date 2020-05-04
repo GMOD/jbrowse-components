@@ -17,10 +17,10 @@ const useStyles = makeStyles({
 })
 
 function onClick(session) {
-  const drawerWidget =  session.addDrawerWidget(
-      'HelloWorldDrawerWidget',
-      'id-helloworlddrawerwidget',
-    )
+  const drawerWidget = session.addDrawerWidget(
+    'HelloWorldDrawerWidget',
+    'id-helloworlddrawerwidget',
+  )
   session.showDrawerWidget(drawerWidget)
 }
 

@@ -14,10 +14,12 @@ test('several features', async () => {
       new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
       new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
     ],
-    region: {
-      end: 100,
-      start: 1,
-    },
+    regions: [
+      {
+        end: 100,
+        start: 1,
+      },
+    ],
     scaleOpts: {
       domain: [0, 100],
       scaleType: 'linear',

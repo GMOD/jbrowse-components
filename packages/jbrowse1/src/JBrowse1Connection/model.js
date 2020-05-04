@@ -32,8 +32,19 @@ export default function (pluginManager) {
                 self.configuration,
                 'assemblyName',
               )
+              const assemblyConf = session.assemblies.find(
+                assembly => readConfObject(assembly, 'name') === assemblyName,
+              )
+              const sequenceAdapter = readConfObject(assemblyConf, [
+                'sequence',
+                'adapter',
+              ])
               const jb2Tracks = config.tracks.map(jb1Track => {
-                const jb2Track = convertTrackConfig(jb1Track, config.dataRoot)
+                const jb2Track = convertTrackConfig(
+                  jb1Track,
+                  config.dataRoot,
+                  sequenceAdapter,
+                )
                 jb2Track.assemblyNames = [assemblyName]
                 return jb2Track
               })

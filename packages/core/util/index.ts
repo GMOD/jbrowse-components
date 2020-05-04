@@ -2,9 +2,9 @@ import { toByteArray, fromByteArray } from 'base64-js'
 import {
   getParent,
   isAlive,
-  addDisposer,
   IAnyStateTreeNode,
-  getType,
+  hasParent,
+  addDisposer,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic } from 'mobx'
 import { inflate, deflate } from 'pako'
@@ -14,6 +14,9 @@ import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
+import { TypeTestedByPredicate, isSessionModel, isViewModel } from './types'
+
+export * from './types'
 
 if (!Object.fromEntries) {
   fromEntries.shim()
@@ -125,6 +128,20 @@ export function useDebouncedCallback<A extends any[]>(
   }
 }
 
+/** find the first node in the hierarchy that matches the given predicate */
+export function findParentThat(
+  node: IAnyStateTreeNode,
+  predicate: (thing: IAnyStateTreeNode) => boolean,
+) {
+  let currentNode: IAnyStateTreeNode | undefined = node
+  while (currentNode && isAlive(currentNode)) {
+    if (predicate(currentNode)) return currentNode
+    if (hasParent(currentNode)) currentNode = getParent(currentNode)
+    else break
+  }
+  throw new Error('no matching node found')
+}
+
 interface Animation {
   lastPosition: number
   lastTime?: number
@@ -191,22 +208,33 @@ export function springAnimate(
   ]
 }
 
-export function getSession(node: IAnyStateTreeNode): IAnyStateTreeNode {
-  let currentNode = node
-  // @ts-ignore
-  while (isAlive(currentNode) && currentNode.pluginManager === undefined)
-    currentNode = getParent(currentNode)
-  return currentNode
+/** find the first node in the hierarchy that matches the given 'is' typescript type guard predicate */
+export function findParentThatIs<
+  PREDICATE extends (thing: IAnyStateTreeNode) => boolean
+>(
+  node: IAnyStateTreeNode,
+  predicate: PREDICATE,
+): TypeTestedByPredicate<PREDICATE> & IAnyStateTreeNode {
+  return findParentThat(node, predicate) as TypeTestedByPredicate<PREDICATE> &
+    IAnyStateTreeNode
 }
 
-export function getContainingView(
-  node: IAnyStateTreeNode,
-): IAnyStateTreeNode | undefined {
-  const currentNode = getParent(node, 2)
-  if (getType(currentNode).name.includes('View')) {
-    return currentNode
+/** get the current JBrowse session model, starting at any node in the state tree */
+export function getSession(node: IAnyStateTreeNode) {
+  try {
+    return findParentThatIs(node, isSessionModel)
+  } catch (e) {
+    throw new Error('no session model found!')
   }
-  return undefined
+}
+
+/** get the state model of the view in the state tree that contains the given node */
+export function getContainingView(node: IAnyStateTreeNode) {
+  try {
+    return findParentThatIs(node, isViewModel)
+  } catch (e) {
+    throw new Error('no containing view found')
+  }
 }
 
 /**
@@ -430,6 +458,7 @@ export function checkAbortSignal(signal?: AbortSignal): void {
 
   if (signal.aborted) {
     if (typeof DOMException !== 'undefined') {
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
       throw new DOMException('aborted', 'AbortError')
     } else {
       const e = new AbortError('aborted')

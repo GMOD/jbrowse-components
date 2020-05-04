@@ -8,7 +8,7 @@ import { checkAbortSignal, isAbortException } from '@gmod/jbrowse-core/util'
 import {
   freeAdapterResources,
   getAdapter,
-} from '@gmod/jbrowse-core/util/dataAdapterCache'
+} from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import { useStaticRendering } from 'mobx-react'
 import corePlugins from './corePlugins'
 
@@ -128,14 +128,7 @@ async function getRegions(
 
 async function getRefNames(
   pluginManager,
-  {
-    sessionId,
-    signal,
-    adapterType,
-    adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
-  },
+  { sessionId, signal, adapterType, adapterConfig },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
@@ -146,8 +139,6 @@ async function getRefNames(
     sessionId,
     adapterType,
     adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
   )
   return dataAdapter.getRefNames({ signal })
 }
@@ -201,27 +192,79 @@ function freeResources(pluginManager, specification) {
  * @param {object} args.renderProps
  * @param {AbortSignal} [args.signal]
  */
-async function render(pluginManager, args) {
-  const {
-    blockKey,
+async function render(
+  pluginManager,
+  {
     regions,
-    region,
-    originalRegion,
     originalRegions,
     sessionId,
     adapterType,
     adapterConfig,
     rendererType,
     renderProps,
+    signal,
+  },
+) {
+  if (!sessionId) {
+    throw new Error('must pass a unique session id')
+  }
+
+  if (isRemoteAbortSignal(signal)) {
+    signal = deserializeAbortSignal(signal)
+  }
+  checkAbortSignal(signal)
+
+  const { dataAdapter } = getAdapter(
+    pluginManager,
+    sessionId,
+    adapterType,
+    adapterConfig,
+  )
+
+  const RendererType = pluginManager.getRendererType(rendererType)
+  if (!RendererType) throw new Error(`renderer "${rendererType}" not found`)
+  if (!RendererType.ReactComponent)
+    throw new Error(
+      `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
+    )
+
+  const result = await RendererType.renderInWorker({
+    ...renderProps,
+    sessionId,
+    dataAdapter,
+    regions,
+    originalRegions,
+    signal,
+  })
+  checkAbortSignal(signal)
+  return result
+}
+
+/**
+ * call a synteny renderer with the given args
+ * param views: a set of views that each contain a set of regions
+ * used instead of passing regions directly as in render()
+ */
+async function comparativeRender(
+  pluginManager,
+  {
+    sessionId,
+    adapterType,
+    adapterConfig,
     sequenceAdapterType,
     sequenceAdapterConfig,
-  } = args
+    rendererType,
+    renderProps,
+    signal,
+  },
+) {
   if (!sessionId) throw new Error('must pass a unique session id')
 
-  const signal = isRemoteAbortSignal(args.signal)
-    ? deserializeAbortSignal(args.signal)
-    : args.signal
+  if (isRemoteAbortSignal(signal)) {
+    signal = deserializeAbortSignal(signal)
+  }
   checkAbortSignal(signal)
+
   const { dataAdapter } = getAdapter(
     pluginManager,
     sessionId,
@@ -240,14 +283,10 @@ async function render(pluginManager, args) {
 
   const result = await RendererType.renderInWorker({
     ...renderProps,
+    pluginManager,
     sessionId,
     dataAdapter,
-    regions,
-    region,
-    originalRegion,
-    originalRegions,
     signal,
-    blockKey,
   })
   checkAbortSignal(signal)
   return result
@@ -262,4 +301,5 @@ window.rpcMethods = {
   getRefNameAliases,
   freeResources,
   render,
+  comparativeRender,
 }

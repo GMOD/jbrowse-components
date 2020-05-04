@@ -23,5 +23,3 @@ and selecting `Factory Reset` from the config:
 ![](images/FactoryReset.png)
 
 ---
-
-

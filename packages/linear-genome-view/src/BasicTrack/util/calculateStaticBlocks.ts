@@ -6,6 +6,7 @@ import {
   ElidedBlock,
   InterRegionPaddingBlock,
 } from './blockTypes'
+
 import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
 
 const interRegionPaddingWidth = 2

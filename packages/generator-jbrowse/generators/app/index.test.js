@@ -15,7 +15,7 @@ describe('generator-jbrowse:app', () => {
       type: 'helloWorldMenuBar',
     })
     const files = fs.readdirSync('.')
-    expect(files.length).toBe(0)
+    expect(files.length).toBe(1)
   })
 
   it('creates a "Hello World" menu bar', async () => {

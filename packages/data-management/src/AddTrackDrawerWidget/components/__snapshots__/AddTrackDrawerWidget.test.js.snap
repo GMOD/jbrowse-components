@@ -20,7 +20,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
             aria-hidden="true"
             class="MuiSvgIcon-root MuiStepIcon-root MuiStepIcon-active"
             focusable="false"
-            role="presentation"
             viewBox="0 0 24 24"
           >
             <circle
@@ -98,7 +97,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                               aria-hidden="true"
                               class="MuiSvgIcon-root"
                               focusable="false"
-                              role="presentation"
                               viewBox="0 0 24 24"
                             >
                               <path
@@ -109,7 +107,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                               aria-hidden="true"
                               class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
                               focusable="false"
-                              role="presentation"
                               viewBox="0 0 24 24"
                             >
                               <path
@@ -152,7 +149,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                               aria-hidden="true"
                               class="MuiSvgIcon-root"
                               focusable="false"
-                              role="presentation"
                               viewBox="0 0 24 24"
                             >
                               <path
@@ -163,7 +159,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                               aria-hidden="true"
                               class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
                               focusable="false"
-                              role="presentation"
                               viewBox="0 0 24 24"
                             >
                               <path
@@ -317,7 +312,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
             aria-hidden="true"
             class="MuiSvgIcon-root MuiStepIcon-root"
             focusable="false"
-            role="presentation"
             viewBox="0 0 24 24"
           >
             <circle

@@ -1,6 +1,5 @@
 import jsonStableStringify from 'json-stable-stringify'
 import { observable, toJS } from 'mobx'
-import { getSnapshot } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from './util/QuickLRU'
 import { readConfObject } from './configuration'
@@ -13,11 +12,6 @@ export default self => {
 
     // the `fill` callback will be called for a cache miss
     async fill({ adapterConf, assemblyName }, signal) {
-      const assemblyConfig = self.assemblyData.get(assemblyName)
-      let sequenceConfig = {}
-      if (assemblyConfig && assemblyConfig.sequence) {
-        sequenceConfig = getSnapshot(assemblyConfig.sequence.adapter)
-      }
       const refNameAliases = await self.getRefNameAliases(assemblyName, {
         signal,
       })
@@ -32,8 +26,6 @@ export default self => {
           sessionId: assemblyName,
           adapterType: readConfObject(adapterConf, 'type'),
           adapterConfig: adapterConf,
-          sequenceAdapterType: sequenceConfig.type,
-          sequenceAdapterConfig: sequenceConfig,
           signal,
         },
         { timeout: 1000000 },

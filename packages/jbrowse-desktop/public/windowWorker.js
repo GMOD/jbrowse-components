@@ -83,9 +83,9 @@ Object.keys(rpcMethods).forEach(key => {
   wrappedRpcMethods[key] = wrapForRpc(rpcMethods[key])
 })
 
-ipcRenderer.answerRenderer('ready', async () => true)
+ipcRenderer.answerRenderer('ready', () => true)
 
-ipcRenderer.answerRenderer('call', async (functionName, args /* , opts */) => {
+ipcRenderer.answerRenderer('call', (functionName, args /* , opts */) => {
   // TODO: implement opts.timeout
   return { ...wrappedRpcMethods, ...remoteAbortRpcHandler(), ping: () => {} }[
     functionName

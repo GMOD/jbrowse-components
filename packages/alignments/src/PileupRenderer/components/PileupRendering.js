@@ -7,7 +7,8 @@ import React, { useRef, useState, useEffect } from 'react'
 import runner from 'mobx-run-in-reactive-context'
 
 function PileupRendering(props) {
-  const { blockKey, trackModel, width, height, region, bpPerPx } = props
+  const { blockKey, trackModel, width, height, regions, bpPerPx } = props
+  const [region] = regions
   const {
     selectedFeatureId,
     featureIdUnderMouse,
@@ -210,7 +211,7 @@ PileupRendering.propTypes = {
   }).isRequired,
   height: ReactPropTypes.number.isRequired,
   width: ReactPropTypes.number.isRequired,
-  region: CommonPropTypes.Region.isRequired,
+  regions: ReactPropTypes.arrayOf(CommonPropTypes.Region).isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
   blockKey: ReactPropTypes.string,
 

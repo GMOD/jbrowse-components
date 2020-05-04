@@ -3,8 +3,9 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import React, { useEffect, useState } from 'react'
 import ReactPropTypes from 'prop-types'
-import Feature from '../util/simpleFeature'
+import { Feature } from '../util/simpleFeature'
 import { readConfObject } from '../configuration'
+import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 const useStyles = makeStyles({
   hoverLabel: {
@@ -25,10 +26,9 @@ const Tooltip = ({
 }: {
   offsetX: number
   offsetY: number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  configuration: any
+  configuration: AnyConfigurationModel
   feature?: Feature
-  timeout: number
+  timeout?: number
 }) => {
   const classes = useStyles()
   // only show the loading message after 400ms to prevent excessive flickering

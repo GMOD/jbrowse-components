@@ -25,7 +25,8 @@ pluginManager.addConnectionType(
       configEditorComponent: MyConfigComponent,
       stateModel: myModelFactory(pluginManager),
       displayName: 'My Awesome Connection',
-      description: 'Add tracks to JBrowse from data in the myAwesomeData format',
+      description:
+        'Add tracks to JBrowse from data in the myAwesomeData format',
       url: '//mysite.com/info',
     }),
 )
@@ -33,29 +34,30 @@ pluginManager.addConnectionType(
 
 ### Required items
 
-* `name`: The name JBrowse will use internally and in configuration files to
-refer to this type of connection
-* `configSchema`: A [configuration schema](../configuration/README.md) for the
-connection. It defines the options a user can configure when adding the
-connection. It must at least have a "name" slot.
-* `stateModel`: The mobx-state-tree model for the connection. This contains the
-code that actually does queries and creates tracks. See below.
+- `name`: The name JBrowse will use internally and in configuration files to
+  refer to this type of connection
+- `configSchema`: A [configuration schema](../configuration/README.md) for the
+  connection. It defines the options a user can configure when adding the
+  connection. It must at least have a "name" slot.
+- `stateModel`: The mobx-state-tree model for the connection. This contains the
+  code that actually does queries and creates tracks. See below.
 
 ### Optional items
 
 These items are used when a user adds a connection via the GUI. If included,
 they are displayed in the GUI so a user can better understand the type of
 connection they are adding.
-* `displayName`: A user-friendly name for the connection type. `name` will be
-used if this is absent.
-* `description`: A description of the connection.
-* `url`: A link to follow for more information about the connection or the
-resource being connected to.
-* `configEditorComponent`: By default the user can use the built-in config
-editor to configure the connection when adding it via the GUI. However, a
-custom editor can be provided. It should be a react component that accepts a
-prop `model`. This can be used to set config items. For example, if you have a
-config slot "name", you can set its value using `model.target.name.set('someNewName')`
+
+- `displayName`: A user-friendly name for the connection type. `name` will be
+  used if this is absent.
+- `description`: A description of the connection.
+- `url`: A link to follow for more information about the connection or the
+  resource being connected to.
+- `configEditorComponent`: By default the user can use the built-in config
+  editor to configure the connection when adding it via the GUI. However, a
+  custom editor can be provided. It should be a react component that accepts a
+  prop `model`. This can be used to set config items. For example, if you have a
+  config slot "name", you can set its value using `model.target.name.set('someNewName')`
 
 ## State Model
 
@@ -75,13 +77,13 @@ function modelFactory(pluginManager) {
   return types.compose(
     'MyConnection',
     connectionModelFactory(pluginManager),
-    types.model().actions(self => ({
+    types.model().actions((self) => ({
       // `connectionConf` contains the configuration defined for this connection
       connect(connectionConf) {
         // Here is an example of how to read data from a configuration
         const dataLocation = readConfObject(connectionConf, 'dataLocation')
         // Now fetch the data.
-        fetchData(dataLocation).then(data => {
+        fetchData(dataLocation).then((data) => {
           // Now do something with the data to convert it to JBrowse tracks
           const tracks = transformData(data)
           // All tracks must be added under an assembly. This assembly might be
@@ -90,7 +92,7 @@ function modelFactory(pluginManager) {
           setTrackConfs(tracks)
 
           // If necessary, the tracks can be added incrementally
-          tracks.forEach(track => {
+          tracks.forEach((track) => {
             addTrackConf(track)
           })
         })

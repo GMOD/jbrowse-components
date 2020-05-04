@@ -61,7 +61,7 @@ function guessColumnType(rowSet: RowSet, columnNumber: number) {
   return guessedType
 }
 
-async function dataToSpreadsheetSnapshot(
+function dataToSpreadsheetSnapshot(
   rows: string[][],
   options: ParseOptions = {
     hasColumnNameLine: false,

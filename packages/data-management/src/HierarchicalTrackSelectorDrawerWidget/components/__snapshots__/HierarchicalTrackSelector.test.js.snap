@@ -80,7 +80,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
               aria-hidden="true"
               class="MuiSvgIcon-root"
               focusable="false"
-              role="presentation"
               viewBox="0 0 24 24"
             >
               <path
@@ -212,7 +211,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                           aria-hidden="true"
                           class="MuiSvgIcon-root"
                           focusable="false"
-                          role="presentation"
                           viewBox="0 0 24 24"
                         >
                           <path
@@ -338,7 +336,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                                       aria-hidden="true"
                                       class="MuiSvgIcon-root"
                                       focusable="false"
-                                      role="presentation"
                                       viewBox="0 0 24 24"
                                     >
                                       <path
@@ -493,7 +490,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
               aria-hidden="true"
               class="MuiSvgIcon-root"
               focusable="false"
-              role="presentation"
               viewBox="0 0 24 24"
             >
               <path
@@ -566,7 +562,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
               aria-hidden="true"
               class="MuiSvgIcon-root"
               focusable="false"
-              role="presentation"
               viewBox="0 0 24 24"
             >
               <path
@@ -632,7 +627,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
               aria-hidden="true"
               class="MuiSvgIcon-root"
               focusable="false"
-              role="presentation"
               viewBox="0 0 24 24"
             >
               <path

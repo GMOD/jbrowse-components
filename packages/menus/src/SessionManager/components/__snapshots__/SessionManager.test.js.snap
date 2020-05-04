@@ -35,12 +35,12 @@ exports[`<SessionManager /> renders 1`] = `
           class="MuiListItemText-root MuiListItemText-multiline"
         >
           <span
-            class="MuiTypography-root MuiListItemText-primary MuiTypography-body1"
+            class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
           >
             testSession
           </span>
           <p
-            class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary"
+            class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
           >
             Currently open
           </p>

@@ -259,7 +259,6 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                             aria-hidden="true"
                             class="MuiSvgIcon-root"
                             focusable="false"
-                            role="presentation"
                             viewBox="0 0 24 24"
                           >
                             <path
@@ -372,10 +371,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   />
                   <span
                     class="MuiSlider-mark MuiSlider-markActive"
-                  />
-                  <span
-                    aria-hidden="true"
-                    class="MuiSlider-markLabel MuiSlider-markLabelActive"
+                    data-index="0"
                   />
                   <span
                     aria-orientation="horizontal"
@@ -416,6 +412,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           </div>
           <div
             class="makeStyles-tracksContainer"
+            role="presentation"
           >
             <div
               class="makeStyles-verticalGuidesZoomContainer"
@@ -666,7 +663,6 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                             aria-hidden="true"
                             class="MuiSvgIcon-root"
                             focusable="false"
-                            role="presentation"
                             viewBox="0 0 24 24"
                           >
                             <path
@@ -779,10 +775,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   />
                   <span
                     class="MuiSlider-mark MuiSlider-markActive"
-                  />
-                  <span
-                    aria-hidden="true"
-                    class="MuiSlider-markLabel MuiSlider-markLabelActive"
+                    data-index="0"
                   />
                   <span
                     aria-orientation="horizontal"
@@ -823,6 +816,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           </div>
           <div
             class="makeStyles-tracksContainer"
+            role="presentation"
           >
             <div
               class="makeStyles-verticalGuidesZoomContainer"

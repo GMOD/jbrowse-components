@@ -1,6 +1,14 @@
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { parseJB1Json, parseJB1Conf, regularizeConf } from './jb1ConfigParse'
 import { clone, deepUpdate, evalHooks, fillTemplate } from './util'
+import {
+  JBLocation,
+  UriLocation,
+  LocalPathLocation,
+  Config,
+  Track,
+  Include,
+} from './types'
 
 function isUriLocation(location: JBLocation): location is UriLocation {
   return (location as UriLocation).uri !== undefined
@@ -223,7 +231,7 @@ function regularizeIncludes(
 
       // set defaults for format and version
       if (!('format' in include)) {
-        include.format = /\.conf$/.test(include.url) ? 'conf' : 'JB_json'
+        include.format = include.url.endsWith('.conf') ? 'conf' : 'JB_json'
       }
       if (include.format === 'JB_json' && !('version' in include)) {
         include.version = 1
@@ -267,14 +275,12 @@ const configDefaults = {
 
   containerID: 'GenomeBrowser',
   dataRoot: 'data',
-  /* eslint-disable @typescript-eslint/camelcase */
   show_tracklist: true,
   show_nav: true,
   show_menu: true,
   show_overview: true,
   show_fullviewlink: true,
   update_browser_title: true,
-  /* eslint-enable @typescript-eslint/camelcase */
   updateBrowserURL: true,
 
   refSeqs: '{dataRoot}/seq/refSeqs.json',

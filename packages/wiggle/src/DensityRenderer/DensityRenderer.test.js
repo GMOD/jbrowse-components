@@ -11,10 +11,14 @@ function DensityRendererPlugin() {
 
 test('empty', async () => {
   const result = await DensityRendererPlugin().makeImageData({
-    region: {
-      end: 100,
-      start: 1,
-    },
+    regions: [
+      {
+        end: 100,
+        start: 1,
+        refName: 'ctgA',
+        assemblyName: 'volvox',
+      },
+    ],
     scaleOpts: {},
     config: {},
   })
@@ -27,11 +31,15 @@ test('inverted mode and reversed', async () => {
       new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
       new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
     ],
-    region: {
-      end: 100,
-      start: 1,
-      reversed: true,
-    },
+    regions: [
+      {
+        end: 100,
+        start: 1,
+        reversed: true,
+        refName: 'ctgA',
+        assemblyName: 'volvox',
+      },
+    ],
     scaleOpts: {
       domain: [0, 100],
       inverted: true,
