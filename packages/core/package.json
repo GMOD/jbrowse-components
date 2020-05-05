@@ -63,6 +63,7 @@
   "peerDependencies": {
     "@material-ui/core": "^4.0.0",
     "@material-ui/lab": "^4.0.0-alpha.45",
+    "@material-ui/icons": "^4.0.0",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "^3.14.1",

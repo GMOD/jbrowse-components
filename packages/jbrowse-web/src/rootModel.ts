@@ -1,11 +1,19 @@
 import assemblyManagerFactory, {
   assemblyConfigSchemas as AssemblyConfigSchemasFactory,
 } from '@gmod/jbrowse-core/assemblyManager'
+import queryString from 'query-string'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
-import { AbstractSessionModel } from '@gmod/jbrowse-core/util'
-import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
+import { toUrlSafeB64, AbstractSessionModel } from '@gmod/jbrowse-core/util'
+import {
+  addDisposer,
+  cast,
+  getSnapshot,
+  SnapshotIn,
+  types,
+} from 'mobx-state-tree'
+import { autorun } from 'mobx'
 import { UndoManager } from 'mst-middlewares'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
@@ -17,6 +25,8 @@ interface Menu {
   label: string
   menuItems: MenuOption[]
 }
+
+const MAX_SESSION_SIZE_IN_URL = 100000
 
 export default function RootModel(pluginManager: PluginManager) {
   const Session = sessionModelFactory(pluginManager)
@@ -117,6 +127,37 @@ export default function RootModel(pluginManager: PluginManager) {
       ),
     }))
     .actions(self => ({
+      afterCreate() {
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              if (self.session) {
+                const snapshot = getSnapshot(self.session)
+                localStorage.setItem(
+                  'jbrowse-web-session',
+                  JSON.stringify(snapshot),
+                )
+                const urlSnapshot = JSON.stringify(snapshot)
+                const parsed = queryString.parse(document.location.search)
+                const urlSplit = window.location.href.split('?')
+                if (urlSnapshot.length < MAX_SESSION_SIZE_IN_URL) {
+                  parsed.session = toUrlSafeB64(urlSnapshot)
+                } else {
+                  parsed.session = undefined
+                }
+                window.history.replaceState(
+                  {},
+                  '',
+                  `${urlSplit[0]}?${queryString.stringify(parsed)}`,
+                )
+              }
+            },
+            { delay: 400 },
+          ),
+        )
+      },
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setHistory(history: any) {
         self.history = history
