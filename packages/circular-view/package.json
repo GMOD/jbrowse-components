@@ -9,6 +9,7 @@
   "author": "Robert Buels",
   "license": "MIT",
   "dependencies": {
-    "@gmod/jbrowse-core": "^2.0.0"
+    "@gmod/jbrowse-core": "^2.0.0",
+    "@material-ui/icons": "^4.9.1"
   }
 }

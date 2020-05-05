@@ -1,7 +1,5 @@
-import Icon, { IconProps as IP } from '@material-ui/core/Icon'
-import IconButton, {
-  IconButtonProps as IBP,
-} from '@material-ui/core/IconButton'
+import { SvgIconProps } from '@material-ui/core/SvgIcon'
+import IconButton, { IconButtonProps } from '@material-ui/core/IconButton'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -10,6 +8,8 @@ import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import React, { useEffect, useRef, useState } from 'react'
 import { ContentRect, withContentRect } from 'react-measure'
+import CloseIcon from '@material-ui/icons/Close'
+import MenuIcon from '@material-ui/icons/Menu'
 import { IBaseViewModel } from '../BaseViewModel'
 import EditableTypography from './EditableTypography'
 import Menu from './Menu'
@@ -73,30 +73,14 @@ const useStyles = makeStyles(theme => ({
 const ViewMenu = observer(
   ({
     model,
-    IconButtonProps,
-    IconProps,
+    iconButtonProps,
+    iconProps,
   }: {
     model: IBaseViewModel
-    IconButtonProps: IBP
-    IconProps: IP
+    iconButtonProps: IconButtonProps
+    iconProps: SvgIconProps
   }) => {
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-
-    function handleClick(event: React.MouseEvent<HTMLElement>) {
-      setAnchorEl(event.currentTarget)
-    }
-
-    const handleMenuItemClick = (
-      event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-      callback: Function,
-    ) => {
-      callback()
-      setAnchorEl(null)
-    }
-
-    function handleClose() {
-      setAnchorEl(null)
-    }
+    const [anchorEl, setAnchorEl] = useState<HTMLElement>()
 
     if (!(model.menuOptions && model.menuOptions.length)) {
       return null
@@ -105,20 +89,27 @@ const ViewMenu = observer(
     return (
       <>
         <IconButton
-          {...IconButtonProps}
+          {...iconButtonProps}
           aria-label="more"
           aria-controls="view-menu"
           aria-haspopup="true"
-          onClick={handleClick}
+          onClick={event => {
+            setAnchorEl(event.currentTarget)
+          }}
           data-testid="view_menu"
         >
-          <Icon {...IconProps}>menu</Icon>
+          <MenuIcon {...iconProps} />
         </IconButton>
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
-          onMenuItemClick={handleMenuItemClick}
-          onClose={handleClose}
+          onMenuItemClick={(event, callback) => {
+            callback()
+            setAnchorEl(undefined)
+          }}
+          onClose={() => {
+            setAnchorEl(undefined)
+          }}
           menuOptions={model.menuOptions}
         />
       </>
@@ -178,12 +169,12 @@ export default withContentRect('bounds')(
           <div ref={scrollRef} style={{ display: 'flex' }}>
             <ViewMenu
               model={view}
-              IconButtonProps={{
+              iconButtonProps={{
                 classes: { root: classes.iconRoot },
                 size: 'small',
                 edge: 'start',
               }}
-              IconProps={{ fontSize: 'small', className: classes.icon }}
+              iconProps={{ fontSize: 'small', className: classes.icon }}
             />
             <div className={classes.grow} />
             {view.displayName ? (
@@ -208,9 +199,7 @@ export default withContentRect('bounds')(
               edge="end"
               onClick={onClose}
             >
-              <Icon fontSize="small" className={classes.icon}>
-                close
-              </Icon>
+              <CloseIcon className={classes.icon} />
             </IconButton>
           </div>
           <Paper>{children}</Paper>
