@@ -72,6 +72,9 @@ function TrackContainer(props: {
     moveTrack,
   } = model
   function onDragEnter() {
+    // TODOSCROLL fix this
+    track.setScrollTop(0)
+    track.setScrollLeft(0)
     if (
       draggingTrackId !== undefined &&
       isAlive(track) &&
@@ -96,6 +99,7 @@ function TrackContainer(props: {
         onScroll={event => {
           const target = event.target as HTMLDivElement
           track.setScrollTop(target.scrollTop)
+          track.setScrollLeft(target.scrollLeft)
         }}
         onDragEnter={debouncedOnDragEnter}
         data-testid={`trackRenderingContainer-${view.id}-${getConf(

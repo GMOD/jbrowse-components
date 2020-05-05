@@ -80,6 +80,7 @@ const BaseTrack = types
     rendererTypeName: undefined,
     ready: false,
     scrollTop: 0,
+    scrollLeft: 0,
     error: '',
   }))
   .views(self => ({
@@ -197,6 +198,10 @@ const BaseTrack = types
 
     setScrollTop(scrollTop: number) {
       self.scrollTop = scrollTop
+    },
+
+    setScrollLeft(scrollLeft: number) {
+      self.scrollLeft = scrollLeft
     },
   }))
 

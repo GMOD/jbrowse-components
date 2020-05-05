@@ -46,6 +46,7 @@ function ResizeHandle({
 
     function mouseMove(event: MouseEvent) {
       event.preventDefault()
+
       const pos = event[vertical ? 'clientX' : 'clientY']
       const distance = pos - prevPos
       if (distance) {
@@ -59,6 +60,7 @@ function ResizeHandle({
     }
 
     if (mouseDragging) {
+      // TODOSCROLL: prevent drag here ??
       window.addEventListener('mousemove', mouseMove, true)
       window.addEventListener('mouseup', mouseUp, true)
       cleanup = () => {
