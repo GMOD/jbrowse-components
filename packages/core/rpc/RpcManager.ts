@@ -130,11 +130,6 @@ class RpcManager {
         { signal },
       )
 
-      if (region) {
-        newArgs.originalRegion = args.region
-        newArgs.region = this.renameRegionIfNeeded(refNameMap, region)
-      }
-
       if (regions && newArgs.regions) {
         for (let i = 0; i < regions.length; i += 1) {
           newArgs.originalRegions = args.regions
