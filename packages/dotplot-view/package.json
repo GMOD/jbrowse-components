@@ -23,6 +23,8 @@
     "rxjs": "^6.0.0"
   },
   "dependencies": {
+    "clsx": "^1.0.0",
+    "react-sizeme": "^2.0.0",
     "abortable-promise-cache": "^1.0.1",
     "generic-filehandle": "^2.0.0",
     "json-stable-stringify": "^1.0.1"

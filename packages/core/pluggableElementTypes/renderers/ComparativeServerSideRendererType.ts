@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderToString } from 'react-dom/server'
-import BaseAdapter from '../../BaseAdapter'
+import { Feature } from '../../util/simpleFeature'
+import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import { checkAbortSignal } from '../../util'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
@@ -10,7 +11,7 @@ interface RenderArgs {
   sessionId: string
   signal?: AbortSignal
   filters?: any
-  dataAdapter: BaseAdapter
+  dataAdapter: BaseFeatureDataAdapter
   bpPerPx: number
   regions?: any
   config: Record<string, any>
