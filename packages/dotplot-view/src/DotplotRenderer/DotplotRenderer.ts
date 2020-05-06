@@ -12,7 +12,8 @@ import Base1DView, {
 } from '@gmod/jbrowse-core/util/Base1DViewModel'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { tap, filter, distinct, toArray } from 'rxjs/operators'
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
 interface Block extends IRegion {
   offsetPx: number
@@ -20,14 +21,14 @@ interface Block extends IRegion {
 }
 
 export interface DotplotRenderProps {
-  dataAdapter: BaseAdapter
+  dataAdapter: BaseFeatureDataAdapter
   signal?: AbortSignal
   config: any
   height: number
   width: number
   fontSize: number
   highResolutionScaling: number
-  pluginManager: any
+  pluginManager: PluginManager
   views: Base1DViewModel[]
 }
 
