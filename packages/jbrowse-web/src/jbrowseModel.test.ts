@@ -1,6 +1,7 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, types } from 'mobx-state-tree'
 import configSnapshot from '../test_data/config_integration_test.json'
+import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
 import corePlugins from './corePlugins'
 import jbrowseModelFactory from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
@@ -14,7 +15,18 @@ describe('JBrowse model', () => {
       .createPluggableElements()
       .configure()
     const Session = sessionModelFactory(pluginManager)
-    JBrowseModel = jbrowseModelFactory(pluginManager, Session)
+    const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
+      pluginManager,
+    )
+    const assemblyConfigSchemasType = types.union(
+      { dispatcher },
+      ...assemblyConfigSchemas,
+    )
+    JBrowseModel = jbrowseModelFactory(
+      pluginManager,
+      Session,
+      assemblyConfigSchemasType,
+    )
   })
 
   it('creates with empty snapshot', () => {

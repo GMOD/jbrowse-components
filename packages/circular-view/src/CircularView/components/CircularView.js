@@ -3,8 +3,9 @@ const dragHandleHeight = 3
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
+  const { getSnapshot } = jbrequire('mobx-state-tree')
   const React = jbrequire('react')
-  const { useEffect, useState } = jbrequire('react')
+  const { useState } = jbrequire('react')
 
   // material-ui stuff
   const Button = jbrequire('@material-ui/core/Button')
@@ -20,9 +21,7 @@ export default pluginManager => {
   const { grey } = jbrequire('@material-ui/core/colors')
 
   const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
-  const { assembleLocString, getSession, isAbortException } = jbrequire(
-    '@gmod/jbrowse-core/util',
-  )
+  const { assembleLocString, getSession } = jbrequire('@gmod/jbrowse-core/util')
   const Ruler = jbrequire(require('./Ruler'))
 
   const useStyles = makeStyles(theme => {
@@ -182,53 +181,17 @@ export default pluginManager => {
   const ImportForm = observer(({ model }) => {
     const classes = useStyles()
     const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-    const [regions, setRegions] = useState([])
-    const { assemblyNames, getRegionsForAssemblyName } = getSession(model)
+    const { assemblyNames, assemblyManager } = getSession(model)
     const [assemblyError, setAssemblyError] = useState('')
     const [regionsError, setRegionsError] = useState('')
     if (!assemblyNames.length) {
       setAssemblyError('No configured assemblies')
     }
-    useEffect(() => {
-      let aborter
-      let mounted = true
-      async function fetchRegions() {
-        if (mounted)
-          if (assemblyError && mounted) {
-            setRegions([])
-          } else {
-            try {
-              aborter = new AbortController()
-              const fetchedRegions = await getRegionsForAssemblyName(
-                assemblyNames[selectedAssemblyIdx],
-                { signal: aborter.signal },
-              )
-              if (mounted) {
-                setRegions(fetchedRegions)
-              }
-            } catch (e) {
-              if (!isAbortException(e) && mounted) {
-                setRegionsError(String(e))
-              }
-            }
-          }
-      }
-      fetchRegions()
-
-      return () => {
-        mounted = false
-        if (aborter) aborter.abort()
-      }
-    }, [
-      assemblyError,
-      assemblyNames,
-      getRegionsForAssemblyName,
-      selectedAssemblyIdx,
-    ])
+    const assembly = assemblyManager.get(assemblyNames[selectedAssemblyIdx])
+    const regions = getSnapshot(assembly.regions)
 
     function onAssemblyChange(event) {
       setSelectedAssemblyIdx(Number(event.target.value))
-      setRegions([])
       setRegionsError('')
     }
 

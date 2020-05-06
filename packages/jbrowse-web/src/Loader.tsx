@@ -103,7 +103,10 @@ export default function Loader() {
   let rootModel
   try {
     if (configSnapshot) {
-      rootModel = JBrowseRootModel.create({ jbrowse: configSnapshot })
+      rootModel = JBrowseRootModel.create({
+        jbrowse: configSnapshot,
+        assemblyManager: {},
+      })
     }
   } catch (error) {
     // if it failed to load, it's probably a problem with the saved sessions,
@@ -115,6 +118,7 @@ export default function Loader() {
       )
       rootModel = JBrowseRootModel.create({
         jbrowse: { ...configSnapshot, savedSessions: [] },
+        assemblyManager: {},
       })
     } catch (e) {
       console.error(e)

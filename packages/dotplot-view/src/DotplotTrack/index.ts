@@ -140,7 +140,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
     })
 }
 function renderBlockData(self: DotplotTrack) {
-  const { rpcManager } = getSession(self) as any
+  const { rpcManager } = getSession(self)
   const track = self
 
   const { renderProps, rendererType } = track

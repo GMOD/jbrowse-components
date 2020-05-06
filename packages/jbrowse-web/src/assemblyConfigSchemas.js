@@ -1,43 +1,23 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 
 export default function (pluginManager) {
-  const BaseAssemblyConfigSchema = ConfigurationSchema('BaseAssembly', {
-    name: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Name of the assembly',
-    },
-    aliases: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'Other possible names for the assembly',
-    },
-  })
-
-  const SequenceAssemblyConfigSchema = ConfigurationSchema(
-    'SequenceAssembly',
+  const BaseAssemblyConfigSchema = ConfigurationSchema(
+    'BaseAssembly',
     {
+      aliases: {
+        type: 'stringArray',
+        defaultValue: [],
+        description: 'Other possible names for the assembly',
+      },
       sequence: pluginManager.getTrackType('ReferenceSequenceTrack')
         .configSchema,
     },
-    { baseConfiguration: BaseAssemblyConfigSchema },
-  )
-
-  const RefNameAliasesAssemblyConfigSchema = ConfigurationSchema(
-    'RefNameAliasesAssembly',
-    {
-      refNameAliases: ConfigurationSchema('RefNameAliases', {
-        adapter: pluginManager.pluggableConfigSchemaType('adapter'),
-      }),
-    },
-    { baseConfiguration: BaseAssemblyConfigSchema },
+    { explicitIdentifier: 'name' },
   )
 
   const AssemblyConfigSchema = ConfigurationSchema(
     'Assembly',
     {
-      sequence: pluginManager.getTrackType('ReferenceSequenceTrack')
-        .configSchema,
       refNameAliases: ConfigurationSchema('RefNameAliases', {
         adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       }),
@@ -47,20 +27,13 @@ export default function (pluginManager) {
 
   function dispatcher(snapshot) {
     if (!snapshot) return BaseAssemblyConfigSchema
-    const { sequence, refNameAliases } = snapshot
-    if (sequence && refNameAliases) return AssemblyConfigSchema
-    if (sequence) return SequenceAssemblyConfigSchema
-    if (refNameAliases) return RefNameAliasesAssemblyConfigSchema
+    const { refNameAliases } = snapshot
+    if (refNameAliases) return AssemblyConfigSchema
     return BaseAssemblyConfigSchema
   }
 
   return {
-    assemblyConfigSchemas: [
-      AssemblyConfigSchema,
-      SequenceAssemblyConfigSchema,
-      RefNameAliasesAssemblyConfigSchema,
-      BaseAssemblyConfigSchema,
-    ],
+    assemblyConfigSchemas: [AssemblyConfigSchema, BaseAssemblyConfigSchema],
     dispatcher,
   }
 }

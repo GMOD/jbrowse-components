@@ -6,7 +6,6 @@ import {
   addDisposer,
   cast,
   Instance,
-  getSnapshot,
 } from 'mobx-state-tree'
 import { Component } from 'react'
 import { reaction } from 'mobx'
@@ -169,17 +168,15 @@ export type BlockStateModel = typeof blockState
 // work with autorun
 function renderBlockData(self: Instance<BlockStateModel>) {
   try {
-    const { assemblyData, rpcManager } = getSession(self) as any
+    const { assemblyManager, rpcManager } = getSession(self)
     const track = getParent<any>(self, 2)
     const assemblyNames = getTrackAssemblyNames(track)
     let cannotBeRenderedReason
     if (!assemblyNames.includes(self.region.assemblyName)) {
       let matchFound = false
       assemblyNames.forEach((assemblyName: string) => {
-        const trackAssemblyData =
-          (assemblyData && assemblyData.get(assemblyName)) || {}
-        const trackAssemblyAliases = trackAssemblyData.aliases || []
-        if (trackAssemblyAliases.includes(self.region.assemblyName))
+        const assembly = assemblyManager.get(assemblyName)
+        if (assembly && assembly.aliases.includes(self.region.assemblyName))
           matchFound = true
       })
       if (!matchFound) {
@@ -188,8 +185,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     }
     if (!cannotBeRenderedReason)
       cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
-    const trackAssemblyData =
-      (assemblyData && assemblyData.get(self.region.assemblyName)) || {}
+    const assembly = assemblyManager.get(self.region.assemblyName)
     const { renderProps } = track
     const { rendererType } = track
     const { config } = renderProps
@@ -198,8 +194,8 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     readConfObject(config)
 
     let sequenceConfig: { type?: string } = {}
-    if (trackAssemblyData.sequence) {
-      sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
+    if (assembly && assembly.configuration.sequence) {
+      sequenceConfig = getConf(assembly, ['sequence', 'adapter'])
     }
     const adapterConfig = getConf(track, 'adapter')
     // Only subtracks will have parent tracks with configs

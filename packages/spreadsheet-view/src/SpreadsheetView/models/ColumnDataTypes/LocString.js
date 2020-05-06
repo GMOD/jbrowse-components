@@ -5,7 +5,7 @@ import {
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { types, getType, getParent, getRoot } = jbrequire('mobx-state-tree')
+  const { types, getType, getParent } = jbrequire('mobx-state-tree')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
 
@@ -234,16 +234,15 @@ export default pluginManager => {
     .volatile(() => ({ ReactComponent: FilterReactComponent }))
 
   // opens a new LGV at the location described in the locString in the cell text
-  async function locationLinkClick(spreadsheet, columnNumber, cell) {
+  function locationLinkClick(spreadsheet, columnNumber, cell) {
     const loc = parseLocStringAndConvertToInterbase(cell.text)
     if (loc) {
       const session = getSession(spreadsheet)
-      const root = getRoot(session)
       const { dataset } = getParent(spreadsheet)
-      loc.refName = await root.jbrowse.getCanonicalRefName(
-        loc.refName,
+      const assembly = session.assemblyManager.get(
         readConfObject(dataset.assembly, 'name'),
       )
+      loc.refName = assembly.getCanonicalRefName(loc.refName)
       const initialState = { displayName: cell.text }
       const view = session.addViewOfDataset(
         'LinearGenomeView',

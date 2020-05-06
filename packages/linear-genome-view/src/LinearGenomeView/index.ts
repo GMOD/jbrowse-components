@@ -13,7 +13,7 @@ import {
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
-import { getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
+import { getSnapshot, types, cast } from 'mobx-state-tree'
 
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
@@ -457,8 +457,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
       },
 
-      async navToLocString(locString: string) {
-        await this.navTo(parseLocStringAndConvertToInterbase(locString))
+      navToLocString(locString: string) {
+        this.navTo(parseLocStringAndConvertToInterbase(locString))
       },
 
       /**
@@ -471,7 +471,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * location to navigate to
        * throws an error if navigation was unsuccessful
        */
-      async navTo(query: {
+      navTo(query: {
         refName: string
         start?: number
         end?: number
@@ -480,20 +480,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
         let { refName } = query
         const { start, end, assemblyName } = query
         if (refName) {
-          try {
-            const root = getRoot(self)
-            const canonicalRefName = await root.jbrowse.getCanonicalRefName(
-              refName,
-              assemblyName || self.assemblyNames[0],
-            )
+          const session = getSession(self)
+          const assembly = session.assemblyManager.get(
+            assemblyName || self.assemblyNames[0],
+          )
+          if (assembly) {
+            const canonicalRefName = assembly.getCanonicalRefName(refName)
             if (canonicalRefName) {
               refName = canonicalRefName
             }
-          } catch (error) {
-            console.warn(
-              `wasn't able to look up canonical ref name for ${refName}`,
-              error,
-            )
           }
         }
 

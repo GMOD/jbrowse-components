@@ -16,7 +16,7 @@ const JBrowse = observer(({ pluginManager }) => {
   const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
 
   const { rootModel } = pluginManager
-  const { session, jbrowse } = rootModel || {}
+  const { session, jbrowse, error } = rootModel || {}
   const useLocalStorage = jbrowse
     ? readConfObject(jbrowse.configuration, 'useLocalStorage')
     : false
@@ -80,6 +80,10 @@ const JBrowse = observer(({ pluginManager }) => {
         : () => {},
     [useUpdateUrl, session],
   )
+
+  if (error) {
+    throw new Error(error)
+  }
 
   return <App session={rootModel.session} />
 })

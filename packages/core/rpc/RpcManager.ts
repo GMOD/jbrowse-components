@@ -20,6 +20,11 @@ const DriverClasses = {
   MainThreadRpcDriver,
   ElectronRpcDriver,
 }
+type GetRefNameMapForAdapter = (
+  adapterConfig: unknown,
+  assemblyName: string,
+  { signal }: { signal?: AbortSignal },
+) => Promise<Map<string, string> | void>
 
 class RpcManager {
   static configSchema = rpcConfigSchema
@@ -32,13 +37,13 @@ class RpcManager {
 
   backendConfigurations: BackendConfigurations
 
-  getRefNameMapForAdapter: Function
+  getRefNameMapForAdapter: GetRefNameMapForAdapter
 
   constructor(
     pluginManager: PluginManager,
     mainConfiguration: AnyConfigurationModel,
     backendConfigurations: BackendConfigurations,
-    getRefNameMapForAdapter = async () => {},
+    getRefNameMapForAdapter: GetRefNameMapForAdapter = async () => {},
   ) {
     if (!mainConfiguration) {
       throw new Error('RpcManager requires at least a main configuration')
@@ -115,7 +120,7 @@ class RpcManager {
     },
     opts = {},
   ) {
-    const { assemblyName, signal, regions, region, adapterConfig } = args
+    const { assemblyName, signal, regions, adapterConfig } = args
     const newArgs: typeof args & {
       originalRegion?: IRegion
       originalRegions?: IRegion[]
@@ -130,7 +135,7 @@ class RpcManager {
         { signal },
       )
 
-      if (regions && newArgs.regions) {
+      if (refNameMap && regions && newArgs.regions) {
         for (let i = 0; i < regions.length; i += 1) {
           newArgs.originalRegions = args.regions
           newArgs.regions[i] =

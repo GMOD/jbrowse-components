@@ -1,7 +1,10 @@
+import assemblyManagerFactory from '@gmod/jbrowse-core/assemblyManager'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
-import { getSnapshot, types, cast, SnapshotIn } from 'mobx-state-tree'
+import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
+import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
 import JBrowseDesktop from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
 
@@ -16,10 +19,24 @@ interface Menu {
 
 export default function RootModel(pluginManager: PluginManager) {
   const Session = sessionModelFactory(pluginManager)
+  const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
+    pluginManager,
+  )
+  const assemblyConfigSchemasType = types.union(
+    { dispatcher },
+    ...assemblyConfigSchemas,
+  )
+  const assemblyManagerType = assemblyManagerFactory(assemblyConfigSchemasType)
   return types
     .model('Root', {
-      jbrowse: JBrowseDesktop(pluginManager, Session),
+      jbrowse: JBrowseDesktop(
+        pluginManager,
+        Session,
+        assemblyConfigSchemasType,
+      ),
       session: types.maybe(Session),
+      assemblyManager: assemblyManagerType,
+      error: types.maybe(types.string),
       savedSessionNames: types.maybe(types.array(types.string)),
     })
     .actions(self => ({
@@ -62,7 +79,7 @@ export default function RootModel(pluginManager: PluginManager) {
         }
       },
     }))
-    .volatile((/* self */) => ({
+    .volatile(self => ({
       history: {},
       menus: [
         {
@@ -79,6 +96,14 @@ export default function RootModel(pluginManager: PluginManager) {
           ],
         },
       ] as Menu[],
+      rpcManager: new RpcManager(
+        pluginManager,
+        self.jbrowse.configuration.rpc,
+        {
+          ElectronRpcDriver: { workerCreationChannel: 'createWindowWorker' },
+        },
+        self.assemblyManager.getRefNameMapForAdapter,
+      ),
     }))
     .actions(self => ({
       activateSession(sessionSnapshot: SnapshotIn<typeof Session>) {

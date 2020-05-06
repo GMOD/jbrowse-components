@@ -24,15 +24,6 @@ stubManager.addTrackType(
 stubManager.createPluggableElements()
 stubManager.configure()
 const LinearGenomeModel = stateModelFactory(stubManager)
-const JBrowse = types.model({}).actions(self => ({
-  getCanonicalRefName(refName: string, assemblyName: string) {
-    if (refName === 'contigA') {
-      return 'ctgA'
-    }
-
-    return refName
-  },
-}))
 
 const Session = types
   .model({
@@ -40,7 +31,6 @@ const Session = types
     pluginManager: 'pluginManagerExists',
     view: types.maybe(LinearGenomeModel),
     configuration: types.map(types.string),
-    jbrowse: types.maybe(JBrowse),
   })
   .actions(self => ({
     setView(view: Instance<LinearGenomeViewStateModel>) {
@@ -48,11 +38,25 @@ const Session = types
       return view
     },
   }))
+  .volatile(self => ({
+    assemblyManager: new Map([
+      [
+        'volvox',
+        {
+          getCanonicalRefName(refName: string) {
+            if (refName === 'contigA') {
+              return 'ctgA'
+            }
+            return refName
+          },
+        },
+      ],
+    ]),
+  }))
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
   const model = Session.create({
     configuration: {},
-    jbrowse: {},
   }).setView(
     LinearGenomeModel.create({
       type: 'LinearGenomeView',
@@ -67,7 +71,6 @@ test('can instantiate a mostly empty model and read a default configuration valu
 test('can instantiate a model that lets you navigate', () => {
   const session = Session.create({
     configuration: {},
-    jbrowse: {},
   })
   const model = session.setView(
     LinearGenomeModel.create({
@@ -112,7 +115,6 @@ test('can instantiate a model that lets you navigate', () => {
 test('can instantiate a model that has multiple displayed regions', () => {
   const session = Session.create({
     configuration: {},
-    jbrowse: {},
   })
   const model = session.setView(
     LinearGenomeModel.create({
@@ -138,7 +140,6 @@ test('can instantiate a model that has multiple displayed regions', () => {
 
 test('can instantiate a model that tests navTo/moveTo', async () => {
   const session = Session.create({
-    jbrowse: {},
     configuration: {},
   })
   const width = 800
@@ -156,22 +157,21 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
   ])
   expect(model.maxBpPerPx).toEqual(20)
 
-  await model.navTo({ refName: 'ctgA', start: 0, end: 100 })
+  model.navTo({ refName: 'ctgA', start: 0, end: 100 })
   expect(model.bpPerPx).toEqual(model.constrainBpPerPx(100 / width))
-  await expect(
-    model.navTo({ refName: 'ctgA', start: 0, end: 20000 }),
-  ).rejects.toThrow(/could not find a region/)
+  expect(() => model.navTo({ refName: 'ctgA', start: 0, end: 20000 })).toThrow(
+    /could not find a region/,
+  )
   expect(model.bpPerPx).toEqual(model.constrainBpPerPx(100 / width)) // did nothing
-  await model.navTo({ refName: 'ctgA' })
+  model.navTo({ refName: 'ctgA' })
   expect(model.offsetPx).toEqual(0)
   expect(model.bpPerPx).toEqual(model.constrainBpPerPx(10000 / width))
-  await model.navTo({ refName: 'contigA', start: 0, end: 100 })
+  model.navTo({ refName: 'contigA', start: 0, end: 100 })
   expect(model.bpPerPx).toEqual(model.constrainBpPerPx(100 / width))
 })
 
 test('can instantiate a model that >2 regions', () => {
   const session = Session.create({
-    jbrowse: {},
     configuration: {},
   })
   const width = 800

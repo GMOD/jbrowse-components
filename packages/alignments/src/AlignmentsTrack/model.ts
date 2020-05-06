@@ -5,7 +5,7 @@ import {
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
-import { types, getSnapshot, addDisposer, Instance } from 'mobx-state-tree'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import jsonStableStringify from 'json-stable-stringify'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
@@ -138,8 +138,7 @@ export default (pluginManager: any, configSchema: any) => {
         self.centerLinePosition = undefined
       },
       sortSelected(selected: string) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { assemblyData, rpcManager } = getSession(self) as any
+        const { assemblyManager, rpcManager } = getSession(self)
         const { centerLineInfo } = getContainingView(self) as Instance<
           LinearGenomeViewStateModel
         >
@@ -158,12 +157,11 @@ export default (pluginManager: any, configSchema: any) => {
         ]
         const adapterConfigId = jsonStableStringify(getConf(self, 'adapter'))
 
-        const trackAssemblyData =
-          (assemblyData && assemblyData.get(regions[0].assemblyName)) || {}
+        const assembly = assemblyManager.get(regions[0].assemblyName)
 
         let sequenceConfig: { type?: string } = {}
-        if (trackAssemblyData.sequence) {
-          sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
+        if (assembly && assembly.configuration.sequence) {
+          sequenceConfig = getConf(assembly, ['sequence', 'adapter'])
         }
 
         // render just the sorted region first
