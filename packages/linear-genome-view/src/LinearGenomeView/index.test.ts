@@ -228,3 +228,24 @@ test('can instantiate a model that >2 regions', () => {
     offsetPx: 10100 / model.bpPerPx,
   })
 })
+
+test('can perform bpToPx in a way that makes sense on things that happen outside', () => {
+  const session = Session.create({
+    jbrowse: {},
+    configuration: {},
+  })
+  const width = 800
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'test5',
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'PileupTrack' }],
+    }),
+  )
+  model.setWidth(width)
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', start: 1000, end: 2000, refName: 'ctgA' },
+  ])
+
+  expect(model.bpToPx({ refName: 'ctgA', coord: 500 })).toBe(undefined)
+})
