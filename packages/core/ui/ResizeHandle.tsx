@@ -70,7 +70,8 @@ function ResizeHandle({
   }, [mouseDragging, onDrag, prevPos, vertical])
 
   function mouseDown(event: React.MouseEvent) {
-    event.stopPropagation()
+    event.preventDefault()
+    event.stopPropagation() // used to prevent scrolling capability while mouse down on resize
     const pos = event[vertical ? 'clientX' : 'clientY']
     setPrevPos(pos)
     setMouseDragging(true)
