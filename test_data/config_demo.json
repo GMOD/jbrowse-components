@@ -1218,11 +1218,11 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "test_data/volvox.dup.vcf.gz"
+          "uri": "test_data/volvox/volvox.dup.vcf.gz"
         },
         "index": {
           "location": {
-            "uri": "test_data/volvox.dup.vcf.gz.tbi"
+            "uri": "test_data/volvox/volvox.dup.vcf.gz.tbi"
           }
         }
       },
@@ -1298,11 +1298,11 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "test_data/volvox-long-reads-sv.bam"
+          "uri": "test_data/volvox/volvox-long-reads-sv.bam"
         },
         "index": {
           "location": {
-            "uri": "test_data/volvox-long-reads-sv.bam.bai"
+            "uri": "test_data/volvox/volvox-long-reads-sv.bam.bai"
           }
         }
       },
