@@ -1,9 +1,5 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import {
-  fromUrlSafeB64,
-  inDevelopment,
-  mergeConfigs,
-} from '@gmod/jbrowse-core/util'
+import { fromUrlSafeB64 } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { makeStyles } from '@material-ui/core/styles'

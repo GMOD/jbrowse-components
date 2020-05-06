@@ -18,10 +18,10 @@ import rangeParser from 'range-parser'
 import React from 'react'
 
 // locals
-import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
+import breakpointConfig from '../test_data/breakpoint/config.json'
 import chromeSizesConfig from '../test_data/config_chrom_sizes_test.json'
 import dotplotConfig from '../test_data/config_dotplot.json'
-import configSnapshot from '../test_data/config_integration_test.json'
+import configSnapshot from '../test_data/config_demo.json'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'

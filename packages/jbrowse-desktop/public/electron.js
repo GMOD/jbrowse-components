@@ -205,16 +205,6 @@ ipcMain.on('createWindowWorker', event => {
 
 ipcMain.handle('getMainWindowId', async () => mainWindow.id)
 
-// // merge function to get stuff from a development config into a production one
-// // limited functionality, difficult to use existing merge-deep/mixin-deep type
-// // things for this
-// function mergeConfigs(A, B) {
-//   const merged = merge(A, B)
-//   if (B.defaultSession) merged.defaultSession = B.defaultSession
-//   else if (A.defaultSession) merged.defaultSession = A.defaultSession
-//   return merged
-// }
-
 ipcMain.handle('loadConfig', async () => {
   try {
     return JSON.parse(await fsReadFile(configLocation, { encoding: 'utf8' }))
