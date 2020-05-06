@@ -53,22 +53,6 @@ export default function Loader() {
           throw error
         })
       }
-      if (configLocation.uri === 'test_data/config.json' && inDevelopment) {
-        try {
-          config = mergeConfigs(
-            config,
-            JSON.parse(
-              (await openLocation({
-                uri: 'test_data/config_in_dev.json',
-              }).readFile('utf8')) as string,
-            ),
-          )
-        } catch (error) {
-          setConfigSnapshot(() => {
-            throw error
-          })
-        }
-      }
       setConfigSnapshot(config)
     }
     fetchConfig()
