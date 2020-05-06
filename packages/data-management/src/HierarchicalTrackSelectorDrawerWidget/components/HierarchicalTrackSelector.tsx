@@ -110,7 +110,9 @@ function HierarchicalTrackSelector({ model }: Props) {
 
   const { assemblyNames } = model
   const assemblyName = assemblyNames[assemblyIdx]
-  if (!assemblyName) return null
+  if (!assemblyName) {
+    return null
+  }
   const filterError =
     model.trackConfigurations(assemblyName) > 0 &&
     model.trackConfigurations(assemblyName).filter(filter).length === 0
@@ -260,7 +262,7 @@ function HierarchicalTrackSelector({ model }: Props) {
         open={Boolean(modalInfo)}
       >
         <DialogTitle>
-          Close connection "{modalInfo && modalInfo.name}"
+          Close connection &quot;{modalInfo && modalInfo.name}&quot;
         </DialogTitle>
         <DialogContent>
           <DialogContentText>

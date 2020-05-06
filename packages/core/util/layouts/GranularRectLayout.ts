@@ -303,7 +303,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private rectangles: Map<string, Rectangle<T>>
 
-  private maxHeightReached: boolean
+  public maxHeightReached: boolean
 
   private maxHeight: number
 
@@ -311,18 +311,24 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private pTotalHeight: number
 
-  constructor(args: {
-    pitchX: number | undefined
-    pitchY: number | undefined
-    maxHeight: number | undefined
-    displayMode: string | undefined
-  }) {
-    this.pitchX = args.pitchX || 10
-    this.pitchY = args.pitchY || 10
-    this.hardRowLimit = 3000
+  constructor({
+    pitchX = 10,
+    pitchY = 10,
+    maxHeight = 10000,
+    hardRowLimit = 3000,
+    displayMode = 'normal',
+  }: {
+    pitchX?: number
+    pitchY?: number
+    maxHeight?: number
+    displayMode?: string
+    hardRowLimit?: number
+  } = {}) {
+    this.pitchX = pitchX
+    this.pitchY = pitchY
+    this.hardRowLimit = hardRowLimit
     this.maxHeightReached = false
-
-    this.displayMode = args.displayMode || 'normal'
+    this.displayMode = displayMode
 
     // reduce the pitchY to try and pack the features tighter
     if (this.displayMode === 'compact') {
@@ -332,7 +338,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
     this.bitmap = []
     this.rectangles = new Map()
-    this.maxHeight = Math.ceil((args.maxHeight || 10000) / this.pitchY)
+    this.maxHeight = Math.ceil(maxHeight / this.pitchY)
     this.pTotalHeight = 0 // total height, in units of bitmap squares (px/pitchY)
   }
 

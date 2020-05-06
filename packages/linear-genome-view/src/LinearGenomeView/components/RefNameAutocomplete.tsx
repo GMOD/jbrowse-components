@@ -185,7 +185,7 @@ function RefNameAutocomplete({
       options={regionNames}
       value={
         !assemblyName || loading || !selectedRegionName
-          ? ''
+          ? null
           : selectedRegionName
       }
       disabled={!assemblyName || loading}

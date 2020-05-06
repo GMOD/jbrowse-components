@@ -1,15 +1,30 @@
 import { getConf } from '@gmod/jbrowse-core/configuration'
+import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React from 'react'
-import Track from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/Track'
 import AlignmentsTrackBlocks from './AlignmentsTrackBlocks'
 
+const useStyles = makeStyles({
+  track: {
+    position: 'relative',
+    whiteSpace: 'nowrap',
+    textAlign: 'left',
+    width: '100%',
+    minHeight: '100%',
+  },
+})
+
 function AlignmentsBlockBasedTrack(props) {
+  const classes = useStyles()
   const { model, children, showPileup, showSNPCoverage } = props
   return (
-    <Track {...props} trackId={getConf(model, 'trackId')}>
+    <div
+      data-testid={`track-${getConf(model, 'trackId')}`}
+      className={classes.track}
+      role="presentation"
+    >
       {model.trackMessageComponent ? (
         <model.trackMessageComponent model={model} />
       ) : (
@@ -21,7 +36,7 @@ function AlignmentsBlockBasedTrack(props) {
         />
       )}
       {children}
-    </Track>
+    </div>
   )
 }
 

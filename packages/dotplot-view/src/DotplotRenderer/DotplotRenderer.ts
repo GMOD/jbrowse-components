@@ -72,10 +72,38 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         if (b1 - b2 < 3 && e1 - e2 < 3) {
           ctx.fillRect(b1 - 1, height - e1 - 1, 3, 3)
         } else {
-          ctx.beginPath()
-          ctx.moveTo(b1, height - e1)
-          ctx.lineTo(b2, height - e2)
-          ctx.stroke()
+          let currX = b1
+          let currY = e1
+          let cigar = feature.get('cg')
+          if (cigar) {
+            cigar = (cigar.toUpperCase().match(/\d+\D/g) || [])
+              .map((op: string) => {
+                // @ts-ignore
+                return [op.match(/\D/)[0], parseInt(op, 10)]
+              })
+              .forEach(([op, val]: [string, number]) => {
+                const prevX = currX
+                const prevY = currY
+
+                if (op === 'M') {
+                  currX += val / views[0].bpPerPx - 0.01
+                  currY += val / views[1].bpPerPx - 0.01
+                } else if (op === 'D') {
+                  currX += val / views[0].bpPerPx
+                } else if (op === 'I') {
+                  currY += val / views[1].bpPerPx
+                }
+                ctx.beginPath()
+                ctx.moveTo(prevX, height - prevY)
+                ctx.lineTo(currX, height - currY)
+                ctx.stroke()
+              })
+          } else {
+            ctx.beginPath()
+            ctx.moveTo(b1, height - e1)
+            ctx.lineTo(b2, height - e2)
+            ctx.stroke()
+          }
         }
       }
     })

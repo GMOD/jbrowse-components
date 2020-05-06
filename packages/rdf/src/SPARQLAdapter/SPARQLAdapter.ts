@@ -1,8 +1,15 @@
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
-import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import format from 'string-template'
+
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import MyConfigSchema from './configSchema'
 
 interface SPARQLEntry {
   type: string
@@ -41,7 +48,7 @@ interface SPARQLFeature {
   data: SPARQLFeatureData
 }
 
-export default class extends BaseAdapter {
+export default class SPARQLAdapter extends BaseFeatureDataAdapter {
   private endpoint: string
 
   private queryTemplate: string
@@ -54,30 +61,13 @@ export default class extends BaseAdapter {
 
   private refNames: string[] | undefined
 
-  public static capabilities = ['getFeatures', 'getRefNames']
-
-  public constructor(config: {
-    endpoint: IFileLocation
-    queryTemplate: string
-    refNamesQueryTemplate: string
-    additionalQueryParams: string[]
-    refNames: string[]
-  }) {
+  public constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
-    const {
-      endpoint,
-      queryTemplate,
-      refNamesQueryTemplate,
-      additionalQueryParams,
-      refNames,
-    } = config
-
-    // @ts-ignore
-    this.endpoint = endpoint.uri
-    this.queryTemplate = queryTemplate
-    this.additionalQueryParams = additionalQueryParams
-    this.refNamesQueryTemplate = refNamesQueryTemplate
-    this.configRefNames = refNames
+    this.endpoint = readConfObject(config, 'endpoint').uri
+    this.queryTemplate = readConfObject(config, 'queryTemplate')
+    this.additionalQueryParams = readConfObject(config, 'additionalQueryParams')
+    this.refNamesQueryTemplate = readConfObject(config, 'refNamesQueryTemplate')
+    this.configRefNames = readConfObject(config, 'refNames')
   }
 
   public async getRefNames(opts: BaseOptions = {}): Promise<string[]> {
@@ -224,11 +214,9 @@ export default class extends BaseAdapter {
     return Object.keys(seenFeatures).map(
       seenFeature =>
         new SimpleFeature({
-          data: {
-            uniqueId: seenFeature,
-            ...seenFeatures[seenFeature].data,
-            subfeatures: seenFeatures[seenFeature].data.subfeatures,
-          },
+          uniqueId: seenFeature,
+          ...seenFeatures[seenFeature].data,
+          subfeatures: seenFeatures[seenFeature].data.subfeatures,
         }),
     )
   }

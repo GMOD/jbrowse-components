@@ -42,6 +42,16 @@ function watchWorker(worker: WorkerHandle, pingTime: number): Promise<void> {
   })
 }
 
+function detectHardwareConcurrency() {
+  if (
+    typeof window !== 'undefined' &&
+    'hardwareConcurrency' in window.navigator
+  ) {
+    return window.navigator.hardwareConcurrency
+  }
+  return 1
+}
+
 export default abstract class BaseRpcDriver {
   private lastWorkerAssignment = -1
 
@@ -90,14 +100,10 @@ export default abstract class BaseRpcDriver {
   }
 
   createWorkerPool(): WorkerHandle[] {
-    // // eslint-disable-next-line no-nested-ternary
-    // typeof window !== 'undefined'
-    //   ? 'hardwareConcurrency' in window.navigator
-    //     ? window.navigator.hardwareConcurrency
-    //     : 2
-    //   : 2
-    const workerCount = 2
-    // this.workerCount || Math.max(1, Math.ceil(hardwareConcurrency / 2))
+    const hardwareConcurrency = detectHardwareConcurrency()
+
+    const workerCount =
+      this.workerCount || Math.max(1, Math.ceil(hardwareConcurrency / 2))
 
     const workerHandles: WorkerHandle[] = new Array(workerCount)
     for (let i = 0; i < workerCount; i += 1) {

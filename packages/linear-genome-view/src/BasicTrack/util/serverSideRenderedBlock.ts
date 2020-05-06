@@ -1,6 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { types, getParent, cast, Instance, getSnapshot } from 'mobx-state-tree'
+import {
+  types,
+  getParent,
+  isAlive,
+  addDisposer,
+  cast,
+  Instance,
+  getSnapshot,
+} from 'mobx-state-tree'
 import { Component } from 'react'
+import { reaction } from 'mobx'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import jsonStableStringify from 'json-stable-stringify'
 import { Region } from '@gmod/jbrowse-core/mst-types'
@@ -8,13 +17,11 @@ import { Region } from '@gmod/jbrowse-core/mst-types'
 import {
   assembleLocString,
   checkAbortSignal,
+  isAbortException,
   getSession,
-  makeAbortableReaction,
-} from '@gmod/jbrowse-core/util'
-import {
   getContainingView,
-  getTrackAssemblyNames,
-} from '@gmod/jbrowse-core/util/tracks'
+} from '@gmod/jbrowse-core/util'
+import { getTrackAssemblyNames } from '@gmod/jbrowse-core/util/tracks'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
@@ -43,21 +50,17 @@ const blockState = types
     let renderInProgress: undefined | AbortController
     return {
       afterAttach() {
-        const track = getParent(self, 2)
-        makeAbortableReaction(
-          self,
-          'render',
-          renderBlockData as any,
-          renderBlockEffect as any,
+        const track = getParent<any>(self, 2)
+        const renderDisposer = reaction(
+          () => renderBlockData(self as any),
+          data => (renderBlockEffect(cast(self), data) as unknown) as void, // reaction doesn't expect async here
           {
             name: `${track.id}/${assembleLocString(self.region)} rendering`,
             delay: track.renderDelay,
             fireImmediately: true,
           },
-          this.setLoading,
-          this.setRendered,
-          this.setError,
         )
+        addDisposer(self, renderDisposer)
       },
       setLoading(abortController: AbortController) {
         if (renderInProgress !== undefined) {
@@ -89,20 +92,13 @@ const blockState = types
         self.renderProps = undefined
         renderInProgress = undefined
       },
-      setRendered(args: {
-        data: any
-        html: any
-        maxHeightReached: boolean
-        renderingComponent: Component
-        renderProps: any
-      }) {
-        const {
-          data,
-          html,
-          maxHeightReached,
-          renderingComponent,
-          renderProps,
-        } = args
+      setRendered(
+        data: any,
+        html: any,
+        maxHeightReached: boolean,
+        renderingComponent: Component,
+        renderProps: any,
+      ) {
         self.filled = true
         self.message = undefined
         self.html = html
@@ -140,22 +136,16 @@ const blockState = types
         self.ReactComponent = ServerSideRenderedBlockContent
         self.renderingComponent = undefined
         self.renderProps = undefined
-
         const data = renderBlockData(self as any)
-        if (renderInProgress) {
-          renderInProgress.abort()
-        }
-        const aborter = new AbortController()
-        this.setLoading(aborter)
-        renderBlockEffect(data, aborter.signal, cast(self))
+        renderBlockEffect(cast(self), data)
       },
       beforeDestroy() {
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
         }
-        const track = getParent(self, 2)
+        const track = getParent<any>(self, 2)
         const view = getContainingView(track)
-        const { rpcManager } = getSession(view) as any
+        const { rpcManager } = getSession(view)
         const { rendererType } = track
         const { renderArgs } = renderBlockData(cast(self))
         rendererType
@@ -180,7 +170,7 @@ export type BlockStateModel = typeof blockState
 function renderBlockData(self: Instance<BlockStateModel>) {
   try {
     const { assemblyData, rpcManager } = getSession(self) as any
-    const track = getParent(self, 2)
+    const track = getParent<any>(self, 2)
     const assemblyNames = getTrackAssemblyNames(track)
     let cannotBeRenderedReason
     if (!assemblyNames.includes(self.region.assemblyName)) {
@@ -214,7 +204,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     const adapterConfig = getConf(track, 'adapter')
     // Only subtracks will have parent tracks with configs
     // They use parent's adapter config for matching sessionId
-    const parentTrack = getParent(track)
+    const parentTrack = getParent<any>(track)
     const adapterConfigId = parentTrack.configuration
       ? jsonStableStringify(getConf(parentTrack, 'adapter'))
       : jsonStableStringify(adapterConfig)
@@ -227,7 +217,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       trackError: track.error,
       renderArgs: {
         assemblyName: self.region.assemblyName,
-        region: getSnapshot(self.region),
+        regions: [self.region],
         adapterType: track.adapterType.name,
         adapterConfig,
         sequenceAdapterType: sequenceConfig.type,
@@ -260,34 +250,69 @@ interface ErrorProps {
 }
 
 async function renderBlockEffect(
-  props: RenderProps | ErrorProps,
-  signal: AbortSignal,
   self: Instance<BlockStateModel>,
+  props: RenderProps | ErrorProps,
+  allowRefetch = true,
 ) {
   const {
+    trackError,
     rendererType,
     renderProps,
     rpcManager,
     cannotBeRenderedReason,
     renderArgs,
   } = props as RenderProps
+  if (!isAlive(self)) return
 
+  if (trackError) {
+    self.setError(trackError)
+    return
+  }
   if (cannotBeRenderedReason) {
     self.setMessage(cannotBeRenderedReason)
-    return undefined
+    return
   }
 
-  renderArgs.signal = signal
-  const { html, maxHeightReached, ...data } = await rendererType.renderInClient(
-    rpcManager,
-    renderArgs,
-  )
-  checkAbortSignal(signal)
-  return {
-    data,
-    html,
-    maxHeightReached,
-    renderingComponent: rendererType.ReactComponent,
-    renderProps,
+  const aborter = new AbortController()
+  self.setLoading(aborter)
+  if (renderProps.notReady) return
+
+  try {
+    renderArgs.signal = aborter.signal
+    // const callId = [
+    //   assembleLocString(renderArgs.region),
+    //   renderArgs.rendererType,
+    // ]
+    const {
+      html,
+      maxHeightReached,
+      ...data
+    } = await rendererType.renderInClient(rpcManager, renderArgs)
+    // if (aborter.signal.aborted) {
+    //   console.log(...callId, 'request to abort render was ignored', html, data)
+    checkAbortSignal(aborter.signal)
+    self.setRendered(
+      data,
+      html,
+      maxHeightReached,
+      rendererType.ReactComponent,
+      renderProps,
+    )
+  } catch (error) {
+    if (isAbortException(error) && !aborter.signal.aborted) {
+      // there is a bug in the underlying code and something is caching aborts. try to refetch once
+      const track = getParent<any>(self, 2)
+      if (allowRefetch) {
+        console.warn(`cached abort detected, refetching "${track.name}"`)
+        renderBlockEffect(self, props, false)
+        return
+      }
+      console.warn(`cached abort detected, failed to recover "${track.name}"`)
+    }
+    if (isAlive(self) && !isAbortException(error)) {
+      // setting the aborted exception as an error will draw the "aborted" error, and we
+      // have not found how to create a re-render if this occurs
+      self.setError(error)
+    }
   }
 }

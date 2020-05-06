@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
 import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
@@ -7,20 +6,32 @@ import {
   clamp,
   getContainingView,
   getSession,
+  isViewContainer,
   parseLocStringAndConvertToInterbase,
   springAnimate,
+  isSessionModelWithDrawerWidgets,
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
-import { getParent, getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
+import { getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
 
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import clone from 'clone'
 import { BlockSet } from '../BasicTrack/util/blockTypes'
+
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
+export interface LGVMenuOption {
+  title: string
+  key: string
+  callback: Function
+  checked?: boolean
+  isCheckbox: boolean
+}
 interface BpOffset {
   refName?: string
   index: number
@@ -67,7 +78,7 @@ export const HEADER_OVERVIEW_HEIGHT = 20
 export const SCALE_BAR_HEIGHT = 17
 export const RESIZE_HANDLE_HEIGHT = 3
 
-export function stateModelFactory(pluginManager: any) {
+export function stateModelFactory(pluginManager: PluginManager) {
   const model = types
     .model('LinearGenomeView', {
       id: ElementId,
@@ -87,6 +98,7 @@ export function stateModelFactory(pluginManager: any) {
         'hierarchical',
       ),
       minimumBlockWidth: 20,
+      showTrackLabels: true,
       showCenterLine: false,
     })
     .volatile(() => ({
@@ -97,6 +109,7 @@ export function stateModelFactory(pluginManager: any) {
       // array of callbacks to run after the next set of the displayedRegions,
       // which is basically like an onLoad
       afterDisplayedRegionsSetCallbacks: [] as Function[],
+      scaleFactor: 1,
     }))
     .views(self => ({
       get initialized() {
@@ -274,7 +287,7 @@ export function stateModelFactory(pluginManager: any) {
           }
           if ('onClick' in action) {
             const holdOnClick = action.onClick
-            action.onClick = (...args: any[]) => {
+            action.onClick = (...args: unknown[]) => {
               self.tracks.forEach(track => {
                 if (track.type === trackType) {
                   // @ts-ignore
@@ -288,7 +301,7 @@ export function stateModelFactory(pluginManager: any) {
 
       get trackTypeActions() {
         const allActions: Map<string, MenuOption[]> = new Map()
-        self.tracks.forEach((track: any) => {
+        self.tracks.forEach(track => {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
             const viewMenuActions = clone(track.viewMenuActions)
@@ -335,7 +348,7 @@ export function stateModelFactory(pluginManager: any) {
         self.offsetPx = self.totalBp / self.bpPerPx - self.offsetPx - self.width
       },
 
-      showTrack(configuration: any, initialSnapshot = {}) {
+      showTrack(configuration: AnyConfigurationModel, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')
         const name = readConfObject(configuration, 'name')
@@ -350,7 +363,7 @@ export function stateModelFactory(pluginManager: any) {
         self.tracks.push(track)
       },
 
-      hideTrack(configuration: any) {
+      hideTrack(configuration: AnyConfigurationModel) {
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(
           t => t.configuration === configuration,
@@ -358,7 +371,8 @@ export function stateModelFactory(pluginManager: any) {
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
       },
-
+    }))
+    .actions(self => ({
       moveTrack(movingTrackId: string, targetTrackId: string) {
         const oldIndex = self.tracks.findIndex(
           track => track.id === movingTrackId,
@@ -376,21 +390,25 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       closeView() {
-        const parent = getContainingView(self) as any
+        const parent = getContainingView(self)
         if (parent) {
-          // I am embedded in a higher order view
-          parent.removeView(self)
+          // I am embedded in a some other view
+          if (isViewContainer(parent)) parent.removeView(self)
         } else {
           // I am part of a session
-          getParent(self, 2).removeView(self)
+          getSession(self).removeView(self)
         }
       },
 
-      toggleTrack(configuration: any) {
+      toggleTrack(configuration: AnyConfigurationModel) {
         // if we have any tracks with that configuration, turn them off
-        const hiddenCount = this.hideTrack(configuration)
+        const hiddenCount = self.hideTrack(configuration)
         // if none had that configuration, turn one on
-        if (!hiddenCount) this.showTrack(configuration)
+        if (!hiddenCount) self.showTrack(configuration)
+      },
+
+      toggleTrackLabels() {
+        self.showTrackLabels = !self.showTrackLabels
       },
 
       toggleCenterLine() {
@@ -404,40 +422,18 @@ export function stateModelFactory(pluginManager: any) {
 
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
-          const session: any = getSession(self)
-          const selector = session.addDrawerWidget(
-            'HierarchicalTrackSelectorDrawerWidget',
-            'hierarchicalTrackSelector',
-            { view: self },
-          )
-          session.showDrawerWidget(selector)
-          return selector
+          const session = getSession(self)
+          if (isSessionModelWithDrawerWidgets(session)) {
+            const selector = session.addDrawerWidget(
+              'HierarchicalTrackSelectorDrawerWidget',
+              'hierarchicalTrackSelector',
+              { view: self },
+            )
+            session.showDrawerWidget(selector)
+            return selector
+          }
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
-      },
-
-      zoom(levels: number) {
-        this.zoomTo(self.bpPerPx)
-        if (
-          // no zoom
-          levels === 0 ||
-          // already zoomed all the way in
-          (levels > 0 && self.bpPerPx === self.minBpPerPx) ||
-          // already zoomed all the way out
-          (levels < 0 && self.bpPerPx === self.maxBpPerPx)
-        ) {
-          return
-        }
-        const currentIndex = self.zoomLevels.findIndex(
-          zoomLevel => zoomLevel === self.bpPerPx,
-        )
-        const targetIndex = clamp(
-          currentIndex - levels,
-          0,
-          self.zoomLevels.length - 1,
-        )
-        const targetBpPerPx = self.zoomLevels[targetIndex]
-        this.zoomTo(targetBpPerPx)
       },
 
       zoomTo(newBpPerPx: number, constrain = true) {
@@ -644,6 +640,10 @@ export function stateModelFactory(pluginManager: any) {
       setDraggingTrackId(idx?: string) {
         self.draggingTrackId = idx
       },
+
+      setScaleFactor(factor: number) {
+        self.scaleFactor = factor
+      },
     }))
     .actions(self => {
       let cancelLastAnimation = () => {}
@@ -661,21 +661,64 @@ export function stateModelFactory(pluginManager: any) {
 
       return { slide }
     })
+    .actions(self => {
+      let cancelLastAnimation = () => {}
+
+      function zoom(levels: number) {
+        self.zoomTo(self.bpPerPx)
+        if (
+          // no zoom
+          levels === 0 ||
+          // already zoomed all the way in
+          (levels > 0 && self.bpPerPx === self.minBpPerPx) ||
+          // already zoomed all the way out
+          (levels < 0 && self.bpPerPx === self.maxBpPerPx)
+        ) {
+          return
+        }
+        const currentIndex = self.zoomLevels.findIndex(
+          zoomLevel => zoomLevel === self.bpPerPx,
+        )
+        const targetIndex = clamp(
+          currentIndex - levels,
+          0,
+          self.zoomLevels.length - 1,
+        )
+        const targetBpPerPx = self.zoomLevels[targetIndex]
+        const factor = self.bpPerPx / targetBpPerPx
+        const [animate, cancelAnimation] = springAnimate(
+          1,
+          factor,
+          self.setScaleFactor,
+          () => {
+            self.zoomTo(targetBpPerPx)
+            self.setScaleFactor(1)
+          },
+        )
+        cancelLastAnimation()
+        cancelLastAnimation = cancelAnimation
+        animate()
+      }
+
+      return { zoom }
+    })
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
         get menuOptions(): MenuOption[] {
-          const session: any = getSession(self)
+          const session = getSession(self)
           const menuOptions: MenuOption[] = [
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
               icon: 'line_style',
               disabled:
+                isSessionModelWithDrawerWidgets(session) &&
                 session.visibleDrawerWidget &&
                 session.visibleDrawerWidget.id ===
                   'hierarchicalTrackSelector' &&
+                // @ts-ignore
                 session.visibleDrawerWidget.view.id === self.id,
             },
             {
@@ -702,6 +745,13 @@ export function stateModelFactory(pluginManager: any) {
               checked: !self.hideHeaderOverview,
               onClick: self.toggleHeaderOverview,
               disabled: self.hideHeader,
+            },
+            {
+              label: 'Show track labels',
+              icon: 'visibility',
+              type: 'checkbox',
+              checked: self.showTrackLabels,
+              onClick: self.toggleTrackLabels,
             },
             {
               label: 'Show center line',

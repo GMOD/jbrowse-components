@@ -160,7 +160,7 @@ export default (pluginManager: any) => {
                     return (
                       <text
                         transform={`rotate(${vtextRotation},${x},${y})`}
-                        key={region.refName}
+                        key={JSON.stringify(region)}
                         x={borderX}
                         y={y}
                         fill="#000000"
@@ -247,7 +247,7 @@ export default (pluginManager: any) => {
                         transform={`rotate(${htextRotation},${x},${y})`}
                         key={region.refName}
                         x={x}
-                        y={y}
+                        y={y + 1}
                         fill="#000000"
                         dominantBaseline="hanging"
                         textAnchor="end"

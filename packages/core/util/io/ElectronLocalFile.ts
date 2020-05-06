@@ -34,7 +34,7 @@ export default class ElectronLocalFile implements GenericFilehandle {
       this.fd = this.ipcRenderer.invoke('open', this.filename, 'r') as Promise<
         number
       >
-    return this.fd as Promise<number>
+    return this.fd
   }
 
   async read(

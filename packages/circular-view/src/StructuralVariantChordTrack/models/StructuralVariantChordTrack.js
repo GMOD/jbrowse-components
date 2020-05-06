@@ -7,7 +7,7 @@ export default pluginManager => {
   )
 
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const { getContainingView } = jbrequire('@gmod/jbrowse-core/util/tracks')
+  const { getContainingView } = jbrequire('@gmod/jbrowse-core/util')
 
   const { renderReactionData, renderReactionEffect } = jbrequire(
     require('./renderReaction'),

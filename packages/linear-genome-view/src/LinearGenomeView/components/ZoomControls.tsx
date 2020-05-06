@@ -33,7 +33,7 @@ function ZoomControls({ model }: { model: LGV }) {
         onClick={() => {
           model.zoom(-1)
         }}
-        disabled={model.bpPerPx >= model.maxBpPerPx}
+        disabled={model.bpPerPx >= model.maxBpPerPx || model.scaleFactor !== 1}
         color="secondary"
       >
         <Icon fontSize="small">zoom_out</Icon>
@@ -52,7 +52,7 @@ function ZoomControls({ model }: { model: LGV }) {
         onClick={() => {
           model.zoom(1)
         }}
-        disabled={model.bpPerPx <= model.minBpPerPx}
+        disabled={model.bpPerPx <= model.minBpPerPx || model.scaleFactor !== 1}
         color="secondary"
       >
         <Icon fontSize="small">zoom_in</Icon>

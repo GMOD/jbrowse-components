@@ -7,7 +7,7 @@ test('bed header trimming', async () => {
   const buf = await fsPromises.readFile(filepath)
   expect(buf[0]).toEqual(98)
   expect(buf[1]).toEqual(114)
-  const trimmedBuffer = await removeBedHeaders(buf)
+  const trimmedBuffer = removeBedHeaders(buf)
   expect(trimmedBuffer[0]).toEqual(99)
   expect(trimmedBuffer.length).toBe(275)
 })

@@ -44,7 +44,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<IRegion | undefined>()
   const [error, setError] = useState('')
-  const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
+  const { assemblyNames } = getSession(model)
   if (!error && !assemblyNames.length) {
     setError('No configured assemblies')
   }

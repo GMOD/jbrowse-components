@@ -6,6 +6,7 @@ import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
+import copy from 'copy-to-clipboard'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -33,6 +34,49 @@ export default (pluginManager, configSchema) =>
           )
           session.showDrawerWidget(featureWidget)
           session.setSelection(feature)
+        },
+
+        // uses copy-to-clipboard and generates notification
+        copyFeatureToClipboard(feature) {
+          const copiedFeature = feature
+          delete copiedFeature.uniqueId
+          const session = getSession(self)
+          copy(JSON.stringify(copiedFeature, null, 4))
+          session.pushSnackbarMessage('Copied to clipboard')
+        },
+
+        // returned if there is no feature id under mouse
+        contextMenuNoFeature() {
+          self.contextMenuOptions = getParentRenderProps(
+            self,
+          ).trackModel.menuOptions
+        },
+
+        // returned if there is a feature id under mouse
+        contextMenuFeature(feature) {
+          const menuOptions = [
+            {
+              label: 'Open feature details',
+              icon: 'menu_open',
+              onClick: () => {
+                self.clearFeatureSelection()
+                self.selectFeature(feature)
+              },
+            },
+            {
+              label: 'Copy info to clipboard',
+              icon: 'content_copy',
+              onClick: () => self.copyFeatureToClipboard(feature),
+            },
+            // {
+            //   label: 'View dotpot',
+            //   icon: 'scatter_plot',
+            //   onClick: () => {},
+            // },
+
+            // any custom right click can be appended to self.contextMenuOptions
+          ]
+          self.contextMenuOptions = menuOptions
         },
       }))
       .views(self => ({

@@ -1,7 +1,7 @@
-/* eslint-disable import/no-cycle */
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import Box from './Box'
 import Chevron from './Chevron'
 import ProcessedTranscript from './ProcessedTranscript'
@@ -37,8 +37,7 @@ interface BaseLayOutArgs {
   layout: SceneGraph
   bpPerPx: number
   reversed: boolean
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  config: any
+  config: AnyConfigurationModel
 }
 
 interface FeatureLayOutArgs extends BaseLayOutArgs {
