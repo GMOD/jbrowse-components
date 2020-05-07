@@ -16,7 +16,7 @@ export async function getGlobalStats(
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = await getAdapter(
+  const { dataAdapter } = getAdapter(
     pluginManager,
     sessionId,
     adapterConfig,
@@ -32,7 +32,7 @@ export async function getRegionStats(
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = await getAdapter(
+  const { dataAdapter } = getAdapter(
     pluginManager,
     sessionId,
     adapterConfig,
@@ -48,7 +48,7 @@ export async function getMultiRegionStats(
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = await getAdapter(
+  const { dataAdapter } = getAdapter(
     pluginManager,
     sessionId,
     adapterConfig,
@@ -64,7 +64,7 @@ export async function getRegions(
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = await getAdapter(
+  const { dataAdapter } = getAdapter(
     pluginManager,
     sessionId,
     adapterConfig,
@@ -80,7 +80,7 @@ export async function getRefNames(
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = await getAdapter(
+  const { dataAdapter } = getAdapter(
     pluginManager,
     sessionId,
     adapterConfig,
@@ -95,7 +95,7 @@ export async function getRefNameAliases(
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
-  const { dataAdapter } = await getAdapter(
+  const { dataAdapter } = getAdapter(
     pluginManager,
     sessionId,
     adapterConfig,

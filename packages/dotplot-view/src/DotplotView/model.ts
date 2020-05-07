@@ -96,11 +96,11 @@ export default function stateModelFactory(pluginManager: any) {
         addDisposer(
           self,
           autorun(
-            async () => {
+            () => {
               const axis = [self.viewWidth, self.viewHeight]
               const views = [self.hview, self.vview]
               if (!self.initialized) {
-                self.assemblyNames.forEach(async (name, index) => {
+                self.assemblyNames.forEach((name, index) => {
                   session
                     .getRegionsForAssemblyName(name)
                     .then((regions: Region[] | undefined) => {
@@ -130,7 +130,7 @@ export default function stateModelFactory(pluginManager: any) {
         )
         addDisposer(
           self,
-          autorun(async () => {
+          autorun(() => {
             const padding = 4
             // these are set via autorun to avoid dependency cycle
             this.setBorderY(

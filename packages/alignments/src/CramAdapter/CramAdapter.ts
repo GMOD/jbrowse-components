@@ -88,7 +88,7 @@ export default (pluginManager: PluginManager) => {
       const refName = this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
       if (!refName) return undefined
 
-      const features = await refSeqStore.getFeatures(
+      const features = refSeqStore.getFeatures(
         {
           refName,
           start,

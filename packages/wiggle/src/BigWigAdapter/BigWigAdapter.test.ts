@@ -12,7 +12,7 @@ describe('adapter can fetch features from volvox.bw', () => {
     )
   })
   it('test basic aspects of getfeatures', async () => {
-    const features = await adapter.getFeatures({
+    const features = adapter.getFeatures({
       refName: 'ctgA',
       start: 0,
       end: 20000,

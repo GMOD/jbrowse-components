@@ -110,7 +110,7 @@ export default (pluginManager: PluginManager) => {
           abortSignal: AbortSignal,
         ): Promise<FeatureStats> => {
           const { refName, start, end, assemblyName, bpPerPx } = args
-          const feats = await this.getFeatures(
+          const feats = this.getFeatures(
             { refName, start, end, assemblyName },
             {
               signal: abortSignal,
