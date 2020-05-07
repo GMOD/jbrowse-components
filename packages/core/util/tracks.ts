@@ -1,7 +1,7 @@
 import { getParent, isRoot, IStateTreeNode } from 'mobx-state-tree'
 import objectHash from 'object-hash'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
-import { IUriLocation, ILocalPathLocation } from '../mst-types'
+import { IUriLocation, ILocalPathLocation } from './types/mst'
 import { readConfObject } from '../configuration'
 
 /* utility functions for use by track models and so forth */

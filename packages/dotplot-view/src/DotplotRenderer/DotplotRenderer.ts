@@ -1,7 +1,7 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import {
   createCanvas,

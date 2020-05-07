@@ -3,7 +3,7 @@ import { SnapshotIn } from 'mobx-state-tree'
 import PluginManager from '../PluginManager'
 import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
 import { AnyDataAdapter } from './BaseAdapter'
-import { IRegion } from '../mst-types'
+import { IRegion } from '../util/types/mst'
 
 function adapterConfigCacheKey(
   adapterConfig: SnapshotIn<AnyConfigurationSchemaType>,

@@ -13,7 +13,7 @@ import fromEntries from 'object.fromentries'
 import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import { Feature } from './simpleFeature'
-import { IRegion, INoAssemblyRegion } from '../mst-types'
+import { IRegion, INoAssemblyRegion } from './types/mst'
 import { TypeTestedByPredicate, isSessionModel, isViewModel } from './types'
 
 export * from './types'

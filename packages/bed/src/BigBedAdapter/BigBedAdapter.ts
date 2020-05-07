@@ -5,7 +5,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { IRegion, IFileLocation } from '@gmod/jbrowse-core/mst-types'
+import { IRegion, IFileLocation } from '@gmod/jbrowse-core/util/types/mst'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'

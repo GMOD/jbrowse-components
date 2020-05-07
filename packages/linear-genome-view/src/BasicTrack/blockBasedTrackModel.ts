@@ -7,7 +7,7 @@ import {
   isSessionModelWithDrawerWidgets,
   isSelectionContainer,
 } from '@gmod/jbrowse-core/util'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
 import { addDisposer, types, Instance } from 'mobx-state-tree'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import RBush from 'rbush'

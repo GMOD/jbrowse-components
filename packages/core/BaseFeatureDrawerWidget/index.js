@@ -1,6 +1,6 @@
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../configuration'
-import { ElementId } from '../mst-types'
+import { ElementId } from '../util/types/mst'
 
 const configSchema = ConfigurationSchema('BaseFeatureDrawerWidget', {})
 

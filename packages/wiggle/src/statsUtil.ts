@@ -1,5 +1,5 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { INoAssemblyRegion } from '@gmod/jbrowse-core/util/types/mst'
 import { Observable } from 'rxjs'
 import { reduce } from 'rxjs/operators'
 

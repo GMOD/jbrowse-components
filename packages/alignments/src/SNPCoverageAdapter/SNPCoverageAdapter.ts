@@ -2,7 +2,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { IRegion, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion, INoAssemblyRegion } from '@gmod/jbrowse-core/util/types/mst'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'

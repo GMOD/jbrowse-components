@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
 import { getContainingView } from '@gmod/jbrowse-core/util'
 import jsonStableStringify from 'json-stable-stringify'
 import { observable } from 'mobx'

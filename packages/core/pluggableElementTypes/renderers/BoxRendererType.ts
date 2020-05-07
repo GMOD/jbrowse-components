@@ -12,7 +12,7 @@ import ServerSideRendererType, {
   RenderArgsDeserialized as BaseRenderArgsDeserialized,
   RenderResults,
 } from './ServerSideRendererType'
-import { IRegion } from '../../mst-types'
+import { IRegion } from '../../util/types/mst'
 import { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
 import { readConfObject, isConfigurationModel } from '../../configuration'
 import SerializableFilterChain from './util/serializableFilterChain'

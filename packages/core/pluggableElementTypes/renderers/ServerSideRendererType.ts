@@ -7,7 +7,7 @@ import {
   isStateTreeNode,
 } from 'mobx-state-tree'
 import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
-import { IRegion } from '../../mst-types'
+import { IRegion } from '../../util/types/mst'
 import { readConfObject } from '../../configuration'
 import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature, {

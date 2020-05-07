@@ -1,6 +1,6 @@
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
-import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
+import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/util/types/mst'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import {
   clamp,

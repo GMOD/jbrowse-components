@@ -1,4 +1,4 @@
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
 import {
   assembleLocString,
   getSession,

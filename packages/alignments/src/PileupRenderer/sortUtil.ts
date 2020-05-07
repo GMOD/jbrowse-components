@@ -1,6 +1,6 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 
 interface SortObject {

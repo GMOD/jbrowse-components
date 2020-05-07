@@ -3,7 +3,7 @@ import {
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'

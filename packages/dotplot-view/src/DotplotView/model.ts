@@ -1,5 +1,5 @@
 import { getSession } from '@gmod/jbrowse-core/util'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
 
 import { types, Instance, SnapshotIn } from 'mobx-state-tree'
 import { autorun, transaction } from 'mobx'
@@ -17,7 +17,7 @@ export default function stateModelFactory(pluginManager: any) {
   const { cast, types: jbrequiredTypes, getParent, addDisposer } = jbrequire(
     'mobx-state-tree',
   )
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const { ElementId } = jbrequire('@gmod/jbrowse-core/util/types/mst')
   const Dotplot1DViewModel = jbrequire(require('./Dotplot1DViewModel'))
 
   return (jbrequiredTypes as Instance<typeof types>)

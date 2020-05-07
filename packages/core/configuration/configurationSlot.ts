@@ -2,7 +2,7 @@
 import { types, IAnyModelType, IAnyComplexType } from 'mobx-state-tree'
 import { stringToFunction, functionRegexp } from '../util/functionStrings'
 import { inDevelopment } from '../util'
-import { FileLocation } from '../mst-types'
+import { FileLocation } from '../util/types/mst'
 
 function isValidColorString(/* str */) {
   // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string

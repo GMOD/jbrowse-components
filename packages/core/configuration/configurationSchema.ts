@@ -9,7 +9,7 @@ import {
   ModelPropertiesDeclaration,
 } from 'mobx-state-tree'
 
-import { ElementId } from '../mst-types'
+import { ElementId } from '../util/types/mst'
 
 import ConfigSlot, { ConfigSlotDefinition } from './configurationSlot'
 import { isConfigurationSchemaType } from './util'

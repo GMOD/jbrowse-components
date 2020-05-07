@@ -2,7 +2,7 @@
 import { renderToString } from 'react-dom/server'
 import { filter, distinct, toArray, tap } from 'rxjs/operators'
 import { getSnapshot } from 'mobx-state-tree'
-import { IRegion } from '../../mst-types'
+import { IRegion } from '../../util/types/mst'
 import { checkAbortSignal } from '../../util'
 import { Feature } from '../../util/simpleFeature'
 import RendererType from './RendererType'
