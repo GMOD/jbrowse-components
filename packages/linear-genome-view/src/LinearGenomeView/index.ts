@@ -1,6 +1,10 @@
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
-import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { Region } from '@gmod/jbrowse-core/util/types'
+import {
+  ElementId,
+  Region as MUIRegion,
+} from '@gmod/jbrowse-core/util/types/mst'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import {
   clamp,
@@ -85,7 +89,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       type: types.literal('LinearGenomeView'),
       offsetPx: 0,
       bpPerPx: 1,
-      displayedRegions: types.array(Region),
+      displayedRegions: types.array(MUIRegion),
       // we use an array for the tracks because the tracks are displayed in a specific
       // order that we need to keep.
       tracks: types.array(
@@ -415,7 +419,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.showCenterLine = !self.showCenterLine
       },
 
-      setDisplayedRegions(regions: IRegion[]) {
+      setDisplayedRegions(regions: Region[]) {
         self.displayedRegions = cast(regions)
         this.zoomTo(self.bpPerPx)
       },

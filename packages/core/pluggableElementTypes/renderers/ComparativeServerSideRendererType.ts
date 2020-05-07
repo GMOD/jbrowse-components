@@ -2,7 +2,7 @@
 import { renderToString } from 'react-dom/server'
 import { filter, distinct, toArray, tap } from 'rxjs/operators'
 import { getSnapshot } from 'mobx-state-tree'
-import { IRegion } from '../../util/types/mst'
+import { Region } from '../../util/types'
 import { checkAbortSignal } from '../../util'
 import { Feature } from '../../util/simpleFeature'
 import RendererType from './RendererType'
@@ -129,7 +129,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
   async getFeatures(renderArgs: RenderArgs) {
     const { dataAdapter, signal, bpPerPx } = renderArgs
 
-    let regions = [] as IRegion[]
+    let regions = [] as Region[]
 
     // @ts-ignore this is instantiated by the getFeatures call
     regions = renderArgs.regions
@@ -139,7 +139,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
       return []
     }
 
-    const requestRegions = regions.map((r: IRegion) => {
+    const requestRegions = regions.map((r: Region) => {
       // make sure the requested region's start and end are integers, if
       // there is a region specification.
       const requestRegion = { ...r }

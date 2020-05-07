@@ -1,7 +1,7 @@
 /**
  * Based on https://material-ui.com/components/autocomplete/#Virtualize.tsx
  */
-import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { getSession, isAbortException } from '@gmod/jbrowse-core/util'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import ListSubheader from '@material-ui/core/ListSubheader'
@@ -99,12 +99,12 @@ function RefNameAutocomplete({
   TextFieldProps,
 }: {
   model: LGV
-  onSelect: (region: IRegion | undefined) => void
+  onSelect: (region: Region | undefined) => void
   assemblyName?: string
   defaultRegionName?: string
   TextFieldProps?: TFP
 }) {
-  const [regions, setRegions] = useState<IRegion[]>([])
+  const [regions, setRegions] = useState<Region[]>([])
   const [selectedRegionName, setSelectedRegionName] = useState<
     string | undefined
   >(defaultRegionName)
@@ -116,7 +116,7 @@ function RefNameAutocomplete({
     getRegionsForAssemblyName: (
       assemblyName: string,
       { signal }: { signal?: AbortSignal },
-    ) => Promise<IRegion[]>
+    ) => Promise<Region[]>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } = getSession(model) as any
 

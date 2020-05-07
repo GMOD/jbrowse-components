@@ -3,7 +3,7 @@ import {
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -64,10 +64,10 @@ export default class extends BaseFeatureDataAdapter {
 
   /**
    * Fetch features for a certain region
-   * @param {IRegion} param
+   * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures(region: IRegion) {
+  public getFeatures(region: Region) {
     const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {
       try {

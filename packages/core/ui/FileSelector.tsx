@@ -9,31 +9,31 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 import { observer } from 'mobx-react'
 import React, { useState, MouseEvent } from 'react'
 import {
-  IFileLocation,
-  IUriLocation,
-  ILocalPathLocation,
-  IBlobLocation,
-} from '../util/types/mst'
+  FileLocation,
+  UriLocation,
+  LocalPathLocation,
+  BlobLocation,
+} from '../util/types'
 
 const isElectron = !!window.electron
 
-function isUriLocation(location: IFileLocation): location is IUriLocation {
-  return (location as IUriLocation).uri !== undefined
+function isUriLocation(location: FileLocation): location is UriLocation {
+  return 'uri' in location
 }
 
 function isLocalPathLocation(
-  location: IFileLocation,
-): location is ILocalPathLocation {
-  return (location as ILocalPathLocation).localPath !== undefined
+  location: FileLocation,
+): location is LocalPathLocation {
+  return 'localPath' in location
 }
 
-function isBlobLocation(location: IFileLocation): location is IBlobLocation {
-  return (location as IBlobLocation).blob !== undefined
+function isBlobLocation(location: FileLocation): location is BlobLocation {
+  return 'blob' in location
 }
 
 const FileLocationEditor = observer(
   (props: {
-    location?: IFileLocation
+    location?: FileLocation
     setLocation: Function
     name?: string
     description?: string
@@ -93,7 +93,7 @@ const FileLocationEditor = observer(
 )
 
 const UrlChooser = (props: {
-  location?: IFileLocation
+  location?: FileLocation
   setLocation: Function
 }) => {
   const { location, setLocation } = props
@@ -113,7 +113,7 @@ const UrlChooser = (props: {
 }
 
 const LocalFileChooser = observer(
-  (props: { location?: IFileLocation; setLocation: Function }) => {
+  (props: { location?: FileLocation; setLocation: Function }) => {
     const { location, setLocation } = props
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const { target } = event

@@ -1,6 +1,6 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
-import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 
 interface SortObject {
@@ -11,7 +11,7 @@ export const sortFeature = (
   features: Map<string, Feature>,
   sortObject: SortObject,
   bpPerPx: number,
-  region: IRegion,
+  region: Region,
 ) => {
   const featureArray = Array.from(features)
   const featuresInCenterLine: typeof featureArray = []

@@ -3,10 +3,10 @@ import {
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import {
-  IFileLocation,
-  INoAssemblyRegion,
-  IRegion,
-} from '@gmod/jbrowse-core/util/types/mst'
+  FileLocation,
+  NoAssemblyRegion,
+  Region,
+} from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -33,16 +33,16 @@ export default class extends BaseFeatureDataAdapter {
     const location = readConfObject(config, ['index', 'location'])
     const indexType = readConfObject(config, ['index', 'indexType'])
 
-    this.filehandle = openLocation(vcfGzLocation as IFileLocation)
+    this.filehandle = openLocation(vcfGzLocation as FileLocation)
     this.vcf = new TabixIndexedFile({
       filehandle: this.filehandle,
       csiFilehandle:
         indexType === 'CSI'
-          ? openLocation(location as IFileLocation)
+          ? openLocation(location as FileLocation)
           : undefined,
       tbiFilehandle:
         indexType !== 'CSI'
-          ? openLocation(location as IFileLocation)
+          ? openLocation(location as FileLocation)
           : undefined,
       chunkCacheSize: 50 * 2 ** 20,
     })
@@ -58,10 +58,10 @@ export default class extends BaseFeatureDataAdapter {
 
   /**
    * Fetch features for a certain region
-   * @param {IRegion} param
+   * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures(query: INoAssemblyRegion, opts: BaseOptions = {}) {
+  public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const parser = await this.parser
       await this.vcf.getLines(query.refName, query.start, query.end, {
@@ -94,7 +94,7 @@ export default class extends BaseFeatureDataAdapter {
    * @returns {Observable[Feature]} see getFeatures()
    */
   public getFeaturesInMultipleRegions(
-    regions: IRegion[],
+    regions: Region[],
     opts: BaseOptions = {},
   ) {
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
@@ -119,7 +119,7 @@ export default class extends BaseFeatureDataAdapter {
    * query regions
    * @param regions list of query regions
    */
-  private async bytesForRegions(regions: IRegion[]) {
+  private async bytesForRegions(regions: Region[]) {
     const blockResults = await Promise.all(
       regions.map(region =>
         // @ts-ignore

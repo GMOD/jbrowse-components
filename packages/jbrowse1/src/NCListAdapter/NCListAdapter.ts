@@ -1,6 +1,6 @@
 import NCListStore from '@gmod/nclist'
 import { openUrl } from '@gmod/jbrowse-core/util/io'
-import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -37,11 +37,11 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
    * Fetch features for a certain region. Use getFeaturesInRegion() if you also
    * want to verify that the store has features for the given reference sequence
    * before fetching.
-   * @param {IRegion} param
+   * @param {Region} param
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures(region: IRegion, opts: BaseOptions = {}) {
+  getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { signal } = opts
       for await (const feature of this.nclist.getFeatures(region, opts)) {

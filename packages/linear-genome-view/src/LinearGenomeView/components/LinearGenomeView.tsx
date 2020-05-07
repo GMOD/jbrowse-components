@@ -1,4 +1,4 @@
-import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { getSession } from '@gmod/jbrowse-core/util'
 
 // material ui things
@@ -42,7 +42,7 @@ const useStyles = makeStyles(theme => ({
 const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-  const [selectedRegion, setSelectedRegion] = useState<IRegion | undefined>()
+  const [selectedRegion, setSelectedRegion] = useState<Region | undefined>()
   const [error, setError] = useState('')
   const { assemblyNames } = getSession(model)
   if (!error && !assemblyNames.length) {

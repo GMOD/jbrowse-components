@@ -3,11 +3,11 @@ import ElectronLocalFile from './ElectronLocalFile'
 import ElectronRemoteFile from './ElectronRemoteFile'
 import { openUrl as rangeFetcherOpenUrl } from './rangeFetcher'
 import {
-  IFileLocation,
-  ILocalPathLocation,
-  IUriLocation,
-  IBlobLocation,
-} from '../types/mst'
+  FileLocation,
+  LocalPathLocation,
+  UriLocation,
+  BlobLocation,
+} from '../types'
 
 export const openUrl = rangeFetcherOpenUrl
 
@@ -19,21 +19,21 @@ declare global {
 
 const isElectron = !!window.electron
 
-function isUriLocation(location: IFileLocation): location is IUriLocation {
-  return (location as IUriLocation).uri !== undefined
+function isUriLocation(location: FileLocation): location is UriLocation {
+  return 'uri' in location
 }
 
 function isLocalPathLocation(
-  location: IFileLocation,
-): location is ILocalPathLocation {
-  return (location as ILocalPathLocation).localPath !== undefined
+  location: FileLocation,
+): location is LocalPathLocation {
+  return 'localPath' in location
 }
 
-function isBlobLocation(location: IFileLocation): location is IBlobLocation {
-  return (location as IBlobLocation).blob !== undefined
+function isBlobLocation(location: FileLocation): location is BlobLocation {
+  return 'blob' in location
 }
 
-export function openLocation(location: IFileLocation): GenericFilehandle {
+export function openLocation(location: FileLocation): GenericFilehandle {
   if (!location) throw new Error('must provide a location to openLocation')
   if (isElectron) {
     if (isUriLocation(location)) return new ElectronRemoteFile(location.uri)

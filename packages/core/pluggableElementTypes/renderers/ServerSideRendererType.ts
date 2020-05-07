@@ -7,7 +7,7 @@ import {
   isStateTreeNode,
 } from 'mobx-state-tree'
 import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
-import { IRegion } from '../../util/types/mst'
+import { Region } from '../../util/types'
 import { readConfObject } from '../../configuration'
 import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature, {
@@ -34,8 +34,8 @@ interface BaseRenderArgs {
     trackModel: { id: string; selectedFeatureId?: string }
     blockKey: string
   }
-  regions: IRegion[]
-  originalRegions?: IRegion[]
+  regions: Region[]
+  originalRegions?: Region[]
 }
 
 export interface RenderArgs extends BaseRenderArgs {
@@ -167,7 +167,7 @@ export default class ServerSideRenderer extends RendererType {
     return deserialized
   }
 
-  getExpandedGlyphRegion(region: IRegion, renderArgs: RenderArgsDeserialized) {
+  getExpandedGlyphRegion(region: Region, renderArgs: RenderArgsDeserialized) {
     if (!region) return region
     const { bpPerPx, config } = renderArgs
     const maxFeatureGlyphExpansion =
@@ -203,7 +203,7 @@ export default class ServerSideRenderer extends RendererType {
       return features
     }
 
-    const requestRegions = regions.map((r: IRegion) => {
+    const requestRegions = regions.map((r: Region) => {
       // make sure the requested region's start and end are integers, if
       // there is a region specification.
       const requestRegion = { ...r }

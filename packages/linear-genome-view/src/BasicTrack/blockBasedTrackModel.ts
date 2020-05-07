@@ -7,7 +7,7 @@ import {
   isSessionModelWithDrawerWidgets,
   isSelectionContainer,
 } from '@gmod/jbrowse-core/util'
-import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { addDisposer, types, Instance } from 'mobx-state-tree'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import RBush from 'rbush'
@@ -83,7 +83,7 @@ const blockBasedTrack = types
       },
 
       get featToBlock() {
-        const m: { [key: string]: IRegion } = {}
+        const m: { [key: string]: Region } = {}
         for (const block of self.blockState.values()) {
           if (block.data && block.data.features) {
             for (const [featId] of block.data.features) {

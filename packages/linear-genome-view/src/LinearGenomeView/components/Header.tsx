@@ -1,4 +1,4 @@
-import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import {
   assembleLocString,
   getSession,
@@ -137,7 +137,7 @@ const Search = observer(({ model }: { model: LGV }) => {
   }
 
   const setDisplayedRegion = useCallback(
-    (region: IRegion | undefined) => {
+    (region: Region | undefined) => {
       if (region) {
         model.setDisplayedRegions([region])
       }

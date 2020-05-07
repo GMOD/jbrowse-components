@@ -2,7 +2,7 @@ import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configur
 import BoxRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { bpSpanPx, iterMap } from '@gmod/jbrowse-core/util'
-import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import {
   createCanvas,
   createImageBitmap,
@@ -17,7 +17,7 @@ interface PileupRenderProps {
   features: Map<string, Feature>
   layout: BaseLayout<string>
   config: AnyConfigurationModel
-  regions: IRegion[]
+  regions: Region[]
   bpPerPx: number
   height: number
   width: number
@@ -48,7 +48,7 @@ export default class PileupRenderer extends BoxRendererType {
     subLayout: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     config: AnyConfigurationModel,
     bpPerPx: number,
-    region: IRegion,
+    region: Region,
   ): LayoutRecord | null {
     const [leftPx, rightPx] = bpSpanPx(
       feature.get('start'),

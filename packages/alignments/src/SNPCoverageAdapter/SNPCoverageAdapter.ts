@@ -2,7 +2,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { IRegion, INoAssemblyRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { Region, NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
@@ -126,11 +126,11 @@ export default (pluginManager: PluginManager) => {
     }
 
     /**
-     * @param {INoAssemblyRegion} region
+     * @param {NoAssemblyRegion} region
      * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
      * @returns {Promise<FeatureStats>} see statsUtil.ts
      */
-    public getRegionStats(region: INoAssemblyRegion, opts: BaseOptions = {}) {
+    public getRegionStats(region: NoAssemblyRegion, opts: BaseOptions = {}) {
       const { refName, start, end } = region
       const { bpPerPx, signal } = opts
       return this.statsCache.get(
@@ -142,12 +142,12 @@ export default (pluginManager: PluginManager) => {
 
     /**
      * Calculate region stats such as scoreMax and scoreMin to be used in domain
-     * @param {INoAssemblyRegion} regions
+     * @param {NoAssemblyRegion} regions
      * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
      * @returns {Promise<FeatureStats>} see statsUtil.ts
      */
     public async getMultiRegionStats(
-      regions: INoAssemblyRegion[] = [],
+      regions: NoAssemblyRegion[] = [],
       opts: BaseOptions = {},
     ) {
       if (!regions.length) {
@@ -193,7 +193,7 @@ export default (pluginManager: PluginManager) => {
      * @returns {Observable[Feature]} Observable of Feature objects in the region
      */
 
-    getFeatures(region: IRegion, opts: BaseOptions = {}) {
+    getFeatures(region: Region, opts: BaseOptions = {}) {
       return ObservableCreate<Feature>(async observer => {
         const features = await this.subadapter
           .getFeatures(region, opts)

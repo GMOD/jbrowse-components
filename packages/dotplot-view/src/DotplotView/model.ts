@@ -1,5 +1,5 @@
 import { getSession } from '@gmod/jbrowse-core/util'
-import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { Region } from '@gmod/jbrowse-core/util/types'
 
 import { types, Instance, SnapshotIn } from 'mobx-state-tree'
 import { autorun, transaction } from 'mobx'
@@ -103,7 +103,7 @@ export default function stateModelFactory(pluginManager: any) {
                 self.assemblyNames.forEach(async (name, index) => {
                   session
                     .getRegionsForAssemblyName(name)
-                    .then((regions: IRegion[] | undefined) => {
+                    .then((regions: Region[] | undefined) => {
                       if (regions !== undefined) {
                         transaction(() => {
                           views[index].setDisplayedRegions(regions)

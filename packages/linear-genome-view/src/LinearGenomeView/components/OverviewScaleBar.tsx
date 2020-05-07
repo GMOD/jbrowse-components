@@ -1,4 +1,4 @@
-import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { getSession, isAbortException } from '@gmod/jbrowse-core/util'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -74,7 +74,7 @@ function OverviewScaleBar({
   children: React.ReactNode
 }) {
   const [assemblyRegions, setAssemblyRegions] = useState<
-    Map<string, IRegion[]>
+    Map<string, Region[]>
   >()
   const [error, setError] = useState('')
   const classes = useStyles()
@@ -95,7 +95,7 @@ function OverviewScaleBar({
     getRegionsForAssemblyName: (
       assemblyName: string,
       { signal }: { signal?: AbortSignal },
-    ) => Promise<IRegion[]>
+    ) => Promise<Region[]>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } = getSession(model) as any
   useEffect(() => {
@@ -103,7 +103,7 @@ function OverviewScaleBar({
     let mounted = true
     async function fetchRegions() {
       if (assemblyNames.length) {
-        const fetchedAssemblyRegions = new Map() as Map<string, IRegion[]>
+        const fetchedAssemblyRegions = new Map() as Map<string, Region[]>
         for (const assemblyName of assemblyNames) {
           try {
             aborter = new AbortController()
@@ -132,7 +132,7 @@ function OverviewScaleBar({
     }
   }, [assemblyNames, getRegionsForAssemblyName])
 
-  const wholeRefSeqs = [] as IRegion[]
+  const wholeRefSeqs = [] as Region[]
   let totalLength = 0
   displayedRegions.forEach(({ refName, assemblyName }) => {
     const r = assemblyRegions && assemblyRegions.get(assemblyName)
