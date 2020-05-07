@@ -204,11 +204,11 @@ test('can instantiate a model that >2 regions', () => {
 
   expect(model.bpToPx({ refName: 'ctgA', coord: 100 })).toEqual({
     index: 0,
-    offsetPx: 100 / model.bpPerPx,
+    offsetPx: Math.round(100 / model.bpPerPx),
   })
 
   expect(model.bpToPx({ refName: 'ctgB', coord: 100 })).toEqual({
     index: 1,
-    offsetPx: 10100 / model.bpPerPx,
+    offsetPx: Math.round(10100 / model.bpPerPx),
   })
 })
