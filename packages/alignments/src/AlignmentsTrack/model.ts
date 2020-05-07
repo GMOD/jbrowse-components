@@ -171,7 +171,6 @@ export default (pluginManager: any, configSchema: any) => {
           .renderInClient(rpcManager, {
             assemblyName: regions[0].assemblyName,
             regions,
-            adapterType: self.PileupTrack.adapterType.name,
             adapterConfig: getConf(self, 'adapter'),
             sequenceAdapterType: sequenceConfig.type,
             sequenceAdapterConfig: sequenceConfig,

@@ -24,7 +24,6 @@ export default self => {
         'getRefNames',
         {
           sessionId: assemblyName,
-          adapterType: readConfObject(adapterConf, 'type'),
           adapterConfig: adapterConf,
           signal,
         },
@@ -118,7 +117,6 @@ export default self => {
             'getRefNameAliases',
             {
               sessionId: assemblyName,
-              adapterType: assemblyConfig.refNameAliases.adapter.type,
               adapterConfig: assemblyConfig.refNameAliases.adapter,
               signal: opts.signal,
             },

@@ -218,7 +218,6 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       renderArgs: {
         assemblyName: self.region.assemblyName,
         regions: [self.region],
-        adapterType: track.adapterType.name,
         adapterConfig,
         sequenceAdapterType: sequenceConfig.type,
         sequenceAdapterConfig: sequenceConfig,
