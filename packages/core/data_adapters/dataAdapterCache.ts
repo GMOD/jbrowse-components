@@ -3,7 +3,7 @@ import { SnapshotIn } from 'mobx-state-tree'
 import PluginManager from '../PluginManager'
 import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
 import { AnyDataAdapter } from './BaseAdapter'
-import { IRegion } from '../util/types/mst'
+import { Region } from '../util/types'
 
 function adapterConfigCacheKey(
   adapterConfig: SnapshotIn<AnyConfigurationSchemaType>,
@@ -108,7 +108,7 @@ export function freeAdapterResources(specification: Record<string, any>) {
         const regions =
           specification.regions ||
           (specification.region ? [specification.region] : [])
-        regions.forEach((region: IRegion) => {
+        regions.forEach((region: Region) => {
           if (region.refName !== undefined)
             cacheEntry.dataAdapter.freeResources(region)
         })

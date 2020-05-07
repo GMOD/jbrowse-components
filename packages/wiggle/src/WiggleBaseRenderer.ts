@@ -3,7 +3,7 @@ import {
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import React from 'react'
@@ -13,7 +13,7 @@ import { ScaleOpts } from './util'
 export interface WiggleBaseRendererProps {
   features: Map<string, Feature>
   config: AnyConfigurationModel
-  regions: IRegion[]
+  regions: Region[]
   bpPerPx: number
   height: number
   width: number
@@ -21,7 +21,7 @@ export interface WiggleBaseRendererProps {
   blockKey: string
   dataAdapter: BaseFeatureDataAdapter
   notReady: boolean
-  originalRegions: IRegion[]
+  originalRegions: Region[]
   scaleOpts: ScaleOpts
   sessionId: string
   signal: AbortSignal

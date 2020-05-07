@@ -1,9 +1,6 @@
 import { IndexedFasta } from '@gmod/indexedfasta'
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import {
-  IFileLocation,
-  INoAssemblyRegion,
-} from '@gmod/jbrowse-core/util/types/mst'
+import { FileLocation, NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -24,8 +21,8 @@ export default class extends BaseFeatureDataAdapter {
       throw new Error('must provide faiLocation')
     }
     const fastaOpts = {
-      fasta: openLocation(fastaLocation as IFileLocation),
-      fai: openLocation(faiLocation as IFileLocation),
+      fasta: openLocation(fastaLocation as FileLocation),
+      fai: openLocation(faiLocation as FileLocation),
     }
 
     this.fasta = new IndexedFasta(fastaOpts)
@@ -35,10 +32,10 @@ export default class extends BaseFeatureDataAdapter {
     return this.fasta.getSequenceList()
   }
 
-  public async getRegions(): Promise<INoAssemblyRegion[]> {
+  public async getRegions(): Promise<NoAssemblyRegion[]> {
     const seqSizes = await this.fasta.getSequenceSizes()
     return Object.keys(seqSizes).map(
-      (refName: string): INoAssemblyRegion => ({
+      (refName: string): NoAssemblyRegion => ({
         refName,
         start: 0,
         end: seqSizes[refName],
@@ -48,10 +45,10 @@ export default class extends BaseFeatureDataAdapter {
 
   /**
    * Fetch features for a certain region
-   * @param {IRegion} param
+   * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures({ refName, start, end }: INoAssemblyRegion) {
+  public getFeatures({ refName, start, end }: NoAssemblyRegion) {
     return ObservableCreate<Feature>(async observer => {
       const size = await this.fasta.getSequenceSize(refName)
       const regionEnd = size !== undefined ? Math.min(size, end) : end

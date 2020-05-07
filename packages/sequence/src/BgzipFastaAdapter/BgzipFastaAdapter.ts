@@ -1,5 +1,5 @@
 import { BgzipIndexedFasta } from '@gmod/indexedfasta'
-import { IFileLocation } from '@gmod/jbrowse-core/util/types/mst'
+import { FileLocation } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -22,9 +22,9 @@ export default class extends IndexedFasta {
       throw new Error('must provide gziLocation')
     }
     const fastaOpts = {
-      fasta: openLocation(fastaLocation as IFileLocation),
-      fai: openLocation(faiLocation as IFileLocation),
-      gzi: openLocation(gziLocation as IFileLocation),
+      fasta: openLocation(fastaLocation as FileLocation),
+      fai: openLocation(faiLocation as FileLocation),
+      gzi: openLocation(gziLocation as FileLocation),
     }
 
     this.fasta = new BgzipIndexedFasta(fastaOpts)

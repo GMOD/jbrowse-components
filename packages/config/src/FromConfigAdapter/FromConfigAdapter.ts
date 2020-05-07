@@ -4,7 +4,7 @@ import SimpleFeature, {
   SimpleFeatureSerialized,
 } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { INoAssemblyRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
@@ -133,7 +133,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
    * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures(region: INoAssemblyRegion) {
+  getFeatures(region: NoAssemblyRegion) {
     const { refName, start, end } = region
 
     return ObservableCreate<Feature>(async observer => {

@@ -13,8 +13,13 @@ import fromEntries from 'object.fromentries'
 import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import { Feature } from './simpleFeature'
-import { IRegion, INoAssemblyRegion } from './types/mst'
-import { TypeTestedByPredicate, isSessionModel, isViewModel } from './types'
+import {
+  TypeTestedByPredicate,
+  isSessionModel,
+  isViewModel,
+  Region,
+  NoAssemblyRegion,
+} from './types'
 
 export * from './types'
 
@@ -246,10 +251,10 @@ export function getContainingView(node: IAnyStateTreeNode) {
  * @param {number} args.end end coordinate
  * @returns {string} the locString
  */
-export function assembleLocString(region: IRegion | INoAssemblyRegion): string {
+export function assembleLocString(region: Region | NoAssemblyRegion): string {
   const { refName, start, end } = region
   let assemblyName
-  if ((region as IRegion).assemblyName) ({ assemblyName } = region as IRegion)
+  if ((region as Region).assemblyName) ({ assemblyName } = region as Region)
   if (assemblyName) return `${assemblyName}:${refName}:${start + 1}..${end}`
   return `${refName}:${start + 1}..${end}`
 }
@@ -357,7 +362,7 @@ function roundToNearestPointOne(num: number): number {
 
 /**
  * @param {number} bp
- * @param {IRegion} region
+ * @param {Region} region
  * @param {number} bpPerPx
  */
 export function bpToPx(

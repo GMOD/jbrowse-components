@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { getContainingView } from '@gmod/jbrowse-core/util'
 import jsonStableStringify from 'json-stable-stringify'
 import { observable } from 'mobx'
@@ -154,7 +154,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
               },
               { timeout: 1000000 },
             )
-            .then((adapterRegions: IRegion[]) => {
+            .then((adapterRegions: Region[]) => {
               const adapterRegionsWithAssembly = adapterRegions.map(
                 adapterRegion => ({
                   ...adapterRegion,
@@ -333,7 +333,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       addViewFromAnotherView(
         viewType: string,
         otherView: any,
-        initialState: { displayedRegions?: IRegion[] } = {},
+        initialState: { displayedRegions?: Region[] } = {},
       ) {
         const state = { ...initialState }
         state.displayedRegions = getSnapshot(otherView.displayedRegions)

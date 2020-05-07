@@ -2,7 +2,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { INoAssemblyRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import format from 'string-template'
@@ -86,10 +86,10 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
 
   /**
    * Fetch features for a certain region
-   * @param {IRegion} param
+   * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures(query: INoAssemblyRegion, opts: BaseOptions = {}) {
+  public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const filledTemplate = encodeURIComponent(
         format(this.queryTemplate, query),

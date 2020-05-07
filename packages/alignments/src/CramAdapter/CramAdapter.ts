@@ -3,7 +3,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -195,11 +195,11 @@ export default (pluginManager: PluginManager) => {
      * Fetch features for a certain region. Use getFeaturesInRegion() if you also
      * want to verify that the store has features for the given reference sequence
      * before fetching.
-     * @param {IRegion} param
+     * @param {Region} param
      * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
      * @returns {Observable[Feature]} Observable of Feature objects in the region
      */
-    getFeatures({ refName, start, end }: IRegion, opts: BaseOptions = {}) {
+    getFeatures({ refName, start, end }: Region, opts: BaseOptions = {}) {
       return ObservableCreate<Feature>(async observer => {
         await this.setup(opts)
         if (this.sequenceAdapter && !this.seqIdToRefName) {

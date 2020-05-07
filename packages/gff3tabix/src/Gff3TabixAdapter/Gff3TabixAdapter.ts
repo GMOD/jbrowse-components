@@ -4,10 +4,7 @@ import {
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
-import {
-  IFileLocation,
-  INoAssemblyRegion,
-} from '@gmod/jbrowse-core/util/types/mst'
+import { FileLocation, NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -40,10 +37,10 @@ interface LineFeature {
 }
 
 interface Config {
-  gffGzLocation: IFileLocation
+  gffGzLocation: FileLocation
   index: {
     index: string
-    location: IFileLocation
+    location: FileLocation
   }
   dontRedispatch: string[]
 }
@@ -75,10 +72,10 @@ export default class extends BaseFeatureDataAdapter {
 
   /**
    * Fetch features for a certain region
-   * @param {IRegion} param
+   * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures(query: INoAssemblyRegion, opts: BaseOptions = {}) {
+  public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const metadata = await this.gff.getMetadata()
       this.getFeaturesHelper(query, opts, metadata, observer, true)
@@ -86,7 +83,7 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   private async getFeaturesHelper(
-    query: INoAssemblyRegion,
+    query: NoAssemblyRegion,
     opts: BaseOptions = {},
     metadata: { columnNumbers: { start: number; end: number } },
     observer: Observer<Feature>,
