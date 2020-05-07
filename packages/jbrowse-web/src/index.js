@@ -16,7 +16,7 @@ if (!window.TextDecoder) window.TextDecoder = TextDecoder
 // this is the main process, so start and register our service worker and web workers
 serviceWorker.register()
 
-async function factoryReset() {
+function factoryReset() {
   localStorage.removeItem('jbrowse-web-data')
   localStorage.removeItem('jbrowse-web-session')
   window.location.reload()
