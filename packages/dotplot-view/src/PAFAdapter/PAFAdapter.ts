@@ -6,7 +6,7 @@ import {
   IFileLocation,
   INoAssemblyRegion,
   IRegion,
-} from '@gmod/jbrowse-core/mst-types'
+} from '@gmod/jbrowse-core/util/types/mst'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { GenericFilehandle } from 'generic-filehandle'
 import { openLocation } from '@gmod/jbrowse-core/util/io'

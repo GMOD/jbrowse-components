@@ -7,7 +7,7 @@ import {
   ILocalPathLocation,
   IUriLocation,
   IBlobLocation,
-} from '../../mst-types'
+} from '../types/mst'
 
 export const openUrl = rangeFetcherOpenUrl
 

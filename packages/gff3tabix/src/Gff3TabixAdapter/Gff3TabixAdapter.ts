@@ -4,7 +4,10 @@ import {
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
-import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import {
+  IFileLocation,
+  INoAssemblyRegion,
+} from '@gmod/jbrowse-core/util/types/mst'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'

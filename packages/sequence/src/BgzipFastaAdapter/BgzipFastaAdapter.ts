@@ -1,5 +1,5 @@
 import { BgzipIndexedFasta } from '@gmod/indexedfasta'
-import { IFileLocation } from '@gmod/jbrowse-core/mst-types'
+import { IFileLocation } from '@gmod/jbrowse-core/util/types/mst'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'

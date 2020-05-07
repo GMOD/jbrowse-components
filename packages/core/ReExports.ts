@@ -61,7 +61,7 @@ import BaseViewModel from './BaseViewModel'
 
 import * as MUIColors from './ReExports/material-ui-colors'
 
-import * as mstTypes from './mst-types'
+import * as mstTypes from './util/types/mst'
 
 const libs = {
   mobx,
@@ -117,7 +117,7 @@ const libs = {
   '@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType': CircularChordRendererType,
   '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType': BoxRendererType,
   '@gmod/jbrowse-core/configuration': Configuration,
-  '@gmod/jbrowse-core/mst-types': mstTypes,
+  '@gmod/jbrowse-core/util/types/mst': mstTypes,
   '@gmod/jbrowse-core/ui': coreUi,
   '@gmod/jbrowse-core/util': coreUtil,
   '@gmod/jbrowse-core/util/tracks': trackUtils,

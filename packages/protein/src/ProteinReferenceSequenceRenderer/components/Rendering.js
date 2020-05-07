@@ -1,5 +1,5 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
 import { objectFromEntries } from '@gmod/jbrowse-core/util'
 import { contrastingTextColor } from '@gmod/jbrowse-core/util/color'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'

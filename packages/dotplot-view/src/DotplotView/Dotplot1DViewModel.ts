@@ -1,5 +1,5 @@
 import { clamp } from '@gmod/jbrowse-core/util'
-import { Region, IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region, IRegion } from '@gmod/jbrowse-core/util/types/mst'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { types, Instance } from 'mobx-state-tree'
 import calculateDynamicBlocks from './calculateDynamicBlocks'

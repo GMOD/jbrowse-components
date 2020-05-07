@@ -7,7 +7,7 @@ import { checkAbortSignal, observeAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
-import { IRegion as Region } from '../mst-types'
+import { IRegion as Region } from '../util/types/mst'
 
 export interface BaseOptions {
   signal?: AbortSignal

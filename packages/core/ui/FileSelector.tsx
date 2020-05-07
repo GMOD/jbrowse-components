@@ -13,7 +13,7 @@ import {
   IUriLocation,
   ILocalPathLocation,
   IBlobLocation,
-} from '../mst-types'
+} from '../util/types/mst'
 
 const isElectron = !!window.electron
 

@@ -1,4 +1,4 @@
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
 import { getSession } from '@gmod/jbrowse-core/util'
 
 // material ui things

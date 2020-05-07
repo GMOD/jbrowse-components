@@ -4,7 +4,7 @@ import SimpleFeature, {
   SimpleFeatureSerialized,
 } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { INoAssemblyRegion } from '@gmod/jbrowse-core/util/types/mst'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'

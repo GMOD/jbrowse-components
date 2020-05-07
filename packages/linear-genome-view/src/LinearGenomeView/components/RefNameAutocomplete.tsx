@@ -1,7 +1,7 @@
 /**
  * Based on https://material-ui.com/components/autocomplete/#Virtualize.tsx
  */
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion } from '@gmod/jbrowse-core/util/types/mst'
 import { getSession, isAbortException } from '@gmod/jbrowse-core/util'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import ListSubheader from '@material-ui/core/ListSubheader'
