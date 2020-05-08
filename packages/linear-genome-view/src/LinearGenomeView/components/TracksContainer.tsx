@@ -97,6 +97,11 @@ function TracksContainer({
 
   function mouseDown(event: React.MouseEvent) {
     if ((event.target as HTMLElement).draggable) return
+    const target = event.target as HTMLElement
+    if (target.draggable || target.dataset.resizer) {
+      // either a track label draggable element or a resize handle
+      return
+    }
     if (event.button === 0) {
       event.preventDefault()
       prevX.current = event.clientX
