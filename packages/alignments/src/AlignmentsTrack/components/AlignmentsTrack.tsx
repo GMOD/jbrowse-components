@@ -33,7 +33,7 @@ function AlignmentsTrackComponent(props: AlignmentsTrackProps) {
   }, [SNPCoverageTrack, model, showPileup])
 
   return (
-    <div style={{ position: 'relative', height, width: '100%' }}>
+    <div style={{ position: 'relative' }}>
       <AlignmentsBlockBasedTrack
         {...props}
         {...PileupTrack}
