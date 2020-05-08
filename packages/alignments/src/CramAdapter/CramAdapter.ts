@@ -81,7 +81,7 @@ export default (pluginManager: PluginManager) => {
       }
     }
 
-    async seqFetch(seqId: number, start: number, end: number) {
+    private async seqFetch(seqId: number, start: number, end: number) {
       start -= 1 // convert from 1-based closed to interbase
 
       const refSeqStore = this.sequenceAdapter
@@ -126,7 +126,7 @@ export default (pluginManager: PluginManager) => {
       return sequence
     }
 
-    async setup(opts?: BaseOptions) {
+    private async setup(opts?: BaseOptions) {
       if (Object.keys(this.samHeader).length === 0) {
         const samHeader = await this.cram.cram.getSamHeader()
 
@@ -192,14 +192,6 @@ export default (pluginManager: PluginManager) => {
       return this.seqIdToOriginalRefName[refId]
     }
 
-    /**
-     * Fetch features for a certain region. Use getFeaturesInRegion() if you also
-     * want to verify that the store has features for the given reference sequence
-     * before fetching.
-     * @param {Region} param
-     * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
-     * @returns {Observable[Feature]} Observable of Feature objects in the region
-     */
     getFeatures({ refName, start, end }: Region, opts: BaseOptions = {}) {
       return ObservableCreate<Feature>(async observer => {
         await this.setup(opts)
@@ -228,14 +220,9 @@ export default (pluginManager: PluginManager) => {
           })
         }
         observer.complete()
-      })
+      }, opts.signal)
     }
 
-    /**
-     * called to provide a hint that data tied to a certain region
-     * will not be needed for the forseeable future and can be purged
-     * from caches, etc
-     */
     freeResources(/* { region } */): void {}
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

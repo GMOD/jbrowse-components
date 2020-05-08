@@ -129,11 +129,6 @@ export default class extends BaseFeatureDataAdapter {
     })
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {Region} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
   public getFeatures(region: NoAssemblyRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
     const { signal, bpPerPx } = opts
@@ -151,7 +146,7 @@ export default class extends BaseFeatureDataAdapter {
           })
         }),
       ).subscribe(observer)
-    })
+    }, opts.signal)
   }
 
   public freeResources(): void {}

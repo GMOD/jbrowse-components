@@ -54,12 +54,6 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     return ((await this.bigbed.getHeader()).refsByNumber[refId] || {}).name
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {Region} param
-   * @param abortSignal an abortSignal
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
   public getFeatures(region: Region, opts: BaseOptions = {}) {
     const { refName, start, end } = region
     const { signal } = opts
@@ -123,7 +117,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       } catch (e) {
         observer.error(e)
       }
-    })
+    }, opts.signal)
   }
 
   public freeResources(): void {}

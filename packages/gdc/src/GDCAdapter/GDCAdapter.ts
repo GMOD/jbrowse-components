@@ -33,7 +33,7 @@ export default class extends BaseFeatureDataAdapter {
     this.featureType = featureType
   }
 
-  public async getRefNames(opts?: BaseOptions) {
+  public async getRefNames() {
     return [
       'chr1',
       'chr10',
@@ -62,12 +62,7 @@ export default class extends BaseFeatureDataAdapter {
     ]
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {Region} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
-  public getFeatures(region: Region) {
+  public getFeatures(region: Region, opts: BaseOptions) {
     const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {
       try {
@@ -96,6 +91,7 @@ export default class extends BaseFeatureDataAdapter {
         const response = await fetch('https://api.gdc.cancer.gov/v0/graphql', {
           method: 'POST',
           body: JSON.stringify(query),
+          signal: opts.signal,
         })
         const result = await response.json()
         const queryResults = result.data.viewer.explore.features.hits.edges
@@ -113,7 +109,7 @@ export default class extends BaseFeatureDataAdapter {
         observer.error(e)
       }
       observer.complete()
-    })
+    }, opts.signal)
   }
 
   public freeResources(): void {}
