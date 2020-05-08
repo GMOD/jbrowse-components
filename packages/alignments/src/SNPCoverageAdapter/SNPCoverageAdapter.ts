@@ -122,11 +122,6 @@ export default (pluginManager: PluginManager) => {
       })
     }
 
-    /**
-     * @param {NoAssemblyRegion} region
-     * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
-     * @returns {Promise<FeatureStats>} see statsUtil.ts
-     */
     public getRegionStats(region: NoAssemblyRegion, opts: BaseOptions = {}) {
       const { refName, start, end } = region
       const { bpPerPx, signal } = opts
@@ -137,12 +132,6 @@ export default (pluginManager: PluginManager) => {
       )
     }
 
-    /**
-     * Calculate region stats such as scoreMax and scoreMin to be used in domain
-     * @param {NoAssemblyRegion} regions
-     * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
-     * @returns {Promise<FeatureStats>} see statsUtil.ts
-     */
     public async getMultiRegionStats(
       regions: NoAssemblyRegion[] = [],
       opts: BaseOptions = {},
@@ -182,14 +171,6 @@ export default (pluginManager: PluginManager) => {
       })
     }
 
-    /**
-     * Fetch features for a certain region. Use coverage bins information to generate
-     * SimpleFeature with useful data to be used for stats and canvas drawing
-     * @param {any} param
-     * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
-     * @returns {Observable[Feature]} Observable of Feature objects in the region
-     */
-
     getFeatures(region: Region, opts: BaseOptions = {}) {
       return ObservableCreate<Feature>(async observer => {
         const features = await this.subadapter
@@ -218,27 +199,22 @@ export default (pluginManager: PluginManager) => {
         })
 
         observer.complete()
-      })
+      }, opts.signal)
     }
 
     async getRefNames() {
       return this.subadapter.getRefNames()
     }
 
-    /**
-     * called to provide a hint that data tied to a certain region
-     * will not be needed for the forseeable future and can be purged
-     * from caches, etc
-     */
     freeResources(/* { region } */): void {}
 
     /**
      * Generates coverage bins from features which details
      * the reference, mismatches, strands, and coverage info
-     * @param {Observable<Feature>} features features of region to be passed in
-     * @param {StatsRegion} region
-     * @param {Number} bpPerPx base pairs per pixel
-     * @returns {Array<NestedFrequencyTable>}
+     * @param features Features of region to be passed in
+     * @param region Region
+     * @param bpPerPx base pairs per pixel
+     * @returns Array of nested frequency tables
      */
     generateCoverageBins(
       features: Feature[],

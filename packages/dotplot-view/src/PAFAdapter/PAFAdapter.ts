@@ -115,14 +115,6 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return []
   }
 
-  /**
-   * Fetch features for a certain region. Use getFeaturesInRegion() if you also
-   * want to verify that the store has features for the given reference sequence
-   * before fetching.
-   * @param {Region} param
-   * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const pafRecords = await this.cache.get('initialize', opts, opts.signal)
@@ -166,10 +158,5 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the forseeable future and can be purged
-   * from caches, etc
-   */
   freeResources(/* { region } */): void {}
 }

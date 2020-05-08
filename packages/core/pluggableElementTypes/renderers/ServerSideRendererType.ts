@@ -218,7 +218,7 @@ export default class ServerSideRenderer extends RendererType {
 
     const featureObservable =
       requestRegions.length === 1
-        ? dataAdapter.getFeaturesInRegion(
+        ? dataAdapter.getFeatures(
             this.getExpandedGlyphRegion(requestRegions[0], renderArgs),
             {
               signal,

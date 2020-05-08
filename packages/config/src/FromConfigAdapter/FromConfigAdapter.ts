@@ -14,7 +14,6 @@ import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
  * key, like:
  *   "features": [ { "refName": "ctgA", "start":1, "end":20 }, ... ]
  */
-
 export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   private features: Map<string, Feature[]>
 
@@ -29,7 +28,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
     this.features = this.makeFeatures(features || [])
   }
 
-  makeFeatures(fdata: SimpleFeatureSerialized[]) {
+  private makeFeatures(fdata: SimpleFeatureSerialized[]) {
     const features = new Map<string, Feature[]>()
     for (let i = 0; i < fdata.length; i += 1) {
       if (fdata[i]) {
@@ -53,7 +52,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
     return features
   }
 
-  makeFeature(data: SimpleFeatureSerialized): SimpleFeature {
+  private makeFeature(data: SimpleFeatureSerialized): SimpleFeature {
     return new SimpleFeature(data)
   }
 
@@ -127,12 +126,6 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
     }))
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {Region} param
-   * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
   getFeatures(region: NoAssemblyRegion) {
     const { refName, start, end } = region
 
@@ -148,10 +141,5 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the forseeable future and can be purged
-   * from caches, etc
-   */
   freeResources(/* { region } */): void {}
 }

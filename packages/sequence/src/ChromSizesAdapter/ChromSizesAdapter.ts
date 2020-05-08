@@ -25,7 +25,7 @@ export default class extends BaseFeatureDataAdapter {
     this.refSeqs = this.init(file)
   }
 
-  async init(file: GenericFilehandle) {
+  private async init(file: GenericFilehandle) {
     const data = (await file.readFile('utf8')) as string
     const refSeqs: { [key: string]: number } = {}
     if (!data.length) {
@@ -53,11 +53,6 @@ export default class extends BaseFeatureDataAdapter {
     }))
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {Region} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
   public getFeatures({ refName, start, end }: NoAssemblyRegion) {
     return ObservableCreate<Feature>(observer => {
       // provides no sequence
@@ -65,10 +60,5 @@ export default class extends BaseFeatureDataAdapter {
     })
   }
 
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the forseeable future and can be purged
-   * from caches, etc
-   */
   public freeResources(/* { region } */): void {}
 }

@@ -70,16 +70,11 @@ export default class extends BaseFeatureDataAdapter {
     return this.gff.getReferenceSequenceNames(opts)
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {Region} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const metadata = await this.gff.getMetadata()
       this.getFeaturesHelper(query, opts, metadata, observer, true)
-    })
+    }, opts.signal)
   }
 
   private async getFeaturesHelper(
@@ -258,10 +253,5 @@ export default class extends BaseFeatureDataAdapter {
     return f
   }
 
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the forseeable future and can be purged
-   * from caches, etc
-   */
   public freeResources(/* { region } */) {}
 }

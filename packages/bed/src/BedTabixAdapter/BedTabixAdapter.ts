@@ -48,11 +48,6 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     return this.bed.getReferenceSequenceNames(opts)
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {Region} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       await this.bed.getLines(query.refName, query.start, query.end, {
@@ -100,7 +95,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
         signal: opts.signal,
       })
       observer.complete()
-    })
+    }, opts.signal)
   }
 
   public freeResources(): void {}
