@@ -45,8 +45,8 @@ export default class extends BaseFeatureDataAdapter {
 
   /**
    * Fetch features for a certain region
-   * @param {Region} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
+   * @param param -
+   * @returns Observable of Feature objects in the region
    */
   public getFeatures({ refName, start, end }: NoAssemblyRegion) {
     return ObservableCreate<Feature>(async observer => {

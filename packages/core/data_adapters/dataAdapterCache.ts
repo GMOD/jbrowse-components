@@ -23,11 +23,11 @@ const adapterCache: Record<string, AdapterCacheEntry> = {}
  * instantiate a data adapter, or return an already-instantiated one if we have one with the same
  * configuration
  *
- * @param {PluginManager} pluginManager
- * @param {string} sessionId session ID of the associated worker session.
+ * @param pluginManager -
+ * @param sessionId - session ID of the associated worker session.
  *   used for reference counting
- * @param {string} adapterType type name of the adapter to instantiate
- * @param {object} adapterConfigSnapshot plain-JS configuration snapshot for the adapter
+ * @param adapterType - type name of the adapter to instantiate
+ * @param adapterConfigSnapshot - plain-JS configuration snapshot for the adapter
  */
 export function getAdapter(
   pluginManager: PluginManager,

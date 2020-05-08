@@ -28,7 +28,7 @@ export default (configSchema: AnyConfigurationSchemaType, trackType: string) =>
         },
 
         /**
-         * @param {Region} region
+         * @param region -
          * @returns falsy if the region is fine to try rendering. Otherwise,
          *  return a string of text saying why the region can't be rendered.
          */

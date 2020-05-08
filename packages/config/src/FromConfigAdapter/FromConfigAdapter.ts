@@ -12,7 +12,7 @@ import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
 /**
  * Adapter that just returns the features defined in its `features` configuration
  * key, like:
- *   "features": [ { "refName": "ctgA", "start":1, "end":20 }, ... ]
+ *   `"features": [ { "refName": "ctgA", "start":1, "end":20 }, ... ]`
  */
 export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   private features: Map<string, Feature[]>

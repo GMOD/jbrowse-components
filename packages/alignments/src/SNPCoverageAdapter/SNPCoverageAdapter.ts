@@ -214,9 +214,9 @@ export default (pluginManager: PluginManager) => {
     /**
      * Generates coverage bins from features which details
      * the reference, mismatches, strands, and coverage info
-     * @param features Features of region to be passed in
-     * @param region Region
-     * @param bpPerPx base pairs per pixel
+     * @param features - Features of region to be passed in
+     * @param region - Region
+     * @param bpPerPx - base pairs per pixel
      * @returns Array of nested frequency tables
      */
     generateCoverageBins(

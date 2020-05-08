@@ -20,7 +20,8 @@
     "project": "./tsconfig.json"
   },
   "plugins": [
-    "@typescript-eslint"
+    "@typescript-eslint",
+    "eslint-plugin-tsdoc"
   ],
   "rules": {
     "@typescript-eslint/await-thenable": "off",
@@ -106,6 +107,15 @@
     }
   },
   "overrides": [
+    {
+      "files": [
+        "**/*.ts",
+        "**/*.tsx"
+      ],
+      "rules": {
+        "tsdoc/syntax": "warn"
+      }
+    },
     {
       "files": [
         "**/*.test.[t,j]s",

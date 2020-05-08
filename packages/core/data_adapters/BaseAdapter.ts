@@ -48,7 +48,7 @@ export abstract class BaseFeatureDataAdapter {
    *
    * NOTE: If an adapter is unable to determine the reference sequence names,
    * the array will be empty
-   * @param opts Feature adapter options
+   * @param opts - Feature adapter options
    */
   public abstract async getRefNames(opts?: BaseOptions): Promise<string[]>
   // public abstract async getRefNames(opts?: BaseOptions): Promise<string[]>
@@ -59,8 +59,8 @@ export abstract class BaseFeatureDataAdapter {
 
   /**
    * Get features from the data source that overlap a region
-   * @param region Region
-   * @param options Feature adapter options
+   * @param region - Region
+   * @param options - Feature adapter options
    * @returns Observable of Feature objects in the region
    */
   public abstract getFeatures(
@@ -83,7 +83,7 @@ export abstract class BaseFeatureDataAdapter {
   /**
    * Called to provide a hint that data tied to a certain region will not be
    * needed for the forseeable future and can be purged from caches, etc
-   * @param region Region
+   * @param region - Region
    */
   public abstract freeResources(region: Region): void
 
@@ -94,8 +94,8 @@ export abstract class BaseFeatureDataAdapter {
    * Currently this just calls getFeatureInRegion for each region. Adapters that
    * are frequently called on multiple regions simultaneously may want to
    * implement a more efficient custom version of this method.
-   * @param regions Regions
-   * @param opts Feature adapter options
+   * @param regions - Regions
+   * @param opts - Feature adapter options
    * @returns Observable of Feature objects in the regions
    */
   public getFeaturesInMultipleRegions(
@@ -125,7 +125,7 @@ export abstract class BaseFeatureDataAdapter {
 
   /**
    * Check if the store has data for the given reference name.
-   * @param refName Name of the reference sequence
+   * @param refName - Name of the reference sequence
    * @returns Whether data source has data for the given reference name
    */
   public async hasDataForRefName(refName: string, opts: BaseOptions = {}) {

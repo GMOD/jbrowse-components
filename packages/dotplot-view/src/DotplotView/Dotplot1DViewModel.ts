@@ -96,8 +96,8 @@ export default function stateModelFactory(pluginManager: any) {
 
       /**
        *
-       * @param {number} px px in the view area, return value is the displayed regions
-       * @returns {BpOffset} of the displayed region that it lands in
+       * @param px - px in the view area, return value is the displayed regions
+       * @returns BpOffset of the displayed region that it lands in
        */
       pxToBp(px: number) {
         const bp = (self.offsetPx + px) * self.bpPerPx

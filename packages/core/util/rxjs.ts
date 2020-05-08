@@ -5,7 +5,7 @@ import { observeAbortSignal } from '.'
 /**
  * Wrapper for rxjs Observable.create with improved error handling and
  * aborting support
- * @param {function} func observer function, could be async
+ * @param func - observer function, could be async
  */
 export function ObservableCreate<T>(
   func: (arg: Observer<T>) => void | Promise<void>,

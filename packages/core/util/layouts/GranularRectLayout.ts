@@ -287,12 +287,6 @@ class LayoutRow<T> {
 }
 
 export default class GranularRectLayout<T> implements BaseLayout<T> {
-  /**
-   * @param args.pitchX  layout grid pitch in the X direction
-   * @param args.pitchY  layout grid pitch in the Y direction
-   * @param args.maxHeight  maximum layout height, default Infinity (no max)
-   */
-
   private pitchX: number
 
   private pitchY: number
@@ -318,8 +312,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     hardRowLimit = 3000,
     displayMode = 'normal',
   }: {
+    /** layout grid pitch in the X direction */
     pitchX?: number
+    /** layout grid pitch in the Y direction */
     pitchY?: number
+    /** maximum layout height, default Infinity (no max) */
     maxHeight?: number
     displayMode?: string
     hardRowLimit?: number
@@ -343,7 +340,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   /**
-   * @returns {Number} top position for the rect, or Null if laying
+   * @returns top position for the rect, or Null if laying
    *  out the rect would exceed maxHeight
    */
   addRect(

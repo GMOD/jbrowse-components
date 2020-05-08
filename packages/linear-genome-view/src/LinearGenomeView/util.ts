@@ -1,6 +1,6 @@
 /**
  * Given a scale ( bp/px ) and minimum distances (px) between major and minor
- * gridlines, return an object like { majorPitch: bp, minorPitch: bp } giving
+ * gridlines, return an object like `{ majorPitch: bp, minorPitch: bp }` giving
  * the gridline pitches to use.
  */
 export function chooseGridPitch(

@@ -22,8 +22,8 @@ export function getTrackAssemblyNames(
 /**
  * given an MST node, get the renderprops of the first parent container that has
  * renderProps
- * @param {TreeNode} node
- * @returns {object} renderprops, or empty object if none found
+ * @param node -
+ * @returns renderprops, or empty object if none found
  */
 export function getParentRenderProps(node: IStateTreeNode) {
   for (

@@ -288,7 +288,7 @@ export default class PluginManager {
    * Get the re-exported version of the given package name.
    * Throws an error if the package is not re-exported by the plugin manager.
    *
-   * @returns {any} the library's default export
+   * @returns the library's default export
    */
   jbrequire = (
     lib: keyof typeof ReExports | AnyFunction | { default: AnyFunction },

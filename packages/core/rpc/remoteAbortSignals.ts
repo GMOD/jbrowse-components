@@ -6,8 +6,8 @@ const abortSignalIds: WeakMap<AbortSignal, number> = new WeakMap() // map of abo
 
 /**
  * assign an ID to the given abort signal and return a plain object representation
- * @param {AbortSignal} signal the signal to serialize
- * @param {function} callfunc function used to call
+ * @param signal - the signal to serialize
+ * @param callfunc - function used to call
  *  a remote method, will be called like callfunc('signalAbort', signalId)
  */
 export function serializeAbortSignal(
@@ -30,8 +30,8 @@ export function serializeAbortSignal(
 
 /**
  * test whether a given object
- * @param {object} thing the thing to test
- * @returns {boolean} true if the thing is a remote abort signal
+ * @param thing - the thing to test
+ * @returns true if the thing is a remote abort signal
  */
 export function isRemoteAbortSignal(
   thing: unknown,
@@ -52,8 +52,8 @@ const surrogateAbortControllers: Map<number, AbortController> = new Map() // num
 /**
  * deserialize the result of serializeAbortSignal into an AbortSignal
  *
- * @param {RemoteAbortSignal} signal
- * @returns {AbortSignal} an abort signal that corresponds to the given ID
+ * @param signal -
+ * @returns an abort signal that corresponds to the given ID
  */
 export function deserializeAbortSignal({
   abortSignalId,
@@ -71,7 +71,7 @@ export function deserializeAbortSignal({
 /**
  * fire an abort signal from a remote abort signal ID
  *
- * @param {number} abortSignalId
+ * @param abortSignalId -
  */
 export function remoteAbort(abortSignalId: number) {
   const surrogateAbortController = surrogateAbortControllers.get(abortSignalId)
