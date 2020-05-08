@@ -13,13 +13,7 @@ interface AlignmentsTrackProps {
 
 function AlignmentsTrackComponent(props: AlignmentsTrackProps) {
   const { model } = props
-  const {
-    PileupTrack,
-    SNPCoverageTrack,
-    height,
-    showPileup,
-    showCoverage,
-  } = model
+  const { PileupTrack, SNPCoverageTrack, showPileup, showCoverage } = model
 
   let showScalebar = false
   if (SNPCoverageTrack) {
