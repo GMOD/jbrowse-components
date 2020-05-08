@@ -170,6 +170,7 @@ export default class ServerSideRenderer extends RendererType {
   getExpandedGlyphRegion(region: IRegion, renderArgs: RenderArgsDeserialized) {
     if (!region) return region
     const { bpPerPx, config } = renderArgs
+    // TODOCLIP maxSoftClip goes here
     const maxFeatureGlyphExpansion =
       config === undefined
         ? 0

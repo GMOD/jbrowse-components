@@ -145,6 +145,7 @@ export default class PileupRenderer extends BoxRendererType {
       ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
       const mismatches: Mismatch[] =
         bpPerPx < 10 ? feature.get('mismatches') : feature.get('skips_and_dels')
+
       if (mismatches) {
         const colorForBase: { [key: string]: string } = {
           A: '#00bf00',
@@ -230,6 +231,9 @@ export default class PileupRenderer extends BoxRendererType {
             )
           }
         }
+        // TODOCLIP: somewhere here the stripey stuff gets colored in on the solid red/blue as a second pass
+        // if condition is if maxFeatureglyphsize/maxsoftclipping some sort of indicator is greater than 0
+        // then find soft clipped bases and draw them
       }
     })
 
