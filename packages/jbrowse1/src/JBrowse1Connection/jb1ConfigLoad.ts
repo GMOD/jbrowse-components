@@ -104,7 +104,6 @@ export function parseJb1(config: string, url = ''): Config {
 
 /**
  * Merges config object b into a. Properties in b override those in a.
- * @private
  */
 function mergeConfigs(a: Config | null, b: Config | null): Config | null {
   if (b === null) return null
@@ -175,7 +174,7 @@ function mergeTrackConfigs(a: Track[], b: Track[]): Track[] {
 /**
  * Recursively fetch, parse, and merge all the includes in the given config
  * object.  Calls the callback with the resulting configuration when finished.
- * @param inputConfig Config to load includes into
+ * @param inputConfig - Config to load includes into
  */
 async function loadIncludes(inputConfig: Config): Promise<Config> {
   inputConfig = clone(inputConfig)
@@ -264,7 +263,7 @@ function fillTemplates<T extends any>(subconfig: T, config: Config): T {
 
 /**
  * list of config properties that should not be recursively merged
- * @param propName name of config property
+ * @param propName - name of config property
  */
 function noRecursiveMerge(propName: string): boolean {
   return propName === 'datasets'
@@ -304,7 +303,6 @@ const configDefaults = {
 /**
  * Examine the loaded and merged configuration for errors.  Throws
  * exceptions if it finds anything amiss.
- * @private
  * @returns nothing meaningful
  */
 function validateConfig(config: Config): void {

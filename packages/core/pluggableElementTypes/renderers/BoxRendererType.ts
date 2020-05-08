@@ -65,8 +65,8 @@ export class LayoutSession implements LayoutSessionProps {
   }
 
   /**
-   * @param {*} layout
-   * @returns {boolean} true if the given layout is a valid one to use for this session
+   * @param layout -
+   * @returns true if the given layout is a valid one to use for this session
    */
   cachedLayoutIsValid(cachedLayout: CachedLayout) {
     return (

@@ -82,7 +82,7 @@ export class BaseBlock {
   /**
    * rename the reference sequence of this block and return a new one
    *
-   * @param {string} refName
+   * @param refName -
    * @returns either a new block with a renamed reference sequence,
    * or the same block, if the ref name is not actually different
    */

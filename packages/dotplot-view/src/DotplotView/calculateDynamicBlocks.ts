@@ -22,7 +22,7 @@ const interRegionPaddingWidth = 0
  *
  * NOTE: start, end, and offsetPx may all be fractional!
  *
- * @returns {BlockSet} of ` { refName, startBp, end, offset, reversed? }`
+ * @returns BlockSet of `{ refName, startBp, end, offset, reversed? }`
  */
 export default function calculateDynamicBlocks(model: any) {
   const { offsetPx, width, displayedRegions, bpPerPx } = model

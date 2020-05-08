@@ -70,6 +70,7 @@
     "eslint-plugin-monorepo": "^0.2.1",
     "eslint-plugin-prettier": "^3.0.1",
     "eslint-plugin-react-hooks": "^4.0.0",
+    "eslint-plugin-tsdoc": "^0.2.4",
     "fastestsmallesttextencoderdecoder": "^1.0.14",
     "find-yarn-workspace-root": "^1.2.1",
     "identity-obj-proxy": "^3.0.0",

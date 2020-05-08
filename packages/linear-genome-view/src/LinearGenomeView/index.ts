@@ -187,8 +187,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        *
-       * @param {number} px px in the view area, return value is the displayed regions
-       * @returns {BpOffset} of the displayed region that it lands in
+       * @param px - px in the view area, return value is the displayed regions
+       * @returns BpOffset of the displayed region that it lands in
        */
       pxToBp(px: number) {
         const bp = (self.offsetPx + px) * self.bpPerPx
@@ -418,7 +418,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * only navigates to a locString if it is entirely within a
        * displayedRegion.
        *
-       * @param {refName,start?,end?,assemblyName?} location - a proposed
+       * @param location - a proposed
        * location to navigate to
        * throws an error if navigation was unsuccessful
        */
@@ -511,8 +511,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * offset is the base-pair-offset in the displayed region, index is the index of the
        * displayed region in the linear genome view
        *
-       * @param {object} start object as {start, end, offset, index}
-       * @param {object} end object as {start, end, offset, index}
+       * @param start - object as `{start, end, offset, index}`
+       * @param end - object as `{start, end, offset, index}`
        */
       moveTo(start: BpOffset, end: BpOffset) {
         // find locations in the modellist
@@ -571,8 +571,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * scrolls the view to center on the given bp. if that is not in any
        * of the displayed regions, does nothing
-       * @param {number} bp
-       * @param {string} refName
+       * @param bp -
+       * @param refName -
        */
       centerAt(/* bp, refName */) {
         /* TODO */

@@ -86,8 +86,8 @@ export default class extends BaseFeatureDataAdapter {
    *
    * Also includes a bit of extra logging to warn when fetching a large portion
    * of a VCF
-   * @param regions Regions
-   * @param opts Feature adapter options
+   * @param regions - Regions
+   * @param opts - Feature adapter options
    * @returns Observable of Feature objects in the regions
    */
   public getFeaturesInMultipleRegions(
@@ -114,7 +114,7 @@ export default class extends BaseFeatureDataAdapter {
   /**
    * get the approximate number of bytes queried from the file for the given
    * query regions
-   * @param regions list of query regions
+   * @param regions - list of query regions
    */
   private async bytesForRegions(regions: Region[]) {
     const blockResults = await Promise.all(

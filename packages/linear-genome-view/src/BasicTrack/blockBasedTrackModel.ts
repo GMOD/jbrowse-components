@@ -51,7 +51,7 @@ const blockBasedTrack = types
       },
 
       /**
-       * a CompositeMap of featureId -> feature obj that
+       * a CompositeMap of `featureId -> feature obj` that
        * just looks in all the block data for that feature
        */
       get features() {
@@ -66,7 +66,7 @@ const blockBasedTrack = types
 
       /**
        * returns per-base block layouts as the data structure
-       * Map<blockKey, Map<featureId, LayoutRecord>>
+       * `Map<blockKey, Map<featureId, LayoutRecord>>`
        *
        * this per-block is needed to avoid cross-contamination of
        * layouts across blocks especially when building the rtree
@@ -95,7 +95,7 @@ const blockBasedTrack = types
       },
 
       /**
-       * a CompositeMap of featureId -> feature obj that
+       * a CompositeMap of `featureId -> feature obj` that
        * just looks in all the block data for that feature
        *
        * when you are not using the rtree you can use this

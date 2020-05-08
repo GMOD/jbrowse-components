@@ -140,9 +140,9 @@ function parse(text: string, url: string): Config {
 
 /**
  * Applies defaults and any other necessary tweaks to the loaded configuration.
- * @param {*} conf the object containing the configuration, which it modifies
+ * @param conf - the object containing the configuration, which it modifies
  * in-place
- * @param {Object} url URL of the config file
+ * @param url - URL of the config file
  * @returns the same object it was passed
  */
 export function regularizeConf(conf: Config, url: string): Config {
@@ -258,8 +258,8 @@ export function regularizeConf(conf: Config, url: string): Config {
 
 /**
  * prefix class name with `root` if it contains no slashes
- * @param root Prefix root
- * @param className class name
+ * @param root - Prefix root
+ * @param className - class name
  */
 function regularizeClass(root: string, className: string | undefined): string {
   if (!className) return ''

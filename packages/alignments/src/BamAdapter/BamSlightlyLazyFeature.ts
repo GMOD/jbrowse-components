@@ -373,8 +373,7 @@ export default class implements Feature {
 
   /**
    * parse a SAM MD tag to find mismatching bases of the template versus the reference
-   * @returns {Array[Object]} array of mismatches and their positions
-   * @private
+   * @returns array of mismatches and their positions
    */
   private mdToMismatches(
     mdstring: string,

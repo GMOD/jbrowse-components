@@ -41,7 +41,6 @@ export function deepUpdate(
 
 /**
  * Does a (deep) crc32 of any object.
- * @returns {Number}
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function objectFingerprint(obj: Record<string, any>) {
@@ -50,10 +49,10 @@ export function objectFingerprint(obj: Record<string, any>) {
 
 /**
  * replace variables in a template string with values
- * @param template String with variable names in curly brackets
- * e.g., "http://foo/{bar}?arg={baz.foo}
- * @param fillWith object with attribute-value mappings
- * e.g., { 'bar': 'someurl', 'baz': { 'foo': 42 } }
+ * @param template - String with variable names in curly brackets
+ * e.g., `http://foo/{bar}?arg={baz.foo}`
+ * @param fillWith - object with attribute-value mappings
+ * e.g., `{ 'bar': 'someurl', 'baz': { 'foo': 42 } }`
  * @returns the template string with variables in fillWith replaced
  * e.g., 'htp://foo/someurl?arg=valueforbaz'
  */
@@ -85,7 +84,7 @@ export function fillTemplate(
  * Clones objects (including DOM nodes) and all children.
  * Warning: do not clone cyclic structures
  * (Lifted from dojo https://github.com/dojo/dojo/blob/master/_base/lang.js)
- * @param src The object to clone
+ * @param src - The object to clone
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function clone(src: any): any {
@@ -141,10 +140,10 @@ export function clone(src: any): any {
  * (if any); copyFunc defaults to the Javascript assignment operator if not
  * provided. Notice that by default, mixin executes a so-called "shallow copy"
  * and aggregate types are copied/added by reference.
- * @param dest The object to which to copy/add all properties contained in
+ * @param dest - The object to which to copy/add all properties contained in
  * source.
- * @param source The object from which to draw all properties to copy into dest.
- * @param copyFunc The process used to copy/add a property in source; defaults
+ * @param source - The object from which to draw all properties to copy into dest.
+ * @param copyFunc - The process used to copy/add a property in source; defaults
  * to the Javascript assignment operator.
  * @returns dest, as modified
  */

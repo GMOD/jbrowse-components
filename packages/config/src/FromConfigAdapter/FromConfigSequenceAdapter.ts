@@ -7,9 +7,8 @@ import FromConfigAdapter from './FromConfigAdapter'
 export default class FromSequenceConfigAdapter extends FromConfigAdapter {
   /**
    * Fetch features for a certain region
-   * @param {Region} param
-   * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
+   * @param region - Region
+   * @returns Observable of Feature objects in the region
    */
   getFeatures(region: NoAssemblyRegion) {
     const { start, end } = region

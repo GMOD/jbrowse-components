@@ -76,8 +76,8 @@ export default class ServerSideRenderer extends RendererType {
    * this is the only part of the track model that most
    * renderers read.
    *
-   * @param {object} args the arguments passed to render
-   * @returns {object} the same object
+   * @param args - the arguments passed to render
+   * @returns the same object
    */
   serializeArgsInClient(args: RenderArgs): RenderArgsSerialized {
     const { trackModel } = args.renderProps
@@ -120,7 +120,7 @@ export default class ServerSideRenderer extends RendererType {
   /**
    * modifies the passed arguments object to
    * inflate arguments as necessary. called in the worker process.
-   * @param {object} args the converted arguments to modify
+   * @param args - the converted arguments to modify
    */
   deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
     const deserialized = ({ ...args } as unknown) as RenderArgsDeserialized
@@ -135,8 +135,8 @@ export default class ServerSideRenderer extends RendererType {
 
   /**
    *
-   * @param {object} result object containing the results of calling the `render` method
-   * @param {Map} features Map of feature.id() -> feature
+   * @param result - object containing the results of calling the `render` method
+   * @param features - Map of `feature.id() -> feature`
    */
   serializeResultsInWorker(
     result: { html: string },
@@ -186,8 +186,8 @@ export default class ServerSideRenderer extends RendererType {
   /**
    * use the dataAdapter to fetch the features to be rendered
    *
-   * @param {object} renderArgs
-   * @returns {Map} of features as { id => feature, ... }
+   * @param renderArgs -
+   * @returns Map of features as `{ id => feature, ... }`
    */
   async getFeatures(renderArgs: RenderArgsDeserialized) {
     const {
@@ -249,9 +249,9 @@ export default class ServerSideRenderer extends RendererType {
   }
 
   /**
-   * @param {object} renderArgs
-   * @param {FeatureI} feature
-   * @returns {boolean} true if this feature passes all configured filters
+   * @param renderArgs -
+   * @param feature -
+   * @returns true if this feature passes all configured filters
    */
   featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
     if (!renderArgs.filters) return true
