@@ -25,6 +25,8 @@ import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-v
 import { getNiceDomain } from '../util'
 
 import WiggleTrackComponent from './components/WiggleTrackComponent'
+import { FeatureStats } from '../statsUtil'
+import ConfigSchemaF from './configSchema'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -33,8 +35,7 @@ const rendererTypes = new Map([
   ['line', 'LinePlotRenderer'],
 ])
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const stateModelFactory = (configSchema: any) =>
+const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
   types
     .compose(
       'WiggleTrack',
@@ -136,11 +137,15 @@ const stateModelFactory = (configSchema: any) =>
         const autoscaleType = getConf(self, 'autoscale', [])
         const { adapter } = self.configuration
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
-          const r = await rpcManager.call('statsGathering', 'getGlobalStats', {
-            adapterConfig: getSnapshot(adapter),
-            adapterType: adapter.type,
-            signal,
-          })
+          const r = (await rpcManager.call(
+            'statsGathering',
+            'WiggleGetGlobalStats',
+            {
+              adapterConfig: getSnapshot(adapter),
+              adapterType: adapter.type,
+              signal,
+            },
+          )) as FeatureStats
           return autoscaleType === 'globalsd'
             ? {
                 ...r,
@@ -181,11 +186,11 @@ const stateModelFactory = (configSchema: any) =>
             : r
         }
         if (autoscaleType === 'zscale') {
-          return rpcManager.call('statsGathering', 'getGlobalStats', {
+          return rpcManager.call('statsGathering', 'WiggleGetGlobalStats', {
             adapterConfig: getSnapshot(adapter),
             adapterType: adapter.type,
             signal,
-          })
+          }) as Promise<FeatureStats>
         }
         return {}
       }

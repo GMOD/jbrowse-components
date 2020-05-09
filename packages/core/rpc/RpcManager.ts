@@ -21,7 +21,7 @@ const DriverClasses = {
   ElectronRpcDriver,
 }
 
-class RpcManager {
+export default class RpcManager {
   static configSchema = rpcConfigSchema
 
   driverObjects: Map<string, DriverClass>
@@ -106,51 +106,15 @@ class RpcManager {
   async call(
     stateGroupName: string,
     functionName: string,
-    args: {
-      assemblyName?: string
-      signal?: AbortSignal
-      regions?: IRegion[]
-      region?: IRegion
-      adapterConfig: unknown
-    },
+    args: {},
     opts = {},
   ) {
-    const { assemblyName, signal, regions, region, adapterConfig } = args
-    const newArgs: typeof args & {
-      originalRegion?: IRegion
-      originalRegions?: IRegion[]
-    } = {
-      ...args,
-      regions: [...(args.regions || [])],
-    }
-    if (assemblyName) {
-      const refNameMap = await this.getRefNameMapForAdapter(
-        adapterConfig,
-        assemblyName,
-        { signal },
-      )
-
-      if (region) {
-        newArgs.originalRegion = args.region
-        newArgs.region = this.renameRegionIfNeeded(refNameMap, region)
-      }
-
-      if (regions && newArgs.regions) {
-        for (let i = 0; i < regions.length; i += 1) {
-          newArgs.originalRegions = args.regions
-          newArgs.regions[i] =
-            this.renameRegionIfNeeded(refNameMap, regions[i]) || regions[i]
-        }
-      }
-    }
-    return this.getDriverForCall(stateGroupName, functionName, newArgs).call(
+    return this.getDriverForCall(stateGroupName, functionName, args).call(
       this.pluginManager,
       stateGroupName,
       functionName,
-      newArgs,
+      args,
       opts,
     )
   }
 }
-
-export default RpcManager

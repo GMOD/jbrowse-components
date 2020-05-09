@@ -1,4 +1,7 @@
-import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  RegionsAdapter,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
@@ -9,9 +12,9 @@ import { Instance } from 'mobx-state-tree'
 
 import configSchema from './configSchema'
 
-export default class TwoBitAdapter extends BaseFeatureDataAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private twobit: any
+export default class TwoBitAdapter extends BaseFeatureDataAdapter
+  implements RegionsAdapter {
+  private twobit: typeof TwoBitFile
 
   constructor(config: Instance<typeof configSchema>) {
     super(config)

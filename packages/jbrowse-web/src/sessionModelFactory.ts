@@ -22,6 +22,7 @@ import {
   readConfObject,
   isConfigurationModel,
 } from '@gmod/jbrowse-core/configuration'
+import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -68,7 +69,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get rpcManager() {
-        return getParent(self).jbrowse.rpcManager
+        return getParent(self).jbrowse.rpcManager as RpcManager
       },
       get assemblyData() {
         return getParent(self).jbrowse.assemblyData
@@ -145,7 +146,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           return self.rpcManager
             .call(
               adapterConfigId,
-              'getRegions',
+              'CoreGetRegions',
               {
                 sessionId: assemblyName,
                 adapterType: adapterConfig.type,
@@ -154,8 +155,8 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
               },
               { timeout: 1000000 },
             )
-            .then((adapterRegions: IRegion[]) => {
-              const adapterRegionsWithAssembly = adapterRegions.map(
+            .then(adapterRegions => {
+              const adapterRegionsWithAssembly = (adapterRegions as IRegion[]).map(
                 adapterRegion => ({
                   ...adapterRegion,
                   assemblyName,

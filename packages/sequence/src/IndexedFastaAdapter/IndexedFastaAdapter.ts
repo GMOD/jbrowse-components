@@ -1,5 +1,8 @@
 import { IndexedFasta } from '@gmod/indexedfasta'
-import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  RegionsAdapter,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
@@ -7,7 +10,7 @@ import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
-export default class extends BaseFeatureDataAdapter {
+export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
   protected fasta: typeof IndexedFasta
 
   public constructor(config: AnyConfigurationModel) {

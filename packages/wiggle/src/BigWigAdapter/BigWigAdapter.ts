@@ -18,6 +18,7 @@ import {
   rectifyStats,
   scoresToStats,
   UnrectifiedFeatureStats,
+  DataAdapterWithGlobalStats,
 } from '../statsUtil'
 
 import configSchema from './configSchema'
@@ -29,7 +30,8 @@ interface StatsRegion {
   bpPerPx?: number
 }
 
-export default class extends BaseFeatureDataAdapter {
+export default class BigWigAdapter extends BaseFeatureDataAdapter
+  implements DataAdapterWithGlobalStats {
   private bigwig: BigWig
 
   private statsCache: {

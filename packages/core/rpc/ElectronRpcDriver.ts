@@ -1,4 +1,6 @@
+/* eslint-disable no-await-in-loop */
 import BaseRpcDriver from './BaseRpcDriver'
+import PluginManager from '../PluginManager'
 
 declare global {
   interface Window {
@@ -37,19 +39,15 @@ class WindowWorkerHandle {
 
   async call(
     functionName: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    filteredArgs?: any,
+    filteredArgs?: unknown,
     options = {},
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): Promise<any> {
+  ): Promise<unknown> {
     // The window can have been created, but still not be ready, and any
     // `callRenderer` call to that window just returns Promise<undefined>
     // instead of an error, which makes failures hard to track down. For now
     // we'll just wait until it's ready until we find a better option.
     while (!this.ready) {
-      // eslint-disable-next-line no-await-in-loop
       await this.wait(1000)
-      // eslint-disable-next-line no-await-in-loop
       this.ready = !!(await this.ipcRenderer.callRenderer(this.window, 'ready'))
     }
     return this.ipcRenderer.callRenderer(
@@ -86,27 +84,23 @@ export default class ElectronRpcDriver extends BaseRpcDriver {
   }
 
   call(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pluginManager: any,
+    pluginManager: PluginManager,
     stateGroupName: string,
     functionName: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    args: any,
+    args: {},
     options = {},
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any {
-    return (
-      super
-        .call(pluginManager, stateGroupName, functionName, args, options)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .then((r: any) => {
-          if (r && r.imageData) {
-            const img = new Image()
-            img.src = r.imageData.dataURL
-            r.imageData = img
-          }
-          return r
-        })
-    )
+  ): Promise<unknown> {
+    return super
+      .call(pluginManager, stateGroupName, functionName, args, options)
+      .then(r => {
+        if (typeof r === 'object' && r !== null && 'imageData' in r) {
+          const img = new Image()
+          // @ts-ignore
+          img.src = r.imageData.dataURL
+          // @ts-ignore
+          r.imageData = img
+        }
+        return r
+      })
   }
 }

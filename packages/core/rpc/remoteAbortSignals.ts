@@ -1,7 +1,7 @@
 /* ---------------- for the RPC client ----------------- */
 
 let abortSignalCounter = 0
-type RemoteAbortSignal = { abortSignalId: number }
+export type RemoteAbortSignal = { abortSignalId: number }
 const abortSignalIds: WeakMap<AbortSignal, number> = new WeakMap() // map of abortsignal => numerical ID
 
 /**
@@ -57,9 +57,7 @@ const surrogateAbortControllers: Map<number, AbortController> = new Map() // num
  */
 export function deserializeAbortSignal({
   abortSignalId,
-}: {
-  abortSignalId: number
-}): AbortSignal {
+}: RemoteAbortSignal): AbortSignal {
   let surrogateAbortController = surrogateAbortControllers.get(abortSignalId)
   if (!surrogateAbortController) {
     surrogateAbortController = new AbortController()

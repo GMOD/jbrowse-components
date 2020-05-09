@@ -5,7 +5,6 @@ import {
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { getSnapshot, resolveIdentifier, types } from 'mobx-state-tree'
 import assemblyManager from '@gmod/jbrowse-core/assemblyManager'
-import * as rpcFuncs from './rpcMethods'
 import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
 import RenderWorker from './rpc.worker'
 
@@ -128,7 +127,7 @@ export default function JBrowseWeb(pluginManager, Session) {
           self.configuration.rpc,
           {
             WebWorkerRpcDriver: { WorkerClass: RenderWorker },
-            MainThreadRpcDriver: { rpcFuncs },
+            MainThreadRpcDriver: {},
           },
           self.getRefNameMapForAdapter,
         ),

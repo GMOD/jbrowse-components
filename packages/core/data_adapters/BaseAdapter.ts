@@ -7,7 +7,7 @@ import { checkAbortSignal, observeAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
-import { IRegion as Region } from '../mst-types'
+import { IRegion as Region, INoAssemblyRegion } from '../mst-types'
 
 export interface BaseOptions {
   signal?: AbortSignal
@@ -90,9 +90,9 @@ export abstract class BaseFeatureDataAdapter {
   /**
    * Checks if the store has data for the given assembly and reference
    * sequence, and then gets the features in the region if it does.
-   * @param {Region} region see getFeatures()
-   * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
-   * @returns {Observable[Feature]} see getFeatures()
+   * @param region see getFeatures()
+   * @param [signal] optional AbortSignal for aborting the request
+   * @returns see getFeatures()
    */
   public getFeaturesInRegion(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
@@ -148,12 +148,27 @@ export abstract class BaseFeatureDataAdapter {
   }
 }
 
+export interface RegionsAdapter extends BaseFeatureDataAdapter {
+  getRegions(opts: { signal?: AbortSignal }): Promise<INoAssemblyRegion[]>
+}
+
+export function isRegionsAdapter(
+  thing: BaseFeatureDataAdapter,
+): thing is RegionsAdapter {
+  return 'getRegions' in thing
+}
+
 export interface Alias {
   refName: string
   aliases: string[]
 }
-export abstract class BaseRefNameAliasAdapter {
-  public abstract async getRefNameAliases(): Promise<Alias[]>
+export interface BaseRefNameAliasAdapter {
+  getRefNameAliases(opts: BaseOptions): Promise<Alias[]>
 
-  public abstract async freeResources(): Promise<void>
+  freeResources(): Promise<void>
+}
+export function isRefNameAliasAdapter(
+  thing: object,
+): thing is BaseRefNameAliasAdapter {
+  return 'getRefNameAliases' in thing
 }

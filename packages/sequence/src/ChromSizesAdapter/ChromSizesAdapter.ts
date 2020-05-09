@@ -1,4 +1,7 @@
-import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  RegionsAdapter,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
@@ -8,7 +11,7 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { Instance } from 'mobx-state-tree'
 import MyConfigSchema from './configSchema'
 
-export default class extends BaseFeatureDataAdapter {
+export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
   // the map of refSeq to length
   protected refSeqs: Promise<Record<string, number>>
 

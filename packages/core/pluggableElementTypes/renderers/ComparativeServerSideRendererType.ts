@@ -8,6 +8,7 @@ import { Feature } from '../../util/simpleFeature'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
 import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
+import RpcManager from '../../rpc/RpcManager'
 
 interface RenderArgs {
   blockKey: string
@@ -61,10 +62,11 @@ export default class ComparativeServerSideRenderer extends RendererType {
   }
 
   // deserialize some of the results that came back from the worker
-  deserializeResultsInClient(result: { features: any }, args: RenderArgs) {
-    // @ts-ignore
-    result.blockKey = args.blockKey
-    return result
+  deserializeResultsInClient(
+    result: {},
+    args: RenderArgs,
+  ): { blockKey: string } {
+    return { ...result, blockKey: args.blockKey }
   }
 
   /**
@@ -94,7 +96,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * Render method called on the client. Serializes args, then
    * calls `render` with the RPC manager.
    */
-  async renderInClient(rpcManager: any, args: RenderArgs) {
+  async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
     const stateGroupName = args.sessionId
@@ -104,7 +106,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
       serializedArgs,
     )
 
-    this.deserializeResultsInClient(result, args)
+    this.deserializeResultsInClient(result as { blockKey: string }, args)
     return result
   }
 
@@ -201,7 +203,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
     return results
   }
 
-  freeResourcesInClient(rpcManager: any, args: RenderArgs) {
+  freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
     const stateGroupName = args.sessionId

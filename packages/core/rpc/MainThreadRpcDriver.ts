@@ -1,6 +1,7 @@
 import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 import { iterMap, objectFromEntries } from '../util'
 import BaseRpcDriver from './BaseRpcDriver'
+import PluginManager from '../PluginManager'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isPlainObject(thing: any): boolean {
@@ -56,8 +57,13 @@ export function cloneArgs(args: any): any {
 class DummyHandle {
   destroy(): void {}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  call(functionName: string, filteredArgs?: any, options = {}): any {}
+  async call(
+    functionName: string,
+    filteredArgs?: {},
+    options = {},
+  ): Promise<unknown> {
+    return undefined
+  }
 }
 
 /**
@@ -68,34 +74,25 @@ class DummyHandle {
 export default class MainThreadRpcDriver extends BaseRpcDriver {
   makeWorker: () => DummyHandle
 
-  rpcFuncs: Record<string, Function>
-
-  constructor({ rpcFuncs }: { rpcFuncs: Record<string, Function> }) {
+  constructor(args: {}) {
     super()
-    if (!rpcFuncs) throw new TypeError('rpcFuncs argument required')
-    this.rpcFuncs = rpcFuncs
     this.makeWorker = (): DummyHandle => new DummyHandle()
   }
 
-  call(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pluginManager: any,
+  async call(
+    pluginManager: PluginManager,
     stateGroupName: string,
     functionName: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    args: any,
+    args: {},
     options = {},
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any {
-    const func = this.rpcFuncs[functionName]
-    if (!func) {
-      // debugger
-      throw new Error(
-        `MainThreadRpcDriver has no RPC function "${functionName}"`,
-      )
+  ): Promise<unknown> {
+    if (!stateGroupName) {
+      throw new TypeError('stateGroupName is required')
     }
-
-    const clonedArgs = cloneArgs(args)
-    return func.call(this, pluginManager, clonedArgs)
+    const filteredArgs = this.filterArgs(args, pluginManager, stateGroupName)
+    const rpcMethod = pluginManager.getRpcMethodType(functionName)
+    const serializedArgs = rpcMethod.serializeArguments(filteredArgs)
+    const result = await rpcMethod.execute(pluginManager, serializedArgs)
+    return rpcMethod.deserializeReturn(result)
   }
 }

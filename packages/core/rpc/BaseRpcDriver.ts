@@ -1,15 +1,14 @@
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import { objectFromEntries } from '../util'
 import { serializeAbortSignal } from './remoteAbortSignals'
+import PluginManager from '../PluginManager'
 
 interface WorkerHandle {
   destroy(): void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  call(functionName: string, args?: any, options?: Record<string, any>): any
+  call(functionName: string, args?: unknown, options?: {}): Promise<unknown>
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isClonable(thing: any): boolean {
+function isClonable(thing: unknown): boolean {
   if (typeof thing === 'function') return false
   if (thing instanceof Error) return false
   return true
@@ -64,20 +63,25 @@ export default abstract class BaseRpcDriver {
   private workerPool?: WorkerHandle[]
 
   // filter the given object and just remove any non-clonable things from it
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  filterArgs(thing: any, pluginManager: any, stateGroupName: string): any {
+  filterArgs<THING_TYPE>(
+    thing: THING_TYPE,
+    pluginManager: PluginManager,
+    stateGroupName: string,
+  ): THING_TYPE {
     if (Array.isArray(thing)) {
-      return thing
+      return (thing
         .filter(isClonable)
-        .map(t => this.filterArgs(t, pluginManager, stateGroupName))
+        .map(t =>
+          this.filterArgs(t, pluginManager, stateGroupName),
+        ) as unknown) as THING_TYPE
     }
     if (typeof thing === 'object' && thing !== null) {
       // AbortSignals are specially handled
       if (thing instanceof AbortSignal) {
-        return serializeAbortSignal(
+        return (serializeAbortSignal(
           thing,
           this.call.bind(this, pluginManager, stateGroupName),
-        )
+        ) as unknown) as THING_TYPE
       }
 
       if (isStateTreeNode(thing) && !isAlive(thing))
@@ -140,7 +144,11 @@ export default abstract class BaseRpcDriver {
     return this.workerPool
   }
 
-  getWorker(stateGroupName: string, functionName: string): WorkerHandle {
+  getWorker(
+    stateGroupName: string,
+    functionName: string,
+    pluginManager: PluginManager,
+  ): WorkerHandle {
     const workers = this.getWorkerPool()
     if (!this.workerAssignments.has(stateGroupName)) {
       const workerAssignment = (this.lastWorkerAssignment + 1) % workers.length
@@ -157,24 +165,24 @@ export default abstract class BaseRpcDriver {
     return worker
   }
 
-  call(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pluginManager: any,
+  async call(
+    pluginManager: PluginManager,
     stateGroupName: string,
     functionName: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    args: any,
+    args: {},
     options = {},
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any {
-    if (stateGroupName === undefined) {
+  ) {
+    if (!stateGroupName) {
       throw new TypeError('stateGroupName is required')
     }
-    const worker = this.getWorker(stateGroupName, functionName)
+    const worker = this.getWorker(stateGroupName, functionName, pluginManager)
     const filteredArgs = this.filterArgs(args, pluginManager, stateGroupName)
-    return worker.call(functionName, filteredArgs, {
+    const rpcMethod = pluginManager.getRpcMethodType(functionName)
+    const serializedArgs = rpcMethod.serializeArguments(filteredArgs)
+    const result = worker.call(functionName, serializedArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes
       ...options,
     })
+    return rpcMethod.deserializeReturn(result)
   }
 }

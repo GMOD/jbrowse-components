@@ -1,7 +1,7 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import Alignments from '@gmod/jbrowse-plugin-alignments'
 import SVG from '@gmod/jbrowse-plugin-svg'
-import { render, freeResources } from './rpcMethods'
+import { render, freeResources } from './rpcMethods_old'
 
 let pluginManager
 beforeAll(() => {

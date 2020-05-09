@@ -1,7 +1,8 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { INoAssemblyRegion, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { Observable } from 'rxjs'
 import { reduce } from 'rxjs/operators'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 
 export interface UnrectifiedFeatureStats {
   scoreMin: number
@@ -181,4 +182,18 @@ export function blankStats(): FeatureStats {
     featureDensity: 0,
     basesCovered: 0,
   }
+}
+
+export interface DataAdapterWithGlobalStats extends BaseFeatureDataAdapter {
+  getGlobalStats(args: { signal?: AbortSignal }): Promise<FeatureStats>
+  getMultiRegionStats(
+    regions: IRegion[],
+    args: { signal?: AbortSignal; bpPerPx: number },
+  ): Promise<FeatureStats>
+}
+
+export function dataAdapterSupportsWiggleStats(
+  adapter: BaseFeatureDataAdapter,
+): adapter is DataAdapterWithGlobalStats {
+  return 'getGlobalStats' in adapter && 'getMultiRegionStats' in adapter
 }
