@@ -34,6 +34,11 @@ export default ConfigurationSchema(
       description: 'the maximum height to be used in a pileup rendering',
       defaultValue: 600,
     },
+    maxClippingSize: {
+      type: 'integer',
+      description: 'the max clip size to be used in a pileup rendering',
+      defaultValue: 10, // TODOCLIP: find out the standard clip size
+    },
     height: {
       type: 'integer',
       description: 'the height of each feature in a pileup alignment',
