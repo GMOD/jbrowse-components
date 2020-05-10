@@ -20,7 +20,8 @@
     "project": "./tsconfig.json"
   },
   "plugins": [
-    "@typescript-eslint"
+    "@typescript-eslint",
+    "react-hooks"
   ],
   "rules": {
     "@typescript-eslint/await-thenable": "off",
@@ -37,6 +38,8 @@
     "@typescript-eslint/prefer-regexp-exec": "off",
     "@typescript-eslint/require-await": "off",
     "@typescript-eslint/unbound-method": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
     "class-methods-use-this": "off",
     "global-require": "off",
     "import/no-cycle": "off",
@@ -55,12 +58,7 @@
     ],
     "no-debugger": "warn",
     "no-param-reassign": "off",
-    "no-plusplus": [
-      "error",
-      {
-        "allowForLoopAfterthoughts": true
-      }
-    ],
+    "no-plusplus": "off",
     "no-restricted-syntax": "off",
     "no-undef": "error",
     "no-underscore-dangle": "warn",
