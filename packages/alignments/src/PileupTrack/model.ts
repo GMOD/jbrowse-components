@@ -3,12 +3,13 @@ import {
   getConf,
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { getSession } from '@gmod/jbrowse-core/util'
+import { getSessionWithDrawerWidget as getSession } from '@gmod/jbrowse-core/util'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { PileupConfigModel } from './configSchema'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -17,7 +18,10 @@ const rendererTypes = new Map([
   ['snpcoverage', 'SNPCoverageRenderer'],
 ])
 
-export default (pluginManager: PluginManager, configSchema: any) =>
+export default (
+  pluginManager: PluginManager,
+  configSchema: PileupConfigModel,
+) =>
   types
     .compose(
       'PileupTrack',
@@ -29,7 +33,7 @@ export default (pluginManager: PluginManager, configSchema: any) =>
     )
     .actions(self => ({
       selectFeature(feature: Feature) {
-        const session = getSession(self) as any
+        const session = getSession(self)
         const featureWidget = session.addDrawerWidget(
           'AlignmentsFeatureDrawerWidget',
           'alignmentFeature',
@@ -43,7 +47,7 @@ export default (pluginManager: PluginManager, configSchema: any) =>
       copyFeatureToClipboard(feature: Feature) {
         const copiedFeature = feature.toJSON()
         delete copiedFeature.uniqueId
-        const session = getSession(self) as any
+        const session = getSession(self)
         copy(JSON.stringify(copiedFeature, null, 4))
         session.pushSnackbarMessage('Copied to clipboard')
       },

@@ -1,6 +1,7 @@
 import { isStateTreeNode } from 'mobx-state-tree'
 import PluginManager from '../../PluginManager'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
+import { Feature } from '../simpleFeature'
 
 import { MenuOption } from '../../ui'
 
@@ -49,6 +50,9 @@ export interface SessionWithDrawerWidgets extends AbstractSessionModel {
     configuration?: { type: string },
   ): void
   showDrawerWidget(drawerWidget: unknown): void
+  setSelection(feature: Feature): void
+  clearSelection(): void
+  pushSnackbarMessage(message: string): void
 }
 export function isSessionModelWithDrawerWidgets(
   thing: unknown,
