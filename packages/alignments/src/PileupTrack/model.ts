@@ -50,9 +50,8 @@ export default (pluginManager: PluginManager, configSchema: any) =>
 
       // returned if there is no feature id under mouse
       contextMenuNoFeature() {
-        self.contextMenuOptions = getParentRenderProps(
-          self,
-        ).trackModel.menuOptions
+        const { trackModel } = getParentRenderProps(self)
+        self.contextMenuOptions = trackModel.meuOptions
       },
 
       // returned if there is a feature id under mouse
@@ -83,15 +82,12 @@ export default (pluginManager: PluginManager, configSchema: any) =>
       },
     }))
     .views(self => ({
-      /**
-       * the renderer type name is based on the "view"
-       * selected in the UI: pileup, coverage, etc
-       */
       get rendererTypeName() {
         const viewName = getConf(self, 'defaultRendering')
         const rendererType = rendererTypes.get(viewName)
-        if (!rendererType)
+        if (!rendererType) {
           throw new Error(`unknown alignments view name ${viewName}`)
+        }
         return rendererType
       },
 
@@ -108,12 +104,7 @@ export default (pluginManager: PluginManager, configSchema: any) =>
             }
       },
 
-      /**
-       * the react props that are passed to the Renderer when data
-       * is rendered in this track
-       */
       get renderProps() {
-        // view -> [tracks] -> [blocks]
         const config = self.rendererType.configSchema.create(
           getConf(self, ['renderers', self.rendererTypeName]) || {},
         )
