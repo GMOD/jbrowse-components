@@ -13,8 +13,10 @@ export function getTrackAssemblyNames(
   const trackAssemblyNames = readConfObject(trackConf, 'assemblyNames')
   if (!trackAssemblyNames) {
     // Check if it's an assembly sequence track
-    const parent = getParent(track.configuration)
-    if (parent.sequence) return [readConfObject(parent, 'name')]
+    const parent = getParent<any>(track.configuration)
+    if ('sequence' in parent) {
+      return [readConfObject(parent, 'name')]
+    }
   }
   return trackAssemblyNames
 }
@@ -31,7 +33,9 @@ export function getParentRenderProps(node: IStateTreeNode) {
     !isRoot(currentNode);
     currentNode = getParent(currentNode)
   ) {
-    if (currentNode.renderProps) return currentNode.renderProps
+    if ('renderProps' in currentNode) {
+      return currentNode.renderProps
+    }
   }
 
   return {}

@@ -89,6 +89,7 @@ class RpcManager {
     if (region && refNameMap && refNameMap.has(region.refName)) {
       // clone the region so we don't modify it
       if (isStateTreeNode(region)) {
+        //@ts-ignore
         region = { ...getSnapshot(region) }
       } else {
         region = { ...region }

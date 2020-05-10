@@ -68,37 +68,37 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get rpcManager() {
-        return getParent(self).jbrowse.rpcManager
+        return getParent<any>(self).jbrowse.rpcManager
       },
       get assemblyData() {
-        return getParent(self).jbrowse.assemblyData
+        return getParent<any>(self).jbrowse.assemblyData
       },
       get configuration() {
-        return getParent(self).jbrowse.configuration
+        return getParent<any>(self).jbrowse.configuration
       },
       get assemblies() {
-        return getParent(self).jbrowse.assemblies
+        return getParent<any>(self).jbrowse.assemblies
       },
       get assemblyNames() {
-        return getParent(self).jbrowse.assemblyNames
+        return getParent<any>(self).jbrowse.assemblyNames
       },
       get tracks() {
-        return getParent(self).jbrowse.tracks
+        return getParent<any>(self).jbrowse.tracks
       },
       get connections() {
-        return getParent(self).jbrowse.connections
+        return getParent<any>(self).jbrowse.connections
       },
       get savedSessions() {
-        return getParent(self).jbrowse.savedSessions
+        return getParent<any>(self).jbrowse.savedSessions
       },
       get savedSessionNames() {
-        return getParent(self).jbrowse.savedSessionNames
+        return getParent<any>(self).jbrowse.savedSessionNames
       },
       get history() {
-        return getParent(self).history
+        return getParent<any>(self).history
       },
       get menus() {
-        return getParent(self).menus
+        return getParent<any>(self).menus
       },
 
       get visibleDrawerWidget() {
@@ -118,7 +118,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        */
       getReferring(object: IAnyStateTreeNode) {
         const refs: ReferringNode[] = []
-        walk(getParent(self), node => {
+        walk(getParent<any>(self), node => {
           if (isModelType(getType(node))) {
             const members = getMembers(node)
             Object.entries(members.properties).forEach(([key, value]) => {
@@ -291,15 +291,15 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       addAssemblyConf(assemblyConf: any) {
-        return getParent(self).jbrowse.addAssemblyConf(assemblyConf)
+        return getParent<any>(self).jbrowse.addAssemblyConf(assemblyConf)
       },
 
       addTrackConf(trackConf: any) {
-        return getParent(self).jbrowse.addTrackConf(trackConf)
+        return getParent<any>(self).jbrowse.addTrackConf(trackConf)
       },
 
       addConnectionConf(connectionConf: any) {
-        return getParent(self).jbrowse.addConnectionConf(connectionConf)
+        return getParent<any>(self).jbrowse.addConnectionConf(connectionConf)
       },
 
       addLinearGenomeViewOfAssembly(assemblyName: string, initialState = {}) {
@@ -420,27 +420,27 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        return getParent(self).jbrowse.addSavedSession(sessionSnapshot)
+        return getParent<any>(self).jbrowse.addSavedSession(sessionSnapshot)
       },
 
       removeSavedSession(sessionSnapshot: any) {
-        return getParent(self).jbrowse.removeSavedSession(sessionSnapshot)
+        return getParent<any>(self).jbrowse.removeSavedSession(sessionSnapshot)
       },
 
       renameCurrentSession(sessionName: string) {
-        return getParent(self).renameCurrentSession(sessionName)
+        return getParent<any>(self).renameCurrentSession(sessionName)
       },
 
       duplicateCurrentSession() {
-        return getParent(self).duplicateCurrentSession()
+        return getParent<any>(self).duplicateCurrentSession()
       },
 
       activateSession(sessionName: any) {
-        return getParent(self).activateSession(sessionName)
+        return getParent<any>(self).activateSession(sessionName)
       },
 
       setDefaultSession() {
-        return getParent(self).setDefaultSession()
+        return getParent<any>(self).setDefaultSession()
       },
     }))
     .extend(() => {

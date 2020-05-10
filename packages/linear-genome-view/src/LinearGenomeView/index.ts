@@ -429,7 +429,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const { start, end, assemblyName } = query
         if (refName) {
           try {
-            const root = getRoot(self)
+            const root = getRoot<any>(self)
             const canonicalRefName = await root.jbrowse.getCanonicalRefName(
               refName,
               assemblyName || self.assemblyNames[0],
