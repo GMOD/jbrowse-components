@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,import/no-extraneous-dependencies */
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { GenericFilehandle } from 'generic-filehandle'
 import { tap } from 'rxjs/operators'
@@ -18,14 +21,14 @@ interface GeneNameToRows {
   [key: string]: number[]
 }
 
-export default class extends BaseAdapter {
+export default class extends BaseFeatureDataAdapter {
   private initialized = false
 
   private geneNameToRows: GeneNameToRows = {}
 
   private rowToGeneName: RowToGeneNames = []
 
-  private subadapters: BaseAdapter[]
+  private subadapters: BaseFeatureDataAdapter[]
 
   private assemblyNames: string[]
 
@@ -35,7 +38,7 @@ export default class extends BaseAdapter {
 
   public constructor(config: {
     mcscanAnchorsLocation: IFileLocation
-    subadapters: BaseAdapter[] | any // todo remove any
+    subadapters: BaseFeatureDataAdapter[] | any // todo remove any
     assemblyNames: string[]
   }) {
     super(config)
@@ -74,7 +77,7 @@ export default class extends BaseAdapter {
   async hasDataForRefName() {
     // determining this properly is basically a call to getFeatures
     // so is not really that important, and has to be true or else
-    // getFeatures is never called (BaseAdapter filters it out)
+    // getFeatures is never called (BaseFeatureDataAdapter filters it out)
     return true
   }
 
@@ -110,7 +113,8 @@ export default class extends BaseAdapter {
               rows.forEach(row => {
                 observer.next(
                   new SimpleFeature({
-                    data: { ...feature.toJSON(), syntenyId: row },
+                    ...feature.toJSON(),
+                    syntenyId: row,
                   }),
                 )
               })

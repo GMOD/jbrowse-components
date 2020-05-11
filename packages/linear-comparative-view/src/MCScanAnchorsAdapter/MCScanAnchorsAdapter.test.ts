@@ -2,10 +2,13 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { toArray } from 'rxjs/operators'
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import Adapter from './MCScanAnchorsAdapter'
 
-class CustomAdapter extends BaseAdapter {
+class CustomAdapter extends BaseFeatureDataAdapter {
   async getRefNames() {
     return []
   }
@@ -17,28 +20,24 @@ class CustomAdapter extends BaseAdapter {
       if (region.assemblyName === 'peach') {
         observer.next(
           new SimpleFeature({
-            data: {
-              uniqueId: 1,
-              start: 0,
-              end: 100,
-              refName: 'peach_chr1',
-              syntenyId: 1,
-              name: 'GSVIVT01012253001',
-            },
+            uniqueId: '1',
+            start: 0,
+            end: 100,
+            refName: 'peach_chr1',
+            syntenyId: 1,
+            name: 'GSVIVT01012253001',
           }),
         )
       }
       if (region.assemblyName === 'grape') {
         observer.next(
           new SimpleFeature({
-            data: {
-              start: 0,
-              uniqueId: 2,
-              end: 100,
-              refName: 'grape_chr1',
-              syntenyId: 1,
-              name: 'Prupe.1G290800.1',
-            },
+            start: 0,
+            uniqueId: '2',
+            end: 100,
+            refName: 'grape_chr1',
+            syntenyId: 1,
+            name: 'Prupe.1G290800.1',
           }),
         )
       }
