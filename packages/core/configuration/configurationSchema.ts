@@ -222,11 +222,6 @@ export interface AnyConfigurationSchemaType
 
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
 
-export type ConfigurationSchemaType<
-  DEFINITION extends ConfigurationSchemaDefinition,
-  OPTIONS extends ConfigurationSchemaOptions
-> = AnyConfigurationSchemaType
-
 export type ConfigurationModel<
   SCHEMA extends AnyConfigurationSchemaType
 > = Instance<SCHEMA>
@@ -238,7 +233,7 @@ export function ConfigurationSchema<
   modelName: string,
   inputSchemaDefinition: DEFINITION,
   inputOptions?: OPTIONS,
-): ConfigurationSchemaType<DEFINITION, OPTIONS> {
+): AnyConfigurationSchemaType {
   const { schemaDefinition, options } = preprocessConfigurationSchemaArguments(
     modelName,
     inputSchemaDefinition,
@@ -248,7 +243,7 @@ export function ConfigurationSchema<
     modelName,
     schemaDefinition,
     options,
-  ) as ConfigurationSchemaType<DEFINITION, OPTIONS>
+  ) as AnyConfigurationSchemaType
   // saving a couple of jbrowse-specific things in the type object. hope nobody gets mad.
   schemaType.isJBrowseConfigurationSchema = true
   schemaType.jbrowseSchemaDefinition = schemaDefinition
