@@ -1,7 +1,6 @@
 {
   "env": {
-    "browser": true,
-    "jest": true
+    "browser": true
   },
   "extends": [
     "airbnb-typescript",
@@ -10,7 +9,8 @@
     "plugin:monorepo/recommended",
     "plugin:prettier/recommended",
     "prettier/@typescript-eslint",
-    "prettier/react"
+    "prettier/react",
+    "react-app"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -20,14 +20,11 @@
     "project": "./tsconfig.json"
   },
   "plugins": [
-    "@typescript-eslint",
-    "react-hooks"
+    "@typescript-eslint"
   ],
   "rules": {
     "@typescript-eslint/await-thenable": "off",
     "@typescript-eslint/ban-ts-ignore": "off",
-    "@typescript-eslint/no-unused-vars": "off",
-    "@typescript-eslint/no-unused-expressions": "off",
     "@typescript-eslint/camelcase": "warn",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-member-accessibility": "off",
@@ -38,8 +35,6 @@
     "@typescript-eslint/prefer-regexp-exec": "off",
     "@typescript-eslint/require-await": "off",
     "@typescript-eslint/unbound-method": "off",
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn",
     "class-methods-use-this": "off",
     "global-require": "off",
     "import/no-cycle": "off",

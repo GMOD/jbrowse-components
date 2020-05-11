@@ -1,4 +1,3 @@
-/* eslint-disable no-cond-assign */
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 import { PrerenderedCanvas, Tooltip } from '@gmod/jbrowse-core/ui'
 import { bpSpanPx } from '@gmod/jbrowse-core/util'
