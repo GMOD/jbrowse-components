@@ -11,7 +11,7 @@ export default pluginManager => {
   const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
   const CircularViewType = pluginManager.getViewType('CircularView')
 
-  const minHeight = 500
+  const minHeight = 400
   const defaultHeight = 500
   const headerHeight = 52
   const circularViewOptionsBarHeight = 52
