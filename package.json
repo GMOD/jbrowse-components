@@ -50,6 +50,7 @@
     "@types/set-value": "^2.0.0",
     "@types/shortid": "^0.0.29",
     "@types/string-template": "^1.0.2",
+    "babel-loader": "^8.1.0",
     "babel-preset-mobx": "^2.0.0",
     "babel-preset-react-app": "9.1.2",
     "babel-preset-typescript": "^7.0.0-alpha.19",
