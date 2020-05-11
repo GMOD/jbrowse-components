@@ -13,7 +13,7 @@ import {
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
-import { getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
+import { getSnapshot, getRoot, types, cast, Instance } from 'mobx-state-tree'
 
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
@@ -733,3 +733,4 @@ export function stateModelFactory(pluginManager: PluginManager) {
   return types.compose(BaseViewModel, model)
 }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
+export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>

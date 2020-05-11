@@ -231,13 +231,7 @@ async function render(
  */
 async function comparativeRender(
   pluginManager,
-  {
-    sessionId,
-    adapterConfig,
-    rendererType,
-    renderProps,
-    signal,
-  },
+  { sessionId, adapterConfig, rendererType, renderProps, signal },
 ) {
   if (!sessionId) throw new Error('must pass a unique session id')
 
@@ -246,11 +240,7 @@ async function comparativeRender(
   }
   checkAbortSignal(signal)
 
-  const { dataAdapter } = getAdapter(
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
 
   const RendererType = pluginManager.getRendererType(rendererType)
   if (!RendererType) throw new Error(`renderer "${rendererType}" not found`)
