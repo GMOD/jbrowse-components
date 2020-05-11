@@ -5,7 +5,7 @@ import {
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
-import { types, getSnapshot, addDisposer, Instance } from 'mobx-state-tree'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import jsonStableStringify from 'json-stable-stringify'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
@@ -158,22 +158,12 @@ export default (pluginManager: any, configSchema: any) => {
         ]
         const adapterConfigId = jsonStableStringify(getConf(self, 'adapter'))
 
-        const trackAssemblyData =
-          (assemblyData && assemblyData.get(regions[0].assemblyName)) || {}
-
-        let sequenceConfig: { type?: string } = {}
-        if (trackAssemblyData.sequence) {
-          sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
-        }
-
         // render just the sorted region first
         self.PileupTrack.rendererType
           .renderInClient(rpcManager, {
             assemblyName: regions[0].assemblyName,
             regions,
             adapterConfig: getConf(self, 'adapter'),
-            sequenceAdapterType: sequenceConfig.type,
-            sequenceAdapterConfig: sequenceConfig,
             rendererType: self.PileupTrack.rendererType.name,
             renderProps: {
               ...self.PileupTrack.renderProps,

@@ -234,8 +234,6 @@ async function comparativeRender(
   {
     sessionId,
     adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
     rendererType,
     renderProps,
     signal,
@@ -252,8 +250,6 @@ async function comparativeRender(
     pluginManager,
     sessionId,
     adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
   )
 
   const RendererType = pluginManager.getRendererType(rendererType)
