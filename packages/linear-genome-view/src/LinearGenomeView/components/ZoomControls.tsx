@@ -5,8 +5,9 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
+import ZoomIn from '@material-ui/icons/ZoomIn'
+import ZoomOut from '@material-ui/icons/ZoomOut'
 import { LinearGenomeViewStateModel } from '..'
-
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles({
@@ -33,7 +34,7 @@ function ZoomControls({ model }: { model: LGV }) {
         disabled={model.bpPerPx >= model.maxBpPerPx || model.scaleFactor !== 1}
         color="secondary"
       >
-        <Icon fontSize="small">zoom_out</Icon>
+        <ZoomOut fontSize="small"/>
       </IconButton>
 
       <Slider
@@ -51,7 +52,7 @@ function ZoomControls({ model }: { model: LGV }) {
         disabled={model.bpPerPx <= model.minBpPerPx || model.scaleFactor !== 1}
         color="secondary"
       >
-        <Icon fontSize="small">zoom_in</Icon>
+        <ZoomIn fontSize="small"/>
       </IconButton>
     </div>
   )

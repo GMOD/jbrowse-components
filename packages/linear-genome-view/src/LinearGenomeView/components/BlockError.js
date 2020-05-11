@@ -5,6 +5,7 @@ import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
+import RefreshIcon from '@material-ui/icons/Refresh'
 
 const useStyles = makeStyles({
   blockError: {
@@ -20,9 +21,8 @@ function BlockError({ error, reload }) {
       {reload ? (
         <Button
           onClick={reload}
-          // variant="outlined"
           size="small"
-          startIcon={<Icon>refresh</Icon>}
+          startIcon={<RefreshIcon />}
         >
           Reload
         </Button>

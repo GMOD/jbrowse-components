@@ -9,7 +9,6 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import Fab from '@material-ui/core/Fab'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormGroup from '@material-ui/core/FormGroup'
-import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import List from '@material-ui/core/List'
@@ -23,6 +22,7 @@ import Tab from '@material-ui/core/Tab'
 import Tabs from '@material-ui/core/Tabs'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
+import ClearIcon from '@material-ui/icons/Clear'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState } from 'react'
 import Contents from './Contents'
@@ -166,7 +166,7 @@ function HierarchicalTrackSelector({ model }) {
           endAdornment: (
             <InputAdornment position="end">
               <IconButton color="secondary" onClick={model.clearFilterText}>
-                <Icon>clear</Icon>
+                <ClearIcon />
               </IconButton>
             </InputAdornment>
           ),

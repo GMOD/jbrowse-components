@@ -11,6 +11,7 @@ import Tooltip from '@material-ui/core/Tooltip'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import propTypes from 'prop-types'
 import React from 'react'
+import SettingsIcon from '@material-ui/icons/Settings'
 
 const useStyles = makeStyles(theme => ({
   formControlLabel: {
@@ -81,7 +82,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
           color="secondary"
           data-testid={`htsTrackEntryConfigure-${trackConfigId}`}
         >
-          <Icon fontSize="small">settings</Icon>
+          <SettingsIcon fontSize="small" />
         </IconButton>
       </div>
     </Fade>

@@ -7,6 +7,7 @@ import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import propTypes from 'prop-types'
 import React from 'react'
+import ExpandIcon from '@material-ui/icons/ExpandMore'
 import Contents from './Contents'
 
 const useStyles = makeStyles(theme => ({
@@ -50,7 +51,7 @@ function Category({
       onChange={() => model.toggleCategory(pathName)}
     >
       <ExpansionPanelSummary
-        expandIcon={<Icon className={classes.expandIcon}>expand_more</Icon>}
+        expandIcon={<ExpandIcon className={classes.expandIcon} />}
       >
         <Typography variant="body2">{`${name}${
           filteredCount ? ` (${filteredCount})` : ''
