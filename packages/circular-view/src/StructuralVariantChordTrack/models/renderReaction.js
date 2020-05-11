@@ -17,7 +17,6 @@ export default ({ jbrequire }) => {
       renderProps,
       renderArgs: {
         assemblyName,
-        adapterType: track.adapterType.name,
         adapterConfig: JSON.parse(JSON.stringify(getConf(track, 'adapter'))),
         rendererType: rendererType.name,
         renderProps,

@@ -138,7 +138,6 @@ const stateModelFactory = (configSchema: any) =>
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
           const r = await rpcManager.call('statsGathering', 'getGlobalStats', {
             adapterConfig: getSnapshot(adapter),
-            adapterType: adapter.type,
             signal,
           })
           return autoscaleType === 'globalsd'
@@ -161,7 +160,6 @@ const stateModelFactory = (configSchema: any) =>
             'getMultiRegionStats',
             {
               adapterConfig: getSnapshot(adapter),
-              adapterType: adapter.type,
               // TODO: Figure this out for multiple assembly names
               assemblyName: getTrackAssemblyNames(self)[0],
               regions: JSON.parse(JSON.stringify(dynamicBlocks.contentBlocks)),
@@ -183,7 +181,6 @@ const stateModelFactory = (configSchema: any) =>
         if (autoscaleType === 'zscale') {
           return rpcManager.call('statsGathering', 'getGlobalStats', {
             adapterConfig: getSnapshot(adapter),
-            adapterType: adapter.type,
             signal,
           })
         }
