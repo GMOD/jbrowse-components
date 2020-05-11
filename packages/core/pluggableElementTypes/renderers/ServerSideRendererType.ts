@@ -170,7 +170,6 @@ export default class ServerSideRenderer extends RendererType {
   getExpandedGlyphRegion(region: IRegion, renderArgs: RenderArgsDeserialized) {
     if (!region) return region
     const { bpPerPx, config } = renderArgs
-    console.log(config)
     const maxFeatureGlyphExpansion =
       config === undefined
         ? 0
@@ -187,10 +186,10 @@ export default class ServerSideRenderer extends RendererType {
   // TODOCLIP maxSoftClip goes here
   getExpandedClippingRegion(
     region: IRegion,
-    renderARgs: RenderArgsDeserialized,
+    renderArgs: RenderArgsDeserialized,
   ) {
     if (!region) return region
-    const { bpPerPx, config } = renderARgs
+    const { bpPerPx, config } = renderArgs
     const maxClippingSize =
       config === undefined ? 0 : readConfObject(config, 'maxClippingSize')
     if (!maxClippingSize) return region
@@ -222,6 +221,7 @@ export default class ServerSideRenderer extends RendererType {
       return features
     }
 
+    const dummySoftClipCond = true
     const requestRegions = regions.map((r: IRegion) => {
       // make sure the requested region's start and end are integers, if
       // there is a region specification.
@@ -252,6 +252,44 @@ export default class ServerSideRenderer extends RendererType {
             originalRegions,
           })
 
+    const softClippedFeatureObservable =
+      requestRegions.length === 1
+        ? dataAdapter.getFeaturesInRegion(
+            this.getExpandedClippingRegion(requestRegions[0], renderArgs),
+            {
+              signal,
+              bpPerPx,
+              originalRegions,
+            },
+          )
+        : dataAdapter.getFeaturesInMultipleRegions(
+            requestRegions.map(region =>
+              this.getExpandedClippingRegion(region, renderArgs),
+            ),
+            {
+              signal,
+              bpPerPx,
+              originalRegions,
+            },
+          )
+
+    const finalFeatureObservable = dummySoftClipCond
+      ? softClippedFeatureObservable
+      : featureObservable
+
+    await finalFeatureObservable
+      .pipe(
+        tap(() => checkAbortSignal(signal)),
+        filter(feature => this.featurePassesFilters(renderArgs, feature)),
+        tap(feature => {
+          const id = feature.id()
+          if (!id) throw new Error(`invalid feature id "${id}"`)
+          features.set(id, feature)
+        }),
+        ignoreElements(),
+      )
+      .toPromise()
+
     await featureObservable
       .pipe(
         tap(() => checkAbortSignal(signal)),
@@ -265,6 +303,7 @@ export default class ServerSideRenderer extends RendererType {
       )
       .toPromise()
 
+    console.log('after', features)
     return features
   }
 
