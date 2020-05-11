@@ -140,7 +140,7 @@ export default abstract class BaseRpcDriver {
     return this.workerPool
   }
 
-  getWorker(stateGroupName: string, functionName: string): WorkerHandle {
+  getWorker(stateGroupName: string): WorkerHandle {
     const workers = this.getWorkerPool()
     if (!this.workerAssignments.has(stateGroupName)) {
       const workerAssignment = (this.lastWorkerAssignment + 1) % workers.length
@@ -170,7 +170,7 @@ export default abstract class BaseRpcDriver {
     if (stateGroupName === undefined) {
       throw new TypeError('stateGroupName is required')
     }
-    const worker = this.getWorker(stateGroupName, functionName)
+    const worker = this.getWorker(stateGroupName)
     const filteredArgs = this.filterArgs(args, pluginManager, stateGroupName)
     return worker.call(functionName, filteredArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes

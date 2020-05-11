@@ -112,8 +112,6 @@ export class ContentBlock extends BaseBlock {}
  * too small to be shown at the current zoom level
  */
 export class ElidedBlock extends BaseBlock {
-  private elidedBlockCount = 1
-
   public widthPx: number
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

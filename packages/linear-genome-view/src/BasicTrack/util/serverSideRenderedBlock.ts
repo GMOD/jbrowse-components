@@ -34,7 +34,7 @@ const blockState = types
     isRightEndOfDisplayedRegion: false,
   })
   // NOTE: all this volatile stuff has to be filled in at once, so that it stays consistent
-  .volatile(self => ({
+  .volatile(() => ({
     renderInProgress: undefined as AbortController | undefined,
     filled: false,
     data: undefined as any,

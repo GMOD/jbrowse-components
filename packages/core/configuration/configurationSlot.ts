@@ -119,7 +119,7 @@ const typeModelExtensions: { [typeName: string]: (self: any) => any } = {
       add(key: string, val: number) {
         self.value.set(key, val)
       },
-      remove(key: string, val: number) {
+      remove(key: string) {
         self.value.delete(key)
       },
     },

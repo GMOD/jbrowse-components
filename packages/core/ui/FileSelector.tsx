@@ -7,7 +7,7 @@ import Typography from '@material-ui/core/Typography'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 import { observer } from 'mobx-react'
-import React, { useState, MouseEvent } from 'react'
+import React, { useState } from 'react'
 import {
   FileLocation,
   UriLocation,

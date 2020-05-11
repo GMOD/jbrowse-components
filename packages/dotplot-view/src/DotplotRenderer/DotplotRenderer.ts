@@ -32,17 +32,6 @@ export interface DotplotRenderProps {
   views: ReducedView[]
 }
 
-interface DotplotRenderingProps extends DotplotRenderProps {
-  imageData: any
-}
-
-interface DotplotImageData {
-  imageData?: ImageBitmap
-  height: number
-  width: number
-  maxHeightReached: boolean
-}
-
 function bpToPx(self: ReducedView, refName: string, coord: number) {
   let offset = 0
 

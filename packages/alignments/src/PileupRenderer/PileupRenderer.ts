@@ -28,12 +28,6 @@ interface PileupRenderProps {
   }
 }
 
-interface PileupImageData {
-  imageData?: ImageBitmap
-  height: number
-  width: number
-  maxHeightReached: boolean
-}
 interface LayoutRecord {
   feature: Feature
   leftPx: number
@@ -110,7 +104,7 @@ export default class PileupRenderer extends BoxRendererType {
 
     const sortedFeatures =
       sortObject && sortObject.by && region.start === sortObject.position
-        ? sortFeature(features, sortObject, bpPerPx, region)
+        ? sortFeature(features, sortObject)
         : null
 
     const featureMap = sortedFeatures || features

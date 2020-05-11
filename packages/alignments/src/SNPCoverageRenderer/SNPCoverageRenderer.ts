@@ -76,7 +76,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       // grab array with nestedtable's info, draw mismatches
       const infoArray = feature.get('snpinfo') || []
       let curr = 0
-      infoArray.forEach(function iterate(info: BaseInfo, index: number) {
+      infoArray.forEach(function iterate(info: BaseInfo) {
         if (!info || info.base === 'reference' || info.base === 'total') {
           return
         }

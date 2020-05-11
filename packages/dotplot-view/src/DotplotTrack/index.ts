@@ -40,7 +40,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           type: types.literal('DotplotTrack'),
           configuration: ConfigurationReference(configSchema),
         })
-        .volatile(self => ({
+        .volatile(() => ({
           // avoid circular typescript reference by casting to generic functional component
           renderInProgress: undefined as AbortController | undefined,
           filled: false,
@@ -183,12 +183,7 @@ function renderBlockData(self: DotplotTrack) {
   }
 }
 
-async function renderBlockEffect(
-  props: ReturnType<typeof renderBlockData>,
-  signal: AbortSignal,
-  self: DotplotTrack,
-  allowRefetch = false,
-) {
+async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   if (!props) {
     throw new Error('cannot render with no props')
   }

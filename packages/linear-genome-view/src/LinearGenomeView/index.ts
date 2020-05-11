@@ -44,9 +44,6 @@ interface BpOffset {
   end?: number
 }
 
-interface ViewActions {
-  [key: string]: MenuOption[]
-}
 const validBpPerPx = [
   1 / 50,
   1 / 20,

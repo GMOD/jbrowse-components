@@ -1,5 +1,5 @@
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { FileLocation, NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
+import { FileLocation } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -53,7 +53,7 @@ export default class extends BaseFeatureDataAdapter {
     }))
   }
 
-  public getFeatures({ refName, start, end }: NoAssemblyRegion) {
+  public getFeatures() {
     return ObservableCreate<Feature>(observer => {
       // provides no sequence
       observer.complete()

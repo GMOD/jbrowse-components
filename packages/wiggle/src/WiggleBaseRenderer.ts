@@ -28,7 +28,7 @@ export interface WiggleBaseRendererProps {
   trackModel: unknown
 }
 
-export default class extends ServerSideRendererType {
+export default abstract class extends ServerSideRendererType {
   async makeImageData(props: WiggleBaseRendererProps) {
     const { height, regions, bpPerPx, highResolutionScaling = 1 } = props
     const [region] = regions
@@ -48,9 +48,11 @@ export default class extends ServerSideRendererType {
     return { imageData, height, width }
   }
 
-  draw(ctx: CanvasRenderingContext2D, props: WiggleBaseRendererProps) {
-    /* draw features to context given props */
-  }
+  /** draw features to context given props */
+  abstract draw(
+    ctx: CanvasRenderingContext2D,
+    props: WiggleBaseRendererProps,
+  ): void
 
   async render(renderProps: WiggleBaseRendererProps) {
     const { height, width, imageData } = await this.makeImageData(renderProps)

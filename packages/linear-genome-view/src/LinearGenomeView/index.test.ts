@@ -24,8 +24,8 @@ stubManager.addTrackType(
 stubManager.createPluggableElements()
 stubManager.configure()
 const LinearGenomeModel = stateModelFactory(stubManager)
-const JBrowse = types.model({}).actions(self => ({
-  getCanonicalRefName(refName: string, assemblyName: string) {
+const JBrowse = types.model({}).actions(() => ({
+  getCanonicalRefName(refName: string) {
     if (refName === 'contigA') {
       return 'ctgA'
     }
