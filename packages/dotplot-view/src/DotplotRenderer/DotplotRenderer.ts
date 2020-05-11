@@ -202,6 +202,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     return featureObservable
       .pipe(
         tap(() => checkAbortSignal(signal)),
+        // @ts-ignore
         filter(feature => this.featurePassesFilters(renderArgs, feature)),
         distinct(feature => feature.id()),
         toArray(),

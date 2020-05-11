@@ -54,7 +54,8 @@ BlockMessage.propTypes = {
   messageText: PropTypes.string.isRequired,
 }
 
-const ServerSideRenderedBlockContent = observer(({ model }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ServerSideRenderedBlockContent = observer(({ model }: { model: any }) => {
   if (model.error) {
     return <BlockError error={model.error} reload={model.reload} />
   }

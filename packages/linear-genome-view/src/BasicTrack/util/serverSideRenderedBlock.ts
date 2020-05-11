@@ -163,7 +163,7 @@ const blockState = types
 
 export default blockState
 export type BlockStateModel = typeof blockState
-
+export type BlockModel = Instance<BlockStateModel>
 // calls the render worker to render the block content
 // not using a flow for this, because the flow doesn't
 // work with autorun

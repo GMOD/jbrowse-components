@@ -61,18 +61,30 @@ BlockMessage.propTypes = {
   messageText: PropTypes.string.isRequired,
 }
 
-const ServerSideRenderedBlockContent = observer(({ model }) => {
-  if (model.error) {
-    return <BlockError error={model.error} reload={model.reload} />
-  }
-  if (model.message) {
-    return <BlockMessage messageText={model.message} />
-  }
-  if (!model.filled) {
-    return <LoadingMessage />
-  }
+const ServerSideRenderedBlockContent = observer(
+  ({
+    model,
+  }: {
+    // requires typing out to avoid circular reference with this component being referenced in the model itself
+    model: {
+      error: Error | undefined
+      reload: () => void
+      message: string | undefined
+      filled: boolean
+    }
+  }) => {
+    if (model.error) {
+      return <BlockError error={model.error} reload={model.reload} />
+    }
+    if (model.message) {
+      return <BlockMessage messageText={model.message} />
+    }
+    if (!model.filled) {
+      return <LoadingMessage />
+    }
 
-  return <ServerSideRenderedContent model={model} />
-})
+    return <ServerSideRenderedContent model={model} />
+  },
+)
 
 export default ServerSideRenderedBlockContent

@@ -9,6 +9,7 @@ export default class extends Plugin {
   install(pluginManager: PluginManager) {
     pluginManager.addRendererType(
       () =>
+        // @ts-ignore error "expected 0 arguments, but got 1"?
         new LollipopRenderer({
           name: 'LollipopRenderer',
           ReactComponent: LollipopRendererReactComponent,
