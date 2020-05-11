@@ -148,7 +148,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
               'getRegions',
               {
                 sessionId: assemblyName,
-                adapterType: adapterConfig.type,
                 adapterConfig,
                 signal: opts.signal,
               },

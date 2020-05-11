@@ -67,13 +67,12 @@ export default (pluginManager: PluginManager) => {
         'sequenceAdapter',
         'type',
       ])
-      const sequenceAdapterConfig = readConfObject(config, 'sequenceAdapter')
-      const sequenceAdapter = getSubAdapter(
-        sequenceAdapterType,
-        sequenceAdapterConfig,
-      ).dataAdapter
-      if (sequenceAdapter instanceof BaseFeatureDataAdapter) {
-        this.sequenceAdapter = sequenceAdapter
+
+      const { dataAdapter } = getSubAdapter(
+        readConfObject(config, 'sequenceAdapter'),
+      )
+      if (dataAdapter instanceof BaseFeatureDataAdapter) {
+        this.sequenceAdapter = dataAdapter
       } else {
         throw new Error(
           `CRAM feature adapters cannot use sequence adapters of type '${sequenceAdapterType}'`,

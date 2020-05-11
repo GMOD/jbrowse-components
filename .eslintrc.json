@@ -54,12 +54,7 @@
     ],
     "no-debugger": "warn",
     "no-param-reassign": "off",
-    "no-plusplus": [
-      "error",
-      {
-        "allowForLoopAfterthoughts": true
-      }
-    ],
+    "no-plusplus": "off",
     "no-restricted-syntax": "off",
     "no-undef": "error",
     "no-underscore-dangle": "warn",

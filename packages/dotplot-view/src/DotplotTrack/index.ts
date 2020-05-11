@@ -150,8 +150,6 @@ function renderBlockData(self: DotplotTrack) {
   // Compare to serverSideRenderedBlock
   readConfObject(self.configuration)
 
-  const sequenceConfig: { type?: string } = {}
-
   const { adapterConfig } = self
   const adapterConfigId = jsonStableStringify(adapterConfig)
   const parent = getParent(self, 2)
@@ -163,10 +161,7 @@ function renderBlockData(self: DotplotTrack) {
     rpcManager,
     renderProps,
     renderArgs: {
-      adapterType: self.adapterType.name,
       adapterConfig,
-      sequenceAdapterType: sequenceConfig.type,
-      sequenceAdapterConfig: sequenceConfig,
       rendererType: rendererType.name,
       views,
       renderProps: {

@@ -6,7 +6,6 @@ import {
   addDisposer,
   cast,
   Instance,
-  getSnapshot,
 } from 'mobx-state-tree'
 import { Component } from 'react'
 import { reaction } from 'mobx'
@@ -188,8 +187,6 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     }
     if (!cannotBeRenderedReason)
       cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
-    const trackAssemblyData =
-      (assemblyData && assemblyData.get(self.region.assemblyName)) || {}
     const { renderProps } = track
     const { rendererType } = track
     const { config } = renderProps
@@ -197,10 +194,6 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     // It won't trigger the reaction if it doesn't think we're accessing it
     readConfObject(config)
 
-    let sequenceConfig: { type?: string } = {}
-    if (trackAssemblyData.sequence) {
-      sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
-    }
     const adapterConfig = getConf(track, 'adapter')
     // Only subtracks will have parent tracks with configs
     // They use parent's adapter config for matching sessionId
@@ -218,10 +211,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       renderArgs: {
         assemblyName: self.region.assemblyName,
         regions: [self.region],
-        adapterType: track.adapterType.name,
         adapterConfig,
-        sequenceAdapterType: sequenceConfig.type,
-        sequenceAdapterConfig: sequenceConfig,
         rendererType: rendererType.name,
         renderProps,
         sessionId: adapterConfigId,

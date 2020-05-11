@@ -1,4 +1,7 @@
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import {
+  SimpleFeatureSerialized,
+  Feature,
+} from '@gmod/jbrowse-core/util/simpleFeature'
 
 interface FeatureData {
   [key: string]: unknown
@@ -30,18 +33,17 @@ export default class GDCFeature implements Feature {
     this.uniqueId = args.id
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  get(field: string): any {
+  get(field: string) {
     return this.gdcObject[field] || this.data[field]
   }
 
-  set(): void {}
+  set() {}
 
-  parent(): undefined {
+  parent() {
     return undefined
   }
 
-  children(): undefined {
+  children() {
     return undefined
   }
 
@@ -72,13 +74,13 @@ export default class GDCFeature implements Feature {
         featureData.type = gdcObject.biotype
         break
       }
+      default:
     }
 
     return featureData
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  toJSON(): any {
+  toJSON(): SimpleFeatureSerialized {
     return {
       uniqueId: this.uniqueId,
       ...this.data,

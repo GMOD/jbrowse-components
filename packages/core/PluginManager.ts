@@ -191,8 +191,9 @@ export default class PluginManager {
         return this.trackTypes
       case 'view':
         return this.viewTypes
+      default:
+        throw new Error(`invalid group name ${groupName}`)
     }
-    throw new Error(`invalid group name ${groupName}`)
   }
 
   addElementType(

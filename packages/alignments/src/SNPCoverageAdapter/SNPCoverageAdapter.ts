@@ -89,13 +89,10 @@ export default (pluginManager: PluginManager) => {
     ) {
       super(config)
 
-      const subadapter = getSubAdapter(
-        config.subadapter.type,
-        getSnapshot(config.subadapter),
-      ).dataAdapter
+      const { dataAdapter } = getSubAdapter(getSnapshot(config.subadapter))
 
-      if (subadapter instanceof BaseFeatureDataAdapter) {
-        this.subadapter = subadapter
+      if (dataAdapter instanceof BaseFeatureDataAdapter) {
+        this.subadapter = dataAdapter
       } else {
         throw new Error(`invalid subadapter type '${config.subadapter.type}'`)
       }

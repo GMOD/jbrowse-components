@@ -13,7 +13,6 @@ beforeAll(() => {
 const baseprops = {
   regions: [{ refName: 'ctgA', start: 0, end: 800 }],
   sessionId: 'knickers the cow',
-  adapterType: 'BamAdapter',
   adapterConfig: {
     type: 'BamAdapter',
     bamLocation: {
