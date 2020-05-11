@@ -1,3 +1,6 @@
+import ClearIcon from '@material-ui/icons/Clear'
+import FilterIcon from '@material-ui/icons/FilterList'
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer } = jbrequire('mobx-react')
@@ -42,7 +45,7 @@ export default pluginManager => {
                 className={classes.textFilterControlStartAdornment}
                 position="start"
               >
-                <Icon>filter_list</Icon>
+                <FilterIcon/>
               </InputAdornment>
             ),
             endAdornment: (
@@ -55,7 +58,7 @@ export default pluginManager => {
                   onClick={() => setTextFilterValue('')}
                   color="secondary"
                 >
-                  <Icon>clear</Icon>
+                  <ClearIcon/>
                 </IconButton>
               </InputAdornment>
             ),

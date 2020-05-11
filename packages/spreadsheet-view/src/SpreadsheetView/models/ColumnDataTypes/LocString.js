@@ -2,6 +2,7 @@ import {
   doesIntersect2,
   isContainedWithin,
 } from '@gmod/jbrowse-core/util/range'
+import ClearIcon from '@material-ui/icons/Clear'
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
@@ -90,7 +91,7 @@ export default pluginManager => {
                   onClick={() => filterModel.setLocString('')}
                   color="secondary"
                 >
-                  <Icon>clear</Icon>
+                  <ClearIcon/>
                 </IconButton>
               </InputAdornment>
             ),

@@ -1,3 +1,6 @@
+import FilterIcon from '@material-ui/icons/FilterList'
+import CloseIcon from '@material-ui/icons/Close'
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes: MobxPropTypes } = jbrequire('mobx-react')
@@ -62,9 +65,7 @@ export default pluginManager => {
           style={{ height }}
         >
           <Grid item className={classes.filterIconBg}>
-            <Icon className={classes.filterIcon} fontSize="small">
-              filter_list
-            </Icon>
+            <FilterIcon className={classes.filterIcon} />
           </Grid>
           <Grid item>
             <IconButton
@@ -72,7 +73,7 @@ export default pluginManager => {
               title="remove filter"
               color="secondary"
             >
-              <Icon fontSize="small">close</Icon>
+              <CloseIcon />
             </IconButton>
             <Typography className={classes.columnName} component="span">
               {columnDefinition.name}
