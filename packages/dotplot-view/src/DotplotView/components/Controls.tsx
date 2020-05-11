@@ -1,5 +1,12 @@
 import { makeStyles as makeStylesMUI } from '@material-ui/core/styles'
 import { DotplotViewModel } from '../model'
+import ZoomOut from '@material-ui/icons/ZoomOut'
+import ZoomIn from '@material-ui/icons/ZoomIn'
+import ArrowUp from '@material-ui/icons/ArrowUpward'
+import ArrowDown from '@material-ui/icons/ArrowDownward'
+import ArrowLeft from '@material-ui/icons/ArrowLeft'
+import ArrowRight from '@material-ui/icons/ArrowRight'
+
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
@@ -45,7 +52,7 @@ export default (pluginManager: any) => {
           title="left"
           color="secondary"
         >
-          <Icon fontSize="small">keyboard_arrow_left</Icon>
+          <ArrowLeft />
         </IconButton>
 
         <IconButton
@@ -56,7 +63,7 @@ export default (pluginManager: any) => {
           title="left"
           color="secondary"
         >
-          <Icon fontSize="small">keyboard_arrow_right</Icon>
+          <ArrowRight />
         </IconButton>
         <IconButton
           onClick={() => {
@@ -66,7 +73,7 @@ export default (pluginManager: any) => {
           title="left"
           color="secondary"
         >
-          <Icon fontSize="small">keyboard_arrow_down</Icon>
+          <ArrowDown />
         </IconButton>
         <IconButton
           onClick={() => {
@@ -76,7 +83,7 @@ export default (pluginManager: any) => {
           title="left"
           color="secondary"
         >
-          <Icon fontSize="small">keyboard_arrow_up</Icon>
+          <ArrowUp />
         </IconButton>
         <IconButton
           onClick={model.zoomOutButton}

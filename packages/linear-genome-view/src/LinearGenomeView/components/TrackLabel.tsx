@@ -34,6 +34,7 @@ const useStyles = makeStyles(theme => ({
     pointerEvents: 'none',
   },
   dragHandle: {
+    display: 'inline',
     verticalAlign: 'middle',
     cursor: 'grab',
     color: '#135560',
@@ -116,25 +117,22 @@ const TrackLabel = React.forwardRef(
     return (
       <>
         <Paper ref={ref} className={clsx(className, classes.root)}>
-      <div
+          <div
             draggable
-onDragStart={onDragStart}
+            className={classes.dragHandle}
+            onDragStart={onDragStart}
             onDragEnd={onDragEnd}
             data-testid={`dragHandle-${view.id}-${getConf(track, 'trackId')}`}
-      >
-          <DragIcon
-            className={classes.dragHandle}
-            fontSize="small"
-
-          />
-      </div>
+          >
+            <DragIcon fontSize="small" />
+          </div>
           <IconButton
             onClick={() => view.hideTrack(track.configuration)}
             className={classes.iconButton}
             title="close this track"
             color="secondary"
           >
-            <CloseIcon fontSize="small"/>
+            <CloseIcon fontSize="small" />
           </IconButton>
           <Typography
             variant="body1"
@@ -150,7 +148,7 @@ onDragStart={onDragStart}
             className={classes.iconButton}
             color="secondary"
           >
-            <MoreVertIcon fontSize="small"/>
+            <MoreVertIcon fontSize="small" />
           </IconButton>
         </Paper>
         <Menu

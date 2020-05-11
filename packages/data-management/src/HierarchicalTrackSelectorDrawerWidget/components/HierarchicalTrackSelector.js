@@ -23,6 +23,7 @@ import Tabs from '@material-ui/core/Tabs'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import ClearIcon from '@material-ui/icons/Clear'
+import AddIcon from '@material-ui/icons/Add'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState } from 'react'
 import Contents from './Contents'
@@ -230,7 +231,7 @@ function HierarchicalTrackSelector({ model }) {
       ) : null}
 
       <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
-        <Icon>add</Icon>
+        <AddIcon />
       </Fab>
       <Menu
         id="simple-menu"

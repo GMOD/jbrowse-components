@@ -11,7 +11,6 @@ export default pluginManager => {
 
   const Grid = jbrequire('@material-ui/core/Grid')
   const IconButton = jbrequire('@material-ui/core/IconButton')
-  const Icon = jbrequire('@material-ui/core/Icon')
   const Typography = jbrequire('@material-ui/core/Typography')
 
   const useStyles = makeStyles(theme => {

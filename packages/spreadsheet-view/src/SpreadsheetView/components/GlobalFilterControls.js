@@ -7,7 +7,6 @@ export default pluginManager => {
   const React = jbrequire('react')
   const { useEffect, useState } = React
   const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const Icon = jbrequire('@material-ui/core/Icon')
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const InputAdornment = jbrequire('@material-ui/core/InputAdornment')
   const { useDebounce } = jbrequire('@gmod/jbrowse-core/util')
