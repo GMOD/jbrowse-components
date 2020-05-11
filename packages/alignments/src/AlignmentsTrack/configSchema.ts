@@ -62,3 +62,4 @@ const configModelFactory = (pluginManager: PluginManager) => {
 }
 
 export type AlignmentsConfigModel = ReturnType<typeof configModelFactory>
+export default configModelFactory
