@@ -62,15 +62,25 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       // ctx.fillStyle = `hsl(${identity * 150},50%,50%)`
       ctx.fillStyle = 'black'
       // @ts-ignore
-      const b1 = views[0].bpToPx(refName, start) - db1[0].offsetPx
+      const b10 = views[0].bpToPx(refName, start) || 0
       // @ts-ignore
-      const b2 = views[0].bpToPx(refName, end) - db1[0].offsetPx
+      const b20 = views[0].bpToPx(refName, end) || 0
       // @ts-ignore
-      const e1 = views[1].bpToPx(mate.refName, mate.start) - db2[0].offsetPx
+      const e10 = views[1].bpToPx(mate.refName, mate.start) || 0
       // @ts-ignore
-      const e2 = views[1].bpToPx(mate.refName, mate.end) - db2[0].offsetPx
-      if (b1 && b2 && e1 && e2) {
-        if (b1 - b2 < 3 && e1 - e2 < 3) {
+      const e20 = views[1].bpToPx(mate.refName, mate.end) || 0
+
+      const b1 = b10 - db1[0].offsetPx
+      const b2 = b20 - db1[0].offsetPx
+      const e1 = e10 - db2[0].offsetPx
+      const e2 = e20 - db2[0].offsetPx
+      if (
+        b1 !== undefined &&
+        b2 !== undefined &&
+        e1 !== undefined &&
+        e2 !== undefined
+      ) {
+        if (Math.abs(b1 - b2) < 3 && Math.abs(e1 - e2) < 3) {
           ctx.fillRect(b1 - 1, height - e1 - 1, 3, 3)
         } else {
           let currX = b1
