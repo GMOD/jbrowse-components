@@ -35,8 +35,6 @@ interface RowState<T> {
 }
 // a single row in the layout
 class LayoutRow<T> {
-  private rowNumber: number
-
   private padding: number
 
   private allFilled?: Record<string, T> | boolean
@@ -46,7 +44,6 @@ class LayoutRow<T> {
   private rowState?: RowState<T>
 
   constructor(rowNumber: number) {
-    this.rowNumber = rowNumber
     this.padding = 1
     this.widthLimit = 1000000
 

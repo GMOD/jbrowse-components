@@ -217,7 +217,7 @@ const blockBasedTrack = types
       }
     },
 
-    contextMenuFeature(feature: Feature) {
+    contextMenuFeature() {
       self.contextMenuOptions = []
     },
 
@@ -258,8 +258,7 @@ const blockBasedTrack = types
           if (!f) {
             self.clearFeatureSelection()
           } else {
-            const feature = self.features.get(f)
-            self.contextMenuFeature(feature as Feature)
+            self.contextMenuFeature()
           }
         },
         onContextMenu() {

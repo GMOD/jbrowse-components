@@ -1,6 +1,5 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
-import { Region } from '@gmod/jbrowse-core/util/types'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 
 interface SortObject {
@@ -10,15 +9,13 @@ interface SortObject {
 export const sortFeature = (
   features: Map<string, Feature>,
   sortObject: SortObject,
-  bpPerPx: number,
-  region: Region,
 ) => {
   const featureArray = Array.from(features)
   const featuresInCenterLine: typeof featureArray = []
   const featuresOutsideCenter: typeof featureArray = []
 
   // only sort on features that intersect center line, append those outside post-sort
-  featureArray.forEach((innerArray, idx) => {
+  featureArray.forEach(innerArray => {
     const feature = innerArray[1]
     if (
       doesIntersect2(
@@ -46,7 +43,7 @@ export const sortFeature = (
     // first sort all mismatches, then all reference bases at the end
     case 'Base pair': {
       const baseSortArray: [string, Mismatch][] = []
-      featuresInCenterLine.forEach((array, idx) => {
+      featuresInCenterLine.forEach(array => {
         const feature = array[1]
         const mismatches: Mismatch[] = feature.get('mismatches')
         mismatches.forEach(mismatch => {

@@ -75,7 +75,6 @@ export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
 export function calcPerBaseStats(
   region: NoAssemblyRegion,
   features: Feature[],
-  opts: { windowSize: number } = { windowSize: 1 },
 ): number[] {
   const { start, end } = region
   const scores = []

@@ -18,24 +18,22 @@ export default (pluginManager: any) => {
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
 
-  const useStyles = (makeStyles as typeof makeStylesMUI)(theme => {
-    return {
-      iconButton: {
-        padding: '4px',
-        margin: '0 2px 0 2px',
-      },
-      controls: {
-        overflow: 'hidden',
-        background: 'white',
-        whiteSpace: 'nowrap',
-        position: 'absolute',
-        boxSizing: 'border-box',
-        border: '1px solid #a2a2a2',
-        right: 0,
-        top: 0,
-        zIndex: 10000, // needs to be above overlay
-      },
-    }
+  const useStyles = (makeStyles as typeof makeStylesMUI)({
+    iconButton: {
+      padding: '4px',
+      margin: '0 2px 0 2px',
+    },
+    controls: {
+      overflow: 'hidden',
+      background: 'white',
+      whiteSpace: 'nowrap',
+      position: 'absolute',
+      boxSizing: 'border-box',
+      border: '1px solid #a2a2a2',
+      right: 0,
+      top: 0,
+      zIndex: 10000, // needs to be above overlay
+    },
   })
 
   const Controls = observer(({ model }: { model: DotplotViewModel }) => {

@@ -137,6 +137,8 @@ export default class ServerSideRenderer extends RendererType {
    *
    * @param result - object containing the results of calling the `render` method
    * @param features - Map of `feature.id() -> feature`
+   * @param args - deserialized render args. unused here, but may be used in
+   * deriving class methods
    */
   serializeResultsInWorker(
     result: { html: string },

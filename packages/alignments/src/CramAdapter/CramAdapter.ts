@@ -103,7 +103,7 @@ export default (pluginManager: PluginManager) => {
       const trimmed: string[] = []
       seqChunks
         .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
-        .forEach((chunk: Feature, i: number) => {
+        .forEach((chunk: Feature) => {
           const chunkStart = chunk.get('start')
           const chunkEnd = chunk.get('end')
           const trimStart = Math.max(start - chunkStart, 0)
@@ -127,7 +127,7 @@ export default (pluginManager: PluginManager) => {
 
     private async setup(opts?: BaseOptions) {
       if (Object.keys(this.samHeader).length === 0) {
-        const samHeader = await this.cram.cram.getSamHeader()
+        const samHeader = await this.cram.cram.getSamHeader(opts?.signal)
 
         // use the @SQ lines in the header to figure out the
         // mapping between ref ref ID numbers and names

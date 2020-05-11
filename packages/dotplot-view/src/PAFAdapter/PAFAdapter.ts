@@ -110,7 +110,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return true
   }
 
-  async getRefNames(opts?: BaseOptions) {
+  async getRefNames() {
     // we cannot determine this accurately
     return []
   }

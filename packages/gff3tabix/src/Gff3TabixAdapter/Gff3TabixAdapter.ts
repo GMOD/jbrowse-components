@@ -4,7 +4,7 @@ import {
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
-import { FileLocation, NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
+import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -36,14 +36,6 @@ interface LineFeature {
   fields: string[]
 }
 
-interface Config {
-  gffGzLocation: FileLocation
-  index: {
-    index: string
-    location: FileLocation
-  }
-  dontRedispatch: string[]
-}
 export default class extends BaseFeatureDataAdapter {
   protected gff: TabixIndexedFile
 
@@ -189,7 +181,7 @@ export default class extends BaseFeatureDataAdapter {
 
   private formatFeatures(featureLocs: FeatureLoc[]) {
     return featureLocs.map(
-      (featureLoc, locIndex) =>
+      featureLoc =>
         new SimpleFeature({
           data: this.featureData(featureLoc),
           id: `${this.id}-offset-${featureLoc.attributes._lineHash[0]}`,
