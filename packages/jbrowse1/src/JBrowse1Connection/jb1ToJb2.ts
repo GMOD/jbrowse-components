@@ -373,7 +373,7 @@ function generateFromConfigTrackConfig(
 export async function createRefSeqsAdapter(
   refSeqs: string | RefSeqs,
 ): Promise<Jb2Adapter> {
-  if (typeof refSeqs == 'string') {
+  if (typeof refSeqs === 'string') {
     // assume refSeqs is a url if it is string
     refSeqs = {
       url: refSeqs,
