@@ -8,6 +8,7 @@ import Filtering from '@gmod/jbrowse-plugin-filtering'
 import Gff3Tabix from '@gmod/jbrowse-plugin-gff3tabix'
 import JBrowse1 from '@gmod/jbrowse-plugin-jbrowse1'
 import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
+import LinearComparativeView from '@gmod/jbrowse-plugin-linear-comparative-view'
 import Lollipop from '@gmod/jbrowse-plugin-lollipop'
 import Menus from '@gmod/jbrowse-plugin-menus'
 import RDF from '@gmod/jbrowse-plugin-rdf'
@@ -31,6 +32,7 @@ export default [
   Gff3Tabix,
   JBrowse1,
   LinearGenomeView,
+  LinearComparativeView,
   Lollipop,
   Menus,
   RDF,

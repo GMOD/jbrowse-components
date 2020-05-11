@@ -1,3 +1,4 @@
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
@@ -28,7 +29,7 @@ import BreakpointSplitRenderer, {
 } from './BreakpointSplitRenderer'
 
 export default class extends Plugin {
-  install(pluginManager) {
+  install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(require('./LinearComparativeView')),
     )
@@ -41,6 +42,7 @@ export default class extends Plugin {
     pluginManager.addTrackType(() => {
       const configSchema = breakpointTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
+        compatibleView: 'BreakpointSplitView',
         name: 'BreakpointSplitTrack',
         configSchema,
         stateModel: breakpointTrackStateModelFactory(
@@ -52,6 +54,7 @@ export default class extends Plugin {
     pluginManager.addTrackType(() => {
       const configSchema = comparativeTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
+        compatibleView: 'LinearComparativeView',
         name: 'LinearComparativeTrack',
         configSchema,
         stateModel: comparativeTrackStateModelFactory(
@@ -63,6 +66,7 @@ export default class extends Plugin {
     pluginManager.addTrackType(() => {
       const configSchema = syntenyTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
+        compatibleView: 'LinearSyntenyView',
         name: 'LinearSyntenyTrack',
         configSchema,
         stateModel: syntenyTrackStateModelFactory(pluginManager, configSchema),

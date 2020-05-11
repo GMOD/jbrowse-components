@@ -3,13 +3,15 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Instance } from 'mobx-state-tree'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { GenericFilehandle } from 'generic-filehandle'
 import { tap } from 'rxjs/operators'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { AdapterClass as NCListAdapter } from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
+import MyConfigSchema from './configSchema'
 
 type RowToGeneNames = {
   name1: string
@@ -21,7 +23,7 @@ interface GeneNameToRows {
   [key: string]: number[]
 }
 
-export default class extends BaseFeatureDataAdapter {
+export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
   private initialized = false
 
   private geneNameToRows: GeneNameToRows = {}
@@ -36,11 +38,7 @@ export default class extends BaseFeatureDataAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: {
-    mcscanAnchorsLocation: IFileLocation
-    subadapters: BaseFeatureDataAdapter[] | any // todo remove any
-    assemblyNames: string[]
-  }) {
+  public constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
     const { mcscanAnchorsLocation, subadapters, assemblyNames } = config
     this.mcscanAnchorsLocation = openLocation(mcscanAnchorsLocation)
