@@ -102,7 +102,6 @@ function LinearSyntenyRendering(props: {
     const ctx = ref.current.getContext('2d')
     if (!ctx) return
     ctx.scale(highResolutionScaling, highResolutionScaling)
-    console.log(trackModel)
     ctx.fillStyle = getConf(trackModel, 'color')
     const showIntraviewLinks = false
     const middle = true

@@ -3,6 +3,7 @@ import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { render } from '@testing-library/react'
 import Base1DView from '@gmod/jbrowse-core/util/Base1DViewModel'
 import React from 'react'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import LinearSyntenyRendering from './LinearSyntenyRendering'
 import { configSchemaFactory } from '../../LinearSyntenyTrack'
 import ThisPlugin from '../..'
@@ -11,8 +12,6 @@ expect.extend({ toMatchImageSnapshot })
 
 // these tests do very little, let's try to expand them at some point
 test('test rendering a simple synteny from fake data', async () => {
-
-test('create config', () => {
   const pluginManager = new PluginManager([new ThisPlugin()])
   const configSchema = configSchemaFactory(pluginManager)
   const views = [
@@ -37,9 +36,13 @@ test('create config', () => {
     <LinearSyntenyRendering
       width={800}
       height={600}
-      trackModel={configSchema.create({
-        configuration: { renderer: { color: 'rgba(255,100,100,0.3)' } },
-      })}
+      trackModel={{
+        trackId: 'test',
+        configuration: configSchema.create({
+          trackId: 'test',
+          renderer: { color: 'rgba(255,100,100,0.3)' },
+        }),
+      }}
       highResolutionScaling={1}
       trackIds={['peach_gene', 'grape_gene']}
       views={views}
