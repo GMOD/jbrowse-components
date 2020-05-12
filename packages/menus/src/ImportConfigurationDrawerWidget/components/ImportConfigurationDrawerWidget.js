@@ -165,7 +165,7 @@ function ImportConfiguration(props) {
       <Paper className={classes.paper}>
         <div {...getRootProps({ className: classes.dropZone })}>
           <input {...getInputProps()} />
-          <CloudUploadIcon className={classes.uploadIcon}/>
+          <CloudUploadIcon className={classes.uploadIcon} />
           <Typography color="textSecondary" align="center" variant="body1">
             Drag and drop files here
           </Typography>
@@ -183,7 +183,7 @@ function ImportConfiguration(props) {
             {acceptedFilesParsed.map((file, idx) => (
               <ListItem key={file.path}>
                 <ListItemIcon>
-              {file.config.error? <ErrorIcon/ > : <CheckCircleIcon/>}
+                  {file.config.error ? <ErrorIcon /> : <CheckCircleIcon />}
                 </ListItemIcon>
                 {file.config.error ? (
                   <Typography color="error" className={classes.listItem}>
@@ -236,9 +236,7 @@ function ImportConfiguration(props) {
           <div>
             <ExpansionPanel style={{ marginTop: 4 }}>
               <ExpansionPanelSummary
-                expandIcon={
-                  <ExpandMoreIcon className={classes.expandIcon} />
-                }
+                expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
               >
                 <Typography color="error" align="center">
                   {acceptedFilesParsed.length === 1

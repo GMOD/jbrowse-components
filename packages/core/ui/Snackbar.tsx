@@ -1,6 +1,6 @@
-import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Snackbar from '@material-ui/core/Snackbar'
+import CloseIcon from '@material-ui/icons/Close'
 import { observer } from 'mobx-react'
 import React, { useEffect, useState } from 'react'
 
@@ -56,7 +56,7 @@ function MessageSnackbar({ session }: { session?: any }) {
       message={snackbarMessage}
       action={
         <IconButton aria-label="close" color="inherit" onClick={handleClose}>
-          <Icon>close</Icon>
+          <CloseIcon />
         </IconButton>
       }
     />

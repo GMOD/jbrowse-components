@@ -1,8 +1,9 @@
+import FolderOpenIcon from '@material-ui/icons/FolderOpen'
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const Icon = jbrequire('@material-ui/core/Icon')
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const Grid = jbrequire('@material-ui/core/Grid')
@@ -69,7 +70,7 @@ export default pluginManager => {
             data-testid="sv_inspector_view_open"
             color="secondary"
           >
-            <Icon fontSize="small">folder_open</Icon>
+            <FolderOpenIcon />
           </IconButton>
         </Grid>
       </Grid>

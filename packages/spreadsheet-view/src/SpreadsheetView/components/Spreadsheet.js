@@ -1,3 +1,8 @@
+import ArrowUp from '@material-ui/icons/ArrowUpward'
+import ArrowDown from '@material-ui/icons/ArrowDownward'
+import CropFreeIcon from '@material-ui/icons/CropFree'
+import ArrowDropDown from '@material-ui/icons/ArrowDropDown'
+
 /* eslint-disable react/prop-types */
 export function numToColName(num) {
   function letterFor(n) {
@@ -27,8 +32,6 @@ export default pluginManager => {
   const { grey, indigo } = jbrequire('@material-ui/core/colors')
   const Checkbox = jbrequire('@material-ui/core/Checkbox')
   const IconButton = jbrequire('@material-ui/core/IconButton')
-  const Icon = jbrequire('@material-ui/core/Icon')
-
   const Tooltip = jbrequire('@material-ui/core/Tooltip')
   const FormControlLabel = jbrequire('@material-ui/core/FormControlLabel')
 
@@ -195,13 +198,9 @@ export default pluginManager => {
     if (sortSpec) {
       const { descending } = sortSpec
       return (
-        <Icon
-          fontSize="small"
-          className={classes.sortIndicator}
-          onClick={sortSpec.switchDirection}
-        >
-          {descending ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
-        </Icon>
+        <div fontSize="small" className={classes.sortIndicator}>
+          {descending ? <ArrowUp /> : <ArrowDown />}
+        </div>
       )
     }
     return null
@@ -253,9 +252,7 @@ export default pluginManager => {
                       size="small"
                       color="secondary"
                     >
-                      <Icon className={classes.columnButtonIcon}>
-                        crop_free
-                      </Icon>
+                      <CropFreeIcon className={classes.columnButtonIcon} />
                     </IconButton>
                   </span>
                 </Tooltip>
@@ -286,9 +283,7 @@ export default pluginManager => {
                       onClick={columnButtonClick.bind(null, colNumber)}
                       color="secondary"
                     >
-                      <Icon className={classes.columnButtonIcon}>
-                        arrow_drop_down
-                      </Icon>
+                      <ArrowDropDown className={classes.columnButtonIcon} />
                     </IconButton>
                   </div>
                 </th>
