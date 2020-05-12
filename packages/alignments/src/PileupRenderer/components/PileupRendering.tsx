@@ -1,12 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  PropTypes as CommonPropTypes,
-  IRegion,
-} from '@gmod/jbrowse-core/mst-types'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { PrerenderedCanvas, Tooltip } from '@gmod/jbrowse-core/ui'
 import { bpSpanPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
-import ReactPropTypes from 'prop-types'
 import React, { MouseEvent, useRef, useState, useEffect } from 'react'
 import runner from 'mobx-run-in-reactive-context'
 

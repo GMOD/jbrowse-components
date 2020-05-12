@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,import/no-extraneous-dependencies */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -11,7 +11,6 @@ import { tap } from 'rxjs/operators'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { AdapterClass as NCListAdapter } from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'

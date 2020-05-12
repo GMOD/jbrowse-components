@@ -31,8 +31,6 @@ export default function stateModelFactory(pluginManager: any) {
     .model('LinearComparativeView', {
       id: ElementId,
       type: types.literal('LinearComparativeView'),
-      headerHeight: 0,
-      width: 800,
       height: defaultHeight,
       displayName: 'synteny detail',
       trackSelectorType: 'hierarchical',
@@ -50,6 +48,10 @@ export default function stateModelFactory(pluginManager: any) {
           .stateModel as LinearGenomeViewStateModel,
       ),
     })
+    .volatile(() => ({
+      headerHeight: 0,
+      width: 800,
+    }))
     .views(self => ({
       get refNames() {
         return (self.views || []).map(v => [

@@ -1,16 +1,10 @@
-import React, { Component } from 'react'
-import ReactPropTypes from 'prop-types'
-import { observer, PropTypes } from 'mobx-react'
-import { hydrate, unmountComponentAtNode } from 'react-dom'
-import { isAlive } from 'mobx-state-tree'
-import BlockError from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView/components/BlockError'
+import React from 'react'
+import { observer } from 'mobx-react'
 
-function ServerSideRenderedContent(props) {
-  console.log('here')
+export default observer(function ServerSideRenderedContent(props) {
   const { model } = props
   const {
     data,
-    html,
     renderProps,
     renderingComponent: RenderingComponent,
   } = model
@@ -20,8 +14,4 @@ function ServerSideRenderedContent(props) {
   ) : (
     <p>Loading</p>
   )
-}
-ServerSideRenderedContent.propTypes = {
-  model: PropTypes.observableObject.isRequired,
-}
-export default observer(ServerSideRenderedContent)
+})

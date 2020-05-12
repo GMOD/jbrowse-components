@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, Instance, getParent } from 'mobx-state-tree'
 import {
   getConf,
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
-
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
   configSchemaFactory as baseConfigFactory,
   stateModelFactory as baseModelFactory,
@@ -19,7 +18,7 @@ interface Block {
   key: string
 }
 
-export function configSchemaFactory(pluginManager: any) {
+export function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearSyntenyTrack',
     {
@@ -30,6 +29,7 @@ export function configSchemaFactory(pluginManager: any) {
       },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
+      middle: { type: 'boolean', defaultValue: true },
     },
     {
       baseConfiguration: baseConfigFactory(pluginManager),
@@ -38,7 +38,10 @@ export function configSchemaFactory(pluginManager: any) {
   )
 }
 
-export function stateModelFactory(pluginManager: any, configSchema: any) {
+export function stateModelFactory(
+  pluginManager: PluginManager,
+  configSchema: ReturnType<typeof configSchemaFactory>,
+) {
   return types
     .compose(
       'LinearSyntenyTrack',
@@ -53,7 +56,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       // see link, can't have colliding name `width` so renamed to `effectiveWidth`
       // https://spectrum.chat/mobx-state-tree/general/types-compose-error~484a5bbe-a280-4fae-8ba7-eb14afc1257d
       get effectiveWidth() {
-        return getParent(self, 2).views[0].viewingRegionWidth
+        return getParent(self, 2).width
       },
       get effectiveHeight() {
         return 100

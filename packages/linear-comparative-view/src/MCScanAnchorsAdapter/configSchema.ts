@@ -13,8 +13,8 @@ export default ConfigurationSchema(
     },
     assemblyNames: {
       type: 'stringArray',
-      defaultValue: []
-    }
+      defaultValue: [],
+    },
   },
   { explicitlyTyped: true },
 )

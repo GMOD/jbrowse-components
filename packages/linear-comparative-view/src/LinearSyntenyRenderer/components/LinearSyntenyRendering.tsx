@@ -1,5 +1,8 @@
+/* eslint-disable no-continue */
+
 import React, { useRef, useEffect } from 'react'
 import { observer } from 'mobx-react'
+import { getParent } from 'mobx-state-tree'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { Base1DViewModel } from '@gmod/jbrowse-core/util/Base1DViewModel'
@@ -83,113 +86,108 @@ function LinearSyntenyRendering(props: {
   const ref = useRef<HTMLCanvasElement>(null)
   const {
     height,
+    width,
     trackModel = {},
     highResolutionScaling = 1,
     views,
     trackIds,
   } = props
-  try {
-    views.forEach(view => {
-      if (view.features) {
-        view.features = view.features
-          .map(f => new SimpleFeature(f))
-          .sort((a, b) => a.get('syntenyId') - b.get('syntenyId'))
+
+  const x1 = getParent(trackModel, 2).views[0].offsetPx
+  const x2 = getParent(trackModel, 2).views[1].offsetPx
+  views.forEach(view => {
+    if (view.features) {
+      view.features = view.features
+        // @ts-ignore this is deserializing the features
+        .map(f => new SimpleFeature(f))
+        .sort((a, b) => a.get('syntenyId') - b.get('syntenyId'))
+    }
+  })
+  const layoutMatches = layoutMatchesFromViews(views)
+
+  useEffect(() => {
+    if (!ref.current) return
+    const ctx = ref.current.getContext('2d')
+    if (!ctx) return
+    ctx.scale(highResolutionScaling, highResolutionScaling)
+    ctx.fillStyle = getConf(trackModel, 'color')
+    const showIntraviewLinks = false
+    const middle = true
+    const hideTiny = false
+    layoutMatches.forEach(chunk => {
+      // we follow a path in the list of chunks, not from top to bottom, just in series
+      // following x1,y1 -> x2,y2
+      for (let i = 0; i < chunk.length - 1; i += 1) {
+        const { layout: c1, feature: f1, level: level1, refName: ref1 } = chunk[
+          i
+        ]
+        const { layout: c2, feature: f2, level: level2, refName: ref2 } = chunk[
+          i + 1
+        ]
+        const v1 = views[level1]
+        const v2 = views[level2]
+
+        if (!c1 || !c2) {
+          console.warn('received null layout for a overlay feature')
+          return
+        }
+
+        // disable rendering connections in a single level
+        if (!showIntraviewLinks && level1 === level2) {
+          return
+        }
+        const length1 = f1.get('end') - f1.get('start')
+        const length2 = f2.get('end') - f2.get('start')
+
+        if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
+          if (hideTiny) {
+            continue
+          }
+        }
+        // if (
+        //   !v1.staticBlocks.find(region => region.refName === ref1) ||
+        //   !v2.staticBlocks.find(region => region.refName === ref2)
+        // ) {
+        //   continue
+        // }
+
+        // @ts-ignore
+        const x11 = getPxFromCoordinate(v1, ref1, c1[LEFT])
+        // @ts-ignore
+        const x12 = getPxFromCoordinate(v1, ref1, c1[RIGHT])
+        // @ts-ignore
+        const x21 = getPxFromCoordinate(v2, ref2, c2[LEFT])
+        // @ts-ignore
+        const x22 = getPxFromCoordinate(v2, ref2, c2[RIGHT])
+
+        const y1 = middle
+          ? interstitialYPos(level1 < level2, height)
+          : // prettier-ignore
+            // @ts-ignore
+            overlayYPos(trackIds[0], level1, views, c1, level1 < level2)
+        const y2 = middle
+          ? interstitialYPos(level2 < level1, height)
+          : // prettier-ignore
+            // @ts-ignore
+            overlayYPos(trackIds[1], level2, views, c2, level2 < level1)
+
+        ctx.beginPath()
+        ctx.moveTo(x11, y1)
+        ctx.lineTo(x12, y1)
+        ctx.lineTo(x22, y2)
+        ctx.lineTo(x21, y2)
+        ctx.closePath()
+        ctx.fill()
       }
     })
-    console.log(props)
-    const layoutMatches = layoutMatchesFromViews(views)
+  })
 
-    useEffect(() => {
-      if (!ref.current) return
-      const ctx = ref.current.getContext('2d')
-      if (!ctx) return
-      ctx.scale(highResolutionScaling, highResolutionScaling)
-      ctx.fillStyle = getConf(trackModel, 'color')
-      const showIntraviewLinks = false
-      const middle = true
-      const hideTiny = false
-      layoutMatches.forEach(chunk => {
-        // we follow a path in the list of chunks, not from top to bottom, just in series
-        // following x1,y1 -> x2,y2
-        for (let i = 0; i < chunk.length - 1; i += 1) {
-          const {
-            layout: c1,
-            feature: f1,
-            level: level1,
-            refName: ref1,
-          } = chunk[i]
-          const {
-            layout: c2,
-            feature: f2,
-            level: level2,
-            refName: ref2,
-          } = chunk[i + 1]
-          const v1 = views[level1]
-          const v2 = views[level2]
-
-          if (!c1 || !c2) {
-            console.warn('received null layout for a overlay feature')
-            return
-          }
-
-          // disable rendering connections in a single level
-          if (!showIntraviewLinks && level1 === level2) {
-            return
-          }
-          const length1 = f1.get('end') - f1.get('start')
-          const length2 = f2.get('end') - f2.get('start')
-
-          if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
-            if (hideTiny) {
-              continue
-            }
-          }
-          // if (
-          //   !v1.staticBlocks.find(region => region.refName === ref1) ||
-          //   !v2.staticBlocks.find(region => region.refName === ref2)
-          // ) {
-          //   continue
-          // }
-
-          // @ts-ignore
-          const x11 = getPxFromCoordinate(v1, ref1, c1[LEFT])
-          // @ts-ignore
-          const x12 = getPxFromCoordinate(v1, ref1, c1[RIGHT])
-          // @ts-ignore
-          const x21 = getPxFromCoordinate(v2, ref2, c2[LEFT])
-          // @ts-ignore
-          const x22 = getPxFromCoordinate(v2, ref2, c2[RIGHT])
-
-          const y1 = middle
-            ? interstitialYPos(level1 < level2, height)
-            : // prettier-ignore
-              // @ts-ignore
-              overlayYPos(trackIds[0], level1, views, c1, level1 < level2)
-          const y2 = middle
-            ? interstitialYPos(level2 < level1, height)
-            : // prettier-ignore
-              // @ts-ignore
-              overlayYPos(trackIds[1], level2, views, c2, level2 < level1)
-
-          ctx.beginPath()
-          ctx.moveTo(x11, y1)
-          ctx.lineTo(x12, y1)
-          ctx.lineTo(x22, y2)
-          ctx.lineTo(x21, y2)
-          ctx.closePath()
-          ctx.fill()
-        }
-      })
-    })
-  } catch (e) {
-    console.error(e)
-  }
   return (
     <canvas
       ref={ref}
-      data-testid="prerendered_canvas"
-      width={800}
-      height={200}
+      data-testid="synteny_canvas"
+      width={width}
+      height={height}
     />
   )
 }

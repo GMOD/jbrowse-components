@@ -3,7 +3,7 @@ import { getSnapshot } from 'mobx-state-tree'
 import Base1DView, {
   Base1DViewModel,
 } from '@gmod/jbrowse-core/util/Base1DViewModel'
-import { tap, filter, distinct, toArray } from 'rxjs/operators'
+import { filter, toArray } from 'rxjs/operators'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
 export default class LinearSyntenyRenderer extends ComparativeServerSideRendererType {
