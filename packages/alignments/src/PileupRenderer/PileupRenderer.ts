@@ -50,9 +50,22 @@ export default class PileupRenderer extends BoxRendererType {
     bpPerPx: number,
     region: IRegion,
   ): LayoutRecord | null {
+    // alter the start and end below when softclipping enabled
+    let expansionBefore = 0
+    let expansionAfter = 0
+    const mismatches: Mismatch[] = feature.get('mismatches')
+    for (let i = 0; i < mismatches.length; i += 1) {
+      const mismatch = mismatches[i]
+      if (mismatch.type === 'softclip') {
+        mismatch.start === 0
+          ? (expansionBefore = mismatch.cliplen || 0)
+          : (expansionAfter = mismatch.cliplen || 0)
+      }
+    }
+
     const [leftPx, rightPx] = bpSpanPx(
-      feature.get('start'),
-      feature.get('end'),
+      feature.get('start') - expansionBefore,
+      feature.get('end') + expansionAfter,
       region,
       bpPerPx,
     )
@@ -67,10 +80,11 @@ export default class PileupRenderer extends BoxRendererType {
         }`,
       )
     }
+    // if weird collisions occur, also alter the below start and end
     const topPx = subLayout.addRect(
       feature.id(),
-      feature.get('start'),
-      feature.get('end'),
+      feature.get('start') - expansionBefore,
+      feature.get('end') + expansionAfter,
       heightPx,
       feature,
     )
@@ -202,6 +216,7 @@ export default class PileupRenderer extends BoxRendererType {
               )
             }
           } else if (
+            // probably change this/use this to display softclip under
             mismatch.type === 'hardclip' ||
             mismatch.type === 'softclip'
           ) {

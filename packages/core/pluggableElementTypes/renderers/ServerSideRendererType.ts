@@ -239,7 +239,9 @@ export default class ServerSideRenderer extends RendererType {
     const featureObservable =
       requestRegions.length === 1
         ? dataAdapter.getFeaturesInRegion(
-            this.getExpandedGlyphRegion(requestRegions[0], renderArgs),
+            dummySoftClipCond
+              ? this.getExpandedClippingRegion(requestRegions[0], renderArgs)
+              : this.getExpandedGlyphRegion(requestRegions[0], renderArgs),
             {
               signal,
               bpPerPx,
@@ -252,32 +254,7 @@ export default class ServerSideRenderer extends RendererType {
             originalRegions,
           })
 
-    const softClippedFeatureObservable =
-      requestRegions.length === 1
-        ? dataAdapter.getFeaturesInRegion(
-            this.getExpandedClippingRegion(requestRegions[0], renderArgs),
-            {
-              signal,
-              bpPerPx,
-              originalRegions,
-            },
-          )
-        : dataAdapter.getFeaturesInMultipleRegions(
-            requestRegions.map(region =>
-              this.getExpandedClippingRegion(region, renderArgs),
-            ),
-            {
-              signal,
-              bpPerPx,
-              originalRegions,
-            },
-          )
-
-    const finalFeatureObservable = dummySoftClipCond
-      ? softClippedFeatureObservable
-      : featureObservable
-
-    await finalFeatureObservable
+    await featureObservable
       .pipe(
         tap(() => checkAbortSignal(signal)),
         filter(feature => this.featurePassesFilters(renderArgs, feature)),
@@ -290,7 +267,6 @@ export default class ServerSideRenderer extends RendererType {
       )
       .toPromise()
 
-    // console.log('after', features)
     return features
   }
 
