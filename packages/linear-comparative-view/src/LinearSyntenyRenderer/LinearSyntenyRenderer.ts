@@ -13,10 +13,8 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
     views: Base1DViewModel[]
   }) {
     const { height, width, views: serializedViews } = renderProps
-    const dimensions = [width, height]
-    console.log(renderProps, 'test')
     const realizedViews = serializedViews.map((view, idx) =>
-      Base1DView.create({ ...view, width: dimensions[idx] }),
+      Base1DView.create({ ...view, width }),
     )
     await Promise.all(
       realizedViews.map(async view => {
@@ -33,6 +31,7 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
       features: (r.features || []).map(f => f.toJSON()),
     }))
     return {
+      offsets: views.map(view => view.offsetPx),
       views,
       height,
       width,

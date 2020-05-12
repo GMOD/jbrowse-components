@@ -55,7 +55,7 @@ const Base1DView = types
         .map(a => a.end - a.start)
         .reduce((a, b) => a + b, 0)
     },
-    bpToPx(refName: string, coord: number) {
+    bpToPx({ refName, coord }: { refName: string; coord: number }) {
       let offsetBp = 0
 
       const index = self.displayedRegions.findIndex(r => {

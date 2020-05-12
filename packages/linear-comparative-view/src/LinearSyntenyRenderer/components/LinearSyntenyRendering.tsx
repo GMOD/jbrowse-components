@@ -5,7 +5,9 @@ import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getConf } from '@gmod/jbrowse-core/configuration'
-import { Base1DViewModel } from '@gmod/jbrowse-core/util/Base1DViewModel'
+import Base1DView, {
+  Base1DViewModel,
+} from '@gmod/jbrowse-core/util/Base1DViewModel'
 import { getPxFromCoordinate, interstitialYPos, overlayYPos } from '../../util'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -89,28 +91,35 @@ function LinearSyntenyRendering(props: {
     width,
     trackModel = {},
     highResolutionScaling = 1,
-    views,
+    views: serializedViews,
     trackIds,
   } = props
 
-  const x1 = getParent(trackModel, 2).views[0].offsetPx
-  const x2 = getParent(trackModel, 2).views[1].offsetPx
-  views.forEach(view => {
+  const v1p = getParent(trackModel, 2).views[0].offsetPx
+  const v2p = getParent(trackModel, 2).views[1].offsetPx
+
+  const views = serializedViews.map(view => {
+    const newView = Base1DView.create({ ...view, width })
     if (view.features) {
-      view.features = view.features
-        // @ts-ignore this is deserializing the features
-        .map(f => new SimpleFeature(f))
-        .sort((a, b) => a.get('syntenyId') - b.get('syntenyId'))
+      newView.setFeatures(
+        view.features
+          // @ts-ignore this is deserializing the features
+          .map(f => new SimpleFeature(f))
+          .sort((a, b) => a.get('syntenyId') - b.get('syntenyId')),
+      )
     }
+    return newView
   })
+
   const layoutMatches = layoutMatchesFromViews(views)
 
   useEffect(() => {
     if (!ref.current) return
     const ctx = ref.current.getContext('2d')
     if (!ctx) return
+    ctx.clearRect(0, 0, width, height)
     ctx.scale(highResolutionScaling, highResolutionScaling)
-    ctx.fillStyle = getConf(trackModel, 'color')
+    ctx.fillStyle = getConf(trackModel, ['renderer', 'color'])
     const showIntraviewLinks = false
     const middle = true
     const hideTiny = false
@@ -150,15 +159,14 @@ function LinearSyntenyRendering(props: {
         // ) {
         //   continue
         // }
+        //
+        const o1 = v1.dynamicBlocks.contentBlocks[0].offsetPx
+        const o2 = v2.dynamicBlocks.contentBlocks[0].offsetPx
 
-        // @ts-ignore
-        const x11 = getPxFromCoordinate(v1, ref1, c1[LEFT])
-        // @ts-ignore
-        const x12 = getPxFromCoordinate(v1, ref1, c1[RIGHT])
-        // @ts-ignore
-        const x21 = getPxFromCoordinate(v2, ref2, c2[LEFT])
-        // @ts-ignore
-        const x22 = getPxFromCoordinate(v2, ref2, c2[RIGHT])
+        const x11 = v1.bpToPx({ refName: ref1, coord: c1[LEFT] }) - v1p
+        const x12 = v1.bpToPx({ refName: ref1, coord: c1[RIGHT] }) - v1p
+        const x21 = v2.bpToPx({ refName: ref2, coord: c2[LEFT] }) - v2p
+        const x22 = v2.bpToPx({ refName: ref2, coord: c2[RIGHT] }) - v2p
 
         const y1 = middle
           ? interstitialYPos(level1 < level2, height)
