@@ -87,4 +87,17 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
       )
       .toPromise()
   }
+
+  // render method called on the worker
+  async renderInWorker(args: any) {
+    this.deserializeArgsInWorker(args)
+
+    const results = await this.render(args)
+
+    // serialize the results for passing back to the main thread.
+    // these will be transmitted to the main process, and will come out
+    // as the result of renderRegionWithWorker.
+    this.serializeResultsInWorker(results, args)
+    return results
+  }
 }
