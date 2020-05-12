@@ -121,6 +121,7 @@ export default class PileupRenderer extends BoxRendererType {
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const w = Math.max(minFeatWidth, pxPerBp)
+    const dummySoftClipCond = true
 
     const sortedFeatures =
       sortObject && sortObject.by && region.start === sortObject.position
@@ -217,8 +218,9 @@ export default class PileupRenderer extends BoxRendererType {
             }
           } else if (
             // probably change this/use this to display softclip under
-            mismatch.type === 'hardclip' ||
-            mismatch.type === 'softclip'
+            mismatch.type ===
+            'hardclip' /* ||
+            mismatch.type === 'softclip' */
           ) {
             ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
             const pos = mismatchLeftPx - 1
@@ -249,6 +251,49 @@ export default class PileupRenderer extends BoxRendererType {
         // TODOCLIP: somewhere here the stripey stuff gets colored in on the solid red/blue as a second pass
         // if condition is if maxFeatureglyphsize/maxsoftclipping some sort of indicator is greater than 0
         // then find soft clipped bases and draw them
+        if (dummySoftClipCond) {
+          for (let j = 0; j < mismatches.length; j += 1) {
+            const mismatch = mismatches[j]
+            if (mismatch.type === 'softclip') {
+              // start at cutoff point, and iterate through
+              // const sequenceArray = feature.get('seq').split('')
+              // console.log(sequenceArray)
+              console.log(mismatch)
+              const softClipLength = mismatch.cliplen || 0
+              const softClipStart =
+                mismatch.start === 0
+                  ? feature.get('start') - softClipLength
+                  : feature.get('start') + mismatch.start
+              for (let k = 0; k < softClipLength; k += 1) {
+                const base = feature.get('seq').charAt(k + mismatch.start)
+                const [softClipLeftPx, softClipRightPx] = bpSpanPx(
+                  softClipStart + k,
+                  softClipStart + k + 1,
+                  region,
+                  bpPerPx,
+                )
+                const softClipWidthPx = Math.max(
+                  minFeatWidth,
+                  Math.abs(softClipLeftPx - softClipRightPx),
+                )
+                ctx.fillStyle = colorForBase[base]
+                ctx.fillRect(softClipLeftPx, topPx, softClipWidthPx, heightPx)
+
+                if (
+                  softClipWidthPx >= charSize.width &&
+                  heightPx >= charSize.height - 5
+                ) {
+                  ctx.fillStyle = 'black'
+                  ctx.fillText(
+                    base,
+                    softClipLeftPx + (softClipWidthPx - charSize.width) / 2 + 1,
+                    topPx + heightPx,
+                  )
+                }
+              }
+            }
+          }
+        }
       }
     })
 
