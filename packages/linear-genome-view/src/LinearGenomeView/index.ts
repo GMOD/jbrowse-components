@@ -13,7 +13,7 @@ import {
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
-import { getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
+import { getSnapshot, getRoot, types, cast, Instance } from 'mobx-state-tree'
 
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
@@ -43,36 +43,6 @@ interface BpOffset {
 interface ViewActions {
   [key: string]: MenuOption[]
 }
-const validBpPerPx = [
-  1 / 50,
-  1 / 20,
-  1 / 10,
-  1 / 5,
-  1 / 2,
-  1,
-  2,
-  5,
-  10,
-  20,
-  50,
-  100,
-  200,
-  500,
-  1000,
-  2000,
-  5000,
-  10000,
-  20000,
-  50000,
-  100000,
-  200000,
-  500000,
-  1000000,
-  2000000,
-  5000000,
-  10000000,
-].sort((a, b) => a - b)
-
 export const HEADER_BAR_HEIGHT = 48
 export const HEADER_OVERVIEW_HEIGHT = 20
 export const SCALE_BAR_HEIGHT = 17
@@ -148,32 +118,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return totalbp
       },
 
-      get zoomLevels() {
-        const zoomLevels = validBpPerPx.filter(
-          val => val <= this.totalBp / self.width && val >= 0,
-        )
-        if (!zoomLevels.length) {
-          zoomLevels.push(validBpPerPx[0])
-        }
-        return zoomLevels
-      },
-
       get maxBpPerPx() {
-        return this.zoomLevels[this.zoomLevels.length - 1]
+        return this.totalBp / 1000
       },
 
       get minBpPerPx() {
-        return this.zoomLevels[0]
-      },
-
-      constrainBpPerPx(newBpPerPx: number): number {
-        // find the closest valid zoom level and return it
-        // might consider reimplementing this later using a more efficient algorithm
-        return this.zoomLevels
-          .slice()
-          .sort(
-            (a, b) => Math.abs(a - newBpPerPx) - Math.abs(b - newBpPerPx),
-          )[0]
+        return 1 / 50
       },
 
       get maxOffset() {
@@ -436,11 +386,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
-      zoomTo(newBpPerPx: number, constrain = true) {
-        let bpPerPx = newBpPerPx
-        if (constrain) {
-          bpPerPx = self.constrainBpPerPx(newBpPerPx)
-        }
+      zoomTo(newBpPerPx: number) {
+        const bpPerPx = newBpPerPx
         if (bpPerPx === self.bpPerPx) return
         const oldBpPerPx = self.bpPerPx
         self.bpPerPx = bpPerPx
@@ -589,11 +536,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
             bpToStart += region.end - region.start
           }
         }
-        self.bpPerPx = self.constrainBpPerPx(bpSoFar / self.width)
-        const viewWidth = self.width
-        if (viewWidth > bpSoFar / self.bpPerPx) {
+        self.bpPerPx = bpSoFar / self.width
+        if (self.width > bpSoFar / self.bpPerPx) {
           self.offsetPx = Math.round(
-            bpToStart / self.bpPerPx - (viewWidth - bpSoFar / self.bpPerPx) / 2,
+            bpToStart / self.bpPerPx -
+              (self.width - bpSoFar / self.bpPerPx) / 2,
           )
         } else {
           self.offsetPx = Math.round(bpToStart / self.bpPerPx)
@@ -633,7 +580,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       showAllRegions() {
-        self.bpPerPx = self.constrainBpPerPx(self.totalBp / self.width)
+        self.bpPerPx = self.totalBp / self.width
         self.offsetPx = 0
       },
 
@@ -664,27 +611,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => {
       let cancelLastAnimation = () => {}
 
-      function zoom(levels: number) {
+      function zoom(targetBpPerPx: number) {
         self.zoomTo(self.bpPerPx)
         if (
-          // no zoom
-          levels === 0 ||
           // already zoomed all the way in
-          (levels > 0 && self.bpPerPx === self.minBpPerPx) ||
+          self.bpPerPx === self.minBpPerPx ||
           // already zoomed all the way out
-          (levels < 0 && self.bpPerPx === self.maxBpPerPx)
+          self.bpPerPx === self.maxBpPerPx
         ) {
           return
         }
-        const currentIndex = self.zoomLevels.findIndex(
-          zoomLevel => zoomLevel === self.bpPerPx,
-        )
-        const targetIndex = clamp(
-          currentIndex - levels,
-          0,
-          self.zoomLevels.length - 1,
-        )
-        const targetBpPerPx = self.zoomLevels[targetIndex]
         const factor = self.bpPerPx / targetBpPerPx
         const [animate, cancelAnimation] = springAnimate(
           1,
@@ -797,3 +733,4 @@ export function stateModelFactory(pluginManager: PluginManager) {
   return types.compose(BaseViewModel, model)
 }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
+export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>

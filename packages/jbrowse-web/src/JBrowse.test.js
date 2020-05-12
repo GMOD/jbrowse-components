@@ -150,7 +150,7 @@ describe('valid file tests', () => {
     fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
     const zoomMenuItem = await findByText('Zoom to region')
     fireEvent.click(zoomMenuItem)
-    expect(state.session.views[0].bpPerPx).toEqual(0.02)
+    expect(state.session.views[0].bpPerPx).toEqual(0.009375)
   })
 
   it('click and drag to reorder tracks', async () => {
@@ -190,7 +190,13 @@ describe('valid file tests', () => {
     await findByText('ctgA')
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
+    await wait(() => {
+      expect(state.session.views[0].bpPerPx).toBe(before / 2)
+    })
     fireEvent.click(await findByTestId('zoom_out'))
+    await wait(() => {
+      expect(state.session.views[0].bpPerPx).toBe(before)
+    })
     expect(state.session.views[0].bpPerPx).toEqual(before)
   })
 

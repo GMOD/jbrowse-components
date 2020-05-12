@@ -1,8 +1,9 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import { BaseTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
-export default pluginManager => {
+const configModelFactory = (pluginManager: PluginManager) => {
   const PileupRendererConfigSchema = pluginManager.getRendererType(
     'PileupRenderer',
   ).configSchema
@@ -59,3 +60,6 @@ export default pluginManager => {
     { baseConfiguration: BaseTrackConfig, explicitlyTyped: true },
   )
 }
+
+export type AlignmentsConfigModel = ReturnType<typeof configModelFactory>
+export default configModelFactory

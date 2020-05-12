@@ -264,21 +264,6 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             value="3.321928094887362"
           />
           <span
-            class="MuiSlider-mark MuiSlider-markActive"
-            data-index="0"
-            style="left: 0%;"
-          />
-          <span
-            class="MuiSlider-mark"
-            data-index="1"
-            style="left: 43.06765580733933%;"
-          />
-          <span
-            class="MuiSlider-mark"
-            data-index="2"
-            style="left: 100%;"
-          />
-          <span
             aria-orientation="horizontal"
             aria-valuemax="5.643856189774724"
             aria-valuemin="3.321928094887362"
@@ -981,10 +966,9 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         class="makeStyles-container"
       >
         <button
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
           data-testid="zoom_out"
-          disabled=""
-          tabindex="-1"
+          tabindex="0"
           type="button"
         >
           <span
@@ -997,6 +981,9 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               zoom_out
             </span>
           </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
         </button>
         <span
           class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
@@ -1006,51 +993,21 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           />
           <span
             class="MuiSlider-track"
-            style="left: 0%; width: 0%;"
+            style="left: 0%; width: 2.378394193813357%;"
           />
           <input
             type="hidden"
             value="0"
           />
           <span
-            class="MuiSlider-mark MuiSlider-markActive"
-            data-index="0"
-            style="left: 0%;"
-          />
-          <span
-            class="MuiSlider-mark"
-            data-index="1"
-            style="left: 17.718382013555793%;"
-          />
-          <span
-            class="MuiSlider-mark"
-            data-index="2"
-            style="left: 41.14080899322211%;"
-          />
-          <span
-            class="MuiSlider-mark"
-            data-index="3"
-            style="left: 58.85919100677789%;"
-          />
-          <span
-            class="MuiSlider-mark"
-            data-index="4"
-            style="left: 76.5775730203337%;"
-          />
-          <span
-            class="MuiSlider-mark"
-            data-index="5"
-            style="left: 100%;"
-          />
-          <span
             aria-orientation="horizontal"
             aria-valuemax="5.643856189774724"
-            aria-valuemin="0"
+            aria-valuemin="-0.13750352374993502"
             aria-valuenow="0"
             class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
             data-index="0"
             role="slider"
-            style="left: 0%;"
+            style="left: 2.378394193813357%;"
             tabindex="0"
           />
         </span>
