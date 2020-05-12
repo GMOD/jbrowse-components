@@ -44,7 +44,7 @@ export default pluginManager => {
                 className={classes.textFilterControlStartAdornment}
                 position="start"
               >
-                <FilterIcon/>
+                <FilterIcon />
               </InputAdornment>
             ),
             endAdornment: (
@@ -57,7 +57,7 @@ export default pluginManager => {
                   onClick={() => setTextFilterValue('')}
                   color="secondary"
                 >
-                  <ClearIcon/>
+                  <ClearIcon />
                 </IconButton>
               </InputAdornment>
             ),

@@ -90,7 +90,7 @@ export default pluginManager => {
                   onClick={() => filterModel.setLocString('')}
                   color="secondary"
                 >
-                  <ClearIcon/>
+                  <ClearIcon />
                 </IconButton>
               </InputAdornment>
             ),

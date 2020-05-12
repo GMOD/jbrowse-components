@@ -1,12 +1,12 @@
 import { makeStyles as makeStylesMUI } from '@material-ui/core/styles'
-import { DotplotViewModel } from '../model'
 import ZoomOut from '@material-ui/icons/ZoomOut'
 import ZoomIn from '@material-ui/icons/ZoomIn'
 import ArrowUp from '@material-ui/icons/ArrowUpward'
 import ArrowDown from '@material-ui/icons/ArrowDownward'
 import ArrowLeft from '@material-ui/icons/ArrowLeft'
 import ArrowRight from '@material-ui/icons/ArrowRight'
-
+import TrackSelectorIcon from '@material-ui/icons/LineStyle'
+import { DotplotViewModel } from '../model'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
@@ -15,7 +15,6 @@ export default (pluginManager: any) => {
   const React = jbrequire('react')
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const Icon = jbrequire('@material-ui/core/Icon')
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
 
@@ -90,7 +89,7 @@ export default (pluginManager: any) => {
           className={classes.iconButton}
           color="secondary"
         >
-          <Icon fontSize="small">zoom_out</Icon>
+          <ZoomOut />
         </IconButton>
 
         <IconButton
@@ -99,7 +98,7 @@ export default (pluginManager: any) => {
           title="zoom in"
           color="secondary"
         >
-          <Icon fontSize="small">zoom_in</Icon>
+          <ZoomIn />
         </IconButton>
 
         <ToggleButton
@@ -114,7 +113,7 @@ export default (pluginManager: any) => {
           data-testid="circular_track_select"
           color="secondary"
         >
-          <Icon fontSize="small">line_style</Icon>
+          <TrackSelectorIcon />
         </ToggleButton>
       </div>
     )

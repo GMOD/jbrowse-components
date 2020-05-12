@@ -1,6 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
-import Icon from '@material-ui/core/Icon'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
@@ -19,11 +18,7 @@ function BlockError({ error, reload }) {
   return (
     <div className={classes.blockError}>
       {reload ? (
-        <Button
-          onClick={reload}
-          size="small"
-          startIcon={<RefreshIcon />}
-        >
+        <Button onClick={reload} size="small" startIcon={<RefreshIcon />}>
           Reload
         </Button>
       ) : null}

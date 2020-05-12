@@ -115,7 +115,7 @@ export default pluginManager => {
           }
           color="secondary"
         >
-          <ZoomOut fontSize="small"/>
+          <ZoomOut fontSize="small" />
         </IconButton>
 
         <IconButton
@@ -125,7 +125,7 @@ export default pluginManager => {
           disabled={!showingFigure || model.atMinBpPerPx}
           color="secondary"
         >
-          <ZoomIn fontSize="small"/>
+          <ZoomIn fontSize="small" />
         </IconButton>
 
         <IconButton
@@ -135,7 +135,7 @@ export default pluginManager => {
           disabled={!showingFigure}
           color="secondary"
         >
-          <RotateLeft fontSize="small"/>
+          <RotateLeft fontSize="small" />
         </IconButton>
 
         <IconButton
@@ -145,7 +145,7 @@ export default pluginManager => {
           disabled={!showingFigure}
           color="secondary"
         >
-          <RotateRight fontSize="small"/>
+          <RotateRight fontSize="small" />
         </IconButton>
 
         <IconButton
@@ -160,9 +160,9 @@ export default pluginManager => {
           color="secondary"
         >
           {model.lockedFitToWindow ? (
-          <LockOutline fontSize="small"/>
+            <LockOutline fontSize="small" />
           ) : (
-          <LockOpen fontSize="small"/>
+            <LockOpen fontSize="small" />
           )}
         </IconButton>
 
@@ -179,7 +179,7 @@ export default pluginManager => {
             data-testid="circular_track_select"
             color="secondary"
           >
-            <LineStyle fontSize="small"/>
+            <LineStyle fontSize="small" />
           </ToggleButton>
         )}
       </div>

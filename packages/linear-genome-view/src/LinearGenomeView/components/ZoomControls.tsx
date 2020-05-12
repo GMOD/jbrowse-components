@@ -7,6 +7,7 @@ import React from 'react'
 import ZoomIn from '@material-ui/icons/ZoomIn'
 import ZoomOut from '@material-ui/icons/ZoomOut'
 import { LinearGenomeViewStateModel } from '..'
+
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles({
@@ -33,7 +34,7 @@ function ZoomControls({ model }: { model: LGV }) {
         disabled={model.bpPerPx >= model.maxBpPerPx || model.scaleFactor !== 1}
         color="secondary"
       >
-        <ZoomOut fontSize="small"/>
+        <ZoomOut fontSize="small" />
       </IconButton>
 
       <Slider
@@ -51,7 +52,7 @@ function ZoomControls({ model }: { model: LGV }) {
         disabled={model.bpPerPx <= model.minBpPerPx || model.scaleFactor !== 1}
         color="secondary"
       >
-        <ZoomIn fontSize="small"/>
+        <ZoomIn fontSize="small" />
       </IconButton>
     </div>
   )
