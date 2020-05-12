@@ -18,7 +18,6 @@ import {
   checkAbortSignal,
   isAbortException,
   getSession,
-  getContainingView,
 } from '@gmod/jbrowse-core/util'
 import { getTrackAssemblyNames } from '@gmod/jbrowse-core/util/tracks'
 

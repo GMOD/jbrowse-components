@@ -3,7 +3,7 @@ import {
   getConf,
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { getSessionWithDrawerWidget as getSession } from '@gmod/jbrowse-core/util'
+import { getSession } from '@gmod/jbrowse-core/util'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
@@ -33,7 +33,8 @@ export default (
     )
     .actions(self => ({
       selectFeature(feature: Feature) {
-        const session = getSession(self)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const session = getSession(self) as any
         const featureWidget = session.addDrawerWidget(
           'AlignmentsFeatureDrawerWidget',
           'alignmentFeature',
@@ -47,7 +48,8 @@ export default (
       copyFeatureToClipboard(feature: Feature) {
         const copiedFeature = feature.toJSON()
         delete copiedFeature.uniqueId
-        const session = getSession(self)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const session = getSession(self) as any
         copy(JSON.stringify(copiedFeature, null, 4))
         session.pushSnackbarMessage('Copied to clipboard')
       },
