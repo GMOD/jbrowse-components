@@ -18,7 +18,6 @@ import {
   checkAbortSignal,
   isAbortException,
   getSession,
-  getContainingView,
 } from '@gmod/jbrowse-core/util'
 import { getTrackAssemblyNames } from '@gmod/jbrowse-core/util/tracks'
 
@@ -142,9 +141,8 @@ const blockState = types
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
         }
-        const track = getParent<any>(self, 2)
-        const view = getContainingView(track)
-        const { rpcManager } = getSession(view)
+        const track = getParent(self, 2)
+        const { rpcManager } = getSession(self)
         const { rendererType } = track
         const { renderArgs } = renderBlockData(cast(self))
         rendererType
@@ -169,7 +167,7 @@ export type BlockStateModel = typeof blockState
 function renderBlockData(self: Instance<BlockStateModel>) {
   try {
     const { assemblyData, rpcManager } = getSession(self) as any
-    const track = getParent<any>(self, 2)
+    const track = getParent(self, 2)
     const assemblyNames = getTrackAssemblyNames(track)
     let cannotBeRenderedReason
     if (!assemblyNames.includes(self.region.assemblyName)) {
