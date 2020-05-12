@@ -218,9 +218,8 @@ export default class PileupRenderer extends BoxRendererType {
             }
           } else if (
             // probably change this/use this to display softclip under
-            mismatch.type ===
-            'hardclip' /* ||
-            mismatch.type === 'softclip' */
+            mismatch.type === 'hardclip' ||
+            (!dummySoftClipCond && mismatch.type === 'softclip')
           ) {
             ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
             const pos = mismatchLeftPx - 1
