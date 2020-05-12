@@ -14,12 +14,7 @@ import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
-import {
-  TypeTestedByPredicate,
-  isSessionModel,
-  isSessionModelWithDrawerWidgets,
-  isViewModel,
-} from './types'
+import { TypeTestedByPredicate, isSessionModel, isViewModel } from './types'
 
 export * from './types'
 
@@ -219,7 +214,7 @@ export function findParentThatIs<
 >(
   node: IAnyStateTreeNode,
   predicate: PREDICATE,
-): TypeTestedByPredicate<PREDICATE> {
+): TypeTestedByPredicate<PREDICATE> & IAnyStateTreeNode {
   return findParentThat(node, predicate) as TypeTestedByPredicate<PREDICATE> &
     IAnyStateTreeNode
 }
@@ -228,14 +223,6 @@ export function findParentThatIs<
 export function getSession(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isSessionModel)
-  } catch (e) {
-    throw new Error('no session model found!')
-  }
-}
-
-export function getSessionWithDrawerWidget(node: IAnyStateTreeNode) {
-  try {
-    return findParentThatIs(node, isSessionModelWithDrawerWidgets)
   } catch (e) {
     throw new Error('no session model found!')
   }
