@@ -3,14 +3,18 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import { Instance } from 'mobx-state-tree'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion, IFileLocation } from '@gmod/jbrowse-core/mst-types'
 import { GenericFilehandle } from 'generic-filehandle'
 import { tap } from 'rxjs/operators'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { AdapterClass as NCListAdapter } from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import AbortablePromiseCache from 'abortable-promise-cache'
+import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
 import MyConfigSchema from './configSchema'
 
 type RowToGeneNames = {
@@ -24,6 +28,13 @@ interface GeneNameToRows {
 }
 
 export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
+  private cache = new AbortablePromiseCache({
+    cache: new QuickLRU({ maxSize: 1 }),
+    fill: (data: BaseOptions, signal: AbortSignal) => {
+      return this.setup({ ...data, signal })
+    },
+  })
+
   private initialized = false
 
   private geneNameToRows: GeneNameToRows = {}
@@ -38,15 +49,20 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: Instance<typeof MyConfigSchema>) {
+  public constructor(
+    config: Instance<typeof MyConfigSchema>,
+    getSubAdapter: getSubAdapterType,
+  ) {
     super(config)
-    const { mcscanAnchorsLocation, subadapters, assemblyNames } = config
-    this.mcscanAnchorsLocation = openLocation(mcscanAnchorsLocation)
+    const subadapters = readConfObject(config, 'subadapters')
+    const assemblyNames = readConfObject(config, 'assemblyNames')
+    this.mcscanAnchorsLocation = openLocation(
+      readConfObject(config, 'mcscanAnchorsLocation') as IFileLocation,
+    )
 
-    // TODO remove this logic once subadapter is updated by Rob
-    this.subadapters = !subadapters[0].getFeatures
-      ? subadapters.map((s: any) => new NCListAdapter(s))
-      : subadapters
+    this.subadapters = subadapters.map(
+      (subadapter: any) => getSubAdapter(subadapter).dataAdapter,
+    )
 
     this.assemblyNames = assemblyNames
   }
@@ -94,7 +110,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
    */
   getFeatures(region: IRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      await this.setup(opts)
+      await this.cache.get('initialize', opts, opts.signal)
 
       // The index of the assembly name in the region list corresponds to
       // the adapter in the subadapters list

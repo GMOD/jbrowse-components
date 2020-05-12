@@ -160,6 +160,10 @@
             "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
           }
         ],
+        "assemblyNames": [
+          "peach",
+          "grape"
+        ],
         "type": "MCScanAnchorsAdapter"
       },
       "renderer": {

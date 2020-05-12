@@ -11,6 +11,10 @@ export default ConfigurationSchema(
       type: 'frozen',
       defaultValue: [],
     },
+    assemblyNames: {
+      type: 'stringArray',
+      defaultValue: []
+    }
   },
   { explicitlyTyped: true },
 )

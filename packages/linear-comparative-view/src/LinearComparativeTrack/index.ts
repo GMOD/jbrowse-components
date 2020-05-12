@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  getConf,
   readConfObject,
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
-import { types, Instance, getParent } from 'mobx-state-tree'
+import { types, getParent, getSnapshot, Instance } from 'mobx-state-tree'
 import {
   BaseTrackConfig,
   BaseTrack,
@@ -12,6 +13,7 @@ import {
 import { getSession, makeAbortableReaction } from '@gmod/jbrowse-core/util'
 import jsonStableStringify from 'json-stable-stringify'
 import LinearComparativeTrackComponent from './components/LinearComparativeTrack'
+import { LinearComparativeViewModel } from '../LinearComparativeView/model'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 
 export function configSchemaFactory(pluginManager: any) {
@@ -19,10 +21,8 @@ export function configSchemaFactory(pluginManager: any) {
     'LinearComparativeTrack',
     {
       viewType: 'LinearComparativeView',
-      middle: {
-        type: 'boolean',
-        defaultValue: true,
-      },
+      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
+      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
     },
     {
       baseConfiguration: BaseTrackConfig,
@@ -49,12 +49,24 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           html: '',
           error: undefined as Error | undefined,
           message: undefined as string | undefined,
-          viewOffsets: [] as number[],
           renderingComponent: undefined as any,
           ReactComponent: (LinearComparativeTrackComponent as unknown) as React.FC,
           ReactComponent2: (ServerSideRenderedBlockContent as unknown) as React.FC,
         })),
     )
+    .views(self => ({
+      get rendererTypeName() {
+        return getConf(self, 'renderer').type
+      },
+      get adapterConfig() {
+        return getConf(self, 'adapter')
+      },
+      get renderProps() {
+        return {
+          trackModel: self,
+        }
+      },
+    }))
     .actions(self => {
       let renderInProgress: undefined | AbortController
 
@@ -80,9 +92,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           self.filled = false
           self.message = undefined
           self.html = ''
-          self.viewOffsets = getParent(self, 2).views.map(
-            (view: any) => view.offsetPx,
-          )
           self.data = undefined
           self.error = undefined
           self.renderingComponent = undefined
@@ -132,48 +141,37 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
     })
 }
 function renderBlockData(self: LinearComparativeTrack) {
-  try {
-    const { rpcManager } = getSession(self) as any
-    const track = self
+  const { rpcManager } = getSession(self) as any
+  const track = self
 
-    const { renderProps, rendererType } = track
+  const { renderProps, rendererType } = track
 
-    // Alternative to readConfObject(config) is below
-    // used because renderProps is something under our control.
-    // Compare to serverSideRenderedBlock
-    readConfObject(self.configuration)
+  // Alternative to readConfObject(config) is below
+  // used because renderProps is something under our control.
+  // Compare to serverSideRenderedBlock
+  readConfObject(self.configuration)
 
-    const sequenceConfig: { type?: string } = {}
+  const { adapterConfig } = self
+  const adapterConfigId = jsonStableStringify(adapterConfig)
+  const parent = getParent<LinearComparativeViewModel>(self, 2)
+  getSnapshot(parent)
+  const { views } = parent
 
-    const { adapterConfig } = self
-    const adapterConfigId = jsonStableStringify(adapterConfig)
-    const parentView = getParent(self, 2)
-    const { views, width, height } = parentView
-    return {
-      rendererType,
-      rpcManager,
-      renderProps,
-      renderArgs: {
-        adapterType: self.adapterType.name,
-        adapterConfig,
-        sequenceAdapterType: sequenceConfig.type,
-        sequenceAdapterConfig: sequenceConfig,
-        rendererType: rendererType.name,
-        views,
-        renderProps: {
-          ...renderProps,
-          width,
-          height,
-        },
-        sessionId: adapterConfigId,
-        timeout: 1000000, // 10000,
+  return {
+    rendererType,
+    rpcManager,
+    renderProps,
+    renderArgs: {
+      adapterConfig,
+      rendererType: rendererType.name,
+      renderProps: {
+        ...renderProps,
+        parentView: getSnapshot(parent),
+        views: views.map(view => getSnapshot(view)),
       },
-    }
-  } catch (error) {
-    console.error(error)
-    return {
-      trackError: error,
-    }
+      sessionId: adapterConfigId,
+      timeout: 1000000, // 10000,
+    },
   }
 }
 
@@ -185,8 +183,6 @@ async function renderBlockEffect(
 ) {
   if (!props) {
     throw new Error('cannot render with no props')
-  } else if (props.trackError) {
-    throw new Error(props.trackError)
   }
 
   const { rendererType, rpcManager, renderArgs } = props
@@ -198,5 +194,6 @@ async function renderBlockEffect(
 
   return { html, data, renderingComponent: rendererType.ReactComponent }
 }
+
 export type LinearComparativeTrackModel = ReturnType<typeof stateModelFactory>
 export type LinearComparativeTrack = Instance<LinearComparativeTrackModel>

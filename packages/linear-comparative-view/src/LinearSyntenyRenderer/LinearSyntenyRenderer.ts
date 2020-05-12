@@ -1,5 +1,9 @@
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import { Base1DViewModel } from '@gmod/jbrowse-core/util/Base1DViewModel'
+import Base1DView, {
+  Base1DViewModel,
+} from '@gmod/jbrowse-core/util/Base1DViewModel'
+import { tap, filter, distinct, toArray } from 'rxjs/operators'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
 export default class LinearSyntenyRenderer extends ComparativeServerSideRendererType {
   async render(renderProps: {
@@ -8,10 +12,74 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
     views: Base1DViewModel[]
   }) {
     const { height, width, views } = renderProps
+    const dimensions = [width, height]
+    console.log(renderProps, 'test')
+    const realizedViews = views.map((view, idx) =>
+      Base1DView.create({ ...view, width: dimensions[idx] }),
+    )
+    await Promise.all(
+      realizedViews.map(async view => {
+        view.setFeatures(
+          await this.getFeatures({
+            ...renderProps,
+            regions: view.dynamicBlocks.contentBlocks,
+          }),
+        )
+      }),
+    )
     return {
       views,
       height,
       width,
     }
+  }
+
+  /**
+   * use the dataAdapter to fetch the features to be rendered
+   *
+   * @param {object} renderArgs
+   * @returns {Map} of features as { id => feature, ... }
+   */
+  async getFeatures(renderArgs: any) {
+    const { dataAdapter, signal } = renderArgs
+
+    let regions = [] as IRegion[]
+
+    // @ts-ignore this is instantiated by the getFeatures call
+    regions = renderArgs.regions
+
+    if (!regions || regions.length === 0) {
+      console.warn('no regions supplied to comparative renderer')
+      return []
+    }
+
+    const requestRegions = regions.map((r: IRegion) => {
+      // make sure the requested region's start and end are integers, if
+      // there is a region specification.
+      const requestRegion = { ...r }
+      if (requestRegion.start) {
+        requestRegion.start = Math.floor(requestRegion.start)
+      }
+      if (requestRegion.end) {
+        requestRegion.end = Math.floor(requestRegion.end)
+      }
+      return requestRegion
+    })
+
+    // note that getFeaturesInMultipleRegions does not do glyph expansion
+    const featureObservable = dataAdapter.getFeaturesInMultipleRegions(
+      requestRegions,
+      {
+        signal,
+      },
+    )
+
+    return featureObservable
+      .pipe(
+        // @ts-ignore
+        filter(feature => this.featurePassesFilters(renderArgs, feature)),
+        toArray(),
+      )
+      .toPromise()
   }
 }

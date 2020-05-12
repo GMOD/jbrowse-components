@@ -1,10 +1,11 @@
-/* eslint-disable no-plusplus,no-continue */
 import React, { useRef, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { Base1DViewModel } from '@gmod/jbrowse-core/util/Base1DViewModel'
 import { getPxFromCoordinate, interstitialYPos, overlayYPos } from '../../util'
+
+;/nearsyntenyrendering* eslint-disable no-plusplus,no-continue */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const [LEFT, TOP, RIGHT, BOTTOM] = [0, 1, 2, 3]
@@ -81,6 +82,7 @@ function LinearSyntenyRendering(props: {
   views: Base1DViewModel[]
   trackIds: string[]
 }) {
+  console.log(props)
   const {
     height,
     trackModel = {},
