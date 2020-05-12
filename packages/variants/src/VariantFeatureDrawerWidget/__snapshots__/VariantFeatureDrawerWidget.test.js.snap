@@ -38,12 +38,16 @@ exports[`VariantTrack drawer widget renders with just the required model element
           <span
             class="MuiIconButton-label"
           >
-            <span
+            <svg
               aria-hidden="true"
-              class="material-icons MuiIcon-root makeStyles-expandIcon"
+              class="MuiSvgIcon-root makeStyles-expandIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
             >
-              expand_more
-            </span>
+              <path
+                d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
+              />
+            </svg>
           </span>
           <span
             class="MuiTouchRipple-root"
@@ -121,12 +125,16 @@ exports[`VariantTrack drawer widget renders with just the required model element
           <span
             class="MuiIconButton-label"
           >
-            <span
+            <svg
               aria-hidden="true"
-              class="material-icons MuiIcon-root makeStyles-expandIcon"
+              class="MuiSvgIcon-root makeStyles-expandIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
             >
-              expand_more
-            </span>
+              <path
+                d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
+              />
+            </svg>
           </span>
           <span
             class="MuiTouchRipple-root"
