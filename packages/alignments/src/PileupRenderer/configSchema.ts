@@ -37,7 +37,7 @@ export default ConfigurationSchema(
     maxClippingSize: {
       type: 'integer',
       description: 'the max clip size to be used in a pileup rendering',
-      defaultValue: 10, // TODOCLIP: find out the standard clip size
+      defaultValue: 600, // TODOCLIP: find out the standard clip size
     },
     height: {
       type: 'integer',

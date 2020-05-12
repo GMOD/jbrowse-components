@@ -290,20 +290,7 @@ export default class ServerSideRenderer extends RendererType {
       )
       .toPromise()
 
-    await featureObservable
-      .pipe(
-        tap(() => checkAbortSignal(signal)),
-        filter(feature => this.featurePassesFilters(renderArgs, feature)),
-        tap(feature => {
-          const id = feature.id()
-          if (!id) throw new Error(`invalid feature id "${id}"`)
-          features.set(id, feature)
-        }),
-        ignoreElements(),
-      )
-      .toPromise()
-
-    console.log('after', features)
+    // console.log('after', features)
     return features
   }
 
