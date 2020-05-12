@@ -1,11 +1,9 @@
 import React, { useRef, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { Base1DViewModel } from '@gmod/jbrowse-core/util/Base1DViewModel'
 import { getPxFromCoordinate, interstitialYPos, overlayYPos } from '../../util'
-
-;/nearsyntenyrendering* eslint-disable no-plusplus,no-continue */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const [LEFT, TOP, RIGHT, BOTTOM] = [0, 1, 2, 3]
@@ -82,7 +80,7 @@ function LinearSyntenyRendering(props: {
   views: Base1DViewModel[]
   trackIds: string[]
 }) {
-  console.log(props)
+  const ref = useRef<HTMLCanvasElement>(null)
   const {
     height,
     trackModel = {},
@@ -90,13 +88,15 @@ function LinearSyntenyRendering(props: {
     views,
     trackIds,
   } = props
-  const ref = useRef<HTMLCanvasElement>(null)
 
   views.forEach(view => {
     if (view.features) {
-      view.features.sort((a, b) => a.get('syntenyId') - b.get('syntenyId'))
+      view.features = view.features
+        .map(f => new SimpleFeature(f))
+        .sort((a, b) => a.get('syntenyId') - b.get('syntenyId'))
     }
   })
+  console.log(props)
   const layoutMatches = layoutMatchesFromViews(views)
 
   useEffect(() => {

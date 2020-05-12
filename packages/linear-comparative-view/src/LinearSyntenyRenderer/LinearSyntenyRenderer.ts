@@ -1,4 +1,5 @@
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import { getSnapshot } from 'mobx-state-tree'
 import Base1DView, {
   Base1DViewModel,
 } from '@gmod/jbrowse-core/util/Base1DViewModel'
@@ -11,10 +12,10 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
     width: number
     views: Base1DViewModel[]
   }) {
-    const { height, width, views } = renderProps
+    const { height, width, views: serializedViews } = renderProps
     const dimensions = [width, height]
     console.log(renderProps, 'test')
-    const realizedViews = views.map((view, idx) =>
+    const realizedViews = serializedViews.map((view, idx) =>
       Base1DView.create({ ...view, width: dimensions[idx] }),
     )
     await Promise.all(
@@ -27,6 +28,10 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
         )
       }),
     )
+    const views = realizedViews.map(r => ({
+      ...getSnapshot(r),
+      features: (r.features || []).map(f => f.toJSON()),
+    }))
     return {
       views,
       height,
