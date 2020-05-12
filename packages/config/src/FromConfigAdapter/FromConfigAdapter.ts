@@ -67,8 +67,8 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
       // the refName targets of those
       features.forEach(feature => {
         // get refNames of generic "mate" records
-        let mate
-        if ((mate = feature.get('mate')) && mate.refName) {
+        const mate = feature.get('mate')
+        if (mate && mate.refName) {
           refNames.add(mate.refName)
         }
         // get refNames of VCF BND and TRA records
