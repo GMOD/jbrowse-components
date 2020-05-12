@@ -1,5 +1,5 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'

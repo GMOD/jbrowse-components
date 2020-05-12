@@ -95,6 +95,7 @@ function ResizeHandle({
 
   return (
     <div
+      data-resizer="true"
       onMouseDown={mouseDown}
       onMouseLeave={mouseLeave}
       role="presentation"

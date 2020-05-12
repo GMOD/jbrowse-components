@@ -1,10 +1,10 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
 import { bpToPx, bpSpanPx } from '@gmod/jbrowse-core/util'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useRef, useState, useCallback } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { Tooltip } from '@gmod/jbrowse-core/ui'
 import FeatureGlyph from './FeatureGlyph'
 import { chooseGlyphComponent, layOut } from './util'
@@ -195,14 +195,13 @@ RenderedFeatureGlyph.propTypes = {
 }
 
 const RenderedFeatures = observer(props => {
-  const { layout, setHeight, features } = props
+  const { features } = props
   const featuresRendered = []
   for (const feature of features.values()) {
     featuresRendered.push(
       <RenderedFeatureGlyph key={feature.id()} feature={feature} {...props} />,
     )
   }
-  setHeight(layout.getTotalHeight())
   return <>{featuresRendered}</>
 })
 RenderedFeatures.propTypes = {
@@ -221,7 +220,15 @@ RenderedFeatures.defaultProps = {
 }
 
 function SvgFeatureRendering(props) {
-  const { blockKey, regions, bpPerPx, features, trackModel, config } = props
+  const {
+    layout,
+    blockKey,
+    regions,
+    bpPerPx,
+    features,
+    trackModel,
+    config,
+  } = props
   const { configuration } = trackModel
   const [region] = regions || []
   const width = (region.end - region.start) / bpPerPx
@@ -373,6 +380,10 @@ function SvgFeatureRendering(props) {
     [movedDuringLastMouseDown, onFeatureContextMenu],
   )
 
+  useEffect(() => {
+    setHeight(layout.getTotalHeight())
+  }, [layout])
+
   return (
     <div style={renderingStyle}>
       <svg
@@ -395,7 +406,6 @@ function SvgFeatureRendering(props) {
       >
         <RenderedFeatures
           features={features}
-          setHeight={setHeight}
           displayMode={displayMode}
           {...props}
           region={region}

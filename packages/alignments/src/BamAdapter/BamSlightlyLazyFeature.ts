@@ -24,8 +24,6 @@ export default class implements Feature {
 
   private adapter: BamAdapter
 
-  private cachedMismatches?: Mismatch[]
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(record: any, adapter: BamAdapter) {
     this.record = record
@@ -337,33 +335,6 @@ export default class implements Feature {
     return mismatches
   }
 
-  // parse just the skips and deletions out of a CIGAR string
-  private cigarToSkipsAndDeletions(ops: CigarOp[]): Mismatch[] {
-    let currOffset = 0
-    const mismatches: Mismatch[] = []
-    ops.forEach(oprec => {
-      const op = oprec[0]
-      const len = oprec[1]
-      if (op === 'D')
-        mismatches.push({
-          start: currOffset,
-          type: 'deletion',
-          base: '*',
-          length: len,
-        })
-      else if (op === 'N')
-        mismatches.push({
-          start: currOffset,
-          type: 'skip',
-          base: 'N',
-          length: len,
-        })
-
-      if (op !== 'I' && op !== 'S' && op !== 'H') currOffset += len
-    })
-    return mismatches
-  }
-
   private parseCigar(cigar: string): CigarOp[] {
     return (cigar.toUpperCase().match(/\d+\D/g) || []).map((op: string) => {
       // @ts-ignore
@@ -373,8 +344,7 @@ export default class implements Feature {
 
   /**
    * parse a SAM MD tag to find mismatching bases of the template versus the reference
-   * @returns {Array[Object]} array of mismatches and their positions
-   * @private
+   * @returns array of mismatches and their positions
    */
   private mdToMismatches(
     mdstring: string,

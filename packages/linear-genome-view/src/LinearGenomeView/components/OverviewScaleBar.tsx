@@ -1,4 +1,5 @@
-import { IRegion, Region } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
+import { Region as MSTRegion } from '@gmod/jbrowse-core/util/types/mst'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -86,11 +87,11 @@ function OverviewScaleBar({
 
   const { assemblyManager } = getSession(model)
 
-  const wholeRefSeqs = [] as IRegion[]
+  const wholeRefSeqs = [] as Region[]
   let totalLength = 0
   displayedRegions.forEach(({ refName, assemblyName }) => {
     const assembly = assemblyManager.get(assemblyName)
-    const r = assembly && (assembly.regions as Instance<typeof Region>[])
+    const r = assembly && (assembly.regions as Instance<typeof MSTRegion>[])
     if (r) {
       const wholeSequence = r.find(sequence => sequence.refName === refName)
       const alreadyExists = wholeRefSeqs.find(

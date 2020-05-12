@@ -18,7 +18,7 @@ export function ucscProcessedTranscript(feature: Feature) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const newChildren: Record<string, any> = []
-  blocks.forEach((block, index) => {
+  blocks.forEach(block => {
     const start = block.get('start')
     const end = block.get('end')
     if (thickStart >= end) {

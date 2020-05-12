@@ -13,15 +13,14 @@ beforeAll(() => {
 const baseprops = {
   regions: [{ refName: 'ctgA', start: 0, end: 800 }],
   sessionId: 'knickers the cow',
-  adapterType: 'BamAdapter',
   adapterConfig: {
     type: 'BamAdapter',
     bamLocation: {
-      localPath: require.resolve('../public/test_data/volvox-sorted.bam'),
+      localPath: require.resolve('../test_data/volvox/volvox-sorted.bam'),
     },
     index: {
       location: {
-        localPath: require.resolve('../public/test_data/volvox-sorted.bam.bai'),
+        localPath: require.resolve('../test_data/volvox/volvox-sorted.bam.bai'),
       },
     },
   },

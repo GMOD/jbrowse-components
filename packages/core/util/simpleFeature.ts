@@ -50,10 +50,12 @@ export function isFeature(thing: unknown): thing is Feature {
   )
 }
 
-// difficult to formalize type but see comments in constructor
 export interface SimpleFeatureArgs {
+  /** key-value data, must include 'start' and 'end' */
   data: {}
+  /** optional parent feature */
   parent?: Feature
+  /** unique identifier. can also be in data.uniqueId */
   id: string | number // thing that can be stringified easily
 }
 
@@ -88,10 +90,7 @@ export default class SimpleFeature implements Feature {
   private uniqueId: string
 
   /**
-   * @param args.data {Object} key-value data, must include 'start' and 'end'
-   * @param args.parent {Feature} optional parent feature
-   * @param args.id {String} unique identifier.  can also be in data.uniqueId.
-   * @param args.data.uniqueId {String} alternate location of the unique identifier
+   * @param args - SimpleFeature args
    *
    * Note: args.data.subfeatures can be an array of these same args,
    * which will be inflated to more instances of this class.

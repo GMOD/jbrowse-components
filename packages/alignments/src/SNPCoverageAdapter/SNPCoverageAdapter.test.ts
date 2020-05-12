@@ -44,7 +44,7 @@ test('SNP adapter can fetch features from volvox.bam using bam subadapter', asyn
     },
   })
 
-  const features = await adapter.getFeatures(
+  const features = adapter.getFeatures(
     {
       assemblyName: 'volvox',
       refName: 'ctgA',
@@ -81,7 +81,7 @@ test('test usage of BamSlightlyLazyFeature toJSON in a SNP adapter', async () =>
     },
   })
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
@@ -165,7 +165,7 @@ test('SNP adapter can fetch features from volvox.cram using cram subadapter', as
     require.resolve('../../test_data/volvox.fa'),
   )
 
-  const features = await adapter.getFeatures(
+  const features = adapter.getFeatures(
     {
       assemblyName: 'volvox',
       refName: 'ctgA',
@@ -201,7 +201,7 @@ test('test usage of CramSlightlyLazyFeature toJSON in a SNP adapter', async () =
     require.resolve('../../test_data/volvox.fa'),
   )
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,

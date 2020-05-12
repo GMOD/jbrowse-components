@@ -16,7 +16,7 @@ export default function stateModelFactory(pluginManager: any) {
   const { cast, types: jbrequiredTypes, getParent, addDisposer } = jbrequire(
     'mobx-state-tree',
   )
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const { ElementId } = jbrequire('@gmod/jbrowse-core/util/types/mst')
   const Dotplot1DViewModel = jbrequire(require('./Dotplot1DViewModel'))
 
   return (jbrequiredTypes as Instance<typeof types>)
@@ -119,7 +119,7 @@ export default function stateModelFactory(pluginManager: any) {
         )
         addDisposer(
           self,
-          autorun(async () => {
+          autorun(() => {
             const padding = 4
             // these are set via autorun to avoid dependency cycle
             this.setBorderY(

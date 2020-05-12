@@ -1,6 +1,6 @@
 import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import {
   getOrigin,
@@ -14,7 +14,7 @@ interface SNPCoverageRendererProps {
   features: Map<string, Feature>
   layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
   config: AnyConfigurationModel
-  regions: IRegion[]
+  regions: Region[]
   bpPerPx: number
   height: number
   width: number
@@ -22,7 +22,7 @@ interface SNPCoverageRendererProps {
   blockKey: string
   dataAdapter: BaseFeatureDataAdapter
   notReady: boolean
-  originalRegions: IRegion[]
+  originalRegions: Region[]
   scaleOpts: ScaleOpts
   sessionId: string
   signal: AbortSignal
@@ -76,7 +76,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       // grab array with nestedtable's info, draw mismatches
       const infoArray = feature.get('snpinfo') || []
       let curr = 0
-      infoArray.forEach(function iterate(info: BaseInfo, index: number) {
+      infoArray.forEach(function iterate(info: BaseInfo) {
         if (!info || info.base === 'reference' || info.base === 'total') {
           return
         }

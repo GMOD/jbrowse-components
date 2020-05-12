@@ -1,5 +1,5 @@
 import { types } from 'mobx-state-tree'
-import { ElementId } from '../../mst-types'
+import { ElementId } from '../../util/types/mst'
 
 export const HelloWorldMenuBarModelFactory = pluginManager =>
   types.model('HelloWorldMenuBar', {

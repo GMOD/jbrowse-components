@@ -11,7 +11,8 @@ import {
 } from 'mobx-state-tree'
 import { readConfObject } from './configuration'
 import { AnyConfigurationModel } from './configuration/configurationSchema'
-import { IRegion, Region } from './mst-types'
+import { Region } from './util/types'
+import { Region as MSTRegion } from './util/types/mst'
 import QuickLRU from './util/QuickLRU'
 
 function checkRefName(refName: string) {
@@ -29,7 +30,7 @@ export function assemblyFactory(assemblyConfigType: IAnyType) {
   return types
     .model({
       configuration: types.reference(assemblyConfigType),
-      regions: types.array(Region),
+      regions: types.array(MSTRegion),
       refNameAliases: types.map(types.array(types.string)),
       refNameAliasesSet: false,
     })
@@ -89,13 +90,12 @@ export function assemblyFactory(assemblyConfigType: IAnyType) {
                 'getRegions',
                 {
                   sessionId: self.name,
-                  adapterType: sequenceAdapterConfig.type,
                   adapterConfig: sequenceAdapterConfig,
                   signal: sequenceAborter.signal,
                 },
                 { timeout: 1000000 },
               )
-              .then((adapterRegions: IRegion[]) => {
+              .then((adapterRegions: Region[]) => {
                 const adapterRegionsWithAssembly = adapterRegions.map(
                   adapterRegion => {
                     const { refName } = adapterRegion
@@ -123,7 +123,6 @@ export function assemblyFactory(assemblyConfigType: IAnyType) {
                   'getRefNameAliases',
                   {
                     sessionId: self.name,
-                    adapterType: refNameAliasesAdapterConfig.type,
                     adapterConfig: refNameAliasesAdapterConfig,
                     signal: refNameAliasesAborter.signal,
                   },
@@ -157,7 +156,7 @@ export function assemblyFactory(assemblyConfigType: IAnyType) {
           }),
         )
       },
-      setRegions(regions: IRegion[]) {
+      setRegions(regions: Region[]) {
         self.regions = cast(regions)
       },
       setRefNameAliases(refNameAliases: Record<string, string[]>) {
@@ -189,10 +188,6 @@ export function assemblyFactory(assemblyConfigType: IAnyType) {
             'getRefNames',
             {
               sessionId: self.name,
-              adapterType: readConfObject(
-                adapterConf as AnyConfigurationModel,
-                'type',
-              ),
               adapterConfig: adapterConf,
               signal,
             },
@@ -222,7 +217,7 @@ export function assemblyFactory(assemblyConfigType: IAnyType) {
       })
 
       /**
-       * get Map of canonical-name -> adapter-specific-name
+       * get Map of `canonical-name -> adapter-specific-name`
        */
       async function getRefNameMapForAdapter(
         adapterConf: unknown,
@@ -237,7 +232,7 @@ export function assemblyFactory(assemblyConfigType: IAnyType) {
       }
 
       /**
-       * get Map of adapter-specific-name -> canonical-name
+       * get Map of `adapter-specific-name -> canonical-name`
        */
       async function getReverseRefNameMapForAdapter(
         adapterConf: unknown,

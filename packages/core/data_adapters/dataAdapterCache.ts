@@ -3,13 +3,12 @@ import { SnapshotIn } from 'mobx-state-tree'
 import PluginManager from '../PluginManager'
 import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
 import { AnyDataAdapter } from './BaseAdapter'
-import { IRegion } from '../mst-types'
+import { Region } from '../util/types'
 
 function adapterConfigCacheKey(
-  adapterType: string,
   adapterConfig: SnapshotIn<AnyConfigurationSchemaType>,
 ) {
-  return `${adapterType}|${jsonStableStringify(adapterConfig)}`
+  return `${jsonStableStringify(adapterConfig)}`
 }
 
 interface AdapterCacheEntry {
@@ -23,21 +22,20 @@ const adapterCache: Record<string, AdapterCacheEntry> = {}
  * instantiate a data adapter, or return an already-instantiated one if we have one with the same
  * configuration
  *
- * @param {PluginManager} pluginManager
- * @param {string} sessionId session ID of the associated worker session.
+ * @param pluginManager -
+ * @param sessionId - session ID of the associated worker session.
  *   used for reference counting
- * @param {string} adapterType type name of the adapter to instantiate
- * @param {object} adapterConfigSnapshot plain-JS configuration snapshot for the adapter
+ * @param adapterConfigSnapshot - plain-JS configuration snapshot for the adapter
  */
 export function getAdapter(
   pluginManager: PluginManager,
   sessionId: string,
-  adapterType: string,
   adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
 ) {
   // cache the adapter object
-  const cacheKey = adapterConfigCacheKey(adapterType, adapterConfigSnapshot)
+  const cacheKey = adapterConfigCacheKey(adapterConfigSnapshot)
   if (!adapterCache[cacheKey]) {
+    const adapterType = (adapterConfigSnapshot || {}).type
     const dataAdapterType = pluginManager.getAdapterType(adapterType)
     if (!dataAdapterType) {
       throw new Error(`unknown data adapter type ${adapterType}`)
@@ -81,7 +79,6 @@ export function getAdapter(
  * internally, staying with the same worker session ID
  */
 export type getSubAdapterType = (
-  adapterType: string,
   adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
 ) => ReturnType<typeof getAdapter>
 
@@ -111,7 +108,7 @@ export function freeAdapterResources(specification: Record<string, any>) {
         const regions =
           specification.regions ||
           (specification.region ? [specification.region] : [])
-        regions.forEach((region: IRegion) => {
+        regions.forEach((region: Region) => {
           if (region.refName !== undefined)
             cacheEntry.dataAdapter.freeResources(region)
         })

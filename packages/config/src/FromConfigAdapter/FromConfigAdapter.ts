@@ -4,7 +4,7 @@ import SimpleFeature, {
   SimpleFeatureSerialized,
 } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
@@ -12,9 +12,8 @@ import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
 /**
  * Adapter that just returns the features defined in its `features` configuration
  * key, like:
- *   "features": [ { "refName": "ctgA", "start":1, "end":20 }, ... ]
+ *   `"features": [ { "refName": "ctgA", "start":1, "end":20 }, ... ]`
  */
-
 export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   private features: Map<string, Feature[]>
 
@@ -29,7 +28,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
     this.features = this.makeFeatures(features || [])
   }
 
-  makeFeatures(fdata: SimpleFeatureSerialized[]) {
+  private makeFeatures(fdata: SimpleFeatureSerialized[]) {
     const features = new Map<string, Feature[]>()
     for (let i = 0; i < fdata.length; i += 1) {
       if (fdata[i]) {
@@ -53,7 +52,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
     return features
   }
 
-  makeFeature(data: SimpleFeatureSerialized): SimpleFeature {
+  private makeFeature(data: SimpleFeatureSerialized): SimpleFeature {
     return new SimpleFeature(data)
   }
 
@@ -67,8 +66,8 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
       // the refName targets of those
       features.forEach(feature => {
         // get refNames of generic "mate" records
-        let mate
-        if ((mate = feature.get('mate')) && mate.refName) {
+        const mate = feature.get('mate')
+        if (mate && mate.refName) {
           refNames.add(mate.refName)
         }
         // get refNames of VCF BND and TRA records
@@ -127,13 +126,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
     }))
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {Region} param
-   * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
-  getFeatures(region: INoAssemblyRegion) {
+  getFeatures(region: NoAssemblyRegion) {
     const { refName, start, end } = region
 
     return ObservableCreate<Feature>(async observer => {
@@ -148,10 +141,5 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the forseeable future and can be purged
-   * from caches, etc
-   */
   freeResources(/* { region } */): void {}
 }
