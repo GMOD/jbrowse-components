@@ -1,7 +1,7 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import {
   createCanvas,
@@ -9,14 +9,14 @@ import {
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
 
-interface Block extends IRegion {
+interface Block extends Region {
   offsetPx: number
   widthPx: number
 }
 
 interface ReducedView {
   features: Feature[]
-  displayedRegions: IRegion[]
+  displayedRegions: Region[]
   dynamicBlocks: Block[]
   horizontallyFlipped: boolean
   bpPerPx: number
@@ -30,17 +30,6 @@ export interface DotplotRenderProps {
   highResolutionScaling: number
   pluginManager: any
   views: ReducedView[]
-}
-
-interface DotplotRenderingProps extends DotplotRenderProps {
-  imageData: any
-}
-
-interface DotplotImageData {
-  imageData?: ImageBitmap
-  height: number
-  width: number
-  maxHeightReached: boolean
 }
 
 function bpToPx(self: ReducedView, refName: string, coord: number) {

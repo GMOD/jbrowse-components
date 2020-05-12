@@ -1,7 +1,7 @@
 import { getParent, isRoot, IStateTreeNode } from 'mobx-state-tree'
 import objectHash from 'object-hash'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
-import { IUriLocation, ILocalPathLocation } from '../mst-types'
+import { UriLocation, LocalPathLocation } from './types'
 import { readConfObject } from '../configuration'
 
 /* utility functions for use by track models and so forth */
@@ -22,8 +22,8 @@ export function getTrackAssemblyNames(
 /**
  * given an MST node, get the renderprops of the first parent container that has
  * renderProps
- * @param {TreeNode} node
- * @returns {object} renderprops, or empty object if none found
+ * @param node -
+ * @returns renderprops, or empty object if none found
  */
 export function getParentRenderProps(node: IStateTreeNode) {
   for (
@@ -41,7 +41,7 @@ export const UNKNOWN = 'UNKNOWN'
 export const UNSUPPORTED = 'UNSUPPORTED'
 
 export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
-  function makeLocation(location: string): IUriLocation | ILocalPathLocation {
+  function makeLocation(location: string): UriLocation | LocalPathLocation {
     if (protocol === 'uri') return { uri: location }
     if (protocol === 'localPath') return { localPath: location }
     throw new Error(`invalid protocol ${protocol}`)

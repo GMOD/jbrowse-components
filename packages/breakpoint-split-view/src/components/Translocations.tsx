@@ -15,7 +15,6 @@ export default (pluginManager: any) => {
   return observer(
     ({
       model,
-      height,
       trackConfigId,
     }: {
       model: BreakpointViewModel
@@ -104,7 +103,7 @@ export default (pluginManager: any) => {
                     d={path}
                     key={JSON.stringify(path)}
                     strokeWidth={id === mouseoverElt ? 10 : 5}
-                    onClick={elt => {
+                    onClick={() => {
                       const featureWidget = session.addDrawerWidget(
                         'VariantFeatureDrawerWidget',
                         'variantFeature',
@@ -116,8 +115,8 @@ export default (pluginManager: any) => {
                       )
                       session.showDrawerWidget(featureWidget)
                     }}
-                    onMouseOver={elt => setMouseoverElt(id)}
-                    onMouseOut={elt => setMouseoverElt(undefined)}
+                    onMouseOver={() => setMouseoverElt(id)}
+                    onMouseOut={() => setMouseoverElt(undefined)}
                   />,
                 )
               }

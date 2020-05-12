@@ -13,8 +13,13 @@ import fromEntries from 'object.fromentries'
 import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import { Feature } from './simpleFeature'
-import { IRegion, INoAssemblyRegion } from '../mst-types'
-import { TypeTestedByPredicate, isSessionModel, isViewModel } from './types'
+import {
+  TypeTestedByPredicate,
+  isSessionModel,
+  isViewModel,
+  Region,
+  NoAssemblyRegion,
+} from './types'
 
 export * from './types'
 
@@ -30,8 +35,8 @@ export const inProduction = !inDevelopment
 
 /**
  * Compress and encode a string as url-safe base64
- * @param str a string to compress and encode
- * @see https://en.wikipedia.org/wiki/Base64#URL_applications
+ * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
+ * @param str-  a string to compress and encode
  */
 export function toUrlSafeB64(str: string): string {
   const bytes = new TextEncoder().encode(str)
@@ -45,8 +50,8 @@ export function toUrlSafeB64(str: string): string {
 
 /**
  * Decode and inflate a url-safe base64 to a string
- * @param b64 a base64 string to decode and inflate
- * @see https://en.wikipedia.org/wiki/Base64#URL_applications
+ * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
+ * @param b64 - a base64 string to decode and inflate
  */
 export function fromUrlSafeB64(b64: string): string {
   const originalB64 = b64PadSuffix(b64.replace(/-/g, '+').replace(/_/g, '/'))
@@ -57,7 +62,7 @@ export function fromUrlSafeB64(b64: string): string {
 
 /**
  * Pad the end of a base64 string with "=" to make it valid
- * @param b64 unpadded b64 string
+ * @param b64 - unpadded b64 string
  */
 function b64PadSuffix(b64: string): string {
   let num = 0
@@ -241,15 +246,13 @@ export function getContainingView(node: IAnyStateTreeNode) {
  * Assemble a "locString" from a location, like "ctgA:20-30".
  * The locString uses 1-based coordinates.
  *
- * @param {string} args.refName reference sequence name
- * @param {number} args.start start coordinate
- * @param {number} args.end end coordinate
- * @returns {string} the locString
+ * @param region - Region
+ * @returns the locString
  */
-export function assembleLocString(region: IRegion | INoAssemblyRegion): string {
+export function assembleLocString(region: Region | NoAssemblyRegion): string {
   const { refName, start, end } = region
   let assemblyName
-  if ((region as IRegion).assemblyName) ({ assemblyName } = region as IRegion)
+  if ((region as Region).assemblyName) ({ assemblyName } = region as Region)
   if (assemblyName) return `${assemblyName}:${refName}:${start + 1}..${end}`
   return `${refName}:${start + 1}..${end}`
 }
@@ -341,9 +344,9 @@ export function compareLocStrings(a: string, b: string) {
 /**
  * Ensure that a number is at least min and at most max.
  *
- * @param {number} num
- * @param {number} min
- * @param {number} max
+ * @param num -
+ * @param min -
+ * @param  max -
  */
 export function clamp(num: number, min: number, max: number): number {
   if (num < min) return min
@@ -356,9 +359,9 @@ function roundToNearestPointOne(num: number): number {
 }
 
 /**
- * @param {number} bp
- * @param {IRegion} region
- * @param {number} bpPerPx
+ * @param bp -
+ * @param region -
+ * @param bpPerPx -
  */
 export function bpToPx(
   bp: number,
@@ -388,8 +391,8 @@ export function polarToCartesian(rho: number, theta: number): [number, number] {
 }
 
 /**
- * @param x the x
- * @param y the y
+ * @param x - the x
+ * @param y - the y
  * @returns [rho, theta]
  */
 export function cartesianToPolar(x: number, y: number): [number, number] {
@@ -446,7 +449,7 @@ class AbortError extends Error {
  *
  * for convenience, passing `undefined` is a no-op
  *
- * @param {AbortSignal} [signal]
+ * @param signal -
  * @returns nothing
  */
 export function checkAbortSignal(signal?: AbortSignal): void {
@@ -475,8 +478,7 @@ export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
 
 /**
  * check if the given exception was caused by an operation being intentionally aborted
- * @param {Error} exception
- * @returns {boolean}
+ * @param exception -
  */
 export function isAbortException(exception: Error): boolean {
   return (
@@ -520,8 +522,8 @@ export function mergeConfigs(A: Config, B: Config) {
 /**
  * Returns the index of the last element in the array where predicate is true,
  * and -1 otherwise.
- * @param array The source array to search in
- * @param predicate find calls predicate once for each element of the array, in
+ * @param array - The source array to search in
+ * @param predicate - find calls predicate once for each element of the array, in
  * descending order, until it finds one where predicate returns true. If such an
  * element is found, findLastIndex immediately returns that element index.
  * Otherwise, findLastIndex returns -1.
@@ -548,11 +550,11 @@ export function findLastIndex<T>(
  * flowNameError(error) actions on the given state tree model when the
  * async reaction function starts, completes, and errors respectively.
  *
- * @param {StateTreeNode} self
- * @param {string} flowName
- * @param {function} dataFunction -> data
- * @param {async_function} asyncReactionFunction(data, signal) -> result
- * @param {object} reactionOptions
+ * @param self -
+ * @param flowName -
+ * @param dataFunction -
+ * @param asyncReactionFunction -
+ * @param reactionOptions -
  */
 export function makeAbortableReaction<T, U>(
   self: T,

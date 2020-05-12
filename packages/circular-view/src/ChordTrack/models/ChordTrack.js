@@ -3,7 +3,7 @@ export default pluginManager => {
   // const { transaction } = jbrequire('mobx')
   const { types, getParent } = jbrequire('mobx-state-tree')
   const React = jbrequire('react')
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const { ElementId } = jbrequire('@gmod/jbrowse-core/util/types/mst')
   const { ConfigurationSchema, ConfigurationReference, getConf } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )

@@ -2,7 +2,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import format from 'string-template'
@@ -84,12 +84,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     return refNames
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {IRegion} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
-  public getFeatures(query: INoAssemblyRegion, opts: BaseOptions = {}) {
+  public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const filledTemplate = encodeURIComponent(
         format(this.queryTemplate, query),
@@ -100,7 +95,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
         observer.next(feature)
       })
       observer.complete()
-    })
+    }, opts.signal)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -230,10 +225,5 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     return true
   }
 
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the forseeable future and can be purged
-   * from caches, etc
-   */
   public freeResources(/* { region } */): void {}
 }

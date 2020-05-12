@@ -3,7 +3,7 @@ import {
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -33,7 +33,7 @@ export default class extends BaseFeatureDataAdapter {
     this.featureType = featureType
   }
 
-  public async getRefNames(opts?: BaseOptions) {
+  public async getRefNames() {
     return [
       'chr1',
       'chr10',
@@ -62,12 +62,7 @@ export default class extends BaseFeatureDataAdapter {
     ]
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {IRegion} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
-  public getFeatures(region: IRegion) {
+  public getFeatures(region: Region, opts: BaseOptions) {
     const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {
       try {
@@ -96,6 +91,7 @@ export default class extends BaseFeatureDataAdapter {
         const response = await fetch('https://api.gdc.cancer.gov/v0/graphql', {
           method: 'POST',
           body: JSON.stringify(query),
+          signal: opts.signal,
         })
         const result = await response.json()
         const queryResults = result.data.viewer.explore.features.hits.edges
@@ -113,16 +109,16 @@ export default class extends BaseFeatureDataAdapter {
         observer.error(e)
       }
       observer.complete()
-    })
+    }, opts.signal)
   }
 
   public freeResources(): void {}
 
   /**
    * Create a GraphQL query for GDC mutations
-   * @param ref chromosome reference
-   * @param start start position
-   * @param end end position
+   * @param ref - chromosome reference
+   * @param start - start position
+   * @param end - end position
    */
   private createMutationQuery(ref: string, start: number, end: number) {
     const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { features: ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { score startPosition: start_position endPosition: end_position mutationType: mutation_type cosmicId: cosmic_id referenceAllele: reference_allele ncbiBuild: ncbi_build genomicDnaChange: genomic_dna_change mutationSubtype: mutation_subtype ssmId: ssm_id chromosome consequence { hits { edges { node { transcript { is_canonical annotation { vep_impact polyphen_impact polyphen_score sift_score sift_impact hgvsc } consequence_type gene { gene_id symbol gene_strand } aa_change transcript_id } id } } } } } } } } } } }`
@@ -145,9 +141,9 @@ export default class extends BaseFeatureDataAdapter {
 
   /**
    * Create a GraphQL query for GDC genes
-   * @param ref chromosome reference
-   * @param start start position
-   * @param end end position
+   * @param ref - chromosome reference
+   * @param start - start position
+   * @param end - end position
    */
   private createGeneQuery(ref: string, start: number, end: number) {
     const geneQuery = `query genesQuery( $filters: FiltersArgument $size: Int $offset: Int $score: String ) { viewer { explore { features: genes { hits(first: $size, offset: $offset, filters: $filters, score: $score) { total edges { node { geneId: gene_id id geneStrand: gene_strand synonyms symbol name geneStart: gene_start geneEnd: gene_end geneChromosome: gene_chromosome description canonicalTranscriptId: canonical_transcript_id externalDbIds: external_db_ids { hgnc omimGene: omim_gene uniprotkbSwissprot: uniprotkb_swissprot entrezGene: entrez_gene } biotype isCancerGeneCensus: is_cancer_gene_census } } } } } } }`
@@ -166,9 +162,9 @@ export default class extends BaseFeatureDataAdapter {
 
   /**
    * Create the full filter based on the given filter, location and case(s)
-   * @param chr chromosome (ex. 1)
-   * @param start start position
-   * @param end end position
+   * @param chr - chromosome (ex. 1)
+   * @param start - start position
+   * @param end - end position
    */
   private getFilterQuery(chr: string, start: number, end: number) {
     const resultingFilterQuery = {
@@ -187,9 +183,9 @@ export default class extends BaseFeatureDataAdapter {
 
   /**
    * Create a filter for the current visible location and case(s)
-   * @param chr chromosome (ex. 1)
-   * @param start start position
-   * @param end end position
+   * @param chr - chromosome (ex. 1)
+   * @param start - start position
+   * @param end - end position
    */
   private addLocationAndCasesToFilter(chr: string, start: number, end: number) {
     let locationFilter

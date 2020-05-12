@@ -30,7 +30,7 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
   }
 
   /**
-   * returns a Map of feature id -> rectangle
+   * returns a Map of `feature id -> rectangle`
    */
   getRectangles(): Map<string, RectTuple> {
     return this.rectangles

@@ -5,7 +5,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { IRegion, IFileLocation } from '@gmod/jbrowse-core/mst-types'
+import { Region, FileLocation } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -36,7 +36,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     const bigBedLocation = readConfObject(
       config,
       'bigBedLocation',
-    ) as IFileLocation
+    ) as FileLocation
     this.bigbed = new BigBed({
       filehandle: openLocation(bigBedLocation),
     })
@@ -54,13 +54,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     return ((await this.bigbed.getHeader()).refsByNumber[refId] || {}).name
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {IRegion} param
-   * @param abortSignal an abortSignal
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
-  public getFeatures(region: IRegion, opts: BaseOptions = {}) {
+  public getFeatures(region: Region, opts: BaseOptions = {}) {
     const { refName, start, end } = region
     const { signal } = opts
     return ObservableCreate<Feature>(async observer => {
@@ -123,7 +117,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       } catch (e) {
         observer.error(e)
       }
-    })
+    }, opts.signal)
   }
 
   public freeResources(): void {}

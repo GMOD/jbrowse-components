@@ -7,7 +7,7 @@ import WebWorkerRpcDriver from './WebWorkerRpcDriver'
 import MainThreadRpcDriver from './MainThreadRpcDriver'
 import ElectronRpcDriver from './ElectronRpcDriver'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
-import { IRegion } from '../mst-types'
+import { Region } from '../util/types'
 
 type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver | ElectronRpcDriver
 type BackendConfigurations = {
@@ -82,7 +82,7 @@ class RpcManager {
     return this.getDriver(backendName)
   }
 
-  renameRegionIfNeeded(refNameMap: Map<string, string>, region: IRegion) {
+  renameRegionIfNeeded(refNameMap: Map<string, string>, region: Region) {
     if (isStateTreeNode(region) && !isAlive(region)) {
       return region
     }
@@ -109,16 +109,16 @@ class RpcManager {
     args: {
       assemblyName?: string
       signal?: AbortSignal
-      regions?: IRegion[]
-      region?: IRegion
+      regions?: Region[]
+      region?: Region
       adapterConfig: unknown
     },
     opts = {},
   ) {
     const { assemblyName, signal, regions, region, adapterConfig } = args
     const newArgs: typeof args & {
-      originalRegion?: IRegion
-      originalRegions?: IRegion[]
+      originalRegion?: Region
+      originalRegions?: Region[]
     } = {
       ...args,
       regions: [...(args.regions || [])],

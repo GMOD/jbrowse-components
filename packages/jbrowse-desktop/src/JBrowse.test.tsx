@@ -53,7 +53,7 @@ function getPluginManager(initialState?: SnapshotIn<JBrowseRootModel>) {
   return pluginManager
 }
 
-test('basic test of electron-mock-ipc', async () => {
+test('basic test of electron-mock-ipc', () => {
   const testMessage = 'test'
   ipcMain.once('test-event', (ev: Event, obj: string) => {
     expect(obj).toEqual(testMessage)

@@ -118,10 +118,10 @@ export default class SceneGraph {
    * if the record does not already cover the given
    * absolute extents, extend it to cover them
    *
-   * @param {number} left
-   * @param {number} right
-   * @param {number} top
-   * @param {number} bottom
+   * @param left -
+   * @param right -
+   * @param top -
+   * @param bottom -
    */
   expand(
     newLeft: number,

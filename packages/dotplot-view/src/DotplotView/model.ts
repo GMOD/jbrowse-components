@@ -1,5 +1,5 @@
 import { getSession } from '@gmod/jbrowse-core/util'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
 
 import { types, Instance, SnapshotIn } from 'mobx-state-tree'
 import { autorun, transaction } from 'mobx'
@@ -17,7 +17,7 @@ export default function stateModelFactory(pluginManager: any) {
   const { cast, types: jbrequiredTypes, getParent, addDisposer } = jbrequire(
     'mobx-state-tree',
   )
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const { ElementId } = jbrequire('@gmod/jbrowse-core/util/types/mst')
   const Dotplot1DViewModel = jbrequire(require('./Dotplot1DViewModel'))
 
   return (jbrequiredTypes as Instance<typeof types>)
@@ -96,14 +96,14 @@ export default function stateModelFactory(pluginManager: any) {
         addDisposer(
           self,
           autorun(
-            async () => {
+            () => {
               const axis = [self.viewWidth, self.viewHeight]
               const views = [self.hview, self.vview]
               if (!self.initialized) {
-                self.assemblyNames.forEach(async (name, index) => {
+                self.assemblyNames.forEach((name, index) => {
                   session
                     .getRegionsForAssemblyName(name)
-                    .then((regions: IRegion[] | undefined) => {
+                    .then((regions: Region[] | undefined) => {
                       if (regions !== undefined) {
                         transaction(() => {
                           views[index].setDisplayedRegions(regions)
@@ -130,7 +130,7 @@ export default function stateModelFactory(pluginManager: any) {
         )
         addDisposer(
           self,
-          autorun(async () => {
+          autorun(() => {
             const padding = 4
             // these are set via autorun to avoid dependency cycle
             this.setBorderY(

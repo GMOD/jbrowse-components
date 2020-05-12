@@ -11,7 +11,7 @@ import { Component } from 'react'
 import { reaction } from 'mobx'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import jsonStableStringify from 'json-stable-stringify'
-import { Region } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types/mst'
 
 import {
   assembleLocString,
@@ -32,7 +32,7 @@ const blockState = types
     isRightEndOfDisplayedRegion: false,
   })
   // NOTE: all this volatile stuff has to be filled in at once, so that it stays consistent
-  .volatile(self => ({
+  .volatile(() => ({
     renderInProgress: undefined as AbortController | undefined,
     filled: false,
     data: undefined as any,

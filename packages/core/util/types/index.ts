@@ -1,8 +1,14 @@
-import { isStateTreeNode } from 'mobx-state-tree'
+import { isStateTreeNode, SnapshotOut, SnapshotIn } from 'mobx-state-tree'
 import PluginManager from '../../PluginManager'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
 import { MenuOption } from '../../ui'
+import {
+  NoAssemblyRegion as MUNoAssemblyRegion,
+  Region as MUIRegion,
+  LocalPathLocation as MULocalPathLocation,
+  UriLocation as MUUriLocation,
+} from './mst'
 
 export * from './util'
 
@@ -117,3 +123,25 @@ export function isAbstractMenuManager(
     'appendToSubMenu' in thing
   )
 }
+
+// Empty interfaces required by mobx-state-tree
+// See https://mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
+/* eslint-disable @typescript-eslint/no-empty-interface */
+
+export interface NoAssemblyRegion
+  extends SnapshotIn<typeof MUNoAssemblyRegion> {}
+
+export interface Region extends SnapshotIn<typeof MUIRegion> {}
+
+export interface LocalPathLocation
+  extends SnapshotOut<typeof MULocalPathLocation> {}
+
+export interface UriLocation extends SnapshotOut<typeof MUUriLocation> {}
+
+export interface BlobLocation {
+  blob: Blob
+}
+
+export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
+
+/* eslint-enable @typescript-eslint/no-empty-interface */

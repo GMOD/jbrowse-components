@@ -26,9 +26,9 @@ import {
  * given a configuration model (an instance of a ConfigurationSchema),
  * read the configuration variable at the given path
  *
- * @param {object} model instance of ConfigurationSchema
- * @param {array} slotPaths array of paths to read
- * @param {any} args extra arguments e.g. for a feature callback,
+ * @param model - instance of ConfigurationSchema
+ * @param slotPaths - array of paths to read
+ * @param args - extra arguments e.g. for a feature callback,
  *  will be sent to each of the slotNames
  */
 export function readConfObject(
@@ -94,9 +94,9 @@ export function readConfObject(
 /**
  * helper method for readConfObject, reads the config from a mst model
  *
- * @param {object} model object containing a 'configuration' member
- * @param {array} slotPaths array of paths to read
- * @param {any} args extra arguments e.g. for a feature callback,
+ * @param model - object containing a 'configuration' member
+ * @param slotPaths - array of paths to read
+ * @param args - extra arguments e.g. for a feature callback,
  *   will be sent to each of the slotNames
  */
 export function getConf(
@@ -116,8 +116,8 @@ export function getConf(
  * given a union of explicitly typed configuration schema types,
  * extract an array of the type names contained in the union
  *
- * @param {mst union type} unionType
- * @returns {Array[string]} type names contained in the union
+ * @param unionType -
+ * @returns Array of type names contained in the union
  */
 export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
   if (isType(maybeUnionType)) {
