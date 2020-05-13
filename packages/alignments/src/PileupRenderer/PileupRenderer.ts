@@ -49,17 +49,21 @@ export default class PileupRenderer extends BoxRendererType {
     config: AnyConfigurationModel,
     bpPerPx: number,
     region: IRegion,
+    softClipOn?: boolean,
   ): LayoutRecord | null {
     // alter the start and end below when softclipping enabled
     let expansionBefore = 0
     let expansionAfter = 0
     const mismatches: Mismatch[] = feature.get('mismatches')
-    for (let i = 0; i < mismatches.length; i += 1) {
-      const mismatch = mismatches[i]
-      if (mismatch.type === 'softclip') {
-        mismatch.start === 0
-          ? (expansionBefore = mismatch.cliplen || 0)
-          : (expansionAfter = mismatch.cliplen || 0)
+
+    if (softClipOn) {
+      for (let i = 0; i < mismatches.length; i += 1) {
+        const mismatch = mismatches[i]
+        if (mismatch.type === 'softclip') {
+          mismatch.start === 0
+            ? (expansionBefore = mismatch.cliplen || 0)
+            : (expansionAfter = mismatch.cliplen || 0)
+        }
       }
     }
 
@@ -131,7 +135,15 @@ export default class PileupRenderer extends BoxRendererType {
     const featureMap = sortedFeatures || features
     const layoutRecords = iterMap(
       featureMap.values(),
-      feature => this.layoutFeature(feature, layout, config, bpPerPx, region),
+      feature =>
+        this.layoutFeature(
+          feature,
+          layout,
+          config,
+          bpPerPx,
+          region,
+          dummySoftClipCond,
+        ),
       featureMap.size,
     )
 
