@@ -219,6 +219,28 @@
     },
     {
       "type": "VariantTrack",
+      "trackId": "volvox_test_vcf",
+      "name": "volvox 1000genomes vcf",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "category": [
+        "VCF"
+      ],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "test_data/volvox/volvox.test.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/volvox/volvox.test.vcf.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
       "trackId": "volvox_filtered_vcf",
       "name": "volvox filtered vcf",
       "assemblyNames": [
