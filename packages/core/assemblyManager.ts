@@ -8,9 +8,11 @@ import {
   IAnyType,
   SnapshotOrInstance,
   types,
+  Instance,
 } from 'mobx-state-tree'
 import { readConfObject } from './configuration'
 import { AnyConfigurationModel } from './configuration/configurationSchema'
+import { makeAbortableReaction } from './util'
 import { Region } from './util/types'
 import { Region as MSTRegion } from './util/types/mst'
 import QuickLRU from './util/QuickLRU'
@@ -25,6 +27,8 @@ function checkRefName(refName: string) {
     throw new Error(`Encountered invalid refName: "${refName}"`)
   }
 }
+
+type RefNameAliases = Record<string, string[]>
 
 export function assemblyFactory(assemblyConfigType: IAnyType) {
   return types
@@ -72,98 +76,53 @@ export function assemblyFactory(assemblyConfigType: IAnyType) {
         return this.allRefNames.includes(refName)
       },
     }))
+    .actions(self => {
+      let renderInProgress: undefined | AbortController
+
+      return {
+        setLoading(abortController: AbortController) {
+          renderInProgress = abortController
+        },
+        setLoaded({
+          adapterRegionsWithAssembly,
+          refNameAliases,
+        }: {
+          adapterRegionsWithAssembly: Region[]
+          refNameAliases: RefNameAliases
+        }) {
+          this.setRegions(adapterRegionsWithAssembly)
+          this.setRefNameAliases(refNameAliases)
+          this.setRefNameAliasesSet(true)
+        },
+        setError(error: Error) {
+          if (renderInProgress && !renderInProgress.signal.aborted) {
+            renderInProgress.abort()
+          }
+          getParent(self, 3).setError(String(error))
+        },
+        setRegions(regions: Region[]) {
+          self.regions = cast(regions)
+        },
+        setRefNameAliases(refNameAliases: RefNameAliases) {
+          self.refNameAliases = cast(refNameAliases)
+        },
+        setRefNameAliasesSet(isSet: boolean) {
+          self.refNameAliasesSet = isSet
+        },
+      }
+    })
     .actions(self => ({
       afterAttach() {
-        addDisposer(
-          self,
-          autorun(async () => {
-            const sequenceAdapterConfig = readConfObject(self.configuration, [
-              'sequence',
-              'adapter',
-            ])
-            const adapterConfigId = jsonStableStringify(sequenceAdapterConfig)
-            const sequenceAborter = new AbortController()
-            const { rpcManager } = getParent(self, 2)
-            rpcManager
-              .call(
-                adapterConfigId,
-                'getRegions',
-                {
-                  sessionId: self.name,
-                  adapterConfig: sequenceAdapterConfig,
-                  signal: sequenceAborter.signal,
-                },
-                { timeout: 1000000 },
-              )
-              .then((adapterRegions: Region[]) => {
-                const adapterRegionsWithAssembly = adapterRegions.map(
-                  adapterRegion => {
-                    const { refName } = adapterRegion
-                    checkRefName(refName)
-                    return {
-                      ...adapterRegion,
-                      assemblyName: self.name,
-                    }
-                  },
-                )
-                this.setRegions(adapterRegionsWithAssembly)
-              })
-              .catch((error: Error) => {
-                getParent(self, 3).setError(String(error))
-              })
-            if (self.configuration.refNameAliases) {
-              const refNameAliasesAdapterConfig = readConfObject(
-                self.configuration,
-                ['refNameAliases', 'adapter'],
-              )
-              const refNameAliasesAborter = new AbortController()
-              rpcManager
-                .call(
-                  adapterConfigId,
-                  'getRefNameAliases',
-                  {
-                    sessionId: self.name,
-                    adapterConfig: refNameAliasesAdapterConfig,
-                    signal: refNameAliasesAborter.signal,
-                  },
-                  { timeout: 1000000 },
-                )
-                .then(
-                  (
-                    refNameAliasesList: {
-                      refName: string
-                      aliases: string[]
-                    }[],
-                  ) => {
-                    const refNameAliases: Record<string, string[]> = {}
-                    refNameAliasesList.forEach(refNameAlias => {
-                      refNameAlias.aliases.forEach(alias => {
-                        checkRefName(alias)
-                      })
-                      refNameAliases[refNameAlias.refName] =
-                        refNameAlias.aliases
-                    })
-                    this.setRefNameAliases(refNameAliases)
-                    this.setRefNameAliasesSet(true)
-                  },
-                )
-                .catch((error: unknown) => {
-                  getParent(self, 3).setError(String(error))
-                })
-            } else {
-              this.setRefNameAliasesSet(true)
-            }
-          }),
+        makeAbortableReaction(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          self as any,
+          loadAssemblyData,
+          loadAssemblyReaction,
+          { name: `${self.name} assembly loading`, fireImmediately: true },
+          self.setLoading,
+          self.setLoaded,
+          self.setError,
         )
-      },
-      setRegions(regions: Region[]) {
-        self.regions = cast(regions)
-      },
-      setRefNameAliases(refNameAliases: Record<string, string[]>) {
-        self.refNameAliases = cast(refNameAliases)
-      },
-      setRefNameAliasesSet(isSet: boolean) {
-        self.refNameAliasesSet = isSet
       },
     }))
     .actions(self => {
@@ -248,6 +207,78 @@ export function assemblyFactory(assemblyConfigType: IAnyType) {
       return { getRefNameMapForAdapter, getReverseRefNameMapForAdapter }
     })
 }
+function loadAssemblyData(self: Assembly) {
+  const sequenceAdapterConfig = readConfObject(self.configuration, [
+    'sequence',
+    'adapter',
+  ])
+  const adapterConfigId = jsonStableStringify(sequenceAdapterConfig)
+  const { rpcManager } = getParent(self, 2)
+  const refNameAliasesAdapterConfig =
+    self.configuration.refNameAliases &&
+    readConfObject(self.configuration, ['refNameAliases', 'adapter'])
+  return {
+    sequenceAdapterConfig,
+    adapterConfigId,
+    rpcManager,
+    assemblyName: self.name,
+    refNameAliasesAdapterConfig,
+  }
+}
+async function loadAssemblyReaction(
+  props: ReturnType<typeof loadAssemblyData> | undefined,
+  signal: AbortSignal,
+) {
+  if (!props) {
+    throw new Error('cannot render with no props')
+  }
+
+  const {
+    sequenceAdapterConfig,
+    adapterConfigId,
+    rpcManager,
+    assemblyName,
+    refNameAliasesAdapterConfig,
+  } = props
+
+  const adapterRegions = (await rpcManager.call(
+    adapterConfigId,
+    'getRegions',
+    { sessionId: assemblyName, adapterConfig: sequenceAdapterConfig, signal },
+    { timeout: 1000000 },
+  )) as Region[]
+  const adapterRegionsWithAssembly = adapterRegions.map(adapterRegion => {
+    const { refName } = adapterRegion
+    checkRefName(refName)
+    return { ...adapterRegion, assemblyName }
+  })
+  const refNameAliases: RefNameAliases = {}
+  if (refNameAliasesAdapterConfig) {
+    const refNameAliasesAborter = new AbortController()
+    const refNameAliasesList = (await rpcManager.call(
+      adapterConfigId,
+      'getRefNameAliases',
+      {
+        sessionId: assemblyName,
+        adapterConfig: refNameAliasesAdapterConfig,
+        signal: refNameAliasesAborter.signal,
+      },
+      { timeout: 1000000 },
+    )) as {
+      refName: string
+      aliases: string[]
+    }[]
+
+    refNameAliasesList.forEach(refNameAlias => {
+      refNameAlias.aliases.forEach(alias => {
+        checkRefName(alias)
+      })
+      refNameAliases[refNameAlias.refName] = refNameAlias.aliases
+    })
+  }
+  return { adapterRegionsWithAssembly, refNameAliases }
+}
+export type Assembly = Instance<ReturnType<typeof assemblyFactory>>
 
 export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
   return types
@@ -318,9 +349,6 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
     }))
     .actions(self => ({
       afterAttach() {
-        // self.assemblies.push({
-        //   configuration: getParent(self).jbrowse.assemblies[0],
-        // })
         addDisposer(
           self,
           autorun(() => {
@@ -349,7 +377,7 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
         idx: number,
         assemblyConfig: SnapshotOrInstance<typeof assemblyConfigType> | string,
       ) {
-        self.assemblies[idx] = assemblyConfigType.create({
+        self.assemblies[idx] = cast({
           configuration: assemblyConfig,
         })
       },
