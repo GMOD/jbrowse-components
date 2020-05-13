@@ -1,8 +1,5 @@
-import {
-  BaseFeatureDataAdapter,
-  RegionsAdapter,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { BaseFeatureDataAdapter, RegionsAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { FileLocation } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -23,12 +20,12 @@ export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
     if (!chromSizesLocation) {
       throw new Error('must provide chromSizesLocation')
     }
-    const file = openLocation(chromSizesLocation as IFileLocation)
+    const file = openLocation(chromSizesLocation as FileLocation)
     this.source = file.toString()
     this.refSeqs = this.init(file)
   }
 
-  async init(file: GenericFilehandle) {
+  private async init(file: GenericFilehandle) {
     const data = (await file.readFile('utf8')) as string
     const refSeqs: { [key: string]: number } = {}
     if (!data.length) {
@@ -56,22 +53,12 @@ export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
     }))
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {IRegion} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
-  public getFeatures({ refName, start, end }: INoAssemblyRegion) {
+  public getFeatures() {
     return ObservableCreate<Feature>(observer => {
       // provides no sequence
       observer.complete()
     })
   }
 
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the forseeable future and can be purged
-   * from caches, etc
-   */
   public freeResources(/* { region } */): void {}
 }

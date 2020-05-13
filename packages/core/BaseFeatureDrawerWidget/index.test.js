@@ -3,7 +3,7 @@ import React from 'react'
 import { stateModel } from '.'
 import ReactComponent from './BaseFeatureDetail'
 
-test('open up a drawer widget', async () => {
+test('open up a drawer widget', () => {
   const model = stateModel.create({ type: 'BaseFeatureDrawerWidget' })
   const { container, getByText } = render(<ReactComponent model={model} />)
   model.setFeatureData({

@@ -12,7 +12,7 @@ import ServerSideRendererType, {
   RenderArgsDeserialized as BaseRenderArgsDeserialized,
   RenderResults,
 } from './ServerSideRendererType'
-import { IRegion } from '../../mst-types'
+import { Region } from '../../util/types'
 import { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
 import { readConfObject, isConfigurationModel } from '../../configuration'
 import SerializableFilterChain from './util/serializableFilterChain'
@@ -65,8 +65,8 @@ export class LayoutSession implements LayoutSessionProps {
   }
 
   /**
-   * @param {*} layout
-   * @returns {boolean} true if the given layout is a valid one to use for this session
+   * @param layout -
+   * @returns true if the given layout is a valid one to use for this session
    */
   cachedLayoutIsValid(cachedLayout: CachedLayout) {
     return (
@@ -129,7 +129,7 @@ export default class BoxRendererType extends ServerSideRendererType {
 
   freeResourcesInWorker(args: {
     sessionId: string
-    regions: IRegion[] | undefined
+    regions: Region[] | undefined
   }) {
     const { sessionId, regions } = args
     const session = this.sessions[sessionId]

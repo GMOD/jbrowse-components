@@ -3,7 +3,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -82,7 +82,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
   }
 
   // todo: incorporate summary blocks
-  public getRegionStats(region: INoAssemblyRegion, opts: BaseOptions = {}) {
+  public getRegionStats(region: NoAssemblyRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
     const { bpPerPx, signal } = opts
     return this.statsCache.get(
@@ -94,7 +94,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
 
   // todo: add caching
   public async getMultiRegionStats(
-    regions: INoAssemblyRegion[] = [],
+    regions: NoAssemblyRegion[] = [],
     opts: BaseOptions = {},
   ) {
     if (!regions.length) {
@@ -131,12 +131,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
     })
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {IRegion} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
-  public getFeatures(region: INoAssemblyRegion, opts: BaseOptions = {}) {
+  public getFeatures(region: NoAssemblyRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
     const { signal, bpPerPx } = opts
     return ObservableCreate<Feature>(async observer => {
@@ -153,7 +148,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
           })
         }),
       ).subscribe(observer)
-    })
+    }, opts.signal)
   }
 
   public freeResources(): void {}

@@ -16,7 +16,7 @@ test('adapter can fetch features from volvox-bed12.bed.gz', async () => {
     }),
   )
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -44,7 +44,7 @@ test('adapter can fetch features from volvox.sort.bed.gz simple bed3', async () 
     }),
   )
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     refName: 'contigA',
     start: 0,
     end: 20000,
@@ -112,7 +112,7 @@ test('adapter can fetch features bed with autosql', async () => {
 )`,
     }),
   )
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -144,7 +144,7 @@ test('adapter can fetch bed with header', async () => {
     }),
   )
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     refName: 'contigA',
     start: 0,
     end: 20000,

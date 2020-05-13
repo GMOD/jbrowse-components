@@ -32,7 +32,7 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
     getVolvoxSequenceSubAdapter,
   )
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
@@ -45,8 +45,8 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
   expect(featuresJsonArray.length).toEqual(3809)
   expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
 
-  expect(await adapter.refIdToName(0)).toBe('ctgA')
-  expect(await adapter.refIdToName(1)).toBe(undefined)
+  expect(adapter.refIdToName(0)).toBe('ctgA')
+  expect(adapter.refIdToName(1)).toBe(undefined)
 
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
 })
@@ -64,7 +64,7 @@ test('test usage of cramSlightlyLazyFeature toJSON (used in the drawer widget)',
     getVolvoxSequenceSubAdapter,
   )
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,

@@ -16,53 +16,55 @@ const numericColumns: Record<string, boolean> = {
   JunctionReadCount: true,
 }
 
-export function parseSTARFusionBuffer(buffer: Buffer, options: ParseOptions) {
-  return parseTsvBuffer(buffer, {
+export async function parseSTARFusionBuffer(
+  buffer: Buffer,
+  options: ParseOptions,
+) {
+  const data = await parseTsvBuffer(buffer, {
     hasColumnNameLine: true,
     columnNameLineNumber: 1,
     selectedAssemblyName: options.selectedAssemblyName,
-  }).then(data => {
-    // remove the # in #FusionName
-    data.columns[0].name = data.columns[0].name.replace('#', '')
-    // set some columns to be numeric
-    data.columns.forEach(col => {
-      if (numericColumns[col.name]) col.dataType = { type: 'Number' }
-    })
+  })
+  // remove the # in #FusionName
+  data.columns[0].name = data.columns[0].name.replace('#', '')
+  // set some columns to be numeric
+  data.columns.forEach(col => {
+    if (numericColumns[col.name]) col.dataType = { type: 'Number' }
+  })
 
-    // decorate each row with a feature object in its extendedData
-    data.rowSet.rows.forEach((row, rowNumber) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const featureData: Record<string, any> = {}
-      row.cells.forEach(({ text }, columnNumber) => {
-        const column = data.columns[columnNumber]
-        if (column.name === 'LeftBreakpoint' && text) {
-          const { refName, pos, strand } = parseSTARFusionBreakpointString(text)
-          featureData.refName = refName
-          featureData.start = pos
-          featureData.end = pos
-          featureData.strand = strand
-        } else if (column.name === 'RightBreakpoint' && text) {
-          const { refName, pos, strand } = parseSTARFusionBreakpointString(text)
-          featureData.mate = {
-            refName,
-            start: pos,
-            end: pos,
-            strand,
-          }
-        } else if (text && numericColumns[column.name]) {
-          // some other column, numeric
-          featureData[column.name] = parseFloat(text)
-        } else {
-          // some other column, text
-          featureData[column.name] = text
+  // decorate each row with a feature object in its extendedData
+  data.rowSet.rows.forEach((row, rowNumber) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const featureData: Record<string, any> = {}
+    row.cells.forEach(({ text }, columnNumber) => {
+      const column = data.columns[columnNumber]
+      if (column.name === 'LeftBreakpoint' && text) {
+        const { refName, pos, strand } = parseSTARFusionBreakpointString(text)
+        featureData.refName = refName
+        featureData.start = pos
+        featureData.end = pos
+        featureData.strand = strand
+      } else if (column.name === 'RightBreakpoint' && text) {
+        const { refName, pos, strand } = parseSTARFusionBreakpointString(text)
+        featureData.mate = {
+          refName,
+          start: pos,
+          end: pos,
+          strand,
         }
-      })
-      featureData.uniqueId = `sf-${rowNumber + 1}`
-      row.extendedData = {
-        feature: featureData,
+      } else if (text && numericColumns[column.name]) {
+        // some other column, numeric
+        featureData[column.name] = parseFloat(text)
+      } else {
+        // some other column, text
+        featureData[column.name] = text
       }
     })
-
-    return data
+    featureData.uniqueId = `sf-${rowNumber + 1}`
+    row.extendedData = {
+      feature: featureData,
+    }
   })
+
+  return data
 }

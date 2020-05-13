@@ -16,21 +16,18 @@ export class CoreGetRegions extends RpcMethodType {
     pluginManager: PluginManager,
     args: {
       sessionId: string
-      adapterType: string
       signal: RemoteAbortSignal
       adapterConfig: {}
     },
   ) {
     const {
       sessionId,
-      adapterType,
       signal,
       adapterConfig,
     } = this.deserializeArguments(args)
     const { dataAdapter } = await getAdapter(
       pluginManager,
       sessionId,
-      adapterType,
       adapterConfig,
     )
     if (
@@ -62,7 +59,6 @@ export class CoreGetRefNames extends RpcMethodType {
     const { dataAdapter } = await getAdapter(
       pluginManager,
       sessionId,
-      adapterType,
       adapterConfig,
     )
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
@@ -91,7 +87,6 @@ export class CoreGetRefNameAliases extends RpcMethodType {
     const { dataAdapter } = await getAdapter(
       pluginManager,
       sessionId,
-      adapterType,
       adapterConfig,
     )
     if (isRefNameAliasAdapter(dataAdapter)) {

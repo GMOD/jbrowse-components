@@ -2,7 +2,7 @@
 import { types, IAnyModelType, IAnyComplexType } from 'mobx-state-tree'
 import { stringToFunction, functionRegexp } from '../util/functionStrings'
 import { inDevelopment } from '../util'
-import { FileLocation } from '../mst-types'
+import { FileLocation } from '../util/types/mst'
 
 function isValidColorString(/* str */) {
   // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string
@@ -119,7 +119,7 @@ const typeModelExtensions: { [typeName: string]: (self: any) => any } = {
       add(key: string, val: number) {
         self.value.set(key, val)
       },
-      remove(key: string, val: number) {
+      remove(key: string) {
         self.value.delete(key)
       },
     },
@@ -134,23 +134,21 @@ const FunctionStringType = types.refinement(
 
 export interface ConfigSlotDefinition {
   description?: string
+  /** custom base MST model for the slot's value */
   model?: IAnyModelType | IAnyComplexType
+  /** name of the type of slot, e.g. "string", "number", "stringArray" */
   type: string
+  /** default value of the slot */
   defaultValue: any
+  /** parameter names of the function callback */
   functionSignature?: string[]
 }
 
 /**
  * builds a MST model for a configuration slot
  *
- * @param {*} slotName
- * @param {object} definition
- * @param {string} definition.description?
- * @param {object} definition.model? custom base MST model for the slot's value
- * @param {string} definition.type name of the type of slot, e.g. "string", "number", "stringArray"
- * @param {*} definition.defaultValue default value of the slot
- * @param {Array[string]} [definition.functionSignature] parameter names
- *  of the function callback, default []
+ * @param slotName -
+ * @param  definition -
  */
 export default function ConfigSlot(
   slotName: string,

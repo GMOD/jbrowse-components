@@ -69,7 +69,7 @@ class DummyHandle {
 /**
  * Stub RPC driver class that runs RPC functions in-band in the main thread.
  *
- * @param {Object} rpcFuncs object containing runnable rpc functions
+ * @param rpcFuncs - object containing runnable rpc functions
  */
 export default class MainThreadRpcDriver extends BaseRpcDriver {
   makeWorker: () => DummyHandle

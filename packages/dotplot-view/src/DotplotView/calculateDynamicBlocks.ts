@@ -22,7 +22,7 @@ const interRegionPaddingWidth = 0
  *
  * NOTE: start, end, and offsetPx may all be fractional!
  *
- * @returns {BlockSet} of ` { refName, startBp, end, offset, reversed? }`
+ * @returns BlockSet of `{ refName, startBp, end, offset, reversed? }`
  */
 export default function calculateDynamicBlocks(model: any) {
   const { offsetPx, width, displayedRegions, bpPerPx } = model
@@ -30,7 +30,7 @@ export default function calculateDynamicBlocks(model: any) {
   let displayedRegionLeftPx = 0
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
-  displayedRegions.forEach((region: any, regionNumber: any) => {
+  displayedRegions.forEach((region: any) => {
     const {
       assemblyName,
       refName,

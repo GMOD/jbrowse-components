@@ -1,14 +1,15 @@
 import { getAdapter } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@gmod/jbrowse-core/pluggableElementTypes/RpcMethodType'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { RemoteAbortSignal } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import {
   FeatureStats,
   blankStats,
   dataAdapterSupportsWiggleStats,
 } from '../statsUtil'
+
 
 export class WiggleGetGlobalStats extends RpcMethodType {
   async execute(
@@ -29,7 +30,6 @@ export class WiggleGetGlobalStats extends RpcMethodType {
     const { dataAdapter } = await getAdapter(
       pluginManager,
       sessionId,
-      adapterType,
       adapterConfig,
     )
     if (
@@ -50,13 +50,12 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
       adapterConfig: {}
       signal?: RemoteAbortSignal
       sessionId: string
-      regions: IRegion[]
+      regions: Region[]
       bpPerPx: number
     },
   ) {
     const {
       regions,
-      adapterType,
       adapterConfig,
       signal,
       bpPerPx,
@@ -65,7 +64,6 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
     const { dataAdapter } = await getAdapter(
       pluginManager,
       sessionId,
-      adapterType,
       adapterConfig,
     )
 

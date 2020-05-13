@@ -12,7 +12,6 @@ import {
  * @param {object} args
  * @param {object} args.regions - array of regions to render. some renderers (such as circular chord tracks) accept multiple at a time
  * @param {string} args.sessionId
- * @param {string} args.adapterType
  * @param {object} args.adapterConfig
  * @param {string} args.rendererType
  * @param {object} args.renderProps
@@ -20,15 +19,7 @@ import {
  */
 export async function render(
   pluginManager,
-  {
-    regions,
-    sessionId,
-    adapterType,
-    adapterConfig,
-    rendererType,
-    renderProps,
-    signal,
-  },
+  { regions, sessionId, adapterConfig, rendererType, renderProps, signal },
 ) {
   if (!sessionId) throw new Error('must pass a unique session id')
 
@@ -37,12 +28,7 @@ export async function render(
   }
   checkAbortSignal(signal)
 
-  const { dataAdapter } = getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
 
   const RendererType = pluginManager.getRendererType(rendererType)
   if (!RendererType) throw new Error(`renderer "${rendererType}" not found`)

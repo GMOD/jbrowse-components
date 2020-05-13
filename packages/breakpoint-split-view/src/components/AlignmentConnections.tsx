@@ -15,7 +15,6 @@ export default (pluginManager: any) => {
   return observer(
     ({
       model,
-      height,
       trackConfigId,
     }: {
       model: BreakpointViewModel
@@ -99,7 +98,7 @@ export default (pluginManager: any) => {
                   key={id}
                   data-testid="r1"
                   strokeWidth={mouseoverElt === id ? 5 : 1}
-                  onClick={evt => {
+                  onClick={() => {
                     const featureWidget = session.addDrawerWidget(
                       'BreakpointAlignmentsDrawerWidget',
                       'breakpointAlignments',
@@ -116,8 +115,8 @@ export default (pluginManager: any) => {
                     )
                     session.showDrawerWidget(featureWidget)
                   }}
-                  onMouseOver={evt => setMouseoverElt(id)}
-                  onMouseOut={evt => setMouseoverElt(undefined)}
+                  onMouseOver={() => setMouseoverElt(id)}
+                  onMouseOut={() => setMouseoverElt(undefined)}
                 />,
               )
             }

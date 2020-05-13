@@ -6,20 +6,18 @@ import {
   addDisposer,
   cast,
   Instance,
-  getSnapshot,
 } from 'mobx-state-tree'
 import { Component } from 'react'
 import { reaction } from 'mobx'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import jsonStableStringify from 'json-stable-stringify'
-import { Region } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types/mst'
 
 import {
   assembleLocString,
   checkAbortSignal,
   isAbortException,
   getSession,
-  getContainingView,
 } from '@gmod/jbrowse-core/util'
 import { getTrackAssemblyNames } from '@gmod/jbrowse-core/util/tracks'
 
@@ -34,7 +32,7 @@ const blockState = types
     isRightEndOfDisplayedRegion: false,
   })
   // NOTE: all this volatile stuff has to be filled in at once, so that it stays consistent
-  .volatile(self => ({
+  .volatile(() => ({
     renderInProgress: undefined as AbortController | undefined,
     filled: false,
     data: undefined as any,
@@ -143,9 +141,8 @@ const blockState = types
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
         }
-        const track = getParent<any>(self, 2)
-        const view = getContainingView(track)
-        const { rpcManager } = getSession(view)
+        const track = getParent(self, 2)
+        const { rpcManager } = getSession(self)
         const { rendererType } = track
         const { renderArgs } = renderBlockData(cast(self))
         rendererType
@@ -170,7 +167,7 @@ export type BlockStateModel = typeof blockState
 function renderBlockData(self: Instance<BlockStateModel>) {
   try {
     const { assemblyData, rpcManager } = getSession(self) as any
-    const track = getParent<any>(self, 2)
+    const track = getParent(self, 2)
     const assemblyNames = getTrackAssemblyNames(track)
     let cannotBeRenderedReason
     if (!assemblyNames.includes(self.region.assemblyName)) {
@@ -188,8 +185,6 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     }
     if (!cannotBeRenderedReason)
       cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
-    const trackAssemblyData =
-      (assemblyData && assemblyData.get(self.region.assemblyName)) || {}
     const { renderProps } = track
     const { rendererType } = track
     const { config } = renderProps
@@ -197,10 +192,6 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     // It won't trigger the reaction if it doesn't think we're accessing it
     readConfObject(config)
 
-    let sequenceConfig: { type?: string } = {}
-    if (trackAssemblyData.sequence) {
-      sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
-    }
     const adapterConfig = getConf(track, 'adapter')
     // Only subtracks will have parent tracks with configs
     // They use parent's adapter config for matching sessionId
@@ -218,10 +209,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       renderArgs: {
         assemblyName: self.region.assemblyName,
         regions: [self.region],
-        adapterType: track.adapterType.name,
         adapterConfig,
-        sequenceAdapterType: sequenceConfig.type,
-        sequenceAdapterConfig: sequenceConfig,
         rendererType: rendererType.name,
         renderProps,
         sessionId: adapterConfigId,

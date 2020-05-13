@@ -364,23 +364,21 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   />
                   <span
                     class="MuiSlider-track"
+                    style="left: 0%; width: 100%;"
                   />
                   <input
                     type="hidden"
                     value="5.643856189774724"
                   />
                   <span
-                    class="MuiSlider-mark MuiSlider-markActive"
-                    data-index="0"
-                  />
-                  <span
                     aria-orientation="horizontal"
                     aria-valuemax="5.643856189774724"
-                    aria-valuemin="5.643856189774724"
+                    aria-valuemin="7.643856189774724"
                     aria-valuenow="5.643856189774724"
                     class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
                     data-index="0"
                     role="slider"
+                    style="left: 100%;"
                     tabindex="0"
                   />
                 </span>
@@ -768,23 +766,21 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   />
                   <span
                     class="MuiSlider-track"
+                    style="left: 0%; width: 100%;"
                   />
                   <input
                     type="hidden"
                     value="5.643856189774724"
                   />
                   <span
-                    class="MuiSlider-mark MuiSlider-markActive"
-                    data-index="0"
-                  />
-                  <span
                     aria-orientation="horizontal"
                     aria-valuemax="5.643856189774724"
-                    aria-valuemin="5.643856189774724"
+                    aria-valuemin="7.643856189774724"
                     aria-valuenow="5.643856189774724"
                     class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
                     data-index="0"
                     role="slider"
+                    style="left: 100%;"
                     tabindex="0"
                   />
                 </span>

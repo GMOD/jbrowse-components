@@ -8,7 +8,7 @@ test('adapter can fetch features', async () => {
     { uniqueId: 'two', refName: 'ctgB', start: 50, end: 60 },
   ]
   const adapter = new Adapter(configSchema.create({ features }))
-  const result = await adapter.getFeatures({
+  const result = adapter.getFeatures({
     refName: 'ctgA',
     start: 0,
     end: 20000,

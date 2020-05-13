@@ -60,102 +60,69 @@ console.error = async (...args) => {
 
 async function getGlobalStats(
   pluginManager,
-  { adapterType, adapterConfig, signal, sessionId },
+  { adapterConfig, signal, sessionId },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getGlobalStats({ signal })
 }
 
 async function getRegionStats(
   pluginManager,
-  { region, adapterType, adapterConfig, signal, bpPerPx, sessionId },
+  { region, adapterConfig, signal, bpPerPx, sessionId },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getRegionStats(region, { signal, bpPerPx })
 }
 
 async function getMultiRegionStats(
   pluginManager,
-  { regions, adapterType, adapterConfig, signal, bpPerPx, sessionId },
+  { regions, adapterConfig, signal, bpPerPx, sessionId },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getMultiRegionStats(regions, { signal, bpPerPx })
 }
 
-async function getRegions(
-  pluginManager,
-  { sessionId, adapterType, signal, adapterConfig },
-) {
+async function getRegions(pluginManager, { sessionId, signal, adapterConfig }) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getRegions({ signal })
 }
 
 async function getRefNames(
   pluginManager,
-  { sessionId, signal, adapterType, adapterConfig },
+  { sessionId, signal, adapterConfig },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getRefNames({ signal })
 }
 
 async function getRefNameAliases(
   pluginManager,
-  { sessionId, adapterType, signal, adapterConfig },
+  { sessionId, signal, adapterConfig },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getRefNameAliases({ signal })
 }
 
@@ -186,7 +153,6 @@ function freeResources(pluginManager, specification) {
  * @param {object} args
  * @param {object} args.regions - array of regions to render. some renderers (such as circular chord tracks) accept multiple at a time
  * @param {string} args.sessionId
- * @param {string} args.adapterType
  * @param {object} args.adapterConfig
  * @param {string} args.rendererType
  * @param {object} args.renderProps
@@ -198,7 +164,6 @@ async function render(
     regions,
     originalRegions,
     sessionId,
-    adapterType,
     adapterConfig,
     rendererType,
     renderProps,
@@ -214,12 +179,7 @@ async function render(
   }
   checkAbortSignal(signal)
 
-  const { dataAdapter } = getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
 
   const RendererType = pluginManager.getRendererType(rendererType)
   if (!RendererType) throw new Error(`renderer "${rendererType}" not found`)
@@ -247,16 +207,7 @@ async function render(
  */
 async function comparativeRender(
   pluginManager,
-  {
-    sessionId,
-    adapterType,
-    adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
-    rendererType,
-    renderProps,
-    signal,
-  },
+  { sessionId, adapterConfig, rendererType, renderProps, signal },
 ) {
   if (!sessionId) throw new Error('must pass a unique session id')
 
@@ -265,14 +216,7 @@ async function comparativeRender(
   }
   checkAbortSignal(signal)
 
-  const { dataAdapter } = getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
 
   const RendererType = pluginManager.getRendererType(rendererType)
   if (!RendererType) throw new Error(`renderer "${rendererType}" not found`)

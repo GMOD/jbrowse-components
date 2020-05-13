@@ -2,6 +2,7 @@ import { toArray } from 'rxjs/operators'
 import { BaseFeatureDataAdapter } from './BaseAdapter'
 import { ObservableCreate } from '../util/rxjs'
 import SimpleFeature, { Feature } from '../util/simpleFeature'
+import { Region } from '../util/types'
 
 describe('base data adapter', () => {
   it('properly propagates errors in feature fetching', async () => {
@@ -10,14 +11,16 @@ describe('base data adapter', () => {
         return ['ctgA', 'ctgB']
       }
 
-      getFeatures() {
+      getFeatures(region: Region) {
         return ObservableCreate<Feature>(() =>
           Promise.reject(new Error('something blew up')),
         )
       }
+
+      freeResources(): void {}
     }
     const adapter = new Adapter({})
-    const features = adapter.getFeaturesInRegion({
+    const features = adapter.getFeatures({
       assemblyName: 'volvox',
       refName: 'ctgA',
       start: 0,
@@ -33,21 +36,25 @@ describe('base data adapter', () => {
         return ['ctgA', 'ctgB']
       }
 
-      getFeatures() {
+      getFeatures(region: Region) {
         return ObservableCreate<Feature>(observer => {
-          observer.next(
-            new SimpleFeature({
-              uniqueId: 'testFeature',
-              start: 100,
-              end: 200,
-            }),
-          )
+          if (region.refName === 'ctgA') {
+            observer.next(
+              new SimpleFeature({
+                uniqueId: 'testFeature',
+                start: 100,
+                end: 200,
+              }),
+            )
+          }
           observer.complete()
         })
       }
+
+      freeResources(): void {}
     }
     const adapter = new Adapter({})
-    const features = adapter.getFeaturesInRegion({
+    const features = adapter.getFeatures({
       assemblyName: 'volvox',
       refName: 'ctgA',
       start: 0,
@@ -63,7 +70,7 @@ describe('base data adapter', () => {
         },
       ]
     `)
-    const features2 = adapter.getFeaturesInRegion({
+    const features2 = adapter.getFeatures({
       assemblyName: 'volvox',
       refName: 'ctgC',
       start: 0,

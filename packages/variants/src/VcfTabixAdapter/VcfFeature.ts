@@ -53,8 +53,7 @@ export default class VCFFeature implements Feature {
     return this.variant[field] || this.data[field]
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  set(name: string, val: any): void {}
+  set(): void {}
 
   parent(): undefined {
     return undefined

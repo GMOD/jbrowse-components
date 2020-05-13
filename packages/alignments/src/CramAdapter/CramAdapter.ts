@@ -3,7 +3,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -67,13 +67,12 @@ export default (pluginManager: PluginManager) => {
         'sequenceAdapter',
         'type',
       ])
-      const sequenceAdapterConfig = readConfObject(config, 'sequenceAdapter')
-      const sequenceAdapter = getSubAdapter(
-        sequenceAdapterType,
-        sequenceAdapterConfig,
-      ).dataAdapter
-      if (sequenceAdapter instanceof BaseFeatureDataAdapter) {
-        this.sequenceAdapter = sequenceAdapter
+
+      const { dataAdapter } = getSubAdapter(
+        readConfObject(config, 'sequenceAdapter'),
+      )
+      if (dataAdapter instanceof BaseFeatureDataAdapter) {
+        this.sequenceAdapter = dataAdapter
       } else {
         throw new Error(
           `CRAM feature adapters cannot use sequence adapters of type '${sequenceAdapterType}'`,
@@ -81,7 +80,7 @@ export default (pluginManager: PluginManager) => {
       }
     }
 
-    async seqFetch(seqId: number, start: number, end: number) {
+    private async seqFetch(seqId: number, start: number, end: number) {
       start -= 1 // convert from 1-based closed to interbase
 
       const refSeqStore = this.sequenceAdapter
@@ -89,7 +88,7 @@ export default (pluginManager: PluginManager) => {
       const refName = this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
       if (!refName) return undefined
 
-      const features = await refSeqStore.getFeatures(
+      const features = refSeqStore.getFeatures(
         {
           refName,
           start,
@@ -104,7 +103,7 @@ export default (pluginManager: PluginManager) => {
       const trimmed: string[] = []
       seqChunks
         .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
-        .forEach((chunk: Feature, i: number) => {
+        .forEach((chunk: Feature) => {
           const chunkStart = chunk.get('start')
           const chunkEnd = chunk.get('end')
           const trimStart = Math.max(start - chunkStart, 0)
@@ -126,9 +125,9 @@ export default (pluginManager: PluginManager) => {
       return sequence
     }
 
-    async setup(opts?: BaseOptions) {
+    private async setup(opts?: BaseOptions) {
       if (Object.keys(this.samHeader).length === 0) {
-        const samHeader = await this.cram.cram.getSamHeader()
+        const samHeader = await this.cram.cram.getSamHeader(opts?.signal)
 
         // use the @SQ lines in the header to figure out the
         // mapping between ref ref ID numbers and names
@@ -192,15 +191,7 @@ export default (pluginManager: PluginManager) => {
       return this.seqIdToOriginalRefName[refId]
     }
 
-    /**
-     * Fetch features for a certain region. Use getFeaturesInRegion() if you also
-     * want to verify that the store has features for the given reference sequence
-     * before fetching.
-     * @param {IRegion} param
-     * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
-     * @returns {Observable[Feature]} Observable of Feature objects in the region
-     */
-    getFeatures({ refName, start, end }: IRegion, opts: BaseOptions = {}) {
+    getFeatures({ refName, start, end }: Region, opts: BaseOptions = {}) {
       return ObservableCreate<Feature>(async observer => {
         await this.setup(opts)
         if (this.sequenceAdapter && !this.seqIdToRefName) {
@@ -228,14 +219,9 @@ export default (pluginManager: PluginManager) => {
           })
         }
         observer.complete()
-      })
+      }, opts.signal)
     }
 
-    /**
-     * called to provide a hint that data tied to a certain region
-     * will not be needed for the forseeable future and can be purged
-     * from caches, etc
-     */
     freeResources(/* { region } */): void {}
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

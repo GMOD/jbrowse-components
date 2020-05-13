@@ -19,7 +19,7 @@ exports[`one feature (compact mode) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="0px"
+    height="4px"
     style="display: block;"
     width="333.3333333333333px"
   >
@@ -110,7 +110,7 @@ exports[`one feature 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="0px"
+    height="25px"
     style="display: block;"
     width="333.3333333333333px"
   >
@@ -142,7 +142,7 @@ exports[`processed transcript (reducedRepresentation mode) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="0px"
+    height="25px"
     style="display: block;"
     width="333.3333333333333px"
   >
@@ -172,7 +172,7 @@ exports[`processed transcript 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="0px"
+    height="25px"
     style="display: block;"
     width="333.3333333333333px"
   >

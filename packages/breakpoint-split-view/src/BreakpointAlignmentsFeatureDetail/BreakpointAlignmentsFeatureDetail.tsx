@@ -10,10 +10,6 @@ interface AlnCardProps {
   title: string
 }
 
-interface AlnProps extends AlnCardProps {
-  feature: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
-}
-
 interface AlnInputProps extends AlnCardProps {
   model: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }

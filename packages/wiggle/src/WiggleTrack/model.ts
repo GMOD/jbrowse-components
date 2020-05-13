@@ -166,7 +166,6 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             'getMultiRegionStats',
             {
               adapterConfig: getSnapshot(adapter),
-              adapterType: adapter.type,
               // TODO: Figure this out for multiple assembly names
               assemblyName: getTrackAssemblyNames(self)[0],
               regions: JSON.parse(JSON.stringify(dynamicBlocks.contentBlocks)),
@@ -188,7 +187,6 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         if (autoscaleType === 'zscale') {
           return rpcManager.call('statsGathering', 'WiggleGetGlobalStats', {
             adapterConfig: getSnapshot(adapter),
-            adapterType: adapter.type,
             signal,
           }) as Promise<FeatureStats>
         }

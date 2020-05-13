@@ -1,6 +1,10 @@
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
-import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
+import {
+  ElementId,
+  Region as MUIRegion,
+} from '@gmod/jbrowse-core/util/types/mst'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import {
   clamp,
@@ -13,7 +17,7 @@ import {
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
-import { getSnapshot, getRoot, types, cast } from 'mobx-state-tree'
+import { getSnapshot, getRoot, types, cast, Instance } from 'mobx-state-tree'
 
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
@@ -40,39 +44,6 @@ interface BpOffset {
   end?: number
 }
 
-interface ViewActions {
-  [key: string]: MenuOption[]
-}
-const validBpPerPx = [
-  1 / 50,
-  1 / 20,
-  1 / 10,
-  1 / 5,
-  1 / 2,
-  1,
-  2,
-  5,
-  10,
-  20,
-  50,
-  100,
-  200,
-  500,
-  1000,
-  2000,
-  5000,
-  10000,
-  20000,
-  50000,
-  100000,
-  200000,
-  500000,
-  1000000,
-  2000000,
-  5000000,
-  10000000,
-].sort((a, b) => a - b)
-
 export const HEADER_BAR_HEIGHT = 48
 export const HEADER_OVERVIEW_HEIGHT = 20
 export const SCALE_BAR_HEIGHT = 17
@@ -85,7 +56,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       type: types.literal('LinearGenomeView'),
       offsetPx: 0,
       bpPerPx: 1,
-      displayedRegions: types.array(Region),
+      displayedRegions: types.array(MUIRegion),
       // we use an array for the tracks because the tracks are displayed in a specific
       // order that we need to keep.
       tracks: types.array(
@@ -148,32 +119,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return totalbp
       },
 
-      get zoomLevels() {
-        const zoomLevels = validBpPerPx.filter(
-          val => val <= this.totalBp / self.width && val >= 0,
-        )
-        if (!zoomLevels.length) {
-          zoomLevels.push(validBpPerPx[0])
-        }
-        return zoomLevels
-      },
-
       get maxBpPerPx() {
-        return this.zoomLevels[this.zoomLevels.length - 1]
+        return this.totalBp / 1000
       },
 
       get minBpPerPx() {
-        return this.zoomLevels[0]
-      },
-
-      constrainBpPerPx(newBpPerPx: number): number {
-        // find the closest valid zoom level and return it
-        // might consider reimplementing this later using a more efficient algorithm
-        return this.zoomLevels
-          .slice()
-          .sort(
-            (a, b) => Math.abs(a - newBpPerPx) - Math.abs(b - newBpPerPx),
-          )[0]
+        return 1 / 50
       },
 
       get maxOffset() {
@@ -233,8 +184,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        *
-       * @param {number} px px in the view area, return value is the displayed regions
-       * @returns {BpOffset} of the displayed region that it lands in
+       * @param px - px in the view area, return value is the displayed regions
+       * @returns BpOffset of the displayed region that it lands in
        */
       pxToBp(px: number) {
         const bp = (self.offsetPx + px) * self.bpPerPx
@@ -415,7 +366,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.showCenterLine = !self.showCenterLine
       },
 
-      setDisplayedRegions(regions: IRegion[]) {
+      setDisplayedRegions(regions: Region[]) {
         self.displayedRegions = cast(regions)
         this.zoomTo(self.bpPerPx)
       },
@@ -436,11 +387,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
-      zoomTo(newBpPerPx: number, constrain = true) {
-        let bpPerPx = newBpPerPx
-        if (constrain) {
-          bpPerPx = self.constrainBpPerPx(newBpPerPx)
-        }
+      zoomTo(newBpPerPx: number) {
+        const bpPerPx = newBpPerPx
         if (bpPerPx === self.bpPerPx) return
         const oldBpPerPx = self.bpPerPx
         self.bpPerPx = bpPerPx
@@ -467,7 +415,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * only navigates to a locString if it is entirely within a
        * displayedRegion.
        *
-       * @param {refName,start?,end?,assemblyName?} location - a proposed
+       * @param location - a proposed
        * location to navigate to
        * throws an error if navigation was unsuccessful
        */
@@ -560,8 +508,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * offset is the base-pair-offset in the displayed region, index is the index of the
        * displayed region in the linear genome view
        *
-       * @param {object} start object as {start, end, offset, index}
-       * @param {object} end object as {start, end, offset, index}
+       * @param start - object as `{start, end, offset, index}`
+       * @param end - object as `{start, end, offset, index}`
        */
       moveTo(start: BpOffset, end: BpOffset) {
         // find locations in the modellist
@@ -589,11 +537,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
             bpToStart += region.end - region.start
           }
         }
-        self.bpPerPx = self.constrainBpPerPx(bpSoFar / self.width)
-        const viewWidth = self.width
-        if (viewWidth > bpSoFar / self.bpPerPx) {
+        self.bpPerPx = bpSoFar / self.width
+        if (self.width > bpSoFar / self.bpPerPx) {
           self.offsetPx = Math.round(
-            bpToStart / self.bpPerPx - (viewWidth - bpSoFar / self.bpPerPx) / 2,
+            bpToStart / self.bpPerPx -
+              (self.width - bpSoFar / self.bpPerPx) / 2,
           )
         } else {
           self.offsetPx = Math.round(bpToStart / self.bpPerPx)
@@ -620,8 +568,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * scrolls the view to center on the given bp. if that is not in any
        * of the displayed regions, does nothing
-       * @param {number} bp
-       * @param {string} refName
+       * @param bp -
+       * @param refName -
        */
       centerAt(/* bp, refName */) {
         /* TODO */
@@ -633,7 +581,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       showAllRegions() {
-        self.bpPerPx = self.constrainBpPerPx(self.totalBp / self.width)
+        self.bpPerPx = self.totalBp / self.width
         self.offsetPx = 0
       },
 
@@ -664,27 +612,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => {
       let cancelLastAnimation = () => {}
 
-      function zoom(levels: number) {
+      function zoom(targetBpPerPx: number) {
         self.zoomTo(self.bpPerPx)
         if (
-          // no zoom
-          levels === 0 ||
           // already zoomed all the way in
-          (levels > 0 && self.bpPerPx === self.minBpPerPx) ||
+          self.bpPerPx === self.minBpPerPx ||
           // already zoomed all the way out
-          (levels < 0 && self.bpPerPx === self.maxBpPerPx)
+          self.bpPerPx === self.maxBpPerPx
         ) {
           return
         }
-        const currentIndex = self.zoomLevels.findIndex(
-          zoomLevel => zoomLevel === self.bpPerPx,
-        )
-        const targetIndex = clamp(
-          currentIndex - levels,
-          0,
-          self.zoomLevels.length - 1,
-        )
-        const targetBpPerPx = self.zoomLevels[targetIndex]
         const factor = self.bpPerPx / targetBpPerPx
         const [animate, cancelAnimation] = springAnimate(
           1,
@@ -797,3 +734,4 @@ export function stateModelFactory(pluginManager: PluginManager) {
   return types.compose(BaseViewModel, model)
 }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
+export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>

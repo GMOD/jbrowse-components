@@ -7,7 +7,7 @@ import WebWorkerRpcDriver from './WebWorkerRpcDriver'
 import MainThreadRpcDriver from './MainThreadRpcDriver'
 import ElectronRpcDriver from './ElectronRpcDriver'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
-import { IRegion } from '../mst-types'
+import { Region } from '../util/types'
 
 type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver | ElectronRpcDriver
 type BackendConfigurations = {
@@ -82,7 +82,7 @@ export default class RpcManager {
     return this.getDriver(backendName)
   }
 
-  renameRegionIfNeeded(refNameMap: Map<string, string>, region: IRegion) {
+  renameRegionIfNeeded(refNameMap: Map<string, string>, region: Region) {
     if (isStateTreeNode(region) && !isAlive(region)) {
       return region
     }
