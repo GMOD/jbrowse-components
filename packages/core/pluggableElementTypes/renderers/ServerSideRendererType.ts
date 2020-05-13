@@ -7,7 +7,7 @@ import {
   isStateTreeNode,
 } from 'mobx-state-tree'
 import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
-import { IRegion } from '../../mst-types'
+import { Region } from '../../util/types'
 import { readConfObject } from '../../configuration'
 import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature, {
@@ -34,8 +34,8 @@ interface BaseRenderArgs {
     trackModel: { id: string; selectedFeatureId?: string }
     blockKey: string
   }
-  regions: IRegion[]
-  originalRegions?: IRegion[]
+  regions: Region[]
+  originalRegions?: Region[]
 }
 
 export interface RenderArgs extends BaseRenderArgs {
@@ -76,8 +76,8 @@ export default class ServerSideRenderer extends RendererType {
    * this is the only part of the track model that most
    * renderers read.
    *
-   * @param {object} args the arguments passed to render
-   * @returns {object} the same object
+   * @param args - the arguments passed to render
+   * @returns the same object
    */
   serializeArgsInClient(args: RenderArgs): RenderArgsSerialized {
     const { trackModel } = args.renderProps
@@ -120,7 +120,7 @@ export default class ServerSideRenderer extends RendererType {
   /**
    * modifies the passed arguments object to
    * inflate arguments as necessary. called in the worker process.
-   * @param {object} args the converted arguments to modify
+   * @param args - the converted arguments to modify
    */
   deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
     const deserialized = ({ ...args } as unknown) as RenderArgsDeserialized
@@ -135,8 +135,10 @@ export default class ServerSideRenderer extends RendererType {
 
   /**
    *
-   * @param {object} result object containing the results of calling the `render` method
-   * @param {Map} features Map of feature.id() -> feature
+   * @param result - object containing the results of calling the `render` method
+   * @param features - Map of `feature.id() -> feature`
+   * @param args - deserialized render args. unused here, but may be used in
+   * deriving class methods
    */
   serializeResultsInWorker(
     result: { html: string },
@@ -167,7 +169,7 @@ export default class ServerSideRenderer extends RendererType {
     return deserialized
   }
 
-  getExpandedGlyphRegion(region: IRegion, renderArgs: RenderArgsDeserialized) {
+  getExpandedGlyphRegion(region: Region, renderArgs: RenderArgsDeserialized) {
     if (!region) return region
     const { bpPerPx, config } = renderArgs
     const maxFeatureGlyphExpansion =
@@ -184,10 +186,7 @@ export default class ServerSideRenderer extends RendererType {
   }
 
   // TODOCLIP maxSoftClip goes here
-  getExpandedClippingRegion(
-    region: IRegion,
-    renderArgs: RenderArgsDeserialized,
-  ) {
+  getExpandedClippingRegion( region: Region, renderArgs: RenderArgsDeserialized) {
     if (!region) return region
     const { bpPerPx, config } = renderArgs
     const maxClippingSize =
@@ -204,8 +203,8 @@ export default class ServerSideRenderer extends RendererType {
   /**
    * use the dataAdapter to fetch the features to be rendered
    *
-   * @param {object} renderArgs
-   * @returns {Map} of features as { id => feature, ... }
+   * @param renderArgs -
+   * @returns Map of features as `{ id => feature, ... }`
    */
   async getFeatures(renderArgs: RenderArgsDeserialized) {
     const {
@@ -222,7 +221,7 @@ export default class ServerSideRenderer extends RendererType {
     }
 
     const dummySoftClipCond = true
-    const requestRegions = regions.map((r: IRegion) => {
+    const requestRegions = regions.map((r: Region) => {
       // make sure the requested region's start and end are integers, if
       // there is a region specification.
       const requestRegion = { ...r }
@@ -238,10 +237,10 @@ export default class ServerSideRenderer extends RendererType {
     // TODOCLIP have a conditional for the maxclipsize flag
     const featureObservable =
       requestRegions.length === 1
-        ? dataAdapter.getFeaturesInRegion(
-            dummySoftClipCond
-              ? this.getExpandedClippingRegion(requestRegions[0], renderArgs)
-              : this.getExpandedGlyphRegion(requestRegions[0], renderArgs),
+        ? dataAdapter.getFeatures(
+          dummySoftClipCond
+          ? this.getExpandedClippingRegion(requestRegions[0], renderArgs)
+          : this.getExpandedGlyphRegion(requestRegions[0], renderArgs),
             {
               signal,
               bpPerPx,
@@ -271,9 +270,9 @@ export default class ServerSideRenderer extends RendererType {
   }
 
   /**
-   * @param {object} renderArgs
-   * @param {FeatureI} feature
-   * @returns {boolean} true if this feature passes all configured filters
+   * @param renderArgs -
+   * @param feature -
+   * @returns true if this feature passes all configured filters
    */
   featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
     if (!renderArgs.filters) return true

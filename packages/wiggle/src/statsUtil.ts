@@ -1,5 +1,5 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { Observable } from 'rxjs'
 import { reduce } from 'rxjs/operators'
 
@@ -73,9 +73,8 @@ export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
  * @return array of numeric scores
  */
 export function calcPerBaseStats(
-  region: INoAssemblyRegion,
+  region: NoAssemblyRegion,
   features: Feature[],
-  opts: { windowSize: number } = { windowSize: 1 },
 ): number[] {
   const { start, end } = region
   const scores = []
@@ -109,7 +108,7 @@ export function calcPerBaseStats(
  * @return - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
  */
 export async function scoresToStats(
-  region: INoAssemblyRegion,
+  region: NoAssemblyRegion,
   features: Observable<Feature>,
 ): Promise<FeatureStats> {
   const { start, end } = region

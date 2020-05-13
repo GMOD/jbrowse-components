@@ -10,7 +10,7 @@ export interface ScaleOpts {
 /**
  * produces a d3-scale from arguments. applies a "nice domain" adjustment
  *
- * @param {opts} object containing attributes
+ * @param object - containing attributes
  *   - domain [min,max]
  *   - range [min,max]
  *   - bounds [min,max]
@@ -50,7 +50,7 @@ export function getScale({
 /**
  * gets the origin for drawing the graph. for linear this is 0, for log this is arbitrarily set to log(1)==0
  *
- * @param {object} scaleType
+ * @param scaleType -
  */
 export function getOrigin(scaleType: string /* , pivot, stats */) {
   // if (pivot) {
@@ -75,7 +75,7 @@ export function getOrigin(scaleType: string /* , pivot, stats */) {
  * produces a "nice" domain that actually rounds down to 0 for the min
  * or 0 to the max depending on if all values are positive or negative
  *
- * @param {opts} object containing attributes
+ * @param object - containing attributes
  *   - domain [min,max]
  *   - bounds [min,max]
  *   - mean

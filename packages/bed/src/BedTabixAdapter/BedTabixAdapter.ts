@@ -4,7 +4,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
+import { FileLocation, Region } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -26,10 +26,10 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     const bedGzLocation = readConfObject(
       config,
       'bedGzLocation',
-    ) as IFileLocation
+    ) as FileLocation
     const index = readConfObject(config, 'index') as {
       indexType?: string
-      location: IFileLocation
+      location: FileLocation
     }
     const autoSql = readConfObject(config, 'autoSql') as string
     const { location, indexType } = index
@@ -48,12 +48,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     return this.bed.getReferenceSequenceNames(opts)
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {IRegion} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
-  public getFeatures(query: IRegion, opts: BaseOptions = {}) {
+  public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       await this.bed.getLines(query.refName, query.start, query.end, {
         lineCallback: (line: string, fileOffset: number) => {
@@ -100,7 +95,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
         signal: opts.signal,
       })
       observer.complete()
-    })
+    }, opts.signal)
   }
 
   public freeResources(): void {}

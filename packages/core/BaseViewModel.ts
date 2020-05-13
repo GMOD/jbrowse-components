@@ -1,5 +1,5 @@
 import { types, Instance } from 'mobx-state-tree'
-import { ElementId } from './mst-types'
+import { ElementId } from './util/types/mst'
 import { MenuOption } from './ui'
 
 const BaseViewModel = types

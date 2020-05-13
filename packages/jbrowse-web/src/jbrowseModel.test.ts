@@ -1,6 +1,6 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { getSnapshot } from 'mobx-state-tree'
-import configSnapshot from '../test_data/config_integration_test.json'
+import configSnapshot from '../test_data/config_demo.json'
 import corePlugins from './corePlugins'
 import jbrowseModelFactory from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'

@@ -42,7 +42,7 @@ export class FloatingLayout {
   }
 
   /**
-   * @returns {Map} of uniqueId => {x,y,anchorLocation,width,height,data}
+   * @returns Map of `uniqueId => {x,y,anchorLocation,width,height,data}`
    */
   getLayout(configuration?: AnyConfigurationModel) {
     if (!this.layoutDirty) return this.layout

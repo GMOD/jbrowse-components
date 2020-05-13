@@ -1,5 +1,5 @@
 import shortid from 'shortid'
-import { types, SnapshotOut, SnapshotIn } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import { PropTypes as MxPropTypes } from 'mobx-react'
 
@@ -20,7 +20,7 @@ export const PropTypes = {
 }
 
 export const NoAssemblyRegion = types
-  .model('Region', {
+  .model('NoAssemblyRegion', {
     refName: types.string,
     start: types.number,
     end: types.number,
@@ -32,29 +32,20 @@ export const NoAssemblyRegion = types
     },
   }))
 
-type TNoAssemblyRegion = SnapshotIn<typeof NoAssemblyRegion>
-export type INoAssemblyRegion = TNoAssemblyRegion
-
 export const Region = types.compose(
+  'Region',
   NoAssemblyRegion,
   types.model({
     assemblyName: types.string,
   }),
 )
 
-export type IRegion = SnapshotIn<typeof Region>
-
 export const LocalPathLocation = types.model('LocalPathLocation', {
   localPath: types.string, // TODO: refine
 })
-export type ILocalPathLocation = SnapshotOut<typeof LocalPathLocation>
 
 export const UriLocation = types.model('UriLocation', {
   uri: types.string, // TODO: refine
 })
-export type IUriLocation = SnapshotOut<typeof UriLocation>
-
-export type IBlobLocation = { blob: Blob }
 
 export const FileLocation = types.union(LocalPathLocation, UriLocation)
-export type IFileLocation = ILocalPathLocation | IUriLocation | IBlobLocation

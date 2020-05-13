@@ -7,7 +7,6 @@ const fetch = require('node-fetch')
 const path = require('path')
 const url = require('url')
 const { promisify } = require('util')
-const merge = require('deepmerge')
 
 const fsFStat = promisify(fs.fstat)
 const fsOpen = promisify(fs.open)
@@ -206,16 +205,6 @@ ipcMain.on('createWindowWorker', event => {
 
 ipcMain.handle('getMainWindowId', async () => mainWindow.id)
 
-// merge function to get stuff from a development config into a production one
-// limited functionality, difficult to use existing merge-deep/mixin-deep type
-// things for this
-function mergeConfigs(A, B) {
-  const merged = merge(A, B)
-  if (B.defaultSession) merged.defaultSession = B.defaultSession
-  else if (A.defaultSession) merged.defaultSession = A.defaultSession
-  return merged
-}
-
 ipcMain.handle('loadConfig', async () => {
   try {
     return JSON.parse(await fsReadFile(configLocation, { encoding: 'utf8' }))
@@ -225,19 +214,10 @@ ipcMain.handle('loadConfig', async () => {
       const configTemplateLocation = isDev
         ? path.join(app.getAppPath(), 'public', 'test_data', 'config.json')
         : path.join(app.getAppPath(), 'build', 'test_data', 'config.json')
-      let config = JSON.parse(
+      const config = JSON.parse(
         await fsReadFile(configTemplateLocation, { encoding: 'utf8' }),
       )
-      if (isDev) {
-        config = mergeConfigs(
-          config,
-          JSON.parse(
-            await fsReadFile('./test_data/config_in_dev.json', {
-              encoding: 'utf8',
-            }),
-          ),
-        )
-      }
+
       await fsWriteFile(configLocation, JSON.stringify(config, null, 2))
       return config
     }

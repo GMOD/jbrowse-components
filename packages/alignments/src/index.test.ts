@@ -77,7 +77,7 @@ test('create bam adapter config', () => {
   expect(getSnapshot(config)).toMatchSnapshot()
 })
 
-test('create track config', async () => {
+test('create track config', () => {
   const pluginManager = new PluginManager([new ThisPlugin(), new SVG()])
   pluginManager.createPluggableElements()
   pluginManager.configure()
@@ -90,7 +90,7 @@ test('create track config', async () => {
   expect(getSnapshot(config2)).toMatchSnapshot()
 })
 
-test('has pileup and alignment tracks', async () => {
+test('has pileup and alignment tracks', () => {
   const pluginManager = new PluginManager([new ThisPlugin(), new SVG()])
   pluginManager.createPluggableElements()
   pluginManager.configure()
@@ -105,7 +105,7 @@ test('has pileup and alignment tracks', async () => {
   expect(sessionModel.SNPCoverageTrack).toBeTruthy()
 })
 
-test('test selection in alignments track model with mock session', async () => {
+test('test selection in alignments track model with mock session', () => {
   const pluginManager = new PluginManager([new ThisPlugin(), new SVG()])
   pluginManager.createPluggableElements()
   pluginManager.configure()

@@ -1,17 +1,16 @@
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { toArray } from 'rxjs/operators'
 import FromConfigAdapter from './FromConfigAdapter'
 
 export default class FromSequenceConfigAdapter extends FromConfigAdapter {
   /**
    * Fetch features for a certain region
-   * @param {Region} param
-   * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
+   * @param region - Region
+   * @returns Observable of Feature objects in the region
    */
-  getFeatures(region: INoAssemblyRegion) {
+  getFeatures(region: NoAssemblyRegion) {
     const { start, end } = region
     return ObservableCreate<Feature>(async observer => {
       const feats = await super.getFeatures(region).pipe(toArray()).toPromise()

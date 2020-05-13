@@ -89,4 +89,6 @@ export class SequenceAdapter extends BaseFeatureDataAdapter {
       return { unsubscribe: () => {} }
     })
   }
+
+  freeResources(/* { region } */): void {}
 }
