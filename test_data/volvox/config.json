@@ -206,14 +206,27 @@
             "uri": "test_data/volvox/volvox-sorted.bam.bai"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer",
-          "maxHeight": 10
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_test_vcf",
+      "name": "volvox 1000genomes vcf",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "category": [
+        "VCF"
+      ],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "test_data/volvox/volvox.test.vcf.gz"
         },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
+        "index": {
+          "location": {
+            "uri": "test_data/volvox/volvox.test.vcf.gz.tbi"
+          }
         }
       }
     },
