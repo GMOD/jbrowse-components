@@ -68,7 +68,11 @@ describe('<Loader />', () => {
   })
 
   it('can use config from a url', async () => {
-    window.history.replaceState({}, '', '/?config=test_data/volvox/config.json')
+    window.history.replaceState(
+      {},
+      '',
+      '/?config=test_data/breakpoint/config.json',
+    )
     console.error = jest.fn()
     const { findByText } = render(<Loader />)
     expect(await findByText('Help')).toBeTruthy()

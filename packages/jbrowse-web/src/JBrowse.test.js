@@ -26,6 +26,13 @@ import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 
+configSnapshot.configuration = {
+  rpc: {
+    defaultDriver: 'MainThreadRpcDriver',
+  },
+  updateUrl: false,
+}
+
 if (!window.TextEncoder) window.TextEncoder = TextEncoder
 if (!window.TextDecoder) window.TextDecoder = TextDecoder
 

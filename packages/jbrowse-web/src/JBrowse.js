@@ -67,7 +67,9 @@ const JBrowse = observer(({ pluginManager }) => {
 
   // Set session URL on first render only, before `onSnapshot` has fired
   useEffect(() => {
-    setUrlSnapshot(getSnapshot(session))
+    if (useUpdateUrl) {
+      setUrlSnapshot(getSnapshot(session))
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

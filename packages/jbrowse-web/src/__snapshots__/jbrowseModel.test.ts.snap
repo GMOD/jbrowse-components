@@ -59,12 +59,7 @@ Object {
       },
     },
   ],
-  "configuration": Object {
-    "rpc": Object {
-      "defaultDriver": "MainThreadRpcDriver",
-    },
-    "updateUrl": false,
-  },
+  "configuration": Object {},
   "connections": Array [],
   "defaultSession": Object {
     "name": "New Session",
