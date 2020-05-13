@@ -78,11 +78,42 @@ exports[`VariantTrack drawer widget renders with just the required model element
                     class="makeStyles-fieldValue"
                   >
                     <div>
-                      ctgA:NaN..undefined 
+                      ctgA:177..177 
                     </div>
                   </div>
                 </div>
-                NaN
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    Name
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      rs123
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    Length
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      1
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -155,22 +186,6 @@ exports[`VariantTrack drawer widget renders with just the required model element
                   <div
                     class="makeStyles-fieldName"
                   >
-                    POS
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      176
-                    </div>
-                  </div>
-                </div>
-                <div
-                  style="display: flex;"
-                >
-                  <div
-                    class="makeStyles-fieldName"
-                  >
                     REF
                   </div>
                   <div
@@ -193,7 +208,7 @@ exports[`VariantTrack drawer widget renders with just the required model element
                     class="makeStyles-fieldValue"
                   >
                     <div>
-                      C
+                      &lt;TRA&gt;
                     </div>
                   </div>
                 </div>
