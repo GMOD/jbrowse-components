@@ -152,13 +152,14 @@ const BaseCoreDetails = (props: BaseProps) => {
   return (
     <BaseCard {...props} title="Primary data">
       {coreRenderedDetails.map(key => {
-        const value = String(displayedDetails[key.toLowerCase()])
+        const value = displayedDetails[key.toLowerCase()]
+        const strValue = String(value)
         return value ? (
           <div key={key} style={{ display: 'flex' }}>
             <div className={classes.fieldName}>{key}</div>
             <div className={classes.fieldValue}>
               <EscapingSanitizedHTML
-                html={isHTML(value) ? value : escapeHTML(value)}
+                html={isHTML(strValue) ? strValue : escapeHTML(strValue)}
               />
             </div>
           </div>
