@@ -12,7 +12,53 @@ import PropTypes from 'prop-types'
 import React, { FunctionComponent } from 'react'
 import isObject from 'is-object'
 import SanitizedHTML from 'react-sanitized-html'
+import escapeHTML from 'escape-html'
 
+// source https://github.com/sindresorhus/html-tags/blob/master/html-tags.json
+// with some random uncommon ones removed. note: we just use this to run the content
+// through sanitize-html without escaping if we see an htmlTag from this list
+// otherwise we escape angle brackets and things prematurely because it might be
+// something like <TRA> in VCF. Ref #657
+const htmlTags = [
+  'a',
+  'b',
+  'br',
+  'code',
+  'div',
+  'em',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'i',
+  'img',
+  'li',
+  'p',
+  'pre',
+  'span',
+  'strong',
+  'table',
+  'tbody',
+  'td',
+  'tfoot',
+  'th',
+  'thead',
+  'tr',
+  'u',
+  'ul',
+]
+
+// adapted from is-html https://github.com/sindresorhus/is-html/blob/master/index.js
+const full = new RegExp(htmlTags.map(tag => `<${tag}\\b[^>]*>`).join('|'), 'i')
+function isHTML(str: string) {
+  return full.test(str)
+}
+function EscapingSanitizedHTML(props: { html: string }) {
+  const { html } = props
+  return <SanitizedHTML html={isHTML(html) ? html : escapeHTML(html)} />
+}
 export const useStyles = makeStyles(theme => ({
   expansionPanelDetails: {
     display: 'block',
@@ -107,16 +153,17 @@ const BaseCoreDetails = (props: BaseProps) => {
     <BaseCard {...props} title="Primary data">
       {coreRenderedDetails.map(key => {
         const value = displayedDetails[key.toLowerCase()]
-        return (
-          value && (
-            <div key={key} style={{ display: 'flex' }}>
-              <div className={classes.fieldName}>{key}</div>
-              <div className={classes.fieldValue}>
-                <SanitizedHTML html={String(value)} />
-              </div>
+        const strValue = String(value)
+        return value ? (
+          <div key={key} style={{ display: 'flex' }}>
+            <div className={classes.fieldName}>{key}</div>
+            <div className={classes.fieldValue}>
+              <EscapingSanitizedHTML
+                html={isHTML(strValue) ? strValue : escapeHTML(strValue)}
+              />
             </div>
-          )
-        )
+          </div>
+        ) : null
       })}
     </BaseCard>
   )
@@ -147,7 +194,7 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
     <div style={{ display: 'flex' }}>
       <div className={classes.fieldName}>{name}</div>
       <div className={classes.fieldValue}>
-        <SanitizedHTML
+        <EscapingSanitizedHTML
           html={isObject(value) ? JSON.stringify(value) : String(value)}
         />
       </div>
@@ -158,7 +205,7 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
       <div className={classes.fieldName}>{name}</div>
       {value.map((val, i) => (
         <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
-          <SanitizedHTML
+          <EscapingSanitizedHTML
             html={isObject(val) ? JSON.stringify(val) : String(val)}
           />
         </div>

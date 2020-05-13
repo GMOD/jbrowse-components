@@ -41,6 +41,7 @@
     "clsx": "^1.0.4",
     "deep-equal": "^1.1.0",
     "deepmerge": "^4.2.2",
+    "escape-html": "^1.0.3",
     "file-uri-to-path": "^1.0.0",
     "generic-filehandle": "^2.0.1",
     "http-range-fetcher": "^1.2.2",
