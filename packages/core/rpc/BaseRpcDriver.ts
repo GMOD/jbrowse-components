@@ -42,12 +42,12 @@ function watchWorker(worker: WorkerHandle, pingTime: number): Promise<void> {
 }
 
 function detectHardwareConcurrency() {
-  if (
-    typeof window !== 'undefined' &&
-    'hardwareConcurrency' in window.navigator
-  ) {
-    return window.navigator.hardwareConcurrency
-  }
+  // if (
+  //   typeof window !== 'undefined' &&
+  //   'hardwareConcurrency' in window.navigator
+  // ) {
+  //   return window.navigator.hardwareConcurrency
+  // }
   return 1
 }
 
@@ -178,8 +178,8 @@ export default abstract class BaseRpcDriver {
     const worker = this.getWorker(stateGroupName, functionName, pluginManager)
     const filteredArgs = this.filterArgs(args, pluginManager, stateGroupName)
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
-    const serializedArgs = rpcMethod.serializeArguments(filteredArgs)
-    const result = worker.call(functionName, serializedArgs, {
+    const serializedArgs = await rpcMethod.serializeArguments(filteredArgs)
+    const result = await worker.call(functionName, serializedArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes
       ...options,
     })

@@ -1,6 +1,5 @@
 import { getAdapter } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@gmod/jbrowse-core/pluggableElementTypes/RpcMethodType'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import { RemoteAbortSignal } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
@@ -10,25 +9,19 @@ import {
   dataAdapterSupportsWiggleStats,
 } from '../statsUtil'
 
-
 export class WiggleGetGlobalStats extends RpcMethodType {
-  async execute(
-    pluginManager: PluginManager,
-    args: {
-      adapterType: string
-      adapterConfig: {}
-      signal?: RemoteAbortSignal
-      sessionId: string
-    },
-  ): Promise<FeatureStats> {
+  async execute(args: {
+    adapterConfig: {}
+    signal?: RemoteAbortSignal
+    sessionId: string
+  }): Promise<FeatureStats> {
     const {
-      adapterType,
       adapterConfig,
       signal,
       sessionId,
-    } = this.deserializeArguments(args)
+    } = await this.deserializeArguments(args)
     const { dataAdapter } = await getAdapter(
-      pluginManager,
+      this.pluginManager,
       sessionId,
       adapterConfig,
     )
@@ -43,26 +36,22 @@ export class WiggleGetGlobalStats extends RpcMethodType {
 }
 
 export class WiggleGetMultiRegionStats extends RpcMethodType {
-  async execute(
-    pluginManager: PluginManager,
-    args: {
-      adapterType: string
-      adapterConfig: {}
-      signal?: RemoteAbortSignal
-      sessionId: string
-      regions: Region[]
-      bpPerPx: number
-    },
-  ) {
+  async execute(args: {
+    adapterConfig: {}
+    signal?: RemoteAbortSignal
+    sessionId: string
+    regions: Region[]
+    bpPerPx: number
+  }) {
     const {
       regions,
       adapterConfig,
       signal,
       bpPerPx,
       sessionId,
-    } = this.deserializeArguments(args)
+    } = await this.deserializeArguments(args)
     const { dataAdapter } = await getAdapter(
-      pluginManager,
+      this.pluginManager,
       sessionId,
       adapterConfig,
     )

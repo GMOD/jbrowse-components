@@ -2,15 +2,15 @@
 import { renderToString } from 'react-dom/server'
 import { filter, distinct, toArray, tap } from 'rxjs/operators'
 import { getSnapshot } from 'mobx-state-tree'
-import { Region } from '../../util/types'
-import { checkAbortSignal } from '../../util'
-import { Feature } from '../../util/simpleFeature'
-import RendererType from './RendererType'
-import SerializableFilterChain from './util/serializableFilterChain'
-import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
-import RpcManager from '../../rpc/RpcManager'
+import { Region } from '@gmod/jbrowse-core/util/types'
+import { checkAbortSignal } from '@gmod/jbrowse-core/util'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import RendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/RendererType'
+import SerializableFilterChain from '@gmod/jbrowse-core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 
-interface RenderArgs {
+export interface RenderArgs {
   blockKey: string
   sessionId: string
   signal?: AbortSignal

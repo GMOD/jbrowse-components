@@ -122,15 +122,10 @@ export default function JBrowseWeb(pluginManager, Session) {
       // code organization
       .extend(assemblyManager)
       .volatile(self => ({
-        rpcManager: new RpcManager(
-          pluginManager,
-          self.configuration.rpc,
-          {
-            WebWorkerRpcDriver: { WorkerClass: RenderWorker },
-            MainThreadRpcDriver: {},
-          },
-          self.getRefNameMapForAdapter,
-        ),
+        rpcManager: new RpcManager(pluginManager, self.configuration.rpc, {
+          WebWorkerRpcDriver: { WorkerClass: RenderWorker },
+          MainThreadRpcDriver: {},
+        }),
         refNameMaps: new Map(),
       }))
   )

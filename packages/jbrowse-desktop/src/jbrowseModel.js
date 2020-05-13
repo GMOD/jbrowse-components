@@ -118,14 +118,9 @@ export default function JBrowseDesktop(pluginManager, Session) {
       // code organization
       .extend(assemblyManager)
       .volatile(self => ({
-        rpcManager: new RpcManager(
-          pluginManager,
-          self.configuration.rpc,
-          {
-            ElectronRpcDriver: { workerCreationChannel: 'createWindowWorker' },
-          },
-          self.getRefNameMapForAdapter,
-        ),
+        rpcManager: new RpcManager(pluginManager, self.configuration.rpc, {
+          ElectronRpcDriver: { workerCreationChannel: 'createWindowWorker' },
+        }),
         refNameMaps: new Map(),
       }))
   )

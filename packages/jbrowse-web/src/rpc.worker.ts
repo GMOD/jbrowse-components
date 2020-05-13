@@ -50,14 +50,14 @@ function flushLog() {
 setInterval(flushLog, 1000)
 
 let callCounter = 0
-function wrapForRpc(func: (pm: PluginManager, args: unknown) => unknown) {
+function wrapForRpc(func: (args: unknown) => unknown) {
   return (args: unknown) => {
     callCounter += 1
     const myId = callCounter
     // logBuffer.push(['rpc-call', myId, func.name, args])
     const retP = Promise.resolve()
       .then(() => getPluginManager())
-      .then(pluginManager => func(pluginManager, args))
+      .then(pluginManager => func(args))
       .catch(error => {
         if (isAbortException(error)) {
           // logBuffer.push(['rpc-abort', myId, func.name, args])

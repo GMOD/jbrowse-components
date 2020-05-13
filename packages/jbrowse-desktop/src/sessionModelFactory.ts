@@ -145,7 +145,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           return self.rpcManager
             .call(
               adapterConfigId,
-              'getRegions',
+              'CoreGetRegions',
               {
                 sessionId: assemblyName,
                 adapterType: adapterConfig.type,

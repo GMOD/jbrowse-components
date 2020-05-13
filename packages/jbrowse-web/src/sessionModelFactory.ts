@@ -143,26 +143,24 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         if (assembly) {
           const adapterConfig = readConfObject(assembly.sequence, 'adapter')
           const adapterConfigId = jsonStableStringify(adapterConfig)
-          return (self.rpcManager
-            .call(
-              adapterConfigId,
-              'CoreGetRegions',
-              {
-                sessionId: assemblyName,
-                adapterConfig,
-                signal: opts.signal,
-              },
-              { timeout: 1000000 },
-            ) as Promise<Region[]>)
-            .then((adapterRegions: Region[]) => {
-              const adapterRegionsWithAssembly = adapterRegions.map(
-                adapterRegion => ({
-                  ...adapterRegion,
-                  assemblyName,
-                }),
-              )
-              return adapterRegionsWithAssembly
-            })
+          return (self.rpcManager.call(
+            adapterConfigId,
+            'CoreGetRegions',
+            {
+              sessionId: assemblyName,
+              adapterConfig,
+              signal: opts.signal,
+            },
+            { timeout: 1000000 },
+          ) as Promise<Region[]>).then((adapterRegions: Region[]) => {
+            const adapterRegionsWithAssembly = adapterRegions.map(
+              adapterRegion => ({
+                ...adapterRegion,
+                assemblyName,
+              }),
+            )
+            return adapterRegionsWithAssembly
+          })
         }
         return Promise.resolve(undefined)
       },

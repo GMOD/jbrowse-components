@@ -9,11 +9,18 @@ import {
 } from '../rpc/remoteAbortSignals'
 
 export default class RpcMethodType extends PluggableElementBase {
-  serializeArguments(args: {}): {} {
+  pluginManager: PluginManager
+
+  constructor(pluginManager: PluginManager) {
+    super()
+    this.pluginManager = pluginManager
+  }
+
+  async serializeArguments(args: {}): Promise<{}> {
     return args
   }
 
-  deserializeArguments<
+  async deserializeArguments<
     SERIALIZED extends { signal?: RemoteAbortSignal | undefined }
   >(serializedArgs: SERIALIZED) {
     const { signal } = serializedArgs
@@ -23,18 +30,15 @@ export default class RpcMethodType extends PluggableElementBase {
     return { ...serializedArgs, signal: undefined }
   }
 
-  async execute(
-    pluginManager: PluginManager,
-    serializedArgs: unknown,
-  ): Promise<unknown> {
+  async execute(serializedArgs: unknown): Promise<unknown> {
     throw new Error('execute method is abstract')
   }
 
-  serializeReturn(originalReturn: unknown) {
+  async serializeReturn(originalReturn: unknown) {
     return originalReturn
   }
 
-  deserializeReturn(serializedReturn: unknown): unknown {
+  async deserializeReturn(serializedReturn: unknown): Promise<unknown> {
     return serializedReturn
   }
 
@@ -44,7 +48,7 @@ export default class RpcMethodType extends PluggableElementBase {
     args: {},
     opts: {},
   ) {
-    const serialized: {} = this.serializeArguments(args)
+    const serialized: {} = await this.serializeArguments(args)
     const serializedReturn = await rpcManager.call(
       stateGroupName,
       this.name,

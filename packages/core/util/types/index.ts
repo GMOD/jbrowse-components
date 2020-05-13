@@ -1,4 +1,9 @@
-import { isStateTreeNode, SnapshotOut, SnapshotIn } from 'mobx-state-tree'
+import {
+  isStateTreeNode,
+  SnapshotOut,
+  SnapshotIn,
+  IAnyStateTreeNode,
+} from 'mobx-state-tree'
 import PluginManager from '../../PluginManager'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
@@ -95,7 +100,7 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
 
 /** minimum interface for the root MST model of a JBrowse app */
 export interface AbstractRootModel {
-  jbrowse: unknown
+  jbrowse: IAnyStateTreeNode
   session?: AbstractSessionModel
   setDefaultSession(): void
 }

@@ -32,13 +32,10 @@ export default class RpcManager {
 
   backendConfigurations: BackendConfigurations
 
-  getRefNameMapForAdapter: Function
-
   constructor(
     pluginManager: PluginManager,
     mainConfiguration: AnyConfigurationModel,
     backendConfigurations: BackendConfigurations,
-    getRefNameMapForAdapter = async () => {},
   ) {
     if (!mainConfiguration) {
       throw new Error('RpcManager requires at least a main configuration')
@@ -46,7 +43,6 @@ export default class RpcManager {
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration
     this.backendConfigurations = backendConfigurations
-    this.getRefNameMapForAdapter = getRefNameMapForAdapter
     this.driverObjects = new Map()
   }
 
@@ -80,27 +76,6 @@ export default class RpcManager {
     const backendName = readConfObject(this.mainConfiguration, 'defaultDriver')
 
     return this.getDriver(backendName)
-  }
-
-  renameRegionIfNeeded(refNameMap: Map<string, string>, region: Region) {
-    if (isStateTreeNode(region) && !isAlive(region)) {
-      return region
-    }
-    if (region && refNameMap && refNameMap.has(region.refName)) {
-      // clone the region so we don't modify it
-      if (isStateTreeNode(region)) {
-        region = { ...getSnapshot(region) }
-      } else {
-        region = { ...region }
-      }
-
-      // modify it directly in the container
-      const newRef = refNameMap.get(region.refName)
-      if (newRef) {
-        region.refName = newRef
-      }
-    }
-    return region
   }
 
   async call(

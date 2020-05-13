@@ -150,6 +150,7 @@ function RefNameAutocomplete({
           }
         } catch (e) {
           if (!isAbortException(e) && mounted) {
+            console.error(e)
             setError(String(e))
           }
         }

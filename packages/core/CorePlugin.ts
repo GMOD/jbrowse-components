@@ -7,7 +7,7 @@ export default class CorePlugin extends Plugin {
   install(pluginManager: PluginManager) {
     // register all our core rpc methods
     Object.values(coreRpcMethods).forEach(RpcMethod => {
-      pluginManager.addRpcMethod(() => new RpcMethod())
+      pluginManager.addRpcMethod(() => new RpcMethod(pluginManager))
     })
   }
 }
