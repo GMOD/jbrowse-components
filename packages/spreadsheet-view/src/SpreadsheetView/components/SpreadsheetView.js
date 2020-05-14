@@ -84,7 +84,7 @@ export default pluginManager => {
             data-testid="spreadsheet_view_open"
             color="secondary"
           >
-            <FolderOpenIcon />
+            <FolderOpenIcon fontSize="small" />
           </IconButton>
         </Grid>
       </Grid>
