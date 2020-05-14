@@ -316,11 +316,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.marked.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam.bai",
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.marked.bam.bai",
           },
         },
         "type": "BamAdapter",

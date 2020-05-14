@@ -283,11 +283,11 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.marked.bam"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.markdup.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.marked.bam.bai"
           }
         }
       }
