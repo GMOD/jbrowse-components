@@ -280,6 +280,36 @@ Object {
       "adapter": Object {
         "index": Object {
           "location": Object {
+            "uri": "test_data/volvox/volvox.test.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": Object {
+          "uri": "test_data/volvox/volvox.test.vcf.gz",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "VCF",
+      ],
+      "name": "volvox 1000genomes vcf",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox_test_vcf",
+      "type": "VariantTrack",
+    },
+    Object {
+      "adapter": Object {
+        "index": Object {
+          "location": Object {
             "uri": "test_data/volvox/volvox.filtered.vcf.gz.tbi",
           },
         },
