@@ -1584,36 +1584,6 @@
     },
     {
       "type": "AlignmentsTrack",
-      "trackId": "na12878_exome",
-      "name": "NA12878 Exome",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "1000 genomes"
-      ],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam"
-        },
-        "index": {
-          "location": {
-            "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.bai"
-          }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
       "trackId": "chm1_pacbio",
       "name": "CHM1 pacbio",
       "assemblyNames": [

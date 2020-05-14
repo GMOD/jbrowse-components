@@ -37,6 +37,7 @@ export default (
           showCoverage: true,
           showPileup: true,
           hideHeader: false,
+          showSoftClipping: false,
         })
         .volatile(() => ({
           ReactComponent: AlignmentsTrackComponent,
@@ -91,6 +92,13 @@ export default (
             icon: self.showPileup ? 'visibility_off' : 'visibility',
             onClick: self.togglePileup,
             disabled: !self.showCoverage,
+          },
+          {
+            label: self.showSoftClipping
+              ? 'Hide soft clipping'
+              : 'Show soft clipping',
+            icon: self.showSoftClipping ? 'visibility_off' : 'visibility',
+            onClick: self.toggleSoftClipping,
           },
         ]
       },
@@ -190,6 +198,9 @@ export default (
       },
       togglePileup() {
         self.showPileup = !self.showPileup
+      },
+      toggleSoftClipping() {
+        self.showSoftClipping = !self.showSoftClipping
       },
     }))
 }

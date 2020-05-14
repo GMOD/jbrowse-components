@@ -26,6 +26,7 @@ interface PileupRenderProps {
     position: number
     by: string
   }
+  showSoftClip: boolean
 }
 
 interface LayoutRecord {
@@ -43,14 +44,14 @@ export default class PileupRenderer extends BoxRendererType {
     config: AnyConfigurationModel,
     bpPerPx: number,
     region: Region,
-    softClipOn?: boolean,
+    showSoftClip?: boolean,
   ): LayoutRecord | null {
     // alter the start and end below when softclipping enabled
     let expansionBefore = 0
     let expansionAfter = 0
     const mismatches: Mismatch[] = feature.get('mismatches')
 
-    if (softClipOn) {
+    if (showSoftClip) {
       for (let i = 0; i < mismatches.length; i += 1) {
         const mismatch = mismatches[i]
         if (mismatch.type === 'softclip') {
@@ -108,6 +109,7 @@ export default class PileupRenderer extends BoxRendererType {
       bpPerPx,
       sortObject,
       highResolutionScaling = 1,
+      showSoftClip,
     } = props
     const [region] = regions
     if (!layout) {
@@ -119,7 +121,6 @@ export default class PileupRenderer extends BoxRendererType {
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const w = Math.max(minFeatWidth, pxPerBp)
-    const dummySoftClipCond = true
 
     const sortedFeatures =
       sortObject && sortObject.by && region.start === sortObject.position
@@ -136,7 +137,7 @@ export default class PileupRenderer extends BoxRendererType {
           config,
           bpPerPx,
           region,
-          dummySoftClipCond,
+          showSoftClip,
         ),
       featureMap.size,
     )
@@ -225,7 +226,7 @@ export default class PileupRenderer extends BoxRendererType {
           } else if (
             // probably change this/use this to display softclip under
             mismatch.type === 'hardclip' ||
-            (!dummySoftClipCond && mismatch.type === 'softclip')
+            (!showSoftClip && mismatch.type === 'softclip')
           ) {
             ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
             const pos = mismatchLeftPx - 1
@@ -253,17 +254,19 @@ export default class PileupRenderer extends BoxRendererType {
             )
           }
         }
-        // TODOCLIP: somewhere here the stripey stuff gets colored in on the solid red/blue as a second pass
-        // if condition is if maxFeatureglyphsize/maxsoftclipping some sort of indicator is greater than 0
-        // then find soft clipped bases and draw them
-        if (dummySoftClipCond) {
+        // When softclipping, set colors more muted and
+        // iterate through the sequence bases that were softclipped off
+        if (showSoftClip) {
+          const colorForSoftClip: { [key: string]: string } = {
+            A: '#13aa13',
+            C: '#5a5aed',
+            G: '#e6a219',
+            T: '#e61919',
+            deletion: 'grey',
+          }
           for (let j = 0; j < mismatches.length; j += 1) {
             const mismatch = mismatches[j]
             if (mismatch.type === 'softclip') {
-              // start at cutoff point, and iterate through
-              // const sequenceArray = feature.get('seq').split('')
-              // console.log(sequenceArray)
-              console.log(mismatch)
               const softClipLength = mismatch.cliplen || 0
               const softClipStart =
                 mismatch.start === 0
@@ -281,14 +284,14 @@ export default class PileupRenderer extends BoxRendererType {
                   minFeatWidth,
                   Math.abs(softClipLeftPx - softClipRightPx),
                 )
-                ctx.fillStyle = colorForBase[base]
+                ctx.fillStyle = colorForSoftClip[base]
                 ctx.fillRect(softClipLeftPx, topPx, softClipWidthPx, heightPx)
 
                 if (
                   softClipWidthPx >= charSize.width &&
                   heightPx >= charSize.height - 5
                 ) {
-                  ctx.fillStyle = 'black'
+                  ctx.fillStyle = '#404040'
                   ctx.fillText(
                     base,
                     softClipLeftPx + (softClipWidthPx - charSize.width) / 2 + 1,

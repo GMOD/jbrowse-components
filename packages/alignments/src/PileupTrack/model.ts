@@ -119,6 +119,7 @@ export default (
           ...getParentRenderProps(self),
           trackModel: self,
           sortObject: self.sortObject,
+          showSoftClip: getParentRenderProps(self).trackModel.showSoftClipping,
           config,
         }
       },

@@ -36,6 +36,7 @@ interface BaseRenderArgs {
   }
   regions: Region[]
   originalRegions?: Region[]
+  showSoftClip: boolean
 }
 
 export interface RenderArgs extends BaseRenderArgs {
@@ -186,7 +187,11 @@ export default class ServerSideRenderer extends RendererType {
   }
 
   // TODOCLIP maxSoftClip goes here
-  getExpandedClippingRegion( region: Region, renderArgs: RenderArgsDeserialized) {
+  // make generic and move into pileup renderer maybe
+  getExpandedClippingRegion(
+    region: Region,
+    renderArgs: RenderArgsDeserialized,
+  ) {
     if (!region) return region
     const { bpPerPx, config } = renderArgs
     const maxClippingSize =
@@ -213,6 +218,7 @@ export default class ServerSideRenderer extends RendererType {
       bpPerPx,
       regions,
       originalRegions,
+      showSoftClip,
     } = renderArgs
     const features = new Map()
 
@@ -220,7 +226,6 @@ export default class ServerSideRenderer extends RendererType {
       return features
     }
 
-    const dummySoftClipCond = true
     const requestRegions = regions.map((r: Region) => {
       // make sure the requested region's start and end are integers, if
       // there is a region specification.
@@ -238,9 +243,9 @@ export default class ServerSideRenderer extends RendererType {
     const featureObservable =
       requestRegions.length === 1
         ? dataAdapter.getFeatures(
-          dummySoftClipCond
-          ? this.getExpandedClippingRegion(requestRegions[0], renderArgs)
-          : this.getExpandedGlyphRegion(requestRegions[0], renderArgs),
+            showSoftClip
+              ? this.getExpandedClippingRegion(requestRegions[0], renderArgs)
+              : this.getExpandedGlyphRegion(requestRegions[0], renderArgs),
             {
               signal,
               bpPerPx,
