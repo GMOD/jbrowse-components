@@ -189,7 +189,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
             .flat()
           let found = false
           for (const subfeature of subfeatures) {
-            if (subfeature.uniqueId === pid) {
+            if (subfeature && subfeature.uniqueId === pid) {
               if (!subfeature.subfeatures) subfeature.subfeatures = []
               subfeature.subfeatures.push({
                 ...f.data,
@@ -198,8 +198,9 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
               delete seenFeatures[uniqueId]
               found = true
               break
-            } else if (subfeature.subfeatures)
-              subfeatures.push(subfeature.subfeatures)
+            } else if (subfeature && subfeature.subfeatures) {
+              subfeatures.push(...subfeature.subfeatures)
+            }
           }
           if (!found) console.error(`Could not find parentID ${pid}`)
         }
@@ -209,8 +210,8 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     return Object.keys(seenFeatures).map(
       seenFeature =>
         new SimpleFeature({
-          uniqueId: seenFeature,
           ...seenFeatures[seenFeature].data,
+          uniqueId: seenFeature,
           subfeatures: seenFeatures[seenFeature].data.subfeatures,
         }),
     )
