@@ -49,7 +49,7 @@ export default (pluginManager: any) => {
           title="left"
           color="secondary"
         >
-          <ArrowLeft />
+          <ArrowLeft fontSize="small" />
         </IconButton>
 
         <IconButton
@@ -60,7 +60,7 @@ export default (pluginManager: any) => {
           title="left"
           color="secondary"
         >
-          <ArrowRight />
+          <ArrowRight fontSize="small" />
         </IconButton>
         <IconButton
           onClick={() => {
@@ -70,7 +70,7 @@ export default (pluginManager: any) => {
           title="left"
           color="secondary"
         >
-          <ArrowDown />
+          <ArrowDown fontSize="small" />
         </IconButton>
         <IconButton
           onClick={() => {
@@ -80,7 +80,7 @@ export default (pluginManager: any) => {
           title="left"
           color="secondary"
         >
-          <ArrowUp />
+          <ArrowUp fontSize="small" />
         </IconButton>
         <IconButton
           onClick={model.zoomOutButton}

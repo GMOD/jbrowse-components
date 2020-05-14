@@ -16,11 +16,7 @@ export async function getGlobalStats(
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = getAdapter(
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getGlobalStats({ signal })
 }
 
@@ -32,11 +28,7 @@ export async function getRegionStats(
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = getAdapter(
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getRegionStats(region, { signal, bpPerPx })
 }
 
@@ -48,11 +40,7 @@ export async function getMultiRegionStats(
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = getAdapter(
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getMultiRegionStats(regions, { signal, bpPerPx })
 }
 
@@ -64,11 +52,7 @@ export async function getRegions(
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = getAdapter(
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getRegions({ signal })
 }
 
@@ -80,11 +64,7 @@ export async function getRefNames(
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = getAdapter(
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getRefNames({ signal })
 }
 
@@ -95,11 +75,7 @@ export async function getRefNameAliases(
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
-  const { dataAdapter } = getAdapter(
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getRefNameAliases({ signal })
 }
 

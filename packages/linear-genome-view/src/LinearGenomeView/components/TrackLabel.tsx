@@ -40,7 +40,7 @@ const useStyles = makeStyles(theme => ({
   dragHandleIcon: {
     display: 'inline-block',
     verticalAlign: 'middle',
-    pointerEvents: 'none'
+    pointerEvents: 'none',
   },
   iconButton: {
     padding: theme.spacing(1),

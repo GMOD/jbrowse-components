@@ -1,5 +1,7 @@
 import { SvgIconProps } from '@material-ui/core/SvgIcon'
-import IconButton, { IconButtonProps } from '@material-ui/core/IconButton'
+import IconButton, {
+  IconButtonProps as IconButtonPropsType,
+} from '@material-ui/core/IconButton'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -74,11 +76,11 @@ const ViewMenu = observer(
   ({
     model,
     IconButtonProps,
-    iconProps,
+    IconProps,
   }: {
     model: IBaseViewModel
-    IconButtonProps: IconButtonProps
-    iconProps: SvgIconProps
+    IconButtonProps: IconButtonPropsType
+    IconProps: SvgIconProps
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()
 
@@ -98,7 +100,7 @@ const ViewMenu = observer(
           }}
           data-testid="view_menu"
         >
-          <MenuIcon {...iconProps} />
+          <MenuIcon {...IconProps} />
         </IconButton>
         <Menu
           anchorEl={anchorEl}
@@ -174,7 +176,7 @@ export default withContentRect('bounds')(
                 size: 'small',
                 edge: 'start',
               }}
-              iconProps={{ fontSize: 'small', className: classes.icon }}
+              IconProps={{ fontSize: 'small', className: classes.icon }}
             />
             <div className={classes.grow} />
             {view.displayName ? (
