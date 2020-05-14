@@ -44,7 +44,7 @@ export default pluginManager => {
                 className={classes.textFilterControlStartAdornment}
                 position="start"
               >
-                <FilterIcon fontSize="small" />
+                <FilterIcon />
               </InputAdornment>
             ),
             endAdornment: (

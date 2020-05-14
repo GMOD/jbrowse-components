@@ -64,7 +64,7 @@ export default pluginManager => {
           style={{ height }}
         >
           <Grid item className={classes.filterIconBg}>
-            <FilterIcon className={classes.filterIcon} />
+            <FilterIcon className={classes.filterIcon} fontSize="small" />
           </Grid>
           <Grid item>
             <IconButton
