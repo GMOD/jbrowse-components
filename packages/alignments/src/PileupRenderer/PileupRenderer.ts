@@ -10,6 +10,7 @@ import {
 import React from 'react'
 import { BaseLayout } from '@gmod/jbrowse-core/util/layouts/BaseLayout'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { RenderArgsDeserialized } from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 import { sortFeature } from './sortUtil'
 
@@ -97,6 +98,21 @@ export default class PileupRenderer extends BoxRendererType {
       rightPx,
       topPx: displayMode === 'collapse' ? 0 : topPx,
       heightPx,
+    }
+  }
+
+  // expands region for clipping to use
+  getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
+    if (!region) return region
+    const { bpPerPx, config, showSoftClip } = renderArgs
+    const maxClippingSize =
+      config === undefined ? 0 : readConfObject(config, 'maxClippingSize')
+    if (!maxClippingSize || !showSoftClip) return region
+    const bpExpansion = Math.round(maxClippingSize * bpPerPx)
+    return {
+      ...region,
+      start: Math.floor(Math.max(region.start - bpExpansion, 0)),
+      end: Math.ceil(region.end + bpExpansion),
     }
   }
 

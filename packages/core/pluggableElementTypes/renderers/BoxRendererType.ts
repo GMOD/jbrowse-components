@@ -123,6 +123,23 @@ export default class BoxRendererType extends ServerSideRendererType {
     return session
   }
 
+  // expands region for glyphs to use
+  getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
+    if (!region) return region
+    const { bpPerPx, config } = renderArgs
+    const maxFeatureGlyphExpansion =
+      config === undefined
+        ? 0
+        : readConfObject(config, 'maxFeatureGlyphExpansion')
+    if (!maxFeatureGlyphExpansion) return region
+    const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
+    return {
+      ...region,
+      start: Math.floor(Math.max(region.start - bpExpansion, 0)),
+      end: Math.ceil(region.end + bpExpansion),
+    }
+  }
+
   createSession(props: LayoutSessionProps) {
     return new LayoutSession(props)
   }
@@ -207,7 +224,7 @@ export default class BoxRendererType extends ServerSideRendererType {
 
     const [region] = args.regions
     serialized.layout = args.layout.serializeRegion(
-      this.getExpandedGlyphRegion(region, args),
+      this.getExpandedRegion(region, args),
     )
     if (serialized.layout.rectangles) {
       serialized.features = serialized.features.filter(f => {

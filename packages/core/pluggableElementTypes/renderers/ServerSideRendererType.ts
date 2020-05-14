@@ -8,7 +8,6 @@ import {
 } from 'mobx-state-tree'
 import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import { Region } from '../../util/types'
-import { readConfObject } from '../../configuration'
 import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature, {
   Feature,
@@ -170,39 +169,9 @@ export default class ServerSideRenderer extends RendererType {
     return deserialized
   }
 
-  getExpandedGlyphRegion(region: Region, renderArgs: RenderArgsDeserialized) {
-    if (!region) return region
-    const { bpPerPx, config } = renderArgs
-    const maxFeatureGlyphExpansion =
-      config === undefined
-        ? 0
-        : readConfObject(config, 'maxFeatureGlyphExpansion')
-    if (!maxFeatureGlyphExpansion) return region
-    const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
-    return {
-      ...region,
-      start: Math.floor(Math.max(region.start - bpExpansion, 0)),
-      end: Math.ceil(region.end + bpExpansion),
-    }
-  }
-
-  // TODOCLIP maxSoftClip goes here
-  // make generic and move into pileup renderer maybe
-  getExpandedClippingRegion(
-    region: Region,
-    renderArgs: RenderArgsDeserialized,
-  ) {
-    if (!region) return region
-    const { bpPerPx, config } = renderArgs
-    const maxClippingSize =
-      config === undefined ? 0 : readConfObject(config, 'maxClippingSize')
-    if (!maxClippingSize) return region
-    const bpExpansion = Math.round(maxClippingSize * bpPerPx)
-    return {
-      ...region,
-      start: Math.floor(Math.max(region.start - bpExpansion, 0)),
-      end: Math.ceil(region.end + bpExpansion),
-    }
+  // will expand if soft clipping or feature glyphs are shown
+  getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
+    return region
   }
 
   /**
@@ -218,7 +187,6 @@ export default class ServerSideRenderer extends RendererType {
       bpPerPx,
       regions,
       originalRegions,
-      showSoftClip,
     } = renderArgs
     const features = new Map()
 
@@ -239,13 +207,10 @@ export default class ServerSideRenderer extends RendererType {
       return requestRegion
     })
 
-    // TODOCLIP have a conditional for the maxclipsize flag
     const featureObservable =
       requestRegions.length === 1
         ? dataAdapter.getFeatures(
-            showSoftClip
-              ? this.getExpandedClippingRegion(requestRegions[0], renderArgs)
-              : this.getExpandedGlyphRegion(requestRegions[0], renderArgs),
+            this.getExpandedRegion(requestRegions[0], renderArgs),
             {
               signal,
               bpPerPx,
