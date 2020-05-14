@@ -39,36 +39,39 @@ const stateModelFactory = (configSchema: any) =>
     .compose(
       'WiggleTrack',
       blockBasedTrackModel,
-      types.model({
-        type: types.literal('WiggleTrack'),
-        configuration: ConfigurationReference(configSchema),
-        selectedRendering: types.optional(types.string, ''),
-      }),
+      types
+        .model({
+          type: types.literal('WiggleTrack'),
+          configuration: ConfigurationReference(configSchema),
+          selectedRendering: types.optional(types.string, ''),
+        })
+        .volatile(() => ({
+          // avoid circular reference since WiggleTrackComponent receives this model
+          ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
+          ready: false,
+          stats: observable({ scoreMin: 0, scoreMax: 50 }),
+          statsFetchInProgress: undefined as undefined | AbortController,
+        })),
     )
-    .volatile(() => ({
-      // avoid circular reference since WiggleTrackComponent receives this model
-      ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
-      ready: false,
-      stats: observable({ scoreMin: 0, scoreMax: 50 }),
-      statsFetchInProgress: undefined as undefined | AbortController,
-    }))
-    .actions(self => ({
-      updateStats(stats: { scoreMin: number; scoreMax: number }) {
-        self.stats.scoreMin = stats.scoreMin
-        self.stats.scoreMax = stats.scoreMax
-        self.ready = true
-      },
+    .actions(self => {
+      return {
+        updateStats(stats: { scoreMin: number; scoreMax: number }) {
+          self.stats.scoreMin = stats.scoreMin
+          self.stats.scoreMax = stats.scoreMax
+          self.ready = true
+        },
 
-      setLoading(aborter: AbortController) {
-        if (
-          self.statsFetchInProgress !== undefined &&
-          !self.statsFetchInProgress.signal.aborted
-        ) {
-          self.statsFetchInProgress.abort()
-        }
-        self.statsFetchInProgress = aborter
-      },
-    }))
+        setLoading(aborter: AbortController) {
+          if (
+            self.statsFetchInProgress !== undefined &&
+            !self.statsFetchInProgress.signal.aborted
+          ) {
+            self.statsFetchInProgress.abort()
+          }
+          self.statsFetchInProgress = aborter
+        },
+      }
+    })
     .views(self => {
       let oldDomain: [number, number] = [0, 0]
       return {

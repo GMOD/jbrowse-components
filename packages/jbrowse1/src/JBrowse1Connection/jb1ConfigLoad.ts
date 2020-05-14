@@ -250,8 +250,10 @@ function fillTemplates<T extends any>(subconfig: T, config: Config): T {
       subconfig[i] = fillTemplates(subconfig[i], config)
     }
   } else if (typeof subconfig === 'object') {
-    for (const name of Object.keys(subconfig)) {
-      subconfig[name] = fillTemplates(subconfig[name], config)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sub = subconfig as Record<string, any>
+    for (const name of Object.keys(sub)) {
+      sub[name] = fillTemplates(sub[name], config)
     }
   } else if (typeof subconfig === 'string') {
     // @ts-ignore

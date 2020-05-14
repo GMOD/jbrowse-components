@@ -429,6 +429,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const { start, end, assemblyName } = query
         if (refName) {
           try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const root = getRoot<any>(self)
             const canonicalRefName = await root.jbrowse.getCanonicalRefName(
               refName,
