@@ -34,10 +34,13 @@ const useStyles = makeStyles(theme => ({
     pointerEvents: 'none',
   },
   dragHandle: {
-    display: 'inline',
-    verticalAlign: 'middle',
     cursor: 'grab',
     color: '#135560',
+  },
+  dragHandleIcon: {
+    display: 'inline-block',
+    verticalAlign: 'middle',
+    pointerEvents: 'none'
   },
   iconButton: {
     padding: theme.spacing(1),
@@ -117,15 +120,15 @@ const TrackLabel = React.forwardRef(
     return (
       <>
         <Paper ref={ref} className={clsx(className, classes.root)}>
-          <div
+          <span
             draggable
             className={classes.dragHandle}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
             data-testid={`dragHandle-${view.id}-${getConf(track, 'trackId')}`}
           >
-            <DragIcon fontSize="small" />
-          </div>
+            <DragIcon fontSize="small" className={classes.dragHandleIcon} />
+          </span>
           <IconButton
             onClick={() => view.hideTrack(track.configuration)}
             className={classes.iconButton}
