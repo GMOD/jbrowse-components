@@ -72,7 +72,7 @@ export default pluginManager => {
               title="remove filter"
               color="secondary"
             >
-              <CloseIcon />
+              <CloseIcon fontSize="small" />
             </IconButton>
             <Typography className={classes.columnName} component="span">
               {columnDefinition.name}

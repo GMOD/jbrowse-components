@@ -70,7 +70,7 @@ export default pluginManager => {
             data-testid="sv_inspector_view_open"
             color="secondary"
           >
-            <FolderOpenIcon />
+            <FolderOpenIcon fontSize="small" />
           </IconButton>
         </Grid>
       </Grid>

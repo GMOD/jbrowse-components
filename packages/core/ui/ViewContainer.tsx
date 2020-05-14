@@ -199,7 +199,7 @@ export default withContentRect('bounds')(
               edge="end"
               onClick={onClose}
             >
-              <CloseIcon className={classes.icon} />
+              <CloseIcon fontSize="small" className={classes.icon} />
             </IconButton>
           </div>
           <Paper>{children}</Paper>
