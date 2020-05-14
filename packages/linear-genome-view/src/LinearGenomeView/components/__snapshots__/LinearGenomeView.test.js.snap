@@ -456,14 +456,14 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         class="MuiPaper-root makeStyles-trackLabel makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
         style="webkit-transform: none; transform: none; webkit-transition: -webkit-transform 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms; transition: transform 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms;"
       >
-        <div
+        <span
           class="makeStyles-dragHandle"
           data-testid="dragHandle-lgv-testConfig"
           draggable="true"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+            class="MuiSvgIcon-root makeStyles-dragHandleIcon MuiSvgIcon-fontSizeSmall"
             focusable="false"
             viewBox="0 0 24 24"
           >
@@ -471,7 +471,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
             />
           </svg>
-        </div>
+        </span>
         <button
           class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
           tabindex="0"
@@ -1556,14 +1556,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         class="MuiPaper-root makeStyles-trackLabel makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
         style="webkit-transform: none; transform: none; webkit-transition: -webkit-transform 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms; transition: transform 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms;"
       >
-        <div
+        <span
           class="makeStyles-dragHandle"
           data-testid="dragHandle-lgv-testConfig"
           draggable="true"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+            class="MuiSvgIcon-root makeStyles-dragHandleIcon MuiSvgIcon-fontSizeSmall"
             focusable="false"
             viewBox="0 0 24 24"
           >
@@ -1571,7 +1571,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
             />
           </svg>
-        </div>
+        </span>
         <button
           class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
           tabindex="0"
@@ -1773,14 +1773,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         class="MuiPaper-root makeStyles-trackLabel makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
         style="webkit-transform: none; transform: none; webkit-transition: -webkit-transform 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms; transition: transform 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms;"
       >
-        <div
+        <span
           class="makeStyles-dragHandle"
           data-testid="dragHandle-lgv-testConfig2"
           draggable="true"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+            class="MuiSvgIcon-root makeStyles-dragHandleIcon MuiSvgIcon-fontSizeSmall"
             focusable="false"
             viewBox="0 0 24 24"
           >
@@ -1788,7 +1788,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
             />
           </svg>
-        </div>
+        </span>
         <button
           class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
           tabindex="0"

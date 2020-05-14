@@ -73,11 +73,11 @@ const useStyles = makeStyles(theme => ({
 const ViewMenu = observer(
   ({
     model,
-    iconButtonProps,
+    IconButtonProps,
     iconProps,
   }: {
     model: IBaseViewModel
-    iconButtonProps: IconButtonProps
+    IconButtonProps: IconButtonProps
     iconProps: SvgIconProps
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()
@@ -89,7 +89,7 @@ const ViewMenu = observer(
     return (
       <>
         <IconButton
-          {...iconButtonProps}
+          {...IconButtonProps}
           aria-label="more"
           aria-controls="view-menu"
           aria-haspopup="true"
@@ -169,7 +169,7 @@ export default withContentRect('bounds')(
           <div ref={scrollRef} style={{ display: 'flex' }}>
             <ViewMenu
               model={view}
-              iconButtonProps={{
+              IconButtonProps={{
                 classes: { root: classes.iconRoot },
                 size: 'small',
                 edge: 'start',
