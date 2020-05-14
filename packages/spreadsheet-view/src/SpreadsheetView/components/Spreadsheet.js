@@ -198,9 +198,17 @@ export default pluginManager => {
     if (sortSpec) {
       const { descending } = sortSpec
       return (
-        <div fontSize="small" className={classes.sortIndicator}>
-          {descending ? <ArrowUp /> : <ArrowDown />}
-        </div>
+        descending ? (
+          <KeyboardArrowUpIcon
+            fontSize="small"
+            className={classes.sortIndicator}
+          />
+        ) : (
+          <KeyboardArrowDownIcon
+            fontSize="small"
+            className={classes.sortIndicator}
+          />
+        )
       )
     }
     return null
