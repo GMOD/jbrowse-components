@@ -1,5 +1,5 @@
-import ArrowUp from '@material-ui/icons/ArrowUpward'
-import ArrowDown from '@material-ui/icons/ArrowDownward'
+import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp'
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown'
 import CropFreeIcon from '@material-ui/icons/CropFree'
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown'
 
