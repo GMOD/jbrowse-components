@@ -44,9 +44,6 @@ interface BpOffset {
   end?: number
 }
 
-interface ViewActions {
-  [key: string]: MenuOption[]
-}
 export const HEADER_BAR_HEIGHT = 48
 export const HEADER_OVERVIEW_HEIGHT = 20
 export const SCALE_BAR_HEIGHT = 17

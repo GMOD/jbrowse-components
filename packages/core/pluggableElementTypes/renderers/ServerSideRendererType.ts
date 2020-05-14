@@ -83,8 +83,8 @@ export default class ServerSideRenderer extends RendererType {
     const { trackModel } = args.renderProps
     if (trackModel) {
       args.renderProps = {
-        blockKey: args.blockKey,
         ...args.renderProps,
+        blockKey: args.blockKey,
         trackModel: {
           id: trackModel.id,
           selectedFeatureId: trackModel.selectedFeatureId,
