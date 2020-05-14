@@ -165,7 +165,7 @@ function ImportConfiguration(props) {
       <Paper className={classes.paper}>
         <div {...getRootProps({ className: classes.dropZone })}>
           <input {...getInputProps()} />
-          <CloudUploadIcon className={classes.uploadIcon} />
+          <CloudUploadIcon className={classes.uploadIcon} fontSize="large" />
           <Typography color="textSecondary" align="center" variant="body1">
             Drag and drop files here
           </Typography>
@@ -231,7 +231,7 @@ function ImportConfiguration(props) {
       {errorMessage ? (
         <>
           <div className={classes.errorMessage}>
-            <ErrorIcon color="error" />
+            <ErrorIcon color="error" fontSize="large" />
           </div>
           <div>
             <ExpansionPanel style={{ marginTop: 4 }}>
