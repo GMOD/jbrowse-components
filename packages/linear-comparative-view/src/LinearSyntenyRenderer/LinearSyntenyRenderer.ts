@@ -21,7 +21,7 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
         view.setFeatures(
           await this.getFeatures({
             ...renderProps,
-            regions: view.dynamicBlocks.contentBlocks,
+            regions: view.staticBlocks.contentBlocks,
           }),
         )
       }),
