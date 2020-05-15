@@ -79,7 +79,6 @@ export default pluginManager => {
       afterAttach() {
         makeAbortableReaction(
           self,
-          'render',
           renderReactionData,
           renderReactionEffect,
           {
