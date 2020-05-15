@@ -68,11 +68,7 @@ describe('<Loader />', () => {
   })
 
   it('can use config from a url', async () => {
-    window.history.replaceState(
-      {},
-      '',
-      '/?config=test_data/config_integration_test.json',
-    )
+    window.history.replaceState({}, '', '/?config=test_data/config_demo.json')
     console.error = jest.fn()
     const { findByText } = render(<Loader />)
     expect(await findByText('Help')).toBeTruthy()

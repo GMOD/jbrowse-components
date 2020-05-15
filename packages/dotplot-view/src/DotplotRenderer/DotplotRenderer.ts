@@ -1,7 +1,7 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import {
   createCanvas,
   createImageBitmap,
@@ -165,10 +165,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
    * @param {object} renderArgs
    * @returns {Map} of features as { id => feature, ... }
    */
-  async getFeatures(renderArgs: DotplotRenderProps & { regions: IRegion[] }) {
+  async getFeatures(renderArgs: DotplotRenderProps & { regions: Region[] }) {
     const { dataAdapter, signal } = renderArgs
 
-    let regions = [] as IRegion[]
+    let regions = [] as Region[]
 
     // @ts-ignore this is instantiated by the getFeatures call
     regions = renderArgs.regions
@@ -178,7 +178,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       return []
     }
 
-    const requestRegions = regions.map((r: IRegion) => {
+    const requestRegions = regions.map(r => {
       // make sure the requested region's start and end are integers, if
       // there is a region specification.
       const requestRegion = { ...r }

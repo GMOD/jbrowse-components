@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/mst-types'
 import { PrerenderedCanvas, Tooltip } from '@gmod/jbrowse-core/ui'
 import { bpSpanPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
@@ -11,7 +11,7 @@ function PileupRendering(props: {
   trackModel: any
   width: number
   height: number
-  regions: IRegion[]
+  regions: Region[]
   bpPerPx: number
 }) {
   const { blockKey, trackModel, width, height, regions, bpPerPx } = props

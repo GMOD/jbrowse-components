@@ -31,8 +31,8 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * this is the only part of the track model that most
    * renderers read.
    *
-   * @param {object} args the arguments passed to render
-   * @returns {object} the same object
+   * @param args - the arguments passed to render
+   * @returns the same object
    */
   serializeArgsInClient(args: RenderArgs) {
     args.renderProps = {
@@ -56,7 +56,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
   /**
    * directly modifies the passed arguments object to
    * inflate arguments as necessary. called in the worker process.
-   * @param {object} args the converted arguments to modify
+   * @param args - the converted arguments to modify
    */
   deserializeArgsInWorker(args: Record<string, any>) {
     // @ts-ignore
@@ -69,8 +69,8 @@ export default class ComparativeServerSideRenderer extends RendererType {
 
   /**
    *
-   * @param {object} result object containing the results of calling the `render` method
-   * @param {Map} features Map of feature.id() -> feature
+   * @param result - object containing the results of calling the `render` method
+   * @param features - Map of `feature.id() -> feature`
    */
   serializeResultsInWorker(result: Record<string, any>, args: RenderArgs) {
     // does nothing currently
@@ -95,9 +95,9 @@ export default class ComparativeServerSideRenderer extends RendererType {
   }
 
   /**
-   * @param {object} renderArgs
-   * @param {FeatureI} feature
-   * @returns {boolean} true if this feature passes all configured filters
+   * @param renderArgs -
+   * @param feature -
+   * @returns true if this feature passes all configured filters
    */
   featurePassesFilters(renderArgs: RenderArgs, feature: Feature) {
     const filterChain = new SerializableFilterChain({

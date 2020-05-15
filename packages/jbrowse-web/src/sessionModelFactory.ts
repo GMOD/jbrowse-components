@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { getContainingView } from '@gmod/jbrowse-core/util'
 import jsonStableStringify from 'json-stable-stringify'
 import { observable } from 'mobx'
@@ -62,7 +62,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * this is the current "task" that is being performed in the UI.
        * this is usually an object of the form
-       * { taskName: "configure", target: thing_being_configured }
+       * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
     }))
@@ -111,8 +111,8 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
       /**
        * See if any MST nodes currently have a types.reference to this object.
-       * @param {MSTNode} object object
-       * @returns {Array} An array where the first element is the node referring
+       * @param object - object
+       * @returns An array where the first element is the node referring
        * to the object and the second element is they property name the node is
        * using to refer to the object
        */
@@ -153,7 +153,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
               },
               { timeout: 1000000 },
             )
-            .then((adapterRegions: IRegion[]) => {
+            .then((adapterRegions: Region[]) => {
               const adapterRegionsWithAssembly = adapterRegions.map(
                 adapterRegion => ({
                   ...adapterRegion,
@@ -332,7 +332,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       addViewFromAnotherView(
         viewType: string,
         otherView: any,
-        initialState: { displayedRegions?: IRegion[] } = {},
+        initialState: { displayedRegions?: Region[] } = {},
       ) {
         const state = { ...initialState }
         state.displayedRegions = getSnapshot(otherView.displayedRegions)
@@ -382,7 +382,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * set the global selection, i.e. the globally-selected object.
        * can be a feature, a view, just about anything
-       * @param {object} thing
+       * @param thing -
        */
       setSelection(thing: any) {
         self.selection = thing
@@ -398,7 +398,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * opens a configuration editor to configure the given thing,
        * and sets the current task to be configuring it
-       * @param {*} configuration
+       * @param configuration -
        */
       editConfiguration(configuration: AnyConfigurationModel) {
         if (!isConfigurationModel(configuration)) {

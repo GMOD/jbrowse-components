@@ -5,19 +5,23 @@ const compilationCache: Record<string, Function> = {}
 /**
  * compile a function to a string
  *
- * @param {string} str string of code like "function() { ... }"
- * @param {object} options
- * @param {string[]?} options.verifyFunctionSignature if passed, the
- *  compiled function will check at runtime that the proper number
- *  of arguments were passed to it
- * @param {any[]} options.bind if passed, the
- *  compiled function will be bound (by calling bind on it) with
- *  the given context and arguments
+ * @param str - string of code like `function() { ... }`
+ * @param options -
  */
 export function stringToFunction(
   str: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  options: { verifyFunctionSignature?: string[]; bind?: any[] } = {},
+  options: {
+    /**
+     * if passed, the compiled function will check at runtime that the proper
+     * number of arguments were passed to it
+     */
+    verifyFunctionSignature?: string[]
+    /**
+     * if passed, the compiled function will be bound (by calling bind on it)
+     * with the given context and arguments
+     */
+    bind?: any[] // eslint-disable-line @typescript-eslint/no-explicit-any
+  } = {},
 ) {
   const { verifyFunctionSignature } = options
 

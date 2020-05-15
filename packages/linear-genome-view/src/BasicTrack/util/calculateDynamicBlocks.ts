@@ -30,7 +30,7 @@ type LGV = Instance<LinearGenomeViewStateModel>
  *
  * NOTE: start, end, and offsetPx may all be fractional!
  *
- * @returns {BlockSet} of ` { refName, startBp, end, offset, reversed? }`
+ * @returns BlockSet of `{ refName, startBp, end, offset, reversed? }`
  */
 export default function calculateDynamicBlocks(model: LGV) {
   const {

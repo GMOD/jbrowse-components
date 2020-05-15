@@ -9,7 +9,7 @@ test('adapter can fetch features from volvox.bb', async () => {
     }),
   )
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,

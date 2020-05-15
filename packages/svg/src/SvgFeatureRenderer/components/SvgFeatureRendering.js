@@ -1,5 +1,5 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
 import { bpToPx, bpSpanPx } from '@gmod/jbrowse-core/util'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'

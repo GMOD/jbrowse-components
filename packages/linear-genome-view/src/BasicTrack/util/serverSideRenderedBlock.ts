@@ -11,14 +11,13 @@ import { Component } from 'react'
 import { reaction } from 'mobx'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import jsonStableStringify from 'json-stable-stringify'
-import { Region } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types/mst'
 
 import {
   assembleLocString,
   checkAbortSignal,
   isAbortException,
   getSession,
-  getContainingView,
 } from '@gmod/jbrowse-core/util'
 import { getTrackAssemblyNames } from '@gmod/jbrowse-core/util/tracks'
 
@@ -33,7 +32,7 @@ const blockState = types
     isRightEndOfDisplayedRegion: false,
   })
   // NOTE: all this volatile stuff has to be filled in at once, so that it stays consistent
-  .volatile(self => ({
+  .volatile(() => ({
     renderInProgress: undefined as AbortController | undefined,
     filled: false,
     data: undefined as any,
@@ -142,9 +141,8 @@ const blockState = types
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
         }
-        const track = getParent<any>(self, 2)
-        const view = getContainingView(track)
-        const { rpcManager } = getSession(view)
+        const track = getParent(self, 2)
+        const { rpcManager } = getSession(self)
         const { rendererType } = track
         const { renderArgs } = renderBlockData(cast(self))
         rendererType
@@ -169,7 +167,7 @@ export type BlockModel = Instance<BlockStateModel>
 function renderBlockData(self: Instance<BlockStateModel>) {
   try {
     const { assemblyData, rpcManager } = getSession(self) as any
-    const track = getParent<any>(self, 2)
+    const track = getParent(self, 2)
     const assemblyNames = getTrackAssemblyNames(track)
     let cannotBeRenderedReason
     if (!assemblyNames.includes(self.region.assemblyName)) {

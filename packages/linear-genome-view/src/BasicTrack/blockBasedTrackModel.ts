@@ -7,7 +7,7 @@ import {
   isSessionModelWithDrawerWidgets,
   isSelectionContainer,
 } from '@gmod/jbrowse-core/util'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { addDisposer, types, Instance } from 'mobx-state-tree'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import RBush from 'rbush'
@@ -51,7 +51,7 @@ const blockBasedTrack = types
       },
 
       /**
-       * a CompositeMap of featureId -> feature obj that
+       * a CompositeMap of `featureId -> feature obj` that
        * just looks in all the block data for that feature
        */
       get features() {
@@ -66,7 +66,7 @@ const blockBasedTrack = types
 
       /**
        * returns per-base block layouts as the data structure
-       * Map<blockKey, Map<featureId, LayoutRecord>>
+       * `Map<blockKey, Map<featureId, LayoutRecord>>`
        *
        * this per-block is needed to avoid cross-contamination of
        * layouts across blocks especially when building the rtree
@@ -83,7 +83,7 @@ const blockBasedTrack = types
       },
 
       get featToBlock() {
-        const m: { [key: string]: IRegion } = {}
+        const m: { [key: string]: Region } = {}
         for (const block of self.blockState.values()) {
           if (block.data && block.data.features) {
             for (const [featId] of block.data.features) {
@@ -95,7 +95,7 @@ const blockBasedTrack = types
       },
 
       /**
-       * a CompositeMap of featureId -> feature obj that
+       * a CompositeMap of `featureId -> feature obj` that
        * just looks in all the block data for that feature
        *
        * when you are not using the rtree you can use this
@@ -217,7 +217,7 @@ const blockBasedTrack = types
       }
     },
 
-    contextMenuFeature(feature: Feature) {
+    contextMenuFeature() {
       self.contextMenuOptions = []
     },
 
@@ -258,8 +258,7 @@ const blockBasedTrack = types
           if (!f) {
             self.clearFeatureSelection()
           } else {
-            const feature = self.features.get(f)
-            self.contextMenuFeature(feature as Feature)
+            self.contextMenuFeature()
           }
         },
         onContextMenu() {

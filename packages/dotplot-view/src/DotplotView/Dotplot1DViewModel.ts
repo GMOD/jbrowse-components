@@ -1,5 +1,6 @@
 import { clamp } from '@gmod/jbrowse-core/util'
-import { Region, IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
+import { Region as MUIRegion } from '@gmod/jbrowse-core/util/types/mst'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { types, Instance } from 'mobx-state-tree'
 import calculateDynamicBlocks from './calculateDynamicBlocks'
@@ -20,7 +21,7 @@ export default function stateModelFactory(pluginManager: any) {
 
   return (jbrequiredTypes as Instance<typeof types>)
     .model('Dotplot1DView', {
-      displayedRegions: types.array(Region),
+      displayedRegions: types.array(MUIRegion),
       bpPerPx: 0,
       offsetPx: 0,
       horizontallyFlipped: false,
@@ -29,7 +30,7 @@ export default function stateModelFactory(pluginManager: any) {
       features: undefined as undefined | Feature[],
     }))
     .actions(self => ({
-      setDisplayedRegions(regions: IRegion[]) {
+      setDisplayedRegions(regions: Region[]) {
         self.displayedRegions = cast(regions)
       },
       setBpPerPx(val: number) {
@@ -95,8 +96,8 @@ export default function stateModelFactory(pluginManager: any) {
 
       /**
        *
-       * @param {number} px px in the view area, return value is the displayed regions
-       * @returns {BpOffset} of the displayed region that it lands in
+       * @param px - px in the view area, return value is the displayed regions
+       * @returns BpOffset of the displayed region that it lands in
        */
       pxToBp(px: number) {
         const bp = (self.offsetPx + px) * self.bpPerPx

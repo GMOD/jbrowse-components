@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
-import { ElementId } from '@gmod/jbrowse-core/mst-types'
+import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
@@ -171,7 +171,7 @@ const BaseTrack = types
     },
 
     /**
-     * @param {Region} region
+     * @param region -
      * @returns falsy if the region is fine to try rendering. Otherwise,
      *  return a string of text saying why the region can't be rendered.
      */

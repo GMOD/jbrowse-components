@@ -60,6 +60,9 @@ export default (pluginManager: any) => {
         gridColumn: '2/2',
         gridRow: '2/2',
       },
+      error: {
+        color: 'red',
+      },
     }
   })
 
@@ -80,6 +83,7 @@ export default (pluginManager: any) => {
     const {
       initialized,
       loading,
+      error,
       hview,
       vview,
       borderY,
@@ -134,6 +138,10 @@ export default (pluginManager: any) => {
 
     if (!initialized && !loading) {
       return <ImportForm model={model} />
+    }
+
+    if (error) {
+      return <p className={classes.error}>{String(error)}</p>
     }
     if (loading) {
       return (

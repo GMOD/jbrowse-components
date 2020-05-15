@@ -1,5 +1,5 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { observer } from 'mobx-react'
 import React from 'react'
 import './DivSequenceRendering.scss'
@@ -9,7 +9,7 @@ import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configur
 // given the displayed region and a Map of id => feature, assemble the region's
 // sequence from the sequences returned by each feature.
 export function featuresToSequence(
-  region: IRegion,
+  region: Region,
   features: Map<string, Feature>,
 ) {
   // insert the `replacement` string into `str` at the given
@@ -44,7 +44,7 @@ export function featuresToSequence(
 
 interface MyProps {
   features: Map<string, Feature>
-  regions: IRegion[]
+  regions: Region[]
   bpPerPx: number
   config: AnyConfigurationModel
 }

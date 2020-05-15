@@ -3,10 +3,10 @@ import {
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import {
-  IFileLocation,
-  INoAssemblyRegion,
-  IRegion,
-} from '@gmod/jbrowse-core/mst-types'
+  FileLocation,
+  NoAssemblyRegion,
+  Region,
+} from '@gmod/jbrowse-core/util/types'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { GenericFilehandle } from 'generic-filehandle'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
@@ -19,7 +19,7 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import MyConfigSchema from './configSchema'
 
 interface PafRecord {
-  records: INoAssemblyRegion[]
+  records: NoAssemblyRegion[]
   extra: {
     blockLen: number
     mappingQual: number
@@ -44,7 +44,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
   public constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
-    const pafLocation = readConfObject(config, 'pafLocation') as IFileLocation
+    const pafLocation = readConfObject(config, 'pafLocation') as FileLocation
     const assemblyNames = readConfObject(config, 'assemblyNames') as string[]
     this.pafLocation = openLocation(pafLocation)
     this.assemblyNames = assemblyNames
@@ -110,20 +110,12 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return true
   }
 
-  async getRefNames(opts?: BaseOptions) {
+  async getRefNames() {
     // we cannot determine this accurately
     return []
   }
 
-  /**
-   * Fetch features for a certain region. Use getFeaturesInRegion() if you also
-   * want to verify that the store has features for the given reference sequence
-   * before fetching.
-   * @param {IRegion} param
-   * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
-  getFeatures(region: IRegion, opts: BaseOptions = {}) {
+  getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const pafRecords = await this.cache.get('initialize', opts, opts.signal)
 
@@ -166,10 +158,5 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the forseeable future and can be purged
-   * from caches, etc
-   */
   freeResources(/* { region } */): void {}
 }
