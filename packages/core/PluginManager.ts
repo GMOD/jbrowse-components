@@ -99,7 +99,10 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   }
 
   get(name: string) {
-    if (!this.has(name)) throw new Error(`${this.typeName} '${name}' not found`)
+    if (!this.has(name))
+      throw new Error(
+        `${this.typeName} '${name}' not found, perhaps its plugin is not loaded or its plugin has not added it.`,
+      )
     return this.registeredTypes[name]
   }
 
