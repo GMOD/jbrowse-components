@@ -309,7 +309,7 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       get allPossibleRefNames() {
         const refNames: string[] = []
         self.assemblies.forEach(assembly => {
-          refNames.push(...assembly.refNames)
+          refNames.push(...assembly.allRefNames)
         })
         return refNames
       },
@@ -343,6 +343,7 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
           if (assembly) {
             return assembly.isValidRefName(refName)
           }
+          return false
         }
         return self.allPossibleRefNames.includes(refName)
       },
