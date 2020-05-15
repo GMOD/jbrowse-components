@@ -15,7 +15,7 @@ import { tap, filter, distinct, toArray } from 'rxjs/operators'
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
-interface Block extends IRegion {
+interface Block extends Region {
   offsetPx: number
   widthPx: number
 }
