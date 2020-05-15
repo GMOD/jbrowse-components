@@ -2,6 +2,7 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import { toArray } from 'rxjs/operators'
+import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -46,14 +47,23 @@ class CustomAdapter extends BaseFeatureDataAdapter {
   }
 }
 
+const getSubAdapter: getSubAdapterType = () => {
+  return {
+    dataAdapter: new CustomAdapter(),
+    sessionIds: new Set(),
+  }
+}
 test('adapter can fetch features from volvox.bam', async () => {
-  const adapter = new Adapter({
-    mcscanAnchorsLocation: {
-      localPath: require.resolve('./test_data/grape.peach.anchors'),
+  const adapter = new Adapter(
+    {
+      mcscanAnchorsLocation: {
+        localPath: require.resolve('./test_data/grape.peach.anchors'),
+      },
+      subadapters: [new CustomAdapter(), new CustomAdapter()],
+      assemblyNames: ['grape', 'peach'],
     },
-    subadapters: [new CustomAdapter(), new CustomAdapter()],
-    assemblyNames: ['grape', 'peach'],
-  })
+    getSubAdapter,
+  )
 
   const features1 = await adapter.getFeatures({
     refName: 'peach_chr1',
