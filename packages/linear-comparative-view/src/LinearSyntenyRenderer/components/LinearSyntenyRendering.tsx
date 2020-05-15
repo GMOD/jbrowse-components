@@ -143,28 +143,19 @@ function LinearSyntenyRendering(props: {
 
         // disable rendering connections in a single level
         if (!showIntraviewLinks && level1 === level2) {
-          return
+          continue
         }
         const length1 = f1.get('end') - f1.get('start')
         const length2 = f2.get('end') - f2.get('start')
 
-        if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
-          if (hideTiny) {
-            continue
-          }
+        if ((length1 < v1.bpPerPx || length2 < v2.bpPerPx) && hideTiny) {
+          continue
         }
-        // if (
-        //   !v1.staticBlocks.find(region => region.refName === ref1) ||
-        //   !v2.staticBlocks.find(region => region.refName === ref2)
-        // ) {
-        //   continue
-        // }
-        //
 
-        const x11 = v1.bpToPx({ refName: ref1, coord: c1[LEFT] }) - v1p
-        const x12 = v1.bpToPx({ refName: ref1, coord: c1[RIGHT] }) - v1p
-        const x21 = v2.bpToPx({ refName: ref2, coord: c2[LEFT] }) - v2p
-        const x22 = v2.bpToPx({ refName: ref2, coord: c2[RIGHT] }) - v2p
+        const x11 = (v1.bpToPx({ refName: ref1, coord: c1[LEFT] }) || 0) - v1p
+        const x12 = (v1.bpToPx({ refName: ref1, coord: c1[RIGHT] }) || 0) - v1p
+        const x21 = (v2.bpToPx({ refName: ref2, coord: c2[LEFT] }) || 0) - v2p
+        const x22 = (v2.bpToPx({ refName: ref2, coord: c2[RIGHT] }) || 0) - v2p
 
         const y1 = middle
           ? interstitialYPos(level1 < level2, height)

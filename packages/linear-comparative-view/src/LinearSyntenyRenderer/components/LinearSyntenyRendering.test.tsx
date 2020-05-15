@@ -5,7 +5,7 @@ import Base1DView from '@gmod/jbrowse-core/util/Base1DViewModel'
 import React from 'react'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import LinearSyntenyRendering from './LinearSyntenyRendering'
-import { configSchemaFactory } from '../../LinearSyntenyTrack'
+import { stateModelFactory, configSchemaFactory } from '../../LinearSyntenyTrack'
 import ThisPlugin from '../..'
 
 expect.extend({ toMatchImageSnapshot })
@@ -14,6 +14,7 @@ expect.extend({ toMatchImageSnapshot })
 test('test rendering a simple synteny from fake data', async () => {
   const pluginManager = new PluginManager([new ThisPlugin()])
   const configSchema = configSchemaFactory(pluginManager)
+  const stateModel = stateModelFactory(pluginManager, configSchema)
   const views = [
     Base1DView.create({
       offsetPx: 0,
@@ -36,13 +37,13 @@ test('test rendering a simple synteny from fake data', async () => {
     <LinearSyntenyRendering
       width={800}
       height={600}
-      trackModel={{
+      trackModel={stateModel.create({
         trackId: 'test',
         configuration: configSchema.create({
           trackId: 'test',
           renderer: { color: 'rgba(255,100,100,0.3)' },
         }),
-      }}
+      })}
       highResolutionScaling={1}
       trackIds={['peach_gene', 'grape_gene']}
       views={views}
