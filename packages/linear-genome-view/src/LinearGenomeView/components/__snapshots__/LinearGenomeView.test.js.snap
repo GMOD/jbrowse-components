@@ -380,6 +380,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       style="height: 17px; box-sizing: border-box;"
     >
       <div
+        class="makeStyles-scaleBarZoomContainer"
         style="transform: scaleX(1);"
       >
         <div
@@ -414,7 +415,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       <p
         class="MuiTypography-root makeStyles-refLabel MuiTypography-body1"
         data-testid="refLabel-ctgA"
-        style="left: -1px; padding-left: 1px; z-index: 1;"
+        style="left: -1px; padding-left: 1px;"
       >
         ctgA
       </p>
@@ -1346,6 +1347,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       style="height: 17px; box-sizing: border-box;"
     >
       <div
+        class="makeStyles-scaleBarZoomContainer"
         style="transform: scaleX(1);"
       >
         <div
@@ -1464,14 +1466,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       <p
         class="MuiTypography-root makeStyles-refLabel MuiTypography-body1"
         data-testid="refLabel-ctgA"
-        style="left: -1px; padding-left: 1px; z-index: 1;"
+        style="left: -1px; padding-left: 1px;"
       >
         ctgA
       </p>
       <p
         class="MuiTypography-root makeStyles-refLabel MuiTypography-body1"
         data-testid="refLabel-ctgB"
-        style="left: 101px; padding-left: 1px; z-index: 3;"
+        style="left: 101px; padding-left: 1px;"
       >
         ctgB
       </p>
