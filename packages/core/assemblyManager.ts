@@ -61,8 +61,10 @@ export function assemblyFactory(assemblyConfigType: IAnyType) {
       get rpcManager() {
         return getParent(self, 2).rpcManager
       },
+    }))
+    .views(self => ({
       getCanonicalRefName(refName: string) {
-        if (this.refNames.includes(refName)) {
+        if (self.refNames.includes(refName)) {
           return refName
         }
         for (const [rName, aliases] of self.refNameAliases) {
@@ -73,7 +75,7 @@ export function assemblyFactory(assemblyConfigType: IAnyType) {
         return undefined
       },
       isValidRefName(refName: string) {
-        return this.allRefNames.includes(refName)
+        return self.allRefNames.includes(refName)
       },
     }))
     .actions(self => {
