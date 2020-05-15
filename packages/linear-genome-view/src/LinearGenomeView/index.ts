@@ -427,16 +427,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }) {
         let { refName } = query
         const { start, end, assemblyName } = query
-        if (refName) {
-          const session = getSession(self)
-          const assembly = session.assemblyManager.get(
-            assemblyName || self.assemblyNames[0],
-          )
-          if (assembly) {
-            const canonicalRefName = assembly.getCanonicalRefName(refName)
-            if (canonicalRefName) {
-              refName = canonicalRefName
-            }
+        if (start !== undefined && end !== undefined && start > end) {
+          throw new Error(`start "${start + 1}" is greater than end "${end}"`)
+        }
+        const session = getSession(self)
+        const assembly = session.assemblyManager.get(
+          assemblyName || self.assemblyNames[0],
+        )
+        if (assembly) {
+          const canonicalRefName = assembly.getCanonicalRefName(refName)
+          if (canonicalRefName) {
+            refName = canonicalRefName
           }
         }
 
@@ -489,8 +490,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         const f = self.displayedRegions[index]
         this.moveTo(
-          { index, offset: s - f.start },
-          { index, offset: e - f.start },
+          { index, offset: f.reversed ? f.end - e : s - f.start },
+          { index, offset: f.reversed ? f.end - s : e - f.start },
         )
       },
 
