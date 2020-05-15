@@ -37,6 +37,7 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
   }
 
   // render method called on the worker
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async renderInWorker(args: any) {
     this.deserializeArgsInWorker(args)
 

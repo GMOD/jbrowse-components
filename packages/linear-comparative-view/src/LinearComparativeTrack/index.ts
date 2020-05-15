@@ -74,7 +74,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         afterAttach() {
           makeAbortableReaction(
             self as any,
-            'render',
             renderBlockData as any,
             renderBlockEffect as any,
             {

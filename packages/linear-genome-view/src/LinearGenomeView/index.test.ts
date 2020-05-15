@@ -215,7 +215,6 @@ test('can instantiate a model that >2 regions', () => {
 
 test('can perform bpToPx in a way that makes sense on things that happen outside', () => {
   const session = Session.create({
-    jbrowse: {},
     configuration: {},
   })
   const width = 800
