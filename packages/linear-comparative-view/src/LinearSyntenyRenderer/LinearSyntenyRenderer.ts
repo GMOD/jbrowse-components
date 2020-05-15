@@ -3,8 +3,6 @@ import { getSnapshot } from 'mobx-state-tree'
 import Base1DView, {
   Base1DViewModel,
 } from '@gmod/jbrowse-core/util/Base1DViewModel'
-import { filter, toArray } from 'rxjs/operators'
-import { Region } from '@gmod/jbrowse-core/util/types'
 
 export default class LinearSyntenyRenderer extends ComparativeServerSideRendererType {
   async render(renderProps: {
@@ -38,57 +36,8 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
     }
   }
 
-  /**
-   * use the dataAdapter to fetch the features to be rendered
-   *
-   * @param {object} renderArgs
-   * @returns {Map} of features as { id => feature, ... }
-   */
-  async getFeatures(renderArgs: any) {
-    const { dataAdapter, signal } = renderArgs
-
-    let regions = [] as Region[]
-
-    // @ts-ignore this is instantiated by the getFeatures call
-    regions = renderArgs.regions
-
-    if (!regions || regions.length === 0) {
-      console.warn('no regions supplied to comparative renderer')
-      return []
-    }
-
-    const requestRegions = regions.map(r => {
-      // make sure the requested region's start and end are integers, if
-      // there is a region specification.
-      const requestRegion = { ...r }
-      if (requestRegion.start) {
-        requestRegion.start = Math.floor(requestRegion.start)
-      }
-      if (requestRegion.end) {
-        requestRegion.end = Math.floor(requestRegion.end)
-      }
-      return requestRegion
-    })
-
-    // note that getFeaturesInMultipleRegions does not do glyph expansion
-    const featureObservable = dataAdapter.getFeaturesInMultipleRegions(
-      requestRegions,
-      {
-        signal,
-      },
-    )
-
-    return featureObservable
-      .pipe(
-        // @ts-ignore
-        filter(feature => this.featurePassesFilters(renderArgs, feature)),
-        toArray(),
-      )
-      .toPromise()
-  }
-
   // render method called on the worker
-  async renderInWorker(args: any) {
+  async renderInWorker(args: unknown) {
     this.deserializeArgsInWorker(args)
 
     const results = await this.render(args)

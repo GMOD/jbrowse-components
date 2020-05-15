@@ -10,8 +10,6 @@ import React from 'react'
 import Base1DView, {
   Base1DViewModel,
 } from '@gmod/jbrowse-core/util/Base1DViewModel'
-import { checkAbortSignal } from '@gmod/jbrowse-core/util'
-import { tap, filter, distinct, toArray } from 'rxjs/operators'
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
@@ -157,56 +155,5 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       offsetX: realizedViews[0].dynamicBlocks.blocks[0].offsetPx,
       offsetY: realizedViews[1].dynamicBlocks.blocks[0].offsetPx,
     }
-  }
-
-  /**
-   * use the dataAdapter to fetch the features to be rendered
-   *
-   * @param {object} renderArgs
-   * @returns {Map} of features as { id => feature, ... }
-   */
-  async getFeatures(renderArgs: DotplotRenderProps & { regions: Region[] }) {
-    const { dataAdapter, signal } = renderArgs
-
-    let regions = [] as Region[]
-
-    // @ts-ignore this is instantiated by the getFeatures call
-    regions = renderArgs.regions
-
-    if (!regions || regions.length === 0) {
-      console.warn('no regions supplied to comparative renderer')
-      return []
-    }
-
-    const requestRegions = regions.map(r => {
-      // make sure the requested region's start and end are integers, if
-      // there is a region specification.
-      const requestRegion = { ...r }
-      if (requestRegion.start) {
-        requestRegion.start = Math.floor(requestRegion.start)
-      }
-      if (requestRegion.end) {
-        requestRegion.end = Math.floor(requestRegion.end)
-      }
-      return requestRegion
-    })
-
-    // note that getFeaturesInMultipleRegions does not do glyph expansion
-    const featureObservable = dataAdapter.getFeaturesInMultipleRegions(
-      requestRegions,
-      {
-        signal,
-      },
-    )
-
-    return featureObservable
-      .pipe(
-        tap(() => checkAbortSignal(signal)),
-        // @ts-ignore
-        filter(feature => this.featurePassesFilters(renderArgs, feature)),
-        distinct(feature => feature.id()),
-        toArray(),
-      )
-      .toPromise()
   }
 }

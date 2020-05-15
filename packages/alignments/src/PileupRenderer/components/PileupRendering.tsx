@@ -152,11 +152,6 @@ function PileupRendering(props: {
     }
   }
 
-  /**
-   * @param {string} handlerName
-   * @param {*} event - the actual mouse event
-   * @param {bool} always - call this handler even if there is no feature
-   */
   function callMouseHandler(
     handlerName: string,
     event: MouseEvent,

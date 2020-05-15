@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderToString } from 'react-dom/server'
+import { filter, toArray } from 'rxjs/operators'
 import { Feature } from '../../util/simpleFeature'
 import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import { checkAbortSignal } from '../../util'
+import { Region } from '../../util/types'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
 
@@ -123,6 +125,49 @@ export default class ComparativeServerSideRenderer extends RendererType {
     // as the result of renderRegionWithWorker.
     this.serializeResultsInWorker(results, args)
     return results
+  }
+
+  async getFeatures(renderArgs: any) {
+    const { dataAdapter, signal } = renderArgs
+
+    let regions = [] as Region[]
+
+    // @ts-ignore this is instantiated by the getFeatures call
+    regions = renderArgs.regions
+
+    if (!regions || regions.length === 0) {
+      console.warn('no regions supplied to comparative renderer')
+      return []
+    }
+
+    const requestRegions = regions.map(r => {
+      // make sure the requested region's start and end are integers, if
+      // there is a region specification.
+      const requestRegion = { ...r }
+      if (requestRegion.start) {
+        requestRegion.start = Math.floor(requestRegion.start)
+      }
+      if (requestRegion.end) {
+        requestRegion.end = Math.floor(requestRegion.end)
+      }
+      return requestRegion
+    })
+
+    // note that getFeaturesInMultipleRegions does not do glyph expansion
+    const featureObservable = dataAdapter.getFeaturesInMultipleRegions(
+      requestRegions,
+      {
+        signal,
+      },
+    )
+
+    return featureObservable
+      .pipe(
+        // @ts-ignore
+        filter(feature => this.featurePassesFilters(renderArgs, feature)),
+        toArray(),
+      )
+      .toPromise()
   }
 
   freeResourcesInClient(rpcManager: any, args: RenderArgs) {

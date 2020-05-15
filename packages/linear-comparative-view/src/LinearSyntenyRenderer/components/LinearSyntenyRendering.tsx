@@ -8,7 +8,7 @@ import { getConf } from '@gmod/jbrowse-core/configuration'
 import Base1DView, {
   Base1DViewModel,
 } from '@gmod/jbrowse-core/util/Base1DViewModel'
-import { getPxFromCoordinate, interstitialYPos, overlayYPos } from '../../util'
+import { interstitialYPos, overlayYPos } from '../../util'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const [LEFT, TOP, RIGHT, BOTTOM] = [0, 1, 2, 3]
@@ -160,8 +160,6 @@ function LinearSyntenyRendering(props: {
         //   continue
         // }
         //
-        const o1 = v1.dynamicBlocks.contentBlocks[0].offsetPx
-        const o2 = v2.dynamicBlocks.contentBlocks[0].offsetPx
 
         const x11 = v1.bpToPx({ refName: ref1, coord: c1[LEFT] }) - v1p
         const x12 = v1.bpToPx({ refName: ref1, coord: c1[RIGHT] }) - v1p

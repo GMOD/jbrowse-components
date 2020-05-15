@@ -99,14 +99,6 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     return []
   }
 
-  /**
-   * Fetch features for a certain region. Use getFeaturesInRegion() if you also
-   * want to verify that the store has features for the given reference sequence
-   * before fetching.
-   * @param {IRegion} param
-   * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       await this.cache.get('initialize', opts, opts.signal)

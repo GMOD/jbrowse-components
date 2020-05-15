@@ -79,13 +79,6 @@ export class BaseBlock {
     this.key = data.key
   }
 
-  /**
-   * rename the reference sequence of this block and return a new one
-   *
-   * @param {string} refName
-   * @returns either a new block with a renamed reference sequence,
-   * or the same block, if the ref name is not actually different
-   */
   renameReference(refName: string) {
     if (this.refName && refName !== this.refName) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
