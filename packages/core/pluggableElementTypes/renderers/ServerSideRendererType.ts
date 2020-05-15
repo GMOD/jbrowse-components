@@ -35,7 +35,7 @@ interface BaseRenderArgs {
   }
   regions: Region[]
   originalRegions?: Region[]
-  showSoftClip: boolean
+  showSoftClip?: boolean
 }
 
 export interface RenderArgs extends BaseRenderArgs {

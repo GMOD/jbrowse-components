@@ -47,11 +47,11 @@ export default class PileupRenderer extends BoxRendererType {
     region: Region,
     showSoftClip?: boolean,
   ): LayoutRecord | null {
-    // alter the start and end below when softclipping enabled
     let expansionBefore = 0
     let expansionAfter = 0
     const mismatches: Mismatch[] = feature.get('mismatches')
 
+    // alter the start and end below when softclipping enabled
     if (showSoftClip) {
       for (let i = 0; i < mismatches.length; i += 1) {
         const mismatch = mismatches[i]
@@ -80,7 +80,7 @@ export default class PileupRenderer extends BoxRendererType {
         }`,
       )
     }
-    // if weird collisions occur, also alter the below start and end
+
     const topPx = subLayout.addRect(
       feature.id(),
       feature.get('start') - expansionBefore,
