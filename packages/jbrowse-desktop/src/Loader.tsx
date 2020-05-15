@@ -80,7 +80,10 @@ export default function Loader() {
   let rootModel
   try {
     if (configSnapshot) {
-      rootModel = JBrowseRootModel.create({ jbrowse: configSnapshot })
+      rootModel = JBrowseRootModel.create({
+        jbrowse: configSnapshot,
+        assemblyManager: {},
+      })
     }
   } catch (e) {
     console.error(e)

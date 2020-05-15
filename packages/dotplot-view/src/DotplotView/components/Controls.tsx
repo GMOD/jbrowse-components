@@ -1,4 +1,11 @@
 import { makeStyles as makeStylesMUI } from '@material-ui/core/styles'
+import ZoomOut from '@material-ui/icons/ZoomOut'
+import ZoomIn from '@material-ui/icons/ZoomIn'
+import ArrowUp from '@material-ui/icons/KeyboardArrowUp'
+import ArrowDown from '@material-ui/icons/KeyboardArrowDown'
+import ArrowLeft from '@material-ui/icons/KeyboardArrowLeft'
+import ArrowRight from '@material-ui/icons/KeyboardArrowRight'
+import TrackSelectorIcon from '@material-ui/icons/LineStyle'
 import { DotplotViewModel } from '../model'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -8,7 +15,6 @@ export default (pluginManager: any) => {
   const React = jbrequire('react')
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const Icon = jbrequire('@material-ui/core/Icon')
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
 
@@ -43,7 +49,7 @@ export default (pluginManager: any) => {
           title="left"
           color="secondary"
         >
-          <Icon fontSize="small">keyboard_arrow_left</Icon>
+          <ArrowLeft fontSize="small" />
         </IconButton>
 
         <IconButton
@@ -54,7 +60,7 @@ export default (pluginManager: any) => {
           title="left"
           color="secondary"
         >
-          <Icon fontSize="small">keyboard_arrow_right</Icon>
+          <ArrowRight fontSize="small" />
         </IconButton>
         <IconButton
           onClick={() => {
@@ -64,7 +70,7 @@ export default (pluginManager: any) => {
           title="left"
           color="secondary"
         >
-          <Icon fontSize="small">keyboard_arrow_down</Icon>
+          <ArrowDown fontSize="small" />
         </IconButton>
         <IconButton
           onClick={() => {
@@ -74,14 +80,14 @@ export default (pluginManager: any) => {
           title="left"
           color="secondary"
         >
-          <Icon fontSize="small">keyboard_arrow_up</Icon>
+          <ArrowUp fontSize="small" />
         </IconButton>
         <IconButton
           onClick={model.zoomOutButton}
           className={classes.iconButton}
           color="secondary"
         >
-          <Icon fontSize="small">zoom_out</Icon>
+          <ZoomOut />
         </IconButton>
 
         <IconButton
@@ -90,7 +96,7 @@ export default (pluginManager: any) => {
           title="zoom in"
           color="secondary"
         >
-          <Icon fontSize="small">zoom_in</Icon>
+          <ZoomIn />
         </IconButton>
 
         <ToggleButton
@@ -105,7 +111,7 @@ export default (pluginManager: any) => {
           data-testid="circular_track_select"
           color="secondary"
         >
-          <Icon fontSize="small">line_style</Icon>
+          <TrackSelectorIcon />
         </ToggleButton>
       </div>
     )

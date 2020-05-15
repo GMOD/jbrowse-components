@@ -2,7 +2,8 @@
  * Based on https://material-ui.com/components/autocomplete/#Virtualize.tsx
  */
 import { Region } from '@gmod/jbrowse-core/util/types'
-import { getSession, isAbortException } from '@gmod/jbrowse-core/util'
+import { Region as MSTRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { getSession } from '@gmod/jbrowse-core/util'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import ListSubheader from '@material-ui/core/ListSubheader'
 import { makeStyles } from '@material-ui/core/styles'
@@ -10,7 +11,7 @@ import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
+import { getSnapshot, Instance } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
 import { ListChildComponentProps, VariableSizeList } from 'react-window'
 import { LinearGenomeViewStateModel } from '..'
@@ -104,64 +105,31 @@ function RefNameAutocomplete({
   defaultRegionName?: string
   TextFieldProps?: TFP
 }) {
-  const [regions, setRegions] = useState<Region[]>([])
   const [selectedRegionName, setSelectedRegionName] = useState<
     string | undefined
   >(defaultRegionName)
-  const [error, setError] = useState('')
-  const loading = !!assemblyName && regions.length === 0
-  const {
-    getRegionsForAssemblyName,
-  }: {
-    getRegionsForAssemblyName: (
-      assemblyName: string,
-      { signal }: { signal?: AbortSignal },
-    ) => Promise<Region[]>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } = getSession(model) as any
+  const { assemblyManager } = getSession(model)
 
+  let regions: Instance<typeof MSTRegion>[] = []
+  if (assemblyName) {
+    const assembly = assemblyManager.get(assemblyName)
+    if (assembly) {
+      regions = assembly.regions
+    }
+  }
+  const loading = regions.length === 0
   useEffect(() => {
-    setRegions([])
     onSelect(undefined)
-    setError('')
     if (defaultRegionName !== undefined) {
       setSelectedRegionName(defaultRegionName)
+    } else if (!loading) {
+      setSelectedRegionName(regions[0].refName)
+      onSelect(getSnapshot(regions[0]))
     } else {
       setSelectedRegionName(undefined)
     }
-  }, [assemblyName, defaultRegionName, onSelect])
+  }, [assemblyName, defaultRegionName, onSelect, loading, regions])
 
-  useEffect(() => {
-    let aborter: AbortController
-    let mounted = true
-    async function fetchRegions() {
-      if (mounted && assemblyName) {
-        try {
-          aborter = new AbortController()
-          const fetchedRegions = await getRegionsForAssemblyName(assemblyName, {
-            signal: aborter.signal,
-          })
-          if (mounted) {
-            setRegions(fetchedRegions)
-            if (defaultRegionName === undefined) {
-              setSelectedRegionName(fetchedRegions[0].refName)
-              onSelect(fetchedRegions[0])
-            }
-          }
-        } catch (e) {
-          if (!isAbortException(e) && mounted) {
-            setError(String(e))
-          }
-        }
-      }
-    }
-    fetchRegions()
-
-    return () => {
-      mounted = false
-      aborter && aborter.abort()
-    }
-  }, [assemblyName, defaultRegionName, getRegionsForAssemblyName, onSelect])
   const classes = useStyles()
 
   const regionNames = regions.map(region => region.refName)
@@ -172,7 +140,10 @@ function RefNameAutocomplete({
   ) {
     if (newRegionName) {
       setSelectedRegionName(newRegionName)
-      onSelect(regions.find(region => region.refName === newRegionName))
+      const newRegion = regions.find(region => region.refName === newRegionName)
+      if (newRegion) {
+        onSelect(getSnapshot(newRegion))
+      }
     }
   }
 
@@ -197,15 +168,13 @@ function RefNameAutocomplete({
       onChange={onChange}
       renderInput={params => {
         const helperText =
-          error || (TextFieldProps && TextFieldProps.helperText) || undefined
+          (TextFieldProps && TextFieldProps.helperText) || undefined
         const TextFieldInputProps = {
           ...params.InputProps,
           ...((TextFieldProps && TextFieldProps.InputProps) || {}),
           endAdornment: (
             <>
-              {loading && !error ? (
-                <CircularProgress color="inherit" size={20} />
-              ) : null}
+              {loading ? <CircularProgress color="inherit" size={20} /> : null}
               {params.InputProps.endAdornment}
             </>
           ),
@@ -215,7 +184,6 @@ function RefNameAutocomplete({
             {...params}
             {...(TextFieldProps || {})}
             helperText={helperText}
-            error={!!error}
             InputProps={TextFieldInputProps}
           />
         )

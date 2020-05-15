@@ -5,7 +5,6 @@ import {
   isSessionModelWithDrawerWidgets,
 } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
-import Icon from '@material-ui/core/Icon'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import TextField from '@material-ui/core/TextField'
@@ -15,6 +14,10 @@ import ToggleButton from '@material-ui/lab/ToggleButton'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import TrackSelectorIcon from '@material-ui/icons/LineStyle'
+import SearchIcon from '@material-ui/icons/Search'
+import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
+import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import { LinearGenomeViewStateModel, HEADER_BAR_HEIGHT } from '..'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import OverviewScaleBar from './OverviewScaleBar'
@@ -71,7 +74,7 @@ const Controls = observer(({ model }: { model: LGV }) => {
         session.visibleDrawerWidget.view.id === model.id
       }
     >
-      <Icon fontSize="small">line_style</Icon>
+      <TrackSelectorIcon fontSize="small" />
     </ToggleButton>
   )
 })
@@ -108,9 +111,9 @@ const Search = observer(({ model }: { model: LGV }) => {
     setDefaultValue(locs.join(';'))
   }, [contentBlocks])
 
-  async function navTo(locString: string) {
+  function navTo(locString: string) {
     try {
-      await model.navToLocString(locString)
+      model.navToLocString(locString)
     } catch (e) {
       session.pushSnackbarMessage(`${e}`)
     }
@@ -159,7 +162,7 @@ const Search = observer(({ model }: { model: LGV }) => {
       onChange={event => onChange(event)}
       value={value === undefined ? defaultValue : value}
       InputProps={{
-        startAdornment: <Icon fontSize="small">search</Icon>,
+        startAdornment: <SearchIcon fontSize="small" />,
         style: {
           background: fade(theme.palette.background.paper, 0.8),
           height: 32,
@@ -236,7 +239,7 @@ function PanControls({ model }: { model: LGV }) {
         className={classes.panButton}
         onClick={() => model.slide(-0.9)}
       >
-        <Icon>arrow_back</Icon>
+        <ArrowBackIcon />
       </Button>
       <Button
         size="small"
@@ -244,7 +247,7 @@ function PanControls({ model }: { model: LGV }) {
         className={classes.panButton}
         onClick={() => model.slide(0.9)}
       >
-        <Icon>arrow_forward</Icon>
+        <ArrowForwardIcon />
       </Button>
     </>
   )

@@ -1,3 +1,5 @@
+import ClearIcon from '@material-ui/icons/Clear'
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { types, getType } = jbrequire('mobx-state-tree')
@@ -39,7 +41,6 @@ export default pluginManager => {
 
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const IconButton = jbrequire('@material-ui/core/IconButton')
-  const Icon = jbrequire('@material-ui/core/Icon')
   const TextField = jbrequire('@material-ui/core/TextField')
   const MenuItem = jbrequire('@material-ui/core/MenuItem')
   const InputAdornment = jbrequire('@material-ui/core/InputAdornment')
@@ -100,7 +101,7 @@ export default pluginManager => {
                   onClick={() => filterModel.setString('')}
                   color="secondary"
                 >
-                  <Icon>clear</Icon>
+                  <ClearIcon />
                 </IconButton>
               </InputAdornment>
             ),

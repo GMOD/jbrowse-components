@@ -9,6 +9,7 @@
   "author": "Robert Buels",
   "license": "MIT",
   "dependencies": {
+    "@material-ui/icons": "^4.9.1",
     "clone": "^2.1.2",
     "clsx": "^1.0.4",
     "json-stable-stringify": "^1.0.1",
@@ -26,8 +27,5 @@
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
-  },
-  "devDependencies": {
-    "@types/clone": "^0.1.30"
   }
 }
