@@ -23,7 +23,7 @@ export default class CompositeMap<T, U> {
 
   *values() {
     for (const key of this.keys()) {
-      yield this.get(key)
+      yield this.get(key) as U
     }
   }
 
