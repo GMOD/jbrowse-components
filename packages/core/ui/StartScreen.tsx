@@ -8,7 +8,8 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Grid from '@material-ui/core/Grid'
-import Icon from '@material-ui/core/Icon'
+import WarningIcon from '@material-ui/icons/Warning'
+import SettingsIcon from '@material-ui/icons/Settings'
 import IconButton from '@material-ui/core/IconButton'
 import Input from '@material-ui/core/Input'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
@@ -278,7 +279,7 @@ export default function StartScreen({
           setMenuAnchorEl(event.currentTarget)
         }}
       >
-        <Icon>settings</Icon>
+        <SettingsIcon />
       </IconButton>
       <Container maxWidth="md">
         <LogoFull />
@@ -344,7 +345,7 @@ export default function StartScreen({
           }}
         >
           <ListItemIcon>
-            <Icon fontSize="small">warning</Icon>
+            <WarningIcon fontSize="small" />
           </ListItemIcon>
           <Typography variant="inherit">Factory Reset</Typography>
         </MenuItem>

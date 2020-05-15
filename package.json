@@ -31,6 +31,7 @@
     "@testing-library/jest-dom": "^5.5.0",
     "@testing-library/react": "^9.0.0",
     "@types/base64-js": "^1.2.5",
+    "@types/clone": "^0.1.30",
     "@types/color": "^3.0.1",
     "@types/d3-scale": "^2.2.0",
     "@types/deep-equal": "^1.0.1",
