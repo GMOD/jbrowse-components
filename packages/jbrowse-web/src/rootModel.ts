@@ -1,10 +1,15 @@
+import assemblyManagerFactory from '@gmod/jbrowse-core/assemblyManager'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
-import { getSnapshot, types, cast, SnapshotIn } from 'mobx-state-tree'
-import { UndoManager } from 'mst-middlewares'
 import { AbstractSessionModel } from '@gmod/jbrowse-core/util'
+import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
+import { UndoManager } from 'mst-middlewares'
+import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
+// @ts-ignore
+import RenderWorker from './rpc.worker' // TODO: maybe move this to the main entry point
 import sessionModelFactory from './sessionModelFactory'
 
 interface Menu {
@@ -14,10 +19,24 @@ interface Menu {
 
 export default function RootModel(pluginManager: PluginManager) {
   const Session = sessionModelFactory(pluginManager)
+  const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
+    pluginManager,
+  )
+  const assemblyConfigSchemasType = types.union(
+    { dispatcher },
+    ...assemblyConfigSchemas,
+  )
+  const assemblyManagerType = assemblyManagerFactory(assemblyConfigSchemasType)
   return types
     .model('Root', {
-      jbrowse: jbrowseWebFactory(pluginManager, Session),
+      jbrowse: jbrowseWebFactory(
+        pluginManager,
+        Session,
+        assemblyConfigSchemasType,
+      ),
       session: types.maybe(Session),
+      assemblyManager: assemblyManagerType,
+      error: types.maybe(types.string),
     })
     .actions(self => ({
       setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
@@ -66,8 +85,11 @@ export default function RootModel(pluginManager: PluginManager) {
           )
         this.setSession(newSessionSnapshot)
       },
+      setError(errorMessage: string) {
+        self.error = errorMessage
+      },
     }))
-    .volatile((/* self */) => ({
+    .volatile(self => ({
       history: {},
       menus: [
         {
@@ -84,6 +106,14 @@ export default function RootModel(pluginManager: PluginManager) {
           ],
         },
       ] as Menu[],
+      rpcManager: new RpcManager(
+        pluginManager,
+        self.jbrowse.configuration.rpc,
+        {
+          WebWorkerRpcDriver: { WorkerClass: RenderWorker },
+          MainThreadRpcDriver: {},
+        },
+      ),
     }))
     .actions(self => ({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -231,6 +261,7 @@ export function createTestSession(snapshot = {}) {
     jbrowse: {
       configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
     },
+    assemblyManager: {},
   })
   root.setSession({
     name: 'testSession',

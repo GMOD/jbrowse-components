@@ -1,5 +1,6 @@
 import {
   isStateTreeNode,
+  Instance,
   SnapshotOut,
   SnapshotIn,
   IAnyStateTreeNode,
@@ -7,6 +8,7 @@ import {
 import PluginManager from '../../PluginManager'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
+import assemblyManager from '../../assemblyManager'
 import { MenuOption } from '../../ui'
 import {
   NoAssemblyRegion as MUNoAssemblyRegion,
@@ -28,6 +30,8 @@ export function isViewContainer(
   return isStateTreeNode(thing) && 'removeView' in thing
 }
 
+type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
+
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
   editConfiguration(configuration: AnyConfigurationModel): void
@@ -39,6 +43,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   assemblies: AnyConfigurationModel[]
   selection?: unknown
   duplicateCurrentSession(): void
+  assemblyManager: AssemblyManager
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (

@@ -1,10 +1,5 @@
 {
-  "configuration": {
-    "rpc": {
-      "defaultDriver": "MainThreadRpcDriver"
-    },
-    "updateUrl": false
-  },
+  "configuration": {},
   "assemblies": [
     {
       "name": "volvox",
@@ -214,6 +209,28 @@
         },
         "SvgFeatureRenderer": {
           "type": "SvgFeatureRenderer"
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_test_vcf",
+      "name": "volvox 1000genomes vcf",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "category": [
+        "VCF"
+      ],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "test_data/volvox/volvox.test.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/volvox/volvox.test.vcf.gz.tbi"
+          }
         }
       }
     },

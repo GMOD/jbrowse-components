@@ -1,16 +1,24 @@
+import ZoomOut from '@material-ui/icons/ZoomOut'
+import ZoomIn from '@material-ui/icons/ZoomIn'
+import RotateLeft from '@material-ui/icons/RotateLeft'
+import RotateRight from '@material-ui/icons/RotateRight'
+import LockOutline from '@material-ui/icons/LockOutlined'
+import LockOpen from '@material-ui/icons/LockOpen'
+import LineStyle from '@material-ui/icons/LineStyle'
+
 const dragHandleHeight = 3
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
+  const { getSnapshot } = jbrequire('mobx-state-tree')
   const React = jbrequire('react')
-  const { useEffect, useState } = jbrequire('react')
+  const { useState } = jbrequire('react')
 
   // material-ui stuff
   const Button = jbrequire('@material-ui/core/Button')
   const Container = jbrequire('@material-ui/core/Container')
   const Grid = jbrequire('@material-ui/core/Grid')
-  const Icon = jbrequire('@material-ui/core/Icon')
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const MenuItem = jbrequire('@material-ui/core/MenuItem')
   const TextField = jbrequire('@material-ui/core/TextField')
@@ -20,9 +28,7 @@ export default pluginManager => {
   const { grey } = jbrequire('@material-ui/core/colors')
 
   const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
-  const { assembleLocString, getSession, isAbortException } = jbrequire(
-    '@gmod/jbrowse-core/util',
-  )
+  const { assembleLocString, getSession } = jbrequire('@gmod/jbrowse-core/util')
   const Ruler = jbrequire(require('./Ruler'))
 
   const useStyles = makeStyles(theme => {
@@ -108,7 +114,7 @@ export default pluginManager => {
           }
           color="secondary"
         >
-          <Icon fontSize="small">zoom_out</Icon>
+          <ZoomOut fontSize="small" />
         </IconButton>
 
         <IconButton
@@ -118,7 +124,7 @@ export default pluginManager => {
           disabled={!showingFigure || model.atMinBpPerPx}
           color="secondary"
         >
-          <Icon fontSize="small">zoom_in</Icon>
+          <ZoomIn fontSize="small" />
         </IconButton>
 
         <IconButton
@@ -128,7 +134,7 @@ export default pluginManager => {
           disabled={!showingFigure}
           color="secondary"
         >
-          <Icon fontSize="small">rotate_left</Icon>
+          <RotateLeft fontSize="small" />
         </IconButton>
 
         <IconButton
@@ -138,7 +144,7 @@ export default pluginManager => {
           disabled={!showingFigure}
           color="secondary"
         >
-          <Icon fontSize="small">rotate_right</Icon>
+          <RotateRight fontSize="small" />
         </IconButton>
 
         <IconButton
@@ -153,9 +159,9 @@ export default pluginManager => {
           color="secondary"
         >
           {model.lockedFitToWindow ? (
-            <Icon fontSize="small">lock_outline</Icon>
+            <LockOutline fontSize="small" />
           ) : (
-            <Icon fontSize="small">lock_open</Icon>
+            <LockOpen fontSize="small" />
           )}
         </IconButton>
 
@@ -172,7 +178,7 @@ export default pluginManager => {
             data-testid="circular_track_select"
             color="secondary"
           >
-            <Icon fontSize="small">line_style</Icon>
+            <LineStyle fontSize="small" />
           </ToggleButton>
         )}
       </div>
@@ -182,53 +188,17 @@ export default pluginManager => {
   const ImportForm = observer(({ model }) => {
     const classes = useStyles()
     const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-    const [regions, setRegions] = useState([])
-    const { assemblyNames, getRegionsForAssemblyName } = getSession(model)
+    const { assemblyNames, assemblyManager } = getSession(model)
     const [assemblyError, setAssemblyError] = useState('')
     const [regionsError, setRegionsError] = useState('')
     if (!assemblyNames.length) {
       setAssemblyError('No configured assemblies')
     }
-    useEffect(() => {
-      let aborter
-      let mounted = true
-      async function fetchRegions() {
-        if (mounted)
-          if (assemblyError && mounted) {
-            setRegions([])
-          } else {
-            try {
-              aborter = new AbortController()
-              const fetchedRegions = await getRegionsForAssemblyName(
-                assemblyNames[selectedAssemblyIdx],
-                { signal: aborter.signal },
-              )
-              if (mounted) {
-                setRegions(fetchedRegions)
-              }
-            } catch (e) {
-              if (!isAbortException(e) && mounted) {
-                setRegionsError(String(e))
-              }
-            }
-          }
-      }
-      fetchRegions()
-
-      return () => {
-        mounted = false
-        if (aborter) aborter.abort()
-      }
-    }, [
-      assemblyError,
-      assemblyNames,
-      getRegionsForAssemblyName,
-      selectedAssemblyIdx,
-    ])
+    const assembly = assemblyManager.get(assemblyNames[selectedAssemblyIdx])
+    const regions = getSnapshot(assembly.regions)
 
     function onAssemblyChange(event) {
       setSelectedAssemblyIdx(Number(event.target.value))
-      setRegions([])
       setRegionsError('')
     }
 

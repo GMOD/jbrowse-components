@@ -66,6 +66,25 @@ Object {
     "assemblyA",
   ],
   "name": "assembly1",
+  "sequence": Object {
+    "adapter": Object {
+      "features": Array [
+        Object {
+          "end": 10,
+          "refName": "ctgA",
+          "seq": "cattgttgcg",
+          "start": 0,
+          "uniqueId": "firstId",
+        },
+      ],
+      "type": "FromConfigAdapter",
+    },
+    "rendering": Object {
+      "type": "DivSequenceRenderer",
+    },
+    "trackId": "sequenceConfigId",
+    "type": "ReferenceSequenceTrack",
+  },
 }
 `;
 

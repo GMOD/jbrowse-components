@@ -9,9 +9,11 @@ describe('VariantTrack drawer widget', () => {
     const f = observable({
       featureData: {
         refName: 'ctgA',
-        POS: '176',
+        start: 176,
+        end: 177,
+        name: 'rs123',
         REF: 'A',
-        ALT: 'C',
+        ALT: '<TRA>',
         QUAL: 10.4,
         INFO: {
           MQ: 5,

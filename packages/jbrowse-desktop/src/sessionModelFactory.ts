@@ -2,7 +2,6 @@
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import { getContainingView } from '@gmod/jbrowse-core/util'
-import jsonStableStringify from 'json-stable-stringify'
 import { observable } from 'mobx'
 import {
   getMembers,
@@ -31,7 +30,7 @@ declare interface ReferringNode {
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const minDrawerWidth = 128
   return types
-    .model('JBrowseWebSessionModel', {
+    .model('JBrowseDesktopSessionModel', {
       name: types.identifier,
       margin: 0,
       drawerWidth: types.optional(
@@ -70,9 +69,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       get rpcManager() {
         return getParent(self).jbrowse.rpcManager
       },
-      get assemblyData() {
-        return getParent(self).jbrowse.assemblyData
-      },
       get configuration() {
         return getParent(self).jbrowse.configuration
       },
@@ -99,6 +95,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
       get menus() {
         return getParent(self).menus
+      },
+
+      get assemblyManager() {
+        return getParent(self).assemblyManager
       },
 
       get visibleDrawerWidget() {
@@ -133,40 +133,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      getRegionsForAssemblyName(
-        assemblyName: string,
-        opts: { signal?: AbortSignal } = {},
-      ) {
-        if (!assemblyName) throw new TypeError('assemblyName is required')
-        const assembly = self.assemblyData.get(assemblyName)
-        if (assembly) {
-          const adapterConfig = readConfObject(assembly.sequence, 'adapter')
-          const adapterConfigId = jsonStableStringify(adapterConfig)
-          return self.rpcManager
-            .call(
-              adapterConfigId,
-              'CoreGetRegions',
-              {
-                sessionId: assemblyName,
-                adapterType: adapterConfig.type,
-                adapterConfig,
-                signal: opts.signal,
-              },
-              { timeout: 1000000 },
-            )
-            .then((adapterRegions: Region[]) => {
-              const adapterRegionsWithAssembly = adapterRegions.map(
-                adapterRegion => ({
-                  ...adapterRegion,
-                  assemblyName,
-                }),
-              )
-              return adapterRegionsWithAssembly
-            })
-        }
-        return Promise.resolve(undefined)
-      },
-
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},

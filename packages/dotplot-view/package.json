@@ -23,6 +23,7 @@
     "rxjs": "^6.0.0"
   },
   "dependencies": {
+    "@material-ui/icons": "^4.9.1",
     "abortable-promise-cache": "^1.0.1",
     "generic-filehandle": "^2.0.0",
     "json-stable-stringify": "^1.0.1"

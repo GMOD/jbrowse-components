@@ -10,7 +10,20 @@
       "name": "hg19",
       "aliases": [
         "GRCh37"
-      ]
+      ],
+      "sequence": {
+        "trackId": "hg19_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/hg19.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
     }
   ],
   "tracks": [
