@@ -111,9 +111,9 @@ const Search = observer(({ model }: { model: LGV }) => {
     setDefaultValue(locs.join(';'))
   }, [contentBlocks])
 
-  async function navTo(locString: string) {
+  function navTo(locString: string) {
     try {
-      await model.navToLocString(locString)
+      model.navToLocString(locString)
     } catch (e) {
       session.pushSnackbarMessage(`${e}`)
     }

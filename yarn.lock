@@ -1309,7 +1309,7 @@
     abortable-promise-cache "^1.0.1"
     quick-lru "^4.0.0"
 
-"@gmod/tabix@^1.4.3":
+"@gmod/tabix@^1.4.6":
   version "1.4.6"
   resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-1.4.6.tgz#eb6ca6a02eb83fbcf8769b1a438c122c9e2fdc2d"
   integrity sha512-vczsvIn0fYkjACQWL31p28dg4/42+jOLZOzc9L1giWqTqe5Dr47f9YqBipFBw4tV9A2snQbq/sWSmzYP3lyq8Q==

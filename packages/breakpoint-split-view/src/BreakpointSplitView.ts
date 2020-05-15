@@ -1,16 +1,16 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
 export default ({ jbrequire }: { jbrequire: Function }) => {
-  const { getRoot } = jbrequire('mobx-state-tree')
   const ViewType = jbrequire(
     '@gmod/jbrowse-core/pluggableElementTypes/ViewType',
   )
+  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
 
   const ReactComponent = jbrequire(require('./components/BreakpointSplitView'))
   const { stateModel } = jbrequire(require('./model'))
 
   class BreakpointSplitViewType extends ViewType {
-    async snapshotFromBreakendFeature(
+    snapshotFromBreakendFeature(
       feature: Feature,
       view: {
         displayedRegions: [
@@ -23,15 +23,11 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
       let endPos
       const bpPerPx = 10
 
+      // TODO: Figure this out for multiple assembly names
       const { assemblyName } = view.displayedRegions[0]
-      const getCanonicalRefName = (ref: string) => {
-        if (assemblyName) {
-          const session = getRoot(view).jbrowse
-          return session.getCanonicalRefName(ref, assemblyName)
-        }
-        return Promise.resolve(ref)
-      }
-      const featureRefName = await getCanonicalRefName(feature.get('refName'))
+      const assembly = getSession(view).assemblyManager.get(assemblyName)
+      const { getCanonicalRefName } = assembly
+      const featureRefName = getCanonicalRefName(feature.get('refName'))
 
       const topRegion = view.displayedRegions.find(
         (f: { refName: string }) => f.refName === String(featureRefName),
@@ -46,11 +42,11 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
         if (breakendSpecification === '<TRA>') {
           const INFO = feature.get('INFO') || []
           endPos = INFO.END[0] - 1
-          mateRefName = await getCanonicalRefName(INFO.CHR2[0])
+          mateRefName = getCanonicalRefName(INFO.CHR2[0])
         } else {
           const matePosition = breakendSpecification.MatePosition.split(':')
           endPos = parseInt(matePosition[1], 10) - 1
-          mateRefName = await getCanonicalRefName(matePosition[0])
+          mateRefName = getCanonicalRefName(matePosition[0])
           if (breakendSpecification.Join === 'left') startMod = -1
           if (breakendSpecification.MateDirection === 'left') endMod = -1
         }
@@ -63,7 +59,7 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
       } else if (feature.get('mate')) {
         // a generic 'mate' feature
         const mate = feature.get('mate')
-        mateRefName = await getCanonicalRefName(mate.refName)
+        mateRefName = getCanonicalRefName(mate.refName)
         endPos = mate.start
       }
 

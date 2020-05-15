@@ -46,6 +46,7 @@ function getPluginManager(initialState?: SnapshotIn<JBrowseRootModel>) {
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
   const rootModel = JBrowseRootModel.create({
     jbrowse: initialState || {},
+    assemblyManager: {},
   })
   pluginManager.setRootModel(rootModel)
 

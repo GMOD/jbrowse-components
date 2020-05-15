@@ -16,7 +16,7 @@ const JBrowse = observer(({ pluginManager }) => {
   const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
 
   const { rootModel } = pluginManager
-  const { session, jbrowse } = rootModel || {}
+  const { session, jbrowse, error } = rootModel || {}
   const useLocalStorage = jbrowse
     ? readConfObject(jbrowse.configuration, 'useLocalStorage')
     : false
@@ -67,7 +67,9 @@ const JBrowse = observer(({ pluginManager }) => {
 
   // Set session URL on first render only, before `onSnapshot` has fired
   useEffect(() => {
-    setUrlSnapshot(getSnapshot(session))
+    if (useUpdateUrl) {
+      setUrlSnapshot(getSnapshot(session))
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -80,6 +82,10 @@ const JBrowse = observer(({ pluginManager }) => {
         : () => {},
     [useUpdateUrl, session],
   )
+
+  if (error) {
+    throw new Error(error)
+  }
 
   return <App session={rootModel.session} />
 })

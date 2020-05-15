@@ -1,7 +1,6 @@
 import { getSession } from '@gmod/jbrowse-core/util'
-import { Region } from '@gmod/jbrowse-core/util/types'
 
-import { types, Instance, SnapshotIn } from 'mobx-state-tree'
+import { getSnapshot, types, Instance, SnapshotIn } from 'mobx-state-tree'
 import { autorun, transaction } from 'mobx'
 
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -91,8 +90,7 @@ export default function stateModelFactory(pluginManager: any) {
     }))
     .actions(self => ({
       afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const session = getSession(self) as any
+        const session = getSession(self)
         addDisposer(
           self,
           autorun(
@@ -101,27 +99,18 @@ export default function stateModelFactory(pluginManager: any) {
               const views = [self.hview, self.vview]
               if (!self.initialized) {
                 self.assemblyNames.forEach((name, index) => {
-                  session
-                    .getRegionsForAssemblyName(name)
-                    .then((regions: Region[] | undefined) => {
-                      if (regions !== undefined) {
-                        transaction(() => {
-                          views[index].setDisplayedRegions(regions)
-                          views[index].setBpPerPx(
-                            views[index].totalBp / axis[index],
-                          )
-                        })
-                      } else {
-                        this.setError(
-                          new Error(
-                            `failed to get regions for assembly ${self.assemblyNames[index]}`,
-                          ),
+                  const assembly = session.assemblyManager.get(name)
+                  if (assembly) {
+                    const { regions } = assembly
+                    if (regions.length) {
+                      transaction(() => {
+                        views[index].setDisplayedRegions(getSnapshot(regions))
+                        views[index].setBpPerPx(
+                          views[index].totalBp / axis[index],
                         )
-                      }
-                    })
-                    .catch((e: Error) => {
-                      this.setError(e)
-                    })
+                      })
+                    }
+                  }
                 })
               }
             },
