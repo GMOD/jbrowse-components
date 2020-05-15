@@ -23,7 +23,7 @@ export default pluginManager => {
 
   // makes a feature data object (passed as `data` to a SimpleFeature constructor)
   // out of table row if the row has 2 location columns. undefined if not
-  function makeAdHocSvFeature(sheet, rowNumber, row) {
+  function makeAdHocSvFeature(sheet, rowNumber, row, isValidRefName) {
     const { columns, columnDisplayOrder } = sheet
     const columnTypes = {}
     columnDisplayOrder.forEach(columnNumber => {
@@ -44,6 +44,7 @@ export default pluginManager => {
         locationColumnNumbers,
         row,
         rowNumber,
+        isValidRefName,
       )
     }
     if (
@@ -120,6 +121,7 @@ export default pluginManager => {
       },
 
       get featuresAdapterConfigSnapshot() {
+        const session = getSession(self)
         const features = (self.spreadsheetView.outputRows || [])
           .map((row, rowNumber) => {
             if (row.extendedData) {
@@ -131,6 +133,7 @@ export default pluginManager => {
               self.spreadsheetView.spreadsheet,
               rowNumber,
               row,
+              session.assemblyManager.isValidRefName,
             )
             if (adhocFeature) return adhocFeature
             return undefined

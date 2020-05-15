@@ -406,7 +406,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       navToLocString(locString: string) {
-        this.navTo(parseLocStringAndConvertToInterbase(locString))
+        const session = getSession(self)
+        const { isValidRefName } = session.assemblyManager
+        this.navTo(
+          parseLocStringAndConvertToInterbase(locString, isValidRefName),
+        )
       },
 
       /**

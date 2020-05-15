@@ -252,8 +252,12 @@ export function getContainingView(node: IAnyStateTreeNode) {
 export function assembleLocString(region: Region | NoAssemblyRegion): string {
   const { refName, start, end } = region
   let assemblyName
-  if ((region as Region).assemblyName) ({ assemblyName } = region as Region)
-  if (assemblyName) return `${assemblyName}:${refName}:${start + 1}..${end}`
+  if ((region as Region).assemblyName) {
+    ;({ assemblyName } = region as Region)
+  }
+  if (assemblyName) {
+    return `{${assemblyName}}${refName}:${start + 1}..${end}`
+  }
   return `${refName}:${start + 1}..${end}`
 }
 
@@ -264,59 +268,88 @@ export interface ParsedLocString {
   end?: number
 }
 
-export function parseLocString(locString: string): ParsedLocString {
-  if (!locString)
+export function parseLocString(
+  locString: string,
+  isValidRefName: (refName: string, assemblyName?: string) => boolean,
+): ParsedLocString {
+  if (!locString) {
     throw new Error('no location string provided, could not parse')
+  }
   // remove any whitespace
   locString = locString.replace(/\s/, '')
-  const ret = locString.split(':')
-  let refName = ''
-  let assemblyName
-  let rest
-  if (ret.length > 3) {
-    throw new Error(`too many ":", could not parse location "${locString}"`)
-  } else if (ret.length === 3) {
-    ;[assemblyName, refName, rest] = ret
-  } else if (ret.length === 2) {
-    ;[refName, rest] = ret
-  } else {
-    ;[refName] = ret
+  // refNames can have colons :(
+  // https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
+  const assemblyMatch = locString.match(/(\{(.+)\})?(.+)/)
+  if (!assemblyMatch) {
+    throw new Error(`invalid location string: "${locString}"`)
   }
-  if (rest) {
-    // see if it's a range
-    const rangeMatch = rest.match(/^(-?\d+)(\.\.|-)(-?\d+)$/)
-    // see if it's a single point
-    const singleMatch = rest.match(/^(-?\d+)(\.\.|-)?$/)
-    if (rangeMatch) {
-      const [, start, , end] = rangeMatch
-      if (start !== undefined && end !== undefined) {
-        return { assemblyName, refName, start: +start, end: +end }
-      }
-    } else if (singleMatch) {
-      const [, start, separator] = singleMatch
-      if (start !== undefined) {
-        if (separator) {
-          // indefinite end
-          return { assemblyName, refName, start: +start }
+  const [, , assemblyName, location] = assemblyMatch
+  const lastColonIdx = location.lastIndexOf(':')
+  if (lastColonIdx === -1) {
+    if (isValidRefName(location, assemblyName)) {
+      return { assemblyName, refName: location }
+    }
+    throw new Error(`Unknown reference sequence "${location}"`)
+  }
+  const prefix = location.slice(0, lastColonIdx)
+  const suffix = location.slice(lastColonIdx + 1)
+  if (
+    isValidRefName(prefix, assemblyName) &&
+    isValidRefName(suffix, assemblyName)
+  ) {
+    throw new Error(`ambiguous location string: "${locString}"`)
+  } else if (isValidRefName(prefix, assemblyName)) {
+    if (suffix) {
+      // see if it's a range
+      const rangeMatch = suffix.match(/^(-?\d+)(\.\.|-)(-?\d+)$/)
+      // see if it's a single point
+      const singleMatch = suffix.match(/^(-?\d+)(\.\.|-)?$/)
+      if (rangeMatch) {
+        const [, start, , end] = rangeMatch
+        if (start !== undefined && end !== undefined) {
+          return { assemblyName, refName: prefix, start: +start, end: +end }
         }
-        return { assemblyName, refName, start: +start, end: +start }
+      } else if (singleMatch) {
+        const [, start, separator] = singleMatch
+        if (start !== undefined) {
+          if (separator) {
+            // indefinite end
+            return { assemblyName, refName: prefix, start: +start }
+          }
+          return { assemblyName, refName: prefix, start: +start, end: +start }
+        }
+      } else {
+        throw new Error(
+          `could not parse range "${suffix}" on location "${locString}"`,
+        )
       }
     } else {
-      throw new Error(`could not parse range "${rest}" on refName "${refName}"`)
+      return { assemblyName, refName: prefix }
     }
+  } else if (isValidRefName(location, assemblyName)) {
+    return { assemblyName, refName: location }
   }
-  return { assemblyName, refName }
+  throw new Error(`unknown reference sequence name in location "${locString}"`)
 }
 
-export function parseLocStringAndConvertToInterbase(locString: string) {
-  const parsed = parseLocString(locString)
-  if (typeof parsed.start === 'number') parsed.start -= 1
+export function parseLocStringAndConvertToInterbase(
+  locString: string,
+  isValidRefName: (refName: string, assemblyName?: string) => boolean,
+) {
+  const parsed = parseLocString(locString, isValidRefName)
+  if (typeof parsed.start === 'number') {
+    parsed.start -= 1
+  }
   return parsed
 }
 
-export function compareLocStrings(a: string, b: string) {
-  const locA = parseLocString(a)
-  const locB = parseLocString(b)
+export function compareLocStrings(
+  a: string,
+  b: string,
+  isValidRefName: (refName: string, assemblyName?: string) => boolean,
+) {
+  const locA = parseLocString(a, isValidRefName)
+  const locB = parseLocString(b, isValidRefName)
 
   const assemblyComp =
     locA.assemblyName || locB.assemblyName

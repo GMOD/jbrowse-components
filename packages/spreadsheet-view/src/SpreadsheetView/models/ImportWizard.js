@@ -1,3 +1,4 @@
+import { getSession } from '@gmod/jbrowse-core/util'
 import { parseCsvBuffer, parseTsvBuffer } from '../importAdapters/ImportUtils'
 import { parseVcfBuffer } from '../importAdapters/VcfImport'
 import { parseBedBuffer, parseBedPEBuffer } from '../importAdapters/BedImport'
@@ -63,6 +64,12 @@ export default pluginManager => {
           return readConfObject(asm, 'name')
         }
         return undefined
+      },
+      isValidRefName(refName, assemblyName) {
+        return getSession(self).assemblyManager.isValidRefName(
+          refName,
+          assemblyName,
+        )
       },
     }))
     .actions(self => ({

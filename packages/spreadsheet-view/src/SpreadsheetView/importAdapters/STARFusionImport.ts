@@ -24,6 +24,7 @@ export async function parseSTARFusionBuffer(
     hasColumnNameLine: true,
     columnNameLineNumber: 1,
     selectedAssemblyName: options.selectedAssemblyName,
+    isValidRefName: () => false,
   })
   // remove the # in #FusionName
   data.columns[0].name = data.columns[0].name.replace('#', '')

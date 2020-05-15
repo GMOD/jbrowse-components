@@ -8,7 +8,7 @@ BlockSet {
       "end": 801,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
-      "key": "volvox:ctgA:2..801",
+      "key": "{volvox}ctgA:2..801",
       "offsetPx": 1,
       "parentRegion": Object {
         "assemblyName": "volvox",
@@ -34,7 +34,7 @@ BlockSet {
       "end": 601,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
-      "key": "volvox:ctgA:402..601",
+      "key": "{volvox}ctgA:402..601",
       "offsetPx": 1604,
       "parentRegion": Object {
         "assemblyName": "volvox",
@@ -60,7 +60,7 @@ BlockSet {
       "end": 801,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
-      "key": "volvox:ctgA:2..801",
+      "key": "{volvox}ctgA:2..801",
       "offsetPx": 1,
       "parentRegion": Object {
         "assemblyName": "volvox",
@@ -86,7 +86,7 @@ BlockSet {
       "end": 1000,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": true,
-      "key": "volvox:ctgA:11..1000",
+      "key": "{volvox}ctgA:11..1000",
       "offsetPx": 1,
       "parentRegion": Object {
         "assemblyName": "volvox",
@@ -105,7 +105,7 @@ BlockSet {
       "end": 1000,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": true,
-      "key": "volvox:ctgB:1..1000",
+      "key": "{volvox}ctgB:1..1000",
       "offsetPx": 100,
       "parentRegion": Object {
         "assemblyName": "volvox",

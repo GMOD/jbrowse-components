@@ -42,13 +42,16 @@ export default ({ jbrequire }) => {
     locationColumnNumbers,
     row,
     rowNumber,
+    isValidRefName,
   ) {
     // use the first two locations we found (first according to *displayed* order)
     const loc1 = parseLocStringAndConvertToInterbase(
       row.cells[locationColumnNumbers[0]].text,
+      isValidRefName,
     )
     const loc2 = parseLocStringAndConvertToInterbase(
       row.cells[locationColumnNumbers[1]].text,
+      isValidRefName,
     )
 
     const columnsAlreadyUsedInLocations = [
