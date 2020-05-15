@@ -12,7 +12,7 @@ const abortSignalIds: WeakMap<AbortSignal, number> = new WeakMap() // map of abo
  */
 export function serializeAbortSignal(
   signal: AbortSignal,
-  callfunc: Function,
+  callfunc: (name: string, abortSignalId: number) => void,
 ): RemoteAbortSignal {
   let abortSignalId = abortSignalIds.get(signal)
   if (!abortSignalId) {
@@ -20,7 +20,10 @@ export function serializeAbortSignal(
     abortSignalIds.set(signal, abortSignalCounter)
     abortSignalId = abortSignalCounter
     signal.addEventListener('abort', () => {
-      callfunc('signalAbort', abortSignalIds.get(signal))
+      const signalId = abortSignalIds.get(signal)
+      if (signalId !== undefined) {
+        callfunc('signalAbort', signalId)
+      }
     })
   }
   return { abortSignalId }

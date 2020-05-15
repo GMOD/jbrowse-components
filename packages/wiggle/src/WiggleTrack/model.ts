@@ -163,7 +163,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           ) as Instance<LinearGenomeViewStateModel>
           const r = await rpcManager.call(
             'statsGathering',
-            'getMultiRegionStats',
+            'WiggleGetMultiRegionStats',
             {
               adapterConfig: getSnapshot(adapter),
               // TODO: Figure this out for multiple assembly names

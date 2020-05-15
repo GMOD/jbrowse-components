@@ -80,9 +80,15 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   baseClass: { new (...args: any[]): ElementClass }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(elementType: { new (...args: any[]): ElementClass }) {
+  name: string
+
+  constructor(
+    name: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    elementType: { new (...args: any[]): ElementClass },
+  ) {
     this.baseClass = elementType
+    this.name = name
   }
 
   add(name: string, t: ElementClass) {
@@ -94,7 +100,7 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   }
 
   get(name: string) {
-    if (!this.has(name)) throw new Error(`${name} not found`)
+    if (!this.has(name)) throw new Error(`${this.name} '${name}' not found`)
     return this.registeredTypes[name]
   }
 
@@ -119,19 +125,19 @@ export default class PluginManager {
     'rpc method',
   )
 
-  rendererTypes = new TypeRecord(RendererType)
+  rendererTypes = new TypeRecord('RendererType', RendererType)
 
-  adapterTypes = new TypeRecord(AdapterType)
+  adapterTypes = new TypeRecord('AdapterType', AdapterType)
 
-  trackTypes = new TypeRecord(TrackType)
+  trackTypes = new TypeRecord('TrackType', TrackType)
 
-  connectionTypes = new TypeRecord(ConnectionType)
+  connectionTypes = new TypeRecord('ConnectionType', ConnectionType)
 
-  viewTypes = new TypeRecord(ViewType)
+  viewTypes = new TypeRecord('ViewType', ViewType)
 
-  drawerWidgetTypes = new TypeRecord(DrawerWidgetType)
+  drawerWidgetTypes = new TypeRecord('DrawerWidgetType', DrawerWidgetType)
 
-  rpcMethods = new TypeRecord(RpcMethodType)
+  rpcMethods = new TypeRecord('RpcMethodType', RpcMethodType)
 
   configured = false
 

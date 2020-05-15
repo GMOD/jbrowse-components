@@ -21,7 +21,7 @@ export default self => {
 
       const refNames = await self.rpcManager.call(
         stateGroupName,
-        'getRefNames',
+        'CoreGetRefNames',
         {
           sessionId: assemblyName,
           adapterConfig: adapterConf,
@@ -114,7 +114,7 @@ export default self => {
           )
           const adapterRefNameAliases = await self.rpcManager.call(
             adapterConfigId,
-            'getRefNameAliases',
+            'CoreGetRefNameAliases',
             {
               sessionId: assemblyName,
               adapterConfig: assemblyConfig.refNameAliases.adapter,
