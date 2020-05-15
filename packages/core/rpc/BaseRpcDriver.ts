@@ -95,9 +95,6 @@ export default abstract class BaseRpcDriver {
             this.filterArgs(v, pluginManager, stateGroupName),
           ]),
       )
-      if (thing === null) {
-        console.warn(`received a null thing from ${stateGroupName}`)
-      }
       return newobj
     }
     return thing
