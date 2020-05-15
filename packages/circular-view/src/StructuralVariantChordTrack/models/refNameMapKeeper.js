@@ -2,10 +2,9 @@ export default pluginManager => {
   const { jbrequire } = pluginManager
 
   const { types } = jbrequire('mobx-state-tree')
-
-  const { makeAbortableReaction } = jbrequire(require('./util'))
-
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { makeAbortableReaction, getSession } = jbrequire(
+    '@gmod/jbrowse-core/util',
+  )
   const { getTrackAssemblyNames } = jbrequire('@gmod/jbrowse-core/util/tracks')
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
 
@@ -18,7 +17,6 @@ export default pluginManager => {
       afterAttach() {
         makeAbortableReaction(
           self,
-          'loadAssemblyRefNameMap',
           () => ({
             // TODO: Figure this out for multiple assembly names
             assemblyName: getTrackAssemblyNames(self)[0],
@@ -34,6 +32,9 @@ export default pluginManager => {
             delay: 300,
             name: 'refNameMapKeeper ref name fetching',
           },
+          self.loadAssemblyRefNameMapStarted,
+          self.loadAssemblyRefNameMapSuccess,
+          self.loadAssemblyRefNameMapError,
         )
       },
 

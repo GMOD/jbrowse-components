@@ -22,10 +22,20 @@ export default class CompositeMap<T, U> {
   }
 
   *values() {
+    for (const key of this.keys()) {
+      yield this.get(key)
+    }
+  }
+
+  *keys() {
+    const keys = new Set<T>()
     for (const submap of this.submaps.values()) {
-      for (const value of submap.values()) {
-        yield value
+      for (const key of submap.keys()) {
+        keys.add(key)
       }
+    }
+    for (const key of keys) {
+      yield key
     }
   }
 
@@ -42,10 +52,14 @@ export default class CompositeMap<T, U> {
   }
 
   *[Symbol.iterator]() {
-    for (const submap of this.submaps.values()) {
-      for (const e of submap) {
-        yield e
-      }
+    for (const key of this.keys()) {
+      yield [key, this.get(key)]
+    }
+  }
+
+  *entries() {
+    for (const k of this.keys()) {
+      yield [k, this.get(k)]
     }
   }
 }

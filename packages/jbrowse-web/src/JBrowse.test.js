@@ -578,7 +578,7 @@ describe('circular views', () => {
   })
 })
 
-describe('breakpoint split view', () => {
+xdescribe('breakpoint split view', () => {
   it('open a split view', async () => {
     console.warn = jest.fn()
     const pluginManager = getPluginManager(breakpointConfig)
