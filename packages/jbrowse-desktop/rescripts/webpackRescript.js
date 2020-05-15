@@ -17,10 +17,6 @@ module.exports = {
     // Generate an HTML file for window workers to load
     config.plugins.unshift(
       new HtmlWebpackPlugin({
-        // template: path.join(
-        //   path.dirname(config.plugins[0].options.template),
-        //   'workerTemplate.html',
-        // ),
         chunks: ['rpc'],
         filename: 'worker.html',
       }),
