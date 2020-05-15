@@ -4,7 +4,6 @@ import Button from '@material-ui/core/Button'
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
-import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
@@ -20,6 +19,11 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
+import CloudUploadIcon from '@material-ui/icons/CloudUpload'
+import ErrorIcon from '@material-ui/icons/Error'
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import CheckCircleIcon from '@material-ui/icons/CheckCircle'
+import DeleteIcon from '@material-ui/icons/Delete'
 
 function styledBy(property, mapping) {
   return props => mapping[props[property]]
@@ -161,9 +165,7 @@ function ImportConfiguration(props) {
       <Paper className={classes.paper}>
         <div {...getRootProps({ className: classes.dropZone })}>
           <input {...getInputProps()} />
-          <Icon fontSize="large" className={classes.uploadIcon}>
-            cloud_upload
-          </Icon>
+          <CloudUploadIcon className={classes.uploadIcon} fontSize="large" />
           <Typography color="textSecondary" align="center" variant="body1">
             Drag and drop files here
           </Typography>
@@ -181,7 +183,7 @@ function ImportConfiguration(props) {
             {acceptedFilesParsed.map((file, idx) => (
               <ListItem key={file.path}>
                 <ListItemIcon>
-                  <Icon>{file.config.error ? 'error' : 'check_circle'}</Icon>
+                  {file.config.error ? <ErrorIcon /> : <CheckCircleIcon />}
                 </ListItemIcon>
                 {file.config.error ? (
                   <Typography color="error" className={classes.listItem}>
@@ -207,7 +209,7 @@ function ImportConfiguration(props) {
                     }}
                     color="secondary"
                   >
-                    <Icon>delete</Icon>
+                    <DeleteIcon />
                   </IconButton>
                 </ListItemSecondaryAction>
               </ListItem>
@@ -229,16 +231,12 @@ function ImportConfiguration(props) {
       {errorMessage ? (
         <>
           <div className={classes.errorMessage}>
-            <Icon color="error" fontSize="large">
-              error
-            </Icon>
+            <ErrorIcon color="error" fontSize="large" />
           </div>
           <div>
             <ExpansionPanel style={{ marginTop: 4 }}>
               <ExpansionPanelSummary
-                expandIcon={
-                  <Icon className={classes.expandIcon}>expand_more</Icon>
-                }
+                expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
               >
                 <Typography color="error" align="center">
                   {acceptedFilesParsed.length === 1

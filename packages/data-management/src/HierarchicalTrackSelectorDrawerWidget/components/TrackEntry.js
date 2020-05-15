@@ -3,11 +3,11 @@ import { getSession } from '@gmod/jbrowse-core/util'
 import Checkbox from '@material-ui/core/Checkbox'
 import Fade from '@material-ui/core/Fade'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
-import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
+import SettingsIcon from '@material-ui/icons/Settings'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import propTypes from 'prop-types'
 import React from 'react'
@@ -81,7 +81,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
           color="secondary"
           data-testid={`htsTrackEntryConfigure-${trackConfigId}`}
         >
-          <Icon fontSize="small">settings</Icon>
+          <SettingsIcon fontSize="small" />
         </IconButton>
       </div>
     </Fade>

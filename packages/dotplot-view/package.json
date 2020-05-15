@@ -23,6 +23,7 @@
     "rxjs": "^6.0.0"
   },
   "dependencies": {
+    "@material-ui/icons": "^4.9.1",
     "clsx": "^1.0.0",
     "react-sizeme": "^2.0.0",
     "abortable-promise-cache": "^1.0.1",

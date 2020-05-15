@@ -22,7 +22,8 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
 
   // @ts-ignore
   const spy = jest.spyOn(global, 'fetch')
-  spy.mockImplementation(mockFetch)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  spy.mockImplementation(mockFetch as any)
   const adapter = new Adapter(
     configSchema.create({
       endpoint: { uri: 'http://somesite.com/sparql' },

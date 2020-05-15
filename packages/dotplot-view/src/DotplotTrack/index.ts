@@ -15,6 +15,7 @@ import jsonStableStringify from 'json-stable-stringify'
 import DotplotTrackComponent from './components/DotplotTrack'
 import { DotplotViewModel } from '../DotplotView/model'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
+import { DotplotViewModel } from '../DotplotView/model'
 
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(

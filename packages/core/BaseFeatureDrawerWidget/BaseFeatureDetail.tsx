@@ -2,8 +2,8 @@
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
-import Icon from '@material-ui/core/Icon'
 import Typography from '@material-ui/core/Typography'
+import ExpandMore from '@material-ui/icons/ExpandMore'
 import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
@@ -113,7 +113,7 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
   return (
     <ExpansionPanel style={{ marginTop: '4px' }} defaultExpanded>
       <ExpansionPanelSummary
-        expandIcon={<Icon className={classes.expandIcon}>expand_more</Icon>}
+        expandIcon={<ExpandMore className={classes.expandIcon} />}
       >
         <Typography variant="button"> {title}</Typography>
       </ExpansionPanelSummary>

@@ -1,12 +1,15 @@
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import { Menu, MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
-import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Typography from '@material-ui/core/Typography'
+import MoreVertIcon from '@material-ui/icons/MoreVert'
+import DragIcon from '@material-ui/icons/DragIndicator'
+import CloseIcon from '@material-ui/icons/Close'
+
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
@@ -31,9 +34,13 @@ const useStyles = makeStyles(theme => ({
     pointerEvents: 'none',
   },
   dragHandle: {
-    verticalAlign: 'middle',
     cursor: 'grab',
     color: '#135560',
+  },
+  dragHandleIcon: {
+    display: 'inline-block',
+    verticalAlign: 'middle',
+    pointerEvents: 'none',
   },
   iconButton: {
     padding: theme.spacing(1),
@@ -113,23 +120,22 @@ const TrackLabel = React.forwardRef(
     return (
       <>
         <Paper ref={ref} className={clsx(className, classes.root)}>
-          <Icon
+          <span
             draggable
             className={classes.dragHandle}
-            fontSize="small"
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
             data-testid={`dragHandle-${view.id}-${getConf(track, 'trackId')}`}
           >
-            drag_indicator
-          </Icon>
+            <DragIcon fontSize="small" className={classes.dragHandleIcon} />
+          </span>
           <IconButton
             onClick={() => view.hideTrack(track.configuration)}
             className={classes.iconButton}
             title="close this track"
             color="secondary"
           >
-            <Icon fontSize="small">close</Icon>
+            <CloseIcon fontSize="small" />
           </IconButton>
           <Typography
             variant="body1"
@@ -145,7 +151,7 @@ const TrackLabel = React.forwardRef(
             className={classes.iconButton}
             color="secondary"
           >
-            <Icon fontSize="small">more_vert</Icon>
+            <MoreVertIcon fontSize="small" />
           </IconButton>
         </Paper>
         <Menu

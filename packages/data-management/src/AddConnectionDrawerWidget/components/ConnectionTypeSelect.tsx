@@ -1,8 +1,8 @@
-import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import MenuItem from '@material-ui/core/MenuItem'
 import TextField from '@material-ui/core/TextField'
 import React from 'react'
+import OpenInNewIcon from '@material-ui/icons/OpenInNew'
 
 import ConnectionType from '@gmod/jbrowse-core/pluggableElementTypes/ConnectionType'
 
@@ -65,7 +65,7 @@ function ConnectionTypeSelect(props: {
                   target="_blank"
                   color="secondary"
                 >
-                  <Icon>open_in_new</Icon>
+                  <OpenInNewIcon />
                 </IconButton>
               ) : null}
             </>
