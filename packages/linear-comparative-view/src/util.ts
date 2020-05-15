@@ -1,5 +1,5 @@
 import { clamp } from '@gmod/jbrowse-core/util'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
 export type LayoutRecord = [number, number, number, number]
@@ -7,9 +7,9 @@ export type LayoutRecord = [number, number, number, number]
 export interface ReducedLinearGenomeView {
   bpPerPx: number
   offsetPx: number
-  staticBlocks: IRegion[]
-  dynamicBlocks: IRegion[]
-  displayedRegions: IRegion[]
+  staticBlocks: Region[]
+  dynamicBlocks: Region[]
+  displayedRegions: Region[]
   headerHeight: number
   scaleBarHeight: number
   height: number

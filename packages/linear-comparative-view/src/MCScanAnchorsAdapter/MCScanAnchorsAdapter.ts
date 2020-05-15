@@ -5,7 +5,7 @@ import {
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import { Instance } from 'mobx-state-tree'
-import { IRegion, IFileLocation } from '@gmod/jbrowse-core/mst-types'
+import { Region, FileLocation } from '@gmod/jbrowse-core/util/types'
 import { GenericFilehandle } from 'generic-filehandle'
 import { tap } from 'rxjs/operators'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
@@ -56,7 +56,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     const subadapters = readConfObject(config, 'subadapters')
     const assemblyNames = readConfObject(config, 'assemblyNames')
     this.mcscanAnchorsLocation = openLocation(
-      readConfObject(config, 'mcscanAnchorsLocation') as IFileLocation,
+      readConfObject(config, 'mcscanAnchorsLocation') as FileLocation,
     )
 
     this.subadapters = subadapters.map(
@@ -107,7 +107,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures(region: IRegion, opts: BaseOptions = {}) {
+  getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       await this.cache.get('initialize', opts, opts.signal)
 

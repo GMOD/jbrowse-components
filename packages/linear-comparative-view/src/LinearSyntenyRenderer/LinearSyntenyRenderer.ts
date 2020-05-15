@@ -4,7 +4,7 @@ import Base1DView, {
   Base1DViewModel,
 } from '@gmod/jbrowse-core/util/Base1DViewModel'
 import { filter, toArray } from 'rxjs/operators'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
 
 export default class LinearSyntenyRenderer extends ComparativeServerSideRendererType {
   async render(renderProps: {
@@ -47,7 +47,7 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
   async getFeatures(renderArgs: any) {
     const { dataAdapter, signal } = renderArgs
 
-    let regions = [] as IRegion[]
+    let regions = [] as Region[]
 
     // @ts-ignore this is instantiated by the getFeatures call
     regions = renderArgs.regions
@@ -57,7 +57,7 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
       return []
     }
 
-    const requestRegions = regions.map((r: IRegion) => {
+    const requestRegions = regions.map(r => {
       // make sure the requested region's start and end are integers, if
       // there is a region specification.
       const requestRegion = { ...r }

@@ -1,6 +1,6 @@
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { toArray } from 'rxjs/operators'
 import {
   BaseFeatureDataAdapter,
@@ -15,7 +15,7 @@ class CustomAdapter extends BaseFeatureDataAdapter {
 
   freeResources() {}
 
-  getFeatures(region: IRegion, opts: BaseOptions) {
+  getFeatures(region: Region, opts: BaseOptions) {
     return ObservableCreate<Feature>(async observer => {
       if (region.assemblyName === 'peach') {
         observer.next(

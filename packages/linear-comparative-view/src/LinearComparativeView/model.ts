@@ -24,7 +24,7 @@ export default function stateModelFactory(pluginManager: any) {
     resolveIdentifier,
     getPath,
   } = jbrequire('mobx-state-tree')
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const { ElementId } = jbrequire('@gmod/jbrowse-core/util/types')
 
   const defaultHeight = 400
   return (jbrequiredTypes as Instance<typeof types>)

@@ -1,6 +1,7 @@
 import { types, cast, Instance } from 'mobx-state-tree'
 import { Feature } from './simpleFeature'
-import { Region, IRegion } from '../mst-types'
+import { Region } from './types/mst'
+import { Region as IRegion } from './types'
 import calculateDynamicBlocks from './calculateDynamicBlocks'
 import calculateStaticBlocks from './calculateStaticBlocks'
 

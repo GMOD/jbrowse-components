@@ -1,5 +1,5 @@
 import { assembleLocString } from '.'
-import { IRegion } from '../mst-types'
+import { Region } from './types'
 import {
   BlockSet,
   ContentBlock,
@@ -23,7 +23,7 @@ export default function calculateBlocks(self: any, extra = 0) {
   let regionBpOffset = 0
   const blocks = new BlockSet()
 
-  displayedRegions.forEach((region: IRegion, index: number) => {
+  displayedRegions.forEach((region: Region, index: number) => {
     // find the block numbers of the left and right window sides,
     // clamp those to the region range, and then make blocks for that range
     const {
