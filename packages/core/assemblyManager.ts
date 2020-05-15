@@ -125,7 +125,7 @@ export function assemblyFactory(assemblyConfigType: IAnyType) {
         )
       },
     }))
-    .actions(self => {
+    .views(self => {
       const refNameMapCache = new AbortablePromiseCache({
         // QuickLRU is a good backing cache to use, but you can use any
         // cache as long as it supports `get`, `set`, `delete`, and `keys`.

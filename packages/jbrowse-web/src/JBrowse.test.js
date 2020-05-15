@@ -274,14 +274,14 @@ describe('test renamed refs', () => {
   it('open a cram with alternate renamed ref', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findByText } = render(
+    const { findAllByTestId, findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_alignments'))
 
-    const canvas = await findByTestId('prerendered_canvas')
+    const [canvas] = await findAllByTestId('prerendered_canvas')
 
     const img = canvas.toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')

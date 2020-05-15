@@ -94,7 +94,7 @@ export default abstract class BaseRpcDriver {
             k,
             this.filterArgs(v, pluginManager, stateGroupName),
           ]),
-      )
+      ) as THING_TYPE
       return newobj
     }
     return thing
