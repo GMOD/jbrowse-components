@@ -166,17 +166,15 @@ export type BlockModel = Instance<BlockStateModel>
 // work with autorun
 function renderBlockData(self: Instance<BlockStateModel>) {
   try {
-    const { assemblyData, rpcManager } = getSession(self) as any
+    const { assemblyManager, rpcManager } = getSession(self)
     const track = getParent(self, 2)
     const assemblyNames = getTrackAssemblyNames(track)
     let cannotBeRenderedReason
     if (!assemblyNames.includes(self.region.assemblyName)) {
       let matchFound = false
       assemblyNames.forEach((assemblyName: string) => {
-        const trackAssemblyData =
-          (assemblyData && assemblyData.get(assemblyName)) || {}
-        const trackAssemblyAliases = trackAssemblyData.aliases || []
-        if (trackAssemblyAliases.includes(self.region.assemblyName))
+        const assembly = assemblyManager.get(assemblyName)
+        if (assembly && assembly.aliases.includes(self.region.assemblyName))
           matchFound = true
       })
       if (!matchFound) {

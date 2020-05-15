@@ -6,7 +6,7 @@ import {
   hasParent,
   addDisposer,
 } from 'mobx-state-tree'
-import { reaction, IReactionPublic } from 'mobx'
+import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import { inflate, deflate } from 'pako'
 import { Observable, fromEvent } from 'rxjs'
 import fromEntries from 'object.fromentries'
@@ -542,34 +542,34 @@ export function findLastIndex<T>(
 }
 
 /**
- * makes a mobx reaction with the given functions, that calls actions
- * on the model for each stage of execution, and to abort the reaction function when the
- * model is destroyed.
+ * makes a mobx reaction with the given functions, that calls actions on the
+ * model for each stage of execution, and to abort the reaction function when
+ * the model is destroyed.
  *
- * Will call flowNameStarted(signal), flowNameSuccess(result), and
- * flowNameError(error) actions on the given state tree model when the
- * async reaction function starts, completes, and errors respectively.
+ * Will call startedFunction(signal), successFunction(result), and
+ * errorFunction(error) when the async reaction function starts, completes, and
+ * errors respectively.
  *
  * @param self -
- * @param flowName -
  * @param dataFunction -
  * @param asyncReactionFunction -
  * @param reactionOptions -
+ * @param startedFunction -
+ * @param successFunction -
+ * @param errorFunction -
  */
-export function makeAbortableReaction<T, U>(
+export function makeAbortableReaction<T, U, V>(
   self: T,
-  flowName: string,
-  dataFunction: (arg: T, name: string) => U,
+  dataFunction: (arg: T) => U,
   asyncReactionFunction: (
     arg: U | undefined,
     signal: AbortSignal,
     model: T,
     handle: IReactionPublic,
-  ) => Promise<void>,
-  reactionOptions: { name: string; fireImmediately: boolean; delay: number },
+  ) => Promise<V>,
+  reactionOptions: IReactionOptions,
   startedFunction: (aborter: AbortController) => void,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  successFunction: (arg: any) => void,
+  successFunction: (arg: V) => void,
   errorFunction: (err: Error) => void,
 ) {
   let inProgress: AbortController | undefined
@@ -587,7 +587,7 @@ export function makeAbortableReaction<T, U>(
   const reactionDisposer = reaction(
     () => {
       try {
-        return dataFunction(self, flowName)
+        return dataFunction(self)
       } catch (error) {
         handleError(error)
         return undefined

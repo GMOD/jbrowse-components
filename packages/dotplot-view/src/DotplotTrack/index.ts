@@ -74,9 +74,8 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         afterAttach() {
           makeAbortableReaction(
             self as any,
-            'render',
-            renderBlockData as any,
-            renderBlockEffect as any,
+            renderBlockData,
+            renderBlockEffect,
             {
               name: `${self.type} ${self.id} rendering`,
               delay: 1000,
@@ -141,7 +140,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
     })
 }
 function renderBlockData(self: DotplotTrack) {
-  const { rpcManager } = getSession(self) as any
+  const { rpcManager } = getSession(self)
   const track = self
 
   const { renderProps, rendererType } = track
@@ -180,7 +179,9 @@ function renderBlockData(self: DotplotTrack) {
   }
 }
 
-async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
+async function renderBlockEffect(
+  props: ReturnType<typeof renderBlockData> | undefined,
+) {
   if (!props) {
     throw new Error('cannot render with no props')
   }

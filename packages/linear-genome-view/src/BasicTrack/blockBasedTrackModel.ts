@@ -277,4 +277,5 @@ const blockBasedTrack = types
   })
 
 export type BlockBasedTrackStateModel = typeof blockBasedTrack
+export type BlockBasedTrackModel = Instance<BlockBasedTrackStateModel>
 export default blockBasedTrack

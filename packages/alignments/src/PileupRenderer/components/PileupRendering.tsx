@@ -1,14 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Region } from '@gmod/jbrowse-core/util/types'
 import { PrerenderedCanvas, Tooltip } from '@gmod/jbrowse-core/ui'
 import { bpSpanPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import React, { MouseEvent, useRef, useState, useEffect } from 'react'
 import runner from 'mobx-run-in-reactive-context'
+import { BlockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
 
 function PileupRendering(props: {
   blockKey: string
-  trackModel: any
+  trackModel: BlockBasedTrackModel
   width: number
   height: number
   regions: Region[]
@@ -21,7 +21,7 @@ function PileupRendering(props: {
     blockLayoutFeatures,
     features,
     configuration,
-  } = trackModel
+  } = trackModel || {}
   const [region] = regions
   const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
@@ -199,7 +199,7 @@ function PileupRendering(props: {
       {localFeatureIdUnderMouse ? (
         <Tooltip
           configuration={configuration}
-          feature={features.get(localFeatureIdUnderMouse)}
+          feature={features.get(localFeatureIdUnderMouse || '')}
           offsetX={offset[0]}
           offsetY={offset[1]}
         />

@@ -128,15 +128,12 @@ export default pluginManager => {
         self.renderingComponent = undefined
       },
 
-      async onChordClick(feature) {
+      onChordClick(feature) {
         const session = getSession(self)
         session.setSelection(feature)
         const view = getContainingView(self)
         const viewType = pluginManager.getViewType('BreakpointSplitView')
-        const viewSnapshot = await viewType.snapshotFromBreakendFeature(
-          feature,
-          view,
-        )
+        const viewSnapshot = viewType.snapshotFromBreakendFeature(feature, view)
         const tracks = getConf(self, 'configRelationships')
           .map(entry => {
             const type = pluginManager.pluggableConfigSchemaType('track')

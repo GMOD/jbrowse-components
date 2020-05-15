@@ -2,7 +2,6 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import '@testing-library/jest-dom/extend-expect'
 import {
-  act,
   cleanup,
   createEvent,
   fireEvent,
@@ -16,6 +15,7 @@ import { LocalFile } from 'generic-filehandle'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import rangeParser from 'range-parser'
 import React from 'react'
+import ErrorBoundary from 'react-error-boundary'
 
 // locals
 // import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
@@ -25,6 +25,13 @@ import configSnapshot from '../test_data/volvox/config.json'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
+
+configSnapshot.configuration = {
+  rpc: {
+    defaultDriver: 'MainThreadRpcDriver',
+  },
+  updateUrl: false,
+}
 
 if (!window.TextEncoder) window.TextEncoder = TextEncoder
 if (!window.TextDecoder) window.TextDecoder = TextDecoder
@@ -48,6 +55,7 @@ function getPluginManager(initialState) {
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
   const rootModel = JBrowseRootModel.create({
     jbrowse: initialState || configSnapshot,
+    assemblyManager: {},
   })
   if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
     const { name } = rootModel.jbrowse.savedSessions[0]
@@ -533,20 +541,26 @@ describe('bigwig', () => {
 describe('circular views', () => {
   it('open a circular view', async () => {
     console.warn = jest.fn()
-    const pluginManager = getPluginManager()
-    const state = pluginManager.rootModel
+    const configSnapshotWithCircular = JSON.parse(
+      JSON.stringify(configSnapshot),
+    )
+    configSnapshotWithCircular.savedSessions[0] = {
+      name: 'Integration Test Circular',
+      views: [
+        {
+          id: 'integration_test_circular',
+          type: 'CircularView',
+        },
+      ],
+    }
+    const pluginManager = getPluginManager(configSnapshotWithCircular)
     const { findByTestId, findAllByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     // wait for the UI to be loaded
     await findByText('Help')
 
-    // open a new circular view on the same assembly as the test linear view
-    const regions = await state.session.getRegionsForAssemblyName('volvox')
-    act(() => {
-      const circularView = state.session.addView('CircularView')
-      circularView.setDisplayedRegions(regions)
-    })
+    fireEvent.click(await findByText('Open'))
 
     // open a track selector for the circular view
     const trackSelectButtons = await findAllByTestId('circular_track_select')
@@ -583,11 +597,24 @@ describe('circular views', () => {
 //   }, 10000)
 // })
 
+// eslint-disable-next-line react/prop-types
+function FallbackComponent({ error }) {
+  return <div>there was an error: {String(error)}</div>
+}
+
 test('404 sequence file', async () => {
   console.error = jest.fn()
   const pluginManager = getPluginManager(chromeSizesConfig)
-  const { findAllByText } = render(<JBrowse pluginManager={pluginManager} />)
-  await findAllByText(/HTTP 404/)
+  const { findByText } = render(
+    <ErrorBoundary FallbackComponent={FallbackComponent}>
+      <JBrowse pluginManager={pluginManager} />
+    </ErrorBoundary>,
+  )
+  expect(
+    await findByText('HTTP 404 fetching test_data/grape.chrom.sizes.nonexist', {
+      exact: false,
+    }),
+  ).toBeTruthy()
 })
 
 describe('dotplot view', () => {

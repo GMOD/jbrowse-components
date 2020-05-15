@@ -1,10 +1,11 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
 
-  const { types, getRoot } = jbrequire('mobx-state-tree')
+  const { types } = jbrequire('mobx-state-tree')
 
   const { makeAbortableReaction } = jbrequire(require('./util'))
 
+  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { getTrackAssemblyNames } = jbrequire('@gmod/jbrowse-core/util/tracks')
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
 
@@ -24,13 +25,9 @@ export default pluginManager => {
             adapter: getConf(self, 'adapter'),
           }),
           ({ assemblyName, adapter }, signal) => {
-            return getRoot(self).jbrowse.getRefNameMapForAdapter(
-              adapter,
-              assemblyName,
-              {
-                signal,
-              },
-            )
+            return getSession(self)
+              .assemblyManager.get(assemblyName)
+              .getRefNameMapForAdapter(adapter, { signal })
           },
           {
             fireImmediately: true,
