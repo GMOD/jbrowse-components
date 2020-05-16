@@ -286,7 +286,7 @@ export default class PileupRenderer extends BoxRendererType {
               for (let k = 0; k < softClipLength; k += 1) {
                 const base = feature.get('seq').charAt(k + mismatch.start)
                 // if softclip length+start is longer than sequence, no need to continue showing base
-                if (!base.length) return
+                if (!base) return
                 const [softClipLeftPx, softClipRightPx] = bpSpanPx(
                   softClipStart + k,
                   softClipStart + k + 1,
