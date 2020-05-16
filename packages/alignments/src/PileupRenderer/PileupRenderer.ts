@@ -11,6 +11,7 @@ import React from 'react'
 import { BaseLayout } from '@gmod/jbrowse-core/util/layouts/BaseLayout'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { RenderArgsDeserialized } from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
+import { lighten } from '@material-ui/core/styles/colorManipulator'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 import { sortFeature } from './sortUtil'
 
@@ -272,14 +273,8 @@ export default class PileupRenderer extends BoxRendererType {
         }
         // When softclipping, set colors more muted and
         // iterate through the sequence bases that were softclipped off
+
         if (showSoftClip) {
-          const colorForSoftClip: { [key: string]: string } = {
-            A: '#13aa13',
-            C: '#5a5aed',
-            G: '#e6a219',
-            T: '#e61919',
-            deletion: 'grey',
-          }
           for (let j = 0; j < mismatches.length; j += 1) {
             const mismatch = mismatches[j]
             if (mismatch.type === 'softclip') {
@@ -290,6 +285,8 @@ export default class PileupRenderer extends BoxRendererType {
                   : feature.get('start') + mismatch.start
               for (let k = 0; k < softClipLength; k += 1) {
                 const base = feature.get('seq').charAt(k + mismatch.start)
+                // if softclip length+start is longer than sequence, no need to continue showing base
+                if (!base.length) return
                 const [softClipLeftPx, softClipRightPx] = bpSpanPx(
                   softClipStart + k,
                   softClipStart + k + 1,
@@ -300,14 +297,14 @@ export default class PileupRenderer extends BoxRendererType {
                   minFeatWidth,
                   Math.abs(softClipLeftPx - softClipRightPx),
                 )
-                ctx.fillStyle = colorForSoftClip[base]
+                ctx.fillStyle = lighten(colorForBase[base], 0.3)
                 ctx.fillRect(softClipLeftPx, topPx, softClipWidthPx, heightPx)
 
                 if (
                   softClipWidthPx >= charSize.width &&
                   heightPx >= charSize.height - 5
                 ) {
-                  ctx.fillStyle = '#404040'
+                  ctx.fillStyle = 'black'
                   ctx.fillText(
                     base,
                     softClipLeftPx + (softClipWidthPx - charSize.width) / 2 + 1,

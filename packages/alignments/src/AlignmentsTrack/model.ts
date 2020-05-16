@@ -37,11 +37,11 @@ export default (
           showCoverage: true,
           showPileup: true,
           hideHeader: false,
-          showSoftClipping: false,
         })
         .volatile(() => ({
           ReactComponent: AlignmentsTrackComponent,
           sortedBy: '',
+          showSoftClipping: false,
         })),
     )
     .views(self => ({
@@ -108,6 +108,8 @@ export default (
           {
             label: 'Sort by',
             icon: 'sort',
+            // sorting while soft clipping turned on is visually confusing, disable it
+            disabled: self.showSoftClipping,
             subMenu: self.sortOptions.map((option: string) => {
               return {
                 label: option,
@@ -200,6 +202,8 @@ export default (
         self.showPileup = !self.showPileup
       },
       toggleSoftClipping() {
+        // if toggling from off to on, will break sort for this track so clear it
+        if (!self.showSoftClipping && self.sortedBy) self.clearSelected()
         self.showSoftClipping = !self.showSoftClipping
       },
     }))
