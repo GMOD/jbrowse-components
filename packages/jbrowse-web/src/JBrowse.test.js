@@ -18,7 +18,7 @@ import React from 'react'
 import ErrorBoundary from 'react-error-boundary'
 
 // locals
-// import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
+import breakpointConfig from '../test_data/breakpoint/config.json'
 import chromeSizesConfig from '../test_data/config_chrom_sizes_test.json'
 import dotplotConfig from '../test_data/config_dotplot.json'
 import configSnapshot from '../test_data/volvox/config.json'
@@ -274,16 +274,16 @@ describe('test renamed refs', () => {
   it('open a cram with alternate renamed ref', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findByText } = render(
+    const { findByTestId, findAllByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_alignments'))
 
-    const canvas = await findByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId('prerendered_canvas')
 
-    const img = canvas.toDataURL()
+    const img = canvas[0].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
     // this is needed to do a fuzzy image comparison because
@@ -578,24 +578,24 @@ describe('circular views', () => {
   })
 })
 
-// describe('breakpoint split view', () => {
-//   it('open a split view', async () => {
-//     console.warn = jest.fn()
-//     const pluginManager = getPluginManager(breakpointConfig)
-//     const { findByTestId, queryAllByTestId } = render(
-//       <JBrowse pluginManager={pluginManager} />,
-//     )
-//     await wait(() => {
-//       const r = queryAllByTestId('r1')
-//       expect(r.length).toBe(2)
-//     }) // the breakpoint could be partially loaded so explicitly wait for two items
-//     expect(
-//       await findByTestId('pacbio_hg002_breakpoints-loaded'),
-//     ).toMatchSnapshot()
+xdescribe('breakpoint split view', () => {
+  it('open a split view', async () => {
+    console.warn = jest.fn()
+    const pluginManager = getPluginManager(breakpointConfig)
+    const { findByTestId, queryAllByTestId } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await wait(() => {
+      const r = queryAllByTestId('r1')
+      expect(r.length).toBe(2)
+    }) // the breakpoint could be partially loaded so explicitly wait for two items
+    expect(
+      await findByTestId('pacbio_hg002_breakpoints-loaded'),
+    ).toMatchSnapshot()
 
-//     expect(await findByTestId('pacbio_vcf-loaded')).toMatchSnapshot()
-//   }, 10000)
-// })
+    expect(await findByTestId('pacbio_vcf-loaded')).toMatchSnapshot()
+  }, 10000)
+})
 
 // eslint-disable-next-line react/prop-types
 function FallbackComponent({ error }) {

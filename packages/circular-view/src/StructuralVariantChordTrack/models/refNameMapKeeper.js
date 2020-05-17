@@ -2,10 +2,9 @@ export default pluginManager => {
   const { jbrequire } = pluginManager
 
   const { types } = jbrequire('mobx-state-tree')
-
-  const { makeAbortableReaction } = jbrequire('@gmod/jbrowse-core/util')
-
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { makeAbortableReaction, getSession } = jbrequire(
+    '@gmod/jbrowse-core/util',
+  )
   const { getTrackAssemblyNames } = jbrequire('@gmod/jbrowse-core/util/tracks')
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
 
