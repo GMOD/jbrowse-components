@@ -146,14 +146,12 @@
   "savedSessions": [
     {
       "name": "Human Example (hg19)",
-      "width": 1850,
       "drawerWidth": 384,
       "views": [
         {
           "id": "MiDMyyWpp",
           "type": "BreakpointSplitView",
           "headerHeight": 44,
-          "width": 1850,
           "height": 400,
           "displayName": "pbsv.BND.3:186700648-6:56758392 split detail",
           "trackSelectorType": "hierarchical",
@@ -191,11 +189,9 @@
                   "selectedRendering": ""
                 }
               ],
-              "width": 800,
               "hideControls": false,
               "hideHeader": true,
               "trackSelectorType": "hierarchical",
-              "minimumBlockWidth": 20
             },
             {
               "id": "0Q9aAu1h7g",
@@ -230,12 +226,9 @@
                   "selectedRendering": ""
                 }
               ],
-              "width": 800,
               "hideControls": false,
               "hideHeader": true,
-              "": true,
-              "trackSelectorType": "hierarchical",
-              "minimumBlockWidth": 20
+              "trackSelectorType": "hierarchical"
             }
           ]
         }
