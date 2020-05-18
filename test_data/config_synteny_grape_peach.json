@@ -19,6 +19,13 @@
           "headerHeight": 44,
           "datasetName": "grape_vs_peach_dataset",
           "width": 1850,
+          "tracks": [
+            {
+              "type": "LinearSyntenyTrack",
+              "height": 100,
+              "configuration": "grape_peach_synteny_mcscan"
+            }
+          ],
           "height": 400,
           "displayName": "Grape vs Peach",
           "trackSelectorType": "hierarchical",
@@ -26,7 +33,7 @@
             {
               "type": "LinearGenomeView",
               "id": "test1_1",
-              "offsetPx": 0,
+              "offsetPx": 28249,
               "bpPerPx": 1000,
               "displayedRegions": [
                 {
