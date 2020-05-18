@@ -1,41 +1,36 @@
-import { parseLocString, ParsedLocString, compareLocStrings } from './index'
+import {
+  assembleLocString,
+  parseLocString,
+  ParsedLocString,
+  compareLocStrings,
+} from './index'
 
 describe('parseLocString', () => {
   const cases: [string, ParsedLocString][] = [
-    [
-      'chr1:1..200',
-      { assemblyName: undefined, start: 1, end: 200, refName: 'chr1' },
-    ],
-    [
-      'chr1:1-200',
-      { assemblyName: undefined, start: 1, end: 200, refName: 'chr1' },
-    ],
+    ['chr1:1..200', { start: 0, end: 200, refName: 'chr1' }],
+    ['chr1:1-200', { start: 0, end: 200, refName: 'chr1' }],
     [
       '{hg19}chr1:1-200',
-      { assemblyName: 'hg19', start: 1, end: 200, refName: 'chr1' },
+      { assemblyName: 'hg19', start: 0, end: 200, refName: 'chr1' },
     ],
     [
       '{hg19}chr1:1..200',
-      { assemblyName: 'hg19', start: 1, end: 200, refName: 'chr1' },
+      { assemblyName: 'hg19', start: 0, end: 200, refName: 'chr1' },
     ],
     [
       '{hg19}chr1:1',
-      { assemblyName: 'hg19', start: 1, end: 1, refName: 'chr1' },
+      { assemblyName: 'hg19', start: 0, end: 1, refName: 'chr1' },
     ],
-    ['chr1:1', { assemblyName: undefined, start: 1, end: 1, refName: 'chr1' }],
-    [
-      'chr1:-1',
-      { assemblyName: undefined, start: -1, end: -1, refName: 'chr1' },
-    ],
-    [
-      'chr1:-100..-1',
-      { assemblyName: undefined, start: -100, end: -1, refName: 'chr1' },
-    ],
+    ['chr1:1', { start: 0, end: 1, refName: 'chr1' }],
+    ['chr1:-1', { start: -2, end: -1, refName: 'chr1' }],
+    ['chr1:-100..-1', { start: -101, end: -1, refName: 'chr1' }],
     [
       'chr1:-100--1', // weird but valid
-      { assemblyName: undefined, start: -100, end: -1, refName: 'chr1' },
+      { start: -101, end: -1, refName: 'chr1' },
     ],
-    ['chr2:1000-', { assemblyName: undefined, refName: 'chr2', start: 1000 }],
+    ['chr2:1000-', { refName: 'chr2', start: 999 }],
+    ['chr1', { refName: 'chr1' }],
+    ['{hg19}chr1', { assemblyName: 'hg19', refName: 'chr1' }],
   ]
   cases.forEach(([input, output]) => {
     test(`${input}`, () => {
@@ -46,6 +41,49 @@ describe('parseLocString', () => {
         ),
       ).toEqual(output)
     })
+  })
+})
+
+describe('assembleLocString', () => {
+  const cases: [ParsedLocString, string][] = [
+    [{ refName: 'chr1' }, 'chr1'],
+    [{ refName: 'chr1', start: 0 }, 'chr1:1..'],
+    [{ refName: 'chr1', start: 0, end: 1 }, 'chr1:1'],
+    [{ refName: 'chr1', start: 0, end: 100 }, 'chr1:1..100'],
+    [{ refName: 'chr1', start: 0, end: 200 }, 'chr1:1..200'],
+    [
+      { assemblyName: 'hg19', refName: 'chr1', start: 0, end: 100 },
+      '{hg19}chr1:1..100',
+    ],
+    [{ refName: 'chr1', start: -2, end: -1 }, 'chr1:-1'],
+    [{ start: -100, end: -1, refName: 'chr1' }, 'chr1:-99..-1'],
+  ]
+  cases.forEach(([input, output]) => {
+    test(`assemble ${output}`, () => {
+      expect(assembleLocString(input)).toEqual(output)
+    })
+    test(`assemble and parse ${output}`, () => {
+      expect(
+        parseLocString(
+          assembleLocString(input),
+          refName => refName === 'chr1' || refName === 'chr2',
+        ),
+      ).toEqual(input)
+    })
+  })
+  // Special case since undefined `start` will result in `start` being assumed
+  // to be `0`
+  const location = { refName: 'chr1', end: 100 }
+  test("assemble 'chr1:1..100'", () => {
+    expect(assembleLocString(location)).toEqual('chr1:1..100')
+  })
+  test("assemble and parse 'chr1:1..100'", () => {
+    expect(
+      parseLocString(
+        assembleLocString(location),
+        refName => refName === 'chr1' || refName === 'chr2',
+      ),
+    ).toEqual({ ...location, start: 0 })
   })
 })
 

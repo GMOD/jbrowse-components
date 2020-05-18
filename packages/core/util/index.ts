@@ -13,13 +13,7 @@ import fromEntries from 'object.fromentries'
 import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import { Feature } from './simpleFeature'
-import {
-  TypeTestedByPredicate,
-  isSessionModel,
-  isViewModel,
-  Region,
-  NoAssemblyRegion,
-} from './types'
+import { TypeTestedByPredicate, isSessionModel, isViewModel } from './types'
 
 export * from './types'
 
@@ -243,22 +237,57 @@ export function getContainingView(node: IAnyStateTreeNode) {
 }
 
 /**
- * Assemble a "locString" from a location, like "ctgA:20-30".
- * The locString uses 1-based coordinates.
- *
+ * Assemble a 1-based "locString" from an interbase genomic location
  * @param region - Region
- * @returns the locString
+ * @example
+ * ```ts
+ * assembleLocString({ refName: 'chr1', start: 0, end: 100 })
+ * // ↳ 'chr1:1..100'
+ * ```
+ * @example
+ * ```ts
+ * assembleLocString({ assemblyName: 'hg19', refName: 'chr1', start: 0, end: 100 })
+ * // ↳ '{hg19}chr1:1..100'
+ * ```
+ * @example
+ * ```ts
+ * assembleLocString({ refName: 'chr1' })
+ * // ↳ 'chr1'
+ * ```
+ * @example
+ * ```ts
+ * assembleLocString({ refName: 'chr1', start: 0 })
+ * // ↳ 'chr1:1..'
+ * ```
+ * @example
+ * ```ts
+ * assembleLocString({ refName: 'chr1', end: 100 })
+ * // ↳ 'chr1:1..100'
+ * ```
+ * @example
+ * ```ts
+ * assembleLocString({ refName: 'chr1', start: 0, end: 1 })
+ * // ↳ 'chr1:1'
+ * ```
  */
-export function assembleLocString(region: Region | NoAssemblyRegion): string {
-  const { refName, start, end } = region
-  let assemblyName
-  if ((region as Region).assemblyName) {
-    ;({ assemblyName } = region as Region)
+export function assembleLocString(region: ParsedLocString): string {
+  const { assemblyName, refName, start, end } = region
+  const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
+  let startString
+  if (start !== undefined) {
+    startString = `:${start + 1}`
+  } else if (end !== undefined) {
+    startString = ':1'
+  } else {
+    startString = ''
   }
-  if (assemblyName) {
-    return `{${assemblyName}}${refName}:${start + 1}..${end}`
+  let endString
+  if (end !== undefined) {
+    endString = start !== undefined && start + 1 === end ? '' : `..${end}`
+  } else {
+    endString = start !== undefined ? '..' : ''
   }
-  return `${refName}:${start + 1}..${end}`
+  return `${assemblyNameString}${refName}${startString}${endString}`
 }
 
 export interface ParsedLocString {
@@ -268,7 +297,7 @@ export interface ParsedLocString {
   end?: number
 }
 
-export function parseLocString(
+export function parseLocStringOneBased(
   locString: string,
   isValidRefName: (refName: string, assemblyName?: string) => boolean,
 ): ParsedLocString {
@@ -332,11 +361,48 @@ export function parseLocString(
   throw new Error(`unknown reference sequence name in location "${locString}"`)
 }
 
-export function parseLocStringAndConvertToInterbase(
+/**
+ * Parse a 1-based location string into an interbase genomic location
+ * @param locString - Location string
+ * @param isValidRefName - Function that checks if a refName exists in the set
+ * of all known refNames, or in the set of refNames for an assembly if
+ * assemblyName is given
+ * @example
+ * ```ts
+ * parseLocString('chr1:1..100', isValidRefName)
+ * // ↳ { refName: 'chr1', start: 0, end: 100 }
+ * ```
+ * @example
+ * ```ts
+ * parseLocString('chr1:1-100', isValidRefName)
+ * // ↳ { refName: 'chr1', start: 0, end: 100 }
+ * ```
+ * @example
+ * ```ts
+ * parseLocString(`{hg19}chr1:1..100`, isValidRefName)
+ * // ↳ { assemblyName: 'hg19', refName: 'chr1', start: 0, end: 100 }
+ * ```
+ * @example
+ * ```ts
+ * parseLocString('chr1', isValidRefName)
+ * // ↳ { refName: 'chr1' }
+ * ```
+ * @example
+ * ```ts
+ * parseLocString('chr1:1', isValidRefName)
+ * // ↳ { refName: 'chr1', start: 0, end: 1 }
+ * ```
+ * @example
+ * ```ts
+ * parseLocString('chr1:1..', isValidRefName)
+ * // ↳ { refName: 'chr1', start: 0}
+ * ```
+ */
+export function parseLocString(
   locString: string,
   isValidRefName: (refName: string, assemblyName?: string) => boolean,
 ) {
-  const parsed = parseLocString(locString, isValidRefName)
+  const parsed = parseLocStringOneBased(locString, isValidRefName)
   if (typeof parsed.start === 'number') {
     parsed.start -= 1
   }

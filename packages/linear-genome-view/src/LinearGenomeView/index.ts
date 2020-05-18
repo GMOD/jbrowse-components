@@ -11,7 +11,7 @@ import {
   getContainingView,
   getSession,
   isViewContainer,
-  parseLocStringAndConvertToInterbase,
+  parseLocString,
   springAnimate,
   isSessionModelWithDrawerWidgets,
 } from '@gmod/jbrowse-core/util'
@@ -408,9 +408,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       navToLocString(locString: string) {
         const session = getSession(self)
         const { isValidRefName } = session.assemblyManager
-        this.navTo(
-          parseLocStringAndConvertToInterbase(locString, isValidRefName),
-        )
+        this.navTo(parseLocString(locString, isValidRefName))
       },
 
       /**

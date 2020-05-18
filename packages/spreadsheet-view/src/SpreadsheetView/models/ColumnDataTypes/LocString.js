@@ -13,11 +13,9 @@ export default pluginManager => {
     '@gmod/jbrowse-core/util/mst-reflection',
   )
 
-  const {
-    compareLocStrings,
-    getSession,
-    parseLocStringAndConvertToInterbase,
-  } = jbrequire('@gmod/jbrowse-core/util')
+  const { compareLocStrings, getSession, parseLocString } = jbrequire(
+    '@gmod/jbrowse-core/util',
+  )
 
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
 
@@ -197,7 +195,7 @@ export default pluginManager => {
       },
       get parsedLocString() {
         const session = getSession(self)
-        return parseLocStringAndConvertToInterbase(
+        return parseLocString(
           self.locString,
           session.assemblyManager.isValidRefName,
         )
@@ -217,7 +215,7 @@ export default pluginManager => {
 
           if (!cell || !cell.text) return false
 
-          const parsedCellText = parseLocStringAndConvertToInterbase(
+          const parsedCellText = parseLocString(
             cell.text,
             session.assemblyManager.isValidRefName,
           )
@@ -244,7 +242,7 @@ export default pluginManager => {
   // opens a new LGV at the location described in the locString in the cell text
   function locationLinkClick(spreadsheet, columnNumber, cell) {
     const session = getSession(spreadsheet)
-    const loc = parseLocStringAndConvertToInterbase(
+    const loc = parseLocString(
       cell.text,
       session.assemblyManager.isValidRefName,
     )

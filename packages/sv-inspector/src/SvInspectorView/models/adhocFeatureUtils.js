@@ -1,9 +1,7 @@
 // this file contains the rather verbose functions for
 // creating features from CSV/TSV lines
 export default ({ jbrequire }) => {
-  const { parseLocStringAndConvertToInterbase } = jbrequire(
-    '@gmod/jbrowse-core/util',
-  )
+  const { parseLocString } = jbrequire('@gmod/jbrowse-core/util')
 
   function makeAdHocFeature(
     columns,
@@ -45,11 +43,11 @@ export default ({ jbrequire }) => {
     isValidRefName,
   ) {
     // use the first two locations we found (first according to *displayed* order)
-    const loc1 = parseLocStringAndConvertToInterbase(
+    const loc1 = parseLocString(
       row.cells[locationColumnNumbers[0]].text,
       isValidRefName,
     )
-    const loc2 = parseLocStringAndConvertToInterbase(
+    const loc2 = parseLocString(
       row.cells[locationColumnNumbers[1]].text,
       isValidRefName,
     )

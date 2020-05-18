@@ -445,7 +445,7 @@ BlockSet {
     InterRegionPaddingBlock {
       "assemblyName": undefined,
       "end": undefined,
-      "key": "ctgA:1..1-reversed-beforeFirstRegion",
+      "key": "ctgA:1-reversed-beforeFirstRegion",
       "offsetPx": -800,
       "refName": undefined,
       "start": undefined,
@@ -457,7 +457,7 @@ BlockSet {
       "end": 1,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": true,
-      "key": "ctgA:1..1-reversed",
+      "key": "ctgA:1-reversed",
       "offsetPx": 0,
       "parentRegion": Object {
         "end": 1,
