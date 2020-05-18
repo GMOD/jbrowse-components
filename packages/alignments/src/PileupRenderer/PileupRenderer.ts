@@ -102,11 +102,17 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   // expands region for clipping to use
-  getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
+  // TODOCLIP continue working on expanding region larger if the default 100 isn't large enough
+  getExpandedRegion(
+    region: Region,
+    renderArgs: RenderArgsDeserialized | PileupRenderProps,
+    expansion?: number,
+  ) {
     if (!region) return region
     const { bpPerPx, config, showSoftClip } = renderArgs
-    const maxClippingSize =
+    const configClippingSize =
       config === undefined ? 0 : readConfObject(config, 'maxClippingSize')
+    const maxClippingSize = expansion || configClippingSize
     if (!maxClippingSize || !showSoftClip) return region
     const bpExpansion = Math.round(maxClippingSize * bpPerPx)
     return {
@@ -172,6 +178,8 @@ export default class PileupRenderer extends BoxRendererType {
     ctx.font = 'bold 10px Courier New,monospace'
     const charSize = ctx.measureText('A')
     charSize.height = 7
+
+    let maxClippingLength = readConfObject(config, 'maxClippingSize')
 
     layoutRecords.forEach(feat => {
       if (feat === null) {
@@ -240,7 +248,6 @@ export default class PileupRenderer extends BoxRendererType {
               )
             }
           } else if (
-            // probably change this/use this to display softclip under
             mismatch.type === 'hardclip' ||
             (!showSoftClip && mismatch.type === 'softclip')
           ) {
@@ -270,22 +277,25 @@ export default class PileupRenderer extends BoxRendererType {
             )
           }
         }
-        // When softclipping, set colors more muted and
-        // iterate through the sequence bases that were softclipped off
-
+        // Display all bases softclipped off in lightened colors
         if (showSoftClip) {
           for (let j = 0; j < mismatches.length; j += 1) {
             const mismatch = mismatches[j]
             if (mismatch.type === 'softclip') {
               const softClipLength = mismatch.cliplen || 0
+              if (softClipLength > maxClippingLength) {
+                maxClippingLength = softClipLength
+                this.getExpandedRegion(region, props, maxClippingLength)
+              }
               const softClipStart =
                 mismatch.start === 0
                   ? feature.get('start') - softClipLength
                   : feature.get('start') + mismatch.start
               for (let k = 0; k < softClipLength; k += 1) {
                 const base = feature.get('seq').charAt(k + mismatch.start)
-                // if softclip length+start is longer than sequence, no need to continue showing base
+                // If softclip length+start is longer than sequence, no need to continue showing base
                 if (!base) return
+
                 const [softClipLeftPx, softClipRightPx] = bpSpanPx(
                   softClipStart + k,
                   softClipStart + k + 1,
@@ -296,7 +306,9 @@ export default class PileupRenderer extends BoxRendererType {
                   minFeatWidth,
                   Math.abs(softClipLeftPx - softClipRightPx),
                 )
-                ctx.fillStyle = lighten(colorForBase[base], 0.3)
+
+                // White accounts for IUPAC ambiguity code bases such as N that show in soft clipping
+                ctx.fillStyle = lighten(colorForBase[base] || '#FFFFFF', 0.3)
                 ctx.fillRect(softClipLeftPx, topPx, softClipWidthPx, heightPx)
 
                 if (
