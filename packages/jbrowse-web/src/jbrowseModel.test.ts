@@ -1,7 +1,7 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { getSnapshot, types } from 'mobx-state-tree'
+import AssemblyConfigSchemasFactory from '@gmod/jbrowse-core/assemblyManager/assemblyConfigSchemas'
 import configSnapshot from '../test_data/volvox/config.json'
-import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
 import corePlugins from './corePlugins'
 import jbrowseModelFactory from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'

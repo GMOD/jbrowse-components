@@ -1,53 +1,19 @@
+import { getSession } from '@gmod/jbrowse-core/util'
+import { getTrackAssemblyNames } from '@gmod/jbrowse-core/util/tracks'
+import { getConf } from '@gmod/jbrowse-core/configuration'
+
 export default pluginManager => {
-  const { jbrequire } = pluginManager
+  const { types } = pluginManager.lib['mobx-state-tree']
 
-  const { types } = jbrequire('mobx-state-tree')
-  const { makeAbortableReaction, getSession } = jbrequire(
-    '@gmod/jbrowse-core/util',
-  )
-  const { getTrackAssemblyNames } = jbrequire('@gmod/jbrowse-core/util/tracks')
-  const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
-
-  const model = types
-    .model('RefNameMap', {})
-    .volatile((/* self */) => ({
-      refNameMap: undefined,
-    }))
-    .actions(self => ({
-      afterAttach() {
-        makeAbortableReaction(
-          self,
-          () => ({
-            // TODO: Figure this out for multiple assembly names
-            assemblyName: getTrackAssemblyNames(self)[0],
-            adapter: getConf(self, 'adapter'),
-          }),
-          ({ assemblyName, adapter }, signal) => {
-            return getSession(self)
-              .assemblyManager.get(assemblyName)
-              .getRefNameMapForAdapter(adapter, { signal })
-          },
-          {
-            fireImmediately: true,
-            delay: 300,
-            name: 'refNameMapKeeper ref name fetching',
-          },
-          self.loadAssemblyRefNameMapStarted,
-          self.loadAssemblyRefNameMapSuccess,
-          self.loadAssemblyRefNameMapError,
-        )
-      },
-
-      loadAssemblyRefNameMapStarted() {},
-      loadAssemblyRefNameMapSuccess(result) {
-        // console.log('loaded refname map', result)
-        self.refNameMap = result
-      },
-      loadAssemblyRefNameMapError(error) {
-        self.error = error
-        console.error(error)
-      },
-    }))
+  const model = types.model('RefNameMap', {}).views(self => ({
+    get refNameMap() {
+      const assemblyName = getTrackAssemblyNames(self)[0]
+      const adapter = getConf(self, 'adapter')
+      return getSession(self)
+        .assemblyManager.get(assemblyName)
+        .getRefNameMapForAdapter(adapter)
+    },
+  }))
 
   return model
 }

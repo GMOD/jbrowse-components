@@ -8,6 +8,7 @@ import MainThreadRpcDriver from './MainThreadRpcDriver'
 import ElectronRpcDriver from './ElectronRpcDriver'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { Region } from '../util/types'
+import { whenPresent } from '../util'
 
 type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver | ElectronRpcDriver
 type BackendConfigurations = {
@@ -24,7 +25,7 @@ type GetRefNameMapForAdapter = (
   adapterConfig: unknown,
   assemblyName: string,
   { signal }: { signal?: AbortSignal },
-) => Promise<Map<string, string> | void>
+) => Map<string, string> | undefined
 
 class RpcManager {
   static configSchema = rpcConfigSchema
@@ -43,7 +44,7 @@ class RpcManager {
     pluginManager: PluginManager,
     mainConfiguration: AnyConfigurationModel,
     backendConfigurations: BackendConfigurations,
-    getRefNameMapForAdapter: GetRefNameMapForAdapter = async () => {},
+    getRefNameMapForAdapter: GetRefNameMapForAdapter = () => new Map(),
   ) {
     if (!mainConfiguration) {
       throw new Error('RpcManager requires at least a main configuration')
@@ -128,12 +129,11 @@ class RpcManager {
       regions: [...(args.regions || [])],
     }
     if (assemblyName) {
-      const refNameMap = await this.getRefNameMapForAdapter(
-        adapterConfig,
-        assemblyName,
-        { signal },
+      const refNameMap = await whenPresent(() =>
+        this.getRefNameMapForAdapter(adapterConfig, assemblyName, { signal }),
       )
 
+      // console.log(`${JSON.stringify(regions)} ${JSON.stringify(refNameMap)}`)
       if (refNameMap && regions && newArgs.regions) {
         newArgs.originalRegions = args.regions
         for (let i = 0; i < regions.length; i += 1) {

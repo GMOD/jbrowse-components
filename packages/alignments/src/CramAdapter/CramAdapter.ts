@@ -86,6 +86,7 @@ export default (pluginManager: PluginManager) => {
       const refSeqStore = this.sequenceAdapter
       if (!refSeqStore) return undefined
       const refName = this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
+      // console.log(`CRAM seq ID ${seqId} -> ${refName}`)
       if (!refName) return undefined
 
       const features = refSeqStore.getFeatures(
@@ -114,7 +115,7 @@ export default (pluginManager: PluginManager) => {
         })
 
       const sequence = trimmed.join('')
-      if (sequence.length !== end - start)
+      if (sequence.length !== end - start) {
         throw new Error(
           `sequence fetch failed: fetching ${refName}:${(
             start - 1
@@ -122,6 +123,7 @@ export default (pluginManager: PluginManager) => {
             end - start
           ).toLocaleString()}`,
         )
+      }
       return sequence
     }
 
@@ -185,13 +187,13 @@ export default (pluginManager: PluginManager) => {
       return undefined
     }
 
-    // use info from the SAM header if possible, but fall back to using
-    // the ref seq order from when the browser's refseqs were loaded
     refIdToOriginalName(refId: number) {
       return this.seqIdToOriginalRefName[refId]
     }
 
     getFeatures({ refName, start, end }: Region, opts: BaseOptions = {}) {
+      // console.log(`CRAM getFeatures ${refName}:${start}-${end}`)
+
       return ObservableCreate<Feature>(async observer => {
         await this.setup(opts)
         if (this.sequenceAdapter && !this.seqIdToRefName) {

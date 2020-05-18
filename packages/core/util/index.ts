@@ -6,7 +6,7 @@ import {
   hasParent,
   addDisposer,
 } from 'mobx-state-tree'
-import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
+import { reaction, IReactionPublic, IReactionOptions, when } from 'mobx'
 import { inflate, deflate } from 'pako'
 import { Observable, fromEvent } from 'rxjs'
 import fromEntries from 'object.fromentries'
@@ -639,6 +639,21 @@ export function makeAbortableReaction<T, U, V>(
 
 export function minmax(a: number, b: number) {
   return [Math.min(a, b), Math.max(a, b)]
+}
+
+/**
+ *  Wrapper for mobx `when` that makes a promise for the return value
+ *  of the given function at the point in time when it becomes not
+ *  undefined and not null.
+ */
+export async function whenPresent<FUNCTION extends () => unknown>(
+  getter: FUNCTION,
+) {
+  await when(() => {
+    const val = getter()
+    return val !== undefined && val !== null
+  })
+  return getter() as NonNullable<ReturnType<FUNCTION>>
 }
 
 export { default as useEventListener } from 'react-use-event-listener'
