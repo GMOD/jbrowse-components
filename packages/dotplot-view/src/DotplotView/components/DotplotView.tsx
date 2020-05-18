@@ -291,13 +291,17 @@ export default (pluginManager: PluginManager) => {
                 {
                   label: 'Zoom in',
                   onClick: () => {
-                    model.zoomIn(mousedown, mouseup)
+                    if (mousedown && mouseup) {
+                      model.zoomIn(mousedown, mouseup)
+                    }
                   },
                 },
                 {
                   label: 'Open linear synteny view',
                   onClick: () => {
-                    model.onDotplotView(mousedown, mouseup)
+                    if (mousedown && mouseup) {
+                      model.onDotplotView(mousedown, mouseup)
+                    }
                   },
                 },
               ]}
