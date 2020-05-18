@@ -279,35 +279,8 @@ export default function stateModelFactory(pluginManager: any) {
             ],
             tracks: [
               {
-                trackId: 'grape_peach_synteny_mcscan',
+                configuration: 'grape_peach_synteny_mcscan',
                 type: 'LinearSyntenyTrack',
-                assemblyNames: ['peach', 'grape'],
-                trackIds: [],
-                renderDelay: 100,
-                adapter: {
-                  mcscanAnchorsLocation: {
-                    uri: 'test_data/grape.peach.anchors',
-                  },
-                  subadapters: [
-                    {
-                      type: 'NCListAdapter',
-                      rootUrlTemplate:
-                        'https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json',
-                    },
-                    {
-                      type: 'NCListAdapter',
-                      rootUrlTemplate:
-                        'https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json',
-                    },
-                  ],
-                  assemblyNames: ['peach', 'grape'],
-                  type: 'MCScanAnchorsAdapter',
-                },
-                renderer: {
-                  type: 'LinearSyntenyRenderer',
-                },
-                name: 'Grape peach synteny (MCScan)',
-                category: ['Annotation'],
               },
             ],
             displayName: 'A vs B',
