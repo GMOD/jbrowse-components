@@ -8,6 +8,7 @@ test('creation', () => {
     .configure()
   const model = stateModelFactory(pluginManager)
   model.create({
+    // @ts-ignore
     type: 'LinearSyntenyView',
     views: [
       {

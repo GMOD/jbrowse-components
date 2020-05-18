@@ -281,12 +281,14 @@ export default function stateModelFactory(pluginManager: any) {
             views: [
               {
                 type: 'LinearGenomeView',
+                // @ts-ignore
                 ...getSnapshot(d1),
                 tracks: [],
                 hideHeader: true,
               },
               {
                 type: 'LinearGenomeView',
+                // @ts-ignore
                 ...getSnapshot(d2),
                 tracks: [],
                 hideHeader: true,
