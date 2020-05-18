@@ -270,6 +270,8 @@ export default function stateModelFactory(pluginManager: any) {
 
           const d1 = Base1DView.create(getSnapshot(self.hview))
           const d2 = Base1DView.create(getSnapshot(self.vview))
+          d1.setVolatileWidth(self.hview.width)
+          d2.setVolatileWidth(self.hview.width)
           d1.moveTo(x1, x2)
           d2.moveTo(y2, y1)
 
