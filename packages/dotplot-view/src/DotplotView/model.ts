@@ -1,4 +1,4 @@
-import { getSession } from '@gmod/jbrowse-core/util'
+import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
 
 import { getSnapshot, types, Instance, SnapshotIn } from 'mobx-state-tree'
 import { autorun, transaction } from 'mobx'
@@ -234,6 +234,27 @@ export default function stateModelFactory(pluginManager: any) {
       setViews(arr: SnapshotIn<Dotplot1DViewStateModel>[]) {
         self.hview = cast(arr[0])
         self.vview = cast(arr[1])
+      },
+
+      onDotplotView(x1: any, x2: any, y1: any, y2: any) {
+        const session = getSession(self)
+
+        console.log('v0')
+        const d1 = Dotplot1DViewModel.create(getSnapshot(self.hview))
+        const d2 = Dotplot1DViewModel.create(getSnapshot(self.vview))
+        console.log('v1')
+        d1.moveTo(x1, x2)
+        d2.moveTo(y2, y1)
+
+        // add the specific evidence tracks to the LGVs in the split view
+        const viewSnapshot = {
+          type: 'LinearSyntenyView',
+          views: [getSnapshot(d1), getSnapshot(d2)],
+          displayName: 'A vs B',
+        }
+        console.log(viewSnapshot)
+
+        // session.addView('LinearSyntenyView', viewSnapshot)
       },
     }))
     .views(self => ({

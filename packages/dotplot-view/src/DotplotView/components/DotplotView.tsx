@@ -11,7 +11,9 @@ export default (pluginManager: PluginManager) => {
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useRef, useEffect, useState } = React
-  const { minmax, useEventListener } = jbrequire('@gmod/jbrowse-core/util')
+  const { minmax, useEventListener, getSession } = jbrequire(
+    '@gmod/jbrowse-core/util',
+  )
   const { Menu } = jbrequire('@gmod/jbrowse-core/ui') as UI
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
@@ -73,16 +75,14 @@ export default (pluginManager: PluginManager) => {
     }
   })
 
+  type MousePos = [number, number] | undefined
+
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
     const ref = (useRef as useRefR)<SVGSVGElement | null>(null)
     const [mousecurr, setMouseCurr] = (useState as useStateR)([0, 0])
-    const [mousedown, setMouseDown] = (useState as useStateR)<
-      [number, number] | undefined
-    >()
-    const [mouseup, setMouseUp] = (useState as useStateR)<
-      [number, number] | undefined
-    >(undefined)
+    const [mousedown, setMouseDown] = (useState as useStateR)<MousePos>()
+    const [mouseup, setMouseUp] = (useState as useStateR)<MousePos>()
     const [tracking, setTracking] = useState(false)
 
     useEventListener(
@@ -314,7 +314,24 @@ export default (pluginManager: PluginManager) => {
                 },
                 {
                   label: 'Open linear synteny view',
-                  onClick: () => {},
+                  onClick: () => {
+                    const up = mouseup as [number, number]
+                    const down = mousedown as [number, number]
+                    const [xmin, xmax] = minmax(up[0], down[0])
+                    const [ymin, ymax] = minmax(up[1], down[1])
+                    if (
+                      Math.abs(xmax - xmin) > 3 &&
+                      Math.abs(ymax - ymin) > 3
+                    ) {
+                      const x1 = model.hview.pxToBp(xmin)
+                      const x2 = model.hview.pxToBp(xmax)
+
+                      const y1 = model.vview.pxToBp(viewHeight - ymin)
+                      const y2 = model.vview.pxToBp(viewHeight - ymax)
+
+                      model.onDotplotView(x1, x2, y1, y2)
+                    }
+                  },
                 },
               ]}
             />
