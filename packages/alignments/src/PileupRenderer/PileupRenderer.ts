@@ -285,7 +285,8 @@ export default class PileupRenderer extends BoxRendererType {
               const softClipLength = mismatch.cliplen || 0
               if (softClipLength > maxClippingLength) {
                 maxClippingLength = softClipLength
-                this.getExpandedRegion(region, props, maxClippingLength)
+                // this.getExpandedRegion(region, props, maxClippingLength)
+                // need to use above return value to alter region somehow
               }
               const softClipStart =
                 mismatch.start === 0
