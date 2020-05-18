@@ -1,6 +1,6 @@
 import { types, Instance } from 'mobx-state-tree'
-import baseModel from '../LinearComparativeView/model'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import baseModel from '../LinearComparativeView/model'
 
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types.compose(

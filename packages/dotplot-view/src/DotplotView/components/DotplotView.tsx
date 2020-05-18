@@ -10,10 +10,8 @@ export default (pluginManager: PluginManager) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useRef, useEffect, useState } = React
-  const { minmax, useEventListener, getSession } = jbrequire(
-    '@gmod/jbrowse-core/util',
-  )
+  const { useRef, useState } = React
+  const { useEventListener } = jbrequire('@gmod/jbrowse-core/util')
   const { Menu } = jbrequire('@gmod/jbrowse-core/ui') as UI
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
@@ -75,19 +73,19 @@ export default (pluginManager: PluginManager) => {
     }
   })
 
-  type MousePos = [number, number] | undefined
+  type Coord = [number, number] | undefined
 
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
     const ref = (useRef as useRefR)<SVGSVGElement | null>(null)
     const [mousecurr, setMouseCurr] = (useState as useStateR)([0, 0])
-    const [mousedown, setMouseDown] = (useState as useStateR)<MousePos>()
-    const [mouseup, setMouseUp] = (useState as useStateR)<MousePos>()
+    const [mousedown, setMouseDown] = (useState as useStateR)<Coord>()
+    const [mouseup, setMouseUp] = (useState as useStateR)<Coord>()
     const [tracking, setTracking] = useState(false)
 
     useEventListener(
       'wheel',
-      function (event: WheelEvent) {
+      (event: WheelEvent) => {
         model.hview.horizontalScroll(event.deltaX)
         model.vview.horizontalScroll(-event.deltaY)
         event.preventDefault()
@@ -111,7 +109,7 @@ export default (pluginManager: PluginManager) => {
 
     useEventListener(
       'mousemove',
-      function (event: MouseEvent) {
+      (event: MouseEvent) => {
         if (tracking) {
           setMouseCurr([event.offsetX, event.offsetY])
         }
@@ -120,7 +118,7 @@ export default (pluginManager: PluginManager) => {
     )
     useEventListener(
       'mouseup',
-      function (event: MouseEvent) {
+      (event: MouseEvent) => {
         if (mousedown) {
           setMouseUp([event.offsetX, event.offsetY])
           setTracking(false)
@@ -293,44 +291,13 @@ export default (pluginManager: PluginManager) => {
                 {
                   label: 'Zoom in',
                   onClick: () => {
-                    const up = mouseup as [number, number]
-                    const down = mousedown as [number, number]
-                    const [xmin, xmax] = minmax(up[0], down[0])
-                    const [ymin, ymax] = minmax(up[1], down[1])
-                    if (
-                      Math.abs(xmax - xmin) > 3 &&
-                      Math.abs(ymax - ymin) > 3
-                    ) {
-                      const x1 = model.hview.pxToBp(xmin)
-                      const x2 = model.hview.pxToBp(xmax)
-
-                      const y1 = model.vview.pxToBp(viewHeight - ymin)
-                      const y2 = model.vview.pxToBp(viewHeight - ymax)
-
-                      model.hview.moveTo(x1, x2)
-                      model.vview.moveTo(y2, y1)
-                    }
+                    model.zoomIn(mousedown, mouseup)
                   },
                 },
                 {
                   label: 'Open linear synteny view',
                   onClick: () => {
-                    const up = mouseup as [number, number]
-                    const down = mousedown as [number, number]
-                    const [xmin, xmax] = minmax(up[0], down[0])
-                    const [ymin, ymax] = minmax(up[1], down[1])
-                    if (
-                      Math.abs(xmax - xmin) > 3 &&
-                      Math.abs(ymax - ymin) > 3
-                    ) {
-                      const x1 = model.hview.pxToBp(xmin)
-                      const x2 = model.hview.pxToBp(xmax)
-
-                      const y1 = model.vview.pxToBp(viewHeight - ymin)
-                      const y2 = model.vview.pxToBp(viewHeight - ymax)
-
-                      model.onDotplotView(x1, x2, y1, y2)
-                    }
+                    model.onDotplotView(mousedown, mouseup)
                   },
                 },
               ]}

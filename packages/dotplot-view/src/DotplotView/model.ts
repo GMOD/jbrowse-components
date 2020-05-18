@@ -1,4 +1,4 @@
-import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
+import { getSession, minmax } from '@gmod/jbrowse-core/util'
 
 import { getSnapshot, types, Instance, SnapshotIn } from 'mobx-state-tree'
 import { autorun, transaction } from 'mobx'
@@ -10,6 +10,8 @@ import { Dotplot1DViewStateModel } from './Dotplot1DViewModel'
 function approxPixelStringLen(str: string) {
   return str.length * 0.7 * 12
 }
+
+type Coord = [number, number]
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
@@ -236,29 +238,83 @@ export default function stateModelFactory(pluginManager: any) {
         self.vview = cast(arr[1])
       },
 
-      onDotplotView(x1: any, x2: any, y1: any, y2: any) {
-        const session = getSession(self)
+      getCoords(mousedown: Coord, mouseup: Coord) {
+        const [xmin, xmax] = minmax(mouseup[0], mousedown[0])
+        const [ymin, ymax] = minmax(mouseup[1], mousedown[1])
+        return Math.abs(xmax - xmin) > 3 && Math.abs(ymax - ymin) > 3
+          ? [
+              self.hview.pxToBp(xmin),
+              self.hview.pxToBp(xmax),
+              self.vview.pxToBp(self.viewHeight - ymin),
+              self.vview.pxToBp(self.viewHeight - ymax),
+            ]
+          : undefined
+      },
 
-        console.log('v0')
-        const d1 = Dotplot1DViewModel.create(getSnapshot(self.hview))
-        const d2 = Dotplot1DViewModel.create(getSnapshot(self.vview))
-        console.log('v1')
-        d1.moveTo(x1, x2)
-        d2.moveTo(y2, y1)
-        console.log(getSnapshot(d1))
-
-        // add the specific evidence tracks to the LGVs in the split view
-        const viewSnapshot = {
-          type: 'LinearSyntenyView',
-          views: [
-            { ...getSnapshot(d1), tracks: [] },
-            { ...getSnapshot(d2), tracks: [] },
-          ],
-          displayName: 'A vs B',
+      zoomIn(mousedown: Coord, mouseup: Coord) {
+        const result = this.getCoords(mousedown, mouseup)
+        if (result) {
+          const [x1, x2, y1, y2] = result
+          self.hview.moveTo(x1, x2)
+          self.vview.moveTo(y2, y1)
         }
-        console.log(viewSnapshot)
+      },
+      onDotplotView(mousedown: Coord, mouseup: Coord) {
+        const result = this.getCoords(mousedown, mouseup)
+        if (result) {
+          const [x1, x2, y1, y2] = result
+          const session = getSession(self)
 
-        // session.addView('LinearSyntenyView', viewSnapshot)
+          const d1 = Dotplot1DViewModel.create(getSnapshot(self.hview))
+          const d2 = Dotplot1DViewModel.create(getSnapshot(self.vview))
+          d1.moveTo(x1, x2)
+          d2.moveTo(y2, y1)
+
+          // add the specific evidence tracks to the LGVs in the split view
+          const viewSnapshot = {
+            type: 'LinearSyntenyView',
+            views: [
+              { type: 'LinearGenomeView', ...getSnapshot(d1), tracks: [] },
+              { type: 'LinearGenomeView', ...getSnapshot(d2), tracks: [] },
+            ],
+            tracks: [
+              {
+                trackId: 'grape_peach_synteny_mcscan',
+                type: 'LinearSyntenyTrack',
+                assemblyNames: ['peach', 'grape'],
+                trackIds: [],
+                renderDelay: 100,
+                adapter: {
+                  mcscanAnchorsLocation: {
+                    uri: 'test_data/grape.peach.anchors',
+                  },
+                  subadapters: [
+                    {
+                      type: 'NCListAdapter',
+                      rootUrlTemplate:
+                        'https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json',
+                    },
+                    {
+                      type: 'NCListAdapter',
+                      rootUrlTemplate:
+                        'https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json',
+                    },
+                  ],
+                  assemblyNames: ['peach', 'grape'],
+                  type: 'MCScanAnchorsAdapter',
+                },
+                renderer: {
+                  type: 'LinearSyntenyRenderer',
+                },
+                name: 'Grape peach synteny (MCScan)',
+                category: ['Annotation'],
+              },
+            ],
+            displayName: 'A vs B',
+          }
+
+          session.addView('LinearSyntenyView', viewSnapshot)
+        }
       },
     }))
     .views(self => ({

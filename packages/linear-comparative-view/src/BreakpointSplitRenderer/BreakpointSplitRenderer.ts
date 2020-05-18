@@ -195,7 +195,7 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
         // }
 
         // flipMultiplier combines with normal directionality of the curve
-        const flipMultipliers = views.map(v => (1))
+        const flipMultipliers = views.map(v => 1)
 
         const x1 = getPxFromCoordinate(
           v1,
