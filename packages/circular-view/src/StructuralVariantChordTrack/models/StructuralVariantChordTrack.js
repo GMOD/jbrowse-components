@@ -30,7 +30,7 @@ export default pluginManager => {
     { baseConfiguration: ChordTrackConfigSchema, explicitlyTyped: true },
   )
 
-  const { makeAbortableReaction } = jbrequire(require('./util'))
+  const { makeAbortableReaction } = jbrequire('@gmod/jbrowse-core/util')
 
   const stateModel = types
     .compose(
@@ -79,7 +79,6 @@ export default pluginManager => {
       afterAttach() {
         makeAbortableReaction(
           self,
-          'render',
           renderReactionData,
           renderReactionEffect,
           {
@@ -87,6 +86,9 @@ export default pluginManager => {
             // delay: self.renderDelay || 300,
             // fireImmediately: true,
           },
+          self.renderStarted,
+          self.renderSuccess,
+          self.renderError,
         )
       },
       renderStarted() {

@@ -9,15 +9,16 @@ import {
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
 import { BaseLayout } from '@gmod/jbrowse-core/util/layouts/BaseLayout'
+
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { RenderArgsDeserialized } from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { lighten } from '@material-ui/core/styles/colorManipulator'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 import { sortFeature } from './sortUtil'
 
-interface PileupRenderProps {
+export interface PileupRenderProps {
   features: Map<string, Feature>
-  layout: BaseLayout<string>
+  layout: BaseLayout<Feature>
   config: AnyConfigurationModel
   regions: Region[]
   bpPerPx: number
@@ -42,7 +43,7 @@ interface LayoutRecord {
 export default class PileupRenderer extends BoxRendererType {
   layoutFeature(
     feature: Feature,
-    subLayout: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    layout: BaseLayout<Feature>,
     config: AnyConfigurationModel,
     bpPerPx: number,
     region: Region,
@@ -81,13 +82,11 @@ export default class PileupRenderer extends BoxRendererType {
         }`,
       )
     }
-
-    const topPx = subLayout.addRect(
+    const topPx = layout.addRect(
       feature.id(),
       feature.get('start') - expansionBefore,
       feature.get('end') + expansionAfter,
       heightPx,
-      feature,
     )
     if (topPx === null) {
       return null

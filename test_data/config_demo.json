@@ -160,11 +160,11 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+          "uri": "test_data/breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
         },
         "index": {
           "location": {
-            "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+            "uri": "test_data/breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
           }
         }
       },

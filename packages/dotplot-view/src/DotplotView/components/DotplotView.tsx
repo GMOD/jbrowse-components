@@ -8,13 +8,12 @@ export default (pluginManager: any) => {
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useRef, useEffect, useState } = React
-  const { minmax } = jbrequire('@gmod/jbrowse-core/util')
+  const { minmax, useEventListener } = jbrequire('@gmod/jbrowse-core/util')
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { makeStyles: jbMakeStyles } = jbrequire('@material-ui/core/styles')
   const LinearProgress = jbrequire('@material-ui/core/LinearProgress')
   const ImportForm = jbrequire(require('./ImportForm'))
   const Controls = jbrequire(require('./Controls'))
-  const useEventListener = jbrequire(require('./useEventListener'))
 
   const useStyles = (jbMakeStyles as typeof makeStyles)(theme => {
     return {
