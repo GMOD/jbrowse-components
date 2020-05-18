@@ -13,7 +13,6 @@ export interface ReducedLinearGenomeView {
   headerHeight: number
   scaleBarHeight: number
   height: number
-  horizontallyFlipped: boolean
   features: Feature[]
   tracks: {
     scrollTop: number
@@ -104,7 +103,7 @@ function bpToPx(
 
   const index = view.displayedRegions.findIndex(r => {
     if (refName === r.refName && coord >= r.start && coord <= r.end) {
-      offsetBp += view.horizontallyFlipped ? r.end - coord : coord - r.start
+      offsetBp += coord - r.start
       return true
     }
     offsetBp += r.end - r.start

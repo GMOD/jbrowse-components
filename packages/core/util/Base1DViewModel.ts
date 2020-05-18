@@ -10,7 +10,6 @@ const Base1DView = types
     displayedRegions: types.array(Region),
     bpPerPx: 0,
     offsetPx: 0,
-    horizontallyFlipped: false,
     width: 0,
   })
   .volatile(() => ({
@@ -61,7 +60,7 @@ const Base1DView = types
 
       const index = self.displayedRegions.findIndex(r => {
         if (refName === r.refName && coord >= r.start && coord <= r.end) {
-          offsetBp += self.horizontallyFlipped ? r.end - coord : coord - r.start
+          offsetBp += coord - r.start
           return true
         }
         offsetBp += r.end - r.start

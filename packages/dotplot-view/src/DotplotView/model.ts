@@ -245,11 +245,15 @@ export default function stateModelFactory(pluginManager: any) {
         console.log('v1')
         d1.moveTo(x1, x2)
         d2.moveTo(y2, y1)
+        console.log(getSnapshot(d1))
 
         // add the specific evidence tracks to the LGVs in the split view
         const viewSnapshot = {
           type: 'LinearSyntenyView',
-          views: [getSnapshot(d1), getSnapshot(d2)],
+          views: [
+            { ...getSnapshot(d1), tracks: [] },
+            { ...getSnapshot(d2), tracks: [] },
+          ],
           displayName: 'A vs B',
         }
         console.log(viewSnapshot)

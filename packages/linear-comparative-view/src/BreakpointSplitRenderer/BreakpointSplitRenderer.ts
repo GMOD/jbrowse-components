@@ -30,7 +30,6 @@ interface BreakpointSplitRenderProps {
   height: number
   width: number
   middle: boolean
-  horizontallyFlipped: boolean
   highResolutionScaling: number
   linkedTrack: string
   pluginManager: any
@@ -196,7 +195,7 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
         // }
 
         // flipMultiplier combines with normal directionality of the curve
-        const flipMultipliers = views.map(v => (v.horizontallyFlipped ? -1 : 1))
+        const flipMultipliers = views.map(v => (1))
 
         const x1 = getPxFromCoordinate(
           v1,

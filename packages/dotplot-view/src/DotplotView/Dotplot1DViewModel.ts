@@ -24,7 +24,6 @@ export default function stateModelFactory(pluginManager: any) {
       displayedRegions: types.array(MUIRegion),
       bpPerPx: 0,
       offsetPx: 0,
-      horizontallyFlipped: false,
     })
     .volatile(() => ({
       features: undefined as undefined | Feature[],
@@ -79,9 +78,7 @@ export default function stateModelFactory(pluginManager: any) {
 
         const index = self.displayedRegions.findIndex(r => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
-            offsetBp += self.horizontallyFlipped
-              ? r.end - coord
-              : coord - r.start
+            offsetBp += coord - r.start
             return true
           }
           offsetBp += r.end - r.start
