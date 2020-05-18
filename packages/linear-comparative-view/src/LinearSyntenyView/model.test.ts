@@ -1,8 +1,11 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 import stateModelFactory from './model'
 
 test('creation', () => {
-  const pluginManager = new PluginManager()
+  const pluginManager = new PluginManager([new LinearGenomeView()])
+    .createPluggableElements()
+    .configure()
   const model = stateModelFactory(pluginManager)
   model.create({
     type: 'LinearSyntenyView',
