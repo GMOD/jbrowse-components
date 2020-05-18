@@ -1,8 +1,8 @@
 import { types, Instance } from 'mobx-state-tree'
 import baseModel from '../LinearComparativeView/model'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function stateModelFactory(pluginManager: any) {
+export default function stateModelFactory(pluginManager: PluginManager) {
   return types.compose(
     baseModel(pluginManager),
     types.model('LinearSyntenyView', {

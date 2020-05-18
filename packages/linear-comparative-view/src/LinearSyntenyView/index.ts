@@ -1,4 +1,7 @@
-export default ({ jbrequire }: { jbrequire: Function }) => {
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+
+export default (pluginManager: PluginManager) => {
+  const { jbrequire } = pluginManager
   const ViewType = jbrequire(
     '@gmod/jbrowse-core/pluggableElementTypes/ViewType',
   )

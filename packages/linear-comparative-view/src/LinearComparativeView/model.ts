@@ -10,11 +10,12 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
 export type LGV = Instance<LinearGenomeViewStateModel>
 type ConfigRelationship = { type: string; target: string }
 
-export default function stateModelFactory(pluginManager: any) {
+export default function stateModelFactory(pluginManager: PluginManager) {
   const { jbrequire } = pluginManager
   const {
     types: jbrequiredTypes,
