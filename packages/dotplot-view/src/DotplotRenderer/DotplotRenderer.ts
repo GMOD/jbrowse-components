@@ -50,8 +50,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     ctx.fillStyle = readConfObject(config, 'color')
     const db1 = views[0].dynamicBlocks.contentBlocks
     const db2 = views[1].dynamicBlocks.contentBlocks
-    // @ts-ignore
-    views[0].features.forEach(feature => {
+    ;(views[0].features || []).forEach(feature => {
       const start = feature.get('start')
       const end = feature.get('end')
       const refName = feature.get('refName')
@@ -59,14 +58,12 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       // const identity = feature.get('numMatches') / feature.get('blockLen')
       // ctx.fillStyle = `hsl(${identity * 150},50%,50%)`
       ctx.fillStyle = 'black'
-      // @ts-ignore
-      const b10 = views[0].bpToPx(refName, start) || 0
-      // @ts-ignore
-      const b20 = views[0].bpToPx(refName, end) || 0
-      // @ts-ignore
-      const e10 = views[1].bpToPx(mate.refName, mate.start) || 0
-      // @ts-ignore
-      const e20 = views[1].bpToPx(mate.refName, mate.end) || 0
+      const b10 = views[0].bpToPx({ refName, coord: start }) || 0
+      const b20 = views[0].bpToPx({ refName, coord: end }) || 0
+
+      const { refName: mateRef } = mate
+      const e10 = views[1].bpToPx({ refName: mateRef, coord: mate.start }) || 0
+      const e20 = views[1].bpToPx({ refName: mateRef, coord: mate.end }) || 0
 
       const b1 = b10 - db1[0].offsetPx
       const b2 = b20 - db1[0].offsetPx
