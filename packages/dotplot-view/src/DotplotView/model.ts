@@ -314,6 +314,7 @@ export default function stateModelFactory(pluginManager: any) {
             disabled:
               session.visibleDrawerWidget &&
               session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
+              session.visibleDrawerWidget.view &&
               session.visibleDrawerWidget.view.id === self.id,
           },
         ]
