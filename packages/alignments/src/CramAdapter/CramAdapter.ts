@@ -116,9 +116,9 @@ export default (pluginManager: PluginManager) => {
       const sequence = trimmed.join('')
       if (sequence.length !== end - start)
         throw new Error(
-          `sequence fetch failed: fetching ${(
+          `sequence fetch failed: fetching ${refName}:${(
             start - 1
-          ).toLocaleString()}-${end.toLocaleString()} only returned ${sequence.length.toLocaleString()} bases, but should have returned ${(
+          ).toLocaleString()}-${end.toLocaleString()} returned ${sequence.length.toLocaleString()} bases, but should have returned ${(
             end - start
           ).toLocaleString()}`,
         )

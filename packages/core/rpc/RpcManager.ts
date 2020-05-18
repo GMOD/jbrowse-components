@@ -116,14 +116,12 @@ class RpcManager {
       assemblyName?: string
       signal?: AbortSignal
       regions?: Region[]
-      region?: Region
       adapterConfig: unknown
     },
     opts = {},
   ) {
     const { assemblyName, signal, regions, adapterConfig } = args
     const newArgs: typeof args & {
-      originalRegion?: Region
       originalRegions?: Region[]
     } = {
       ...args,
@@ -137,10 +135,9 @@ class RpcManager {
       )
 
       if (refNameMap && regions && newArgs.regions) {
+        newArgs.originalRegions = args.regions
         for (let i = 0; i < regions.length; i += 1) {
-          newArgs.originalRegions = args.regions
-          newArgs.regions[i] =
-            this.renameRegionIfNeeded(refNameMap, regions[i]) || regions[i]
+          newArgs.regions[i] = this.renameRegionIfNeeded(refNameMap, regions[i])
         }
       }
     }
