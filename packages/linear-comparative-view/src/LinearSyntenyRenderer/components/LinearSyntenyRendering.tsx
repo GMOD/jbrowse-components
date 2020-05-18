@@ -99,7 +99,8 @@ function LinearSyntenyRendering(props: {
   const v2p = getParent(trackModel, 2).views[1].offsetPx
 
   const views = serializedViews.map(view => {
-    const newView = Base1DView.create({ ...view, width })
+    const newView = Base1DView.create(view)
+    newView.setVolatileWidth(width)
     if (view.features) {
       newView.setFeatures(
         view.features
@@ -114,9 +115,13 @@ function LinearSyntenyRendering(props: {
   const layoutMatches = layoutMatchesFromViews(views)
 
   useEffect(() => {
-    if (!ref.current) return
+    if (!ref.current) {
+      return
+    }
     const ctx = ref.current.getContext('2d')
-    if (!ctx) return
+    if (!ctx) {
+      return
+    }
     ctx.clearRect(0, 0, width, height)
     ctx.scale(highResolutionScaling, highResolutionScaling)
     ctx.fillStyle = getConf(trackModel, ['renderer', 'color'])

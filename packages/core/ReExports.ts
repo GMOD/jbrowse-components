@@ -43,6 +43,7 @@ import MUITypography from '@material-ui/core/Typography'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 
+import Base1DView from './util/Base1DViewModel'
 import ViewType from './pluggableElementTypes/ViewType'
 import AdapterType from './pluggableElementTypes/AdapterType'
 import TrackType from './pluggableElementTypes/TrackType'
@@ -121,6 +122,7 @@ const libs = {
   '@gmod/jbrowse-core/ui': coreUi,
   '@gmod/jbrowse-core/util': coreUtil,
   '@gmod/jbrowse-core/util/tracks': trackUtils,
+  '@gmod/jbrowse-core/util/Base1DViewModel': Base1DView,
   '@gmod/jbrowse-core/util/io': coreIo,
   '@gmod/jbrowse-core/util/mst-reflection': coreMstReflection,
   '@gmod/jbrowse-core/BaseViewModel': BaseViewModel,

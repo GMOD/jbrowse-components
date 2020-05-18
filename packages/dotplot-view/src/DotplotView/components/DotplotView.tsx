@@ -86,8 +86,8 @@ export default (pluginManager: PluginManager) => {
     useEventListener(
       'wheel',
       (event: WheelEvent) => {
-        model.hview.horizontalScroll(event.deltaX)
-        model.vview.horizontalScroll(-event.deltaY)
+        model.hview.scroll(event.deltaX)
+        model.vview.scroll(-event.deltaY)
         event.preventDefault()
       },
       ref.current,

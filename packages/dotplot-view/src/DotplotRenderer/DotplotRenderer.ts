@@ -119,9 +119,11 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
   async render(renderProps: DotplotRenderProps) {
     const { width, height, views } = renderProps
     const dimensions = [width, height]
-    const realizedViews = views.map((view, idx) =>
-      Base1DView.create({ ...view, width: dimensions[idx] }),
-    )
+    const realizedViews = views.map((snap, idx) => {
+      const view = Base1DView.create(snap)
+      view.setVolatileWidth(dimensions[idx])
+      return view
+    })
     await Promise.all(
       realizedViews.map(async view => {
         view.setFeatures(
