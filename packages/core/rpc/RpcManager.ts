@@ -130,16 +130,10 @@ class RpcManager {
     }
     if (assemblyName) {
       const refNameMap = await whenPresent(
-        () => {
-          const val = this.getRefNameMapForAdapter(
-            adapterConfig,
-            assemblyName,
-            {
-              signal,
-            },
-          )
-          return val
-        },
+        () =>
+          this.getRefNameMapForAdapter(adapterConfig, assemblyName, {
+            signal,
+          }),
         {
           timeout: 30000,
           name: `getRefNameMapForAdapter($conf, '${assemblyName}')`,
