@@ -58,7 +58,7 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
         if (assembly) {
           return assembly.getRefNameMapForAdapter(adapterConf, opts)
         }
-        return undefined
+        throw new Error(`unknown assembly ${assemblyName}`)
       },
       getReverseRefNameMapForAdapter(
         adapterConf: unknown,
@@ -69,7 +69,7 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
         if (assembly) {
           return assembly.getReverseRefNameMapForAdapter(adapterConf, opts)
         }
-        return undefined
+        throw new Error(`unknown assembly ${assemblyName}`)
       },
       isValidRefName(refName: string, assemblyName?: string) {
         if (assemblyName) {
