@@ -751,7 +751,6 @@ function loadColour(schema) {
   }
 }
 
-
 /**
  * Creates the form for interacting with the track filters
  */
@@ -809,7 +808,7 @@ ConfigurationEditor.propTypes = {
  * @param {*} msg Message to display if invalid
  * @param {*} isValid Do not display if valid
  */
-function setValidationMessage(msg, isValid) {
+function setFilterValidationMessage(msg, isValid) {
   validationMessage = msg
   isValidGDCFilter = isValid
 }
@@ -823,6 +822,5 @@ function setColourValidationMessage(msg, isValid) {
   colourValidationMessage = msg
   isValidColourBy = isValid
 }
-
 
 export default observer(ConfigurationEditor)
