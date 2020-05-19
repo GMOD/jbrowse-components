@@ -38,12 +38,12 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
         return getParent(self).rpcManager
       },
       get allPossibleRefNames() {
-        const refNames: string[] = []
+        let refNames: string[] = []
         for (const assembly of self.assemblies) {
           if (!assembly.allRefNames) {
             return undefined
           }
-          refNames.push(...assembly.allRefNames)
+          refNames = refNames.concat(assembly.allRefNames)
         }
         return refNames
       },
