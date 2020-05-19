@@ -62,9 +62,6 @@ export default pluginManager => {
       bezierRadiusRatio: 0.1,
       assemblyName: types.maybe(types.string),
     })
-    .volatile((/* self */) => ({
-      refNameMap: undefined,
-    }))
     .views(self => ({
       get blockDefinitions() {
         return getContainingView(self).staticSlices
