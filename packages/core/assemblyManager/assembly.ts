@@ -32,16 +32,27 @@ async function loadRefNameMap(
     })
 
     const stateGroupName = adapterId
-    const refNames = await assembly.rpcManager.call(
-      stateGroupName,
-      'getRefNames',
-      {
-        sessionId: assembly.name,
-        adapterConfig: adapterConf,
-        signal,
-      },
-      { timeout: 1000000 },
-    )
+    let refNames = []
+    try {
+      refNames = await assembly.rpcManager.call(
+        stateGroupName,
+        'getRefNames',
+        {
+          sessionId: assembly.name,
+          adapterConfig: adapterConf,
+          signal,
+        },
+        { timeout: 1000000 },
+      )
+    } catch (error) {
+      if (!isAbortException) {
+        console.error(
+          `Error loading adapter refNames for adapter ${getAdapterId(
+            adapterConf,
+          )}`,
+        )
+      }
+    }
 
     const refNameMap: Record<string, string> = {}
     const { refNameAliases } = assembly
@@ -81,13 +92,13 @@ async function loadRefNameMap(
       reverseMap: reversed,
     })
   } catch (err) {
-    if (!isAbortException(err)) {
-      console.error(err)
+    if (isAbortException(err)) {
       assembly.addAdapterMap(adapterId, {
         forwardMap: {},
         reverseMap: {},
       })
     } else {
+      console.error(err)
       throw err
     }
   }
