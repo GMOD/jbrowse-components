@@ -35,7 +35,7 @@ async function loadRefNameMap(
     try {
       refNames = await assembly.rpcManager.call(
         stateGroupName,
-        'getRefNames',
+        'CoreGetRefNames',
         {
           sessionId: assembly.name,
           adapterConfig: adapterConf,
@@ -301,7 +301,7 @@ async function loadAssemblyReaction(
 
   const adapterRegions = (await rpcManager.call(
     adapterConfigId,
-    'getRegions',
+    'CoreGetRegions',
     { sessionId: assemblyName, adapterConfig: sequenceAdapterConfig, signal },
     { timeout: 1000000 },
   )) as Region[]
@@ -315,7 +315,7 @@ async function loadAssemblyReaction(
     const refNameAliasesAborter = new AbortController()
     const refNameAliasesList = (await rpcManager.call(
       adapterConfigId,
-      'getRefNameAliases',
+      'CoreGetRefNameAliases',
       {
         sessionId: assemblyName,
         adapterConfig: refNameAliasesAdapterConfig,

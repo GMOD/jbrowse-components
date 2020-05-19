@@ -105,6 +105,7 @@ export default abstract class BaseRpcDriver {
     functionName: string,
     signalId: number,
   ) {
+    // TODO: this is not the right state group name!
     const worker = this.getWorker('remoteAbort', functionName, pluginManager)
     worker.call(functionName, signalId)
   }
