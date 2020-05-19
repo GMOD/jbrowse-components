@@ -162,18 +162,16 @@ export default (pluginManager: any) => {
                 {vview.dynamicBlocks.blocks
                   .filter(region => region.refName)
                   .map((region, index, array) => {
-                    const prevY =
-                      viewHeight -
-                      (((array[index - 1] || {}).offsetPx || 0) -
-                        vview.offsetPx)
-                    const y = viewHeight - (region.offsetPx - vview.offsetPx)
+                    const prevY = index > 0 ? array[index - 1].offsetPx : 0
+                    const y = region.offsetPx
                     const x = borderX
-                    return Math.abs(prevY - y) > 12 ? (
+
+                    return index === 0 || Math.abs(prevY - y) > 12 ? (
                       <text
                         transform={`rotate(${vtextRotation},${x},${y})`}
                         key={JSON.stringify(region)}
                         x={borderX}
-                        y={y}
+                        y={viewHeight - y + vview.offsetPx}
                         fill="#000000"
                         textAnchor="end"
                       >
@@ -205,13 +203,9 @@ export default (pluginManager: any) => {
               <g>
                 {hview.dynamicBlocks.blocks
                   .filter(region => region.refName)
-                  .map((region, index, array) => {
-                    const prevX =
-                      viewHeight -
-                      (((array[index - 1] || {}).offsetPx || 0) -
-                        hview.offsetPx)
+                  .map(region => {
                     const x = region.offsetPx - hview.offsetPx
-                    return Math.abs(prevX - x) > 12 ? (
+                    return (
                       <line
                         key={JSON.stringify(region)}
                         x1={x}
@@ -220,7 +214,7 @@ export default (pluginManager: any) => {
                         y2={viewHeight}
                         stroke="#000000"
                       />
-                    ) : null
+                    )
                   })}
                 {vview.dynamicBlocks.blocks
                   .filter(region => region.refName)
@@ -254,14 +248,17 @@ export default (pluginManager: any) => {
               <g>
                 {hview.dynamicBlocks.blocks
                   .filter(region => region.refName)
-                  .map(region => {
-                    const x = region.offsetPx - hview.offsetPx
+                  .map((region, index, array) => {
+                    const prevX = index > 0 ? array[index - 1].offsetPx : 0
+                    const x = region.offsetPx
                     const y = tickSize
-                    return (
+                    return index === 0 || Math.abs(prevX - x) > 12 ? (
                       <text
-                        transform={`rotate(${htextRotation},${x},${y})`}
+                        transform={`rotate(${htextRotation},${
+                          x - hview.offsetPx
+                        },${y})`}
                         key={region.refName}
-                        x={x}
+                        x={x - hview.offsetPx}
                         y={y + 1}
                         fill="#000000"
                         dominantBaseline="hanging"
@@ -269,7 +266,7 @@ export default (pluginManager: any) => {
                       >
                         {region.refName}
                       </text>
-                    )
+                    ) : null
                   })}
               </g>
             </svg>
