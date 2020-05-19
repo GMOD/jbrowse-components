@@ -109,7 +109,7 @@ export class CoreFreeResources extends RpcMethodType {
   }
 }
 
-interface SerializedCoreRenderArgs {
+interface SerializedRenderArgs {
   assemblyName: string
   regions: Region[]
   sessionId: string
@@ -123,7 +123,61 @@ interface SerializedCoreRenderArgs {
  * call a renderer with the given args
  */
 export class CoreRender extends RpcMethodType {
-  async execute(args: SerializedCoreRenderArgs) {
+  async serializeArguments(args: SerializedRenderArgs) {
+    const { assemblyName, signal, regions, adapterConfig } = args
+    const newArgs: typeof args & {
+      originalRegions?: Region[]
+    } = {
+      ...args,
+      regions: [...(args.regions || [])],
+    }
+    if (assemblyName) {
+      const app = this.pluginManager.rootModel?.jbrowse
+      // if (app && typeof app.getRefNameMapForAdapter === 'function') {
+      //   const refNameMap = await app.getRefNameMapForAdapter(
+      //     adapterConfig,
+      //     assemblyName,
+      //     { signal },
+      //   )
+
+      //   if (regions && newArgs.regions) {
+      //     for (let i = 0; i < regions.length; i += 1) {
+      //       newArgs.originalRegions = args.regions
+      //       newArgs.regions[i] =
+      //         this.renameRegionIfNeeded(refNameMap, regions[i]) || regions[i]
+      //     }
+      //   }
+      // }
+
+      // const { assemblyName, signal, regions, adapterConfig } = args
+      // const newArgs: typeof args & {
+      //   originalRegion?: Region
+      //   originalRegions?: Region[]
+      // } = {
+      //   ...args,
+      //   regions: [...(args.regions || [])],
+      // }
+      // if (assemblyName) {
+      //   const refNameMap = await this.getRefNameMapForAdapter(
+      //     adapterConfig,
+      //     assemblyName,
+      //     { signal },
+      //   )
+
+      //   if (refNameMap && regions && newArgs.regions) {
+      //     for (let i = 0; i < regions.length; i += 1) {
+      //       newArgs.originalRegions = args.regions
+      //       newArgs.regions[i] =
+      //         this.renameRegionIfNeeded(refNameMap, regions[i]) || regions[i]
+      //     }
+      //   }
+      // }
+    }
+
+    return newArgs
+  }
+
+  async execute(args: SerializedRenderArgs) {
     const {
       regions,
       sessionId,

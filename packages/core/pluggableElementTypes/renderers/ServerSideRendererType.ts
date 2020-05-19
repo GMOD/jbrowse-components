@@ -19,7 +19,6 @@ import SerializableFilterChain, {
   SerializedFilterChain,
 } from './util/serializableFilterChain'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
-import RpcManager from '../../rpc/RpcManager'
 
 interface BaseRenderArgs {
   blockKey: string
@@ -42,17 +41,15 @@ interface BaseRenderArgs {
 export interface RenderArgs extends BaseRenderArgs {
   config: SnapshotOrInstance<AnyConfigurationModel>
   filters: SerializableFilterChain
-  refNameMapsForAdapter: Map<string, Promise<Map<string, string>>>
 }
+
 export interface RenderArgsSerialized extends BaseRenderArgs {
   config: SnapshotIn<AnyConfigurationModel>
   filters: SerializedFilterChain
-  refNameMapsForAdapter: Map<string, Map<string, string>>
 }
 export interface RenderArgsDeserialized extends BaseRenderArgs {
   config: AnyConfigurationModel
   filters: SerializableFilterChain
-  refNameMapsForAdapter: Map<string, Map<string, string>>
 }
 
 export interface RenderResults {
@@ -82,7 +79,7 @@ export default class ServerSideRenderer extends RendererType {
    * @param args - the arguments passed to render
    * @returns the same object
    */
-  async serializeArgsInClient(args: RenderArgs): Promise<RenderArgsSerialized> {
+  serializeArgsInClient(args: RenderArgs): RenderArgsSerialized {
     const { trackModel } = args.renderProps
     if (trackModel) {
       args.renderProps = {
@@ -94,20 +91,8 @@ export default class ServerSideRenderer extends RendererType {
         },
       }
     }
-
-    // await all the refname maps of all the adapters
-    const entryPromises = Array.from(args.refNameMapsForAdapter).map(
-      async ([assemblyName, refNameMapP]) => {
-        const refNameMap = await refNameMapP
-        const entry: [string, Map<string, string>] = [assemblyName, refNameMap]
-        return entry
-      },
-    )
-    const refNameMapsForAdapter = new Map(await Promise.all(entryPromises))
-
     return {
       ...args,
-      refNameMapsForAdapter,
       config: isStateTreeNode(args.config)
         ? getSnapshot(args.config)
         : args.config,
@@ -169,19 +154,16 @@ export default class ServerSideRenderer extends RendererType {
    * Render method called on the client. Serializes args, then
    * calls `render` with the RPC manager.
    */
-  async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
-    if (!args.refNameMapsForAdapter) {
-      throw new Error('refNameMapsForAdapter is required in renderProps')
-    }
-
-    const serializedArgs = await this.serializeArgsInClient(args)
+  async renderInClient(rpcManager: { call: Function }, args: RenderArgs) {
+    const serializedArgs = this.serializeArgsInClient(args)
 
     const stateGroupName = args.sessionId
-    const result = (await rpcManager.call(
+    const result = await rpcManager.call(
       stateGroupName,
       'CoreRender',
       serializedArgs,
-    )) as ResultsSerialized
+    )
+    // const result = await renderRegionWithWorker(session, serializedArgs)
 
     const deserialized = this.deserializeResultsInClient(result, args)
     return deserialized
@@ -301,11 +283,8 @@ export default class ServerSideRenderer extends RendererType {
     )
   }
 
-  async freeResourcesInClient(
-    rpcManager: { call: Function },
-    args: RenderArgs,
-  ) {
-    const serializedArgs = await this.serializeArgsInClient(args)
+  freeResourcesInClient(rpcManager: { call: Function }, args: RenderArgs) {
+    const serializedArgs = this.serializeArgsInClient(args)
 
     const stateGroupName = args.sessionId
     return rpcManager.call(stateGroupName, 'CoreFreeResources', serializedArgs)

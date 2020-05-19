@@ -1,13 +1,11 @@
 import {
   ConfigurationReference,
   ConfigurationSchema,
-  getConf,
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { types } from 'mobx-state-tree'
 import { AnyConfigurationSchemaType } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { getSession } from '@gmod/jbrowse-core/util'
 import { BaseTrackConfig } from './baseTrackModel'
 import BlockBasedTrackComponent from './components/BlockBasedTrack'
 import blockBasedTrack from './blockBasedTrackModel'
@@ -44,17 +42,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           ...self.composedRenderProps,
           ...getParentRenderProps(self),
           config: self.configuration.renderer,
-          refNameMapsForAdapter: new Map(
-            (getConf(self, 'assemblyNames') as string[]).map(assemblyName => {
-              return [
-                assemblyName,
-                getSession(self).assemblyManager.getRefNameMapForAdapter(
-                  getConf(self, 'adapter'),
-                  assemblyName,
-                ),
-              ]
-            }),
-          ),
         }
       },
 
