@@ -242,7 +242,7 @@ export default pluginManager => {
       const assembly = session.assemblyManager.get(
         readConfObject(dataset.assembly, 'name'),
       )
-      loc.refName = assembly.getCanonicalRefName(loc.refName)
+      loc.refName = assembly.getCanonicalRefName(loc.refName) || loc.refName
       const initialState = { displayName: cell.text }
       const view = session.addViewOfDataset(
         'LinearGenomeView',

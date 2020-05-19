@@ -22,7 +22,6 @@ export default pluginManager => {
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const MenuItem = jbrequire('@material-ui/core/MenuItem')
   const TextField = jbrequire('@material-ui/core/TextField')
-  const Typography = jbrequire('@material-ui/core/Typography')
   const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { grey } = jbrequire('@material-ui/core/colors')
@@ -190,16 +189,14 @@ export default pluginManager => {
     const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
     const { assemblyNames, assemblyManager } = getSession(model)
     const [assemblyError, setAssemblyError] = useState('')
-    const [regionsError, setRegionsError] = useState('')
     if (!assemblyNames.length) {
       setAssemblyError('No configured assemblies')
     }
     const assembly = assemblyManager.get(assemblyNames[selectedAssemblyIdx])
-    const regions = getSnapshot(assembly.regions)
+    const regions = assembly.regions ? getSnapshot(assembly.regions) : []
 
     function onAssemblyChange(event) {
       setSelectedAssemblyIdx(Number(event.target.value))
-      setRegionsError('')
     }
 
     function onOpenClick() {
@@ -233,16 +230,13 @@ export default pluginManager => {
             </Grid>
             <Grid item>
               <Button
-                disabled={!regions.length || !!regionsError}
+                disabled={!(regions && regions.length)}
                 onClick={onOpenClick}
                 variant="contained"
                 color="primary"
               >
                 {regions.length ? 'Open' : 'Loading…'}
               </Button>
-              {regionsError ? (
-                <Typography color="error">{regionsError}</Typography>
-              ) : null}
             </Grid>
           </Grid>
         </Container>

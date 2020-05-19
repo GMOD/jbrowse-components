@@ -39,9 +39,12 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       },
       get allPossibleRefNames() {
         const refNames: string[] = []
-        self.assemblies.forEach(assembly => {
-          refNames.push(...assembly.refNames)
-        })
+        for (const assembly of self.assemblies) {
+          if (!assembly.allRefNames) {
+            return undefined
+          }
+          refNames.push(...assembly.allRefNames)
+        }
         return refNames
       },
     }))
@@ -74,6 +77,9 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
           if (assembly) {
             return assembly.isValidRefName(refName)
           }
+        }
+        if (!self.allPossibleRefNames) {
+          return undefined
         }
         return self.allPossibleRefNames.includes(refName)
       },

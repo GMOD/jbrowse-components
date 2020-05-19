@@ -25,7 +25,7 @@ async function loadRefNameMap(
   signal?: AbortSignal,
 ): Promise<void> {
   try {
-    await when(() => assembly.ready, {
+    await when(() => Boolean(assembly.regions && assembly.refNameAliases), {
       timeout: 20000,
       signal,
       name: 'when assembly ready',
@@ -44,16 +44,22 @@ async function loadRefNameMap(
     )
 
     const refNameMap: Record<string, string> = {}
+    const { refNameAliases } = assembly
+    if (!refNameAliases) {
+      throw new Error(
+        `error loading assembly ${assembly.name}'s refNameAliases`,
+      )
+    }
 
     refNames.forEach((refName: string) => {
       checkRefName(refName)
-      const aliases = assembly.refNameAliases.get(refName)
+      const aliases = refNameAliases.get(refName)
       if (aliases) {
         aliases.forEach(refNameAlias => {
           refNameMap[refNameAlias] = refName
         })
       } else {
-        assembly.refNameAliases.forEach((configAliases, configRefName) => {
+        refNameAliases.forEach((configAliases, configRefName) => {
           if (configAliases.includes(refName)) {
             refNameMap[configRefName] = refName
             configAliases.forEach(refNameAlias => {
@@ -110,9 +116,8 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
   return types
     .model({
       configuration: types.reference(assemblyConfigType),
-      regions: types.array(MSTRegion),
-      refNameAliases: types.map(types.array(types.string)),
-      refNameAliasesSet: false,
+      regions: types.maybe(types.array(MSTRegion)),
+      refNameAliases: types.maybe(types.map(types.array(types.string))),
       adapterMaps: types.map(refNameAdapterMapSet), // map of adapter ID => refNameAdapterMap
     })
     .views(self => ({
@@ -123,12 +128,12 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         return readConfObject(self.configuration, 'aliases')
       },
       get refNames() {
-        return self.regions.map(region => region.refName)
-      },
-      get ready() {
-        return !!self.regions.length && self.refNameAliasesSet
+        return self.regions && self.regions.map(region => region.refName)
       },
       get allRefNames() {
+        if (!(this.refNames && self.refNameAliases)) {
+          return undefined
+        }
         const aliases: string[] = []
         self.refNameAliases.forEach(aliasList => {
           aliases.push(...aliasList)
@@ -139,6 +144,9 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         return getParent(self, 2).rpcManager
       },
       getCanonicalRefName(refName: string) {
+        if (!(this.refNames && self.refNameAliases)) {
+          return undefined
+        }
         if (this.refNames.includes(refName)) {
           return refName
         }
@@ -150,7 +158,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         return undefined
       },
       isValidRefName(refName: string) {
-        return this.allRefNames.includes(refName)
+        return this.allRefNames && this.allRefNames.includes(refName)
       },
     }))
     .actions(self => ({
@@ -164,7 +172,6 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       }) {
         this.setRegions(adapterRegionsWithAssembly)
         this.setRefNameAliases(refNameAliases)
-        this.setRefNameAliasesSet(true)
       },
       setError(error: Error) {
         getParent(self, 3).setError(String(error))
@@ -174,9 +181,6 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       },
       setRefNameAliases(refNameAliases: RefNameAliases) {
         self.refNameAliases = cast(refNameAliases)
-      },
-      setRefNameAliasesSet(isSet: boolean) {
-        self.refNameAliasesSet = isSet
       },
       afterAttach() {
         makeAbortableReaction(

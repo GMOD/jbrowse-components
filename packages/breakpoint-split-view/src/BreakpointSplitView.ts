@@ -27,7 +27,8 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
       const { assemblyName } = view.displayedRegions[0]
       const assembly = getSession(view).assemblyManager.get(assemblyName)
       const { getCanonicalRefName } = assembly
-      const featureRefName = getCanonicalRefName(feature.get('refName'))
+      const featureRefName =
+        getCanonicalRefName(feature.get('refName')) || feature.get('refName')
 
       const topRegion = view.displayedRegions.find(
         (f: { refName: string }) => f.refName === String(featureRefName),
@@ -42,11 +43,11 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
         if (breakendSpecification === '<TRA>') {
           const INFO = feature.get('INFO') || []
           endPos = INFO.END[0] - 1
-          mateRefName = getCanonicalRefName(INFO.CHR2[0])
+          mateRefName = getCanonicalRefName(INFO.CHR2[0]) || INFO.CHR2[0]
         } else {
           const matePosition = breakendSpecification.MatePosition.split(':')
           endPos = parseInt(matePosition[1], 10) - 1
-          mateRefName = getCanonicalRefName(matePosition[0])
+          mateRefName = getCanonicalRefName(matePosition[0]) || matePosition[0]
           if (breakendSpecification.Join === 'left') startMod = -1
           if (breakendSpecification.MateDirection === 'left') endMod = -1
         }
@@ -59,7 +60,7 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
       } else if (feature.get('mate')) {
         // a generic 'mate' feature
         const mate = feature.get('mate')
-        mateRefName = getCanonicalRefName(mate.refName)
+        mateRefName = getCanonicalRefName(mate.refName) || mate.refName
         endPos = mate.start
       }
 
