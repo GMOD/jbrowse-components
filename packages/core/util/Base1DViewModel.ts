@@ -40,6 +40,12 @@ const Base1DView = types
       return self.volatileWidth
     },
 
+    get displayedRegionsMap() {
+      return Object.fromEntries(self.displayedRegions.map(region => {
+        return [region.refName, region.offsetPx]
+      })
+    },
+
     get displayedRegionsTotalPx() {
       return this.totalBp / self.bpPerPx
     },
