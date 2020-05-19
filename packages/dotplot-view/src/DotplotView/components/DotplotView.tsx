@@ -161,10 +161,14 @@ export default (pluginManager: any) => {
               <g>
                 {vview.dynamicBlocks.blocks
                   .filter(region => region.refName)
-                  .map(region => {
+                  .map((region, index, array) => {
+                    const prevY =
+                      viewHeight -
+                      (((array[index - 1] || {}).offsetPx || 0) -
+                        vview.offsetPx)
                     const y = viewHeight - (region.offsetPx - vview.offsetPx)
                     const x = borderX
-                    return (
+                    return Math.abs(prevY - y) > 12 ? (
                       <text
                         transform={`rotate(${vtextRotation},${x},${y})`}
                         key={JSON.stringify(region)}
@@ -175,7 +179,7 @@ export default (pluginManager: any) => {
                       >
                         {region.refName}
                       </text>
-                    )
+                    ) : null
                   })}
               </g>
             </svg>
@@ -201,9 +205,13 @@ export default (pluginManager: any) => {
               <g>
                 {hview.dynamicBlocks.blocks
                   .filter(region => region.refName)
-                  .map(region => {
+                  .map((region, index, array) => {
+                    const prevX =
+                      viewHeight -
+                      (((array[index - 1] || {}).offsetPx || 0) -
+                        hview.offsetPx)
                     const x = region.offsetPx - hview.offsetPx
-                    return (
+                    return Math.abs(prevX - x) > 12 ? (
                       <line
                         key={JSON.stringify(region)}
                         x1={x}
@@ -212,7 +220,7 @@ export default (pluginManager: any) => {
                         y2={viewHeight}
                         stroke="#000000"
                       />
-                    )
+                    ) : null
                   })}
                 {vview.dynamicBlocks.blocks
                   .filter(region => region.refName)
