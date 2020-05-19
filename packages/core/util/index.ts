@@ -8,7 +8,6 @@ import {
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import { inflate, deflate } from 'pako'
-import { Observable, fromEvent } from 'rxjs'
 import fromEntries from 'object.fromentries'
 import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
@@ -20,8 +19,11 @@ import {
   Region,
   NoAssemblyRegion,
 } from './types'
+import { isAbortException, checkAbortSignal } from './aborting'
 
 export * from './types'
+export * from './aborting'
+export * from './when'
 
 if (!Object.fromEntries) {
   fromEntries.shim()
@@ -437,63 +439,6 @@ export function iterMap<T, U>(
   return results
 }
 
-class AbortError extends Error {
-  public code: string | undefined
-}
-
-/**
- * properly check if the given AbortSignal is aborted.
- * per the standard, if the signal reads as aborted,
- * this function throws either a DOMException AbortError, or a regular error
- * with a `code` attribute set to `ERR_ABORTED`.
- *
- * for convenience, passing `undefined` is a no-op
- *
- * @param signal -
- * @returns nothing
- */
-export function checkAbortSignal(signal?: AbortSignal): void {
-  if (!signal) return
-
-  if (inDevelopment && !(signal instanceof AbortSignal)) {
-    throw new TypeError('must pass an AbortSignal')
-  }
-
-  if (signal.aborted) {
-    if (typeof DOMException !== 'undefined') {
-      // eslint-disable-next-line @typescript-eslint/no-throw-literal
-      throw new DOMException('aborted', 'AbortError')
-    } else {
-      const e = new AbortError('aborted')
-      e.code = 'ERR_ABORTED'
-      throw e
-    }
-  }
-}
-
-export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
-  if (!signal) return Observable.create()
-  return fromEvent(signal, 'abort')
-}
-
-/**
- * check if the given exception was caused by an operation being intentionally aborted
- * @param exception -
- */
-export function isAbortException(exception: Error): boolean {
-  return (
-    // DOMException
-    exception.name === 'AbortError' ||
-    // standard-ish non-DOM abort exception
-    (exception as AbortError).code === 'ERR_ABORTED' ||
-    // message contains aborted for bubbling through RPC
-    // things we have seen that we want to catch here
-    // Error: aborted
-    // AbortError: aborted
-    // AbortError: The user aborted a request.
-    !!exception.message.match(/\b(aborted|AbortError)\b/i)
-  )
-}
 interface Assembly {
   name: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -640,3 +585,5 @@ export function makeAbortableReaction<T, U, V>(
 export function minmax(a: number, b: number) {
   return [Math.min(a, b), Math.max(a, b)]
 }
+
+export { default as useEventListener } from 'react-use-event-listener'

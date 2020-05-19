@@ -274,16 +274,16 @@ describe('test renamed refs', () => {
   it('open a cram with alternate renamed ref', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findAllByTestId, findByTestId, findByText } = render(
+    const { findByTestId, findAllByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_alignments'))
 
-    const [canvas] = await findAllByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId('prerendered_canvas')
 
-    const img = canvas.toDataURL()
+    const img = canvas[0].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
     // this is needed to do a fuzzy image comparison because
@@ -578,7 +578,7 @@ describe('circular views', () => {
   })
 })
 
-describe('breakpoint split view', () => {
+xdescribe('breakpoint split view', () => {
   it('open a split view', async () => {
     console.warn = jest.fn()
     const pluginManager = getPluginManager(breakpointConfig)

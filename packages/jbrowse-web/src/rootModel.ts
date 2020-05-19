@@ -1,11 +1,12 @@
-import assemblyManagerFactory from '@gmod/jbrowse-core/assemblyManager'
+import assemblyManagerFactory, {
+  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
+} from '@gmod/jbrowse-core/assemblyManager'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { AbstractSessionModel } from '@gmod/jbrowse-core/util'
 import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
-import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 // @ts-ignore
