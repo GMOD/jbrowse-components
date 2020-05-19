@@ -20,12 +20,14 @@ export interface BaseLayout<T> {
     left: number,
     right: number,
     height: number,
-    data: Record<string, T>,
+    data?: Record<string, T>,
   ): number | null
   collides(rect: Rectangle<T>, top: number): boolean
   addRectToBitmap(rect: Rectangle<T>, data: Record<string, T>): void
   getRectangles(): Map<string, RectTuple>
   discardRange(left: number, right: number): void
   serializeRegion(region: { start: number; end: number }): SerializedLayout
+  getTotalHeight(): number
+  maxHeightReached: boolean
   toJSON(): SerializedLayout
 }

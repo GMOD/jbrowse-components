@@ -1,9 +1,17 @@
+import assemblyManagerFactory, {
+  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
+} from '@gmod/jbrowse-core/assemblyManager'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
-import { getSnapshot, types, cast, SnapshotIn } from 'mobx-state-tree'
+import { AbstractSessionModel } from '@gmod/jbrowse-core/util'
+import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
+// @ts-ignore
+import RenderWorker from './rpc.worker'
+import * as rpcFuncs from './rpcMethods'
 import sessionModelFactory from './sessionModelFactory'
 
 interface Menu {
@@ -11,13 +19,26 @@ interface Menu {
   menuItems: MenuOption[]
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function RootModel(pluginManager: any) {
+export default function RootModel(pluginManager: PluginManager) {
   const Session = sessionModelFactory(pluginManager)
+  const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
+    pluginManager,
+  )
+  const assemblyConfigSchemasType = types.union(
+    { dispatcher },
+    ...assemblyConfigSchemas,
+  )
+  const assemblyManagerType = assemblyManagerFactory(assemblyConfigSchemasType)
   return types
     .model('Root', {
-      jbrowse: jbrowseWebFactory(pluginManager, Session),
+      jbrowse: jbrowseWebFactory(
+        pluginManager,
+        Session,
+        assemblyConfigSchemasType,
+      ),
       session: types.maybe(Session),
+      assemblyManager: assemblyManagerType,
+      error: types.maybe(types.string),
     })
     .actions(self => ({
       setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
@@ -66,8 +87,11 @@ export default function RootModel(pluginManager: any) {
           )
         this.setSession(newSessionSnapshot)
       },
+      setError(errorMessage: string) {
+        self.error = errorMessage
+      },
     }))
-    .volatile((/* self */) => ({
+    .volatile(self => ({
       history: {},
       menus: [
         {
@@ -84,6 +108,15 @@ export default function RootModel(pluginManager: any) {
           ],
         },
       ] as Menu[],
+      rpcManager: new RpcManager(
+        pluginManager,
+        self.jbrowse.configuration.rpc,
+        {
+          WebWorkerRpcDriver: { WorkerClass: RenderWorker },
+          MainThreadRpcDriver: { rpcFuncs },
+        },
+        self.assemblyManager.getRefNameMapForAdapter,
+      ),
     }))
     .actions(self => ({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -95,7 +128,7 @@ export default function RootModel(pluginManager: any) {
       },
       /**
        * Add a top-level menu
-       * @param menuName Name of the menu to insert.
+       * @param menuName - Name of the menu to insert.
        * @returns The new length of the top-level menus array
        */
       appendMenu(menuName: string) {
@@ -103,8 +136,8 @@ export default function RootModel(pluginManager: any) {
       },
       /**
        * Insert a top-level menu
-       * @param menuName Name of the menu to insert.
-       * @param position Position to insert menu. If negative, counts from th
+       * @param menuName - Name of the menu to insert.
+       * @param position - Position to insert menu. If negative, counts from th
        * end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the
        * second-to-last one.
        * @returns The new length of the top-level menus array
@@ -117,8 +150,8 @@ export default function RootModel(pluginManager: any) {
       },
       /**
        * Add a menu item to a top-level menu
-       * @param menuName Name of the top-level menu to append to.
-       * @param menuItem Menu item to append.
+       * @param menuName - Name of the top-level menu to append to.
+       * @param menuItem - Menu item to append.
        * @returns The new length of the menu
        */
       appendToMenu(menuName: string, menuItem: MenuOption) {
@@ -131,11 +164,11 @@ export default function RootModel(pluginManager: any) {
       },
       /**
        * Insert a menu item into a top-level menu
-       * @param menuName Name of the top-level menu to insert into
-       * @param menuItem Menu item to insert
-       * @param position Position to insert menu item. If negative, counts from
-       * the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the
-       * second-to-last one.
+       * @param menuName - Name of the top-level menu to insert into
+       * @param menuItem - Menu item to insert
+       * @param position - Position to insert menu item. If negative, counts
+       * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
+       * the second-to-last one.
        * @returns The new length of the menu
        */
       insertInMenu(menuName: string, menuItem: MenuOption, position: number) {
@@ -151,9 +184,9 @@ export default function RootModel(pluginManager: any) {
       },
       /**
        * Add a menu item to a sub-menu
-       * @param menuPath Path to the sub-menu to add to, starting with the
+       * @param menuPath - Path to the sub-menu to add to, starting with the
        * top-level menu (e.g. `['File', 'Insert']`).
-       * @param menuItem Menu item to append.
+       * @param menuItem - Menu item to append.
        * @returns The new length of the sub-menu
        */
       appendToSubMenu(menuPath: string[], menuItem: MenuOption) {
@@ -182,12 +215,12 @@ export default function RootModel(pluginManager: any) {
       },
       /**
        * Insert a menu item into a sub-menu
-       * @param menuPath Path to the sub-menu to add to, starting with the
+       * @param menuPath - Path to the sub-menu to add to, starting with the
        * top-level menu (e.g. `['File', 'Insert']`).
-       * @param menuItem Menu item to insert.
-       * @param position Position to insert menu item. If negative, counts from
-       * the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the
-       * second-to-last one.
+       * @param menuItem - Menu item to insert.
+       * @param position - Position to insert menu item. If negative, counts
+       * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
+       * the second-to-last one.
        * @returns The new length of the sub-menu
        */
       insertInSubMenu(
@@ -231,6 +264,7 @@ export function createTestSession(snapshot = {}) {
     jbrowse: {
       configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
     },
+    assemblyManager: {},
   })
   root.setSession({
     name: 'testSession',
@@ -240,5 +274,5 @@ export function createTestSession(snapshot = {}) {
   pluginManager.setRootModel(root)
 
   pluginManager.configure()
-  return root.session
+  return root.session as AbstractSessionModel
 }

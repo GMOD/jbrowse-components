@@ -2,7 +2,7 @@ import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import {
   freeAdapterResources,
   getAdapter,
-} from '@gmod/jbrowse-core/util/dataAdapterCache'
+} from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import {
   deserializeAbortSignal,
   isRemoteAbortSignal,
@@ -10,111 +10,72 @@ import {
 
 export async function getGlobalStats(
   pluginManager,
-  { adapterType, adapterConfig, signal, sessionId },
+  { adapterConfig, signal, sessionId },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getGlobalStats({ signal })
 }
 
 export async function getRegionStats(
   pluginManager,
-  { region, adapterType, adapterConfig, signal, bpPerPx, sessionId },
+  { region, adapterConfig, signal, bpPerPx, sessionId },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getRegionStats(region, { signal, bpPerPx })
 }
 
 export async function getMultiRegionStats(
   pluginManager,
-  { regions, adapterType, adapterConfig, signal, bpPerPx, sessionId },
+  { regions, adapterConfig, signal, bpPerPx, sessionId },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getMultiRegionStats(regions, { signal, bpPerPx })
 }
 
 export async function getRegions(
   pluginManager,
-  { sessionId, adapterType, signal, adapterConfig },
+  { sessionId, signal, adapterConfig },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getRegions({ signal })
 }
 
 export async function getRefNames(
   pluginManager,
-  {
-    sessionId,
-    signal,
-    adapterType,
-    adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
-  },
+  { sessionId, signal, adapterConfig },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
 
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getRefNames({ signal })
 }
 
 export async function getRefNameAliases(
   pluginManager,
-  { sessionId, adapterType, signal, adapterConfig },
+  { sessionId, signal, adapterConfig },
 ) {
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
   return dataAdapter.getRefNameAliases({ signal })
 }
 
@@ -145,7 +106,6 @@ export function freeResources(pluginManager, specification) {
  * @param {object} args
  * @param {object} args.regions - array of regions to render. some renderers (such as circular chord tracks) accept multiple at a time
  * @param {string} args.sessionId
- * @param {string} args.adapterType
  * @param {object} args.adapterConfig
  * @param {string} args.rendererType
  * @param {object} args.renderProps
@@ -155,34 +115,24 @@ export async function render(
   pluginManager,
   {
     regions,
-    region,
-    originalRegion,
     originalRegions,
     sessionId,
-    adapterType,
     adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
     rendererType,
     renderProps,
     signal,
   },
 ) {
-  if (!sessionId) throw new Error('must pass a unique session id')
+  if (!sessionId) {
+    throw new Error('must pass a unique session id')
+  }
 
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
   checkAbortSignal(signal)
 
-  const { dataAdapter } = getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
 
   const RendererType = pluginManager.getRendererType(rendererType)
   if (!RendererType) throw new Error(`renderer "${rendererType}" not found`)
@@ -196,9 +146,7 @@ export async function render(
     sessionId,
     dataAdapter,
     regions,
-    region,
     originalRegions,
-    originalRegion,
     signal,
   })
   checkAbortSignal(signal)
@@ -212,16 +160,7 @@ export async function render(
  */
 export async function comparativeRender(
   pluginManager,
-  {
-    sessionId,
-    adapterType,
-    adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
-    rendererType,
-    renderProps,
-    signal,
-  },
+  { sessionId, adapterConfig, rendererType, renderProps, signal },
 ) {
   if (!sessionId) throw new Error('must pass a unique session id')
 
@@ -230,21 +169,18 @@ export async function comparativeRender(
   }
   checkAbortSignal(signal)
 
-  const { dataAdapter } = getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-    sequenceAdapterType,
-    sequenceAdapterConfig,
-  )
+  const { dataAdapter } = getAdapter(pluginManager, sessionId, adapterConfig)
 
   const RendererType = pluginManager.getRendererType(rendererType)
-  if (!RendererType) throw new Error(`renderer "${rendererType}" not found`)
-  if (!RendererType.ReactComponent)
+
+  if (!RendererType) {
+    throw new Error(`renderer "${rendererType}" not found`)
+  }
+  if (!RendererType.ReactComponent) {
     throw new Error(
       `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
     )
+  }
 
   const result = await RendererType.renderInWorker({
     ...renderProps,

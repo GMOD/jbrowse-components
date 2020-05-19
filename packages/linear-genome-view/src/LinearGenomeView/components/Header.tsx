@@ -1,7 +1,10 @@
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { assembleLocString, getSession } from '@gmod/jbrowse-core/util'
+import { Region } from '@gmod/jbrowse-core/util/types'
+import {
+  assembleLocString,
+  getSession,
+  isSessionModelWithDrawerWidgets,
+} from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
-import Icon from '@material-ui/core/Icon'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import TextField from '@material-ui/core/TextField'
@@ -11,6 +14,10 @@ import ToggleButton from '@material-ui/lab/ToggleButton'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import TrackSelectorIcon from '@material-ui/icons/LineStyle'
+import SearchIcon from '@material-ui/icons/Search'
+import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
+import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import { LinearGenomeViewStateModel, HEADER_BAR_HEIGHT } from '..'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import OverviewScaleBar from './OverviewScaleBar'
@@ -49,10 +56,9 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const Controls = observer(({ model }) => {
+const Controls = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const session: any = getSession(model)
+  const session = getSession(model)
   return (
     <ToggleButton
       onChange={model.activateTrackSelector}
@@ -61,12 +67,14 @@ const Controls = observer(({ model }) => {
       value="track_select"
       color="secondary"
       selected={
+        isSessionModelWithDrawerWidgets(session) &&
         session.visibleDrawerWidget &&
         session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
+        // @ts-ignore
         session.visibleDrawerWidget.view.id === model.id
       }
     >
-      <Icon fontSize="small">line_style</Icon>
+      <TrackSelectorIcon fontSize="small" />
     </ToggleButton>
   )
 })
@@ -103,9 +111,9 @@ const Search = observer(({ model }: { model: LGV }) => {
     setDefaultValue(locs.join(';'))
   }, [contentBlocks])
 
-  async function navTo(locString: string) {
+  function navTo(locString: string) {
     try {
-      await model.navToLocString(locString)
+      model.navToLocString(locString)
     } catch (e) {
       session.pushSnackbarMessage(`${e}`)
     }
@@ -132,7 +140,7 @@ const Search = observer(({ model }: { model: LGV }) => {
   }
 
   const setDisplayedRegion = useCallback(
-    (region: IRegion | undefined) => {
+    (region: Region | undefined) => {
       if (region) {
         model.setDisplayedRegions([region])
       }
@@ -154,12 +162,13 @@ const Search = observer(({ model }: { model: LGV }) => {
       onChange={event => onChange(event)}
       value={value === undefined ? defaultValue : value}
       InputProps={{
-        startAdornment: <Icon fontSize="small">search</Icon>,
+        startAdornment: <SearchIcon fontSize="small" />,
         style: {
           background: fade(theme.palette.background.paper, 0.8),
           height: 32,
         },
       }}
+      // eslint-disable-next-line react/jsx-no-duplicate-props
       inputProps={{ style: { padding: theme.spacing() } }}
       disabled={disabled}
     />
@@ -230,7 +239,7 @@ function PanControls({ model }: { model: LGV }) {
         className={classes.panButton}
         onClick={() => model.slide(-0.9)}
       >
-        <Icon>arrow_back</Icon>
+        <ArrowBackIcon />
       </Button>
       <Button
         size="small"
@@ -238,7 +247,7 @@ function PanControls({ model }: { model: LGV }) {
         className={classes.panButton}
         onClick={() => model.slide(0.9)}
       >
-        <Icon>arrow_forward</Icon>
+        <ArrowForwardIcon />
       </Button>
     </>
   )

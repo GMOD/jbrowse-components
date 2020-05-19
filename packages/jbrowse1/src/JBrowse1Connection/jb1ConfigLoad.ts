@@ -1,6 +1,14 @@
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { parseJB1Json, parseJB1Conf, regularizeConf } from './jb1ConfigParse'
 import { clone, deepUpdate, evalHooks, fillTemplate } from './util'
+import {
+  JBLocation,
+  UriLocation,
+  LocalPathLocation,
+  Config,
+  Track,
+  Include,
+} from './types'
 
 function isUriLocation(location: JBLocation): location is UriLocation {
   return (location as UriLocation).uri !== undefined
@@ -96,7 +104,6 @@ export function parseJb1(config: string, url = ''): Config {
 
 /**
  * Merges config object b into a. Properties in b override those in a.
- * @private
  */
 function mergeConfigs(a: Config | null, b: Config | null): Config | null {
   if (b === null) return null
@@ -167,7 +174,7 @@ function mergeTrackConfigs(a: Track[], b: Track[]): Track[] {
 /**
  * Recursively fetch, parse, and merge all the includes in the given config
  * object.  Calls the callback with the resulting configuration when finished.
- * @param inputConfig Config to load includes into
+ * @param inputConfig - Config to load includes into
  */
 async function loadIncludes(inputConfig: Config): Promise<Config> {
   inputConfig = clone(inputConfig)
@@ -223,7 +230,7 @@ function regularizeIncludes(
 
       // set defaults for format and version
       if (!('format' in include)) {
-        include.format = /\.conf$/.test(include.url) ? 'conf' : 'JB_json'
+        include.format = include.url.endsWith('.conf') ? 'conf' : 'JB_json'
       }
       if (include.format === 'JB_json' && !('version' in include)) {
         include.version = 1
@@ -243,8 +250,10 @@ function fillTemplates<T extends any>(subconfig: T, config: Config): T {
       subconfig[i] = fillTemplates(subconfig[i], config)
     }
   } else if (typeof subconfig === 'object') {
-    for (const name of Object.keys(subconfig)) {
-      subconfig[name] = fillTemplates(subconfig[name], config)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sub = subconfig as Record<string, any>
+    for (const name of Object.keys(sub)) {
+      sub[name] = fillTemplates(sub[name], config)
     }
   } else if (typeof subconfig === 'string') {
     // @ts-ignore
@@ -256,7 +265,7 @@ function fillTemplates<T extends any>(subconfig: T, config: Config): T {
 
 /**
  * list of config properties that should not be recursively merged
- * @param propName name of config property
+ * @param propName - name of config property
  */
 function noRecursiveMerge(propName: string): boolean {
   return propName === 'datasets'
@@ -267,14 +276,12 @@ const configDefaults = {
 
   containerID: 'GenomeBrowser',
   dataRoot: 'data',
-  /* eslint-disable @typescript-eslint/camelcase */
   show_tracklist: true,
   show_nav: true,
   show_menu: true,
   show_overview: true,
   show_fullviewlink: true,
   update_browser_title: true,
-  /* eslint-enable @typescript-eslint/camelcase */
   updateBrowserURL: true,
 
   refSeqs: '{dataRoot}/seq/refSeqs.json',
@@ -298,7 +305,6 @@ const configDefaults = {
 /**
  * Examine the loaded and merged configuration for errors.  Throws
  * exceptions if it finds anything amiss.
- * @private
  * @returns nothing meaningful
  */
 function validateConfig(config: Config): void {

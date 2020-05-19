@@ -1,7 +1,6 @@
 import { getSession } from '@gmod/jbrowse-core/util'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
-import { types, Instance, SnapshotIn } from 'mobx-state-tree'
+import { getSnapshot, types, Instance, SnapshotIn } from 'mobx-state-tree'
 import { autorun, transaction } from 'mobx'
 
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -17,7 +16,7 @@ export default function stateModelFactory(pluginManager: any) {
   const { cast, types: jbrequiredTypes, getParent, addDisposer } = jbrequire(
     'mobx-state-tree',
   )
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const { ElementId } = jbrequire('@gmod/jbrowse-core/util/types/mst')
   const Dotplot1DViewModel = jbrequire(require('./Dotplot1DViewModel'))
 
   return (jbrequiredTypes as Instance<typeof types>)
@@ -82,6 +81,7 @@ export default function stateModelFactory(pluginManager: any) {
         return self.width - self.borderX
       },
       get viewHeight() {
+        // console.log('height', self.height, 'borderY', self.borderY)
         return self.height - self.borderY
       },
       get views() {
@@ -90,37 +90,30 @@ export default function stateModelFactory(pluginManager: any) {
     }))
     .actions(self => ({
       afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const session = getSession(self) as any
+        const session = getSession(self)
         addDisposer(
           self,
           autorun(
-            async () => {
+            () => {
               const axis = [self.viewWidth, self.viewHeight]
               const views = [self.hview, self.vview]
               if (!self.initialized) {
-                self.assemblyNames.forEach(async (name, index) => {
-                  session
-                    .getRegionsForAssemblyName(name)
-                    .then((regions: IRegion[] | undefined) => {
-                      if (regions !== undefined) {
+                self.assemblyNames.forEach((name, index) => {
+                  const assembly = session.assemblyManager.get(name)
+                  if (assembly) {
+                    const { regions } = assembly
+                    if (regions && regions.length) {
+                      const regionsSnapshot = getSnapshot(regions)
+                      if (regionsSnapshot) {
                         transaction(() => {
-                          views[index].setDisplayedRegions(regions)
+                          views[index].setDisplayedRegions(regionsSnapshot)
                           views[index].setBpPerPx(
                             views[index].totalBp / axis[index],
                           )
                         })
-                      } else {
-                        this.setError(
-                          new Error(
-                            `failed to get regions for assembly ${self.assemblyNames[index]}`,
-                          ),
-                        )
                       }
-                    })
-                    .catch((e: Error) => {
-                      this.setError(e)
-                    })
+                    }
+                  }
                 })
               }
             },
@@ -129,12 +122,13 @@ export default function stateModelFactory(pluginManager: any) {
         )
         addDisposer(
           self,
-          autorun(async () => {
+          autorun(() => {
             const padding = 4
             // these are set via autorun to avoid dependency cycle
             this.setBorderY(
               self.hview.dynamicBlocks.contentBlocks.reduce(
-                (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
+                (a, b) =>
+                  Math.max(a, approxPixelStringLen(b.refName.slice(0, 10))),
                 0,
               ) + padding,
             )

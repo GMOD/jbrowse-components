@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/core/styles'
 import clsx from 'clsx'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 
 const useStyles = makeStyles({
   horizontalHandle: {
@@ -11,12 +11,10 @@ const useStyles = makeStyles({
     cursor: 'col-resize',
     height: '100%',
   },
-  // eslint-disable-next-line @typescript-eslint/camelcase
   flexbox_verticalHandle: {
     cursor: 'col-resize',
     alignSelf: 'stretch', // the height: 100% is actually unable to function inside flexbox
   },
-  // eslint-disable-next-line @typescript-eslint/camelcase
   flexbox_horizontalHandle: {
     cursor: 'row-resize',
     alignSelf: 'stretch', // similar to above
@@ -28,8 +26,7 @@ interface ResizeHandleProps {
   vertical?: boolean
   flexbox?: boolean
   className?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [props: string]: any
+  [props: string]: unknown
 }
 
 function ResizeHandle({
@@ -40,47 +37,33 @@ function ResizeHandle({
   ...props
 }: ResizeHandleProps) {
   const [mouseDragging, setMouseDragging] = useState(false)
-  const [prevPos, setPrevPos] = useState(0)
+  const prevPos = useRef(0)
   const classes = useStyles()
 
   useEffect(() => {
-    let cleanup = () => {}
-
     function mouseMove(event: MouseEvent) {
       event.preventDefault()
       const pos = event[vertical ? 'clientX' : 'clientY']
-      const distance = pos - prevPos
+      const distance = pos - prevPos.current
       if (distance) {
         const actualDistance = onDrag(distance)
-        setPrevPos(prevState => prevState + actualDistance)
+        prevPos.current += actualDistance
       }
     }
 
     function mouseUp() {
       setMouseDragging(false)
     }
-
     if (mouseDragging) {
       window.addEventListener('mousemove', mouseMove, true)
       window.addEventListener('mouseup', mouseUp, true)
-      cleanup = () => {
+      return () => {
         window.removeEventListener('mousemove', mouseMove, true)
         window.removeEventListener('mouseup', mouseUp, true)
       }
     }
-    return cleanup
-  }, [mouseDragging, onDrag, prevPos, vertical])
-
-  function mouseDown(event: React.MouseEvent) {
-    event.preventDefault()
-    const pos = event[vertical ? 'clientX' : 'clientY']
-    setPrevPos(pos)
-    setMouseDragging(true)
-  }
-
-  function mouseLeave(event: React.MouseEvent) {
-    event.preventDefault()
-  }
+    return () => {}
+  }, [mouseDragging, onDrag, vertical])
 
   let className
   if (flexbox) {
@@ -97,8 +80,13 @@ function ResizeHandle({
 
   return (
     <div
-      onMouseDown={mouseDown}
-      onMouseLeave={mouseLeave}
+      data-resizer="true"
+      onMouseDown={event => {
+        event.preventDefault()
+        const pos = event[vertical ? 'clientX' : 'clientY']
+        prevPos.current = pos
+        setMouseDragging(true)
+      }}
       role="presentation"
       className={clsx(className, originalClassName)}
       {...props}

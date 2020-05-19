@@ -167,12 +167,16 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 <span
                   class="MuiToggleButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    line_style
-                  </span>
+                    <path
+                      d="M3 16h5v-2H3v2zm6.5 0h5v-2h-5v2zm6.5 0h5v-2h-5v2zM3 20h2v-2H3v2zm4 0h2v-2H7v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zM3 12h8v-2H3v2zm10 0h8v-2h-8v2zM3 4v4h18V4H3z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -189,12 +193,16 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 <span
                   class="MuiButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    arrow_back
-                  </span>
+                    <path
+                      d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -208,12 +216,16 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 <span
                   class="MuiButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    arrow_forward
-                  </span>
+                    <path
+                      d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -259,7 +271,6 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                             aria-hidden="true"
                             class="MuiSvgIcon-root"
                             focusable="false"
-                            role="presentation"
                             viewBox="0 0 24 24"
                           >
                             <path
@@ -297,12 +308,16 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                     class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
                     style="background: rgba(255, 255, 255, 0.8); height: 32px;"
                   >
-                    <span
+                    <svg
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      search
-                    </span>
+                      <path
+                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                      />
+                    </svg>
                     <input
                       aria-invalid="false"
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
@@ -349,12 +364,16 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   <span
                     class="MuiIconButton-label"
                   >
-                    <span
+                    <svg
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      zoom_out
-                    </span>
+                      <path
+                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"
+                      />
+                    </svg>
                   </span>
                 </button>
                 <span
@@ -365,26 +384,21 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   />
                   <span
                     class="MuiSlider-track"
+                    style="left: 0%; width: 100%;"
                   />
                   <input
                     type="hidden"
                     value="5.643856189774724"
                   />
                   <span
-                    class="MuiSlider-mark MuiSlider-markActive"
-                  />
-                  <span
-                    aria-hidden="true"
-                    class="MuiSlider-markLabel MuiSlider-markLabelActive"
-                  />
-                  <span
                     aria-orientation="horizontal"
                     aria-valuemax="5.643856189774724"
-                    aria-valuemin="5.643856189774724"
+                    aria-valuemin="7.643856189774724"
                     aria-valuenow="5.643856189774724"
                     class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
                     data-index="0"
                     role="slider"
+                    style="left: 100%;"
                     tabindex="0"
                   />
                 </span>
@@ -397,12 +411,19 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   <span
                     class="MuiIconButton-label"
                   >
-                    <span
+                    <svg
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      zoom_in
-                    </span>
+                      <path
+                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                      />
+                      <path
+                        d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"
+                      />
+                    </svg>
                   </span>
                   <span
                     class="MuiTouchRipple-root"
@@ -416,23 +437,29 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           </div>
           <div
             class="makeStyles-tracksContainer"
+            role="presentation"
           >
             <div
-              class="makeStyles-verticalGuidesContainer"
-              style="left: -800px; width: 1605px;"
+              class="makeStyles-verticalGuidesZoomContainer"
+              style="transform: scaleX(1);"
             >
               <div
-                class="makeStyles-boundaryPaddingBlock"
-                style="width: 800px;"
-              />
-              <div
-                class="makeStyles-elidedBlock"
-                style="width: 5px;"
-              />
-              <div
-                class="makeStyles-boundaryPaddingBlock"
-                style="width: 800px;"
-              />
+                class="makeStyles-verticalGuidesContainer"
+                style="left: -800px; width: 1605px;"
+              >
+                <div
+                  class="makeStyles-boundaryPaddingBlock"
+                  style="width: 800px;"
+                />
+                <div
+                  class="makeStyles-elidedBlock"
+                  style="width: 5px;"
+                />
+                <div
+                  class="makeStyles-boundaryPaddingBlock"
+                  style="width: 800px;"
+                />
+              </div>
             </div>
             <div
               class="makeStyles-rubberBand"
@@ -458,21 +485,25 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               style="height: 17px; box-sizing: border-box;"
             >
               <div
-                class="makeStyles-scaleBar"
-                style="left: -801px; width: 1605px; height: 17px; box-sizing: border-box;"
+                style="transform: scaleX(1);"
               >
                 <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
-                <div
-                  class="makeStyles-elidedBlock"
-                  style="width: 5px;"
-                />
-                <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
+                  class="makeStyles-scaleBar"
+                  style="left: -801px; width: 1605px; height: 17px; box-sizing: border-box;"
+                >
+                  <div
+                    class="makeStyles-boundaryPaddingBlock"
+                    style="background: none; width: 800px;"
+                  />
+                  <div
+                    class="makeStyles-elidedBlock"
+                    style="width: 5px;"
+                  />
+                  <div
+                    class="makeStyles-boundaryPaddingBlock"
+                    style="background: none; width: 800px;"
+                  />
+                </div>
               </div>
             </div>
             <div
@@ -565,12 +596,16 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 <span
                   class="MuiToggleButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    line_style
-                  </span>
+                    <path
+                      d="M3 16h5v-2H3v2zm6.5 0h5v-2h-5v2zm6.5 0h5v-2h-5v2zM3 20h2v-2H3v2zm4 0h2v-2H7v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zM3 12h8v-2H3v2zm10 0h8v-2h-8v2zM3 4v4h18V4H3z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -587,12 +622,16 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 <span
                   class="MuiButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    arrow_back
-                  </span>
+                    <path
+                      d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -606,12 +645,16 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 <span
                   class="MuiButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    arrow_forward
-                  </span>
+                    <path
+                      d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -657,7 +700,6 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                             aria-hidden="true"
                             class="MuiSvgIcon-root"
                             focusable="false"
-                            role="presentation"
                             viewBox="0 0 24 24"
                           >
                             <path
@@ -695,12 +737,16 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                     class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
                     style="background: rgba(255, 255, 255, 0.8); height: 32px;"
                   >
-                    <span
+                    <svg
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      search
-                    </span>
+                      <path
+                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                      />
+                    </svg>
                     <input
                       aria-invalid="false"
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
@@ -747,12 +793,16 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   <span
                     class="MuiIconButton-label"
                   >
-                    <span
+                    <svg
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      zoom_out
-                    </span>
+                      <path
+                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"
+                      />
+                    </svg>
                   </span>
                 </button>
                 <span
@@ -763,26 +813,21 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   />
                   <span
                     class="MuiSlider-track"
+                    style="left: 0%; width: 100%;"
                   />
                   <input
                     type="hidden"
                     value="5.643856189774724"
                   />
                   <span
-                    class="MuiSlider-mark MuiSlider-markActive"
-                  />
-                  <span
-                    aria-hidden="true"
-                    class="MuiSlider-markLabel MuiSlider-markLabelActive"
-                  />
-                  <span
                     aria-orientation="horizontal"
                     aria-valuemax="5.643856189774724"
-                    aria-valuemin="5.643856189774724"
+                    aria-valuemin="7.643856189774724"
                     aria-valuenow="5.643856189774724"
                     class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
                     data-index="0"
                     role="slider"
+                    style="left: 100%;"
                     tabindex="0"
                   />
                 </span>
@@ -795,12 +840,19 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   <span
                     class="MuiIconButton-label"
                   >
-                    <span
+                    <svg
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      zoom_in
-                    </span>
+                      <path
+                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                      />
+                      <path
+                        d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"
+                      />
+                    </svg>
                   </span>
                   <span
                     class="MuiTouchRipple-root"
@@ -814,23 +866,29 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           </div>
           <div
             class="makeStyles-tracksContainer"
+            role="presentation"
           >
             <div
-              class="makeStyles-verticalGuidesContainer"
-              style="left: -800px; width: 1605px;"
+              class="makeStyles-verticalGuidesZoomContainer"
+              style="transform: scaleX(1);"
             >
               <div
-                class="makeStyles-boundaryPaddingBlock"
-                style="width: 800px;"
-              />
-              <div
-                class="makeStyles-elidedBlock"
-                style="width: 5px;"
-              />
-              <div
-                class="makeStyles-boundaryPaddingBlock"
-                style="width: 800px;"
-              />
+                class="makeStyles-verticalGuidesContainer"
+                style="left: -800px; width: 1605px;"
+              >
+                <div
+                  class="makeStyles-boundaryPaddingBlock"
+                  style="width: 800px;"
+                />
+                <div
+                  class="makeStyles-elidedBlock"
+                  style="width: 5px;"
+                />
+                <div
+                  class="makeStyles-boundaryPaddingBlock"
+                  style="width: 800px;"
+                />
+              </div>
             </div>
             <div
               class="makeStyles-rubberBand"
@@ -856,21 +914,25 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               style="height: 17px; box-sizing: border-box;"
             >
               <div
-                class="makeStyles-scaleBar"
-                style="left: -801px; width: 1605px; height: 17px; box-sizing: border-box;"
+                style="transform: scaleX(1);"
               >
                 <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
-                <div
-                  class="makeStyles-elidedBlock"
-                  style="width: 5px;"
-                />
-                <div
-                  class="makeStyles-boundaryPaddingBlock"
-                  style="background: none; width: 800px;"
-                />
+                  class="makeStyles-scaleBar"
+                  style="left: -801px; width: 1605px; height: 17px; box-sizing: border-box;"
+                >
+                  <div
+                    class="makeStyles-boundaryPaddingBlock"
+                    style="background: none; width: 800px;"
+                  />
+                  <div
+                    class="makeStyles-elidedBlock"
+                    style="width: 5px;"
+                  />
+                  <div
+                    class="makeStyles-boundaryPaddingBlock"
+                    style="background: none; width: 800px;"
+                  />
+                </div>
               </div>
             </div>
             <div

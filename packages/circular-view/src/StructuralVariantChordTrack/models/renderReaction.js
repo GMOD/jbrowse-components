@@ -1,8 +1,7 @@
 export default ({ jbrequire }) => {
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
-  const { getContainingView, getTrackAssemblyNames } = jbrequire(
-    '@gmod/jbrowse-core/util/tracks',
-  )
+  const { getTrackAssemblyNames } = jbrequire('@gmod/jbrowse-core/util/tracks')
+  const { getContainingView } = jbrequire('@gmod/jbrowse-core/util')
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
 
   function renderReactionData(self) {
@@ -11,14 +10,14 @@ export default ({ jbrequire }) => {
     const { rendererType, renderProps } = track
     const { rpcManager } = getSession(view)
 
-    const assemblyName = getTrackAssemblyNames(track)
+    // TODO: do multiple assemblies
+    const [assemblyName] = getTrackAssemblyNames(track)
     const data = {
       rendererType,
       rpcManager,
       renderProps,
       renderArgs: {
         assemblyName,
-        adapterType: track.adapterType.name,
         adapterConfig: JSON.parse(JSON.stringify(getConf(track, 'adapter'))),
         rendererType: rendererType.name,
         renderProps,

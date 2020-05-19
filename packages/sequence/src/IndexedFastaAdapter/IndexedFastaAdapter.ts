@@ -1,22 +1,19 @@
 import { IndexedFasta } from '@gmod/indexedfasta'
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
-import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { FileLocation, NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
-export default class extends BaseAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected fasta: any
+export default class extends BaseFeatureDataAdapter {
+  protected fasta: typeof IndexedFasta
 
-  public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
-
-  public constructor(config: {
-    fastaLocation: IFileLocation
-    faiLocation: IFileLocation
-  }) {
+  public constructor(config: AnyConfigurationModel) {
     super(config)
-    const { fastaLocation, faiLocation } = config
+    const fastaLocation = readConfObject(config, 'fastaLocation')
+    const faiLocation = readConfObject(config, 'faiLocation')
     if (!fastaLocation) {
       throw new Error('must provide fastaLocation')
     }
@@ -24,21 +21,21 @@ export default class extends BaseAdapter {
       throw new Error('must provide faiLocation')
     }
     const fastaOpts = {
-      fasta: openLocation(fastaLocation),
-      fai: openLocation(faiLocation),
+      fasta: openLocation(fastaLocation as FileLocation),
+      fai: openLocation(faiLocation as FileLocation),
     }
 
     this.fasta = new IndexedFasta(fastaOpts)
   }
 
-  public async getRefNames(): Promise<string[]> {
+  public getRefNames() {
     return this.fasta.getSequenceList()
   }
 
-  public async getRegions(): Promise<INoAssemblyRegion[]> {
+  public async getRegions(): Promise<NoAssemblyRegion[]> {
     const seqSizes = await this.fasta.getSequenceSizes()
     return Object.keys(seqSizes).map(
-      (refName: string): INoAssemblyRegion => ({
+      (refName: string): NoAssemblyRegion => ({
         refName,
         start: 0,
         end: seqSizes[refName],
@@ -48,10 +45,10 @@ export default class extends BaseAdapter {
 
   /**
    * Fetch features for a certain region
-   * @param {IRegion} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
+   * @param param -
+   * @returns Observable of Feature objects in the region
    */
-  public getFeatures({ refName, start, end }: INoAssemblyRegion) {
+  public getFeatures({ refName, start, end }: NoAssemblyRegion) {
     return ObservableCreate<Feature>(async observer => {
       const size = await this.fasta.getSequenceSize(refName)
       const regionEnd = size !== undefined ? Math.min(size, end) : end

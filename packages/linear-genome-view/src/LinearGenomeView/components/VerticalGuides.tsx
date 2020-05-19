@@ -19,15 +19,16 @@ import { makeTicks } from '../util'
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles(theme => ({
-  verticalGuidesContainer: {
+  verticalGuidesZoomContainer: {
     position: 'absolute',
     height: '100%',
     width: '100%',
-    overflow: 'hidden',
+  },
+  verticalGuidesContainer: {
+    position: 'absolute',
+    height: '100%',
     zIndex: 1,
     pointerEvents: 'none',
-    whiteSpace: 'nowrap',
-    textAlign: 'left',
     display: 'flex',
   },
   majorTickLabel: {
@@ -64,52 +65,57 @@ function VerticalGuides({
   return (
     <>
       <div
-        className={classes.verticalGuidesContainer}
-        style={{
-          left: offsetLeft,
-          width: model.staticBlocks.totalWidthPx,
-        }}
+        className={classes.verticalGuidesZoomContainer}
+        style={{ transform: `scaleX(${model.scaleFactor})` }}
       >
-        {model.staticBlocks.map((block, index) => {
-          if (block instanceof ContentBlock) {
-            const ticks = makeTicks(block.start, block.end, model.bpPerPx)
-            return (
-              <Block key={`${block.key}-${index}`} block={block}>
-                {ticks.map(tick => {
-                  const x =
-                    (block.reversed
-                      ? block.end - tick.base
-                      : tick.base - block.start) / model.bpPerPx
-                  return (
-                    <div
-                      key={tick.base}
-                      className={clsx(
-                        classes.tick,
-                        tick.type === 'major' || tick.type === 'labeledMajor'
-                          ? classes.majorTick
-                          : classes.minorTick,
-                      )}
-                      style={{ left: x }}
-                    ></div>
-                  )
-                })}
-              </Block>
-            )
-          }
-          if (block instanceof ElidedBlock) {
-            return <ElidedBlockMarker key={block.key} width={block.widthPx} />
-          }
-          if (block instanceof InterRegionPaddingBlock) {
-            return (
-              <InterRegionPaddingBlockMarker
-                key={block.key}
-                width={block.widthPx}
-                boundary={block.variant === 'boundary'}
-              />
-            )
-          }
-          return null
-        })}
+        <div
+          className={classes.verticalGuidesContainer}
+          style={{
+            left: offsetLeft,
+            width: model.staticBlocks.totalWidthPx,
+          }}
+        >
+          {model.staticBlocks.map((block, index) => {
+            if (block instanceof ContentBlock) {
+              const ticks = makeTicks(block.start, block.end, model.bpPerPx)
+              return (
+                <Block key={`${block.key}-${index}`} block={block}>
+                  {ticks.map(tick => {
+                    const x =
+                      (block.reversed
+                        ? block.end - tick.base
+                        : tick.base - block.start) / model.bpPerPx
+                    return (
+                      <div
+                        key={tick.base}
+                        className={clsx(
+                          classes.tick,
+                          tick.type === 'major' || tick.type === 'labeledMajor'
+                            ? classes.majorTick
+                            : classes.minorTick,
+                        )}
+                        style={{ left: x }}
+                      />
+                    )
+                  })}
+                </Block>
+              )
+            }
+            if (block instanceof ElidedBlock) {
+              return <ElidedBlockMarker key={block.key} width={block.widthPx} />
+            }
+            if (block instanceof InterRegionPaddingBlock) {
+              return (
+                <InterRegionPaddingBlockMarker
+                  key={block.key}
+                  width={block.widthPx}
+                  boundary={block.variant === 'boundary'}
+                />
+              )
+            }
+            return null
+          })}
+        </div>
       </div>
       {children}
     </>

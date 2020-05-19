@@ -1,21 +1,24 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import BoxRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { bpSpanPx, iterMap } from '@gmod/jbrowse-core/util'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import {
   createCanvas,
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
+import { BaseLayout } from '@gmod/jbrowse-core/util/layouts/BaseLayout'
+
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 import { sortFeature } from './sortUtil'
 
-interface PileupRenderProps {
+export interface PileupRenderProps {
   features: Map<string, Feature>
-  layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  config: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  region: IRegion
+  layout: BaseLayout<Feature>
+  config: AnyConfigurationModel
+  regions: Region[]
   bpPerPx: number
   height: number
   width: number
@@ -26,12 +29,6 @@ interface PileupRenderProps {
   }
 }
 
-interface PileupImageData {
-  imageData?: ImageBitmap
-  height: number
-  width: number
-  maxHeightReached: boolean
-}
 interface LayoutRecord {
   feature: Feature
   leftPx: number
@@ -40,13 +37,13 @@ interface LayoutRecord {
   heightPx: number
 }
 
-export default class extends BoxRendererType {
+export default class PileupRenderer extends BoxRendererType {
   layoutFeature(
     feature: Feature,
-    subLayout: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-    config: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    layout: BaseLayout<Feature>,
+    config: AnyConfigurationModel,
     bpPerPx: number,
-    region: IRegion,
+    region: Region,
   ): LayoutRecord | null {
     const [leftPx, rightPx] = bpSpanPx(
       feature.get('start'),
@@ -65,12 +62,11 @@ export default class extends BoxRendererType {
         }`,
       )
     }
-    const topPx = subLayout.addRect(
+    const topPx = layout.addRect(
       feature.id(),
       feature.get('start'),
       feature.get('end'),
       heightPx,
-      feature,
     )
     if (topPx === null) {
       return null
@@ -90,21 +86,25 @@ export default class extends BoxRendererType {
       features,
       layout,
       config,
-      region,
+      regions,
       bpPerPx,
       sortObject,
       highResolutionScaling = 1,
     } = props
-
-    if (!layout) throw new Error(`layout required`)
-    if (!layout.addRect) throw new Error('invalid layout object')
+    const [region] = regions
+    if (!layout) {
+      throw new Error(`layout required`)
+    }
+    if (!layout.addRect) {
+      throw new Error('invalid layout object')
+    }
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const w = Math.max(minFeatWidth, pxPerBp)
 
     const sortedFeatures =
       sortObject && sortObject.by && region.start === sortObject.position
-        ? sortFeature(features, sortObject, bpPerPx, region)
+        ? sortFeature(features, sortObject)
         : null
 
     const featureMap = sortedFeatures || features
@@ -245,7 +245,13 @@ export default class extends BoxRendererType {
     } = await this.makeImageData(renderProps)
     const element = React.createElement(
       this.ReactComponent,
-      { ...renderProps, height, width, imageData },
+      {
+        ...renderProps,
+        region: renderProps.regions[0],
+        height,
+        width,
+        imageData,
+      },
       null,
     )
 

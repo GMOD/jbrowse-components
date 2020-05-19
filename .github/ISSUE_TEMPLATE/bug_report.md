@@ -4,15 +4,16 @@ about: Create a report to help us improve
 title: ''
 labels: bug
 assignees: ''
-
 ---
 
 <!-- Please fill out as much of the template as you can. -->
 
 **Describe the bug**
+
 <!-- Put a clear and concise description of the bug here. -->
 
 **To Reproduce**
+
 <!--
 Describe here the steps to reproduce the behavior, e.g.:
 1. Go to '...'
@@ -22,12 +23,15 @@ Describe here the steps to reproduce the behavior, e.g.:
 -->
 
 **Expected behavior**
+
 <!-- Put a clear and concise description of what you expected to happen. -->
 
 **Screenshots**
+
 <!-- If applicable, add screenshots here to help explain your problem. -->
 
 **Version:**
+
 <!--
 Tell us what version of JBrowse 2 you are using (e.g. 2.0.3).
 
@@ -39,4 +43,5 @@ Chrome)
 -->
 
 **Additional context**
+
 <!-- Add any other context about the problem here. -->

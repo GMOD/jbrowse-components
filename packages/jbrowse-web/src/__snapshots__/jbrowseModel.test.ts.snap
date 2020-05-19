@@ -47,7 +47,7 @@ Object {
       "sequence": Object {
         "adapter": Object {
           "twoBitLocation": Object {
-            "uri": "test_data/volvox.2bit",
+            "uri": "test_data/volvox/volvox.2bit",
           },
           "type": "TwoBitAdapter",
         },
@@ -59,12 +59,7 @@ Object {
       },
     },
   ],
-  "configuration": Object {
-    "rpc": Object {
-      "defaultDriver": "MainThreadRpcDriver",
-    },
-    "updateUrl": false,
-  },
+  "configuration": Object {},
   "connections": Array [],
   "defaultSession": Object {
     "name": "New Session",
@@ -106,12 +101,12 @@ Object {
       "adapter": Object {
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox.dup.vcf.gz.tbi",
+            "uri": "test_data/volvox/volvox.dup.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": Object {
-          "uri": "test_data/volvox.dup.vcf.gz",
+          "uri": "test_data/volvox/volvox.dup.vcf.gz",
         },
       },
       "assemblyNames": Array [
@@ -127,10 +122,16 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
-          "uri": "test_data/volvox-sorted-altname.cram.crai",
+          "uri": "test_data/volvox/volvox-sorted-altname.cram.crai",
         },
         "cramLocation": Object {
-          "uri": "test_data/volvox-sorted-altname.cram",
+          "uri": "test_data/volvox/volvox-sorted-altname.cram",
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "test_data/volvox/volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
         },
         "type": "CramAdapter",
       },
@@ -155,11 +156,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox-sorted.bam",
+          "uri": "test_data/volvox/volvox-sorted.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox-sorted.bam.bai",
+            "uri": "test_data/volvox/volvox-sorted.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -186,11 +187,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox-sorted.bam",
+          "uri": "test_data/volvox/volvox-sorted.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox-sorted.bam.bai",
+            "uri": "test_data/volvox/volvox-sorted.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -216,11 +217,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox-sorted-altname.bam",
+          "uri": "test_data/volvox/volvox-sorted-altname.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox-sorted-altname.bam.bai",
+            "uri": "test_data/volvox/volvox-sorted-altname.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -247,11 +248,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox-sorted.bam",
+          "uri": "test_data/volvox/volvox-sorted.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox-sorted.bam.bai",
+            "uri": "test_data/volvox/volvox-sorted.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -279,20 +280,49 @@ Object {
       "adapter": Object {
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox.filtered.vcf.gz.tbi",
+            "uri": "test_data/volvox/volvox.test.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": Object {
-          "uri": "test_data/volvox.filtered.vcf.gz",
+          "uri": "test_data/volvox/volvox.test.vcf.gz",
         },
       },
       "assemblyNames": Array [
         "volvox",
       ],
       "category": Array [
-        "Bee Category",
-        "Boo Category",
+        "VCF",
+      ],
+      "name": "volvox 1000genomes vcf",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox_test_vcf",
+      "type": "VariantTrack",
+    },
+    Object {
+      "adapter": Object {
+        "index": Object {
+          "location": Object {
+            "uri": "test_data/volvox/volvox.filtered.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": Object {
+          "uri": "test_data/volvox/volvox.filtered.vcf.gz",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "VCF",
       ],
       "name": "volvox filtered vcf",
       "renderers": Object {
@@ -309,7 +339,7 @@ Object {
     },
     Object {
       "adapter": Object {
-        "rootUrlTemplate": "test_data/volvox_long_names_nclist/{refseq}/trackData.json",
+        "rootUrlTemplate": "test_data/volvox/volvox_long_names_nclist/{refseq}/trackData.json",
         "type": "NCListAdapter",
       },
       "assemblyNames": Array [
@@ -325,11 +355,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox-sorted.bam.nonexist",
+          "uri": "test_data/volvox/volvox-sorted.bam.nonexist",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox-sorted.bam.bai",
+            "uri": "test_data/volvox/volvox-sorted.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -355,11 +385,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox-sorted.bam",
+          "uri": "test_data/volvox/volvox-sorted.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox-sorted.bam.bai.nonexist",
+            "uri": "test_data/volvox/volvox-sorted.bam.bai.nonexist",
           },
         },
         "type": "BamAdapter",
@@ -385,7 +415,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox.bw.nonexist",
+          "uri": "test_data/volvox/volvox.bw.nonexist",
         },
         "type": "BigWigAdapter",
       },
@@ -410,7 +440,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox_microarray.bw",
+          "uri": "test_data/volvox/volvox_microarray.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -435,7 +465,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox_microarray.bw",
+          "uri": "test_data/volvox/volvox_microarray.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -461,7 +491,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox_microarray.bw",
+          "uri": "test_data/volvox/volvox_microarray.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -487,7 +517,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox_microarray.altname.bw",
+          "uri": "test_data/volvox/volvox_microarray.altname.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -563,6 +593,876 @@ Object {
       },
       "trackId": "lollipop_track",
       "type": "DynamicTrack",
+    },
+    Object {
+      "adapter": Object {
+        "index": Object {
+          "location": Object {
+            "uri": "test_data/volvox.dup.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": Object {
+          "uri": "test_data/volvox.dup.vcf.gz",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "name": "volvox chord test",
+      "renderer": Object {
+        "type": "StructuralVariantChordRenderer",
+      },
+      "trackId": "QGoUN4vNq",
+      "type": "StructuralVariantChordTrack",
+    },
+    Object {
+      "adapter": Object {
+        "features": Array [
+          Object {
+            "end": 191,
+            "name": "Boris",
+            "refName": "ctgA",
+            "score": 200,
+            "start": 190,
+            "type": "foo",
+            "uniqueId": "one",
+          },
+          Object {
+            "end": 192,
+            "name": "Theresa",
+            "refName": "ctgA",
+            "score": 20,
+            "start": 191,
+            "type": "bar",
+            "uniqueId": "two",
+          },
+          Object {
+            "end": 211,
+            "name": "Nigel",
+            "refName": "ctgA",
+            "score": 300,
+            "start": 210,
+            "type": "baz",
+            "uniqueId": "three",
+          },
+          Object {
+            "end": 221,
+            "name": "Geoffray",
+            "refName": "ctgA",
+            "score": 2,
+            "start": 220,
+            "type": "quux",
+            "uniqueId": "four",
+          },
+        ],
+        "type": "FromConfigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Miscellaneous",
+      ],
+      "name": "Lollipop track",
+      "renderer": Object {
+        "type": "LollipopRenderer",
+      },
+      "trackId": "FDN0zpD_B6",
+      "type": "DynamicTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bamLocation": Object {
+          "uri": "test_data/volvox-long-reads-sv.bam",
+        },
+        "index": Object {
+          "location": Object {
+            "uri": "test_data/volvox-long-reads-sv.bam.bai",
+          },
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Alignments",
+      ],
+      "name": "volvox-long reads with SV",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox-long-reads-sv-bam",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "craiLocation": Object {
+          "uri": "test_data/volvox-long-reads-sv.cram.crai",
+        },
+        "cramLocation": Object {
+          "uri": "test_data/volvox-long-reads-sv.cram",
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "test_data/volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Alignments",
+      ],
+      "name": "volvox-long reads with SV (cram)",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox-long-reads-sv-cram",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "craiLocation": Object {
+          "uri": "test_data/volvox-long-reads.fastq.sorted.cram.crai",
+        },
+        "cramLocation": Object {
+          "uri": "test_data/volvox-long-reads.fastq.sorted.cram",
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "test_data/volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Alignments",
+      ],
+      "name": "volvox-long reads (cram)",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox-long-reads-cram",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bamLocation": Object {
+          "uri": "test_data/volvox-long-reads.fastq.sorted.bam",
+        },
+        "index": Object {
+          "location": Object {
+            "uri": "test_data/volvox-long-reads.fastq.sorted.bam.bai",
+          },
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Alignments",
+      ],
+      "name": "volvox-long reads",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox-long-reads-bam",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "craiLocation": Object {
+          "uri": "test_data/volvox-samspec.cram.crai",
+        },
+        "cramLocation": Object {
+          "uri": "test_data/volvox-samspec.cram",
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "test_data/volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Alignments",
+      ],
+      "name": "volvox-samspec (cram)",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox_samspec_cram",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bamLocation": Object {
+          "uri": "test_data/volvox-samspec.bam",
+        },
+        "index": Object {
+          "location": Object {
+            "uri": "test_data/volvox-samspec.bam.bai",
+          },
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Alignments",
+      ],
+      "name": "volvox-samspec",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox_samspec",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "craiLocation": Object {
+          "uri": "test_data/volvox-sv.cram.crai",
+        },
+        "cramLocation": Object {
+          "uri": "test_data/volvox-sv.cram",
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "test_data/volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Alignments",
+      ],
+      "name": "volvox-sv (cram)",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox_sv_cram",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bamLocation": Object {
+          "uri": "test_data/volvox-sv.bam",
+        },
+        "index": Object {
+          "location": Object {
+            "uri": "test_data/volvox-sv.bam.bai",
+          },
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Alignments",
+      ],
+      "name": "volvox-sv",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox_sv",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "gffGzLocation": Object {
+          "uri": "test_data/volvox.sort.gff3.gz",
+        },
+        "index": Object {
+          "location": Object {
+            "uri": "test_data/volvox.sort.gff3.gz.tbi",
+          },
+        },
+        "type": "Gff3TabixAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Miscellaneous",
+      ],
+      "name": "GFF3Tabix genes",
+      "renderer": Object {
+        "type": "SvgFeatureRenderer",
+      },
+      "trackId": "gff3tabix_genes",
+      "type": "BasicTrack",
+    },
+    Object {
+      "adapter": Object {
+        "craiLocation": Object {
+          "uri": "test_data/volvox-sorted.cram.crai",
+        },
+        "cramLocation": Object {
+          "uri": "test_data/volvox-sorted.cram",
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "test_data/volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Alignments",
+      ],
+      "name": "volvox-sorted red/blue (CRAM)",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox_cram",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bamLocation": Object {
+          "uri": "test_data/volvox-sorted.bam",
+        },
+        "index": Object {
+          "location": Object {
+            "uri": "test_data/volvox-sorted.bam.bai",
+          },
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Alignments",
+      ],
+      "name": "volvox-sorted red/blue",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox_bam",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "index": Object {
+          "location": Object {
+            "uri": "test_data/volvox.filtered.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": Object {
+          "uri": "test_data/volvox.filtered.vcf.gz",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Variants",
+      ],
+      "name": "volvox filtered vcf",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "TBggZ1Rwy_p",
+      "type": "VariantTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigBedLocation": Object {
+          "uri": "test_data/volvox.bb",
+        },
+        "type": "BigBedAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Miscellaneous",
+      ],
+      "name": "BigBed genes",
+      "renderer": Object {
+        "type": "SvgFeatureRenderer",
+      },
+      "trackId": "bigbed_genes",
+      "type": "BasicTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bedGzLocation": Object {
+          "uri": "test_data/volvox-bed12.bed.gz",
+        },
+        "index": Object {
+          "location": Object {
+            "uri": "test_data/volvox-bed12.bed.gz.tbi",
+          },
+        },
+        "type": "BedTabixAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Miscellaneous",
+      ],
+      "name": "BedTabix genes",
+      "renderer": Object {
+        "type": "SvgFeatureRenderer",
+      },
+      "trackId": "bedtabix_genes",
+      "type": "BasicTrack",
+    },
+    Object {
+      "adapter": Object {
+        "features": Array [
+          Object {
+            "end": 101,
+            "name": "Boris",
+            "note": "note for boris",
+            "refName": "ctgA",
+            "start": 100,
+            "type": "foo",
+            "uniqueId": "one",
+          },
+          Object {
+            "end": 111,
+            "name": "Theresa",
+            "note": "note for theresa",
+            "refName": "ctgA",
+            "start": 110,
+            "type": "bar",
+            "uniqueId": "two",
+          },
+          Object {
+            "end": 121,
+            "name": "Nigel",
+            "note": "note for nigel",
+            "refName": "ctgA",
+            "start": 120,
+            "type": "baz",
+            "uniqueId": "three",
+          },
+          Object {
+            "end": 131,
+            "name": "Geoffray",
+            "note": "note for geoffray",
+            "refName": "ctgA",
+            "start": 130,
+            "type": "quux",
+            "uniqueId": "four",
+          },
+        ],
+        "type": "FromConfigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Miscellaneous",
+      ],
+      "filterAttributes": Array [
+        "type",
+        "start",
+        "end",
+      ],
+      "name": "Filter track",
+      "renderer": Object {
+        "type": "SvgFeatureRenderer",
+      },
+      "trackId": "gp2w9yFU-MS",
+      "type": "FilteringTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "uri": "test_data/volvox_microarray.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "BigWig",
+        "Line",
+      ],
+      "defaultRendering": "line",
+      "name": "Volvox microarray",
+      "renderers": Object {
+        "DensityRenderer": Object {
+          "type": "DensityRenderer",
+        },
+        "LinePlotRenderer": Object {
+          "type": "LinePlotRenderer",
+        },
+        "XYPlotRenderer": Object {
+          "type": "XYPlotRenderer",
+        },
+      },
+      "trackId": "LrM3WWJR0tj",
+      "type": "WiggleTrack",
+    },
+    Object {
+      "adapter": Object {
+        "rootUrlTemplate": "test_data/volvox_genes_nclist/{refseq}/trackData.json",
+        "type": "NCListAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Miscellaneous",
+      ],
+      "name": "NCList genes",
+      "renderer": Object {
+        "type": "SvgFeatureRenderer",
+      },
+      "trackId": "EA_0Jp4oPKg",
+      "type": "BasicTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "uri": "test_data/volvox_microarray.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "BigWig",
+        "Density",
+      ],
+      "defaultRendering": "density",
+      "name": "Volvox microarray",
+      "renderers": Object {
+        "DensityRenderer": Object {
+          "type": "DensityRenderer",
+        },
+        "LinePlotRenderer": Object {
+          "type": "LinePlotRenderer",
+        },
+        "XYPlotRenderer": Object {
+          "type": "XYPlotRenderer",
+        },
+      },
+      "trackId": "VUyE25kYsQo",
+      "type": "WiggleTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "uri": "test_data/volvox_microarray.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "BigWig",
+        "XYPlot",
+      ],
+      "name": "Volvox microarray",
+      "renderers": Object {
+        "DensityRenderer": Object {
+          "type": "DensityRenderer",
+        },
+        "LinePlotRenderer": Object {
+          "type": "LinePlotRenderer",
+        },
+        "XYPlotRenderer": Object {
+          "type": "XYPlotRenderer",
+        },
+      },
+      "trackId": "24eGIUSM86l",
+      "type": "WiggleTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "uri": "test_data/volvox_microarray_negative.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "BigWig",
+        "Density",
+      ],
+      "defaultRendering": "density",
+      "name": "Volvox microarray - negative",
+      "renderers": Object {
+        "DensityRenderer": Object {
+          "type": "DensityRenderer",
+        },
+        "LinePlotRenderer": Object {
+          "type": "LinePlotRenderer",
+        },
+        "XYPlotRenderer": Object {
+          "type": "XYPlotRenderer",
+        },
+      },
+      "trackId": "oMVFQozR9NO",
+      "type": "WiggleTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "uri": "test_data/volvox_microarray_negative.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "BigWig",
+        "XYPlot",
+      ],
+      "name": "Volvox microarray - negative",
+      "renderers": Object {
+        "DensityRenderer": Object {
+          "type": "DensityRenderer",
+        },
+        "LinePlotRenderer": Object {
+          "type": "LinePlotRenderer",
+        },
+        "XYPlotRenderer": Object {
+          "type": "XYPlotRenderer",
+        },
+      },
+      "trackId": "1at1sLO1Gsl",
+      "type": "WiggleTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "uri": "test_data/volvox_microarray_posneg.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "BigWig",
+        "Line",
+      ],
+      "defaultRendering": "line",
+      "name": "Volvox microarray with +/- values",
+      "renderers": Object {
+        "DensityRenderer": Object {
+          "type": "DensityRenderer",
+        },
+        "LinePlotRenderer": Object {
+          "type": "LinePlotRenderer",
+        },
+        "XYPlotRenderer": Object {
+          "type": "XYPlotRenderer",
+        },
+      },
+      "trackId": "FKQP7kvWcgO",
+      "type": "WiggleTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "uri": "test_data/volvox_microarray_posneg.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "BigWig",
+        "XYPlot",
+      ],
+      "name": "Volvox microarray with +/- values",
+      "renderers": Object {
+        "DensityRenderer": Object {
+          "type": "DensityRenderer",
+        },
+        "LinePlotRenderer": Object {
+          "type": "LinePlotRenderer",
+        },
+        "XYPlotRenderer": Object {
+          "type": "XYPlotRenderer",
+        },
+      },
+      "trackId": "jdYHuGnpAc_",
+      "type": "WiggleTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "uri": "test_data/volvox-sorted.bam.coverage.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "BigWig",
+        "Line",
+      ],
+      "defaultRendering": "line",
+      "name": "Volvox - BAM coverage",
+      "renderers": Object {
+        "DensityRenderer": Object {
+          "type": "DensityRenderer",
+        },
+        "LinePlotRenderer": Object {
+          "type": "LinePlotRenderer",
+        },
+        "XYPlotRenderer": Object {
+          "type": "XYPlotRenderer",
+        },
+      },
+      "trackId": "p7FU-K6WqS_",
+      "type": "WiggleTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "uri": "test_data/volvox-sorted.bam.coverage.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "BigWig",
+      ],
+      "name": "Volvox - BAM coverage",
+      "renderers": Object {
+        "DensityRenderer": Object {
+          "type": "DensityRenderer",
+        },
+        "LinePlotRenderer": Object {
+          "type": "LinePlotRenderer",
+        },
+        "XYPlotRenderer": Object {
+          "type": "XYPlotRenderer",
+        },
+      },
+      "trackId": "pOOtg9wxcUC",
+      "type": "WiggleTrack",
     },
   ],
 }

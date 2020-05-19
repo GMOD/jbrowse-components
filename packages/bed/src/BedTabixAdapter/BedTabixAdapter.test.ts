@@ -1,19 +1,22 @@
 import { toArray } from 'rxjs/operators'
 import BedTabixAdapter from './BedTabixAdapter'
+import MyConfigSchema from './configSchema'
 
 test('adapter can fetch features from volvox-bed12.bed.gz', async () => {
-  const adapter = new BedTabixAdapter({
-    bedGzLocation: {
-      localPath: require.resolve('./test_data/volvox-bed12.bed.gz'),
-    },
-    index: {
-      location: {
-        localPath: require.resolve('./test_data/volvox-bed12.bed.gz.tbi'),
+  const adapter = new BedTabixAdapter(
+    MyConfigSchema.create({
+      bedGzLocation: {
+        localPath: require.resolve('./test_data/volvox-bed12.bed.gz'),
       },
-    },
-  })
+      index: {
+        location: {
+          localPath: require.resolve('./test_data/volvox-bed12.bed.gz.tbi'),
+        },
+      },
+    }),
+  )
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -28,18 +31,20 @@ test('adapter can fetch features from volvox-bed12.bed.gz', async () => {
 })
 
 test('adapter can fetch features from volvox.sort.bed.gz simple bed3', async () => {
-  const adapter = new BedTabixAdapter({
-    bedGzLocation: {
-      localPath: require.resolve('./test_data/volvox.sort.bed.gz'),
-    },
-    index: {
-      location: {
-        localPath: require.resolve('./test_data/volvox.sort.bed.gz.tbi'),
+  const adapter = new BedTabixAdapter(
+    MyConfigSchema.create({
+      bedGzLocation: {
+        localPath: require.resolve('./test_data/volvox.sort.bed.gz'),
       },
-    },
-  })
+      index: {
+        location: {
+          localPath: require.resolve('./test_data/volvox.sort.bed.gz.tbi'),
+        },
+      },
+    }),
+  )
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     refName: 'contigA',
     start: 0,
     end: 20000,
@@ -54,16 +59,17 @@ test('adapter can fetch features from volvox.sort.bed.gz simple bed3', async () 
 })
 
 test('adapter can fetch features bed with autosql', async () => {
-  const adapter = new BedTabixAdapter({
-    bedGzLocation: {
-      localPath: require.resolve('./test_data/volvox-autosql.bed.gz'),
-    },
-    index: {
-      location: {
-        localPath: require.resolve('./test_data/volvox-autosql.bed.gz.tbi'),
+  const adapter = new BedTabixAdapter(
+    MyConfigSchema.create({
+      bedGzLocation: {
+        localPath: require.resolve('./test_data/volvox-autosql.bed.gz'),
       },
-    },
-    autoSql: `table gdcCancer
+      index: {
+        location: {
+          localPath: require.resolve('./test_data/volvox-autosql.bed.gz.tbi'),
+        },
+      },
+      autoSql: `table gdcCancer
 "somatic variants converted from MAF files obtained through the NCI GDC"
     (
     string chrom;      "Chromosome (or contig, scaffold, etc.)"
@@ -104,9 +110,9 @@ test('adapter can fetch features bed with autosql', async () => {
     lstring Matched_Norm_Sample_Barcode;  "Matcheds normal sample barcode"
     lstring case_id;                "Case ID number"
 )`,
-  })
-
-  const features = await adapter.getFeatures({
+    }),
+  )
+  const features = adapter.getFeatures({
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -121,20 +127,24 @@ test('adapter can fetch features bed with autosql', async () => {
 })
 
 test('adapter can fetch bed with header', async () => {
-  const adapter = new BedTabixAdapter({
-    bedGzLocation: {
-      localPath: require.resolve('./test_data/volvox.sort.with.header.bed.gz'),
-    },
-    index: {
-      location: {
+  const adapter = new BedTabixAdapter(
+    MyConfigSchema.create({
+      bedGzLocation: {
         localPath: require.resolve(
-          './test_data/volvox.sort.with.header.bed.gz.tbi',
+          './test_data/volvox.sort.with.header.bed.gz',
         ),
       },
-    },
-  })
+      index: {
+        location: {
+          localPath: require.resolve(
+            './test_data/volvox.sort.with.header.bed.gz.tbi',
+          ),
+        },
+      },
+    }),
+  )
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     refName: 'contigA',
     start: 0,
     end: 20000,

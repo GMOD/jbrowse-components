@@ -67,7 +67,7 @@ export default class NestedFrequencyTable {
 
   // get a given category as a frequency table
   getNested(path: string | string[]) {
-    if (typeof path == 'string') {
+    if (typeof path === 'string') {
       path = path.split('/')
     }
 

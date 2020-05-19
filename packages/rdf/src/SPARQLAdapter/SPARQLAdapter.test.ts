@@ -6,6 +6,8 @@ import queryResponse from './test_data/queryResponse.json'
 import refNamesResponse from './test_data/refNamesResponse.json'
 import 'core-js/stable'
 
+import configSchema from './configSchema'
+
 // window.fetch = jest.fn(url => new Promise(resolve => resolve()))
 
 test('adapter can fetch variants from volvox.vcf.gz', async () => {
@@ -20,14 +22,17 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
 
   // @ts-ignore
   const spy = jest.spyOn(global, 'fetch')
-  spy.mockImplementation(mockFetch)
-  const adapter = new Adapter({
-    endpoint: { uri: 'http://somesite.com/sparql' },
-    queryTemplate: 'fakeSPARQLQuery-start{start}-end{end}-{refName}',
-    refNamesQueryTemplate: 'fakeRefNamesQuery',
-    additionalQueryParams: ['format=json'],
-    refNames: [],
-  })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  spy.mockImplementation(mockFetch as any)
+  const adapter = new Adapter(
+    configSchema.create({
+      endpoint: { uri: 'http://somesite.com/sparql' },
+      queryTemplate: 'fakeSPARQLQuery-start{start}-end{end}-{refName}',
+      refNamesQueryTemplate: 'fakeRefNamesQuery',
+      additionalQueryParams: ['format=json'],
+      refNames: [],
+    }),
+  )
 
   const refNames = await adapter.getRefNames()
   expect(spy).toHaveBeenLastCalledWith(
@@ -40,7 +45,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   expect(refNames.length).toBe(17)
   expect(refNames[0]).toBe('NC_004353.4')
 
-  const features = await adapter.getFeatures({
+  const features = adapter.getFeatures({
     refName: 'chr1',
     start: 0,
     end: 20000,
@@ -55,7 +60,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     },
   )
 
-  const featuresNonExist = await adapter.getFeatures({
+  const featuresNonExist = adapter.getFeatures({
     refName: 'chr80',
     start: 0,
     end: 20000,

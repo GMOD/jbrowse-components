@@ -38,17 +38,46 @@ export interface Feature {
   /*
    * Convert to JSON
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  toJSON(): Record<string, any>
+  toJSON(): SimpleFeatureSerialized
 }
 
-// difficult to formalize type but see comments in constructor
-interface SimpleFeatureArgs {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: Record<string, any>
-  parent?: Feature
-  id?: string | number // thing that can be stringified easily
+export function isFeature(thing: unknown): thing is Feature {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    typeof (thing as Feature).get === 'function' &&
+    typeof (thing as Feature).id === 'function'
+  )
 }
+
+export interface SimpleFeatureArgs {
+  /** key-value data, must include 'start' and 'end' */
+  data: {}
+  /** optional parent feature */
+  parent?: Feature
+  /** unique identifier. can also be in data.uniqueId */
+  id: string | number // thing that can be stringified easily
+}
+
+// subfeatures do not have to have uniqueId
+interface SimpleFeatureSerializedNoId {
+  [key: string]: unknown
+  parentId?: string
+  subfeatures?: SimpleFeatureSerializedNoId[]
+}
+
+// base serialized feature has to have a uniqueId
+export interface SimpleFeatureSerialized extends SimpleFeatureSerializedNoId {
+  subfeatures?: SimpleFeatureSerializedNoId[]
+  uniqueId: string
+}
+
+function isSimpleFeatureSerialized(
+  args: SimpleFeatureSerialized | SimpleFeatureArgs,
+): args is SimpleFeatureSerialized {
+  return 'uniqueId' in args && typeof args.data !== 'object'
+}
+
 /**
  * Simple implementation of a feature object.
  */
@@ -61,33 +90,30 @@ export default class SimpleFeature implements Feature {
   private uniqueId: string
 
   /**
-   * @param args.data {Object} key-value data, must include 'start' and 'end'
-   * @param args.parent {Feature} optional parent feature
-   * @param args.id {String} unique identifier.  can also be in data.uniqueId.
-   * @param args.data.uniqueId {String} alternate location of the unique identifier
+   * @param args - SimpleFeature args
    *
    * Note: args.data.subfeatures can be an array of these same args,
    * which will be inflated to more instances of this class.
    */
-  public constructor(args: SimpleFeatureArgs) {
-    // this.data becomes args.data or from args itself
-    this.data = args.data || args
-
-    // load handle from args.parent (not args.data.parent)
-    // this reason is because if args is an object, it likely isn't properly loaded with
-    // parent as a Feature reference (probably a raw parent ID or something instead)
-    this.parentHandle = args.parent
+  public constructor(args: SimpleFeatureArgs | SimpleFeatureSerialized) {
+    if (isSimpleFeatureSerialized(args)) {
+      this.data = args
+    } else {
+      this.data = args.data || {}
+      // load handle from args.parent (not args.data.parent)
+      // this reason is because if args is an object, it likely isn't properly loaded with
+      // parent as a Feature reference (probably a raw parent ID or something instead)
+      this.parentHandle = args.parent
+    }
 
     // the feature id comes from
     // args.id, args.data.uniqueId, or args.uniqueId due to this initialization
-    const id = args.id || this.data.uniqueId || this.data.uniqueID
-
+    const id = isSimpleFeatureSerialized(args) ? args.uniqueId : args.id
     if (id === undefined || id === null) {
       throw new Error(
         'SimpleFeature requires a unique `id` or `data.uniqueId` attribute',
       )
     }
-    // stringified
     this.uniqueId = String(id)
 
     if (!(this.data.aliases || this.data.end - this.data.start >= 0)) {
@@ -158,19 +184,16 @@ export default class SimpleFeature implements Feature {
     return this.get('subfeatures')
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public toJSON(): Record<string, any> {
-    const d = { ...this.data, uniqueId: this.id() }
+  public toJSON(): SimpleFeatureSerialized {
+    const d = { ...this.data, uniqueId: this.id() } as SimpleFeatureSerialized
     const p = this.parent()
-    // @ts-ignore doesn't need to have parentId in it if there is none
     if (p) d.parentId = p.id()
     const c = this.children()
-    // @ts-ignore
     if (c) d.subfeatures = c.map(child => child.toJSON())
     return d
   }
 
-  public static fromJSON(json: SimpleFeatureArgs): Feature {
+  public static fromJSON(json: SimpleFeatureSerialized) {
     return new SimpleFeature({ ...json })
   }
 }

@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/camelcase,no-underscore-dangle */
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import {
+  Feature,
+  SimpleFeatureSerialized,
+} from '@gmod/jbrowse-core/util/simpleFeature'
+
 import BamAdapter from './BamAdapter'
 
 export interface Mismatch {
@@ -19,8 +23,6 @@ export default class implements Feature {
   private record: any
 
   private adapter: BamAdapter
-
-  private cachedMismatches?: Mismatch[]
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(record: any, adapter: BamAdapter) {
@@ -181,19 +183,20 @@ export default class implements Feature {
     return false
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  toJSON(): Record<string, any> {
+  toJSON(): SimpleFeatureSerialized {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const plain: any = {}
+    const tags: Record<string, any> = {}
     this.tags().forEach((t: string) => {
-      plain[t] = this.get(t)
+      tags[t] = this.get(t)
     })
-    plain.refName = this.get('refName')
-    plain.name = this.get('name')
-    plain.type = this.get('type')
-    plain.uniqueId = this.id()
-    plain.clipPos = this._get_clippos()
-    return plain
+    return {
+      ...tags,
+      refName: this.get('refName'),
+      name: this.get('name'),
+      type: this.get('type'),
+      uniqueId: this.id(),
+      clipPos: this._get_clippos(),
+    }
   }
 
   _get_skips_and_dels(
@@ -332,33 +335,6 @@ export default class implements Feature {
     return mismatches
   }
 
-  // parse just the skips and deletions out of a CIGAR string
-  private cigarToSkipsAndDeletions(ops: CigarOp[]): Mismatch[] {
-    let currOffset = 0
-    const mismatches: Mismatch[] = []
-    ops.forEach(oprec => {
-      const op = oprec[0]
-      const len = oprec[1]
-      if (op === 'D')
-        mismatches.push({
-          start: currOffset,
-          type: 'deletion',
-          base: '*',
-          length: len,
-        })
-      else if (op === 'N')
-        mismatches.push({
-          start: currOffset,
-          type: 'skip',
-          base: 'N',
-          length: len,
-        })
-
-      if (op !== 'I' && op !== 'S' && op !== 'H') currOffset += len
-    })
-    return mismatches
-  }
-
   private parseCigar(cigar: string): CigarOp[] {
     return (cigar.toUpperCase().match(/\d+\D/g) || []).map((op: string) => {
       // @ts-ignore
@@ -368,8 +344,7 @@ export default class implements Feature {
 
   /**
    * parse a SAM MD tag to find mismatching bases of the template versus the reference
-   * @returns {Array[Object]} array of mismatches and their positions
-   * @private
+   * @returns array of mismatches and their positions
    */
   private mdToMismatches(
     mdstring: string,

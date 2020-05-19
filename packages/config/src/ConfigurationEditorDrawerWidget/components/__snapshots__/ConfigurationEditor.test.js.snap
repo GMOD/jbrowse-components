@@ -210,12 +210,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   <span
                     class="MuiIconButton-label"
                   >
-                    <span
+                    <svg
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root"
+                      class="MuiSvgIcon-root"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      delete
-                    </span>
+                      <path
+                        d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                      />
+                    </svg>
                   </span>
                   <span
                     class="MuiTouchRipple-root"
@@ -251,12 +255,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   <span
                     class="MuiIconButton-label"
                   >
-                    <span
+                    <svg
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root"
+                      class="MuiSvgIcon-root"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      delete
-                    </span>
+                      <path
+                        d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                      />
+                    </svg>
                   </span>
                   <span
                     class="MuiTouchRipple-root"
@@ -294,12 +302,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   <span
                     class="MuiIconButton-label"
                   >
-                    <span
+                    <svg
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root"
+                      class="MuiSvgIcon-root"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      add
-                    </span>
+                      <path
+                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                      />
+                    </svg>
                   </span>
                 </button>
               </div>
@@ -375,12 +387,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
               <span
                 class="MuiIconButton-label"
               >
-                <span
+                <svg
                   aria-hidden="true"
-                  class="material-icons MuiIcon-root"
+                  class="MuiSvgIcon-root"
+                  focusable="false"
+                  viewBox="0 0 24 24"
                 >
-                  delete
-                </span>
+                  <path
+                    d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                  />
+                </svg>
               </span>
               <span
                 class="MuiTouchRipple-root"
@@ -420,12 +436,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                       <span
                         class="MuiIconButton-label"
                       >
-                        <span
+                        <svg
                           aria-hidden="true"
-                          class="material-icons MuiIcon-root"
+                          class="MuiSvgIcon-root"
+                          focusable="false"
+                          viewBox="0 0 24 24"
                         >
-                          delete
-                        </span>
+                          <path
+                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                          />
+                        </svg>
                       </span>
                       <span
                         class="MuiTouchRipple-root"
@@ -461,12 +481,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                       <span
                         class="MuiIconButton-label"
                       >
-                        <span
+                        <svg
                           aria-hidden="true"
-                          class="material-icons MuiIcon-root"
+                          class="MuiSvgIcon-root"
+                          focusable="false"
+                          viewBox="0 0 24 24"
                         >
-                          delete
-                        </span>
+                          <path
+                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                          />
+                        </svg>
                       </span>
                       <span
                         class="MuiTouchRipple-root"
@@ -504,12 +528,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                       <span
                         class="MuiIconButton-label"
                       >
-                        <span
+                        <svg
                           aria-hidden="true"
-                          class="material-icons MuiIcon-root"
+                          class="MuiSvgIcon-root"
+                          focusable="false"
+                          viewBox="0 0 24 24"
                         >
-                          add
-                        </span>
+                          <path
+                            d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                          />
+                        </svg>
                       </span>
                     </button>
                   </div>
@@ -558,12 +586,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                     <span
                       class="MuiIconButton-label"
                     >
-                      <span
+                      <svg
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
                       >
-                        add
-                      </span>
+                        <path
+                          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                        />
+                      </svg>
                     </span>
                   </button>
                 </div>
@@ -805,7 +837,6 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                 aria-hidden="true"
                 class="MuiSvgIcon-root"
                 focusable="false"
-                role="presentation"
                 viewBox="0 0 24 24"
               >
                 <path
@@ -960,12 +991,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                   <span
                     class="MuiIconButton-label"
                   >
-                    <span
+                    <svg
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root"
+                      class="MuiSvgIcon-root"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      delete
-                    </span>
+                      <path
+                        d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                      />
+                    </svg>
                   </span>
                   <span
                     class="MuiTouchRipple-root"
@@ -1003,12 +1038,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                   <span
                     class="MuiIconButton-label"
                   >
-                    <span
+                    <svg
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root"
+                      class="MuiSvgIcon-root"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      add
-                    </span>
+                      <path
+                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                      />
+                    </svg>
                   </span>
                 </button>
               </div>
@@ -1146,12 +1185,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                   <span
                     class="MuiIconButton-label"
                   >
-                    <span
+                    <svg
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root"
+                      class="MuiSvgIcon-root"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      add
-                    </span>
+                      <path
+                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                      />
+                    </svg>
                   </span>
                 </button>
               </div>
@@ -1350,7 +1393,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
             aria-hidden="true"
             class="MuiSvgIcon-root"
             focusable="false"
-            role="presentation"
             viewBox="0 0 24 24"
           >
             <path
@@ -1501,7 +1543,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
           >
             <div
               aria-haspopup="listbox"
-              aria-labelledby=" "
               class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
               role="button"
               tabindex="0"
@@ -1516,7 +1557,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
               aria-hidden="true"
               class="MuiSvgIcon-root MuiSelect-icon"
               focusable="false"
-              role="presentation"
               viewBox="0 0 24 24"
             >
               <path
@@ -1672,7 +1712,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 >
                   <div
                     aria-haspopup="listbox"
-                    aria-labelledby=" "
                     class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
                     role="button"
                     tabindex="0"
@@ -1687,7 +1726,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                     aria-hidden="true"
                     class="MuiSvgIcon-root MuiSelect-icon"
                     focusable="false"
-                    role="presentation"
                     viewBox="0 0 24 24"
                   >
                     <path
@@ -1959,7 +1997,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
         >
           <div
             aria-haspopup="listbox"
-            aria-labelledby=" "
             class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
             role="button"
             tabindex="0"
@@ -1974,7 +2011,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
             aria-hidden="true"
             class="MuiSvgIcon-root MuiSelect-icon"
             focusable="false"
-            role="presentation"
             viewBox="0 0 24 24"
           >
             <path
@@ -2251,7 +2287,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                     aria-hidden="true"
                     class="MuiSvgIcon-root"
                     focusable="false"
-                    role="presentation"
                     viewBox="0 0 24 24"
                   >
                     <path
@@ -2285,7 +2320,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 >
                   <div
                     aria-haspopup="listbox"
-                    aria-labelledby=" "
                     class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
                     role="button"
                     tabindex="0"
@@ -2300,7 +2334,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                     aria-hidden="true"
                     class="MuiSvgIcon-root MuiSelect-icon"
                     focusable="false"
-                    role="presentation"
                     viewBox="0 0 24 24"
                   >
                     <path
@@ -2795,7 +2828,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                         spellcheck="false"
                         style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; resize: none; overflow: hidden; padding: 10px 10px 10px 10px;"
                       >
-                        function(feature) { return feature.get('name') || feature.get('id') }
+                        function(feature) { return feature.get('name') || feature.get('id') || feature.id() }
                       </textarea>
                       <pre
                         aria-hidden="true"
@@ -2893,6 +2926,33 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                         </span>
                          
                         <span
+                          class="token operator"
+                        >
+                          ||
+                        </span>
+                         feature
+                        <span
+                          class="token punctuation"
+                        >
+                          .
+                        </span>
+                        <span
+                          class="token function"
+                        >
+                          id
+                        </span>
+                        <span
+                          class="token punctuation"
+                        >
+                          (
+                        </span>
+                        <span
+                          class="token punctuation"
+                        >
+                          )
+                        </span>
+                         
+                        <span
                           class="token punctuation"
                         >
                           }
@@ -2954,7 +3014,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                         aria-hidden="true"
                         class="MuiSvgIcon-root"
                         focusable="false"
-                        role="presentation"
                         viewBox="0 0 24 24"
                       >
                         <path
@@ -3214,7 +3273,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                         aria-hidden="true"
                         class="MuiSvgIcon-root"
                         focusable="false"
-                        role="presentation"
                         viewBox="0 0 24 24"
                       >
                         <path
@@ -3365,7 +3423,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 >
                   <div
                     aria-haspopup="listbox"
-                    aria-labelledby=" "
                     class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
                     role="button"
                     tabindex="0"
@@ -3380,7 +3437,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                     aria-hidden="true"
                     class="MuiSvgIcon-root MuiSelect-icon"
                     focusable="false"
-                    role="presentation"
                     viewBox="0 0 24 24"
                   >
                     <path

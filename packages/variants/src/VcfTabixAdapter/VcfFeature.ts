@@ -53,8 +53,7 @@ export default class VCFFeature implements Feature {
     return this.variant[field] || this.data[field]
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  set(name: string, val: any): void {}
+  set(): void {}
 
   parent(): undefined {
     return undefined
@@ -130,7 +129,7 @@ export default class VCFFeature implements Feature {
     if (descriptions.size > 1) {
       const prefixes: Set<string> = new Set()
       descriptions.forEach(desc => {
-        const prefix = desc.match(/(\w+? \w+? -> )(?:<)\w+(?:>)/)
+        const prefix = /(\w+? \w+? -> )(?:<)\w+(?:>)/.exec(desc)
         if (prefix && prefix[1]) prefixes.add(prefix[1])
         else prefixes.add(desc)
       })
@@ -167,17 +166,24 @@ export default class VCFFeature implements Feature {
 
   _getSOAndDescFromAltDefs(
     ref: string,
-    alt: string,
+    alt: string | Breakend,
   ): [string, string] | [undefined, undefined] {
     // not a symbolic ALT if doesn't begin with '<', so we'll have no definition
-    if (alt[0] !== '<') {
+    if (typeof alt === 'object') {
+      return [
+        'breakend',
+        'A VCF breakend defines one end of a point of structural variation',
+      ]
+    }
+
+    if (typeof alt === 'string' && !alt.startsWith('<')) {
       return [undefined, undefined]
     }
 
     alt = alt.replace(/^<|>$/g, '') // trim off < and >
 
     // look for a definition with an SO type for this
-    let soTerm = VCFFeature._altTypeToSO[alt] as string | undefined
+    let soTerm = VCFFeature._altTypeToSO[alt]
     // if no SO term but ALT is in metadata, assume sequence_variant
     if (!soTerm && this.parser.getMetadata('ALT', alt))
       soTerm = 'sequence_variant'

@@ -26,6 +26,8 @@ const assemblyConf = {
   },
 }
 
+// unnecessary
+
 describe('<LinearGenomeView />', () => {
   it('renders setup wizard', async () => {
     const session = createTestSession()

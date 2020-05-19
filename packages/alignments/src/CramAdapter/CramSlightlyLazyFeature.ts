@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/camelcase,no-underscore-dangle */
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import CramAdapter from './CramAdapter'
+import {
+  Feature,
+  SimpleFeatureSerialized,
+} from '@gmod/jbrowse-core/util/simpleFeature'
+
+import { ClassReturnedBy } from '@gmod/jbrowse-core/util'
+import CramAdapterF from './CramAdapter'
+
+type CramAdapter = ClassReturnedBy<typeof CramAdapterF>
 
 export interface Mismatch {
   start: number
@@ -179,7 +186,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     return properties
       .filter(
         prop =>
-          /^_get_/.test(prop) &&
+          prop.startsWith('_get_') &&
           prop !== '_get_mismatches' &&
           prop !== '_get_skips_and_dels' &&
           prop !== '_get_cram_read_features',
@@ -235,19 +242,20 @@ export default class CramSlightlyLazyFeature implements Feature {
     return 0
   }
 
-  toJSON() {
+  toJSON(): SimpleFeatureSerialized {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const plain: Record<string, any> = {}
+    const tags: Record<string, any> = {}
     this.tags().forEach((t: string) => {
-      plain[t] = this.get(t)
+      tags[t] = this.get(t)
     })
-    plain.refName = this.get('refName')
-    plain.name = this.get('name')
-    plain.type = this.get('type')
-    plain.uniqueId = this.id()
-    plain.clipPos = this._get_clipPos()
-
-    return plain
+    return {
+      ...tags,
+      refName: this.get('refName'),
+      name: this.get('name'),
+      type: this.get('type'),
+      uniqueId: this.id(),
+      clipPos: this._get_clipPos(),
+    }
   }
 
   _get_mismatches(): Mismatch[] {

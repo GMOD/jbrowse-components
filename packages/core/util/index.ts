@@ -2,18 +2,28 @@ import { toByteArray, fromByteArray } from 'base64-js'
 import {
   getParent,
   isAlive,
-  addDisposer,
   IAnyStateTreeNode,
-  getType,
+  hasParent,
+  addDisposer,
 } from 'mobx-state-tree'
-import { reaction, IReactionPublic } from 'mobx'
+import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import { inflate, deflate } from 'pako'
-import { Observable, fromEvent } from 'rxjs'
 import fromEntries from 'object.fromentries'
 import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import { Feature } from './simpleFeature'
-import { IRegion, INoAssemblyRegion } from '../mst-types'
+import {
+  TypeTestedByPredicate,
+  isSessionModel,
+  isViewModel,
+  Region,
+  NoAssemblyRegion,
+} from './types'
+import { isAbortException, checkAbortSignal } from './aborting'
+
+export * from './types'
+export * from './aborting'
+export * from './when'
 
 if (!Object.fromEntries) {
   fromEntries.shim()
@@ -27,8 +37,8 @@ export const inProduction = !inDevelopment
 
 /**
  * Compress and encode a string as url-safe base64
- * @param str a string to compress and encode
- * @see https://en.wikipedia.org/wiki/Base64#URL_applications
+ * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
+ * @param str-  a string to compress and encode
  */
 export function toUrlSafeB64(str: string): string {
   const bytes = new TextEncoder().encode(str)
@@ -42,8 +52,8 @@ export function toUrlSafeB64(str: string): string {
 
 /**
  * Decode and inflate a url-safe base64 to a string
- * @param b64 a base64 string to decode and inflate
- * @see https://en.wikipedia.org/wiki/Base64#URL_applications
+ * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
+ * @param b64 - a base64 string to decode and inflate
  */
 export function fromUrlSafeB64(b64: string): string {
   const originalB64 = b64PadSuffix(b64.replace(/-/g, '+').replace(/_/g, '/'))
@@ -54,7 +64,7 @@ export function fromUrlSafeB64(b64: string): string {
 
 /**
  * Pad the end of a base64 string with "=" to make it valid
- * @param b64 unpadded b64 string
+ * @param b64 - unpadded b64 string
  */
 function b64PadSuffix(b64: string): string {
   let num = 0
@@ -125,6 +135,20 @@ export function useDebouncedCallback<A extends any[]>(
   }
 }
 
+/** find the first node in the hierarchy that matches the given predicate */
+export function findParentThat(
+  node: IAnyStateTreeNode,
+  predicate: (thing: IAnyStateTreeNode) => boolean,
+) {
+  let currentNode: IAnyStateTreeNode | undefined = node
+  while (currentNode && isAlive(currentNode)) {
+    if (predicate(currentNode)) return currentNode
+    if (hasParent(currentNode)) currentNode = getParent(currentNode)
+    else break
+  }
+  throw new Error('no matching node found')
+}
+
 interface Animation {
   lastPosition: number
   lastTime?: number
@@ -136,6 +160,7 @@ export function springAnimate(
   fromValue: number,
   toValue: number,
   setValue: (value: number) => void,
+  onFinish = () => {},
   precision = 0,
   tension = 170,
   friction = 26,
@@ -171,6 +196,7 @@ export function springAnimate(
     const endOfAnimation = isVelocity && isDisplacement
     if (endOfAnimation) {
       setValue(toValue)
+      onFinish()
     } else {
       setValue(position)
       animationFrameId = requestAnimationFrame(() =>
@@ -189,37 +215,46 @@ export function springAnimate(
   ]
 }
 
-export function getSession(node: IAnyStateTreeNode): IAnyStateTreeNode {
-  let currentNode = node
-  // @ts-ignore
-  while (isAlive(currentNode) && currentNode.pluginManager === undefined)
-    currentNode = getParent(currentNode)
-  return currentNode
+/** find the first node in the hierarchy that matches the given 'is' typescript type guard predicate */
+export function findParentThatIs<
+  PREDICATE extends (thing: IAnyStateTreeNode) => boolean
+>(
+  node: IAnyStateTreeNode,
+  predicate: PREDICATE,
+): TypeTestedByPredicate<PREDICATE> & IAnyStateTreeNode {
+  return findParentThat(node, predicate) as TypeTestedByPredicate<PREDICATE> &
+    IAnyStateTreeNode
 }
 
-export function getContainingView(
-  node: IAnyStateTreeNode,
-): IAnyStateTreeNode | undefined {
-  const currentNode = getParent(node, 2)
-  if (getType(currentNode).name.includes('View')) {
-    return currentNode
+/** get the current JBrowse session model, starting at any node in the state tree */
+export function getSession(node: IAnyStateTreeNode) {
+  try {
+    return findParentThatIs(node, isSessionModel)
+  } catch (e) {
+    throw new Error('no session model found!')
   }
-  return undefined
+}
+
+/** get the state model of the view in the state tree that contains the given node */
+export function getContainingView(node: IAnyStateTreeNode) {
+  try {
+    return findParentThatIs(node, isViewModel)
+  } catch (e) {
+    throw new Error('no containing view found')
+  }
 }
 
 /**
  * Assemble a "locString" from a location, like "ctgA:20-30".
  * The locString uses 1-based coordinates.
  *
- * @param {string} args.refName reference sequence name
- * @param {number} args.start start coordinate
- * @param {number} args.end end coordinate
- * @returns {string} the locString
+ * @param region - Region
+ * @returns the locString
  */
-export function assembleLocString(region: IRegion | INoAssemblyRegion): string {
+export function assembleLocString(region: Region | NoAssemblyRegion): string {
   const { refName, start, end } = region
   let assemblyName
-  if ((region as IRegion).assemblyName) ({ assemblyName } = region as IRegion)
+  if ((region as Region).assemblyName) ({ assemblyName } = region as Region)
   if (assemblyName) return `${assemblyName}:${refName}:${start + 1}..${end}`
   return `${refName}:${start + 1}..${end}`
 }
@@ -311,9 +346,9 @@ export function compareLocStrings(a: string, b: string) {
 /**
  * Ensure that a number is at least min and at most max.
  *
- * @param {number} num
- * @param {number} min
- * @param {number} max
+ * @param num -
+ * @param min -
+ * @param  max -
  */
 export function clamp(num: number, min: number, max: number): number {
   if (num < min) return min
@@ -326,9 +361,9 @@ function roundToNearestPointOne(num: number): number {
 }
 
 /**
- * @param {number} bp
- * @param {IRegion} region
- * @param {number} bpPerPx
+ * @param bp -
+ * @param region -
+ * @param bpPerPx -
  */
 export function bpToPx(
   bp: number,
@@ -358,8 +393,8 @@ export function polarToCartesian(rho: number, theta: number): [number, number] {
 }
 
 /**
- * @param x the x
- * @param y the y
+ * @param x - the x
+ * @param y - the y
  * @returns [rho, theta]
  */
 export function cartesianToPolar(x: number, y: number): [number, number] {
@@ -404,63 +439,6 @@ export function iterMap<T, U>(
   return results
 }
 
-class AbortError extends Error {
-  public code: string | undefined
-}
-
-/**
- * properly check if the given AbortSignal is aborted.
- * per the standard, if the signal reads as aborted,
- * this function throws either a DOMException AbortError, or a regular error
- * with a `code` attribute set to `ERR_ABORTED`.
- *
- * for convenience, passing `undefined` is a no-op
- *
- * @param {AbortSignal} [signal]
- * @returns nothing
- */
-export function checkAbortSignal(signal?: AbortSignal): void {
-  if (!signal) return
-
-  if (inDevelopment && !(signal instanceof AbortSignal)) {
-    throw new TypeError('must pass an AbortSignal')
-  }
-
-  if (signal.aborted) {
-    if (typeof DOMException !== 'undefined') {
-      throw new DOMException('aborted', 'AbortError')
-    } else {
-      const e = new AbortError('aborted')
-      e.code = 'ERR_ABORTED'
-      throw e
-    }
-  }
-}
-
-export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
-  if (!signal) return Observable.create()
-  return fromEvent(signal, 'abort')
-}
-
-/**
- * check if the given exception was caused by an operation being intentionally aborted
- * @param {Error} exception
- * @returns {boolean}
- */
-export function isAbortException(exception: Error): boolean {
-  return (
-    // DOMException
-    exception.name === 'AbortError' ||
-    // standard-ish non-DOM abort exception
-    (exception as AbortError).code === 'ERR_ABORTED' ||
-    // message contains aborted for bubbling through RPC
-    // things we have seen that we want to catch here
-    // Error: aborted
-    // AbortError: aborted
-    // AbortError: The user aborted a request.
-    !!exception.message.match(/\b(aborted|AbortError)\b/i)
-  )
-}
 interface Assembly {
   name: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -489,8 +467,8 @@ export function mergeConfigs(A: Config, B: Config) {
 /**
  * Returns the index of the last element in the array where predicate is true,
  * and -1 otherwise.
- * @param array The source array to search in
- * @param predicate find calls predicate once for each element of the array, in
+ * @param array - The source array to search in
+ * @param predicate - find calls predicate once for each element of the array, in
  * descending order, until it finds one where predicate returns true. If such an
  * element is found, findLastIndex immediately returns that element index.
  * Otherwise, findLastIndex returns -1.
@@ -500,7 +478,7 @@ export function findLastIndex<T>(
   predicate: (value: T, index: number, obj: T[]) => boolean,
 ): number {
   let l = array.length
-  while ((l -= 1)) {
+  while (l--) {
     if (predicate(array[l], l, array)) {
       return l
     }
@@ -509,34 +487,34 @@ export function findLastIndex<T>(
 }
 
 /**
- * makes a mobx reaction with the given functions, that calls actions
- * on the model for each stage of execution, and to abort the reaction function when the
- * model is destroyed.
+ * makes a mobx reaction with the given functions, that calls actions on the
+ * model for each stage of execution, and to abort the reaction function when
+ * the model is destroyed.
  *
- * Will call flowNameStarted(signal), flowNameSuccess(result), and
- * flowNameError(error) actions on the given state tree model when the
- * async reaction function starts, completes, and errors respectively.
+ * Will call startedFunction(signal), successFunction(result), and
+ * errorFunction(error) when the async reaction function starts, completes, and
+ * errors respectively.
  *
- * @param {StateTreeNode} self
- * @param {string} flowName
- * @param {function} dataFunction -> data
- * @param {async_function} asyncReactionFunction(data, signal) -> result
- * @param {object} reactionOptions
+ * @param self -
+ * @param dataFunction -
+ * @param asyncReactionFunction -
+ * @param reactionOptions -
+ * @param startedFunction -
+ * @param successFunction -
+ * @param errorFunction -
  */
-export function makeAbortableReaction<T, U>(
+export function makeAbortableReaction<T, U, V>(
   self: T,
-  flowName: string,
-  dataFunction: (arg: T, name: string) => U,
+  dataFunction: (arg: T) => U,
   asyncReactionFunction: (
     arg: U | undefined,
     signal: AbortSignal,
     model: T,
     handle: IReactionPublic,
-  ) => Promise<void>,
-  reactionOptions: { name: string; fireImmediately: boolean; delay: number },
+  ) => Promise<V>,
+  reactionOptions: IReactionOptions,
   startedFunction: (aborter: AbortController) => void,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  successFunction: (arg: any) => void,
+  successFunction: (arg: V) => void,
   errorFunction: (err: Error) => void,
 ) {
   let inProgress: AbortController | undefined
@@ -554,7 +532,7 @@ export function makeAbortableReaction<T, U>(
   const reactionDisposer = reaction(
     () => {
       try {
-        return dataFunction(self, flowName)
+        return dataFunction(self)
       } catch (error) {
         handleError(error)
         return undefined
@@ -607,3 +585,5 @@ export function makeAbortableReaction<T, U>(
 export function minmax(a: number, b: number) {
   return [Math.min(a, b), Math.max(a, b)]
 }
+
+export { default as useEventListener } from 'react-use-event-listener'

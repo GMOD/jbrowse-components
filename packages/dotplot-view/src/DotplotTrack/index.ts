@@ -14,6 +14,7 @@ import { getSession, makeAbortableReaction } from '@gmod/jbrowse-core/util'
 import jsonStableStringify from 'json-stable-stringify'
 import DotplotTrackComponent from './components/DotplotTrack'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
+import { DotplotViewModel } from '../DotplotView/model'
 
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
@@ -40,7 +41,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           type: types.literal('DotplotTrack'),
           configuration: ConfigurationReference(configSchema),
         })
-        .volatile(self => ({
+        .volatile(() => ({
           // avoid circular typescript reference by casting to generic functional component
           renderInProgress: undefined as AbortController | undefined,
           filled: false,
@@ -73,9 +74,8 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
         afterAttach() {
           makeAbortableReaction(
             self as any,
-            'render',
-            renderBlockData as any,
-            renderBlockEffect as any,
+            renderBlockData,
+            renderBlockEffect,
             {
               name: `${self.type} ${self.id} rendering`,
               delay: 1000,
@@ -140,7 +140,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
     })
 }
 function renderBlockData(self: DotplotTrack) {
-  const { rpcManager } = getSession(self) as any
+  const { rpcManager } = getSession(self)
   const track = self
 
   const { renderProps, rendererType } = track
@@ -150,11 +150,9 @@ function renderBlockData(self: DotplotTrack) {
   // Compare to serverSideRenderedBlock
   readConfObject(self.configuration)
 
-  const sequenceConfig: { type?: string } = {}
-
   const { adapterConfig } = self
   const adapterConfigId = jsonStableStringify(adapterConfig)
-  const parent = getParent(self, 2)
+  const parent = getParent<DotplotViewModel>(self, 2)
   getSnapshot(parent)
   const { views, viewWidth, viewHeight, borderSize, borderX, borderY } = parent
 
@@ -163,10 +161,7 @@ function renderBlockData(self: DotplotTrack) {
     rpcManager,
     renderProps,
     renderArgs: {
-      adapterType: self.adapterType.name,
       adapterConfig,
-      sequenceAdapterType: sequenceConfig.type,
-      sequenceAdapterConfig: sequenceConfig,
       rendererType: rendererType.name,
       views,
       renderProps: {
@@ -184,10 +179,7 @@ function renderBlockData(self: DotplotTrack) {
 }
 
 async function renderBlockEffect(
-  props: ReturnType<typeof renderBlockData>,
-  signal: AbortSignal,
-  self: DotplotTrack,
-  allowRefetch = false,
+  props: ReturnType<typeof renderBlockData> | undefined,
 ) {
   if (!props) {
     throw new Error('cannot render with no props')

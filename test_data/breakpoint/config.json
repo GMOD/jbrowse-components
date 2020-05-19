@@ -1,0 +1,231 @@
+{
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    },
+    "updateUrl": false
+  },
+  "assemblies": [
+    {
+      "name": "hg19",
+      "aliases": [
+        "GRCh37"
+      ],
+      "sequence": {
+        "trackId": "hg19_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/hg19.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "StructuralVariantChordTrack",
+      "trackId": "sv_chord_track",
+      "name": "human chord test",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "test_data/breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+          }
+        }
+      },
+      "renderer": {
+        "type": "StructuralVariantChordRenderer"
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "pacbio_vcf",
+      "name": "HG002.hs37d5.bnds",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "PacBio",
+        "VCF"
+      ],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "test_data/breakpoint/pacbio_chr3_chr6.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/breakpoint/pacbio_chr3_chr6.vcf.gz.tbi"
+          }
+        }
+      },
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "pacbio_hg002_breakpoints",
+      "name": "HG002.hs37d5.11kb",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "PacBio",
+        "BAM"
+      ],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "test_data/breakpoint/pacbio_chr3_chr6.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/breakpoint/pacbio_chr3_chr6.bam.bai"
+          }
+        }
+      },
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer"
+        }
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "New Session"
+  },
+  "savedSessions": [
+    {
+      "name": "Human Example (hg19)",
+      "width": 1850,
+      "drawerWidth": 384,
+      "views": [
+        {
+          "id": "MiDMyyWpp",
+          "type": "BreakpointSplitView",
+          "headerHeight": 44,
+          "width": 1850,
+          "height": 400,
+          "displayName": "pbsv.BND.3:186700648-6:56758392 split detail",
+          "trackSelectorType": "hierarchical",
+          "views": [
+            {
+              "id": "AcZl9Uifbv",
+              "type": "LinearGenomeView",
+              "offsetPx": 18669656.00687344,
+              "bpPerPx": 10,
+              "displayedRegions": [
+                {
+                  "refName": "3",
+                  "start": 0,
+                  "end": 186700647,
+                  "assemblyName": "hg19"
+                },
+                {
+                  "refName": "3",
+                  "start": 186700647,
+                  "end": 198022430,
+                  "assemblyName": "hg19"
+                }
+              ],
+              "tracks": [
+                {
+                  "type": "AlignmentsTrack",
+                  "height": 100,
+                  "configuration": "pacbio_hg002_breakpoints",
+                  "selectedRendering": ""
+                },
+                {
+                  "type": "VariantTrack",
+                  "height": 100,
+                  "configuration": "pacbio_vcf",
+                  "selectedRendering": ""
+                }
+              ],
+              "width": 800,
+              "hideControls": false,
+              "hideHeader": true,
+              "trackSelectorType": "hierarchical",
+              "minimumBlockWidth": 20
+            },
+            {
+              "id": "0Q9aAu1h7g",
+              "type": "LinearGenomeView",
+              "offsetPx": 5675435.581319785,
+              "bpPerPx": 10,
+              "displayedRegions": [
+                {
+                  "refName": "6",
+                  "start": 0,
+                  "end": 56758391,
+                  "assemblyName": "hg19"
+                },
+                {
+                  "refName": "6",
+                  "start": 56758391,
+                  "end": 171115067,
+                  "assemblyName": "hg19"
+                }
+              ],
+              "tracks": [
+                {
+                  "type": "AlignmentsTrack",
+                  "height": 100,
+                  "configuration": "pacbio_hg002_breakpoints",
+                  "selectedRendering": ""
+                },
+                {
+                  "type": "VariantTrack",
+                  "height": 100,
+                  "configuration": "pacbio_vcf",
+                  "selectedRendering": ""
+                }
+              ],
+              "width": 800,
+              "hideControls": false,
+              "hideHeader": true,
+              "": true,
+              "trackSelectorType": "hierarchical",
+              "minimumBlockWidth": 20
+            }
+          ]
+        }
+      ],
+      "drawerWidgets": {
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "collapsed": {},
+          "filterText": ""
+        },
+        "sessionManager": {
+          "id": "sessionManager",
+          "type": "SessionManager"
+        }
+      },
+      "activeDrawerWidgets": {},
+      "connections": {}
+    }
+  ]
+}

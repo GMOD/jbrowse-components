@@ -1,10 +1,11 @@
-import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Slider from '@material-ui/core/Slider'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
+import ZoomIn from '@material-ui/icons/ZoomIn'
+import ZoomOut from '@material-ui/icons/ZoomOut'
 import { LinearGenomeViewStateModel } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -22,40 +23,36 @@ const useStyles = makeStyles({
 
 function ZoomControls({ model }: { model: LGV }) {
   const classes = useStyles()
-  const marks = model.zoomLevels.map(zoomLevel => ({
-    value: -Math.log2(zoomLevel),
-  }))
-  marks.reverse()
+
   return (
     <div className={classes.container}>
       <IconButton
         data-testid="zoom_out"
         onClick={() => {
-          model.zoom(-1)
+          model.zoom(model.bpPerPx * 2)
         }}
-        disabled={model.bpPerPx >= model.maxBpPerPx}
+        disabled={model.bpPerPx >= model.maxBpPerPx || model.scaleFactor !== 1}
         color="secondary"
       >
-        <Icon fontSize="small">zoom_out</Icon>
+        <ZoomOut fontSize="small" />
       </IconButton>
+
       <Slider
         className={classes.slider}
-        marks={marks}
-        step={null}
         value={-Math.log2(model.bpPerPx)}
-        min={marks[0].value}
-        max={marks[marks.length - 1].value}
+        min={-Math.log2(model.maxBpPerPx)}
+        max={-Math.log2(model.minBpPerPx)}
         onChange={(event, value) => model.zoomTo(2 ** -value)}
       />
       <IconButton
         data-testid="zoom_in"
         onClick={() => {
-          model.zoom(1)
+          model.zoom(model.bpPerPx / 2)
         }}
-        disabled={model.bpPerPx <= model.minBpPerPx}
+        disabled={model.bpPerPx <= model.minBpPerPx || model.scaleFactor !== 1}
         color="secondary"
       >
-        <Icon fontSize="small">zoom_in</Icon>
+        <ZoomIn fontSize="small" />
       </IconButton>
     </div>
   )

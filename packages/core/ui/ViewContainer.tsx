@@ -1,6 +1,6 @@
-import Icon, { IconProps as IP } from '@material-ui/core/Icon'
+import { SvgIconProps } from '@material-ui/core/SvgIcon'
 import IconButton, {
-  IconButtonProps as IBP,
+  IconButtonProps as IconButtonPropsType,
 } from '@material-ui/core/IconButton'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
@@ -10,6 +10,8 @@ import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import React, { useEffect, useRef, useState } from 'react'
 import { ContentRect, withContentRect } from 'react-measure'
+import CloseIcon from '@material-ui/icons/Close'
+import MenuIcon from '@material-ui/icons/Menu'
 import { IBaseViewModel } from '../BaseViewModel'
 import EditableTypography from './EditableTypography'
 import Menu from './Menu'
@@ -77,26 +79,10 @@ const ViewMenu = observer(
     IconProps,
   }: {
     model: IBaseViewModel
-    IconButtonProps: IBP
-    IconProps: IP
+    IconButtonProps: IconButtonPropsType
+    IconProps: SvgIconProps
   }) => {
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-
-    function handleClick(event: React.MouseEvent<HTMLElement>) {
-      setAnchorEl(event.currentTarget)
-    }
-
-    const handleMenuItemClick = (
-      event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-      callback: () => void,
-    ) => {
-      callback()
-      setAnchorEl(null)
-    }
-
-    function handleClose() {
-      setAnchorEl(null)
-    }
+    const [anchorEl, setAnchorEl] = useState<HTMLElement>()
 
     if (!(model.menuOptions && model.menuOptions.length)) {
       return null
@@ -109,16 +95,23 @@ const ViewMenu = observer(
           aria-label="more"
           aria-controls="view-menu"
           aria-haspopup="true"
-          onClick={handleClick}
+          onClick={event => {
+            setAnchorEl(event.currentTarget)
+          }}
           data-testid="view_menu"
         >
-          <Icon {...IconProps}>menu</Icon>
+          <MenuIcon {...IconProps} />
         </IconButton>
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
-          onMenuItemClick={handleMenuItemClick}
-          onClose={handleClose}
+          onMenuItemClick={(event, callback) => {
+            callback()
+            setAnchorEl(undefined)
+          }}
+          onClose={() => {
+            setAnchorEl(undefined)
+          }}
           menuOptions={model.menuOptions}
         />
       </>
@@ -208,9 +201,7 @@ export default withContentRect('bounds')(
               edge="end"
               onClick={onClose}
             >
-              <Icon fontSize="small" className={classes.icon}>
-                close
-              </Icon>
+              <CloseIcon fontSize="small" className={classes.icon} />
             </IconButton>
           </div>
           <Paper>{children}</Paper>

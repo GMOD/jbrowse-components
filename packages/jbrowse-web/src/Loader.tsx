@@ -1,15 +1,14 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import {
-  fromUrlSafeB64,
-  inDevelopment,
-  mergeConfigs,
-} from '@gmod/jbrowse-core/util'
+import { fromUrlSafeB64 } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { makeStyles } from '@material-ui/core/styles'
 import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
 import { StringParam, useQueryParam } from 'use-query-params'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { SnapshotOut } from 'mobx-state-tree'
+import { PluginConstructor } from '@gmod/jbrowse-core/Plugin'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
@@ -25,8 +24,10 @@ const useStyles = makeStyles({
 })
 
 export default function Loader() {
-  const [configSnapshot, setConfigSnapshot] = useState()
-  const [plugins, setPlugins] = useState()
+  const [configSnapshot, setConfigSnapshot] = useState<
+    SnapshotOut<AnyConfigurationModel>
+  >()
+  const [plugins, setPlugins] = useState<PluginConstructor[]>()
 
   const [configQueryParam] = useQueryParam('config', StringParam)
   const [sessionQueryParam] = useQueryParam('session', StringParam)
@@ -47,22 +48,6 @@ export default function Loader() {
         setConfigSnapshot(() => {
           throw error
         })
-      }
-      if (configLocation.uri === 'test_data/config.json' && inDevelopment) {
-        try {
-          config = mergeConfigs(
-            config,
-            JSON.parse(
-              (await openLocation({
-                uri: 'test_data/config_in_dev.json',
-              }).readFile('utf8')) as string,
-            ),
-          )
-        } catch (error) {
-          setConfigSnapshot(() => {
-            throw error
-          })
-        }
       }
       setConfigSnapshot(config)
     }
@@ -91,15 +76,17 @@ export default function Loader() {
     )
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const pluginManager = new PluginManager(plugins.map((P: any) => new P()))
+  const pluginManager = new PluginManager(plugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
   let rootModel
   try {
     if (configSnapshot) {
-      rootModel = JBrowseRootModel.create({ jbrowse: configSnapshot })
+      rootModel = JBrowseRootModel.create({
+        jbrowse: configSnapshot,
+        assemblyManager: {},
+      })
     }
   } catch (error) {
     // if it failed to load, it's probably a problem with the saved sessions,
@@ -111,6 +98,7 @@ export default function Loader() {
       )
       rootModel = JBrowseRootModel.create({
         jbrowse: { ...configSnapshot, savedSessions: [] },
+        assemblyManager: {},
       })
     } catch (e) {
       console.error(e)

@@ -1,6 +1,7 @@
 import { FatalErrorDialog } from '@gmod/jbrowse-core/ui'
 import 'core-js/stable'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
+import 'mobx-react/batchingForReactDom'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import ErrorBoundary from 'react-error-boundary'
@@ -15,7 +16,7 @@ if (!window.TextDecoder) window.TextDecoder = TextDecoder
 // this is the main process, so start and register our service worker and web workers
 serviceWorker.register()
 
-async function factoryReset() {
+function factoryReset() {
   localStorage.removeItem('jbrowse-web-data')
   localStorage.removeItem('jbrowse-web-session')
   window.location.reload()

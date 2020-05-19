@@ -1,18 +1,26 @@
 import { objectFromEntries } from '..'
-import { RectTuple } from './BaseLayout'
+import {
+  RectTuple,
+  SerializedLayout,
+  BaseLayout,
+  Rectangle,
+} from './BaseLayout'
 
-export default class PrecomputedLayout {
+export default class PrecomputedLayout<T> implements BaseLayout<T> {
   private rectangles: Map<string, RectTuple>
 
   private totalHeight: number
 
-  constructor({ rectangles = {}, totalHeight = 0 }) {
+  public maxHeightReached: boolean
+
+  constructor({ rectangles, totalHeight, maxHeightReached }: SerializedLayout) {
     this.rectangles = new Map(Object.entries(rectangles))
     // rectangles is of the form "featureId": [leftPx, topPx, rightPx, bottomPx]
     this.totalHeight = totalHeight
+    this.maxHeightReached = maxHeightReached
   }
 
-  addRect(id: string): number {
+  addRect(id: string) {
     const rect = this.rectangles.get(id)
     if (!rect) {
       throw new Error(`id ${id} not found in precomputed feature layout`)
@@ -22,7 +30,7 @@ export default class PrecomputedLayout {
   }
 
   /**
-   * returns a Map of feature id -> rectangle
+   * returns a Map of `feature id -> rectangle`
    */
   getRectangles(): Map<string, RectTuple> {
     return this.rectangles
@@ -32,11 +40,27 @@ export default class PrecomputedLayout {
     return this.totalHeight
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  toJSON(): { rectangles: Record<string, any>; totalHeight: number } {
+  collides(rect: Rectangle<T>, top: number): boolean {
+    throw new Error('Method not implemented.')
+  }
+
+  addRectToBitmap(rect: Rectangle<T>, data: Record<string, T>): void {
+    throw new Error('Method not implemented.')
+  }
+
+  discardRange(left: number, right: number): void {
+    throw new Error('Method not implemented.')
+  }
+
+  serializeRegion(region: { start: number; end: number }): SerializedLayout {
+    throw new Error('Method not implemented.')
+  }
+
+  toJSON(): SerializedLayout {
     return {
       rectangles: objectFromEntries(this.rectangles),
       totalHeight: this.totalHeight,
+      maxHeightReached: false,
     }
   }
 }

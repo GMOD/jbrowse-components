@@ -1,4 +1,5 @@
 import { getSession } from '@gmod/jbrowse-core/util'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Divider from '@material-ui/core/Divider'
 import FormGroup from '@material-ui/core/FormGroup'
@@ -6,7 +7,6 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import propTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
-// eslint-disable-next-line import/no-cycle
 import Category from './Category'
 import TrackEntry from './TrackEntry'
 
@@ -80,17 +80,17 @@ function Contents({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hierarchy.size, categories.length, trackConfigurations.length])
 
-  const { assemblyData } = getSession(model)
-  const thisAssemblyData = assemblyData && assemblyData.get(assemblyName)
+  const { assemblyManager } = getSession(model)
+  const assembly = assemblyManager.get(assemblyName)
   const doneLoading =
     categories.length + trackConfigurations.length === hierarchy.size
 
   const showRefSeqTrack =
     top &&
     !connection &&
-    thisAssemblyData &&
-    thisAssemblyData.sequence &&
-    model.view.type === thisAssemblyData.sequence.viewType
+    assembly &&
+    assembly.configuration.sequence &&
+    model.view.type === getConf(assembly, ['sequence', 'viewType'])
 
   return (
     <>
@@ -99,7 +99,7 @@ function Contents({
           <FormGroup>
             <TrackEntry
               model={model}
-              trackConf={thisAssemblyData.sequence}
+              trackConf={assembly.configuration.sequence}
               assemblyName={assemblyName}
             />
           </FormGroup>

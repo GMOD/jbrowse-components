@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
-import { ElementId } from '@gmod/jbrowse-core/mst-types'
+import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
@@ -76,8 +76,8 @@ const BaseTrack = types
     ),
   })
   .volatile(() => ({
-    ReactComponent: undefined,
-    rendererTypeName: undefined,
+    ReactComponent: undefined as any,
+    rendererTypeName: '',
     ready: false,
     scrollTop: 0,
     error: '',
@@ -138,7 +138,7 @@ const BaseTrack = types
      */
     get adapterType() {
       const adapterConfig = getConf(self, 'adapter')
-      const session: any = getSession(self)
+      const session = getSession(self)
       if (!adapterConfig)
         throw new Error(`no adapter configuration provided for ${self.type}`)
       const adapterType = session.pluginManager.getAdapterType(
@@ -150,8 +150,8 @@ const BaseTrack = types
     },
 
     get showConfigurationButton() {
-      const session: any = getSession(self)
-      return !!session.editConfiguration
+      const session = getSession(self)
+      return Boolean(session.editConfiguration)
     },
 
     /**
@@ -171,7 +171,7 @@ const BaseTrack = types
     },
 
     /**
-     * @param {Region} region
+     * @param region -
      * @returns falsy if the region is fine to try rendering. Otherwise,
      *  return a string of text saying why the region can't be rendered.
      */
@@ -211,7 +211,7 @@ const BaseTrackWithReferences = types
   )
   .actions(self => ({
     activateConfigurationUI() {
-      const session: any = getSession(self)
+      const session = getSession(self)
       session.editConfiguration(self.configuration)
     },
   }))

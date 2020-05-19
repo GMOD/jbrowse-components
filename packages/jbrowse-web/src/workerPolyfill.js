@@ -21,6 +21,11 @@ self.document = {
     return { appendChild() {} }
   },
   createElement() {
-    return { style: {}, setAttribute() {}, appendChild() {} }
+    return {
+      style: {},
+      setAttribute() {},
+      removeAttribute() {},
+      appendChild() {},
+    }
   },
 }
