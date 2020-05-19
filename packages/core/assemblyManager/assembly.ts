@@ -154,8 +154,10 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         return getParent(self, 2).rpcManager
       },
       getCanonicalRefName(refName: string) {
-        if (!(this.refNames && self.refNameAliases)) {
-          return undefined
+        if (!this.refNames || !self.refNameAliases) {
+          throw new Error(
+            'assembly not loaded, getCanonicalRefName should not be used until the assembly is loaded',
+          )
         }
         if (this.refNames.includes(refName)) {
           return refName
@@ -165,7 +167,9 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
             return rName
           }
         }
-        return undefined
+        throw new Error(
+          `unknown reference sequence name ${refName}, this reference does not appear in the assembly`,
+        )
       },
       isValidRefName(refName: string) {
         return this.allRefNames && this.allRefNames.includes(refName)
