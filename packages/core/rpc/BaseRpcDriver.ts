@@ -21,24 +21,24 @@ const WORKER_MAX_PING_TIME = 30 * 1000 // 30 secs
 // the worker times out
 function watchWorker(worker: WorkerHandle, pingTime: number): Promise<void> {
   return new Promise((resolve, reject): void => {
-    // let pingIsOK = true
-    // const watcherInterval = setInterval(() => {
-    //   if (!pingIsOK) {
-    //     clearInterval(watcherInterval)
-    //     reject(
-    //       new Error(
-    //         `worker look longer than ${pingTime} ms to respond. terminated.`,
-    //       ),
-    //     )
-    //   } else {
-    //     pingIsOK = false
-    //     worker
-    //       .call('ping', [], { timeout: 2 * WORKER_MAX_PING_TIME })
-    //       .then(() => {
-    //         pingIsOK = true
-    //       })
-    //   }
-    // }, pingTime)
+    let pingIsOK = true
+    const watcherInterval = setInterval(() => {
+      if (!pingIsOK) {
+        clearInterval(watcherInterval)
+        reject(
+          new Error(
+            `worker look longer than ${pingTime} ms to respond. terminated.`,
+          ),
+        )
+      } else {
+        pingIsOK = false
+        worker
+          .call('ping', [], { timeout: 2 * WORKER_MAX_PING_TIME })
+          .then(() => {
+            pingIsOK = true
+          })
+      }
+    }, pingTime)
   })
 }
 

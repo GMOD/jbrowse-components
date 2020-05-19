@@ -17,7 +17,6 @@ const refNameAdapterMapSet = types.model('RefNameMappingForAdapter', {
   reverseMap: types.map(types.string),
 })
 
-// the `fill` callback will be called for a cache miss
 async function loadRefNameMap(
   assembly: Assembly,
   adapterId: string,
