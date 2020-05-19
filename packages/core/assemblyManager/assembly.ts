@@ -10,7 +10,7 @@ import {
 import { readConfObject } from '../configuration'
 import { Region } from '../util/types'
 import { Region as MSTRegion } from '../util/types/mst'
-import { makeAbortableReaction } from '../util'
+import { makeAbortableReaction, isAbortException, when } from '../util'
 
 const refNameAdapterMapSet = types.model('RefNameMappingForAdapter', {
   forwardMap: types.map(types.string),
@@ -24,53 +24,67 @@ async function loadRefNameMap(
   adapterConf: unknown,
   signal?: AbortSignal,
 ): Promise<void> {
-  if (!assembly.refNameAliasesSet) {
-    return
-  }
-
-  const stateGroupName = adapterId
-  const refNames = await assembly.rpcManager.call(
-    stateGroupName,
-    'getRefNames',
-    {
-      sessionId: assembly.name,
-      adapterConfig: adapterConf,
+  try {
+    await when(() => assembly.ready, {
+      timeout: 20000,
       signal,
-    },
-    { timeout: 1000000 },
-  )
+      name: 'when assembly ready',
+    })
 
-  const refNameMap: Record<string, string> = {}
+    const stateGroupName = adapterId
+    const refNames = await assembly.rpcManager.call(
+      stateGroupName,
+      'getRefNames',
+      {
+        sessionId: assembly.name,
+        adapterConfig: adapterConf,
+        signal,
+      },
+      { timeout: 1000000 },
+    )
 
-  refNames.forEach((refName: string) => {
-    checkRefName(refName)
-    const aliases = assembly.refNameAliases.get(refName)
-    if (aliases) {
-      aliases.forEach(refNameAlias => {
-        refNameMap[refNameAlias] = refName
+    const refNameMap: Record<string, string> = {}
+
+    refNames.forEach((refName: string) => {
+      checkRefName(refName)
+      const aliases = assembly.refNameAliases.get(refName)
+      if (aliases) {
+        aliases.forEach(refNameAlias => {
+          refNameMap[refNameAlias] = refName
+        })
+      } else {
+        assembly.refNameAliases.forEach((configAliases, configRefName) => {
+          if (configAliases.includes(refName)) {
+            refNameMap[configRefName] = refName
+            configAliases.forEach(refNameAlias => {
+              if (refNameAlias !== refName) refNameMap[refNameAlias] = refName
+            })
+          }
+        })
+      }
+    })
+
+    // make the reversed map too
+    const reversed: Record<string, string> = {}
+    for (const [canonicalName, adapterName] of Object.entries(refNameMap)) {
+      reversed[adapterName] = canonicalName
+    }
+
+    assembly.addAdapterMap(adapterId, {
+      forwardMap: refNameMap,
+      reverseMap: reversed,
+    })
+  } catch (err) {
+    if (!isAbortException(err)) {
+      console.error(err)
+      assembly.addAdapterMap(adapterId, {
+        forwardMap: {},
+        reverseMap: {},
       })
     } else {
-      assembly.refNameAliases.forEach((configAliases, configRefName) => {
-        if (configAliases.includes(refName)) {
-          refNameMap[configRefName] = refName
-          configAliases.forEach(refNameAlias => {
-            if (refNameAlias !== refName) refNameMap[refNameAlias] = refName
-          })
-        }
-      })
+      throw err
     }
-  })
-
-  // make the reversed map too
-  const reversed: Record<string, string> = {}
-  for (const [canonicalName, adapterName] of Object.entries(refNameMap)) {
-    reversed[adapterName] = canonicalName
   }
-
-  assembly.addAdapterMap(adapterId, {
-    forwardMap: refNameMap,
-    reverseMap: reversed,
-  })
 }
 
 function checkRefName(refName: string) {
@@ -82,6 +96,10 @@ function checkRefName(refName: string) {
   ) {
     throw new Error(`Encountered invalid refName: "${refName}"`)
   }
+}
+
+function getAdapterId(adapterConf: unknown) {
+  return jsonStableStringify(adapterConf)
 }
 
 type RefNameAliases = Record<string, string[]>
@@ -184,24 +202,20 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         adapterConf: unknown,
         opts: { signal?: AbortSignal } = {},
       ) {
-        const adapterConfigId = jsonStableStringify(adapterConf)
-        const adapterMap = self.adapterMaps.get(adapterConfigId)
+        const adapterId = getAdapterId(adapterConf)
+        const adapterMap = self.adapterMaps.get(adapterId)
         if (!adapterMap) {
-          if (!adapterLoadsInFlight.has(adapterConfigId)) {
+          if (!adapterLoadsInFlight.has(adapterId)) {
             const load = loadRefNameMap(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               self as any,
-              adapterConfigId,
+              adapterId,
               adapterConf,
               opts.signal,
             )
-            adapterLoadsInFlight.set(adapterConfigId, load)
+            adapterLoadsInFlight.set(adapterId, load)
             // clean up the in-flight record when done
-            load
-              .catch(err => {
-                console.error(err)
-              })
-              .finally(() => adapterLoadsInFlight.delete(adapterConfigId))
+            load.finally(() => adapterLoadsInFlight.delete(adapterId))
           }
           return undefined
         }
@@ -234,7 +248,7 @@ function loadAssemblyData(self: Assembly) {
     'sequence',
     'adapter',
   ])
-  const adapterConfigId = jsonStableStringify(sequenceAdapterConfig)
+  const adapterConfigId = getAdapterId(sequenceAdapterConfig)
   const { rpcManager } = getParent(self, 2)
   const refNameAliasesAdapterConfig =
     self.configuration.refNameAliases &&

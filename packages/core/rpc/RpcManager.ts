@@ -129,8 +129,21 @@ class RpcManager {
       regions: [...(args.regions || [])],
     }
     if (assemblyName) {
-      const refNameMap = await whenPresent(() =>
-        this.getRefNameMapForAdapter(adapterConfig, assemblyName, { signal }),
+      const refNameMap = await whenPresent(
+        () => {
+          const val = this.getRefNameMapForAdapter(
+            adapterConfig,
+            assemblyName,
+            {
+              signal,
+            },
+          )
+          return val
+        },
+        {
+          timeout: 30000,
+          name: `getRefNameMapForAdapter($conf, '${assemblyName}')`,
+        },
       )
 
       // console.log(`${JSON.stringify(regions)} ${JSON.stringify(refNameMap)}`)
