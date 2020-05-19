@@ -172,7 +172,11 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         )
       },
       isValidRefName(refName: string) {
-        return this.allRefNames && this.allRefNames.includes(refName)
+        if (!this.allRefNames)
+          throw new Error(
+            'isValidRefName cannot be called yet, the assembly has not finished loading',
+          )
+        return this.allRefNames.includes(refName)
       },
     }))
     .actions(self => ({

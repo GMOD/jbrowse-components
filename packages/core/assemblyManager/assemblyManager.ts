@@ -79,7 +79,9 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
           }
         }
         if (!self.allPossibleRefNames) {
-          return undefined
+          throw new Error(
+            `isValidRefName not available, assemblyManager has not yet finished loading`,
+          )
         }
         return self.allPossibleRefNames.includes(refName)
       },
