@@ -1,6 +1,8 @@
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import { SnapshotIn } from 'mobx-state-tree'
+import { ConfigurationSchema } from '../configuration'
+import PluginManager from '../PluginManager'
 
-export default function (pluginManager) {
+export default (pluginManager: PluginManager) => {
   const BaseAssemblyConfigSchema = ConfigurationSchema(
     'BaseAssembly',
     {
@@ -25,7 +27,11 @@ export default function (pluginManager) {
     { baseConfiguration: BaseAssemblyConfigSchema },
   )
 
-  function dispatcher(snapshot) {
+  function dispatcher(
+    snapshot:
+      | SnapshotIn<typeof BaseAssemblyConfigSchema>
+      | SnapshotIn<typeof AssemblyConfigSchema>,
+  ) {
     if (!snapshot) return BaseAssemblyConfigSchema
     const { refNameAliases } = snapshot
     if (refNameAliases) return AssemblyConfigSchema

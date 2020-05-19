@@ -10,7 +10,8 @@ export default ({ jbrequire }) => {
     const { rendererType, renderProps } = track
     const { rpcManager } = getSession(view)
 
-    const assemblyName = getTrackAssemblyNames(track)
+    // TODO: do multiple assemblies
+    const [assemblyName] = getTrackAssemblyNames(track)
     const data = {
       rendererType,
       rpcManager,

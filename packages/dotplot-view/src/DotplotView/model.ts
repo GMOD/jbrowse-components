@@ -102,13 +102,16 @@ export default function stateModelFactory(pluginManager: any) {
                   const assembly = session.assemblyManager.get(name)
                   if (assembly) {
                     const { regions } = assembly
-                    if (regions.length) {
-                      transaction(() => {
-                        views[index].setDisplayedRegions(getSnapshot(regions))
-                        views[index].setBpPerPx(
-                          views[index].totalBp / axis[index],
-                        )
-                      })
+                    if (regions && regions.length) {
+                      const regionsSnapshot = getSnapshot(regions)
+                      if (regionsSnapshot) {
+                        transaction(() => {
+                          views[index].setDisplayedRegions(regionsSnapshot)
+                          views[index].setBpPerPx(
+                            views[index].totalBp / axis[index],
+                          )
+                        })
+                      }
                     }
                   }
                 })
