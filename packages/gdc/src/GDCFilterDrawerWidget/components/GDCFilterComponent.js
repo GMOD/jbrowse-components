@@ -1,3 +1,4 @@
+
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState } from 'react'
@@ -18,6 +19,8 @@ import Tooltip from '@material-ui/core/Tooltip'
 import HelpIcon from '@material-ui/icons/Help'
 import ClearIcon from '@material-ui/icons/Clear'
 import AddIcon from '@material-ui/icons/Add'
+
+import { MutationHighlightFeature } from './ColourFeatures'
 
 // TODO: Convert these to use the GDC API
 const ssmFacets = [

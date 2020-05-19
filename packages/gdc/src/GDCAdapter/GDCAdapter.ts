@@ -29,7 +29,7 @@ export default class extends BaseFeatureDataAdapter {
     const cases = readConfObject(config, 'cases') as string[]
     const size = readConfObject(config, 'size') as number
     const featureType = readConfObject(config, 'featureType') as string
-    const colorBy = readConfObject(config, 'colorBy') as any
+    const colorBy = readConfObject(config, 'colorBy')
     this.filters = filters
     this.cases = cases
     this.size = size
