@@ -41,9 +41,11 @@ const Base1DView = types
     },
 
     get displayedRegionsMap() {
-      return Object.fromEntries(self.displayedRegions.map(region => {
-        return [region.refName, region.offsetPx]
-      })
+      return Object.fromEntries(
+        self.displayedRegions.map(region => {
+          return [region.refName, region.offsetPx]
+        }),
+      )
     },
 
     get displayedRegionsTotalPx() {
