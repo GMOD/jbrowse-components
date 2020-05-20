@@ -474,12 +474,20 @@ const mutationHighlightFeatures = [
     ],
   },
   {
-    name: 'Mutation Frequency',
+    name: 'Mutation Count',
     type: 'threshold',
-    description: 'Colour by mutation recurrence across the GDC.',
+    description:
+      'Colour by mutation occurrence count across the current cohort.',
     attributeName: 'score',
+    values: [{ name: 'Count', colour1: 'red', colour2: 'blue', threshold: 2 }],
+  },
+  {
+    name: 'Mutation Frequency',
+    type: 'percentage',
+    description: 'Frequency of mutation occurrence across the current cohort.',
+    attributeName: 'percentage',
     values: [
-      { name: 'Frequency', colour1: 'red', colour2: 'blue', threshold: 2 },
+      { name: 'Percentage', colour1: 'dark green', colour2: 'light green' },
     ],
   },
 ]

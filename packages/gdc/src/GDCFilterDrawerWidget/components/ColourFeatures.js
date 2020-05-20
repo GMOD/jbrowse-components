@@ -67,6 +67,8 @@ export const HighlightFeature = observer(({ schema, type }) => {
       }
     } else if (hlBy.type === 'boolean') {
       colourFunction = `function(feature) { if (feature.get('${hlBy.attributeName}')) {return '${hlBy.values[0].colour1}'; } else {return '${hlBy.values[0].colour2}'; } }`
+    } else if (hlBy.type === 'percentage') {
+      colourFunction = `function(feature) { const logValue = feature.get('${hlBy.attributeName}'); return 'rgb(0,' + logValue + ',0)' }`
     } else {
       colourFunction = `function(feature) { return 'goldenrod' }`
     }
@@ -173,6 +175,31 @@ export const HighlightFeature = observer(({ schema, type }) => {
                   <TableCell>Value</TableCell>
                   <TableCell>True</TableCell>
                   <TableCell>False</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {colourBy.values &&
+                  colourBy.values.map(value => {
+                    return (
+                      <TableRow key={value.name}>
+                        <TableCell>
+                          {value.name !== '' ? value.name : 'n/a'}
+                        </TableCell>
+                        <TableCell>{value.colour1}</TableCell>
+                        <TableCell>{value.colour2}</TableCell>
+                      </TableRow>
+                    )
+                  })}
+              </TableBody>
+            </Table>
+          )}
+          {colourBy.values && colourBy.type === 'percentage' && (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Value</TableCell>
+                  <TableCell>Low</TableCell>
+                  <TableCell>High</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

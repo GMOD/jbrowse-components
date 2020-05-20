@@ -571,6 +571,8 @@ function GDCFeatureDetails(props) {
     cosmicId,
     canonicalTranscriptId,
     externalDbIds,
+    percentage,
+    numOfCasesInCohort,
     ...rest
   } = feat
   /* eslint-enable @typescript-eslint/no-unused-vars */
