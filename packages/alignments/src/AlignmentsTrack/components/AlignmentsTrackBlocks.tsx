@@ -49,7 +49,7 @@ function AlignmentsTrackBlocks({
     trackModel: Instance<BlockBasedTrackStateModel>,
   ) => {
     e.preventDefault()
-    if (trackModel.contextMenuOptions) {
+    if (trackModel.contextMenuOptions.length) {
       setContextMenu(trackModel.contextMenuOptions)
       setState({
         mouseX: e.clientX - 2,
