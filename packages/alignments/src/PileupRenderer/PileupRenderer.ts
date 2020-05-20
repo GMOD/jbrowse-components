@@ -102,17 +102,14 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   // expands region for clipping to use
-  // TODOCLIP continue working on expanding region larger if the default 100 isn't large enough
-  getExpandedRegion(
-    region: Region,
-    renderArgs: RenderArgsDeserialized | PileupRenderProps,
-    expansion?: number,
-  ) {
+  // In future when stats are improved, look for average read size in renderArg stats
+  // and set that as the maxClippingSize/expand region by average read size
+  getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
+    console.log('running')
     if (!region) return region
     const { bpPerPx, config, showSoftClip } = renderArgs
-    const configClippingSize =
+    const maxClippingSize =
       config === undefined ? 0 : readConfObject(config, 'maxClippingSize')
-    const maxClippingSize = expansion || configClippingSize
     if (!maxClippingSize || !showSoftClip) return region
     const bpExpansion = Math.round(maxClippingSize * bpPerPx)
     return {
@@ -178,8 +175,6 @@ export default class PileupRenderer extends BoxRendererType {
     ctx.font = 'bold 10px Courier New,monospace'
     const charSize = ctx.measureText('A')
     charSize.height = 7
-
-    let maxClippingLength = readConfObject(config, 'maxClippingSize')
 
     layoutRecords.forEach(feat => {
       if (feat === null) {
@@ -283,12 +278,6 @@ export default class PileupRenderer extends BoxRendererType {
             const mismatch = mismatches[j]
             if (mismatch.type === 'softclip') {
               const softClipLength = mismatch.cliplen || 0
-              if (softClipLength > maxClippingLength) {
-                maxClippingLength = softClipLength
-                console.log(maxClippingLength)
-                // this.getExpandedRegion(region, props, maxClippingLength)
-                // need to use above return value to alter region somehow
-              }
               const softClipStart =
                 mismatch.start === 0
                   ? feature.get('start') - softClipLength
