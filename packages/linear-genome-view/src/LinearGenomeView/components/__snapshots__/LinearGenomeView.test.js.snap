@@ -505,6 +505,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           aria-controls="simple-menu"
           aria-haspopup="true"
           class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          data-testid="track_menu_icon"
           tabindex="0"
           type="button"
         >
@@ -1605,6 +1606,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           aria-controls="simple-menu"
           aria-haspopup="true"
           class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          data-testid="track_menu_icon"
           tabindex="0"
           type="button"
         >
@@ -1822,6 +1824,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           aria-controls="simple-menu"
           aria-haspopup="true"
           class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          data-testid="track_menu_icon"
           tabindex="0"
           type="button"
         >
