@@ -1,8 +1,15 @@
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
-import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import format from 'string-template'
+
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import MyConfigSchema from './configSchema'
 
 interface SPARQLEntry {
   type: string
@@ -41,7 +48,7 @@ interface SPARQLFeature {
   data: SPARQLFeatureData
 }
 
-export default class extends BaseAdapter {
+export default class SPARQLAdapter extends BaseFeatureDataAdapter {
   private endpoint: string
 
   private queryTemplate: string
@@ -54,30 +61,13 @@ export default class extends BaseAdapter {
 
   private refNames: string[] | undefined
 
-  public static capabilities = ['getFeatures', 'getRefNames']
-
-  public constructor(config: {
-    endpoint: IFileLocation
-    queryTemplate: string
-    refNamesQueryTemplate: string
-    additionalQueryParams: string[]
-    refNames: string[]
-  }) {
+  public constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
-    const {
-      endpoint,
-      queryTemplate,
-      refNamesQueryTemplate,
-      additionalQueryParams,
-      refNames,
-    } = config
-
-    // @ts-ignore
-    this.endpoint = endpoint.uri
-    this.queryTemplate = queryTemplate
-    this.additionalQueryParams = additionalQueryParams
-    this.refNamesQueryTemplate = refNamesQueryTemplate
-    this.configRefNames = refNames
+    this.endpoint = readConfObject(config, 'endpoint').uri
+    this.queryTemplate = readConfObject(config, 'queryTemplate')
+    this.additionalQueryParams = readConfObject(config, 'additionalQueryParams')
+    this.refNamesQueryTemplate = readConfObject(config, 'refNamesQueryTemplate')
+    this.configRefNames = readConfObject(config, 'refNames')
   }
 
   public async getRefNames(opts: BaseOptions = {}): Promise<string[]> {
@@ -94,12 +84,7 @@ export default class extends BaseAdapter {
     return refNames
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {IRegion} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
-  public getFeatures(query: INoAssemblyRegion, opts: BaseOptions = {}) {
+  public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const filledTemplate = encodeURIComponent(
         format(this.queryTemplate, query),
@@ -110,7 +95,7 @@ export default class extends BaseAdapter {
         observer.next(feature)
       })
       observer.complete()
-    })
+    }, opts.signal)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -204,7 +189,7 @@ export default class extends BaseAdapter {
             .flat()
           let found = false
           for (const subfeature of subfeatures) {
-            if (subfeature.uniqueId === pid) {
+            if (subfeature && subfeature.uniqueId === pid) {
               if (!subfeature.subfeatures) subfeature.subfeatures = []
               subfeature.subfeatures.push({
                 ...f.data,
@@ -213,8 +198,9 @@ export default class extends BaseAdapter {
               delete seenFeatures[uniqueId]
               found = true
               break
-            } else if (subfeature.subfeatures)
-              subfeatures.push(subfeature.subfeatures)
+            } else if (subfeature && subfeature.subfeatures) {
+              subfeatures.push(...subfeature.subfeatures)
+            }
           }
           if (!found) console.error(`Could not find parentID ${pid}`)
         }
@@ -224,11 +210,9 @@ export default class extends BaseAdapter {
     return Object.keys(seenFeatures).map(
       seenFeature =>
         new SimpleFeature({
-          data: {
-            uniqueId: seenFeature,
-            ...seenFeatures[seenFeature].data,
-            subfeatures: seenFeatures[seenFeature].data.subfeatures,
-          },
+          ...seenFeatures[seenFeature].data,
+          uniqueId: seenFeature,
+          subfeatures: seenFeatures[seenFeature].data.subfeatures,
         }),
     )
   }
@@ -242,10 +226,5 @@ export default class extends BaseAdapter {
     return true
   }
 
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the forseeable future and can be purged
-   * from caches, etc
-   */
   public freeResources(/* { region } */): void {}
 }

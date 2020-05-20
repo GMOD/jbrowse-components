@@ -1,7 +1,10 @@
-/* eslint-disable no-underscore-dangle,@typescript-eslint/no-explicit-any */
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
+/* eslint-disable no-underscore-dangle */
+import {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
-import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -9,16 +12,21 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import gff from '@gmod/gff'
 import { Observer } from 'rxjs'
 
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import MyConfigSchema from './configSchema'
+
 type Strand = '+' | '-' | '.' | '?'
 interface FeatureLoc {
+  [key: string]: unknown
   start: number
   end: number
   strand: Strand
   seq_id: string
-  child_features: any[]
-  data: any
-  derived_features: any
-  attributes: { [key: string]: any }
+  child_features: FeatureLoc[][]
+  data: unknown
+  derived_features: unknown
+  attributes: { [key: string]: unknown[] }
 }
 
 interface LineFeature {
@@ -28,24 +36,16 @@ interface LineFeature {
   fields: string[]
 }
 
-interface Config {
-  gffGzLocation: IFileLocation
-  index: {
-    index: string
-    location: IFileLocation
-  }
-  dontRedispatch: string[]
-}
-export default class extends BaseAdapter {
+export default class extends BaseFeatureDataAdapter {
   protected gff: TabixIndexedFile
 
   protected dontRedispatch: string[]
 
-  public static capabilities = ['getFeatures', 'getRefNames']
-
-  public constructor(config: Config) {
+  public constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
-    const { gffGzLocation, index, dontRedispatch } = config
+    const gffGzLocation = readConfObject(config, 'gffGzLocation')
+    const index = readConfObject(config, 'index')
+    const dontRedispatch = readConfObject(config, 'dontRedispatch')
     const { location, index: indexType } = index
 
     this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
@@ -62,20 +62,15 @@ export default class extends BaseAdapter {
     return this.gff.getReferenceSequenceNames(opts)
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {IRegion} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
-  public getFeatures(query: INoAssemblyRegion, opts: BaseOptions = {}) {
+  public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const metadata = await this.gff.getMetadata()
       this.getFeaturesHelper(query, opts, metadata, observer, true)
-    })
+    }, opts.signal)
   }
 
   private async getFeaturesHelper(
-    query: INoAssemblyRegion,
+    query: NoAssemblyRegion,
     opts: BaseOptions = {},
     metadata: { columnNumbers: { start: number; end: number } },
     observer: Observer<Feature>,
@@ -146,9 +141,9 @@ export default class extends BaseAdapter {
         parseComments: false,
         parseDirectives: false,
         parseSequences: false,
-      })
+      }) as FeatureLoc[][]
 
-      features.forEach((featureLocs: any) =>
+      features.forEach(featureLocs =>
         this.formatFeatures(featureLocs).forEach(f => {
           if (
             doesIntersect2(
@@ -186,7 +181,7 @@ export default class extends BaseAdapter {
 
   private formatFeatures(featureLocs: FeatureLoc[]) {
     return featureLocs.map(
-      (featureLoc, locIndex) =>
+      featureLoc =>
         new SimpleFeature({
           data: this.featureData(featureLoc),
           id: `${this.id}-offset-${featureLoc.attributes._lineHash[0]}`,
@@ -195,16 +190,16 @@ export default class extends BaseAdapter {
   }
 
   private featureData(data: FeatureLoc) {
-    const f = { ...data } as any
+    const f: Record<string, unknown> = { ...data }
 
-    f.start -= 1 // convert to interbase
-    f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[f.strand as Strand] // convert strand
-    f.phase = +f.phase
-    f.refName = f.seq_id
-    if (f.score === null) {
+    ;(f.start as number) -= 1 // convert to interbase
+    f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[data.strand] // convert strand
+    f.phase = Number(data.phase)
+    f.refName = data.seq_id
+    if (data.score === null) {
       delete f.score
     }
-    if (f.phase === null) {
+    if (data.phase === null) {
       delete f.score
     }
     const defaultFields = [
@@ -225,11 +220,11 @@ export default class extends BaseAdapter {
         b += '2'
       }
       if (data.attributes[a] !== null) {
-        f[b] = data.attributes[a]
-        if (f[b].length === 1) {
-          // eslint-disable-next-line prefer-destructuring
-          f[b] = f[b][0]
+        let attr = data.attributes[a]
+        if (Array.isArray(attr) && attr.length === 1) {
+          ;[attr] = attr
         }
+        f[b] = attr
       }
     })
     f.refName = f.seq_id
@@ -237,9 +232,7 @@ export default class extends BaseAdapter {
     // the SimpleFeature constructor takes care of recursively inflating subfeatures
     if (data.child_features && data.child_features.length) {
       f.subfeatures = data.child_features
-        .map(childLocs =>
-          childLocs.map((childLoc: any) => this.featureData(childLoc)),
-        )
+        .map(childLocs => childLocs.map(childLoc => this.featureData(childLoc)))
         .flat()
     }
 
@@ -252,10 +245,5 @@ export default class extends BaseAdapter {
     return f
   }
 
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the forseeable future and can be purged
-   * from caches, etc
-   */
-  public freeResources(/* { region } */): void {}
+  public freeResources(/* { region } */) {}
 }

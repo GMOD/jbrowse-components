@@ -42,6 +42,16 @@ function watchWorker(worker: WorkerHandle, pingTime: number): Promise<void> {
   })
 }
 
+function detectHardwareConcurrency() {
+  if (
+    typeof window !== 'undefined' &&
+    'hardwareConcurrency' in window.navigator
+  ) {
+    return window.navigator.hardwareConcurrency
+  }
+  return 1
+}
+
 export default abstract class BaseRpcDriver {
   private lastWorkerAssignment = -1
 
@@ -90,13 +100,8 @@ export default abstract class BaseRpcDriver {
   }
 
   createWorkerPool(): WorkerHandle[] {
-    const hardwareConcurrency =
-      // eslint-disable-next-line no-nested-ternary
-      typeof window !== 'undefined'
-        ? 'hardwareConcurrency' in window.navigator
-          ? window.navigator.hardwareConcurrency
-          : 2
-        : 2
+    const hardwareConcurrency = detectHardwareConcurrency()
+
     const workerCount =
       this.workerCount || Math.max(1, Math.ceil(hardwareConcurrency / 2))
 
@@ -135,7 +140,7 @@ export default abstract class BaseRpcDriver {
     return this.workerPool
   }
 
-  getWorker(stateGroupName: string, functionName: string): WorkerHandle {
+  getWorker(stateGroupName: string): WorkerHandle {
     const workers = this.getWorkerPool()
     if (!this.workerAssignments.has(stateGroupName)) {
       const workerAssignment = (this.lastWorkerAssignment + 1) % workers.length
@@ -165,7 +170,7 @@ export default abstract class BaseRpcDriver {
     if (stateGroupName === undefined) {
       throw new TypeError('stateGroupName is required')
     }
-    const worker = this.getWorker(stateGroupName, functionName)
+    const worker = this.getWorker(stateGroupName)
     const filteredArgs = this.filterArgs(args, pluginManager, stateGroupName)
     return worker.call(functionName, filteredArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes

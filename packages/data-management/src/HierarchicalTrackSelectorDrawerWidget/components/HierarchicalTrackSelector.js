@@ -9,7 +9,6 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import Fab from '@material-ui/core/Fab'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormGroup from '@material-ui/core/FormGroup'
-import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import List from '@material-ui/core/List'
@@ -23,6 +22,8 @@ import Tab from '@material-ui/core/Tab'
 import Tabs from '@material-ui/core/Tabs'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
+import ClearIcon from '@material-ui/icons/Clear'
+import AddIcon from '@material-ui/icons/Add'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState } from 'react'
 import Contents from './Contents'
@@ -130,7 +131,9 @@ function HierarchicalTrackSelector({ model }) {
 
   const { assemblyNames } = model
   const assemblyName = assemblyNames[assemblyIdx]
-  if (!assemblyName) return null
+  if (!assemblyName) {
+    return null
+  }
   const filterError =
     model.trackConfigurations(assemblyName) > 0 &&
     model.trackConfigurations(assemblyName).filter(filter).length === 0
@@ -164,7 +167,7 @@ function HierarchicalTrackSelector({ model }) {
           endAdornment: (
             <InputAdornment position="end">
               <IconButton color="secondary" onClick={model.clearFilterText}>
-                <Icon>clear</Icon>
+                <ClearIcon />
               </IconButton>
             </InputAdornment>
           ),
@@ -228,7 +231,7 @@ function HierarchicalTrackSelector({ model }) {
       ) : null}
 
       <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
-        <Icon>add</Icon>
+        <AddIcon />
       </Fab>
       <Menu
         id="simple-menu"
@@ -245,7 +248,7 @@ function HierarchicalTrackSelector({ model }) {
         open={Boolean(modalInfo)}
       >
         <DialogTitle>
-          Close connection "{modalInfo && modalInfo.name}"
+          Close connection &quot;{modalInfo && modalInfo.name}&quot;
         </DialogTitle>
         <DialogContent>
           <DialogContentText>

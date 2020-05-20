@@ -6,7 +6,7 @@ export default ({ jbrequire }) => {
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
 
   const { PropTypes: CommonPropTypes } = jbrequire(
-    '@gmod/jbrowse-core/mst-types',
+    '@gmod/jbrowse-core/util/types/mst',
   )
   const PropTypes = jbrequire('prop-types')
 
@@ -146,6 +146,7 @@ export default ({ jbrequire }) => {
     return (
       <g id={trackStyleId}>
         <style
+          // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
             __html: `
           #${trackStyleId} > path {

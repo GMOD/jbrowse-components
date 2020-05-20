@@ -71,7 +71,7 @@ describe('<Loader />', () => {
     window.history.replaceState(
       {},
       '',
-      '/?config=test_data/config_integration_test.json',
+      '/?config=test_data/breakpoint/config.json',
     )
     console.error = jest.fn()
     const { findByText } = render(<Loader />)

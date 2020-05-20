@@ -6,7 +6,9 @@ import { FloatingLayout, PrecomputedFloatingLayout } from './Layout'
 
 class FloatingLayoutSession extends LayoutSession {
   makeLayout() {
-    const { end, start } = this.region
+    'sequenceAdapter'
+
+    const { end, start } = this.regions[0]
     const widthPx = (end - start) / this.bpPerPx
     return new MultiLayout(FloatingLayout, { width: widthPx })
   }
@@ -17,8 +19,8 @@ class FloatingLayoutSession extends LayoutSession {
 }
 
 export default class extends BoxRendererType {
-  createSession() {
-    return new FloatingLayoutSession()
+  createSession(args) {
+    return new FloatingLayoutSession(args)
   }
 
   deserializeLayoutInClient(json) {

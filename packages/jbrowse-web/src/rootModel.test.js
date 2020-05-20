@@ -18,6 +18,7 @@ describe('Root MST model', () => {
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
+      assemblyManager: {},
     })
     expect(root.session).toBeUndefined()
     expect(root.jbrowse.savedSessions.length).toBe(0)
@@ -34,6 +35,7 @@ describe('Root MST model', () => {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
       session: { name: 'testSession' },
+      assemblyManager: {},
     })
     expect(root.session).toBeTruthy()
   })
@@ -44,6 +46,7 @@ describe('Root MST model', () => {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
         savedSessions: [{ name: 'testSession' }],
       },
+      assemblyManager: {},
     })
     expect(root.session).toBeUndefined()
     root.setSession(root.jbrowse.savedSessions[0])
@@ -54,8 +57,29 @@ describe('Root MST model', () => {
     const root = rootModel.create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
-        assemblies: [{ name: 'assembly1', aliases: ['assemblyA'] }],
+        assemblies: [
+          {
+            name: 'assembly1',
+            aliases: ['assemblyA'],
+            sequence: {
+              trackId: 'sequenceConfigId',
+              adapter: {
+                type: 'FromConfigAdapter',
+                features: [
+                  {
+                    refName: 'ctgA',
+                    uniqueId: 'firstId',
+                    start: 0,
+                    end: 10,
+                    seq: 'cattgttgcg',
+                  },
+                ],
+              },
+            },
+          },
+        ],
       },
+      assemblyManager: {},
     })
     expect(root.jbrowse.assemblies.length).toBe(1)
     expect(getSnapshot(root.jbrowse.assemblies[0])).toMatchSnapshot()
@@ -78,6 +102,7 @@ describe('Root MST model', () => {
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
+      assemblyManager: {},
     })
     root.jbrowse.addSavedSession({ name: 'testSession' })
     expect(root.jbrowse.savedSessions.length).toBe(1)
@@ -90,6 +115,7 @@ describe('Root MST model', () => {
           configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
         },
         session: {},
+        assemblyManager: {},
       }),
     ).toThrow()
   })
@@ -101,6 +127,7 @@ describe('Root MST model', () => {
           configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
           savedSessions: [{}],
         },
+        assemblyManager: {},
       }),
     ).toThrow()
   })
@@ -110,6 +137,7 @@ describe('Root MST model', () => {
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
+      assemblyManager: {},
     })
     expect(root.menus).toMatchSnapshot()
     root.appendMenu('Third Menu')

@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
-import jsonStableStringify from 'json-stable-stringify'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { Region } from '@gmod/jbrowse-core/util/types'
+import { getContainingView } from '@gmod/jbrowse-core/util'
 import { observable } from 'mobx'
 import {
   getMembers,
@@ -18,16 +16,21 @@ import {
   types,
   walk,
 } from 'mobx-state-tree'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import {
+  readConfObject,
+  isConfigurationModel,
+} from '@gmod/jbrowse-core/configuration'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
   key: string
 }
 
-export default function sessionModelFactory(pluginManager: any) {
+export default function sessionModelFactory(pluginManager: PluginManager) {
   const minDrawerWidth = 128
   return types
-    .model('JBrowseWebSessionModel', {
+    .model('JBrowseDesktopSessionModel', {
       name: types.identifier,
       margin: 0,
       drawerWidth: types.optional(
@@ -58,16 +61,13 @@ export default function sessionModelFactory(pluginManager: any) {
       /**
        * this is the current "task" that is being performed in the UI.
        * this is usually an object of the form
-       * { taskName: "configure", target: thing_being_configured }
+       * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
     }))
     .views(self => ({
       get rpcManager() {
         return getParent(self).jbrowse.rpcManager
-      },
-      get assemblyData() {
-        return getParent(self).jbrowse.assemblyData
       },
       get configuration() {
         return getParent(self).jbrowse.configuration
@@ -97,6 +97,10 @@ export default function sessionModelFactory(pluginManager: any) {
         return getParent(self).menus
       },
 
+      get assemblyManager() {
+        return getParent(self).assemblyManager
+      },
+
       get visibleDrawerWidget() {
         if (isAlive(self))
           // returns most recently added item in active drawer widgets
@@ -107,8 +111,8 @@ export default function sessionModelFactory(pluginManager: any) {
       },
       /**
        * See if any MST nodes currently have a types.reference to this object.
-       * @param {MSTNode} object object
-       * @returns {Array} An array where the first element is the node referring
+       * @param object - object
+       * @returns An array where the first element is the node referring
        * to the object and the second element is they property name the node is
        * using to refer to the object
        */
@@ -129,47 +133,22 @@ export default function sessionModelFactory(pluginManager: any) {
       },
     }))
     .actions(self => ({
-      getRegionsForAssemblyName(
-        assemblyName: string,
-        opts: { signal?: AbortSignal } = {},
+      makeConnection(
+        configuration: AnyConfigurationModel,
+        initialSnapshot = {},
       ) {
-        const assembly = self.assemblyData.get(assemblyName)
-        if (assembly) {
-          const adapterConfig = readConfObject(assembly.sequence, 'adapter')
-          const adapterConfigId = jsonStableStringify(adapterConfig)
-          return self.rpcManager
-            .call(
-              adapterConfigId,
-              'getRegions',
-              {
-                sessionId: assemblyName,
-                adapterType: adapterConfig.type,
-                adapterConfig,
-                signal: opts.signal,
-              },
-              { timeout: 1000000 },
-            )
-            .then((adapterRegions: IRegion[]) => {
-              const adapterRegionsWithAssembly = adapterRegions.map(
-                adapterRegion => ({
-                  ...adapterRegion,
-                  assemblyName,
-                }),
-              )
-              return adapterRegionsWithAssembly
-            })
-        }
-        return Promise.resolve(undefined)
-      },
-
-      makeConnection(configuration: any, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')
         const name = readConfObject(configuration, 'name')
         const connectionType = pluginManager.getConnectionType(type)
         if (!connectionType) throw new Error(`unknown connection type ${type}`)
         const assemblyName = readConfObject(configuration, 'assemblyName')
-        const connectionData = { ...initialSnapshot, name, type, configuration }
+        const connectionData = {
+          ...initialSnapshot,
+          name,
+          type,
+          configuration,
+        }
         if (!self.connectionInstances.has(assemblyName))
           self.connectionInstances.set(assemblyName, [])
         const assemblyConnections = self.connectionInstances.get(assemblyName)
@@ -179,7 +158,7 @@ export default function sessionModelFactory(pluginManager: any) {
         return assemblyConnections[length - 1]
       },
 
-      prepareToBreakConnection(configuration: any) {
+      prepareToBreakConnection(configuration: AnyConfigurationModel) {
         const name = readConfObject(configuration, 'name')
         const assemblyName = readConfObject(configuration, 'assemblyName')
         const assemblyConnections =
@@ -229,7 +208,7 @@ export default function sessionModelFactory(pluginManager: any) {
         return [safelyBreakConnection, dereferenceTypeCount]
       },
 
-      breakConnection(configuration: any) {
+      breakConnection(configuration: AnyConfigurationModel) {
         const name = readConfObject(configuration, 'name')
         const assemblyName = readConfObject(configuration, 'assemblyName')
         const connectionInstances = self.connectionInstances.get(assemblyName)
@@ -289,10 +268,38 @@ export default function sessionModelFactory(pluginManager: any) {
         return getParent(self).jbrowse.addConnectionConf(connectionConf)
       },
 
+      addLinearGenomeViewOfAssembly(assemblyName: string, initialState = {}) {
+        return this.addViewOfAssembly(
+          'LinearGenomeView',
+          assemblyName,
+          initialState,
+        )
+      },
+
+      addViewOfAssembly(
+        viewType: any,
+        assemblyName: string,
+        initialState: any = {},
+      ) {
+        const assembly = self.assemblies.find(
+          (s: AnyConfigurationModel) =>
+            readConfObject(s, 'name') === assemblyName,
+        )
+        if (!assembly)
+          throw new Error(
+            `Could not add view of assembly "${assemblyName}", assembly name not found`,
+          )
+        initialState.displayRegionsFromAssemblyName = readConfObject(
+          assembly,
+          'name',
+        )
+        return this.addView(viewType, initialState)
+      },
+
       addViewFromAnotherView(
         viewType: string,
         otherView: any,
-        initialState: { displayedRegions?: IRegion[] } = {},
+        initialState: { displayedRegions?: Region[] } = {},
       ) {
         const state = { ...initialState }
         state.displayedRegions = getSnapshot(otherView.displayedRegions)
@@ -342,7 +349,7 @@ export default function sessionModelFactory(pluginManager: any) {
       /**
        * set the global selection, i.e. the globally-selected object.
        * can be a feature, a view, just about anything
-       * @param {object} thing
+       * @param thing -
        */
       setSelection(thing: any) {
         self.selection = thing
@@ -358,9 +365,9 @@ export default function sessionModelFactory(pluginManager: any) {
       /**
        * opens a configuration editor to configure the given thing,
        * and sets the current task to be configuring it
-       * @param {*} configuration
+       * @param configuration -
        */
-      editConfiguration(configuration: any) {
+      editConfiguration(configuration: AnyConfigurationModel) {
         if (!isConfigurationModel(configuration)) {
           throw new Error(
             'must pass a configuration model to editConfiguration',

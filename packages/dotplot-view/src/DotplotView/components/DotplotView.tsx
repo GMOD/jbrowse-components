@@ -8,13 +8,12 @@ export default (pluginManager: any) => {
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useRef, useEffect, useState } = React
-  const { minmax } = jbrequire('@gmod/jbrowse-core/util')
+  const { minmax, useEventListener } = jbrequire('@gmod/jbrowse-core/util')
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { makeStyles: jbMakeStyles } = jbrequire('@material-ui/core/styles')
   const LinearProgress = jbrequire('@material-ui/core/LinearProgress')
   const ImportForm = jbrequire(require('./ImportForm'))
   const Controls = jbrequire(require('./Controls'))
-  const useEventListener = jbrequire(require('./useEventListener'))
 
   const useStyles = (jbMakeStyles as typeof makeStyles)(theme => {
     return {
@@ -60,6 +59,9 @@ export default (pluginManager: any) => {
         gridColumn: '2/2',
         gridRow: '2/2',
       },
+      error: {
+        color: 'red',
+      },
     }
   })
 
@@ -80,6 +82,7 @@ export default (pluginManager: any) => {
     const {
       initialized,
       loading,
+      error,
       hview,
       vview,
       borderY,
@@ -135,6 +138,10 @@ export default (pluginManager: any) => {
     if (!initialized && !loading) {
       return <ImportForm model={model} />
     }
+
+    if (error) {
+      return <p className={classes.error}>{String(error)}</p>
+    }
     if (loading) {
       return (
         <div>
@@ -160,7 +167,7 @@ export default (pluginManager: any) => {
                     return (
                       <text
                         transform={`rotate(${vtextRotation},${x},${y})`}
-                        key={region.refName}
+                        key={JSON.stringify(region)}
                         x={borderX}
                         y={y}
                         fill="#000000"
@@ -247,7 +254,7 @@ export default (pluginManager: any) => {
                         transform={`rotate(${htextRotation},${x},${y})`}
                         key={region.refName}
                         x={x}
-                        y={y}
+                        y={y + 1}
                         fill="#000000"
                         dominantBaseline="hanging"
                         textAnchor="end"

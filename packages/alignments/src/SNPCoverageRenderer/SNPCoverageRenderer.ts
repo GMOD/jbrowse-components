@@ -1,27 +1,28 @@
 import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import { Region } from '@gmod/jbrowse-core/util/types'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import {
   getOrigin,
   getScale,
   ScaleOpts,
 } from '@gmod/jbrowse-plugin-wiggle/src/util'
 import WiggleBaseRenderer from '@gmod/jbrowse-plugin-wiggle/src/WiggleBaseRenderer'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
 interface SNPCoverageRendererProps {
   features: Map<string, Feature>
   layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  config: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  region: IRegion
+  config: AnyConfigurationModel
+  regions: Region[]
   bpPerPx: number
   height: number
   width: number
   highResolutionScaling: number
   blockKey: string
-  dataAdapter: BaseAdapter
+  dataAdapter: BaseFeatureDataAdapter
   notReady: boolean
-  originalRegion: IRegion
+  originalRegions: Region[]
   scaleOpts: ScaleOpts
   sessionId: string
   signal: AbortSignal
@@ -38,8 +39,8 @@ interface BaseInfo {
 
 export default class SNPCoverageRenderer extends WiggleBaseRenderer {
   draw(ctx: CanvasRenderingContext2D, props: SNPCoverageRendererProps) {
-    const { features, region, bpPerPx, scaleOpts, height } = props
-
+    const { features, regions, bpPerPx, scaleOpts, height } = props
+    const [region] = regions
     const viewScale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
     const toY = (rawscore: number, curr = 0) =>
@@ -75,7 +76,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       // grab array with nestedtable's info, draw mismatches
       const infoArray = feature.get('snpinfo') || []
       let curr = 0
-      infoArray.forEach(function iterate(info: BaseInfo, index: number) {
+      infoArray.forEach(function iterate(info: BaseInfo) {
         if (!info || info.base === 'reference' || info.base === 'total') {
           return
         }

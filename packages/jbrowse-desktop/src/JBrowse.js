@@ -23,7 +23,7 @@ const JBrowse = observer(({ pluginManager }) => {
   const debouncedConfigSnapshot = useDebounce(configSnapshot, debounceMs)
 
   const { rootModel } = pluginManager
-  const { session, jbrowse } = rootModel
+  const { session, jbrowse, error } = rootModel
   if (firstLoad && session) setFirstLoad(false)
 
   useEffect(() => {
@@ -60,6 +60,10 @@ const JBrowse = observer(({ pluginManager }) => {
       ipcRenderer.send('saveConfig', debouncedConfigSnapshot)
     }
   }, [debouncedConfigSnapshot, ipcRenderer])
+
+  if (error) {
+    throw new Error(error)
+  }
 
   return rootModel.session ? (
     <App session={rootModel.session} />

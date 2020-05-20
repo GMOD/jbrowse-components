@@ -51,6 +51,7 @@ whole monorepo.
 - All `devDependencies` go in `<root>/package.json`
 
 Or saying it a different way:
+
 - `<root>/package.json` should only list devDependencies and no dependencies
 - `<root>/packages/<package>/package.json` should only list dependencies and no devDependencies
 
@@ -67,6 +68,7 @@ already in the root.
 - `devDependencies` are any NPM package `import`ed or `require`d in any other files and not already in `dependencies`
 
 To add NPM packages:
+
 - `dependencies`: from root directory run `cd packages/<package> && yarn add <npm_package_name>`
 - `devDependencies`: from root directory run `yarn add --dev -W <npm_package_name>`
 
@@ -78,9 +80,7 @@ need an ESLint rule like this for now in your package to appease the linter:
 {
   "overrides": [
     {
-      "files": [
-        "generators/**/*.test.js"
-      ],
+      "files": ["generators/**/*.test.js"],
       "rules": {
         "import/no-extraneous-dependencies": "off"
       }
@@ -88,5 +88,3 @@ need an ESLint rule like this for now in your package to appease the linter:
   ]
 }
 ```
-
-

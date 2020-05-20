@@ -6,13 +6,12 @@ import {
   addDisposer,
   cast,
   Instance,
-  getSnapshot,
 } from 'mobx-state-tree'
 import { Component } from 'react'
 import { reaction } from 'mobx'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import jsonStableStringify from 'json-stable-stringify'
-import { Region } from '@gmod/jbrowse-core/mst-types'
+import { Region } from '@gmod/jbrowse-core/util/types/mst'
 
 import {
   assembleLocString,
@@ -20,10 +19,7 @@ import {
   isAbortException,
   getSession,
 } from '@gmod/jbrowse-core/util'
-import {
-  getContainingView,
-  getTrackAssemblyNames,
-} from '@gmod/jbrowse-core/util/tracks'
+import { getTrackAssemblyNames } from '@gmod/jbrowse-core/util/tracks'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
@@ -36,7 +32,7 @@ const blockState = types
     isRightEndOfDisplayedRegion: false,
   })
   // NOTE: all this volatile stuff has to be filled in at once, so that it stays consistent
-  .volatile(self => ({
+  .volatile(() => ({
     renderInProgress: undefined as AbortController | undefined,
     filled: false,
     data: undefined as any,
@@ -52,10 +48,10 @@ const blockState = types
     let renderInProgress: undefined | AbortController
     return {
       afterAttach() {
-        const track = getParent(self, 2)
+        const track = getParent<any>(self, 2)
         const renderDisposer = reaction(
           () => renderBlockData(self as any),
-          data => renderBlockEffect(cast(self), data),
+          data => (renderBlockEffect(cast(self), data) as unknown) as void, // reaction doesn't expect async here
           {
             name: `${track.id}/${assembleLocString(self.region)} rendering`,
             delay: track.renderDelay,
@@ -146,8 +142,7 @@ const blockState = types
           renderInProgress.abort()
         }
         const track = getParent(self, 2)
-        const view = getContainingView(track)
-        const { rpcManager } = getSession(view) as any
+        const { rpcManager } = getSession(self)
         const { rendererType } = track
         const { renderArgs } = renderBlockData(cast(self))
         rendererType
@@ -171,17 +166,15 @@ export type BlockStateModel = typeof blockState
 // work with autorun
 function renderBlockData(self: Instance<BlockStateModel>) {
   try {
-    const { assemblyData, rpcManager } = getSession(self) as any
+    const { assemblyManager, rpcManager } = getSession(self)
     const track = getParent(self, 2)
     const assemblyNames = getTrackAssemblyNames(track)
     let cannotBeRenderedReason
     if (!assemblyNames.includes(self.region.assemblyName)) {
       let matchFound = false
       assemblyNames.forEach((assemblyName: string) => {
-        const trackAssemblyData =
-          (assemblyData && assemblyData.get(assemblyName)) || {}
-        const trackAssemblyAliases = trackAssemblyData.aliases || []
-        if (trackAssemblyAliases.includes(self.region.assemblyName))
+        const assembly = assemblyManager.get(assemblyName)
+        if (assembly && assembly.aliases.includes(self.region.assemblyName))
           matchFound = true
       })
       if (!matchFound) {
@@ -190,8 +183,6 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     }
     if (!cannotBeRenderedReason)
       cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
-    const trackAssemblyData =
-      (assemblyData && assemblyData.get(self.region.assemblyName)) || {}
     const { renderProps } = track
     const { rendererType } = track
     const { config } = renderProps
@@ -199,14 +190,10 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     // It won't trigger the reaction if it doesn't think we're accessing it
     readConfObject(config)
 
-    let sequenceConfig: { type?: string } = {}
-    if (trackAssemblyData.sequence) {
-      sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
-    }
     const adapterConfig = getConf(track, 'adapter')
     // Only subtracks will have parent tracks with configs
     // They use parent's adapter config for matching sessionId
-    const parentTrack = getParent(track)
+    const parentTrack = getParent<any>(track)
     const adapterConfigId = parentTrack.configuration
       ? jsonStableStringify(getConf(parentTrack, 'adapter'))
       : jsonStableStringify(adapterConfig)
@@ -219,11 +206,8 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       trackError: track.error,
       renderArgs: {
         assemblyName: self.region.assemblyName,
-        region: self.region,
-        adapterType: track.adapterType.name,
+        regions: [self.region],
         adapterConfig,
-        sequenceAdapterType: sequenceConfig.type,
-        sequenceAdapterConfig: sequenceConfig,
         rendererType: rendererType.name,
         renderProps,
         sessionId: adapterConfigId,
@@ -303,7 +287,7 @@ async function renderBlockEffect(
   } catch (error) {
     if (isAbortException(error) && !aborter.signal.aborted) {
       // there is a bug in the underlying code and something is caching aborts. try to refetch once
-      const track = getParent(self, 2)
+      const track = getParent<any>(self, 2)
       if (allowRefetch) {
         console.warn(`cached abort detected, refetching "${track.name}"`)
         renderBlockEffect(self, props, false)

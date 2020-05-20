@@ -1,9 +1,12 @@
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import {
-  IFileLocation,
-  INoAssemblyRegion,
-  IRegion,
-} from '@gmod/jbrowse-core/mst-types'
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import {
+  FileLocation,
+  NoAssemblyRegion,
+  Region,
+} from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -11,16 +14,12 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import { GenericFilehandle } from 'generic-filehandle'
 import VcfParser from '@gmod/vcf'
 import { Observer } from 'rxjs'
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import VcfFeature from './VcfFeature'
+import MyConfigSchema from './configSchema'
 
-interface Config {
-  vcfGzLocation: IFileLocation
-  index: {
-    indexType: string
-    location: IFileLocation
-  }
-}
-export default class extends BaseAdapter {
+export default class extends BaseFeatureDataAdapter {
   protected vcf: TabixIndexedFile
 
   protected filehandle: GenericFilehandle
@@ -28,18 +27,23 @@ export default class extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected parser: any
 
-  public static capabilities = ['getFeatures', 'getRefNames']
-
-  public constructor(config: Config) {
+  public constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
-    const { vcfGzLocation, index } = config
-    const { location, indexType } = index
+    const vcfGzLocation = readConfObject(config, 'vcfGzLocation')
+    const location = readConfObject(config, ['index', 'location'])
+    const indexType = readConfObject(config, ['index', 'indexType'])
 
-    this.filehandle = openLocation(vcfGzLocation)
+    this.filehandle = openLocation(vcfGzLocation as FileLocation)
     this.vcf = new TabixIndexedFile({
       filehandle: this.filehandle,
-      csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
-      tbiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
+      csiFilehandle:
+        indexType === 'CSI'
+          ? openLocation(location as FileLocation)
+          : undefined,
+      tbiFilehandle:
+        indexType !== 'CSI'
+          ? openLocation(location as FileLocation)
+          : undefined,
       chunkCacheSize: 50 * 2 ** 20,
     })
 
@@ -52,12 +56,7 @@ export default class extends BaseAdapter {
     return this.vcf.getReferenceSequenceNames(opts)
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {IRegion} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
-  public getFeatures(query: INoAssemblyRegion, opts: BaseOptions = {}) {
+  public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const parser = await this.parser
       await this.vcf.getLines(query.refName, query.start, query.end, {
@@ -74,23 +73,25 @@ export default class extends BaseAdapter {
         signal: opts.signal,
       })
       observer.complete()
-    })
+    }, opts.signal)
   }
 
   /**
-   * Checks if the store has data for the given assembly and reference
-   * sequence, and then gets the features in the region if it does.
+   * Checks if the data source has data for the given reference sequence,
+   * and then gets the features in the region if it does
    *
-   * Currently this just calls getFeatureInRegion for each region. Adapters
-   * that are frequently called on multiple regions simultaneously may
-   * want to implement a more efficient custom version of this method.
+   * Currently this just calls getFeatureInRegion for each region. Adapters that
+   * are frequently called on multiple regions simultaneously may want to
+   * implement a more efficient custom version of this method.
    *
-   * @param {[Region]} regions see getFeatures()
-   * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
-   * @returns {Observable[Feature]} see getFeatures()
+   * Also includes a bit of extra logging to warn when fetching a large portion
+   * of a VCF
+   * @param regions - Regions
+   * @param opts - Feature adapter options
+   * @returns Observable of Feature objects in the regions
    */
   public getFeaturesInMultipleRegions(
-    regions: IRegion[],
+    regions: Region[],
     opts: BaseOptions = {},
   ) {
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
@@ -113,9 +114,9 @@ export default class extends BaseAdapter {
   /**
    * get the approximate number of bytes queried from the file for the given
    * query regions
-   * @param regions list of query regions
+   * @param regions - list of query regions
    */
-  private async bytesForRegions(regions: IRegion[]) {
+  private async bytesForRegions(regions: Region[]) {
     const blockResults = await Promise.all(
       regions.map(region =>
         // @ts-ignore
@@ -156,10 +157,5 @@ export default class extends BaseAdapter {
     return byteRanges.reduce((a, b) => a + b.end - b.start + 1, 0)
   }
 
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the forseeable future and can be purged
-   * from caches, etc
-   */
   public freeResources(/* { region } */): void {}
 }

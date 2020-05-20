@@ -3,7 +3,7 @@ export default pluginManager => {
   // const { transaction } = jbrequire('mobx')
   const { types, getParent } = jbrequire('mobx-state-tree')
   const React = jbrequire('react')
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const { ElementId } = jbrequire('@gmod/jbrowse-core/util/types/mst')
   const { ConfigurationSchema, ConfigurationReference, getConf } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
@@ -11,10 +11,8 @@ export default pluginManager => {
     '@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType',
   )
 
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const { getParentRenderProps, getContainingView } = jbrequire(
-    '@gmod/jbrowse-core/util/tracks',
-  )
+  const { getSession, getContainingView } = jbrequire('@gmod/jbrowse-core/util')
+  const { getParentRenderProps } = jbrequire('@gmod/jbrowse-core/util/tracks')
 
   const configSchema = ConfigurationSchema(
     'ChordTrack',
@@ -64,9 +62,6 @@ export default pluginManager => {
       bezierRadiusRatio: 0.1,
       assemblyName: types.maybe(types.string),
     })
-    .volatile((/* self */) => ({
-      refNameMap: undefined,
-    }))
     .views(self => ({
       get blockDefinitions() {
         return getContainingView(self).staticSlices

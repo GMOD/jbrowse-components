@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer } from 'mobx-react'
 import React, { useState } from 'react'
 import Typography from '@material-ui/core/Typography'
 import MenuItem from '@material-ui/core/MenuItem'

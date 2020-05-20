@@ -1,12 +1,17 @@
 import { BigWig, Feature as BBIFeature } from '@gmod/bbi'
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
-import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
 import { map, mergeAll } from 'rxjs/operators'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { Instance } from 'mobx-state-tree'
 import {
   blankStats,
   FeatureStats,
@@ -15,6 +20,8 @@ import {
   UnrectifiedFeatureStats,
 } from '../statsUtil'
 
+import configSchema from './configSchema'
+
 interface StatsRegion {
   refName: string
   start: number
@@ -22,7 +29,7 @@ interface StatsRegion {
   bpPerPx?: number
 }
 
-export default class extends BaseAdapter {
+export default class extends BaseFeatureDataAdapter {
   private bigwig: BigWig
 
   private statsCache: {
@@ -33,12 +40,10 @@ export default class extends BaseAdapter {
     ) => Promise<FeatureStats>
   }
 
-  public static capabilities = ['getFeatures', 'getRefNames']
-
-  public constructor(config: { bigWigLocation: IFileLocation }) {
+  public constructor(config: Instance<typeof configSchema>) {
     super(config)
     this.bigwig = new BigWig({
-      filehandle: openLocation(config.bigWigLocation),
+      filehandle: openLocation(readConfObject(config, 'bigWigLocation')),
     })
     this.statsCache = new AbortablePromiseCache({
       cache: new QuickLRU({ maxSize: 1000 }),
@@ -47,7 +52,7 @@ export default class extends BaseAdapter {
         abortSignal: AbortSignal,
       ) => {
         const { refName, start, end, bpPerPx } = args
-        const feats = await this.getFeatures(
+        const feats = this.getFeatures(
           { refName, start, end },
           {
             signal: abortSignal,
@@ -75,7 +80,7 @@ export default class extends BaseAdapter {
   }
 
   // todo: incorporate summary blocks
-  public getRegionStats(region: INoAssemblyRegion, opts: BaseOptions = {}) {
+  public getRegionStats(region: NoAssemblyRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
     const { bpPerPx, signal } = opts
     return this.statsCache.get(
@@ -87,7 +92,7 @@ export default class extends BaseAdapter {
 
   // todo: add caching
   public async getMultiRegionStats(
-    regions: INoAssemblyRegion[] = [],
+    regions: NoAssemblyRegion[] = [],
     opts: BaseOptions = {},
   ) {
     if (!regions.length) {
@@ -124,12 +129,7 @@ export default class extends BaseAdapter {
     })
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {IRegion} param
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
-  public getFeatures(region: INoAssemblyRegion, opts: BaseOptions = {}) {
+  public getFeatures(region: NoAssemblyRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
     const { signal, bpPerPx } = opts
     return ObservableCreate<Feature>(async observer => {
@@ -141,12 +141,12 @@ export default class extends BaseAdapter {
         mergeAll(),
         map((record: BBIFeature) => {
           return new SimpleFeature({
-            id: record.start + 1,
+            id: String(record.start + 1),
             data: record,
           })
         }),
       ).subscribe(observer)
-    })
+    }, opts.signal)
   }
 
   public freeResources(): void {}

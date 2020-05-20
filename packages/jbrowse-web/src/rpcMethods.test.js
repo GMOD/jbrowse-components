@@ -11,17 +11,16 @@ beforeAll(() => {
 })
 
 const baseprops = {
-  region: { refName: 'ctgA', start: 0, end: 800 },
+  regions: [{ refName: 'ctgA', start: 0, end: 800 }],
   sessionId: 'knickers the cow',
-  adapterType: 'BamAdapter',
   adapterConfig: {
     type: 'BamAdapter',
     bamLocation: {
-      localPath: require.resolve('../public/test_data/volvox-sorted.bam'),
+      localPath: require.resolve('../test_data/volvox/volvox-sorted.bam'),
     },
     index: {
       location: {
-        localPath: require.resolve('../public/test_data/volvox-sorted.bam.bai'),
+        localPath: require.resolve('../test_data/volvox/volvox-sorted.bam.bai'),
       },
     },
   },
@@ -71,7 +70,7 @@ test('can render a single region with SvgFeatures + BamAdapter', async () => {
   const testprops = {
     ...baseprops,
     rendererType: 'SvgFeatureRenderer',
-    region: { refName: 'ctgA', start: 0, end: 300 },
+    regions: [{ refName: 'ctgA', start: 0, end: 300 }],
   }
 
   const result = await render(pluginManager, testprops)
@@ -107,11 +106,12 @@ test('throws if no session ID', async () => {
     /must pass a unique session id/,
   )
 })
+
 test('can render a single region with SvgFeatures + BamAdapter (larger maxHeight)', async () => {
   const testprops = {
     ...baseprops,
     rendererType: 'SvgFeatureRenderer',
-    region: { refName: 'ctgA', start: 0, end: 300 },
+    regions: [{ refName: 'ctgA', start: 0, end: 300 }],
   }
   testprops.renderProps.config = { maxHeight: 5000 }
 
@@ -137,17 +137,6 @@ test('can render a single region with SvgFeatures + BamAdapter (larger maxHeight
   ).toBe(0)
 })
 
-test('throws if no session ID', async () => {
-  const testprops = {
-    ...baseprops,
-    rendererType: 'PileupRenderer',
-    sessionId: undefined,
-  }
-
-  await expect(render(pluginManager, testprops)).rejects.toThrow(
-    /must pass a unique session id/,
-  )
-})
 test('throws on unrecoginze worker', async () => {
   const testprops = {
     ...baseprops,

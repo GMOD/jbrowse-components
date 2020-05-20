@@ -1,24 +1,29 @@
 import NCListStore from '@gmod/nclist'
 import { openUrl } from '@gmod/jbrowse-core/util/io'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
+import { Region } from '@gmod/jbrowse-core/util/types'
+import {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import NCListFeature from './NCListFeature'
+import MyConfigSchema from './configSchema'
 
-export default class NCListAdapter extends BaseAdapter {
+export default class NCListAdapter extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private nclist: any
 
   private configRefNames?: string[]
 
-  static capabilities = ['getFeatures']
-
-  constructor(args: { refNames?: string[]; rootUrlTemplate: string }) {
-    super(args)
-    const { refNames, rootUrlTemplate } = args
+  constructor(config: Instance<typeof MyConfigSchema>) {
+    super(config)
+    const refNames = readConfObject(config, 'refNames')
+    const rootUrlTemplate = readConfObject(config, 'rootUrlTemplate')
     this.configRefNames = refNames
 
     this.nclist = new NCListStore({
@@ -32,11 +37,11 @@ export default class NCListAdapter extends BaseAdapter {
    * Fetch features for a certain region. Use getFeaturesInRegion() if you also
    * want to verify that the store has features for the given reference sequence
    * before fetching.
-   * @param {IRegion} param
-   * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
+   * @param region -
+   * @param opts - [signal] optional signalling object for aborting the fetch
+   * @returns Observable of Feature objects in the region
    */
-  getFeatures(region: IRegion, opts: BaseOptions = {}) {
+  getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { signal } = opts
       for await (const feature of this.nclist.getFeatures(region, opts)) {
@@ -65,8 +70,8 @@ export default class NCListAdapter extends BaseAdapter {
    * NCList is unable to get list of ref names so returns empty
    * @return Promise<string[]> of empty list
    */
-  async getRefNames() {
-    return this.configRefNames || []
+  getRefNames() {
+    return Promise.resolve(this.configRefNames || [])
   }
 
   /**

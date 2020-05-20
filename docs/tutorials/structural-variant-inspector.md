@@ -2,7 +2,6 @@
 
 In this exercise we create a complex view of genomic data.
 
-
 ## Open New Structural Variant Inspector
 
 Open data set by clicking on the `Structural Variant Inspector`.
@@ -24,7 +23,3 @@ Putting `CHR2=2` into the text filter will filter down the tabular set:
 Clicking on `show only regions with data` will remove additional chromosomes:
 
 TODO: rest of https://docs.google.com/document/d/18k4VgDvJJOME4Rc-oKv7e3xtuvwnYE3VLNXykX3MNXY/edit
-
-
-
-

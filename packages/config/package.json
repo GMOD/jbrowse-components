@@ -2,13 +2,14 @@
   "name": "@gmod/jbrowse-plugin-config",
   "version": "2.0.0",
   "description": "JBrowse 2 config utilities",
-  "main": "src/index.js",
+  "main": "src/index.ts",
   "scripts": {
     "test": "cd ../..; jest packages/config"
   },
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {
+    "@material-ui/icons": "^4.9.1",
     "pluralize": "^7.0.0",
     "prismjs": "^1.15.0",
     "react-color": "^2.17.3",
@@ -17,12 +18,13 @@
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",
     "@material-ui/core": "^4.0.0",
-    "@material-ui/lab": "^4.0.0",
+    "@material-ui/lab": "^4.0.0-alpha",
+    "generic-filehandle": "^2.0.0",
     "mobx-react": "^6.0.0",
-    "mobx-state-tree": "3.14.1",
-    "generic-filehandle": "^1.0.0",
+    "mobx-state-tree": "^3.14.1",
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
+    "react-dom": "^16.8.0",
     "rxjs": "^6.0.0"
   }
 }

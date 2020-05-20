@@ -1,6 +1,7 @@
+
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React from 'react'
+import React, { useState } from 'react'
 import Typography from '@material-ui/core/Typography'
 import Alert from '@material-ui/lab/Alert'
 import Icon from '@material-ui/core/Icon'
@@ -155,7 +156,6 @@ const GDCQueryBuilder = observer(({ schema }) => {
 
 function ConfigurationEditor({ model }) {
   const classes = useStyles()
-
   return (
     <div className={classes.root} data-testid="configEditor">
       {!model.target ? (

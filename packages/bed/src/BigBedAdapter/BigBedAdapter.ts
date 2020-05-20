@@ -1,12 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BigBed } from '@gmod/bbi'
 import BED from '@gmod/bed'
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
-import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
+import {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { Region, FileLocation } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { map, mergeAll } from 'rxjs/operators'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { Instance } from 'mobx-state-tree'
+import configSchema from './configSchema'
 import { ucscProcessedTranscript } from '../util'
 
 interface BEDFeature {
@@ -20,17 +26,19 @@ interface Parser {
   parseLine: (line: string, opts: { uniqueId: string | number }) => BEDFeature
 }
 
-export default class extends BaseAdapter {
+export default class BigBedAdapter extends BaseFeatureDataAdapter {
   private bigbed: BigBed
 
   private parser: Promise<Parser>
 
-  public static capabilities = ['getFeatures', 'getRefNames']
-
-  public constructor(config: { bigBedLocation: IFileLocation }) {
+  public constructor(config: Instance<typeof configSchema>) {
     super(config)
+    const bigBedLocation = readConfObject(
+      config,
+      'bigBedLocation',
+    ) as FileLocation
     this.bigbed = new BigBed({
-      filehandle: openLocation(config.bigBedLocation),
+      filehandle: openLocation(bigBedLocation),
     })
 
     this.parser = this.bigbed
@@ -46,13 +54,7 @@ export default class extends BaseAdapter {
     return ((await this.bigbed.getHeader()).refsByNumber[refId] || {}).name
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param {IRegion} param
-   * @param abortSignal an abortSignal
-   * @returns {Observable[Feature]} Observable of Feature objects in the region
-   */
-  public getFeatures(region: IRegion, opts: BaseOptions = {}) {
+  public getFeatures(region: Region, opts: BaseOptions = {}) {
     const { refName, start, end } = region
     const { signal } = opts
     return ObservableCreate<Feature>(async observer => {
@@ -97,6 +99,8 @@ export default class extends BaseAdapter {
                   })
                 }
               }
+              if (r.uniqueId === undefined)
+                throw new Error('invalid bbi feature')
               const f = new SimpleFeature({
                 id: `${this.id}-${r.uniqueId}`,
                 data: {
@@ -113,7 +117,7 @@ export default class extends BaseAdapter {
       } catch (e) {
         observer.error(e)
       }
-    })
+    }, opts.signal)
   }
 
   public freeResources(): void {}

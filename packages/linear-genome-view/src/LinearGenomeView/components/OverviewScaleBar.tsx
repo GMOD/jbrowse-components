@@ -1,12 +1,13 @@
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import { getSession, isAbortException } from '@gmod/jbrowse-core/util'
+import { Region } from '@gmod/jbrowse-core/util/types'
+import { Region as MSTRegion } from '@gmod/jbrowse-core/util/types/mst'
+import { getSession } from '@gmod/jbrowse-core/util'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Paper from '@material-ui/core/Paper'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { Typography } from '@material-ui/core'
 import {
   LinearGenomeViewStateModel,
@@ -73,15 +74,10 @@ function OverviewScaleBar({
   model: LGV
   children: React.ReactNode
 }) {
-  const [assemblyRegions, setAssemblyRegions] = useState<
-    Map<string, IRegion[]>
-  >()
-  const [error, setError] = useState('')
   const classes = useStyles()
   const theme = useTheme()
 
   const {
-    assemblyNames,
     displayedRegions,
     dynamicBlocks: visibleRegions,
     width,
@@ -89,53 +85,13 @@ function OverviewScaleBar({
     bpPerPx,
   } = model
 
-  const {
-    getRegionsForAssemblyName,
-  }: {
-    getRegionsForAssemblyName: (
-      assemblyName: string,
-      { signal }: { signal?: AbortSignal },
-    ) => Promise<IRegion[]>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } = getSession(model) as any
-  useEffect(() => {
-    let aborter: AbortController
-    let mounted = true
-    async function fetchRegions() {
-      if (assemblyNames.length) {
-        const fetchedAssemblyRegions = new Map() as Map<string, IRegion[]>
-        for (const assemblyName of assemblyNames) {
-          try {
-            aborter = new AbortController()
-            // eslint-disable-next-line no-await-in-loop
-            const fetchedRegions = await getRegionsForAssemblyName(
-              assemblyName,
-              { signal: aborter.signal },
-            )
-            fetchedAssemblyRegions.set(assemblyName, fetchedRegions)
-          } catch (e) {
-            if (!isAbortException(e) && mounted) {
-              setError(String(e))
-            }
-          }
-        }
-        if (mounted) {
-          setAssemblyRegions(fetchedAssemblyRegions)
-        }
-      }
-    }
-    fetchRegions()
+  const { assemblyManager } = getSession(model)
 
-    return () => {
-      mounted = false
-      aborter && aborter.abort()
-    }
-  }, [assemblyNames, getRegionsForAssemblyName])
-
-  const wholeRefSeqs = [] as IRegion[]
+  const wholeRefSeqs = [] as Region[]
   let totalLength = 0
   displayedRegions.forEach(({ refName, assemblyName }) => {
-    const r = assemblyRegions && assemblyRegions.get(assemblyName)
+    const assembly = assemblyManager.get(assemblyName)
+    const r = assembly && (assembly.regions as Instance<typeof MSTRegion>[])
     if (r) {
       const wholeSequence = r.find(sequence => sequence.refName === refName)
       const alreadyExists = wholeRefSeqs.find(
@@ -159,17 +115,6 @@ function OverviewScaleBar({
       // @ts-ignore
       theme.palette.tertiary.light
     : theme.palette.primary.light
-
-  if (error) {
-    return (
-      <>
-        <div className={classes.scaleBar}>
-          <Typography color="error">{error}</Typography>
-        </div>
-        <div>{children}</div>
-      </>
-    )
-  }
 
   if (!wholeRefSeqs.length) {
     return (
@@ -281,11 +226,14 @@ function OverviewScaleBar({
             return (
               <polygon
                 key={`${region.key}-${idx}`}
-                // @ts-ignore
                 points={[
+                  // @ts-ignore
                   [startPx, HEADER_BAR_HEIGHT],
+                  // @ts-ignore
                   [endPx, HEADER_BAR_HEIGHT],
+                  // @ts-ignore
                   [topRight, 0],
+                  // @ts-ignore
                   [topLeft, 0],
                 ]}
                 fill={fade(polygonColor, 0.3)}

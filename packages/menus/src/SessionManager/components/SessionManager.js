@@ -4,7 +4,6 @@ import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
-import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
@@ -13,6 +12,8 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import ListItemText from '@material-ui/core/ListItemText'
 import ListSubheader from '@material-ui/core/ListSubheader'
 import Paper from '@material-ui/core/Paper'
+import DeleteIcon from '@material-ui/icons/Delete'
+import ViewListIcon from '@material-ui/icons/ViewList'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import React, { useState } from 'react'
@@ -87,7 +88,7 @@ export default observer(({ session }) => {
                 key={sessionSnapshot.name}
               >
                 <ListItemIcon>
-                  <Icon>view_list</Icon>
+                  <ViewListIcon />
                 </ListItemIcon>
                 <ListItemText
                   primary={sessionSnapshot.name}
@@ -104,7 +105,7 @@ export default observer(({ session }) => {
                     aria-label="Delete"
                     onClick={() => handleDialogOpen(idx)}
                   >
-                    <Icon>delete</Icon>
+                    <DeleteIcon />
                   </IconButton>
                 </ListItemSecondaryAction>
               </ListItem>

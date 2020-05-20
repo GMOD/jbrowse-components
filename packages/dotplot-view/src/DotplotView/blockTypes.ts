@@ -82,7 +82,7 @@ export class BaseBlock {
   /**
    * rename the reference sequence of this block and return a new one
    *
-   * @param {string} refName
+   * @param refName -
    * @returns either a new block with a renamed reference sequence,
    * or the same block, if the ref name is not actually different
    */
@@ -112,8 +112,6 @@ export class ContentBlock extends BaseBlock {}
  * too small to be shown at the current zoom level
  */
 export class ElidedBlock extends BaseBlock {
-  private elidedBlockCount = 1
-
   public widthPx: number
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

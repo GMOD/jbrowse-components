@@ -1,7 +1,7 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { autorun, reaction } = jbrequire('mobx')
-  const { types, getParent, addDisposer, getRoot } = jbrequire(
+  const { types, getParent, addDisposer, getSnapshot } = jbrequire(
     'mobx-state-tree',
   )
   const BaseViewModel = jbrequire('@gmod/jbrowse-core/BaseViewModel')
@@ -160,6 +160,7 @@ export default pluginManager => {
           name: 'features from tabular data',
           renderer: { type: 'StructuralVariantChordRenderer' },
           adapter: self.featuresAdapterConfigSnapshot,
+          assemblyNames: [self.assemblyName],
         }
         return configuration
       },
@@ -217,52 +218,37 @@ export default pluginManager => {
               const { tracks } = circularView
               const session = getSession(self)
               if (assemblyName) {
+                let { regions: assemblyRegions } = session.assemblyManager.get(
+                  assemblyName,
+                )
+                if (!assemblyRegions) {
+                  assemblyRegions = []
+                }
                 if (onlyDisplayRelevantRegionsInCircularView) {
                   if (tracks.length === 1) {
-                    // this is a map of canonical-name -> adapter-specific-name
-                    const refNameCanonicalizationMapP = getRoot(
-                      self,
-                    ).jbrowse.getRefNameCanonicalizationMap(assemblyName)
-
-                    const assemblyRegionsP = session.getRegionsForAssemblyName(
+                    const { getCanonicalRefName } = session.assemblyManager.get(
                       assemblyName,
                     )
 
-                    Promise.all([
-                      refNameCanonicalizationMapP,
-                      featuresRefNamesP,
-                      assemblyRegionsP,
-                    ])
-                      .then(
-                        ([
-                          refNameCanonicalizationMap,
-                          featureRefNames,
-                          assemblyRegions,
-                        ]) => {
-                          // canonicalize the store's ref names if necessary
-                          const canonicalFeatureRefNames = new Set(
-                            featureRefNames.map(
-                              refName =>
-                                refNameCanonicalizationMap.get(refName) ||
-                                refName,
-                            ),
-                          )
-                          const displayedRegions = assemblyRegions.filter(r =>
-                            canonicalFeatureRefNames.has(r.refName),
-                          )
-                          circularView.setDisplayedRegions(
-                            JSON.parse(JSON.stringify(displayedRegions)),
-                          )
-                        },
-                      )
+                    featuresRefNamesP
+                      .then(featureRefNames => {
+                        // canonicalize the store's ref names if necessary
+                        const canonicalFeatureRefNames = new Set(
+                          featureRefNames.map(
+                            refName => getCanonicalRefName(refName) || refName,
+                          ),
+                        )
+                        const displayedRegions = assemblyRegions.filter(r =>
+                          canonicalFeatureRefNames.has(r.refName),
+                        )
+                        circularView.setDisplayedRegions(
+                          JSON.parse(JSON.stringify(displayedRegions)),
+                        )
+                      })
                       .catch(e => console.error(e))
                   }
                 } else {
-                  session
-                    .getRegionsForAssemblyName(assemblyName)
-                    .then(assemblyRegions => {
-                      circularView.setDisplayedRegions(assemblyRegions)
-                    })
+                  circularView.setDisplayedRegions(getSnapshot(assemblyRegions))
                 }
               } else {
                 circularView.setDisplayedRegions([])

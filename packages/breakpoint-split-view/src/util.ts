@@ -13,10 +13,12 @@ function heightFromSpecificLevel(
   trackConfigId: string,
   level: number,
 ) {
-  const heightUpUntilThisPoint = views
-    .slice(0, level)
-    .map(v => v.height + VIEW_DIVIDER_HEIGHT)
-    .reduce((a, b) => a + b, 0)
+  const heightUpUntilThisPoint =
+    views
+      .slice(0, level)
+      .map(v => v.height + VIEW_DIVIDER_HEIGHT)
+      .reduce((a, b) => a + b, 0) +
+    level * 3
   return (
     heightUpUntilThisPoint +
     views[level].headerHeight +
@@ -39,13 +41,26 @@ export function yPos(
   trackConfigId: string,
   level: number,
   views: Instance<LinearGenomeViewStateModel>[],
-  tracks: { height: number; scrollTop: number }[], // basic track requirements
+  tracks: {
+    height: number
+    scrollTop: number
+  }[], // basic track requirements
   c: LayoutRecord,
 ) {
   const min = 0
   const max = tracks[level].height
+
+  let offset = 0
+  // @ts-ignore
+  if (tracks[level].SNPCoverageTrack) {
+    // @ts-ignore
+    offset = tracks[level].SNPCoverageTrack.height + 5
+  }
   return (
-    clamp(c[TOP] - tracks[level].scrollTop + cheight(c) / 2, min, max) +
-    heightFromSpecificLevel(views, trackConfigId, level)
+    clamp(
+      c[TOP] - tracks[level].scrollTop + cheight(c) / 2 + offset,
+      min,
+      max,
+    ) + heightFromSpecificLevel(views, trackConfigId, level)
   )
 }

@@ -1,10 +1,10 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
 import { bpToPx, bpSpanPx } from '@gmod/jbrowse-core/util'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useRef, useState, useCallback } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { Tooltip } from '@gmod/jbrowse-core/ui'
 import FeatureGlyph from './FeatureGlyph'
 import { chooseGlyphComponent, layOut } from './util'
@@ -195,14 +195,13 @@ RenderedFeatureGlyph.propTypes = {
 }
 
 const RenderedFeatures = observer(props => {
-  const { layout, setHeight, features } = props
+  const { features } = props
   const featuresRendered = []
   for (const feature of features.values()) {
     featuresRendered.push(
       <RenderedFeatureGlyph key={feature.id()} feature={feature} {...props} />,
     )
   }
-  setHeight(layout.getTotalHeight())
   return <>{featuresRendered}</>
 })
 RenderedFeatures.propTypes = {
@@ -221,8 +220,17 @@ RenderedFeatures.defaultProps = {
 }
 
 function SvgFeatureRendering(props) {
-  const { blockKey, region, bpPerPx, features, trackModel, config } = props
+  const {
+    layout,
+    blockKey,
+    regions,
+    bpPerPx,
+    features,
+    trackModel,
+    config,
+  } = props
   const { configuration } = trackModel
+  const [region] = regions || []
   const width = (region.end - region.start) / bpPerPx
   const displayMode = readConfObject(config, 'displayMode')
 
@@ -243,6 +251,7 @@ function SvgFeatureRendering(props) {
     onMouseMove,
     onMouseUp,
     onFeatureClick,
+    onFeatureContextMenu,
   } = props
 
   const mouseDown = useCallback(
@@ -349,12 +358,31 @@ function SvgFeatureRendering(props) {
   const click = useCallback(
     event => {
       // don't select a feature if we are clicking and dragging
-      if (movedDuringLastMouseDown) return
-
-      onFeatureClick && onFeatureClick(event)
+      if (movedDuringLastMouseDown) {
+        return
+      }
+      if (onFeatureClick) {
+        onFeatureClick(event)
+      }
     },
     [movedDuringLastMouseDown, onFeatureClick],
   )
+
+  const contextMenu = useCallback(
+    event => {
+      if (movedDuringLastMouseDown) {
+        return
+      }
+      if (onFeatureContextMenu) {
+        onFeatureContextMenu(event)
+      }
+    },
+    [movedDuringLastMouseDown, onFeatureContextMenu],
+  )
+
+  useEffect(() => {
+    setHeight(layout.getTotalHeight())
+  }, [layout])
 
   return (
     <div style={renderingStyle}>
@@ -373,16 +401,17 @@ function SvgFeatureRendering(props) {
         onFocus={mouseEnter}
         onBlur={mouseLeave}
         onClick={click}
+        onContextMenu={contextMenu}
         style={{ display: 'block' }}
       >
         <RenderedFeatures
           features={features}
-          setHeight={setHeight}
           displayMode={displayMode}
           {...props}
+          region={region}
         />
-        <SvgSelected {...props} />
-        <SvgMouseover {...props} />
+        <SvgSelected {...props} region={region} />
+        <SvgMouseover {...props} region={region} />
       </svg>
       {localFeatureIdUnderMouse ? (
         <Tooltip
@@ -402,7 +431,7 @@ SvgFeatureRendering.propTypes = {
     getTotalHeight: ReactPropTypes.func.isRequired,
   }).isRequired,
 
-  region: CommonPropTypes.Region.isRequired,
+  regions: ReactPropTypes.arrayOf(CommonPropTypes.Region).isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
   features: ReactPropTypes.oneOfType([
     ReactPropTypes.instanceOf(Map),
@@ -425,7 +454,9 @@ SvgFeatureRendering.propTypes = {
   onMouseOut: ReactPropTypes.func,
   onMouseMove: ReactPropTypes.func,
   onClick: ReactPropTypes.func,
+  onContextMenu: ReactPropTypes.func,
   onFeatureClick: ReactPropTypes.func,
+  onFeatureContextMenu: ReactPropTypes.func,
   blockKey: ReactPropTypes.string,
 }
 
@@ -443,7 +474,9 @@ SvgFeatureRendering.defaultProps = {
   onMouseOut: undefined,
   onMouseMove: undefined,
   onClick: undefined,
+  onContextMenu: undefined,
   onFeatureClick: undefined,
+  onFeatureContextMenu: undefined,
 }
 
 export default observer(SvgFeatureRendering)

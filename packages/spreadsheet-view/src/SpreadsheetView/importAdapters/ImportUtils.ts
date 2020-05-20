@@ -61,7 +61,7 @@ function guessColumnType(rowSet: RowSet, columnNumber: number) {
   return guessedType
 }
 
-async function dataToSpreadsheetSnapshot(
+function dataToSpreadsheetSnapshot(
   rows: string[][],
   options: ParseOptions = {
     hasColumnNameLine: false,
@@ -119,20 +119,18 @@ async function dataToSpreadsheetSnapshot(
   }
 }
 
-export function parseCsvBuffer(
+export async function parseCsvBuffer(
   buffer: Buffer,
   options: ParseOptions = { hasColumnNameLine: false, columnNameLineNumber: 1 },
 ) {
-  return parseWith(buffer).then(rows =>
-    dataToSpreadsheetSnapshot(rows, options),
-  )
+  const rows = await parseWith(buffer)
+  return dataToSpreadsheetSnapshot(rows, options)
 }
 
-export function parseTsvBuffer(
+export async function parseTsvBuffer(
   buffer: Buffer,
   options: ParseOptions = { hasColumnNameLine: false, columnNameLineNumber: 1 },
 ) {
-  return parseWith(buffer, { delimiter: '\t' }).then(rows =>
-    dataToSpreadsheetSnapshot(rows, options),
-  )
+  const rows = await parseWith(buffer, { delimiter: '\t' })
+  return dataToSpreadsheetSnapshot(rows, options)
 }

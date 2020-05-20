@@ -1,7 +1,7 @@
 import Button from '@material-ui/core/Button'
-import Icon from '@material-ui/core/Icon'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
+import ArrowDropDown from '@material-ui/icons/ArrowDropDown'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useRef, useState } from 'react'
@@ -44,8 +44,7 @@ function DropDownMenu({
 
   function handleMenuItemClick(
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    callback: (session: any) => void,
+    callback: Function,
   ) {
     callback(session)
     handleClose()
@@ -65,7 +64,7 @@ function DropDownMenu({
         classes={{ root: classes.buttonRoot }}
       >
         {menuTitle}
-        <Icon>arrow_drop_down</Icon>
+        <ArrowDropDown />
       </Button>
       <Menu
         anchorEl={anchorEl.current}

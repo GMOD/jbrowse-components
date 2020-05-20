@@ -1,5 +1,5 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
 import { contrastingTextColor } from '@gmod/jbrowse-core/util/color'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
@@ -50,57 +50,6 @@ ScoreText.propTypes = {
 }
 
 class Lollipop extends Component {
-  static propTypes = {
-    feature: ReactPropTypes.shape({
-      id: ReactPropTypes.func.isRequired,
-      get: ReactPropTypes.func.isRequired,
-    }).isRequired,
-    // bpPerPx: ReactPropTypes.number.isRequired,
-    // region: CommonPropTypes.Region.isRequired,
-    // config: CommonPropTypes.ConfigSchema.isRequired,
-    layoutRecord: ReactPropTypes.shape({
-      x: ReactPropTypes.number.isRequired,
-      y: ReactPropTypes.number.isRequired,
-      anchorLocation: ReactPropTypes.number.isRequired,
-      data: ReactPropTypes.shape({
-        anchorX: ReactPropTypes.number.isRequired,
-        radiusPx: ReactPropTypes.number.isRequired,
-        score: ReactPropTypes.number.isRequired,
-      }),
-      width: ReactPropTypes.number.isRequired,
-      height: ReactPropTypes.number.isRequired,
-    }).isRequired,
-
-    selectedFeatureId: ReactPropTypes.string,
-
-    config: CommonPropTypes.ConfigSchema.isRequired,
-
-    onFeatureMouseDown: ReactPropTypes.func,
-    onFeatureMouseEnter: ReactPropTypes.func,
-    onFeatureMouseOut: ReactPropTypes.func,
-    onFeatureMouseOver: ReactPropTypes.func,
-    onFeatureMouseUp: ReactPropTypes.func,
-    onFeatureMouseLeave: ReactPropTypes.func,
-    onFeatureMouseMove: ReactPropTypes.func,
-
-    // synthesized from mouseup and mousedown
-    onFeatureClick: ReactPropTypes.func,
-  }
-
-  static defaultProps = {
-    selectedFeatureId: undefined,
-
-    onFeatureMouseDown: undefined,
-    onFeatureMouseEnter: undefined,
-    onFeatureMouseOut: undefined,
-    onFeatureMouseOver: undefined,
-    onFeatureMouseUp: undefined,
-    onFeatureMouseLeave: undefined,
-    onFeatureMouseMove: undefined,
-
-    onFeatureClick: undefined,
-  }
-
   onFeatureMouseDown = event => {
     const { onFeatureMouseDown: handler, feature } = this.props
     if (!handler) return undefined
@@ -217,5 +166,57 @@ class Lollipop extends Component {
     )
   }
 }
+Lollipop.propTypes = {
+  feature: ReactPropTypes.shape({
+    id: ReactPropTypes.func.isRequired,
+    get: ReactPropTypes.func.isRequired,
+  }).isRequired,
+  // horizontallyFlipped: ReactPropTypes.bool,
+  // bpPerPx: ReactPropTypes.number.isRequired,
+  // region: CommonPropTypes.Region.isRequired,
+  // config: CommonPropTypes.ConfigSchema.isRequired,
+  layoutRecord: ReactPropTypes.shape({
+    x: ReactPropTypes.number.isRequired,
+    y: ReactPropTypes.number.isRequired,
+    anchorLocation: ReactPropTypes.number.isRequired,
+    data: ReactPropTypes.shape({
+      anchorX: ReactPropTypes.number.isRequired,
+      radiusPx: ReactPropTypes.number.isRequired,
+      score: ReactPropTypes.number.isRequired,
+    }),
+    width: ReactPropTypes.number.isRequired,
+    height: ReactPropTypes.number.isRequired,
+  }).isRequired,
 
+  selectedFeatureId: ReactPropTypes.string,
+
+  config: CommonPropTypes.ConfigSchema.isRequired,
+
+  onFeatureMouseDown: ReactPropTypes.func,
+  onFeatureMouseEnter: ReactPropTypes.func,
+  onFeatureMouseOut: ReactPropTypes.func,
+  onFeatureMouseOver: ReactPropTypes.func,
+  onFeatureMouseUp: ReactPropTypes.func,
+  onFeatureMouseLeave: ReactPropTypes.func,
+  onFeatureMouseMove: ReactPropTypes.func,
+
+  // synthesized from mouseup and mousedown
+  onFeatureClick: ReactPropTypes.func,
+}
+
+Lollipop.defaultProps = {
+  // horizontallyFlipped: false,
+
+  selectedFeatureId: undefined,
+
+  onFeatureMouseDown: undefined,
+  onFeatureMouseEnter: undefined,
+  onFeatureMouseOut: undefined,
+  onFeatureMouseOver: undefined,
+  onFeatureMouseUp: undefined,
+  onFeatureMouseLeave: undefined,
+  onFeatureMouseMove: undefined,
+
+  onFeatureClick: undefined,
+}
 export default observer(Lollipop)

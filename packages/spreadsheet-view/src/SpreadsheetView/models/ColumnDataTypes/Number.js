@@ -156,11 +156,13 @@ export default ({ jbrequire }) => {
     }))
     .actions(self => ({
       setFirstNumber(n) {
-        if (isNaN(n) || typeof n !== 'number') self.firstNumber = undefined
+        if (Number.isNaN(n) || typeof n !== 'number')
+          self.firstNumber = undefined
         else self.firstNumber = n
       },
       setSecondNumber(n) {
-        if (isNaN(n) || typeof n !== 'number') self.secondNumber = undefined
+        if (Number.isNaN(n) || typeof n !== 'number')
+          self.secondNumber = undefined
         else self.secondNumber = n
       },
       setOperation(op) {
