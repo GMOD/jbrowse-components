@@ -64,11 +64,7 @@ export default class RpcManager {
     return newDriver
   }
 
-  getDriverForCall(
-    sessionId: string,
-    functionName: string,
-    args: unknown,
-  ) {
+  getDriverForCall(sessionId: string, functionName: string, args: unknown) {
     // TODO: add logic here so different sessions can have
     // different RPC backends configured
 
@@ -100,12 +96,7 @@ export default class RpcManager {
     return region
   }
 
-  async call(
-    sessionId: string,
-    functionName: string,
-    args: {},
-    opts = {},
-  ) {
+  async call(sessionId: string, functionName: string, args: {}, opts = {}) {
     return this.getDriverForCall(sessionId, functionName, args).call(
       this.pluginManager,
       sessionId,

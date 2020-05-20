@@ -99,9 +99,8 @@ export default class ComparativeServerSideRenderer extends RendererType {
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
-    const sessionId = args.sessionId
     const result = await rpcManager.call(
-      sessionId,
+      args.sessionId,
       'ComparativeRender',
       serializedArgs,
     )
@@ -206,8 +205,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
   freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
-    const sessionId = args.sessionId
-    return rpcManager.call(sessionId, 'CoreFreeResources', serializedArgs)
+    return rpcManager.call(args.sessionId, 'CoreFreeResources', serializedArgs)
   }
 
   freeResourcesInWorker(args: RenderArgs) {
