@@ -217,8 +217,16 @@ const blockBasedTrack = types
       }
     },
 
-    contextMenuFeature() {
-      self.contextMenuOptions = []
+    contextMenuFeature(feature: Feature) {
+      self.contextMenuOptions = [
+        {
+          label: 'Open feature details',
+          icon: 'menu_open',
+          onClick: () => {
+            this.selectFeature(feature)
+          },
+        },
+      ]
     },
 
     contextMenuNoFeature() {
@@ -258,7 +266,9 @@ const blockBasedTrack = types
           if (!f) {
             self.clearFeatureSelection()
           } else {
-            self.contextMenuFeature()
+            // feature id under mouse passed to context menu
+            const feature = self.features.get(f)
+            self.contextMenuFeature(feature as Feature)
           }
         },
         onContextMenu() {
