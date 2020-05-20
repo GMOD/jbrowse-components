@@ -54,7 +54,7 @@ export default class PileupRenderer extends BoxRendererType {
     const mismatches: Mismatch[] = feature.get('mismatches')
 
     // alter the start and end below when softclipping enabled
-    if (showSoftClip) {
+    if (showSoftClip && feature.get('seq')) {
       for (let i = 0; i < mismatches.length; i += 1) {
         const mismatch = mismatches[i]
         if (mismatch.type === 'softclip') {
@@ -273,8 +273,8 @@ export default class PileupRenderer extends BoxRendererType {
         }
         // Display all bases softclipped off in lightened colors
         if (showSoftClip) {
-          // in cram below is undefined at certain times
           const seq = feature.get('seq')
+          if (!seq) return
           for (let j = 0; j < mismatches.length; j += 1) {
             const mismatch = mismatches[j]
             if (mismatch.type === 'softclip') {
@@ -284,7 +284,6 @@ export default class PileupRenderer extends BoxRendererType {
                   ? feature.get('start') - softClipLength
                   : feature.get('start') + mismatch.start
               for (let k = 0; k < softClipLength; k += 1) {
-                console.log(seq)
                 const base = seq.charAt(k + mismatch.start)
                 // If softclip length+start is longer than sequence, no need to continue showing base
                 if (!base) return
@@ -300,8 +299,8 @@ export default class PileupRenderer extends BoxRendererType {
                   Math.abs(softClipLeftPx - softClipRightPx),
                 )
 
-                // White accounts for IUPAC ambiguity code bases such as N that show in soft clipping
-                ctx.fillStyle = lighten(colorForBase[base] || '#FFFFFF', 0.3)
+                // Black accounts for IUPAC ambiguity code bases such as N that show in soft clipping
+                ctx.fillStyle = lighten(colorForBase[base] || '#000000', 0.3)
                 ctx.fillRect(softClipLeftPx, topPx, softClipWidthPx, heightPx)
 
                 if (
