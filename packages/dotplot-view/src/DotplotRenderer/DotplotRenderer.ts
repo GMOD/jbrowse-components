@@ -7,7 +7,9 @@ import {
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { Instance } from 'mobx-state-tree'
 import ComparativeServerSideRendererType from './ComparativeServerSideRendererType'
+import MyConfig from './configSchema'
 
 interface Block extends Region {
   offsetPx: number
@@ -23,7 +25,7 @@ interface ReducedView {
 }
 
 export interface DotplotRenderProps {
-  config: any
+  config: Instance<typeof MyConfig>
   height: number
   width: number
   fontSize: number

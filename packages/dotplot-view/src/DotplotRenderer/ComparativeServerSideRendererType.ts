@@ -102,7 +102,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
     const stateGroupName = args.sessionId
     const result = await rpcManager.call(
       stateGroupName,
-      'DotplotComparativeRender',
+      'ComparativeRender',
       serializedArgs,
     )
 
