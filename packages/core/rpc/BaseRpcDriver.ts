@@ -42,12 +42,12 @@ function watchWorker(worker: WorkerHandle, pingTime: number): Promise<void> {
 }
 
 function detectHardwareConcurrency() {
-  // if (
-  //   typeof window !== 'undefined' &&
-  //   'hardwareConcurrency' in window.navigator
-  // ) {
-  //   return window.navigator.hardwareConcurrency
-  // }
+  if (
+    typeof window !== 'undefined' &&
+    'hardwareConcurrency' in window.navigator
+  ) {
+    return window.navigator.hardwareConcurrency
+  }
   return 1
 }
 
@@ -114,7 +114,7 @@ export default abstract class BaseRpcDriver {
     const hardwareConcurrency = detectHardwareConcurrency()
 
     const workerCount =
-      this.workerCount || Math.max(1, Math.ceil(hardwareConcurrency / 2))
+      this.workerCount || Math.max(1, Math.ceil((hardwareConcurrency - 2) / 3))
 
     const workerHandles: WorkerHandle[] = new Array(workerCount)
     for (let i = 0; i < workerCount; i += 1) {
