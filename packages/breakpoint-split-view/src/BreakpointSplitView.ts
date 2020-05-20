@@ -1,18 +1,21 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
-export default ({ jbrequire }: { jbrequire: Function }) => {
-  const ViewType = jbrequire(
-    '@gmod/jbrowse-core/pluggableElementTypes/ViewType',
-  )
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
+import { IAnyStateTreeNode } from 'mobx-state-tree'
+import modelF from './model'
+import componentF from './components/BreakpointSplitView'
 
-  const ReactComponent = jbrequire(require('./components/BreakpointSplitView'))
-  const { stateModel } = jbrequire(require('./model'))
+export default ({ lib, load }: PluginManager) => {
+  const ViewType = lib['@gmod/jbrowse-core/pluggableElementTypes/ViewType']
+  const { getSession } = lib['@gmod/jbrowse-core/util']
+
+  const ReactComponent = load(componentF)
+  const { stateModel } = load(modelF)
 
   class BreakpointSplitViewType extends ViewType {
     snapshotFromBreakendFeature(
       feature: Feature,
-      view: {
+      view: IAnyStateTreeNode & {
         displayedRegions: [
           { assemblyName: string; start: number; end: number; refName: string },
         ]
@@ -26,6 +29,7 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
       // TODO: Figure this out for multiple assembly names
       const { assemblyName } = view.displayedRegions[0]
       const assembly = getSession(view).assemblyManager.get(assemblyName)
+      if (!assembly) throw new Error('assembly not yet loaded')
       const { getCanonicalRefName } = assembly
       const featureRefName = getCanonicalRefName(feature.get('refName'))
 
@@ -113,7 +117,6 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
     }
   }
 
-  // @ts-ignore
   return new BreakpointSplitViewType({
     name: 'BreakpointSplitView',
     stateModel,

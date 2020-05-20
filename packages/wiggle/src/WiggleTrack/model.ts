@@ -129,10 +129,8 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
       }
     })
     .actions(self => {
-      async function getStats(signal: AbortSignal) {
-        const { rpcManager } = (getSession(self) as unknown) as {
-          rpcManager: { call: Function }
-        }
+      async function getStats(signal: AbortSignal): Promise<FeatureStats> {
+        const { rpcManager } = getSession(self)
         const nd = getConf(self, 'numStdDev')
         const autoscaleType = getConf(self, 'autoscale', [])
         const { adapter } = self.configuration
@@ -142,7 +140,6 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             'WiggleGetGlobalStats',
             {
               adapterConfig: getSnapshot(adapter),
-              adapterType: adapter.type,
               signal,
             },
           )) as FeatureStats
@@ -161,7 +158,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           const { dynamicBlocks, bpPerPx } = getContainingView(
             self,
           ) as Instance<LinearGenomeViewStateModel>
-          const r = await rpcManager.call(
+          const r = (await rpcManager.call(
             'statsGathering',
             'WiggleGetMultiRegionStats',
             {
@@ -172,7 +169,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
               signal,
               bpPerPx,
             },
-          )
+          )) as FeatureStats
           return autoscaleType === 'localsd'
             ? {
                 ...r,
@@ -190,7 +187,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             signal,
           }) as Promise<FeatureStats>
         }
-        return {}
+        throw new Error(`invalid autoscaleType '${autoscaleType}'`)
       }
       return {
         afterAttach() {

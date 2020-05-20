@@ -6,7 +6,8 @@ import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAda
 import {
   FeatureStats,
   blankStats,
-  dataAdapterSupportsWiggleStats,
+  dataAdapterSupportsMultiRegionStats,
+  dataAdapterSupportsGlobalStats,
 } from '../statsUtil'
 
 export class WiggleGetGlobalStats extends RpcMethodType {
@@ -27,7 +28,7 @@ export class WiggleGetGlobalStats extends RpcMethodType {
     )
     if (
       dataAdapter instanceof BaseFeatureDataAdapter &&
-      dataAdapterSupportsWiggleStats(dataAdapter)
+      dataAdapterSupportsGlobalStats(dataAdapter)
     ) {
       return dataAdapter.getGlobalStats({ signal })
     }
@@ -58,7 +59,7 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
 
     if (
       dataAdapter instanceof BaseFeatureDataAdapter &&
-      dataAdapterSupportsWiggleStats(dataAdapter)
+      dataAdapterSupportsMultiRegionStats(dataAdapter)
     ) {
       return dataAdapter.getMultiRegionStats(regions, { signal, bpPerPx })
     }

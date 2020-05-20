@@ -16,6 +16,7 @@ import {
   LocalPathLocation as MULocalPathLocation,
   UriLocation as MUUriLocation,
 } from './mst'
+import RpcManager from '../../rpc/RpcManager'
 
 export * from './util'
 
@@ -38,7 +39,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   clearSelection(): void
   configuration: AnyConfigurationModel
   pluginManager: PluginManager
-  rpcManager: { call: Function }
+  rpcManager: RpcManager
   assemblyNames: string[]
   assemblies: AnyConfigurationModel[]
   selection?: unknown

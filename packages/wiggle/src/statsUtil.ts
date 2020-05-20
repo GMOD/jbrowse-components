@@ -185,14 +185,24 @@ export function blankStats(): FeatureStats {
 
 export interface DataAdapterWithGlobalStats extends BaseFeatureDataAdapter {
   getGlobalStats(args: { signal?: AbortSignal }): Promise<FeatureStats>
+}
+
+export function dataAdapterSupportsGlobalStats(
+  adapter: BaseFeatureDataAdapter,
+): adapter is DataAdapterWithGlobalStats {
+  return 'getGlobalStats' in adapter
+}
+
+export interface DataAdapterWithMultiRegionStats
+  extends BaseFeatureDataAdapter {
   getMultiRegionStats(
     regions: Region[],
     args: { signal?: AbortSignal; bpPerPx: number },
   ): Promise<FeatureStats>
 }
 
-export function dataAdapterSupportsWiggleStats(
+export function dataAdapterSupportsMultiRegionStats(
   adapter: BaseFeatureDataAdapter,
-): adapter is DataAdapterWithGlobalStats {
-  return 'getGlobalStats' in adapter && 'getMultiRegionStats' in adapter
+): adapter is DataAdapterWithMultiRegionStats {
+  return 'getMultiRegionStats' in adapter
 }
