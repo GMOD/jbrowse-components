@@ -153,21 +153,23 @@ export default (pluginManager: PluginManager) => {
               <g>
                 {vview.dynamicBlocks.blocks
                   .filter(region => region.refName)
-                  .map(region => {
-                    const y = viewHeight - (region.offsetPx - vview.offsetPx)
+                  .map((region, index, array) => {
+                    const prevY = index > 0 ? array[index - 1].offsetPx : 0
+                    const y = region.offsetPx
                     const x = borderX
-                    return (
+
+                    return index === 0 || Math.abs(prevY - y) > 12 ? (
                       <text
                         transform={`rotate(${vtextRotation},${x},${y})`}
                         key={JSON.stringify(region)}
                         x={borderX}
-                        y={y}
+                        y={viewHeight - y + vview.offsetPx}
                         fill="#000000"
                         textAnchor="end"
                       >
                         {region.refName}
                       </text>
-                    )
+                    ) : null
                   })}
               </g>
             </svg>
@@ -239,14 +241,17 @@ export default (pluginManager: PluginManager) => {
               <g>
                 {hview.dynamicBlocks.blocks
                   .filter(region => region.refName)
-                  .map(region => {
-                    const x = region.offsetPx - hview.offsetPx
+                  .map((region, index, array) => {
+                    const prevX = index > 0 ? array[index - 1].offsetPx : 0
+                    const x = region.offsetPx
                     const y = tickSize
-                    return (
+                    return index === 0 || Math.abs(prevX - x) > 12 ? (
                       <text
-                        transform={`rotate(${htextRotation},${x},${y})`}
+                        transform={`rotate(${htextRotation},${
+                          x - hview.offsetPx
+                        },${y})`}
                         key={region.refName}
-                        x={x}
+                        x={x - hview.offsetPx}
                         y={y + 1}
                         fill="#000000"
                         dominantBaseline="hanging"
@@ -254,7 +259,7 @@ export default (pluginManager: PluginManager) => {
                       >
                         {region.refName}
                       </text>
-                    )
+                    ) : null
                   })}
               </g>
             </svg>

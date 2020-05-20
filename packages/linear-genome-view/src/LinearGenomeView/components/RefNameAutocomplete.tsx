@@ -111,7 +111,7 @@ function RefNameAutocomplete({
   let regions: Instance<typeof MSTRegion>[] = []
   if (assemblyName) {
     const assembly = assemblyManager.get(assemblyName)
-    if (assembly) {
+    if (assembly && assembly.regions) {
       regions = assembly.regions
     }
   }
