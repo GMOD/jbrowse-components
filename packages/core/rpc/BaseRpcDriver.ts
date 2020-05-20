@@ -80,7 +80,7 @@ export default abstract class BaseRpcDriver {
       if (thing instanceof AbortSignal) {
         return (serializeAbortSignal(
           thing,
-          this.remoteAbort.bind(this, pluginManager),
+          this.remoteAbort.bind(this, pluginManager, stateGroupName),
         ) as unknown) as THING_TYPE
       }
 
@@ -102,11 +102,11 @@ export default abstract class BaseRpcDriver {
 
   remoteAbort(
     pluginManager: PluginManager,
+    stateGroupName: string,
     functionName: string,
     signalId: number,
   ) {
-    // TODO: this is not the right state group name!
-    const worker = this.getWorker('remoteAbort', functionName, pluginManager)
+    const worker = this.getWorker(stateGroupName, functionName, pluginManager)
     worker.call(functionName, signalId)
   }
 
