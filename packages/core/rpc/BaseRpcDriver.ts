@@ -183,10 +183,14 @@ export default abstract class BaseRpcDriver {
       throw new TypeError('stateGroupName is required')
     }
     const worker = this.getWorker(stateGroupName, functionName, pluginManager)
-    const filteredArgs = this.filterArgs(args, pluginManager, stateGroupName)
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
-    const serializedArgs = await rpcMethod.serializeArguments(filteredArgs)
-    const result = await worker.call(functionName, serializedArgs, {
+    const serializedArgs = await rpcMethod.serializeArguments(args)
+    const filteredAndSerializedArgs = this.filterArgs(
+      serializedArgs,
+      pluginManager,
+      stateGroupName,
+    )
+    const result = await worker.call(functionName, filteredAndSerializedArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes
       ...options,
     })

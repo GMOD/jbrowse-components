@@ -20,9 +20,9 @@ export default class RpcMethodType extends PluggableElementBase {
     return args
   }
 
-  async deserializeArguments<
-    SERIALIZED extends { signal?: RemoteAbortSignal | undefined }
-  >(serializedArgs: SERIALIZED) {
+  async deserializeArguments<SERIALIZED extends { signal?: RemoteAbortSignal }>(
+    serializedArgs: SERIALIZED,
+  ) {
     const { signal } = serializedArgs
     if (signal && isRemoteAbortSignal(signal)) {
       return { ...serializedArgs, signal: deserializeAbortSignal(signal) }

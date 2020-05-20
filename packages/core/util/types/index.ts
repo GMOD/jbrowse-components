@@ -30,7 +30,7 @@ export function isViewContainer(
   return isStateTreeNode(thing) && 'removeView' in thing
 }
 
-type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
+export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
 
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {

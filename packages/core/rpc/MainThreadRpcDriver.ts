@@ -89,10 +89,14 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
     if (!stateGroupName) {
       throw new TypeError('stateGroupName is required')
     }
-    const filteredArgs = this.filterArgs(args, pluginManager, stateGroupName)
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
-    const serializedArgs = await rpcMethod.serializeArguments(filteredArgs)
-    const result = await rpcMethod.execute(serializedArgs)
+    const serializedArgs = await rpcMethod.serializeArguments(args)
+    const filteredAndSerializedArgs = this.filterArgs(
+      serializedArgs,
+      pluginManager,
+      stateGroupName,
+    )
+    const result = await rpcMethod.execute(filteredAndSerializedArgs)
     return rpcMethod.deserializeReturn(result)
   }
 }

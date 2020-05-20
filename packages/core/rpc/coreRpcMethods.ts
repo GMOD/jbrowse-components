@@ -4,7 +4,7 @@ import {
 } from '../data_adapters/dataAdapterCache'
 import RpcMethodType from '../pluggableElementTypes/RpcMethodType'
 import ServerSideRendererType, {
-  RenderArgsSerialized,
+  RenderArgsSerialized as RendererTypeRenderArgsSerialized,
 } from '../pluggableElementTypes/renderers/ServerSideRendererType'
 import { RemoteAbortSignal } from './remoteAbortSignals'
 import {
@@ -13,7 +13,7 @@ import {
   isRefNameAliasAdapter,
 } from '../data_adapters/BaseAdapter'
 import { Region } from '../util/types'
-import { checkAbortSignal } from '../util'
+import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
 
 export class CoreGetRegions extends RpcMethodType {
   async execute(args: {
@@ -109,83 +109,40 @@ export class CoreFreeResources extends RpcMethodType {
   }
 }
 
-interface SerializedRenderArgs {
+interface RenderArgs {
   assemblyName: string
   regions: Region[]
   sessionId: string
   adapterConfig: {}
   rendererType: string
-  renderProps: RenderArgsSerialized
-  signal?: RemoteAbortSignal
+  renderProps: RendererTypeRenderArgsSerialized
 }
 
 /**
- * call a renderer with the given args
+ * fetches features from an adapter and call a renderer with them
  */
 export class CoreRender extends RpcMethodType {
-  async serializeArguments(args: SerializedRenderArgs) {
-    const { assemblyName, signal, regions, adapterConfig } = args
-    const newArgs: typeof args & {
-      originalRegions?: Region[]
-    } = {
-      ...args,
-      regions: [...(args.regions || [])],
-    }
-    if (assemblyName) {
-      const app = this.pluginManager.rootModel?.jbrowse
-      // if (app && typeof app.getRefNameMapForAdapter === 'function') {
-      //   const refNameMap = await app.getRefNameMapForAdapter(
-      //     adapterConfig,
-      //     assemblyName,
-      //     { signal },
-      //   )
-
-      //   if (regions && newArgs.regions) {
-      //     for (let i = 0; i < regions.length; i += 1) {
-      //       newArgs.originalRegions = args.regions
-      //       newArgs.regions[i] =
-      //         this.renameRegionIfNeeded(refNameMap, regions[i]) || regions[i]
-      //     }
-      //   }
-      // }
-
-      // const { assemblyName, signal, regions, adapterConfig } = args
-      // const newArgs: typeof args & {
-      //   originalRegion?: Region
-      //   originalRegions?: Region[]
-      // } = {
-      //   ...args,
-      //   regions: [...(args.regions || [])],
-      // }
-      // if (assemblyName) {
-      //   const refNameMap = await this.getRefNameMapForAdapter(
-      //     adapterConfig,
-      //     assemblyName,
-      //     { signal },
-      //   )
-
-      //   if (refNameMap && regions && newArgs.regions) {
-      //     for (let i = 0; i < regions.length; i += 1) {
-      //       newArgs.originalRegions = args.regions
-      //       newArgs.regions[i] =
-      //         this.renameRegionIfNeeded(refNameMap, regions[i]) || regions[i]
-      //     }
-      //   }
-      // }
+  async serializeArguments(args: RenderArgs & { signal?: AbortSignal }) {
+    const assemblyManager = this.pluginManager.rootModel?.session
+      ?.assemblyManager
+    if (!assemblyManager) {
+      return args
     }
 
-    return newArgs
+    return renameRegionsIfNeeded(assemblyManager, args)
   }
 
-  async execute(args: SerializedRenderArgs) {
+  async execute(args: RenderArgs & { signal?: RemoteAbortSignal }) {
+    const deserializedArgs = await this.deserializeArguments(args)
     const {
       regions,
       sessionId,
       adapterConfig,
       rendererType,
       renderProps,
+      originalRegions,
       signal,
-    } = await this.deserializeArguments(args)
+    } = deserializedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
@@ -219,6 +176,7 @@ export class CoreRender extends RpcMethodType {
       sessionId,
       dataAdapter,
       regions,
+      originalRegions,
       signal,
     })
     checkAbortSignal(signal)

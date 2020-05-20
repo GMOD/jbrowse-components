@@ -8,7 +8,7 @@ import {
   isSelectionContainer,
 } from '@gmod/jbrowse-core/util'
 import { Region } from '@gmod/jbrowse-core/util/types'
-import { addDisposer, types, Instance } from 'mobx-state-tree'
+import { addDisposer, types, Instance, isAlive } from 'mobx-state-tree'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import RBush from 'rbush'
 import { Feature, isFeature } from '@gmod/jbrowse-core/util/simpleFeature'
