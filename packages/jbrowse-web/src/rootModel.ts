@@ -10,7 +10,7 @@ import { UndoManager } from 'mst-middlewares'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 // @ts-ignore
-import RenderWorker from './rpc.worker' // TODO: maybe move this to the main entry point
+import RenderWorker from './rpc.worker'
 import sessionModelFactory from './sessionModelFactory'
 
 interface Menu {
