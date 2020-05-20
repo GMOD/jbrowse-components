@@ -10,6 +10,7 @@ import {
 import {
   getParentRenderProps,
   getTrackAssemblyNames,
+  getRpcSessionId,
 } from '@gmod/jbrowse-core/util/tracks'
 import blockBasedTrackModel from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
 import { autorun, observable } from 'mobx'
@@ -136,7 +137,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         const { adapter } = self.configuration
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
           const r = (await rpcManager.call(
-            'statsGathering',
+            getRpcSessionId(self),
             'WiggleGetGlobalStats',
             {
               adapterConfig: getSnapshot(adapter),
@@ -159,7 +160,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             self,
           ) as Instance<LinearGenomeViewStateModel>
           const r = (await rpcManager.call(
-            'statsGathering',
+            getRpcSessionId(self),
             'WiggleGetMultiRegionStats',
             {
               adapterConfig: getSnapshot(adapter),
@@ -182,10 +183,14 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             : r
         }
         if (autoscaleType === 'zscale') {
-          return rpcManager.call('statsGathering', 'WiggleGetGlobalStats', {
-            adapterConfig: getSnapshot(adapter),
-            signal,
-          }) as Promise<FeatureStats>
+          return rpcManager.call(
+            getRpcSessionId(self),
+            'WiggleGetGlobalStats',
+            {
+              adapterConfig: getSnapshot(adapter),
+              signal,
+            },
+          ) as Promise<FeatureStats>
         }
         throw new Error(`invalid autoscaleType '${autoscaleType}'`)
       }

@@ -90,10 +90,7 @@ export default abstract class BaseRpcDriver {
       const newobj = objectFromEntries(
         Object.entries(thing)
           .filter(e => isClonable(e[1]))
-          .map(([k, v]) => [
-            k,
-            this.filterArgs(v, pluginManager, sessionId),
-          ]),
+          .map(([k, v]) => [k, this.filterArgs(v, pluginManager, sessionId)]),
       )
       return newobj as THING_TYPE
     }
@@ -107,7 +104,7 @@ export default abstract class BaseRpcDriver {
     signalId: number,
   ) {
     const worker = this.getWorker(sessionId, functionName, pluginManager)
-    worker.call(functionName, signalId)
+    worker.call(functionName, signalId, { timeout: 1000000 })
   }
 
   createWorkerPool(): WorkerHandle[] {
@@ -164,7 +161,6 @@ export default abstract class BaseRpcDriver {
     }
 
     const workerNumber = this.workerAssignments.get(sessionId)
-    // console.log(sessionId, workerNumber)
     const worker = workers[workerNumber]
     if (!worker) {
       throw new Error('no web workers registered for RPC')

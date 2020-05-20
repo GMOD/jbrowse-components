@@ -11,7 +11,7 @@ import {
   BaseTrack,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { getSession, makeAbortableReaction } from '@gmod/jbrowse-core/util'
-import jsonStableStringify from 'json-stable-stringify'
+import { getRpcSessionId } from '@gmod/jbrowse-core/util/tracks'
 import DotplotTrackComponent from './components/DotplotTrack'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { DotplotViewModel } from '../DotplotView/model'
@@ -151,7 +151,6 @@ function renderBlockData(self: DotplotTrack) {
   readConfObject(self.configuration)
 
   const { adapterConfig } = self
-  const adapterConfigId = jsonStableStringify(adapterConfig)
   const parent = getParent<DotplotViewModel>(self, 2)
   getSnapshot(parent)
   const { views, viewWidth, viewHeight, borderSize, borderX, borderY } = parent
@@ -172,7 +171,7 @@ function renderBlockData(self: DotplotTrack) {
         borderX,
         borderY,
       },
-      sessionId: adapterConfigId,
+      sessionId: getRpcSessionId(self),
       timeout: 1000000, // 10000,
     },
   }

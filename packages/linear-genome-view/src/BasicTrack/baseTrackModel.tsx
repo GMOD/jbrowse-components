@@ -83,6 +83,10 @@ const BaseTrack = types
     error: '',
   }))
   .views(self => ({
+    get rpcSessionId() {
+      return self.id
+    },
+
     get name() {
       return getConf(self, 'name')
     },
