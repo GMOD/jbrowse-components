@@ -483,7 +483,7 @@ describe('alignments track', () => {
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+  }, 15000)
 
   // it('access alignments context menu', async () => {
   //   const pluginManager = getPluginManager()
