@@ -1,4 +1,7 @@
-import { BaseFeatureDataAdapter, RegionsAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  RegionsAdapter,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'

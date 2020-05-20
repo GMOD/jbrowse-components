@@ -1,4 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies,no-console,no-underscore-dangle */
+/* eslint-disable no-console */
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { remoteAbortRpcHandler } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
 import { isAbortException } from '@gmod/jbrowse-core/util'

@@ -112,6 +112,7 @@ export class CoreFreeResources extends RpcMethodType {
 interface RenderArgs {
   assemblyName: string
   regions: Region[]
+  originalRegions?: Region[]
   sessionId: string
   adapterConfig: {}
   rendererType: string
