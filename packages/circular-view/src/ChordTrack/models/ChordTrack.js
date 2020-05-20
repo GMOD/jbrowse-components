@@ -63,6 +63,9 @@ export default pluginManager => {
       assemblyName: types.maybe(types.string),
     })
     .views(self => ({
+      get rpcSessionId() {
+        return self.id
+      },
       get blockDefinitions() {
         return getContainingView(self).staticSlices
       },
