@@ -43,6 +43,14 @@ export default (
           sortedBy: '',
         })),
     )
+    .actions(self => ({
+      toggleCoverage() {
+        self.showCoverage = !self.showCoverage
+      },
+      togglePileup() {
+        self.showPileup = !self.showPileup
+      },
+    }))
     .views(self => ({
       get pileupTrackConfig() {
         return {
@@ -91,24 +99,6 @@ export default (
             icon: self.showPileup ? 'visibility_off' : 'visibility',
             onClick: self.togglePileup,
             disabled: !self.showCoverage,
-          },
-        ]
-      },
-
-      get viewMenuActions(): MenuOption[] {
-        return [
-          {
-            label: 'Sort by',
-            icon: 'sort',
-            subMenu: self.sortOptions.map((option: string) => {
-              return {
-                label: option,
-                onClick: (object: typeof self) =>
-                  option === 'Clear sort'
-                    ? object.clearSelected()
-                    : object.sortSelected(option),
-              }
-            }),
           },
         ]
       },
@@ -185,11 +175,24 @@ export default (
         self.sortedBy = selected
         self.centerLinePosition = centerBp
       },
-      toggleCoverage() {
-        self.showCoverage = !self.showCoverage
-      },
-      togglePileup() {
-        self.showPileup = !self.showPileup
+    }))
+    .views(self => ({
+      get viewMenuActions(): MenuOption[] {
+        return [
+          {
+            label: 'Sort by',
+            icon: 'sort',
+            subMenu: self.sortOptions.map((option: string) => {
+              return {
+                label: option,
+                onClick: (object: typeof self) =>
+                  option === 'Clear sort'
+                    ? object.clearSelected()
+                    : object.sortSelected(option),
+              }
+            }),
+          },
+        ]
       },
     }))
 }
