@@ -105,7 +105,6 @@ export default class PileupRenderer extends BoxRendererType {
   // In future when stats are improved, look for average read size in renderArg stats
   // and set that as the maxClippingSize/expand region by average read size
   getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
-    console.log('running')
     if (!region) return region
     const { bpPerPx, config, showSoftClip } = renderArgs
     const maxClippingSize =
@@ -274,6 +273,8 @@ export default class PileupRenderer extends BoxRendererType {
         }
         // Display all bases softclipped off in lightened colors
         if (showSoftClip) {
+          // in cram below is undefined at certain times
+          const seq = feature.get('seq')
           for (let j = 0; j < mismatches.length; j += 1) {
             const mismatch = mismatches[j]
             if (mismatch.type === 'softclip') {
@@ -283,7 +284,8 @@ export default class PileupRenderer extends BoxRendererType {
                   ? feature.get('start') - softClipLength
                   : feature.get('start') + mismatch.start
               for (let k = 0; k < softClipLength; k += 1) {
-                const base = feature.get('seq').charAt(k + mismatch.start)
+                console.log(seq)
+                const base = seq.charAt(k + mismatch.start)
                 // If softclip length+start is longer than sequence, no need to continue showing base
                 if (!base) return
 
