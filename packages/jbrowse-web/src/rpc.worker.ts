@@ -50,19 +50,22 @@ function flushLog() {
 setInterval(flushLog, 1000)
 
 let callCounter = 0
-function wrapForRpc(func: (args: unknown) => unknown) {
+function wrapForRpc(
+  func: (args: unknown) => unknown,
+  funcName: string = func.name,
+) {
   return (args: unknown) => {
     callCounter += 1
     const myId = callCounter
-    // logBuffer.push(['rpc-call', myId, func.name, args])
+    // logBuffer.push(['rpc-call', myId, funcName, args])
     const retP = Promise.resolve()
       .then(() => getPluginManager())
       .then(pluginManager => func(args))
       .catch(error => {
         if (isAbortException(error)) {
-          // logBuffer.push(['rpc-abort', myId, func.name, args])
+          // logBuffer.push(['rpc-abort', myId, funcName, args])
         } else {
-          logBuffer.push(['rpc-error', myId, func.name, error])
+          logBuffer.push(['rpc-error', myId, funcName, error])
           flushLog()
         }
         throw error
@@ -70,7 +73,7 @@ function wrapForRpc(func: (args: unknown) => unknown) {
 
     // uncomment below to log returns
     // retP.then(
-    //   result => logBuffer.push(['rpc-return', myId, func.name, result]),
+    //   result => logBuffer.push(['rpc-return', myId, funcName, result]),
     //   err => {},
     // )
 
@@ -85,12 +88,18 @@ getPluginManager().then(pluginManager => {
     if (!(rpcMethod instanceof RpcMethodType))
       throw new Error('invalid rpc method??')
 
-    rpcConfig[rpcMethod.name] = wrapForRpc(rpcMethod.execute.bind(rpcMethod))
+    rpcConfig[rpcMethod.name] = wrapForRpc(
+      rpcMethod.execute.bind(rpcMethod),
+      rpcMethod.name,
+    )
   })
-  // @ts-ignore
-  self.rpcServer = new RpcServer.Server({
+
+  const rpcServer = new RpcServer.Server({
     ...rpcConfig,
     ...remoteAbortRpcHandler(),
     ping: () => {}, // < the ping method is required by the worker driver for checking the health of the worker
   })
+
+  // @ts-ignore
+  self.rpcServer = rpcServer
 })
