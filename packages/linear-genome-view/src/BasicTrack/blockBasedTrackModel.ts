@@ -154,12 +154,13 @@ const blockBasedTrack = types
        * is probably a feature
        */
       get selectedFeatureId() {
-        const session = getSession(self)
-        if (!session) throw new Error('no session found in state tree!')
-        const { selection } = session
-        // does it quack like a feature?
-        if (isFeature(selection)) {
-          return selection.id()
+        if (isAlive(self)) {
+          const session = getSession(self)
+          const { selection } = session
+          // does it quack like a feature?
+          if (isFeature(selection)) {
+            return selection.id()
+          }
         }
         return undefined
       },
