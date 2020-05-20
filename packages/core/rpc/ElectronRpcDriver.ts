@@ -85,13 +85,13 @@ export default class ElectronRpcDriver extends BaseRpcDriver {
 
   call(
     pluginManager: PluginManager,
-    stateGroupName: string,
+    sessionId: string,
     functionName: string,
     args: {},
     options = {},
   ): Promise<unknown> {
     return super
-      .call(pluginManager, stateGroupName, functionName, args, options)
+      .call(pluginManager, sessionId, functionName, args, options)
       .then(r => {
         if (typeof r === 'object' && r !== null && 'imageData' in r) {
           const img = new Image()

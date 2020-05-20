@@ -157,9 +157,9 @@ export default class ServerSideRenderer extends RendererType {
   async renderInClient(rpcManager: { call: Function }, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
-    const stateGroupName = args.sessionId
+    const sessionId = args.sessionId
     const result = await rpcManager.call(
-      stateGroupName,
+      sessionId,
       'CoreRender',
       serializedArgs,
     )
@@ -286,8 +286,8 @@ export default class ServerSideRenderer extends RendererType {
   freeResourcesInClient(rpcManager: { call: Function }, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
-    const stateGroupName = args.sessionId
-    return rpcManager.call(stateGroupName, 'CoreFreeResources', serializedArgs)
+    const sessionId = args.sessionId
+    return rpcManager.call(sessionId, 'CoreFreeResources', serializedArgs)
   }
 
   freeResources(args: {}) {

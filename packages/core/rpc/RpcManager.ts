@@ -65,7 +65,7 @@ export default class RpcManager {
   }
 
   getDriverForCall(
-    stateGroupName: string,
+    sessionId: string,
     functionName: string,
     args: unknown,
   ) {
@@ -101,14 +101,14 @@ export default class RpcManager {
   }
 
   async call(
-    stateGroupName: string,
+    sessionId: string,
     functionName: string,
     args: {},
     opts = {},
   ) {
-    return this.getDriverForCall(stateGroupName, functionName, args).call(
+    return this.getDriverForCall(sessionId, functionName, args).call(
       this.pluginManager,
-      stateGroupName,
+      sessionId,
       functionName,
       args,
       opts,

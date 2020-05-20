@@ -44,13 +44,13 @@ export default class RpcMethodType extends PluggableElementBase {
 
   async call(
     rpcManager: RpcManager,
-    stateGroupName: string,
+    sessionId: string,
     args: {},
     opts: {},
   ) {
     const serialized: {} = await this.serializeArguments(args)
     const serializedReturn = await rpcManager.call(
-      stateGroupName,
+      sessionId,
       this.name,
       serialized,
       opts,

@@ -54,7 +54,7 @@ function detectHardwareConcurrency() {
 export default abstract class BaseRpcDriver {
   private lastWorkerAssignment = -1
 
-  private workerAssignments = new Map() // stateGroupName -> worker number
+  private workerAssignments = new Map() // sessionId -> worker number
 
   private workerCount = 0
 
@@ -66,13 +66,13 @@ export default abstract class BaseRpcDriver {
   filterArgs<THING_TYPE>(
     thing: THING_TYPE,
     pluginManager: PluginManager,
-    stateGroupName: string,
+    sessionId: string,
   ): THING_TYPE {
     if (Array.isArray(thing)) {
       return (thing
         .filter(isClonable)
         .map(t =>
-          this.filterArgs(t, pluginManager, stateGroupName),
+          this.filterArgs(t, pluginManager, sessionId),
         ) as unknown) as THING_TYPE
     }
     if (typeof thing === 'object' && thing !== null) {
@@ -80,7 +80,7 @@ export default abstract class BaseRpcDriver {
       if (thing instanceof AbortSignal) {
         return (serializeAbortSignal(
           thing,
-          this.remoteAbort.bind(this, pluginManager, stateGroupName),
+          this.remoteAbort.bind(this, pluginManager, sessionId),
         ) as unknown) as THING_TYPE
       }
 
@@ -92,7 +92,7 @@ export default abstract class BaseRpcDriver {
           .filter(e => isClonable(e[1]))
           .map(([k, v]) => [
             k,
-            this.filterArgs(v, pluginManager, stateGroupName),
+            this.filterArgs(v, pluginManager, sessionId),
           ]),
       )
       return newobj as THING_TYPE
@@ -102,11 +102,11 @@ export default abstract class BaseRpcDriver {
 
   remoteAbort(
     pluginManager: PluginManager,
-    stateGroupName: string,
+    sessionId: string,
     functionName: string,
     signalId: number,
   ) {
-    const worker = this.getWorker(stateGroupName, functionName, pluginManager)
+    const worker = this.getWorker(sessionId, functionName, pluginManager)
     worker.call(functionName, signalId)
   }
 
@@ -152,19 +152,19 @@ export default abstract class BaseRpcDriver {
   }
 
   getWorker(
-    stateGroupName: string,
+    sessionId: string,
     functionName: string,
     pluginManager: PluginManager,
   ): WorkerHandle {
     const workers = this.getWorkerPool()
-    if (!this.workerAssignments.has(stateGroupName)) {
+    if (!this.workerAssignments.has(sessionId)) {
       const workerAssignment = (this.lastWorkerAssignment + 1) % workers.length
-      this.workerAssignments.set(stateGroupName, workerAssignment)
+      this.workerAssignments.set(sessionId, workerAssignment)
       this.lastWorkerAssignment = workerAssignment
     }
 
-    const workerNumber = this.workerAssignments.get(stateGroupName)
-    // console.log(stateGroupName, workerNumber)
+    const workerNumber = this.workerAssignments.get(sessionId)
+    // console.log(sessionId, workerNumber)
     const worker = workers[workerNumber]
     if (!worker) {
       throw new Error('no web workers registered for RPC')
@@ -174,21 +174,21 @@ export default abstract class BaseRpcDriver {
 
   async call(
     pluginManager: PluginManager,
-    stateGroupName: string,
+    sessionId: string,
     functionName: string,
     args: {},
     options = {},
   ) {
-    if (!stateGroupName) {
-      throw new TypeError('stateGroupName is required')
+    if (!sessionId) {
+      throw new TypeError('sessionId is required')
     }
-    const worker = this.getWorker(stateGroupName, functionName, pluginManager)
+    const worker = this.getWorker(sessionId, functionName, pluginManager)
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
     const serializedArgs = await rpcMethod.serializeArguments(args)
     const filteredAndSerializedArgs = this.filterArgs(
       serializedArgs,
       pluginManager,
-      stateGroupName,
+      sessionId,
     )
     const result = await worker.call(functionName, filteredAndSerializedArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes

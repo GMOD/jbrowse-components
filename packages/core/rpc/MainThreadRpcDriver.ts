@@ -81,20 +81,20 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
 
   async call(
     pluginManager: PluginManager,
-    stateGroupName: string,
+    sessionId: string,
     functionName: string,
     args: {},
     options = {},
   ): Promise<unknown> {
-    if (!stateGroupName) {
-      throw new TypeError('stateGroupName is required')
+    if (!sessionId) {
+      throw new TypeError('sessionId is required')
     }
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
     const serializedArgs = await rpcMethod.serializeArguments(args)
     const filteredAndSerializedArgs = this.filterArgs(
       serializedArgs,
       pluginManager,
-      stateGroupName,
+      sessionId,
     )
     const result = await rpcMethod.execute(filteredAndSerializedArgs)
     return rpcMethod.deserializeReturn(result)

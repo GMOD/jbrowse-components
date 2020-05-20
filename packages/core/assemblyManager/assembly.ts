@@ -30,11 +30,11 @@ async function loadRefNameMap(
       name: 'when assembly ready',
     })
 
-    const stateGroupName = adapterId
+    const sessionId = `assemblyManager-${assembly.name}`
     let refNames = []
     try {
       refNames = await assembly.rpcManager.call(
-        stateGroupName,
+        sessionId,
         'CoreGetRefNames',
         {
           sessionId: assembly.name,
@@ -299,8 +299,9 @@ async function loadAssemblyReaction(
     refNameAliasesAdapterConfig,
   } = props
 
+  const sessionId = `assembly-${assemblyName}`
   const adapterRegions = (await rpcManager.call(
-    adapterConfigId,
+    sessionId,
     'CoreGetRegions',
     { sessionId: assemblyName, adapterConfig: sequenceAdapterConfig, signal },
     { timeout: 1000000 },
