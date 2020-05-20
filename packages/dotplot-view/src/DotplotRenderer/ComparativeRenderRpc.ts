@@ -1,4 +1,7 @@
-import { checkAbortSignal } from '@gmod/jbrowse-core/util'
+import {
+  checkAbortSignal,
+  renameRegionsIfNeeded,
+} from '@gmod/jbrowse-core/util'
 import { getAdapter } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import { RemoteAbortSignal } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
 import RpcMethodType from '@gmod/jbrowse-core/pluggableElementTypes/RpcMethodType'
@@ -7,19 +10,33 @@ import ComparativeServerSideRendererType, {
   RenderArgs,
 } from './ComparativeServerSideRendererType'
 
+interface ComparativeRenderArgs {
+  sessionId: string
+  adapterConfig: {}
+  rendererType: string
+  renderProps: RenderArgs
+  signal?: RemoteAbortSignal
+}
+
 /**
  * call a synteny renderer with the given args
  * param views: a set of views that each contain a set of regions
  * used instead of passing regions directly as in render()
  */
 export default class ComparativeRender extends RpcMethodType {
-  async execute(args: {
-    sessionId: string
-    adapterConfig: {}
-    rendererType: string
-    renderProps: RenderArgs
-    signal?: RemoteAbortSignal
-  }) {
+  async serializeArguments(
+    args: ComparativeRenderArgs & { signal?: AbortSignal },
+  ) {
+    const assemblyManager = this.pluginManager.rootModel?.session
+      ?.assemblyManager
+    if (!assemblyManager) {
+      return args
+    }
+
+    return renameRegionsIfNeeded(assemblyManager, args)
+  }
+
+  async execute(args: ComparativeRenderArgs) {
     const {
       sessionId,
       adapterConfig,
