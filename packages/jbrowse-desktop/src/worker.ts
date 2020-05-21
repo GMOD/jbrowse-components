@@ -2,7 +2,6 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { remoteAbortRpcHandler } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
 import { isAbortException } from '@gmod/jbrowse-core/util'
-import {} from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import { useStaticRendering } from 'mobx-react'
 import RpcMethodType from '@gmod/jbrowse-core/pluggableElementTypes/RpcMethodType'
 import corePlugins from './corePlugins'
