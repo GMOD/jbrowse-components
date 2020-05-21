@@ -635,7 +635,6 @@ export async function renameRegionsIfNeeded<
           sessionId: newArgs.sessionId,
         }),
       {
-        timeout: 30000,
         name: `getRefNameMapForAdapter($conf, '${assemblyName}')`,
       },
     )
