@@ -48,6 +48,7 @@ export const HEADER_BAR_HEIGHT = 48
 export const HEADER_OVERVIEW_HEIGHT = 20
 export const SCALE_BAR_HEIGHT = 17
 export const RESIZE_HANDLE_HEIGHT = 3
+export const INTER_REGION_PADDING_WIDTH = 2
 
 export function stateModelFactory(pluginManager: PluginManager) {
   const model = types
@@ -110,6 +111,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
           this.headerHeight +
           this.scaleBarHeight
         )
+      },
+      get interRegionPaddingWidth() {
+        return INTER_REGION_PADDING_WIDTH
       },
       get totalBp() {
         let totalbp = 0
@@ -525,6 +529,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
           bpSoFar += end.offset
         }
+        self.bpPerPx =
+          bpSoFar /
+          (self.width -
+            self.interRegionPaddingWidth * (end.index - start.index))
+
         let bpToStart = 0
         for (let i = 0; i < self.displayedRegions.length; i += 1) {
           const region = self.displayedRegions[i]
@@ -535,15 +544,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
             bpToStart += region.end - region.start
           }
         }
-        self.bpPerPx = bpSoFar / self.width
-        if (self.width > bpSoFar / self.bpPerPx) {
-          self.offsetPx = Math.round(
-            bpToStart / self.bpPerPx -
-              (self.width - bpSoFar / self.bpPerPx) / 2,
-          )
-        } else {
-          self.offsetPx = Math.round(bpToStart / self.bpPerPx)
-        }
+        self.offsetPx =
+          Math.round(bpToStart / self.bpPerPx) +
+          self.interRegionPaddingWidth * start.index
       },
 
       horizontalScroll(distance: number) {

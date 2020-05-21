@@ -81,6 +81,15 @@ BlockSet {
       "start": 0,
       "widthPx": 100,
     },
+    InterRegionPaddingBlock {
+      "assemblyName": undefined,
+      "end": undefined,
+      "key": "ctgA:1..100-0-rightpad",
+      "offsetPx": 100,
+      "refName": undefined,
+      "start": undefined,
+      "widthPx": 2,
+    },
     ContentBlock {
       "assemblyName": undefined,
       "end": 200,
@@ -182,6 +191,15 @@ BlockSet {
       "reversed": undefined,
       "start": 0,
       "widthPx": 200,
+    },
+    InterRegionPaddingBlock {
+      "assemblyName": undefined,
+      "end": undefined,
+      "key": "ctgA:1..200-0-rightpad",
+      "offsetPx": 200,
+      "refName": undefined,
+      "start": undefined,
+      "widthPx": 2,
     },
     ContentBlock {
       "assemblyName": undefined,
@@ -540,6 +558,15 @@ BlockSet {
       "reversed": true,
       "start": 100,
       "widthPx": 100,
+    },
+    InterRegionPaddingBlock {
+      "assemblyName": undefined,
+      "end": undefined,
+      "key": "ctgA:101..200-reversed-0-rightpad",
+      "offsetPx": 100,
+      "refName": undefined,
+      "start": undefined,
+      "widthPx": 2,
     },
     ContentBlock {
       "assemblyName": undefined,

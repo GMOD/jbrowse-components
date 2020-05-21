@@ -197,7 +197,7 @@ test('can instantiate a model that >2 regions', () => {
     { refName: 'ctgB', index: 1, offset: 0, start: 0, end: 10000 },
     { refName: 'ctgC', index: 2, offset: 0, start: 0, end: 10000 },
   )
-  expect(model.offsetPx).toEqual(10000 / model.bpPerPx)
+  expect(model.offsetPx).toEqual(10000 / model.bpPerPx + 2)
   expect(model.displayedRegionsTotalPx).toEqual(30000 / model.bpPerPx)
   model.showAllRegions()
   expect(model.offsetPx).toEqual(0)
