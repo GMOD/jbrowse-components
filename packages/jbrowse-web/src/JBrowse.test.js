@@ -468,10 +468,11 @@ describe('alignments track', () => {
     fireEvent.click(getByText('Show soft clipping'))
 
     // wait til clip display is complete
-    await wait(() => {
-      expect(alignmentsTrack.showSoftClipping).toBe(true)
-    })
+    // await wait(() => {
+    //   expect(alignmentsTrack.showSoftClipping).toBe(true)
+    // })
 
+    // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
@@ -483,7 +484,7 @@ describe('alignments track', () => {
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
-  }, 15000)
+  }, 10000)
 
   // it('access alignments context menu', async () => {
   //   const pluginManager = getPluginManager()
