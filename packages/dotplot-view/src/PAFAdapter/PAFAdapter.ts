@@ -31,7 +31,7 @@ interface PafRecord {
 export default class PAFAdapter extends BaseFeatureDataAdapter {
   private cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 1 }),
-    fill: (data: BaseOptions, signal: AbortSignal) => {
+    fill: (data: BaseOptions, signal?: AbortSignal) => {
       return this.setup({ ...data, signal })
     },
   })

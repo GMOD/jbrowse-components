@@ -1,4 +1,3 @@
-import { getSnapshot, isStateTreeNode, isAlive } from 'mobx-state-tree'
 import PluginManager from '../PluginManager'
 import { readConfObject } from '../configuration'
 
@@ -7,7 +6,6 @@ import WebWorkerRpcDriver from './WebWorkerRpcDriver'
 import MainThreadRpcDriver from './MainThreadRpcDriver'
 import ElectronRpcDriver from './ElectronRpcDriver'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
-import { Region } from '../util/types'
 
 type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver | ElectronRpcDriver
 type BackendConfigurations = {

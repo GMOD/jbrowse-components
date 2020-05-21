@@ -14,7 +14,6 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { Instance } from 'mobx-state-tree'
 import {
   blankStats,
-  FeatureStats,
   rectifyStats,
   scoresToStats,
   UnrectifiedFeatureStats,
@@ -34,35 +33,28 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
   implements DataAdapterWithGlobalStats {
   private bigwig: BigWig
 
-  private statsCache: {
-    get: (
-      key: string,
-      region: StatsRegion,
-      signal?: AbortSignal,
-    ) => Promise<FeatureStats>
-  }
+  private statsCache = new AbortablePromiseCache({
+    cache: new QuickLRU({ maxSize: 1000 }),
+    fill: async (
+      args: { refName: string; start: number; end: number; bpPerPx?: number },
+      abortSignal?: AbortSignal,
+    ) => {
+      const { refName, start, end, bpPerPx } = args
+      const feats = this.getFeatures(
+        { refName, start, end },
+        {
+          signal: abortSignal,
+          basesPerSpan: bpPerPx,
+        },
+      )
+      return scoresToStats({ refName, start, end }, feats)
+    },
+  })
 
   public constructor(config: Instance<typeof configSchema>) {
     super(config)
     this.bigwig = new BigWig({
       filehandle: openLocation(readConfObject(config, 'bigWigLocation')),
-    })
-    this.statsCache = new AbortablePromiseCache({
-      cache: new QuickLRU({ maxSize: 1000 }),
-      fill: async (
-        args: { refName: string; start: number; end: number; bpPerPx: number },
-        abortSignal: AbortSignal,
-      ) => {
-        const { refName, start, end, bpPerPx } = args
-        const feats = this.getFeatures(
-          { refName, start, end },
-          {
-            signal: abortSignal,
-            basesPerSpan: bpPerPx,
-          },
-        )
-        return scoresToStats({ refName, start, end }, feats)
-      },
     })
   }
 

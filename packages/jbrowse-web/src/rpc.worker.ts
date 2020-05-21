@@ -94,12 +94,10 @@ getPluginManager().then(pluginManager => {
     )
   })
 
-  const rpcServer = new RpcServer.Server({
+  // @ts-ignore
+  self.rpcServer = new RpcServer.Server({
     ...rpcConfig,
     ...remoteAbortRpcHandler(),
     ping: () => {}, // < the ping method is required by the worker driver for checking the health of the worker
   })
-
-  // @ts-ignore
-  self.rpcServer = rpcServer
 })
