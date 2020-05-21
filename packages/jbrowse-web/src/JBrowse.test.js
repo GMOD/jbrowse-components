@@ -444,7 +444,7 @@ describe('alignments track', () => {
   }, 10000)
 
   // Note: tracks with assembly volvox don't have much soft clipping
-  it('opens the track menu and enables soft clipping', async () => {
+  xit('opens the track menu and enables soft clipping', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findByText, getByText } = render(
