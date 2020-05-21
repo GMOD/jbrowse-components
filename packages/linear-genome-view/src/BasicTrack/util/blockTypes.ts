@@ -25,6 +25,10 @@ export class BlockSet {
     return this.blocks
   }
 
+  getRegions() {
+    return this.blocks.map(block => block.toRegion())
+  }
+
   map<T, U = this>(func: Func<T>, thisarg?: U) {
     return this.blocks.map(func, thisarg)
   }

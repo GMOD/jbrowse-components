@@ -100,6 +100,7 @@ export default class AlignmentsPlugin extends Plugin {
     )
     pluginManager.addRendererType(
       () =>
+        // @ts-ignore error "expected 0 arguments, but got 1"?
         new PileupRenderer({
           name: 'PileupRenderer',
           ReactComponent: PileupRendererReactComponent,

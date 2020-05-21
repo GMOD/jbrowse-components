@@ -8,6 +8,7 @@ import Filtering from '@gmod/jbrowse-plugin-filtering'
 import Gff3Tabix from '@gmod/jbrowse-plugin-gff3tabix'
 import JBrowse1 from '@gmod/jbrowse-plugin-jbrowse1'
 import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
+import LinearComparativeView from '@gmod/jbrowse-plugin-linear-comparative-view'
 import Lollipop from '@gmod/jbrowse-plugin-lollipop'
 import Menus from '@gmod/jbrowse-plugin-menus'
 import RDF from '@gmod/jbrowse-plugin-rdf'
@@ -17,7 +18,6 @@ import TrackHubRegistry from '@gmod/jbrowse-plugin-trackhub-registry'
 import Variants from '@gmod/jbrowse-plugin-variants'
 import Wiggle from '@gmod/jbrowse-plugin-wiggle'
 import SpreadsheetViewPlugin from '@gmod/jbrowse-plugin-spreadsheet-view'
-import BreakpointSplitView from '@gmod/jbrowse-plugin-breakpoint-split-view'
 import SvInspectorPlugin from '@gmod/jbrowse-plugin-sv-inspector'
 import GDCPlugin from '@gmod/jbrowse-plugin-gdc'
 
@@ -32,6 +32,7 @@ export default [
   Gff3Tabix,
   JBrowse1,
   LinearGenomeView,
+  LinearComparativeView,
   Lollipop,
   Menus,
   RDF,
@@ -41,7 +42,6 @@ export default [
   Variants,
   Wiggle,
   SpreadsheetViewPlugin,
-  BreakpointSplitView,
   SvInspectorPlugin,
   GDCPlugin,
 ]

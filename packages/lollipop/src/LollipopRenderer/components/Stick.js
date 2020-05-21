@@ -87,7 +87,6 @@ Stick.propTypes = {
     id: ReactPropTypes.func.isRequired,
     get: ReactPropTypes.func.isRequired,
   }).isRequired,
-  // horizontallyFlipped: ReactPropTypes.bool,
   // bpPerPx: ReactPropTypes.number.isRequired,
   // region: CommonPropTypes.Region.isRequired,
   // config: CommonPropTypes.ConfigSchema.isRequired,
@@ -118,8 +117,6 @@ Stick.propTypes = {
 }
 
 Stick.defaultProps = {
-  // horizontallyFlipped: false,
-
   selectedFeatureId: undefined,
 
   onFeatureMouseDown: undefined,

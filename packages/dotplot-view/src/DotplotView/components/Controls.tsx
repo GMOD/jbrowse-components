@@ -43,7 +43,7 @@ export default (pluginManager: any) => {
       <div className={classes.controls}>
         <IconButton
           onClick={() => {
-            model.hview.horizontalScroll(-100)
+            model.hview.scroll(-100)
           }}
           className={classes.iconButton}
           title="left"
@@ -54,7 +54,7 @@ export default (pluginManager: any) => {
 
         <IconButton
           onClick={() => {
-            model.hview.horizontalScroll(100)
+            model.hview.scroll(100)
           }}
           className={classes.iconButton}
           title="left"
@@ -64,7 +64,7 @@ export default (pluginManager: any) => {
         </IconButton>
         <IconButton
           onClick={() => {
-            model.vview.horizontalScroll(100)
+            model.vview.scroll(100)
           }}
           className={classes.iconButton}
           title="left"
@@ -74,7 +74,7 @@ export default (pluginManager: any) => {
         </IconButton>
         <IconButton
           onClick={() => {
-            model.vview.horizontalScroll(-100)
+            model.vview.scroll(-100)
           }}
           className={classes.iconButton}
           title="left"

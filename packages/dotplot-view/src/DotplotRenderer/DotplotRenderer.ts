@@ -1,14 +1,17 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { Region } from '@gmod/jbrowse-core/util/types'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import {
   createCanvas,
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
+import Base1DView, {
+  Base1DViewModel,
+} from '@gmod/jbrowse-core/util/Base1DViewModel'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Instance } from 'mobx-state-tree'
-import ComparativeServerSideRendererType from './ComparativeServerSideRendererType'
+import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import MyConfig from './configSchema'
 
 interface Block extends Region {
@@ -16,42 +19,16 @@ interface Block extends Region {
   widthPx: number
 }
 
-interface ReducedView {
-  features: Feature[]
-  displayedRegions: Region[]
-  dynamicBlocks: Block[]
-  horizontallyFlipped: boolean
-  bpPerPx: number
-}
-
 export interface DotplotRenderProps {
+  dataAdapter: BaseFeatureDataAdapter
+  signal?: AbortSignal
   config: Instance<typeof MyConfig>
   height: number
   width: number
   fontSize: number
   highResolutionScaling: number
   pluginManager: PluginManager
-  views: ReducedView[]
-}
-
-function bpToPx(self: ReducedView, refName: string, coord: number) {
-  let offset = 0
-
-  const index = self.dynamicBlocks.findIndex(r => {
-    if (refName === r.refName && coord >= r.start && coord <= r.end) {
-      offset +=
-        (self.horizontallyFlipped ? r.end - coord : coord - r.start) /
-        self.bpPerPx
-      return true
-    }
-    offset += r.widthPx
-    return false
-  })
-  const foundRegion = self.dynamicBlocks[index]
-  if (foundRegion) {
-    return Math.round(offset)
-  }
-  return undefined
+  views: Base1DViewModel[]
 }
 
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
@@ -72,7 +49,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
 
     ctx.lineWidth = 3
     ctx.fillStyle = readConfObject(config, 'color')
-    views[0].features.forEach(feature => {
+    const db1 = views[0].dynamicBlocks.contentBlocks
+    const db2 = views[1].dynamicBlocks.contentBlocks
+    ;(views[0].features || []).forEach(feature => {
       const start = feature.get('start')
       const end = feature.get('end')
       const refName = feature.get('refName')
@@ -80,15 +59,22 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       // const identity = feature.get('numMatches') / feature.get('blockLen')
       // ctx.fillStyle = `hsl(${identity * 150},50%,50%)`
       ctx.fillStyle = 'black'
-      const b1 = bpToPx(views[0], refName, start)
-      const b2 = bpToPx(views[0], refName, end)
-      const e1 = bpToPx(views[1], mate.refName, mate.start)
-      const e2 = bpToPx(views[1], mate.refName, mate.end)
+      const b10 = views[0].bpToPx({ refName, coord: start }) || 0
+      const b20 = views[0].bpToPx({ refName, coord: end }) || 0
+
+      const { refName: mateRef } = mate
+      const e10 = views[1].bpToPx({ refName: mateRef, coord: mate.start }) || 0
+      const e20 = views[1].bpToPx({ refName: mateRef, coord: mate.end }) || 0
+
+      const b1 = b10 - db1[0].offsetPx
+      const b2 = b20 - db1[0].offsetPx
+      const e1 = e10 - db2[0].offsetPx
+      const e2 = e20 - db2[0].offsetPx
       if (
-        typeof b1 !== 'undefined' &&
-        typeof b2 !== 'undefined' &&
-        typeof e1 !== 'undefined' &&
-        typeof e2 !== 'undefined'
+        b1 !== undefined &&
+        b2 !== undefined &&
+        e1 !== undefined &&
+        e2 !== undefined
       ) {
         if (Math.abs(b1 - b2) < 3 && Math.abs(e1 - e2) < 3) {
           ctx.fillRect(b1 - 1, height - e1 - 1, 3, 3)
@@ -128,41 +114,31 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         }
       }
     })
-    // views[1].features.forEach(feature => {
-    //   const start = feature.get('start')
-    //   const end = feature.get('end')
-    //   const refName = feature.get('refName')
-    //   const mate = feature.get('mate')
-    //   const b1 = bpToPx(views[0], refName, start)
-    //   const b2 = bpToPx(views[0], refName, end)
-    //   const e1 = bpToPx(views[1], mate.refName, mate.start)
-    //   const e2 = bpToPx(views[1], mate.refName, mate.end)
-    //   if (b1 && b2 && e1 && e2) {
-    //     if (b1 - b2 < 3 && e1 - e2 < 3) {
-    //       ctx.fillRect(b1, height - e1, 3, 3)
-    //     } else {
-    //       ctx.beginPath()
-    //       ctx.moveTo(b1, height - e1)
-    //       ctx.lineTo(b2, height - e2)
-    //       ctx.stroke()
-    //     }
-    //   }
-    // })
-
-    // ctx.fillStyle = 'red' // readConfObject(config, 'color')
-    // // const drawMode = readConfObject(config, 'drawMode')
-    // ctx.fillRect(0, 0, 100, 100)
-
-    const imageData = await createImageBitmap(canvas)
-    return {
-      imageData,
-      height,
-      width,
-    }
+    return createImageBitmap(canvas)
   }
 
   async render(renderProps: DotplotRenderProps) {
-    const { height, width, imageData } = await this.makeImageData(renderProps)
+    const { width, height, views } = renderProps
+    const dimensions = [width, height]
+    const realizedViews = views.map((snap, idx) => {
+      const view = Base1DView.create(snap)
+      view.setVolatileWidth(dimensions[idx])
+      return view
+    })
+    await Promise.all(
+      realizedViews.map(async view => {
+        view.setFeatures(
+          await this.getFeatures({
+            ...renderProps,
+            regions: view.dynamicBlocks.contentBlocks,
+          }),
+        )
+      }),
+    )
+    const imageData = await this.makeImageData({
+      ...renderProps,
+      views: realizedViews,
+    })
 
     const element = React.createElement(
       // @ts-ignore
@@ -171,15 +147,13 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       null,
     )
 
-    const { views } = renderProps
-
     return {
       element,
       imageData,
       height,
       width,
-      offsetX: views[0].dynamicBlocks[0].offsetPx,
-      offsetY: views[1].dynamicBlocks[0].offsetPx,
+      offsetX: realizedViews[0].dynamicBlocks.blocks[0].offsetPx,
+      offsetY: realizedViews[1].dynamicBlocks.blocks[0].offsetPx,
     }
   }
 }
