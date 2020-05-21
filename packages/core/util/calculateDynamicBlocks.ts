@@ -11,7 +11,7 @@ export default function calculateDynamicBlocks(model: any) {
   let displayedRegionLeftPx = 0
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
-  displayedRegions.forEach((region: any, regionNumber: any) => {
+  displayedRegions.forEach((region: any) => {
     const {
       assemblyName,
       refName,
