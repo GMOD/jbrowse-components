@@ -8,7 +8,7 @@ import {
   isSelectionContainer,
 } from '@gmod/jbrowse-core/util'
 import { Region } from '@gmod/jbrowse-core/util/types'
-import { addDisposer, types, Instance } from 'mobx-state-tree'
+import { addDisposer, types, Instance, isAlive } from 'mobx-state-tree'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import RBush from 'rbush'
 import { Feature, isFeature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -154,12 +154,13 @@ const blockBasedTrack = types
        * is probably a feature
        */
       get selectedFeatureId() {
-        const session = getSession(self)
-        if (!session) throw new Error('no session found in state tree!')
-        const { selection } = session
-        // does it quack like a feature?
-        if (isFeature(selection)) {
-          return selection.id()
+        if (isAlive(self)) {
+          const session = getSession(self)
+          const { selection } = session
+          // does it quack like a feature?
+          if (isFeature(selection)) {
+            return selection.id()
+          }
         }
         return undefined
       },

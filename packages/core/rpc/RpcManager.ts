@@ -1,4 +1,3 @@
-import { getSnapshot, isStateTreeNode, isAlive } from 'mobx-state-tree'
 import PluginManager from '../PluginManager'
 import { readConfObject } from '../configuration'
 
@@ -7,8 +6,6 @@ import WebWorkerRpcDriver from './WebWorkerRpcDriver'
 import MainThreadRpcDriver from './MainThreadRpcDriver'
 import ElectronRpcDriver from './ElectronRpcDriver'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
-import { Region } from '../util/types'
-import { whenPresent } from '../util'
 
 type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver | ElectronRpcDriver
 type BackendConfigurations = {
@@ -21,13 +18,8 @@ const DriverClasses = {
   MainThreadRpcDriver,
   ElectronRpcDriver,
 }
-type GetRefNameMapForAdapter = (
-  adapterConfig: unknown,
-  assemblyName: string,
-  { signal }: { signal?: AbortSignal },
-) => Map<string, string> | undefined
 
-class RpcManager {
+export default class RpcManager {
   static configSchema = rpcConfigSchema
 
   driverObjects: Map<string, DriverClass>
@@ -38,13 +30,10 @@ class RpcManager {
 
   backendConfigurations: BackendConfigurations
 
-  getRefNameMapForAdapter: GetRefNameMapForAdapter
-
   constructor(
     pluginManager: PluginManager,
     mainConfiguration: AnyConfigurationModel,
     backendConfigurations: BackendConfigurations,
-    getRefNameMapForAdapter: GetRefNameMapForAdapter = () => new Map(),
   ) {
     if (!mainConfiguration) {
       throw new Error('RpcManager requires at least a main configuration')
@@ -52,7 +41,6 @@ class RpcManager {
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration
     this.backendConfigurations = backendConfigurations
-    this.getRefNameMapForAdapter = getRefNameMapForAdapter
     this.driverObjects = new Map()
   }
 
@@ -74,11 +62,7 @@ class RpcManager {
     return newDriver
   }
 
-  getDriverForCall(
-    stateGroupName: string,
-    functionName: string,
-    args: unknown,
-  ) {
+  getDriverForCall(sessionId: string, functionName: string, args: unknown) {
     // TODO: add logic here so different sessions can have
     // different RPC backends configured
 
@@ -88,74 +72,14 @@ class RpcManager {
     return this.getDriver(backendName)
   }
 
-  renameRegionIfNeeded(refNameMap: Map<string, string>, region: Region) {
-    if (isStateTreeNode(region) && !isAlive(region)) {
-      return region
-    }
-    if (region && refNameMap && refNameMap.has(region.refName)) {
-      // clone the region so we don't modify it
-      if (isStateTreeNode(region)) {
-        // @ts-ignore
-        region = { ...getSnapshot(region) }
-      } else {
-        region = { ...region }
-      }
-
-      // modify it directly in the container
-      const newRef = refNameMap.get(region.refName)
-      if (newRef) {
-        region.refName = newRef
-      }
-    }
-    return region
-  }
-
-  async call(
-    stateGroupName: string,
-    functionName: string,
-    args: {
-      assemblyName?: string
-      signal?: AbortSignal
-      regions?: Region[]
-      adapterConfig: unknown
-    },
-    opts = {},
-  ) {
-    const { assemblyName, signal, regions, adapterConfig } = args
-    const newArgs: typeof args & {
-      originalRegions?: Region[]
-    } = {
-      ...args,
-      regions: [...(args.regions || [])],
-    }
-    if (assemblyName) {
-      const refNameMap = await whenPresent(
-        () =>
-          this.getRefNameMapForAdapter(adapterConfig, assemblyName, {
-            signal,
-          }),
-        {
-          timeout: 30000,
-          name: `getRefNameMapForAdapter($conf, '${assemblyName}')`,
-        },
-      )
-
-      // console.log(`${JSON.stringify(regions)} ${JSON.stringify(refNameMap)}`)
-      if (refNameMap && regions && newArgs.regions) {
-        newArgs.originalRegions = args.regions
-        for (let i = 0; i < regions.length; i += 1) {
-          newArgs.regions[i] = this.renameRegionIfNeeded(refNameMap, regions[i])
-        }
-      }
-    }
-    return this.getDriverForCall(stateGroupName, functionName, newArgs).call(
+  async call(sessionId: string, functionName: string, args: {}, opts = {}) {
+    // console.log(sessionId, functionName)
+    return this.getDriverForCall(sessionId, functionName, args).call(
       this.pluginManager,
-      stateGroupName,
+      sessionId,
       functionName,
-      newArgs,
+      args,
       opts,
     )
   }
 }
-
-export default RpcManager

@@ -113,6 +113,7 @@ test('test usage of getMultiRegion stats, SNP adapter can generate a domain from
   const stats = await adapter.getMultiRegionStats(
     [
       {
+        assemblyName: 'volvox',
         refName: 'ctgA',
         start: 0,
         end: 100,
@@ -233,6 +234,7 @@ test('test usage of getMultiRegion stats, SNP adapter can generate a domain from
   const stats = await adapter.getMultiRegionStats(
     [
       {
+        assemblyName: 'volvox',
         refName: 'ctgA',
         start: 0,
         end: 100,

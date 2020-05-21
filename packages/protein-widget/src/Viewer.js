@@ -24,7 +24,6 @@ import SvgRendererConfigSchema from '@gmod/jbrowse-plugin-svg/src/SvgFeatureRend
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import { AdapterClass } from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
 import Ruler from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView/components/Ruler'
-import * as rpcFuncs from './rpcMethods'
 
 const plugins = [Config, LinearGenomeView, Protein, Lollipop, SVG, Filtering]
 
@@ -60,7 +59,7 @@ export class ProteinWidget {
       .volatile(self => ({
         pluginManager: this.pluginManager,
         rpcManager: new RpcManager(this.pluginManager, self.configuration.rpc, {
-          MainThreadRpcDriver: { rpcFuncs },
+          MainThreadRpcDriver: {},
         }),
       }))
       .create({

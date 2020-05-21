@@ -1,4 +1,9 @@
-import { getParent, isRoot, IStateTreeNode } from 'mobx-state-tree'
+import {
+  getParent,
+  isRoot,
+  IStateTreeNode,
+  IAnyStateTreeNode,
+} from 'mobx-state-tree'
 import objectHash from 'object-hash'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { UriLocation, LocalPathLocation } from './types'
@@ -20,6 +25,24 @@ export function getTrackAssemblyNames(
     }
   }
   return trackAssemblyNames
+}
+
+/** return the rpcSessionId of the highest parent node in the tree that has an rpcSessionId */
+
+export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
+  interface NodeWithRpcSessionId extends IAnyStateTreeNode {
+    rpcSessionId: string
+  }
+  let highestRpcSessionId
+  for (let node = thisNode; !isRoot(node); node = getParent(node)) {
+    if ('rpcSessionId' in node)
+      highestRpcSessionId = (node as NodeWithRpcSessionId).rpcSessionId
+  }
+  if (!highestRpcSessionId)
+    throw new Error(
+      'getRpcSessionId failed, no parent node in the state tree has an `rpcSessionId` attribute',
+    )
+  return highestRpcSessionId
 }
 
 /**
