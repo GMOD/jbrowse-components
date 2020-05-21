@@ -11,7 +11,7 @@
   "dependencies": {
     "@gmod/bam": "^1.0.36",
     "@gmod/cram": "^1.5.3",
-    "abortable-promise-cache": "^1.0.1",
+    "abortable-promise-cache": "^1.1.3",
     "color": "^3.1.2",
     "copy-to-clipboard": "^3.3.1",
     "d3-scale": "^3.2.1",

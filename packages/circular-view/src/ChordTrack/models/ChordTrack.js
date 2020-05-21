@@ -1,7 +1,7 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
   // const { transaction } = jbrequire('mobx')
-  const { types, getParent } = jbrequire('mobx-state-tree')
+  const { types, getParent, isAlive } = jbrequire('mobx-state-tree')
   const React = jbrequire('react')
   const { ElementId } = jbrequire('@gmod/jbrowse-core/util/types/mst')
   const { ConfigurationSchema, ConfigurationReference, getConf } = jbrequire(
@@ -138,6 +138,7 @@ export default pluginManager => {
        * is probably a feature
        */
       get selectedFeatureId() {
+        if (!isAlive(self)) return undefined
         const session = getSession(self)
         if (!session) return undefined
         const { selection } = session

@@ -2,7 +2,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { Region, NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
@@ -75,13 +75,29 @@ export default (pluginManager: PluginManager) => {
   return class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     private subadapter: BaseFeatureDataAdapter
 
-    private statsCache: {
-      get: (
-        key: string,
-        region: StatsRegion,
-        signal?: AbortSignal,
-      ) => Promise<FeatureStats>
-    }
+    private statsCache = new AbortablePromiseCache({
+      cache: new QuickLRU({ maxSize: 1000 }),
+      fill: async (
+        args: {
+          refName: string
+          assemblyName: string
+          start: number
+          end: number
+          bpPerPx: number
+        },
+        abortSignal?: AbortSignal,
+      ): Promise<FeatureStats> => {
+        const { refName, start, end, assemblyName, bpPerPx } = args
+        const feats = this.getFeatures(
+          { refName, start, end, assemblyName },
+          {
+            signal: abortSignal,
+            basesPerSpan: bpPerPx,
+          },
+        )
+        return scoresToStats({ refName, start, end }, feats)
+      },
+    })
 
     public constructor(
       config: Instance<typeof MyConfigSchema>,
@@ -96,44 +112,20 @@ export default (pluginManager: PluginManager) => {
       } else {
         throw new Error(`invalid subadapter type '${config.subadapter.type}'`)
       }
-
-      this.statsCache = new AbortablePromiseCache({
-        cache: new QuickLRU({ maxSize: 1000 }),
-        fill: async (
-          args: {
-            refName: string
-            assemblyName: string
-            start: number
-            end: number
-            bpPerPx: number
-          },
-          abortSignal: AbortSignal,
-        ): Promise<FeatureStats> => {
-          const { refName, start, end, assemblyName, bpPerPx } = args
-          const feats = this.getFeatures(
-            { refName, start, end, assemblyName },
-            {
-              signal: abortSignal,
-              basesPerSpan: bpPerPx,
-            },
-          )
-          return scoresToStats({ refName, start, end }, feats)
-        },
-      })
     }
 
-    public getRegionStats(region: NoAssemblyRegion, opts: BaseOptions = {}) {
+    public getRegionStats(region: Region, opts: BaseOptions = {}) {
       const { refName, start, end } = region
       const { bpPerPx, signal } = opts
       return this.statsCache.get(
         `${refName}_${start}_${end}_${bpPerPx}`,
-        { refName, start, end, bpPerPx },
+        { ...region, bpPerPx: bpPerPx || 0 },
         signal,
       )
     }
 
     public async getMultiRegionStats(
-      regions: NoAssemblyRegion[] = [],
+      regions: Region[] = [],
       opts: BaseOptions = {},
     ) {
       if (!regions.length) {

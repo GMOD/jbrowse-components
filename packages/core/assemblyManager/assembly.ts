@@ -7,10 +7,12 @@ import {
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
+import AbortablePromiseCache from 'abortable-promise-cache'
 import { readConfObject } from '../configuration'
 import { Region } from '../util/types'
 import { Region as MSTRegion } from '../util/types/mst'
 import { makeAbortableReaction, isAbortException, when } from '../util'
+import QuickLRU from '../util/QuickLRU'
 
 const refNameAdapterMapSet = types.model('RefNameMappingForAdapter', {
   forwardMap: types.map(types.string),
@@ -121,7 +123,20 @@ function getAdapterId(adapterConf: unknown) {
 type RefNameAliases = Record<string, string[]>
 
 export default function assemblyFactory(assemblyConfigType: IAnyType) {
-  const adapterLoadsInFlight = new Map<string, Promise<unknown>>()
+  interface CacheData {
+    adapterConf: unknown
+    adapterId: string
+    self: Assembly
+  }
+  const adapterLoadsInFlight = new AbortablePromiseCache<CacheData, void>({
+    cache: new QuickLRU({ maxSize: 1000 }),
+    async fill(
+      { adapterConf, adapterId, self }: CacheData,
+      abortSignal?: AbortSignal,
+    ) {
+      return loadRefNameMap(self, adapterId, adapterConf, abortSignal)
+    },
+  })
 
   return types
     .model({
@@ -227,18 +242,15 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         const adapterId = getAdapterId(adapterConf)
         const adapterMap = self.adapterMaps.get(adapterId)
         if (!adapterMap) {
-          if (!adapterLoadsInFlight.has(adapterId)) {
-            const load = loadRefNameMap(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              self as any,
+          adapterLoadsInFlight
+            .get(
               adapterId,
-              adapterConf,
+              { adapterConf, adapterId, self: self as Assembly },
               opts.signal,
             )
-            adapterLoadsInFlight.set(adapterId, load)
-            // clean up the in-flight record when done
-            load.finally(() => adapterLoadsInFlight.delete(adapterId))
-          }
+            .catch(err => {
+              if (!isAbortException(err)) console.error(err)
+            })
           return undefined
         }
         return adapterMap
