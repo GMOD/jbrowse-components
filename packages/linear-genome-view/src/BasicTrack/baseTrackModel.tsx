@@ -76,8 +76,8 @@ const BaseTrack = types
     ),
   })
   .volatile(() => ({
-    ReactComponent: undefined,
-    rendererTypeName: undefined,
+    ReactComponent: undefined as any,
+    rendererTypeName: '',
     ready: false,
     scrollTop: 0,
     error: '',

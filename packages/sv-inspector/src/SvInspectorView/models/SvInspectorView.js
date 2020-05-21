@@ -221,15 +221,19 @@ export default pluginManager => {
               const { tracks } = circularView
               const session = getSession(self)
               if (assemblyName) {
+                let { regions: assemblyRegions } = session.assemblyManager.get(
+                  assemblyName,
+                )
+                if (!assemblyRegions) {
+                  assemblyRegions = []
+                } else {
+                  assemblyRegions = getSnapshot(assemblyRegions)
+                }
                 if (onlyDisplayRelevantRegionsInCircularView) {
                   if (tracks.length === 1) {
                     const { getCanonicalRefName } = session.assemblyManager.get(
                       assemblyName,
                     )
-
-                    const assemblyRegions = session.assemblyManager.get(
-                      assemblyName,
-                    ).regions
 
                     featuresRefNamesP
                       .then(featureRefNames => {
@@ -249,10 +253,7 @@ export default pluginManager => {
                       .catch(e => console.error(e))
                   }
                 } else {
-                  const assemblyRegions = session.assemblyManager.get(
-                    assemblyName,
-                  ).regions
-                  circularView.setDisplayedRegions(getSnapshot(assemblyRegions))
+                  circularView.setDisplayedRegions(assemblyRegions)
                 }
               } else {
                 circularView.setDisplayedRegions([])
@@ -287,6 +288,7 @@ export default pluginManager => {
             },
             {
               name: 'SvInspectorView track configuration binding',
+              fireImmediately: true,
             },
           ),
         )

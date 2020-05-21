@@ -1,3 +1,11 @@
+import ZoomOut from '@material-ui/icons/ZoomOut'
+import ZoomIn from '@material-ui/icons/ZoomIn'
+import RotateLeft from '@material-ui/icons/RotateLeft'
+import RotateRight from '@material-ui/icons/RotateRight'
+import LockOutline from '@material-ui/icons/LockOutlined'
+import LockOpen from '@material-ui/icons/LockOpen'
+import LineStyle from '@material-ui/icons/LineStyle'
+
 const dragHandleHeight = 3
 
 export default pluginManager => {
@@ -11,11 +19,9 @@ export default pluginManager => {
   const Button = jbrequire('@material-ui/core/Button')
   const Container = jbrequire('@material-ui/core/Container')
   const Grid = jbrequire('@material-ui/core/Grid')
-  const Icon = jbrequire('@material-ui/core/Icon')
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const MenuItem = jbrequire('@material-ui/core/MenuItem')
   const TextField = jbrequire('@material-ui/core/TextField')
-  const Typography = jbrequire('@material-ui/core/Typography')
   const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { grey } = jbrequire('@material-ui/core/colors')
@@ -107,7 +113,7 @@ export default pluginManager => {
           }
           color="secondary"
         >
-          <Icon fontSize="small">zoom_out</Icon>
+          <ZoomOut fontSize="small" />
         </IconButton>
 
         <IconButton
@@ -117,7 +123,7 @@ export default pluginManager => {
           disabled={!showingFigure || model.atMinBpPerPx}
           color="secondary"
         >
-          <Icon fontSize="small">zoom_in</Icon>
+          <ZoomIn fontSize="small" />
         </IconButton>
 
         <IconButton
@@ -127,7 +133,7 @@ export default pluginManager => {
           disabled={!showingFigure}
           color="secondary"
         >
-          <Icon fontSize="small">rotate_left</Icon>
+          <RotateLeft fontSize="small" />
         </IconButton>
 
         <IconButton
@@ -137,7 +143,7 @@ export default pluginManager => {
           disabled={!showingFigure}
           color="secondary"
         >
-          <Icon fontSize="small">rotate_right</Icon>
+          <RotateRight fontSize="small" />
         </IconButton>
 
         <IconButton
@@ -152,9 +158,9 @@ export default pluginManager => {
           color="secondary"
         >
           {model.lockedFitToWindow ? (
-            <Icon fontSize="small">lock_outline</Icon>
+            <LockOutline fontSize="small" />
           ) : (
-            <Icon fontSize="small">lock_open</Icon>
+            <LockOpen fontSize="small" />
           )}
         </IconButton>
 
@@ -171,7 +177,7 @@ export default pluginManager => {
             data-testid="circular_track_select"
             color="secondary"
           >
-            <Icon fontSize="small">line_style</Icon>
+            <LineStyle fontSize="small" />
           </ToggleButton>
         )}
       </div>
@@ -183,16 +189,14 @@ export default pluginManager => {
     const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
     const { assemblyNames, assemblyManager } = getSession(model)
     const [assemblyError, setAssemblyError] = useState('')
-    const [regionsError, setRegionsError] = useState('')
     if (!assemblyNames.length) {
       setAssemblyError('No configured assemblies')
     }
     const assembly = assemblyManager.get(assemblyNames[selectedAssemblyIdx])
-    const regions = getSnapshot(assembly.regions)
+    const regions = assembly.regions ? getSnapshot(assembly.regions) : []
 
     function onAssemblyChange(event) {
       setSelectedAssemblyIdx(Number(event.target.value))
-      setRegionsError('')
     }
 
     function onOpenClick() {
@@ -226,16 +230,13 @@ export default pluginManager => {
             </Grid>
             <Grid item>
               <Button
-                disabled={!regions.length || !!regionsError}
+                disabled={!(regions && regions.length)}
                 onClick={onOpenClick}
                 variant="contained"
                 color="primary"
               >
                 {regions.length ? 'Open' : 'Loading…'}
               </Button>
-              {regionsError ? (
-                <Typography color="error">{regionsError}</Typography>
-              ) : null}
             </Grid>
           </Grid>
         </Container>

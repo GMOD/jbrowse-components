@@ -6,16 +6,18 @@ import {
   parseLocString,
 } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
-import Icon from '@material-ui/core/Icon'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import TextField from '@material-ui/core/TextField'
-import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import { observer } from 'mobx-react'
 import { getSnapshot, Instance } from 'mobx-state-tree'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import TrackSelectorIcon from '@material-ui/icons/LineStyle'
+import SearchIcon from '@material-ui/icons/Search'
+import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
+import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import { LinearGenomeViewStateModel, HEADER_BAR_HEIGHT } from '..'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import OverviewScaleBar from './OverviewScaleBar'
@@ -72,7 +74,7 @@ const Controls = observer(({ model }: { model: LGV }) => {
         session.visibleDrawerWidget.view.id === model.id
       }
     >
-      <Icon fontSize="small">line_style</Icon>
+      <TrackSelectorIcon fontSize="small" />
     </ToggleButton>
   )
 })
@@ -85,7 +87,6 @@ const Search = observer(({ model }: { model: LGV }) => {
   const theme = useTheme()
   const { displayedRegions, dynamicBlocks, setDisplayedRegions } = model
   const { blocks } = dynamicBlocks
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const session = getSession(model)
 
   const contentBlocks = blocks.filter(block => block.refName)
@@ -122,7 +123,13 @@ const Search = observer(({ model }: { model: LGV }) => {
             `Could not find assembly ${displayedRegion.assemblyName}`,
           )
         }
-        const matchedRegion = assembly.regions.find(
+        const { regions } = assembly
+        if (!regions) {
+          throw new Error(
+            `Regions for assembly ${displayedRegion.assemblyName} not yet loaded`,
+          )
+        }
+        const matchedRegion = regions.find(
           region =>
             region.refName === displayedRegion.refName &&
             region.start === displayedRegion.start &&
@@ -160,7 +167,7 @@ const Search = observer(({ model }: { model: LGV }) => {
             )
           }
           if (changedAssembly || canonicalRefName !== displayedRegion.refName) {
-            const newDisplayedRegion = assembly.regions.find(
+            const newDisplayedRegion = regions.find(
               region => region.refName === canonicalRefName,
             )
             if (newDisplayedRegion) {
@@ -249,7 +256,7 @@ const Search = observer(({ model }: { model: LGV }) => {
           onChange={event => onChange(event)}
           value={value === undefined ? defaultValue : value}
           InputProps={{
-            startAdornment: <Icon fontSize="small">search</Icon>,
+            startAdornment: <SearchIcon fontSize="small" />,
             style: {
               background: fade(theme.palette.background.paper, 0.8),
               height: 32,
@@ -289,7 +296,7 @@ function PanControls({ model }: { model: LGV }) {
         className={classes.panButton}
         onClick={() => model.slide(-0.9)}
       >
-        <Icon>arrow_back</Icon>
+        <ArrowBackIcon />
       </Button>
       <Button
         size="small"
@@ -297,7 +304,7 @@ function PanControls({ model }: { model: LGV }) {
         className={classes.panButton}
         onClick={() => model.slide(0.9)}
       >
-        <Icon>arrow_forward</Icon>
+        <ArrowForwardIcon />
       </Button>
     </>
   )

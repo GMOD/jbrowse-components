@@ -5,9 +5,10 @@ export default pluginManager => {
   const { getConf, ConfigurationSchema, ConfigurationReference } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
-
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const { getContainingView } = jbrequire('@gmod/jbrowse-core/util')
+  const { getTrackAssemblyNames } = jbrequire('@gmod/jbrowse-core/util/tracks')
+  const { getContainingView, makeAbortableReaction, getSession } = jbrequire(
+    '@gmod/jbrowse-core/util',
+  )
 
   const { renderReactionData, renderReactionEffect } = jbrequire(
     require('./renderReaction'),
@@ -19,8 +20,6 @@ export default pluginManager => {
     stateModel: ChordTrackStateModel,
   } = jbrequire(require('../../ChordTrack/models/ChordTrack'))
 
-  const refNameMapKeeper = jbrequire(require('./refNameMapKeeper'))
-
   const configSchema = ConfigurationSchema(
     'StructuralVariantChordTrack',
     {
@@ -30,13 +29,10 @@ export default pluginManager => {
     { baseConfiguration: ChordTrackConfigSchema, explicitlyTyped: true },
   )
 
-  const { makeAbortableReaction } = jbrequire(require('./util'))
-
   const stateModel = types
     .compose(
       'StructuralVariantChordTrack',
       ChordTrackStateModel,
-      refNameMapKeeper,
       types.model({
         type: types.literal('StructuralVariantChordTrack'),
         configuration: ConfigurationReference(configSchema),
@@ -50,11 +46,19 @@ export default pluginManager => {
       filled: false,
       html: '',
       data: undefined,
+      message: '',
       error: undefined,
       renderingComponent: undefined,
-      renderInProgress: undefined,
     }))
     .views(self => ({
+      get refNameMap() {
+        const assemblyName = getTrackAssemblyNames(self)[0]
+        const adapter = getConf(self, 'adapter')
+        const assembly = getSession(self).assemblyManager.get(assemblyName)
+        if (!assembly) return new Map()
+        return assembly && assembly.getRefNameMapForAdapter(adapter)
+      },
+
       get blockDefinitions() {
         const origSlices = getContainingView(self).staticSlices
         if (!self.refNameMap) return origSlices
@@ -79,14 +83,16 @@ export default pluginManager => {
       afterAttach() {
         makeAbortableReaction(
           self,
-          'render',
           renderReactionData,
           renderReactionEffect,
           {
             name: `${self.type} ${self.id} rendering`,
             // delay: self.renderDelay || 300,
-            // fireImmediately: true,
+            fireImmediately: true,
           },
+          self.renderStarted,
+          self.renderSuccess,
+          self.renderError,
         )
       },
       renderStarted() {

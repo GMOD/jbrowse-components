@@ -8,6 +8,7 @@ import MainThreadRpcDriver from './MainThreadRpcDriver'
 import ElectronRpcDriver from './ElectronRpcDriver'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { Region } from '../util/types'
+import { whenPresent } from '../util'
 
 type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver | ElectronRpcDriver
 type BackendConfigurations = {
@@ -24,7 +25,7 @@ type GetRefNameMapForAdapter = (
   adapterConfig: unknown,
   assemblyName: string,
   { signal }: { signal?: AbortSignal },
-) => Promise<Map<string, string> | void>
+) => Map<string, string> | undefined
 
 class RpcManager {
   static configSchema = rpcConfigSchema
@@ -43,7 +44,7 @@ class RpcManager {
     pluginManager: PluginManager,
     mainConfiguration: AnyConfigurationModel,
     backendConfigurations: BackendConfigurations,
-    getRefNameMapForAdapter: GetRefNameMapForAdapter = async () => {},
+    getRefNameMapForAdapter: GetRefNameMapForAdapter = () => new Map(),
   ) {
     if (!mainConfiguration) {
       throw new Error('RpcManager requires at least a main configuration')
@@ -94,6 +95,7 @@ class RpcManager {
     if (region && refNameMap && refNameMap.has(region.refName)) {
       // clone the region so we don't modify it
       if (isStateTreeNode(region)) {
+        // @ts-ignore
         region = { ...getSnapshot(region) }
       } else {
         region = { ...region }
@@ -115,31 +117,34 @@ class RpcManager {
       assemblyName?: string
       signal?: AbortSignal
       regions?: Region[]
-      region?: Region
       adapterConfig: unknown
     },
     opts = {},
   ) {
     const { assemblyName, signal, regions, adapterConfig } = args
     const newArgs: typeof args & {
-      originalRegion?: Region
       originalRegions?: Region[]
     } = {
       ...args,
       regions: [...(args.regions || [])],
     }
     if (assemblyName) {
-      const refNameMap = await this.getRefNameMapForAdapter(
-        adapterConfig,
-        assemblyName,
-        { signal },
+      const refNameMap = await whenPresent(
+        () =>
+          this.getRefNameMapForAdapter(adapterConfig, assemblyName, {
+            signal,
+          }),
+        {
+          timeout: 30000,
+          name: `getRefNameMapForAdapter($conf, '${assemblyName}')`,
+        },
       )
 
+      // console.log(`${JSON.stringify(regions)} ${JSON.stringify(refNameMap)}`)
       if (refNameMap && regions && newArgs.regions) {
+        newArgs.originalRegions = args.regions
         for (let i = 0; i < regions.length; i += 1) {
-          newArgs.originalRegions = args.regions
-          newArgs.regions[i] =
-            this.renameRegionIfNeeded(refNameMap, regions[i]) || regions[i]
+          newArgs.regions[i] = this.renameRegionIfNeeded(refNameMap, regions[i])
         }
       }
     }

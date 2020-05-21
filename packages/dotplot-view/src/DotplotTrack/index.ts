@@ -14,6 +14,7 @@ import { getSession, makeAbortableReaction } from '@gmod/jbrowse-core/util'
 import jsonStableStringify from 'json-stable-stringify'
 import DotplotTrackComponent from './components/DotplotTrack'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
+import { DotplotViewModel } from '../DotplotView/model'
 
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
@@ -151,7 +152,7 @@ function renderBlockData(self: DotplotTrack) {
 
   const { adapterConfig } = self
   const adapterConfigId = jsonStableStringify(adapterConfig)
-  const parent = getParent(self, 2)
+  const parent = getParent<DotplotViewModel>(self, 2)
   getSnapshot(parent)
   const { views, viewWidth, viewHeight, borderSize, borderX, borderY } = parent
 

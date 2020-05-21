@@ -8,13 +8,12 @@ export default (pluginManager: any) => {
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useRef, useEffect, useState } = React
-  const { minmax } = jbrequire('@gmod/jbrowse-core/util')
+  const { minmax, useEventListener } = jbrequire('@gmod/jbrowse-core/util')
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { makeStyles: jbMakeStyles } = jbrequire('@material-ui/core/styles')
   const LinearProgress = jbrequire('@material-ui/core/LinearProgress')
   const ImportForm = jbrequire(require('./ImportForm'))
   const Controls = jbrequire(require('./Controls'))
-  const useEventListener = jbrequire(require('./useEventListener'))
 
   const useStyles = (jbMakeStyles as typeof makeStyles)(theme => {
     return {
@@ -162,21 +161,23 @@ export default (pluginManager: any) => {
               <g>
                 {vview.dynamicBlocks.blocks
                   .filter(region => region.refName)
-                  .map(region => {
-                    const y = viewHeight - (region.offsetPx - vview.offsetPx)
+                  .map((region, index, array) => {
+                    const prevY = index > 0 ? array[index - 1].offsetPx : 0
+                    const y = region.offsetPx
                     const x = borderX
-                    return (
+
+                    return index === 0 || Math.abs(prevY - y) > 12 ? (
                       <text
                         transform={`rotate(${vtextRotation},${x},${y})`}
                         key={JSON.stringify(region)}
                         x={borderX}
-                        y={y}
+                        y={viewHeight - y + vview.offsetPx}
                         fill="#000000"
                         textAnchor="end"
                       >
                         {region.refName}
                       </text>
-                    )
+                    ) : null
                   })}
               </g>
             </svg>
@@ -247,14 +248,17 @@ export default (pluginManager: any) => {
               <g>
                 {hview.dynamicBlocks.blocks
                   .filter(region => region.refName)
-                  .map(region => {
-                    const x = region.offsetPx - hview.offsetPx
+                  .map((region, index, array) => {
+                    const prevX = index > 0 ? array[index - 1].offsetPx : 0
+                    const x = region.offsetPx
                     const y = tickSize
-                    return (
+                    return index === 0 || Math.abs(prevX - x) > 12 ? (
                       <text
-                        transform={`rotate(${htextRotation},${x},${y})`}
+                        transform={`rotate(${htextRotation},${
+                          x - hview.offsetPx
+                        },${y})`}
                         key={region.refName}
-                        x={x}
+                        x={x - hview.offsetPx}
                         y={y + 1}
                         fill="#000000"
                         dominantBaseline="hanging"
@@ -262,7 +266,7 @@ export default (pluginManager: any) => {
                       >
                         {region.refName}
                       </text>
-                    )
+                    ) : null
                   })}
               </g>
             </svg>

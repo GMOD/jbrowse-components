@@ -32,7 +32,7 @@ export type AnyDataAdapter = BaseFeatureDataAdapter | BaseRefNameAliasAdapter
 export abstract class BaseFeatureDataAdapter {
   public id: string
 
-  constructor(args: unknown) {
+  constructor(args: unknown = {}) {
     // note: we use switch on jest here for more simple feature IDs
     // in test environment
     if (typeof jest === 'undefined') {
@@ -65,7 +65,7 @@ export abstract class BaseFeatureDataAdapter {
    */
   public abstract getFeatures(
     region: Region,
-    opts: BaseOptions,
+    opts?: BaseOptions,
   ): Observable<Feature>
   // public abstract getFeatures(
   //   region: Region,

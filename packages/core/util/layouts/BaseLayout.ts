@@ -20,7 +20,7 @@ export interface BaseLayout<T> {
     left: number,
     right: number,
     height: number,
-    data: Record<string, T>,
+    data?: Record<string, T>,
   ): number | null
   collides(rect: Rectangle<T>, top: number): boolean
   addRectToBitmap(rect: Rectangle<T>, data: Record<string, T>): void

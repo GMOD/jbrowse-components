@@ -22,6 +22,8 @@ import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 import SvgIcon from '@material-ui/core/SvgIcon'
 import TextField from '@material-ui/core/TextField'
+import DeleteIcon from '@material-ui/icons/Delete'
+import AddIcon from '@material-ui/icons/Add'
 import { observer } from 'mobx-react'
 import { getPropertyMembers } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
@@ -76,7 +78,7 @@ const StringArrayEditor = observer(({ slot }) => {
                       color="secondary"
                       onClick={() => slot.removeAtIndex(idx)}
                     >
-                      <Icon>delete</Icon>
+                      <DeleteIcon />
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -100,7 +102,7 @@ const StringArrayEditor = observer(({ slot }) => {
                     disabled={value === ''}
                     color="secondary"
                   >
-                    <Icon>add</Icon>
+                    <AddIcon />
                   </IconButton>
                 </InputAdornment>
               ),
@@ -131,7 +133,7 @@ const StringArrayMapEditor = observer(({ slot }) => {
             title={key}
             action={
               <IconButton color="secondary" onClick={() => slot.remove(key)}>
-                <Icon>delete</Icon>
+                <DeleteIcon />
               </IconButton>
             }
           />
@@ -174,7 +176,7 @@ const StringArrayMapEditor = observer(({ slot }) => {
                       }}
                       color="secondary"
                     >
-                      <Icon>add</Icon>
+                      <AddIcon />
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -200,7 +202,7 @@ const NumberMapEditor = observer(({ slot }) => {
             title={key}
             action={
               <IconButton color="secondary" onClick={() => slot.remove(key)}>
-                <Icon>delete</Icon>
+                <DeleteIcon />
               </IconButton>
             }
           />
@@ -234,7 +236,7 @@ const NumberMapEditor = observer(({ slot }) => {
                       }}
                       color="secondary"
                     >
-                      <Icon>add</Icon>
+                      <AddIcon />
                     </IconButton>
                   </InputAdornment>
                 ),
