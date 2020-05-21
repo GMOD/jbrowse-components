@@ -459,7 +459,7 @@ describe('alignments track', () => {
     )
     await findByTestId('track-volvox_alignments_pileup_coverage')
     expect(state.session.views[0].tracks[0]).toBeTruthy()
-    const alignmentsTrack = state.session.views[0].tracks[0]
+    // const alignmentsTrack = state.session.views[0].tracks[0]
 
     // opens the track menu and turns on soft clipping
     const trackMenu = await findByTestId('track_menu_icon')
