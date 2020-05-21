@@ -617,6 +617,7 @@ export async function renameRegionsIfNeeded<
     regions?: Region[]
     signal?: AbortSignal
     adapterConfig: unknown
+    sessionId: string
   }
 >(assemblyManager: AssemblyManager, args: ARGTYPE) {
   const { assemblyName, signal, regions, adapterConfig } = args
@@ -631,6 +632,7 @@ export async function renameRegionsIfNeeded<
       () =>
         assemblyManager.getRefNameMapForAdapter(adapterConfig, assemblyName, {
           signal,
+          sessionId: newArgs.sessionId,
         }),
       {
         timeout: 30000,

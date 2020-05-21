@@ -23,6 +23,7 @@ async function loadRefNameMap(
   assembly: Assembly,
   adapterId: string,
   adapterConf: unknown,
+  sessionId = `assemblyManager-${assembly.name}`,
   signal?: AbortSignal,
 ): Promise<void> {
   try {
@@ -32,7 +33,6 @@ async function loadRefNameMap(
       name: 'when assembly ready',
     })
 
-    const sessionId = `assemblyManager-${assembly.name}`
     let refNames = []
     try {
       refNames = await assembly.rpcManager.call(
@@ -127,14 +127,21 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
     adapterConf: unknown
     adapterId: string
     self: Assembly
+    sessionId?: string
   }
   const adapterLoadsInFlight = new AbortablePromiseCache<CacheData, void>({
     cache: new QuickLRU({ maxSize: 1000 }),
     async fill(
-      { adapterConf, adapterId, self }: CacheData,
+      { adapterConf, adapterId, self, sessionId }: CacheData,
       abortSignal?: AbortSignal,
     ) {
-      return loadRefNameMap(self, adapterId, adapterConf, abortSignal)
+      return loadRefNameMap(
+        self,
+        adapterId,
+        adapterConf,
+        sessionId,
+        abortSignal,
+      )
     },
   })
 
@@ -237,7 +244,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
     .views(self => ({
       getAdapterMapEntry(
         adapterConf: unknown,
-        opts: { signal?: AbortSignal } = {},
+        opts: { signal?: AbortSignal; sessionId?: string } = {},
       ) {
         const adapterId = getAdapterId(adapterConf)
         const adapterMap = self.adapterMaps.get(adapterId)
@@ -245,7 +252,12 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
           adapterLoadsInFlight
             .get(
               adapterId,
-              { adapterConf, adapterId, self: self as Assembly },
+              {
+                adapterConf,
+                adapterId,
+                self: self as Assembly,
+                sessionId: opts.sessionId,
+              },
               opts.signal,
             )
             .catch(err => {
@@ -261,7 +273,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
        */
       getRefNameMapForAdapter(
         adapterConf: unknown,
-        opts: { signal?: AbortSignal } = {},
+        opts: { signal?: AbortSignal; sessionId: string },
       ) {
         return this.getAdapterMapEntry(adapterConf, opts)?.forwardMap
       },
@@ -271,7 +283,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
        */
       getReverseRefNameMapForAdapter(
         adapterConf: unknown,
-        opts: { signal?: AbortSignal } = {},
+        opts: { signal?: AbortSignal; sessionId: string },
       ) {
         return this.getAdapterMapEntry(adapterConf, opts)?.reverseMap
       },

@@ -74,29 +74,8 @@ export default class RpcManager {
     return this.getDriver(backendName)
   }
 
-  renameRegionIfNeeded(refNameMap: Map<string, string>, region: Region) {
-    if (isStateTreeNode(region) && !isAlive(region)) {
-      return region
-    }
-    if (region && refNameMap && refNameMap.has(region.refName)) {
-      // clone the region so we don't modify it
-      if (isStateTreeNode(region)) {
-        // @ts-ignore
-        region = { ...getSnapshot(region) }
-      } else {
-        region = { ...region }
-      }
-
-      // modify it directly in the container
-      const newRef = refNameMap.get(region.refName)
-      if (newRef) {
-        region.refName = newRef
-      }
-    }
-    return region
-  }
-
   async call(sessionId: string, functionName: string, args: {}, opts = {}) {
+    // console.log(sessionId, functionName)
     return this.getDriverForCall(sessionId, functionName, args).call(
       this.pluginManager,
       sessionId,
