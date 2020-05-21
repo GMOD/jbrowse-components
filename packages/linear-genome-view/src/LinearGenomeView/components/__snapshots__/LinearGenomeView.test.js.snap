@@ -917,10 +917,9 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       <form>
         <div
           class="MuiFormControl-root MuiTextField-root makeStyles-input MuiFormControl-marginDense"
-          title="Disabled because this view is displaying multiple regions"
         >
           <div
-            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-disabled MuiOutlinedInput-disabled MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
+            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
             style="background: rgba(255, 255, 255, 0.8); height: 32px;"
           >
             <span
@@ -931,8 +930,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             </span>
             <input
               aria-invalid="false"
-              class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-disabled MuiOutlinedInput-disabled MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
-              disabled=""
+              class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
               style="padding: 8px;"
               type="text"
               value="ctgA:1..100;ctgB:1001..1698"

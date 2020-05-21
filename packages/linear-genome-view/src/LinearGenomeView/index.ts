@@ -7,7 +7,9 @@ import {
 } from '@gmod/jbrowse-core/util/types/mst'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import {
+  assembleLocString,
   clamp,
+  findLastIndex,
   getContainingView,
   getSession,
   isViewContainer,
@@ -42,6 +44,13 @@ interface BpOffset {
   offset: number
   start?: number
   end?: number
+}
+
+interface NavLocation {
+  refName: string
+  start?: number
+  end?: number
+  assemblyName?: string
 }
 
 export const HEADER_BAR_HEIGHT = 48
@@ -415,24 +424,34 @@ export function stateModelFactory(pluginManager: PluginManager) {
         this.navTo(parseLocString(locString, isValidRefName))
       },
 
+      navToLocStrings(locStrings: string) {
+        const session = getSession(self)
+        const { isValidRefName } = session.assemblyManager
+        const locations = locStrings
+          .split(';')
+          .map(locString => parseLocString(locString, isValidRefName))
+        this.navToMultiple(locations)
+      },
+
       /**
-       * navTo navigates to a simple refName:start..end type object as input.
-       * can handle if there are multiple displayedRegions from same chr.
-       * only navigates to a locString if it is entirely within a
-       * displayedRegion.
+       * Navigate to a location based on its refName and optionally start, end,
+       * and assemblyName. Can handle if there are multiple displayedRegions
+       * from same refName. Only navigates to a location if it is entirely
+       * within a displayedRegion. Navigates to the first matching location
+       * encountered.
        *
-       * @param location - a proposed
-       * location to navigate to
-       * throws an error if navigation was unsuccessful
+       * Throws an error if navigation was unsuccessful
+       *
+       * @param location - a proposed location to navigate to
        */
-      navTo(query: {
-        refName: string
-        start?: number
-        end?: number
-        assemblyName?: string
-      }) {
-        let { refName } = query
-        const { start, end, assemblyName } = query
+      navTo(query: NavLocation) {
+        this.navToMultiple([query])
+      },
+
+      navToMultiple(locations: NavLocation[]) {
+        const firstLocation = locations[0]
+        let { refName } = firstLocation
+        const { start, end, assemblyName } = firstLocation
         if (start !== undefined && end !== undefined && start > end) {
           throw new Error(`start "${start + 1}" is greater than end "${end}"`)
         }
@@ -446,15 +465,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
             refName = canonicalRefName
           }
         }
-
         let s = start
         let e = end
         let refNameMatched = false
 
-        // get the proper displayedRegion that is relevant for the nav command
-        // assumes that a single displayedRegion will satisfy the query
-        // TODO: may not necessarily be true?
-        const index = self.displayedRegions.findIndex(r => {
+        const predicate = (r: Region) => {
           if (refName === r.refName) {
             refNameMatched = true
             if (s === undefined) {
@@ -470,35 +485,127 @@ export function stateModelFactory(pluginManager: PluginManager) {
             e = end
           }
           return false
-        })
-        if (!refNameMatched) {
-          throw new Error(`could not find a region with refName "${refName}"`)
         }
-        if (s !== undefined && e === undefined) {
-          throw new Error(`could not find a region that contained ${s + 1}`)
+
+        const lastIndex = findLastIndex(self.displayedRegions, predicate)
+        let index
+        while (index !== lastIndex) {
+          try {
+            const previousIndex: number | undefined = index
+            index = self.displayedRegions
+              .slice(previousIndex === undefined ? 0 : previousIndex + 1)
+              .findIndex(predicate)
+            if (previousIndex !== undefined) {
+              index += previousIndex + 1
+            }
+            if (!refNameMatched) {
+              throw new Error(
+                `could not find a region with refName "${refName}"`,
+              )
+            }
+            if (s === undefined) {
+              throw new Error(
+                `could not find a region with refName "${refName}" that contained an end position ${e}`,
+              )
+            }
+            if (e === undefined) {
+              throw new Error(
+                `could not find a region with refName "${refName}" that contained a start position ${
+                  s + 1
+                }`,
+              )
+            }
+            if (index === -1) {
+              throw new Error(
+                `could not find a region that completely contained "${assembleLocString(
+                  firstLocation,
+                )}"`,
+              )
+            }
+            if (locations.length === 1) {
+              const f = self.displayedRegions[index]
+              this.moveTo(
+                { index, offset: f.reversed ? f.end - e : s - f.start },
+                { index, offset: f.reversed ? f.end - s : e - f.start },
+              )
+              return
+            }
+            let locationIndex = 0
+            let locationStart = 0
+            let locationEnd = 0
+            for (
+              locationIndex;
+              locationIndex < locations.length;
+              locationIndex++
+            ) {
+              const location = locations[locationIndex]
+              const region = self.displayedRegions[index + locationIndex]
+              locationStart = location.start || region.start
+              locationEnd = location.end || region.end
+              if (location.refName !== region.refName) {
+                throw new Error(
+                  `Entered location ${assembleLocString(
+                    location,
+                  )} does not match with displayed regions`,
+                )
+              }
+              if (locationIndex > 0) {
+                // does it reach the left side?
+                const matchesLeft = region.reversed
+                  ? locationEnd === region.end
+                  : locationStart === region.start
+                if (!matchesLeft) {
+                  throw new Error(
+                    `${
+                      region.reversed ? 'End' : 'Start'
+                    } of region ${assembleLocString(location)} should be ${
+                      region.reversed ? region.end : region.start + 1
+                    }, but it is not`,
+                  )
+                }
+              }
+              const isLast = locationIndex === locations.length - 1
+              if (!isLast) {
+                // does it reach the right side?
+                const matchesRight = region.reversed
+                  ? locationStart === region.start
+                  : locationEnd === region.end
+                if (!matchesRight) {
+                  throw new Error(
+                    `${
+                      region.reversed ? 'Start' : 'End'
+                    } of region ${assembleLocString(location)} should be ${
+                      region.reversed ? region.start + 1 : region.end
+                    }, but it is not`,
+                  )
+                }
+              }
+            }
+            locationIndex -= 1
+            const startDisplayedRegion = self.displayedRegions[index]
+            const endDisplayedRegion =
+              self.displayedRegions[index + locationIndex]
+            this.moveTo(
+              {
+                index,
+                offset: startDisplayedRegion.reversed
+                  ? startDisplayedRegion.end - e
+                  : s - startDisplayedRegion.start,
+              },
+              {
+                index: index + locationIndex,
+                offset: endDisplayedRegion.reversed
+                  ? endDisplayedRegion.end - locationStart
+                  : locationEnd - endDisplayedRegion.start,
+              },
+            )
+            return
+          } catch (error) {
+            if (index === lastIndex) {
+              throw error
+            }
+          }
         }
-        if (s === undefined) {
-          throw new Error(
-            `could not find a region with refName "${refName}" that contained an end position ${e}`,
-          )
-        }
-        if (e === undefined) {
-          throw new Error(
-            `could not find a region with refName "${refName}" that contained a start position ${s}`,
-          )
-        }
-        if (index === -1) {
-          throw new Error(
-            `could not find a region that completely contained "${refName}:${
-              start !== undefined ? start + 1 : start
-            }..${end}"`,
-          )
-        }
-        const f = self.displayedRegions[index]
-        this.moveTo(
-          { index, offset: f.reversed ? f.end - e : s - f.start },
-          { index, offset: f.reversed ? f.end - s : e - f.start },
-        )
       },
 
       // schedule something to be run after the next time displayedRegions is set
