@@ -324,7 +324,7 @@ export function parseLocStringOneBased(
   const suffix = location.slice(lastColonIdx + 1)
   if (
     isValidRefName(prefix, assemblyName) &&
-    isValidRefName(suffix, assemblyName)
+    isValidRefName(location, assemblyName)
   ) {
     throw new Error(`ambiguous location string: "${locString}"`)
   } else if (isValidRefName(prefix, assemblyName)) {
