@@ -3,7 +3,7 @@ export default abstract class PluggableElementBase {
 
   name = ''
 
-  constructor({ name }: { name: string } = { name: '' }) {
-    this.name = name || this.constructor.name
+  constructor({ name }: { name: string }) {
+    this.name = name
   }
 }

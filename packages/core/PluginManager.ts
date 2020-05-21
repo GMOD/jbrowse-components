@@ -83,11 +83,12 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   typeName: string
 
   constructor(
+    typeName: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     elementType: { new (...args: any[]): ElementClass },
   ) {
+    this.typeName = typeName
     this.baseClass = elementType
-    this.typeName = elementType.prototype.constructor.name
   }
 
   add(name: string, t: ElementClass) {
@@ -127,19 +128,19 @@ export default class PluginManager {
     'rpc method',
   )
 
-  rendererTypes = new TypeRecord(RendererType)
+  rendererTypes = new TypeRecord('RendererType', RendererType)
 
-  adapterTypes = new TypeRecord(AdapterType)
+  adapterTypes = new TypeRecord('AdapterType', AdapterType)
 
-  trackTypes = new TypeRecord(TrackType)
+  trackTypes = new TypeRecord('TrackType', TrackType)
 
-  connectionTypes = new TypeRecord(ConnectionType)
+  connectionTypes = new TypeRecord('ConnectionType', ConnectionType)
 
-  viewTypes = new TypeRecord(ViewType)
+  viewTypes = new TypeRecord('ViewType', ViewType)
 
-  drawerWidgetTypes = new TypeRecord(DrawerWidgetType)
+  drawerWidgetTypes = new TypeRecord('DrawerWidgetType', DrawerWidgetType)
 
-  rpcMethods = new TypeRecord(RpcMethodType)
+  rpcMethods = new TypeRecord('RpcMethodType', RpcMethodType)
 
   configured = false
 
@@ -226,6 +227,8 @@ export default class PluginManager {
 
     this.elementCreationSchedule.add(groupName, () => {
       const newElement = creationCallback(this)
+      if (!newElement.name)
+        throw new Error(`cannot add a ${groupName} with no name`)
 
       if (typeRecord.has(newElement.name)) {
         throw new Error(

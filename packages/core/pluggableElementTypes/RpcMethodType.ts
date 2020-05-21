@@ -8,11 +8,15 @@ import {
   RemoteAbortSignal,
 } from '../rpc/remoteAbortSignals'
 
+export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
+
 export default class RpcMethodType extends PluggableElementBase {
   pluginManager: PluginManager
 
+  name = 'UNKNOWN'
+
   constructor(pluginManager: PluginManager) {
-    super()
+    super({ name: '' })
     this.pluginManager = pluginManager
   }
 

@@ -24,6 +24,8 @@ interface ComparativeRenderArgs {
  * used instead of passing regions directly as in render()
  */
 export default class ComparativeRender extends RpcMethodType {
+  name = 'ComparativeRender'
+
   async serializeArguments(
     args: ComparativeRenderArgs & { signal?: AbortSignal },
   ) {
