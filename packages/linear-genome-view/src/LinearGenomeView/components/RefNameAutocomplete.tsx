@@ -38,48 +38,50 @@ const OuterElementType = React.forwardRef<HTMLDivElement>((props, ref) => {
 })
 
 // Adapter for react-window
-const ListboxComponent = React.forwardRef<HTMLDivElement>((props, ref) => {
-  // eslint-disable-next-line react/prop-types
-  const { children, ...other } = props
-  const itemData = React.Children.toArray(children)
-  const itemCount = itemData.length
-  const itemSize = 36
+const ListboxComponent = React.forwardRef<HTMLDivElement>(
+  function ListboxComponent(props, ref) {
+    // eslint-disable-next-line react/prop-types
+    const { children, ...other } = props
+    const itemData = React.Children.toArray(children)
+    const itemCount = itemData.length
+    const itemSize = 36
 
-  const getChildSize = (child: React.ReactNode) => {
-    if (React.isValidElement(child) && child.type === ListSubheader) {
-      return 48
+    const getChildSize = (child: React.ReactNode) => {
+      if (React.isValidElement(child) && child.type === ListSubheader) {
+        return 48
+      }
+
+      return itemSize
     }
 
-    return itemSize
-  }
-
-  const getHeight = () => {
-    if (itemCount > 8) {
-      return 8 * itemSize
+    const getHeight = () => {
+      if (itemCount > 8) {
+        return 8 * itemSize
+      }
+      return itemData.map(getChildSize).reduce((a, b) => a + b, 0)
     }
-    return itemData.map(getChildSize).reduce((a, b) => a + b, 0)
-  }
 
-  return (
-    <div ref={ref}>
-      <OuterElementContext.Provider value={other}>
-        <VariableSizeList
-          itemData={itemData}
-          height={getHeight() + 2 * LISTBOX_PADDING}
-          width="100%"
-          key={itemCount}
-          outerElementType={OuterElementType}
-          innerElementType="ul"
-          itemSize={(index: number) => getChildSize(itemData[index])}
-          overscanCount={5}
-          itemCount={itemCount}
-        >
-          {renderRow}
-        </VariableSizeList>
-      </OuterElementContext.Provider>
-    </div>
-  )
-})
+    return (
+      <div ref={ref}>
+        <OuterElementContext.Provider value={other}>
+          <VariableSizeList
+            itemData={itemData}
+            height={getHeight() + 2 * LISTBOX_PADDING}
+            width="100%"
+            key={itemCount}
+            outerElementType={OuterElementType}
+            innerElementType="ul"
+            itemSize={(index: number) => getChildSize(itemData[index])}
+            overscanCount={5}
+            itemCount={itemCount}
+          >
+            {renderRow}
+          </VariableSizeList>
+        </OuterElementContext.Provider>
+      </div>
+    )
+  },
+)
 
 const useStyles = makeStyles({
   listbox: {
@@ -151,8 +153,11 @@ function RefNameAutocomplete({
       disableListWrap
       disableClearable
       classes={classes}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ListboxComponent={ListboxComponent as any}
+      ListboxComponent={
+        ListboxComponent as React.ComponentType<
+          React.HTMLAttributes<HTMLElement>
+        >
+      }
       options={regionNames}
       value={
         !assemblyName || loading || !selectedRegionName
