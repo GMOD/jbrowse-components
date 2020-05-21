@@ -246,22 +246,13 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
               },
               opts.signal,
             )
-            .then(
-              mapData => {
-                self.addAdapterMap(adapterId, mapData)
-              },
-              err => {
-                if (!isAbortException(err)) console.error(err)
-              },
-            )
+            .then(mapData => {
+              self.addAdapterMap(adapterId, mapData)
+            })
             .catch(err => {
-              if (isAbortException(err)) {
-                self.addAdapterMap(adapterId, {
-                  forwardMap: {},
-                  reverseMap: {},
-                })
+              if (!isAbortException(err)) {
+                console.error(err)
               }
-              console.error(err)
             })
           return undefined
         }
