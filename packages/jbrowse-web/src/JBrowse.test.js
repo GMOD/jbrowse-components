@@ -539,7 +539,7 @@ describe('alignments track', () => {
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
-  })
+  }, 10000)
 })
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
