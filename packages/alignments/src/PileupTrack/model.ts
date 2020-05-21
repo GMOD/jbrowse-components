@@ -57,7 +57,7 @@ export default (
       // returned if there is no feature id under mouse
       contextMenuNoFeature() {
         const { trackModel } = getParentRenderProps(self)
-        self.contextMenuOptions = trackModel.meuOptions
+        self.contextMenuOptions = trackModel.menuOptions
       },
 
       // returned if there is a feature id under mouse

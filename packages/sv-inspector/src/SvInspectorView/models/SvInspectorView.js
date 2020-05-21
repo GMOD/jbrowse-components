@@ -223,6 +223,8 @@ export default pluginManager => {
                 )
                 if (!assemblyRegions) {
                   assemblyRegions = []
+                } else {
+                  assemblyRegions = getSnapshot(assemblyRegions)
                 }
                 if (onlyDisplayRelevantRegionsInCircularView) {
                   if (tracks.length === 1) {
@@ -248,7 +250,7 @@ export default pluginManager => {
                       .catch(e => console.error(e))
                   }
                 } else {
-                  circularView.setDisplayedRegions(getSnapshot(assemblyRegions))
+                  circularView.setDisplayedRegions(assemblyRegions)
                 }
               } else {
                 circularView.setDisplayedRegions([])
@@ -283,6 +285,7 @@ export default pluginManager => {
             },
             {
               name: 'SvInspectorView track configuration binding',
+              fireImmediately: true,
             },
           ),
         )
