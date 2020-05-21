@@ -74,7 +74,7 @@ export default (
           {
             label: 'Copy info to clipboard',
             icon: 'content_copy',
-            onClick: () => self.copyFeatureToClipboard(feature),
+            onClick: () => this.copyFeatureToClipboard(feature),
           },
           // {
           //   label: 'View dotpot',
@@ -118,7 +118,7 @@ export default (
           ...self.composedRenderProps,
           ...getParentRenderProps(self),
           trackModel: self,
-          sortObject: self.sortObject,
+          sortObject: this.sortObject,
           showSoftClip: getParentRenderProps(self).trackModel.showSoftClipping,
           config,
         }
