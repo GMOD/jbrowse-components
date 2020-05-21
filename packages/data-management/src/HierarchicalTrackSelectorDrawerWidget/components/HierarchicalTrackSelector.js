@@ -27,7 +27,6 @@ import AddIcon from '@material-ui/icons/Add'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState } from 'react'
 import Contents from './Contents'
-import { HierarchicalTrackSelectorModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -53,40 +52,61 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-interface Props {
-  model: HierarchicalTrackSelectorModel
-}
-
-interface ModalInfo {
-  safelyBreakConnection: Function
-  dereferenceTypeCount: number
-  name: string
-}
-function HierarchicalTrackSelector({ model }: Props) {
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
+function HierarchicalTrackSelector({ model }) {
+  const [anchorEl, setAnchorEl] = useState(null)
   const [assemblyIdx, setAssemblyIdx] = useState(0)
-  const [modalInfo, setModalInfo] = useState<ModalInfo | undefined>()
+  const [modalInfo, setModalInfo] = useState()
   const classes = useStyles()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const session = getSession(model) as any
+  const session = getSession(model)
+
+  function handleTabChange(event, newIdx) {
+    setAssemblyIdx(newIdx)
+  }
+
+  function handleFabClick(event) {
+    setAnchorEl(event.currentTarget)
+  }
 
   function handleFabClose() {
     setAnchorEl(null)
   }
 
-  function filter(trackConfig: unknown) {
+  function handleInputChange(event) {
+    model.setFilterText(event.target.value)
+  }
+
+  function addConnection() {
+    handleFabClose()
+    const drawerWidget = session.addDrawerWidget(
+      'AddConnectionDrawerWidget',
+      'addConnectionDrawerWidget',
+    )
+    session.showDrawerWidget(drawerWidget)
+  }
+
+  function addTrack() {
+    handleFabClose()
+    const drawerWidget = session.addDrawerWidget(
+      'AddTrackDrawerWidget',
+      'addTrackDrawerWidget',
+      { view: model.view.id },
+    )
+    session.showDrawerWidget(drawerWidget)
+  }
+
+  function filter(trackConfig) {
     if (!model.filterText) return true
     const name = readConfObject(trackConfig, 'name')
     return name.toLowerCase().includes(model.filterText.toLowerCase())
   }
 
-  function handleConnectionToggle(connectionConf: unknown) {
+  function handleConnectionToggle(connectionConf) {
     const assemblyConnections = session.connectionInstances.get(assemblyName)
     const existingConnection =
       assemblyConnections &&
       !!assemblyConnections.find(
-        (connection: { name: string }) =>
+        connection =>
           connection.name === readConfObject(connectionConf, 'name'),
       )
     if (existingConnection) {
@@ -96,7 +116,7 @@ function HierarchicalTrackSelector({ model }: Props) {
     }
   }
 
-  function breakConnection(connectionConf: unknown) {
+  function breakConnection(connectionConf) {
     const name = readConfObject(connectionConf, 'name')
     const [
       safelyBreakConnection,
@@ -128,11 +148,9 @@ function HierarchicalTrackSelector({ model }: Props) {
         <Tabs
           className={classes.tabs}
           value={assemblyIdx}
-          onChange={(event, newIdx) => {
-            setAssemblyIdx(newIdx)
-          }}
+          onChange={handleTabChange}
         >
-          {assemblyNames.map((name: string) => (
+          {assemblyNames.map(name => (
             <Tab key={name} label={name} />
           ))}
         </Tabs>
@@ -143,9 +161,7 @@ function HierarchicalTrackSelector({ model }: Props) {
         value={model.filterText}
         error={filterError}
         helperText={filterError ? 'No matches' : ''}
-        onChange={function handleInputChange(event) {
-          model.setFilterText(event.target.value)
-        }}
+        onChange={handleInputChange}
         fullWidth
         InputProps={{
           endAdornment: (
@@ -166,10 +182,10 @@ function HierarchicalTrackSelector({ model }: Props) {
       <FormGroup>
         {session.connections
           .filter(
-            (connectionConf: unknown) =>
+            connectionConf =>
               readConfObject(connectionConf, 'assemblyName') === assemblyName,
           )
-          .map((connectionConf: unknown) => (
+          .map(connectionConf => (
             <FormControlLabel
               key={readConfObject(connectionConf, 'name')}
               control={
@@ -179,7 +195,7 @@ function HierarchicalTrackSelector({ model }: Props) {
                     !!session.connectionInstances
                       .get(assemblyName)
                       .find(
-                        (connection: { name: string }) =>
+                        connection =>
                           connection.name ===
                           readConfObject(connectionConf, 'name'),
                       )
@@ -195,34 +211,26 @@ function HierarchicalTrackSelector({ model }: Props) {
       {session.connectionInstances.has(assemblyName) ? (
         <>
           <Typography variant="h5">Connections</Typography>
-          {session.connectionInstances
-            .get(assemblyName)
-            .map((connection: { name: string }) => (
-              <Paper
-                key={connection.name}
-                className={classes.connectionsPaper}
-                elevation={8}
-              >
-                <Typography variant="h6">{connection.name}</Typography>
-                <Contents
-                  model={model}
-                  filterPredicate={filter}
-                  connection={connection}
-                  assemblyName={assemblyName}
-                  top
-                />
-              </Paper>
-            ))}
+          {session.connectionInstances.get(assemblyName).map(connection => (
+            <Paper
+              key={connection.name}
+              className={classes.connectionsPaper}
+              elevation={8}
+            >
+              <Typography variant="h6">{connection.name}</Typography>
+              <Contents
+                model={model}
+                filterPredicate={filter}
+                connection={connection}
+                assemblyName={assemblyName}
+                top
+              />
+            </Paper>
+          ))}
         </>
       ) : null}
 
-      <Fab
-        color="secondary"
-        className={classes.fab}
-        onClick={function handleFabClick(event) {
-          setAnchorEl(event.currentTarget)
-        }}
-      >
+      <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
         <AddIcon />
       </Fab>
       <Menu
@@ -231,31 +239,8 @@ function HierarchicalTrackSelector({ model }: Props) {
         open={Boolean(anchorEl)}
         onClose={handleFabClose}
       >
-        <MenuItem
-          onClick={function addConnection() {
-            handleFabClose()
-            const drawerWidget = session.addDrawerWidget(
-              'AddConnectionDrawerWidget',
-              'addConnectionDrawerWidget',
-            )
-            session.showDrawerWidget(drawerWidget)
-          }}
-        >
-          Add connection
-        </MenuItem>
-        <MenuItem
-          onClick={function addTrack() {
-            handleFabClose()
-            const drawerWidget = session.addDrawerWidget(
-              'AddTrackDrawerWidget',
-              'addTrackDrawerWidget',
-              { view: model.view.id },
-            )
-            session.showDrawerWidget(drawerWidget)
-          }}
-        >
-          Add track
-        </MenuItem>
+        <MenuItem onClick={addConnection}>Add connection</MenuItem>
+        <MenuItem onClick={addTrack}>Add track</MenuItem>
       </Menu>
       <Dialog
         aria-labelledby="connection-modal-title"
@@ -283,7 +268,7 @@ function HierarchicalTrackSelector({ model }: Props) {
         <DialogActions>
           <Button
             onClick={() => {
-              setModalInfo(undefined)
+              setModalInfo()
             }}
             color="primary"
           >
@@ -295,7 +280,7 @@ function HierarchicalTrackSelector({ model }: Props) {
               modalInfo
                 ? () => {
                     modalInfo.safelyBreakConnection()
-                    setModalInfo(undefined)
+                    setModalInfo()
                   }
                 : () => {}
             }
