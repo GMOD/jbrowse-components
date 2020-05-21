@@ -16,6 +16,8 @@ import { Region } from '../util/types'
 import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
 
 export class CoreGetRegions extends RpcMethodType {
+  name = 'CoreGetRegions'
+
   async execute(args: {
     sessionId: string
     signal: RemoteAbortSignal
@@ -42,6 +44,8 @@ export class CoreGetRegions extends RpcMethodType {
 }
 
 export class CoreGetRefNames extends RpcMethodType {
+  name = 'CoreGetRefNames'
+
   async execute(args: {
     sessionId: string
     signal: RemoteAbortSignal
@@ -65,6 +69,8 @@ export class CoreGetRefNames extends RpcMethodType {
 }
 
 export class CoreGetRefNameAliases extends RpcMethodType {
+  name = 'CoreGetRefNameAliases'
+
   async execute(args: {
     sessionId: string
     signal: RemoteAbortSignal
@@ -94,6 +100,8 @@ export class CoreGetRefNameAliases extends RpcMethodType {
  * returns number of objects deleted
  */
 export class CoreFreeResources extends RpcMethodType {
+  name = 'CoreFreeResources'
+
   async execute(specification: {}) {
     let deleteCount = 0
 
@@ -123,6 +131,8 @@ interface RenderArgs {
  * fetches features from an adapter and call a renderer with them
  */
 export class CoreRender extends RpcMethodType {
+  name = 'CoreRender'
+
   async serializeArguments(args: RenderArgs & { signal?: AbortSignal }) {
     const assemblyManager = this.pluginManager.rootModel?.session
       ?.assemblyManager

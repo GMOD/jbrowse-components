@@ -11,6 +11,8 @@ import {
 } from '../statsUtil'
 
 export class WiggleGetGlobalStats extends RpcMethodType {
+  name = 'WiggleGetGlobalStats'
+
   async execute(args: {
     adapterConfig: {}
     signal?: RemoteAbortSignal
@@ -37,6 +39,8 @@ export class WiggleGetGlobalStats extends RpcMethodType {
 }
 
 export class WiggleGetMultiRegionStats extends RpcMethodType {
+  name = 'WiggleGetMultiRegionStats'
+
   async execute(args: {
     adapterConfig: {}
     signal?: RemoteAbortSignal

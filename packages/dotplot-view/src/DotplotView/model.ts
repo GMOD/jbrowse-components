@@ -1,15 +1,20 @@
-import { getSession } from '@gmod/jbrowse-core/util'
+import { getSession, minmax } from '@gmod/jbrowse-core/util'
 
 import { getSnapshot, types, Instance, SnapshotIn } from 'mobx-state-tree'
 import { autorun, transaction } from 'mobx'
 
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
-import { Dotplot1DViewStateModel } from './Dotplot1DViewModel'
+import {
+  Base1DViewModel,
+  Base1DViewStateModel,
+} from '@gmod/jbrowse-core/util/Base1DViewModel'
 
 function approxPixelStringLen(str: string) {
   return str.length * 0.7 * 12
 }
+
+type Coord = [number, number]
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
@@ -17,7 +22,7 @@ export default function stateModelFactory(pluginManager: any) {
     'mobx-state-tree',
   )
   const { ElementId } = jbrequire('@gmod/jbrowse-core/util/types/mst')
-  const Dotplot1DViewModel = jbrequire(require('./Dotplot1DViewModel'))
+  const Base1DView = jbrequire('@gmod/jbrowse-core/util/Base1DViewModel')
 
   return (jbrequiredTypes as Instance<typeof types>)
     .model('DotplotView', {
@@ -34,7 +39,7 @@ export default function stateModelFactory(pluginManager: any) {
       trackSelectorType: 'hierarchical',
       assemblyNames: types.array(types.string),
       hview: types.optional(
-        (Dotplot1DViewModel as Dotplot1DViewStateModel).extend(self => ({
+        (Base1DView as Base1DViewStateModel).extend(self => ({
           views: {
             get width() {
               return getParent(self).viewWidth
@@ -44,7 +49,7 @@ export default function stateModelFactory(pluginManager: any) {
         {},
       ),
       vview: types.optional(
-        (Dotplot1DViewModel as Dotplot1DViewStateModel).extend(self => ({
+        (Base1DView as Base1DViewStateModel).extend(self => ({
           views: {
             get width() {
               return getParent(self).viewHeight
@@ -171,12 +176,12 @@ export default function stateModelFactory(pluginManager: any) {
       },
 
       zoomOutButton() {
-        self.hview.zoomOutButton()
-        self.vview.zoomOutButton()
+        self.hview.zoomOut()
+        self.vview.zoomOut()
       },
       zoomInButton() {
-        self.hview.zoomInButton()
-        self.vview.zoomInButton()
+        self.hview.zoomIn()
+        self.vview.zoomIn()
       },
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
@@ -234,9 +239,75 @@ export default function stateModelFactory(pluginManager: any) {
       setAssemblyNames(assemblyNames: string[]) {
         self.assemblyNames = cast(assemblyNames)
       },
-      setViews(arr: SnapshotIn<Dotplot1DViewStateModel>[]) {
+      setViews(arr: SnapshotIn<Base1DViewModel>[]) {
         self.hview = cast(arr[0])
         self.vview = cast(arr[1])
+      },
+
+      getCoords(mousedown: Coord, mouseup: Coord) {
+        const [xmin, xmax] = minmax(mouseup[0], mousedown[0])
+        const [ymin, ymax] = minmax(mouseup[1], mousedown[1])
+        return Math.abs(xmax - xmin) > 3 && Math.abs(ymax - ymin) > 3
+          ? [
+              self.hview.pxToBp(xmin),
+              self.hview.pxToBp(xmax),
+              self.vview.pxToBp(self.viewHeight - ymin),
+              self.vview.pxToBp(self.viewHeight - ymax),
+            ]
+          : undefined
+      },
+
+      zoomIn(mousedown: Coord, mouseup: Coord) {
+        const result = this.getCoords(mousedown, mouseup)
+        if (result) {
+          const [x1, x2, y1, y2] = result
+          self.hview.moveTo(x1, x2)
+          self.vview.moveTo(y2, y1)
+        }
+      },
+      onDotplotView(mousedown: Coord, mouseup: Coord) {
+        const result = this.getCoords(mousedown, mouseup)
+        if (result) {
+          const [x1, x2, y1, y2] = result
+          const session = getSession(self)
+
+          const d1 = Base1DView.create(getSnapshot(self.hview))
+          const d2 = Base1DView.create(getSnapshot(self.vview))
+          d1.setVolatileWidth(self.hview.width)
+          d2.setVolatileWidth(self.hview.width)
+          d1.moveTo(x1, x2)
+          d2.moveTo(y2, y1)
+
+          // add the specific evidence tracks to the LGVs in the split view
+          const viewSnapshot = {
+            type: 'LinearSyntenyView',
+            views: [
+              {
+                type: 'LinearGenomeView',
+                // @ts-ignore
+                ...getSnapshot(d1),
+                tracks: [],
+                hideHeader: true,
+              },
+              {
+                type: 'LinearGenomeView',
+                // @ts-ignore
+                ...getSnapshot(d2),
+                tracks: [],
+                hideHeader: true,
+              },
+            ],
+            tracks: [
+              {
+                configuration: 'grape_peach_synteny_mcscan',
+                type: 'LinearSyntenyTrack',
+              },
+            ],
+            displayName: 'A vs B',
+          }
+
+          session.addView('LinearSyntenyView', viewSnapshot)
+        }
       },
     }))
     .views(self => ({
@@ -250,6 +321,7 @@ export default function stateModelFactory(pluginManager: any) {
             disabled:
               session.visibleDrawerWidget &&
               session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
+              session.visibleDrawerWidget.view &&
               session.visibleDrawerWidget.view.id === self.id,
           },
         ]

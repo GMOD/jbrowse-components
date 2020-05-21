@@ -71,6 +71,332 @@
   "tracks": [
     {
       "type": "BasicTrack",
+      "trackId": "ncbi_gff_hg19",
+      "name": "NCBI RefSeq (GFF3Tabix)",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/GRCh37_latest_genomic.sort.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/GRCh37_latest_genomic.sort.gff.gz.tbi"
+          }
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "repeats_hg19",
+      "name": "Repeats",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "nclist_genes_hg19",
+      "name": "Gencode v19",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json",
+        "refNames": [
+          "chr1",
+          "chr2",
+          "chr3",
+          "chr4",
+          "chr5",
+          "chr6",
+          "chr7",
+          "chr8",
+          "chr9",
+          "chr10",
+          "chr11",
+          "chr12",
+          "chr13",
+          "chr14",
+          "chr15",
+          "chr16",
+          "chr17",
+          "chr18",
+          "chr19",
+          "chr20",
+          "chr21",
+          "chr22",
+          "chr23",
+          "chrX",
+          "chrY",
+          "chrMT"
+        ]
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer",
+        "labels": {
+          "description": "function(feature) { return feature.get('gene_name') }"
+        }
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "hg19_gaps",
+      "name": "Gaps",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/gaps.bb"
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "clinvar_cnv_hg19",
+      "name": "Clinvar CNV",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb"
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "clinvar_hg19",
+      "name": "Clinvar variants",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb"
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "repeats_hg38",
+      "name": "Repeats",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/repeats.bb"
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "gencode_nclist_hg38",
+      "name": "Gencode v32",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz",
+        "refNames": [
+          "chr1",
+          "chr2",
+          "chr3",
+          "chr4",
+          "chr5",
+          "chr6",
+          "chr7",
+          "chr8",
+          "chr9",
+          "chr10",
+          "chr11",
+          "chr12",
+          "chr13",
+          "chr14",
+          "chr15",
+          "chr16",
+          "chr17",
+          "chr18",
+          "chr19",
+          "chr20",
+          "chr21",
+          "chr22",
+          "chr23",
+          "chrX",
+          "chrY",
+          "chrMT"
+        ]
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer",
+        "labels": {
+          "description": "function(feature) { return feature.get('gene_name') }"
+        }
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "clinvar_cnv_hg38",
+      "name": "Clinvar CNV",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb"
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "clinvar_hg38",
+      "name": "Clinvar variants",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb"
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "mane_hg38",
+      "name": "MANE 0.6",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.0.6.bb"
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer",
+        "labels": {
+          "description": "function(feature) { return feature.get('geneName2') }"
+        }
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "gdc_features",
+      "name": "GDC Cancer",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/gdcCancer/gdcCancer.bb"
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "hg38_gaps",
+      "name": "Gaps",
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/gaps.bb"
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "type": "BasicTrack",
       "trackId": "ncbi_refseq_109_hg38",
       "name": "NCBI RefSeq (GFF3Tabix)",
       "assemblyNames": [
@@ -868,6 +1194,31 @@
         "SvgFeatureRenderer": {
           "type": "SvgFeatureRenderer"
         }
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "variants_hg002",
+      "name": "HG002 consensus SV (VCF)",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "GIAB"
+      ],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "test_data/breakpoint/variants.sorted.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/breakpoint/variants.sorted.bed.gz.tbi"
+          }
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
       }
     },
     {

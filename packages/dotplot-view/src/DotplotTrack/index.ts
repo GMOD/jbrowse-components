@@ -162,9 +162,10 @@ function renderBlockData(self: DotplotTrack) {
     renderArgs: {
       adapterConfig,
       rendererType: rendererType.name,
-      views,
       renderProps: {
         ...renderProps,
+        parentView: getSnapshot(parent),
+        views: views.map(view => getSnapshot(view)),
         width: viewWidth,
         height: viewHeight,
         borderSize,

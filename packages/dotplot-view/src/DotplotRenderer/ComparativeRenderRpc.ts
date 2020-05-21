@@ -8,7 +8,7 @@ import RpcMethodType from '@gmod/jbrowse-core/pluggableElementTypes/RpcMethodTyp
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import ComparativeServerSideRendererType, {
   RenderArgs,
-} from './ComparativeServerSideRendererType'
+} from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 
 interface ComparativeRenderArgs {
   sessionId: string
@@ -24,6 +24,8 @@ interface ComparativeRenderArgs {
  * used instead of passing regions directly as in render()
  */
 export default class ComparativeRender extends RpcMethodType {
+  name = 'ComparativeRender'
+
   async serializeArguments(
     args: ComparativeRenderArgs & { signal?: AbortSignal },
   ) {
@@ -55,7 +57,7 @@ export default class ComparativeRender extends RpcMethodType {
     )
     if (!(dataAdapter instanceof BaseFeatureDataAdapter))
       throw new Error(
-        `CoreRender cannot handle this type of data adapter ${dataAdapter}`,
+        `ComparativeRender cannot handle this type of data adapter ${dataAdapter}`,
       )
 
     const RendererType = this.pluginManager.getRendererType(rendererType)

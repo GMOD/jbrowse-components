@@ -1,0 +1,251 @@
+{
+  "defaultSession": {
+    "name": "New Session",
+    "menuBars": [
+      {
+        "type": "MainMenuBar"
+      }
+    ]
+  },
+  "savedSessions": [
+    {
+      "name": "Grape vs Peach Demo",
+      "drawerWidth": 384,
+      "views": [
+        {
+          "type": "LinearSyntenyView",
+          "id": "test1",
+          "headerHeight": 44,
+          "datasetName": "grape_vs_peach_dataset",
+          "tracks": [
+            {
+              "type": "LinearSyntenyTrack",
+              "height": 100,
+              "configuration": "grape_peach_synteny_mcscan"
+            }
+          ],
+          "height": 400,
+          "displayName": "Grape vs Peach",
+          "trackSelectorType": "hierarchical",
+          "views": [
+            {
+              "type": "LinearGenomeView",
+              "id": "test1_1",
+              "offsetPx": 28249,
+              "bpPerPx": 1000,
+              "displayedRegions": [
+                {
+                  "refName": "Pp01",
+                  "assemblyName": "peach",
+                  "start": 0,
+                  "end": 100000000
+                }
+              ],
+              "tracks": [
+                {
+                  "type": "BasicTrack",
+                  "height": 100,
+                  "configuration": "peach_genes",
+                  "selectedRendering": ""
+                }
+              ],
+              "hideControls": false,
+              "hideHeader": true,
+              "hideCloseButton": true,
+              "trackSelectorType": "hierarchical"
+            },
+            {
+              "type": "LinearGenomeView",
+              "id": "test1_2",
+              "offsetPx": 0,
+              "bpPerPx": 1000,
+              "displayedRegions": [
+                {
+                  "refName": "chr1",
+                  "assemblyName": "grape",
+                  "start": 0,
+                  "end": 100000000
+                }
+              ],
+              "tracks": [
+                {
+                  "type": "BasicTrack",
+                  "height": 100,
+                  "configuration": "grape_genes",
+                  "selectedRendering": ""
+                }
+              ],
+              "hideControls": false,
+              "hideHeader": true,
+              "hideCloseButton": true,
+              "trackSelectorType": "hierarchical"
+            }
+          ]
+        }
+      ],
+      "drawerWidgets": {
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "collapsed": {},
+          "filterText": ""
+        },
+        "sessionManager": {
+          "id": "sessionManager",
+          "type": "SessionManager"
+        }
+      },
+      "activeDrawerWidgets": {},
+      "connections": {}
+    }
+  ],
+  "assemblies": [
+    {
+      "name": "grape",
+      "sequence": {
+        "trackId": "grape_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/grape.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
+    },
+    {
+      "name": "peach",
+      "sequence": {
+        "trackId": "peach_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "test_data/peach.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "trackId": "grape_peach_synteny_mcscan",
+      "type": "LinearSyntenyTrack",
+      "assemblyNames": [
+        "peach",
+        "grape"
+      ],
+      "trackIds": [],
+      "renderDelay": 100,
+      "adapter": {
+        "mcscanAnchorsLocation": {
+          "uri": "test_data/grape.peach.anchors"
+        },
+        "subadapters": [
+          {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+          },
+          {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+          }
+        ],
+        "assemblyNames": [
+          "peach",
+          "grape"
+        ],
+        "type": "MCScanAnchorsAdapter"
+      },
+      "renderer": {
+        "type": "LinearSyntenyRenderer"
+      },
+      "name": "Grape peach synteny (MCScan)",
+      "category": [
+        "Annotation"
+      ]
+    },
+    {
+      "trackId": "peach_genes",
+      "type": "BasicTrack",
+      "assemblyNames": [
+        "peach"
+      ],
+      "name": "mcscan",
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+      },
+      "renderer": {
+        "type": "PileupRenderer"
+      }
+    },
+    {
+      "trackId": "peach_genes2",
+      "type": "BasicTrack",
+      "assemblyNames": [
+        "peach"
+      ],
+      "name": "mcscan2",
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "trackId": "grape_genes",
+      "type": "BasicTrack",
+      "name": "mcscan",
+      "assemblyNames": [
+        "grape"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+      },
+      "renderer": {
+        "type": "PileupRenderer"
+      }
+    },
+    {
+      "trackId": "grape_genes2",
+      "type": "BasicTrack",
+      "name": "mcscan2",
+      "category": [
+        "Annotation"
+      ],
+      "assemblyNames": [
+        "grape"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    }
+  ],
+  "configuration": {
+    "updateUrl": true,
+    "useLocalStorage": false
+  }
+}

@@ -68,12 +68,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
         types.enumeration(['hierarchical']),
         'hierarchical',
       ),
-      minimumBlockWidth: 20,
       showTrackLabels: true,
       showCenterLine: false,
     })
     .volatile(() => ({
       width: 800,
+      minimumBlockWidth: 20,
       draggingTrackId: undefined as undefined | string,
       error: undefined as undefined | Error,
 
