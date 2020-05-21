@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-globals */
+/* eslint-disable no-restricted-globals, no-console, @typescript-eslint/camelcase, react-hooks/rules-of-hooks */
 import './workerPolyfill'
 
 import RpcServer from '@librpc/web'
@@ -7,15 +7,15 @@ import { useStaticRendering } from 'mobx-react'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { remoteAbortRpcHandler } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
 import { isAbortException } from '@gmod/jbrowse-core/util'
-import * as rpcMethods from './rpcMethods'
+import RpcMethodType from '@gmod/jbrowse-core/pluggableElementTypes/RpcMethodType'
 import corePlugins from './corePlugins'
 
 // prevent mobx-react from doing funny things when we render in the worker.
 // but only if we are running in the browser.  in node tests, leave it alone.
-// eslint-disable-next-line @typescript-eslint/camelcase,react-hooks/rules-of-hooks
+// @ts-ignore
 if (typeof __webpack_require__ === 'function') useStaticRendering(true)
 
-let jbPluginManager
+let jbPluginManager: PluginManager | undefined
 
 async function getPluginManager() {
   if (jbPluginManager) {
@@ -33,7 +33,7 @@ async function getPluginManager() {
   return pluginManager
 }
 
-const logBuffer = []
+const logBuffer: [string, ...unknown[]][] = []
 function flushLog() {
   if (logBuffer.length) {
     for (const l of logBuffer) {
@@ -41,7 +41,6 @@ function flushLog() {
       if (head === 'rpc-error') {
         console.error(head, ...rest)
       } else {
-        // eslint-disable-next-line no-console
         console.log(head, ...rest)
       }
     }
@@ -51,19 +50,22 @@ function flushLog() {
 setInterval(flushLog, 1000)
 
 let callCounter = 0
-function wrapForRpc(func) {
-  return args => {
+function wrapForRpc(
+  func: (args: unknown) => unknown,
+  funcName: string = func.name,
+) {
+  return (args: unknown) => {
     callCounter += 1
     const myId = callCounter
-    // logBuffer.push(['rpc-call', myId, func.name, args])
+    // logBuffer.push(['rpc-call', myId, funcName, args])
     const retP = Promise.resolve()
       .then(() => getPluginManager())
-      .then(pluginManager => func(pluginManager, args))
+      .then(pluginManager => func(args))
       .catch(error => {
         if (isAbortException(error)) {
-          // logBuffer.push(['rpc-abort', myId, func.name, args])
+          // logBuffer.push(['rpc-abort', myId, funcName, args])
         } else {
-          logBuffer.push(['rpc-error', myId, func.name, error])
+          logBuffer.push(['rpc-error', myId, funcName, error])
           flushLog()
         }
         throw error
@@ -71,7 +73,7 @@ function wrapForRpc(func) {
 
     // uncomment below to log returns
     // retP.then(
-    //   result => logBuffer.push(['rpc-return', myId, func.name, result]),
+    //   result => logBuffer.push(['rpc-return', myId, funcName, result]),
     //   err => {},
     // )
 
@@ -79,14 +81,23 @@ function wrapForRpc(func) {
   }
 }
 
-const rpcConfig = {}
+getPluginManager().then(pluginManager => {
+  const rpcConfig: { [methodName: string]: Function } = {}
+  const rpcMethods = pluginManager.getElementTypesInGroup('rpc method')
+  rpcMethods.forEach(rpcMethod => {
+    if (!(rpcMethod instanceof RpcMethodType))
+      throw new Error('invalid rpc method??')
 
-Object.keys(rpcMethods).forEach(key => {
-  rpcConfig[key] = wrapForRpc(rpcMethods[key])
-})
+    rpcConfig[rpcMethod.name] = wrapForRpc(
+      rpcMethod.execute.bind(rpcMethod),
+      rpcMethod.name,
+    )
+  })
 
-self.rpcServer = new RpcServer.Server({
-  ...rpcConfig,
-  ...remoteAbortRpcHandler(),
-  ping: () => {}, // < the ping method is required by the worker driver for checking the health of the worker
+  // @ts-ignore
+  self.rpcServer = new RpcServer.Server({
+    ...rpcConfig,
+    ...remoteAbortRpcHandler(),
+    ping: () => {}, // < the ping method is required by the worker driver for checking the health of the worker
+  })
 })

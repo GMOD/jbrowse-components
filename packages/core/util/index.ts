@@ -3,8 +3,10 @@ import {
   getParent,
   isAlive,
   IAnyStateTreeNode,
+  getSnapshot,
   hasParent,
   addDisposer,
+  isStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import { inflate, deflate } from 'pako'
@@ -18,8 +20,10 @@ import {
   isViewModel,
   Region,
   NoAssemblyRegion,
+  AssemblyManager,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
+import { whenPresent } from './when'
 
 export * from './types'
 export * from './aborting'
@@ -580,6 +584,71 @@ export function makeAbortableReaction<T, U, V>(
       inProgress.abort()
     }
   })
+}
+
+export function renameRegionIfNeeded(
+  refNameMap: Map<string, string>,
+  region: Region,
+) {
+  if (isStateTreeNode(region) && !isAlive(region)) {
+    return region
+  }
+  if (region && refNameMap && refNameMap.has(region.refName)) {
+    // clone the region so we don't modify it
+    if (isStateTreeNode(region)) {
+      // @ts-ignore
+      region = { ...getSnapshot(region) }
+    } else {
+      region = { ...region }
+    }
+
+    // modify it directly in the container
+    const newRef = refNameMap.get(region.refName)
+    if (newRef) {
+      region.refName = newRef
+    }
+  }
+  return region
+}
+
+export async function renameRegionsIfNeeded<
+  ARGTYPE extends {
+    assemblyName?: string
+    regions?: Region[]
+    signal?: AbortSignal
+    adapterConfig: unknown
+    sessionId: string
+  }
+>(assemblyManager: AssemblyManager, args: ARGTYPE) {
+  const { assemblyName, signal, regions, adapterConfig } = args
+  const newArgs: ARGTYPE & {
+    originalRegions?: Region[]
+  } = {
+    ...args,
+    regions: [...(args.regions || [])],
+  }
+  if (assemblyName) {
+    const refNameMap = await whenPresent(
+      () =>
+        assemblyManager.getRefNameMapForAdapter(adapterConfig, assemblyName, {
+          signal,
+          sessionId: newArgs.sessionId,
+        }),
+      {
+        timeout: 30000,
+        name: `getRefNameMapForAdapter($conf, '${assemblyName}')`,
+      },
+    )
+
+    // console.log(`${JSON.stringify(regions)} ${JSON.stringify(refNameMap)}`)
+    if (refNameMap && regions && newArgs.regions) {
+      newArgs.originalRegions = args.regions
+      for (let i = 0; i < regions.length; i += 1) {
+        newArgs.regions[i] = renameRegionIfNeeded(refNameMap, regions[i])
+      }
+    }
+  }
+  return newArgs
 }
 
 export function minmax(a: number, b: number) {

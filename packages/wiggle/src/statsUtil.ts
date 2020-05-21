@@ -1,7 +1,8 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
+import { NoAssemblyRegion, Region } from '@gmod/jbrowse-core/util/types'
 import { Observable } from 'rxjs'
 import { reduce } from 'rxjs/operators'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 
 export interface UnrectifiedFeatureStats {
   scoreMin: number
@@ -180,4 +181,28 @@ export function blankStats(): FeatureStats {
     featureDensity: 0,
     basesCovered: 0,
   }
+}
+
+export interface DataAdapterWithGlobalStats extends BaseFeatureDataAdapter {
+  getGlobalStats(args: { signal?: AbortSignal }): Promise<FeatureStats>
+}
+
+export function dataAdapterSupportsGlobalStats(
+  adapter: BaseFeatureDataAdapter,
+): adapter is DataAdapterWithGlobalStats {
+  return 'getGlobalStats' in adapter
+}
+
+export interface DataAdapterWithMultiRegionStats
+  extends BaseFeatureDataAdapter {
+  getMultiRegionStats(
+    regions: Region[],
+    args: { signal?: AbortSignal; bpPerPx: number },
+  ): Promise<FeatureStats>
+}
+
+export function dataAdapterSupportsMultiRegionStats(
+  adapter: BaseFeatureDataAdapter,
+): adapter is DataAdapterWithMultiRegionStats {
+  return 'getMultiRegionStats' in adapter
 }

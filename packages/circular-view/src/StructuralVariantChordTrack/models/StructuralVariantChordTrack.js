@@ -46,6 +46,7 @@ export default pluginManager => {
       filled: false,
       html: '',
       data: undefined,
+      message: '',
       error: undefined,
       renderingComponent: undefined,
     }))
@@ -53,9 +54,9 @@ export default pluginManager => {
       get refNameMap() {
         const assemblyName = getTrackAssemblyNames(self)[0]
         const adapter = getConf(self, 'adapter')
-        return getSession(self)
-          .assemblyManager.get(assemblyName)
-          .getRefNameMapForAdapter(adapter)
+        const assembly = getSession(self).assemblyManager.get(assemblyName)
+        if (!assembly) return new Map()
+        return assembly && assembly.getRefNameMapForAdapter(adapter)
       },
 
       get blockDefinitions() {
@@ -87,7 +88,7 @@ export default pluginManager => {
           {
             name: `${self.type} ${self.id} rendering`,
             // delay: self.renderDelay || 300,
-            // fireImmediately: true,
+            fireImmediately: true,
           },
           self.renderStarted,
           self.renderSuccess,

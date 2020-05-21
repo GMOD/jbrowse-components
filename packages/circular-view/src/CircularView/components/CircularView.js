@@ -193,7 +193,8 @@ export default pluginManager => {
       setAssemblyError('No configured assemblies')
     }
     const assembly = assemblyManager.get(assemblyNames[selectedAssemblyIdx])
-    const regions = assembly.regions ? getSnapshot(assembly.regions) : []
+    const regions =
+      assembly && assembly.regions ? getSnapshot(assembly.regions) : []
 
     function onAssemblyChange(event) {
       setSelectedAssemblyIdx(Number(event.target.value))

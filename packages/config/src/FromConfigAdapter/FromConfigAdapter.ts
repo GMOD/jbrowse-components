@@ -1,4 +1,7 @@
-import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  RegionsAdapter,
+} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import SimpleFeature, {
   Feature,
   SimpleFeatureSerialized,
@@ -14,7 +17,9 @@ import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
  * key, like:
  *   `"features": [ { "refName": "ctgA", "start":1, "end":20 }, ... ]`
  */
-export default class FromConfigAdapter extends BaseFeatureDataAdapter {
+
+export default class FromConfigAdapter extends BaseFeatureDataAdapter
+  implements RegionsAdapter {
   private features: Map<string, Feature[]>
 
   constructor(

@@ -1,5 +1,3 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
-import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import {
@@ -12,6 +10,9 @@ import Base1DView, {
 } from '@gmod/jbrowse-core/util/Base1DViewModel'
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { Instance } from 'mobx-state-tree'
+import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import MyConfig from './configSchema'
 
 interface Block extends Region {
   offsetPx: number
@@ -21,7 +22,7 @@ interface Block extends Region {
 export interface DotplotRenderProps {
   dataAdapter: BaseFeatureDataAdapter
   signal?: AbortSignal
-  config: any
+  config: Instance<typeof MyConfig>
   height: number
   width: number
   fontSize: number

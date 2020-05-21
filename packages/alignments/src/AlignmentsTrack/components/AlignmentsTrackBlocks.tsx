@@ -49,7 +49,6 @@ function AlignmentsTrackBlocks({
     trackModel: Instance<BlockBasedTrackStateModel>,
   ) => {
     e.preventDefault()
-    // only open context menu if hovered over feature
     if (trackModel.contextMenuOptions.length) {
       setContextMenu(trackModel.contextMenuOptions)
       setState({

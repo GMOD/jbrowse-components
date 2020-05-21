@@ -8,7 +8,7 @@ import { Region } from '../../util/types'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
 
-interface RenderArgs {
+export interface RenderArgs {
   blockKey: string
   sessionId: string
   signal?: AbortSignal
@@ -88,7 +88,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
     const stateGroupName = args.sessionId
     const result = await rpcManager.call(
       stateGroupName,
-      'comparativeRender',
+      'ComparativeRender',
       serializedArgs,
     )
 
