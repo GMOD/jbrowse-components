@@ -1,5 +1,3 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
-import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -8,6 +6,10 @@ import {
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { Instance } from 'mobx-state-tree'
+import ComparativeServerSideRendererType from './ComparativeServerSideRendererType'
+import MyConfig from './configSchema'
 
 interface Block extends Region {
   offsetPx: number
@@ -23,12 +25,12 @@ interface ReducedView {
 }
 
 export interface DotplotRenderProps {
-  config: any
+  config: Instance<typeof MyConfig>
   height: number
   width: number
   fontSize: number
   highResolutionScaling: number
-  pluginManager: any
+  pluginManager: PluginManager
   views: ReducedView[]
 }
 

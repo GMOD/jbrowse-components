@@ -2,14 +2,15 @@
 import { renderToString } from 'react-dom/server'
 import { filter, distinct, toArray, tap } from 'rxjs/operators'
 import { getSnapshot } from 'mobx-state-tree'
-import { Region } from '../../util/types'
-import { checkAbortSignal } from '../../util'
-import { Feature } from '../../util/simpleFeature'
-import RendererType from './RendererType'
-import SerializableFilterChain from './util/serializableFilterChain'
-import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
+import { Region } from '@gmod/jbrowse-core/util/types'
+import { checkAbortSignal } from '@gmod/jbrowse-core/util'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import RendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/RendererType'
+import SerializableFilterChain from '@gmod/jbrowse-core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 
-interface RenderArgs {
+export interface RenderArgs {
   blockKey: string
   sessionId: string
   signal?: AbortSignal
@@ -61,10 +62,11 @@ export default class ComparativeServerSideRenderer extends RendererType {
   }
 
   // deserialize some of the results that came back from the worker
-  deserializeResultsInClient(result: { features: any }, args: RenderArgs) {
-    // @ts-ignore
-    result.blockKey = args.blockKey
-    return result
+  deserializeResultsInClient(
+    result: {},
+    args: RenderArgs,
+  ): { blockKey: string } {
+    return { ...result, blockKey: args.blockKey }
   }
 
   /**
@@ -94,17 +96,16 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * Render method called on the client. Serializes args, then
    * calls `render` with the RPC manager.
    */
-  async renderInClient(rpcManager: any, args: RenderArgs) {
+  async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
-    const stateGroupName = args.sessionId
     const result = await rpcManager.call(
-      stateGroupName,
-      'comparativeRender',
+      args.sessionId,
+      'ComparativeRender',
       serializedArgs,
     )
 
-    this.deserializeResultsInClient(result, args)
+    this.deserializeResultsInClient(result as { blockKey: string }, args)
     return result
   }
 
@@ -201,11 +202,10 @@ export default class ComparativeServerSideRenderer extends RendererType {
     return results
   }
 
-  freeResourcesInClient(rpcManager: any, args: RenderArgs) {
+  freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
-    const stateGroupName = args.sessionId
-    return rpcManager.call(stateGroupName, 'freeResources', serializedArgs)
+    return rpcManager.call(args.sessionId, 'CoreFreeResources', serializedArgs)
   }
 
   freeResourcesInWorker(args: RenderArgs) {

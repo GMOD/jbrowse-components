@@ -3,6 +3,7 @@ import {
   Instance,
   SnapshotOut,
   SnapshotIn,
+  IAnyStateTreeNode,
 } from 'mobx-state-tree'
 import PluginManager from '../../PluginManager'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
@@ -15,6 +16,7 @@ import {
   LocalPathLocation as MULocalPathLocation,
   UriLocation as MUUriLocation,
 } from './mst'
+import RpcManager from '../../rpc/RpcManager'
 
 export * from './util'
 
@@ -29,7 +31,7 @@ export function isViewContainer(
   return isStateTreeNode(thing) && 'removeView' in thing
 }
 
-type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
+export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
 
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
@@ -37,7 +39,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   clearSelection(): void
   configuration: AnyConfigurationModel
   pluginManager: PluginManager
-  rpcManager: { call: Function }
+  rpcManager: RpcManager
   assemblyNames: string[]
   assemblies: AnyConfigurationModel[]
   selection?: unknown
@@ -104,7 +106,7 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
 
 /** minimum interface for the root MST model of a JBrowse app */
 export interface AbstractRootModel {
-  jbrowse: unknown
+  jbrowse: IAnyStateTreeNode
   session?: AbstractSessionModel
   setDefaultSession(): void
 }

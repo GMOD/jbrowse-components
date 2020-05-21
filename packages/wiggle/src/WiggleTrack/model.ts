@@ -10,6 +10,7 @@ import {
 import {
   getParentRenderProps,
   getTrackAssemblyNames,
+  getRpcSessionId,
 } from '@gmod/jbrowse-core/util/tracks'
 import blockBasedTrackModel from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
 import { autorun, observable } from 'mobx'
@@ -25,6 +26,8 @@ import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-v
 import { getNiceDomain } from '../util'
 
 import WiggleTrackComponent from './components/WiggleTrackComponent'
+import { FeatureStats } from '../statsUtil'
+import ConfigSchemaF from './configSchema'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -33,8 +36,7 @@ const rendererTypes = new Map([
   ['line', 'LinePlotRenderer'],
 ])
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const stateModelFactory = (configSchema: any) =>
+const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
   types
     .compose(
       'WiggleTrack',
@@ -128,18 +130,20 @@ const stateModelFactory = (configSchema: any) =>
       }
     })
     .actions(self => {
-      async function getStats(signal: AbortSignal) {
-        const { rpcManager } = (getSession(self) as unknown) as {
-          rpcManager: { call: Function }
-        }
+      async function getStats(signal: AbortSignal): Promise<FeatureStats> {
+        const { rpcManager } = getSession(self)
         const nd = getConf(self, 'numStdDev')
         const autoscaleType = getConf(self, 'autoscale', [])
         const { adapter } = self.configuration
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
-          const r = await rpcManager.call('statsGathering', 'getGlobalStats', {
-            adapterConfig: getSnapshot(adapter),
-            signal,
-          })
+          const r = (await rpcManager.call(
+            getRpcSessionId(self),
+            'WiggleGetGlobalStats',
+            {
+              adapterConfig: getSnapshot(adapter),
+              signal,
+            },
+          )) as FeatureStats
           return autoscaleType === 'globalsd'
             ? {
                 ...r,
@@ -155,9 +159,9 @@ const stateModelFactory = (configSchema: any) =>
           const { dynamicBlocks, bpPerPx } = getContainingView(
             self,
           ) as Instance<LinearGenomeViewStateModel>
-          const r = await rpcManager.call(
-            'statsGathering',
-            'getMultiRegionStats',
+          const r = (await rpcManager.call(
+            getRpcSessionId(self),
+            'WiggleGetMultiRegionStats',
             {
               adapterConfig: getSnapshot(adapter),
               // TODO: Figure this out for multiple assembly names
@@ -166,7 +170,7 @@ const stateModelFactory = (configSchema: any) =>
               signal,
               bpPerPx,
             },
-          )
+          )) as FeatureStats
           return autoscaleType === 'localsd'
             ? {
                 ...r,
@@ -179,12 +183,16 @@ const stateModelFactory = (configSchema: any) =>
             : r
         }
         if (autoscaleType === 'zscale') {
-          return rpcManager.call('statsGathering', 'getGlobalStats', {
-            adapterConfig: getSnapshot(adapter),
-            signal,
-          })
+          return rpcManager.call(
+            getRpcSessionId(self),
+            'WiggleGetGlobalStats',
+            {
+              adapterConfig: getSnapshot(adapter),
+              signal,
+            },
+          ) as Promise<FeatureStats>
         }
-        return {}
+        throw new Error(`invalid autoscaleType '${autoscaleType}'`)
       }
       return {
         afterAttach() {

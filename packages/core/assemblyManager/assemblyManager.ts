@@ -52,7 +52,7 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       getRefNameMapForAdapter(
         adapterConf: unknown,
         assemblyName: string,
-        opts: { signal?: AbortSignal } = {},
+        opts: { signal?: AbortSignal; sessionId: string },
       ) {
         const assembly = self.get(assemblyName)
         if (assembly) {
@@ -63,7 +63,7 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       getReverseRefNameMapForAdapter(
         adapterConf: unknown,
         assemblyName: string,
-        opts: { signal?: AbortSignal } = {},
+        opts: { signal?: AbortSignal; sessionId: string },
       ) {
         const assembly = self.get(assemblyName)
         if (assembly) {
