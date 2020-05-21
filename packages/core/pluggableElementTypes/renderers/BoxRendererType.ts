@@ -17,21 +17,17 @@ import { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
 import { readConfObject, isConfigurationModel } from '../../configuration'
 import SerializableFilterChain from './util/serializableFilterChain'
 
-interface LayoutSessionProps {
+export interface LayoutSessionProps {
   config: AnyConfigurationModel
   bpPerPx: number
   filters: SerializableFilterChain
-  sortObject?: unknown
-  showSoftClip?: unknown
 }
 
-type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
-interface CachedLayout {
+export type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
+export interface CachedLayout {
   layout: MyMultiLayout
   config: AnyConfigurationModel
   filters: SerializableFilterChain
-  sortObject?: unknown
-  showSoftClip?: unknown
 }
 
 export class LayoutSession implements LayoutSessionProps {
@@ -40,10 +36,6 @@ export class LayoutSession implements LayoutSessionProps {
   bpPerPx: number
 
   filters: SerializableFilterChain
-
-  sortObject: unknown
-
-  showSoftClip: unknown
 
   constructor(args: LayoutSessionProps) {
     this.config = args.config
@@ -77,10 +69,7 @@ export class LayoutSession implements LayoutSessionProps {
       cachedLayout &&
       cachedLayout.layout.subLayoutConstructorArgs.pitchX === this.bpPerPx &&
       deepEqual(readConfObject(this.config), cachedLayout.config) &&
-      deepEqual(this.filters, cachedLayout.filters) &&
-      deepEqual(this.sortObject, cachedLayout.sortObject) &&
-      deepEqual(this.showSoftClip, cachedLayout.showSoftClip)
-      // deepEqual(this.sortObject.by, cachedLayout.sortedBy)
+      deepEqual(this.filters, cachedLayout.filters)
     )
   }
 
@@ -92,8 +81,6 @@ export class LayoutSession implements LayoutSessionProps {
         layout: this.makeLayout(),
         config: readConfObject(this.config),
         filters: this.filters,
-        sortObject: this.sortObject,
-        showSoftClip: this.showSoftClip,
       }
     }
     return this.cachedLayout.layout

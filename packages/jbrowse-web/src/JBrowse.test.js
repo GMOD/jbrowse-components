@@ -206,7 +206,7 @@ describe('valid file tests', () => {
       expect(state.session.views[0].bpPerPx).toBe(before)
     })
     expect(state.session.views[0].bpPerPx).toEqual(before)
-  })
+  }, 10000)
 
   it('opens track selector', async () => {
     const pluginManager = getPluginManager()

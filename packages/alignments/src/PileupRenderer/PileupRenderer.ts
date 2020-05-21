@@ -1,5 +1,11 @@
+import deepEqual from 'deep-equal'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import BoxRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
+import BoxRendererType, {
+  LayoutSession,
+  CachedLayout,
+  MyMultiLayout,
+  LayoutSessionProps,
+} from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { bpSpanPx, iterMap } from '@gmod/jbrowse-core/util'
 import { Region } from '@gmod/jbrowse-core/util/types'
@@ -40,6 +46,51 @@ interface LayoutRecord {
   heightPx: number
 }
 
+interface RenderArgsSoftClip extends RenderArgsDeserialized {
+  showSoftClip?: boolean
+}
+
+interface PileupLayoutSessionProps extends LayoutSessionProps {
+  sortObject: unknown
+  showSoftClip: unknown
+}
+
+interface CachedPileupLayout extends CachedLayout {
+  sortObject: unknown
+  showSoftClip: unknown
+}
+
+class SoftClipLayoutSession extends LayoutSession {
+  sortObject: unknown
+
+  showSoftClip: unknown
+
+  cachedLayoutIsValid(cachedLayout: CachedPileupLayout) {
+    return (
+      cachedLayout &&
+      cachedLayout.layout.subLayoutConstructorArgs.pitchX === this.bpPerPx &&
+      deepEqual(readConfObject(this.config), cachedLayout.config) &&
+      deepEqual(this.filters, cachedLayout.filters) &&
+      deepEqual(this.sortObject, cachedLayout.sortObject) &&
+      deepEqual(this.showSoftClip, cachedLayout.showSoftClip)
+    )
+  }
+
+  cachedLayout: CachedPileupLayout | undefined
+
+  get layout(): MyMultiLayout {
+    if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
+      this.cachedLayout = {
+        layout: this.makeLayout(),
+        config: readConfObject(this.config),
+        filters: this.filters,
+        sortObject: this.sortObject,
+        showSoftClip: this.showSoftClip,
+      }
+    }
+    return this.cachedLayout.layout
+  }
+}
 export default class PileupRenderer extends BoxRendererType {
   layoutFeature(
     feature: Feature,
@@ -104,7 +155,7 @@ export default class PileupRenderer extends BoxRendererType {
   // expands region for clipping to use
   // In future when stats are improved, look for average read size in renderArg stats
   // and set that as the maxClippingSize/expand region by average read size
-  getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
+  getExpandedRegion(region: Region, renderArgs: RenderArgsSoftClip) {
     if (!region) return region
     const { bpPerPx, config, showSoftClip } = renderArgs
     const maxClippingSize =
@@ -357,5 +408,9 @@ export default class PileupRenderer extends BoxRendererType {
       maxHeightReached,
       layout: renderProps.layout,
     }
+  }
+
+  createSession(args: PileupLayoutSessionProps) {
+    return new SoftClipLayoutSession(args)
   }
 }
