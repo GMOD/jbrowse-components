@@ -153,13 +153,15 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       get rpcManager() {
         return getParent(self, 2).rpcManager
       },
+    }))
+    .views(self => ({
       getCanonicalRefName(refName: string) {
-        if (!this.refNames || !self.refNameAliases) {
+        if (!self.refNames || !self.refNameAliases) {
           throw new Error(
             'assembly not loaded, getCanonicalRefName should not be used until the assembly is loaded',
           )
         }
-        if (this.refNames.includes(refName)) {
+        if (self.refNames.includes(refName)) {
           return refName
         }
         for (const [rName, aliases] of self.refNameAliases) {
@@ -172,11 +174,11 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         )
       },
       isValidRefName(refName: string) {
-        if (!this.allRefNames)
+        if (!self.allRefNames)
           throw new Error(
             'isValidRefName cannot be called yet, the assembly has not finished loading',
           )
-        return this.allRefNames.includes(refName)
+        return self.allRefNames.includes(refName)
       },
     }))
     .actions(self => ({
