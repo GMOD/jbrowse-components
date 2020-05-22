@@ -462,10 +462,13 @@ describe('alignments track', () => {
     const trackMenu = await findByTestId('track_menu_icon')
     fireEvent.click(trackMenu)
     await waitForElement(() => getByText('Show soft clipping'))
+
     fireEvent.click(getByText('Show soft clipping'))
 
     expect(state.session.views[0].tracks[0].showSoftClipping).toBe(true)
 
+    // wait one tick to give soft clipping rendering time
+    await wait(() => {})
     // wait for second region of pileup to render for consistent image size
     await findByTestId('canvas_region:4000-8000')
     const { findAllByTestId: findAllByTestId1 } = within(
@@ -535,7 +538,7 @@ describe('alignments track', () => {
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+  }, 12000)
 })
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
