@@ -2,7 +2,7 @@
  * Query the GDC API for project information related to the given gene
  * @param {String} featureId Gene ID
  */
-async function getGeneProjectsAsync(featureId) {
+export async function getGeneProjectsAsync(featureId) {
   const query = {
     query: `query ProjectTable( $caseAggsFilters: FiltersArgument $ssmTested: FiltersArgument $cnvGain: FiltersArgument $cnvLoss: FiltersArgument $cnvTested: FiltersArgument $projectCount: Int ) { viewer { explore { cases { gain: aggregations(filters: $cnvGain) { project__project_id { buckets { docCount: doc_count projectId: key } } } loss: aggregations(filters: $cnvLoss) { project__project_id { buckets { docCount: doc_count projectId: key } } } cnvTotal: aggregations(filters: $cnvTested) { project__project_id { buckets { docCount: doc_count projectId: key } } } filtered: aggregations(filters: $caseAggsFilters) { project__project_id { buckets { docCount: doc_count projectId: key } } } total: aggregations(filters: $ssmTested) { project__project_id { buckets { docCount: doc_count projectId: key } } } } } } projects { hits(first: $projectCount) { edges { node { primary_site disease_type project_id id } } } } }`,
     variables: {
@@ -93,13 +93,11 @@ async function getGeneProjectsAsync(featureId) {
   return result
 }
 
-module.exports.getGeneProjectsAsync = getGeneProjectsAsync
-
 /**
  * Query the GDC API for project information related to the given mutation
  * @param {String} featureId Mutation ID
  */
-async function getMutationProjectsAsync(featureId) {
+export async function getMutationProjectsAsync(featureId) {
   const query = {
     query: `query projectsTable($ssmTested: FiltersArgument, $caseAggsFilter: FiltersArgument, $projectCount: Int) { viewer { explore { cases { filtered: aggregations(filters: $caseAggsFilter) { project__project_id { buckets { docCount: doc_count projectId: key } } } total: aggregations(filters: $ssmTested) { project__project_id { buckets { docCount: doc_count projectId: key } } } } } } projects { hits(first: $projectCount) { edges { node { primary_site disease_type project_id id } } } } }`,
     variables: {
@@ -142,5 +140,3 @@ async function getMutationProjectsAsync(featureId) {
   const result = await response.json()
   return result
 }
-
-module.exports.getMutationProjectsAsync = getMutationProjectsAsync

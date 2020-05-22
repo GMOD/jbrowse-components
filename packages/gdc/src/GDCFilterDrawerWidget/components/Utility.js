@@ -1,5 +1,5 @@
 // TODO: Convert these to use the GDC API
-const ssmFacets = [
+export const ssmFacets = [
   {
     name: 'consequence.transcript.annotation.polyphen_impact',
     prettyName: 'polyphen impact',
@@ -59,7 +59,7 @@ const ssmFacets = [
     values: ['mutect2', 'varscan', 'muse', 'somaticsniper'],
   },
 ]
-const geneFacets = [
+export const geneFacets = [
   {
     name: 'biotype',
     prettyName: 'biotype',
@@ -104,7 +104,7 @@ const geneFacets = [
     values: ['1'],
   },
 ]
-const caseFacets = [
+export const caseFacets = [
   {
     name: 'demographic.ethnicity',
     prettyName: 'ethnicity',
@@ -421,7 +421,7 @@ const caseFacets = [
   },
 ]
 
-const mutationHighlightFeatures = [
+export const mutationHighlightFeatures = [
   {
     name: 'VEP',
     attributeName: 'vep_impact',
@@ -492,7 +492,7 @@ const mutationHighlightFeatures = [
   },
 ]
 
-const geneHighlightFeatures = [
+export const geneHighlightFeatures = [
   {
     name: 'Is Cancer Gene Census',
     attributeName: 'isCancerGeneCensus',
@@ -503,9 +503,3 @@ const geneHighlightFeatures = [
     ],
   },
 ]
-
-module.exports.ssmFacets = ssmFacets
-module.exports.geneFacets = geneFacets
-module.exports.caseFacets = caseFacets
-module.exports.mutationHighlightFeatures = mutationHighlightFeatures
-module.exports.geneHighlightFeatures = geneHighlightFeatures
