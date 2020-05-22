@@ -9,13 +9,12 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import MyConfigAdapterSchema from './configSchema'
 
-export default class RefNameAliasAdapter extends BaseRefNameAliasAdapter {
+export default class RefNameAliasAdapter implements BaseRefNameAliasAdapter {
   private location: GenericFilehandle
 
   private promise: Promise<Alias[]>
 
   constructor(config: ConfigurationModel<typeof MyConfigAdapterSchema>) {
-    super()
     this.location = openLocation(readConfObject(config, 'location'))
     this.promise = this.downloadResults()
   }

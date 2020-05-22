@@ -21,6 +21,7 @@ import {
   readConfObject,
   isConfigurationModel,
 } from '@gmod/jbrowse-core/configuration'
+import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -67,7 +68,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get rpcManager() {
-        return getParent(self).jbrowse.rpcManager
+        return getParent(self).jbrowse.rpcManager as RpcManager
       },
       get configuration() {
         return getParent(self).jbrowse.configuration

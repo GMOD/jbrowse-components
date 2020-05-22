@@ -35,6 +35,7 @@ import SNPCoverageRenderer, {
 } from './SNPCoverageRenderer'
 
 import CramAdapterF from './CramAdapter'
+import SNPCoverageAdapterF from './SNPCoverageAdapter'
 
 export default class AlignmentsPlugin extends Plugin {
   install(pluginManager: PluginManager) {
@@ -87,7 +88,7 @@ export default class AlignmentsPlugin extends Plugin {
       () =>
         new AdapterType({
           name: 'SNPCoverageAdapter',
-          ...pluginManager.jbrequire(require('./SNPCoverageAdapter')),
+          ...pluginManager.load(SNPCoverageAdapterF),
         }),
     )
     pluginManager.addAdapterType(
@@ -99,6 +100,7 @@ export default class AlignmentsPlugin extends Plugin {
     )
     pluginManager.addRendererType(
       () =>
+        // @ts-ignore error "expected 0 arguments, but got 1"?
         new PileupRenderer({
           name: 'PileupRenderer',
           ReactComponent: PileupRendererReactComponent,

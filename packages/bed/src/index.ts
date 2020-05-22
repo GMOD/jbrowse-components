@@ -10,7 +10,7 @@ import {
   configSchema as bedTabixAdapterConfigSchema,
 } from './BedTabixAdapter'
 
-export default class extends Plugin {
+export default class BedPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>

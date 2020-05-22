@@ -81,6 +81,34 @@
       }
     },
     {
+      "type": "BreakpointSplitTrack",
+      "trackId": "pacbio_hg002_breakpoint_track",
+      "middle": true,
+      "linkedTrack": "pacbio_hg002_breakpoints",
+      "name": "HG002.hs37d5.11kb breakpoints",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "PacBio",
+        "BAM"
+      ],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "test_data/pacbio_chr3_chr6.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/pacbio_chr3_chr6.bam.bai"
+          }
+        }
+      },
+      "renderer": {
+        "type": "BreakpointSplitRenderer"
+      }
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "pacbio_hg002_breakpoints",
       "name": "HG002.hs37d5.11kb",
@@ -118,14 +146,12 @@
   "savedSessions": [
     {
       "name": "Human Example (hg19)",
-      "width": 1850,
       "drawerWidth": 384,
       "views": [
         {
           "id": "MiDMyyWpp",
           "type": "BreakpointSplitView",
           "headerHeight": 44,
-          "width": 1850,
           "height": 400,
           "displayName": "pbsv.BND.3:186700648-6:56758392 split detail",
           "trackSelectorType": "hierarchical",
@@ -163,11 +189,9 @@
                   "selectedRendering": ""
                 }
               ],
-              "width": 800,
               "hideControls": false,
               "hideHeader": true,
-              "trackSelectorType": "hierarchical",
-              "minimumBlockWidth": 20
+              "trackSelectorType": "hierarchical"
             },
             {
               "id": "0Q9aAu1h7g",
@@ -202,12 +226,9 @@
                   "selectedRendering": ""
                 }
               ],
-              "width": 800,
               "hideControls": false,
               "hideHeader": true,
-              "": true,
-              "trackSelectorType": "hierarchical",
-              "minimumBlockWidth": 20
+              "trackSelectorType": "hierarchical"
             }
           ]
         }

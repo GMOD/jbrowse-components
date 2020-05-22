@@ -7,10 +7,12 @@ import {
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
+import AbortablePromiseCache from 'abortable-promise-cache'
 import { readConfObject } from '../configuration'
 import { Region } from '../util/types'
 import { Region as MSTRegion } from '../util/types/mst'
 import { makeAbortableReaction, isAbortException, when } from '../util'
+import QuickLRU from '../util/QuickLRU'
 
 const refNameAdapterMapSet = types.model('RefNameMappingForAdapter', {
   forwardMap: types.map(types.string),
@@ -21,85 +23,71 @@ async function loadRefNameMap(
   assembly: Assembly,
   adapterId: string,
   adapterConf: unknown,
+  sessionId = `assemblyManager-${assembly.name}`,
   signal?: AbortSignal,
-): Promise<void> {
+) {
+  await when(() => Boolean(assembly.regions && assembly.refNameAliases), {
+    timeout: 20000,
+    signal,
+    name: 'when assembly ready',
+  })
+
+  let refNames = []
   try {
-    await when(() => Boolean(assembly.regions && assembly.refNameAliases), {
-      timeout: 20000,
-      signal,
-      name: 'when assembly ready',
-    })
-
-    const stateGroupName = adapterId
-    let refNames = []
-    try {
-      refNames = await assembly.rpcManager.call(
-        stateGroupName,
-        'getRefNames',
-        {
-          sessionId: assembly.name,
-          adapterConfig: adapterConf,
-          signal,
-        },
-        { timeout: 1000000 },
-      )
-    } catch (error) {
-      if (!isAbortException) {
-        console.error(
-          `Error loading adapter refNames for adapter ${getAdapterId(
-            adapterConf,
-          )}`,
-        )
-      }
-    }
-
-    const refNameMap: Record<string, string> = {}
-    const { refNameAliases } = assembly
-    if (!refNameAliases) {
-      throw new Error(
-        `error loading assembly ${assembly.name}'s refNameAliases`,
+    refNames = await assembly.rpcManager.call(
+      sessionId,
+      'CoreGetRefNames',
+      {
+        sessionId,
+        adapterConfig: adapterConf,
+        signal,
+      },
+      { timeout: 1000000 },
+    )
+  } catch (error) {
+    if (!isAbortException) {
+      console.error(
+        `Error loading adapter refNames for adapter ${getAdapterId(
+          adapterConf,
+        )}`,
       )
     }
+  }
 
-    refNames.forEach((refName: string) => {
-      checkRefName(refName)
-      const aliases = refNameAliases.get(refName)
-      if (aliases) {
-        aliases.forEach(refNameAlias => {
-          refNameMap[refNameAlias] = refName
-        })
-      } else {
-        refNameAliases.forEach((configAliases, configRefName) => {
-          if (configAliases.includes(refName)) {
-            refNameMap[configRefName] = refName
-            configAliases.forEach(refNameAlias => {
-              if (refNameAlias !== refName) refNameMap[refNameAlias] = refName
-            })
-          }
-        })
-      }
-    })
+  const refNameMap: Record<string, string> = {}
+  const { refNameAliases } = assembly
+  if (!refNameAliases) {
+    throw new Error(`error loading assembly ${assembly.name}'s refNameAliases`)
+  }
 
-    // make the reversed map too
-    const reversed: Record<string, string> = {}
-    for (const [canonicalName, adapterName] of Object.entries(refNameMap)) {
-      reversed[adapterName] = canonicalName
-    }
-
-    assembly.addAdapterMap(adapterId, {
-      forwardMap: refNameMap,
-      reverseMap: reversed,
-    })
-  } catch (err) {
-    if (isAbortException(err)) {
-      assembly.addAdapterMap(adapterId, {
-        forwardMap: {},
-        reverseMap: {},
+  refNames.forEach((refName: string) => {
+    checkRefName(refName)
+    const aliases = refNameAliases.get(refName)
+    if (aliases) {
+      aliases.forEach(refNameAlias => {
+        refNameMap[refNameAlias] = refName
       })
     } else {
-      console.error(err)
-      throw err
+      refNameAliases.forEach((configAliases, configRefName) => {
+        if (configAliases.includes(refName)) {
+          refNameMap[configRefName] = refName
+          configAliases.forEach(refNameAlias => {
+            if (refNameAlias !== refName) refNameMap[refNameAlias] = refName
+          })
+        }
+      })
     }
+  })
+
+  // make the reversed map too
+  const reversed: Record<string, string> = {}
+  for (const [canonicalName, adapterName] of Object.entries(refNameMap)) {
+    reversed[adapterName] = canonicalName
+  }
+
+  return {
+    forwardMap: refNameMap,
+    reverseMap: reversed,
   }
 }
 
@@ -121,7 +109,27 @@ function getAdapterId(adapterConf: unknown) {
 type RefNameAliases = Record<string, string[]>
 
 export default function assemblyFactory(assemblyConfigType: IAnyType) {
-  const adapterLoadsInFlight = new Map<string, Promise<unknown>>()
+  interface CacheData {
+    adapterConf: unknown
+    adapterId: string
+    self: Assembly
+    sessionId?: string
+  }
+  const adapterLoads = new AbortablePromiseCache({
+    cache: new QuickLRU({ maxSize: 1000 }),
+    async fill(
+      { adapterConf, adapterId, self, sessionId }: CacheData,
+      abortSignal?: AbortSignal,
+    ) {
+      return loadRefNameMap(
+        self,
+        adapterId,
+        adapterConf,
+        sessionId,
+        abortSignal,
+      )
+    },
+  })
 
   return types
     .model({
@@ -224,23 +232,30 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
     .views(self => ({
       getAdapterMapEntry(
         adapterConf: unknown,
-        opts: { signal?: AbortSignal } = {},
+        opts: { signal?: AbortSignal; sessionId?: string } = {},
       ) {
         const adapterId = getAdapterId(adapterConf)
         const adapterMap = self.adapterMaps.get(adapterId)
         if (!adapterMap) {
-          if (!adapterLoadsInFlight.has(adapterId)) {
-            const load = loadRefNameMap(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              self as any,
+          adapterLoads
+            .get(
               adapterId,
-              adapterConf,
+              {
+                adapterConf,
+                adapterId,
+                self: self as Assembly,
+                sessionId: opts.sessionId,
+              },
               opts.signal,
             )
-            adapterLoadsInFlight.set(adapterId, load)
-            // clean up the in-flight record when done
-            load.finally(() => adapterLoadsInFlight.delete(adapterId))
-          }
+            .then(mapData => {
+              self.addAdapterMap(adapterId, mapData)
+            })
+            .catch(err => {
+              if (!isAbortException(err)) {
+                console.error(err)
+              }
+            })
           return undefined
         }
         return adapterMap
@@ -251,7 +266,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
        */
       getRefNameMapForAdapter(
         adapterConf: unknown,
-        opts: { signal?: AbortSignal } = {},
+        opts: { signal?: AbortSignal; sessionId: string },
       ) {
         return this.getAdapterMapEntry(adapterConf, opts)?.forwardMap
       },
@@ -261,7 +276,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
        */
       getReverseRefNameMapForAdapter(
         adapterConf: unknown,
-        opts: { signal?: AbortSignal } = {},
+        opts: { signal?: AbortSignal; sessionId: string },
       ) {
         return this.getAdapterMapEntry(adapterConf, opts)?.reverseMap
       },
@@ -295,16 +310,16 @@ async function loadAssemblyReaction(
 
   const {
     sequenceAdapterConfig,
-    adapterConfigId,
     rpcManager,
     assemblyName,
     refNameAliasesAdapterConfig,
   } = props
 
+  const sessionId = `assembly-${assemblyName}`
   const adapterRegions = (await rpcManager.call(
-    adapterConfigId,
-    'getRegions',
-    { sessionId: assemblyName, adapterConfig: sequenceAdapterConfig, signal },
+    sessionId,
+    'CoreGetRegions',
+    { sessionId, adapterConfig: sequenceAdapterConfig, signal },
     { timeout: 1000000 },
   )) as Region[]
   const adapterRegionsWithAssembly = adapterRegions.map(adapterRegion => {
@@ -316,10 +331,10 @@ async function loadAssemblyReaction(
   if (refNameAliasesAdapterConfig) {
     const refNameAliasesAborter = new AbortController()
     const refNameAliasesList = (await rpcManager.call(
-      adapterConfigId,
-      'getRefNameAliases',
+      sessionId,
+      'CoreGetRefNameAliases',
       {
-        sessionId: assemblyName,
+        sessionId,
         adapterConfig: refNameAliasesAdapterConfig,
         signal: refNameAliasesAborter.signal,
       },
