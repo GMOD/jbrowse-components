@@ -60,17 +60,16 @@ interface CachedPileupLayout extends CachedLayout {
   showSoftClip: unknown
 }
 
-class SoftClipLayoutSession extends LayoutSession {
+// Sorting and revealing soft clip changes the layout of Pileup renderer
+// Adds extra conditions to see if cached layout is valid
+class PileupLayoutSession extends LayoutSession {
   sortObject: unknown
 
   showSoftClip: unknown
 
   cachedLayoutIsValid(cachedLayout: CachedPileupLayout) {
     return (
-      cachedLayout &&
-      cachedLayout.layout.subLayoutConstructorArgs.pitchX === this.bpPerPx &&
-      deepEqual(readConfObject(this.config), cachedLayout.config) &&
-      deepEqual(this.filters, cachedLayout.filters) &&
+      super.cachedLayoutIsValid(cachedLayout) &&
       deepEqual(this.sortObject, cachedLayout.sortObject) &&
       deepEqual(this.showSoftClip, cachedLayout.showSoftClip)
     )
@@ -104,7 +103,7 @@ export default class PileupRenderer extends BoxRendererType {
     let expansionAfter = 0
     const mismatches: Mismatch[] = feature.get('mismatches')
 
-    // alter the start and end below when softclipping enabled
+    // Expand the start and end of feature when softclipping enabled
     if (showSoftClip && feature.get('seq')) {
       for (let i = 0; i < mismatches.length; i += 1) {
         const mismatch = mismatches[i]
@@ -411,6 +410,6 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   createSession(args: PileupLayoutSessionProps) {
-    return new SoftClipLayoutSession(args)
+    return new PileupLayoutSession(args)
   }
 }

@@ -401,8 +401,6 @@ describe('test configuration editor', () => {
   }, 10000)
 })
 describe('alignments track', () => {
-  // improve this, currently renders the pileup and stops
-  // if pileup rendering is disabled then snp coverage will run
   it('opens an alignments track', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
@@ -444,7 +442,7 @@ describe('alignments track', () => {
   }, 10000)
 
   // Note: tracks with assembly volvox don't have much soft clipping
-  xit('opens the track menu and enables soft clipping', async () => {
+  it('opens the track menu and enables soft clipping', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findByText, getByText } = render(
@@ -459,18 +457,12 @@ describe('alignments track', () => {
     )
     await findByTestId('track-volvox_alignments_pileup_coverage')
     expect(state.session.views[0].tracks[0]).toBeTruthy()
-    // const alignmentsTrack = state.session.views[0].tracks[0]
 
     // opens the track menu and turns on soft clipping
     const trackMenu = await findByTestId('track_menu_icon')
     fireEvent.click(trackMenu)
     await waitForElement(() => getByText('Show soft clipping'))
     fireEvent.click(getByText('Show soft clipping'))
-
-    // wait til clip display is complete
-    // await wait(() => {
-    //   expect(alignmentsTrack.showSoftClipping).toBe(true)
-    // })
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
@@ -484,7 +476,7 @@ describe('alignments track', () => {
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+  })
 
   // it('access alignments context menu', async () => {
   //   const pluginManager = getPluginManager()
