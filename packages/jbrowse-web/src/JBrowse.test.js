@@ -472,6 +472,7 @@ describe('alignments track', () => {
       await findByTestId('Blockset-pileup-softclipping'),
     )
 
+    await wait(() => {})
     const pileupCanvas = await findAllByTestId1('prerendered_canvas')
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
