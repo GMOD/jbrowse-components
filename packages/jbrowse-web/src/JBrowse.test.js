@@ -461,8 +461,8 @@ describe('alignments track', () => {
     // opens the track menu and turns on soft clipping
     const trackMenu = await findByTestId('track_menu_icon')
     fireEvent.click(trackMenu)
-    await waitForElement(() => getByText('Show soft clipping'))
 
+    await waitForElement(() => getByText('Show soft clipping'))
     fireEvent.click(getByText('Show soft clipping'))
 
     expect(state.session.views[0].tracks[0].showSoftClipping).toBe(true)
