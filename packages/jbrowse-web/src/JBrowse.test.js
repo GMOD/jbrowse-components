@@ -466,20 +466,21 @@ describe('alignments track', () => {
 
     expect(state.session.views[0].tracks[0].showSoftClipping).toBe(true)
 
-    // Simple test until can figure out why Buffer.from gives varying size images
-    // wait for pileup track to render
-    // const { findAllByTestId: findAllByTestId1 } = within(
-    //   await findByTestId('Blockset-pileup'),
-    // )
+    // wait for second region of pileup to render for consistent image size
+    await findByTestId('canvas_region:4000-8000')
 
-    // const pileupCanvas = await findAllByTestId1('prerendered_canvas')
-    // const pileupImg = pileupCanvas[0].toDataURL()
-    // const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
-    // const pileupBuf = Buffer.from(pileupData, 'base64')
-    // expect(pileupBuf).toMatchImageSnapshot({
-    //   failureThreshold: 0.5,
-    //   failureThresholdType: 'percent',
-    // })
+    const { findAllByTestId: findAllByTestId1 } = within(
+      await findByTestId('Blockset-pileup'),
+    )
+
+    const pileupCanvas = await findAllByTestId1('prerendered_canvas')
+    const pileupImg = pileupCanvas[0].toDataURL()
+    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
+    const pileupBuf = Buffer.from(pileupData, 'base64')
+    expect(pileupBuf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
   }, 10000)
 
   // it('access alignments context menu', async () => {
