@@ -27,7 +27,6 @@ async function loadRefNameMap(
   signal?: AbortSignal,
 ) {
   await when(() => Boolean(assembly.regions && assembly.refNameAliases), {
-    timeout: 20000,
     signal,
     name: 'when assembly ready',
   })

@@ -3,7 +3,7 @@
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"
     },
-    "updateUrl": false
+    "updateUrl": true
   },
   "assemblies": [
     {
@@ -80,6 +80,86 @@
           "longread",
           "hg19"
         ]
+      },
+      "renderer": {
+        "type": "LinearSyntenyRenderer"
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "nclist_genes_hg19",
+      "name": "Gencode v19",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation"
+      ],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json",
+        "refNames": [
+          "chr1",
+          "chr2",
+          "chr3",
+          "chr4",
+          "chr5",
+          "chr6",
+          "chr7",
+          "chr8",
+          "chr9",
+          "chr10",
+          "chr11",
+          "chr12",
+          "chr13",
+          "chr14",
+          "chr15",
+          "chr16",
+          "chr17",
+          "chr18",
+          "chr19",
+          "chr20",
+          "chr21",
+          "chr22",
+          "chr23",
+          "chrX",
+          "chrY",
+          "chrMT"
+        ]
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer",
+        "labels": {
+          "description": "function(feature) { return feature.get('gene_name') }"
+        }
+      }
+    },
+    {
+      "type": "WiggleTrack",
+      "trackId": "ngmlr_cov",
+      "name": "SKBR3 pacbio coverage (NGMLR)",
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "SKBR3"
+      ],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw"
+        }
+      },
+      "renderers": {
+        "DensityRenderer": {
+          "type": "DensityRenderer"
+        },
+        "XYPlotRenderer": {
+          "type": "XYPlotRenderer"
+        },
+        "LinePlotRenderer": {
+          "type": "LinePlotRenderer"
+        }
       }
     }
   ],
@@ -106,6 +186,7 @@
           ],
           "views": [
             {
+              "type": "LinearGenomeView",
               "displayedRegions": [
                 {
                   "refName": "m150119_155609_00118_c100767352550000001823169407221597_s1_p0/48046/0_23941",
@@ -118,6 +199,7 @@
               "offsetPx": 0
             },
             {
+              "type": "LinearGenomeView",
               "displayedRegions": [
                 {
                   "refName": "chr5",
@@ -138,7 +220,7 @@
           ],
           "tracks": [
             {
-              "type": "DotplotTrack",
+              "type": "LinearSyntenyTrack",
               "configuration": "dotplot_track"
             }
           ],
