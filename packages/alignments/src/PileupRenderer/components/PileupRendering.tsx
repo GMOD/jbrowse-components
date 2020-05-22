@@ -184,7 +184,6 @@ function PileupRendering(props: {
         style={{ position: 'absolute', left: 0, top: 0 }}
       />
       <canvas
-        data-testid={`canvas_region:${region.start}-${region.end}`}
         width={canvasWidth}
         height={height}
         style={{ position: 'absolute', left: 0, top: 0 }}

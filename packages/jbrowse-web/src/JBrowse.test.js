@@ -469,8 +469,8 @@ describe('alignments track', () => {
 
     // wait one tick to give soft clipping rendering time
     await wait(() => {})
+
     // wait for second region of pileup to render for consistent image size
-    await findByTestId('canvas_region:4000-8000')
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
@@ -483,7 +483,7 @@ describe('alignments track', () => {
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+  }, 12000)
 
   // it('access alignments context menu', async () => {
   //   const pluginManager = getPluginManager()
@@ -538,7 +538,7 @@ describe('alignments track', () => {
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
-  }, 12000)
+  }, 10000)
 })
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
