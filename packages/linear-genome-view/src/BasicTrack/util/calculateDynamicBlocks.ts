@@ -9,8 +9,6 @@ import {
 } from './blockTypes'
 import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
 
-const interRegionPaddingWidth = 2
-
 type LGV = Instance<LinearGenomeViewStateModel>
 
 /**
@@ -39,6 +37,7 @@ export default function calculateDynamicBlocks(model: LGV) {
     displayedRegions,
     bpPerPx,
     minimumBlockWidth,
+    interRegionPaddingWidth,
   } = model
   const blocks = new BlockSet()
   let displayedRegionLeftPx = 0

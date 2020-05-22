@@ -11,7 +11,7 @@ export default pluginManager => {
   const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
   const CircularViewType = pluginManager.getViewType('CircularView')
 
-  const minHeight = 500
+  const minHeight = 400
   const defaultHeight = 500
   const headerHeight = 52
   const circularViewOptionsBarHeight = 52
@@ -23,7 +23,7 @@ export default pluginManager => {
 
   // makes a feature data object (passed as `data` to a SimpleFeature constructor)
   // out of table row if the row has 2 location columns. undefined if not
-  function makeAdHocSvFeature(sheet, rowNumber, row) {
+  function makeAdHocSvFeature(sheet, rowNumber, row, isValidRefName) {
     const { columns, columnDisplayOrder } = sheet
     const columnTypes = {}
     columnDisplayOrder.forEach(columnNumber => {
@@ -44,6 +44,7 @@ export default pluginManager => {
         locationColumnNumbers,
         row,
         rowNumber,
+        isValidRefName,
       )
     }
     if (
@@ -120,6 +121,7 @@ export default pluginManager => {
       },
 
       get featuresAdapterConfigSnapshot() {
+        const session = getSession(self)
         const features = (self.spreadsheetView.outputRows || [])
           .map((row, rowNumber) => {
             if (row.extendedData) {
@@ -131,6 +133,7 @@ export default pluginManager => {
               self.spreadsheetView.spreadsheet,
               rowNumber,
               row,
+              session.assemblyManager.isValidRefName,
             )
             if (adhocFeature) return adhocFeature
             return undefined
@@ -218,42 +221,44 @@ export default pluginManager => {
               const { tracks } = circularView
               const session = getSession(self)
               if (assemblyName) {
-                let { regions: assemblyRegions } = session.assemblyManager.get(
-                  assemblyName,
-                )
-                if (!assemblyRegions) {
-                  assemblyRegions = []
-                } else {
-                  assemblyRegions = getSnapshot(assemblyRegions)
-                }
-                if (onlyDisplayRelevantRegionsInCircularView) {
-                  if (tracks.length === 1) {
-                    const { getCanonicalRefName } = session.assemblyManager.get(
-                      assemblyName,
-                    )
+                const assembly = session.assemblyManager.get(assemblyName)
+                if (assembly) {
+                  let { regions: assemblyRegions } = assembly
+                  if (!assemblyRegions) {
+                    assemblyRegions = []
+                  } else {
+                    assemblyRegions = getSnapshot(assemblyRegions)
+                  }
+                  if (onlyDisplayRelevantRegionsInCircularView) {
+                    if (tracks.length === 1) {
+                      const {
+                        getCanonicalRefName,
+                      } = session.assemblyManager.get(assemblyName)
 
-                    featuresRefNamesP
-                      .then(featureRefNames => {
-                        // canonicalize the store's ref names if necessary
-                        const canonicalFeatureRefNames = new Set(
-                          featureRefNames.map(
-                            refName => getCanonicalRefName(refName) || refName,
-                          ),
-                        )
-                        const displayedRegions = assemblyRegions.filter(r =>
-                          canonicalFeatureRefNames.has(r.refName),
-                        )
-                        circularView.setDisplayedRegions(
-                          JSON.parse(JSON.stringify(displayedRegions)),
-                        )
-                      })
-                      .catch(e => console.error(e))
+                      featuresRefNamesP
+                        .then(featureRefNames => {
+                          // canonicalize the store's ref names if necessary
+                          const canonicalFeatureRefNames = new Set(
+                            featureRefNames.map(
+                              refName =>
+                                getCanonicalRefName(refName) || refName,
+                            ),
+                          )
+                          const displayedRegions = assemblyRegions.filter(r =>
+                            canonicalFeatureRefNames.has(r.refName),
+                          )
+                          circularView.setDisplayedRegions(
+                            JSON.parse(JSON.stringify(displayedRegions)),
+                          )
+                        })
+                        .catch(e => console.error(e))
+                    }
+                  } else {
+                    circularView.setDisplayedRegions(assemblyRegions)
                   }
                 } else {
-                  circularView.setDisplayedRegions(assemblyRegions)
+                  circularView.setDisplayedRegions([])
                 }
-              } else {
-                circularView.setDisplayedRegions([])
               }
             },
             { name: 'SvInspectorView displayed regions bind' },

@@ -9,6 +9,8 @@ test('one', () => {
       width: 200,
       displayedRegions: [ctgA],
       bpPerPx: 1,
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     }).getBlocks(),
   ).toMatchSnapshot()
 })
@@ -19,6 +21,8 @@ test('two', () => {
       width: 200,
       displayedRegions: [{ ...ctgA, reversed: true }],
       bpPerPx: 1,
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     }).getBlocks(),
   ).toMatchSnapshot()
 })
@@ -29,6 +33,8 @@ test('three', () => {
       width: 200,
       displayedRegions: [{ ...ctgA, reversed: true }],
       bpPerPx: 1,
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     }).getBlocks(),
   ).toMatchSnapshot()
 })
@@ -39,6 +45,8 @@ test('four', () => {
       width: 350,
       displayedRegions: [ctgA],
       bpPerPx: 1,
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     }).getBlocks(),
   ).toMatchSnapshot()
 })
@@ -49,6 +57,8 @@ test('five', () => {
       width: 927,
       displayedRegions: [{ ...ctgA, reversed: false }],
       bpPerPx: 0.05,
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     }).getBlocks(),
   ).toMatchSnapshot()
 })

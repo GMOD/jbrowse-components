@@ -9,12 +9,17 @@ import {
 
 import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
 
-const interRegionPaddingWidth = 2
-
 type LGV = Instance<LinearGenomeViewStateModel>
 
 export default function calculateBlocks(self: LGV, extra = 0) {
-  const { offsetPx, bpPerPx, width, displayedRegions, minimumBlockWidth } = self
+  const {
+    offsetPx,
+    bpPerPx,
+    width,
+    displayedRegions,
+    minimumBlockWidth,
+    interRegionPaddingWidth,
+  } = self
   if (!width)
     throw new Error('view has no width, cannot calculate displayed blocks')
   const windowLeftBp = offsetPx * bpPerPx

@@ -13,6 +13,7 @@ import TrackType from './pluggableElementTypes/TrackType'
 import ViewType from './pluggableElementTypes/ViewType'
 import DrawerWidgetType from './pluggableElementTypes/DrawerWidgetType'
 import ConnectionType from './pluggableElementTypes/ConnectionType'
+import RpcMethodType from './pluggableElementTypes/RpcMethodType'
 
 import {
   ConfigurationSchema,
@@ -28,6 +29,7 @@ import {
 } from './pluggableElementTypes'
 import { AnyConfigurationSchemaType } from './configuration/configurationSchema'
 import { AbstractRootModel } from './util'
+import CorePlugin from './CorePlugin'
 
 /** little helper class that keeps groups of callbacks that are
 then run in a specified order by group */
@@ -69,7 +71,7 @@ type PluggableElementTypeGroup =
   | 'connection'
   | 'view'
   | 'drawer widget'
-  | 'menu bar'
+  | 'rpc method'
 
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
@@ -78,8 +80,14 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   baseClass: { new (...args: any[]): ElementClass }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(elementType: { new (...args: any[]): ElementClass }) {
+  typeName: string
+
+  constructor(
+    typeName: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    elementType: { new (...args: any[]): ElementClass },
+  ) {
+    this.typeName = typeName
     this.baseClass = elementType
   }
 
@@ -92,6 +100,10 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   }
 
   get(name: string) {
+    if (!this.has(name))
+      throw new Error(
+        `${this.typeName} '${name}' not found, perhaps its plugin is not loaded or its plugin has not added it.`,
+      )
     return this.registeredTypes[name]
   }
 
@@ -113,25 +125,31 @@ export default class PluginManager {
     'connection',
     'view',
     'drawer widget',
+    'rpc method',
   )
 
-  rendererTypes = new TypeRecord(RendererType)
+  rendererTypes = new TypeRecord('RendererType', RendererType)
 
-  adapterTypes = new TypeRecord(AdapterType)
+  adapterTypes = new TypeRecord('AdapterType', AdapterType)
 
-  trackTypes = new TypeRecord(TrackType)
+  trackTypes = new TypeRecord('TrackType', TrackType)
 
-  connectionTypes = new TypeRecord(ConnectionType)
+  connectionTypes = new TypeRecord('ConnectionType', ConnectionType)
 
-  viewTypes = new TypeRecord(ViewType)
+  viewTypes = new TypeRecord('ViewType', ViewType)
 
-  drawerWidgetTypes = new TypeRecord(DrawerWidgetType)
+  drawerWidgetTypes = new TypeRecord('DrawerWidgetType', DrawerWidgetType)
+
+  rpcMethods = new TypeRecord('RpcMethodType', RpcMethodType)
 
   configured = false
 
   rootModel?: AbstractRootModel
 
   constructor(initialPlugins: Plugin[] = []) {
+    // add the core plugin
+    this.addPlugin(new CorePlugin())
+
     // add all the initial plugins
     initialPlugins.forEach(plugin => {
       this.addPlugin(plugin)
@@ -145,7 +163,6 @@ export default class PluginManager {
     if (this.plugins.includes(plugin)) {
       throw new Error('plugin already installed')
     }
-    // if (!plugin.install) console.error(plugin)
     plugin.install(this)
     this.plugins.push(plugin)
     return this
@@ -191,9 +208,10 @@ export default class PluginManager {
         return this.trackTypes
       case 'view':
         return this.viewTypes
-      default:
-        throw new Error(`invalid group name ${groupName}`)
+      case 'rpc method':
+        return this.rpcMethods
     }
+    throw new Error(`invalid element type '${groupName}'`)
   }
 
   addElementType(
@@ -209,6 +227,8 @@ export default class PluginManager {
 
     this.elementCreationSchedule.add(groupName, () => {
       const newElement = creationCallback(this)
+      if (!newElement.name)
+        throw new Error(`cannot add a ${groupName} with no name`)
 
       if (typeRecord.has(newElement.name)) {
         throw new Error(
@@ -250,7 +270,7 @@ export default class PluginManager {
     // try to smooth over the case when no types are registered, mostly encountered in tests
     if (pluggableTypes.length === 0) {
       console.warn(
-        `No JBrowse pluggable types found matching ('${typeGroup}','${fieldName}'), returning null type`,
+        `No JBrowse pluggable types found matching ('${typeGroup}','${fieldName}')`,
       )
       return fallback
     }
@@ -319,6 +339,10 @@ export default class PluginManager {
     return this.rendererTypes.get(typeName)
   }
 
+  getRendererTypes(): RendererType[] {
+    return this.rendererTypes.all()
+  }
+
   getAdapterType(typeName: string): AdapterType {
     return this.adapterTypes.get(typeName)
   }
@@ -337,6 +361,10 @@ export default class PluginManager {
 
   getConnectionType(typeName: string): ConnectionType {
     return this.connectionTypes.get(typeName)
+  }
+
+  getRpcMethodType(methodName: string): RpcMethodType {
+    return this.rpcMethods.get(methodName)
   }
 
   addRendererType(
@@ -373,5 +401,11 @@ export default class PluginManager {
     creationCallback: (pluginManager: PluginManager) => ConnectionType,
   ): this {
     return this.addElementType('connection', creationCallback)
+  }
+
+  addRpcMethod(
+    creationCallback: (pluginManager: PluginManager) => RpcMethodType,
+  ): this {
+    return this.addElementType('rpc method', creationCallback)
   }
 }

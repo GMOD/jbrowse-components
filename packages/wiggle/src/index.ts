@@ -22,6 +22,10 @@ import LinePlotRenderer, {
   configSchema as linePlotRendererConfigSchema,
   ReactComponent as LinePlotRendererReactComponent,
 } from './LinePlotRenderer'
+import {
+  WiggleGetGlobalStats,
+  WiggleGetMultiRegionStats,
+} from './WiggleTrack/rpcMethods'
 
 export default class extends Plugin {
   install(pluginManager: PluginManager) {
@@ -69,6 +73,11 @@ export default class extends Plugin {
           ReactComponent: XYPlotRendererReactComponent,
           configSchema: xyPlotRendererConfigSchema,
         }),
+    )
+
+    pluginManager.addRpcMethod(() => new WiggleGetGlobalStats(pluginManager))
+    pluginManager.addRpcMethod(
+      () => new WiggleGetMultiRegionStats(pluginManager),
     )
   }
 }

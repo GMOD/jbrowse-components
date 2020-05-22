@@ -1,15 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderToString } from 'react-dom/server'
-import { filter, distinct, toArray, tap } from 'rxjs/operators'
-import { getSnapshot } from 'mobx-state-tree'
-import { Region } from '../../util/types'
-import { checkAbortSignal } from '../../util'
+import { filter, toArray } from 'rxjs/operators'
 import { Feature } from '../../util/simpleFeature'
+import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
+import { checkAbortSignal } from '../../util'
+import { Region } from '../../util/types'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
-import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 
-interface RenderArgs {
+export interface RenderArgs {
   blockKey: string
   sessionId: string
   signal?: AbortSignal
@@ -19,7 +18,8 @@ interface RenderArgs {
   regions?: any
   config: Record<string, any>
   renderProps: { trackModel: any }
-  views: any[]
+  width: number
+  height: number
 }
 
 export default class ComparativeServerSideRenderer extends RendererType {
@@ -37,24 +37,12 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * @returns the same object
    */
   serializeArgsInClient(args: RenderArgs) {
-    const { trackModel } = args.renderProps
-    if (trackModel) {
-      args.renderProps = {
-        ...args.renderProps,
-        // @ts-ignore
-        blockKey: args.blockKey,
-        // @ts-ignore
-        views: args.views.map(view => {
-          return {
-            // @ts-ignore
-            ...getSnapshot(view),
-            dynamicBlocks: JSON.parse(
-              JSON.stringify(view.dynamicBlocks.contentBlocks),
-            ),
-          }
-        }),
-        trackModel: {},
-      }
+    args.renderProps = {
+      ...args.renderProps,
+      // @ts-ignore
+      blockKey: args.blockKey,
+
+      trackModel: {},
     }
 
     return args
@@ -97,10 +85,9 @@ export default class ComparativeServerSideRenderer extends RendererType {
   async renderInClient(rpcManager: any, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
-    const stateGroupName = args.sessionId
     const result = await rpcManager.call(
-      stateGroupName,
-      'comparativeRender',
+      args.sessionId,
+      'ComparativeRender',
       serializedArgs,
     )
 
@@ -120,14 +107,27 @@ export default class ComparativeServerSideRenderer extends RendererType {
     return filterChain.passes(feature, renderArgs)
   }
 
-  /**
-   * use the dataAdapter to fetch the features to be rendered
-   *
-   * @param renderArgs -
-   * @returns Map of features as `{ id => feature, ... }`
-   */
-  async getFeatures(renderArgs: RenderArgs) {
-    const { dataAdapter, signal, bpPerPx } = renderArgs
+  // render method called on the worker
+  async renderInWorker(args: RenderArgs) {
+    checkAbortSignal(args.signal)
+    this.deserializeArgsInWorker(args)
+    checkAbortSignal(args.signal)
+
+    const results = await this.render(args)
+    checkAbortSignal(args.signal)
+    // @ts-ignore
+    results.html = renderToString(results.element)
+    delete results.element
+
+    // serialize the results for passing back to the main thread.
+    // these will be transmitted to the main process, and will come out
+    // as the result of renderRegionWithWorker.
+    this.serializeResultsInWorker(results, args)
+    return results
+  }
+
+  async getFeatures(renderArgs: any) {
+    const { dataAdapter, signal } = renderArgs
 
     let regions = [] as Region[]
 
@@ -139,7 +139,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
       return []
     }
 
-    const requestRegions = regions.map((r: Region) => {
+    const requestRegions = regions.map(r => {
       // make sure the requested region's start and end are integers, if
       // there is a region specification.
       const requestRegion = { ...r }
@@ -157,55 +157,22 @@ export default class ComparativeServerSideRenderer extends RendererType {
       requestRegions,
       {
         signal,
-        bpPerPx,
       },
     )
 
     return featureObservable
       .pipe(
-        tap(() => checkAbortSignal(signal)),
+        // @ts-ignore
         filter(feature => this.featurePassesFilters(renderArgs, feature)),
-        distinct(feature => feature.id()),
         toArray(),
       )
       .toPromise()
   }
 
-  // render method called on the worker
-  async renderInWorker(args: RenderArgs) {
-    checkAbortSignal(args.signal)
-    this.deserializeArgsInWorker(args)
-
-    await Promise.all(
-      args.views.map(async view => {
-        view.features = await this.getFeatures({
-          ...args,
-          regions: view.dynamicBlocks.filter(
-            (f: { refName: string }) => !!f.refName,
-          ),
-        })
-      }),
-    )
-    checkAbortSignal(args.signal)
-
-    const results = await this.render({ ...args })
-    checkAbortSignal(args.signal)
-    // @ts-ignore
-    results.html = renderToString(results.element)
-    delete results.element
-
-    // serialize the results for passing back to the main thread.
-    // these will be transmitted to the main process, and will come out
-    // as the result of renderRegionWithWorker.
-    this.serializeResultsInWorker(results, args)
-    return results
-  }
-
   freeResourcesInClient(rpcManager: any, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
-    const stateGroupName = args.sessionId
-    return rpcManager.call(stateGroupName, 'freeResources', serializedArgs)
+    return rpcManager.call(args.sessionId, 'freeResources', serializedArgs)
   }
 
   freeResourcesInWorker(args: RenderArgs) {

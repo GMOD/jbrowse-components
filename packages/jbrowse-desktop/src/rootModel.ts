@@ -103,7 +103,6 @@ export default function RootModel(pluginManager: PluginManager) {
         {
           ElectronRpcDriver: { workerCreationChannel: 'createWindowWorker' },
         },
-        self.assemblyManager.getRefNameMapForAdapter,
       ),
     }))
     .actions(self => ({

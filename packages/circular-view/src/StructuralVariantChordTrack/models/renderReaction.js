@@ -1,6 +1,8 @@
 export default ({ jbrequire }) => {
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
-  const { getTrackAssemblyNames } = jbrequire('@gmod/jbrowse-core/util/tracks')
+  const { getTrackAssemblyNames, getRpcSessionId } = jbrequire(
+    '@gmod/jbrowse-core/util/tracks',
+  )
   const { getContainingView } = jbrequire('@gmod/jbrowse-core/util')
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
 
@@ -23,7 +25,7 @@ export default ({ jbrequire }) => {
         renderProps,
         regions: JSON.parse(JSON.stringify(view.displayedRegions)),
         blockDefinitions: view.blockDefinitions,
-        sessionId: track.id,
+        sessionId: getRpcSessionId(track),
         timeout: 1000000, // 10000,
       },
     }

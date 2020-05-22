@@ -30,6 +30,7 @@ export interface ParseOptions {
   hasColumnNameLine: boolean
   columnNameLineNumber: number
   selectedAssemblyName?: string
+  isValidRefName: (refName: string, assemblyName?: string) => boolean
 }
 
 export interface Column {
@@ -38,14 +39,18 @@ export interface Column {
   isDerived?: boolean
 }
 
-function guessColumnType(rowSet: RowSet, columnNumber: number) {
+function guessColumnType(
+  rowSet: RowSet,
+  columnNumber: number,
+  isValidRefName: (refName: string, assemblyName?: string) => boolean,
+) {
   const text = rowSet.rows[0].cells[columnNumber].text || ''
 
   let guessedType = 'Text'
 
   let parsedLoc
   try {
-    parsedLoc = parseLocString(text)
+    parsedLoc = parseLocString(text, isValidRefName)
   } catch (error) {
     //
   }
@@ -66,6 +71,7 @@ function dataToSpreadsheetSnapshot(
   options: ParseOptions = {
     hasColumnNameLine: false,
     columnNameLineNumber: 1,
+    isValidRefName: () => false,
   },
 ) {
   // rows is an array of row objects and columnNames
@@ -106,7 +112,9 @@ function dataToSpreadsheetSnapshot(
     columnDisplayOrder.push(columnNumber)
     columns[columnNumber] = {
       name: columnNames[columnNumber],
-      dataType: { type: guessColumnType(rowSet, columnNumber) },
+      dataType: {
+        type: guessColumnType(rowSet, columnNumber, options.isValidRefName),
+      },
     }
   }
 
@@ -121,7 +129,11 @@ function dataToSpreadsheetSnapshot(
 
 export async function parseCsvBuffer(
   buffer: Buffer,
-  options: ParseOptions = { hasColumnNameLine: false, columnNameLineNumber: 1 },
+  options: ParseOptions = {
+    hasColumnNameLine: false,
+    columnNameLineNumber: 1,
+    isValidRefName: () => false,
+  },
 ) {
   const rows = await parseWith(buffer)
   return dataToSpreadsheetSnapshot(rows, options)
@@ -129,7 +141,11 @@ export async function parseCsvBuffer(
 
 export async function parseTsvBuffer(
   buffer: Buffer,
-  options: ParseOptions = { hasColumnNameLine: false, columnNameLineNumber: 1 },
+  options: ParseOptions = {
+    hasColumnNameLine: false,
+    columnNameLineNumber: 1,
+    isValidRefName: () => false,
+  },
 ) {
   const rows = await parseWith(buffer, { delimiter: '\t' })
   return dataToSpreadsheetSnapshot(rows, options)

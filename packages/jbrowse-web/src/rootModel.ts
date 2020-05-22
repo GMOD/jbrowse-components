@@ -11,7 +11,6 @@ import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 // @ts-ignore
 import RenderWorker from './rpc.worker'
-import * as rpcFuncs from './rpcMethods'
 import sessionModelFactory from './sessionModelFactory'
 
 interface Menu {
@@ -113,9 +112,8 @@ export default function RootModel(pluginManager: PluginManager) {
         self.jbrowse.configuration.rpc,
         {
           WebWorkerRpcDriver: { WorkerClass: RenderWorker },
-          MainThreadRpcDriver: { rpcFuncs },
+          MainThreadRpcDriver: {},
         },
-        self.assemblyManager.getRefNameMapForAdapter,
       ),
     }))
     .actions(self => ({
