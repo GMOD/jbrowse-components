@@ -1,5 +1,7 @@
 {
-  "configuration": {},
+  "configuration": {
+    "updateUrl": true
+  },
   "assemblies": [
     {
       "name": "hg38",
