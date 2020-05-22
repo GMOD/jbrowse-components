@@ -212,6 +212,7 @@ export default class extends BaseFeatureDataAdapter {
     end: number,
     skipLocation: boolean,
   ) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let locationFilter: any
 
     if (!skipLocation) {

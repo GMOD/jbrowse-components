@@ -1,7 +1,6 @@
-
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React, { useState } from 'react'
+import React from 'react'
 import Typography from '@material-ui/core/Typography'
 import Alert from '@material-ui/lab/Alert'
 import Icon from '@material-ui/core/Icon'
