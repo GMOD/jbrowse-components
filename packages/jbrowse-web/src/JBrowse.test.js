@@ -468,7 +468,6 @@ describe('alignments track', () => {
 
     // wait for second region of pileup to render for consistent image size
     await findByTestId('canvas_region:4000-8000')
-
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
