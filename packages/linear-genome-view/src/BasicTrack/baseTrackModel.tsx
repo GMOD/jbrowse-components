@@ -4,7 +4,7 @@ import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { types } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import React from 'react'
 
 // these MST models only exist for tracks that are *shown*.
@@ -83,6 +83,10 @@ const BaseTrack = types
     error: '',
   }))
   .views(self => ({
+    get rpcSessionId() {
+      return self.id
+    },
+
     get name() {
       return getConf(self, 'name')
     },
@@ -217,4 +221,5 @@ const BaseTrackWithReferences = types
   }))
 
 export type BaseTrackStateModel = typeof BaseTrackWithReferences
+export type BaseTrackModel = Instance<BaseTrackStateModel>
 export default BaseTrackWithReferences

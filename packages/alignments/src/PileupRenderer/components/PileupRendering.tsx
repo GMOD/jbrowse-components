@@ -119,6 +119,10 @@ function PileupRendering(props: {
     setLocalFeatureIdUnderMouse(undefined)
   }
 
+  function onContextMenu(event: MouseEvent) {
+    if (!movedDuringLastMouseDown) callMouseHandler('ContextMenu', event)
+  }
+
   function onMouseMove(event: MouseEvent) {
     if (mouseIsDown) setMovedDuringLastMouseDown(true)
     let offsetX = 0
@@ -193,6 +197,7 @@ function PileupRendering(props: {
         onMouseLeave={event => runner(() => onMouseLeave(event))}
         onMouseMove={event => runner(() => onMouseMove(event))}
         onClick={event => runner(() => onClick(event))}
+        onContextMenu={event => runner(() => onContextMenu(event))}
         onFocus={() => {}}
         onBlur={() => {}}
       />

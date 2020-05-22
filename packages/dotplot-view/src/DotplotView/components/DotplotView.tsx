@@ -1,21 +1,29 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { makeStyles } from '@material-ui/core/styles'
-import { useRef as reactUseRef } from 'react'
+import { makeStyles as muiMakeStyles } from '@material-ui/core/styles'
+import { useRef as reactUseRef, useState as reactUseState } from 'react'
+import { Menu as CoreMenu } from '@gmod/jbrowse-core/ui'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { DotplotViewModel } from '../model'
 
-export default (pluginManager: any) => {
+type UI = { Menu: typeof CoreMenu }
+
+export default (pluginManager: PluginManager) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useRef, useEffect, useState } = React
-  const { minmax, useEventListener } = jbrequire('@gmod/jbrowse-core/util')
+  const { useRef, useState } = React
+  const { useEventListener } = jbrequire('@gmod/jbrowse-core/util')
+  const { Menu } = jbrequire('@gmod/jbrowse-core/ui') as UI
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
-  const { makeStyles: jbMakeStyles } = jbrequire('@material-ui/core/styles')
+  const { makeStyles } = jbrequire('@material-ui/core/styles')
   const LinearProgress = jbrequire('@material-ui/core/LinearProgress')
   const ImportForm = jbrequire(require('./ImportForm'))
   const Controls = jbrequire(require('./Controls'))
 
-  const useStyles = (jbMakeStyles as typeof makeStyles)(theme => {
+  type useRefR = typeof reactUseRef
+  type useStateR = typeof reactUseState
+  type makeStylesR = typeof muiMakeStyles
+
+  const useStyles = (makeStyles as makeStylesR)(theme => {
     return {
       root: {
         position: 'relative',
@@ -65,19 +73,25 @@ export default (pluginManager: any) => {
     }
   })
 
+  type Coord = [number, number] | undefined
+
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const ref = (useRef as typeof reactUseRef)<SVGSVGElement | null>(null)
-    const [curr, setCurr] = useState()
-    const [down, setDown] = useState()
+    const ref = (useRef as useRefR)<SVGSVGElement | null>(null)
+    const [mousecurr, setMouseCurr] = (useState as useStateR)([0, 0])
+    const [mousedown, setMouseDown] = (useState as useStateR)<Coord>()
+    const [mouseup, setMouseUp] = (useState as useStateR)<Coord>()
+    const [tracking, setTracking] = useState(false)
 
-    function wheel(event: WheelEvent) {
-      model.hview.horizontalScroll(event.deltaX)
-      model.vview.horizontalScroll(event.deltaY)
-      event.preventDefault()
-    }
-
-    useEventListener('wheel', wheel, ref.current)
+    useEventListener(
+      'wheel',
+      (event: WheelEvent) => {
+        model.hview.scroll(event.deltaX)
+        model.vview.scroll(-event.deltaY)
+        event.preventDefault()
+      },
+      ref.current,
+    )
 
     const {
       initialized,
@@ -93,47 +107,25 @@ export default (pluginManager: any) => {
       vtextRotation,
     } = model
 
-    let left = 0
-    let top = 0
-    if (ref.current) {
-      const bounds = ref.current.getBoundingClientRect()
-      left = bounds.left
-      top = bounds.top
-    }
-    useEffect(() => {
-      function globalMouseMove(event: MouseEvent) {
-        setCurr([event.offsetX, event.offsetY])
-        event.preventDefault()
-      }
-
-      function globalMouseUp(event: MouseEvent) {
-        if (down) {
-          setDown(undefined)
-
-          const [currX, currY] = [event.clientX, event.clientY]
-          const [downX, downY] = down
-          const [xmin, xmax] = minmax(currX - left, downX)
-          const [ymin, ymax] = minmax(currY - top, downY)
-          if (Math.abs(xmax - xmin) > 3 && Math.abs(ymax - ymin) > 3) {
-            const x1 = model.hview.pxToBp(xmin)
-            const x2 = model.hview.pxToBp(xmax)
-
-            const y1 = model.vview.pxToBp(viewHeight - ymin)
-            const y2 = model.vview.pxToBp(viewHeight - ymax)
-
-            model.hview.moveTo(x1, x2)
-            model.vview.moveTo(y2, y1)
-          }
+    useEventListener(
+      'mousemove',
+      (event: MouseEvent) => {
+        if (tracking) {
+          setMouseCurr([event.offsetX, event.offsetY])
         }
-      }
-
-      window.addEventListener('mousemove', globalMouseMove)
-      window.addEventListener('mouseup', globalMouseUp)
-      return () => {
-        window.removeEventListener('mousemove', globalMouseMove)
-        window.removeEventListener('mouseup', globalMouseUp)
-      }
-    }, [down, left, model, top, viewHeight])
+      },
+      ref.current,
+    )
+    useEventListener(
+      'mouseup',
+      (event: MouseEvent) => {
+        if (mousedown) {
+          setMouseUp([event.offsetX, event.offsetY])
+          setTracking(false)
+        }
+      },
+      ref.current,
+    )
 
     if (!initialized && !loading) {
       return <ImportForm model={model} />
@@ -161,21 +153,23 @@ export default (pluginManager: any) => {
               <g>
                 {vview.dynamicBlocks.blocks
                   .filter(region => region.refName)
-                  .map(region => {
-                    const y = viewHeight - (region.offsetPx - vview.offsetPx)
+                  .map((region, index, array) => {
+                    const prevY = index > 0 ? array[index - 1].offsetPx : 0
+                    const y = region.offsetPx
                     const x = borderX
-                    return (
+
+                    return index === 0 || Math.abs(prevY - y) > 12 ? (
                       <text
                         transform={`rotate(${vtextRotation},${x},${y})`}
                         key={JSON.stringify(region)}
                         x={borderX}
-                        y={y}
+                        y={viewHeight - y + vview.offsetPx}
                         fill="#000000"
                         textAnchor="end"
                       >
                         {region.refName}
                       </text>
-                    )
+                    ) : null
                   })}
               </g>
             </svg>
@@ -187,14 +181,15 @@ export default (pluginManager: any) => {
               ref={ref}
               onMouseDown={event => {
                 if (event.button === 0) {
-                  setDown([
+                  setMouseDown([
                     event.nativeEvent.offsetX,
                     event.nativeEvent.offsetY,
                   ])
-                  setCurr([
+                  setMouseCurr([
                     event.nativeEvent.offsetX,
                     event.nativeEvent.offsetY,
                   ])
+                  setTracking(true)
                 }
               }}
             >
@@ -231,13 +226,13 @@ export default (pluginManager: any) => {
                     )
                   })}
               </g>
-              {down ? (
+              {mousedown ? (
                 <rect
                   fill="rgba(255,0,0,0.3)"
-                  x={Math.min(curr[0], down[0])}
-                  y={Math.min(curr[1], down[1])}
-                  width={Math.abs(curr[0] - down[0])}
-                  height={Math.abs(curr[1] - down[1])}
+                  x={Math.min(mousecurr[0], mousedown[0])}
+                  y={Math.min(mousecurr[1], mousedown[1])}
+                  width={Math.abs(mousecurr[0] - mousedown[0])}
+                  height={Math.abs(mousecurr[1] - mousedown[1])}
                 />
               ) : null}
             </svg>
@@ -246,14 +241,17 @@ export default (pluginManager: any) => {
               <g>
                 {hview.dynamicBlocks.blocks
                   .filter(region => region.refName)
-                  .map(region => {
-                    const x = region.offsetPx - hview.offsetPx
+                  .map((region, index, array) => {
+                    const prevX = index > 0 ? array[index - 1].offsetPx : 0
+                    const x = region.offsetPx
                     const y = tickSize
-                    return (
+                    return index === 0 || Math.abs(prevX - x) > 12 ? (
                       <text
-                        transform={`rotate(${htextRotation},${x},${y})`}
+                        transform={`rotate(${htextRotation},${
+                          x - hview.offsetPx
+                        },${y})`}
                         key={region.refName}
-                        x={x}
+                        x={x - hview.offsetPx}
                         y={y + 1}
                         fill="#000000"
                         dominantBaseline="hanging"
@@ -261,7 +259,7 @@ export default (pluginManager: any) => {
                       >
                         {region.refName}
                       </text>
-                    )
+                    ) : null
                   })}
               </g>
             </svg>
@@ -278,6 +276,41 @@ export default (pluginManager: any) => {
                 ) : null
               })}
             </div>
+            <Menu
+              open={Boolean(mouseup)}
+              onMenuItemClick={(event, callback) => {
+                callback()
+                setMouseUp(undefined)
+                setMouseDown(undefined)
+              }}
+              onClose={() => {
+                setMouseUp(undefined)
+                setMouseDown(undefined)
+              }}
+              anchorReference="anchorPosition"
+              anchorPosition={
+                mouseup ? { top: mouseup[1], left: mouseup[0] } : undefined
+              }
+              style={{ zIndex: 1000 }}
+              menuOptions={[
+                {
+                  label: 'Zoom in',
+                  onClick: () => {
+                    if (mousedown && mouseup) {
+                      model.zoomIn(mousedown, mouseup)
+                    }
+                  },
+                },
+                {
+                  label: 'Open linear synteny view',
+                  onClick: () => {
+                    if (mousedown && mouseup) {
+                      model.onDotplotView(mousedown, mouseup)
+                    }
+                  },
+                },
+              ]}
+            />
           </div>
         </div>
       </div>

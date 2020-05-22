@@ -7,6 +7,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 0,
       displayedRegions: [{ refName: 'ctgA', start: 0, end: 10000 }],
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     })
 
     const blocks2 = calculateBlocks({
@@ -14,6 +16,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 0,
       displayedRegions: [{ refName: 'ctgA', start: 0, end: 10000 }],
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     })
     expect(blocks1).toMatchSnapshot()
     expect(blocks1).toEqual(blocks2)
@@ -28,6 +32,8 @@ describe('block calculation', () => {
         { refName: 'ctgA', start: 0, end: 100 },
         { refName: 'ctgB', start: 100, end: 200 },
       ],
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -41,25 +47,24 @@ describe('block calculation', () => {
         { refName: 'ctgA', start: 0, end: 100 },
         { refName: 'ctgB', start: 100, end: 200 },
       ],
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     })
     expect(blockSet.getBlocks()).toEqual([])
   })
 
   it('can calculate some blocks 4', () => {
-    const blockSet = calculateBlocks(
-      {
-        bpPerPx: 1,
-        width: 800,
-        offsetPx: -1000,
-        displayedRegions: [
-          { refName: 'ctgA', start: 0, end: 100 },
-          { refName: 'ctgB', start: 100, end: 200 },
-        ],
-      },
-      {
-        testEnv: true,
-      },
-    )
+    const blockSet = calculateBlocks({
+      bpPerPx: 1,
+      width: 800,
+      offsetPx: -1000,
+      displayedRegions: [
+        { refName: 'ctgA', start: 0, end: 100 },
+        { refName: 'ctgB', start: 100, end: 200 },
+      ],
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
+    })
     expect(blockSet.getBlocks()).toEqual([])
   })
 
@@ -72,6 +77,8 @@ describe('block calculation', () => {
         { refName: 'ctgA', start: 0, end: 10000 },
         { refName: 'ctgB', start: 100, end: 10000 },
       ],
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -85,6 +92,8 @@ describe('block calculation', () => {
         { refName: 'ctgA', start: 0, end: 200 },
         { refName: 'ctgB', start: 0, end: 1000 },
       ],
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     })
     expect(blockSet).toMatchSnapshot()
     expect(blockSet.blocks[1].offsetPx).toBe(0)
@@ -99,6 +108,8 @@ describe('block calculation', () => {
         { refName: 'ctgA', start: 0, end: 200 },
         { refName: 'ctgB', start: 0, end: 1000 },
       ],
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -112,7 +123,8 @@ describe('block calculation', () => {
         { refName: 'ctgA', start: 0, end: 200 },
         { refName: 'ctgB', start: 0, end: 10000000 },
       ],
-      configuration: 'fakeReference',
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -126,7 +138,8 @@ describe('block calculation', () => {
         { refName: 'ctgA', start: 0, end: 50000 },
         { refName: 'ctgB', start: 0, end: 300 },
       ],
-      configuration: 'fakeReference',
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     })
     expect(blockSet).toMatchSnapshot()
   })
@@ -140,7 +153,8 @@ describe('block calculation', () => {
         { refName: 'ctgA', start: 100, end: 200 },
         { refName: 'ctgA', start: 300, end: 400 },
       ],
-      configuration: 'fakeReference',
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     })
     // console.log(JSON.stringify(blockSet.blocks, null, '  '))
     expect(blockSet.blocks[1].offsetPx).toBe(0)
@@ -157,6 +171,8 @@ describe('reverse block calculation', () => {
       displayedRegions: [
         { refName: 'ctgA', start: 0, end: 10000, reversed: true },
       ],
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -164,18 +180,17 @@ describe('reverse block calculation', () => {
 
 describe('reversed displayed regions', () => {
   test('without elided region', () => {
-    const blocks = calculateBlocks(
-      {
-        bpPerPx: 1,
-        width: 800,
-        offsetPx: 0,
-        displayedRegions: [
-          { refName: 'ctgA', start: 100, end: 200, reversed: true },
-          { refName: 'ctgA', start: 500, end: 600, reversed: true },
-        ],
-      },
-      true,
-    )
+    const blocks = calculateBlocks({
+      bpPerPx: 1,
+      width: 800,
+      offsetPx: 0,
+      displayedRegions: [
+        { refName: 'ctgA', start: 100, end: 200, reversed: true },
+        { refName: 'ctgA', start: 500, end: 600, reversed: true },
+      ],
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
+    })
     expect(blocks).toMatchSnapshot()
   })
   test('with elided region', () => {
@@ -189,6 +204,7 @@ describe('reversed displayed regions', () => {
           { refName: 'ctgA', start: 0, end: 1, reversed: true },
           { refName: 'ctgA', start: 0, end: 10000, reversed: true },
         ],
+        interRegionPaddingWidth: 2,
       },
       1,
     )

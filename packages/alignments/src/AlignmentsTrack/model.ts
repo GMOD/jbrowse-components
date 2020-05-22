@@ -7,10 +7,10 @@ import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
 import { types, addDisposer } from 'mobx-state-tree'
 import { autorun } from 'mobx'
-import jsonStableStringify from 'json-stable-stringify'
 import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { getRpcSessionId } from '@gmod/jbrowse-core/util/tracks'
 import AlignmentsTrackComponent from './components/AlignmentsTrack'
 import { AlignmentsConfigModel } from './configSchema'
 
@@ -43,6 +43,14 @@ export default (
           sortedBy: '',
         })),
     )
+    .actions(self => ({
+      toggleCoverage() {
+        self.showCoverage = !self.showCoverage
+      },
+      togglePileup() {
+        self.showPileup = !self.showPileup
+      },
+    }))
     .views(self => ({
       get pileupTrackConfig() {
         return {
@@ -94,24 +102,6 @@ export default (
           },
         ]
       },
-
-      get viewMenuActions(): MenuOption[] {
-        return [
-          {
-            label: 'Sort by',
-            icon: 'sort',
-            subMenu: self.sortOptions.map((option: string) => {
-              return {
-                label: option,
-                onClick: (object: typeof self) =>
-                  option === 'Clear sort'
-                    ? object.clearSelected()
-                    : object.sortSelected(option),
-              }
-            }),
-          },
-        ]
-      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -158,7 +148,6 @@ export default (
             assemblyName: centerLineInfo.assemblyName,
           },
         ]
-        const adapterConfigId = jsonStableStringify(getConf(self, 'adapter'))
 
         // render just the sorted region first
         self.PileupTrack.rendererType
@@ -174,7 +163,7 @@ export default (
                 by: selected,
               },
             },
-            sessionId: adapterConfigId,
+            sessionId: getRpcSessionId(self),
             timeout: 1000000,
           })
           .then(() => {
@@ -185,11 +174,24 @@ export default (
         self.sortedBy = selected
         self.centerLinePosition = centerBp
       },
-      toggleCoverage() {
-        self.showCoverage = !self.showCoverage
-      },
-      togglePileup() {
-        self.showPileup = !self.showPileup
+    }))
+    .views(self => ({
+      get viewMenuActions(): MenuOption[] {
+        return [
+          {
+            label: 'Sort by',
+            icon: 'sort',
+            subMenu: self.sortOptions.map((option: string) => {
+              return {
+                label: option,
+                onClick: (object: typeof self) =>
+                  option === 'Clear sort'
+                    ? object.clearSelected()
+                    : object.sortSelected(option),
+              }
+            }),
+          },
+        ]
       },
     }))
 }

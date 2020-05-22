@@ -10,7 +10,6 @@ import {
 import { Component } from 'react'
 import { reaction } from 'mobx'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import jsonStableStringify from 'json-stable-stringify'
 import { Region } from '@gmod/jbrowse-core/util/types/mst'
 
 import {
@@ -19,7 +18,10 @@ import {
   isAbortException,
   getSession,
 } from '@gmod/jbrowse-core/util'
-import { getTrackAssemblyNames } from '@gmod/jbrowse-core/util/tracks'
+import {
+  getTrackAssemblyNames,
+  getRpcSessionId,
+} from '@gmod/jbrowse-core/util/tracks'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
@@ -160,7 +162,7 @@ const blockState = types
 
 export default blockState
 export type BlockStateModel = typeof blockState
-
+export type BlockModel = Instance<BlockStateModel>
 // calls the render worker to render the block content
 // not using a flow for this, because the flow doesn't
 // work with autorun
@@ -191,12 +193,8 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     readConfObject(config)
 
     const adapterConfig = getConf(track, 'adapter')
-    // Only subtracks will have parent tracks with configs
-    // They use parent's adapter config for matching sessionId
-    const parentTrack = getParent<any>(track)
-    const adapterConfigId = parentTrack.configuration
-      ? jsonStableStringify(getConf(parentTrack, 'adapter'))
-      : jsonStableStringify(adapterConfig)
+
+    const sessionId = getRpcSessionId(track)
 
     return {
       rendererType,
@@ -210,7 +208,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
         adapterConfig,
         rendererType: rendererType.name,
         renderProps,
-        sessionId: adapterConfigId,
+        sessionId,
         blockKey: self.key,
         timeout: 1000000, // 10000,
       },

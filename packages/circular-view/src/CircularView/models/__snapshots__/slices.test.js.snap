@@ -59,7 +59,7 @@ Array [
     "bpPerRadian": 8925.40920859349,
     "endRadians": 5.602096086738348,
     "flipped": false,
-    "key": "volvox:ctgA:1..50001",
+    "key": "{volvox}ctgA:1..50001",
     "offsetRadians": 0,
     "radianWidth": 5.6070960867383475,
     "region": Object {
@@ -75,7 +75,7 @@ Array [
     "bpPerRadian": 8925.40920859349,
     "endRadians": 6.288185307179587,
     "flipped": false,
-    "key": "volvox:ctgB:1..6079",
+    "key": "{volvox}ctgB:1..6079",
     "offsetRadians": 5.6070960867383475,
     "radianWidth": 0.6860892204412394,
     "region": Object {

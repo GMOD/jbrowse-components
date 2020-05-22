@@ -130,7 +130,6 @@
               "assemblyName": "hg38"
             }
           ],
-          "horizontallyFlipped": false,
           "tracks": [
             {
               "type": "BasicTrack",

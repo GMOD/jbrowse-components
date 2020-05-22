@@ -52,24 +52,24 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       getRefNameMapForAdapter(
         adapterConf: unknown,
         assemblyName: string,
-        opts: { signal?: AbortSignal } = {},
+        opts: { signal?: AbortSignal; sessionId: string },
       ) {
         const assembly = self.get(assemblyName)
         if (assembly) {
           return assembly.getRefNameMapForAdapter(adapterConf, opts)
         }
-        throw new Error(`unknown assembly ${assemblyName}`)
+        return undefined
       },
       getReverseRefNameMapForAdapter(
         adapterConf: unknown,
         assemblyName: string,
-        opts: { signal?: AbortSignal } = {},
+        opts: { signal?: AbortSignal; sessionId: string },
       ) {
         const assembly = self.get(assemblyName)
         if (assembly) {
           return assembly.getReverseRefNameMapForAdapter(adapterConf, opts)
         }
-        throw new Error(`unknown assembly ${assemblyName}`)
+        return undefined
       },
       isValidRefName(refName: string, assemblyName?: string) {
         if (assemblyName) {

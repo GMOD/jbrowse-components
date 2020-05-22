@@ -7,7 +7,7 @@ import { checkAbortSignal, observeAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
-import { Region } from '../util/types'
+import { Region, NoAssemblyRegion } from '../util/types'
 
 export interface BaseOptions {
   signal?: AbortSignal
@@ -88,8 +88,31 @@ export abstract class BaseFeatureDataAdapter {
   public abstract freeResources(region: Region): void
 
   /**
-   * Checks if the data source has data for the given reference sequence,
-   * and then gets the features in the region if it does
+   * Checks if the store has data for the given assembly and reference
+   * sequence, and then gets the features in the region if it does.
+   */
+  public getFeaturesInRegion(region: Region, opts: BaseOptions = {}) {
+    return ObservableCreate<Feature>(async observer => {
+      const hasData = await this.hasDataForRefName(region.refName, opts)
+      checkAbortSignal(opts.signal)
+      if (!hasData) {
+        // console.warn(`no data for ${region.refName}`)
+        observer.complete()
+      } else {
+        this.getFeatures(region, opts)
+          .pipe(takeUntil(observeAbortSignal(opts.signal)))
+          .subscribe(observer)
+      }
+    })
+  }
+
+  /**
+   * Checks if the store has data for the given assembly and reference
+   * sequence, and then gets the features in the region if it does.
+   *
+   * Currently this just calls getFeatureInRegion for each region. Adapters
+   * that are frequently called on multiple regions simultaneously may
+   * want to implement a more efficient custom version of this method.
    *
    * Currently this just calls getFeatureInRegion for each region. Adapters that
    * are frequently called on multiple regions simultaneously may want to
@@ -134,12 +157,27 @@ export abstract class BaseFeatureDataAdapter {
   }
 }
 
+export interface RegionsAdapter extends BaseFeatureDataAdapter {
+  getRegions(opts: { signal?: AbortSignal }): Promise<NoAssemblyRegion[]>
+}
+
+export function isRegionsAdapter(
+  thing: BaseFeatureDataAdapter,
+): thing is RegionsAdapter {
+  return 'getRegions' in thing
+}
+
 export interface Alias {
   refName: string
   aliases: string[]
 }
-export abstract class BaseRefNameAliasAdapter {
-  public abstract async getRefNameAliases(): Promise<Alias[]>
+export interface BaseRefNameAliasAdapter {
+  getRefNameAliases(opts: BaseOptions): Promise<Alias[]>
 
-  public abstract async freeResources(): Promise<void>
+  freeResources(): Promise<void>
+}
+export function isRefNameAliasAdapter(
+  thing: object,
+): thing is BaseRefNameAliasAdapter {
+  return 'getRefNameAliases' in thing
 }

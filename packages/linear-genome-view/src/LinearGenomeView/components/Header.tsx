@@ -3,16 +3,16 @@ import {
   assembleLocString,
   getSession,
   isSessionModelWithDrawerWidgets,
+  parseLocString,
 } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import TextField from '@material-ui/core/TextField'
-import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
+import { getSnapshot, Instance } from 'mobx-state-tree'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import TrackSelectorIcon from '@material-ui/icons/LineStyle'
 import SearchIcon from '@material-ui/icons/Search'
@@ -85,10 +85,9 @@ const Search = observer(({ model }: { model: LGV }) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const classes = useStyles()
   const theme = useTheme()
-  const { displayedRegions, dynamicBlocks } = model
+  const { displayedRegions, dynamicBlocks, setDisplayedRegions } = model
   const { blocks } = dynamicBlocks
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const session = getSession(model) as any
+  const session = getSession(model)
 
   const contentBlocks = blocks.filter(block => block.refName)
 
@@ -113,8 +112,79 @@ const Search = observer(({ model }: { model: LGV }) => {
 
   function navTo(locString: string) {
     try {
-      model.navToLocString(locString)
+      const { assemblyManager } = session
+      const { isValidRefName } = assemblyManager
+      const locStrings = locString.split(';')
+      if (displayedRegions.length === 1) {
+        const displayedRegion = displayedRegions[0]
+        let assembly = assemblyManager.get(displayedRegion.assemblyName)
+        if (!assembly) {
+          throw new Error(
+            `Could not find assembly ${displayedRegion.assemblyName}`,
+          )
+        }
+        const { regions } = assembly
+        if (!regions) {
+          throw new Error(
+            `Regions for assembly ${displayedRegion.assemblyName} not yet loaded`,
+          )
+        }
+        const matchedRegion = regions.find(
+          region =>
+            region.refName === displayedRegion.refName &&
+            region.start === displayedRegion.start &&
+            region.end === displayedRegion.end,
+        )
+        if (matchedRegion) {
+          if (locStrings.length > 1) {
+            throw new Error(
+              'Navigating to multiple locations is not allowed when viewing a whole chromosome',
+            )
+          }
+          const parsedLocString = parseLocString(locStrings[0], isValidRefName)
+          let changedAssembly = false
+          if (
+            parsedLocString.assemblyName &&
+            parsedLocString.assemblyName !== displayedRegion.assemblyName
+          ) {
+            const newAssembly = assemblyManager.get(
+              parsedLocString.assemblyName,
+            )
+            if (!newAssembly) {
+              throw new Error(
+                `Could not find assembly ${parsedLocString.assemblyName}`,
+              )
+            }
+            assembly = newAssembly
+            changedAssembly = true
+          }
+          const canonicalRefName = assembly.getCanonicalRefName(
+            parsedLocString.refName,
+          )
+          if (!canonicalRefName) {
+            throw new Error(
+              `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
+            )
+          }
+          if (changedAssembly || canonicalRefName !== displayedRegion.refName) {
+            const newDisplayedRegion = regions.find(
+              region => region.refName === canonicalRefName,
+            )
+            if (newDisplayedRegion) {
+              setDisplayedRegions([getSnapshot(newDisplayedRegion)])
+            } else {
+              throw new Error(
+                `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
+              )
+            }
+          }
+          model.navTo(parsedLocString)
+          return
+        }
+      }
+      model.navToLocStrings(locString)
     } catch (e) {
+      console.error(e)
       session.pushSnackbarMessage(`${e}`)
     }
   }
@@ -148,32 +218,6 @@ const Search = observer(({ model }: { model: LGV }) => {
     [model],
   )
 
-  const disabled = displayedRegions.length > 1
-
-  const searchField = (
-    <TextField
-      inputRef={inputRef}
-      onFocus={onFocus}
-      onBlur={onBlur}
-      className={classes.input}
-      variant="outlined"
-      margin="dense"
-      size="small"
-      onChange={event => onChange(event)}
-      value={value === undefined ? defaultValue : value}
-      InputProps={{
-        startAdornment: <SearchIcon fontSize="small" />,
-        style: {
-          background: fade(theme.palette.background.paper, 0.8),
-          height: 32,
-        },
-      }}
-      // eslint-disable-next-line react/jsx-no-duplicate-props
-      inputProps={{ style: { padding: theme.spacing() } }}
-      disabled={disabled}
-    />
-  )
-
   const assemblyName = contentBlocks.length
     ? contentBlocks[0].assemblyName
     : undefined
@@ -201,13 +245,26 @@ const Search = observer(({ model }: { model: LGV }) => {
         }}
       />
       <form onSubmit={onSubmit}>
-        {disabled ? (
-          <Tooltip title="Disabled because this view is displaying multiple regions">
-            {searchField}
-          </Tooltip>
-        ) : (
-          searchField
-        )}
+        <TextField
+          inputRef={inputRef}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          className={classes.input}
+          variant="outlined"
+          margin="dense"
+          size="small"
+          onChange={event => onChange(event)}
+          value={value === undefined ? defaultValue : value}
+          InputProps={{
+            startAdornment: <SearchIcon fontSize="small" />,
+            style: {
+              background: fade(theme.palette.background.paper, 0.8),
+              height: 32,
+            },
+          }}
+          // eslint-disable-next-line react/jsx-no-duplicate-props
+          inputProps={{ style: { padding: theme.spacing() } }}
+        />
       </form>
       <div className={classes.bp}>
         <Typography

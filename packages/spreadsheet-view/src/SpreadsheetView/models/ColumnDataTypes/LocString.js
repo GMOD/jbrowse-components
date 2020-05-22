@@ -14,11 +14,9 @@ export default pluginManager => {
     '@gmod/jbrowse-core/util/mst-reflection',
   )
 
-  const {
-    compareLocStrings,
-    getSession,
-    parseLocStringAndConvertToInterbase,
-  } = jbrequire('@gmod/jbrowse-core/util')
+  const { compareLocStrings, getSession, parseLocString } = jbrequire(
+    '@gmod/jbrowse-core/util',
+  )
 
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
 
@@ -196,10 +194,15 @@ export default pluginManager => {
         return false
       },
       get parsedLocString() {
-        return parseLocStringAndConvertToInterbase(self.locString)
+        const session = getSession(self)
+        return parseLocString(
+          self.locString,
+          session.assemblyManager.isValidRefName,
+        )
       },
       // returns a function that tests the given row
       get predicate() {
+        const session = getSession(self)
         if (!self.locString || self.locStringIsInvalid)
           return function alwaysTrue() {
             return true
@@ -212,7 +215,10 @@ export default pluginManager => {
 
           if (!cell || !cell.text) return false
 
-          const parsedCellText = parseLocStringAndConvertToInterbase(cell.text)
+          const parsedCellText = parseLocString(
+            cell.text,
+            session.assemblyManager.isValidRefName,
+          )
           if (!parsedCellText.refName) return false
 
           const predicate = OPERATION_PREDICATES[operation]
@@ -235,9 +241,12 @@ export default pluginManager => {
 
   // opens a new LGV at the location described in the locString in the cell text
   function locationLinkClick(spreadsheet, columnNumber, cell) {
-    const loc = parseLocStringAndConvertToInterbase(cell.text)
+    const session = getSession(spreadsheet)
+    const loc = parseLocString(
+      cell.text,
+      session.assemblyManager.isValidRefName,
+    )
     if (loc) {
-      const session = getSession(spreadsheet)
       const { dataset } = getParent(spreadsheet)
       const assembly = session.assemblyManager.get(
         readConfObject(dataset.assembly, 'name'),

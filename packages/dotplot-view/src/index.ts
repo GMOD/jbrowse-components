@@ -20,6 +20,7 @@ import {
   configSchema as PAFAdapterConfigSchema,
   AdapterClass as PAFAdapter,
 } from './PAFAdapter'
+import ComparativeRender from './DotplotRenderer/ComparativeRenderRpc'
 
 export default class DotplotPlugin extends Plugin {
   install(pluginManager: PluginManager) {
@@ -53,6 +54,9 @@ export default class DotplotPlugin extends Plugin {
           AdapterClass: PAFAdapter,
         }),
     )
+
+    // install our comparative rendering rpc callback
+    pluginManager.addRpcMethod(() => new ComparativeRender(pluginManager))
   }
 
   configure(pluginManager: PluginManager) {

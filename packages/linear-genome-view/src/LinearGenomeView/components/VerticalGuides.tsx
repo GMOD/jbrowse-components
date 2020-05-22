@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
-import { LinearGenomeViewStateModel, SCALE_BAR_HEIGHT } from '..'
+import { LinearGenomeViewStateModel } from '..'
 import Block from '../../BasicTrack/components/Block'
 import {
   ElidedBlockMarker,
@@ -23,6 +23,8 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
     height: '100%',
     width: '100%',
+    zIndex: 1,
+    pointerEvents: 'none',
   },
   verticalGuidesContainer: {
     position: 'absolute',
@@ -30,14 +32,6 @@ const useStyles = makeStyles(theme => ({
     zIndex: 1,
     pointerEvents: 'none',
     display: 'flex',
-  },
-  majorTickLabel: {
-    marginTop: 1,
-    fontSize: '11px',
-    color: theme.palette.text.primary,
-    height: SCALE_BAR_HEIGHT,
-    zIndex: 1,
-    background: theme.palette.background.paper,
   },
   tick: {
     position: 'absolute',
