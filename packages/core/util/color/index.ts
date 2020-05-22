@@ -1,6 +1,9 @@
 import {
+  darken,
   emphasize as muiEmphasize,
+  getContrastRatio,
   getLuminance as muiGetLuminance,
+  lighten,
 } from '@material-ui/core/styles/colorManipulator'
 import { namedColorToHex, isNamedColor } from './cssColorsLevel4'
 
@@ -49,4 +52,26 @@ function getLuminance(color: string): number {
 export function emphasize(color: string, coefficient = 0.15): string {
   const convertedColor = namedColorToHex(color)
   return muiEmphasize(convertedColor || color, coefficient)
+}
+
+export function makeContrasting(
+  foreground: string,
+  background = 'white',
+  minContrastRatio = 3,
+) {
+  let convertedForeground = namedColorToHex(foreground) || foreground
+  const convertedBackground = namedColorToHex(background) || background
+  const backgroundLuminance = getLuminance(convertedBackground)
+  let contrastRatio = getContrastRatio(convertedForeground, convertedBackground)
+  const originalColor = convertedForeground
+  let coefficient = 0.05
+  while (contrastRatio < minContrastRatio) {
+    convertedForeground =
+      backgroundLuminance > 0.5
+        ? darken(originalColor, coefficient)
+        : lighten(originalColor, coefficient)
+    coefficient += 0.05
+    contrastRatio = getContrastRatio(convertedForeground, convertedBackground)
+  }
+  return convertedForeground
 }
