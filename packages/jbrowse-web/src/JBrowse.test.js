@@ -472,7 +472,7 @@ describe('alignments track', () => {
     await wait(() =>
       expect(state.session.views[0].tracks[0].showSoftClipping).toBe(true),
     )
-    
+
     const pileupCanvas = await findAllByTestId1('prerendered_canvas')
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
