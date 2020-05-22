@@ -468,6 +468,11 @@ describe('alignments track', () => {
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
+
+    await wait(() =>
+      expect(state.session.views[0].tracks[0].showSoftClipping).toBe(true),
+    )
+    
     const pileupCanvas = await findAllByTestId1('prerendered_canvas')
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
@@ -476,7 +481,7 @@ describe('alignments track', () => {
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
-  })
+  }, 10000)
 
   // it('access alignments context menu', async () => {
   //   const pluginManager = getPluginManager()
