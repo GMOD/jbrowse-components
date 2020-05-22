@@ -467,13 +467,9 @@ describe('alignments track', () => {
 
     expect(state.session.views[0].tracks[0].showSoftClipping).toBe(true)
 
-    // wait two ticks to give soft clipping rendering time
-    await wait(() => {})
-    await wait(() => {})
-
-    // wait for second region of pileup to render for consistent image size
+    // wait for blocket to rerender after softclipping
     const { findAllByTestId: findAllByTestId1 } = within(
-      await findByTestId('Blockset-pileup'),
+      await findByTestId('Blockset-pileup-softclipping'),
     )
 
     const pileupCanvas = await findAllByTestId1('prerendered_canvas')
