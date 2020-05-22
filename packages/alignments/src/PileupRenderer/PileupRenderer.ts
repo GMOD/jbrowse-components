@@ -50,12 +50,12 @@ interface RenderArgsSoftClip extends RenderArgsDeserialized {
   showSoftClip?: boolean
 }
 
-interface PileupLayoutSessionProps extends LayoutSessionProps {
+interface PileupLayoutSessionProps {
   sortObject: unknown
   showSoftClip: unknown
 }
 
-interface CachedPileupLayout extends CachedLayout {
+interface CachedPileupLayout {
   sortObject: unknown
   showSoftClip: unknown
 }
@@ -67,7 +67,7 @@ class PileupLayoutSession extends LayoutSession {
 
   showSoftClip: unknown
 
-  cachedLayoutIsValid(cachedLayout: CachedPileupLayout) {
+  cachedLayoutIsValid(cachedLayout: CachedLayout & CachedPileupLayout) {
     return (
       super.cachedLayoutIsValid(cachedLayout) &&
       deepEqual(this.sortObject, cachedLayout.sortObject) &&
@@ -75,7 +75,7 @@ class PileupLayoutSession extends LayoutSession {
     )
   }
 
-  cachedLayout: CachedPileupLayout | undefined
+  cachedLayout: (CachedLayout & CachedPileupLayout) | undefined
 
   get layout(): MyMultiLayout {
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
@@ -409,7 +409,7 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  createSession(args: PileupLayoutSessionProps) {
+  createSession(args: LayoutSessionProps & PileupLayoutSessionProps) {
     return new PileupLayoutSession(args)
   }
 }
