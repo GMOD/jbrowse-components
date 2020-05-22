@@ -117,7 +117,7 @@ export class CoreFreeResources extends RpcMethodType {
   }
 }
 
-interface RenderArgs {
+export interface RenderArgs {
   assemblyName: string
   regions: Region[]
   originalRegions?: Region[]
