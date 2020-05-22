@@ -60,7 +60,11 @@ function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
 
 export function parseVcfBuffer(
   buffer: Buffer,
-  options: ParseOptions = { hasColumnNameLine: false, columnNameLineNumber: 0 },
+  options: ParseOptions = {
+    hasColumnNameLine: false,
+    columnNameLineNumber: 0,
+    isValidRefName: () => false,
+  },
 ) {
   let { header, body } = splitVcfFileHeaderAndBody(bufferToString(buffer))
   const rows: Row[] = []

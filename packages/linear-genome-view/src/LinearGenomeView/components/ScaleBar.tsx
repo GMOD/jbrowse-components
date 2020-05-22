@@ -25,6 +25,10 @@ const useStyles = makeStyles(theme => ({
     overflow: 'hidden',
     position: 'relative',
   },
+  scaleBarZoomContainer: {
+    position: 'relative',
+    zIndex: 1,
+  },
   scaleBar: {
     position: 'absolute',
     display: 'flex',
@@ -51,6 +55,7 @@ const useStyles = makeStyles(theme => ({
     top: '-1px',
     fontWeight: 'bold',
     lineHeight: 'normal',
+    zIndex: 1,
     pointerEvents: 'none',
     background: theme.palette.background.paper,
   },
@@ -123,7 +128,6 @@ const ScaleBar = React.forwardRef(
                     ? Math.max(0, -model.offsetPx)
                     : block.offsetPx - model.offsetPx - 1,
                 paddingLeft: index === lastLeftBlock ? 0 : 1,
-                zIndex: index,
               }}
               className={classes.refLabel}
               data-testid={`refLabel-${block.refName}`}
@@ -159,7 +163,10 @@ const ScaleBar = React.forwardRef(
         style={style}
         {...other}
       >
-        <div style={{ transform: `scaleX(${model.scaleFactor})` }}>
+        <div
+          className={classes.scaleBarZoomContainer}
+          style={{ transform: `scaleX(${model.scaleFactor})` }}
+        >
           <div
             className={classes.scaleBar}
             style={{

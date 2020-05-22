@@ -150,12 +150,112 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
   expect(model.maxBpPerPx).toEqual(20)
 
   model.navTo({ refName: 'ctgA', start: 0, end: 100 })
-  expect(() => model.navTo({ refName: 'ctgA', start: 0, end: 20000 })).toThrow(
-    /could not find a region/,
-  )
+  expect(model.offsetPx).toBe(0)
+  expect(model.bpPerPx).toBe(0.125)
+
   model.navTo({ refName: 'ctgA' })
-  expect(model.offsetPx).toEqual(0)
+  expect(model.offsetPx).toBe(0)
+  expect(model.bpPerPx).toBe(12.5)
+
   model.navTo({ refName: 'contigA', start: 0, end: 100 })
+  expect(model.offsetPx).toBe(0)
+  expect(model.bpPerPx).toBe(0.125)
+
+  expect(() => model.navTo({ refName: 'ctgA', start: 200, end: 100 })).toThrow(
+    'start "201" is greater than end "100"',
+  )
+
+  expect(() =>
+    model.navTo({ refName: 'ctgDoesNotExist', start: 0, end: 100 }),
+  ).toThrow('could not find a region with refName "ctgDoesNotExist"')
+
+  expect(() => model.navTo({ refName: 'ctgA', end: 20100 })).toThrow(
+    'could not find a region with refName "ctgA" that contained an end position 20100',
+  )
+
+  expect(() => model.navTo({ refName: 'ctgA', start: 20000 })).toThrow(
+    'could not find a region with refName "ctgA" that contained a start position 20001',
+  )
+
+  expect(() =>
+    model.navTo({ refName: 'ctgA', start: 20000, end: 20100 }),
+  ).toThrow(
+    'could not find a region that completely contained "ctgA:20001..20100"',
+  )
+
+  expect(() => model.navTo({ refName: 'ctgA', start: 0, end: 20000 })).toThrow(
+    'could not find a region that completely contained "ctgA:1..20000"',
+  )
+})
+
+test('can navToMultiple', () => {
+  const session = Session.create({
+    configuration: {},
+  })
+  const width = 800
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'testNavToMultiple',
+      type: 'LinearGenomeView',
+    }),
+  )
+  model.setWidth(width)
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
+    { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 10000 },
+    { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 10000 },
+    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
+    { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 10000 },
+  ])
+
+  model.navToMultiple([{ refName: 'ctgA', start: 0, end: 10000 }])
+  expect(model.offsetPx).toBe(0)
+  expect(model.bpPerPx).toBe(12.5)
+
+  model.navToMultiple([
+    { refName: 'ctgA', start: 5000, end: 10000 },
+    { refName: 'ctgB', start: 0, end: 5000 },
+  ])
+  expect(model.offsetPx).toBe(399)
+  expect(model.bpPerPx).toBeCloseTo(12.531)
+
+  model.navToMultiple([
+    { refName: 'ctgA', start: 5000, end: 10000 },
+    { refName: 'ctgB', start: 0, end: 10000 },
+    { refName: 'ctgC', start: 0, end: 5000 },
+  ])
+  expect(model.offsetPx).toBe(199)
+  expect(model.bpPerPx).toBeCloseTo(25.126)
+
+  model.navToMultiple([
+    { refName: 'ctgA', start: 5000, end: 10000 },
+    { refName: 'ctgC', start: 0, end: 5000 },
+  ])
+  expect(model.offsetPx).toBe(2799)
+  expect(model.bpPerPx).toBeCloseTo(12.531)
+
+  expect(() =>
+    model.navToMultiple([
+      { refName: 'ctgB', start: 5000, end: 10000 },
+      { refName: 'ctgC', start: 5000, end: 10000 },
+    ]),
+  ).toThrow('Start of region ctgC:5001..10000 should be 1, but it is not')
+
+  expect(() =>
+    model.navToMultiple([
+      { refName: 'ctgB', start: 0, end: 5000 },
+      { refName: 'ctgC', start: 0, end: 5000 },
+    ]),
+  ).toThrow('End of region ctgB:1..5000 should be 10000, but it is not')
+
+  expect(() =>
+    model.navToMultiple([
+      { refName: 'ctgA', start: 5000, end: 10000 },
+      { refName: 'ctgA', start: 0, end: 5000 },
+    ]),
+  ).toThrow(
+    'Entered location ctgA:1..5000 does not match with displayed regions',
+  )
 })
 
 test('can instantiate a model that >2 regions', () => {
@@ -197,7 +297,7 @@ test('can instantiate a model that >2 regions', () => {
     { refName: 'ctgB', index: 1, offset: 0, start: 0, end: 10000 },
     { refName: 'ctgC', index: 2, offset: 0, start: 0, end: 10000 },
   )
-  expect(model.offsetPx).toEqual(10000 / model.bpPerPx)
+  expect(model.offsetPx).toEqual(10000 / model.bpPerPx + 2)
   expect(model.displayedRegionsTotalPx).toEqual(30000 / model.bpPerPx)
   model.showAllRegions()
   expect(model.offsetPx).toEqual(0)
