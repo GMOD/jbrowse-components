@@ -1,4 +1,5 @@
-const defaultOnChordClick = function(feature, self, pluginManager) {
+// eslint-disable-next-line func-names
+const defaultOnChordClick = function (feature, self, pluginManager) {
   const { jbrequire } = pluginManager
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { getContainingView, getSession } = jbrequire('@gmod/jbrowse-core/util')
