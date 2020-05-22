@@ -467,7 +467,8 @@ describe('alignments track', () => {
 
     expect(state.session.views[0].tracks[0].showSoftClipping).toBe(true)
 
-    // wait one tick to give soft clipping rendering time
+    // wait two ticks to give soft clipping rendering time
+    await wait(() => {})
     await wait(() => {})
 
     // wait for second region of pileup to render for consistent image size
