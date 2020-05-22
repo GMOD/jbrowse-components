@@ -17,14 +17,14 @@ import { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
 import { readConfObject, isConfigurationModel } from '../../configuration'
 import SerializableFilterChain from './util/serializableFilterChain'
 
-export interface LayoutSessionProps {
+interface LayoutSessionProps {
   config: AnyConfigurationModel
   bpPerPx: number
   filters: SerializableFilterChain
 }
 
-export type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
-export interface CachedLayout {
+type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
+interface CachedLayout {
   layout: MyMultiLayout
   config: AnyConfigurationModel
   filters: SerializableFilterChain

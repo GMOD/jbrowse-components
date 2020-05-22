@@ -196,6 +196,7 @@ export default (
           {
             label: 'Sort by',
             icon: 'sort',
+            disabled: self.showSoftClipping,
             subMenu: self.sortOptions.map((option: string) => {
               return {
                 label: option,

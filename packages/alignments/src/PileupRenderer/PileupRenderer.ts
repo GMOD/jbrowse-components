@@ -2,10 +2,10 @@ import deepEqual from 'deep-equal'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import BoxRendererType, {
   LayoutSession,
-  CachedLayout,
-  MyMultiLayout,
-  LayoutSessionProps,
 } from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
+import GranularRectLayout from '@gmod/jbrowse-core/util/layouts/GranularRectLayout'
+import MultiLayout from '@gmod/jbrowse-core/util/layouts/MultiLayout'
+import SerializableFilterChain from '@gmod/jbrowse-core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { bpSpanPx, iterMap } from '@gmod/jbrowse-core/util'
 import { Region } from '@gmod/jbrowse-core/util/types'
@@ -51,11 +51,18 @@ interface RenderArgsSoftClip extends RenderArgsDeserialized {
 }
 
 interface PileupLayoutSessionProps {
+  config: AnyConfigurationModel
+  bpPerPx: number
+  filters: SerializableFilterChain
   sortObject: unknown
   showSoftClip: unknown
 }
 
+type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
 interface CachedPileupLayout {
+  layout: MyMultiLayout
+  config: AnyConfigurationModel
+  filters: SerializableFilterChain
   sortObject: unknown
   showSoftClip: unknown
 }
@@ -67,7 +74,12 @@ class PileupLayoutSession extends LayoutSession {
 
   showSoftClip: unknown
 
-  cachedLayoutIsValid(cachedLayout: CachedLayout & CachedPileupLayout) {
+  constructor(args: PileupLayoutSessionProps) {
+    super(args)
+    this.config = args.config
+  }
+
+  cachedLayoutIsValid(cachedLayout: CachedPileupLayout) {
     return (
       super.cachedLayoutIsValid(cachedLayout) &&
       deepEqual(this.sortObject, cachedLayout.sortObject) &&
@@ -75,7 +87,7 @@ class PileupLayoutSession extends LayoutSession {
     )
   }
 
-  cachedLayout: (CachedLayout & CachedPileupLayout) | undefined
+  cachedLayout: CachedPileupLayout | undefined
 
   get layout(): MyMultiLayout {
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
@@ -409,7 +421,7 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  createSession(args: LayoutSessionProps & PileupLayoutSessionProps) {
+  createSession(args: PileupLayoutSessionProps) {
     return new PileupLayoutSession(args)
   }
 }
