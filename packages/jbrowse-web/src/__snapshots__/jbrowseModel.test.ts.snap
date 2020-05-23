@@ -138,7 +138,10 @@ Object {
       "assemblyNames": Array [
         "volvox",
       ],
-      "name": "volvox-sorted.cram (contigA)",
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "volvox-sorted.cram (contigA, svg)",
       "renderers": Object {
         "PileupRenderer": Object {
           "type": "PileupRenderer",
@@ -168,8 +171,11 @@ Object {
       "assemblyNames": Array [
         "volvox",
       ],
+      "category": Array [
+        "Integration test",
+      ],
       "defaultRendering": "svg",
-      "name": "volvox-sorted red/blue (ctgA)",
+      "name": "volvox-sorted red/blue (ctgA, svg)",
       "renderers": Object {
         "PileupRenderer": Object {
           "type": "PileupRenderer",
@@ -199,7 +205,10 @@ Object {
       "assemblyNames": Array [
         "volvox",
       ],
-      "name": "volvox-sorted red/blue (ctgA)",
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "volvox-sorted red/blue (ctgA, canvas)",
       "renderers": Object {
         "PileupRenderer": Object {
           "type": "PileupRenderer",
@@ -228,6 +237,9 @@ Object {
       },
       "assemblyNames": Array [
         "volvox",
+      ],
+      "category": Array [
+        "Integration test",
       ],
       "defaultRendering": "svg",
       "name": "volvox-sorted red/blue (contigA)",
@@ -259,6 +271,9 @@ Object {
       },
       "assemblyNames": Array [
         "volvox",
+      ],
+      "category": Array [
+        "Integration test",
       ],
       "name": "volvox-sorted red/blue (small max height)",
       "renderers": Object {
@@ -345,6 +360,9 @@ Object {
       "assemblyNames": Array [
         "volvox",
       ],
+      "category": Array [
+        "Integration test",
+      ],
       "name": "nclist with long names/descriptions",
       "renderer": Object {
         "type": "SvgFeatureRenderer",
@@ -366,6 +384,9 @@ Object {
       },
       "assemblyNames": Array [
         "volvox",
+      ],
+      "category": Array [
+        "Integration test",
       ],
       "name": "volvox-sorted red/blue (bam nonexist 404)",
       "renderers": Object {
@@ -397,6 +418,9 @@ Object {
       "assemblyNames": Array [
         "volvox",
       ],
+      "category": Array [
+        "Integration test",
+      ],
       "name": "volvox-sorted red/blue (bai nonexist 404)",
       "renderers": Object {
         "PileupRenderer": Object {
@@ -422,7 +446,10 @@ Object {
       "assemblyNames": Array [
         "volvox",
       ],
-      "name": "wiggle_track nonexist",
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "wiggle_track 404",
       "renderers": Object {
         "DensityRenderer": Object {
           "type": "DensityRenderer",
@@ -446,6 +473,9 @@ Object {
       },
       "assemblyNames": Array [
         "volvox",
+      ],
+      "category": Array [
+        "Integration test",
       ],
       "name": "wiggle_track xyplot",
       "renderers": Object {
@@ -471,6 +501,9 @@ Object {
       },
       "assemblyNames": Array [
         "volvox",
+      ],
+      "category": Array [
+        "Integration test",
       ],
       "defaultRendering": "line",
       "name": "wiggle_track lineplot",
@@ -498,6 +531,9 @@ Object {
       "assemblyNames": Array [
         "volvox",
       ],
+      "category": Array [
+        "Integration test",
+      ],
       "defaultRendering": "density",
       "name": "wiggle_track density",
       "renderers": Object {
@@ -523,6 +559,9 @@ Object {
       },
       "assemblyNames": Array [
         "volvox",
+      ],
+      "category": Array [
+        "Integration test",
       ],
       "name": "wiggle_track density (altname)",
       "renderers": Object {
