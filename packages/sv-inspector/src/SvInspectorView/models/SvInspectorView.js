@@ -1,15 +1,17 @@
-function defaultOnChordClick(feature, self, pluginManager) {
+function defaultOnChordClick(feature, chordTrack, pluginManager) {
   const { jbrequire } = pluginManager
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { getContainingView, getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { resolveIdentifier } = jbrequire('mobx-state-tree')
 
-  const session = getSession(self)
+  const session = getSession(chordTrack)
   session.setSelection(feature)
-  const view = getContainingView(self)
+  const view = getContainingView(chordTrack)
   const viewType = pluginManager.getViewType('BreakpointSplitView')
   const viewSnapshot = viewType.snapshotFromBreakendFeature(feature, view)
-  const tracks = getConf(self, 'configRelationships')
+
+  // open any evidence tracks defined in configRelationships for this track
+  const tracks = getConf(chordTrack, 'configRelationships')
     .map(entry => {
       const type = pluginManager.pluggableConfigSchemaType('track')
       const trackConfig = resolveIdentifier(type, session, entry.target)
@@ -23,8 +25,6 @@ function defaultOnChordClick(feature, self, pluginManager) {
         : null
     })
     .filter(f => !!f)
-
-  // add the specific evidence tracks to the LGVs in the split view
   viewSnapshot.views[0].tracks = tracks
   viewSnapshot.views[1].tracks = tracks
 
