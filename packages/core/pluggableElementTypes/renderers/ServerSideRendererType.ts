@@ -8,7 +8,6 @@ import {
 } from 'mobx-state-tree'
 import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import { Region } from '../../util/types'
-import { readConfObject } from '../../configuration'
 import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature, {
   Feature,
@@ -168,20 +167,9 @@ export default class ServerSideRenderer extends RendererType {
     return deserialized
   }
 
-  getExpandedGlyphRegion(region: Region, renderArgs: RenderArgsDeserialized) {
-    if (!region) return region
-    const { bpPerPx, config } = renderArgs
-    const maxFeatureGlyphExpansion =
-      config === undefined
-        ? 0
-        : readConfObject(config, 'maxFeatureGlyphExpansion')
-    if (!maxFeatureGlyphExpansion) return region
-    const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
-    return {
-      ...region,
-      start: Math.floor(Math.max(region.start - bpExpansion, 0)),
-      end: Math.ceil(region.end + bpExpansion),
-    }
+  // will expand if soft clipping or feature glyphs are shown
+  getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
+    return region
   }
 
   /**
@@ -220,7 +208,7 @@ export default class ServerSideRenderer extends RendererType {
     const featureObservable =
       requestRegions.length === 1
         ? dataAdapter.getFeatures(
-            this.getExpandedGlyphRegion(requestRegions[0], renderArgs),
+            this.getExpandedRegion(requestRegions[0], renderArgs),
             {
               signal,
               bpPerPx,

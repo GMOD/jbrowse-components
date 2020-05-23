@@ -98,7 +98,7 @@ const ViewMenu = observer(
           onClick={event => {
             setAnchorEl(event.currentTarget)
           }}
-          data-testid="view_menu"
+          data-testid="view_menu_icon"
         >
           <MenuIcon {...IconProps} />
         </IconButton>
