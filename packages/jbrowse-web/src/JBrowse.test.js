@@ -467,12 +467,13 @@ describe('alignments track', () => {
 
     expect(state.session.views[0].tracks[0].showSoftClipping).toBe(true)
 
+    await wait(() => {})
+    await wait(() => {})
     // wait for blocket to rerender after softclipping
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup-softclipping'),
     )
 
-    await wait(() => {})
     const pileupCanvas = await findAllByTestId1('prerendered_canvas')
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
