@@ -15,7 +15,6 @@ interface AlignmentsBlockBasedTrackStateModel
   extends Instance<BlockBasedTrackStateModel> {
   PileupTrack: Instance<BlockBasedTrackStateModel>
   SNPCoverageTrack: Instance<BlockBasedTrackStateModel>
-  showSoftClipping: boolean
 }
 
 interface MouseState {
@@ -72,7 +71,6 @@ function AlignmentsTrackBlocks({
     setState(initialState)
   }
 
-  const softClipString = model.showSoftClipping ? '-softclipping' : ''
   return (
     <>
       {SNPCoverageTrack && (
@@ -105,7 +103,7 @@ function AlignmentsTrackBlocks({
       />
       {PileupTrack && (
         <div
-          data-testid={`Blockset-pileup${softClipString}`}
+          data-testid="Blockset-pileup"
           className={classes.trackBlocks}
           onContextMenu={e => handleRightClick(e, PileupTrack)}
           style={{
