@@ -455,7 +455,7 @@ describe('alignments track', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox-long-reads-sv-bam'),
     )
-    await findByTestId('track-volvox_alignments_pileup_coverage')
+    await findByTestId('track-volvox-long-reads-sv-bam')
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu and turns on soft clipping
