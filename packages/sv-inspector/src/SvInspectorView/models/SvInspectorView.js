@@ -1,3 +1,41 @@
+function defaultOnChordClick(feature, self, pluginManager) {
+  const { jbrequire } = pluginManager
+  const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
+  const { getContainingView, getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { resolveIdentifier } = jbrequire('mobx-state-tree')
+
+  const session = getSession(self)
+  session.setSelection(feature)
+  const view = getContainingView(self)
+  const viewType = pluginManager.getViewType('BreakpointSplitView')
+  const viewSnapshot = viewType.snapshotFromBreakendFeature(feature, view)
+  const tracks = getConf(self, 'configRelationships')
+    .map(entry => {
+      const type = pluginManager.pluggableConfigSchemaType('track')
+      const trackConfig = resolveIdentifier(type, session, entry.target)
+      return trackConfig
+        ? {
+            type: trackConfig.type,
+            height: 100,
+            configuration: trackConfig.trackId,
+            selectedRendering: '',
+          }
+        : null
+    })
+    .filter(f => !!f)
+
+  // add the specific evidence tracks to the LGVs in the split view
+  viewSnapshot.views[0].tracks = tracks
+  viewSnapshot.views[1].tracks = tracks
+
+  // try to center the offsetPx
+  viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
+  viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
+  viewSnapshot.featureData = feature.data
+
+  session.addView('BreakpointSplitView', viewSnapshot)
+}
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { autorun, reaction } = jbrequire('mobx')
@@ -164,6 +202,7 @@ export default pluginManager => {
           renderer: { type: 'StructuralVariantChordRenderer' },
           adapter: self.featuresAdapterConfigSnapshot,
           assemblyNames: [self.assemblyName],
+          onChordClick: defaultOnChordClick.toString(),
         }
         return configuration
       },
