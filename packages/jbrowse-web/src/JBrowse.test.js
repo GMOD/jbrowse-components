@@ -453,7 +453,7 @@ describe('alignments track', () => {
 
     // load track
     fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+      await findByTestId('htsTrackEntry-volvox-long-reads-sv-bam'),
     )
     await findByTestId('track-volvox_alignments_pileup_coverage')
     expect(state.session.views[0].tracks[0]).toBeTruthy()
