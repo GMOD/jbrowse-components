@@ -99,21 +99,34 @@ export default class extends BaseFeatureDataAdapter {
         })
         const result = await response.json()
         const queryResults = result.data.viewer.explore.features.hits.edges
-        const cohortCount = result.data.viewer.explore.filteredCases.hits.total
+        if (this.featureType === 'mutation') {
+          const cohortCount =
+            result.data.viewer.explore.filteredCases.hits.total
 
-        const denom = Math.ceil(Math.log10(cohortCount))
-        for (const hit of queryResults) {
-          const gdcObject = hit.node
-          gdcObject.numOfCasesInCohort = cohortCount
-          gdcObject.percentage =
-            (100 * Math.log10(gdcObject.score)) / denom + 100
-          gdcObject.occurrenceInCohort = `${gdcObject.score} / ${cohortCount}`
-          const feature = new GDCFeature({
-            gdcObject,
-            id: gdcObject[idField],
-            featureType: this.featureType,
-          })
-          observer.next(feature)
+          const denom = Math.ceil(Math.log10(cohortCount))
+          for (const hit of queryResults) {
+            const gdcObject = hit.node
+            gdcObject.numOfCasesInCohort = cohortCount
+            gdcObject.percentage =
+              (100 * Math.log10(gdcObject.score)) / denom + 100
+            gdcObject.occurrenceInCohort = `${gdcObject.score} / ${cohortCount}`
+            const feature = new GDCFeature({
+              gdcObject,
+              id: gdcObject[idField],
+              featureType: this.featureType,
+            })
+            observer.next(feature)
+          }
+        } else {
+          for (const hit of queryResults) {
+            const gdcObject = hit.node
+            const feature = new GDCFeature({
+              gdcObject,
+              id: gdcObject[idField],
+              featureType: this.featureType,
+            })
+            observer.next(feature)
+          }
         }
       } catch (e) {
         observer.error(e)
