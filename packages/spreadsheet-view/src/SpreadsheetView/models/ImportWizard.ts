@@ -8,7 +8,7 @@ import { parseSTARFusionBuffer } from '../importAdapters/STARFusionImport'
 const IMPORT_SIZE_LIMIT = 300000
 
 export default (pluginManager: PluginManager) => {
-  const { lib, load } = pluginManager
+  const { lib } = pluginManager
   const { types, getParent, getRoot } = lib['mobx-state-tree']
   const { openLocation } = lib['@gmod/jbrowse-core/util/io']
   const { readConfObject } = lib['@gmod/jbrowse-core/configuration']
