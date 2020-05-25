@@ -1,4 +1,5 @@
 import { getSession } from '@gmod/jbrowse-core/util'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { parseCsvBuffer, parseTsvBuffer } from '../importAdapters/ImportUtils'
 import { parseVcfBuffer } from '../importAdapters/VcfImport'
 import { parseBedBuffer, parseBedPEBuffer } from '../importAdapters/BedImport'
@@ -6,11 +7,11 @@ import { parseSTARFusionBuffer } from '../importAdapters/STARFusionImport'
 
 const IMPORT_SIZE_LIMIT = 300000
 
-export default pluginManager => {
-  const { jbrequire } = pluginManager
-  const { types, getParent, getRoot } = jbrequire('mobx-state-tree')
-  const { openLocation } = jbrequire('@gmod/jbrowse-core/util/io')
-  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
+export default (pluginManager: PluginManager) => {
+  const { lib, load } = pluginManager
+  const { types, getParent, getRoot } = lib['mobx-state-tree']
+  const { openLocation } = lib['@gmod/jbrowse-core/util/io']
+  const { readConfObject } = lib['@gmod/jbrowse-core/configuration']
 
   const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE', 'STAR-Fusion']
   const fileTypeParsers = {
@@ -65,7 +66,7 @@ export default pluginManager => {
         }
         return undefined
       },
-      isValidRefName(refName, assemblyName) {
+      isValidRefName(refName: string, assemblyName?: string) {
         return getSession(self).assemblyManager.isValidRefName(
           refName,
           assemblyName,
@@ -73,7 +74,7 @@ export default pluginManager => {
       },
     }))
     .actions(self => ({
-      setFileSource(newSource) {
+      setFileSource(newSource: unknown) {
         self.fileSource = newSource
         self.error = undefined
 
@@ -93,7 +94,7 @@ export default pluginManager => {
         }
       },
 
-      setSelectedAssemblyIdx(idx) {
+      setSelectedAssemblyIdx(idx: number) {
         self.selectedAssemblyIdx = idx
       },
 
@@ -101,15 +102,15 @@ export default pluginManager => {
         self.hasColumnNameLine = !self.hasColumnNameLine
       },
 
-      setColumnNameLineNumber(newnumber) {
+      setColumnNameLineNumber(newnumber: number) {
         if (newnumber > 0) self.columnNameLineNumber = newnumber
       },
 
-      setFileType(typeName) {
+      setFileType(typeName: string) {
         self.fileType = typeName
       },
 
-      setError(error) {
+      setError(error: Error) {
         console.error(error)
         self.loading = false
         self.error = {
@@ -133,7 +134,8 @@ export default pluginManager => {
       import() {
         try {
           if (!self.fileSource) return
-          const typeParser = fileTypeParsers[self.fileType]
+          const typeParser =
+            fileTypeParsers[self.fileType as keyof typeof fileTypeParsers]
           if (!typeParser)
             throw new Error(`cannot open files of type '${self.fileType}'`)
           if (self.loading)
@@ -151,14 +153,14 @@ export default pluginManager => {
                 )
             })
             .then(() => filehandle.readFile())
-            .then(buffer => typeParser(buffer, self))
+            .then(buffer => typeParser(buffer as Buffer, self))
             .then(spreadsheet => {
-              self.setLoaded()
+              this.setLoaded()
               getParent(self).displaySpreadsheet(spreadsheet)
             })
-            .catch(self.setError)
+            .catch(this.setError)
         } catch (error) {
-          self.setError(error)
+          this.setError(error)
         }
       },
     }))

@@ -1,7 +1,10 @@
-export default pluginManager => {
-  const { jbrequire } = pluginManager
-  const { types, getParent } = jbrequire('mobx-state-tree')
-  const RowModel = jbrequire(require('./Row'))
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import Row from './Row'
+
+export default (pluginManager: PluginManager) => {
+  const { lib, load } = pluginManager
+  const { types, getParent } = lib['mobx-state-tree']
+  const RowModel = load(Row)
 
   return types
     .model('StaticRowSet', {
@@ -14,15 +17,15 @@ export default pluginManager => {
       },
 
       get passingFiltersCount() {
-        return self.sortedFilteredRows.length
+        return this.sortedFilteredRows.length
       },
 
       get selectedCount() {
-        return self.selectedRows.length
+        return this.selectedRows.length
       },
 
       get selectedAndPassingFiltersCount() {
-        return self.selectedFilteredRows.length
+        return this.selectedFilteredRows.length
       },
 
       get sortedRows() {
@@ -38,7 +41,7 @@ export default pluginManager => {
         const sheet = getParent(self)
         const view = getParent(sheet)
         const { filterControls } = view
-        return self.selectedRows.filter(row =>
+        return this.selectedRows.filter(row =>
           filterControls.rowPassesFilters(sheet, row),
         )
       },
