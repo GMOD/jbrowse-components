@@ -1,5 +1,7 @@
 {
-  "configuration": {},
+  "configuration": {
+    "updateUrl": true
+  },
   "assemblies": [
     {
       "name": "hg38",
@@ -50,6 +52,8 @@
         "type": "GDCAdapter"
       },
       "renderer": {
+        "color": "function(feature) { const filteredConsequences = feature.get('consequence').hits.edges.filter(cons => cons.node.transcript.is_canonical); const impact = filteredConsequences[0].node.transcript.annotation.vep_impact; switch(impact) {case 'LOW': return 'blue'; break;case 'MODIFIER': return 'goldenrod'; break;case 'MODERATE': return 'orange'; break;case 'HIGH': return 'red'; break;case '': return 'lightgrey'; break;}}",
+        "label": "function(feature) { return feature.get('genomicDnaChange') }",
         "type": "SvgFeatureRenderer"
       }
     },

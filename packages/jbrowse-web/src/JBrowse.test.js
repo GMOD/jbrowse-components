@@ -206,7 +206,7 @@ describe('valid file tests', () => {
       expect(state.session.views[0].bpPerPx).toBe(before)
     })
     expect(state.session.views[0].bpPerPx).toEqual(before)
-  })
+  }, 10000)
 
   it('opens track selector', async () => {
     const pluginManager = getPluginManager()
@@ -242,7 +242,7 @@ describe('valid file tests', () => {
     await findByTestId('track-volvox_alignments')
 
     // opens the view menu and selects show center line
-    const viewMenu = await findByTestId('view_menu')
+    const viewMenu = await findByTestId('view_menu_icon')
     fireEvent.click(viewMenu)
     await waitForElement(() => getByText('Show center line'))
     fireEvent.click(getByText('Show center line'))
@@ -401,8 +401,6 @@ describe('test configuration editor', () => {
   }, 10000)
 })
 describe('alignments track', () => {
-  // improve this, currently renders the pileup and stops
-  // if pileup rendering is disabled then snp coverage will run
   it('opens an alignments track', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
@@ -443,6 +441,49 @@ describe('alignments track', () => {
     })
   }, 10000)
 
+  // Note: tracks with assembly volvox don't have much soft clipping
+  it('opens the track menu and enables soft clipping', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText, getByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(0.5, 6000)
+
+    // load track
+    fireEvent.click(
+      await findByTestId('htsTrackEntry-volvox-long-reads-sv-bam'),
+    )
+    await findByTestId('track-volvox-long-reads-sv-bam')
+    expect(state.session.views[0].tracks[0]).toBeTruthy()
+
+    // opens the track menu and turns on soft clipping
+    const trackMenu = await findByTestId('track_menu_icon')
+    fireEvent.click(trackMenu)
+
+    await waitForElement(() => getByText('Show soft clipping'))
+    fireEvent.click(getByText('Show soft clipping'))
+
+    expect(state.session.views[0].tracks[0].showSoftClipping).toBe(true)
+
+    // wait for blocket to rerender after softclipping
+    const { findAllByTestId: findAllByTestId1 } = within(
+      await findByTestId('Blockset-pileup'),
+    )
+
+    const pileupCanvas = await findAllByTestId1(
+      'prerendered_canvas_softclipped',
+    )
+    const pileupImg = pileupCanvas[0].toDataURL()
+    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
+    const pileupBuf = Buffer.from(pileupData, 'base64')
+    expect(pileupBuf).toMatchImageSnapshot({
+      failureThreshold: 0.2,
+      failureThresholdType: 'percent',
+    })
+  }, 12000)
+
   // it('access alignments context menu', async () => {
   //   const pluginManager = getPluginManager()
   //   const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
@@ -471,13 +512,11 @@ describe('alignments track', () => {
     expect(state.session.views[0].tracks[0]).toBeTruthy()
     const alignmentsTrack = state.session.views[0].tracks[0]
 
-    // open view level menu
-    const viewMenu = await findByTestId('view_menu')
+    // open view level menu and chooses item to be sorted by
+    const viewMenu = await findByTestId('view_menu_icon')
     fireEvent.click(viewMenu)
     await waitForElement(() => getByText('Sort by'))
     fireEvent.click(getByText('Sort by'))
-
-    // choose option to be sorted by
     await waitForElement(() => getByText('Read strand'))
     fireEvent.click(getByText('Read strand'))
 
@@ -498,7 +537,7 @@ describe('alignments track', () => {
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
-  })
+  }, 10000)
 })
 describe('bigwig', () => {
   it('open a bigwig track', async () => {

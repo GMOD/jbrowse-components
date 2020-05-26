@@ -41,6 +41,7 @@ export default (
         .volatile(() => ({
           ReactComponent: AlignmentsTrackComponent,
           sortedBy: '',
+          showSoftClipping: false,
         })),
     )
     .actions(self => ({
@@ -49,6 +50,13 @@ export default (
       },
       togglePileup() {
         self.showPileup = !self.showPileup
+      },
+      toggleSoftClipping() {
+        self.showSoftClipping = !self.showSoftClipping
+      },
+      clearSelected() {
+        self.sortedBy = ''
+        self.centerLinePosition = undefined
       },
     }))
     .views(self => ({
@@ -100,6 +108,17 @@ export default (
             onClick: self.togglePileup,
             disabled: !self.showCoverage,
           },
+          {
+            label: self.showSoftClipping
+              ? 'Hide soft clipping'
+              : 'Show soft clipping',
+            icon: self.showSoftClipping ? 'visibility_off' : 'visibility',
+            onClick: () => {
+              self.toggleSoftClipping()
+              // if toggling from off to on, will break sort for this track so clear it
+              if (self.showSoftClipping) self.clearSelected()
+            },
+          },
         ]
       },
     }))
@@ -125,10 +144,6 @@ export default (
           type: 'PileupTrack',
           configuration: trackConfig,
         }
-      },
-      clearSelected() {
-        self.sortedBy = ''
-        self.centerLinePosition = undefined
       },
       sortSelected(selected: string) {
         const { rpcManager } = getSession(self)
@@ -181,6 +196,7 @@ export default (
           {
             label: 'Sort by',
             icon: 'sort',
+            disabled: self.showSoftClipping,
             subMenu: self.sortOptions.map((option: string) => {
               return {
                 label: option,

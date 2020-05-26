@@ -1,6 +1,5 @@
 import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
-import RpcManager from '../rpc/RpcManager'
 
 import {
   deserializeAbortSignal,
@@ -44,16 +43,5 @@ export default class RpcMethodType extends PluggableElementBase {
 
   async deserializeReturn(serializedReturn: unknown): Promise<unknown> {
     return serializedReturn
-  }
-
-  async call(rpcManager: RpcManager, sessionId: string, args: {}, opts: {}) {
-    const serialized: {} = await this.serializeArguments(args)
-    const serializedReturn = await rpcManager.call(
-      sessionId,
-      this.name,
-      serialized,
-      opts,
-    )
-    return this.deserializeReturn(serializedReturn)
   }
 }

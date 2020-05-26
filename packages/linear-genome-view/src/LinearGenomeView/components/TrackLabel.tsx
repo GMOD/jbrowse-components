@@ -150,6 +150,7 @@ const TrackLabel = React.forwardRef(
             onClick={handleClick}
             className={classes.iconButton}
             color="secondary"
+            data-testid="track_menu_icon"
           >
             <MoreVertIcon fontSize="small" />
           </IconButton>

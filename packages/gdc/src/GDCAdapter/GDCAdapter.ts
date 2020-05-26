@@ -19,6 +19,8 @@ export default class extends BaseFeatureDataAdapter {
 
   private featureType: string
 
+  private colorBy: string
+
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: Instance<typeof MyConfigSchema>) {
@@ -27,10 +29,12 @@ export default class extends BaseFeatureDataAdapter {
     const cases = readConfObject(config, 'cases') as string[]
     const size = readConfObject(config, 'size') as number
     const featureType = readConfObject(config, 'featureType') as string
+    const colorBy = readConfObject(config, 'colorBy')
     this.filters = filters
     this.cases = cases
     this.size = size
     this.featureType = featureType
+    this.colorBy = colorBy
   }
 
   public async getRefNames() {
@@ -95,15 +99,34 @@ export default class extends BaseFeatureDataAdapter {
         })
         const result = await response.json()
         const queryResults = result.data.viewer.explore.features.hits.edges
+        if (this.featureType === 'mutation') {
+          const cohortCount =
+            result.data.viewer.explore.filteredCases.hits.total
 
-        for (const hit of queryResults) {
-          const gdcObject = hit.node
-          const feature = new GDCFeature({
-            gdcObject,
-            id: gdcObject[idField],
-            featureType: this.featureType,
-          })
-          observer.next(feature)
+          const denom = Math.ceil(Math.log10(cohortCount))
+          for (const hit of queryResults) {
+            const gdcObject = hit.node
+            gdcObject.numOfCasesInCohort = cohortCount
+            gdcObject.percentage =
+              (100 * Math.log10(gdcObject.score)) / denom + 100
+            gdcObject.occurrenceInCohort = `${gdcObject.score} / ${cohortCount}`
+            const feature = new GDCFeature({
+              gdcObject,
+              id: gdcObject[idField],
+              featureType: this.featureType,
+            })
+            observer.next(feature)
+          }
+        } else {
+          for (const hit of queryResults) {
+            const gdcObject = hit.node
+            const feature = new GDCFeature({
+              gdcObject,
+              id: gdcObject[idField],
+              featureType: this.featureType,
+            })
+            observer.next(feature)
+          }
         }
       } catch (e) {
         observer.error(e)
@@ -121,14 +144,16 @@ export default class extends BaseFeatureDataAdapter {
    * @param end - end position
    */
   private createMutationQuery(ref: string, start: number, end: number) {
-    const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { features: ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { score startPosition: start_position endPosition: end_position mutationType: mutation_type cosmicId: cosmic_id referenceAllele: reference_allele ncbiBuild: ncbi_build genomicDnaChange: genomic_dna_change mutationSubtype: mutation_subtype ssmId: ssm_id chromosome consequence { hits { edges { node { transcript { is_canonical annotation { vep_impact polyphen_impact polyphen_score sift_score sift_impact hgvsc } consequence_type gene { gene_id symbol gene_strand } aa_change transcript_id } id } } } } } } } } } } }`
-    const combinedFilters = this.getFilterQuery(ref, start, end)
+    const ssmQuery = `query mutationsQuery( $size: Int $offset: Int $filters: FiltersArgument $filtersWithoutLocation: FiltersArgument $score: String $sort: [Sort] ) { viewer { explore { filteredCases: cases { hits(first: 0, filters: $filtersWithoutLocation) { total } } features: ssms { hits(first: $size, offset: $offset, filters: $filters, score: $score, sort: $sort) { total edges { node { score startPosition: start_position endPosition: end_position mutationType: mutation_type cosmicId: cosmic_id referenceAllele: reference_allele ncbiBuild: ncbi_build genomicDnaChange: genomic_dna_change mutationSubtype: mutation_subtype ssmId: ssm_id chromosome consequence { hits { edges { node { transcript { is_canonical annotation { vep_impact polyphen_impact polyphen_score sift_score sift_impact hgvsc } consequence_type gene { gene_id symbol gene_strand } aa_change transcript_id } id } } } } } } } } } } }`
+    const combinedFilters = this.getFilterQuery(ref, start, end, false)
+    const filtersNoLocation = this.getFilterQuery(ref, start, end, true)
     const body = {
       query: ssmQuery,
       variables: {
         size: this.size ? this.size : 5000,
         offset: 0,
         filters: combinedFilters,
+        filtersWithoutLocation: filtersNoLocation,
         score: 'occurrence.case.project.project_id',
         sort: [
           { field: '_score', order: 'desc' },
@@ -147,7 +172,7 @@ export default class extends BaseFeatureDataAdapter {
    */
   private createGeneQuery(ref: string, start: number, end: number) {
     const geneQuery = `query genesQuery( $filters: FiltersArgument $size: Int $offset: Int $score: String ) { viewer { explore { features: genes { hits(first: $size, offset: $offset, filters: $filters, score: $score) { total edges { node { geneId: gene_id id geneStrand: gene_strand synonyms symbol name geneStart: gene_start geneEnd: gene_end geneChromosome: gene_chromosome description canonicalTranscriptId: canonical_transcript_id externalDbIds: external_db_ids { hgnc omimGene: omim_gene uniprotkbSwissprot: uniprotkb_swissprot entrezGene: entrez_gene } biotype isCancerGeneCensus: is_cancer_gene_census } } } } } } }`
-    const combinedFilters = this.getFilterQuery(ref, start, end)
+    const combinedFilters = this.getFilterQuery(ref, start, end, false)
     const body = {
       query: geneQuery,
       variables: {
@@ -166,10 +191,17 @@ export default class extends BaseFeatureDataAdapter {
    * @param start - start position
    * @param end - end position
    */
-  private getFilterQuery(chr: string, start: number, end: number) {
+  private getFilterQuery(
+    chr: string,
+    start: number,
+    end: number,
+    skipLocation: boolean,
+  ) {
     const resultingFilterQuery = {
       op: 'and',
-      content: [this.addLocationAndCasesToFilter(chr, start, end)],
+      content: [
+        this.addLocationAndCasesToFilter(chr, start, end, skipLocation),
+      ],
     }
 
     const filterObject = JSON.parse(this.filters)
@@ -187,43 +219,67 @@ export default class extends BaseFeatureDataAdapter {
    * @param start - start position
    * @param end - end position
    */
-  private addLocationAndCasesToFilter(chr: string, start: number, end: number) {
-    let locationFilter
+  private addLocationAndCasesToFilter(
+    chr: string,
+    start: number,
+    end: number,
+    skipLocation: boolean,
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let locationFilter: any
 
-    switch (this.featureType) {
-      case 'mutation': {
-        locationFilter = {
-          op: 'and',
-          content: [
-            {
-              op: '>=',
-              content: { field: 'ssms.start_position', value: start },
-            },
-            { op: '<=', content: { field: 'ssms.end_position', value: end } },
-            {
-              op: '=',
-              content: { field: 'ssms.chromosome', value: [`chr${chr}`] },
-            },
-          ],
+    if (!skipLocation) {
+      switch (this.featureType) {
+        case 'mutation': {
+          locationFilter = {
+            op: 'and',
+            content: [
+              {
+                op: '>=',
+                content: { field: 'ssms.start_position', value: start },
+              },
+              { op: '<=', content: { field: 'ssms.end_position', value: end } },
+              {
+                op: '=',
+                content: { field: 'ssms.chromosome', value: [`chr${chr}`] },
+              },
+            ],
+          }
+          break
         }
-        break
-      }
-      case 'gene': {
-        locationFilter = {
-          op: 'and',
-          content: [
-            { op: '>=', content: { field: 'genes.gene_start', value: start } },
-            { op: '<=', content: { field: 'genes.gene_end', value: end } },
-            {
-              op: '=',
-              content: { field: 'genes.gene_chromosome', value: [chr] },
-            },
-          ],
+        case 'gene': {
+          locationFilter = {
+            op: 'and',
+            content: [
+              {
+                op: '>=',
+                content: { field: 'genes.gene_start', value: start },
+              },
+              { op: '<=', content: { field: 'genes.gene_end', value: end } },
+              {
+                op: '=',
+                content: { field: 'genes.gene_chromosome', value: [chr] },
+              },
+            ],
+          }
+          break
         }
-        break
+        default:
+          throw new Error(`invalid featureType ${this.featureType}`)
       }
-      default:
-        throw new Error(`invalid featureType ${this.featureType}`)
+    } else {
+      locationFilter = {
+        op: 'and',
+        content: [
+          {
+            op: 'in',
+            content: {
+              field: 'available_variation_data',
+              value: ['ssm'],
+            },
+          },
+        ],
+      }
     }
 
     if (this.cases && this.cases.length > 0) {
