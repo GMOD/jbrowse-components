@@ -86,14 +86,18 @@ export default pluginManager => {
     row,
     rowNumber,
   ) {
-    const viewSnapshot = breakpointSplitViewSnapshotFromTableRow(
-      svInspectorView,
-      spreadsheetView,
-      spreadsheet,
-      row,
-      rowNumber,
-    )
-    return Boolean(viewSnapshot)
+    try {
+      const viewSnapshot = breakpointSplitViewSnapshotFromTableRow(
+        svInspectorView,
+        spreadsheetView,
+        spreadsheet,
+        row,
+        rowNumber,
+      )
+      return Boolean(viewSnapshot)
+    } catch (e) {
+      return false
+    }
   }
 
   return {

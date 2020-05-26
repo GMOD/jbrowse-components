@@ -2,11 +2,23 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { SnapshotIn, Instance } from 'mobx-state-tree'
+import { InstanceOfModelReturnedBy } from '@gmod/jbrowse-core/util'
 import Spreadsheet from './Spreadsheet'
 import ImportWizard from './ImportWizard'
 import FilterControls from './FilterControls'
 
-const defaultRowMenuItems: MenuOption[] = [
+export type MenuOptionWithDisabledCallback = MenuOption & {
+  disabled?:
+    | boolean
+    | ((
+        viewModel: unknown,
+        spreadsheetModel: InstanceOfModelReturnedBy<typeof Spreadsheet>,
+        rowNumber: number,
+        row: Instance<ReturnType<typeof Spreadsheet>>['rowSet']['rows'][0],
+      ) => boolean)
+}
+
+const defaultRowMenuItems: MenuOptionWithDisabledCallback[] = [
   {
     label: 'Toggle select',
     icon: 'done',
@@ -149,5 +161,5 @@ export default (pluginManager: PluginManager) => {
 
   const stateModel = types.compose(BaseViewModel, model)
 
-  return { stateModel }
+  return stateModel
 }

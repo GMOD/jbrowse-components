@@ -55,7 +55,7 @@ export default pluginManager => {
   const circularViewOptionsBarHeight = 52
 
   const {
-    // canOpenBreakpointSplitViewFromTableRow,
+    canOpenBreakpointSplitViewFromTableRow,
     openBreakpointSplitViewFromTableRow,
     getSerializedFeatureForRow,
   } = jbrequire(require('./breakpointSplitViewFromTableRow'))
@@ -298,15 +298,15 @@ export default pluginManager => {
                 {
                   label: 'Open split detail view',
                   icon: 'open_in_new',
-                  // disabled(spreadsheetView, spreadsheet, rowNumber, row) {
-                  //   return canOpenBreakpointSplitViewFromTableRow(
-                  //     self,
-                  //     spreadsheetView,
-                  //     spreadsheet,
-                  //     row,
-                  //     rowNumber,
-                  //   )
-                  // },
+                  disabled(spreadsheetView, spreadsheet, rowNumber, row) {
+                    return !canOpenBreakpointSplitViewFromTableRow(
+                      self,
+                      spreadsheetView,
+                      spreadsheet,
+                      row,
+                      rowNumber,
+                    )
+                  },
                   onClick(spreadsheetView, spreadsheet, rowNumber, row) {
                     openBreakpointSplitViewFromTableRow(
                       self,
