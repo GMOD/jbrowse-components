@@ -25,6 +25,16 @@ describe('function string parsing', () => {
     expect(paramList).toEqual('')
     expect(remainder).toContain('volvox-sorted red/blue')
   })
+  it('has working regex 4', () => {
+    const result = functionRegexp.exec(`function zonker() {
+  return 'volvox-sorted red/blue'
+}
+    `)
+    expect(result).toBeTruthy()
+    const [, paramList, remainder] = result
+    expect(paramList).toEqual('')
+    expect(remainder).toContain('volvox-sorted red/blue')
+  })
   ;[
     'function(a,b,c) { return a+b+c+5}',
     'function(a, b,c){return a+b+c+5 }',
@@ -32,6 +42,8 @@ describe('function string parsing', () => {
     '  function( a, b,c){\nreturn a+b+c+5 } ',
     '  function( a, b,c){\nreturn a+b+c+5; ;}',
     '  function( a, b,c){\nreturn a+b+c+5; \n ;\n}',
+    ' function zonker( a, b,c){\nreturn a+b+c+5; \n ;\n}',
+    ' function dweeble_Zo12 ( a, b,c){\nreturn a+b+c+5; \n ;\n}',
   ].forEach(funcStr => {
     it(`can parse '${funcStr}'`, () => {
       const func = stringToFunction(funcStr, {

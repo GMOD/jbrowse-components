@@ -1,10 +1,12 @@
-export default pluginManager => {
-  const { jbrequire } = pluginManager
-  const { types, getParent } = jbrequire('mobx-state-tree')
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { SnapshotIn } from 'mobx-state-tree'
+import ColumnDataTypes from './ColumnDataTypes'
 
-  const { AnyFilterModelType: AnyColumnFilter } = jbrequire(
-    require('./ColumnDataTypes'),
-  )
+export default (pluginManager: PluginManager) => {
+  const { lib, load } = pluginManager
+  const { types, getParent } = lib['mobx-state-tree']
+
+  const { AnyFilterModelType: AnyColumnFilter } = load(ColumnDataTypes)
 
   // filter that finds a simple string in any of the cells of a row
   const RowFullTextFilter = types
@@ -21,7 +23,10 @@ export default pluginManager => {
             return true
           }
         s = s.toLowerCase()
-        return function stringPredicate(sheet, row) {
+        return function stringPredicate(
+          sheet: unknown,
+          row: { cells: { text: string }[] },
+        ) {
           const { cells } = row
           for (
             let columnNumber = 0;
@@ -31,15 +36,14 @@ export default pluginManager => {
             const cell = cells[columnNumber]
             // TODO: add support for derived cells
             // note: case insensitive
-            if (cell.text && cell.text.toLowerCase().indexOf(s) !== -1)
-              return true
+            if (cell.text && cell.text.toLowerCase().includes(s)) return true
           }
           return false
         }
       },
     }))
     .actions(self => ({
-      setString(s) {
+      setString(s: string) {
         self.stringToFind = s
       },
       clear() {
@@ -49,34 +53,43 @@ export default pluginManager => {
 
   return types
     .model('SpreadsheetFilterControls', {
-      rowFullText: types.optional(RowFullTextFilter, () => ({
-        type: 'RowFullText',
-      })),
+      rowFullText: types.optional(
+        RowFullTextFilter,
+        () =>
+          ({
+            type: 'RowFullText',
+            stringToFind: '',
+          } as SnapshotIn<typeof RowFullTextFilter>),
+      ),
       columnFilters: types.array(AnyColumnFilter),
     })
     .views(self => ({
       get filters() {
         return [self.rowFullText, ...self.columnFilters].filter(f => !!f)
       },
-      setRowFullTextFilter(stringToFind) {
-        self.rowFullText = { type: 'RowFullText', stringToFind }
+      setRowFullTextFilter(stringToFind: string) {
+        // @ts-ignore
+        self.rowFullText = {
+          type: 'RowFullText',
+          stringToFind,
+        }
       },
-      rowPassesFilters(sheet, row) {
-        for (let i = 0; i < self.filters.length; i += 1) {
-          if (!self.filters[i].predicate(sheet, row)) return false
+      rowPassesFilters(sheet: unknown, row: unknown) {
+        for (let i = 0; i < this.filters.length; i += 1) {
+          if (!this.filters[i].predicate(sheet, row)) return false
         }
         return true
       },
     }))
     .actions(self => ({
-      addBlankColumnFilter(columnNumber) {
+      addBlankColumnFilter(columnNumber: number) {
         const { dataType } = getParent(self).spreadsheet.columns[columnNumber]
         self.columnFilters.push({
           type: dataType.type,
           columnNumber,
         })
       },
-      removeColumnFilter(filter) {
+      removeColumnFilter(filter: typeof AnyColumnFilter) {
         return self.columnFilters.remove(filter)
       },
       clearAllFilters() {

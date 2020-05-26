@@ -27,8 +27,8 @@ export interface RowSet {
 }
 
 export interface ParseOptions {
-  hasColumnNameLine: boolean
-  columnNameLineNumber: number
+  hasColumnNameLine?: boolean
+  columnNameLineNumber?: number
   selectedAssemblyName?: string
   isValidRefName: (refName: string, assemblyName?: string) => boolean
 }
@@ -92,7 +92,7 @@ function dataToSpreadsheetSnapshot(
 
   // process the column names row if present
   const columnNames: Record<string, string> = {}
-  if (options.hasColumnNameLine) {
+  if (options.hasColumnNameLine && options.columnNameLineNumber !== undefined) {
     const [colNamesRow] = rowSet.rows.splice(
       options.columnNameLineNumber - 1,
       1,

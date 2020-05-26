@@ -1,13 +1,48 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { MenuOption } from '@gmod/jbrowse-core/ui'
+import { SnapshotIn, Instance } from 'mobx-state-tree'
+import { InstanceOfModelReturnedBy } from '@gmod/jbrowse-core/util'
+import Spreadsheet from './Spreadsheet'
+import ImportWizard from './ImportWizard'
+import FilterControls from './FilterControls'
 
-export default pluginManager => {
-  const { jbrequire } = pluginManager
-  const { types, getParent, getRoot, getEnv } = jbrequire('mobx-state-tree')
-  const BaseViewModel = jbrequire('@gmod/jbrowse-core/BaseViewModel')
+export type MenuOptionWithDisabledCallback = MenuOption & {
+  disabled?:
+    | boolean
+    | ((
+        viewModel: unknown,
+        spreadsheetModel: InstanceOfModelReturnedBy<typeof Spreadsheet>,
+        rowNumber: number,
+        row: Instance<ReturnType<typeof Spreadsheet>>['rowSet']['rows'][0],
+      ) => boolean)
+}
 
-  const SpreadsheetModel = jbrequire(require('./Spreadsheet'))
-  const ImportWizardModel = jbrequire(require('./ImportWizard'))
-  const FilterControlsModel = jbrequire(require('./FilterControls'))
+const defaultRowMenuItems: MenuOptionWithDisabledCallback[] = [
+  {
+    label: 'Toggle select',
+    icon: 'done',
+    onClick(
+      view: unknown,
+      spreadsheet: Instance<ReturnType<typeof Spreadsheet>>,
+    ) {
+      const rowNumber = spreadsheet.rowMenuPosition?.rowNumber
+      if (rowNumber !== undefined) {
+        spreadsheet.rowSet.rows[rowNumber - 1].toggleSelect()
+      }
+    },
+  },
+]
+
+export default (pluginManager: PluginManager) => {
+  const { lib, load } = pluginManager
+  const { mobx } = lib
+  const { types, getParent, getRoot, getEnv } = lib['mobx-state-tree']
+  const BaseViewModel = lib['@gmod/jbrowse-core/BaseViewModel']
+
+  const SpreadsheetModel = load(Spreadsheet)
+  const ImportWizardModel = load(ImportWizard)
+  const FilterControlsModel = load(FilterControls)
 
   const minHeight = 40
   const defaultHeight = 440
@@ -44,6 +79,7 @@ export default pluginManager => {
     })
     .volatile(() => ({
       width: 400,
+      rowMenuItems: mobx.observable(defaultRowMenuItems),
     }))
     .views(self => ({
       get readyToDisplay() {
@@ -65,10 +101,11 @@ export default pluginManager => {
 
       get assembly() {
         if (self.spreadsheet && self.spreadsheet.assemblyName) {
-          const { assemblies } = getRoot(self).jbrowse
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const assemblies = getRoot(self).jbrowse.assemblies as any[]
           const assembly = (assemblies || []).find(
             asm =>
-              readConfObject(asm, 'name') === self.spreadsheet.assemblyName,
+              readConfObject(asm, 'name') === self.spreadsheet?.assemblyName,
           )
           if (assembly) {
             return assembly
@@ -78,29 +115,33 @@ export default pluginManager => {
       },
     }))
     .actions(self => ({
-      setWidth(newWidth) {
+      setRowMenuItems(newItems: MenuOption[]) {
+        self.rowMenuItems.replace(newItems)
+      },
+      setWidth(newWidth: number) {
         self.width = newWidth
         return self.width
       },
-      setHeight(newHeight) {
+      setHeight(newHeight: number) {
         if (newHeight > minHeight) self.height = newHeight
         else self.height = minHeight
         return self.height
       },
-      resizeHeight(distance) {
+      resizeHeight(distance: number) {
         const oldHeight = self.height
-        const newHeight = self.setHeight(self.height + distance)
+        const newHeight = this.setHeight(self.height + distance)
         return newHeight - oldHeight
       },
-      resizeWidth(distance) {
+      resizeWidth(distance: number) {
         const oldWidth = self.width
-        const newWidth = self.setWidth(self.width + distance)
+        const newWidth = this.setWidth(self.width + distance)
         return newWidth - oldWidth
       },
 
-      // load a new spreadsheet and set our mode to display it
-      displaySpreadsheet(spreadsheet) {
+      /** load a new spreadsheet and set our mode to display it */
+      displaySpreadsheet(spreadsheet: SnapshotIn<typeof SpreadsheetModel>) {
         self.filterControls.clearAllFilters()
+        // @ts-ignore
         self.spreadsheet = spreadsheet
         self.mode = 'display'
       },
@@ -120,5 +161,5 @@ export default pluginManager => {
 
   const stateModel = types.compose(BaseViewModel, model)
 
-  return { stateModel }
+  return stateModel
 }

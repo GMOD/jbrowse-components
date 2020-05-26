@@ -1,6 +1,8 @@
-export default pluginManager => {
-  const { jbrequire } = pluginManager
-  const { types } = jbrequire('mobx-state-tree')
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+
+export default (pluginManager: PluginManager) => {
+  const { lib } = pluginManager
+  const { types } = lib['mobx-state-tree']
 
   const CellModel = types.model('SpreadsheetCell', {
     text: types.string,
