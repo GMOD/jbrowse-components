@@ -41,7 +41,8 @@ export default pluginManager => {
 
   const ElisionRulerArc = observer(({ model, slice }) => {
     const theme = useTheme()
-    const { radiusPx } = model
+    const { radiusPx: modelRadiusPx } = model
+    const radiusPx = modelRadiusPx + 1
     const { endRadians, startRadians, region } = slice
     const startXY = polarToCartesian(radiusPx, startRadians)
     const endXY = polarToCartesian(radiusPx, endRadians)
@@ -78,6 +79,7 @@ export default pluginManager => {
             ...endXY,
           ].join(' ')}
           stroke={theme.palette.text.secondary}
+          strokeWidth={2}
           strokeDasharray="2,2"
           fill="none"
         />
@@ -186,8 +188,9 @@ export default pluginManager => {
           color={color}
         />
         <path
-          d={sliceArcPath(slice, radiusPx, region.start, region.end)}
+          d={sliceArcPath(slice, radiusPx + 1, region.start, region.end)}
           stroke={color}
+          strokeWidth={2}
           fill="none"
         >
           <title>{region.refName}</title>
