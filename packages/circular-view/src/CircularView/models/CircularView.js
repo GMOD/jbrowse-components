@@ -206,11 +206,11 @@ export default pluginManager => {
         return newWidth - oldWidth
       },
       rotateClockwiseButton() {
-        self.rotateClockwise()
+        self.rotateClockwise(Math.PI / 6)
       },
 
       rotateCounterClockwiseButton() {
-        self.rotateCounterClockwise()
+        self.rotateCounterClockwise(Math.PI / 6)
       },
 
       rotateClockwise(distance = 0.17) {

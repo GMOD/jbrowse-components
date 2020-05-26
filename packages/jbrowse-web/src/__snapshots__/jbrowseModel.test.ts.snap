@@ -635,28 +635,6 @@ Object {
     },
     Object {
       "adapter": Object {
-        "index": Object {
-          "location": Object {
-            "uri": "test_data/volvox/volvox.dup.vcf.gz.tbi",
-          },
-        },
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": Object {
-          "uri": "test_data/volvox/volvox.dup.vcf.gz",
-        },
-      },
-      "assemblyNames": Array [
-        "volvox",
-      ],
-      "name": "volvox chord test",
-      "renderer": Object {
-        "type": "StructuralVariantChordRenderer",
-      },
-      "trackId": "QGoUN4vNq",
-      "type": "StructuralVariantChordTrack",
-    },
-    Object {
-      "adapter": Object {
         "features": Array [
           Object {
             "end": 191,

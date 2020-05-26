@@ -55,6 +55,7 @@ import * as Configuration from './configuration'
 import Plugin from './Plugin'
 import * as coreUi from './ui'
 import * as coreUtil from './util'
+import * as coreColor from './util/color'
 import * as trackUtils from './util/tracks'
 import * as coreIo from './util/io'
 import * as coreMstReflection from './util/mst-reflection'
@@ -121,6 +122,7 @@ const libs = {
   '@gmod/jbrowse-core/util/types/mst': mstTypes,
   '@gmod/jbrowse-core/ui': coreUi,
   '@gmod/jbrowse-core/util': coreUtil,
+  '@gmod/jbrowse-core/util/color': coreColor,
   '@gmod/jbrowse-core/util/tracks': trackUtils,
   '@gmod/jbrowse-core/util/Base1DViewModel': Base1DView,
   '@gmod/jbrowse-core/util/io': coreIo,

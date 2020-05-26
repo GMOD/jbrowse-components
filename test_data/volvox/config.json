@@ -537,28 +537,6 @@
       }
     },
     {
-      "type": "StructuralVariantChordTrack",
-      "trackId": "QGoUN4vNq",
-      "name": "volvox chord test",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "adapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "test_data/volvox/volvox.dup.vcf.gz"
-        },
-        "index": {
-          "location": {
-            "uri": "test_data/volvox/volvox.dup.vcf.gz.tbi"
-          }
-        }
-      },
-      "renderer": {
-        "type": "StructuralVariantChordRenderer"
-      }
-    },
-    {
       "type": "DynamicTrack",
       "trackId": "FDN0zpD_B6",
       "name": "Lollipop track",

@@ -2,7 +2,9 @@ export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { makeStyles } = jbrequire('@material-ui/core/styles')
+  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { makeContrasting } = jbrequire('@gmod/jbrowse-core/util/color')
+  const { makeStyles, useTheme } = jbrequire('@material-ui/core/styles')
   const { polarToCartesian, radToDeg, assembleLocString } = jbrequire(
     '@gmod/jbrowse-core/util',
   )
@@ -10,7 +12,6 @@ export default pluginManager => {
   const useStyles = makeStyles({
     rulerLabel: {
       fontSize: '0.8rem',
-      fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
       fontWeight: 500,
       lineHeight: 1.6,
       letterSpacing: '0.0075em',
@@ -39,7 +40,9 @@ export default pluginManager => {
   }
 
   const ElisionRulerArc = observer(({ model, slice }) => {
-    const { radiusPx } = model
+    const theme = useTheme()
+    const { radiusPx: modelRadiusPx } = model
+    const radiusPx = modelRadiusPx + 1
     const { endRadians, startRadians, region } = slice
     const startXY = polarToCartesian(radiusPx, startRadians)
     const endXY = polarToCartesian(radiusPx, endRadians)
@@ -61,6 +64,7 @@ export default pluginManager => {
           title={`${Number(
             region.regions.length,
           ).toLocaleString()} more regions`}
+          color={theme.palette.text.primary}
         />
         <path
           d={[
@@ -74,7 +78,8 @@ export default pluginManager => {
             '1',
             ...endXY,
           ].join(' ')}
-          stroke="gray"
+          stroke={theme.palette.text.secondary}
+          strokeWidth={2}
           strokeDasharray="2,2"
           fill="none"
         />
@@ -83,7 +88,7 @@ export default pluginManager => {
   })
 
   const RulerLabel = observer(
-    ({ view, text, maxWidthPx, radians, radiusPx, title }) => {
+    ({ view, text, maxWidthPx, radians, radiusPx, title, color }) => {
       const classes = useStyles()
       const textXY = polarToCartesian(radiusPx + 5, radians)
       if (!text) return null
@@ -98,6 +103,7 @@ export default pluginManager => {
             textAnchor="middle"
             dominantBaseline="baseline"
             transform={`translate(${textXY}) rotate(${radToDeg(radians) + 90})`}
+            style={{ fill: color }}
           >
             {text}
             <title>{title || text}</title>
@@ -118,6 +124,7 @@ export default pluginManager => {
               textAnchor="start"
               dominantBaseline="middle"
               transform={`translate(${textXY}) rotate(${radToDeg(radians)})`}
+              style={{ fill: color }}
             >
               {text}
               <title>{title || text}</title>
@@ -134,6 +141,7 @@ export default pluginManager => {
             transform={`translate(${textXY}) rotate(${
               radToDeg(radians) + 180
             })`}
+            style={{ fill: color }}
           >
             {text}
             <title>{title || text}</title>
@@ -147,10 +155,26 @@ export default pluginManager => {
   )
 
   const RegionRulerArc = observer(({ model, slice }) => {
+    const theme = useTheme()
     const { radiusPx } = model
     const { region, endRadians, startRadians } = slice
     const centerRadians = (endRadians + startRadians) / 2
     const widthPx = (endRadians - startRadians) * radiusPx
+    const session = getSession(model)
+    let color
+    const assembly = session.assemblyManager.get(slice.region.assemblyName)
+    if (assembly) {
+      color = assembly.getRefNameColor(region.refName)
+    }
+    if (color) {
+      try {
+        color = makeContrasting(color, theme.palette.background.paper)
+      } catch (error) {
+        color = theme.palette.text.primary
+      }
+    } else {
+      color = theme.palette.text.primary
+    }
 
     // TODO: slice flipping
     return (
@@ -161,10 +185,12 @@ export default pluginManager => {
           maxWidthPx={widthPx}
           radians={centerRadians}
           radiusPx={radiusPx}
+          color={color}
         />
         <path
-          d={sliceArcPath(slice, radiusPx, region.start, region.end)}
-          stroke="black"
+          d={sliceArcPath(slice, radiusPx + 1, region.start, region.end)}
+          stroke={color}
+          strokeWidth={2}
           fill="none"
         >
           <title>{region.refName}</title>
