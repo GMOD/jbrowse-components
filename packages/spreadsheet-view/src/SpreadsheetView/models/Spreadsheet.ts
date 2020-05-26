@@ -37,6 +37,7 @@ export default (pluginManager: PluginManager) => {
       },
     }))
 
+  type RowMenuPosition = { anchorEl: Element; rowNumber: number } | null
   const stateModel = types
     .model('Spreadsheet', {
       rowSet: types.optional(StaticRowSetModel, () =>
@@ -63,6 +64,7 @@ export default (pluginManager: PluginManager) => {
     })
     .volatile(() => ({
       defaultDataType: ColumnTypes.Text,
+      rowMenuPosition: null as RowMenuPosition,
     }))
     .views(self => ({
       get hideRowSelection() {
@@ -97,6 +99,10 @@ export default (pluginManager: PluginManager) => {
       },
     }))
     .actions(self => ({
+      setRowMenuPosition(newPosition: RowMenuPosition) {
+        self.rowMenuPosition = newPosition
+      },
+
       setSortColumns(
         newSort: NonNullable<SnapshotIn<typeof self.sortColumns>>,
       ) {

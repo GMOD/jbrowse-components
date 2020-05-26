@@ -1,13 +1,30 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
-import { SnapshotIn } from 'mobx-state-tree'
+import { SnapshotIn, Instance } from 'mobx-state-tree'
 import Spreadsheet from './Spreadsheet'
 import ImportWizard from './ImportWizard'
 import FilterControls from './FilterControls'
 
+const defaultRowMenuItems: MenuOption[] = [
+  {
+    label: 'Toggle select',
+    icon: 'done',
+    onClick(
+      view: unknown,
+      spreadsheet: Instance<ReturnType<typeof Spreadsheet>>,
+    ) {
+      const rowNumber = spreadsheet.rowMenuPosition?.rowNumber
+      if (rowNumber !== undefined) {
+        spreadsheet.rowSet.rows[rowNumber - 1].toggleSelect()
+      }
+    },
+  },
+]
+
 export default (pluginManager: PluginManager) => {
   const { lib, load } = pluginManager
+  const { mobx } = lib
   const { types, getParent, getRoot, getEnv } = lib['mobx-state-tree']
   const BaseViewModel = lib['@gmod/jbrowse-core/BaseViewModel']
 
@@ -38,8 +55,6 @@ export default (pluginManager: PluginManager) => {
         FilterControlsModel.create({}),
       ),
 
-      rowMenuItems: types.array(types.frozen<MenuOption>()),
-
       // switch specifying whether we are showing the import wizard or the spreadsheet in our viewing area
       mode: types.optional(
         types.enumeration('SpreadsheetViewMode', ['import', 'display']),
@@ -52,6 +67,7 @@ export default (pluginManager: PluginManager) => {
     })
     .volatile(() => ({
       width: 400,
+      rowMenuItems: mobx.observable(defaultRowMenuItems),
     }))
     .views(self => ({
       get readyToDisplay() {

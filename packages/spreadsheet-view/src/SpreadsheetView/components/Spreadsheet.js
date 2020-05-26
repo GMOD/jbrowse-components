@@ -36,6 +36,7 @@ export default pluginManager => {
   const FormControlLabel = jbrequire('@material-ui/core/FormControlLabel')
 
   const ColumnMenu = jbrequire(require('./ColumnMenu'))
+  const RowMenu = jbrequire(require('./RowMenu'))
 
   const useStyles = makeStyles(theme => {
     return {
@@ -63,19 +64,31 @@ export default pluginManager => {
       },
       rowNumCell: {
         background: grey[200],
-        textAlign: 'right',
+        textAlign: 'left',
         border: `1px solid ${grey[300]}`,
         position: 'relative',
         padding: '0 2px 0 0',
+        whiteSpace: 'nowrap',
         userSelect: 'none',
       },
       rowNumber: {
         fontWeight: 'normal',
-        display: 'flex',
-        textAlign: 'right',
+        display: 'inline-block',
+        flex: 'none',
+        paddingRight: '20px',
         margin: 0,
         whiteSpace: 'nowrap',
       },
+      rowMenuButton: {
+        padding: 0,
+        margin: 0,
+        position: 'absolute',
+        right: 0,
+        display: 'inline-block',
+        whiteSpace: 'nowrap',
+        flex: 'none',
+      },
+      rowMenuButtonIcon: {},
       rowSelector: {
         position: 'relative',
         top: '-2px',
@@ -144,16 +157,25 @@ export default pluginManager => {
     return cell.text
   })
 
-  const DataRow = observer(({ rowModel, spreadsheetModel }) => {
+  const DataRow = observer(({ rowModel, rowNumber, spreadsheetModel }) => {
     const classes = useStyles()
     const { hideRowSelection, columnDisplayOrder } = spreadsheetModel
     let rowClass = classes.dataRow
     if (rowModel.isSelected) rowClass += ` ${classes.dataRowSelected}`
 
-    const labelClick = evt => {
+    function labelClick(evt) {
       rowModel.toggleSelect()
       evt.stopPropagation()
       evt.preventDefault()
+    }
+
+    function rowButtonClick(event) {
+      spreadsheetModel.setRowMenuPosition({
+        anchorEl: event.currentTarget,
+        rowNumber,
+      })
+      event.preventDefault()
+      event.stopPropagation()
     }
 
     return (
@@ -173,6 +195,13 @@ export default pluginManager => {
             }
             label={rowModel.id}
           />
+          <IconButton
+            className={classes.rowMenuButton}
+            onClick={rowButtonClick}
+            color="secondary"
+          >
+            <ArrowDropDown className={classes.rowMenuButtonIcon} />
+          </IconButton>
         </th>
         {columnDisplayOrder.map(colNumber => (
           <td key={colNumber}>
@@ -212,13 +241,29 @@ export default pluginManager => {
     return null
   }
 
+  const DataTableBody = observer(({ rows, spreadsheetModel }) => {
+    const classes = useStyles()
+    return (
+      <tbody className={classes.dataTableBody}>
+        {rows.map(row => (
+          <DataRow
+            key={row.id}
+            rowNumber={row.id}
+            spreadsheetModel={spreadsheetModel}
+            rowModel={row}
+          />
+        ))}
+      </tbody>
+    )
+  })
+
   const DataTable = observer(({ model }) => {
     const { columnDisplayOrder, columns, hasColumnNames, rowSet } = model
     const classes = useStyles()
 
     // column menu active state
     const [currentColumnMenu, setColumnMenu] = useState(null)
-    const columnButtonClick = (colNumber, evt) => {
+    function columnButtonClick(colNumber, evt) {
       setColumnMenu({
         colNumber,
         anchorEl: evt.currentTarget,
@@ -227,10 +272,10 @@ export default pluginManager => {
 
     // column header hover state
     const [currentHoveredColumn, setHoveredColumn] = useState(null)
-    const columnHeaderMouseOver = (colNumber /* , evt */) => {
+    function columnHeaderMouseOver(colNumber /* , evt */) {
       setHoveredColumn(colNumber)
     }
-    const columnHeaderMouseOut = (/* colNumber, evt */) => {
+    function columnHeaderMouseOut(/* colNumber, evt */) {
       setHoveredColumn(null)
     }
 
@@ -245,6 +290,7 @@ export default pluginManager => {
           currentColumnMenu={currentColumnMenu}
           setColumnMenu={setColumnMenu}
         />
+        <RowMenu viewModel={getParent(model)} spreadsheetModel={model} />
         <table className={classes.dataTable}>
           <thead>
             <tr>
@@ -296,11 +342,7 @@ export default pluginManager => {
               ))}
             </tr>
           </thead>
-          <tbody className={classes.dataTableBody}>
-            {rows.map(row => (
-              <DataRow key={row.id} spreadsheetModel={model} rowModel={row} />
-            ))}
-          </tbody>
+          <DataTableBody rows={rows} spreadsheetModel={model} />
           {!rows.length ? (
             <caption className={classes.emptyMessage}>
               {totalRows ? 'no rows match criteria' : 'no rows present'}
