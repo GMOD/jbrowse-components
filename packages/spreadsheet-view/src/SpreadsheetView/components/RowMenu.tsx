@@ -1,5 +1,8 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Menu, MenuOption } from '@gmod/jbrowse-core/ui'
+import { InstanceOfModelReturnedBy } from '@gmod/jbrowse-core/util'
+
+import SpreadsheetModelF from '../models/Spreadsheet'
 
 export default (pluginManager: PluginManager) => {
   const { lib } = pluginManager
@@ -13,10 +16,7 @@ export default (pluginManager: PluginManager) => {
 
   interface Props {
     viewModel: { rowMenuItems: MenuOption[] }
-    spreadsheetModel: {
-      rowMenuPosition: RowMenuPosition | null
-      setRowMenuPosition: (n: RowMenuPosition | null) => void
-    }
+    spreadsheetModel: InstanceOfModelReturnedBy<typeof SpreadsheetModelF>
   }
   const RowMenu = observer(({ viewModel, spreadsheetModel }: Props) => {
     const currentRowMenu = spreadsheetModel.rowMenuPosition
@@ -27,7 +27,13 @@ export default (pluginManager: PluginManager) => {
     }
 
     function handleMenuItemClick(event: React.MouseEvent, callback: Function) {
-      callback(viewModel, spreadsheetModel)
+      const rowNumber = spreadsheetModel.rowMenuPosition?.rowNumber
+      let row
+      if (rowNumber !== undefined) {
+        row = spreadsheetModel.rowSet.rows[rowNumber - 1]
+      }
+
+      callback(viewModel, spreadsheetModel, rowNumber, row)
       rowMenuClose()
     }
 

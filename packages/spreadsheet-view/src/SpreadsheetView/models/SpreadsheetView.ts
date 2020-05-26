@@ -103,6 +103,9 @@ export default (pluginManager: PluginManager) => {
       },
     }))
     .actions(self => ({
+      setRowMenuItems(newItems: MenuOption[]) {
+        self.rowMenuItems.replace(newItems)
+      },
       setWidth(newWidth: number) {
         self.width = newWidth
         return self.width
