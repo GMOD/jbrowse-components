@@ -6,6 +6,7 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { toUrlSafeB64, AbstractSessionModel } from '@gmod/jbrowse-core/util'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 import {
   addDisposer,
   cast,
@@ -133,24 +134,24 @@ export default function RootModel(pluginManager: PluginManager) {
           autorun(
             () => {
               if (self.session) {
-                const snapshot = getSnapshot(self.session)
-                localStorage.setItem(
-                  'jbrowse-web-session',
-                  JSON.stringify(snapshot),
-                )
-                const urlSnapshot = JSON.stringify(snapshot)
-                const parsed = queryString.parse(document.location.search)
-                const urlSplit = window.location.href.split('?')
-                if (urlSnapshot.length < MAX_SESSION_SIZE_IN_URL) {
-                  parsed.session = toUrlSafeB64(urlSnapshot)
-                } else {
-                  parsed.session = undefined
+                const snapshot = JSON.stringify(getSnapshot(self.session))
+                if (getConf(self.jbrowse, 'useLocalStorage')) {
+                  localStorage.setItem('jbrowse-web-session', snapshot)
                 }
-                window.history.replaceState(
-                  {},
-                  '',
-                  `${urlSplit[0]}?${queryString.stringify(parsed)}`,
-                )
+                if (getConf(self.jbrowse, 'updateUrl')) {
+                  const parsed = queryString.parse(document.location.search)
+                  const urlSplit = window.location.href.split('?')
+                  if (snapshot.length < MAX_SESSION_SIZE_IN_URL) {
+                    parsed.session = toUrlSafeB64(snapshot)
+                  } else {
+                    parsed.session = undefined
+                  }
+                  window.history.replaceState(
+                    {},
+                    '',
+                    `${urlSplit[0]}?${queryString.stringify(parsed)}`,
+                  )
+                }
               }
             },
             { delay: 400 },
