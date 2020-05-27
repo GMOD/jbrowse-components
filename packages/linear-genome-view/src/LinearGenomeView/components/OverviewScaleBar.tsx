@@ -15,6 +15,7 @@ import {
   HEADER_OVERVIEW_HEIGHT,
 } from '..'
 import { chooseGridPitch } from '../util'
+import OverviewRubberBand from './OverviewRubberBand'
 
 const useStyles = makeStyles(theme => {
   // @ts-ignore
@@ -108,6 +109,7 @@ function OverviewScaleBar({
   const scale =
     totalLength / (width - (wholeRefSeqs.length - 1) * wholeSeqSpacer)
   const gridPitch = chooseGridPitch(scale, 120, 15)
+  console.log(scale)
 
   // @ts-ignore
   const polygonColor = theme.palette.tertiary
@@ -142,6 +144,7 @@ function OverviewScaleBar({
           }
 
           return (
+            // each whole sequence
             <Paper
               key={seq.refName}
               style={{
@@ -152,9 +155,11 @@ function OverviewScaleBar({
               className={classes.scaleBarContig}
               variant="outlined"
             >
+              {/* name of sequence */}
               <Typography className={classes.scaleBarRefName}>
                 {seq.refName}
               </Typography>
+              {/* where the boxes actually get drawn   */}
               {visibleRegions.map((r, visibleRegionIdx) => {
                 if (
                   seq.assemblyName === r.assemblyName &&
@@ -173,6 +178,7 @@ function OverviewScaleBar({
                 }
                 return null
               })}
+              {/* the numbers */}
               {labels.map((label, labelIdx) => (
                 <div
                   key={label}
@@ -188,6 +194,7 @@ function OverviewScaleBar({
           )
         })}
       </div>
+      {/* probably can ignore the below */}
       <div className={classes.overview}>
         <svg
           height={HEADER_BAR_HEIGHT}

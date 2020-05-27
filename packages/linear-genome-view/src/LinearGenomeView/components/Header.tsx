@@ -21,6 +21,7 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import { LinearGenomeViewStateModel, HEADER_BAR_HEIGHT } from '..'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import OverviewScaleBar from './OverviewScaleBar'
+import OverviewRubberBand from './OverviewRubberBand'
 import ZoomControls from './ZoomControls'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -328,5 +329,13 @@ export default observer(({ model }: { model: LGV }) => {
     return controls
   }
 
-  return <OverviewScaleBar model={model}>{controls}</OverviewScaleBar>
+  // return <OverviewScaleBar model={model}>{controls}</OverviewScaleBar>
+  return (
+    <OverviewRubberBand
+      model={model}
+      ControlComponent={
+        <OverviewScaleBar model={model}>{controls}</OverviewScaleBar>
+      }
+    />
+  )
 })
