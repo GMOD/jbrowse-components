@@ -2,6 +2,7 @@ import { makeStyles as muiMakeStyles } from '@material-ui/core/styles'
 import { useRef as reactUseRef, useState as reactUseState } from 'react'
 import { Menu as CoreMenu } from '@gmod/jbrowse-core/ui'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { BaseBlock } from '@gmod/jbrowse-core/util/blockTypes'
 import { DotplotViewModel } from '../model'
 
 type UI = { Menu: typeof CoreMenu }
@@ -75,6 +76,42 @@ export default (pluginManager: PluginManager) => {
 
   type Coord = [number, number] | undefined
 
+  function getBlockLabelKeysToHide(blocks: BaseBlock[]) {
+    const sortedBlocks = blocks
+      .filter(block => block.refName)
+      .map(({ assemblyName, refName, start, end, key }) => ({
+        assemblyName,
+        refName,
+        start,
+        end,
+        key,
+      }))
+    sortedBlocks.sort((a, b) => b.end - b.start - (a.end - a.start))
+    let collisionCount = 0
+    let blockLabelKeysToHide: string[] = []
+    do {
+      let currentCollisions = 0
+      blocks
+        .filter(block => block.refName)
+        // eslint-disable-next-line no-loop-func
+        .filter(block => !blockLabelKeysToHide.includes(block.key))
+        .forEach((block, index, array) => {
+          const prevY = index > 0 ? array[index - 1].offsetPx : 0
+          const y = block.offsetPx
+          if (index !== 0 && Math.abs(prevY - y) <= 12) {
+            currentCollisions += 1
+          }
+        })
+      collisionCount = currentCollisions
+      const numBlocksToHide =
+        blockLabelKeysToHide.length + Math.ceil(currentCollisions / 2)
+      blockLabelKeysToHide = sortedBlocks
+        .slice(sortedBlocks.length - numBlocksToHide)
+        .map(block => block.key)
+    } while (collisionCount > 0)
+    return blockLabelKeysToHide
+  }
+
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
     const ref = (useRef as useRefR)<SVGSVGElement | null>(null)
@@ -144,6 +181,12 @@ export default (pluginManager: PluginManager) => {
     }
 
     const tickSize = 0
+    const verticalBlockLabelKeysToHide = getBlockLabelKeysToHide(
+      vview.dynamicBlocks.blocks,
+    )
+    const horizontalBlockLabelKeysToHide = getBlockLabelKeysToHide(
+      hview.dynamicBlocks.blocks,
+    )
     return (
       <div style={{ position: 'relative' }}>
         <Controls model={model} />
@@ -152,13 +195,15 @@ export default (pluginManager: PluginManager) => {
             <svg className={classes.vtext} width={borderX} height={viewHeight}>
               <g>
                 {vview.dynamicBlocks.blocks
-                  .filter(region => region.refName)
-                  .map((region, index, array) => {
-                    const prevY = index > 0 ? array[index - 1].offsetPx : 0
+                  .filter(
+                    region =>
+                      region.refName &&
+                      !verticalBlockLabelKeysToHide.includes(region.key),
+                  )
+                  .map(region => {
                     const y = region.offsetPx
                     const x = borderX
-
-                    return index === 0 || Math.abs(prevY - y) > 12 ? (
+                    return (
                       <text
                         transform={`rotate(${vtextRotation},${x},${y})`}
                         key={JSON.stringify(region)}
@@ -169,7 +214,7 @@ export default (pluginManager: PluginManager) => {
                       >
                         {region.refName}
                       </text>
-                    ) : null
+                    )
                   })}
               </g>
             </svg>
@@ -240,12 +285,15 @@ export default (pluginManager: PluginManager) => {
             <svg width={viewWidth} height={borderY} className={classes.htext}>
               <g>
                 {hview.dynamicBlocks.blocks
-                  .filter(region => region.refName)
+                  .filter(
+                    region =>
+                      region.refName &&
+                      !horizontalBlockLabelKeysToHide.includes(region.key),
+                  )
                   .map((region, index, array) => {
-                    const prevX = index > 0 ? array[index - 1].offsetPx : 0
                     const x = region.offsetPx
                     const y = tickSize
-                    return index === 0 || Math.abs(prevX - x) > 12 ? (
+                    return (
                       <text
                         transform={`rotate(${htextRotation},${
                           x - hview.offsetPx
@@ -259,7 +307,7 @@ export default (pluginManager: PluginManager) => {
                       >
                         {region.refName}
                       </text>
-                    ) : null
+                    )
                   })}
               </g>
             </svg>
