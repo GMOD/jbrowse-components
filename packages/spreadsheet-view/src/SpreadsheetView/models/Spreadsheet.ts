@@ -1,12 +1,18 @@
 import { stringToFunction } from '@gmod/jbrowse-core/util/functionStrings'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { SnapshotIn, Instance } from 'mobx-state-tree'
+import ColumnDataTypes from './ColumnDataTypes'
+import StaticRowSetF from './StaticRowSet'
+import RowF from './Row'
 
-export default pluginManager => {
-  const { jbrequire } = pluginManager
-  const { types, getParent } = jbrequire('mobx-state-tree')
+export default (pluginManager: PluginManager) => {
+  const { lib, load } = pluginManager
+  const { types, getParent } = lib['mobx-state-tree']
 
-  const { ColumnTypes, AnyColumnType } = jbrequire(require('./ColumnDataTypes'))
+  const { ColumnTypes, AnyColumnType } = load(ColumnDataTypes)
 
-  const StaticRowSetModel = jbrequire(require('./StaticRowSet'))
+  const StaticRowSetModel = load(StaticRowSetF)
+  type Row = Instance<ReturnType<typeof RowF>>
 
   const ColumnDefinition = types
     .model('ColumnDefinition', {
@@ -31,6 +37,7 @@ export default pluginManager => {
       },
     }))
 
+  type RowMenuPosition = { anchorEl: Element; rowNumber: number } | null
   const stateModel = types
     .model('Spreadsheet', {
       rowSet: types.optional(StaticRowSetModel, () =>
@@ -57,6 +64,7 @@ export default pluginManager => {
     })
     .volatile(() => ({
       defaultDataType: ColumnTypes.Text,
+      rowMenuPosition: null as RowMenuPosition,
     }))
     .views(self => ({
       get hideRowSelection() {
@@ -67,7 +75,9 @@ export default pluginManager => {
       // list of data type names to be made available in the column
       // dropdown menu
       get dataTypeChoices() {
-        const typeNames = Object.keys(ColumnTypes)
+        const typeNames = Object.keys(
+          ColumnTypes,
+        ) as (keyof typeof ColumnTypes)[]
         return typeNames.map(typeName => {
           const dataType = ColumnTypes[typeName].create({ type: typeName })
           const { displayName, categoryName } = dataType
@@ -75,10 +85,10 @@ export default pluginManager => {
         })
       },
 
-      rowSortingComparisonFunction(rowA, rowB) {
+      rowSortingComparisonFunction(rowA: Row, rowB: Row) {
         for (let i = 0; i < self.sortColumns.length; i += 1) {
           const { columnNumber, descending } = self.sortColumns[i]
-          const { dataType } = self.columns.get(columnNumber)
+          const { dataType } = self.columns[columnNumber]
           const result = dataType.compare(
             rowA.cells[columnNumber],
             rowB.cells[columnNumber],
@@ -89,10 +99,17 @@ export default pluginManager => {
       },
     }))
     .actions(self => ({
-      setSortColumns(newSort) {
-        self.sortColumns = newSort
+      setRowMenuPosition(newPosition: RowMenuPosition) {
+        self.rowMenuPosition = newPosition
       },
-      setColumnType(columnNumber, newTypeName) {
+
+      setSortColumns(
+        newSort: NonNullable<SnapshotIn<typeof self.sortColumns>>,
+      ) {
+        // @ts-ignore
+        if (newSort) self.sortColumns = newSort
+      },
+      setColumnType(columnNumber: number, newTypeName: string) {
         self.columns[columnNumber].dataType = { type: newTypeName }
       },
       unselectAll() {

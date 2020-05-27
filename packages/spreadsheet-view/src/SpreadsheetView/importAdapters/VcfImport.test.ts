@@ -12,7 +12,7 @@ const SpreadsheetModel = pluginManager.jbrequire(
 )
 
 describe('vcf file splitter', () => {
-  const cases = [
+  const cases: [string, {}][] = [
     [
       '##fileformat=VCFv4.3\nfogbat\n',
       { header: '##fileformat=VCFv4.3\n', body: 'fogbat\n' },

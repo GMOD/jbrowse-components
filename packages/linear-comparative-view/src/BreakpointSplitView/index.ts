@@ -47,7 +47,7 @@ export default ({ lib, load }: PluginManager) => {
           const INFO = feature.get('INFO') || []
           endPos = INFO.END[0] - 1
           mateRefName = getCanonicalRefName(INFO.CHR2[0])
-        } else {
+        } else if (breakendSpecification.MatePosition) {
           const matePosition = breakendSpecification.MatePosition.split(':')
           endPos = parseInt(matePosition[1], 10) - 1
           mateRefName = getCanonicalRefName(matePosition[0])
@@ -71,7 +71,7 @@ export default ({ lib, load }: PluginManager) => {
         console.warn(
           `unable to resolve mate refName ${mateRefName} in reference genome`,
         )
-        return {}
+        return undefined
       }
 
       const bottomRegion = view.displayedRegions.find(
@@ -82,7 +82,7 @@ export default ({ lib, load }: PluginManager) => {
         console.warn(
           `unable to find the refName for the top or bottom of the breakpoint view`,
         )
-        return {}
+        return undefined
       }
 
       const topMarkedRegion = [{ ...topRegion }, { ...topRegion }]

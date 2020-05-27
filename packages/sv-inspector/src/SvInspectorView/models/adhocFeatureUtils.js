@@ -104,7 +104,51 @@ export default ({ jbrequire }) => {
     )
   }
 
+  // makes a feature data object (passed as `data` to a SimpleFeature constructor)
+  // out of table row if the row has 2 location columns. undefined if not
+  function makeAdHocSvFeature(sheet, rowNumber, row, isValidRefName) {
+    const { columns, columnDisplayOrder } = sheet
+    const columnTypes = {}
+    columnDisplayOrder.forEach(columnNumber => {
+      const columnDefinition = columns[columnNumber]
+      if (!columnTypes[columnDefinition.dataType.type])
+        columnTypes[columnDefinition.dataType.type] = []
+      columnTypes[columnDefinition.dataType.type].push(columnNumber)
+    })
+    const locationColumnNumbers = columnTypes.LocString || []
+    const locStartColumnNumbers = columnTypes.LocStart || []
+    const locEndColumnNumbers = columnTypes.LocEnd || []
+    const locRefColumnNumbers = columnTypes.LocRef || []
+
+    // if we have 2 or more columns of type location, make a feature from them
+    if (locationColumnNumbers.length >= 2) {
+      return makeAdHocSvFeatureFromTwoLocations(
+        columns,
+        locationColumnNumbers,
+        row,
+        rowNumber,
+        isValidRefName,
+      )
+    }
+    if (
+      locRefColumnNumbers.length >= 2 &&
+      locStartColumnNumbers.length >= 2 &&
+      locEndColumnNumbers.length >= 2
+    ) {
+      return makeAdHocSvFeatureFromTwoRefStartEndSets(
+        columns,
+        locRefColumnNumbers,
+        locStartColumnNumbers,
+        locEndColumnNumbers,
+        row,
+        rowNumber,
+      )
+    }
+    return undefined
+  }
+
   return {
+    makeAdHocSvFeature,
     makeAdHocSvFeatureFromTwoLocations,
     makeAdHocSvFeatureFromTwoRefStartEndSets,
   }

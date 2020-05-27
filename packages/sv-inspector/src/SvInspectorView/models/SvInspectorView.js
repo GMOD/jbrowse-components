@@ -1,3 +1,41 @@
+function defaultOnChordClick(feature, chordTrack, pluginManager) {
+  const { jbrequire } = pluginManager
+  const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
+  const { getContainingView, getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { resolveIdentifier } = jbrequire('mobx-state-tree')
+
+  const session = getSession(chordTrack)
+  session.setSelection(feature)
+  const view = getContainingView(chordTrack)
+  const viewType = pluginManager.getViewType('BreakpointSplitView')
+  const viewSnapshot = viewType.snapshotFromBreakendFeature(feature, view)
+
+  // open any evidence tracks defined in configRelationships for this track
+  const tracks = getConf(chordTrack, 'configRelationships')
+    .map(entry => {
+      const type = pluginManager.pluggableConfigSchemaType('track')
+      const trackConfig = resolveIdentifier(type, session, entry.target)
+      return trackConfig
+        ? {
+            type: trackConfig.type,
+            height: 100,
+            configuration: trackConfig.trackId,
+            selectedRendering: '',
+          }
+        : null
+    })
+    .filter(f => !!f)
+  viewSnapshot.views[0].tracks = tracks
+  viewSnapshot.views[1].tracks = tracks
+
+  // try to center the offsetPx
+  viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
+  viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
+  viewSnapshot.featureData = feature.data
+
+  session.addView('BreakpointSplitView', viewSnapshot)
+}
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { autorun, reaction } = jbrequire('mobx')
@@ -17,52 +55,10 @@ export default pluginManager => {
   const circularViewOptionsBarHeight = 52
 
   const {
-    makeAdHocSvFeatureFromTwoLocations,
-    makeAdHocSvFeatureFromTwoRefStartEndSets,
-  } = jbrequire(require('./adhocFeatureUtils'))
-
-  // makes a feature data object (passed as `data` to a SimpleFeature constructor)
-  // out of table row if the row has 2 location columns. undefined if not
-  function makeAdHocSvFeature(sheet, rowNumber, row, isValidRefName) {
-    const { columns, columnDisplayOrder } = sheet
-    const columnTypes = {}
-    columnDisplayOrder.forEach(columnNumber => {
-      const columnDefinition = columns[columnNumber]
-      if (!columnTypes[columnDefinition.dataType.type])
-        columnTypes[columnDefinition.dataType.type] = []
-      columnTypes[columnDefinition.dataType.type].push(columnNumber)
-    })
-    const locationColumnNumbers = columnTypes.LocString || []
-    const locStartColumnNumbers = columnTypes.LocStart || []
-    const locEndColumnNumbers = columnTypes.LocEnd || []
-    const locRefColumnNumbers = columnTypes.LocRef || []
-
-    // if we have 2 or more columns of type location, make a feature from them
-    if (locationColumnNumbers.length >= 2) {
-      return makeAdHocSvFeatureFromTwoLocations(
-        columns,
-        locationColumnNumbers,
-        row,
-        rowNumber,
-        isValidRefName,
-      )
-    }
-    if (
-      locRefColumnNumbers.length >= 2 &&
-      locStartColumnNumbers.length >= 2 &&
-      locEndColumnNumbers.length >= 2
-    ) {
-      return makeAdHocSvFeatureFromTwoRefStartEndSets(
-        columns,
-        locRefColumnNumbers,
-        locStartColumnNumbers,
-        locEndColumnNumbers,
-        row,
-        rowNumber,
-      )
-    }
-    return undefined
-  }
+    canOpenBreakpointSplitViewFromTableRow,
+    openBreakpointSplitViewFromTableRow,
+    getSerializedFeatureForRow,
+  } = jbrequire(require('./breakpointSplitViewFromTableRow'))
 
   const model = types
     .model('SvInspectorView', {
@@ -122,26 +118,18 @@ export default pluginManager => {
 
       get featuresAdapterConfigSnapshot() {
         const session = getSession(self)
-        const features = (self.spreadsheetView.outputRows || [])
-          .map((row, rowNumber) => {
-            if (row.extendedData) {
-              if (row.extendedData.vcfFeature)
-                return row.extendedData.vcfFeature
-              if (row.extendedData.feature) return row.extendedData.feature
-            }
-            const adhocFeature = makeAdHocSvFeature(
-              self.spreadsheetView.spreadsheet,
-              rowNumber,
-              row,
-              session.assemblyManager.isValidRefName,
-            )
-            if (adhocFeature) return adhocFeature
-            return undefined
-          })
-          .filter(f => Boolean(f))
         return {
           type: 'FromConfigAdapter',
-          features,
+          features: (self.spreadsheetView.outputRows || [])
+            .map((row, rowNumber) =>
+              getSerializedFeatureForRow(
+                session,
+                self.spreadsheetView,
+                row,
+                rowNumber,
+              ),
+            )
+            .filter(f => Boolean(f)),
         }
       },
 
@@ -164,6 +152,7 @@ export default pluginManager => {
           renderer: { type: 'StructuralVariantChordRenderer' },
           adapter: self.featuresAdapterConfigSnapshot,
           assemblyNames: [self.assemblyName],
+          onChordClick: defaultOnChordClick.toString(),
         }
         return configuration
       },
@@ -270,10 +259,13 @@ export default pluginManager => {
           self,
           reaction(
             () => ({
-              generatedTrackConf: self.featuresCircularTrackConfiguration,
-              assemblyName: self.assemblyName,
+              generatedTrackConf:
+                self && self.featuresCircularTrackConfiguration,
+              assemblyName: self && self.assemblyName,
             }),
-            ({ assemblyName, generatedTrackConf }) => {
+            data => {
+              if (!data) return
+              const { assemblyName, generatedTrackConf } = data
               // hide any visible tracks
               if (self.circularView.tracks.length) {
                 self.circularView.tracks.forEach(track => {
@@ -282,7 +274,7 @@ export default pluginManager => {
               }
 
               // put our track in as the only track
-              if (assemblyName) {
+              if (assemblyName && generatedTrackConf) {
                 self.circularView.showTrack(generatedTrackConf, {
                   assemblyName,
                 })
@@ -293,6 +285,41 @@ export default pluginManager => {
               fireImmediately: true,
             },
           ),
+        )
+
+        // bind spreadsheetView row menu actions to us
+        addDisposer(
+          self,
+          autorun(() => {
+            self.spreadsheetView.setRowMenuItems(
+              // these are the MenuOption entries for the row menu actions in the spreadsheet view.
+              // these are installed into the child SpreadsheetView using an autorun below
+              [
+                {
+                  label: 'Open split detail view',
+                  icon: 'open_in_new',
+                  disabled(spreadsheetView, spreadsheet, rowNumber, row) {
+                    return !canOpenBreakpointSplitViewFromTableRow(
+                      self,
+                      spreadsheetView,
+                      spreadsheet,
+                      row,
+                      rowNumber,
+                    )
+                  },
+                  onClick(spreadsheetView, spreadsheet, rowNumber, row) {
+                    openBreakpointSplitViewFromTableRow(
+                      self,
+                      spreadsheetView,
+                      spreadsheet,
+                      row,
+                      rowNumber,
+                    )
+                  },
+                },
+              ],
+            )
+          }),
         )
       },
       setWidth(newWidth) {

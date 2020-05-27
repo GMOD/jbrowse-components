@@ -190,7 +190,7 @@ export default function ConfigSlot(
     }))
     .views(self => ({
       get isCallback() {
-        return /^\s*function\s*\(/.test(String(self.value))
+        return functionRegexp.test(String(self.value))
       },
     }))
     .views(self => ({
