@@ -161,6 +161,7 @@ export default abstract class BaseRpcDriver {
     }
 
     const workerNumber = this.workerAssignments.get(sessionId)
+    // console.log(`${sessionId} -> worker ${workerNumber}`)
     const worker = workers[workerNumber]
     if (!worker) {
       throw new Error('no web workers registered for RPC')

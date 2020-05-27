@@ -56,7 +56,7 @@ async function loadRefNameMap(
   assembly: Assembly,
   adapterId: string,
   adapterConf: unknown,
-  sessionId = `assemblyManager-${assembly.name}`,
+  sessionId: string,
   signal?: AbortSignal,
 ) {
   await when(() => Boolean(assembly.regions && assembly.refNameAliases), {
@@ -145,7 +145,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
     adapterConf: unknown
     adapterId: string
     self: Assembly
-    sessionId?: string
+    sessionId: string
   }
   const adapterLoads = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 1000 }),
@@ -281,8 +281,11 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
     .views(self => ({
       getAdapterMapEntry(
         adapterConf: unknown,
-        opts: { signal?: AbortSignal; sessionId?: string } = {},
+        opts: { signal?: AbortSignal; sessionId: string },
       ) {
+        if (!opts.sessionId) {
+          throw new Error('sessionId is required')
+        }
         const adapterId = getAdapterId(adapterConf)
         const adapterMap = self.adapterMaps.get(adapterId)
         if (!adapterMap) {
@@ -317,6 +320,9 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         adapterConf: unknown,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
+        if (!opts || !opts.sessionId) {
+          throw new Error('sessionId is required')
+        }
         return this.getAdapterMapEntry(adapterConf, opts)?.forwardMap
       },
 
