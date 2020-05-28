@@ -150,6 +150,7 @@ function RefNameAutocomplete({
   return (
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
+      key={String(!assemblyName || loading || !selectedRegionName)}
       disableListWrap
       disableClearable
       classes={classes}
@@ -161,7 +162,7 @@ function RefNameAutocomplete({
       options={regionNames}
       value={
         !assemblyName || loading || !selectedRegionName
-          ? null
+          ? undefined
           : selectedRegionName
       }
       disabled={!assemblyName || loading}
