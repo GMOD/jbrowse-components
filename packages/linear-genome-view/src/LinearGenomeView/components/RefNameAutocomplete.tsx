@@ -150,9 +150,7 @@ function RefNameAutocomplete({
   return (
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
-      key={String(!assemblyName || loading || !selectedRegionName)}
       disableListWrap
-      disableClearable
       classes={classes}
       ListboxComponent={
         ListboxComponent as React.ComponentType<
@@ -162,7 +160,7 @@ function RefNameAutocomplete({
       options={regionNames}
       value={
         !assemblyName || loading || !selectedRegionName
-          ? undefined
+          ? null
           : selectedRegionName
       }
       disabled={!assemblyName || loading}
