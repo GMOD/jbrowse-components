@@ -7,6 +7,7 @@ import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
 import { StringParam, useQueryParam } from 'use-query-params'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 import { SnapshotOut } from 'mobx-state-tree'
 import { PluginConstructor } from '@gmod/jbrowse-core/Plugin'
 import corePlugins from './corePlugins'
@@ -115,15 +116,21 @@ export default function Loader() {
       const savedSessionIndex = rootModel.jbrowse.savedSessionNames.indexOf(
         sessionQueryParam,
       )
-      if (savedSessionIndex !== -1) {
-        rootModel.setSession(rootModel.jbrowse.savedSessions[savedSessionIndex])
-      } else {
-        rootModel.setSession(JSON.parse(fromUrlSafeB64(sessionQueryParam)))
+      if (getConf(rootModel.jbrowse, 'updateUrl')) {
+        if (savedSessionIndex !== -1) {
+          rootModel.setSession(
+            rootModel.jbrowse.savedSessions[savedSessionIndex],
+          )
+        } else {
+          rootModel.setSession(JSON.parse(fromUrlSafeB64(sessionQueryParam)))
+        }
       }
     } else {
       const localStorageSession = localStorage.getItem('jbrowse-web-session')
       if (localStorageSession) {
-        rootModel.setSession(JSON.parse(localStorageSession))
+        if (getConf(rootModel.jbrowse, 'useLocalStorage')) {
+          rootModel.setSession(JSON.parse(localStorageSession))
+        }
       }
     }
     if (!rootModel.session) {
