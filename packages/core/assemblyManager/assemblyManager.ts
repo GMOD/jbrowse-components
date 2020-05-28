@@ -1,4 +1,4 @@
-import { autorun } from 'mobx'
+import { reaction } from 'mobx'
 import {
   addDisposer,
   cast,
@@ -6,15 +6,17 @@ import {
   IAnyType,
   SnapshotOrInstance,
   types,
+  Instance,
 } from 'mobx-state-tree'
 import { readConfObject } from '../configuration'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import assemblyFactory from './assembly'
 
 export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
+  const Assembly = assemblyFactory(assemblyConfigType)
   return types
     .model({
-      assemblies: types.array(assemblyFactory(assemblyConfigType)),
+      assemblies: types.array(Assembly),
     })
     .views(self => ({
       get(assemblyName: string) {
@@ -90,21 +92,25 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            getParent(self).jbrowse.assemblies.forEach(
-              (assemblyConfig: AnyConfigurationModel) => {
+          reaction(
+            // have to slice it to be properly reacted to
+            () => getParent(self).jbrowse.assemblies.slice(),
+            (
+              assemblyConfigs: Instance<typeof Assembly> &
+                AnyConfigurationModel[],
+            ) => {
+              assemblyConfigs.forEach(assemblyConfig => {
                 const existingAssemblyIdx = self.assemblies.findIndex(
                   assembly =>
                     assembly.name === readConfObject(assemblyConfig, 'name'),
                 )
-                if (existingAssemblyIdx !== -1) {
-                  this.replaceAssembly(existingAssemblyIdx, assemblyConfig)
-                } else {
+                if (existingAssemblyIdx === -1) {
                   this.addAssembly(assemblyConfig)
                 }
-              },
-            )
-          }),
+              })
+            },
+            { fireImmediately: true, name: 'assemblyManagerAfterAttach' },
+          ),
         )
       },
       addAssembly(
