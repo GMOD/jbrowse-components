@@ -223,6 +223,8 @@ function OverviewRubberBand({
       <Tooltip
         open={guideOpen && !mouseDragging}
         placement="top"
+        // this conversion # will need to be changed
+        // maybe Math.round(guideX / scale - 1).toLocaleString, passing scale from OverviewScaleBar
         title={Math.round(model.pxToBp(guideX).offset + 1).toLocaleString()}
         arrow
       >
@@ -230,7 +232,6 @@ function OverviewRubberBand({
           className={classes.guide}
           style={{
             left: guideX,
-            background: guideOpen && !mouseDragging ? 'red' : undefined,
           }}
         />
       </Tooltip>

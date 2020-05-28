@@ -329,13 +329,19 @@ export default observer(({ model }: { model: LGV }) => {
     return controls
   }
 
-  // return <OverviewScaleBar model={model}>{controls}</OverviewScaleBar>
   return (
-    <OverviewRubberBand
-      model={model}
-      ControlComponent={
-        <OverviewScaleBar model={model}>{controls}</OverviewScaleBar>
-      }
-    />
+    <>
+      {/* this needs some sort of control component for the refs */}
+      <OverviewRubberBand model={model} />
+      <OverviewScaleBar model={model}>{controls}</OverviewScaleBar>
+    </>
   )
+  // return (
+  //   <OverviewRubberBand
+  //     model={model}
+  //     ControlComponent={
+  //       <OverviewScaleBar model={model}>{controls}</OverviewScaleBar>
+  //     }
+  //   />
+  // )
 })
