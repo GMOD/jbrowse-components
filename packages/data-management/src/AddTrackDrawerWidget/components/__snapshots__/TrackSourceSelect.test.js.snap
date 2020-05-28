@@ -143,7 +143,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
           <button
             aria-label="local file"
             aria-pressed="false"
-            class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedSizeSmall MuiToggleButton-disabled MuiToggleButton-sizeSmall MuiButtonBase-disabled"
+            class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-disabled MuiToggleButton-sizeSmall MuiButtonBase-disabled"
             disabled=""
             tabindex="-1"
             type="button"
@@ -158,7 +158,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
           <button
             aria-label="url"
             aria-pressed="true"
-            class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedSizeSmall MuiToggleButton-selected MuiToggleButton-sizeSmall"
+            class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected MuiToggleButton-sizeSmall"
             tabindex="0"
             type="button"
             value="url"
