@@ -28,7 +28,7 @@ export default function JBrowseWeb(
           type: 'number',
           defaultValue: 2,
         },
-        updateUrl: {
+        useUrlSession: {
           type: 'boolean',
           defaultValue: true,
         },

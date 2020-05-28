@@ -116,7 +116,7 @@ export default function Loader() {
       const savedSessionIndex = rootModel.jbrowse.savedSessionNames.indexOf(
         sessionQueryParam,
       )
-      if (getConf(rootModel.jbrowse, 'updateUrl')) {
+      if (getConf(rootModel.jbrowse, 'useUrlSession')) {
         if (savedSessionIndex !== -1) {
           rootModel.setSession(
             rootModel.jbrowse.savedSessions[savedSessionIndex],

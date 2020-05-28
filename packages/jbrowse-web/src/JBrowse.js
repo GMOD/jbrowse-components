@@ -22,7 +22,7 @@ const JBrowse = observer(({ pluginManager }) => {
     : false
 
   const useUpdateUrl = jbrowse
-    ? readConfObject(jbrowse.configuration, 'updateUrl')
+    ? readConfObject(jbrowse.configuration, 'useUrlSession')
     : false
 
   // This serializes the session to URL

@@ -28,7 +28,7 @@ export default function JBrowseDesktop(
           type: 'number',
           defaultValue: 2,
         },
-        updateUrl: {
+        useUrlSession: {
           type: 'boolean',
           defaultValue: true,
         },
