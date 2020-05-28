@@ -1,13 +1,5 @@
-import {
-  getSession,
-  minmax,
-  isSessionModelWithDrawerWidgets,
-} from '@gmod/jbrowse-core/util'
-
-import { getSnapshot, types, Instance, SnapshotIn } from 'mobx-state-tree'
-import { autorun, transaction } from 'mobx'
-
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+// typescript only imports, runtime imports below loaded via pluginManager
+import { Instance, SnapshotIn } from 'mobx-state-tree'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 import { Base1DViewModel } from '@gmod/jbrowse-core/util/Base1DViewModel'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
@@ -19,13 +11,18 @@ function approxPixelStringLen(str: string) {
 type Coord = [number, number]
 export default function stateModelFactory(pluginManager: PluginManager) {
   const { lib } = pluginManager
-  const { cast, types: jbrequiredTypes, getParent, addDisposer } = lib[
+  const { cast, types, getParent, getSnapshot, addDisposer } = lib[
     'mobx-state-tree'
   ]
+  const { autorun, transaction } = lib.mobx
   const { ElementId } = lib['@gmod/jbrowse-core/util/types/mst']
   const Base1DView = lib['@gmod/jbrowse-core/util/Base1DViewModel']
+  const { readConfObject } = lib['@gmod/jbrowse-core/configuration']
+  const { getSession, minmax, isSessionModelWithDrawerWidgets } = lib[
+    '@gmod/jbrowse-core/util'
+  ]
 
-  return jbrequiredTypes
+  return types
     .model('DotplotView', {
       id: ElementId,
       type: types.literal('DotplotView'),
