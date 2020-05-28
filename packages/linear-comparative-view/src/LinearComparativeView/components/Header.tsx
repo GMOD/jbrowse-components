@@ -1,3 +1,9 @@
+import LeakAddIcon from '@material-ui/icons/LeakAdd'
+import LeakRemoveIcon from '@material-ui/icons/LeakRemove'
+import LinkIcon from '@material-ui/icons/Link'
+import LinkOffIcon from '@material-ui/icons/LinkOff'
+import LocationSearchingIcon from '@material-ui/icons/LocationSearching'
+import LocationDisabledIcon from '@material-ui/icons/LocationDisabled'
 import { withSize } from 'react-sizeme'
 import { LinearComparativeViewModel } from '../model'
 
@@ -5,7 +11,6 @@ import { LinearComparativeViewModel } from '../model'
 export default ({ jbrequire }: { jbrequire: any }) => {
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const Icon = jbrequire('@material-ui/core/Icon')
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
 
@@ -54,9 +59,11 @@ export default ({ jbrequire }: { jbrequire: any }) => {
           className={classes.iconButton}
           title="Toggle interacting with the overlay"
         >
-          <Icon fontSize="small">
-            {model.interactToggled ? 'location_searching' : 'location_disabled'}
-          </Icon>
+          {model.interactToggled ? (
+            <LocationSearchingIcon fontSize="small" />
+          ) : (
+            <LocationDisabledIcon fontSize="small" />
+          )}
         </IconButton>
       )
     },
@@ -67,16 +74,17 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   const LinkViews = observer(
     ({ model }: { model: LinearComparativeViewModel }) => {
       const classes = useStyles()
-      const title = model.linkViews ? 'link' : 'link_off'
       return (
         <IconButton
           onClick={model.toggleLinkViews}
           className={classes.iconButton}
           title="Toggle linked scrolls and behavior across views"
         >
-          <Icon color="secondary" fontSize="small">
-            {title}
-          </Icon>
+          {model.linkViews ? (
+            <LinkIcon color="secondary" fontSize="small" />
+          ) : (
+            <LinkOffIcon color="secondary" fontSize="small" />
+          )}
         </IconButton>
       )
     },
@@ -86,16 +94,17 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   }
   const Sync = observer(({ model }: { model: LinearComparativeViewModel }) => {
     const classes = useStyles()
-    const title = model.showIntraviewLinks ? 'leak_add' : 'leak_remove'
     return (
       <IconButton
         onClick={model.toggleIntraviewLinks}
         className={classes.iconButton}
         title="Toggle rendering intraview links"
       >
-        <Icon color="secondary" fontSize="small">
-          {title}
-        </Icon>
+        {model.showIntraviewLinks ? (
+          <LeakAddIcon color="secondary" fontSize="small" />
+        ) : (
+          <LeakRemoveIcon color="secondary" fontSize="small" />
+        )}
       </IconButton>
     )
   })

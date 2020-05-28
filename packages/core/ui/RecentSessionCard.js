@@ -1,7 +1,6 @@
 import Card from '@material-ui/core/Card'
 import CardHeader from '@material-ui/core/CardHeader'
 import CardMedia from '@material-ui/core/CardMedia'
-import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import Menu from '@material-ui/core/Menu'
@@ -9,6 +8,9 @@ import MenuItem from '@material-ui/core/MenuItem'
 import { makeStyles } from '@material-ui/core/styles'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
+import DeleteIcon from '@material-ui/icons/Delete'
+import MoreVertIcon from '@material-ui/icons/MoreVert'
+import TextFieldsIcon from '@material-ui/icons/TextFields'
 import PropTypes from 'prop-types'
 import React, { useState } from 'react'
 
@@ -63,7 +65,7 @@ function RecentSessionCard({
         <CardHeader
           action={
             <IconButton onClick={onMenuClick}>
-              <Icon color="secondary">more_vert</Icon>
+              <MoreVertIcon color="secondary" />
             </IconButton>
           }
           disableTypography
@@ -98,17 +100,13 @@ function RecentSessionCard({
       >
         <MenuItem onClick={() => handleMenuClose('rename')}>
           <ListItemIcon>
-            <Icon color="secondary" fontSize="small">
-              text_fields
-            </Icon>
+            <TextFieldsIcon color="secondary" fontSize="small" />
           </ListItemIcon>
           <Typography variant="inherit">Rename</Typography>
         </MenuItem>
         <MenuItem onClick={() => handleMenuClose('delete')}>
           <ListItemIcon>
-            <Icon color="secondary" fontSize="small">
-              delete
-            </Icon>
+            <DeleteIcon color="secondary" fontSize="small" />
           </ListItemIcon>
           <Typography variant="inherit">Delete</Typography>
         </MenuItem>

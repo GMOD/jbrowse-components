@@ -5,13 +5,13 @@ import Typography from '@material-ui/core/Typography'
 import MenuItem from '@material-ui/core/MenuItem'
 import FormControl from '@material-ui/core/FormControl'
 import Select from '@material-ui/core/Select'
-import Icon from '@material-ui/core/Icon'
 import Tooltip from '@material-ui/core/Tooltip'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
 import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
+import HelpIcon from '@material-ui/icons/Help'
 import { mutationHighlightFeatures, geneHighlightFeatures } from './Utility'
 
 const useStyles = makeStyles(theme => ({
@@ -89,7 +89,7 @@ export const HighlightFeature = observer(({ schema, type }) => {
           aria-label="help"
           placement="right"
         >
-          <Icon>help</Icon>
+          <HelpIcon />
         </Tooltip>
       </Typography>
       <FormControl className={classes.formControl}>
