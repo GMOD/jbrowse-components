@@ -76,39 +76,33 @@ export default (pluginManager: PluginManager) => {
 
   type Coord = [number, number] | undefined
 
-  function getBlockLabelKeysToHide(blocks: BaseBlock[]) {
+  function getBlockLabelKeysToHide(
+    blocks: BaseBlock[],
+    length: number,
+    viewOffsetPx: number,
+  ) {
+    const blockLabelKeysToHide: string[] = []
     const sortedBlocks = blocks
       .filter(block => block.refName)
-      .map(({ assemblyName, refName, start, end, key }) => ({
-        assemblyName,
-        refName,
+      .map(({ start, end, key, offsetPx }) => ({
         start,
         end,
         key,
+        offsetPx,
       }))
-    sortedBlocks.sort((a, b) => b.end - b.start - (a.end - a.start))
-    let collisionCount = 0
-    let blockLabelKeysToHide: string[] = []
-    do {
-      let currentCollisions = 0
-      blocks
-        .filter(block => block.refName)
-        // eslint-disable-next-line no-loop-func
-        .filter(block => !blockLabelKeysToHide.includes(block.key))
-        .forEach((block, index, array) => {
-          const prevY = index > 0 ? array[index - 1].offsetPx : 0
-          const y = block.offsetPx
-          if (index !== 0 && Math.abs(prevY - y) <= 12) {
-            currentCollisions += 1
-          }
-        })
-      collisionCount = currentCollisions
-      const numBlocksToHide =
-        blockLabelKeysToHide.length + Math.ceil(currentCollisions / 2)
-      blockLabelKeysToHide = sortedBlocks
-        .slice(sortedBlocks.length - numBlocksToHide)
-        .map(block => block.key)
-    } while (collisionCount > 0)
+      .sort((a, b) => b.end - b.start - (a.end - a.start))
+    const positions = new Array(Math.round(length))
+    sortedBlocks.forEach(({ key, offsetPx }) => {
+      const y = Math.round(length - offsetPx + viewOffsetPx)
+      if (
+        y === positions.length ||
+        positions.slice(y, y + 12).some(pos => pos)
+      ) {
+        blockLabelKeysToHide.push(key)
+      } else {
+        positions.fill(true, y, y + 12)
+      }
+    })
     return blockLabelKeysToHide
   }
 
@@ -183,9 +177,13 @@ export default (pluginManager: PluginManager) => {
     const tickSize = 0
     const verticalBlockLabelKeysToHide = getBlockLabelKeysToHide(
       vview.dynamicBlocks.blocks,
+      viewHeight,
+      vview.offsetPx,
     )
     const horizontalBlockLabelKeysToHide = getBlockLabelKeysToHide(
       hview.dynamicBlocks.blocks,
+      viewWidth,
+      hview.offsetPx,
     )
     return (
       <div style={{ position: 'relative' }}>
