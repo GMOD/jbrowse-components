@@ -9,15 +9,6 @@ describe('generator-jbrowse:app', () => {
 
   afterEach(() => process.chdir(originalWorkingDirectory))
 
-  it('throws when not in the plugins directory', async () => {
-    await helpers.run(__dirname).withPrompts({
-      correctDir: false,
-      type: 'helloWorldMenuBar',
-    })
-    const files = fs.readdirSync('.')
-    expect(files.length).toBe(1)
-  })
-
   it('creates a "Hello World" menu bar', async () => {
     await helpers
       .run(__dirname)
