@@ -32,8 +32,6 @@ export default function Loader() {
 
   const [configQueryParam] = useQueryParam('config', StringParam)
   const [sessionQueryParam] = useQueryParam('session', StringParam)
-  console.log(configQueryParam, sessionQueryParam, window.location)
-
   const classes = useStyles()
 
   useEffect(() => {
