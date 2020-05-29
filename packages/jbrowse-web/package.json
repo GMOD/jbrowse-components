@@ -44,6 +44,12 @@
     "@material-ui/core": "^4.9.5",
     "@material-ui/icons": "^4.0.0",
     "@material-ui/lab": "^4.0.0-alpha.45",
+    "@storybook/addon-actions": "^5.3.19",
+    "@storybook/addon-links": "^5.3.19",
+    "@storybook/addons": "^5.3.19",
+    "@storybook/preset-create-react-app": "^3.0.0",
+    "@storybook/react": "^5.3.19",
+    "rescripts-use-yarn-workspaces": "^1.3.3",
     "clsx": "^1.0.4",
     "core-js": "^3.2.1",
     "fastestsmallesttextencoderdecoder": "^1.0.14",
@@ -77,13 +83,5 @@
     "storybook": "start-storybook -p 9009 -s public",
     "build-storybook": "build-storybook -s public"
   },
-  "homepage": ".",
-  "devDependencies": {
-    "@storybook/addon-actions": "^5.3.19",
-    "@storybook/addon-links": "^5.3.19",
-    "@storybook/addons": "^5.3.19",
-    "@storybook/preset-create-react-app": "^3.0.0",
-    "@storybook/react": "^5.3.19",
-    "rescripts-use-yarn-workspaces": "^1.3.3"
-  }
+  "homepage": "."
 }
