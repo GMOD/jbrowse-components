@@ -7,6 +7,12 @@ import JBrowse from '../JBrowse'
 import JBrowseRootModelFactory from '../rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
 
+configSnapshot.configuration = {
+  rpc: {
+    defaultDriver: 'MainThreadRpcDriver',
+  },
+  useUrlSession: false,
+}
 export default {
   title: 'PluginManager',
   component: Button,
@@ -33,6 +39,6 @@ function getPluginManager(initialState) {
   return pluginManager
 }
 export const Text = () => {
-  const pluginManager = getPluginManager({})
+  const pluginManager = getPluginManager()
   return <JBrowse pluginManager={pluginManager} />
 }
