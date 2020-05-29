@@ -11,6 +11,9 @@ import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/s
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { getRpcSessionId } from '@gmod/jbrowse-core/util/tracks'
+import SortIcon from '@material-ui/icons/Sort'
+import VisibilityIcon from '@material-ui/icons/Visibility'
+import VisibilityOffIcon from '@material-ui/icons/VisibilityOff'
 import AlignmentsTrackComponent from './components/AlignmentsTrack'
 import { AlignmentsConfigModel } from './configSchema'
 
@@ -98,13 +101,13 @@ export default (
             label: self.showCoverage
               ? 'Hide coverage track'
               : 'Show coverage track',
-            icon: self.showCoverage ? 'visibility_off' : 'visibility',
+            icon: self.showCoverage ? VisibilityOffIcon : VisibilityIcon,
             onClick: self.toggleCoverage,
             disabled: !self.showPileup,
           },
           {
             label: self.showPileup ? 'Hide pileup track' : 'Show pileup track',
-            icon: self.showPileup ? 'visibility_off' : 'visibility',
+            icon: self.showPileup ? VisibilityOffIcon : VisibilityIcon,
             onClick: self.togglePileup,
             disabled: !self.showCoverage,
           },
@@ -112,7 +115,7 @@ export default (
             label: self.showSoftClipping
               ? 'Hide soft clipping'
               : 'Show soft clipping',
-            icon: self.showSoftClipping ? 'visibility_off' : 'visibility',
+            icon: self.showSoftClipping ? VisibilityOffIcon : VisibilityIcon,
             onClick: () => {
               self.toggleSoftClipping()
               // if toggling from off to on, will break sort for this track so clear it
@@ -195,7 +198,7 @@ export default (
         return [
           {
             label: 'Sort by',
-            icon: 'sort',
+            icon: SortIcon,
             disabled: self.showSoftClipping,
             subMenu: self.sortOptions.map((option: string) => {
               return {

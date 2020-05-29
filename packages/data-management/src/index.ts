@@ -7,6 +7,8 @@ import {
   SessionWithDrawerWidgets,
   isAbstractMenuManager,
 } from '@gmod/jbrowse-core/util'
+import NoteAddIcon from '@material-ui/icons/NoteAdd'
+import InputIcon from '@material-ui/icons/Input'
 import {
   configSchema as ucscConfigSchema,
   modelFactory as ucscModelFactory,
@@ -76,7 +78,7 @@ export default class extends Plugin {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToMenu('File', {
         label: 'Open new track',
-        icon: 'note_add',
+        icon: NoteAddIcon,
         onClick: (session: SessionWithDrawerWidgets) => {
           const drawerWidget = session.addDrawerWidget(
             'AddTrackDrawerWidget',
@@ -87,7 +89,7 @@ export default class extends Plugin {
       })
       pluginManager.rootModel.appendToMenu('File', {
         label: 'Open new connection',
-        icon: 'input',
+        icon: InputIcon,
         onClick: (session: SessionWithDrawerWidgets) => {
           const drawerWidget = session.addDrawerWidget(
             'AddConnectionDrawerWidget',

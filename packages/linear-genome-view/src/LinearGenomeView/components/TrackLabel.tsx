@@ -9,6 +9,7 @@ import Typography from '@material-ui/core/Typography'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import DragIcon from '@material-ui/icons/DragIndicator'
 import CloseIcon from '@material-ui/icons/Close'
+import SettingsIcon from '@material-ui/icons/Settings'
 
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
@@ -110,7 +111,7 @@ const TrackLabel = React.forwardRef(
     }
 
     const menuItems: MenuOption[] = [
-      { label: 'Settings', onClick: onConfigureClick, icon: 'settings' },
+      { label: 'Settings', onClick: onConfigureClick, icon: SettingsIcon },
     ]
 
     if (track.menuOptions.length) {

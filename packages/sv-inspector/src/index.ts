@@ -4,6 +4,7 @@ import {
   AbstractViewContainer,
   isAbstractMenuManager,
 } from '@gmod/jbrowse-core/util/types'
+import TableChartIcon from '@material-ui/icons/TableChart'
 
 export default class SvInspectorViewPlugin extends Plugin {
   install(pluginManager: PluginManager) {
@@ -16,7 +17,7 @@ export default class SvInspectorViewPlugin extends Plugin {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
         label: 'SV inspector',
-        icon: 'table_chart',
+        icon: TableChartIcon,
         onClick: (session: AbstractViewContainer) => {
           session.addView('SvInspectorView', {})
         },

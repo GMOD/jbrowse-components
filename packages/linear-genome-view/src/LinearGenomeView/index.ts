@@ -23,6 +23,9 @@ import { getSnapshot, types, cast, Instance } from 'mobx-state-tree'
 
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import LineStyleIcon from '@material-ui/icons/LineStyle'
+import SyncAltIcon from '@material-ui/icons/SyncAlt'
+import VisibilityIcon from '@material-ui/icons/Visibility'
 import clone from 'clone'
 import { BlockSet } from '../BasicTrack/util/blockTypes'
 
@@ -757,7 +760,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
-              icon: 'line_style',
+              icon: LineStyleIcon,
               disabled:
                 isSessionModelWithDrawerWidgets(session) &&
                 session.visibleDrawerWidget &&
@@ -768,24 +771,24 @@ export function stateModelFactory(pluginManager: PluginManager) {
             },
             {
               label: 'Horizontally flip',
-              icon: 'sync_alt',
+              icon: SyncAltIcon,
               onClick: self.horizontallyFlip,
             },
             {
               label: 'Show all regions',
-              icon: 'visibility',
+              icon: VisibilityIcon,
               onClick: self.showAllRegions,
             },
             {
               label: 'Show header',
-              icon: 'visibility',
+              icon: VisibilityIcon,
               type: 'checkbox',
               checked: !self.hideHeader,
               onClick: self.toggleHeader,
             },
             {
               label: 'Show header overview',
-              icon: 'visibility',
+              icon: VisibilityIcon,
               type: 'checkbox',
               checked: !self.hideHeaderOverview,
               onClick: self.toggleHeaderOverview,
@@ -793,14 +796,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
             },
             {
               label: 'Show track labels',
-              icon: 'visibility',
+              icon: VisibilityIcon,
               type: 'checkbox',
               checked: self.showTrackLabels,
               onClick: self.toggleTrackLabels,
             },
             {
               label: 'Show center line',
-              icon: 'visibility',
+              icon: VisibilityIcon,
               type: 'checkbox',
               checked: self.showCenterLine,
               onClick: self.toggleCenterLine,

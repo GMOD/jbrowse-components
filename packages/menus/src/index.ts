@@ -7,6 +7,10 @@ import {
   SessionWithDrawerWidgets,
   isAbstractMenuManager,
 } from '@gmod/jbrowse-core/util'
+import FileCopyIcon from '@material-ui/icons/FileCopy'
+import FolderOpenIcon from '@material-ui/icons/FolderOpen'
+import HelpIcon from '@material-ui/icons/Help'
+import InfoIcon from '@material-ui/icons/Info'
 import {
   configSchema as aboutConfigSchema,
   ReactComponent as AboutReactComponent,
@@ -75,7 +79,7 @@ export default class extends Plugin {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToMenu('Help', {
         label: 'About',
-        icon: 'info',
+        icon: InfoIcon,
         onClick: (session: SessionWithDrawerWidgets) => {
           const drawerWidget = session.addDrawerWidget(
             'AboutDrawerWidget',
@@ -86,7 +90,7 @@ export default class extends Plugin {
       })
       pluginManager.rootModel.appendToMenu('Help', {
         label: 'Help',
-        icon: 'help',
+        icon: HelpIcon,
         onClick: (session: SessionWithDrawerWidgets) => {
           const drawerWidget = session.addDrawerWidget(
             'HelpDrawerWidget',
@@ -99,7 +103,7 @@ export default class extends Plugin {
         'File',
         {
           label: 'Open Session…',
-          icon: 'folder_open',
+          icon: FolderOpenIcon,
           onClick: (session: SessionWithDrawerWidgets) => {
             const drawerWidget = session.addDrawerWidget(
               'SessionManager',
@@ -114,7 +118,7 @@ export default class extends Plugin {
         'File',
         {
           label: 'Duplicate Session',
-          icon: 'file_copy',
+          icon: FileCopyIcon,
           onClick: (session: AbstractSessionModel) => {
             session.duplicateCurrentSession()
           },

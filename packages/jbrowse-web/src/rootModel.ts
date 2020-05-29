@@ -5,6 +5,7 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { AbstractSessionModel } from '@gmod/jbrowse-core/util'
+import AddIcon from '@material-ui/icons/Add'
 import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import corePlugins from './corePlugins'
@@ -98,7 +99,7 @@ export default function RootModel(pluginManager: PluginManager) {
           menuItems: [
             {
               label: 'New Session',
-              icon: 'add',
+              icon: AddIcon,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
                 session.setDefaultSession()

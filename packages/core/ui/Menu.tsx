@@ -1,6 +1,5 @@
 import Divider from '@material-ui/core/Divider'
 import Grow from '@material-ui/core/Grow'
-import Icon from '@material-ui/core/Icon'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
 import ListSubheader from '@material-ui/core/ListSubheader'
@@ -9,6 +8,7 @@ import MenuItem, { MenuItemProps } from '@material-ui/core/MenuItem'
 import MenuList from '@material-ui/core/MenuList'
 import Paper from '@material-ui/core/Paper'
 import Popover, { PopoverProps } from '@material-ui/core/Popover'
+import { SvgIconProps } from '@material-ui/core/SvgIcon'
 import { makeStyles } from '@material-ui/core/styles'
 import ArrowRightIcon from '@material-ui/icons/ArrowRight'
 import CheckBoxIcon from '@material-ui/icons/CheckBox'
@@ -99,7 +99,7 @@ interface MenuSubHeader {
 interface BaseMenuItem {
   label: string
   subLabel?: string
-  icon?: string
+  icon?: React.ComponentType<SvgIconProps>
   disabled?: boolean
 }
 
@@ -280,9 +280,10 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
           let icon = null
           let endDecoration = null
           if (menuOption.icon) {
+            const Icon = menuOption.icon
             icon = (
               <ListItemIcon>
-                <Icon>{menuOption.icon}</Icon>
+                <Icon />
               </ListItemIcon>
             )
           }
