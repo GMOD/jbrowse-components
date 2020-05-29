@@ -14,7 +14,6 @@ module.exports = {
     'rescripts-use-yarn-workspaces/storybook',
   ],
   webpackFinal: config => {
-    console.error('wtf')
     const isEnvProduction = config.mode === 'production'
     const isEnvDevelopment = !isEnvProduction
     // get something that has setted appSrc and fill here
