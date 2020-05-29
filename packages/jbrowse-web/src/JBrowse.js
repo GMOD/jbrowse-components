@@ -1,5 +1,4 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import '@gmod/jbrowse-core/fonts/material-icons.css'
 import { App, theme } from '@gmod/jbrowse-core/ui'
 import { toUrlSafeB64, useDebounce } from '@gmod/jbrowse-core/util'
 import CssBaseline from '@material-ui/core/CssBaseline'

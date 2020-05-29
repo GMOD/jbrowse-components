@@ -6,7 +6,6 @@ import { Provider } from 'mobx-react'
 import { types } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import 'typeface-roboto'
-import '@gmod/jbrowse-core/fonts/material-icons.css'
 
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
