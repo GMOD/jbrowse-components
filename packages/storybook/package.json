@@ -6,6 +6,7 @@
   "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.10.1",
+    "@gmod/jbrowse-core": "^2.0.0",
     "@storybook/addon-actions": "^5.3.19",
     "@storybook/addon-links": "^5.3.19",
     "@storybook/addons": "^5.3.19",
