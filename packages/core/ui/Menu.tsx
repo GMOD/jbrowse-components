@@ -10,6 +10,11 @@ import MenuList from '@material-ui/core/MenuList'
 import Paper from '@material-ui/core/Paper'
 import Popover, { PopoverProps } from '@material-ui/core/Popover'
 import { makeStyles } from '@material-ui/core/styles'
+import ArrowRightIcon from '@material-ui/icons/ArrowRight'
+import CheckBoxIcon from '@material-ui/icons/CheckBox'
+import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank'
+import RadioButtonCheckedIcon from '@material-ui/icons/RadioButtonChecked'
+import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked'
 import React, { useEffect, useRef, useState } from 'react'
 import { findLastIndex } from '../util'
 
@@ -63,20 +68,20 @@ function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
   }
   let icon
   if (type === 'subMenu') {
-    icon = <Icon color="action">arrow_right</Icon>
+    icon = <ArrowRightIcon color="action" />
   } else if (type === 'checkbox') {
     if (checked) {
       const color = disabled ? 'inherit' : 'secondary'
-      icon = <Icon color={color}>check_box</Icon>
+      icon = <CheckBoxIcon color={color} />
     } else {
-      icon = <Icon color="action">check_box_outline_blank</Icon>
+      icon = <CheckBoxOutlineBlankIcon color="action" />
     }
   } else if (type === 'radio') {
     if (checked) {
       const color = disabled ? 'inherit' : 'secondary'
-      icon = <Icon color={color}>radio_button_checked</Icon>
+      icon = <RadioButtonCheckedIcon color={color} />
     } else {
-      icon = <Icon color="action">radio_button_unchecked</Icon>
+      icon = <RadioButtonUncheckedIcon color="action" />
     }
   }
   return <div className={classes.menuItemEndDecoration}>{icon}</div>
