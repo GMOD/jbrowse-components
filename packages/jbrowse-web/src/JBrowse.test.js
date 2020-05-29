@@ -30,7 +30,7 @@ configSnapshot.configuration = {
   rpc: {
     defaultDriver: 'MainThreadRpcDriver',
   },
-  updateUrl: false,
+  useUrlSession: false,
 }
 
 if (!window.TextEncoder) window.TextEncoder = TextEncoder

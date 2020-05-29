@@ -1,6 +1,6 @@
 {
   "configuration": {
-    "updateUrl": true
+    "useUrlSession": true
   },
   "assemblies": [
     {
