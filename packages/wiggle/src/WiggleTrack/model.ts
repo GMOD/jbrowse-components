@@ -159,14 +159,16 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           const { dynamicBlocks, bpPerPx } = getContainingView(
             self,
           ) as Instance<LinearGenomeViewStateModel>
+          const sessionId = getRpcSessionId(self)
           const r = (await rpcManager.call(
-            getRpcSessionId(self),
+            sessionId,
             'WiggleGetMultiRegionStats',
             {
               adapterConfig: getSnapshot(adapter),
               // TODO: Figure this out for multiple assembly names
               assemblyName: getTrackAssemblyNames(self)[0],
               regions: JSON.parse(JSON.stringify(dynamicBlocks.contentBlocks)),
+              sessionId,
               signal,
               bpPerPx,
             },

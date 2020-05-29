@@ -725,6 +725,9 @@ export async function renameRegionsIfNeeded<
   }
 >(assemblyManager: AssemblyManager, args: ARGTYPE) {
   const { assemblyName, signal, regions, adapterConfig } = args
+  if (!args.sessionId) {
+    throw new Error('sessionId is required')
+  }
   const newArgs: ARGTYPE & {
     originalRegions?: Region[]
   } = {

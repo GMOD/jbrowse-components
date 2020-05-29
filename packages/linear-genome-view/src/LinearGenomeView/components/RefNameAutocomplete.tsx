@@ -151,7 +151,6 @@ function RefNameAutocomplete({
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
       disableListWrap
-      disableClearable
       classes={classes}
       ListboxComponent={
         ListboxComponent as React.ComponentType<

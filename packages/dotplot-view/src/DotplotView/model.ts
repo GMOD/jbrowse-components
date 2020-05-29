@@ -1,30 +1,28 @@
-import { getSession, minmax } from '@gmod/jbrowse-core/util'
-
-import { getSnapshot, types, Instance, SnapshotIn } from 'mobx-state-tree'
-import { autorun, transaction } from 'mobx'
-
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+// typescript only imports, runtime imports below loaded via pluginManager
+import { Instance, SnapshotIn } from 'mobx-state-tree'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
-import {
-  Base1DViewModel,
-  Base1DViewStateModel,
-} from '@gmod/jbrowse-core/util/Base1DViewModel'
+import { Base1DViewModel } from '@gmod/jbrowse-core/util/Base1DViewModel'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
 function approxPixelStringLen(str: string) {
   return str.length * 0.7 * 12
 }
 
 type Coord = [number, number]
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function stateModelFactory(pluginManager: any) {
-  const { jbrequire } = pluginManager
-  const { cast, types: jbrequiredTypes, getParent, addDisposer } = jbrequire(
-    'mobx-state-tree',
-  )
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/util/types/mst')
-  const Base1DView = jbrequire('@gmod/jbrowse-core/util/Base1DViewModel')
+export default function stateModelFactory(pluginManager: PluginManager) {
+  const { lib } = pluginManager
+  const { cast, types, getParent, getSnapshot, addDisposer } = lib[
+    'mobx-state-tree'
+  ]
+  const { autorun, transaction } = lib.mobx
+  const { ElementId } = lib['@gmod/jbrowse-core/util/types/mst']
+  const Base1DView = lib['@gmod/jbrowse-core/util/Base1DViewModel']
+  const { readConfObject } = lib['@gmod/jbrowse-core/configuration']
+  const { getSession, minmax, isSessionModelWithDrawerWidgets } = lib[
+    '@gmod/jbrowse-core/util'
+  ]
 
-  return (jbrequiredTypes as Instance<typeof types>)
+  return types
     .model('DotplotView', {
       id: ElementId,
       type: types.literal('DotplotView'),
@@ -39,7 +37,7 @@ export default function stateModelFactory(pluginManager: any) {
       trackSelectorType: 'hierarchical',
       assemblyNames: types.array(types.string),
       hview: types.optional(
-        (Base1DView as Base1DViewStateModel).extend(self => ({
+        Base1DView.extend(self => ({
           views: {
             get width() {
               return getParent(self).viewWidth
@@ -49,7 +47,7 @@ export default function stateModelFactory(pluginManager: any) {
         {},
       ),
       vview: types.optional(
-        (Base1DView as Base1DViewStateModel).extend(self => ({
+        Base1DView.extend(self => ({
           views: {
             get width() {
               return getParent(self).viewHeight
@@ -284,14 +282,12 @@ export default function stateModelFactory(pluginManager: any) {
             views: [
               {
                 type: 'LinearGenomeView',
-                // @ts-ignore
                 ...getSnapshot(d1),
                 tracks: [],
                 hideHeader: true,
               },
               {
                 type: 'LinearGenomeView',
-                // @ts-ignore
                 ...getSnapshot(d2),
                 tracks: [],
                 hideHeader: true,
@@ -312,19 +308,24 @@ export default function stateModelFactory(pluginManager: any) {
     }))
     .views(self => ({
       get menuOptions() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const session: any = getSession(self)
-        return [
-          {
-            label: 'Open track selector',
-            onClick: self.activateTrackSelector,
-            disabled:
-              session.visibleDrawerWidget &&
-              session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
-              session.visibleDrawerWidget.view &&
-              session.visibleDrawerWidget.view.id === self.id,
-          },
-        ]
+        const session = getSession(self)
+        if (isSessionModelWithDrawerWidgets(session)) {
+          return [
+            {
+              label: 'Open track selector',
+              onClick: self.activateTrackSelector,
+              disabled:
+                session.visibleDrawerWidget &&
+                session.visibleDrawerWidget.id ===
+                  'hierarchicalTrackSelector' &&
+                // @ts-ignore
+                session.visibleDrawerWidget.view &&
+                // @ts-ignore
+                session.visibleDrawerWidget.view.id === self.id,
+            },
+          ]
+        }
+        return []
       },
     }))
 }

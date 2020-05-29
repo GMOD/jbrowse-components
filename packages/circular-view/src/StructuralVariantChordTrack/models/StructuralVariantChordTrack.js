@@ -5,7 +5,9 @@ export default pluginManager => {
   const { getConf, ConfigurationSchema, ConfigurationReference } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
-  const { getTrackAssemblyNames } = jbrequire('@gmod/jbrowse-core/util/tracks')
+  const { getTrackAssemblyNames, getRpcSessionId } = jbrequire(
+    '@gmod/jbrowse-core/util/tracks',
+  )
   const { getContainingView, makeAbortableReaction, getSession } = jbrequire(
     '@gmod/jbrowse-core/util',
   )
@@ -63,7 +65,12 @@ export default pluginManager => {
         const adapter = getConf(self, 'adapter')
         const assembly = getSession(self).assemblyManager.get(assemblyName)
         if (!assembly) return new Map()
-        return assembly && assembly.getRefNameMapForAdapter(adapter)
+        return (
+          assembly &&
+          assembly.getRefNameMapForAdapter(adapter, {
+            sessionId: getRpcSessionId(self),
+          })
+        )
       },
 
       get blockDefinitions() {
