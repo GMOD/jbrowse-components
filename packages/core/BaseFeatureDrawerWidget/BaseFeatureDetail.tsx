@@ -256,7 +256,7 @@ const BaseFeatureDetails = (props: BaseInputProps) => {
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
   return (
-    <Paper className={classes.paperRoot} data-testid="alignment-side-drawer">
+    <Paper className={classes.paperRoot}>
       <BaseCoreDetails feature={feat} {...props} />
       <Divider />
       <BaseAttributes feature={feat} {...props} />

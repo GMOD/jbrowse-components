@@ -584,7 +584,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="313"
+                  data-html-size="349"
                 >
                   <div
                     classname="ssr-container-inner"
@@ -601,6 +601,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                       />
                       <canvas
                         class="highlightOverlayCanvas"
+                        data-testid="pileup_overlay_canvas"
                         height="0"
                         style="position:absolute;left:0;top:0"
                         width="0"
@@ -1734,7 +1735,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="313"
+                  data-html-size="349"
                 >
                   <div
                     classname="ssr-container-inner"
@@ -1751,6 +1752,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                       />
                       <canvas
                         class="highlightOverlayCanvas"
+                        data-testid="pileup_overlay_canvas"
                         height="0"
                         style="position:absolute;left:0;top:0"
                         width="0"
@@ -1769,7 +1771,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="313"
+                  data-html-size="349"
                 >
                   <div
                     classname="ssr-container-inner"
@@ -1786,6 +1788,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                       />
                       <canvas
                         class="highlightOverlayCanvas"
+                        data-testid="pileup_overlay_canvas"
                         height="0"
                         style="position:absolute;left:0;top:0"
                         width="0"
@@ -1800,7 +1803,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="313"
+                  data-html-size="349"
                 >
                   <div
                     classname="ssr-container-inner"
@@ -1817,6 +1820,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                       />
                       <canvas
                         class="highlightOverlayCanvas"
+                        data-testid="pileup_overlay_canvas"
                         height="0"
                         style="position:absolute;left:0;top:0"
                         width="0"
@@ -1952,7 +1956,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="313"
+                  data-html-size="349"
                 >
                   <div
                     classname="ssr-container-inner"
@@ -1969,6 +1973,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                       />
                       <canvas
                         class="highlightOverlayCanvas"
+                        data-testid="pileup_overlay_canvas"
                         height="0"
                         style="position:absolute;left:0;top:0"
                         width="0"
@@ -1987,7 +1992,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="313"
+                  data-html-size="349"
                 >
                   <div
                     classname="ssr-container-inner"
@@ -2004,6 +2009,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                       />
                       <canvas
                         class="highlightOverlayCanvas"
+                        data-testid="pileup_overlay_canvas"
                         height="0"
                         style="position:absolute;left:0;top:0"
                         width="0"
@@ -2018,7 +2024,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="313"
+                  data-html-size="349"
                 >
                   <div
                     classname="ssr-container-inner"
@@ -2035,6 +2041,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                       />
                       <canvas
                         class="highlightOverlayCanvas"
+                        data-testid="pileup_overlay_canvas"
                         height="0"
                         style="position:absolute;left:0;top:0"
                         width="0"

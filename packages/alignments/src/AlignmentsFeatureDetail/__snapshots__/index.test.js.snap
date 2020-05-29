@@ -7,7 +7,6 @@ exports[`open up a drawer widget 1`] = `
 >
   <div
     class="MuiPaper-root makeStyles-paperRoot MuiPaper-elevation1 MuiPaper-rounded"
-    data-testid="alignment-side-drawer"
   >
     <div
       class="MuiPaper-root MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-elevation1 MuiPaper-rounded"

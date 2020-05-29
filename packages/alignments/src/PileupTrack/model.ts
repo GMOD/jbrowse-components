@@ -3,7 +3,10 @@ import {
   getConf,
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { getSession } from '@gmod/jbrowse-core/util'
+import {
+  getSession,
+  isSessionModelWithDrawerWidgets,
+} from '@gmod/jbrowse-core/util'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
@@ -33,14 +36,15 @@ export default (
     )
     .actions(self => ({
       selectFeature(feature: Feature) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const session = getSession(self) as any
-        const featureWidget = session.addDrawerWidget(
-          'AlignmentsFeatureDrawerWidget',
-          'alignmentFeature',
-          { featureData: feature.toJSON() },
-        )
-        session.showDrawerWidget(featureWidget)
+        const session = getSession(self)
+        if (isSessionModelWithDrawerWidgets(session)) {
+          const featureWidget = session.addDrawerWidget(
+            'AlignmentsFeatureDrawerWidget',
+            'alignmentFeature',
+            { featureData: feature.toJSON() },
+          )
+          session.showDrawerWidget(featureWidget)
+        }
         session.setSelection(feature)
       },
 
