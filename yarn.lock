@@ -16296,6 +16296,15 @@ query-string@^4.1.0:
     object-assign "^4.1.0"
     strict-uri-encode "^1.0.0"
 
+query-string@^5.0.0:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/query-string/-/query-string-5.1.1.tgz#a78c012b71c17e05f2e3fa2319dd330682efb3cb"
+  integrity sha512-gjWOsm2SoGlgLEdAGt7a6slVOk9mGiXmPFMqrEhLQ68rhQuBnpfs3+EmlvqKyxnCo9/PPlF+9MtY02S1aFg+Jw==
+  dependencies:
+    decode-uri-component "^0.2.0"
+    object-assign "^4.1.0"
+    strict-uri-encode "^1.0.0"
+
 query-string@^6.9.0:
   version "6.12.1"
   resolved "https://registry.yarnpkg.com/query-string/-/query-string-6.12.1.tgz#2ae4d272db4fba267141665374e49a1de09e8a7c"
@@ -17788,10 +17797,12 @@ serialize-javascript@^3.0.0:
   dependencies:
     randombytes "^2.1.0"
 
-serialize-query-params@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/serialize-query-params/-/serialize-query-params-1.2.0.tgz#12842a42881ad65c1c257e786f7bb00f2fbb2d10"
-  integrity sha512-rkcZFpQjGAA1tTncuon/CyBa81pTMztz0rxspHEnVlTfW+UQNa1rtgfl0PlL6b2Gwp5T1HyIZKyc1xwhZjYUHQ==
+serialize-query-params@^0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/serialize-query-params/-/serialize-query-params-0.1.4.tgz#c671f253860bfcb410fe7c64b13c4cd55ca611e8"
+  integrity sha512-d3GHKPAOBULhCMg+jM687vRIMnTXMo8M0lHUOVeFxSGYvfmNlksiOpLyb0orhXPhhFCvZvt+SwC2iPRVIhKS/g==
+  dependencies:
+    query-string "^5.0.0"
 
 serve-favicon@^2.5.0:
   version "2.5.0"
@@ -19718,12 +19729,12 @@ use-callback-ref@^1.2.1:
   resolved "https://registry.yarnpkg.com/use-callback-ref/-/use-callback-ref-1.2.3.tgz#9f939dfb5740807bbf9dd79cdd4e99d27e827756"
   integrity sha512-DPBPh1i2adCZoIArRlTuKRy7yue7QogtEnfv0AKrWsY+GA+4EKe37zhRDouNnyWMoNQFYZZRF+2dLHsWE4YvJA==
 
-use-query-params@^1.1.3:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/use-query-params/-/use-query-params-1.1.3.tgz#b99cd48f87fcc79f737ce5c46c65a3ac73ba6c7f"
-  integrity sha512-lT4zhtmeMecwXPFExLbMV0BSISl08kwAFtKw8Wz0HQyCDo01nIDYa7NV7kU9dTfljkDN6LRqiHBcRoa/MU8P9A==
+use-query-params@^0.4.3:
+  version "0.4.6"
+  resolved "https://registry.yarnpkg.com/use-query-params/-/use-query-params-0.4.6.tgz#36be1a6b9d3939bfdfc9280f050d5cb6c34f7686"
+  integrity sha512-zKDfy23zjIEEWuMGwG7QjSgwtulk+uNExM7agVHvoKLSMl/jyalnNIv2R3prsbkGr2b63rZEt1NLHDlsjiXtAg==
   dependencies:
-    serialize-query-params "^1.2.0"
+    serialize-query-params "^0.1.4"
 
 use-sidecar@^1.0.1:
   version "1.0.2"
