@@ -7,7 +7,7 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect, useState } from 'react'
-import { LinearGenomeViewStateModel } from '..'
+import { LinearGenomeViewStateModel, HEADER_OVERVIEW_HEIGHT } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -61,10 +61,12 @@ const useStyles = makeStyles(theme => {
 function OverviewRubberBand({
   model,
   ControlComponent = <div />,
+  scale,
   children,
 }: {
   model: LGV
   ControlComponent?: React.ReactElement
+  scale: number
   children: React.ReactNode
 }) {
   const [startX, setStartX] = useState<number>()
@@ -117,9 +119,7 @@ function OverviewRubberBand({
     event.preventDefault()
     event.stopPropagation()
     setMouseDragging(true)
-    const relativeX =
-      event.clientX -
-      (event.target as HTMLDivElement).getBoundingClientRect().left
+    const relativeX = event.clientX
     setStartX(relativeX)
   }
 
@@ -127,10 +127,7 @@ function OverviewRubberBand({
     if (!guideOpen) {
       setGuideOpen(true)
     }
-    setGuideX(
-      event.clientX -
-        (event.target as HTMLDivElement).getBoundingClientRect().left,
-    )
+    setGuideX(event.clientX)
   }
 
   function mouseOut() {
@@ -167,17 +164,23 @@ function OverviewRubberBand({
   let width = 0
   if (startX !== undefined && currentX !== undefined) {
     left = currentX < startX ? currentX : startX
-    width = Math.abs(currentX - startX)
+    width = currentX - startX
   }
 
-  const leftBpOffset = model.pxToBp(left)
-  const leftBp = (
-    Math.round(leftBpOffset.start + leftBpOffset.offset) + 1
-  ).toLocaleString()
-  const rightBpOffset = model.pxToBp(left + width)
-  const rightBp = (
-    Math.round(rightBpOffset.start + rightBpOffset.offset) + 1
-  ).toLocaleString()
+  //   const leftBpOffset = model.pxToBp(left)
+  //   const leftBp = (
+  //     Math.round(leftBpOffset.start + leftBpOffset.offset) + 1
+  //   ).toLocaleString()
+  //   const rightBpOffset = model.pxToBp(left + width)
+  //   const rightBp = (
+  //     Math.round(rightBpOffset.start + rightBpOffset.offset) + 1
+  //   ).toLocaleString()
+
+  const leftCount = Math.round((startX || 0) * scale)
+  let leftScale = leftCount.toLocaleString()
+  console.log(startX, currentX)
+  let rightScale = Math.round(leftCount + width * scale).toLocaleString()
+  if (leftScale > rightScale) [leftScale, rightScale] = [rightScale, leftScale]
 
   const isRubberBandOpen = startX !== undefined && currentX !== undefined
   return (
@@ -199,7 +202,7 @@ function OverviewRubberBand({
         }}
         keepMounted
       >
-        <Typography>{isRubberBandOpen ? leftBp : ''}</Typography>
+        <Typography>{isRubberBandOpen ? leftScale : ''}</Typography>
       </Popover>
       <Popover
         className={classes.popover}
@@ -218,14 +221,19 @@ function OverviewRubberBand({
         }}
         keepMounted
       >
-        <Typography>{isRubberBandOpen ? rightBp : ''}</Typography>
+        <Typography>{isRubberBandOpen ? rightScale : ''}</Typography>
       </Popover>
+      <div
+        ref={rubberBandRef}
+        className={classes.rubberBand}
+        style={{ left, width: Math.abs(width), height: HEADER_OVERVIEW_HEIGHT }}
+      />
       <Tooltip
         open={guideOpen && !mouseDragging}
         placement="top"
         // this conversion # will need to be changed
         // maybe Math.round(guideX / scale - 1).toLocaleString, passing scale from OverviewScaleBar
-        title={Math.round(model.pxToBp(guideX).offset + 1).toLocaleString()}
+        title={Math.round(guideX * scale).toLocaleString()}
         arrow
       >
         <div
