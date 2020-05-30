@@ -73,6 +73,7 @@ function OverviewRubberBand({
   const [currentX, setCurrentX] = useState<number>()
   const [mouseDragging, setMouseDragging] = useState(false)
   const [guideX, setGuideX] = useState(0)
+  const [offsetX, setOffsetX] = useState(0)
   const [guideOpen, setGuideOpen] = useState(false)
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
@@ -84,13 +85,13 @@ function OverviewRubberBand({
     function globalMouseMove(event: MouseEvent) {
       event.preventDefault()
       if (controlsRef.current) {
-        const relativeX =
-          event.clientX - controlsRef.current.getBoundingClientRect().left
+        const relativeX = event.clientX
         setCurrentX(relativeX)
       }
     }
 
     function globalMouseUp(event: MouseEvent) {
+      if (controlsRef.current) zoomToRegion()
       setMouseDragging(false)
     }
 
@@ -100,6 +101,27 @@ function OverviewRubberBand({
         setCurrentX(undefined)
         setMouseDragging(false)
       }
+    }
+
+    function zoomToRegion() {
+      console.log(startX, currentX)
+      if (startX === undefined || currentX === undefined) return
+      let leftPx = startX
+      let rightPx = currentX
+      if (rightPx < leftPx) {
+        ;[leftPx, rightPx] = [rightPx, leftPx]
+      }
+
+      console.log(leftPx, rightPx, scale)
+      const newRegions = []
+
+      model.displayedRegions.map(region => {
+        console.log(region)
+      })
+      // TODORB: get all the displayed regions in an array. Map through each one
+      // find the earliest overlap between the display region and the leftpx
+      // if no overlap go to next. then find the latest overlap between
+      // display region and the rightpx. zoom into everything in between
     }
 
     if (mouseDragging) {
@@ -113,13 +135,15 @@ function OverviewRubberBand({
       }
     }
     return cleanup
-  }, [mouseDragging])
+  }, [mouseDragging, currentX, model, scale, startX])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
     event.stopPropagation()
     setMouseDragging(true)
-    const relativeX = event.clientX
+    const relativeX =
+      event.clientX -
+      (event.target as HTMLDivElement).getBoundingClientRect().left
     setStartX(relativeX)
   }
 
@@ -127,27 +151,12 @@ function OverviewRubberBand({
     if (!guideOpen) {
       setGuideOpen(true)
     }
+    setOffsetX((event.target as HTMLDivElement).getBoundingClientRect().left)
     setGuideX(event.clientX)
   }
 
   function mouseOut() {
-    zoomToRegion()
     setGuideOpen(false)
-  }
-
-  function zoomToRegion() {
-    if (startX === undefined || currentX === undefined) return
-    let leftPx = startX
-    let rightPx = currentX
-    if (rightPx < leftPx) {
-      ;[leftPx, rightPx] = [rightPx, leftPx]
-    }
-
-    console.log('zooming here')
-    // TODORB: get all the displayed regions in an array. Map through each one
-    // find the earliest overlap between the display region and the leftpx
-    // if no overlap go to next. then find the latest overlap between
-    // display region and the rightpx. zoom into everything in between
   }
 
   const controlComponent = React.cloneElement(ControlComponent, {
@@ -163,7 +172,7 @@ function OverviewRubberBand({
   let left = 0
   let width = 0
   if (startX !== undefined && currentX !== undefined) {
-    left = currentX < startX ? currentX : startX
+    left = startX + offsetX
     width = currentX - startX
   }
 
@@ -176,11 +185,11 @@ function OverviewRubberBand({
   //     Math.round(rightBpOffset.start + rightBpOffset.offset) + 1
   //   ).toLocaleString()
 
-  const leftCount = Math.round((startX || 0) * scale)
-  let leftScale = leftCount.toLocaleString()
-  console.log(startX, currentX)
-  let rightScale = Math.round(leftCount + width * scale).toLocaleString()
-  if (leftScale > rightScale) [leftScale, rightScale] = [rightScale, leftScale]
+  let leftCount = Math.round((startX || 0) * scale)
+  let rightCount = Math.round(leftCount + width * scale)
+  if (leftCount > rightCount) {
+    ;[leftCount, rightCount] = [rightCount, leftCount]
+  }
 
   const isRubberBandOpen = startX !== undefined && currentX !== undefined
   return (
@@ -202,7 +211,9 @@ function OverviewRubberBand({
         }}
         keepMounted
       >
-        <Typography>{isRubberBandOpen ? leftScale : ''}</Typography>
+        <Typography>
+          {isRubberBandOpen ? leftCount.toLocaleString() : ''}
+        </Typography>
       </Popover>
       <Popover
         className={classes.popover}
@@ -221,19 +232,23 @@ function OverviewRubberBand({
         }}
         keepMounted
       >
-        <Typography>{isRubberBandOpen ? rightScale : ''}</Typography>
+        <Typography>
+          {isRubberBandOpen ? rightCount.toLocaleString() : ''}
+        </Typography>
       </Popover>
       <div
         ref={rubberBandRef}
         className={classes.rubberBand}
-        style={{ left, width: Math.abs(width), height: HEADER_OVERVIEW_HEIGHT }}
+        style={{
+          left,
+          width: Math.abs(width),
+          height: HEADER_OVERVIEW_HEIGHT,
+        }}
       />
       <Tooltip
         open={guideOpen && !mouseDragging}
         placement="top"
-        // this conversion # will need to be changed
-        // maybe Math.round(guideX / scale - 1).toLocaleString, passing scale from OverviewScaleBar
-        title={Math.round(guideX * scale).toLocaleString()}
+        title={Math.round((guideX - offsetX) * scale).toLocaleString()}
         arrow
       >
         <div
@@ -241,6 +256,7 @@ function OverviewRubberBand({
           style={{
             left: guideX,
           }}
+          data-testid="here"
         />
       </Tooltip>
       {controlComponent}

@@ -47,6 +47,7 @@ const useStyles = makeStyles(theme => {
       position: 'absolute',
       display: 'flex',
       justifyContent: 'center',
+      pointerEvents: 'none',
     },
     scaleBarVisibleRegion: {
       height: '100%',
@@ -109,7 +110,6 @@ function OverviewScaleBar({
   const scale =
     totalLength / (width - (wholeRefSeqs.length - 1) * wholeSeqSpacer)
   const gridPitch = chooseGridPitch(scale, 120, 15)
-  console.log(scale)
 
   // @ts-ignore
   const polygonColor = theme.palette.tertiary
@@ -172,6 +172,7 @@ function OverviewScaleBar({
                       style={{
                         width: Math.max((r.end - r.start) / scale, 1),
                         left: r.start / scale - 1,
+                        pointerEvents: 'none',
                       }}
                     />
                   )
@@ -185,6 +186,7 @@ function OverviewScaleBar({
                   className={classes.scaleBarLabel}
                   style={{
                     left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
+                    pointerEvents: 'none',
                   }}
                 >
                   {label.toLocaleString()}
