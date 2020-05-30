@@ -130,6 +130,7 @@ function TracksContainer({
       onMouseLeave={mouseLeave}
     >
       <VerticalGuides model={model} />
+      {model.showCenterLine ? <CenterLine model={model} /> : null}
 
       <RubberBand
         model={model}
@@ -140,8 +141,6 @@ function TracksContainer({
           />
         }
       />
-      {model.showCenterLine ? <CenterLine model={model} /> : null}
-
       <div className={classes.spacer} />
       {children}
     </div>

@@ -239,12 +239,12 @@ function RubberBand({
   if (!isRubberBandOpen) {
     return (
       <>
-        {controlComponent}
         <VerticalGuide
           model={model}
           open={guideOpen && !mouseDragging}
           coordX={guideX}
         />
+        {controlComponent}
       </>
     )
   }
