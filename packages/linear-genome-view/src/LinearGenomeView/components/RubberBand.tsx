@@ -62,11 +62,11 @@ const useStyles = makeStyles(theme => {
 })
 
 const VerticalGuide = observer(
-  ({ model, coordX, open }: { model: LGV; coordX: number; open: boolean }) => {
+  ({ model, coordX }: { model: LGV; coordX: number }) => {
     const classes = useStyles()
     return (
       <Tooltip
-        open={open}
+        open={true}
         placement="top"
         title={Math.round(model.pxToBp(coordX).offset + 1).toLocaleString()}
         arrow
@@ -75,7 +75,7 @@ const VerticalGuide = observer(
           className={classes.guide}
           style={{
             left: coordX,
-            background: open ? 'red' : undefined,
+            background: 'red',
           }}
         />
       </Tooltip>
@@ -97,18 +97,12 @@ function RubberBand({
 }) {
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
-  const [mouseDragging, setMouseDragging] = useState(false)
   const [anchorPosition, setAnchorPosition] = useState<Coord | undefined>()
-  const [guideX, setGuideX] = useState(0)
-  const [guideOpen, setGuideOpen] = useState(false)
+  const [guideX, setGuideX] = useState<number | undefined>()
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
   const classes = useStyles()
-
-  function localMouseUp(event: MouseEvent) {
-    setAnchorPosition({ left: event.clientX, top: event.clientY })
-    setMouseDragging(false)
-  }
+  const mouseDragging = startX !== undefined
 
   useEventListener('mousemove', (event: MouseEvent) => {
     if (controlsRef.current) {
@@ -120,52 +114,8 @@ function RubberBand({
 
   useEventListener('mouseup', (event: MouseEvent) => {
     setAnchorPosition({ left: event.clientX, top: event.clientY })
-    setMouseDragging(false)
+    setGuideX(undefined)
   })
-  useEffect(() => {
-    let cleanup = () => {}
-
-    function globalMouseMove(event: MouseEvent) {
-      if (controlsRef.current) {
-        const relativeX =
-          event.clientX - controlsRef.current.getBoundingClientRect().left
-        setCurrentX(relativeX)
-      }
-    }
-
-    function globalMouseUp(event: MouseEvent) {
-      setAnchorPosition({ left: event.clientX, top: event.clientY })
-      setMouseDragging(false)
-    }
-
-    function globalKeyDown(event: KeyboardEvent) {
-      if (event.keyCode === 27) {
-        setAnchorPosition(undefined)
-        setStartX(undefined)
-        setCurrentX(undefined)
-        setMouseDragging(false)
-      }
-    }
-
-    if (mouseDragging) {
-      window.addEventListener('mousemove', globalMouseMove)
-      window.addEventListener('mouseup', globalMouseUp)
-      window.addEventListener('keydown', globalKeyDown)
-      cleanup = () => {
-        window.removeEventListener('mousemove', globalMouseMove)
-        window.removeEventListener('mouseup', globalMouseUp)
-        window.removeEventListener('keydown', globalKeyDown)
-      }
-    }
-    return cleanup
-  }, [
-    mouseDragging,
-    setAnchorPosition,
-    setMouseDragging,
-    setAnchorPosition,
-    setStartX,
-    setCurrentX,
-  ])
 
   useEffect(() => {
     if (
@@ -181,36 +131,34 @@ function RubberBand({
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
     event.stopPropagation()
-    setMouseDragging(true)
     const relativeX =
       event.clientX -
       (event.target as HTMLDivElement).getBoundingClientRect().left
     setStartX(relativeX)
+    setCurrentX(relativeX)
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (!guideOpen) {
-      setGuideOpen(true)
-    }
     const target = event.target as HTMLDivElement
     setGuideX(event.clientX - target.getBoundingClientRect().left)
   }
 
   function mouseOut() {
-    setGuideOpen(false)
+    setGuideX(undefined)
   }
 
   function zoomToRegion() {
-    if (startX === undefined || currentX === undefined) {
+    if (startX === undefined || anchorPosition === undefined) {
       return
     }
     let leftPx = startX
-    let rightPx = currentX
+    let rightPx = anchorPosition.left
     if (rightPx < leftPx) {
       ;[leftPx, rightPx] = [rightPx, leftPx]
     }
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
+    console.log(leftOffset, rightOffset)
     model.moveTo(leftOffset, rightOffset)
   }
 
@@ -218,7 +166,6 @@ function RubberBand({
     setAnchorPosition(undefined)
     setStartX(undefined)
     setCurrentX(undefined)
-    setMouseDragging(false)
   }
 
   const open = Boolean(anchorPosition)
@@ -242,22 +189,12 @@ function RubberBand({
     },
   ]
 
-  let left = 0
-  let width = 0
-  if (startX !== undefined && currentX !== undefined) {
-    left = currentX < startX ? currentX : startX
-    width = Math.abs(currentX - startX)
-  }
-
-  const isRubberBandOpen = startX !== undefined && currentX !== undefined
-  if (!isRubberBandOpen) {
+  if (startX === undefined) {
     return (
       <>
-        <VerticalGuide
-          model={model}
-          open={guideOpen && !mouseDragging}
-          coordX={guideX}
-        />
+        {guideX !== undefined ? (
+          <VerticalGuide model={model} coordX={guideX} />
+        ) : null}
         <div
           data-testid="rubberBand_controls"
           className={classes.rubberBandControl}
@@ -273,6 +210,11 @@ function RubberBand({
     )
   }
 
+  let left = 0
+  let width = 0
+  const right = anchorPosition ? anchorPosition.left : currentX || 0
+  left = right < startX ? right : startX
+  width = Math.abs(right - startX)
   const leftBpOffset = model.pxToBp(left)
   const leftBp = (
     Math.round(leftBpOffset.start + leftBpOffset.offset) + 1
@@ -291,7 +233,7 @@ function RubberBand({
             classes={{
               paper: classes.paper,
             }}
-            open={isRubberBandOpen}
+            open={true}
             anchorEl={rubberBandRef.current}
             anchorOrigin={{
               vertical: 'top',
@@ -303,7 +245,7 @@ function RubberBand({
             }}
             keepMounted
           >
-            <Typography>{isRubberBandOpen ? leftBp : ''}</Typography>
+            <Typography>{leftBp}</Typography>
           </Popover>
           <Popover
             className={classes.popover}
@@ -322,7 +264,7 @@ function RubberBand({
             }}
             keepMounted
           >
-            <Typography>{isRubberBandOpen ? rightBp : ''}</Typography>
+            <Typography>{rightBp}</Typography>
           </Popover>
         </>
       ) : null}
