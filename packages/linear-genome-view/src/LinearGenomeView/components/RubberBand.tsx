@@ -260,44 +260,48 @@ function RubberBand({
 
   return (
     <>
-      <Popover
-        className={classes.popover}
-        classes={{
-          paper: classes.paper,
-        }}
-        open={isRubberBandOpen}
-        anchorEl={rubberBandRef.current}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
-        }}
-        transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        keepMounted
-      >
-        <Typography>{isRubberBandOpen ? leftBp : ''}</Typography>
-      </Popover>
-      <Popover
-        className={classes.popover}
-        classes={{
-          paper: classes.paper,
-        }}
-        open={startX !== undefined && currentX !== undefined}
-        anchorEl={rubberBandRef.current}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
-        }}
-        keepMounted
-      >
-        <Typography>{isRubberBandOpen ? rightBp : ''}</Typography>
-      </Popover>
+      {rubberBandRef.current ? (
+        <>
+          <Popover
+            className={classes.popover}
+            classes={{
+              paper: classes.paper,
+            }}
+            open={isRubberBandOpen}
+            anchorEl={rubberBandRef.current}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'left',
+            }}
+            transformOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            keepMounted
+          >
+            <Typography>{isRubberBandOpen ? leftBp : ''}</Typography>
+          </Popover>
+          <Popover
+            className={classes.popover}
+            classes={{
+              paper: classes.paper,
+            }}
+            open={startX !== undefined && currentX !== undefined}
+            anchorEl={rubberBandRef.current}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+            keepMounted
+          >
+            <Typography>{isRubberBandOpen ? rightBp : ''}</Typography>
+          </Popover>
+        </>
+      ) : null}
       <div
         ref={rubberBandRef}
         className={classes.rubberBand}
