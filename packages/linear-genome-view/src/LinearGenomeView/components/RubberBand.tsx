@@ -1,4 +1,5 @@
 import { Menu } from '@gmod/jbrowse-core/ui'
+import { useEventListener } from '@gmod/jbrowse-core/util'
 import Popover from '@material-ui/core/Popover'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -104,11 +105,27 @@ function RubberBand({
   const rubberBandRef = useRef(null)
   const classes = useStyles()
 
+  function localMouseUp(event: MouseEvent) {
+    setAnchorPosition({ left: event.clientX, top: event.clientY })
+    setMouseDragging(false)
+  }
+
+  useEventListener('mousemove', (event: MouseEvent) => {
+    if (controlsRef.current) {
+      const relativeX =
+        event.clientX - controlsRef.current.getBoundingClientRect().left
+      setCurrentX(relativeX)
+    }
+  })
+
+  useEventListener('mouseup', (event: MouseEvent) => {
+    setAnchorPosition({ left: event.clientX, top: event.clientY })
+    setMouseDragging(false)
+  })
   useEffect(() => {
     let cleanup = () => {}
 
     function globalMouseMove(event: MouseEvent) {
-      event.preventDefault()
       if (controlsRef.current) {
         const relativeX =
           event.clientX - controlsRef.current.getBoundingClientRect().left
@@ -117,9 +134,8 @@ function RubberBand({
     }
 
     function globalMouseUp(event: MouseEvent) {
+      setAnchorPosition({ left: event.clientX, top: event.clientY })
       setMouseDragging(false)
-      const pos = { left: event.clientX, top: event.clientY }
-      setAnchorPosition(pos)
     }
 
     function globalKeyDown(event: KeyboardEvent) {
@@ -132,17 +148,24 @@ function RubberBand({
     }
 
     if (mouseDragging) {
-      window.addEventListener('mousemove', globalMouseMove, true)
-      window.addEventListener('mouseup', globalMouseUp, true)
-      window.addEventListener('keydown', globalKeyDown, true)
+      window.addEventListener('mousemove', globalMouseMove)
+      window.addEventListener('mouseup', globalMouseUp)
+      window.addEventListener('keydown', globalKeyDown)
       cleanup = () => {
-        window.removeEventListener('mousemove', globalMouseMove, true)
-        window.removeEventListener('mouseup', globalMouseUp, true)
-        window.removeEventListener('keydown', globalKeyDown, true)
+        window.removeEventListener('mousemove', globalMouseMove)
+        window.removeEventListener('mouseup', globalMouseUp)
+        window.removeEventListener('keydown', globalKeyDown)
       }
     }
     return cleanup
-  }, [mouseDragging])
+  }, [
+    mouseDragging,
+    setAnchorPosition,
+    setMouseDragging,
+    setAnchorPosition,
+    setStartX,
+    setCurrentX,
+  ])
 
   useEffect(() => {
     if (
@@ -200,16 +223,6 @@ function RubberBand({
 
   const open = Boolean(anchorPosition)
 
-  const controlComponent = React.cloneElement(ControlComponent, {
-    'data-testid': 'rubberBand_controls',
-    className: classes.rubberBandControl,
-    role: 'presentation',
-    ref: controlsRef,
-    onMouseDown: mouseDown,
-    onMouseOut: mouseOut,
-    onMouseMove: mouseMove,
-  })
-
   function handleMenuItemClick(
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
     callback: Function,
@@ -235,6 +248,7 @@ function RubberBand({
     left = currentX < startX ? currentX : startX
     width = Math.abs(currentX - startX)
   }
+
   const isRubberBandOpen = startX !== undefined && currentX !== undefined
   if (!isRubberBandOpen) {
     return (
@@ -244,7 +258,17 @@ function RubberBand({
           open={guideOpen && !mouseDragging}
           coordX={guideX}
         />
-        {controlComponent}
+        <div
+          data-testid="rubberBand_controls"
+          className={classes.rubberBandControl}
+          role="presentation"
+          ref={controlsRef}
+          onMouseDown={mouseDown}
+          onMouseOut={mouseOut}
+          onMouseMove={mouseMove}
+        >
+          {ControlComponent}
+        </div>
       </>
     )
   }
@@ -311,15 +335,27 @@ function RubberBand({
           {Math.round(width * model.bpPerPx).toLocaleString()} bp{' '}
         </Typography>
       </div>
-      {controlComponent}
-      <Menu
-        anchorReference="anchorPosition"
-        anchorPosition={anchorPosition}
-        onMenuItemClick={handleMenuItemClick}
-        open={open}
-        onClose={handleClose}
-        menuOptions={menuOptions}
-      />
+      <div
+        data-testid="rubberBand_controls"
+        className={classes.rubberBandControl}
+        role="presentation"
+        ref={controlsRef}
+        onMouseDown={mouseDown}
+        onMouseOut={mouseOut}
+        onMouseMove={mouseMove}
+      >
+        {ControlComponent}
+      </div>
+      {anchorPosition ? (
+        <Menu
+          anchorReference="anchorPosition"
+          anchorPosition={anchorPosition}
+          onMenuItemClick={handleMenuItemClick}
+          open={open}
+          onClose={handleClose}
+          menuOptions={menuOptions}
+        />
+      ) : null}
     </>
   )
 }

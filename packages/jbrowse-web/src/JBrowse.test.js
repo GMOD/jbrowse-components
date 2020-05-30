@@ -1,5 +1,7 @@
 // library
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+
+import { screen } from '@testing-library/dom'
 import '@testing-library/jest-dom/extend-expect'
 import {
   cleanup,
@@ -147,15 +149,15 @@ describe('valid file tests', () => {
   it('click and drag to rubberBand', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findByText } = render(
+    const { findByTestId, findByText, debug } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     const track = await findByTestId('rubberBand_controls')
 
     expect(state.session.views[0].bpPerPx).toEqual(0.05)
-    fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
-    fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
-    fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
+    fireEvent.mouseDown(track, { clientX: 100, clientY: 5 })
+    fireEvent.mouseMove(track, { clientX: 250, clientY: 5 })
+    fireEvent.mouseUp(track, { clientX: 250, clientY: 5 })
     const zoomMenuItem = await findByText('Zoom to region')
     fireEvent.click(zoomMenuItem)
     expect(state.session.views[0].bpPerPx).toEqual(0.009375)
