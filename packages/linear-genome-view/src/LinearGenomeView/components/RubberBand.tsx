@@ -158,7 +158,6 @@ function RubberBand({
     }
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
-    console.log(leftOffset, rightOffset)
     model.moveTo(leftOffset, rightOffset)
   }
 
