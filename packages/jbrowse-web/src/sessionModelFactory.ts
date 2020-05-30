@@ -108,13 +108,14 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       get visibleDrawerWidget() {
-        if (isAlive(self))
-          // returns most recently added item in active drawer widgets
-          return Array.from(self.activeDrawerWidgets.values())[
-            self.activeDrawerWidgets.size - 1
-          ]
-        return undefined
+        // returns most recently added item in active drawer widgets
+        return isAlive(self)
+          ? Array.from(self.activeDrawerWidgets.values())[
+              self.activeDrawerWidgets.size - 1
+            ]
+          : undefined
       },
+
       /**
        * See if any MST nodes currently have a types.reference to this object.
        * @param object - object
@@ -256,8 +257,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             id === 'hierarchicalTrackSelector' &&
             drawerWidget.view &&
             drawerWidget.view.id === view.id
-          )
+          ) {
             this.hideDrawerWidget(drawerWidget)
+          }
         }
         self.views.remove(view)
       },
@@ -335,8 +337,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       showDrawerWidget(drawerWidget: any) {
-        if (self.activeDrawerWidgets.has(drawerWidget.id))
+        if (self.activeDrawerWidgets.has(drawerWidget.id)) {
           self.activeDrawerWidgets.delete(drawerWidget.id)
+        }
         self.activeDrawerWidgets.set(drawerWidget.id, drawerWidget)
       },
 
