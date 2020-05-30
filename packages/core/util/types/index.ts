@@ -17,6 +17,7 @@ import {
   UriLocation as MUUriLocation,
 } from './mst'
 import RpcManager from '../../rpc/RpcManager'
+import { Feature } from '../simpleFeature'
 
 export * from './util'
 
@@ -36,6 +37,7 @@ export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
   editConfiguration(configuration: AnyConfigurationModel): void
+  setSelection(feature: Feature): void
   clearSelection(): void
   configuration: AnyConfigurationModel
   pluginManager: PluginManager

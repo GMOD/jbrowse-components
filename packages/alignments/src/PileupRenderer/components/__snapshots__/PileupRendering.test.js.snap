@@ -13,6 +13,7 @@ exports[`one 1`] = `
   />
   <canvas
     class="highlightOverlayCanvas"
+    data-testid="pileup_overlay_canvas"
     height="500"
     style="position: absolute; left: 0px; top: 0px;"
     width="500"

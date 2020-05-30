@@ -90,6 +90,6 @@
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"
     },
-    "updateUrl": false
+    "useUrlSession": false
   }
 }

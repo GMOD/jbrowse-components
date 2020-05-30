@@ -30,7 +30,7 @@ configSnapshot.configuration = {
   rpc: {
     defaultDriver: 'MainThreadRpcDriver',
   },
-  updateUrl: false,
+  useUrlSession: false,
 }
 
 if (!window.TextEncoder) window.TextEncoder = TextEncoder
@@ -356,6 +356,8 @@ test('variant track test - opens feature detail view', async () => {
   state.session.views[0].setNewView(0.05, 5000)
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
   fireEvent.click(await findByTestId('test-vcf-604452'))
+
+  // this text is to confirm a feature detail drawer opened
   await expect(findByText('ctgA:277..277')).resolves.toBeTruthy()
 })
 
@@ -404,7 +406,7 @@ describe('alignments track', () => {
   it('opens an alignments track', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findByText } = render(
+    const { findByTestId, findByText, findAllByTestId } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
@@ -439,7 +441,20 @@ describe('alignments track', () => {
       failureThreshold: 0.5,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+
+    const track = await findAllByTestId('pileup_overlay_canvas')
+    fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
+
+    fireEvent.click(track[0], { clientX: 200, clientY: 40 })
+
+    fireEvent.mouseDown(track[0], { clientX: 200, clientY: 20 })
+    fireEvent.mouseMove(track[0], { clientX: 300, clientY: 20 })
+    fireEvent.mouseUp(track[0], { clientX: 300, clientY: 20 })
+    fireEvent.mouseMove(track[0], { clientX: -100, clientY: -100 })
+
+    // this is to confirm a alignment detail drawer widget opened
+    await expect(findAllByTestId('alignment-side-drawer')).resolves.toBeTruthy()
+  }, 15000)
 
   // Note: tracks with assembly volvox don't have much soft clipping
   it('opens the track menu and enables soft clipping', async () => {
