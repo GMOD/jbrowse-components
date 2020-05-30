@@ -66,7 +66,7 @@ const VerticalGuide = observer(
     const classes = useStyles()
     return (
       <Tooltip
-        open={true}
+        open
         placement="top"
         title={Math.round(model.pxToBp(coordX).offset + 1).toLocaleString()}
         arrow
@@ -232,7 +232,7 @@ function RubberBand({
             classes={{
               paper: classes.paper,
             }}
-            open={true}
+            open
             anchorEl={rubberBandRef.current}
             anchorOrigin={{
               vertical: 'top',
@@ -251,7 +251,7 @@ function RubberBand({
             classes={{
               paper: classes.paper,
             }}
-            open={startX !== undefined && currentX !== undefined}
+            open
             anchorEl={rubberBandRef.current}
             anchorOrigin={{
               vertical: 'top',

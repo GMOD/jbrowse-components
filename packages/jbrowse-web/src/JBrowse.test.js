@@ -1,7 +1,6 @@
 // library
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
-import { screen } from '@testing-library/dom'
 import '@testing-library/jest-dom/extend-expect'
 import {
   cleanup,
@@ -149,7 +148,7 @@ describe('valid file tests', () => {
   it('click and drag to rubberBand', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findByText, debug } = render(
+    const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     const track = await findByTestId('rubberBand_controls')
