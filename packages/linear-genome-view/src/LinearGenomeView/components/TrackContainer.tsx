@@ -64,13 +64,7 @@ function TrackContainer(props: {
 }) {
   const classes = useStyles()
   const { model, track } = props
-  const {
-    bpPerPx,
-    offsetPx,
-    horizontalScroll,
-    draggingTrackId,
-    moveTrack,
-  } = model
+  const { horizontalScroll, draggingTrackId, moveTrack } = model
   function onDragEnter() {
     if (
       draggingTrackId !== undefined &&
@@ -110,8 +104,6 @@ function TrackContainer(props: {
         >
           <RenderingComponent
             model={track}
-            offsetPx={offsetPx}
-            bpPerPx={bpPerPx}
             blockState={{}}
             onHorizontalScroll={horizontalScroll}
           />

@@ -7,7 +7,6 @@ import Typography from '@material-ui/core/Typography'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import { trace } from 'mobx'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect, useState } from 'react'
 import { LinearGenomeViewStateModel } from '..'
@@ -64,7 +63,6 @@ const useStyles = makeStyles(theme => {
 const VerticalGuide = observer(
   ({ model, coordX, open }: { model: LGV; coordX: number; open: boolean }) => {
     const classes = useStyles()
-    console.log('open', open)
     return (
       <Tooltip
         open={open}
@@ -96,8 +94,6 @@ function RubberBand({
   model: LGV
   ControlComponent?: React.ReactElement
 }) {
-  trace(model, 'offsetPx')
-  console.log('here')
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
   const [mouseDragging, setMouseDragging] = useState(false)
@@ -241,7 +237,6 @@ function RubberBand({
   }
   const isRubberBandOpen = startX !== undefined && currentX !== undefined
   if (!isRubberBandOpen) {
-    console.log('here1', guideOpen, !mouseDragging)
     return (
       <>
         {controlComponent}
@@ -253,7 +248,6 @@ function RubberBand({
       </>
     )
   }
-  console.log('here2', guideOpen, !mouseDragging)
 
   const leftBpOffset = model.pxToBp(left)
   const leftBp = (
