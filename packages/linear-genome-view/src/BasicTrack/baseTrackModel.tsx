@@ -93,8 +93,6 @@ const BaseTrack = types
 
     get RenderingComponent(): React.FC<{
       model: typeof self
-      offsetPx: number
-      bpPerPx: number
       onHorizontalScroll: Function
       blockState: Record<string, any>
     }> {

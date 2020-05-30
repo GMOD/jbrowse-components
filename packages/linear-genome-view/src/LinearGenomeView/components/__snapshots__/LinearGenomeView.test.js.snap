@@ -359,7 +359,6 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
   >
     <div
       class="makeStyles-verticalGuidesZoomContainer"
-      style="transform: scaleX(1);"
     >
       <div
         class="makeStyles-verticalGuidesContainer"
@@ -409,68 +408,54 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       </div>
     </div>
     <div
-      class="makeStyles-rubberBand"
-      style="left: 0px; width: 0px;"
-    >
-      <h6
-        class="MuiTypography-root makeStyles-rubberBandText MuiTypography-h6"
-      >
-        0
-         bp
-         
-      </h6>
-    </div>
-    <div
-      class="makeStyles-guide"
-      style="left: 0px;"
-      title="1"
-    />
-    <div
-      class="MuiPaper-root makeStyles-scaleBarContainer makeStyles-rubberBandControl MuiPaper-outlined MuiPaper-rounded"
+      class="makeStyles-rubberBandControl"
       data-testid="rubberBand_controls"
       role="presentation"
-      style="height: 17px; box-sizing: border-box;"
     >
       <div
-        class="makeStyles-scaleBarZoomContainer"
-        style="transform: scaleX(1);"
+        class="MuiPaper-root makeStyles-scaleBarContainer MuiPaper-outlined MuiPaper-rounded"
+        style="height: 17px; box-sizing: border-box;"
       >
         <div
-          class="makeStyles-scaleBar"
-          style="left: -801px; width: 1700px; height: 17px; box-sizing: border-box;"
+          class="makeStyles-scaleBarZoomContainer"
         >
           <div
-            class="makeStyles-boundaryPaddingBlock"
-            style="background: none; width: 800px;"
-          />
-          <div
-            class="makeStyles-block"
-            style="width: 100px;"
+            class="makeStyles-scaleBar"
+            style="left: -801px; width: 1700px; height: 17px; box-sizing: border-box;"
           >
             <div
-              class="makeStyles-tick"
-              style="left: -1px;"
+              class="makeStyles-boundaryPaddingBlock"
+              style="background: none; width: 800px;"
+            />
+            <div
+              class="makeStyles-block"
+              style="width: 100px;"
             >
-              <p
-                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+              <div
+                class="makeStyles-tick"
+                style="left: -1px;"
               >
-                0
-              </p>
+                <p
+                  class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+                >
+                  0
+                </p>
+              </div>
             </div>
+            <div
+              class="makeStyles-boundaryPaddingBlock"
+              style="background: none; width: 800px;"
+            />
           </div>
-          <div
-            class="makeStyles-boundaryPaddingBlock"
-            style="background: none; width: 800px;"
-          />
         </div>
+        <p
+          class="MuiTypography-root makeStyles-refLabel MuiTypography-body1"
+          data-testid="refLabel-ctgA"
+          style="left: -1px; padding-left: 1px;"
+        >
+          ctgA
+        </p>
       </div>
-      <p
-        class="MuiTypography-root makeStyles-refLabel MuiTypography-body1"
-        data-testid="refLabel-ctgA"
-        style="left: -1px; padding-left: 1px;"
-      >
-        ctgA
-      </p>
     </div>
     <div
       class="makeStyles-spacer"
@@ -1189,7 +1174,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
   >
     <div
       class="makeStyles-verticalGuidesZoomContainer"
-      style="transform: scaleX(1);"
     >
       <div
         class="makeStyles-verticalGuidesContainer"
@@ -1469,159 +1453,145 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       </div>
     </div>
     <div
-      class="makeStyles-rubberBand"
-      style="left: 0px; width: 0px;"
-    >
-      <h6
-        class="MuiTypography-root makeStyles-rubberBandText MuiTypography-h6"
-      >
-        0
-         bp
-         
-      </h6>
-    </div>
-    <div
-      class="makeStyles-guide"
-      style="left: 0px;"
-      title="1"
-    />
-    <div
-      class="MuiPaper-root makeStyles-scaleBarContainer makeStyles-rubberBandControl MuiPaper-outlined MuiPaper-rounded"
+      class="makeStyles-rubberBandControl"
       data-testid="rubberBand_controls"
       role="presentation"
-      style="height: 17px; box-sizing: border-box;"
     >
       <div
-        class="makeStyles-scaleBarZoomContainer"
-        style="transform: scaleX(1);"
+        class="MuiPaper-root makeStyles-scaleBarContainer MuiPaper-outlined MuiPaper-rounded"
+        style="height: 17px; box-sizing: border-box;"
       >
         <div
-          class="makeStyles-scaleBar"
-          style="left: -801px; width: 2702px; height: 17px; box-sizing: border-box;"
+          class="makeStyles-scaleBarZoomContainer"
         >
           <div
-            class="makeStyles-boundaryPaddingBlock"
-            style="background: none; width: 800px;"
-          />
-          <div
-            class="makeStyles-block"
-            style="width: 100px;"
+            class="makeStyles-scaleBar"
+            style="left: -801px; width: 2702px; height: 17px; box-sizing: border-box;"
           >
             <div
-              class="makeStyles-tick"
-              style="left: -1px;"
+              class="makeStyles-boundaryPaddingBlock"
+              style="background: none; width: 800px;"
+            />
+            <div
+              class="makeStyles-block"
+              style="width: 100px;"
             >
-              <p
-                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+              <div
+                class="makeStyles-tick"
+                style="left: -1px;"
               >
-                0
-              </p>
+                <p
+                  class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+                >
+                  0
+                </p>
+              </div>
             </div>
+            <div
+              class="makeStyles-interRegionPaddingBlock"
+              style="background: none; width: 2px;"
+            />
+            <div
+              class="makeStyles-block"
+              style="width: 800px;"
+            >
+              <div
+                class="makeStyles-tick"
+                style="left: -1px;"
+              >
+                <p
+                  class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+                >
+                  1,000
+                </p>
+              </div>
+              <div
+                class="makeStyles-tick"
+                style="left: 199px;"
+              >
+                <p
+                  class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+                >
+                  1,200
+                </p>
+              </div>
+              <div
+                class="makeStyles-tick"
+                style="left: 399px;"
+              >
+                <p
+                  class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+                >
+                  1,400
+                </p>
+              </div>
+              <div
+                class="makeStyles-tick"
+                style="left: 599px;"
+              >
+                <p
+                  class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+                >
+                  1,600
+                </p>
+              </div>
+              <div
+                class="makeStyles-tick"
+                style="left: 799px;"
+              >
+                <p
+                  class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+                >
+                  1,800
+                </p>
+              </div>
+            </div>
+            <div
+              class="makeStyles-block"
+              style="width: 200px;"
+            >
+              <div
+                class="makeStyles-tick"
+                style="left: -1px;"
+              >
+                <p
+                  class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+                >
+                  1,800
+                </p>
+              </div>
+              <div
+                class="makeStyles-tick"
+                style="left: 199px;"
+              >
+                <p
+                  class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
+                >
+                  2,000
+                </p>
+              </div>
+            </div>
+            <div
+              class="makeStyles-boundaryPaddingBlock"
+              style="background: none; width: 800px;"
+            />
           </div>
-          <div
-            class="makeStyles-interRegionPaddingBlock"
-            style="background: none; width: 2px;"
-          />
-          <div
-            class="makeStyles-block"
-            style="width: 800px;"
-          >
-            <div
-              class="makeStyles-tick"
-              style="left: -1px;"
-            >
-              <p
-                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-              >
-                1,000
-              </p>
-            </div>
-            <div
-              class="makeStyles-tick"
-              style="left: 199px;"
-            >
-              <p
-                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-              >
-                1,200
-              </p>
-            </div>
-            <div
-              class="makeStyles-tick"
-              style="left: 399px;"
-            >
-              <p
-                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-              >
-                1,400
-              </p>
-            </div>
-            <div
-              class="makeStyles-tick"
-              style="left: 599px;"
-            >
-              <p
-                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-              >
-                1,600
-              </p>
-            </div>
-            <div
-              class="makeStyles-tick"
-              style="left: 799px;"
-            >
-              <p
-                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-              >
-                1,800
-              </p>
-            </div>
-          </div>
-          <div
-            class="makeStyles-block"
-            style="width: 200px;"
-          >
-            <div
-              class="makeStyles-tick"
-              style="left: -1px;"
-            >
-              <p
-                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-              >
-                1,800
-              </p>
-            </div>
-            <div
-              class="makeStyles-tick"
-              style="left: 199px;"
-            >
-              <p
-                class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-              >
-                2,000
-              </p>
-            </div>
-          </div>
-          <div
-            class="makeStyles-boundaryPaddingBlock"
-            style="background: none; width: 800px;"
-          />
         </div>
+        <p
+          class="MuiTypography-root makeStyles-refLabel MuiTypography-body1"
+          data-testid="refLabel-ctgA"
+          style="left: -1px; padding-left: 1px;"
+        >
+          ctgA
+        </p>
+        <p
+          class="MuiTypography-root makeStyles-refLabel MuiTypography-body1"
+          data-testid="refLabel-ctgB"
+          style="left: 101px; padding-left: 1px;"
+        >
+          ctgB
+        </p>
       </div>
-      <p
-        class="MuiTypography-root makeStyles-refLabel MuiTypography-body1"
-        data-testid="refLabel-ctgA"
-        style="left: -1px; padding-left: 1px;"
-      >
-        ctgA
-      </p>
-      <p
-        class="MuiTypography-root makeStyles-refLabel MuiTypography-body1"
-        data-testid="refLabel-ctgB"
-        style="left: 101px; padding-left: 1px;"
-      >
-        ctgB
-      </p>
     </div>
     <div
       class="makeStyles-spacer"
