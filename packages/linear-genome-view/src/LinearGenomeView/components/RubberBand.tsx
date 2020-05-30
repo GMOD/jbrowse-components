@@ -7,6 +7,7 @@ import Typography from '@material-ui/core/Typography'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
+import { trace } from 'mobx'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect, useState } from 'react'
 import { LinearGenomeViewStateModel } from '..'
@@ -60,25 +61,47 @@ const useStyles = makeStyles(theme => {
   }
 })
 
+const VerticalGuide = observer(
+  ({ model, coordX, open }: { model: LGV; coordX: number; open: boolean }) => {
+    const classes = useStyles()
+    console.log('open', open)
+    return (
+      <Tooltip
+        open={open}
+        placement="top"
+        title={Math.round(model.pxToBp(coordX).offset + 1).toLocaleString()}
+        arrow
+      >
+        <div
+          className={classes.guide}
+          style={{
+            left: coordX,
+            background: open ? 'red' : undefined,
+          }}
+        />
+      </Tooltip>
+    )
+  },
+)
+
+interface Coord {
+  left: number
+  top: number
+}
+
 function RubberBand({
   model,
   ControlComponent = <div />,
-  children,
 }: {
   model: LGV
   ControlComponent?: React.ReactElement
-  children: React.ReactNode
 }) {
+  trace(model, 'offsetPx')
+  console.log('here')
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
   const [mouseDragging, setMouseDragging] = useState(false)
-  const [anchorPosition, setAnchorPosition] = useState<
-    | {
-        top: number
-        left: number
-      }
-    | undefined
-  >(undefined)
+  const [anchorPosition, setAnchorPosition] = useState<Coord | undefined>()
   const [guideX, setGuideX] = useState(0)
   const [guideOpen, setGuideOpen] = useState(false)
   const controlsRef = useRef<HTMLDivElement>(null)
@@ -150,10 +173,8 @@ function RubberBand({
     if (!guideOpen) {
       setGuideOpen(true)
     }
-    setGuideX(
-      event.clientX -
-        (event.target as HTMLDivElement).getBoundingClientRect().left,
-    )
+    const target = event.target as HTMLDivElement
+    setGuideX(event.clientX - target.getBoundingClientRect().left)
   }
 
   function mouseOut() {
@@ -161,7 +182,9 @@ function RubberBand({
   }
 
   function zoomToRegion() {
-    if (startX === undefined || currentX === undefined) return
+    if (startX === undefined || currentX === undefined) {
+      return
+    }
     let leftPx = startX
     let rightPx = currentX
     if (rightPx < leftPx) {
@@ -216,6 +239,21 @@ function RubberBand({
     left = currentX < startX ? currentX : startX
     width = Math.abs(currentX - startX)
   }
+  const isRubberBandOpen = startX !== undefined && currentX !== undefined
+  if (!isRubberBandOpen) {
+    console.log('here1', guideOpen, !mouseDragging)
+    return (
+      <>
+        {controlComponent}
+        <VerticalGuide
+          model={model}
+          open={guideOpen && !mouseDragging}
+          coordX={guideX}
+        />
+      </>
+    )
+  }
+  console.log('here2', guideOpen, !mouseDragging)
 
   const leftBpOffset = model.pxToBp(left)
   const leftBp = (
@@ -226,7 +264,6 @@ function RubberBand({
     Math.round(rightBpOffset.start + rightBpOffset.offset) + 1
   ).toLocaleString()
 
-  const isRubberBandOpen = startX !== undefined && currentX !== undefined
   return (
     <>
       <Popover
@@ -276,22 +313,7 @@ function RubberBand({
           {Math.round(width * model.bpPerPx).toLocaleString()} bp{' '}
         </Typography>
       </div>
-      <Tooltip
-        open={guideOpen && !mouseDragging}
-        placement="top"
-        title={Math.round(model.pxToBp(guideX).offset + 1).toLocaleString()}
-        arrow
-      >
-        <div
-          className={classes.guide}
-          style={{
-            left: guideX,
-            background: guideOpen && !mouseDragging ? 'red' : undefined,
-          }}
-        />
-      </Tooltip>
       {controlComponent}
-      {children}
       <Menu
         anchorReference="anchorPosition"
         anchorPosition={anchorPosition}
@@ -307,12 +329,10 @@ function RubberBand({
 RubberBand.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
   ControlComponent: ReactPropTypes.node,
-  children: ReactPropTypes.node,
 }
 
 RubberBand.defaultProps = {
   ControlComponent: <div />,
-  children: undefined,
 }
 
 export default observer(RubberBand)

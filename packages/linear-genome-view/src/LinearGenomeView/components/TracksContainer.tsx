@@ -129,21 +129,21 @@ function TracksContainer({
       onMouseUp={mouseUp}
       onMouseLeave={mouseLeave}
     >
-      <VerticalGuides model={model}></VerticalGuides>
-      {model.showCenterLine && <CenterLine model={model} />}
+      <VerticalGuides model={model} />
+
       <RubberBand
         model={model}
         ControlComponent={
-          // Subtract two from height for ScaleBar borders
           <ScaleBar
             model={model}
             style={{ height: SCALE_BAR_HEIGHT, boxSizing: 'border-box' }}
           />
         }
-      >
-        <div className={classes.spacer} />
-        {children}
-      </RubberBand>
+      />
+      {model.showCenterLine ? <CenterLine model={model} /> : null}
+
+      <div className={classes.spacer} />
+      {children}
     </div>
   )
 }
