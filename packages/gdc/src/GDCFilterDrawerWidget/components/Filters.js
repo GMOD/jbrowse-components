@@ -8,12 +8,13 @@ import Select from '@material-ui/core/Select'
 import Input from '@material-ui/core/Input'
 import Checkbox from '@material-ui/core/Checkbox'
 import ListItemText from '@material-ui/core/ListItemText'
-import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import { v4 as uuidv4 } from 'uuid'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import Tooltip from '@material-ui/core/Tooltip'
+import AddIcon from '@material-ui/icons/Add'
+import ClearIcon from '@material-ui/icons/Clear'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -140,7 +141,7 @@ const Filter = observer(props => {
 
           <Tooltip title="Remove filter" aria-label="remove" placement="bottom">
             <IconButton aria-label="remove filter" onClick={handleFilterDelete}>
-              <Icon>clear</Icon>
+              <ClearIcon />
             </IconButton>
           </Tooltip>
         </ListItem>
@@ -180,7 +181,7 @@ export const FilterList = observer(({ schema, type, facets }) => {
       })}
       <Tooltip title="Add a new filter" aria-label="add" placement="right">
         <IconButton aria-label="add" onClick={handleClick}>
-          <Icon>add</Icon>
+          <AddIcon />
         </IconButton>
       </Tooltip>
     </>

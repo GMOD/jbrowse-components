@@ -5,10 +5,10 @@ import Typography from '@material-ui/core/Typography'
 import MenuItem from '@material-ui/core/MenuItem'
 import FormControl from '@material-ui/core/FormControl'
 import Select from '@material-ui/core/Select'
-import Icon from '@material-ui/core/Icon'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import Tooltip from '@material-ui/core/Tooltip'
+import HelpIcon from '@material-ui/icons/Help'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -57,7 +57,7 @@ export const TrackType = observer(schema => {
           aria-label="help"
           placement="right"
         >
-          <Icon>help</Icon>
+          <HelpIcon />
         </Tooltip>
       </Typography>
       <List>

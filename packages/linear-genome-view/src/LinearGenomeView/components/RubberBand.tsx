@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
+import ZoomInIcon from '@material-ui/icons/ZoomIn'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
@@ -201,7 +202,7 @@ function RubberBand({
   const menuOptions = [
     {
       label: 'Zoom to region',
-      icon: 'zoom_in',
+      icon: ZoomInIcon,
       onClick: () => {
         zoomToRegion()
         handleClose()

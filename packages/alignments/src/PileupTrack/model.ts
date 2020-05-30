@@ -3,6 +3,7 @@ import {
   getConf,
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import { ContentCopy as ContentCopyIcon } from '@gmod/jbrowse-core/ui/Icons'
 import {
   getSession,
   isSessionModelWithDrawerWidgets,
@@ -12,6 +13,7 @@ import { types } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import { PileupConfigModel } from './configSchema'
 
 // using a map because it preserves order
@@ -69,7 +71,7 @@ export default (
         const menuOptions = [
           {
             label: 'Open feature details',
-            icon: 'menu_open',
+            icon: MenuOpenIcon,
             onClick: () => {
               self.clearFeatureSelection()
               self.selectFeature(feature)
@@ -77,12 +79,12 @@ export default (
           },
           {
             label: 'Copy info to clipboard',
-            icon: 'content_copy',
+            icon: ContentCopyIcon,
             onClick: () => this.copyFeatureToClipboard(feature),
           },
           // {
           //   label: 'View dotpot',
-          //   icon: 'scatter_plot',
+          //   icon: ScatterPlotIcon,
           //   onClick: () => {},
           // },
 

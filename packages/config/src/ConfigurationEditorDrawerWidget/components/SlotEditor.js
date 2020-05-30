@@ -11,7 +11,6 @@ import Checkbox from '@material-ui/core/Checkbox'
 import FormControl from '@material-ui/core/FormControl'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormHelperText from '@material-ui/core/FormHelperText'
-import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import InputLabel from '@material-ui/core/InputLabel'
@@ -24,6 +23,7 @@ import SvgIcon from '@material-ui/core/SvgIcon'
 import TextField from '@material-ui/core/TextField'
 import DeleteIcon from '@material-ui/icons/Delete'
 import AddIcon from '@material-ui/icons/Add'
+import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked'
 import { observer } from 'mobx-react'
 import { getPropertyMembers } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
@@ -402,11 +402,7 @@ const SlotEditor = observer(({ slot, slotSchema }) => {
           title={`convert to ${slot.isCallback ? 'regular value' : 'callback'}`}
           color="secondary"
         >
-          {!slot.isCallback ? (
-            <Icon>radio_button_unchecked</Icon>
-          ) : (
-            <SvgCheckbox />
-          )}
+          {!slot.isCallback ? <RadioButtonUncheckedIcon /> : <SvgCheckbox />}
         </IconButton>
       </div>
     </Paper>

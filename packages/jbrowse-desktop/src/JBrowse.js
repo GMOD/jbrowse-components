@@ -1,4 +1,3 @@
-import '@gmod/jbrowse-core/fonts/material-icons.css'
 import { useDebounce } from '@gmod/jbrowse-core/util'
 import { App, StartScreen, theme } from '@gmod/jbrowse-core/ui'
 

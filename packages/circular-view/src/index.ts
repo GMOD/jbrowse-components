@@ -4,6 +4,7 @@ import {
 } from '@gmod/jbrowse-core/util'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import Plugin from '@gmod/jbrowse-core/Plugin'
+import DataUsageIcon from '@material-ui/icons/DataUsage'
 
 export default class CircularViewPlugin extends Plugin {
   install(pluginManager: PluginManager) {
@@ -24,7 +25,7 @@ export default class CircularViewPlugin extends Plugin {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
         label: 'Circular view',
-        icon: 'data_usage',
+        icon: DataUsageIcon,
         onClick: (session: AbstractViewContainer) => {
           session.addView('CircularView', {})
         },

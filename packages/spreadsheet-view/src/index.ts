@@ -4,6 +4,7 @@ import {
 } from '@gmod/jbrowse-core/util'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import Plugin from '@gmod/jbrowse-core/Plugin'
+import ViewComfyIcon from '@material-ui/icons/ViewComfy'
 
 export default class SpreadsheetViewPlugin extends Plugin {
   install(pluginManager: PluginManager) {
@@ -16,7 +17,7 @@ export default class SpreadsheetViewPlugin extends Plugin {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
         label: 'Tabular data',
-        icon: 'view_comfy',
+        icon: ViewComfyIcon,
         onClick: (session: AbstractViewContainer) => {
           session.addView('SpreadsheetView', {})
         },

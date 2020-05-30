@@ -6,7 +6,16 @@ Array [
     "label": "File",
     "menuItems": Array [
       Object {
-        "icon": "add",
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "displayName": "AddIcon",
+          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
         "label": "New Session",
         "onClick": [Function],
       },
@@ -21,7 +30,16 @@ Array [
     "label": "File",
     "menuItems": Array [
       Object {
-        "icon": "add",
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "displayName": "AddIcon",
+          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
         "label": "New Session",
         "onClick": [Function],
       },

@@ -3,6 +3,7 @@ import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import ViewType from '@gmod/jbrowse-core/pluggableElementTypes/ViewType'
 import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
+import LineStyleIcon from '@material-ui/icons/LineStyle'
 import { lazy } from 'react'
 
 import {
@@ -73,7 +74,7 @@ export default class extends Plugin {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
         label: 'Linear genome view',
-        icon: 'line_style',
+        icon: LineStyleIcon,
         onClick: (session: AbstractViewContainer) => {
           session.addView('LinearGenomeView', {})
         },

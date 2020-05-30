@@ -49,12 +49,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         <span
           class="MuiIconButton-label"
         >
-          <span
+          <svg
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
-            radio_button_unchecked
-          </span>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -157,12 +161,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         <span
           class="MuiIconButton-label"
         >
-          <span
+          <svg
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
-            radio_button_unchecked
-          </span>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -337,12 +345,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         <span
           class="MuiIconButton-label"
         >
-          <span
+          <svg
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
-            radio_button_unchecked
-          </span>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -622,12 +634,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         <span
           class="MuiIconButton-label"
         >
-          <span
+          <svg
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
-            radio_button_unchecked
-          </span>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -679,12 +695,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         <span
           class="MuiIconButton-label"
         >
-          <span
+          <svg
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
-            radio_button_unchecked
-          </span>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -736,12 +756,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         <span
           class="MuiIconButton-label"
         >
-          <span
+          <svg
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
-            radio_button_unchecked
-          </span>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -794,12 +818,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         <span
           class="MuiIconButton-label"
         >
-          <span
+          <svg
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
-            radio_button_unchecked
-          </span>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -873,12 +901,16 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         <span
           class="MuiIconButton-label"
         >
-          <span
+          <svg
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
-            radio_button_unchecked
-          </span>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -938,12 +970,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
         <span
           class="MuiIconButton-label"
         >
-          <span
+          <svg
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
-            radio_button_unchecked
-          </span>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -1073,12 +1109,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
         <span
           class="MuiIconButton-label"
         >
-          <span
+          <svg
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
-            radio_button_unchecked
-          </span>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -1130,12 +1170,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
         <span
           class="MuiIconButton-label"
         >
-          <span
+          <svg
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
-            radio_button_unchecked
-          </span>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -1220,12 +1264,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
         <span
           class="MuiIconButton-label"
         >
-          <span
+          <svg
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
-            radio_button_unchecked
-          </span>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -1502,12 +1550,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
         <span
           class="MuiIconButton-label"
         >
-          <span
+          <svg
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
-            radio_button_unchecked
-          </span>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -1668,12 +1720,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
             <span
               class="MuiIconButton-label"
             >
-              <span
+              <svg
                 aria-hidden="true"
-                class="material-icons MuiIcon-root"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
               >
-                radio_button_unchecked
-              </span>
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                />
+              </svg>
             </span>
             <span
               class="MuiTouchRipple-root"
@@ -1748,12 +1804,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 <span
                   class="MuiIconButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    radio_button_unchecked
-                  </span>
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -1854,12 +1914,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 <span
                   class="MuiIconButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    radio_button_unchecked
-                  </span>
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -1909,12 +1973,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
             <span
               class="MuiIconButton-label"
             >
-              <span
+              <svg
                 aria-hidden="true"
-                class="material-icons MuiIcon-root"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
               >
-                radio_button_unchecked
-              </span>
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                />
+              </svg>
             </span>
             <span
               class="MuiTouchRipple-root"
@@ -1962,12 +2030,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
             <span
               class="MuiIconButton-label"
             >
-              <span
+              <svg
                 aria-hidden="true"
-                class="material-icons MuiIcon-root"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
               >
-                radio_button_unchecked
-              </span>
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                />
+              </svg>
             </span>
             <span
               class="MuiTouchRipple-root"
@@ -2033,12 +2105,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
         <span
           class="MuiIconButton-label"
         >
-          <span
+          <svg
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
-            radio_button_unchecked
-          </span>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -2360,12 +2436,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 <span
                   class="MuiIconButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    radio_button_unchecked
-                  </span>
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -2417,12 +2497,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 <span
                   class="MuiIconButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    radio_button_unchecked
-                  </span>
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -2474,12 +2558,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 <span
                   class="MuiIconButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    radio_button_unchecked
-                  </span>
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -2531,12 +2619,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 <span
                   class="MuiIconButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    radio_button_unchecked
-                  </span>
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -2588,12 +2680,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 <span
                   class="MuiIconButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    radio_button_unchecked
-                  </span>
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -2659,12 +2755,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 <span
                   class="MuiIconButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    radio_button_unchecked
-                  </span>
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -2717,12 +2817,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 <span
                   class="MuiIconButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    radio_button_unchecked
-                  </span>
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -2775,12 +2879,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 <span
                   class="MuiIconButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    radio_button_unchecked
-                  </span>
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -2832,12 +2940,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 <span
                   class="MuiIconButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    radio_button_unchecked
-                  </span>
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -3102,12 +3214,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                     <span
                       class="MuiIconButton-label"
                     >
-                      <span
+                      <svg
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
                       >
-                        radio_button_unchecked
-                      </span>
+                        <path
+                          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                        />
+                      </svg>
                     </span>
                     <span
                       class="MuiTouchRipple-root"
@@ -3361,12 +3477,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                     <span
                       class="MuiIconButton-label"
                     >
-                      <span
+                      <svg
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
                       >
-                        radio_button_unchecked
-                      </span>
+                        <path
+                          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                        />
+                      </svg>
                     </span>
                     <span
                       class="MuiTouchRipple-root"
@@ -3418,12 +3538,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                     <span
                       class="MuiIconButton-label"
                     >
-                      <span
+                      <svg
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
                       >
-                        radio_button_unchecked
-                      </span>
+                        <path
+                          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                        />
+                      </svg>
                     </span>
                     <span
                       class="MuiTouchRipple-root"
@@ -3493,12 +3617,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 <span
                   class="MuiIconButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    radio_button_unchecked
-                  </span>
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -3550,12 +3678,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 <span
                   class="MuiIconButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    radio_button_unchecked
-                  </span>
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -3607,12 +3739,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                 <span
                   class="MuiIconButton-label"
                 >
-                  <span
+                  <svg
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    radio_button_unchecked
-                  </span>
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                    />
+                  </svg>
                 </span>
                 <span
                   class="MuiTouchRipple-root"
@@ -3672,12 +3808,16 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
         <span
           class="MuiIconButton-label"
         >
-          <span
+          <svg
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
-            radio_button_unchecked
-          </span>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
         </span>
         <span
           class="MuiTouchRipple-root"

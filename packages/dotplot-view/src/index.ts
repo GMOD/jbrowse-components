@@ -7,6 +7,7 @@ import {
   AbstractViewContainer,
   isAbstractMenuManager,
 } from '@gmod/jbrowse-core/util'
+import TimelineIcon from '@material-ui/icons/Timeline'
 import {
   configSchemaFactory as dotplotTrackConfigSchemaFactory,
   stateModelFactory as dotplotTrackStateModelFactory,
@@ -63,7 +64,7 @@ export default class DotplotPlugin extends Plugin {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
         label: 'Dotplot view',
-        icon: 'timeline',
+        icon: TimelineIcon,
         onClick: (session: AbstractViewContainer) => {
           session.addView('DotplotView', {})
         },

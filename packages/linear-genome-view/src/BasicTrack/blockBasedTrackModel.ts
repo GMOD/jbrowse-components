@@ -12,6 +12,7 @@ import { addDisposer, types, Instance, isAlive } from 'mobx-state-tree'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import RBush from 'rbush'
 import { Feature, isFeature } from '@gmod/jbrowse-core/util/simpleFeature'
+import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import BlockState from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
 import { BaseBlock, ContentBlock } from './util/blockTypes'
@@ -222,7 +223,7 @@ const blockBasedTrack = types
       self.contextMenuOptions = [
         {
           label: 'Open feature details',
-          icon: 'menu_open',
+          icon: MenuOpenIcon,
           onClick: () => {
             this.selectFeature(feature)
           },

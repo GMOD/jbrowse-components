@@ -1,3 +1,8 @@
+import CheckIcon from '@material-ui/icons/Check'
+import FilterListIcon from '@material-ui/icons/FilterList'
+import PermDataSettingIcon from '@material-ui/icons/PermDataSetting'
+import SortIcon from '@material-ui/icons/Sort'
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer } = jbrequire('mobx-react')
@@ -88,7 +93,7 @@ export default pluginManager => {
         // top-level column menu
         {
           label: 'Sort ascending',
-          icon: 'sort',
+          icon: SortIcon,
           type: 'radio',
           checked: isSortingAscending,
           onClick: isSortingAscending
@@ -97,7 +102,7 @@ export default pluginManager => {
         },
         {
           label: 'Sort descending',
-          icon: 'sort',
+          icon: SortIcon,
           type: 'radio',
           checked: isSortingDescending,
           onClick: isSortingDescending
@@ -107,7 +112,7 @@ export default pluginManager => {
         // data type menu
         {
           label: `Type: ${dataTypeDisplayName}`,
-          icon: 'perm_data_setting',
+          icon: PermDataSettingIcon,
           subMenu: iterMap(
             dataTypeTopLevelMenu.entries(),
             ([displayName, record]) => {
@@ -120,7 +125,7 @@ export default pluginManager => {
                   },
                 }
                 if (dataTypeName === typeName) {
-                  menuEntry.icon = 'check'
+                  menuEntry.icon = CheckIcon
                 }
                 return menuEntry
               }
@@ -128,7 +133,7 @@ export default pluginManager => {
                 return {
                   label: displayName,
                   icon: subMenuItems.find(i => i.typeName === dataTypeName)
-                    ? 'check'
+                    ? CheckIcon
                     : undefined,
                   subMenu: subMenuItems.map(
                     ({
@@ -136,7 +141,8 @@ export default pluginManager => {
                       displayName: subDisplayName,
                     }) => ({
                       label: subDisplayName,
-                      icon: subTypeName === dataTypeName ? 'check' : undefined,
+                      icon:
+                        subTypeName === dataTypeName ? CheckIcon : undefined,
                       onClick: () => {
                         spreadsheetModel.setColumnType(
                           columnNumber,
@@ -158,7 +164,7 @@ export default pluginManager => {
       if (dataType && dataType.hasFilter) {
         menuOptions.push({
           label: 'Create filter',
-          icon: 'filter_list',
+          icon: FilterListIcon,
           onClick: filterMenuClick.bind(null, true),
         })
       }
