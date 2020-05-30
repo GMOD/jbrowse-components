@@ -4,10 +4,8 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import TrackSelector from '@gmod/jbrowse-plugin-data-management/src/HierarchicalTrackSelectorDrawerWidget/components/HierarchicalTrackSelector'
 
 import corePlugins from '../corePlugins'
-import JBrowse from '../JBrowse'
 import JBrowseRootModelFactory from '../rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
-import breakpointConfig from '../../test_data/breakpoint/config.json'
 
 configSnapshot.configuration = {
   rpc: {
@@ -43,5 +41,12 @@ function getPluginManager(initialState) {
 
 export const DefaultConfig = () => {
   const pluginManager = getPluginManager()
-  return <TrackSelector model={pluginManager.rootModel} />
+  const { rootModel } = pluginManager
+  const { session } = rootModel
+  const selector = session.addDrawerWidget(
+    'HierarchicalTrackSelectorDrawerWidget',
+    'hierarchicalTrackSelector',
+    { view: session.views[0] },
+  )
+  return <TrackSelector model={selector} />
 }

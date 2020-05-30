@@ -426,7 +426,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
               'hierarchicalTrackSelector',
               { view: self },
             )
-            console.log(selector)
             session.showDrawerWidget(selector)
             return selector
           }
