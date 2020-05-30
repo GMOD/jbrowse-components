@@ -5,6 +5,7 @@ import corePlugins from '../corePlugins'
 import JBrowse from '../JBrowse'
 import JBrowseRootModelFactory from '../rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
+import breakpointConfig from '../../test_data/breakpoint/config.json'
 
 configSnapshot.configuration = {
   rpc: {
@@ -13,7 +14,7 @@ configSnapshot.configuration = {
   useUrlSession: false,
 }
 export default {
-  title: 'PluginManager',
+  title: '<JBrowse>',
   component: Button,
 }
 
@@ -37,7 +38,13 @@ function getPluginManager(initialState) {
   pluginManager.configure()
   return pluginManager
 }
-export const Text = () => {
+
+export const DefaultConfig = () => {
   const pluginManager = getPluginManager()
+  return <JBrowse pluginManager={pluginManager} />
+}
+
+export const BreakpointConfig = () => {
+  const pluginManager = getPluginManager(breakpointConfig)
   return <JBrowse pluginManager={pluginManager} />
 }
