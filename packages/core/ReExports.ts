@@ -59,11 +59,9 @@ import * as coreColor from './util/color'
 import * as trackUtils from './util/tracks'
 import * as coreIo from './util/io'
 import * as coreMstReflection from './util/mst-reflection'
-import BaseViewModel from './BaseViewModel'
-
 import * as MUIColors from './ReExports/material-ui-colors'
-
 import * as mstTypes from './util/types/mst'
+import BaseViewModel from './BaseViewModel'
 
 const libs = {
   mobx,

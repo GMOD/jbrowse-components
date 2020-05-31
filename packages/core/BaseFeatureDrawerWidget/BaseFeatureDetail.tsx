@@ -11,7 +11,7 @@ import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { FunctionComponent } from 'react'
 import isObject from 'is-object'
-import SanitizedHTML from './CustomSanitizeHTML'
+import SanitizedHTML from '../ui/SanitizedHTML'
 
 export const useStyles = makeStyles(theme => ({
   expansionPanelDetails: {

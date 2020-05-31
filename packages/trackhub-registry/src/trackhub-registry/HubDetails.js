@@ -10,8 +10,8 @@ import Typography from '@material-ui/core/Typography'
 import EmailIcon from '@material-ui/icons/Email'
 import OpenInNewIcon from '@material-ui/icons/OpenInNew'
 import PropTypes from 'prop-types'
+import DOMPurify from 'dompurify'
 import React, { useEffect, useState } from 'react'
-import SanitizedHTML from 'react-sanitized-html'
 
 function HubDetails(props) {
   const [hubFile, setHubFile] = useState(null)
@@ -65,7 +65,7 @@ function HubDetails(props) {
       <Card>
         <CardHeader title={shortLabel} />
         <CardContent>
-          <SanitizedHTML html={longLabel} />
+          <div __dangerouslySetInnerHTML={DOMPurify.sanitize(longLabel)} />
         </CardContent>
         <CardActions>
           <IconButton

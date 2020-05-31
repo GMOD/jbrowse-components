@@ -11,7 +11,7 @@ import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
-import SanitizedHTML from 'react-sanitized-html'
+import DOMPurify from 'dompurify'
 import HubDetails from './HubDetails'
 import SelectBox from './SelectBox'
 
@@ -272,10 +272,18 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
                 .map(hub => {
                   const disabled = Boolean(hub.error)
                   const cleanShortLabel = (
-                    <SanitizedHTML html={hub.hub.shortLabel} />
+                    <div
+                      __dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(hub.hub.shortLabel),
+                      }}
+                    />
                   )
                   const cleanLongLabel = (
-                    <SanitizedHTML html={hub.hub.longLabel} />
+                    <div
+                      __dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(hub.hub.longLabel),
+                      }}
+                    />
                   )
                   return (
                     <Wire key={hub.id} value={hub.id}>
