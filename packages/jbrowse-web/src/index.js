@@ -7,6 +7,7 @@ import ReactDOM from 'react-dom'
 import ErrorBoundary from 'react-error-boundary'
 import 'requestidlecallback-polyfill'
 import 'typeface-roboto'
+import { QueryParamProvider } from 'use-query-params'
 import Loader from './Loader'
 import * as serviceWorker from './serviceWorker'
 
@@ -28,7 +29,9 @@ const PlatformSpecificFatalErrorDialog = props => {
 
 ReactDOM.render(
   <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
-    <Loader />
+    <QueryParamProvider>
+      <Loader />
+    </QueryParamProvider>
   </ErrorBoundary>,
   document.getElementById('root'),
 )
