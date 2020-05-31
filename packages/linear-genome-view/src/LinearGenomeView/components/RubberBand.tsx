@@ -97,7 +97,7 @@ function RubberBand({
 }) {
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
-  const [anchorPosition, setAnchorPosition] = useState<Coord | undefined>()
+  const [anchorPosition, setAnchorPosition] = useState<Coord>()
   const [guideX, setGuideX] = useState<number | undefined>()
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
@@ -113,8 +113,10 @@ function RubberBand({
   })
 
   useEventListener('mouseup', (event: MouseEvent) => {
-    setAnchorPosition({ left: event.clientX, top: event.clientY })
-    setGuideX(undefined)
+    if (startX !== undefined) {
+      setAnchorPosition({ left: event.clientX, top: event.clientY })
+      setGuideX(undefined)
+    }
   })
 
   useEffect(() => {
