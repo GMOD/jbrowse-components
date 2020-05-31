@@ -80,9 +80,8 @@ export default function calculateBlocks(self: any, extra = 0) {
         isRightEndOfDisplayedRegion,
         key: '',
       }
-      blockData.key = `${assembleLocString(blockData)}${
-        reversed ? '-reversed' : ''
-      }`
+      const locstring = assembleLocString(blockData)
+      blockData.key = `${locstring}-${index}-${reversed ? '-reversed' : ''}`
       if (index === 0 && blockNum === 0) {
         blocks.push(
           new InterRegionPaddingBlock({
@@ -107,7 +106,7 @@ export default function calculateBlocks(self: any, extra = 0) {
       ) {
         blocks.push(
           new InterRegionPaddingBlock({
-            key: `${blockData.key}-${index}-rightpad`,
+            key: `${blockData.key}-rightpad`,
             widthPx: interRegionPaddingWidth,
             offsetPx: blockData.offsetPx + blockData.widthPx,
           }),

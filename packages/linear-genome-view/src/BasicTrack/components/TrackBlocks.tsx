@@ -49,7 +49,7 @@ const RenderedBlocks = observer(
           if (block instanceof ContentBlock) {
             const state = blockState.get(block.key)
             return (
-              <Block block={block} key={`${model.id}-${block.key}-${idx}`}>
+              <Block block={block} key={`${model.id}-${block.key}`}>
                 {state && state.ReactComponent ? (
                   <state.ReactComponent model={state} />
                 ) : null}
