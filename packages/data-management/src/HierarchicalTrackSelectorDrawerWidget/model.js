@@ -12,7 +12,9 @@ export function generateHierarchy(trackConfigurations) {
     let currLevel = hierarchy
     for (let i = 0; i < categories.length; i += 1) {
       const category = categories[i]
-      if (!currLevel.has(category)) currLevel.set(category, new Map())
+      if (!currLevel.has(category)) {
+        currLevel.set(category, new Map())
+      }
       currLevel = currLevel.get(category)
     }
     currLevel.set(trackConf.trackId, trackConf)

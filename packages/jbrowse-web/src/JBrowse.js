@@ -5,7 +5,7 @@ import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { getSnapshot, onSnapshot } from 'mobx-state-tree'
-import queryString from 'query-string'
+import { StringParam, useQueryParam } from 'use-query-params'
 import React, { useEffect, useState } from 'react'
 
 const MAX_SESSION_SIZE_IN_URL = 100000
@@ -13,6 +13,7 @@ const MAX_SESSION_SIZE_IN_URL = 100000
 const JBrowse = observer(({ pluginManager }) => {
   const [urlSnapshot, setUrlSnapshot] = useState()
   const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
+  const [, setSession] = useQueryParam('session', StringParam)
 
   const { rootModel } = pluginManager
   const { session, jbrowse, error } = rootModel || {}
@@ -27,21 +28,13 @@ const JBrowse = observer(({ pluginManager }) => {
   // This serializes the session to URL
   useEffect(() => {
     if (debouncedUrlSnapshot) {
-      const parsed = queryString.parse(document.location.search)
-      const urlSplit = window.location.href.split('?')
       const json = JSON.stringify(debouncedUrlSnapshot)
-      if (json.length < MAX_SESSION_SIZE_IN_URL) {
-        parsed.session = toUrlSafeB64(json)
-      } else {
-        parsed.session = undefined
-      }
-      window.history.replaceState(
-        {},
-        '',
-        `${urlSplit[0]}?${queryString.stringify(parsed)}`,
-      )
+      const sess =
+        json.length < MAX_SESSION_SIZE_IN_URL ? toUrlSafeB64(json) : undefined
+
+      setSession(sess)
     }
-  }, [debouncedUrlSnapshot])
+  }, [debouncedUrlSnapshot, setSession])
 
   // This updates savedSession list on the rootModel
   useEffect(() => {

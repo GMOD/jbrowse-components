@@ -1,10 +1,13 @@
 import React from 'react'
+
 import '@testing-library/jest-dom/extend-expect'
 import { render } from '@testing-library/react'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 import ErrorBoundary, { FallbackProps } from 'react-error-boundary'
+import { QueryParamProvider } from 'use-query-params'
+
 import Loader from './Loader'
 
 if (!window.TextEncoder) window.TextEncoder = TextEncoder
@@ -53,11 +56,13 @@ function FallbackComponent({ error }: FallbackProps) {
 
 describe('<Loader />', () => {
   it('errors with config in URL that does not exist', async () => {
-    window.history.replaceState({}, '', '/?config=doesNotExist.json')
     console.error = jest.fn()
     const { findByText } = render(
       <ErrorBoundary FallbackComponent={FallbackComponent}>
-        <Loader />
+        {/* @ts-ignore */}
+        <QueryParamProvider location={{ search: '?config=doesNotExist.json' }}>
+          <Loader />
+        </QueryParamProvider>
       </ErrorBoundary>,
     )
     expect(
@@ -68,13 +73,17 @@ describe('<Loader />', () => {
   })
 
   it('can use config from a url', async () => {
-    window.history.replaceState(
-      {},
-      '',
-      '/?config=test_data/breakpoint/config.json',
-    )
     console.error = jest.fn()
-    const { findByText } = render(<Loader />)
+    // onaction warning from linear-comparative-view
+    console.warn = jest.fn()
+    const { findByText } = render(
+      <QueryParamProvider
+        // @ts-ignore
+        location={{ search: '?config=test_data/breakpoint/config.json' }}
+      >
+        <Loader />
+      </QueryParamProvider>,
+    )
     expect(await findByText('Help')).toBeTruthy()
   })
 })
