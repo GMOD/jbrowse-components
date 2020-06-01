@@ -147,7 +147,11 @@ export default function Loader() {
     )
   } catch (e) {
     console.error(e)
-    throw new Error(e.message.slice(0, 10000))
+    if (e.message) {
+      throw new Error(e.message.slice(0, 10000))
+    } else {
+      throw e
+    }
   }
   // make some things available globally for testing
   // e.g. window.MODEL.views[0] in devtools
