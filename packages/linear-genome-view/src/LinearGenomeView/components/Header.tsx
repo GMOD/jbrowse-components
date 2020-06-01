@@ -1,6 +1,5 @@
 import { Region } from '@gmod/jbrowse-core/util/types'
 import {
-  assembleLocString,
   getSession,
   isSessionModelWithDrawerWidgets,
   parseLocString,
@@ -13,7 +12,7 @@ import Typography from '@material-ui/core/Typography'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import { observer } from 'mobx-react'
 import { getSnapshot, Instance } from 'mobx-state-tree'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import TrackSelectorIcon from '@material-ui/icons/LineStyle'
 import SearchIcon from '@material-ui/icons/Search'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
@@ -81,34 +80,16 @@ const Controls = observer(({ model }: { model: LGV }) => {
 
 const Search = observer(({ model }: { model: LGV }) => {
   const [value, setValue] = useState<string | undefined>()
-  const [defaultValue, setDefaultValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const classes = useStyles()
   const theme = useTheme()
-  const { displayedRegions, dynamicBlocks, setDisplayedRegions } = model
-  const { blocks } = dynamicBlocks
+  const {
+    dynamicBlocks: { contentBlocks },
+    displayedRegions,
+    visibleLocStrings,
+    setDisplayedRegions,
+  } = model
   const session = getSession(model)
-
-  const contentBlocks = blocks.filter(block => block.refName)
-
-  useEffect(() => {
-    if (!contentBlocks.length) {
-      setDefaultValue('')
-      return
-    }
-    const isSingleAssemblyName = contentBlocks.every(
-      block => block.assemblyName === contentBlocks[0].assemblyName,
-    )
-    const locs = contentBlocks.map(block =>
-      assembleLocString({
-        ...block,
-        start: Math.round(block.start),
-        end: Math.round(block.end),
-        assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
-      }),
-    )
-    setDefaultValue(locs.join(';'))
-  }, [contentBlocks])
 
   function navTo(locString: string) {
     try {
@@ -189,26 +170,6 @@ const Search = observer(({ model }: { model: LGV }) => {
     }
   }
 
-  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    inputRef && inputRef.current && inputRef.current.blur()
-    value && navTo(value)
-  }
-
-  function onFocus() {
-    setValue(defaultValue)
-  }
-
-  function onBlur() {
-    setValue(undefined)
-  }
-
-  function onChange(
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) {
-    setValue(event.target.value)
-  }
-
   const setDisplayedRegion = useCallback(
     (region: Region | undefined) => {
       if (region) {
@@ -244,17 +205,23 @@ const Search = observer(({ model }: { model: LGV }) => {
           },
         }}
       />
-      <form onSubmit={onSubmit}>
+      <form
+        onSubmit={event => {
+          event.preventDefault()
+          inputRef && inputRef.current && inputRef.current.blur()
+          value && navTo(value)
+        }}
+      >
         <TextField
           inputRef={inputRef}
-          onFocus={onFocus}
-          onBlur={onBlur}
+          onFocus={() => setValue(visibleLocStrings)}
+          onBlur={() => setValue(undefined)}
+          onChange={event => setValue(event.target.value)}
           className={classes.input}
           variant="outlined"
           margin="dense"
           size="small"
-          onChange={event => onChange(event)}
-          value={value === undefined ? defaultValue : value}
+          value={value === undefined ? visibleLocStrings : value}
           InputProps={{
             startAdornment: <SearchIcon fontSize="small" />,
             style: {
