@@ -4,7 +4,7 @@ import dompurify from 'dompurify'
 
 // source https://github.com/sindresorhus/html-tags/blob/master/html-tags.json
 // with some random uncommon ones removed. note: we just use this to run the content
-// through sanitize-html without escaping if we see an htmlTag from this list
+// through dompurify without escaping if we see an htmlTag from this list
 // otherwise we escape angle brackets and things prematurely because it might be
 // something like <TRA> in VCF. Ref #657
 const htmlTags = [

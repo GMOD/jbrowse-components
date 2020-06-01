@@ -54,7 +54,6 @@
     "react-error-boundary": "^1.2.5",
     "react-measure": "^2.3.0",
     "react-use-event-listener": "^1.1.1",
-    "sanitize-html": "^1.20.1",
     "shortid": "^2.2.13",
     "tenacious-fetch": "^2.1.0",
     "util.promisify": "^1.0.0",
