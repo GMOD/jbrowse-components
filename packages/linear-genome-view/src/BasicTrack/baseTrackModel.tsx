@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
+import { isSessionModelWithConfigEditing } from '@gmod/jbrowse-core/util/types'
 import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
@@ -151,9 +152,9 @@ const BaseTrack = types
       return adapterType
     },
 
-    get showConfigurationButton() {
+    get canConfigure() {
       const session = getSession(self)
-      return Boolean(session.editConfiguration)
+      return isSessionModelWithConfigEditing(session)
     },
 
     /**
@@ -214,7 +215,9 @@ const BaseTrackWithReferences = types
   .actions(self => ({
     activateConfigurationUI() {
       const session = getSession(self)
-      session.editConfiguration(self.configuration)
+      if (isSessionModelWithConfigEditing(session)) {
+        session.editConfiguration(self.configuration)
+      }
     },
   }))
 

@@ -36,7 +36,6 @@ export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
 
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
-  editConfiguration(configuration: AnyConfigurationModel): void
   setSelection(feature: Feature): void
   clearSelection(): void
   configuration: AnyConfigurationModel
@@ -58,6 +57,16 @@ export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   )
 }
 
+/** abstract interface for a session allows editing configurations */
+export interface SessionWithConfigEditing extends AbstractSessionModel {
+  editConfiguration(configuration: AnyConfigurationModel): void
+}
+export function isSessionModelWithConfigEditing(
+  thing: unknown,
+): thing is SessionWithConfigEditing {
+  return isSessionModel(thing) && 'editConfiguration' in thing
+}
+
 /** abstract interface for a session that manages drawer widgets */
 export interface SessionWithDrawerWidgets extends AbstractSessionModel {
   visibleDrawerWidget?: { id: string }
@@ -77,7 +86,7 @@ export function isSessionModelWithDrawerWidgets(
 }
 
 /** abstract interface for a session that manages a global selection */
-export interface SelectionContainer {
+export interface SelectionContainer extends AbstractSessionModel {
   selection?: unknown
   setSelection: (thing: unknown) => void
 }
