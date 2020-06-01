@@ -29,7 +29,7 @@ export default function calculateBlocks(self: LGV, extra = 0) {
   // for each displayed region
   let regionBpOffset = 0
   const blocks = new BlockSet()
-  displayedRegions.forEach((region, regionNumber) => {
+  displayedRegions.forEach((region, index) => {
     // find the block numbers of the left and right window sides,
     // clamp those to the region range, and then make blocks for that range
     const {
@@ -86,10 +86,9 @@ export default function calculateBlocks(self: LGV, extra = 0) {
         isRightEndOfDisplayedRegion,
         key: '',
       }
-      blockData.key = `${assembleLocString(blockData)}${
-        reversed ? '-reversed' : ''
-      }`
-      if (regionNumber === 0 && blockNum === 0) {
+      const locstring = assembleLocString(blockData)
+      blockData.key = `${locstring}-${index}${reversed ? '-reversed' : ''}`
+      if (index === 0 && blockNum === 0) {
         blocks.push(
           new InterRegionPaddingBlock({
             key: `${blockData.key}-beforeFirstRegion`,
@@ -109,18 +108,18 @@ export default function calculateBlocks(self: LGV, extra = 0) {
       if (
         regionWidthPx >= minimumBlockWidth &&
         blockData.isRightEndOfDisplayedRegion &&
-        regionNumber < displayedRegions.length - 1
+        index < displayedRegions.length - 1
       ) {
         blocks.push(
           new InterRegionPaddingBlock({
-            key: `${blockData.key}-${regionNumber}-rightpad`,
+            key: `${blockData.key}-rightpad`,
             widthPx: interRegionPaddingWidth,
             offsetPx: blockData.offsetPx + blockData.widthPx,
           }),
         )
       }
       if (
-        regionNumber === displayedRegions.length - 1 &&
+        index === displayedRegions.length - 1 &&
         blockData.isRightEndOfDisplayedRegion
       ) {
         blocks.push(
