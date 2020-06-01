@@ -1,3 +1,5 @@
+import OpenInNewIcon from '@material-ui/icons/OpenInNew'
+
 function defaultOnChordClick(feature, chordTrack, pluginManager) {
   const { jbrequire } = pluginManager
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
@@ -297,7 +299,7 @@ export default pluginManager => {
               [
                 {
                   label: 'Open split detail view',
-                  icon: 'open_in_new',
+                  icon: OpenInNewIcon,
                   disabled(spreadsheetView, spreadsheet, rowNumber, row) {
                     return !canOpenBreakpointSplitViewFromTableRow(
                       self,

@@ -5,6 +5,7 @@ import {
   blockBasedTrackModel,
   BlockBasedTrack,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
+import FilterListIcon from '@material-ui/icons/FilterList'
 import { types } from 'mobx-state-tree'
 
 export default function stateModelFactory(configSchema) {
@@ -60,7 +61,7 @@ export default function stateModelFactory(configSchema) {
           {
             label: 'Filter',
             onClick: self.openFilterConfig,
-            icon: 'filter_list',
+            icon: FilterListIcon,
           },
         ]
       },

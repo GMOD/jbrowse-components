@@ -1,19 +1,18 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import '@gmod/jbrowse-core/fonts/material-icons.css'
 import { App, theme } from '@gmod/jbrowse-core/ui'
-import { toUrlSafeB64, useDebounce } from '@gmod/jbrowse-core/util'
+import { toUrlSafeB64 } from '@gmod/jbrowse-core/util'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { getSnapshot, onSnapshot } from 'mobx-state-tree'
-import queryString from 'query-string'
-import React, { useEffect, useState } from 'react'
+import { StringParam, useQueryParam } from 'use-query-params'
+import React, { useEffect, useRef } from 'react'
 
 const MAX_SESSION_SIZE_IN_URL = 100000
 
 const JBrowse = observer(({ pluginManager }) => {
-  const [urlSnapshot, setUrlSnapshot] = useState()
-  const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
+  const urlLastUpdated = useRef(Date.now())
+  const [, setSession] = useQueryParam('session', StringParam)
 
   const { rootModel } = pluginManager
   const { session, jbrowse, error } = rootModel || {}
@@ -25,63 +24,44 @@ const JBrowse = observer(({ pluginManager }) => {
     ? readConfObject(jbrowse.configuration, 'useUrlSession')
     : false
 
-  // This serializes the session to URL
+  // Set session URL on first render only, before `onSnapshot` has fired
   useEffect(() => {
-    if (debouncedUrlSnapshot) {
-      const parsed = queryString.parse(document.location.search)
-      const urlSplit = window.location.href.split('?')
-      const json = JSON.stringify(debouncedUrlSnapshot)
-      if (json.length < MAX_SESSION_SIZE_IN_URL) {
-        parsed.session = toUrlSafeB64(json)
-      } else {
-        parsed.session = undefined
-      }
-      window.history.replaceState(
-        {},
-        '',
-        `${urlSplit[0]}?${queryString.stringify(parsed)}`,
-      )
+    if (useUpdateUrl) {
+      const json = JSON.stringify(getSnapshot(session))
+      const sess =
+        json.length < MAX_SESSION_SIZE_IN_URL ? toUrlSafeB64(json) : undefined
+      setSession(sess)
     }
-  }, [debouncedUrlSnapshot])
+  }, [session, setSession, useUpdateUrl])
 
-  // This updates savedSession list on the rootModel
   useEffect(() => {
-    if (rootModel && rootModel.session && debouncedUrlSnapshot) {
-      rootModel.jbrowse.updateSavedSession(debouncedUrlSnapshot)
-    }
-  }, [debouncedUrlSnapshot, rootModel])
+    if (session && useUpdateUrl) {
+      return onSnapshot(session, snapshot => {
+        if (Date.now() - urlLastUpdated.current > 1000) {
+          const json = JSON.stringify(snapshot)
+          const sess =
+            json.length < MAX_SESSION_SIZE_IN_URL
+              ? toUrlSafeB64(json)
+              : undefined
 
-  // set session in localstorage
-  useEffect(
-    () =>
-      useLocalStorage
-        ? onSnapshot(rootModel.session, snapshot => {
+          if (useUpdateUrl) {
+            setSession(sess)
+          }
+          if (rootModel && rootModel.session) {
+            rootModel.jbrowse.updateSavedSession(snapshot)
+          }
+          if (useLocalStorage) {
             localStorage.setItem(
               'jbrowse-web-session',
               JSON.stringify(snapshot),
             )
-          })
-        : () => {},
-    [rootModel, useLocalStorage],
-  )
-
-  // Set session URL on first render only, before `onSnapshot` has fired
-  useEffect(() => {
-    if (useUpdateUrl) {
-      setUrlSnapshot(getSnapshot(session))
+          }
+          urlLastUpdated.current = Date.now()
+        }
+      })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(
-    () =>
-      session && useUpdateUrl
-        ? onSnapshot(session, snapshot => {
-            setUrlSnapshot(snapshot)
-          })
-        : () => {},
-    [useUpdateUrl, session],
-  )
+    return () => {}
+  }, [rootModel, setSession, useLocalStorage, useUpdateUrl, session])
 
   if (error) {
     throw new Error(error)

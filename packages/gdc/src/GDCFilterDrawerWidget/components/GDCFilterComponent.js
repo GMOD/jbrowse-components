@@ -3,9 +3,9 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState, useEffect } from 'react'
 import Typography from '@material-ui/core/Typography'
 import Alert from '@material-ui/lab/Alert'
-import Icon from '@material-ui/core/Icon'
 import { v4 as uuidv4 } from 'uuid'
 import Tooltip from '@material-ui/core/Tooltip'
+import HelpIcon from '@material-ui/icons/Help'
 import { ssmFacets, geneFacets, caseFacets } from './Utility'
 import { TrackType } from './TrackType'
 import { FilterList } from './Filters'
@@ -121,7 +121,7 @@ const GDCQueryBuilder = observer(({ schema }) => {
           aria-label="help"
           placement="right"
         >
-          <Icon>help</Icon>
+          <HelpIcon />
         </Tooltip>
       </Typography>
       <FilterList schema={schema} type="case" facets={caseFacets} />

@@ -45,74 +45,75 @@ const useStyles = makeStyles(theme => ({
     background: theme.palette.divider,
   },
 }))
-
-function VerticalGuides({
-  model,
-  children,
-}: {
-  model: LGV
-  children: React.ReactNode
-}) {
+const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
+  const classes = useStyles()
+  return (
+    <>
+      {model.staticBlocks.map((block, index) => {
+        if (block instanceof ContentBlock) {
+          const ticks = makeTicks(block.start, block.end, model.bpPerPx)
+          return (
+            <Block key={`${block.key}-${index}`} block={block}>
+              {ticks.map(tick => {
+                const x =
+                  (block.reversed
+                    ? block.end - tick.base
+                    : tick.base - block.start) / model.bpPerPx
+                return (
+                  <div
+                    key={tick.base}
+                    className={clsx(
+                      classes.tick,
+                      tick.type === 'major' || tick.type === 'labeledMajor'
+                        ? classes.majorTick
+                        : classes.minorTick,
+                    )}
+                    style={{ left: x }}
+                  />
+                )
+              })}
+            </Block>
+          )
+        }
+        if (block instanceof ElidedBlock) {
+          return <ElidedBlockMarker key={block.key} width={block.widthPx} />
+        }
+        if (block instanceof InterRegionPaddingBlock) {
+          return (
+            <InterRegionPaddingBlockMarker
+              key={block.key}
+              width={block.widthPx}
+              boundary={block.variant === 'boundary'}
+            />
+          )
+        }
+        return null
+      })}
+    </>
+  )
+})
+function VerticalGuides({ model }: { model: LGV }) {
   const classes = useStyles()
   // find the block that needs pinning to the left side for context
   const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
   return (
-    <>
+    <div
+      className={classes.verticalGuidesZoomContainer}
+      style={{
+        transform:
+          model.scaleFactor !== 1 ? `scaleX(${model.scaleFactor})` : undefined,
+      }}
+    >
       <div
-        className={classes.verticalGuidesZoomContainer}
-        style={{ transform: `scaleX(${model.scaleFactor})` }}
+        className={classes.verticalGuidesContainer}
+        style={{
+          left: offsetLeft,
+          width: model.staticBlocks.totalWidthPx,
+        }}
       >
-        <div
-          className={classes.verticalGuidesContainer}
-          style={{
-            left: offsetLeft,
-            width: model.staticBlocks.totalWidthPx,
-          }}
-        >
-          {model.staticBlocks.map((block, index) => {
-            if (block instanceof ContentBlock) {
-              const ticks = makeTicks(block.start, block.end, model.bpPerPx)
-              return (
-                <Block key={`${block.key}-${index}`} block={block}>
-                  {ticks.map(tick => {
-                    const x =
-                      (block.reversed
-                        ? block.end - tick.base
-                        : tick.base - block.start) / model.bpPerPx
-                    return (
-                      <div
-                        key={tick.base}
-                        className={clsx(
-                          classes.tick,
-                          tick.type === 'major' || tick.type === 'labeledMajor'
-                            ? classes.majorTick
-                            : classes.minorTick,
-                        )}
-                        style={{ left: x }}
-                      />
-                    )
-                  })}
-                </Block>
-              )
-            }
-            if (block instanceof ElidedBlock) {
-              return <ElidedBlockMarker key={block.key} width={block.widthPx} />
-            }
-            if (block instanceof InterRegionPaddingBlock) {
-              return (
-                <InterRegionPaddingBlockMarker
-                  key={block.key}
-                  width={block.widthPx}
-                  boundary={block.variant === 'boundary'}
-                />
-              )
-            }
-            return null
-          })}
-        </div>
+        <RenderedVerticalGuides model={model} />
       </div>
-      {children}
-    </>
+    </div>
   )
 }
 

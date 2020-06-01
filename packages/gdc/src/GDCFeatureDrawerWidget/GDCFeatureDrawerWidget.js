@@ -9,7 +9,8 @@ import TableRow from '@material-ui/core/TableRow'
 import Chip from '@material-ui/core/Chip'
 import Tooltip from '@material-ui/core/Tooltip'
 import Link from '@material-ui/core/Link'
-import Icon from '@material-ui/core/Icon'
+import AddIcon from '@material-ui/icons/Add'
+import RemoveIcon from '@material-ui/icons/Remove'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useState, useEffect } from 'react'
@@ -117,9 +118,9 @@ function Consequence(props) {
                     </TableCell>
                     <TableCell>
                       {value.node.transcript.gene.gene_strand === 1 ? (
-                        <Icon>add</Icon>
+                        <AddIcon />
                       ) : (
-                        <Icon>remove</Icon>
+                        <RemoveIcon />
                       )}
                     </TableCell>
                     <TableCell>

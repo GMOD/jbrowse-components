@@ -11,6 +11,7 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import LineStyleIcon from '@material-ui/icons/LineStyle'
 
 export type LGV = Instance<LinearGenomeViewStateModel>
 type ConfigRelationship = { type: string; target: string }
@@ -198,7 +199,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         menuOptions.push({
           label: 'Open track selector',
           onClick: self.activateTrackSelector,
-          icon: 'line_style',
+          icon: LineStyleIcon,
           disabled:
             session.visibleDrawerWidget &&
             session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&

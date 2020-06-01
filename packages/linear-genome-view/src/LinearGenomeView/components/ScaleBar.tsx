@@ -61,6 +61,103 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
+  const classes = useStyles()
+
+  // find the block that needs pinning to the left side for context
+  let lastLeftBlock = 0
+  model.staticBlocks.forEach((block, i) => {
+    if (block.offsetPx - model.offsetPx < 0) {
+      lastLeftBlock = i
+    }
+  })
+  return (
+    <>
+      {model.staticBlocks.map((block, index) => {
+        return block instanceof ContentBlock &&
+          (block.isLeftEndOfDisplayedRegion || index === lastLeftBlock) ? (
+          <Typography
+            key={`refLabel-${block.key}-${index}`}
+            style={{
+              left:
+                index === lastLeftBlock
+                  ? Math.max(0, -model.offsetPx)
+                  : block.offsetPx - model.offsetPx - 1,
+              paddingLeft: index === lastLeftBlock ? 0 : 1,
+            }}
+            className={classes.refLabel}
+            data-testid={`refLabel-${block.refName}`}
+          >
+            {block.refName}
+          </Typography>
+        ) : null
+      })}
+    </>
+  )
+})
+
+const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
+  const classes = useStyles()
+
+  return (
+    <>
+      {model.staticBlocks.map((block, index) => {
+        if (block instanceof ContentBlock) {
+          const ticks = makeTicks(
+            block.start,
+            block.end,
+            model.bpPerPx,
+            true,
+            false,
+          )
+
+          return (
+            <Block key={`${block.key}-${index}`} block={block}>
+              {ticks.map(tick => {
+                if (tick.type === 'labeledMajor') {
+                  const x =
+                    (block.reversed
+                      ? block.end - tick.base
+                      : tick.base - block.start) / model.bpPerPx
+                  const baseNumber = (tick.base + 1).toLocaleString()
+                  return (
+                    <div
+                      key={tick.base}
+                      className={classes.tick}
+                      style={{ left: x }}
+                    >
+                      {baseNumber ? (
+                        <Typography className={classes.majorTickLabel}>
+                          {baseNumber}
+                        </Typography>
+                      ) : null}
+                    </div>
+                  )
+                }
+                return null
+              })}
+            </Block>
+          )
+        }
+        if (block instanceof ElidedBlock) {
+          return <ElidedBlockMarker key={block.key} width={block.widthPx} />
+        }
+        if (block instanceof InterRegionPaddingBlock) {
+          return (
+            <InterRegionPaddingBlockMarker
+              key={block.key}
+              width={block.widthPx}
+              style={{ background: 'none' }}
+              boundary={block.variant === 'boundary'}
+            />
+          )
+        }
+        return null
+      })}
+    </>
+  )
+})
+
 const ScaleBar = React.forwardRef(
   (
     {
@@ -73,87 +170,6 @@ const ScaleBar = React.forwardRef(
   ) => {
     const classes = useStyles()
 
-    // find the block that needs pinning to the left side for context
-    let lastLeftBlock = 0
-    model.staticBlocks.forEach((block, i) => {
-      if (block.offsetPx - model.offsetPx < 0) {
-        lastLeftBlock = i
-      }
-    })
-    const rulerLabels: JSX.Element[] = []
-    const refNameLabels: JSX.Element[] = []
-    model.staticBlocks.forEach((block, index) => {
-      if (block instanceof ContentBlock) {
-        const ticks = makeTicks(
-          block.start,
-          block.end,
-          model.bpPerPx,
-          true,
-          false,
-        )
-        rulerLabels.push(
-          <Block key={`${block.key}-${index}`} block={block}>
-            {ticks.map(tick => {
-              if (tick.type === 'labeledMajor') {
-                const x =
-                  (block.reversed
-                    ? block.end - tick.base
-                    : tick.base - block.start) / model.bpPerPx
-                const baseNumber = (tick.base + 1).toLocaleString()
-                return (
-                  <div
-                    key={tick.base}
-                    className={classes.tick}
-                    style={{ left: x }}
-                  >
-                    {baseNumber ? (
-                      <Typography className={classes.majorTickLabel}>
-                        {baseNumber}
-                      </Typography>
-                    ) : null}
-                  </div>
-                )
-              }
-              return null
-            })}
-          </Block>,
-        )
-        if (block.isLeftEndOfDisplayedRegion || index === lastLeftBlock) {
-          refNameLabels.push(
-            <Typography
-              key={`refLabel-${block.key}-${index}`}
-              style={{
-                left:
-                  index === lastLeftBlock
-                    ? Math.max(0, -model.offsetPx)
-                    : block.offsetPx - model.offsetPx - 1,
-                paddingLeft: index === lastLeftBlock ? 0 : 1,
-              }}
-              className={classes.refLabel}
-              data-testid={`refLabel-${block.refName}`}
-            >
-              {block.refName}
-            </Typography>,
-          )
-        }
-      }
-      if (block instanceof ElidedBlock) {
-        rulerLabels.push(
-          <ElidedBlockMarker key={block.key} width={block.widthPx} />,
-        )
-      }
-      if (block instanceof InterRegionPaddingBlock) {
-        rulerLabels.push(
-          <InterRegionPaddingBlockMarker
-            key={block.key}
-            width={block.widthPx}
-            style={{ background: 'none' }}
-            boundary={block.variant === 'boundary'}
-          />,
-        )
-      }
-    })
-
     const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
     return (
       <Paper
@@ -165,7 +181,12 @@ const ScaleBar = React.forwardRef(
       >
         <div
           className={classes.scaleBarZoomContainer}
-          style={{ transform: `scaleX(${model.scaleFactor})` }}
+          style={{
+            transform:
+              model.scaleFactor !== 1
+                ? `scaleX(${model.scaleFactor})`
+                : undefined,
+          }}
         >
           <div
             className={classes.scaleBar}
@@ -175,10 +196,10 @@ const ScaleBar = React.forwardRef(
               ...style,
             }}
           >
-            {rulerLabels}
+            <RenderedScaleBarLabels model={model} />
           </div>
         </div>
-        {refNameLabels}
+        <RenderedRefNameLabels model={model} />
       </Paper>
     )
   },

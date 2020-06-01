@@ -1,3 +1,5 @@
+import CloseIcon from '@material-ui/icons/Close'
+import LineStyleIcon from '@material-ui/icons/LineStyle'
 import clsx from 'clsx'
 import { withSize } from 'react-sizeme'
 import { DotplotViewModel } from '../model'
@@ -7,7 +9,6 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState } = React
-  const Icon = jbrequire('@material-ui/core/Icon')
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const TextField = jbrequire('@material-ui/core/TextField')
   const Typography = jbrequire('@material-ui/core/Typography')
@@ -43,7 +44,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
           className={classes.iconButton}
           title="close this view"
         >
-          <Icon fontSize="small">close</Icon>
+          <CloseIcon fontSize="small" />
         </IconButton>
       </>
     )
@@ -117,7 +118,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
             value="track_select"
             color="secondary"
           >
-            <Icon fontSize="small">line_style</Icon>
+            <LineStyleIcon fontSize="small" />
           </IconButton>
           <div className={classes.spacer} />
         </div>

@@ -1,9 +1,11 @@
 import { Menu } from '@gmod/jbrowse-core/ui'
+import { useEventListener } from '@gmod/jbrowse-core/util'
 import Popover from '@material-ui/core/Popover'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
+import ZoomInIcon from '@material-ui/icons/ZoomIn'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
@@ -59,70 +61,63 @@ const useStyles = makeStyles(theme => {
   }
 })
 
+const VerticalGuide = observer(
+  ({ model, coordX }: { model: LGV; coordX: number }) => {
+    const classes = useStyles()
+    return (
+      <Tooltip
+        open
+        placement="top"
+        title={Math.round(model.pxToBp(coordX).offset + 1).toLocaleString()}
+        arrow
+      >
+        <div
+          className={classes.guide}
+          style={{
+            left: coordX,
+            background: 'red',
+          }}
+        />
+      </Tooltip>
+    )
+  },
+)
+
+interface Coord {
+  left: number
+  top: number
+}
+
 function RubberBand({
   model,
   ControlComponent = <div />,
-  children,
 }: {
   model: LGV
   ControlComponent?: React.ReactElement
-  children: React.ReactNode
 }) {
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
-  const [mouseDragging, setMouseDragging] = useState(false)
-  const [anchorPosition, setAnchorPosition] = useState<
-    | {
-        top: number
-        left: number
-      }
-    | undefined
-  >(undefined)
-  const [guideX, setGuideX] = useState(0)
-  const [guideOpen, setGuideOpen] = useState(false)
+  const [anchorPosition, setAnchorPosition] = useState<Coord>()
+  const [guideX, setGuideX] = useState<number | undefined>()
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
   const classes = useStyles()
+  const mouseDragging = startX !== undefined
 
-  useEffect(() => {
-    let cleanup = () => {}
-
-    function globalMouseMove(event: MouseEvent) {
-      event.preventDefault()
-      if (controlsRef.current) {
-        const relativeX =
-          event.clientX - controlsRef.current.getBoundingClientRect().left
-        setCurrentX(relativeX)
-      }
+  useEventListener('mousemove', (event: MouseEvent) => {
+    if (controlsRef.current) {
+      const relativeX =
+        event.clientX - controlsRef.current.getBoundingClientRect().left
+      setCurrentX(relativeX)
     }
+  })
 
-    function globalMouseUp(event: MouseEvent) {
-      setMouseDragging(false)
-      const pos = { left: event.clientX, top: event.clientY }
-      setAnchorPosition(pos)
+  useEventListener('mouseup', (event: MouseEvent) => {
+    if (startX !== undefined) {
+      setAnchorPosition({ left: event.clientX, top: event.clientY })
+      setGuideX(undefined)
     }
-
-    function globalKeyDown(event: KeyboardEvent) {
-      if (event.keyCode === 27) {
-        setAnchorPosition(undefined)
-        setStartX(undefined)
-        setCurrentX(undefined)
-        setMouseDragging(false)
-      }
-    }
-
-    if (mouseDragging) {
-      window.addEventListener('mousemove', globalMouseMove, true)
-      window.addEventListener('mouseup', globalMouseUp, true)
-      window.addEventListener('keydown', globalKeyDown, true)
-      cleanup = () => {
-        window.removeEventListener('mousemove', globalMouseMove, true)
-        window.removeEventListener('mouseup', globalMouseUp, true)
-        window.removeEventListener('keydown', globalKeyDown, true)
-      }
-    }
-    return cleanup
-  }, [mouseDragging])
+  })
 
   useEffect(() => {
     if (
@@ -138,31 +133,28 @@ function RubberBand({
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
     event.stopPropagation()
-    setMouseDragging(true)
     const relativeX =
       event.clientX -
       (event.target as HTMLDivElement).getBoundingClientRect().left
     setStartX(relativeX)
+    setCurrentX(relativeX)
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (!guideOpen) {
-      setGuideOpen(true)
-    }
-    setGuideX(
-      event.clientX -
-        (event.target as HTMLDivElement).getBoundingClientRect().left,
-    )
+    const target = event.target as HTMLDivElement
+    setGuideX(event.clientX - target.getBoundingClientRect().left)
   }
 
   function mouseOut() {
-    setGuideOpen(false)
+    setGuideX(undefined)
   }
 
   function zoomToRegion() {
-    if (startX === undefined || currentX === undefined) return
+    if (startX === undefined || anchorPosition === undefined) {
+      return
+    }
     let leftPx = startX
-    let rightPx = currentX
+    let rightPx = anchorPosition.left
     if (rightPx < leftPx) {
       ;[leftPx, rightPx] = [rightPx, leftPx]
     }
@@ -175,20 +167,9 @@ function RubberBand({
     setAnchorPosition(undefined)
     setStartX(undefined)
     setCurrentX(undefined)
-    setMouseDragging(false)
   }
 
   const open = Boolean(anchorPosition)
-
-  const controlComponent = React.cloneElement(ControlComponent, {
-    'data-testid': 'rubberBand_controls',
-    className: classes.rubberBandControl,
-    role: 'presentation',
-    ref: controlsRef,
-    onMouseDown: mouseDown,
-    onMouseOut: mouseOut,
-    onMouseMove: mouseMove,
-  })
 
   function handleMenuItemClick(
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
@@ -201,7 +182,7 @@ function RubberBand({
   const menuOptions = [
     {
       label: 'Zoom to region',
-      icon: 'zoom_in',
+      icon: ZoomInIcon,
       onClick: () => {
         zoomToRegion()
         handleClose()
@@ -209,13 +190,32 @@ function RubberBand({
     },
   ]
 
-  let left = 0
-  let width = 0
-  if (startX !== undefined && currentX !== undefined) {
-    left = currentX < startX ? currentX : startX
-    width = Math.abs(currentX - startX)
+  if (startX === undefined) {
+    return (
+      <>
+        {guideX !== undefined ? (
+          <VerticalGuide model={model} coordX={guideX} />
+        ) : null}
+        <div
+          data-testid="rubberBand_controls"
+          className={classes.rubberBandControl}
+          role="presentation"
+          ref={controlsRef}
+          onMouseDown={mouseDown}
+          onMouseOut={mouseOut}
+          onMouseMove={mouseMove}
+        >
+          {ControlComponent}
+        </div>
+      </>
+    )
   }
 
+  let left = 0
+  let width = 0
+  const right = anchorPosition ? anchorPosition.left : currentX || 0
+  left = right < startX ? right : startX
+  width = Math.abs(right - startX)
   const leftBpOffset = model.pxToBp(left)
   const leftBp = (
     Math.round(leftBpOffset.start + leftBpOffset.offset) + 1
@@ -225,47 +225,50 @@ function RubberBand({
     Math.round(rightBpOffset.start + rightBpOffset.offset) + 1
   ).toLocaleString()
 
-  const isRubberBandOpen = startX !== undefined && currentX !== undefined
   return (
     <>
-      <Popover
-        className={classes.popover}
-        classes={{
-          paper: classes.paper,
-        }}
-        open={isRubberBandOpen}
-        anchorEl={rubberBandRef.current}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
-        }}
-        transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        keepMounted
-      >
-        <Typography>{isRubberBandOpen ? leftBp : ''}</Typography>
-      </Popover>
-      <Popover
-        className={classes.popover}
-        classes={{
-          paper: classes.paper,
-        }}
-        open={startX !== undefined && currentX !== undefined}
-        anchorEl={rubberBandRef.current}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
-        }}
-        keepMounted
-      >
-        <Typography>{isRubberBandOpen ? rightBp : ''}</Typography>
-      </Popover>
+      {rubberBandRef.current ? (
+        <>
+          <Popover
+            className={classes.popover}
+            classes={{
+              paper: classes.paper,
+            }}
+            open
+            anchorEl={rubberBandRef.current}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'left',
+            }}
+            transformOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            keepMounted
+          >
+            <Typography>{leftBp}</Typography>
+          </Popover>
+          <Popover
+            className={classes.popover}
+            classes={{
+              paper: classes.paper,
+            }}
+            open
+            anchorEl={rubberBandRef.current}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+            keepMounted
+          >
+            <Typography>{rightBp}</Typography>
+          </Popover>
+        </>
+      ) : null}
       <div
         ref={rubberBandRef}
         className={classes.rubberBand}
@@ -275,30 +278,27 @@ function RubberBand({
           {Math.round(width * model.bpPerPx).toLocaleString()} bp{' '}
         </Typography>
       </div>
-      <Tooltip
-        open={guideOpen && !mouseDragging}
-        placement="top"
-        title={Math.round(model.pxToBp(guideX).offset + 1).toLocaleString()}
-        arrow
+      <div
+        data-testid="rubberBand_controls"
+        className={classes.rubberBandControl}
+        role="presentation"
+        ref={controlsRef}
+        onMouseDown={mouseDown}
+        onMouseOut={mouseOut}
+        onMouseMove={mouseMove}
       >
-        <div
-          className={classes.guide}
-          style={{
-            left: guideX,
-            background: guideOpen && !mouseDragging ? 'red' : undefined,
-          }}
+        {ControlComponent}
+      </div>
+      {anchorPosition ? (
+        <Menu
+          anchorReference="anchorPosition"
+          anchorPosition={anchorPosition}
+          onMenuItemClick={handleMenuItemClick}
+          open={open}
+          onClose={handleClose}
+          menuOptions={menuOptions}
         />
-      </Tooltip>
-      {controlComponent}
-      {children}
-      <Menu
-        anchorReference="anchorPosition"
-        anchorPosition={anchorPosition}
-        onMenuItemClick={handleMenuItemClick}
-        open={open}
-        onClose={handleClose}
-        menuOptions={menuOptions}
-      />
+      ) : null}
     </>
   )
 }
@@ -306,12 +306,10 @@ function RubberBand({
 RubberBand.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
   ControlComponent: ReactPropTypes.node,
-  children: ReactPropTypes.node,
 }
 
 RubberBand.defaultProps = {
   ControlComponent: <div />,
-  children: undefined,
 }
 
 export default observer(RubberBand)
