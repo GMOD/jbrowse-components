@@ -156,7 +156,6 @@ function RubberBand({
   }
 
   function mouseOut() {
-    console.log('out')
     setGuideOpen(false)
   }
 

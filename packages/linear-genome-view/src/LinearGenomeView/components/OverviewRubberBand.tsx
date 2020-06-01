@@ -7,6 +7,7 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect, useState } from 'react'
+import { Region } from '@gmod/jbrowse-core/util/types'
 import { LinearGenomeViewStateModel, HEADER_OVERVIEW_HEIGHT } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -112,16 +113,40 @@ function OverviewRubberBand({
         ;[leftPx, rightPx] = [rightPx, leftPx]
       }
 
-      console.log(leftPx, rightPx, scale)
-      const newRegions = []
+      const start = Math.round(leftPx * scale)
+      const end = Math.round(rightPx * scale)
+      let startOverlap = false
+      const newRegions: Region[] = []
 
-      model.displayedRegions.map(region => {
-        console.log(region)
+      // run through the regions
+      model.displayedRegions.map((region, idx) => {
+        // find earliest overlap and re-set that region's start
+        if (!startOverlap) {
+          if (region.start < start && region.end > start) {
+            startOverlap = true
+            newRegions.push({
+              ...region,
+              start,
+            })
+          }
+        } 
+        // if a region after the first overlap has the ending overlap
+        // re-set that region's end
+        else if (region.start < end && region.end > end)
+          newRegions.push({ ...region, end })
+        // if there is a middle region that doesn't overlap or the
+        // selection goes past all displayed regions, display all of the current region
+        else if (idx < model.displayedRegions.length - 1 || region.end < end)
+          newRegions.push(region)
+
+        return newRegions
       })
-      // TODORB: get all the displayed regions in an array. Map through each one
-      // find the earliest overlap between the display region and the leftpx
-      // if no overlap go to next. then find the latest overlap between
-      // display region and the rightpx. zoom into everything in between
+
+      // 'zoom' by setting the new displayed regions and reset all hooks
+      model.setDisplayedRegions(newRegions)
+      setStartX(undefined)
+      setCurrentX(undefined)
+      setMouseDragging(false)
     }
 
     if (mouseDragging) {
@@ -172,21 +197,12 @@ function OverviewRubberBand({
   let left = 0
   let width = 0
   if (startX !== undefined && currentX !== undefined) {
-    left = startX + offsetX
+    left = currentX < startX ? currentX + offsetX : startX + offsetX
     width = currentX - startX
   }
 
-  //   const leftBpOffset = model.pxToBp(left)
-  //   const leftBp = (
-  //     Math.round(leftBpOffset.start + leftBpOffset.offset) + 1
-  //   ).toLocaleString()
-  //   const rightBpOffset = model.pxToBp(left + width)
-  //   const rightBp = (
-  //     Math.round(rightBpOffset.start + rightBpOffset.offset) + 1
-  //   ).toLocaleString()
-
-  let leftCount = Math.round((startX || 0) * scale)
-  let rightCount = Math.round(leftCount + width * scale)
+  let leftCount = Math.max(0, Math.round((startX || 0) * scale))
+  let rightCount = Math.max(0, Math.round(leftCount + width * scale))
   if (leftCount > rightCount) {
     ;[leftCount, rightCount] = [rightCount, leftCount]
   }
@@ -256,7 +272,6 @@ function OverviewRubberBand({
           style={{
             left: guideX,
           }}
-          data-testid="here"
         />
       </Tooltip>
       {controlComponent}
