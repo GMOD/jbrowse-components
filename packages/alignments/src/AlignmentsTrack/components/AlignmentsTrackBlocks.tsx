@@ -8,14 +8,8 @@ import {
   RenderedBlocks,
   useStyles,
 } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/TrackBlocks'
-
 import { useTheme } from '@material-ui/core/styles'
-
-interface AlignmentsBlockBasedTrackStateModel
-  extends Instance<BlockBasedTrackStateModel> {
-  PileupTrack: Instance<BlockBasedTrackStateModel>
-  SNPCoverageTrack: Instance<BlockBasedTrackStateModel>
-}
+import { AlignmentsTrackModel } from '../model'
 
 interface MouseState {
   mouseX: number | null
@@ -28,7 +22,7 @@ function AlignmentsTrackBlocks({
   showPileup,
   showSNPCoverage,
 }: {
-  model: AlignmentsBlockBasedTrackStateModel
+  model: AlignmentsTrackModel
   viewModel: Instance<LinearGenomeViewStateModel>
   showPileup: boolean
   showSNPCoverage: boolean

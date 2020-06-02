@@ -5,6 +5,7 @@ import { getParent } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React from 'react'
 import AlignmentsTrackBlocks from './AlignmentsTrackBlocks'
+import { AlignmentsTrackModel } from '../model'
 
 const useStyles = makeStyles({
   track: {
@@ -16,7 +17,12 @@ const useStyles = makeStyles({
   },
 })
 
-function AlignmentsBlockBasedTrack(props) {
+function AlignmentsBlockBasedTrack(props: {
+  model: AlignmentsTrackModel
+  children: React.ReactNode
+  showPileup: boolean
+  showSNPCoverage: boolean
+}) {
   const classes = useStyles()
   const { model, children, showPileup, showSNPCoverage } = props
   return (
