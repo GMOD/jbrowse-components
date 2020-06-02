@@ -27,7 +27,6 @@ function BlockBasedTrack(props: {
   const ref = useRef<HTMLDivElement>(null)
   const { model, children } = props
   const { featureIdUnderMouse, trackMessageComponent: Message } = model
-  console.log(mouseCoord)
   return (
     <div
       ref={ref}
@@ -48,7 +47,14 @@ function BlockBasedTrack(props: {
       )}
       {children}
       {featureIdUnderMouse ? (
-        <Tooltip title={featureIdUnderMouse} open>
+        <Tooltip
+          title={
+            model.features.get(featureIdUnderMouse)
+              ? model.features.get(featureIdUnderMouse).get('name')
+              : ''
+          }
+          open
+        >
           <div
             style={{
               position: 'absolute',
