@@ -31,6 +31,7 @@ const blockBasedTrack = types
       .volatile(() => ({
         contextMenuOptions: [] as MenuOption[],
         featureIdUnderMouse: undefined as undefined | string,
+        mouseCoord: undefined as undefined | string,
         ReactComponent: (BlockBasedTrack as unknown) as React.FC,
       })),
   )

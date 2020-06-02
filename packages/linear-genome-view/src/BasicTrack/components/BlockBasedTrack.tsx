@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useState, useRef } from 'react'
 import Tooltip from '@material-ui/core/Tooltip'
 import TrackBlocks from './TrackBlocks'
 import { BlockBasedTrackModel } from '../blockBasedTrackModel'
@@ -23,12 +23,22 @@ function BlockBasedTrack(props: {
   children: React.ReactNode
 }) {
   const classes = useStyles()
+  const [mouseCoord, setMouseCoord] = useState<[number, number]>([0, 0])
+  const ref = useRef<HTMLDivElement>(null)
   const { model, children } = props
   const { featureIdUnderMouse, trackMessageComponent: Message } = model
+  console.log(mouseCoord)
   return (
     <div
+      ref={ref}
       data-testid={`track-${getConf(model, 'trackId')}`}
       className={classes.track}
+      onMouseMove={event => {
+        if (ref.current) {
+          const rect = ref.current.getBoundingClientRect()
+          setMouseCoord([event.clientX - rect.left, event.clientY - rect.top])
+        }
+      }}
       role="presentation"
     >
       {Message ? (
@@ -38,9 +48,15 @@ function BlockBasedTrack(props: {
       )}
       {children}
       {featureIdUnderMouse ? (
-        <Tooltip title="test" open>
-          <div style={{ position: 'absolute', left: 50, top: 50 }}>
-            Hello world!
+        <Tooltip title={featureIdUnderMouse} open>
+          <div
+            style={{
+              position: 'absolute',
+              left: mouseCoord[0],
+              top: mouseCoord[1],
+            }}
+          >
+            {' '}
           </div>
         </Tooltip>
       ) : null}
