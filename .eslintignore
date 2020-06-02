@@ -5,6 +5,8 @@
 **/dist/**
 **/umd/**
 # TODO: decide whether or not to bring these up to eslint standards
-packages/jbrowse-web/scripts/**
 /config/
-/packages/jbrowse-web/config/
+packages/jbrowse-web/scripts/**
+packages/jbrowse-web/config/
+packages/jbrowse-web/storybook-static/
+packages/jbrowse-web/build/

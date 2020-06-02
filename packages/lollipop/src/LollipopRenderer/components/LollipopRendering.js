@@ -3,7 +3,7 @@ import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
 import { bpToPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { Component } from 'react'
+import React from 'react'
 import Lollipop from './Lollipop'
 import Stick from './Stick'
 

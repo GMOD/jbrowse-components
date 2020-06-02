@@ -52,30 +52,9 @@ Stick.propTypes = {
   selectedFeatureId: ReactPropTypes.string,
 
   config: CommonPropTypes.ConfigSchema.isRequired,
-
-  onFeatureMouseDown: ReactPropTypes.func,
-  onFeatureMouseEnter: ReactPropTypes.func,
-  onFeatureMouseOut: ReactPropTypes.func,
-  onFeatureMouseOver: ReactPropTypes.func,
-  onFeatureMouseUp: ReactPropTypes.func,
-  onFeatureMouseLeave: ReactPropTypes.func,
-  onFeatureMouseMove: ReactPropTypes.func,
-
-  // synthesized from mouseup and mousedown
-  onFeatureClick: ReactPropTypes.func,
 }
-
 Stick.defaultProps = {
   selectedFeatureId: undefined,
-
-  onFeatureMouseDown: undefined,
-  onFeatureMouseEnter: undefined,
-  onFeatureMouseOut: undefined,
-  onFeatureMouseOver: undefined,
-  onFeatureMouseUp: undefined,
-  onFeatureMouseLeave: undefined,
-  onFeatureMouseMove: undefined,
-
-  onFeatureClick: undefined,
 }
+
 export default observer(Stick)
