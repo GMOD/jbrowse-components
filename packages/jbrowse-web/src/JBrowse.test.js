@@ -55,7 +55,6 @@ function getPluginManager(initialState) {
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
   const rootModel = JBrowseRootModel.create({
     jbrowse: initialState || configSnapshot,
-    assemblyManager: {},
   })
   if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
     const { name } = rootModel.jbrowse.savedSessions[0]

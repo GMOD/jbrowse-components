@@ -18,14 +18,10 @@ export default {
   component: Button,
 }
 
-function getPluginManager(initialState) {
-  const pluginManager = new PluginManager(corePlugins.map(P => new P()))
-  pluginManager.createPluggableElements()
-
-  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
-  const rootModel = JBrowseRootModel.create({
-    jbrowse: initialState || configSnapshot,
-    assemblyManager: {},
+function getPluginManager(jbrowse=configSnapshot) {
+  const pluginManager = new PluginManager(corePlugins.map(P => new P())).createPluggableElements()
+  const rootModel = JBrowseRootModelFactory(pluginManager).create({
+    jbrowse,
   })
   if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
     const { name } = rootModel.jbrowse.savedSessions[0]

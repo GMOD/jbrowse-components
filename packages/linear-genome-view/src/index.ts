@@ -90,3 +90,4 @@ export {
 export { default as blockBasedTrackModel } from './BasicTrack/blockBasedTrackModel'
 export { default as BlockBasedTrack } from './BasicTrack/components/BlockBasedTrack'
 export { basicTrackConfigSchemaFactory, basicTrackStateModelFactory }
+export { default as LinearGenomeView } from './LinearGenomeView/components/LinearGenomeView'

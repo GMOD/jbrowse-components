@@ -82,7 +82,6 @@ export default function Loader() {
     if (configSnapshot) {
       rootModel = JBrowseRootModel.create({
         jbrowse: configSnapshot,
-        assemblyManager: {},
       })
     }
   } catch (e) {

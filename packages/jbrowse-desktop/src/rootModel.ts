@@ -37,7 +37,7 @@ export default function RootModel(pluginManager: PluginManager) {
         assemblyConfigSchemasType,
       ),
       session: types.maybe(Session),
-      assemblyManager: assemblyManagerType,
+      assemblyManager: types.optional(assemblyManagerType, {}),
       error: types.maybe(types.string),
       savedSessionNames: types.maybe(types.array(types.string)),
     })
