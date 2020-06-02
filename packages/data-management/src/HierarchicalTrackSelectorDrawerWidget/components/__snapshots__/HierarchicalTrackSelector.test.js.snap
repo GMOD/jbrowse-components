@@ -342,29 +342,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
   <div
     class="MuiFormGroup-root"
   />
-  <button
-    class="MuiButtonBase-root MuiFab-root makeStyles-fab MuiFab-secondary"
-    tabindex="0"
-    type="button"
-  >
-    <span
-      class="MuiFab-label"
-    >
-      <svg
-        aria-hidden="true"
-        class="MuiSvgIcon-root"
-        focusable="false"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-        />
-      </svg>
-    </span>
-    <span
-      class="MuiTouchRipple-root"
-    />
-  </button>
 </div>
 `;
 
@@ -569,28 +546,5 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
   <div
     class="MuiFormGroup-root"
   />
-  <button
-    class="MuiButtonBase-root MuiFab-root makeStyles-fab MuiFab-secondary"
-    tabindex="0"
-    type="button"
-  >
-    <span
-      class="MuiFab-label"
-    >
-      <svg
-        aria-hidden="true"
-        class="MuiSvgIcon-root"
-        focusable="false"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-        />
-      </svg>
-    </span>
-    <span
-      class="MuiTouchRipple-root"
-    />
-  </button>
 </div>
 `;
