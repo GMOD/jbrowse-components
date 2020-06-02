@@ -1,4 +1,5 @@
 import { getConf } from '@gmod/jbrowse-core/configuration'
+import { getContainingView } from '@gmod/jbrowse-core/util'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
@@ -41,11 +42,7 @@ function BlockBasedTrack(props: {
       }}
       role="presentation"
     >
-      {Message ? (
-        <Message model={model} />
-      ) : (
-        <TrackBlocks {...props} viewModel={getParent(model, 2)} />
-      )}
+      {Message ? <Message model={model} /> : <TrackBlocks {...props} />}
       {children}
       {mouseover ? (
         <Tooltip title={mouseover} open>

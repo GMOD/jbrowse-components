@@ -3,7 +3,7 @@ import { Instance } from 'mobx-state-tree'
 import React, { useState } from 'react'
 import { BlockBasedTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
 import BlockBasedTrack from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/BlockBasedTrack'
-import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { ResizeHandle, Menu, MenuOption } from '@gmod/jbrowse-core/ui'
 import { useStyles } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/TrackBlocks'
 import { useTheme } from '@material-ui/core/styles'
@@ -16,12 +16,10 @@ interface MouseState {
 
 function AlignmentsTrackBlocks({
   model,
-  viewModel,
   showPileup,
   showSNPCoverage,
 }: {
   model: AlignmentsTrackModel
-  viewModel: Instance<LinearGenomeViewStateModel>
   showPileup: boolean
   showSNPCoverage: boolean
 }) {
@@ -71,8 +69,6 @@ function AlignmentsTrackBlocks({
           className={classes.trackBlocks}
           onContextMenu={e => handleRightClick(e, SNPCoverageTrack)}
           style={{
-            left:
-              SNPCoverageTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
             display: showSNPCoverage ? 'flex' : 'none',
           }}
         >
@@ -99,7 +95,6 @@ function AlignmentsTrackBlocks({
           className={classes.trackBlocks}
           onContextMenu={e => handleRightClick(e, PileupTrack)}
           style={{
-            left: PileupTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
             top:
               SNPCoverageTrack && showSNPCoverage
                 ? SNPCoverageTrack.height + 5
@@ -130,7 +125,6 @@ function AlignmentsTrackBlocks({
 
 AlignmentsTrackBlocks.propTypes = {
   model: PropTypes.observableObject.isRequired,
-  viewModel: PropTypes.observableObject.isRequired,
 }
 
 export default observer(AlignmentsTrackBlocks)

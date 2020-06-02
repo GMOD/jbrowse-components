@@ -36,7 +36,7 @@ function AlignmentsBlockBasedTrack(props: {
       ) : (
         <AlignmentsTrackBlocks
           {...props}
-          viewModel={getParent(getParent(model))}
+          viewModel={getParent(model, 2)}
           showPileup={showPileup}
           showSNPCoverage={showSNPCoverage}
         />
