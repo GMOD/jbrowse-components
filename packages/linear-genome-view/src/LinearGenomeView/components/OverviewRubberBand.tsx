@@ -8,6 +8,7 @@ import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect, useState } from 'react'
 import { Region } from '@gmod/jbrowse-core/util/types'
+import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { LinearGenomeViewStateModel, HEADER_OVERVIEW_HEIGHT } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -104,8 +105,12 @@ function OverviewRubberBand({
       }
     }
 
+    // need to somehow get the refname of when user starts dragging and ends dragging
+    // so if user starts dragging ctgA: 40000 and ends ctgB: 3000
+    // should be zoom ctgA: 40000 - 50000 and ctgB: 0 - 3000
+    // start needs to check that its on ctg, end needs to check its on ctgB
+    // and also both need to account for spacer if they selected on ctgB ( or any thats not the first)
     function zoomToRegion() {
-      console.log(startX, currentX)
       if (startX === undefined || currentX === undefined) return
       let leftPx = startX
       let rightPx = currentX
@@ -113,37 +118,45 @@ function OverviewRubberBand({
         ;[leftPx, rightPx] = [rightPx, leftPx]
       }
 
-      const start = Math.round(leftPx * scale)
-      const end = Math.round(rightPx * scale)
-      let startOverlap = false
-      const newRegions: Region[] = []
+      // with two refNames, need to account for refNamespacer (2) at end
+      const start = Math.round(leftPx * scale) // start dragging
+      const end = Math.round(rightPx * scale) // end dragging
+      let firstOverlapFound = false
+      console.log(start, end)
+
+      const pessimisticNewRegions: Region[] = [] // assumes you have not found the final overlap
+      let optimisitcNewRegions: Region[] = [] // assumes you have found the final overlap
 
       // run through the regions
-      model.displayedRegions.map((region, idx) => {
-        // find earliest overlap and re-set that region's start
-        if (!startOverlap) {
-          if (region.start < start && region.end > start) {
-            startOverlap = true
-            newRegions.push({
-              ...region,
-              start,
-            })
+      // need to check refname still!
+      model.displayedRegions.forEach((region, idx) => {
+        if (doesIntersect2(start, end, region.start, region.end)) {
+          let startValue = region.start
+          // if first instance of overlap modify the first overlapping region's start
+          if (!firstOverlapFound) {
+            startValue = region.start < start ? start : region.start
+            firstOverlapFound = true
           }
-        } 
-        // if a region after the first overlap has the ending overlap
-        // re-set that region's end
-        else if (region.start < end && region.end > end)
-          newRegions.push({ ...region, end })
-        // if there is a middle region that doesn't overlap or the
-        // selection goes past all displayed regions, display all of the current region
-        else if (idx < model.displayedRegions.length - 1 || region.end < end)
-          newRegions.push(region)
 
-        return newRegions
+          // current region overlapping means previous region was not region with final overlap
+          // overwrite optimistic with pessimistic
+          optimisitcNewRegions = JSON.parse(
+            JSON.stringify(pessimisticNewRegions),
+          )
+          // push region with the selected end to optimistic, assume current region is final overlap
+          optimisitcNewRegions.push({
+            ...region,
+            start: startValue,
+            end: region.end > end ? end : region.end,
+          })
+          pessimisticNewRegions.push({ ...region, start: startValue })
+        }
+        // add regions that don't overlap to pessimistic, display if overlap is found in later region
+        else if (firstOverlapFound) pessimisticNewRegions.push(region)
       })
 
-      // 'zoom' by setting the new displayed regions and reset all hooks
-      model.setDisplayedRegions(newRegions)
+      console.log(optimisitcNewRegions)
+      if (optimisitcNewRegions.length) model.navToMultiple(optimisitcNewRegions)
       setStartX(undefined)
       setCurrentX(undefined)
       setMouseDragging(false)
