@@ -113,6 +113,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             getConf(self, ['renderers', this.rendererTypeName]) || {},
           )
           return {
+            ...self.composedRenderProps,
             ...getParentRenderProps(self),
             notReady: !self.ready,
             trackModel: self,

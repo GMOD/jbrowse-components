@@ -109,7 +109,6 @@ function TrackBlocks({ model }: { model: BlockBasedTrackModel }) {
 
 TrackBlocks.propTypes = {
   model: PropTypes.observableObject.isRequired,
-  viewModel: PropTypes.observableObject.isRequired,
 }
 
 export { RenderedBlocks, useStyles }

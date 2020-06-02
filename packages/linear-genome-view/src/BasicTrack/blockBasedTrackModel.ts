@@ -294,6 +294,7 @@ const blockBasedTrack = types
       }
     },
     get renderProps() {
+      console.log('test')
       return this.composedRenderProps
     },
   }))

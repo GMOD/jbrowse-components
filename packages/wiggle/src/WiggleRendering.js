@@ -93,9 +93,16 @@ Tooltip.propTypes = {
 }
 
 function WiggleRendering(props) {
-  const { trackModel, regions, features, bpPerPx, width, height } = props
-  const { onMouseLeave, onMouseMove } = trackModel
-  console.log(props, trackModel)
+  const {
+    trackModel,
+    regions,
+    features,
+    bpPerPx,
+    width,
+    height,
+    onMouseLeave,
+    onMouseMove,
+  } = props
   const [region] = regions
   const ref = useRef()
 
@@ -114,6 +121,7 @@ function WiggleRendering(props) {
         break
       }
     }
+    console.log('wtf', onMouseMove)
 
     if (onMouseMove) {
       onMouseMove(event, featureIdUnderMouse)
