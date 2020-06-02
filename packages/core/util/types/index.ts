@@ -32,7 +32,7 @@ export function isViewContainer(
   return isStateTreeNode(thing) && 'removeView' in thing
 }
 
-type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
+export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
 
 export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
 

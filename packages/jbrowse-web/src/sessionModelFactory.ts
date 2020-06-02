@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { Region } from '@gmod/jbrowse-core/util/types'
+import { Region, NotificationLevel } from '@gmod/jbrowse-core/util/types'
 import { getContainingView } from '@gmod/jbrowse-core/util'
 import { observable } from 'mobx'
 import {
@@ -420,12 +420,12 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           },
         },
         actions: {
-          notify(message: string) {
-            return this.pushSnackbarMessage(message)
+          notify(message: string, level?: NotificationLevel) {
+            return this.pushSnackbarMessage(message, level)
           },
 
-          pushSnackbarMessage(message: string) {
-            return snackbarMessages.push(message)
+          pushSnackbarMessage(message: string, level?: NotificationLevel) {
+            return snackbarMessages.push([message, level])
           },
 
           popSnackbarMessage() {
