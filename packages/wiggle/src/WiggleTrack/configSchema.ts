@@ -70,6 +70,14 @@ export default (pluginManager: PluginManager) => {
         XYPlotRenderer: XYPlotRendererConfigSchema,
         LinePlotRenderer: LinePlotRendererConfigSchema,
       }),
+      mouseover: {
+        type: 'string',
+        description: 'what to display in the given mouseover',
+        defaultValue: `function(feature) {
+        return feature.get('score')
+        }`,
+        functionSignature: ['feature'],
+      },
     },
     {
       baseConfiguration: BaseTrackConfig,

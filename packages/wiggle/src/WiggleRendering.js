@@ -117,11 +117,10 @@ function WiggleRendering(props) {
     let featureIdUnderMouse
     for (const feature of features.values()) {
       if (clientBp <= feature.get('end') && clientBp >= feature.get('start')) {
-        featureIdUnderMouse = feature
+        featureIdUnderMouse = feature.id()
         break
       }
     }
-    console.log('wtf', onMouseMove)
 
     if (onMouseMove) {
       onMouseMove(event, featureIdUnderMouse)

@@ -29,6 +29,7 @@ function BlockBasedTrack(props: {
   const { model, children } = props
   const { featureUnderMouse: feature, trackMessageComponent: Message } = model
   const mouseover = feature ? getConf(model, 'mouseover', [feature]) : undefined
+  console.log('feature', mouseover)
   return (
     <div
       ref={ref}
