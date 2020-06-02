@@ -5,7 +5,6 @@ import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect, useRef, useState, useCallback } from 'react'
-import { Tooltip } from '@gmod/jbrowse-core/ui'
 import FeatureGlyph from './FeatureGlyph'
 import { chooseGlyphComponent, layOut } from './util'
 
@@ -229,18 +228,15 @@ function SvgFeatureRendering(props) {
     trackModel,
     config,
   } = props
-  const { configuration } = trackModel
   const [region] = regions || []
   const width = (region.end - region.start) / bpPerPx
   const displayMode = readConfObject(config, 'displayMode')
 
   const ref = useRef()
   const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [localFeatureIdUnderMouse, setLocalFeatureIdUnderMouse] = useState()
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
     false,
   )
-  const [tooltipCoord, setTooltipCoord] = useState([0, 0])
   const [height, setHeight] = useState(0)
   const {
     onMouseOut,
@@ -287,12 +283,10 @@ function SvgFeatureRendering(props) {
   const mouseLeave = useCallback(
     event => {
       const handler = onMouseLeave
-      setLocalFeatureIdUnderMouse(undefined)
-      trackModel.setFeatureIdUnderMouse(undefined)
       if (!handler) return undefined
       return handler(event)
     },
-    [onMouseLeave, trackModel],
+    [onMouseLeave],
   )
 
   const mouseOver = useCallback(
@@ -315,8 +309,9 @@ function SvgFeatureRendering(props) {
 
   const mouseMove = useCallback(
     event => {
-      const handler = onMouseMove
-      if (mouseIsDown) setMovedDuringLastMouseDown(true)
+      if (mouseIsDown) {
+        setMovedDuringLastMouseDown(true)
+      }
       let offsetX = 0
       let offsetY = 0
       if (ref.current) {
@@ -336,12 +331,10 @@ function SvgFeatureRendering(props) {
       const featureIdCurrentlyUnderMouse = feats.length
         ? feats[0].name
         : undefined
-      setTooltipCoord([offsetX, offsetY])
-      setLocalFeatureIdUnderMouse(featureIdCurrentlyUnderMouse)
-      trackModel.setFeatureIdUnderMouse(featureIdCurrentlyUnderMouse)
 
-      if (!handler) return undefined
-      return handler(event)
+      if (onMouseMove) {
+        onMouseMove(event, featureIdCurrentlyUnderMouse)
+      }
     },
     [
       blockKey,
@@ -413,14 +406,6 @@ function SvgFeatureRendering(props) {
         <SvgSelected {...props} region={region} />
         <SvgMouseover {...props} region={region} />
       </svg>
-      {localFeatureIdUnderMouse ? (
-        <Tooltip
-          configuration={configuration}
-          feature={features.get(localFeatureIdUnderMouse)}
-          offsetX={tooltipCoord[0]}
-          offsetY={tooltipCoord[1]}
-        />
-      ) : null}
     </div>
   )
 }
@@ -440,7 +425,6 @@ SvgFeatureRendering.propTypes = {
   config: CommonPropTypes.ConfigSchema.isRequired,
   trackModel: ReactPropTypes.shape({
     configuration: ReactPropTypes.shape({}),
-    setFeatureIdUnderMouse: ReactPropTypes.func,
     getFeatureOverlapping: ReactPropTypes.func,
     selectedFeatureId: ReactPropTypes.string,
     featureIdUnderMouse: ReactPropTypes.string,

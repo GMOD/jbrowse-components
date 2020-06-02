@@ -15,7 +15,7 @@ import { Feature, isFeature } from '@gmod/jbrowse-core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import BlockState from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
-import { BaseBlock, ContentBlock } from './util/blockTypes'
+import { BaseBlock } from './util/blockTypes'
 import BlockBasedTrack from './components/BlockBasedTrack'
 import { LinearGenomeViewStateModel } from '../LinearGenomeView'
 
@@ -63,6 +63,12 @@ const blockBasedTrack = types
         }
         stale = true
         return new CompositeMap<string, Feature>(featureMaps)
+      },
+
+      get featureUnderMouse() {
+        return self.featureIdUnderMouse
+          ? this.features.get(self.featureIdUnderMouse)
+          : undefined
       },
 
       /**
@@ -273,13 +279,10 @@ const blockBasedTrack = types
           }
         },
 
-        onFeatureMouseMove(event: unknown, featureId: string | undefined) {
+        onMouseMove(event: unknown, featureId: string | undefined) {
           self.setFeatureIdUnderMouse(featureId)
         },
 
-        onMouseOut(event: unknown) {
-          self.setFeatureIdUnderMouse(undefined)
-        },
         onMouseLeave(event: unknown) {
           self.setFeatureIdUnderMouse(undefined)
         },

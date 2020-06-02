@@ -2,12 +2,10 @@ import { observer, PropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useState } from 'react'
 import { BlockBasedTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
+import BlockBasedTrack from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/BlockBasedTrack'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { ResizeHandle, Menu, MenuOption } from '@gmod/jbrowse-core/ui'
-import {
-  RenderedBlocks,
-  useStyles,
-} from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/TrackBlocks'
+import { useStyles } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/TrackBlocks'
 import { useTheme } from '@material-ui/core/styles'
 import { AlignmentsTrackModel } from '../model'
 
@@ -78,7 +76,7 @@ function AlignmentsTrackBlocks({
             display: showSNPCoverage ? 'flex' : 'none',
           }}
         >
-          <RenderedBlocks model={SNPCoverageTrack} />
+          <BlockBasedTrack model={SNPCoverageTrack} />
         </div>
       )}
       <ResizeHandle
@@ -109,7 +107,7 @@ function AlignmentsTrackBlocks({
             display: showPileup ? 'flex' : 'none',
           }}
         >
-          <RenderedBlocks model={PileupTrack} />
+          <BlockBasedTrack model={PileupTrack} />
         </div>
       )}
       <Menu
