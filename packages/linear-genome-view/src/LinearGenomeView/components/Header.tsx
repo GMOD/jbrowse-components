@@ -185,7 +185,7 @@ const Search = observer(({ model }: { model: LGV }) => {
       model.navToLocStrings(locString)
     } catch (e) {
       console.error(e)
-      session.notify(`${e}`)
+      session.notify(`${e}`, 'error')
     }
   }
 

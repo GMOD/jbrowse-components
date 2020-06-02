@@ -68,6 +68,7 @@ function App({ session }) {
     ) {
       session.notify(
         `Cannot rename session to "${newName}", a saved session with that name already exists`,
+        'warning',
       )
     } else {
       session.renameCurrentSession(newName)

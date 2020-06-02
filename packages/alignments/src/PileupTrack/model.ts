@@ -54,10 +54,9 @@ export default (
       copyFeatureToClipboard(feature: Feature) {
         const copiedFeature = feature.toJSON()
         delete copiedFeature.uniqueId
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const session = getSession(self) as any
+        const session = getSession(self)
         copy(JSON.stringify(copiedFeature, null, 4))
-        session.notify('Copied to clipboard')
+        session.notify('Copied to clipboard', 'success')
       },
 
       // returned if there is no feature id under mouse

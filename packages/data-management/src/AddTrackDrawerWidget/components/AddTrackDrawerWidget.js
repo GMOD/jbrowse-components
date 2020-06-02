@@ -97,6 +97,7 @@ function AddTrackDrawerWidget({ model }) {
     } else {
       session.notify(
         'Open a new view, or use the track selector in an existing view, to view this track',
+        'info',
       )
     }
     session.hideDrawerWidget(model)

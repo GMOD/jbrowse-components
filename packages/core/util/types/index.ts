@@ -32,6 +32,8 @@ export function isViewContainer(
   return isStateTreeNode(thing) && 'removeView' in thing
 }
 
+type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
+
 export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
 
 /** minimum interface that all session state models must implement */
@@ -46,7 +48,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   assemblies: AnyConfigurationModel[]
   selection?: unknown
   duplicateCurrentSession(): void
-  notify(message: string): void
+  notify(message: string, level?: NotificationLevel): void
   assemblyManager: AssemblyManager
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
