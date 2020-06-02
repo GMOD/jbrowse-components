@@ -28,9 +28,12 @@ declare interface ReferringNode {
   key: string
 }
 
-export default function sessionModelFactory(pluginManager: PluginManager) {
+export default function sessionModelFactory(
+  pluginManager: PluginManager,
+  editableConfigs = false,
+) {
   const minDrawerWidth = 128
-  return types
+  const session = types
     .model('JBrowseWebSessionModel', {
       name: types.identifier,
       margin: 0,
@@ -363,25 +366,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         self.selection = undefined
       },
 
-      /**
-       * opens a configuration editor to configure the given thing,
-       * and sets the current task to be configuring it
-       * @param configuration -
-       */
-      editConfiguration(configuration: AnyConfigurationModel) {
-        if (!isConfigurationModel(configuration)) {
-          throw new Error(
-            'must pass a configuration model to editConfiguration',
-          )
-        }
-        const editor = this.addDrawerWidget(
-          'ConfigurationEditorDrawerWidget',
-          'configEditor',
-          { target: configuration },
-        )
-        this.showDrawerWidget(editor)
-      },
-
       clearConnections() {
         self.connectionInstances.clear()
       },
@@ -430,6 +414,37 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         },
       }
     })
+
+  if (!editableConfigs) {
+    return session
+  }
+
+  return types.compose(
+    'EditableConfigSession',
+    session,
+    types.model().actions(self => ({
+      /**
+       * opens a configuration editor to configure the given thing,
+       * and sets the current task to be configuring it
+       * @param configuration -
+       */
+      editConfiguration(configuration: AnyConfigurationModel) {
+        if (!isConfigurationModel(configuration)) {
+          throw new Error(
+            'must pass a configuration model to editConfiguration',
+          )
+        }
+        // @ts-ignore
+        const editor = self.addDrawerWidget(
+          'ConfigurationEditorDrawerWidget',
+          'configEditor',
+          { target: configuration },
+        )
+        // @ts-ignore
+        self.showDrawerWidget(editor)
+      },
+    })),
+  )
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

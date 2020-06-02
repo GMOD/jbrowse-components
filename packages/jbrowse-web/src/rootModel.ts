@@ -19,8 +19,11 @@ interface Menu {
   menuItems: MenuOption[]
 }
 
-export default function RootModel(pluginManager: PluginManager) {
-  const Session = sessionModelFactory(pluginManager)
+export default function RootModel(
+  pluginManager: PluginManager,
+  editableConfigs = false,
+) {
+  const Session = sessionModelFactory(pluginManager, editableConfigs)
   const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
     pluginManager,
   )

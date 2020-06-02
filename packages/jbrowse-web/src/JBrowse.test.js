@@ -48,11 +48,11 @@ Storage.prototype.setItem = jest.fn()
 Storage.prototype.removeItem = jest.fn()
 Storage.prototype.clear = jest.fn()
 
-function getPluginManager(initialState) {
+function getPluginManager(initialState, adminMode = false) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
-  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
+  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)
   const rootModel = JBrowseRootModel.create({
     jbrowse: initialState || configSnapshot,
     assemblyManager: {},
@@ -380,7 +380,7 @@ describe('nclist track test with long name', () => {
 })
 describe('test configuration editor', () => {
   it('change color on track', async () => {
-    const pluginManager = getPluginManager()
+    const pluginManager = getPluginManager(undefined, true)
     const state = pluginManager.rootModel
     const { findByTestId, findByText, findByDisplayValue } = render(
       <JBrowse pluginManager={pluginManager} />,
