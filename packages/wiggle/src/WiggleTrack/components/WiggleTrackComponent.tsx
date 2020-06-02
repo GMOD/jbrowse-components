@@ -48,6 +48,7 @@ export const YScaleBar = observer(
     )
   },
 )
+
 function WiggleTrackComponent(props: { model: Instance<WiggleTrackModel> }) {
   const { model } = props
   const { ready, stats } = model

@@ -93,38 +93,44 @@ Tooltip.propTypes = {
 }
 
 function WiggleRendering(props) {
-  const { regions, features, bpPerPx, width, height } = props
+  const { trackModel, regions, features, bpPerPx, width, height } = props
+  const { onMouseLeave, onMouseMove } = trackModel
+  console.log(props, trackModel)
   const [region] = regions
   const ref = useRef()
-  const [featureUnderMouse, setFeatureUnderMouse] = useState()
-  const [clientX, setClientX] = useState()
 
   let offset = 0
   if (ref.current) {
     offset = ref.current.getBoundingClientRect().left
   }
-  function onMouseMove(evt) {
-    const offsetX = evt.clientX - offset
+  function mouseMove(event) {
+    const offsetX = event.clientX - offset
     const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
+    let featureIdUnderMouse
     for (const feature of features.values()) {
       if (clientBp <= feature.get('end') && clientBp >= feature.get('start')) {
-        setFeatureUnderMouse(feature)
+        featureIdUnderMouse = feature
         break
       }
     }
-    setClientX(evt.clientX)
+
+    if (onMouseMove) {
+      onMouseMove(event, featureIdUnderMouse)
+    }
   }
 
-  function onMouseLeave() {
-    setFeatureUnderMouse(undefined)
+  function mouseLeave(event) {
+    if (onMouseLeave) {
+      onMouseLeave(event)
+    }
   }
 
   return (
     <div
       ref={ref}
-      onMouseMove={onMouseMove}
-      onMouseLeave={onMouseLeave}
+      onMouseMove={mouseMove}
+      onMouseLeave={mouseLeave}
       role="presentation"
       onFocus={() => {}}
       className="WiggleRendering"
@@ -135,9 +141,6 @@ function WiggleRendering(props) {
       }}
     >
       <PrerenderedCanvas {...props} />
-      {featureUnderMouse ? (
-        <Tooltip feature={featureUnderMouse} offsetX={clientX - offset} />
-      ) : null}
     </div>
   )
 }
