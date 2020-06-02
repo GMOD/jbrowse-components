@@ -2,10 +2,20 @@ import IconButton from '@material-ui/core/IconButton'
 import Snackbar from '@material-ui/core/Snackbar'
 import CloseIcon from '@material-ui/icons/Close'
 import { observer } from 'mobx-react'
+import { IAnyStateTreeNode } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
+import { AbstractSessionModel } from '../util'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function MessageSnackbar({ session }: { session?: any }) {
+interface SnackbarSession extends AbstractSessionModel {
+  snackbarMessages: unknown[]
+  popSnackbarMessage: () => unknown
+}
+
+function MessageSnackbar({
+  session,
+}: {
+  session: SnackbarSession & IAnyStateTreeNode
+}) {
   const [open, setOpen] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState('')
 
@@ -24,12 +34,12 @@ function MessageSnackbar({ session }: { session?: any }) {
       } else if (snackbarMessage !== latestMessage) {
         setOpen(false)
         timeoutId = setTimeout(() => {
-          setSnackbarMessage(latestMessage)
+          setSnackbarMessage(String(latestMessage))
           setOpen(true)
         }, 100)
       }
     } else if (latestMessage) {
-      setSnackbarMessage(latestMessage)
+      setSnackbarMessage(String(latestMessage))
       setOpen(true)
     }
 
