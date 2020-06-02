@@ -45,6 +45,7 @@
     "@material-ui/icons": "^4.0.0",
     "@material-ui/lab": "^4.0.0-alpha.45",
     "@storybook/addon-actions": "^5.3.19",
+    "@storybook/addon-docs": "^5.3.19",
     "@storybook/addon-links": "^5.3.19",
     "@storybook/addons": "^5.3.19",
     "@storybook/preset-create-react-app": "^3.0.0",
