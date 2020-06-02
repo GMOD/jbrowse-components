@@ -231,6 +231,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
       }
     })
 
-export type WiggleTrackModel = ReturnType<typeof stateModelFactory>
+export type WiggleTrackStateModel = ReturnType<typeof stateModelFactory>
+export type WiggleTrackModel = Instance<WiggleTrackStateModel>
 
 export default stateModelFactory

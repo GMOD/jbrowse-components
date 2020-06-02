@@ -94,7 +94,6 @@ Tooltip.propTypes = {
 
 function WiggleRendering(props) {
   const {
-    trackModel,
     regions,
     features,
     bpPerPx,
@@ -106,31 +105,27 @@ function WiggleRendering(props) {
   const [region] = regions
   const ref = useRef()
 
-  let offset = 0
-  if (ref.current) {
-    offset = ref.current.getBoundingClientRect().left
-  }
   function mouseMove(event) {
+    let offset = 0
+    if (ref.current) {
+      offset = ref.current.getBoundingClientRect().left
+    }
     const offsetX = event.clientX - offset
     const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
-    let featureIdUnderMouse
+    let featureUnderMouse
     for (const feature of features.values()) {
       if (clientBp <= feature.get('end') && clientBp >= feature.get('start')) {
-        featureIdUnderMouse = feature.id()
+        featureUnderMouse = feature
         break
       }
     }
 
-    if (onMouseMove) {
-      onMouseMove(event, featureIdUnderMouse)
-    }
+      onMouseMove(event, featureUnderMouse ? featureUnderMouse.id() : undefined)
   }
 
   function mouseLeave(event) {
-    if (onMouseLeave) {
       onMouseLeave(event)
-    }
   }
 
   return (
@@ -158,14 +153,14 @@ WiggleRendering.propTypes = {
   regions: ReactPropTypes.arrayOf(CommonPropTypes.Region).isRequired,
   features: ReactPropTypes.instanceOf(Map).isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
-  trackModel: ReactPropTypes.shape({
-    /** id of the currently selected feature, if any */
-    selectedFeatureId: ReactPropTypes.string,
-  }),
+  onMouseLeave: ReactPropTypes.func
+  onMouseMove: ReactPropTypes.func
+}
+WiggleRendering.defaultProps = {
+  onMouseLeave: () => {}
+  onMouseMove: () => {}
 }
 
-WiggleRendering.defaultProps = {
-  trackModel: {},
-}
+
 
 export default observer(WiggleRendering)
