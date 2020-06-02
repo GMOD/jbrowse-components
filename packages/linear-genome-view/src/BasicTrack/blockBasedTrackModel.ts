@@ -31,7 +31,7 @@ const blockBasedTrack = types
       .volatile(() => ({
         contextMenuOptions: [] as MenuOption[],
         featureIdUnderMouse: undefined as undefined | string,
-        ReactComponent: BlockBasedTrack,
+        ReactComponent: (BlockBasedTrack as unknown) as React.FC,
       })),
   )
   .views(self => {
@@ -174,14 +174,13 @@ const blockBasedTrack = types
       const blockWatchDisposer = autorun(() => {
         // create any blocks that we need to create
         const blocksPresent: { [key: string]: boolean } = {}
-        self.blockDefinitions.forEach(block => {
-          if (!(block instanceof ContentBlock)) return
+        self.blockDefinitions.contentBlocks.forEach(block => {
           blocksPresent[block.key] = true
           if (!self.blockState.has(block.key)) {
             this.addBlock(block.key, block)
           }
         })
-        // delete any blocks we need to delete
+        // delete any blocks we need go delete
         self.blockState.forEach((value, key) => {
           if (!blocksPresent[key]) this.deleteBlock(key)
         })
@@ -273,6 +272,18 @@ const blockBasedTrack = types
             self.contextMenuFeature(feature as Feature)
           }
         },
+
+        onFeatureMouseMove(event: unknown, featureId: string | undefined) {
+          self.setFeatureIdUnderMouse(featureId)
+        },
+
+        onMouseOut(event: unknown) {
+          self.setFeatureIdUnderMouse(undefined)
+        },
+        onMouseLeave(event: unknown) {
+          self.setFeatureIdUnderMouse(undefined)
+        },
+
         onContextMenu() {
           self.contextMenuNoFeature()
           self.clearFeatureSelection()

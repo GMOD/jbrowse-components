@@ -4,7 +4,9 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React from 'react'
+import Tooltip from '@material-ui/core/Tooltip'
 import TrackBlocks from './TrackBlocks'
+import { BlockBasedTrackModel } from '../blockBasedTrackModel'
 
 const useStyles = makeStyles({
   track: {
@@ -16,21 +18,32 @@ const useStyles = makeStyles({
   },
 })
 
-function BlockBasedTrack(props) {
+function BlockBasedTrack(props: {
+  model: BlockBasedTrackModel
+  children: React.ReactNode
+}) {
   const classes = useStyles()
   const { model, children } = props
+  const { featureIdUnderMouse, trackMessageComponent: Message } = model
   return (
     <div
       data-testid={`track-${getConf(model, 'trackId')}`}
       className={classes.track}
       role="presentation"
     >
-      {model.trackMessageComponent ? (
-        <model.trackMessageComponent model={model} />
+      {Message ? (
+        <Message model={model} />
       ) : (
         <TrackBlocks {...props} viewModel={getParent(model, 2)} />
       )}
       {children}
+      {featureIdUnderMouse ? (
+        <Tooltip title="test" open>
+          <div style={{ position: 'absolute', left: 50, top: 50 }}>
+            Hello world!
+          </div>
+        </Tooltip>
+      ) : null}
     </div>
   )
 }

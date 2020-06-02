@@ -13,23 +13,28 @@ function PileupRendering(props: {
   height: number
   regions: Region[]
   bpPerPx: number
+  onFeatureMouseMove?: (
+    event: React.MouseEvent,
+    featureId: string | undefined,
+  ) => void
 }) {
-  const { blockKey, trackModel, width, height, regions, bpPerPx } = props
   const {
-    selectedFeatureId,
-    featureIdUnderMouse,
-    blockLayoutFeatures,
-    features,
-    configuration,
-  } = trackModel || {}
+    onFeatureMouseMove,
+    blockKey,
+    trackModel,
+    width,
+    height,
+    regions,
+    bpPerPx,
+  } = props
+  const { selectedFeatureId, featureIdUnderMouse, blockLayoutFeatures } =
+    trackModel || {}
   const [region] = regions
   const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [localFeatureIdUnderMouse, setLocalFeatureIdUnderMouse] = useState()
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
     false,
   )
-  const [offset, setOffset] = useState([0, 0])
   useEffect(() => {
     const canvas = highlightOverlayCanvas.current
     if (!canvas) return
@@ -95,8 +100,6 @@ function PileupRendering(props: {
   function onMouseOut(event: MouseEvent) {
     callMouseHandler('MouseOut', event)
     callMouseHandler('MouseLeave', event)
-    trackModel.setFeatureIdUnderMouse(undefined)
-    setLocalFeatureIdUnderMouse(undefined)
   }
 
   function onMouseOver(event: MouseEvent) {
@@ -109,22 +112,26 @@ function PileupRendering(props: {
   }
 
   function onClick(event: MouseEvent) {
-    if (!movedDuringLastMouseDown) callMouseHandler('Click', event, true)
+    if (!movedDuringLastMouseDown) {
+      callMouseHandler('Click', event, true)
+    }
   }
 
   function onMouseLeave(event: MouseEvent) {
     callMouseHandler('MouseOut', event)
     callMouseHandler('MouseLeave', event)
-    trackModel.setFeatureIdUnderMouse(undefined)
-    setLocalFeatureIdUnderMouse(undefined)
   }
 
   function onContextMenu(event: MouseEvent) {
-    if (!movedDuringLastMouseDown) callMouseHandler('ContextMenu', event)
+    if (!movedDuringLastMouseDown) {
+      callMouseHandler('ContextMenu', event)
+    }
   }
 
   function onMouseMove(event: MouseEvent) {
-    if (mouseIsDown) setMovedDuringLastMouseDown(true)
+    if (mouseIsDown) {
+      setMovedDuringLastMouseDown(true)
+    }
     let offsetX = 0
     let offsetY = 0
     if (highlightOverlayCanvas.current) {
@@ -137,22 +144,11 @@ function PileupRendering(props: {
     const clientBp = region.start + bpPerPx * px
 
     const feats = trackModel.getFeatureOverlapping(blockKey, clientBp, offsetY)
-    const featureIdCurrentlyUnderMouse = feats.length
-      ? feats[0].name
-      : undefined
-    setOffset([offsetX, offsetY])
-    setLocalFeatureIdUnderMouse(featureIdCurrentlyUnderMouse)
-    trackModel.setFeatureIdUnderMouse(featureIdCurrentlyUnderMouse)
+    const featIdUnderMouse = feats.length ? feats[0].name : undefined
+    trackModel.setFeatureIdUnderMouse(featIdUnderMouse)
 
-    if (featureIdUnderMouse === featureIdCurrentlyUnderMouse) {
-      callMouseHandler('MouseMove', event)
-    } else {
-      if (featureIdUnderMouse) {
-        callMouseHandler('MouseOut', event)
-        callMouseHandler('MouseLeave', event)
-      }
-      callMouseHandler('MouseOver', event)
-      callMouseHandler('MouseEnter', event)
+    if (onFeatureMouseMove) {
+      onFeatureMouseMove(event, featIdUnderMouse)
     }
   }
 
@@ -202,14 +198,6 @@ function PileupRendering(props: {
         onFocus={() => {}}
         onBlur={() => {}}
       />
-      {localFeatureIdUnderMouse ? (
-        <Tooltip
-          configuration={configuration}
-          feature={features.get(localFeatureIdUnderMouse || '')}
-          offsetX={offset[0]}
-          offsetY={offset[1]}
-        />
-      ) : null}
     </div>
   )
 }

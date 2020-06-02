@@ -161,7 +161,7 @@ const BaseTrack = types
      * make this return a react component
      */
     get trackMessageComponent() {
-      return undefined
+      return undefined as undefined | React.FC<any>
     },
 
     get menuOptions(): MenuOption[] {
