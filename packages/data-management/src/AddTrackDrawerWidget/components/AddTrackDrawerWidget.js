@@ -95,7 +95,7 @@ function AddTrackDrawerWidget({ model }) {
     if (model.view) {
       model.view.showTrack(trackConf)
     } else {
-      session.pushSnackbarMessage(
+      session.notify(
         'Open a new view, or use the track selector in an existing view, to view this track',
       )
     }

@@ -57,7 +57,7 @@ export default (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const session = getSession(self) as any
         copy(JSON.stringify(copiedFeature, null, 4))
-        session.pushSnackbarMessage('Copied to clipboard')
+        session.notify('Copied to clipboard')
       },
 
       // returned if there is no feature id under mouse

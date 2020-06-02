@@ -66,7 +66,7 @@ function App({ session }) {
       session.savedSessionNames &&
       session.savedSessionNames.includes(newName)
     ) {
-      session.pushSnackbarMessage(
+      session.notify(
         `Cannot rename session to "${newName}", a saved session with that name already exists`,
       )
     } else {

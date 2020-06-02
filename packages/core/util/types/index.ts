@@ -46,7 +46,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   assemblies: AnyConfigurationModel[]
   selection?: unknown
   duplicateCurrentSession(): void
-  pushSnackbarMessage(message: string): void
+  notify(message: string): void
   assemblyManager: AssemblyManager
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {

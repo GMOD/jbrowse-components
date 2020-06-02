@@ -420,6 +420,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           },
         },
         actions: {
+          notify(message: string) {
+            return this.pushSnackbarMessage(message)
+          },
+
           pushSnackbarMessage(message: string) {
             return snackbarMessages.push(message)
           },
