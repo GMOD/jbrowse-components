@@ -24,7 +24,7 @@ const Tooltip = observer(
       ? getConf(model, 'mouseover', [featureUnderMouse])
       : undefined
     return mouseover ? (
-      <MUITooltip title={mouseover} open>
+      <MUITooltip title={mouseover} open placement="right">
         <div
           style={{
             position: 'absolute',

@@ -9,7 +9,7 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
 const toP = (s: number) => parseFloat(s.toPrecision(6))
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
   popper: {
     fontSize: '0.8em',
     zIndex: theme.zIndex.tooltip, // important to have a zIndex directly on the popper itself, material-ui Tooltip uses popper and has similar thing
@@ -26,7 +26,8 @@ const useStyles = makeStyles({
     position: 'absolute',
     pointerEvents: 'none',
   },
-})
+}))
+
 function TooltipContents(props: { feature: Feature }) {
   const { feature } = props
   return (

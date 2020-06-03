@@ -7,10 +7,10 @@ import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
   popper: {
     fontSize: '0.8em',
-    zIndex: 1500, // important to have a zIndex directly on the popper itself, material-ui Tooltip uses popper and has similar thing
+    zIndex: theme.zIndex.tooltip, // important to have a zIndex directly on the popper itself, material-ui Tooltip uses popper and has similar thing
     pointerEvents: 'none', // needed to avoid rapid mouseLeave/mouseEnter on popper
   },
 
@@ -24,7 +24,8 @@ const useStyles = makeStyles({
     position: 'absolute',
     pointerEvents: 'none',
   },
-})
+}))
+
 function TooltipContents({ feature }: { feature: Feature }) {
   const info = feature.get('snpinfo')
   const total = info
