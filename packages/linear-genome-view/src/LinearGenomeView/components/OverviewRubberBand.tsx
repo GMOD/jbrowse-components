@@ -110,6 +110,8 @@ function OverviewRubberBand({
     // should be zoom ctgA: 40000 - 50000 and ctgB: 0 - 3000
     // start needs to check that its on ctg, end needs to check its on ctgB
     // and also both need to account for spacer if they selected on ctgB ( or any thats not the first)
+
+    // prob need wholeRefSeqs.forEach.seqName and pass into this component
     function zoomToRegion() {
       if (startX === undefined || currentX === undefined) return
       let leftPx = startX
@@ -125,7 +127,7 @@ function OverviewRubberBand({
       console.log(start, end)
 
       const pessimisticNewRegions: Region[] = [] // assumes you have not found the final overlap
-      let optimisitcNewRegions: Region[] = [] // assumes you have found the final overlap
+      let optimisticNewRegions: Region[] = [] // assumes you have found the final overlap
 
       // run through the regions
       // need to check refname still!
@@ -140,11 +142,11 @@ function OverviewRubberBand({
 
           // current region overlapping means previous region was not region with final overlap
           // overwrite optimistic with pessimistic
-          optimisitcNewRegions = JSON.parse(
+          optimisticNewRegions = JSON.parse(
             JSON.stringify(pessimisticNewRegions),
           )
           // push region with the selected end to optimistic, assume current region is final overlap
-          optimisitcNewRegions.push({
+          optimisticNewRegions.push({
             ...region,
             start: startValue,
             end: region.end > end ? end : region.end,
@@ -155,8 +157,8 @@ function OverviewRubberBand({
         else if (firstOverlapFound) pessimisticNewRegions.push(region)
       })
 
-      console.log(optimisitcNewRegions)
-      if (optimisitcNewRegions.length) model.navToMultiple(optimisitcNewRegions)
+      console.log(optimisticNewRegions)
+      if (optimisticNewRegions.length) model.navToMultiple(optimisticNewRegions)
       setStartX(undefined)
       setCurrentX(undefined)
       setMouseDragging(false)
