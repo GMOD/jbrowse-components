@@ -60,6 +60,12 @@ const Tooltip = observer(props => {
           placement="right-start"
           className={classes.popper}
           anchorEl={ref.current}
+          modifiers={{
+            offset: {
+              enabled: true,
+              offset: '0, 10',
+            },
+          }}
           open
         >
           <TooltipContents
@@ -70,13 +76,13 @@ const Tooltip = observer(props => {
       ) : null}
       <div
         className={classes.hoverVertical}
-        style={{ left: mouseCoord[0], height }}
+        style={{ left: mouseCoord[0] + 4, height }}
       />
       <div
         ref={ref}
         style={{
           position: 'absolute',
-          left: mouseCoord[0],
+          left: mouseCoord[0] + 4,
           top: 0,
         }}
       >

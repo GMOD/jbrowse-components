@@ -82,6 +82,12 @@ const Tooltip = observer(props => {
           placement="right-start"
           className={classes.popper}
           anchorEl={ref.current}
+          modifiers={{
+            offset: {
+              enabled: true,
+              offset: '0, 10',
+            },
+          }}
           open
         >
           <TooltipContents
