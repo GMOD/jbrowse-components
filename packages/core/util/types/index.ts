@@ -121,6 +121,7 @@ export interface AbstractRootModel {
   jbrowse: IAnyStateTreeNode
   session?: AbstractSessionModel
   setDefaultSession(): void
+  adminMode?: boolean
 }
 
 /** a root model that manages global menus */
