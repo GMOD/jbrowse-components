@@ -6,12 +6,35 @@ import { ThemeProvider } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { getSnapshot, onSnapshot } from 'mobx-state-tree'
 import { StringParam, useQueryParam } from 'use-query-params'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect } from 'react'
 
 const MAX_SESSION_SIZE_IN_URL = 100000
 
+// adapted from https://github.com/jashkenas/underscore/blob/5d8ab5e37c9724f6f1181c5f95d0020815e4cb77/underscore.js#L894-L925
+function debounce(func, wait) {
+  let timeout
+  let result
+  const later = (...args) => {
+    timeout = null
+    result = func(...args)
+  }
+  const debounced = (...args) => {
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+    timeout = setTimeout(() => {
+      return later(...args)
+    }, wait)
+    return result
+  }
+  debounced.cancel = () => {
+    clearTimeout(timeout)
+    timeout = null
+  }
+  return debounced
+}
+
 const JBrowse = observer(({ pluginManager }) => {
-  const urlLastUpdated = useRef(Date.now())
   const [, setSession] = useQueryParam('session', StringParam)
 
   const { rootModel } = pluginManager
@@ -35,32 +58,30 @@ const JBrowse = observer(({ pluginManager }) => {
   }, [session, setSession, useUpdateUrl])
 
   useEffect(() => {
-    if (session && useUpdateUrl) {
-      return onSnapshot(session, snapshot => {
-        if (Date.now() - urlLastUpdated.current > 1000) {
-          const json = JSON.stringify(snapshot)
-          const sess =
-            json.length < MAX_SESSION_SIZE_IN_URL
-              ? toUrlSafeB64(json)
-              : undefined
+    function updateUrl(snapshot) {
+      const json = JSON.stringify(snapshot)
+      const sess =
+        json.length < MAX_SESSION_SIZE_IN_URL ? toUrlSafeB64(json) : undefined
 
-          if (useUpdateUrl) {
-            setSession(sess)
-          }
-          if (rootModel && rootModel.session) {
-            rootModel.jbrowse.updateSavedSession(snapshot)
-          }
-          if (useLocalStorage) {
-            localStorage.setItem(
-              'jbrowse-web-session',
-              JSON.stringify(snapshot),
-            )
-          }
-          urlLastUpdated.current = Date.now()
-        }
-      })
+      setSession(sess)
+      if (rootModel && rootModel.session) {
+        rootModel.jbrowse.updateSavedSession(snapshot)
+      }
+      if (useLocalStorage) {
+        localStorage.setItem('jbrowse-web-session', JSON.stringify(snapshot))
+      }
     }
-    return () => {}
+
+    let disposer = () => {}
+    if (session && useUpdateUrl) {
+      const updater = debounce(updateUrl, 400)
+      const snapshotDisposer = onSnapshot(session, updater)
+      disposer = () => {
+        snapshotDisposer()
+        updater.cancel()
+      }
+    }
+    return disposer
   }, [rootModel, setSession, useLocalStorage, useUpdateUrl, session])
 
   if (error) {
