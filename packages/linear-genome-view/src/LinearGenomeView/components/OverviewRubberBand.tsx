@@ -64,44 +64,39 @@ function OverviewRubberBand({
   model,
   ControlComponent = <div />,
   scale,
-  children,
 }: {
   model: LGV
   ControlComponent?: React.ReactElement
   scale: number
-  children: React.ReactNode
 }) {
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
-  const [mouseDragging, setMouseDragging] = useState(false)
-  const [guideX, setGuideX] = useState(0)
-  const [offsetX, setOffsetX] = useState(0)
-  const [guideOpen, setGuideOpen] = useState(false)
+  const [guideX, setGuideX] = useState<number | undefined>()
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
   const classes = useStyles()
+  const mouseDragging = startX !== undefined
 
   useEffect(() => {
-    let cleanup = () => {}
-
     function globalMouseMove(event: MouseEvent) {
-      event.preventDefault()
-      if (controlsRef.current) {
-        const relativeX = event.clientX
+      if (controlsRef.current && mouseDragging) {
+        const relativeX = event.offsetX
         setCurrentX(relativeX)
       }
     }
 
     function globalMouseUp(event: MouseEvent) {
       if (controlsRef.current) zoomToRegion()
-      setMouseDragging(false)
+
+      if (startX !== undefined) {
+        setGuideX(undefined)
+      }
     }
 
     function globalKeyDown(event: KeyboardEvent) {
       if (event.keyCode === 27) {
         setStartX(undefined)
         setCurrentX(undefined)
-        setMouseDragging(false)
       }
     }
 
@@ -112,6 +107,8 @@ function OverviewRubberBand({
     // and also both need to account for spacer if they selected on ctgB ( or any thats not the first)
 
     // prob need wholeRefSeqs.forEach.seqName and pass into this component
+
+    // move this to linear genome view model
     function zoomToRegion() {
       if (startX === undefined || currentX === undefined) return
       let leftPx = startX
@@ -158,61 +155,77 @@ function OverviewRubberBand({
       })
 
       console.log(optimisticNewRegions)
+      // could change displayed regions instead using model.setDisplayedRegions(optimisticNewRegions)
       if (optimisticNewRegions.length) model.navToMultiple(optimisticNewRegions)
       setStartX(undefined)
       setCurrentX(undefined)
-      setMouseDragging(false)
     }
 
     if (mouseDragging) {
       window.addEventListener('mousemove', globalMouseMove, true)
       window.addEventListener('mouseup', globalMouseUp, true)
       window.addEventListener('keydown', globalKeyDown, true)
-      cleanup = () => {
+      return () => {
         window.removeEventListener('mousemove', globalMouseMove, true)
         window.removeEventListener('mouseup', globalMouseUp, true)
         window.removeEventListener('keydown', globalKeyDown, true)
       }
     }
-    return cleanup
+    return () => {}
   }, [mouseDragging, currentX, model, scale, startX])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
     event.stopPropagation()
-    setMouseDragging(true)
-    const relativeX =
-      event.clientX -
-      (event.target as HTMLDivElement).getBoundingClientRect().left
+    const relativeX = event.nativeEvent.offsetX
     setStartX(relativeX)
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (!guideOpen) {
-      setGuideOpen(true)
-    }
-    setOffsetX((event.target as HTMLDivElement).getBoundingClientRect().left)
-    setGuideX(event.clientX)
+    setGuideX(event.nativeEvent.offsetX)
   }
 
   function mouseOut() {
-    setGuideOpen(false)
+    setGuideX(undefined)
   }
 
-  const controlComponent = React.cloneElement(ControlComponent, {
-    'data-testid': 'overviewRubberBand_controls',
-    className: classes.rubberBandControl,
-    role: 'presentation',
-    ref: controlsRef,
-    onMouseDown: mouseDown,
-    onMouseOut: mouseOut,
-    onMouseMove: mouseMove,
-  })
+  if (startX === undefined) {
+    return (
+      <div style={{ position: 'relative' }}>
+        {guideX !== undefined ? (
+          <Tooltip
+            open={!mouseDragging}
+            placement="top"
+            title={Math.round(guideX * scale).toLocaleString()}
+            arrow
+          >
+            <div
+              className={classes.guide}
+              style={{
+                left: guideX,
+              }}
+            />
+          </Tooltip>
+        ) : null}
+        <div
+          data-testid="rubberBand_controls"
+          className={classes.rubberBandControl}
+          role="presentation"
+          ref={controlsRef}
+          onMouseDown={mouseDown}
+          onMouseOut={mouseOut}
+          onMouseMove={mouseMove}
+        >
+          {ControlComponent}
+        </div>
+      </div>
+    )
+  }
 
   let left = 0
   let width = 0
   if (startX !== undefined && currentX !== undefined) {
-    left = currentX < startX ? currentX + offsetX : startX + offsetX
+    left = currentX < startX ? currentX : startX
     width = currentX - startX
   }
 
@@ -222,51 +235,50 @@ function OverviewRubberBand({
     ;[leftCount, rightCount] = [rightCount, leftCount]
   }
 
-  const isRubberBandOpen = startX !== undefined && currentX !== undefined
   return (
-    <>
-      <Popover
-        className={classes.popover}
-        classes={{
-          paper: classes.paper,
-        }}
-        open={isRubberBandOpen}
-        anchorEl={rubberBandRef.current}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
-        }}
-        transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        keepMounted
-      >
-        <Typography>
-          {isRubberBandOpen ? leftCount.toLocaleString() : ''}
-        </Typography>
-      </Popover>
-      <Popover
-        className={classes.popover}
-        classes={{
-          paper: classes.paper,
-        }}
-        open={startX !== undefined && currentX !== undefined}
-        anchorEl={rubberBandRef.current}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
-        }}
-        keepMounted
-      >
-        <Typography>
-          {isRubberBandOpen ? rightCount.toLocaleString() : ''}
-        </Typography>
-      </Popover>
+    <div style={{ position: 'relative' }}>
+      {rubberBandRef.current ? (
+        <>
+          <Popover
+            className={classes.popover}
+            classes={{
+              paper: classes.paper,
+            }}
+            open
+            anchorEl={rubberBandRef.current}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'left',
+            }}
+            transformOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            keepMounted
+          >
+            <Typography>{leftCount.toLocaleString()}</Typography>
+          </Popover>
+          <Popover
+            className={classes.popover}
+            classes={{
+              paper: classes.paper,
+            }}
+            open
+            anchorEl={rubberBandRef.current}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+            keepMounted
+          >
+            <Typography>{rightCount.toLocaleString()}</Typography>
+          </Popover>
+        </>
+      ) : null}
       <div
         ref={rubberBandRef}
         className={classes.rubberBand}
@@ -276,22 +288,18 @@ function OverviewRubberBand({
           height: HEADER_OVERVIEW_HEIGHT,
         }}
       />
-      <Tooltip
-        open={guideOpen && !mouseDragging}
-        placement="top"
-        title={Math.round((guideX - offsetX) * scale).toLocaleString()}
-        arrow
+      <div
+        data-testid="rubberBand_controls"
+        className={classes.rubberBandControl}
+        role="presentation"
+        ref={controlsRef}
+        onMouseDown={mouseDown}
+        onMouseOut={mouseOut}
+        onMouseMove={mouseMove}
       >
-        <div
-          className={classes.guide}
-          style={{
-            left: guideX,
-          }}
-        />
-      </Tooltip>
-      {controlComponent}
-      {children}
-    </>
+        {ControlComponent}
+      </div>
+    </div>
   )
 }
 
