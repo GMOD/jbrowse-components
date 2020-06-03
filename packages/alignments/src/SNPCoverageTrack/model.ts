@@ -22,6 +22,7 @@ const stateModelFactory = (configSchema: any) =>
       get TooltipComponent() {
         return Tooltip
       },
+
       get rendererTypeName() {
         return rendererTypes.get('snpcoverage')
       },
