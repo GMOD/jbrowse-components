@@ -20,6 +20,7 @@ const useStyles = makeStyles({
     top: 0,
     cursor: 'default',
     position: 'absolute',
+    pointerEvents: 'none',
   },
 })
 function TooltipContents(props) {
@@ -75,37 +76,41 @@ const Tooltip = observer(props => {
   const { featureUnderMouse } = model
   const classes = useStyles()
   const ref = useRef()
+
   return (
     <>
       {ref.current && featureUnderMouse ? (
-        <Popper
-          placement="right-start"
-          className={classes.popper}
-          anchorEl={ref.current}
-          modifiers={{
-            offset: {
-              enabled: true,
-              offset: '0, 10',
-            },
-          }}
-          open
-        >
-          <TooltipContents
-            feature={featureUnderMouse}
-            offsetX={mouseCoord[0]}
+        <>
+          <Popper
+            placement="right-start"
+            className={classes.popper}
+            anchorEl={ref.current}
+            modifiers={{
+              offset: {
+                enabled: true,
+                offset: '0, 10',
+              },
+            }}
+            open
+          >
+            <TooltipContents
+              feature={featureUnderMouse}
+              offsetX={mouseCoord[0]}
+            />
+          </Popper>
+          <div
+            className={classes.hoverVertical}
+            style={{ left: mouseCoord[0], height }}
           />
-        </Popper>
+        </>
       ) : null}
-      <div
-        className={classes.hoverVertical}
-        style={{ left: mouseCoord[0], height }}
-      />
+
       <div
         ref={ref}
         style={{
           position: 'absolute',
           left: mouseCoord[0],
-          top: mouseCoord[1],
+          top: 0,
         }}
       >
         {' '}
