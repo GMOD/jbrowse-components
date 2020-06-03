@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useRef } from 'react'

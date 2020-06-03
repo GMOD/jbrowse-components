@@ -5,6 +5,7 @@ import Paper from '@material-ui/core/Paper'
 import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
 
+const toP = s => parseFloat(s.toPrecision(6))
 const useStyles = makeStyles({
   popper: {
     zIndex: 1500, // important to have a zIndex directly on the popper itself, material-ui Tooltip uses popper and has similar thing
@@ -13,44 +14,21 @@ const useStyles = makeStyles({
 })
 function TooltipContents(props) {
   const { feature } = props
-  const info = feature.get('snpinfo')
-  const total = info ? info[info.map(e => e.base).indexOf('total')].score : 0
-  const condId = info && info.length >= 5 ? 'smallInfo' : 'info' // readjust table size to fit all
   return (
     <Paper>
-      <table>
-        <thead>
-          <tr>
-            <th id={condId}>Base</th>
-            <th id={condId}>Count</th>
-            <th id={condId}>% of Total</th>
-            <th id={condId}>Strands</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(info || []).map(mismatch => {
-            const { base, score, strands } = mismatch
-            return (
-              <tr key={base}>
-                <td id={condId}>{base.toUpperCase()}</td>
-                <td id={condId}>{score}</td>
-                <td id={condId}>
-                  {base === 'total'
-                    ? '---'
-                    : `${Math.floor((score / total) * 100)}%`}
-                </td>
-                <td id={condId}>
-                  {base === 'total'
-                    ? '---'
-                    : (strands['+']
-                        ? `+:${strands['+']} ${strands['-'] ? `,\t` : `\t`} `
-                        : ``) + (strands['-'] ? `-:${strands['-']}` : ``)}
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+      {feature.get('summary') !== undefined ? (
+        <div>
+          Summary
+          <br />
+          Max: {toP(feature.get('maxScore'))}
+          <br />
+          Avg: {toP(feature.get('score'))}
+          <br />
+          Min: {toP(feature.get('minScore'))}
+        </div>
+      ) : (
+        toP(feature.get('score'))
+      )}
     </Paper>
   )
 }

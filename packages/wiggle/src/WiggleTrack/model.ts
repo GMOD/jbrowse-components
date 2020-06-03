@@ -26,6 +26,7 @@ import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-v
 import { getNiceDomain } from '../util'
 
 import WiggleTrackComponent from './components/WiggleTrackComponent'
+import Tooltip from './components/Tooltip'
 import { FeatureStats } from '../statsUtil'
 import ConfigSchemaF from './configSchema'
 
@@ -77,9 +78,8 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
     .views(self => {
       let oldDomain: [number, number] = [0, 0]
       return {
-
-        get useTooltip() {
-          return false
+        get TooltipComponent(): React.FC {
+          return (Tooltip as unknown) as React.FC
         },
 
         get rendererTypeName() {

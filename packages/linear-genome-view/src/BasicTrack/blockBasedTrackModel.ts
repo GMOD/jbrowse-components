@@ -51,6 +51,7 @@ const blockBasedTrack = types
         return 50
       },
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       get TooltipComponent(): React.FC<any> {
         return (Tooltip as unknown) as React.FC
       },

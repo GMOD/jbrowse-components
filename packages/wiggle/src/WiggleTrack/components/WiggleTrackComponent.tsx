@@ -6,21 +6,6 @@ import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
 import { getScale } from '../../util'
 import { WiggleTrackModel } from '../model'
 
-// .hoverVertical {
-//     background: #333;
-//     border: none;
-//     width: 1px;
-//     height: 100%;
-//     top: 0px;
-//     cursor: default;
-//     position: absolute;
-//   }
-//   .hoverLabel {
-//     top: 0px;
-//     position: absolute;
-//   }
-
-
 const powersOfTen: number[] = []
 for (let i = -20; i < 20; i += 1) {
   powersOfTen.push(10 ** i)
