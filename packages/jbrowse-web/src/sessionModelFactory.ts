@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { Region } from '@gmod/jbrowse-core/util/types'
+import { Region, SessionWithDrawerWidgets } from '@gmod/jbrowse-core/util/types'
 import { getContainingView } from '@gmod/jbrowse-core/util'
 import { observable } from 'mobx'
 import {
@@ -434,14 +434,13 @@ export default function sessionModelFactory(
             'must pass a configuration model to editConfiguration',
           )
         }
-        // @ts-ignore
-        const editor = self.addDrawerWidget(
+        const editableConfigSession = self as SessionWithDrawerWidgets
+        const editor = editableConfigSession.addDrawerWidget(
           'ConfigurationEditorDrawerWidget',
           'configEditor',
           { target: configuration },
         )
-        // @ts-ignore
-        self.showDrawerWidget(editor)
+        editableConfigSession.showDrawerWidget(editor)
       },
     })),
   )
