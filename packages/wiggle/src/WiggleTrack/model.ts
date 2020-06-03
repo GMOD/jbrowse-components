@@ -77,6 +77,11 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
     .views(self => {
       let oldDomain: [number, number] = [0, 0]
       return {
+
+        get useTooltip() {
+          return false
+        },
+
         get rendererTypeName() {
           const viewName = getConf(self, 'defaultRendering')
           const rendererType = rendererTypes.get(viewName)

@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useState, useRef } from 'react'
+import React, { useRef } from 'react'
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
 import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
 import MUITooltip from '@material-ui/core/Tooltip'
@@ -121,11 +121,11 @@ function WiggleRendering(props) {
       }
     }
 
-      onMouseMove(event, featureUnderMouse ? featureUnderMouse.id() : undefined)
+    onMouseMove(event, featureUnderMouse ? featureUnderMouse.id() : undefined)
   }
 
   function mouseLeave(event) {
-      onMouseLeave(event)
+    onMouseLeave(event)
   }
 
   return (
@@ -153,14 +153,12 @@ WiggleRendering.propTypes = {
   regions: ReactPropTypes.arrayOf(CommonPropTypes.Region).isRequired,
   features: ReactPropTypes.instanceOf(Map).isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
-  onMouseLeave: ReactPropTypes.func
-  onMouseMove: ReactPropTypes.func
+  onMouseLeave: ReactPropTypes.func,
+  onMouseMove: ReactPropTypes.func,
 }
 WiggleRendering.defaultProps = {
-  onMouseLeave: () => {}
-  onMouseMove: () => {}
+  onMouseLeave: () => {},
+  onMouseMove: () => {},
 }
-
-
 
 export default observer(WiggleRendering)

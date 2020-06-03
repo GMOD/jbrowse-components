@@ -51,6 +51,10 @@ const blockBasedTrack = types
         return 50
       },
 
+      get useTooltip() {
+        return true
+      },
+
       /**
        * a CompositeMap of `featureId -> feature obj` that
        * just looks in all the block data for that feature
@@ -58,7 +62,6 @@ const blockBasedTrack = types
       get features() {
         const featureMaps = []
         for (const block of self.blockState.values()) {
-          console.log(block.data)
           if (block.data && block.data.features)
             featureMaps.push(block.data.features)
         }
@@ -295,7 +298,6 @@ const blockBasedTrack = types
       }
     },
     get renderProps() {
-      console.log('test')
       return this.composedRenderProps
     },
   }))

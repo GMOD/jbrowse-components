@@ -1,7 +1,6 @@
 import { makeStyles } from '@material-ui/core/styles'
 import { getContainingView } from '@gmod/jbrowse-core/util'
 import { observer, PropTypes } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
 import React from 'react'
 import { BlockBasedTrackModel } from '../blockBasedTrackModel'
 import {
@@ -93,6 +92,7 @@ const RenderedBlocks = observer((props: { model: BlockBasedTrackModel }) => {
 function TrackBlocks({ model }: { model: BlockBasedTrackModel }) {
   const classes = useStyles()
   const { blockDefinitions } = model
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const viewModel = getContainingView(model) as any
   return (
     <div

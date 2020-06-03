@@ -160,7 +160,7 @@ const BaseTrack = types
      * if a track-level message should be displayed instead of the blocks,
      * make this return a react component
      */
-    get trackMessageComponent() {
+    get TrackMessageComponent() {
       return undefined as undefined | React.FC<any>
     },
 

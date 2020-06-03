@@ -1,8 +1,6 @@
 import { getConf } from '@gmod/jbrowse-core/configuration'
-import { getContainingView } from '@gmod/jbrowse-core/util'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { getParent } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React, { useState, useRef } from 'react'
 import Tooltip from '@material-ui/core/Tooltip'
@@ -19,6 +17,29 @@ const useStyles = makeStyles({
   },
 })
 
+const MyTooltip = observer(
+  (props: { model: BlockBasedTrackModel; mouseCoord: [number, number] }) => {
+    const { model, mouseCoord } = props
+    const { featureUnderMouse } = model
+    const mouseover = featureUnderMouse
+      ? getConf(model, 'mouseover', [featureUnderMouse])
+      : undefined
+    return mouseover ? (
+      <Tooltip title={mouseover} open>
+        <div
+          style={{
+            position: 'absolute',
+            left: mouseCoord[0],
+            top: mouseCoord[1],
+          }}
+        >
+          {' '}
+        </div>
+      </Tooltip>
+    ) : null
+  },
+)
+
 function BlockBasedTrack(props: {
   model: BlockBasedTrackModel
   children: React.ReactNode
@@ -27,9 +48,8 @@ function BlockBasedTrack(props: {
   const [mouseCoord, setMouseCoord] = useState<[number, number]>([0, 0])
   const ref = useRef<HTMLDivElement>(null)
   const { model, children } = props
-  const { featureUnderMouse: feature, trackMessageComponent: Message } = model
-  const mouseover = feature ? getConf(model, 'mouseover', [feature]) : undefined
-  console.log('feature', mouseover)
+  const { useTooltip, TrackMessageComponent } = model
+
   return (
     <div
       ref={ref}
@@ -43,21 +63,13 @@ function BlockBasedTrack(props: {
       }}
       role="presentation"
     >
-      {Message ? <Message model={model} /> : <TrackBlocks {...props} />}
+      {TrackMessageComponent ? (
+        <TrackMessageComponent model={model} />
+      ) : (
+        <TrackBlocks {...props} />
+      )}
       {children}
-      {mouseover ? (
-        <Tooltip title={mouseover} open>
-          <div
-            style={{
-              position: 'absolute',
-              left: mouseCoord[0],
-              top: mouseCoord[1],
-            }}
-          >
-            {' '}
-          </div>
-        </Tooltip>
-      ) : null}
+      {useTooltip ? <MyTooltip model={model} mouseCoord={mouseCoord} /> : null}
     </div>
   )
 }
