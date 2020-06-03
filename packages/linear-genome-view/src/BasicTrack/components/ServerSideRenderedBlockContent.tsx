@@ -1,5 +1,4 @@
 import { makeStyles } from '@material-ui/core/styles'
-import LinearProgress from '@material-ui/core/LinearProgress'
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
@@ -15,7 +14,6 @@ const useStyles = makeStyles(theme => ({
       'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',
     height: '100%',
     width: '100%',
-    textAlign: 'center',
     pointerEvents: 'none',
   },
   error: {
@@ -36,15 +34,20 @@ function LoadingMessage() {
   // only show the loading message after 300ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
   const classes = useStyles()
+  const [dots, setDots] = useState(0)
   useEffect(() => {
     const timeout = setTimeout(() => setShown(true), 300)
     return () => clearTimeout(timeout)
   }, [])
 
+  useEffect(() => {
+    const timeout = setTimeout(() => setDots(state => (state + 1) % 4), 400)
+    return () => clearTimeout(timeout)
+  })
+
   return shown ? (
     <div className={classes.loading}>
-      Loading &hellip;
-      <LinearProgress />
+      Loading {new Array(dots).fill('.').join('')}
     </div>
   ) : null
 }
