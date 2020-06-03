@@ -839,6 +839,26 @@ export function stateModelFactory(pluginManager: PluginManager) {
         get dynamicBlocks() {
           return calculateDynamicBlocks(cast(self))
         },
+        get visibleLocStrings() {
+          const { contentBlocks } = this.dynamicBlocks
+          if (!contentBlocks.length) {
+            return ''
+          }
+          const isSingleAssemblyName = contentBlocks.every(
+            block => block.assemblyName === contentBlocks[0].assemblyName,
+          )
+          const locs = contentBlocks.map(block =>
+            assembleLocString({
+              ...block,
+              start: Math.round(block.start),
+              end: Math.round(block.end),
+              assemblyName: isSingleAssemblyName
+                ? undefined
+                : block.assemblyName,
+            }),
+          )
+          return locs.join(';')
+        },
       }
     })
 
