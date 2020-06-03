@@ -13,7 +13,7 @@ function AlignmentsTrackComponent({ model }: { model: AlignmentsTrackModel }) {
 
   return (
     <div style={{ position: 'relative' }}>
-      <div data-testid="Blockset-pileup">
+      <div data-testid="Blockset-snpcoverage">
         {showCoverage ? (
           <SNPCoverageTrack.ReactComponent model={SNPCoverageTrack} />
         ) : null}
@@ -34,7 +34,7 @@ function AlignmentsTrackComponent({ model }: { model: AlignmentsTrackModel }) {
       />
 
       <div
-        data-testid="Blockset-snpcoverage"
+        data-testid="Blockset-pileup"
         style={{
           position: 'absolute',
           top: SNPCoverageTrack ? SNPCoverageTrack.height + 5 : 0,
