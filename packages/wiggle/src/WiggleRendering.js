@@ -4,12 +4,6 @@ import ReactPropTypes from 'prop-types'
 import React, { useRef } from 'react'
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
 import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
-import MUITooltip from '@material-ui/core/Tooltip'
-import './WiggleRendering.scss'
-
-const toP = s => parseFloat(s.toPrecision(6))
-
-
 
 function WiggleRendering(props) {
   const {
@@ -53,7 +47,6 @@ function WiggleRendering(props) {
       onMouseMove={mouseMove}
       onMouseLeave={mouseLeave}
       role="presentation"
-      onFocus={() => {}}
       className="WiggleRendering"
       style={{
         overflow: 'visible',
