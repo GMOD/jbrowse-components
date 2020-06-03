@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useRef } from 'react'
 import PropTypes from 'prop-types'
 import Popper from '@material-ui/core/Popper'
 import Paper from '@material-ui/core/Paper'
 import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
 const useStyles = makeStyles({
   popper: {
@@ -23,10 +25,11 @@ const useStyles = makeStyles({
     pointerEvents: 'none',
   },
 })
-function TooltipContents(props) {
-  const { feature } = props
+function TooltipContents({ feature }: { feature: Feature }) {
   const info = feature.get('snpinfo')
-  const total = info ? info[info.map(e => e.base).indexOf('total')].score : 0
+  const total = info
+    ? info[info.map((e: any) => e.base).indexOf('total')].score
+    : 0
   const condId = info && info.length >= 5 ? 'smallInfo' : 'info' // readjust table size to fit all
   return (
     <Paper>
@@ -40,7 +43,7 @@ function TooltipContents(props) {
           </tr>
         </thead>
         <tbody>
-          {(info || []).map(mismatch => {
+          {(info || []).map((mismatch: any) => {
             const { base, score, strands } = mismatch
             return (
               <tr key={base}>
@@ -71,52 +74,59 @@ TooltipContents.propTypes = {
   feature: PropTypes.shape({ get: PropTypes.func.isRequired }).isRequired,
 }
 
-const Tooltip = observer(props => {
-  const { model, height, mouseCoord } = props
-  const { featureUnderMouse } = model
-  const classes = useStyles()
-  const ref = useRef()
+type Coord = [number, number]
+const Tooltip = observer(
+  ({
+    model,
+    height,
+    mouseCoord,
+  }: {
+    model: any
+    height: number
+    mouseCoord: Coord
+  }) => {
+    const { featureUnderMouse } = model
+    const classes = useStyles()
+    const ref = useRef<HTMLDivElement>(null)
 
-  return (
-    <>
-      {ref.current && featureUnderMouse ? (
-        <>
-          <Popper
-            placement="right-start"
-            className={classes.popper}
-            anchorEl={ref.current}
-            modifiers={{
-              offset: {
-                enabled: true,
-                offset: '0, 10',
-              },
-            }}
-            open
-          >
-            <TooltipContents
-              feature={featureUnderMouse}
-              offsetX={mouseCoord[0]}
+    return (
+      <>
+        {ref.current && featureUnderMouse ? (
+          <>
+            <Popper
+              placement="right-start"
+              className={classes.popper}
+              anchorEl={ref.current}
+              modifiers={{
+                offset: {
+                  enabled: true,
+                  offset: '0, 10',
+                },
+              }}
+              open
+            >
+              <TooltipContents feature={featureUnderMouse} />
+            </Popper>
+            <div
+              className={classes.hoverVertical}
+              style={{ left: mouseCoord[0], height }}
             />
-          </Popper>
-          <div
-            className={classes.hoverVertical}
-            style={{ left: mouseCoord[0], height }}
-          />
-        </>
-      ) : null}
+          </>
+        ) : null}
 
-      <div
-        ref={ref}
-        style={{
-          position: 'absolute',
-          left: mouseCoord[0],
-          top: 0,
-        }}
-      >
-        {' '}
-      </div>
-    </>
-  )
-})
+        <div
+          ref={ref}
+          style={{
+            position: 'absolute',
+            left: mouseCoord[0],
+            top: 0,
+          }}
+        >
+          {' '}
+        </div>
+      </>
+    )
+  },
+)
 
 export default Tooltip
