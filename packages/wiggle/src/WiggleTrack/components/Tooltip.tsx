@@ -12,7 +12,7 @@ const toP = (s: number) => parseFloat(s.toPrecision(6))
 const useStyles = makeStyles({
   popper: {
     fontSize: '0.8em',
-    zIndex: 1500, // important to have a zIndex directly on the popper itself, material-ui Tooltip uses popper and has similar thing
+    zIndex: theme.zIndex.tooltip, // important to have a zIndex directly on the popper itself, material-ui Tooltip uses popper and has similar thing
     pointerEvents: 'none', // needed to avoid rapid mouseLeave/mouseEnter on popper
   },
 
