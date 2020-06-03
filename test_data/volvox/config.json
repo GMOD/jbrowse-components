@@ -68,7 +68,7 @@
       }
     },
     {
-      "type": "PileupTrack",
+      "type": "AlignmentsTrack",
       "trackId": "volvox_cram_alignments",
       "name": "volvox-sorted.cram (contigA, svg)",
       "category": [
