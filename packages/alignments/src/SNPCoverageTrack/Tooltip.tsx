@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useRef } from 'react'
-import PropTypes from 'prop-types'
+import React from 'react'
 import MUITooltip from '@material-ui/core/Tooltip'
-import Paper from '@material-ui/core/Paper'
 import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -27,7 +25,6 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function TooltipContents({ feature }: { feature: Feature }) {
-  if (!feature) return null
   const info = feature.get('snpinfo')
   const total = info
     ? info[info.map((e: any) => e.base).indexOf('total')].score
@@ -70,10 +67,6 @@ function TooltipContents({ feature }: { feature: Feature }) {
   )
 }
 
-TooltipContents.propTypes = {
-  feature: PropTypes.shape({ get: PropTypes.func.isRequired }).isRequired,
-}
-
 type Coord = [number, number]
 const Tooltip = observer(
   ({
@@ -88,12 +81,12 @@ const Tooltip = observer(
     const { featureUnderMouse } = model
     const classes = useStyles()
 
-    return (
+    return featureUnderMouse ? (
       <>
         <MUITooltip
           placement="right-start"
           className={classes.popper}
-          open={Boolean(featureUnderMouse)}
+          open
           title={<TooltipContents feature={featureUnderMouse} />}
         >
           <div
@@ -111,7 +104,7 @@ const Tooltip = observer(
           style={{ left: mouseCoord[0], height }}
         />
       </>
-    )
+    ) : null
   },
 )
 
