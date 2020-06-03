@@ -48,7 +48,7 @@ function BlockBasedTrack(props: {
   const [mouseCoord, setMouseCoord] = useState<[number, number]>([0, 0])
   const ref = useRef<HTMLDivElement>(null)
   const { model, children } = props
-  const { useTooltip, TrackMessageComponent } = model
+  const { TooltipComponent, TrackMessageComponent } = model
 
   return (
     <div
@@ -69,7 +69,7 @@ function BlockBasedTrack(props: {
         <TrackBlocks {...props} />
       )}
       {children}
-      {useTooltip ? <Tooltip model={model} mouseCoord={mouseCoord} /> : null}
+      <TooltipComponent model={model} mouseCoord={mouseCoord} />
     </div>
   )
 }

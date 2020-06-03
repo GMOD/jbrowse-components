@@ -51,8 +51,8 @@ const blockBasedTrack = types
         return 50
       },
 
-      get TooltipComponent() {
-        return Tooltip
+      get TooltipComponent(): React.FC<any> {
+        return (Tooltip as unknown) as React.FC
       },
 
       /**

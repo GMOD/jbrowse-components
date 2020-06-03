@@ -8,16 +8,18 @@ const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const stateModelFactory = (configSchema: any) =>
-  types.compose(
-    'SNPCoverageTrack',
-    wiggleStateModelFactory(configSchema),
-    types.model({ type: types.literal('SNPCoverageTrack') }).views(self => ({
-      get rendererTypeName() {
-        return rendererTypes.get('snpcoverage')
-      },
-
+  types
+    .compose(
+      'SNPCoverageTrack',
+      wiggleStateModelFactory(configSchema),
+      types.model({ type: types.literal('SNPCoverageTrack') }),
+    )
+    .views(self => ({
       get TooltipComponent() {
         return Tooltip
+      },
+      get rendererTypeName() {
+        return rendererTypes.get('snpcoverage')
       },
 
       get needsScalebar() {
@@ -26,8 +28,7 @@ const stateModelFactory = (configSchema: any) =>
       get contextMenuOptions() {
         return getParentRenderProps(self).trackModel.menuOptions
       },
-    })),
-  )
+    }))
 
 export type SNPCoverageTrackModel = ReturnType<typeof stateModelFactory>
 

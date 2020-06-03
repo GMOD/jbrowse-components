@@ -1,4 +1,12 @@
-export default function Tooltip({ offsetX, feature }) {
+import React, { useRef } from 'react'
+import { getConf } from '@gmod/jbrowse-core/configuration'
+import PropTypes from 'prop-types'
+import Popper from '@material-ui/core/Popper'
+import Paper from '@material-ui/core/Paper'
+import { observer } from 'mobx-react'
+
+function TooltipContents(props) {
+  const { feature } = props
   const info = feature.get('snpinfo') ? feature.get('snpinfo') : null
   const total = info ? info[info.map(e => e.base).indexOf('total')].score : 0
   const condId = info && info.length >= 5 ? 'smallInfo' : 'info' // readjust table size to fit all
@@ -28,8 +36,8 @@ export default function Tooltip({ offsetX, feature }) {
       })
     : null
 
-  const contents = info ? (
-    <div id="info">
+  return (
+    <Paper>
       <table>
         <thead>
           <tr>
@@ -41,42 +49,41 @@ export default function Tooltip({ offsetX, feature }) {
         </thead>
         <tbody>{renderTableData}</tbody>
       </table>
-    </div>
-  ) : feature.get('maxScore') !== undefined ? (
-    <div>
-      Summary
-      <br />
-      Max: {toP(feature.get('maxScore'))}
-      <br />
-      Avg: {toP(feature.get('score'))}
-      <br />
-      Min: {toP(feature.get('minScore'))}
-    </div>
-  ) : (
-    toP(feature.get('score'))
+    </Paper>
   )
+}
 
-  return (
+TooltipContents.propTypes = {
+  feature: PropTypes.shape({}).isRequired,
+}
+
+const Tooltip = observer(props => {
+  const { model, mouseCoord } = props
+  const { featureUnderMouse } = model
+  const ref = useRef()
+  return featureUnderMouse ? (
     <>
-      <MUITooltip title={contents} placement="right-start" open>
-        <div
-          className="hoverLabel"
-          style={{
-            left: `${offsetX}px`,
-            zIndex: 10000,
-            width: 1,
-            height: 100,
-          }}
-        >
-          {' '}
-        </div>
-      </MUITooltip>
-      <div className="hoverVertical" style={{ left: `${offsetX}px` }} />
-    </>
-  )
-}
+      {ref.current ? (
+        <Popper anchorEl={ref.current} open>
+          <TooltipContents
+            feature={featureUnderMouse}
+            offsetX={mouseCoord[0]}
+          />
+        </Popper>
+      ) : null}
 
-Tooltip.propTypes = {
-  offsetX: ReactPropTypes.number.isRequired,
-  feature: ReactPropTypes.object.isRequired,
-}
+      <div
+        ref={ref}
+        style={{
+          position: 'absolute',
+          left: mouseCoord[0],
+          top: mouseCoord[1],
+        }}
+      >
+        {' '}
+      </div>
+    </>
+  ) : null
+})
+
+export default Tooltip
