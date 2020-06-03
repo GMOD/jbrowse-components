@@ -1,11 +1,18 @@
 import React, { useRef } from 'react'
-import { getConf } from '@gmod/jbrowse-core/configuration'
 import PropTypes from 'prop-types'
 import Popper from '@material-ui/core/Popper'
 import Paper from '@material-ui/core/Paper'
 import { observer } from 'mobx-react'
+import { makeStyles } from '@material-ui/core/styles'
 
+const useStyles = makeStyles({
+  tooltip: {
+    position: 'relative',
+    zIndex: 100000,
+  },
+})
 function TooltipContents(props) {
+  const classes = useStyles()
   const { feature } = props
   const info = feature.get('snpinfo') ? feature.get('snpinfo') : null
   const total = info ? info[info.map(e => e.base).indexOf('total')].score : 0
@@ -38,7 +45,7 @@ function TooltipContents(props) {
 
   return (
     <Paper>
-      <table>
+      <table className={classes.tooltip}>
         <thead>
           <tr>
             <th id={condId}>Base</th>
