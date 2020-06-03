@@ -15,8 +15,8 @@ import { Feature, isFeature } from '@gmod/jbrowse-core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import BlockState from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
-import { BaseBlock, ContentBlock } from './util/blockTypes'
-import BlockBasedTrack from './components/BlockBasedTrack'
+import { BaseBlock } from './util/blockTypes'
+import BlockBasedTrack, { Tooltip } from './components/BlockBasedTrack'
 import { LinearGenomeViewStateModel } from '../LinearGenomeView'
 
 type LayoutRecord = [number, number, number, number]
@@ -31,7 +31,7 @@ const blockBasedTrack = types
       .volatile(() => ({
         contextMenuOptions: [] as MenuOption[],
         featureIdUnderMouse: undefined as undefined | string,
-        ReactComponent: BlockBasedTrack,
+        ReactComponent: (BlockBasedTrack as unknown) as React.FC, // avoid circular reference
       })),
   )
   .views(self => {
@@ -51,6 +51,11 @@ const blockBasedTrack = types
         return 50
       },
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      get TooltipComponent(): React.FC<any> {
+        return (Tooltip as unknown) as React.FC
+      },
+
       /**
        * a CompositeMap of `featureId -> feature obj` that
        * just looks in all the block data for that feature
@@ -63,6 +68,12 @@ const blockBasedTrack = types
         }
         stale = true
         return new CompositeMap<string, Feature>(featureMaps)
+      },
+
+      get featureUnderMouse() {
+        return self.featureIdUnderMouse
+          ? this.features.get(self.featureIdUnderMouse)
+          : undefined
       },
 
       /**
@@ -174,14 +185,13 @@ const blockBasedTrack = types
       const blockWatchDisposer = autorun(() => {
         // create any blocks that we need to create
         const blocksPresent: { [key: string]: boolean } = {}
-        self.blockDefinitions.forEach(block => {
-          if (!(block instanceof ContentBlock)) return
+        self.blockDefinitions.contentBlocks.forEach(block => {
           blocksPresent[block.key] = true
           if (!self.blockState.has(block.key)) {
             this.addBlock(block.key, block)
           }
         })
-        // delete any blocks we need to delete
+        // delete any blocks we need go delete
         self.blockState.forEach((value, key) => {
           if (!blocksPresent[key]) this.deleteBlock(key)
         })
@@ -273,6 +283,15 @@ const blockBasedTrack = types
             self.contextMenuFeature(feature as Feature)
           }
         },
+
+        onMouseMove(event: unknown, featureId: string | undefined) {
+          self.setFeatureIdUnderMouse(featureId)
+        },
+
+        onMouseLeave(event: unknown) {
+          self.setFeatureIdUnderMouse(undefined)
+        },
+
         onContextMenu() {
           self.contextMenuNoFeature()
           self.clearFeatureSelection()

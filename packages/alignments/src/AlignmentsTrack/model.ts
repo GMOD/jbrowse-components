@@ -5,7 +5,7 @@ import {
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { MenuOption } from '@gmod/jbrowse-core/ui'
 import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
-import { types, addDisposer } from 'mobx-state-tree'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
@@ -17,7 +17,7 @@ import VisibilityOffIcon from '@material-ui/icons/VisibilityOff'
 import AlignmentsTrackComponent from './components/AlignmentsTrack'
 import { AlignmentsConfigModel } from './configSchema'
 
-export default (
+const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: AlignmentsConfigModel,
 ) => {
@@ -214,3 +214,7 @@ export default (
       },
     }))
 }
+
+export default stateModelFactory
+export type AlignmentsTrackStateModel = ReturnType<typeof stateModelFactory>
+export type AlignmentsTrackModel = Instance<AlignmentsTrackStateModel>

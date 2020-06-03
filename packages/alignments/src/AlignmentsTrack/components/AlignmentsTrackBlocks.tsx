@@ -2,20 +2,11 @@ import { observer, PropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useState } from 'react'
 import { BlockBasedTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
-import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+import BlockBasedTrack from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/BlockBasedTrack'
 import { ResizeHandle, Menu, MenuOption } from '@gmod/jbrowse-core/ui'
-import {
-  RenderedBlocks,
-  useStyles,
-} from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/TrackBlocks'
-
+import { useStyles } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/TrackBlocks'
 import { useTheme } from '@material-ui/core/styles'
-
-interface AlignmentsBlockBasedTrackStateModel
-  extends Instance<BlockBasedTrackStateModel> {
-  PileupTrack: Instance<BlockBasedTrackStateModel>
-  SNPCoverageTrack: Instance<BlockBasedTrackStateModel>
-}
+import { AlignmentsTrackModel } from '../model'
 
 interface MouseState {
   mouseX: number | null
@@ -24,12 +15,10 @@ interface MouseState {
 
 function AlignmentsTrackBlocks({
   model,
-  viewModel,
   showPileup,
   showSNPCoverage,
 }: {
-  model: AlignmentsBlockBasedTrackStateModel
-  viewModel: Instance<LinearGenomeViewStateModel>
+  model: AlignmentsTrackModel
   showPileup: boolean
   showSNPCoverage: boolean
 }) {
@@ -79,12 +68,10 @@ function AlignmentsTrackBlocks({
           className={classes.trackBlocks}
           onContextMenu={e => handleRightClick(e, SNPCoverageTrack)}
           style={{
-            left:
-              SNPCoverageTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
             display: showSNPCoverage ? 'flex' : 'none',
           }}
         >
-          <RenderedBlocks model={SNPCoverageTrack} />
+          <BlockBasedTrack model={SNPCoverageTrack} />
         </div>
       )}
       <ResizeHandle
@@ -107,7 +94,6 @@ function AlignmentsTrackBlocks({
           className={classes.trackBlocks}
           onContextMenu={e => handleRightClick(e, PileupTrack)}
           style={{
-            left: PileupTrack.blockDefinitions.offsetPx - viewModel.offsetPx,
             top:
               SNPCoverageTrack && showSNPCoverage
                 ? SNPCoverageTrack.height + 5
@@ -115,7 +101,7 @@ function AlignmentsTrackBlocks({
             display: showPileup ? 'flex' : 'none',
           }}
         >
-          <RenderedBlocks model={PileupTrack} />
+          <BlockBasedTrack model={PileupTrack} />
         </div>
       )}
       <Menu
@@ -138,7 +124,6 @@ function AlignmentsTrackBlocks({
 
 AlignmentsTrackBlocks.propTypes = {
   model: PropTypes.observableObject.isRequired,
-  viewModel: PropTypes.observableObject.isRequired,
 }
 
 export default observer(AlignmentsTrackBlocks)

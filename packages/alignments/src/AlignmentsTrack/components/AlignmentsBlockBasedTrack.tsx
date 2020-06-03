@@ -1,10 +1,10 @@
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { getParent } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React from 'react'
 import AlignmentsTrackBlocks from './AlignmentsTrackBlocks'
+import { AlignmentsTrackModel } from '../model'
 
 const useStyles = makeStyles({
   track: {
@@ -16,21 +16,26 @@ const useStyles = makeStyles({
   },
 })
 
-function AlignmentsBlockBasedTrack(props) {
+function AlignmentsBlockBasedTrack(props: {
+  model: AlignmentsTrackModel
+  children: React.ReactNode
+  showPileup: boolean
+  showSNPCoverage: boolean
+}) {
   const classes = useStyles()
   const { model, children, showPileup, showSNPCoverage } = props
+  const { TrackMessageComponent } = model
   return (
     <div
       data-testid={`track-${getConf(model, 'trackId')}`}
       className={classes.track}
       role="presentation"
     >
-      {model.trackMessageComponent ? (
-        <model.trackMessageComponent model={model} />
+      {TrackMessageComponent ? (
+        <TrackMessageComponent model={model} />
       ) : (
         <AlignmentsTrackBlocks
           {...props}
-          viewModel={getParent(getParent(model))}
           showPileup={showPileup}
           showSNPCoverage={showSNPCoverage}
         />

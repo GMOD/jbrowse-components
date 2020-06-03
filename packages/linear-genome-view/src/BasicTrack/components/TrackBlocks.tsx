@@ -1,9 +1,8 @@
 import { makeStyles } from '@material-ui/core/styles'
+import { getContainingView } from '@gmod/jbrowse-core/util'
 import { observer, PropTypes } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
 import React from 'react'
-import { BlockBasedTrackStateModel } from '../blockBasedTrackModel'
-import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
+import { BlockBasedTrackModel } from '../blockBasedTrackModel'
 import {
   BaseBlock,
   ContentBlock,
@@ -38,69 +37,63 @@ const useStyles = makeStyles({
     boxSizing: 'border-box',
   },
 })
-const RenderedBlocks = observer(
-  (props: { model: Instance<BlockBasedTrackStateModel> }) => {
-    const { model } = props
-    const classes = useStyles()
-    const { blockDefinitions, blockState } = model
-    return (
-      <>
-        {blockDefinitions.map((block: BaseBlock, idx: number) => {
-          if (block instanceof ContentBlock) {
-            const state = blockState.get(block.key)
-            return (
-              <Block block={block} key={`${model.id}-${block.key}`}>
-                {state && state.ReactComponent ? (
-                  <state.ReactComponent model={state} />
-                ) : null}
-                {state && state.maxHeightReached ? (
-                  <div
-                    className={classes.heightOverflowed}
-                    style={{
-                      top: state.data.layout.totalHeight - 16,
-                      pointerEvents: 'none',
-                      height: 16,
-                    }}
-                  >
-                    Max height reached
-                  </div>
-                ) : null}
-              </Block>
-            )
-          }
-          if (block instanceof ElidedBlock) {
-            return (
-              <ElidedBlockMarker
-                key={`${model.id}-${block.key}`}
-                width={block.widthPx}
-              />
-            )
-          }
-          if (block instanceof InterRegionPaddingBlock) {
-            return (
-              <InterRegionPaddingBlockMarker
-                key={block.key}
-                width={block.widthPx}
-                style={{ background: 'none' }}
-                boundary={block.variant === 'boundary'}
-              />
-            )
-          }
-          throw new Error(`invalid block type ${typeof block}`)
-        })}
-      </>
-    )
-  },
-)
-function TrackBlocks({
-  model,
-  viewModel,
-}: {
-  model: Instance<BlockBasedTrackStateModel>
-  viewModel: Instance<LinearGenomeViewStateModel>
-}) {
+const RenderedBlocks = observer((props: { model: BlockBasedTrackModel }) => {
+  const { model } = props
+  const classes = useStyles()
+  const { blockDefinitions, blockState } = model
+  return (
+    <>
+      {blockDefinitions.map((block: BaseBlock, idx: number) => {
+        if (block instanceof ContentBlock) {
+          const state = blockState.get(block.key)
+          return (
+            <Block block={block} key={`${model.id}-${block.key}`}>
+              {state && state.ReactComponent ? (
+                <state.ReactComponent model={state} />
+              ) : null}
+              {state && state.maxHeightReached ? (
+                <div
+                  className={classes.heightOverflowed}
+                  style={{
+                    top: state.data.layout.totalHeight - 16,
+                    pointerEvents: 'none',
+                    height: 16,
+                  }}
+                >
+                  Max height reached
+                </div>
+              ) : null}
+            </Block>
+          )
+        }
+        if (block instanceof ElidedBlock) {
+          return (
+            <ElidedBlockMarker
+              key={`${model.id}-${block.key}`}
+              width={block.widthPx}
+            />
+          )
+        }
+        if (block instanceof InterRegionPaddingBlock) {
+          return (
+            <InterRegionPaddingBlockMarker
+              key={block.key}
+              width={block.widthPx}
+              style={{ background: 'none' }}
+              boundary={block.variant === 'boundary'}
+            />
+          )
+        }
+        throw new Error(`invalid block type ${typeof block}`)
+      })}
+    </>
+  )
+})
+function TrackBlocks({ model }: { model: BlockBasedTrackModel }) {
   const classes = useStyles()
   const { blockDefinitions } = model
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const viewModel = getContainingView(model) as any
   return (
     <div
       data-testid="Blockset"
@@ -116,7 +109,6 @@ function TrackBlocks({
 
 TrackBlocks.propTypes = {
   model: PropTypes.observableObject.isRequired,
-  viewModel: PropTypes.observableObject.isRequired,
 }
 
 export { RenderedBlocks, useStyles }
