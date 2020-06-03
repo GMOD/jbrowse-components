@@ -16,7 +16,7 @@ import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import BlockState from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
 import { BaseBlock } from './util/blockTypes'
-import BlockBasedTrack from './components/BlockBasedTrack'
+import BlockBasedTrack, { Tooltip } from './components/BlockBasedTrack'
 import { LinearGenomeViewStateModel } from '../LinearGenomeView'
 
 type LayoutRecord = [number, number, number, number]
@@ -31,7 +31,7 @@ const blockBasedTrack = types
       .volatile(() => ({
         contextMenuOptions: [] as MenuOption[],
         featureIdUnderMouse: undefined as undefined | string,
-        ReactComponent: (BlockBasedTrack as unknown) as React.FC,
+        ReactComponent: (BlockBasedTrack as unknown) as React.FC, // avoid circular reference
       })),
   )
   .views(self => {
@@ -51,8 +51,8 @@ const blockBasedTrack = types
         return 50
       },
 
-      get useTooltip() {
-        return true
+      get TooltipComponent() {
+        return Tooltip
       },
 
       /**

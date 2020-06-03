@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useState, useRef } from 'react'
-import Tooltip from '@material-ui/core/Tooltip'
+import MUITooltip from '@material-ui/core/Tooltip'
 import TrackBlocks from './TrackBlocks'
 import { BlockBasedTrackModel } from '../blockBasedTrackModel'
 
@@ -17,7 +17,7 @@ const useStyles = makeStyles({
   },
 })
 
-const MyTooltip = observer(
+const Tooltip = observer(
   (props: { model: BlockBasedTrackModel; mouseCoord: [number, number] }) => {
     const { model, mouseCoord } = props
     const { featureUnderMouse } = model
@@ -25,7 +25,7 @@ const MyTooltip = observer(
       ? getConf(model, 'mouseover', [featureUnderMouse])
       : undefined
     return mouseover ? (
-      <Tooltip title={mouseover} open>
+      <MUITooltip title={mouseover} open>
         <div
           style={{
             position: 'absolute',
@@ -35,7 +35,7 @@ const MyTooltip = observer(
         >
           {' '}
         </div>
-      </Tooltip>
+      </MUITooltip>
     ) : null
   },
 )
@@ -69,7 +69,7 @@ function BlockBasedTrack(props: {
         <TrackBlocks {...props} />
       )}
       {children}
-      {useTooltip ? <MyTooltip model={model} mouseCoord={mouseCoord} /> : null}
+      {useTooltip ? <Tooltip model={model} mouseCoord={mouseCoord} /> : null}
     </div>
   )
 }
@@ -84,3 +84,4 @@ BlockBasedTrack.defaultProps = {
 }
 
 export default observer(BlockBasedTrack)
+export { Tooltip }

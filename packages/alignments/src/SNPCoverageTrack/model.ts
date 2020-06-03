@@ -1,6 +1,7 @@
 import { types } from 'mobx-state-tree'
 import wiggleStateModelFactory from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/model'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import Tooltip from './Tooltip'
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
@@ -13,6 +14,10 @@ const stateModelFactory = (configSchema: any) =>
     types.model({ type: types.literal('SNPCoverageTrack') }).views(self => ({
       get rendererTypeName() {
         return rendererTypes.get('snpcoverage')
+      },
+
+      get TooltipComponent() {
+        return Tooltip
       },
 
       get needsScalebar() {
