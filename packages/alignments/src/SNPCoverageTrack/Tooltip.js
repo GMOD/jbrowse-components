@@ -7,8 +7,19 @@ import { makeStyles } from '@material-ui/core/styles'
 
 const useStyles = makeStyles({
   popper: {
+    fontSize: '0.8em',
     zIndex: 1500, // important to have a zIndex directly on the popper itself, material-ui Tooltip uses popper and has similar thing
     pointerEvents: 'none', // needed to avoid rapid mouseLeave/mouseEnter on popper
+  },
+
+  hoverVertical: {
+    background: '#333',
+    border: 'none',
+    width: 1,
+    height: '100%',
+    top: 0,
+    cursor: 'default',
+    position: 'absolute',
   },
 })
 function TooltipContents(props) {
@@ -60,7 +71,7 @@ TooltipContents.propTypes = {
 }
 
 const Tooltip = observer(props => {
-  const { model, mouseCoord } = props
+  const { model, height, mouseCoord } = props
   const { featureUnderMouse } = model
   const classes = useStyles()
   const ref = useRef()
@@ -79,6 +90,10 @@ const Tooltip = observer(props => {
           />
         </Popper>
       ) : null}
+      <div
+        className={classes.hoverVertical}
+        style={{ left: mouseCoord[0], height }}
+      />
       <div
         ref={ref}
         style={{

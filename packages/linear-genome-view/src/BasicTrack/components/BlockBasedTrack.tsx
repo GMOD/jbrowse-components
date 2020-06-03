@@ -16,7 +16,6 @@ const useStyles = makeStyles({
     minHeight: '100%',
   },
 })
-
 const Tooltip = observer(
   (props: { model: BlockBasedTrackModel; mouseCoord: [number, number] }) => {
     const { model, mouseCoord } = props
@@ -40,15 +39,16 @@ const Tooltip = observer(
   },
 )
 
+type Coord = [number, number]
 function BlockBasedTrack(props: {
   model: BlockBasedTrackModel
   children: React.ReactNode
 }) {
   const classes = useStyles()
-  const [mouseCoord, setMouseCoord] = useState<[number, number]>([0, 0])
+  const [mouseCoord, setMouseCoord] = useState<Coord>([0, 0])
   const ref = useRef<HTMLDivElement>(null)
   const { model, children } = props
-  const { TooltipComponent, TrackMessageComponent } = model
+  const { TooltipComponent, TrackMessageComponent, height } = model
 
   return (
     <div
@@ -69,7 +69,7 @@ function BlockBasedTrack(props: {
         <TrackBlocks {...props} />
       )}
       {children}
-      <TooltipComponent model={model} mouseCoord={mouseCoord} />
+      <TooltipComponent model={model} height={height} mouseCoord={mouseCoord} />
     </div>
   )
 }
