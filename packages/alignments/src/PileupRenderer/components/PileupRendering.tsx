@@ -142,7 +142,6 @@ function PileupRendering(props: {
 
     const feats = trackModel.getFeatureOverlapping(blockKey, clientBp, offsetY)
     const featIdUnderMouse = feats.length ? feats[0].name : undefined
-    trackModel.setFeatureIdUnderMouse(featIdUnderMouse)
 
     if (onMouseMove) {
       onMouseMove(event, featIdUnderMouse)

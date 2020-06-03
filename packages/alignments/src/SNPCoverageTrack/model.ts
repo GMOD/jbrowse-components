@@ -1,5 +1,6 @@
 import { types } from 'mobx-state-tree'
 import wiggleStateModelFactory from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/model'
+import WiggleTrackComponent from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import Tooltip from './Tooltip'
 
@@ -14,6 +15,9 @@ const stateModelFactory = (configSchema: any) =>
       wiggleStateModelFactory(configSchema),
       types.model({ type: types.literal('SNPCoverageTrack') }),
     )
+    .volatile(self => ({
+      ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
+    }))
     .views(self => ({
       get TooltipComponent() {
         return Tooltip
