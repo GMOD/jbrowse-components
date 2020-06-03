@@ -18,6 +18,7 @@ import {
   isSessionModelWithDrawerWidgets,
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { transaction } from 'mobx'
 import { getSnapshot, types, cast, Instance } from 'mobx-state-tree'
 
@@ -609,6 +610,67 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
           }
         }
+      },
+
+      // need to somehow get the refname of when user starts dragging and ends dragging
+      // so if user starts dragging ctgA: 40000 and ends ctgB: 3000
+      // should be zoom ctgA: 40000 - 50000 and ctgB: 0 - 3000
+      // start needs to check that its on ctg, end needs to check its on ctgB
+      // and also both need to account for spacer if they selected on ctgB ( or any thats not the first)
+
+      // prob need wholeRefSeqs.forEach.seqName and pass into this component
+      zoomToDisplayedRegions(
+        leftPx: number | undefined,
+        rightPx: number | undefined,
+        wholeRefSeqs: Region[],
+        scale: number,
+      ) {
+        if (leftPx === undefined || rightPx === undefined) return
+        if (rightPx < leftPx) {
+          ;[leftPx, rightPx] = [rightPx, leftPx]
+        }
+
+        // with two refNames, need to account for refNamespacer (2) at end
+        const start = Math.round(leftPx * scale) // start dragging
+        const end = Math.round(rightPx * scale) // end dragging
+        let firstOverlapFound = false
+        console.log(start, end, wholeRefSeqs) // TODO: use wholerefseqs to match up refnames
+
+        const pessimisticNewRegions: Region[] = [] // assumes you have not found the final overlap
+        let optimisticNewRegions: Region[] = [] // assumes you have found the final overlap
+
+        // run through the regions
+        // need to check refname still!
+        self.displayedRegions.forEach(region => {
+          if (doesIntersect2(start, end, region.start, region.end)) {
+            let startValue = region.start
+            // if first instance of overlap modify the first overlapping region's start
+            if (!firstOverlapFound) {
+              startValue = region.start < start ? start : region.start
+              firstOverlapFound = true
+            }
+
+            // current region overlapping means previous region was not region with final overlap
+            // overwrite optimistic with pessimistic
+            optimisticNewRegions = JSON.parse(
+              JSON.stringify(pessimisticNewRegions),
+            )
+            // push region with the selected end to optimistic, assume current region is final overlap
+            optimisticNewRegions.push({
+              ...region,
+              start: startValue,
+              end: region.end > end ? end : region.end,
+            })
+            pessimisticNewRegions.push({ ...region, start: startValue })
+          }
+          // add regions that don't overlap to pessimistic, display if overlap is found in later region
+          else if (firstOverlapFound) pessimisticNewRegions.push(region)
+        })
+
+        console.log(optimisticNewRegions)
+        // could change displayed regions instead using model.setDisplayedRegions(optimisticNewRegions)
+        if (optimisticNewRegions.length)
+          this.navToMultiple(optimisticNewRegions)
       },
 
       // schedule something to be run after the next time displayedRegions is set

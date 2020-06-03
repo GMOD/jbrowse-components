@@ -8,7 +8,6 @@ import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect, useState } from 'react'
 import { Region } from '@gmod/jbrowse-core/util/types'
-import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { LinearGenomeViewStateModel, HEADER_OVERVIEW_HEIGHT } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -64,10 +63,12 @@ function OverviewRubberBand({
   model,
   ControlComponent = <div />,
   scale,
+  wholeRefSeq,
 }: {
   model: LGV
   ControlComponent?: React.ReactElement
   scale: number
+  wholeRefSeq: Region[]
 }) {
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
@@ -86,7 +87,11 @@ function OverviewRubberBand({
     }
 
     function globalMouseUp(event: MouseEvent) {
-      if (controlsRef.current) zoomToRegion()
+      if (controlsRef.current) {
+        model.zoomToDisplayedRegions(startX, currentX, wholeRefSeq, scale)
+        setStartX(undefined)
+        setCurrentX(undefined)
+      }
 
       if (startX !== undefined) {
         setGuideX(undefined)
@@ -100,67 +105,6 @@ function OverviewRubberBand({
       }
     }
 
-    // need to somehow get the refname of when user starts dragging and ends dragging
-    // so if user starts dragging ctgA: 40000 and ends ctgB: 3000
-    // should be zoom ctgA: 40000 - 50000 and ctgB: 0 - 3000
-    // start needs to check that its on ctg, end needs to check its on ctgB
-    // and also both need to account for spacer if they selected on ctgB ( or any thats not the first)
-
-    // prob need wholeRefSeqs.forEach.seqName and pass into this component
-
-    // move this to linear genome view model
-    function zoomToRegion() {
-      if (startX === undefined || currentX === undefined) return
-      let leftPx = startX
-      let rightPx = currentX
-      if (rightPx < leftPx) {
-        ;[leftPx, rightPx] = [rightPx, leftPx]
-      }
-
-      // with two refNames, need to account for refNamespacer (2) at end
-      const start = Math.round(leftPx * scale) // start dragging
-      const end = Math.round(rightPx * scale) // end dragging
-      let firstOverlapFound = false
-      console.log(start, end)
-
-      const pessimisticNewRegions: Region[] = [] // assumes you have not found the final overlap
-      let optimisticNewRegions: Region[] = [] // assumes you have found the final overlap
-
-      // run through the regions
-      // need to check refname still!
-      model.displayedRegions.forEach((region, idx) => {
-        if (doesIntersect2(start, end, region.start, region.end)) {
-          let startValue = region.start
-          // if first instance of overlap modify the first overlapping region's start
-          if (!firstOverlapFound) {
-            startValue = region.start < start ? start : region.start
-            firstOverlapFound = true
-          }
-
-          // current region overlapping means previous region was not region with final overlap
-          // overwrite optimistic with pessimistic
-          optimisticNewRegions = JSON.parse(
-            JSON.stringify(pessimisticNewRegions),
-          )
-          // push region with the selected end to optimistic, assume current region is final overlap
-          optimisticNewRegions.push({
-            ...region,
-            start: startValue,
-            end: region.end > end ? end : region.end,
-          })
-          pessimisticNewRegions.push({ ...region, start: startValue })
-        }
-        // add regions that don't overlap to pessimistic, display if overlap is found in later region
-        else if (firstOverlapFound) pessimisticNewRegions.push(region)
-      })
-
-      console.log(optimisticNewRegions)
-      // could change displayed regions instead using model.setDisplayedRegions(optimisticNewRegions)
-      if (optimisticNewRegions.length) model.navToMultiple(optimisticNewRegions)
-      setStartX(undefined)
-      setCurrentX(undefined)
-    }
-
     if (mouseDragging) {
       window.addEventListener('mousemove', globalMouseMove, true)
       window.addEventListener('mouseup', globalMouseUp, true)
@@ -172,7 +116,7 @@ function OverviewRubberBand({
       }
     }
     return () => {}
-  }, [mouseDragging, currentX, model, scale, startX])
+  }, [mouseDragging, currentX, startX, wholeRefSeq, model, scale])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
@@ -196,7 +140,7 @@ function OverviewRubberBand({
           <Tooltip
             open={!mouseDragging}
             placement="top"
-            title={Math.round(guideX * scale).toLocaleString()}
+            title={Math.max(0, Math.round(guideX * scale)).toLocaleString()}
             arrow
           >
             <div
@@ -306,12 +250,10 @@ function OverviewRubberBand({
 OverviewRubberBand.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
   ControlComponent: ReactPropTypes.node,
-  children: ReactPropTypes.node,
 }
 
 OverviewRubberBand.defaultProps = {
   ControlComponent: <div />,
-  children: undefined,
 }
 
 export default observer(OverviewRubberBand)

@@ -204,6 +204,7 @@ function OverviewScaleBar({
         model={model}
         ControlComponent={controlComponent}
         scale={scale}
+        wholeRefSeq={wholeRefSeqs}
       />
       {/* probably can ignore the below */}
       <div className={classes.overview}>
