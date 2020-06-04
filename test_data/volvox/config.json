@@ -150,6 +150,87 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "volvox_cram_alignments_ctga",
+      "name": "volvox-sorted.cram (ctgA, AlignmentsTrack)",
+      "category": [
+        "Integration test"
+      ],
+      "assemblyNames": [
+        "volvox"
+      ],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "test_data/volvox/volvox-sorted.cram"
+        },
+        "craiLocation": {
+          "uri": "test_data/volvox/volvox-sorted.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "test_data/volvox/volvox.2bit"
+          }
+        }
+      }
+    },
+    {
+      "type": "PileupTrack",
+      "trackId": "volvox_cram_pileup_ctga",
+      "name": "volvox-sorted.cram (ctgA, PileupTrack)",
+      "category": [
+        "Integration test"
+      ],
+      "assemblyNames": [
+        "volvox"
+      ],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "test_data/volvox/volvox-sorted.cram"
+        },
+        "craiLocation": {
+          "uri": "test_data/volvox/volvox-sorted.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "test_data/volvox/volvox.2bit"
+          }
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "volvox_cram_snpcoverage_ctga",
+      "name": "volvox-sorted.cram (ctgA, SNPCoverage)",
+      "category": [
+        "Integration test"
+      ],
+      "assemblyNames": [
+        "volvox"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "CramAdapter",
+          "cramLocation": {
+            "uri": "test_data/volvox/volvox-sorted.cram"
+          },
+          "craiLocation": {
+            "uri": "test_data/volvox/volvox-sorted.cram.crai"
+          },
+          "sequenceAdapter": {
+            "type": "TwoBitAdapter",
+            "twoBitLocation": {
+              "uri": "test_data/volvox/volvox.2bit"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "volvox_alignments",
       "name": "volvox-sorted.bam (ctgA, svg)",
       "category": [
