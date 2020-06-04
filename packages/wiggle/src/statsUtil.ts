@@ -197,7 +197,7 @@ export interface DataAdapterWithMultiRegionStats
   extends BaseFeatureDataAdapter {
   getMultiRegionStats(
     regions: Region[],
-    args: { signal?: AbortSignal; bpPerPx: number },
+    args: { signal?: AbortSignal; bpPerPx: number, originalRegions: Region[] },
   ): Promise<FeatureStats>
 }
 
