@@ -81,15 +81,13 @@ export default (pluginManager: PluginManager) => {
         args: {
           region: Region
           bpPerPx: number
-          originalRegion: Region
         },
         abortSignal?: AbortSignal,
       ): Promise<FeatureStats> => {
-        const { region, bpPerPx, originalRegion } = args
+        const { region, bpPerPx } = args
         const feats = this.getFeatures(region, {
           signal: abortSignal,
           basesPerSpan: bpPerPx,
-          originalRegions: [originalRegion],
         })
         return scoresToStats(region, feats)
       },
@@ -112,10 +110,10 @@ export default (pluginManager: PluginManager) => {
 
     public getRegionStats(region: Region, opts: BaseOptions = {}) {
       const { refName, start, end } = region
-      const { bpPerPx, signal, originalRegion } = opts
+      const { bpPerPx, signal } = opts
       return this.statsCache.get(
         `${refName}_${start}_${end}_${bpPerPx}`,
-        { region, originalRegion, bpPerPx: bpPerPx || 0 },
+        { region, bpPerPx: bpPerPx || 0 },
         signal,
       )
     }
@@ -129,12 +127,7 @@ export default (pluginManager: PluginManager) => {
       }
 
       const feats = await Promise.all(
-        regions.map((region, index) =>
-          this.getRegionStats(region, {
-            originalRegion: opts.originalRegions[index],
-            opts,
-          }),
-        ),
+        regions.map((region, index) => this.getRegionStats(region, opts)),
       )
 
       const scoreMax = feats

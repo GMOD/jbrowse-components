@@ -58,12 +58,10 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
     signal?: RemoteAbortSignal
     sessionId: string
     regions: Region[]
-    originalRegions: Region[]
     bpPerPx: number
   }) {
     const {
       regions,
-      originalRegions,
       adapterConfig,
       signal,
       bpPerPx,
@@ -82,7 +80,6 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
       return dataAdapter.getMultiRegionStats(regions, {
         signal,
         bpPerPx,
-        originalRegions,
       })
     }
     return blankStats()

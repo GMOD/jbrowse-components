@@ -191,8 +191,10 @@ export default (pluginManager: PluginManager) => {
       return this.seqIdToOriginalRefName[refId]
     }
 
-    getFeatures({ refName, start, end }: Region, opts: BaseOptions = {}) {
+    getFeatures(region: Region, opts: BaseOptions = {}) {
       // console.log(`CRAM getFeatures ${refName}:${start}-${end}`)
+      // @ts-ignore
+      const { refName, start, end, originalRefName } = region
 
       return ObservableCreate<Feature>(async observer => {
         await this.setup(opts)
@@ -201,12 +203,8 @@ export default (pluginManager: PluginManager) => {
         }
         const refId = this.refNameToId(refName)
         if (refId !== undefined) {
-          if (
-            opts.originalRegions &&
-            opts.originalRegions[0] &&
-            opts.originalRegions[0].refName
-          ) {
-            this.seqIdToOriginalRefName[refId] = opts.originalRegions[0].refName
+          if (originalRefName) {
+            this.seqIdToOriginalRefName[refId] = originalRefName
           }
           const records = await this.cram.getRecordsForRange(
             refId,

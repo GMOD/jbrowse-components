@@ -709,6 +709,8 @@ export function renameRegionIfNeeded(
     // modify it directly in the container
     const newRef = refNameMap.get(region.refName)
     if (newRef) {
+      // @ts-ignore
+      region.originalRefName = region.refName
       region.refName = newRef
     }
   }
@@ -728,9 +730,7 @@ export async function renameRegionsIfNeeded<
   if (!args.sessionId) {
     throw new Error('sessionId is required')
   }
-  const newArgs: ARGTYPE & {
-    originalRegions?: Region[]
-  } = {
+  const newArgs: ARGTYPE = {
     ...args,
     regions: [...(args.regions || [])],
   }
@@ -748,7 +748,6 @@ export async function renameRegionsIfNeeded<
 
     // console.log(`${JSON.stringify(regions)} ${JSON.stringify(refNameMap)}`)
     if (refNameMap && regions && newArgs.regions) {
-      newArgs.originalRegions = args.regions
       for (let i = 0; i < regions.length; i += 1) {
         newArgs.regions[i] = renameRegionIfNeeded(refNameMap, regions[i])
       }
