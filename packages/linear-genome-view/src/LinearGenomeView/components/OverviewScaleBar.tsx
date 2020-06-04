@@ -205,6 +205,7 @@ function OverviewScaleBar({
         ControlComponent={controlComponent}
         scale={scale}
         wholeRefSeq={wholeRefSeqs}
+        wholeSeqSpacer={wholeSeqSpacer}
       />
       {/* probably can ignore the below */}
       <div className={classes.overview}>

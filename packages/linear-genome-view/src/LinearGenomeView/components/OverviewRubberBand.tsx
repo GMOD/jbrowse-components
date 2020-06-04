@@ -64,15 +64,18 @@ function OverviewRubberBand({
   ControlComponent = <div />,
   scale,
   wholeRefSeq,
+  wholeSeqSpacer,
 }: {
   model: LGV
   ControlComponent?: React.ReactElement
   scale: number
   wholeRefSeq: Region[]
+  wholeSeqSpacer: number
 }) {
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
   const [guideX, setGuideX] = useState<number | undefined>()
+  const [seqOffsetX, setSeqOffsetX] = useState<number>(0)
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
   const classes = useStyles()
@@ -116,16 +119,22 @@ function OverviewRubberBand({
       }
     }
     return () => {}
-  }, [mouseDragging, currentX, startX, wholeRefSeq, model, scale])
+  }, [mouseDragging, currentX, startX, seqOffsetX, wholeRefSeq, model, scale])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
     event.stopPropagation()
-    const relativeX = event.nativeEvent.offsetX
+    const relativeX = event.nativeEvent.offsetX + seqOffsetX
+    console.log(relativeX)
     setStartX(relativeX)
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
+    setSeqOffsetX(
+      (event.target as HTMLDivElement).offsetLeft > 0
+        ? (event.target as HTMLDivElement).offsetLeft - wholeSeqSpacer
+        : 0,
+    )
     setGuideX(event.nativeEvent.offsetX)
   }
 
@@ -146,7 +155,7 @@ function OverviewRubberBand({
             <div
               className={classes.guide}
               style={{
-                left: guideX,
+                left: guideX + seqOffsetX,
               }}
             />
           </Tooltip>
@@ -175,6 +184,7 @@ function OverviewRubberBand({
 
   let leftCount = Math.max(0, Math.round((startX || 0) * scale))
   let rightCount = Math.max(0, Math.round(leftCount + width * scale))
+  const scaledSeqOffset = Math.round(seqOffsetX * scale)
   if (leftCount > rightCount) {
     ;[leftCount, rightCount] = [rightCount, leftCount]
   }
@@ -200,7 +210,9 @@ function OverviewRubberBand({
             }}
             keepMounted
           >
-            <Typography>{leftCount.toLocaleString()}</Typography>
+            <Typography>
+              {(leftCount - scaledSeqOffset).toLocaleString()}
+            </Typography>
           </Popover>
           <Popover
             className={classes.popover}
@@ -219,7 +231,9 @@ function OverviewRubberBand({
             }}
             keepMounted
           >
-            <Typography>{rightCount.toLocaleString()}</Typography>
+            <Typography>
+              {(rightCount - scaledSeqOffset).toLocaleString()}
+            </Typography>
           </Popover>
         </>
       ) : null}
