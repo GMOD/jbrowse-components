@@ -58,7 +58,6 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
     signal?: RemoteAbortSignal
     sessionId: string
     regions: Region[]
-    originalRegions: Region[]
     bpPerPx: number
   }) {
     const {
