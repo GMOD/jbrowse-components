@@ -35,7 +35,7 @@ export const YScaleBar = observer(({ model }: { model: WiggleTrackModel }) => {
         left: 300,
         pointerEvents: 'none',
         height,
-        width: 20,
+        width: 50,
       }}
     >
       <Axis

@@ -62,6 +62,7 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
   }) {
     const {
       regions,
+      originalRegions,
       adapterConfig,
       signal,
       bpPerPx,
@@ -77,7 +78,12 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
       dataAdapter instanceof BaseFeatureDataAdapter &&
       dataAdapterSupportsMultiRegionStats(dataAdapter)
     ) {
-      return dataAdapter.getMultiRegionStats(regions, { signal, bpPerPx })
+      // @ts-ignore
+      return dataAdapter.getMultiRegionStats(regions, {
+        signal,
+        bpPerPx,
+        originalRegions,
+      })
     }
     return blankStats()
   }
