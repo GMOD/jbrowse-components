@@ -191,9 +191,11 @@ export default (pluginManager: PluginManager) => {
       return this.seqIdToOriginalRefName[refId]
     }
 
-    getFeatures(region: Region, opts: BaseOptions = {}) {
+    getFeatures(
+      region: Region & { originalRefName?: string },
+      opts: BaseOptions = {},
+    ) {
       // console.log(`CRAM getFeatures ${refName}:${start}-${end}`)
-      // @ts-ignore
       const { refName, start, end, originalRefName } = region
 
       return ObservableCreate<Feature>(async observer => {

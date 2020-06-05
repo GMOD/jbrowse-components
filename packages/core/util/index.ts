@@ -693,14 +693,13 @@ export function makeAbortableReaction<T, U, V>(
 export function renameRegionIfNeeded(
   refNameMap: Map<string, string>,
   region: Region,
-) {
+): Region & { originalRefName?: string } {
   if (isStateTreeNode(region) && !isAlive(region)) {
     return region
   }
   if (region && refNameMap && refNameMap.has(region.refName)) {
     // clone the region so we don't modify it
     if (isStateTreeNode(region)) {
-      // @ts-ignore
       region = { ...getSnapshot(region) }
     } else {
       region = { ...region }
@@ -709,9 +708,7 @@ export function renameRegionIfNeeded(
     // modify it directly in the container
     const newRef = refNameMap.get(region.refName)
     if (newRef) {
-      // @ts-ignore
-      region.originalRefName = region.refName
-      region.refName = newRef
+      return { ...region, refName: newRef, originalRefName: region.refName }
     }
   }
   return region
