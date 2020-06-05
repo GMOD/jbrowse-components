@@ -57,10 +57,6 @@ const stateModelFactory = (
         }
       },
 
-      get sortedBy() {
-        return self.PileupTrack.sortedBy
-      },
-
       get layoutFeatures() {
         return self.PileupTrack.layoutFeatures
       },
@@ -71,6 +67,16 @@ const stateModelFactory = (
 
       get TrackBlurb() {
         return self.PileupTrack.TrackBlurb
+      },
+
+      get sortedBy() {
+        return self.PileupTrack.sortedBy
+      },
+      get sortedByPosition() {
+        return self.PileupTrack.sortedByPosition
+      },
+      get sortedByRefName() {
+        return self.PileupTrack.sortedByRefName
       },
 
       get snpCoverageTrackConfig() {
