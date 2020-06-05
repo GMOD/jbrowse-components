@@ -11,7 +11,6 @@ import {
   isSessionModelWithDrawerWidgets,
   getContainingView,
 } from '@gmod/jbrowse-core/util'
-import { MenuOption } from '@gmod/jbrowse-core/ui'
 
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import { ContentCopy as ContentCopyIcon } from '@gmod/jbrowse-core/ui/Icons'
