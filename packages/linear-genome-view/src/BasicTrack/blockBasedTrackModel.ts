@@ -229,18 +229,6 @@ const blockBasedTrack = types
       }
     },
 
-    contextMenuFeature(feature: Feature) {
-      self.contextMenuOptions = [
-        {
-          label: 'Open feature details',
-          icon: MenuOpenIcon,
-          onClick: () => {
-            this.selectFeature(feature)
-          },
-        },
-      ]
-    },
-
     contextMenuNoFeature() {
       self.contextMenuOptions = []
     },
@@ -300,6 +288,19 @@ const blockBasedTrack = types
     },
     get renderProps() {
       return this.composedRenderProps
+    },
+  }))
+  .actions(self => ({
+    contextMenuFeature(feature: Feature) {
+      self.contextMenuOptions = [
+        {
+          label: 'Open feature details',
+          icon: MenuOpenIcon,
+          onClick: () => {
+            self.selectFeature(feature)
+          },
+        },
+      ]
     },
   }))
   .postProcessSnapshot(self => {
