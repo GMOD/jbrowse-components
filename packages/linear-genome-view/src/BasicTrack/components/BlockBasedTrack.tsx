@@ -1,5 +1,6 @@
 import { getConf } from '@gmod/jbrowse-core/configuration'
-import { makeStyles } from '@material-ui/core/styles'
+import { Menu } from '@gmod/jbrowse-core/ui'
+import { useTheme, makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useState, useRef } from 'react'
@@ -45,16 +46,30 @@ function BlockBasedTrack(props: {
   children: React.ReactNode
 }) {
   const classes = useStyles()
+  const theme = useTheme()
+
   const [mouseCoord, setMouseCoord] = useState<Coord>([0, 0])
+  const [contextCoord, setContextCoord] = useState<Coord>()
   const ref = useRef<HTMLDivElement>(null)
   const { model, children } = props
-  const { TooltipComponent, TrackMessageComponent, height } = model
+  const {
+    TooltipComponent,
+    TrackMessageComponent,
+    contextMenuOptions,
+    height,
+  } = model
 
   return (
     <div
       ref={ref}
       data-testid={`track-${getConf(model, 'trackId')}`}
       className={classes.track}
+      onContextMenu={event => {
+        event.preventDefault()
+        if (ref.current) {
+          setContextCoord([event.clientX, event.clientY])
+        }
+      }}
       onMouseMove={event => {
         if (ref.current) {
           const rect = ref.current.getBoundingClientRect()
@@ -70,6 +85,26 @@ function BlockBasedTrack(props: {
       )}
       {children}
       <TooltipComponent model={model} height={height} mouseCoord={mouseCoord} />
+
+      <Menu
+        open={Boolean(contextCoord)}
+        onMenuItemClick={(event, callback) => {
+          callback()
+          setContextCoord(undefined)
+        }}
+        onClose={() => {
+          setContextCoord(undefined)
+        }}
+        anchorReference="anchorPosition"
+        anchorPosition={
+          contextCoord
+            ? { top: contextCoord[1], left: contextCoord[0] }
+            : undefined
+        }
+        style={{ zIndex: theme.zIndex.tooltip }}
+        menuOptions={contextMenuOptions}
+        data-testid="alignments_context_menu"
+      />
     </div>
   )
 }
