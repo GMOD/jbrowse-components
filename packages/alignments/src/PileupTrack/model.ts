@@ -15,7 +15,7 @@ import {
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import { ContentCopy as ContentCopyIcon } from '@gmod/jbrowse-core/ui/Icons'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { types } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -23,6 +23,7 @@ import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
 import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { PileupConfigModel } from './configSchema'
+import PileupTrackBlurb from './components/PileupTrackBlurb'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -31,7 +32,7 @@ const rendererTypes = new Map([
   ['snpcoverage', 'SNPCoverageRenderer'],
 ])
 
-export default (
+const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: PileupConfigModel,
 ) =>
@@ -42,12 +43,13 @@ export default (
       types.model({
         type: types.literal('PileupTrack'),
         configuration: ConfigurationReference(configSchema),
-        centerLinePosition: types.maybe(types.number),
       }),
     )
     .volatile(() => ({
       showSoftClipping: false,
       sortedBy: '',
+      sortedByPosition: 0,
+      sortedByRefName: '',
     }))
     .actions(self => ({
       selectFeature(feature: Feature) {
@@ -65,7 +67,8 @@ export default (
 
       clearSelected() {
         self.sortedBy = ''
-        self.centerLinePosition = undefined
+        self.sortedByPosition = 0
+        self.sortedByRefName = ''
       },
 
       // uses copy-to-clipboard and generates notification
@@ -116,6 +119,7 @@ export default (
         }
 
         const centerBp = Math.round(centerLineInfo.offset) + 1
+        const centerRefName = centerLineInfo.refName
 
         if (centerBp < 0) {
           return
@@ -148,16 +152,21 @@ export default (
             timeout: 1000000,
           })
           .then(() => {
-            this.applySortSelected(selected, centerBp)
+            this.applySortSelected(selected, centerBp, centerRefName)
           })
           .catch((error: Error) => {
             console.error(error)
             self.setError(error.message)
           })
       },
-      applySortSelected(selected: string, centerBp: number) {
+      applySortSelected(
+        selected: string,
+        centerBp: number,
+        centerRefName: string,
+      ) {
         self.sortedBy = selected
-        self.centerLinePosition = centerBp
+        self.sortedByPosition = centerBp
+        self.sortedByRefName = centerRefName
       },
     }))
     .views(self => ({
@@ -172,12 +181,16 @@ export default (
 
       get sortObject() {
         return {
-          position: self.centerLinePosition,
+          position: self.sortedByPosition,
           by: self.sortedBy,
         }
       },
       get sortOptions() {
         return ['Start location', 'Read strand', 'Base pair', 'Clear sort']
+      },
+
+      get TrackBlurb() {
+        return PileupTrackBlurb
       },
 
       get renderProps() {
@@ -227,3 +240,8 @@ export default (
         ]
       },
     }))
+
+export type PileupTrackStateModel = ReturnType<typeof stateModelFactory>
+export type PileupTrackModel = Instance<PileupTrackStateModel>
+
+export default stateModelFactory

@@ -69,6 +69,10 @@ const stateModelFactory = (
         return self.PileupTrack.features
       },
 
+      get TrackBlurb() {
+        return self.PileupTrack.TrackBlurb
+      },
+
       get snpCoverageTrackConfig() {
         return {
           ...getConf(self),

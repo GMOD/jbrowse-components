@@ -75,7 +75,7 @@ function TrackContainer(props: {
     }
   }
   const debouncedOnDragEnter = useDebouncedCallback(onDragEnter, 100)
-  const { RenderingComponent } = track
+  const { RenderingComponent, TrackBlurb } = track
   const view = getContainingView(track)
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== track.id
   return (
@@ -107,6 +107,15 @@ function TrackContainer(props: {
             blockState={{}}
             onHorizontalScroll={horizontalScroll}
           />
+        </div>
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: track.height - 20,
+          }}
+        >
+          {TrackBlurb ? <TrackBlurb model={track} /> : null}
         </div>
       </Paper>
       <div
