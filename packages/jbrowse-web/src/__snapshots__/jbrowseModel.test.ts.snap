@@ -226,6 +226,111 @@ Object {
     },
     Object {
       "adapter": Object {
+        "craiLocation": Object {
+          "uri": "test_data/volvox/volvox-sorted.cram.crai",
+        },
+        "cramLocation": Object {
+          "uri": "test_data/volvox/volvox-sorted.cram",
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "test_data/volvox/volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "volvox-sorted.cram (ctgA, AlignmentsTrack)",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox_cram_alignments_ctga",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "craiLocation": Object {
+          "uri": "test_data/volvox/volvox-sorted.cram.crai",
+        },
+        "cramLocation": Object {
+          "uri": "test_data/volvox/volvox-sorted.cram",
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "test_data/volvox/volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "volvox-sorted.cram (ctgA, PileupTrack)",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox_cram_pileup_ctga",
+      "type": "PileupTrack",
+    },
+    Object {
+      "adapter": Object {
+        "subadapter": Object {
+          "craiLocation": Object {
+            "uri": "test_data/volvox/volvox-sorted.cram.crai",
+          },
+          "cramLocation": Object {
+            "uri": "test_data/volvox/volvox-sorted.cram",
+          },
+          "sequenceAdapter": Object {
+            "twoBitLocation": Object {
+              "uri": "test_data/volvox/volvox.2bit",
+            },
+            "type": "TwoBitAdapter",
+          },
+          "type": "CramAdapter",
+        },
+        "type": "SNPCoverageAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "volvox-sorted.cram (ctgA, SNPCoverage)",
+      "renderers": Object {
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+      },
+      "trackId": "volvox_cram_snpcoverage_ctga",
+      "type": "SNPCoverageTrack",
+    },
+    Object {
+      "adapter": Object {
         "bamLocation": Object {
           "uri": "test_data/volvox/volvox-sorted.bam",
         },
