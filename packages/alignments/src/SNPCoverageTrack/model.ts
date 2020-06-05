@@ -30,9 +30,6 @@ const stateModelFactory = (configSchema: any) =>
       get needsScalebar() {
         return true
       },
-      get contextMenuOptions() {
-        return getParentRenderProps(self).trackModel.menuOptions
-      },
     }))
 
 export type SNPCoverageTrackModel = ReturnType<typeof stateModelFactory>
