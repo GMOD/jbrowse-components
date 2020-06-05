@@ -136,6 +136,11 @@ function OverviewScaleBar({
     <div>
       <div className={classes.scaleBar}>
         {wholeRefSeqs.map((seq, idx) => {
+          const assembly = assemblyManager.get(seq.assemblyName)
+          let refNameColor: string | undefined
+          if (assembly) {
+            refNameColor = assembly.getRefNameColor(seq.refName)
+          }
           const regionLength = seq.end - seq.start
           const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
           const labels = []
@@ -151,12 +156,16 @@ function OverviewScaleBar({
                 minWidth: regionLength / scale,
                 marginRight:
                   idx === wholeRefSeqs.length - 1 ? undefined : wholeSeqSpacer,
+                borderColor: refNameColor,
               }}
               className={classes.scaleBarContig}
               variant="outlined"
             >
               {/* name of sequence */}
-              <Typography className={classes.scaleBarRefName}>
+              <Typography
+                style={{ color: refNameColor }}
+                className={classes.scaleBarRefName}
+              >
                 {seq.refName}
               </Typography>
               {/* where the boxes actually get drawn   */}
@@ -187,6 +196,7 @@ function OverviewScaleBar({
                   style={{
                     left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
                     pointerEvents: 'none',
+                    color: refNameColor,
                   }}
                 >
                   {label.toLocaleString()}

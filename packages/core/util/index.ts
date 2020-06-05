@@ -693,14 +693,13 @@ export function makeAbortableReaction<T, U, V>(
 export function renameRegionIfNeeded(
   refNameMap: Map<string, string>,
   region: Region,
-) {
+): Region & { originalRefName?: string } {
   if (isStateTreeNode(region) && !isAlive(region)) {
     return region
   }
   if (region && refNameMap && refNameMap.has(region.refName)) {
     // clone the region so we don't modify it
     if (isStateTreeNode(region)) {
-      // @ts-ignore
       region = { ...getSnapshot(region) }
     } else {
       region = { ...region }
@@ -709,7 +708,7 @@ export function renameRegionIfNeeded(
     // modify it directly in the container
     const newRef = refNameMap.get(region.refName)
     if (newRef) {
-      region.refName = newRef
+      return { ...region, refName: newRef, originalRefName: region.refName }
     }
   }
   return region
@@ -728,9 +727,7 @@ export async function renameRegionsIfNeeded<
   if (!args.sessionId) {
     throw new Error('sessionId is required')
   }
-  const newArgs: ARGTYPE & {
-    originalRegions?: Region[]
-  } = {
+  const newArgs: ARGTYPE = {
     ...args,
     regions: [...(args.regions || [])],
   }
@@ -748,7 +745,6 @@ export async function renameRegionsIfNeeded<
 
     // console.log(`${JSON.stringify(regions)} ${JSON.stringify(refNameMap)}`)
     if (refNameMap && regions && newArgs.regions) {
-      newArgs.originalRegions = args.regions
       for (let i = 0; i < regions.length; i += 1) {
         newArgs.regions[i] = renameRegionIfNeeded(refNameMap, regions[i])
       }

@@ -77,7 +77,10 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
       dataAdapter instanceof BaseFeatureDataAdapter &&
       dataAdapterSupportsMultiRegionStats(dataAdapter)
     ) {
-      return dataAdapter.getMultiRegionStats(regions, { signal, bpPerPx })
+      return dataAdapter.getMultiRegionStats(regions, {
+        signal,
+        bpPerPx,
+      })
     }
     return blankStats()
   }

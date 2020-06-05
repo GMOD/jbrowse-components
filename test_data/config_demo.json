@@ -77,7 +77,8 @@
         "hg19"
       ],
       "category": [
-        "Annotation"
+        "Annotation test",
+        "blah"
       ],
       "adapter": {
         "type": "Gff3TabixAdapter",

@@ -1,5 +1,5 @@
 import { Region } from '@gmod/jbrowse-core/util/types'
-import { PrerenderedCanvas, Tooltip } from '@gmod/jbrowse-core/ui'
+import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
 import { bpSpanPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import React, { MouseEvent, useRef, useState, useEffect } from 'react'
@@ -13,23 +13,25 @@ function PileupRendering(props: {
   height: number
   regions: Region[]
   bpPerPx: number
+  onMouseMove?: (event: React.MouseEvent, featureId: string | undefined) => void
 }) {
-  const { blockKey, trackModel, width, height, regions, bpPerPx } = props
   const {
-    selectedFeatureId,
-    featureIdUnderMouse,
-    blockLayoutFeatures,
-    features,
-    configuration,
-  } = trackModel || {}
+    onMouseMove,
+    blockKey,
+    trackModel,
+    width,
+    height,
+    regions,
+    bpPerPx,
+  } = props
+  const { selectedFeatureId, featureIdUnderMouse, blockLayoutFeatures } =
+    trackModel || {}
   const [region] = regions
   const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [localFeatureIdUnderMouse, setLocalFeatureIdUnderMouse] = useState()
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
     false,
   )
-  const [offset, setOffset] = useState([0, 0])
   useEffect(() => {
     const canvas = highlightOverlayCanvas.current
     if (!canvas) return
@@ -95,8 +97,6 @@ function PileupRendering(props: {
   function onMouseOut(event: MouseEvent) {
     callMouseHandler('MouseOut', event)
     callMouseHandler('MouseLeave', event)
-    trackModel.setFeatureIdUnderMouse(undefined)
-    setLocalFeatureIdUnderMouse(undefined)
   }
 
   function onMouseOver(event: MouseEvent) {
@@ -109,22 +109,26 @@ function PileupRendering(props: {
   }
 
   function onClick(event: MouseEvent) {
-    if (!movedDuringLastMouseDown) callMouseHandler('Click', event, true)
+    if (!movedDuringLastMouseDown) {
+      callMouseHandler('Click', event, true)
+    }
   }
 
   function onMouseLeave(event: MouseEvent) {
     callMouseHandler('MouseOut', event)
     callMouseHandler('MouseLeave', event)
-    trackModel.setFeatureIdUnderMouse(undefined)
-    setLocalFeatureIdUnderMouse(undefined)
   }
 
   function onContextMenu(event: MouseEvent) {
-    if (!movedDuringLastMouseDown) callMouseHandler('ContextMenu', event)
+    if (!movedDuringLastMouseDown) {
+      callMouseHandler('ContextMenu', event)
+    }
   }
 
-  function onMouseMove(event: MouseEvent) {
-    if (mouseIsDown) setMovedDuringLastMouseDown(true)
+  function mouseMove(event: MouseEvent) {
+    if (mouseIsDown) {
+      setMovedDuringLastMouseDown(true)
+    }
     let offsetX = 0
     let offsetY = 0
     if (highlightOverlayCanvas.current) {
@@ -137,22 +141,10 @@ function PileupRendering(props: {
     const clientBp = region.start + bpPerPx * px
 
     const feats = trackModel.getFeatureOverlapping(blockKey, clientBp, offsetY)
-    const featureIdCurrentlyUnderMouse = feats.length
-      ? feats[0].name
-      : undefined
-    setOffset([offsetX, offsetY])
-    setLocalFeatureIdUnderMouse(featureIdCurrentlyUnderMouse)
-    trackModel.setFeatureIdUnderMouse(featureIdCurrentlyUnderMouse)
+    const featIdUnderMouse = feats.length ? feats[0].name : undefined
 
-    if (featureIdUnderMouse === featureIdCurrentlyUnderMouse) {
-      callMouseHandler('MouseMove', event)
-    } else {
-      if (featureIdUnderMouse) {
-        callMouseHandler('MouseOut', event)
-        callMouseHandler('MouseLeave', event)
-      }
-      callMouseHandler('MouseOver', event)
-      callMouseHandler('MouseEnter', event)
+    if (onMouseMove) {
+      onMouseMove(event, featIdUnderMouse)
     }
   }
 
@@ -196,20 +188,12 @@ function PileupRendering(props: {
         onMouseOver={event => runner(() => onMouseOver(event))}
         onMouseUp={event => runner(() => onMouseUp(event))}
         onMouseLeave={event => runner(() => onMouseLeave(event))}
-        onMouseMove={event => runner(() => onMouseMove(event))}
+        onMouseMove={event => runner(() => mouseMove(event))}
         onClick={event => runner(() => onClick(event))}
         onContextMenu={event => runner(() => onContextMenu(event))}
         onFocus={() => {}}
         onBlur={() => {}}
       />
-      {localFeatureIdUnderMouse ? (
-        <Tooltip
-          configuration={configuration}
-          feature={features.get(localFeatureIdUnderMouse || '')}
-          offsetX={offset[0]}
-          offsetY={offset[1]}
-        />
-      ) : null}
     </div>
   )
 }

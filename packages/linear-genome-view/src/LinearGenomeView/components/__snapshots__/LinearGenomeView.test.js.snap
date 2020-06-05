@@ -7,10 +7,11 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
   >
     <div
       class="MuiPaper-root makeStyles-scaleBarContig MuiPaper-outlined MuiPaper-rounded"
-      style="min-width: 800px;"
+      style="min-width: 800px; border-color: rgb(153, 102, 0);"
     >
       <p
         class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
+        style="color: rgb(153, 102, 0);"
       >
         ctgA
       </p>
@@ -20,13 +21,13 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       />
       <div
         class="makeStyles-scaleBarLabel"
-        style="left: 400px;"
+        style="left: 400px; color: rgb(153, 102, 0);"
       >
         5
       </div>
       <div
         class="makeStyles-scaleBarLabel"
-        style="left: 800px;"
+        style="left: 800px; color: rgb(153, 102, 0);"
       >
         10
       </div>
@@ -820,10 +821,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
   >
     <div
       class="MuiPaper-root makeStyles-scaleBarContig MuiPaper-outlined MuiPaper-rounded"
-      style="min-width: 800px;"
+      style="min-width: 800px; border-color: rgb(153, 102, 0);"
     >
       <p
         class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
+        style="color: rgb(153, 102, 0);"
       >
         ctgA
       </p>
@@ -833,13 +835,13 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       />
       <div
         class="makeStyles-scaleBarLabel"
-        style="left: 400px;"
+        style="left: 400px; color: rgb(153, 102, 0);"
       >
         5
       </div>
       <div
         class="makeStyles-scaleBarLabel"
-        style="left: 800px;"
+        style="left: 800px; color: rgb(153, 102, 0);"
       >
         10
       </div>

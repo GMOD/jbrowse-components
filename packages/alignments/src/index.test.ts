@@ -41,7 +41,7 @@ const createMockTrack = (
   snpcoverage: TrackType,
 ) =>
   createMockTrackStateModel(track, pileup, snpcoverage).create({
-    staticBlocks: [],
+    staticBlocks: { contentBlocks: [] },
     track: {
       configuration: track.configSchema.create({
         type: 'AlignmentsTrack',
