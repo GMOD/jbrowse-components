@@ -696,6 +696,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.offsetPx = 0
       },
 
+      showAllRegionsButSlightlyZoomedIn() {
+        self.bpPerPx = (self.totalBp * 0.75) / self.width
+        self.offsetPx = self.width / 8
+      },
+
       setDraggingTrackId(idx?: string) {
         self.draggingTrackId = idx
       },

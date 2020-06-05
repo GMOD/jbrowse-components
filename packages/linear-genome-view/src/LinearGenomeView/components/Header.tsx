@@ -174,23 +174,20 @@ const Search = observer(({ model }: { model: LGV }) => {
     (region: Region | undefined) => {
       if (region) {
         model.setDisplayedRegions([region])
+        model.showAllRegionsButSlightlyZoomedIn()
       }
     },
     [model],
   )
 
-  const assemblyName = contentBlocks.length
-    ? contentBlocks[0].assemblyName
-    : undefined
+  const { assemblyName, refName } = contentBlocks[0] || {}
   return (
     <>
       <RefNameAutocomplete
         model={model}
         onSelect={setDisplayedRegion}
         assemblyName={assemblyName}
-        defaultRegionName={
-          displayedRegions.length > 1 ? '' : contentBlocks[0].refName
-        }
+        defaultRegionName={displayedRegions.length > 1 ? '' : refName}
         TextFieldProps={{
           variant: 'outlined',
           margin: 'dense',
