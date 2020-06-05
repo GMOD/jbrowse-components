@@ -691,11 +691,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.offsetPx = offsetPx
       },
 
+      // this makes a zoomed out view that shows all displayedRegions
+      // that makes the overview bar square with the scale bar
       showAllRegions() {
         self.bpPerPx = self.totalBp / self.width
         self.offsetPx = 0
       },
 
+      // this makes a zoomed out view that shows all displayedRegions
+      // but is slightly zoomed in, which looks nicer than having the overview
+      // scale bar square with the scale bar
       showAllRegionsButSlightlyZoomedIn() {
         self.bpPerPx = (self.totalBp * 0.75) / self.width
         self.offsetPx = self.width / 8
