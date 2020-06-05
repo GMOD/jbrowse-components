@@ -627,6 +627,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         let selectionEnd = Math.round(rightPx * scale) // end dragging
         const refSeqSelections: Region[] = []
         console.log('selection range: ', selectionStart, selectionEnd)
+
         // ex selection: 30000 - 53000, wholeRefSeq contains ctgA:0-50000, ctgB:0-5000
         // breaks selection into ctgA:30000-50000, ctgB:0 - 3000
         for (let i = 0; i < wholeRefSeqs.length; i++) {
@@ -695,6 +696,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // could change displayed regions instead using model.setDisplayedRegions(optimisticNewRegions)
         if (optimisticNewRegions.length)
           this.navToMultiple(optimisticNewRegions)
+
+        // modify navto for zooming into displayed regions,should be easier
+        // try out moveTo
       },
 
       // schedule something to be run after the next time displayedRegions is set
