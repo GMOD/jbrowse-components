@@ -79,23 +79,17 @@ export default (pluginManager: PluginManager) => {
       cache: new QuickLRU({ maxSize: 1000 }),
       fill: async (
         args: {
-          refName: string
-          assemblyName: string
-          start: number
-          end: number
+          region: Region
           bpPerPx: number
         },
         abortSignal?: AbortSignal,
       ): Promise<FeatureStats> => {
-        const { refName, start, end, assemblyName, bpPerPx } = args
-        const feats = this.getFeatures(
-          { refName, start, end, assemblyName },
-          {
-            signal: abortSignal,
-            basesPerSpan: bpPerPx,
-          },
-        )
-        return scoresToStats({ refName, start, end }, feats)
+        const { region, bpPerPx } = args
+        const feats = this.getFeatures(region, {
+          signal: abortSignal,
+          basesPerSpan: bpPerPx,
+        })
+        return scoresToStats(region, feats)
       },
     })
 
@@ -119,7 +113,7 @@ export default (pluginManager: PluginManager) => {
       const { bpPerPx, signal } = opts
       return this.statsCache.get(
         `${refName}_${start}_${end}_${bpPerPx}`,
-        { ...region, bpPerPx: bpPerPx || 0 },
+        { region, bpPerPx: bpPerPx || 0 },
         signal,
       )
     }
@@ -133,7 +127,7 @@ export default (pluginManager: PluginManager) => {
       }
 
       const feats = await Promise.all(
-        regions.map(r => this.getRegionStats(r, opts)),
+        regions.map((region, index) => this.getRegionStats(region, opts)),
       )
 
       const scoreMax = feats

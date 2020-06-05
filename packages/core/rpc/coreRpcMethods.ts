@@ -120,7 +120,6 @@ export class CoreFreeResources extends RpcMethodType {
 export interface RenderArgs {
   assemblyName: string
   regions: Region[]
-  originalRegions?: Region[]
   sessionId: string
   adapterConfig: {}
   rendererType: string
@@ -151,7 +150,6 @@ export class CoreRender extends RpcMethodType {
       adapterConfig,
       rendererType,
       renderProps,
-      originalRegions,
       signal,
     } = deserializedArgs
     if (!sessionId) {
@@ -187,7 +185,6 @@ export class CoreRender extends RpcMethodType {
       sessionId,
       dataAdapter,
       regions,
-      originalRegions,
       signal,
     })
     checkAbortSignal(signal)

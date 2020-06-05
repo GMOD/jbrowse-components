@@ -42,7 +42,7 @@ const stateModelFactory = (
           hideHeader: false,
         })
         .volatile(() => ({
-          ReactComponent: AlignmentsTrackComponent,
+          ReactComponent: (AlignmentsTrackComponent as unknown) as React.FC,
           sortedBy: '',
           showSoftClipping: false,
         })),

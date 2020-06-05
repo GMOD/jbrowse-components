@@ -34,7 +34,8 @@ export const YScaleBar = observer(({ model }: { model: WiggleTrackModel }) => {
         top: 0,
         left: 300,
         pointerEvents: 'none',
-        height: '100%',
+        height,
+        width: 50,
       }}
     >
       <Axis
@@ -49,12 +50,10 @@ export const YScaleBar = observer(({ model }: { model: WiggleTrackModel }) => {
 
 function WiggleTrackComponent(props: { model: WiggleTrackModel }) {
   const { model } = props
-  const { ready, stats } = model
+  const { ready, stats, needsScalebar } = model
   return (
     <BlockBasedTrack {...props}>
-      {ready && stats && model.needsScalebar ? (
-        <YScaleBar model={model} />
-      ) : null}
+      {ready && stats && needsScalebar ? <YScaleBar model={model} /> : null}
     </BlockBasedTrack>
   )
 }

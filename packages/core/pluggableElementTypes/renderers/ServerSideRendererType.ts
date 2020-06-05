@@ -34,7 +34,6 @@ interface BaseRenderArgs {
     blockKey: string
   }
   regions: Region[]
-  originalRegions?: Region[]
 }
 
 export interface RenderArgs extends BaseRenderArgs {
@@ -179,13 +178,7 @@ export default class ServerSideRenderer extends RendererType {
    * @returns Map of features as `{ id => feature, ... }`
    */
   async getFeatures(renderArgs: RenderArgsDeserialized) {
-    const {
-      dataAdapter,
-      signal,
-      bpPerPx,
-      regions,
-      originalRegions,
-    } = renderArgs
+    const { dataAdapter, signal, bpPerPx, regions } = renderArgs
     const features = new Map()
 
     if (!regions || regions.length === 0) {
@@ -212,13 +205,11 @@ export default class ServerSideRenderer extends RendererType {
             {
               signal,
               bpPerPx,
-              originalRegions,
             },
           )
         : dataAdapter.getFeaturesInMultipleRegions(requestRegions, {
             signal,
             bpPerPx,
-            originalRegions,
           })
 
     await featureObservable
