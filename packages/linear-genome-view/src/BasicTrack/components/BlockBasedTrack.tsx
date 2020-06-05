@@ -87,7 +87,7 @@ function BlockBasedTrack(props: {
       <TooltipComponent model={model} height={height} mouseCoord={mouseCoord} />
 
       <Menu
-        open={Boolean(contextCoord)}
+        open={Boolean(contextCoord) && Boolean(contextMenuOptions.length)}
         onMenuItemClick={(event, callback) => {
           callback()
           setContextCoord(undefined)

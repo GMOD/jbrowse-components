@@ -9,7 +9,6 @@ import {
 } from '@gmod/jbrowse-core/util'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import { addDisposer, types, Instance, isAlive } from 'mobx-state-tree'
-import { MenuOption } from '@gmod/jbrowse-core/ui'
 import RBush from 'rbush'
 import { Feature, isFeature } from '@gmod/jbrowse-core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
@@ -29,9 +28,9 @@ const blockBasedTrack = types
         blockState: types.map(BlockState),
       })
       .volatile(() => ({
-        contextMenuOptions: [] as MenuOption[],
         featureIdUnderMouse: undefined as undefined | string,
         ReactComponent: (BlockBasedTrack as unknown) as React.FC, // avoid circular reference
+        contextMenuFeature: undefined as undefined | Feature,
       })),
   )
   .views(self => {
@@ -229,10 +228,6 @@ const blockBasedTrack = types
       }
     },
 
-    contextMenuNoFeature() {
-      self.contextMenuOptions = []
-    },
-
     clearFeatureSelection() {
       const session = getSession(self)
       session.clearSelection()
@@ -242,18 +237,27 @@ const blockBasedTrack = types
       self.featureIdUnderMouse = feature
     },
   }))
-
   .actions(self => ({
-    contextMenuFeature(feature: Feature) {
-      self.contextMenuOptions = [
-        {
-          label: 'Open feature details',
-          icon: MenuOpenIcon,
-          onClick: () => {
-            self.selectFeature(feature)
-          },
-        },
-      ]
+    setContextMenuFeature(feature?: Feature) {
+      self.contextMenuFeature = feature
+    },
+  }))
+
+  .views(self => ({
+    get contextMenuOptions() {
+      return self.contextMenuFeature
+        ? [
+            {
+              label: 'Open feature details',
+              icon: MenuOpenIcon,
+              onClick: () => {
+                if (self.contextMenuFeature) {
+                  self.selectFeature(self.contextMenuFeature)
+                }
+              },
+            },
+          ]
+        : []
     },
   }))
 
@@ -281,9 +285,7 @@ const blockBasedTrack = types
             self.clearFeatureSelection()
           } else {
             // feature id under mouse passed to context menu
-            const feature = self.features.get(f)
-            // @ts-ignore
-            self.contextMenuFeature(feature as Feature)
+            self.setContextMenuFeature(self.features.get(f))
           }
         },
 
@@ -296,7 +298,7 @@ const blockBasedTrack = types
         },
 
         onContextMenu() {
-          self.contextMenuNoFeature()
+          self.setContextMenuFeature(undefined)
           self.clearFeatureSelection()
         },
       }

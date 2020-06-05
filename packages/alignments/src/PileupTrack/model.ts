@@ -80,33 +80,8 @@ const stateModelFactory = (
         session.notify('Copied to clipboard', 'success')
       },
 
-      // returned if there is no feature id under mouse
-      contextMenuNoFeature() {
-        const { trackModel } = getParentRenderProps(self)
-        self.contextMenuOptions = trackModel.menuOptions
-      },
       toggleSoftClipping() {
         self.showSoftClipping = !self.showSoftClipping
-      },
-
-      // returned if there is a feature id under mouse
-      contextMenuFeature(feature: Feature) {
-        const menuOptions = [
-          {
-            label: 'Open feature details',
-            icon: MenuOpenIcon,
-            onClick: () => {
-              self.clearFeatureSelection()
-              self.selectFeature(feature)
-            },
-          },
-          {
-            label: 'Copy info to clipboard',
-            icon: ContentCopyIcon,
-            onClick: () => this.copyFeatureToClipboard(feature),
-          },
-        ]
-        self.contextMenuOptions = menuOptions
       },
 
       async sortSelected(selected: string) {
@@ -177,6 +152,34 @@ const stateModelFactory = (
           throw new Error(`unknown alignments view name ${viewName}`)
         }
         return rendererType
+      },
+
+      // returned if there is a feature id under mouse
+      get contextMenuOptions() {
+        const feat = self.contextMenuFeature
+        return feat
+          ? [
+              {
+                label: 'Open feature details',
+                icon: MenuOpenIcon,
+                onClick: () => {
+                  self.clearFeatureSelection()
+                  if (feat) {
+                    self.selectFeature(feat)
+                  }
+                },
+              },
+              {
+                label: 'Copy info to clipboard',
+                icon: ContentCopyIcon,
+                onClick: () => {
+                  if (feat) {
+                    self.copyFeatureToClipboard(feat)
+                  }
+                },
+              },
+            ]
+          : []
       },
 
       get sortObject() {
