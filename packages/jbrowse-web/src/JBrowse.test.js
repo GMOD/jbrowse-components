@@ -522,9 +522,7 @@ describe('alignments track', () => {
     await waitForElement(() => getByText('Show soft clipping'))
     fireEvent.click(getByText('Show soft clipping'))
 
-    expect(state.session.views[0].tracks[0].showSoftClipping).toBe(true)
-
-    // wait for blocket to rerender after softclipping
+    // wait for block to rerender after softclipping
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
@@ -540,17 +538,6 @@ describe('alignments track', () => {
       failureThresholdType: 'percent',
     })
   }, 12000)
-
-  // it('access alignments context menu', async () => {
-  //   const pluginManager = getPluginManager()
-  //   const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
-  //   fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
-  //   const track = await findByTestId('track-volvox_alignments')
-
-  //   fireEvent.contextMenu(track, { clientX: 250, clientY: 20 })
-
-  //   expect(await findByTestId('alignments_context_menu')).toBeTruthy()
-  // })
 
   it('selects a sort, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -569,9 +556,10 @@ describe('alignments track', () => {
     expect(state.session.views[0].tracks[0]).toBeTruthy()
     const alignmentsTrack = state.session.views[0].tracks[0]
 
-    // open view level menu and chooses item to be sorted by
-    const viewMenu = await findByTestId('view_menu_icon')
-    fireEvent.click(viewMenu)
+    // opens the track menu and turns on soft clipping
+    const trackMenu = await findByTestId('track_menu_icon')
+
+    fireEvent.click(trackMenu)
     await waitForElement(() => getByText('Sort by'))
     fireEvent.click(getByText('Sort by'))
     await waitForElement(() => getByText('Read strand'))

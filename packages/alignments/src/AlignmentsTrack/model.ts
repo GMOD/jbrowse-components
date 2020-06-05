@@ -57,6 +57,10 @@ const stateModelFactory = (
         }
       },
 
+      get sortedBy() {
+        return self.PileupTrack.sortedBy
+      },
+
       get layoutFeatures() {
         return self.PileupTrack.layoutFeatures
       },
