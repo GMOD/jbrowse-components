@@ -57,6 +57,10 @@ interface NavLocation {
   assemblyName?: string
 }
 
+interface ZoomRegion extends Region {
+  index: number
+}
+
 export const HEADER_BAR_HEIGHT = 48
 export const HEADER_OVERVIEW_HEIGHT = 20
 export const SCALE_BAR_HEIGHT = 17
@@ -626,7 +630,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         let selectionStart = Math.round(leftPx * scale) // start dragging
         let selectionEnd = Math.round(rightPx * scale) // end dragging
         const refSeqSelections: Region[] = []
-        console.log('selection range: ', selectionStart, selectionEnd)
+        // console.log('selection range: ', selectionStart, selectionEnd)
 
         // ex selection: 30000 - 53000, wholeRefSeq contains ctgA:0-50000, ctgB:0-5000
         // breaks selection into ctgA:30000-50000, ctgB:0 - 3000
@@ -655,16 +659,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
           selectionEnd -= ref.end
         }
 
-        console.log('look at this', refSeqSelections)
+        // console.log('look at this', refSeqSelections)
 
-        const pessimisticNewRegions: Region[] = [] // assumes you have not found the final overlap
-        let optimisticNewRegions: Region[] = [] // assumes you have found the final overlap
+        const pessimisticNewRegions: ZoomRegion[] = [] // assumes you have not found the final overlap
+        let optimisticNewRegions: ZoomRegion[] = [] // assumes you have found the final overlap
         let firstOverlapFound = false
 
         // go through all the selections and zoom for each displayedRegion contained in selection
         refSeqSelections.forEach(seq => {
           const { start, end, refName } = seq
-          self.displayedRegions.forEach(region => {
+          self.displayedRegions.forEach((region, idx) => {
             if (region.refName !== refName) return
             if (doesIntersect2(start, end, region.start, region.end)) {
               let startValue = region.start
@@ -679,26 +683,53 @@ export function stateModelFactory(pluginManager: PluginManager) {
               optimisticNewRegions = JSON.parse(
                 JSON.stringify(pessimisticNewRegions),
               )
+
               // push region with the selected end to optimistic, assume current region is final overlap
               optimisticNewRegions.push({
                 ...region,
                 start: startValue,
                 end: region.end > end ? end : region.end,
+                index: idx,
               })
-              pessimisticNewRegions.push({ ...region, start: startValue })
+              pessimisticNewRegions.push({
+                ...region,
+                start: startValue,
+                index: idx,
+              })
             }
             // add regions that don't overlap to pessimistic, display if overlap is found in later region
-            else if (firstOverlapFound) pessimisticNewRegions.push(region)
+            else if (firstOverlapFound)
+              pessimisticNewRegions.push({ ...region, index: idx })
           })
         })
 
-        console.log(optimisticNewRegions)
+        // console.log(optimisticNewRegions)
         // could change displayed regions instead using model.setDisplayedRegions(optimisticNewRegions)
-        if (optimisticNewRegions.length)
-          this.navToMultiple(optimisticNewRegions)
+        // if (optimisticNewRegions.length)
+        //   this.navToMultiple(optimisticNewRegions)
 
         // modify navto for zooming into displayed regions,should be easier
         // try out moveTo
+        if (optimisticNewRegions.length) {
+          const lastIdx = optimisticNewRegions.length - 1
+          const startingDisplayZoom = optimisticNewRegions[0].index
+          const endingDisplayZoom = optimisticNewRegions[lastIdx].index
+          const startMoveTo = {
+            ...optimisticNewRegions[0],
+            offset:
+              optimisticNewRegions[0].start -
+              self.displayedRegions[startingDisplayZoom].start,
+          }
+          const endMoveTo = {
+            ...optimisticNewRegions[lastIdx],
+            offset:
+              optimisticNewRegions[lastIdx].end -
+              self.displayedRegions[endingDisplayZoom].start,
+          }
+
+          console.log(startMoveTo, endMoveTo)
+          this.moveTo(startMoveTo, endMoveTo, true)
+        }
       },
 
       // schedule something to be run after the next time displayedRegions is set
@@ -713,21 +744,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param start - object as `{start, end, offset, index}`
        * @param end - object as `{start, end, offset, index}`
        */
-      moveTo(start: BpOffset, end: BpOffset) {
+      moveTo(start: BpOffset, end: BpOffset, zooming = false) {
         // find locations in the modellist
         let bpSoFar = 0
+
+        const mdisplayedRegions = JSON.parse(
+          JSON.stringify(self.displayedRegions),
+        )
+        if (zooming && end.end) mdisplayedRegions[end.index].end = end.end
         if (start.index === end.index) {
           bpSoFar += end.offset - start.offset
         } else {
-          const s = self.displayedRegions[start.index]
+          const s = mdisplayedRegions[start.index]
           bpSoFar += (s.reversed ? s.start : s.end) - start.offset
           if (end.index - start.index >= 2) {
             for (let i = start.index + 1; i < end.index; i += 1) {
-              bpSoFar +=
-                self.displayedRegions[i].end - self.displayedRegions[i].start
+              bpSoFar += mdisplayedRegions[i].end - mdisplayedRegions[i].start
             }
           }
-          bpSoFar += end.offset
+          if (!zooming) bpSoFar += end.offset
         }
         self.bpPerPx =
           bpSoFar /
@@ -735,8 +770,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
             self.interRegionPaddingWidth * (end.index - start.index))
 
         let bpToStart = 0
-        for (let i = 0; i < self.displayedRegions.length; i += 1) {
-          const region = self.displayedRegions[i]
+        for (let i = 0; i < mdisplayedRegions.length; i += 1) {
+          const region = mdisplayedRegions[i]
           if (start.index === i) {
             bpToStart += start.offset
             break
