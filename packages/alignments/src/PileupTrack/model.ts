@@ -150,6 +150,10 @@ export default (
           .then(() => {
             this.applySortSelected(selected, centerBp)
           })
+          .catch((error: Error) => {
+            console.error(error)
+            self.setError(error.message)
+          })
       },
       applySortSelected(selected: string, centerBp: number) {
         self.sortedBy = selected
