@@ -612,13 +612,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
-      // need to somehow get the refname of when user starts dragging and ends dragging
-      // so if user starts dragging ctgA: 40000 and ends ctgB: 3000
-      // should be zoom ctgA: 40000 - 50000 and ctgB: 0 - 3000
-      // start needs to check that its on ctg, end needs to check its on ctgB
-      // and also both need to account for spacer if they selected on ctgB ( or any thats not the first)
-
-      // prob need wholeRefSeqs.forEach.seqName and pass into this component
       zoomToDisplayedRegions(
         leftPx: number | undefined,
         rightPx: number | undefined,
@@ -630,41 +623,72 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ;[leftPx, rightPx] = [rightPx, leftPx]
         }
 
-        // with two refNames, need to account for refNamespacer (2) at end
-        const start = Math.round(leftPx * scale) // start dragging
-        const end = Math.round(rightPx * scale) // end dragging
-        let firstOverlapFound = false
-        console.log(start, end, wholeRefSeqs) // TODO: use wholerefseqs to match up refnames
+        let selectionStart = Math.round(leftPx * scale) // start dragging
+        let selectionEnd = Math.round(rightPx * scale) // end dragging
+        const refSeqSelections: Region[] = []
+        console.log('selection range: ', selectionStart, selectionEnd)
+        // ex selection: 30000 - 53000, wholeRefSeq contains ctgA:0-50000, ctgB:0-5000
+        // breaks selection into ctgA:30000-50000, ctgB:0 - 3000
+        for (let i = 0; i < wholeRefSeqs.length; i++) {
+          const ref = wholeRefSeqs[i]
+          // selection falls into current refSeq, push the selection and stop looking
+          if (ref.end > selectionEnd) {
+            refSeqSelections.push({
+              ...ref,
+              start: refSeqSelections.length ? 0 : selectionStart, // start from 0 if another refSeq in array
+              end: selectionEnd,
+            })
+            break
+          }
+          // selection extends past current refseq, set end to end of current refseq
+          // and calculate start/end for the next refseq
+          if (
+            doesIntersect2(selectionStart, selectionEnd, ref.start, ref.end)
+          ) {
+            refSeqSelections.push({
+              ...ref,
+              start: refSeqSelections.length ? 0 : selectionStart,
+            })
+          }
+          selectionStart -= ref.end
+          selectionEnd -= ref.end
+        }
+
+        console.log('look at this', refSeqSelections)
 
         const pessimisticNewRegions: Region[] = [] // assumes you have not found the final overlap
         let optimisticNewRegions: Region[] = [] // assumes you have found the final overlap
+        let firstOverlapFound = false
 
-        // run through the regions
-        // need to check refname still!
-        self.displayedRegions.forEach(region => {
-          if (doesIntersect2(start, end, region.start, region.end)) {
-            let startValue = region.start
-            // if first instance of overlap modify the first overlapping region's start
-            if (!firstOverlapFound) {
-              startValue = region.start < start ? start : region.start
-              firstOverlapFound = true
+        // go through all the selections and zoom for each displayedRegion contained in selection
+        refSeqSelections.forEach(seq => {
+          const { start, end, refName } = seq
+          self.displayedRegions.forEach(region => {
+            if (region.refName !== refName) return
+            if (doesIntersect2(start, end, region.start, region.end)) {
+              let startValue = region.start
+              // if first instance of overlap modify the first overlapping region's start
+              if (!firstOverlapFound) {
+                startValue = region.start < start ? start : region.start
+                firstOverlapFound = true
+              }
+
+              // current region overlapping means previous region was not region with final overlap
+              // overwrite optimistic with pessimistic since pessimistic still correct
+              optimisticNewRegions = JSON.parse(
+                JSON.stringify(pessimisticNewRegions),
+              )
+              // push region with the selected end to optimistic, assume current region is final overlap
+              optimisticNewRegions.push({
+                ...region,
+                start: startValue,
+                end: region.end > end ? end : region.end,
+              })
+              pessimisticNewRegions.push({ ...region, start: startValue })
             }
-
-            // current region overlapping means previous region was not region with final overlap
-            // overwrite optimistic with pessimistic
-            optimisticNewRegions = JSON.parse(
-              JSON.stringify(pessimisticNewRegions),
-            )
-            // push region with the selected end to optimistic, assume current region is final overlap
-            optimisticNewRegions.push({
-              ...region,
-              start: startValue,
-              end: region.end > end ? end : region.end,
-            })
-            pessimisticNewRegions.push({ ...region, start: startValue })
-          }
-          // add regions that don't overlap to pessimistic, display if overlap is found in later region
-          else if (firstOverlapFound) pessimisticNewRegions.push(region)
+            // add regions that don't overlap to pessimistic, display if overlap is found in later region
+            else if (firstOverlapFound) pessimisticNewRegions.push(region)
+          })
         })
 
         console.log(optimisticNewRegions)

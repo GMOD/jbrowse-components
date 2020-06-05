@@ -125,7 +125,6 @@ function OverviewRubberBand({
     event.preventDefault()
     event.stopPropagation()
     const relativeX = event.nativeEvent.offsetX + seqOffsetX
-    console.log(relativeX)
     setStartX(relativeX)
   }
 
