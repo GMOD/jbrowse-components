@@ -32,7 +32,7 @@ function AlignmentsTrackComponent({ model }: { model: AlignmentsTrackModel }) {
         }}
         style={{
           position: 'absolute',
-          top: SNPCoverageTrack ? SNPCoverageTrack.height + 2 : 0,
+          top: showCoverage ? SNPCoverageTrack.height + 2 : 0,
           height: 3,
         }}
       />
@@ -41,7 +41,7 @@ function AlignmentsTrackComponent({ model }: { model: AlignmentsTrackModel }) {
         data-testid="Blockset-pileup"
         style={{
           position: 'absolute',
-          top: SNPCoverageTrack ? SNPCoverageTrack.height + 5 : 0,
+          top: showCoverage ? SNPCoverageTrack.height + 5 : 0,
           height: 3,
         }}
       >

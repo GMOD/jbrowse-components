@@ -455,6 +455,48 @@ describe('alignments track', () => {
     // this is to confirm a alignment detail drawer widget opened
     await expect(findAllByTestId('alignment-side-drawer')).resolves.toBeTruthy()
   }, 15000)
+  it('opens a SNPCoverageTrack', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText, findAllByTestId } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(5, 100)
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_snpcoverage'))
+
+    const snpCoverageCanvas = await findAllByTestId('prerendered_canvas')
+    const snpCoverageImg = snpCoverageCanvas[0].toDataURL()
+    const snpCoverageData = snpCoverageImg.replace(
+      /^data:image\/\w+;base64,/,
+      '',
+    )
+    const snpCoverageBuf = Buffer.from(snpCoverageData, 'base64')
+    expect(snpCoverageBuf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
+  }, 15000)
+
+  it('opens a PileupTrack', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText, findAllByTestId } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(5, 100)
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
+
+    const pileupCanvas = await findAllByTestId('prerendered_canvas')
+    const pileupImg = pileupCanvas[0].toDataURL()
+    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
+    const pileupBuf = Buffer.from(pileupData, 'base64')
+    expect(pileupBuf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
+  }, 15000)
 
   // Note: tracks with assembly volvox don't have much soft clipping
   it('opens the track menu and enables soft clipping', async () => {

@@ -2,18 +2,27 @@ import {
   ConfigurationReference,
   getConf,
 } from '@gmod/jbrowse-core/configuration'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { ContentCopy as ContentCopyIcon } from '@gmod/jbrowse-core/ui/Icons'
+import {
+  getParentRenderProps,
+  getRpcSessionId,
+} from '@gmod/jbrowse-core/util/tracks'
 import {
   getSession,
   isSessionModelWithDrawerWidgets,
+  getContainingView,
 } from '@gmod/jbrowse-core/util'
+import { MenuOption } from '@gmod/jbrowse-core/ui'
+
+import VisibilityIcon from '@material-ui/icons/Visibility'
+import { ContentCopy as ContentCopyIcon } from '@gmod/jbrowse-core/ui/Icons'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
+import SortIcon from '@material-ui/icons/Sort'
+import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { PileupConfigModel } from './configSchema'
 
 // using a map because it preserves order
@@ -34,8 +43,13 @@ export default (
       types.model({
         type: types.literal('PileupTrack'),
         configuration: ConfigurationReference(configSchema),
+        centerLinePosition: types.maybe(types.number),
       }),
     )
+    .volatile(() => ({
+      showSoftClipping: false,
+      sortedBy: '',
+    }))
     .actions(self => ({
       selectFeature(feature: Feature) {
         const session = getSession(self)
@@ -48,6 +62,11 @@ export default (
           session.showDrawerWidget(featureWidget)
         }
         session.setSelection(feature)
+      },
+
+      clearSelected() {
+        self.sortedBy = ''
+        self.centerLinePosition = undefined
       },
 
       // uses copy-to-clipboard and generates notification
@@ -63,6 +82,9 @@ export default (
       contextMenuNoFeature() {
         const { trackModel } = getParentRenderProps(self)
         self.contextMenuOptions = trackModel.menuOptions
+      },
+      toggleSoftClipping() {
+        self.showSoftClipping = !self.showSoftClipping
       },
 
       // returned if there is a feature id under mouse
@@ -81,15 +103,58 @@ export default (
             icon: ContentCopyIcon,
             onClick: () => this.copyFeatureToClipboard(feature),
           },
-          // {
-          //   label: 'View dotpot',
-          //   icon: ScatterPlotIcon,
-          //   onClick: () => {},
-          // },
-
-          // any custom right click can be appended to self.contextMenuOptions
         ]
         self.contextMenuOptions = menuOptions
+      },
+
+      async sortSelected(selected: string) {
+        const { rpcManager } = getSession(self)
+        const { centerLineInfo } = getContainingView(
+          self,
+        ) as LinearGenomeViewModel
+        if (!centerLineInfo) {
+          return
+        }
+
+        const centerBp = Math.round(centerLineInfo.offset) + 1
+
+        if (centerBp < 0) {
+          return
+        }
+
+        const regions = [
+          {
+            refName: centerLineInfo.refName,
+            start: centerBp,
+            end: centerBp + 1,
+            assemblyName: centerLineInfo.assemblyName,
+          },
+        ]
+
+        // render just the sorted region first
+        self.rendererType
+          .renderInClient(rpcManager, {
+            assemblyName: regions[0].assemblyName,
+            regions,
+            adapterConfig: getConf(self, 'adapter'),
+            rendererType: self.rendererType.name,
+            renderProps: {
+              ...self.renderProps,
+              sortObject: {
+                position: centerBp,
+                by: selected,
+              },
+            },
+            sessionId: getRpcSessionId(self),
+            timeout: 1000000,
+          })
+          .then(() => {
+            this.applySortSelected(selected, centerBp)
+          })
+      },
+      applySortSelected(selected: string, centerBp: number) {
+        self.sortedBy = selected
+        self.centerLinePosition = centerBp
       },
     }))
     .views(self => ({
@@ -103,16 +168,13 @@ export default (
       },
 
       get sortObject() {
-        const { trackModel } = getParentRenderProps(self)
-        return trackModel
-          ? {
-              position: trackModel.centerLinePosition,
-              by: trackModel.sortedBy,
-            }
-          : {
-              position: 0,
-              by: '',
-            }
+        return {
+          position: self.centerLinePosition,
+          by: self.sortedBy,
+        }
+      },
+      get sortOptions() {
+        return ['Start location', 'Read strand', 'Base pair', 'Clear sort']
       },
 
       get renderProps() {
@@ -124,8 +186,41 @@ export default (
           ...getParentRenderProps(self),
           trackModel: self,
           sortObject: this.sortObject,
-          showSoftClip: getParentRenderProps(self).trackModel.showSoftClipping,
+          showSoftClip: self.showSoftClipping,
           config,
         }
+      },
+
+      get menuOptions() {
+        return [
+          {
+            label: 'Show soft clipping',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: self.showSoftClipping,
+            onClick: () => {
+              self.toggleSoftClipping()
+              // if toggling from off to on, will break sort for this track so clear it
+              if (self.showSoftClipping) {
+                self.clearSelected()
+              }
+            },
+          },
+          {
+            label: 'Sort by',
+            icon: SortIcon,
+            disabled: self.showSoftClipping,
+            subMenu: this.sortOptions.map((option: string) => {
+              return {
+                label: option,
+                onClick() {
+                  option === 'Clear sort'
+                    ? self.clearSelected()
+                    : self.sortSelected(option)
+                },
+              }
+            }),
+          },
+        ]
       },
     }))
