@@ -243,6 +243,20 @@ const blockBasedTrack = types
     },
   }))
 
+  .actions(self => ({
+    contextMenuFeature(feature: Feature) {
+      self.contextMenuOptions = [
+        {
+          label: 'Open feature details',
+          icon: MenuOpenIcon,
+          onClick: () => {
+            self.selectFeature(feature)
+          },
+        },
+      ]
+    },
+  }))
+
   .views(self => ({
     get composedRenderProps() {
       return {
@@ -268,6 +282,7 @@ const blockBasedTrack = types
           } else {
             // feature id under mouse passed to context menu
             const feature = self.features.get(f)
+            // @ts-ignore
             self.contextMenuFeature(feature as Feature)
           }
         },
@@ -288,19 +303,6 @@ const blockBasedTrack = types
     },
     get renderProps() {
       return this.composedRenderProps
-    },
-  }))
-  .actions(self => ({
-    contextMenuFeature(feature: Feature) {
-      self.contextMenuOptions = [
-        {
-          label: 'Open feature details',
-          icon: MenuOpenIcon,
-          onClick: () => {
-            self.selectFeature(feature)
-          },
-        },
-      ]
     },
   }))
   .postProcessSnapshot(self => {
