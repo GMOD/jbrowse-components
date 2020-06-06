@@ -15,9 +15,9 @@ export function cigarToMismatches(ops: string[], seq: string): Mismatch[] {
   let currOffset = 0
   let seqOffset = 0
   const mismatches: Mismatch[] = []
-  for (let i = 0; i < ops.length; i += 2) {
-    const len = +ops[0]
-    const op = ops[1]
+  for (let i = 0; i < ops.length - 1; i += 2) {
+    const len = +ops[i]
+    const op = ops[i + 1]
     if (op === 'M' || op === '=' || op === 'E') {
       seqOffset += len
     }
@@ -46,11 +46,11 @@ export function cigarToMismatches(ops: string[], seq: string): Mismatch[] {
       })
     } else if (op === 'X') {
       const r = seq.slice(seqOffset, seqOffset + len)
-      for (let i = 0; i < len; i++) {
+      for (let j = 0; j < len; j++) {
         mismatches.push({
-          start: currOffset + i,
+          start: currOffset + j,
           type: 'mismatch',
-          base: r[i],
+          base: r[j],
           length: 1,
         })
       }
@@ -132,7 +132,7 @@ export function mdToMismatches(
       nextRecord()
     } else if (token.match(/^[a-z]/i)) {
       // mismatch
-      for (let i = 0; i < token.length; i += 1) {
+      for (let j = 0; j < token.length; j += 1) {
         curr.length = 1
         curr.base = seq
           ? seq.substr(
