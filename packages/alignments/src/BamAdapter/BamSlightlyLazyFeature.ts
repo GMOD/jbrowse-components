@@ -16,9 +16,9 @@ export interface Mismatch {
   cliplen?: number
 }
 
-type CigarOp = [string, number]
-
 export default class implements Feature {
+  private pattern = new RegExp('([MIDNSHPX=])')
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private record: any
 
@@ -208,7 +208,7 @@ export default class implements Feature {
   ): Mismatch[] {
     const { cigarAttributeName } = opts
     let mismatches: Mismatch[] = []
-    let cigarOps: CigarOp[] = []
+    let cigarOps: string[] = []
 
     // parse the CIGAR tag if it has one
     const cigarString = this.get(cigarAttributeName)
@@ -230,7 +230,7 @@ export default class implements Feature {
   ): Mismatch[] {
     const { cigarAttributeName, mdAttributeName } = opts
     let mismatches: Mismatch[] = []
-    let cigarOps: CigarOp[] = []
+    let cigarOps: string[] = []
 
     // parse the CIGAR tag if it has one
     const cigarString = this.get(cigarAttributeName)
@@ -264,14 +264,14 @@ export default class implements Feature {
       : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
   }
 
-  private cigarToMismatches(ops: CigarOp[]): Mismatch[] {
+  private cigarToMismatches(ops: string[]): Mismatch[] {
     let currOffset = 0
     let seqOffset = 0
     const seq = this.get('seq')
     const mismatches: Mismatch[] = []
-    ops.forEach(oprec => {
-      const op = oprec[0]
-      const len = oprec[1]
+    for (let i = 0; i < ops.length; i += 2) {
+      const len = +ops[0]
+      const op = ops[1]
       if (op === 'M' || op === '=' || op === 'E') {
         seqOffset += len
       }
@@ -331,15 +331,12 @@ export default class implements Feature {
       if (op !== 'I' && op !== 'S' && op !== 'H') {
         currOffset += len
       }
-    })
+    }
     return mismatches
   }
 
-  private parseCigar(cigar: string): CigarOp[] {
-    return (cigar.toUpperCase().match(/\d+\D/g) || []).map((op: string) => {
-      // @ts-ignore
-      return [op.match(/\D/)[0], parseInt(op, 10)]
-    })
+  private parseCigar(cigar: string) {
+    return cigar.split(/([MIDNSHPX=])/)
   }
 
   /**
@@ -348,7 +345,7 @@ export default class implements Feature {
    */
   private mdToMismatches(
     mdstring: string,
-    cigarOps: CigarOp[],
+    cigarOps: string[],
     cigarMismatches: Mismatch[],
   ): Mismatch[] {
     const mismatchRecords: Mismatch[] = []
@@ -412,12 +409,12 @@ export default class implements Feature {
     return mismatchRecords
   }
 
-  private getTemplateCoord(refCoord: number, cigarOps: CigarOp[]): number {
+  private getTemplateCoord(refCoord: number, cigarOps: string[]): number {
     let templateOffset = 0
     let refOffset = 0
-    for (let i = 0; i < cigarOps.length && refOffset <= refCoord; i += 1) {
-      const op = cigarOps[i][0]
-      const len = cigarOps[i][1]
+    for (let i = 0; i < cigarOps.length && refOffset <= refCoord; i += 2) {
+      const len = +cigarOps[i]
+      const op = cigarOps[i + 1]
       if (op === 'S' || op === 'I') {
         templateOffset += len
       } else if (op === 'D' || op === 'P') {
