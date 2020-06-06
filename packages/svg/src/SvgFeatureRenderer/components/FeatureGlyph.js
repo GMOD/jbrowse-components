@@ -69,6 +69,13 @@ function FeatureGlyph(props) {
     return handler(event, feature.id())
   }
 
+  function onFeatureContextMenu(event) {
+    const { onFeatureContextMenu: handler } = props
+    if (!handler) return undefined
+    event.stopPropagation()
+    return handler(event, feature.id())
+  }
+
   const featureLayout = rootLayout.getSubRecord(String(feature.id()))
   const { GlyphComponent } = featureLayout.data
 
@@ -128,6 +135,7 @@ function FeatureGlyph(props) {
       onMouseLeave={onFeatureMouseLeave}
       onMouseMove={onFeatureMouseMove}
       onClick={onFeatureClick}
+      onContextMenu={onFeatureContextMenu}
       onFocus={onFeatureMouseOver}
       onBlur={onFeatureMouseOut}
     >
@@ -171,6 +179,7 @@ FeatureGlyph.propTypes = {
 
   // synthesized from mouseup and mousedown
   onFeatureClick: PropTypes.func,
+  onFeatureContextMenu: PropTypes.func,
 }
 
 FeatureGlyph.defaultProps = {
@@ -188,6 +197,7 @@ FeatureGlyph.defaultProps = {
   onFeatureMouseUp: undefined,
   onFeatureMouseLeave: undefined,
   onFeatureMouseMove: undefined,
+  onFeatureContextMenu: undefined,
 
   onFeatureClick: undefined,
   fontHeight: undefined,

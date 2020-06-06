@@ -3,6 +3,7 @@
 exports[`one 1`] = `
 <div
   class="PileupRendering"
+  data-testid="pileup-normal"
   style="position: relative; width: 500px; height: 500px;"
 >
   <canvas
