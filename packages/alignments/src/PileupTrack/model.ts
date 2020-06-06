@@ -154,7 +154,6 @@ const stateModelFactory = (
         return rendererType
       },
 
-      // returned if there is a feature id under mouse
       get contextMenuOptions() {
         const feat = self.contextMenuFeature
         return feat
