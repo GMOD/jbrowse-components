@@ -6,7 +6,10 @@ import { PileupTrackModel } from '../model'
 function TrackBlurb(props: { model: PileupTrackModel }) {
   const { model } = props
   return (
-    <div style={{ backgroundColor: 'white' }}>
+    <div
+      data-testid={`blurb-${model.sortedBy}`}
+      style={{ backgroundColor: 'white' }}
+    >
       <Typography color="secondary" variant="caption">
         {model.sortedBy
           ? `Sorted by ${model.sortedBy.toLowerCase()} at ${

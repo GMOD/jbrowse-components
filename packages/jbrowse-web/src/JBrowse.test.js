@@ -546,46 +546,38 @@ describe('alignments track', () => {
   it('selects a sort, updates object and layout', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findByText, getByText } = render(
+    const { findByTestId, findByText, findAllByTestId } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
-    state.session.views[0].setNewView(5, 100)
+    state.session.views[0].setNewView(1, 2000)
 
     // load track
     fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+      await findByTestId('htsTrackEntry-volvox-long-reads-sv-cram'),
     )
-    await findByTestId('track-volvox_alignments_pileup_coverage')
+    await findByTestId('track-volvox-long-reads-sv-cram')
     expect(state.session.views[0].tracks[0]).toBeTruthy()
-    const alignmentsTrack = state.session.views[0].tracks[0]
 
     // opens the track menu and turns on soft clipping
     const trackMenu = await findByTestId('track_menu_icon')
 
     fireEvent.click(trackMenu)
-    await waitForElement(() => getByText('Sort by'))
-    fireEvent.click(getByText('Sort by'))
-    await waitForElement(() => getByText('Read strand'))
-    fireEvent.click(getByText('Read strand'))
+    fireEvent.click(await findByText('Sort by'))
+    fireEvent.click(await findByText('Read strand'))
 
-    // wait til sort is complete
-    await wait(() => {
-      expect(alignmentsTrack.sortedBy).toBe('Read strand')
-    })
+    // wait for pileup track to render with sort
+    await findAllByTestId('pileup-Read strand')
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
-    const pileupCanvas = await findAllByTestId1('prerendered_canvas')
-    const pileupImg = pileupCanvas[0].toDataURL()
-    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
-    const pileupBuf = Buffer.from(pileupData, 'base64')
-    expect(pileupBuf).toMatchImageSnapshot({
-      failureThreshold: 0.5,
-      failureThresholdType: 'percent',
-    })
+    const canvases = await findAllByTestId1('prerendered_canvas')
+    const img = canvases[0].toDataURL()
+    const data = img.replace(/^data:image\/\w+;base64,/, '')
+    const buf = Buffer.from(data, 'base64')
+    expect(buf).toMatchImageSnapshot()
   }, 10000)
 })
 describe('bigwig', () => {
