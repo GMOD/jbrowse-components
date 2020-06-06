@@ -358,8 +358,12 @@ test('variant track test - opens feature detail view', async () => {
   fireEvent.click(await findByTestId('test-vcf-604452'))
 
   // this text is to confirm a feature detail drawer opened
-  await expect(findByText('ctgA:277..277')).resolves.toBeTruthy()
-})
+  expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
+  fireEvent.click(await findByTestId('drawer-close'))
+  fireEvent.contextMenu(await findByTestId('test-vcf-604452'))
+  fireEvent.click(await findByText('Open feature details'))
+  expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
+}, 10000)
 
 describe('nclist track test with long name', () => {
   it('see that a feature gets ellipses', async () => {
