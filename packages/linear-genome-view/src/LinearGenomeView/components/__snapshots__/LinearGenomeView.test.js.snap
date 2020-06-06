@@ -570,13 +570,14 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="349"
+                  data-html-size="377"
                 >
                   <div
                     classname="ssr-container-inner"
                   >
                     <div
                       class="PileupRendering"
+                      data-testid="pileup-normal"
                       style="position:relative;width:0;height:0"
                     >
                       <canvas
@@ -1707,13 +1708,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="349"
+                  data-html-size="377"
                 >
                   <div
                     classname="ssr-container-inner"
                   >
                     <div
                       class="PileupRendering"
+                      data-testid="pileup-normal"
                       style="position:relative;width:0;height:0"
                     >
                       <canvas
@@ -1743,13 +1745,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="349"
+                  data-html-size="377"
                 >
                   <div
                     classname="ssr-container-inner"
                   >
                     <div
                       class="PileupRendering"
+                      data-testid="pileup-normal"
                       style="position:relative;width:0;height:0"
                     >
                       <canvas
@@ -1775,13 +1778,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="349"
+                  data-html-size="377"
                 >
                   <div
                     classname="ssr-container-inner"
                   >
                     <div
                       class="PileupRendering"
+                      data-testid="pileup-normal"
                       style="position:relative;width:0;height:0"
                     >
                       <canvas
@@ -1928,13 +1932,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="349"
+                  data-html-size="377"
                 >
                   <div
                     classname="ssr-container-inner"
                   >
                     <div
                       class="PileupRendering"
+                      data-testid="pileup-normal"
                       style="position:relative;width:0;height:0"
                     >
                       <canvas
@@ -1964,13 +1969,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="349"
+                  data-html-size="377"
                 >
                   <div
                     classname="ssr-container-inner"
                   >
                     <div
                       class="PileupRendering"
+                      data-testid="pileup-normal"
                       style="position:relative;width:0;height:0"
                     >
                       <canvas
@@ -1996,13 +2002,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="349"
+                  data-html-size="377"
                 >
                   <div
                     classname="ssr-container-inner"
                   >
                     <div
                       class="PileupRendering"
+                      data-testid="pileup-normal"
                       style="position:relative;width:0;height:0"
                     >
                       <canvas
