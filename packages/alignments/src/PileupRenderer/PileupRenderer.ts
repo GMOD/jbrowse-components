@@ -223,9 +223,7 @@ export default class PileupRenderer extends BoxRendererType {
     )
 
     const width = (region.end - region.start) / bpPerPx
-    const height = layout.getTotalHeight()
-    if (!(width > 0) || !(height > 0))
-      return { height: 0, width: 0, maxHeightReached: false }
+    const height = Math.max(layout.getTotalHeight(), 1)
 
     const canvas = createCanvas(
       Math.ceil(width * highResolutionScaling),
