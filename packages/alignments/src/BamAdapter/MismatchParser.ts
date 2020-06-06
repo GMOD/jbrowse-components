@@ -158,7 +158,7 @@ export function getTemplateCoord(refCoord: number, cigarOps: string[]): number {
       templateOffset += len
     } else if (op === 'D' || op === 'P') {
       refOffset += len
-    } else {
+    } else if (op !== 'H') {
       templateOffset += len
       refOffset += len
     }
