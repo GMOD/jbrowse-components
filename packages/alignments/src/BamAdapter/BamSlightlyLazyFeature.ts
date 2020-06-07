@@ -71,7 +71,7 @@ export default class implements Feature {
   }
 
   _get_refname(): string | undefined {
-    return this.adapter.refIdToName(this.record._refID)
+    return this.adapter.refIdToName(this.record.seq_id())
   }
 
   _get_qc_failed(): boolean {
