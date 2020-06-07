@@ -59,7 +59,11 @@ test('get mismatches', () => {
     { altbase: 'A', base: 'C', length: 1, start: 5, type: 'mismatch' },
     { altbase: 'C', base: 'A', length: 1, start: 6, type: 'mismatch' },
   ])
-
+  expect(getMismatches('6M200N6M', '5AC5', 'GGGGGCATTTTT')).toEqual([
+    { base: 'N', length: 200, start: 6, type: 'skip' },
+    { altbase: 'A', base: 'C', length: 1, start: 5, type: 'mismatch' },
+    { altbase: 'C', base: 'A', length: 1, start: 206, type: 'mismatch' },
+  ])
   expect(
     getMismatches('31M1I17M1D37M', '6G4C20G1A5C5A1^C3A15G1G15', seq).sort(
       (a, b) => a.start - b.start,

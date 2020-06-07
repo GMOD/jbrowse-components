@@ -93,7 +93,7 @@ export function mdToMismatches(
 ): Mismatch[] {
   const mismatchRecords: Mismatch[] = []
   let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
-  let has
+  const hasSkip = cigarMismatches.find(cigar => cigar.type === 'skip')
 
   // convert a position on the reference sequence to a position
   // on the template sequence, taking into account hard and soft
@@ -101,11 +101,13 @@ export function mdToMismatches(
 
   function nextRecord(): void {
     // correct the start of the current mismatch if it comes after a cigar skip
-    ;(cigarMismatches || []).forEach((mismatch: Mismatch) => {
-      if (mismatch.type === 'skip' && curr.start >= mismatch.start) {
-        curr.start += mismatch.length
-      }
-    })
+    if (hasSkip) {
+      cigarMismatches.forEach((mismatch: Mismatch) => {
+        if (mismatch.type === 'skip' && curr.start >= mismatch.start) {
+          curr.start += mismatch.length
+        }
+      })
+    }
 
     // record it
     mismatchRecords.push(curr)
@@ -120,13 +122,12 @@ export function mdToMismatches(
   }
 
   // now actually parse the MD string
-  const md = mdstring.match(/(\d+|\^[a-z]+|[a-z])/gi)
-  md.forEach(token => {
+  const md = mdstring.match(/(\d+|\^[a-z]+|[a-z])/gi) || []
+  for (let i = 0; i < md.length; i++) {
+    const token = md[i]
     if (token.match(/^\d/)) {
-      // matching bases
       curr.start += parseInt(token, 10)
     } else if (token.match(/^\^/)) {
-      // insertion in the template
       curr.length = token.length - 1
       curr.base = '*'
       curr.type = 'deletion'
@@ -146,7 +147,7 @@ export function mdToMismatches(
         nextRecord()
       }
     }
-  })
+  }
   return mismatchRecords
 }
 
