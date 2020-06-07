@@ -93,6 +93,7 @@ export function mdToMismatches(
 ): Mismatch[] {
   const mismatchRecords: Mismatch[] = []
   let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
+  let has
 
   // convert a position on the reference sequence to a position
   // on the template sequence, taking into account hard and soft
@@ -119,7 +120,8 @@ export function mdToMismatches(
   }
 
   // now actually parse the MD string
-  ;(mdstring.match(/(\d+|\^[a-z]+|[a-z])/gi) || []).forEach(token => {
+  const md = mdstring.match(/(\d+|\^[a-z]+|[a-z])/gi)
+  md.forEach(token => {
     if (token.match(/^\d/)) {
       // matching bases
       curr.start += parseInt(token, 10)
@@ -164,4 +166,35 @@ export function getTemplateCoord(refCoord: number, cigarOps: string[]): number {
     }
   }
   return templateOffset - (refOffset - refCoord)
+}
+
+export function getMismatches(
+  cigarString: string,
+  mdString: string,
+  seq: string,
+): Mismatch[] {
+  let mismatches: Mismatch[] = []
+  let cigarOps: string[] = []
+
+  // parse the CIGAR tag if it has one
+  if (cigarString) {
+    cigarOps = parseCigar(cigarString)
+    mismatches = mismatches.concat(cigarToMismatches(cigarOps, seq))
+  }
+
+  // now let's look for CRAM or MD mismatches
+  if (mdString) {
+    mismatches = mismatches.concat(
+      mdToMismatches(mdString, cigarOps, mismatches, seq),
+    )
+  }
+
+  // uniqify the mismatches
+  const seen: { [index: string]: boolean } = {}
+  return mismatches.filter(m => {
+    const key = `${m.type},${m.start},${m.length}`
+    const s = seen[key]
+    seen[key] = true
+    return !s
+  })
 }

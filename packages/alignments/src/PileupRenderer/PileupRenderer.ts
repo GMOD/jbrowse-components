@@ -19,7 +19,7 @@ import { BaseLayout } from '@gmod/jbrowse-core/util/layouts/BaseLayout'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { RenderArgsDeserialized } from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { lighten } from '@material-ui/core/styles/colorManipulator'
-import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
+import { Mismatch } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
 
 export interface PileupRenderProps {
