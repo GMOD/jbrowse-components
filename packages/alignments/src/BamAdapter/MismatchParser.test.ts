@@ -148,3 +148,17 @@ test('get mismatches', () => {
     ]
   `)
 })
+
+test('clipping', () => {
+  expect(getMismatches('200H10M200H', '9A', 'AAAAAAAAAC')).toEqual([
+    { cliplen: 200, base: 'H200', length: 1, start: 0, type: 'hardclip' },
+    { cliplen: 200, base: 'H200', length: 1, start: 10, type: 'hardclip' },
+    { altbase: 'A', base: 'C', length: 1, start: 9, type: 'mismatch' },
+  ])
+
+  expect(getMismatches('10S10M10S', '9A', 'AAAAAAAAAAGGGGGGGGGC')).toEqual([
+    { cliplen: 10, base: 'S10', length: 1, start: 0, type: 'softclip' },
+    { cliplen: 10, base: 'S10', length: 1, start: 10, type: 'softclip' },
+    { altbase: 'A', base: 'C', length: 1, start: 9, type: 'mismatch' },
+  ])
+})
