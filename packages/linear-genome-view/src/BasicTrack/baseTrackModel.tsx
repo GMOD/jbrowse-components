@@ -106,6 +106,10 @@ const BaseTrack = types
       )
     },
 
+    get TrackBlurb(): React.FC<{ model: typeof self }> | null {
+      return null
+    },
+
     /**
      * the react props that are passed to the Renderer when data
      * is rendered in this track

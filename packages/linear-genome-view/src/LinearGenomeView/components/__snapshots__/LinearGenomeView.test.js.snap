@@ -570,27 +570,28 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="349"
+                  data-html-size="393"
                 >
                   <div
                     classname="ssr-container-inner"
                   >
                     <div
                       class="PileupRendering"
-                      style="position:relative;width:0;height:0"
+                      data-testid="pileup-normal"
+                      style="position:relative;width:100px;height:1px"
                     >
                       <canvas
                         data-testid="prerendered_canvas"
-                        height="0"
-                        style="width:0;height:0;position:absolute;left:0;top:0"
-                        width="0"
+                        height="2"
+                        style="width:100px;height:1px;position:absolute;left:0;top:0"
+                        width="200"
                       />
                       <canvas
                         class="highlightOverlayCanvas"
                         data-testid="pileup_overlay_canvas"
-                        height="0"
+                        height="1"
                         style="position:absolute;left:0;top:0"
-                        width="0"
+                        width="100"
                       />
                     </div>
                   </div>
@@ -1707,27 +1708,28 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="349"
+                  data-html-size="393"
                 >
                   <div
                     classname="ssr-container-inner"
                   >
                     <div
                       class="PileupRendering"
-                      style="position:relative;width:0;height:0"
+                      data-testid="pileup-normal"
+                      style="position:relative;width:100px;height:1px"
                     >
                       <canvas
                         data-testid="prerendered_canvas"
-                        height="0"
-                        style="width:0;height:0;position:absolute;left:0;top:0"
-                        width="0"
+                        height="2"
+                        style="width:100px;height:1px;position:absolute;left:0;top:0"
+                        width="200"
                       />
                       <canvas
                         class="highlightOverlayCanvas"
                         data-testid="pileup_overlay_canvas"
-                        height="0"
+                        height="1"
                         style="position:absolute;left:0;top:0"
-                        width="0"
+                        width="100"
                       />
                     </div>
                   </div>
@@ -1743,27 +1745,28 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="349"
+                  data-html-size="394"
                 >
                   <div
                     classname="ssr-container-inner"
                   >
                     <div
                       class="PileupRendering"
-                      style="position:relative;width:0;height:0"
+                      data-testid="pileup-normal"
+                      style="position:relative;width:800px;height:1px"
                     >
                       <canvas
                         data-testid="prerendered_canvas"
-                        height="0"
-                        style="width:0;height:0;position:absolute;left:0;top:0"
-                        width="0"
+                        height="2"
+                        style="width:800px;height:1px;position:absolute;left:0;top:0"
+                        width="1600"
                       />
                       <canvas
                         class="highlightOverlayCanvas"
                         data-testid="pileup_overlay_canvas"
-                        height="0"
+                        height="1"
                         style="position:absolute;left:0;top:0"
-                        width="0"
+                        width="800"
                       />
                     </div>
                   </div>
@@ -1775,27 +1778,28 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="349"
+                  data-html-size="393"
                 >
                   <div
                     classname="ssr-container-inner"
                   >
                     <div
                       class="PileupRendering"
-                      style="position:relative;width:0;height:0"
+                      data-testid="pileup-normal"
+                      style="position:relative;width:200px;height:1px"
                     >
                       <canvas
                         data-testid="prerendered_canvas"
-                        height="0"
-                        style="width:0;height:0;position:absolute;left:0;top:0"
-                        width="0"
+                        height="2"
+                        style="width:200px;height:1px;position:absolute;left:0;top:0"
+                        width="400"
                       />
                       <canvas
                         class="highlightOverlayCanvas"
                         data-testid="pileup_overlay_canvas"
-                        height="0"
+                        height="1"
                         style="position:absolute;left:0;top:0"
-                        width="0"
+                        width="200"
                       />
                     </div>
                   </div>
@@ -1928,27 +1932,28 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="349"
+                  data-html-size="393"
                 >
                   <div
                     classname="ssr-container-inner"
                   >
                     <div
                       class="PileupRendering"
-                      style="position:relative;width:0;height:0"
+                      data-testid="pileup-normal"
+                      style="position:relative;width:100px;height:1px"
                     >
                       <canvas
                         data-testid="prerendered_canvas"
-                        height="0"
-                        style="width:0;height:0;position:absolute;left:0;top:0"
-                        width="0"
+                        height="2"
+                        style="width:100px;height:1px;position:absolute;left:0;top:0"
+                        width="200"
                       />
                       <canvas
                         class="highlightOverlayCanvas"
                         data-testid="pileup_overlay_canvas"
-                        height="0"
+                        height="1"
                         style="position:absolute;left:0;top:0"
-                        width="0"
+                        width="100"
                       />
                     </div>
                   </div>
@@ -1964,27 +1969,28 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="349"
+                  data-html-size="394"
                 >
                   <div
                     classname="ssr-container-inner"
                   >
                     <div
                       class="PileupRendering"
-                      style="position:relative;width:0;height:0"
+                      data-testid="pileup-normal"
+                      style="position:relative;width:800px;height:1px"
                     >
                       <canvas
                         data-testid="prerendered_canvas"
-                        height="0"
-                        style="width:0;height:0;position:absolute;left:0;top:0"
-                        width="0"
+                        height="2"
+                        style="width:800px;height:1px;position:absolute;left:0;top:0"
+                        width="1600"
                       />
                       <canvas
                         class="highlightOverlayCanvas"
                         data-testid="pileup_overlay_canvas"
-                        height="0"
+                        height="1"
                         style="position:absolute;left:0;top:0"
-                        width="0"
+                        width="800"
                       />
                     </div>
                   </div>
@@ -1996,27 +2002,28 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               >
                 <div
                   class="ssr-container"
-                  data-html-size="349"
+                  data-html-size="393"
                 >
                   <div
                     classname="ssr-container-inner"
                   >
                     <div
                       class="PileupRendering"
-                      style="position:relative;width:0;height:0"
+                      data-testid="pileup-normal"
+                      style="position:relative;width:200px;height:1px"
                     >
                       <canvas
                         data-testid="prerendered_canvas"
-                        height="0"
-                        style="width:0;height:0;position:absolute;left:0;top:0"
-                        width="0"
+                        height="2"
+                        style="width:200px;height:1px;position:absolute;left:0;top:0"
+                        width="400"
                       />
                       <canvas
                         class="highlightOverlayCanvas"
                         data-testid="pileup_overlay_canvas"
-                        height="0"
+                        height="1"
                         style="position:absolute;left:0;top:0"
-                        width="0"
+                        width="200"
                       />
                     </div>
                   </div>

@@ -66,6 +66,7 @@ const DrawerWidget = observer(props => {
             <div className={classes.drawerToolbarCloseButton} />
             <IconButton
               className={classes.drawerCloseButton}
+              data-testid="drawer-close"
               color="inherit"
               aria-label="Close"
               onClick={() => session.hideDrawerWidget(visibleDrawerWidget)}

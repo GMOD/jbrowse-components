@@ -1,7 +1,6 @@
 import { types } from 'mobx-state-tree'
 import wiggleStateModelFactory from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/model'
 import WiggleTrackComponent from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import Tooltip from './Tooltip'
 
 // using a map because it preserves order
@@ -15,10 +14,10 @@ const stateModelFactory = (configSchema: any) =>
       wiggleStateModelFactory(configSchema),
       types.model({ type: types.literal('SNPCoverageTrack') }),
     )
-    .volatile(self => ({
+    .volatile(() => ({
       ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
     }))
-    .views(self => ({
+    .views(() => ({
       get TooltipComponent() {
         return Tooltip
       },
@@ -30,8 +29,9 @@ const stateModelFactory = (configSchema: any) =>
       get needsScalebar() {
         return true
       },
+
       get contextMenuOptions() {
-        return getParentRenderProps(self).trackModel.menuOptions
+        return []
       },
     }))
 
