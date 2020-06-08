@@ -695,14 +695,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.scrollTo(self.displayedRegionsTotalPx / 8)
       },
 
-      // this makes a zoomed out view that shows all displayedRegions
-      // but is slightly zoomed in, which looks nicer than having the overview
-      // scale bar square with the scale bar
-      showAllRegionsButSlightlyZoomedIn() {
-        self.zoomTo((self.totalBp * 0.75) / self.width)
-        self.scrollTo(self.width / 8)
-      },
-
       setDraggingTrackId(idx?: string) {
         self.draggingTrackId = idx
       },
