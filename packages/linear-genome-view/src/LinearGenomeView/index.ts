@@ -154,7 +154,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return this.displayedRegionsTotalPx - leftPadding
       },
 
-
       get displayedParentRegions() {
         const wholeRefSeqs = [] as Region[]
         const { assemblyManager } = getSession(self)

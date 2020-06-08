@@ -70,7 +70,7 @@ const useStyles = makeStyles(theme => {
   }
 })
 
-function Polygon({ model }: { model: LGV }) {
+const Polygon = observer(({ model }: { model: LGV }) => {
   const theme = useTheme()
   const classes = useStyles()
   const {
@@ -93,63 +93,61 @@ function Polygon({ model }: { model: LGV }) {
     displayedParentRegionsLength /
     (width - (displayedParentRegions.length - 1) * wholeSeqSpacer)
   return (
-    <div className={classes.overview}>
-      <svg
-        height={HEADER_BAR_HEIGHT}
-        width="100%"
-        className={classes.overviewSvg}
-      >
-        {visibleRegions.map((region, idx) => {
-          const seqIndex = displayedParentRegions.findIndex(
-            seq => seq.refName === region.refName,
-          )
-          if (seqIndex === -1) {
-            return null
-          }
-          let startPx = region.offsetPx - offsetPx
-          let endPx = startPx + (region.end - region.start) / bpPerPx
-          if (region.reversed) {
-            ;[startPx, endPx] = [endPx, startPx]
-          }
-          let totalWidth = 0
-          for (let i = 0; i < seqIndex; i++) {
-            const seq = displayedParentRegions[i]
-            const regionLength = seq.end - seq.start
-            totalWidth += regionLength / scale + wholeSeqSpacer
-          }
-          const topLeft =
-            totalWidth +
-            (region.start - displayedParentRegions[seqIndex].start) / scale +
-            1
-          let topRight =
-            totalWidth +
-            (region.end - displayedParentRegions[seqIndex].start) / scale +
-            1
-          if (topRight - topLeft < 1) {
-            topRight = topLeft + 1
-          }
-          return (
-            <polygon
-              key={`${region.key}-${idx}`}
-              points={[
-                [startPx, HEADER_BAR_HEIGHT],
-                [endPx, HEADER_BAR_HEIGHT],
-                [topRight, 0],
-                [topLeft, 0],
-              ].toString()}
-              fill={fade(polygonColor, 0.3)}
-              stroke={fade(polygonColor, 0.8)}
-            />
-          )
-        })}
-      </svg>
-    </div>
+    <svg
+      height={HEADER_BAR_HEIGHT}
+      width="100%"
+      className={classes.overviewSvg}
+    >
+      {visibleRegions.map((region, idx) => {
+        const seqIndex = displayedParentRegions.findIndex(
+          seq => seq.refName === region.refName,
+        )
+        if (seqIndex === -1) {
+          return null
+        }
+        let startPx = region.offsetPx - offsetPx
+        let endPx = startPx + (region.end - region.start) / bpPerPx
+        if (region.reversed) {
+          ;[startPx, endPx] = [endPx, startPx]
+        }
+        let totalWidth = 0
+        for (let i = 0; i < seqIndex; i++) {
+          const seq = displayedParentRegions[i]
+          const regionLength = seq.end - seq.start
+          totalWidth += regionLength / scale + wholeSeqSpacer
+        }
+        const topLeft =
+          totalWidth +
+          (region.start - displayedParentRegions[seqIndex].start) / scale +
+          1
+        let topRight =
+          totalWidth +
+          (region.end - displayedParentRegions[seqIndex].start) / scale +
+          1
+        if (topRight - topLeft < 1) {
+          topRight = topLeft + 1
+        }
+        return (
+          <polygon
+            key={`${region.key}-${idx}`}
+            points={[
+              [startPx, HEADER_BAR_HEIGHT],
+              [endPx, HEADER_BAR_HEIGHT],
+              [topRight, 0],
+              [topLeft, 0],
+            ].toString()}
+            fill={fade(polygonColor, 0.3)}
+            stroke={fade(polygonColor, 0.8)}
+          />
+        )
+      })}
+    </svg>
   )
-}
+})
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
-function ScaleBar({ model }: { model: LGV }) {
+const ScaleBar = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
 
   const { displayedRegions, dynamicBlocks: visibleRegions, width } = model
@@ -252,7 +250,7 @@ function ScaleBar({ model }: { model: LGV }) {
       })}
     </div>
   )
-}
+})
 
 function OverviewScaleBar({
   model,
@@ -284,7 +282,10 @@ function OverviewScaleBar({
         model={model}
         ControlComponent={<ScaleBar model={model} />}
       />
-      {children}
+      <div className={classes.overview}>
+        <Polygon model={model} />
+        {children}
+      </div>
     </div>
   )
 }
