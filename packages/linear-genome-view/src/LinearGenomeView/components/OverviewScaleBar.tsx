@@ -83,6 +83,12 @@ const Polygon = observer(({ model }: { model: LGV }) => {
   } = model
   const wholeSeqSpacer = 2
 
+  const overview = Base1DView.create({
+    displayedRegions: JSON.parse(JSON.stringify(displayedParentRegions)),
+  })
+  overview.setVolatileWidth(width)
+  overview.showAllRegions()
+
   // @ts-ignore
   const polygonColor = theme.palette.tertiary
     ? // prettier-ignore
@@ -116,17 +122,19 @@ const Polygon = observer(({ model }: { model: LGV }) => {
           const regionLength = seq.end - seq.start
           totalWidth += regionLength / scale + wholeSeqSpacer
         }
-        const topLeft =
-          totalWidth +
-          (region.start - displayedParentRegions[seqIndex].start) / scale +
-          1
-        let topRight =
-          totalWidth +
-          (region.end - displayedParentRegions[seqIndex].start) / scale +
-          1
-        if (topRight - topLeft < 1) {
-          topRight = topLeft + 1
-        }
+        const parentStart = displayedParentRegions[seqIndex].start
+
+        console.log(region)
+        const topRight = overview.bpToPx({
+          refName: region.refName,
+          coord: region.end,
+        })
+        const topLeft = overview.bpToPx({
+          refName: region.refName,
+          coord: region.start,
+        })
+        console.log(topLeft)
+
         return (
           <polygon
             key={`${region.key}-${idx}`}
