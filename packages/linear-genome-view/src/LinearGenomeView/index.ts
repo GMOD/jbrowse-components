@@ -154,6 +154,33 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return this.displayedRegionsTotalPx - leftPadding
       },
 
+
+      get displayedParentRegions() {
+        const wholeRefSeqs = [] as Region[]
+        const { assemblyManager } = getSession(self)
+        self.displayedRegions.forEach(({ refName, assemblyName }) => {
+          const assembly = assemblyManager.get(assemblyName)
+          const r = assembly && (assembly.regions as Region[])
+          if (r) {
+            const wholeSequence = r.find(
+              sequence => sequence.refName === refName,
+            )
+            const alreadyExists = wholeRefSeqs.find(
+              sequence => sequence.refName === refName,
+            )
+            if (wholeSequence && !alreadyExists) {
+              wholeRefSeqs.push(wholeSequence)
+            }
+          }
+        })
+        return wholeRefSeqs
+      },
+
+      get displayedParentRegionsLength() {
+        return this.displayedParentRegions
+          .map(a => a.end - a.start)
+          .reduce((a, b) => a + b, 0)
+      },
       get minOffset() {
         // objectively determined to keep the linear genome on the main screen
         const rightPadding = 30
