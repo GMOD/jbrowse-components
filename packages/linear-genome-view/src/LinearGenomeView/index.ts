@@ -737,9 +737,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.zoomTo(self.bpPerPx)
         if (
           // already zoomed all the way in
-          self.bpPerPx === self.minBpPerPx ||
+          (targetBpPerPx < self.bpPerPx && self.bpPerPx === self.minBpPerPx) ||
           // already zoomed all the way out
-          self.bpPerPx === self.maxBpPerPx
+          (targetBpPerPx > self.bpPerPx && self.bpPerPx === self.maxBpPerPx)
         ) {
           return
         }
