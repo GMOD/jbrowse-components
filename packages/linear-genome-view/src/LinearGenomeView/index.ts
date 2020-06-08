@@ -305,6 +305,36 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.hideHeaderOverview = !self.hideHeaderOverview
       },
 
+      scrollTo(offsetPx: number) {
+        const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
+        self.offsetPx = newOffsetPx
+        return newOffsetPx
+      },
+
+      zoomTo(bpPerPx: number) {
+        const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
+        if (newBpPerPx === self.bpPerPx) {
+          return newBpPerPx
+        }
+        const oldBpPerPx = self.bpPerPx
+        self.bpPerPx = newBpPerPx
+
+        // tweak the offset so that the center of the view remains at the same coordinate
+        const viewWidth = self.width
+        this.scrollTo(
+          Math.round(
+            ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
+              viewWidth / 2,
+          ),
+        )
+        return newBpPerPx
+      },
+
+      setNewView(bpPerPx: number, offsetPx: number) {
+        this.zoomTo(bpPerPx)
+        this.scrollTo(offsetPx)
+      },
+
       horizontallyFlip() {
         self.displayedRegions = cast(
           self.displayedRegions
@@ -312,7 +342,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             .reverse()
             .map(region => ({ ...region, reversed: !region.reversed })),
         )
-        self.offsetPx = self.totalBp / self.bpPerPx - self.offsetPx - self.width
+        this.scrollTo(self.totalBp / self.bpPerPx - self.offsetPx - self.width)
       },
 
       showTrack(configuration: AnyConfigurationModel, initialSnapshot = {}) {
@@ -384,7 +414,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       setDisplayedRegions(regions: Region[]) {
         self.displayedRegions = cast(regions)
-        this.zoomTo(self.bpPerPx)
+        self.zoomTo(self.bpPerPx)
       },
 
       activateTrackSelector() {
@@ -401,24 +431,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
-      },
-
-      zoomTo(newBpPerPx: number) {
-        const bpPerPx = newBpPerPx
-        if (bpPerPx === self.bpPerPx) return
-        const oldBpPerPx = self.bpPerPx
-        self.bpPerPx = bpPerPx
-
-        // tweak the offset so that the center of the view remains at the same coordinate
-        const viewWidth = self.width
-        self.offsetPx = clamp(
-          Math.round(
-            ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
-              viewWidth / 2,
-          ),
-          self.minOffset,
-          self.maxOffset,
-        )
       },
 
       navToLocString(locString: string) {
@@ -639,10 +651,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
           bpSoFar += end.offset
         }
-        self.bpPerPx =
+        self.zoomTo(
           bpSoFar /
-          (self.width -
-            self.interRegionPaddingWidth * (end.index - start.index))
+            (self.width -
+              self.interRegionPaddingWidth * (end.index - start.index)),
+        )
 
         let bpToStart = 0
         for (let i = 0; i < self.displayedRegions.length; i += 1) {
@@ -654,26 +667,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
             bpToStart += region.end - region.start
           }
         }
-        self.offsetPx =
+        self.scrollTo(
           Math.round(bpToStart / self.bpPerPx) +
-          self.interRegionPaddingWidth * start.index
+            self.interRegionPaddingWidth * start.index,
+        )
       },
 
       horizontalScroll(distance: number) {
         const oldOffsetPx = self.offsetPx
-        // the scroll is clamped to keep the linear genome on the main screen
-        const newOffsetPx = clamp(
-          self.offsetPx + distance,
-          self.minOffset,
-          self.maxOffset,
-        )
-        self.offsetPx = newOffsetPx
+        // newOffsetPx is the actual offset after the scroll is clamped
+        const newOffsetPx = self.scrollTo(self.offsetPx + distance)
         return newOffsetPx - oldOffsetPx
-      },
-
-      scrollTo(offsetPx: number) {
-        const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
-        self.offsetPx = newOffsetPx
       },
 
       /**
@@ -686,24 +690,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /* TODO */
       },
 
-      setNewView(bpPerPx: number, offsetPx: number) {
-        self.bpPerPx = bpPerPx
-        self.offsetPx = offsetPx
-      },
-
-      // this makes a zoomed out view that shows all displayedRegions
-      // that makes the overview bar square with the scale bar
       showAllRegions() {
-        self.bpPerPx = self.totalBp / self.width
-        self.offsetPx = 0
+        self.zoomTo(self.totalBp / self.width)
+        self.scrollTo(self.displayedRegionsTotalPx / 8)
       },
 
       // this makes a zoomed out view that shows all displayedRegions
       // but is slightly zoomed in, which looks nicer than having the overview
       // scale bar square with the scale bar
       showAllRegionsButSlightlyZoomedIn() {
-        self.bpPerPx = (self.totalBp * 0.75) / self.width
-        self.offsetPx = self.width / 8
+        self.zoomTo((self.totalBp * 0.75) / self.width)
+        self.scrollTo(self.width / 8)
       },
 
       setDraggingTrackId(idx?: string) {
