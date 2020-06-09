@@ -209,6 +209,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return assemblyNames
       },
 
+      idxInParentRegion(refName: string | undefined) {
+        return this.displayedParentRegions.findIndex(
+          (region: Region) => region.refName === refName,
+        )
+      },
+
       bpToPx({ refName, coord }: { refName: string; coord: number }) {
         let offsetBp = 0
 
@@ -642,51 +648,50 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
-      zoomToDisplayedRegions(
-        leftPx: number | undefined,
-        rightPx: number | undefined,
-        wholeRefSeqs: Region[],
-        scale: number,
-      ) {
+      zoomToDisplayedRegions(leftPx: BpOffset, rightPx: BpOffset) {
         if (leftPx === undefined || rightPx === undefined) return
-        if (rightPx < leftPx) {
+        if (
+          (leftPx.refName === rightPx.refName &&
+            rightPx.offset < leftPx.offset) ||
+          self.idxInParentRegion(leftPx.refName) >
+            self.idxInParentRegion(rightPx.refName)
+        ) {
           ;[leftPx, rightPx] = [rightPx, leftPx]
         }
 
-        let selectionStart = Math.round(leftPx * scale) // start dragging
-        let selectionEnd = Math.round(rightPx * scale) // end dragging
-        const refSeqSelections: Region[] = []
-        // console.log('selection range: ', selectionStart, selectionEnd)
+        const selectionStart = Math.round(leftPx.offset) // start dragging
+        const selectionEnd = Math.round(rightPx.offset) // end dragging
+        const startIdx = self.idxInParentRegion(leftPx.refName)
+        const endIdx = self.idxInParentRegion(rightPx.refName)
 
-        // Below should just pxToBp
-        // ex selection: 30000 - 53000, wholeRefSeq contains ctgA:0-50000, ctgB:0-5000
-        // breaks selection into ctgA:30000-50000, ctgB:0 - 3000
-        for (let i = 0; i < wholeRefSeqs.length; i++) {
-          const ref = wholeRefSeqs[i]
-          // selection falls into current refSeq, push the selection and stop looking
-          if (ref.end > selectionEnd) {
-            refSeqSelections.push({
-              ...ref,
-              start: refSeqSelections.length ? 0 : selectionStart, // start from 0 if another refSeq in array
-              end: selectionEnd,
-            })
-            break
+        const refSeqSelections: Region[] = []
+
+        // if selected over one refSeq
+        if (leftPx.refName === rightPx.refName) {
+          refSeqSelections.push({
+            ...self.displayedParentRegions[startIdx],
+            start: selectionStart,
+            end: selectionEnd,
+          })
+        } else {
+          // if selecting over multiple, convert into correct coordinates
+          for (let i = startIdx; i <= endIdx; i++) {
+            const ref = self.displayedParentRegions[i]
+            if (!refSeqSelections.length && ref.refName === leftPx.refName)
+              refSeqSelections.push({
+                ...ref,
+                start: selectionStart,
+              })
+            else if (ref.refName === rightPx.refName)
+              refSeqSelections.push({
+                ...ref,
+                end: selectionEnd,
+              })
+            else refSeqSelections.push(ref)
           }
-          // selection extends past current refseq, set end to end of current refseq
-          // and calculate start/end for the next refseq
-          if (
-            doesIntersect2(selectionStart, selectionEnd, ref.start, ref.end)
-          ) {
-            refSeqSelections.push({
-              ...ref,
-              start: refSeqSelections.length ? 0 : selectionStart,
-            })
-          }
-          selectionStart -= ref.end
-          selectionEnd -= ref.end
         }
 
-        // console.log('look at this', refSeqSelections)
+        console.log(refSeqSelections)
 
         const pessimisticNewRegions: ZoomRegion[] = [] // assumes you have not found the final overlap
         let optimisticNewRegions: ZoomRegion[] = [] // assumes you have found the final overlap

@@ -263,7 +263,6 @@ function OverviewScaleBar({
     displayedParentRegionsLength /
     (width - (displayedParentRegions.length - 1) * wholeSeqSpacer)
 
-  console.log(width, 'outside')
   if (!displayedParentRegions.length) {
     return (
       <>
@@ -284,8 +283,6 @@ function OverviewScaleBar({
         model={model}
         ControlComponent={<ScaleBar model={model} scale={scale} />}
         pxToBp={overview.pxToBp}
-        scale={scale}
-        wholeRefSeq={displayedParentRegions}
         wholeSeqSpacer={wholeSeqSpacer}
       />
       <div className={classes.overview}>

@@ -63,15 +63,11 @@ function OverviewRubberBand({
   model,
   ControlComponent = <div />,
   pxToBp,
-  scale,
-  wholeRefSeq,
   wholeSeqSpacer,
 }: {
   model: LGV
   ControlComponent?: React.ReactElement
   pxToBp: Function
-  scale: number
-  wholeRefSeq: Region[]
   wholeSeqSpacer: number
 }) {
   const [startX, setStartX] = useState<number>()
@@ -94,7 +90,8 @@ function OverviewRubberBand({
     function globalMouseUp(event: MouseEvent) {
       if (controlsRef.current) {
         // potentially model.zoomToDisplayedRegions(pxToBp(startX).offset, pxToBp(currentX).offset)
-        model.zoomToDisplayedRegions(startX, currentX, wholeRefSeq, scale)
+        model.zoomToDisplayedRegions(pxToBp(startX), pxToBp(currentX))
+        // model.zoomToDisplayedRegions(startX, currentX, wholeRefSeq, scale)
         setStartX(undefined)
         setCurrentX(undefined)
       }
@@ -122,7 +119,7 @@ function OverviewRubberBand({
       }
     }
     return () => {}
-  }, [mouseDragging, currentX, startX, seqOffsetX, wholeRefSeq, model, scale])
+  }, [mouseDragging, currentX, startX, model, pxToBp])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
@@ -189,19 +186,14 @@ function OverviewRubberBand({
 
   const leftBpOffset = pxToBp(startX)
   const rightBpOffset = pxToBp(startX + width)
-  const findIdxInParentRegion = (refName: string) => {
-    return model.displayedParentRegions.findIndex(
-      region => region.refName === refName,
-    )
-  }
 
   let leftCount = Math.max(0, Math.round(leftBpOffset.offset))
   let rightCount = Math.max(0, Math.round(rightBpOffset.offset))
   if (
     (leftBpOffset.refName === rightBpOffset.refName &&
       leftCount > rightCount) ||
-    findIdxInParentRegion(leftBpOffset.refName) >
-      findIdxInParentRegion(rightBpOffset.refName)
+    model.idxInParentRegion(leftBpOffset.refName) >
+      model.idxInParentRegion(rightBpOffset.refName)
   ) {
     ;[leftCount, rightCount] = [rightCount, leftCount]
   }
