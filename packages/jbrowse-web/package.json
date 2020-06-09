@@ -15,6 +15,7 @@
     ]
   },
   "dependencies": {
+    "@gmod/bam": "^1.0.37",
     "@gmod/jbrowse-core": "^2.0.0",
     "@gmod/jbrowse-plugin-alignments": "^2.0.0",
     "@gmod/jbrowse-plugin-bed": "^2.0.0",
