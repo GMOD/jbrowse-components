@@ -109,7 +109,7 @@ const BaseCoreDetails = (props: BaseProps) => {
         const value = displayedDetails[key.toLowerCase()]
         const strValue = String(value)
         return value ? (
-          <div key={key} style={{ display: 'flex' }}>
+          <div key={key}>
             <div className={classes.fieldName}>{key}</div>
             <div className={classes.fieldValue}>
               <SanitizedHTML html={strValue} />
@@ -143,7 +143,7 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
   const classes = useStyles()
   const { attributes } = props
   const SimpleValue = ({ name, value }: { name: string; value: any }) => (
-    <div style={{ display: 'flex' }}>
+    <div>
       <div className={classes.fieldName}>{name}</div>
       <div className={classes.fieldValue}>
         <SanitizedHTML
@@ -153,7 +153,7 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
     </div>
   )
   const ArrayValue = ({ name, value }: { name: string; value: any[] }) => (
-    <div style={{ display: 'flex' }}>
+    <div>
       <div className={classes.fieldName}>{name}</div>
       {value.map((val, i) => (
         <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
