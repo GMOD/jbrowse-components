@@ -1,11 +1,12 @@
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { Region as MSTRegion } from '@gmod/jbrowse-core/util/types/mst'
-import Base1DView from '@gmod/jbrowse-core/util/Base1DViewModel'
+// import { Region } from '@gmod/jbrowse-core/util/types'
+// import { Region as MSTRegion } from '@gmod/jbrowse-core/util/types/mst'
+import Base1DView, {
+  Base1DViewModel,
+} from '@gmod/jbrowse-core/util/Base1DViewModel'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import LinearProgress from '@material-ui/core/LinearProgress'
-import { withContentRect } from 'react-measure'
 import Paper from '@material-ui/core/Paper'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
@@ -17,7 +18,7 @@ import {
   HEADER_OVERVIEW_HEIGHT,
 } from '..'
 import { chooseGridPitch } from '../util'
-import OverviewRubberBand from './RubberBand'
+import OverviewRubberBand from './OverviewRubberBand'
 
 const useStyles = makeStyles(theme => {
   // @ts-ignore
@@ -70,116 +71,100 @@ const useStyles = makeStyles(theme => {
   }
 })
 
-const Polygon = observer(({ model }: { model: LGV }) => {
-  const theme = useTheme()
-  const classes = useStyles()
-  const {
-    offsetPx,
-    width,
-    bpPerPx,
-    dynamicBlocks: visibleRegions,
-    displayedParentRegions,
-    displayedParentRegionsLength,
-  } = model
-  const wholeSeqSpacer = 2
+const wholeSeqSpacer = 2
+const Polygon = observer(
+  ({
+    model,
+    overview,
+    scale,
+  }: {
+    model: LGV
+    overview: Instance<Base1DViewModel>
+    scale: number
+  }) => {
+    const theme = useTheme()
+    const classes = useStyles()
+    const {
+      offsetPx,
+      width,
+      bpPerPx,
+      dynamicBlocks: visibleRegions,
+      displayedParentRegions,
+    } = model
 
-  const overview = Base1DView.create({
-    displayedRegions: JSON.parse(JSON.stringify(displayedParentRegions)),
-  })
-  overview.setVolatileWidth(width)
-  overview.showAllRegions()
+    overview.setVolatileWidth(width)
+    overview.showAllRegions()
 
-  // @ts-ignore
-  const polygonColor = theme.palette.tertiary
-    ? // prettier-ignore
-      // @ts-ignore
-      theme.palette.tertiary.light
-    : theme.palette.primary.light
-  const scale =
-    displayedParentRegionsLength /
-    (width - (displayedParentRegions.length - 1) * wholeSeqSpacer)
-  return (
-    <svg
-      height={HEADER_BAR_HEIGHT}
-      width="100%"
-      className={classes.overviewSvg}
-    >
-      {visibleRegions.map((region, idx) => {
-        const seqIndex = displayedParentRegions.findIndex(
-          seq => seq.refName === region.refName,
-        )
-        if (seqIndex === -1) {
-          return null
-        }
-        let startPx = region.offsetPx - offsetPx
-        let endPx = startPx + (region.end - region.start) / bpPerPx
-        if (region.reversed) {
-          ;[startPx, endPx] = [endPx, startPx]
-        }
-        let totalWidth = 0
-        for (let i = 0; i < seqIndex; i++) {
-          const seq = displayedParentRegions[i]
-          const regionLength = seq.end - seq.start
-          totalWidth += regionLength / scale + wholeSeqSpacer
-        }
-        const parentStart = displayedParentRegions[seqIndex].start
+    // @ts-ignore
+    const polygonColor = theme.palette.tertiary
+      ? // prettier-ignore
+        // @ts-ignore
+        theme.palette.tertiary.light
+      : theme.palette.primary.light
+    return (
+      <svg
+        height={HEADER_BAR_HEIGHT}
+        width="100%"
+        className={classes.overviewSvg}
+      >
+        {visibleRegions.map((region, idx) => {
+          const seqIndex = displayedParentRegions.findIndex(
+            seq => seq.refName === region.refName,
+          )
+          if (seqIndex === -1) {
+            return null
+          }
+          let startPx = region.offsetPx - offsetPx
+          let endPx = startPx + (region.end - region.start) / bpPerPx
+          if (region.reversed) {
+            ;[startPx, endPx] = [endPx, startPx]
+          }
+          let totalWidth = 0
+          for (let i = 0; i < seqIndex; i++) {
+            const seq = displayedParentRegions[i]
+            const regionLength = seq.end - seq.start
+            totalWidth += regionLength / scale + wholeSeqSpacer
+          }
+          const parentStart = displayedParentRegions[seqIndex].start
 
-        console.log(region)
-        const topRight = overview.bpToPx({
-          refName: region.refName,
-          coord: region.end,
-        })
-        const topLeft = overview.bpToPx({
-          refName: region.refName,
-          coord: region.start,
-        })
-        console.log(topLeft)
+          // console.log(region)
+          const topRight = overview.bpToPx({
+            refName: region.refName,
+            coord: region.end,
+          })
+          const topLeft = overview.bpToPx({
+            refName: region.refName,
+            coord: region.start,
+          })
+          // console.log(topLeft)
 
-        return (
-          <polygon
-            key={`${region.key}-${idx}`}
-            points={[
-              [startPx, HEADER_BAR_HEIGHT],
-              [endPx, HEADER_BAR_HEIGHT],
-              [topRight, 0],
-              [topLeft, 0],
-            ].toString()}
-            fill={fade(polygonColor, 0.3)}
-            stroke={fade(polygonColor, 0.8)}
-          />
-        )
-      })}
-    </svg>
-  )
-})
+          return (
+            <polygon
+              key={`${region.key}-${idx}`}
+              points={[
+                [startPx, HEADER_BAR_HEIGHT],
+                [endPx, HEADER_BAR_HEIGHT],
+                [topRight, 0],
+                [topLeft, 0],
+              ].toString()}
+              fill={fade(polygonColor, 0.3)}
+              stroke={fade(polygonColor, 0.8)}
+            />
+          )
+        })}
+      </svg>
+    )
+  },
+)
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
-const ScaleBar = observer(({ model }: { model: LGV }) => {
+const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
   const classes = useStyles()
 
-  const { displayedRegions, dynamicBlocks: visibleRegions, width } = model
+  const { displayedParentRegions, dynamicBlocks: visibleRegions } = model
   const { assemblyManager } = getSession(model)
 
-  const displayedParentRegions = [] as Region[]
-  let totalLength = 0
-  displayedRegions.forEach(({ refName, assemblyName }) => {
-    const assembly = assemblyManager.get(assemblyName)
-    const r = assembly && (assembly.regions as Instance<typeof MSTRegion>[])
-    if (r) {
-      const wholeSequence = r.find(sequence => sequence.refName === refName)
-      const alreadyExists = displayedParentRegions.find(
-        sequence => sequence.refName === refName,
-      )
-      if (wholeSequence && !alreadyExists) {
-        displayedParentRegions.push(wholeSequence)
-        totalLength += wholeSequence.end - wholeSequence.start
-      }
-    }
-  })
-  const wholeSeqSpacer = 2
-  const scale =
-    totalLength / (width - (displayedParentRegions.length - 1) * wholeSeqSpacer)
   const gridPitch = chooseGridPitch(scale, 120, 15)
 
   return (
@@ -268,8 +253,17 @@ function OverviewScaleBar({
   children: React.ReactNode
 }) {
   const classes = useStyles()
-  const { displayedParentRegions } = model
+  const { displayedParentRegions, displayedParentRegionsLength, width } = model
 
+  const overview = Base1DView.create({
+    displayedRegions: JSON.parse(JSON.stringify(displayedParentRegions)),
+  })
+
+  const scale =
+    displayedParentRegionsLength /
+    (width - (displayedParentRegions.length - 1) * wholeSeqSpacer)
+
+  console.log(width, 'outside')
   if (!displayedParentRegions.length) {
     return (
       <>
@@ -288,10 +282,14 @@ function OverviewScaleBar({
     <div>
       <OverviewRubberBand
         model={model}
-        ControlComponent={<ScaleBar model={model} />}
+        ControlComponent={<ScaleBar model={model} scale={scale} />}
+        pxToBp={overview.pxToBp}
+        scale={scale}
+        wholeRefSeq={displayedParentRegions}
+        wholeSeqSpacer={wholeSeqSpacer}
       />
       <div className={classes.overview}>
-        <Polygon model={model} />
+        <Polygon model={model} overview={overview} scale={scale} />
         {children}
       </div>
     </div>

@@ -62,12 +62,14 @@ const useStyles = makeStyles(theme => {
 function OverviewRubberBand({
   model,
   ControlComponent = <div />,
+  pxToBp,
   scale,
   wholeRefSeq,
   wholeSeqSpacer,
 }: {
   model: LGV
   ControlComponent?: React.ReactElement
+  pxToBp: Function
   scale: number
   wholeRefSeq: Region[]
   wholeSeqSpacer: number
@@ -91,6 +93,7 @@ function OverviewRubberBand({
 
     function globalMouseUp(event: MouseEvent) {
       if (controlsRef.current) {
+        // potentially model.zoomToDisplayedRegions(pxToBp(startX).offset, pxToBp(currentX).offset)
         model.zoomToDisplayedRegions(startX, currentX, wholeRefSeq, scale)
         setStartX(undefined)
         setCurrentX(undefined)
@@ -148,7 +151,10 @@ function OverviewRubberBand({
           <Tooltip
             open={!mouseDragging}
             placement="top"
-            title={Math.max(0, Math.round(guideX * scale)).toLocaleString()}
+            title={Math.max(
+              0,
+              Math.round(pxToBp(guideX).offset),
+            ).toLocaleString()}
             arrow
           >
             <div
@@ -181,10 +187,22 @@ function OverviewRubberBand({
     width = currentX - startX
   }
 
-  let leftCount = Math.max(0, Math.round((startX || 0) * scale))
-  let rightCount = Math.max(0, Math.round(leftCount + width * scale))
-  const scaledSeqOffset = Math.round(seqOffsetX * scale)
-  if (leftCount > rightCount) {
+  const leftBpOffset = pxToBp(startX)
+  const rightBpOffset = pxToBp(startX + width)
+  const findIdxInParentRegion = (refName: string) => {
+    return model.displayedParentRegions.findIndex(
+      region => region.refName === refName,
+    )
+  }
+
+  let leftCount = Math.max(0, Math.round(leftBpOffset.offset))
+  let rightCount = Math.max(0, Math.round(rightBpOffset.offset))
+  if (
+    (leftBpOffset.refName === rightBpOffset.refName &&
+      leftCount > rightCount) ||
+    findIdxInParentRegion(leftBpOffset.refName) >
+      findIdxInParentRegion(rightBpOffset.refName)
+  ) {
     ;[leftCount, rightCount] = [rightCount, leftCount]
   }
 
@@ -209,9 +227,7 @@ function OverviewRubberBand({
             }}
             keepMounted
           >
-            <Typography>
-              {(leftCount - scaledSeqOffset).toLocaleString()}
-            </Typography>
+            <Typography>{leftCount.toLocaleString()}</Typography>
           </Popover>
           <Popover
             className={classes.popover}
@@ -230,9 +246,7 @@ function OverviewRubberBand({
             }}
             keepMounted
           >
-            <Typography>
-              {(rightCount - scaledSeqOffset).toLocaleString()}
-            </Typography>
+            <Typography>{rightCount.toLocaleString()}</Typography>
           </Popover>
         </>
       ) : null}

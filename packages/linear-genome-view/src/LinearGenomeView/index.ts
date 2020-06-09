@@ -658,6 +658,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const refSeqSelections: Region[] = []
         // console.log('selection range: ', selectionStart, selectionEnd)
 
+        // Below should just pxToBp
         // ex selection: 30000 - 53000, wholeRefSeq contains ctgA:0-50000, ctgB:0-5000
         // breaks selection into ctgA:30000-50000, ctgB:0 - 3000
         for (let i = 0; i < wholeRefSeqs.length; i++) {
