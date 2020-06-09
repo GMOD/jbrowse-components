@@ -1,3 +1,5 @@
+import { template } from '@babel/core'
+
 export interface Mismatch {
   start: number
   length: number
@@ -94,6 +96,9 @@ export function mdToMismatches(
   const mismatchRecords: Mismatch[] = []
   let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
   const hasSkip = cigarMismatches.find(cigar => cigar.type === 'skip')
+  let lastCigar = 0
+  let lastTemplateOffset = 0
+  let lastRefOffset = 0
 
   // convert a position on the reference sequence to a position
   // on the template sequence, taking into account hard and soft
@@ -121,6 +126,30 @@ export function mdToMismatches(
     }
   }
 
+  function getTemplateCoordLocal(refCoord: number): number {
+    let templateOffset = lastTemplateOffset
+    let refOffset = lastRefOffset
+    for (
+      let i = lastCigar;
+      i < cigarOps.length && refOffset <= refCoord;
+      i += 2, lastCigar = i
+    ) {
+      const len = +cigarOps[i]
+      const op = cigarOps[i + 1]
+      if (op === 'S' || op === 'I') {
+        templateOffset += len
+      } else if (op === 'D' || op === 'P') {
+        refOffset += len
+      } else if (op !== 'H') {
+        templateOffset += len
+        refOffset += len
+      }
+    }
+    lastTemplateOffset = templateOffset
+    lastRefOffset = refOffset
+    return templateOffset - (refOffset - refCoord)
+  }
+
   // now actually parse the MD string
   const md = mdstring.match(/(\d+|\^[a-z]+|[a-z])/gi) || []
   for (let i = 0; i < md.length; i++) {
@@ -139,7 +168,7 @@ export function mdToMismatches(
         curr.length = 1
         curr.base = seq
           ? seq.substr(
-              cigarOps ? getTemplateCoord(curr.start, cigarOps) : curr.start,
+              cigarOps ? getTemplateCoordLocal(curr.start) : curr.start,
               1,
             )
           : 'X'

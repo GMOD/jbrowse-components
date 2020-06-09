@@ -27,10 +27,19 @@ test('md to mismatches', () => {
 })
 
 test('get mismatches', () => {
-  expect(getMismatches('56M1D45M', '10A80', seq)).toEqual([
+  // simple deletion
+  expect(getMismatches('56M1D45M', '56^A45', seq)).toEqual([
     { start: 56, type: 'deletion', base: '*', length: 1 },
-    { start: 10, type: 'mismatch', base: 'C', altbase: 'A', length: 1 },
   ])
+
+  // simple insertion
+  expect(
+    getMismatches(
+      '89M1I11M',
+      '100',
+      'AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTTA',
+    ),
+  ).toEqual([{ start: 89, type: 'insertion', base: '1', length: 1 }])
 
   // contains a deletion and a SNP
   // read GGGGG--ATTTTTT
