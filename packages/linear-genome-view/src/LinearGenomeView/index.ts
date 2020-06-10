@@ -690,9 +690,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /* TODO */
       },
 
+      center() {
+        const centerBp = self.totalBp / 2
+        self.scrollTo(Math.round(centerBp / self.bpPerPx - self.width / 2))
+      },
+
       showAllRegions() {
-        self.zoomTo(self.totalBp / self.width)
-        self.scrollTo(self.displayedRegionsTotalPx / 8)
+        self.zoomTo(self.maxBpPerPx)
+        this.center()
       },
 
       setDraggingTrackId(idx?: string) {
