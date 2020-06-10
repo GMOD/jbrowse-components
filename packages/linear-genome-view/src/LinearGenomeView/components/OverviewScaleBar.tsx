@@ -281,9 +281,9 @@ function OverviewScaleBar({
     <div>
       <OverviewRubberBand
         model={model}
+        // pass overview instead of pxToBp
+        overview={overview}
         ControlComponent={<ScaleBar model={model} scale={scale} />}
-        pxToBp={overview.pxToBp}
-        wholeSeqSpacer={wholeSeqSpacer}
       />
       <div className={classes.overview}>
         <Polygon model={model} overview={overview} scale={scale} />

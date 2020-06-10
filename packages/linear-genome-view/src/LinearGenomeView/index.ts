@@ -57,10 +57,6 @@ interface NavLocation {
   assemblyName?: string
 }
 
-interface ZoomRegion extends Region {
-  index: number
-}
-
 export const HEADER_BAR_HEIGHT = 48
 export const HEADER_OVERVIEW_HEIGHT = 20
 export const SCALE_BAR_HEIGHT = 17
@@ -694,8 +690,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
         }
 
-        const pessimisticNewRegions: ZoomRegion[] = [] // assumes you have not found the final overlap
-        let optimisticNewRegions: ZoomRegion[] = [] // assumes you have found the final overlap
+        const pessimisticNewRegions: Region[] = [] // assumes you have not found the final overlap
+        let optimisticNewRegions: Region[] = [] // assumes you have found the final overlap
         let firstOverlapFound = false
 
         // go through selections from each refseq and zoom to each displayedRegion contained in selection
@@ -722,17 +718,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 ...region,
                 start: startValue,
                 end: region.end > end ? end : region.end,
-                index: idx,
               })
               pessimisticNewRegions.push({
                 ...region,
                 start: startValue,
-                index: idx,
               })
             }
             // add regions that don't overlap to pessimistic, display if overlap is found in later region
-            else if (firstOverlapFound)
-              pessimisticNewRegions.push({ ...region, index: idx })
+            else if (firstOverlapFound) pessimisticNewRegions.push(region)
           })
         })
 

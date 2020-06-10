@@ -7,7 +7,7 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect, useState } from 'react'
-import { Region } from '@gmod/jbrowse-core/util/types'
+import { Base1DViewModel } from '@gmod/jbrowse-core/util/Base1DViewModel'
 import { LinearGenomeViewStateModel, HEADER_OVERVIEW_HEIGHT } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -61,19 +61,16 @@ const useStyles = makeStyles(theme => {
 
 function OverviewRubberBand({
   model,
+  overview,
   ControlComponent = <div />,
-  pxToBp,
-  wholeSeqSpacer,
 }: {
   model: LGV
+  overview: Base1DViewModel
   ControlComponent?: React.ReactElement
-  pxToBp: Function
-  wholeSeqSpacer: number
 }) {
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
   const [guideX, setGuideX] = useState<number | undefined>()
-  const [seqOffsetX, setSeqOffsetX] = useState<number>(0)
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
   const classes = useStyles()
@@ -82,15 +79,19 @@ function OverviewRubberBand({
   useEffect(() => {
     function globalMouseMove(event: MouseEvent) {
       if (controlsRef.current && mouseDragging) {
-        const relativeX = event.offsetX
+        const relativeX =
+          event.clientX - controlsRef.current.getBoundingClientRect().left
         setCurrentX(relativeX)
       }
     }
 
     function globalMouseUp(event: MouseEvent) {
-      if (controlsRef.current) {
+      if (controlsRef.current && startX && currentX) {
         // potentially model.zoomToDisplayedRegions(pxToBp(startX).offset, pxToBp(currentX).offset)
-        model.zoomToDisplayedRegions(pxToBp(startX), pxToBp(currentX))
+        model.zoomToDisplayedRegions(
+          overview.pxToBp(startX),
+          overview.pxToBp(currentX),
+        )
         // model.zoomToDisplayedRegions(startX, currentX, wholeRefSeq, scale)
         setStartX(undefined)
         setCurrentX(undefined)
@@ -119,22 +120,22 @@ function OverviewRubberBand({
       }
     }
     return () => {}
-  }, [mouseDragging, currentX, startX, model, pxToBp])
+  }, [mouseDragging, currentX, startX, model, overview])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
     event.stopPropagation()
-    const relativeX = event.nativeEvent.offsetX + seqOffsetX
-    setStartX(relativeX)
+    if (controlsRef.current)
+      setStartX(
+        event.clientX - controlsRef.current.getBoundingClientRect().left,
+      )
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    setSeqOffsetX(
-      (event.target as HTMLDivElement).offsetLeft > 0
-        ? (event.target as HTMLDivElement).offsetLeft - wholeSeqSpacer
-        : 0,
-    )
-    setGuideX(event.nativeEvent.offsetX)
+    if (controlsRef.current)
+      setGuideX(
+        event.clientX - controlsRef.current.getBoundingClientRect().left,
+      )
   }
 
   function mouseOut() {
@@ -150,14 +151,14 @@ function OverviewRubberBand({
             placement="top"
             title={Math.max(
               0,
-              Math.round(pxToBp(guideX).offset),
+              Math.round(overview.pxToBp(guideX).offset),
             ).toLocaleString()}
             arrow
           >
             <div
               className={classes.guide}
               style={{
-                left: guideX + seqOffsetX,
+                left: guideX,
               }}
             />
           </Tooltip>
@@ -184,8 +185,8 @@ function OverviewRubberBand({
     width = currentX - startX
   }
 
-  const leftBpOffset = pxToBp(startX)
-  const rightBpOffset = pxToBp(startX + width)
+  const leftBpOffset = overview.pxToBp(startX)
+  const rightBpOffset = overview.pxToBp(startX + width)
 
   let leftCount = Math.max(0, Math.round(leftBpOffset.offset))
   let rightCount = Math.max(0, Math.round(rightBpOffset.offset))
