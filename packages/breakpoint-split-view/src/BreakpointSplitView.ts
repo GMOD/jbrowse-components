@@ -1,6 +1,7 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+import { Assembly } from '@gmod/jbrowse-core/assemblyManager/assembly'
 import BreakpointSplitViewComponent from './components/BreakpointSplitView'
 import BreakpointSplitViewModel from './model'
 
@@ -22,11 +23,11 @@ export default (pluginManager: PluginManager) => {
       // TODO: Figure this out for multiple assembly names
       const { assemblyName } = view.displayedRegions[0]
       const assembly = getSession(view).assemblyManager.get(assemblyName)
-      const { getCanonicalRefName } = assembly as any
+      const { getCanonicalRefName } = assembly as Assembly
       const featureRefName = getCanonicalRefName(feature.get('refName'))
 
       const topRegion = view.displayedRegions.find(
-        (f: { refName: string }) => f.refName === String(featureRefName),
+        f => f.refName === String(featureRefName),
       )
 
       let mateRefName: string | undefined
