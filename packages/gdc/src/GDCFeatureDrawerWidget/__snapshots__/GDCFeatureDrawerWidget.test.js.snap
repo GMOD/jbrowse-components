@@ -69,9 +69,7 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
               <div
                 class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
               >
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -85,9 +83,7 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -101,9 +97,7 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -117,9 +111,7 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -133,9 +125,7 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -219,9 +209,7 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
               <div
                 class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
               >
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -235,9 +223,7 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -251,9 +237,7 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -267,9 +251,7 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -283,9 +265,7 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -299,9 +279,7 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -315,9 +293,7 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -331,9 +307,7 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -347,9 +321,7 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -363,9 +335,7 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -488,9 +458,7 @@ exports[`GDCTrack drawer widget renders mutation with just the required model el
               <div
                 class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
               >
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -504,9 +472,7 @@ exports[`GDCTrack drawer widget renders mutation with just the required model el
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -520,9 +486,7 @@ exports[`GDCTrack drawer widget renders mutation with just the required model el
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -606,9 +570,7 @@ exports[`GDCTrack drawer widget renders mutation with just the required model el
               <div
                 class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
               >
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -622,9 +584,7 @@ exports[`GDCTrack drawer widget renders mutation with just the required model el
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -638,9 +598,7 @@ exports[`GDCTrack drawer widget renders mutation with just the required model el
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -654,9 +612,7 @@ exports[`GDCTrack drawer widget renders mutation with just the required model el
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -670,9 +626,7 @@ exports[`GDCTrack drawer widget renders mutation with just the required model el
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -686,9 +640,7 @@ exports[`GDCTrack drawer widget renders mutation with just the required model el
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -702,9 +654,7 @@ exports[`GDCTrack drawer widget renders mutation with just the required model el
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -718,9 +668,7 @@ exports[`GDCTrack drawer widget renders mutation with just the required model el
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -734,9 +682,7 @@ exports[`GDCTrack drawer widget renders mutation with just the required model el
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >

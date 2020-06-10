@@ -69,9 +69,7 @@ exports[`VariantTrack drawer widget renders with just the required model element
               <div
                 class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
               >
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -85,9 +83,7 @@ exports[`VariantTrack drawer widget renders with just the required model element
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -101,9 +97,7 @@ exports[`VariantTrack drawer widget renders with just the required model element
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -187,9 +181,7 @@ exports[`VariantTrack drawer widget renders with just the required model element
               <div
                 class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
               >
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -203,9 +195,7 @@ exports[`VariantTrack drawer widget renders with just the required model element
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -219,9 +209,7 @@ exports[`VariantTrack drawer widget renders with just the required model element
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -235,9 +223,7 @@ exports[`VariantTrack drawer widget renders with just the required model element
                     </div>
                   </div>
                 </div>
-                <div
-                  style="display: flex;"
-                >
+                <div>
                   <div
                     class="makeStyles-fieldName"
                   >
