@@ -1,9 +1,4 @@
 {
-  "configuration": {
-    "rpc": {
-      "defaultDriver": "MainThreadRpcDriver"
-    }
-  },
   "assemblies": [
     {
       "name": "volvox",
