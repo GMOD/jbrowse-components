@@ -18,8 +18,10 @@ export default {
   component: Button,
 }
 
-function getPluginManager(jbrowse=configSnapshot) {
-  const pluginManager = new PluginManager(corePlugins.map(P => new P())).createPluggableElements()
+function getPluginManager(jbrowse = configSnapshot) {
+  const pluginManager = new PluginManager(
+    corePlugins.map(P => new P()),
+  ).createPluggableElements()
   const rootModel = JBrowseRootModelFactory(pluginManager).create({
     jbrowse,
   })
