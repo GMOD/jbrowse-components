@@ -33,7 +33,7 @@ beforeEach(() => {
 afterEach(() => {
   console.warn.mockRestore()
 })
-describe('BreakpointSplitView genome view component', () => {
+xdescribe('BreakpointSplitView genome view component', () => {
   it('renders with an empty model', async () => {
     const session = createTestSession()
     session.addAssemblyConf(assemblyConf)
