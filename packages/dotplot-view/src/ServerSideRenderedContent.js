@@ -3,7 +3,6 @@ import ReactPropTypes from 'prop-types'
 import { observer, PropTypes } from 'mobx-react'
 import { hydrate, unmountComponentAtNode } from 'react-dom'
 import { isAlive } from 'mobx-state-tree'
-import BlockError from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView/components/BlockError'
 
 // This code is nearly identical to the server side renderer from linear-genome-view except it
 // doesn't have special handling for serializing region!
@@ -27,7 +26,7 @@ class RenderErrorBoundary extends Component {
   render() {
     const { hasError, error } = this.state
     if (hasError) {
-      return <BlockError error={error} />
+      return <div style={{ color: 'red' }}>{error.message}</div>
     }
 
     const { children } = this.props
