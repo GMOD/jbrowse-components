@@ -119,15 +119,14 @@ const Polygon = observer(
           if (region.reversed) {
             ;[startPx, endPx] = [endPx, startPx]
           }
-          let totalWidth = 0
-          for (let i = 0; i < seqIndex; i++) {
-            const seq = displayedParentRegions[i]
-            const regionLength = seq.end - seq.start
-            totalWidth += regionLength / scale + wholeSeqSpacer
-          }
-          const parentStart = displayedParentRegions[seqIndex].start
+          // let totalWidth = 0
+          // for (let i = 0; i < seqIndex; i++) {
+          //   const seq = displayedParentRegions[i]
+          //   const regionLength = seq.end - seq.start
+          //   totalWidth += regionLength / scale + wholeSeqSpacer
+          // }
+          // const parentStart = displayedParentRegions[seqIndex].start
 
-          // console.log(region)
           const topRight = overview.bpToPx({
             refName: region.refName,
             coord: region.end,
@@ -136,7 +135,6 @@ const Polygon = observer(
             refName: region.refName,
             coord: region.start,
           })
-          // console.log(topLeft)
 
           return (
             <polygon
@@ -281,7 +279,6 @@ function OverviewScaleBar({
     <div>
       <OverviewRubberBand
         model={model}
-        // pass overview instead of pxToBp
         overview={overview}
         ControlComponent={<ScaleBar model={model} scale={scale} />}
       />

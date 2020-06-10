@@ -87,12 +87,11 @@ function OverviewRubberBand({
 
     function globalMouseUp(event: MouseEvent) {
       if (controlsRef.current && startX && currentX) {
-        // potentially model.zoomToDisplayedRegions(pxToBp(startX).offset, pxToBp(currentX).offset)
-        model.zoomToDisplayedRegions(
-          overview.pxToBp(startX),
-          overview.pxToBp(currentX),
-        )
-        // model.zoomToDisplayedRegions(startX, currentX, wholeRefSeq, scale)
+        if (startX !== currentX)
+          model.zoomToDisplayedRegions(
+            overview.pxToBp(startX),
+            overview.pxToBp(currentX),
+          )
         setStartX(undefined)
         setCurrentX(undefined)
       }
@@ -178,7 +177,7 @@ function OverviewRubberBand({
     )
   }
 
-  let left = 0
+  let left = startX || 0
   let width = 0
   if (startX !== undefined && currentX !== undefined) {
     left = currentX < startX ? currentX : startX
