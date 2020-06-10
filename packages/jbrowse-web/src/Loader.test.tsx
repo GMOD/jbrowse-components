@@ -79,7 +79,7 @@ describe('<Loader />', () => {
     const { findByText } = render(
       <QueryParamProvider
         // @ts-ignore
-        location={{ search: '?config=test_data/breakpoint/config.json' }}
+        location={{ search: '?config=test_data/volvox/config.json' }}
       >
         <Loader />
       </QueryParamProvider>,
