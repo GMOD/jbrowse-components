@@ -550,13 +550,11 @@ describe('alignments track', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
-    state.session.views[0].setNewView(1, 2000)
+    state.session.views[0].setNewView(0.02, 2086500)
 
     // load track
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox-long-reads-sv-cram'),
-    )
-    await findByTestId('track-volvox-long-reads-sv-cram')
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+    await findByTestId('track-volvox-long-reads-cram')
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu and turns on soft clipping
@@ -574,7 +572,7 @@ describe('alignments track', () => {
       await findByTestId('Blockset-pileup'),
     )
     const canvases = await findAllByTestId1('prerendered_canvas')
-    const img = canvases[0].toDataURL()
+    const img = canvases[1].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
     expect(buf).toMatchImageSnapshot()

@@ -9,7 +9,7 @@
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {
-    "@gmod/bam": "^1.0.36",
+    "@gmod/bam": "^1.0.37",
     "@gmod/cram": "^1.5.3",
     "@material-ui/icons": "^4.9.1",
     "abortable-promise-cache": "^1.1.3",

@@ -1124,7 +1124,7 @@
     "@babel/helper-plugin-utils" "^7.10.1"
     "@babel/plugin-transform-typescript" "^7.10.1"
 
-"@babel/runtime-corejs2@^7.3.1", "@babel/runtime-corejs2@^7.4.3", "@babel/runtime-corejs2@^7.5.5":
+"@babel/runtime-corejs2@^7.3.1", "@babel/runtime-corejs2@^7.4.3":
   version "7.10.1"
   resolved "https://registry.yarnpkg.com/@babel/runtime-corejs2/-/runtime-corejs2-7.10.1.tgz#53809ef921ea7019be5ee6166f324fb9b7884e7d"
   integrity sha512-94v+EvClppy9BhjnLvTqfLmcHIFdrfwvfgQ1EvfkA/604JbuLaRLOhlfzhmgKjjbaIu49sJXH9fvYtZQ9pssQg==
@@ -1136,6 +1136,14 @@
   version "7.10.1"
   resolved "https://registry.yarnpkg.com/@babel/runtime-corejs3/-/runtime-corejs3-7.10.1.tgz#ae8a85a04029d94ab8c3b5237a1031a9d631b515"
   integrity sha512-/NLH0a34E/moPbqB1C/72I2gvMOmOly2JQARcRE1+PWCdHwMQ3la4sz7WnlK/EVHiBjQruH2WqE8YufL632Y8w==
+  dependencies:
+    core-js-pure "^3.0.0"
+    regenerator-runtime "^0.13.4"
+
+"@babel/runtime-corejs3@^7.5.5":
+  version "7.10.2"
+  resolved "https://registry.yarnpkg.com/@babel/runtime-corejs3/-/runtime-corejs3-7.10.2.tgz#3511797ddf9a3d6f3ce46b99cc835184817eaa4e"
+  integrity sha512-+a2M/u7r15o3dV1NEizr9bRi+KUVnrs/qYxF0Z06DAPx/4VCWaz1WA7EcbE+uqGgt39lp5akWGmHsTseIkHkHg==
   dependencies:
     core-js-pure "^3.0.0"
     regenerator-runtime "^0.13.4"
@@ -1308,16 +1316,16 @@
     unique-filename "^1.1.1"
     which "^1.3.1"
 
-"@gmod/bam@^1.0.36":
-  version "1.0.36"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.36.tgz#60aa9e0d1c53066c84b5fd8ed49e5cf5fd8ec0aa"
-  integrity sha512-geelEq4F7FCD8hU1CSsPeOrF6A78Pp6Ka3OVyLmTRkVnOO2DR9eejnQx7R1nnrdReNxIyFVBjV3Em0w4R/hJJw==
+"@gmod/bam@^1.0.37":
+  version "1.0.37"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.37.tgz#7be76f81e54d2baeb0be06a8578df6806e247dcf"
+  integrity sha512-GJJOeNUZ3vdvxaGVGX7bGrSJj+OB1G7xUeAfnDV3MHmNoMhiVEDXYyZVgiTrHY7UezUtTS6MFGKsQiRL47pdjQ==
   dependencies:
-    "@babel/runtime-corejs2" "^7.5.5"
+    "@babel/runtime-corejs3" "^7.5.5"
     "@gmod/bgzf-filehandle" "^1.3.3"
     "@types/long" "^4.0.0"
     "@types/node" "^12.7.8"
-    abortable-promise-cache "^1.0.1"
+    abortable-promise-cache "^1.1.2"
     cross-fetch "^3.0.2"
     es6-promisify "^6.0.1"
     generic-filehandle "^2.0.0"
@@ -3506,7 +3514,7 @@ abbrev@1:
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
   integrity sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==
 
-abortable-promise-cache@^1.0.1, abortable-promise-cache@^1.1.3:
+abortable-promise-cache@^1.0.1, abortable-promise-cache@^1.1.2, abortable-promise-cache@^1.1.3:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/abortable-promise-cache/-/abortable-promise-cache-1.1.3.tgz#8d354779f6583be2250e92aa6306e711318049ef"
   integrity sha512-yPQiNjcVvDiQ3Y8sexcVDvCnLCtqfKb23SVYfoWxMzKNgk5WuWJhmD6fs5M7Uwor8hN1Ge8Y4+XZHkFV32vX/w==
@@ -17137,9 +17145,9 @@ websocket-driver@>=0.5.1:
     websocket-extensions ">=0.1.1"
 
 websocket-extensions@>=0.1.1:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/websocket-extensions/-/websocket-extensions-0.1.3.tgz#5d2ff22977003ec687a4b87073dfbbac146ccf29"
-  integrity sha512-nqHUnMXmBzT0w570r2JpJxfiSD1IzoI+HGVdd3aZ0yNi3ngvQ4jv1dtHt5VGxfI2yj5yqImPhOK4vmIh2xMbGg==
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/websocket-extensions/-/websocket-extensions-0.1.4.tgz#7f8473bc839dfd87608adb95d7eb075211578a42"
+  integrity sha512-OqedPIGOfsDlo31UNwYbCFMSaO9m9G/0faIHj5/dZFDMFqPTcx6UwqyOy3COEaEOg/9VsGIpdqn62W5KhoKSpg==
 
 whatwg-encoding@^1.0.1, whatwg-encoding@^1.0.3, whatwg-encoding@^1.0.5:
   version "1.0.5"
