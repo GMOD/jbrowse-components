@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import ReactPropTypes from 'prop-types'
 import { observer, PropTypes } from 'mobx-react'
 import { hydrate, unmountComponentAtNode } from 'react-dom'
 import { isAlive, isStateTreeNode, getSnapshot } from 'mobx-state-tree'
