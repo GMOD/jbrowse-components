@@ -64,6 +64,6 @@ describe('BreakpointSplitView genome view component', () => {
     const SplitView = new BreakpointSplitView(session.pluginManager)
     const { container, findAllByText } = render(<SplitView model={model} />)
     await findAllByText('No tracks active.')
-    expect(container.firstChild).toMatchSnapshot()
+    expect(container).toMatchSnapshot()
   })
 })
