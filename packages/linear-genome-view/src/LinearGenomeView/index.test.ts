@@ -300,7 +300,7 @@ test('can instantiate a model that >2 regions', () => {
   expect(model.offsetPx).toEqual(10000 / model.bpPerPx + 2)
   expect(model.displayedRegionsTotalPx).toEqual(30000 / model.bpPerPx)
   model.showAllRegions()
-  expect(model.offsetPx).toEqual(125)
+  expect(model.offsetPx).toEqual(100)
 
   expect(model.bpToPx({ refName: 'ctgA', coord: 100 })).toEqual({
     index: 0,
