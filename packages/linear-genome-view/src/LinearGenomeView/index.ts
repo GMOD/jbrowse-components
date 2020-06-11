@@ -697,7 +697,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // go through selections from each refseq and zoom to each displayedRegion contained in selection
         refSeqSelections.forEach(seq => {
           const { start, end, refName } = seq
-          self.displayedRegions.forEach((region, idx) => {
+          self.displayedRegions.forEach(region => {
             if (region.refName !== refName) return
             if (doesIntersect2(start, end, region.start, region.end)) {
               let startValue = region.start
@@ -731,29 +731,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         if (optimisticNewRegions.length)
           this.navToMultiple(optimisticNewRegions)
-
-        // modify navto for zooming into displayed regions,should be easier
-        // try out moveTo
-        // if (optimisticNewRegions.length) {
-        //   const lastIdx = optimisticNewRegions.length - 1
-        //   const startingDisplayZoom = optimisticNewRegions[0].index
-        //   const endingDisplayZoom = optimisticNewRegions[lastIdx].index
-        //   const startMoveTo = {
-        //     ...optimisticNewRegions[0],
-        //     offset:
-        //       optimisticNewRegions[0].start -
-        //       self.displayedRegions[startingDisplayZoom].start,
-        //   }
-        //   const endMoveTo = {
-        //     ...optimisticNewRegions[lastIdx],
-        //     offset:
-        //       optimisticNewRegions[lastIdx].end -
-        //       self.displayedRegions[endingDisplayZoom].start,
-        //   }
-
-        //   console.log(startMoveTo, endMoveTo)
-        //   this.moveTo(startMoveTo, endMoveTo, true)
-        // }
       },
 
       // schedule something to be run after the next time displayedRegions is set

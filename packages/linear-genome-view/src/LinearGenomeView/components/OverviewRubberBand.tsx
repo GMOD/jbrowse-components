@@ -268,6 +268,7 @@ function OverviewRubberBand({
 
 OverviewRubberBand.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
+  overview: MobxPropTypes.objectOrObservableObject.isRequired,
   ControlComponent: ReactPropTypes.node,
 }
 
