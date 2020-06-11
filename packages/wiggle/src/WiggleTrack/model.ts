@@ -105,10 +105,10 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             scaleType: getConf(self, 'scaleType'),
             bounds: [minScore, maxScore],
           })
-          if (maxScore !== Number.MIN_VALUE) {
+          if (maxScore !== Number.MIN_VALUE && ret[1] > 1.0) {
             ret[1] = round(ret[1] + 10)
           }
-          if (minScore !== Number.MAX_VALUE && ret[0] < 0) {
+          if (minScore !== Number.MAX_VALUE && ret[0] < -1.0) {
             ret[0] = round(ret[0] - 10)
           }
           if (JSON.stringify(oldDomain) !== JSON.stringify(ret)) {
