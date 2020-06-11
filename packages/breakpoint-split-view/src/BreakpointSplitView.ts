@@ -110,7 +110,6 @@ export default (pluginManager: PluginManager) => {
     }
   }
 
-  // @ts-ignore
   return new BreakpointSplitViewType({
     name: 'BreakpointSplitView',
     stateModel,
