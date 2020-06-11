@@ -5,7 +5,7 @@ import TrackSelector from '@gmod/jbrowse-plugin-data-management/src/Hierarchical
 
 import corePlugins from '../corePlugins'
 import JBrowseRootModelFactory from '../rootModel'
-import configSnapshot from '../../test_data/volvox/config.json'
+import configSnapshot from './test_data/volvox/config.json'
 
 configSnapshot.configuration = {
   rpc: {

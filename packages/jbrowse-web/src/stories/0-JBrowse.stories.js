@@ -4,8 +4,8 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import corePlugins from '../corePlugins'
 import JBrowse from '../JBrowse'
 import JBrowseRootModelFactory from '../rootModel'
-import configSnapshot from '../../test_data/volvox/config.json'
-import breakpointConfig from '../../test_data/breakpoint/config.json'
+import configSnapshot from './test_data/volvox/config.json'
+import breakpointConfig from './test_data/breakpoint/config.json'
 
 configSnapshot.configuration = {
   rpc: {
