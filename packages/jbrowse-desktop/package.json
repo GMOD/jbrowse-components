@@ -26,8 +26,8 @@
     "@gmod/jbrowse-plugin-gdc": "^2.0.0",
     "@gmod/jbrowse-plugin-gff3tabix": "^2.0.0",
     "@gmod/jbrowse-plugin-jbrowse1": "^2.0.0",
-    "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
     "@gmod/jbrowse-plugin-linear-comparative-view": "^2.0.0",
+    "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
     "@gmod/jbrowse-plugin-lollipop": "^2.0.0",
     "@gmod/jbrowse-plugin-menus": "^2.0.0",
     "@gmod/jbrowse-plugin-rdf": "^2.0.0",
@@ -58,6 +58,7 @@
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "react-error-boundary": "^1.2.5",
+    "react-scripts": "^3.4.1",
     "react-sizeme": "^2.6.7",
     "rxjs": "^6.5.2",
     "typeface-roboto": "^0.0.54"
