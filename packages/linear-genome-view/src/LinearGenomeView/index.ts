@@ -656,6 +656,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
+      /**
+       * Navigate to a location based on user clicking and dragging on the
+       * overview scale bar to select a region to zoom into.
+       * Can handle if there are multiple displayedRegions from same refName.
+       * Only navigates to a location if it is entirely within a displayedRegion.
+       *
+       * @param leftPx- `object as {start, end, index, offset}`, offset = start of user drag
+       * @param rightPx- `object as {start, end, index, offset}`, offset = end of user drag
+       */
       zoomToDisplayedRegions(leftPx: BpOffset, rightPx: BpOffset) {
         if (leftPx === undefined || rightPx === undefined) return
 
@@ -668,8 +677,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ;[leftPx, rightPx] = [rightPx, leftPx]
         }
 
-        const selectionStart = Math.round(leftPx.offset) // start dragging
-        const selectionEnd = Math.round(rightPx.offset) // end dragging
+        const selectionStart = Math.round(leftPx.offset)
+        const selectionEnd = Math.round(rightPx.offset)
         const startIdx = self.idxInParentRegion(leftPx.refName)
         const endIdx = self.idxInParentRegion(rightPx.refName)
 
@@ -682,7 +691,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             end: selectionEnd,
           })
         else {
-          // if selecting over multiple ref seq, convert into correct selections
+          // when selecting over multiple ref seq, convert into correct selections
           // ie select from ctgA: 30k - ctgB: 1k -> select from ctgA: 30k - 50k, ctgB: 0 - 1k
           for (let i = startIdx; i <= endIdx; i++) {
             const ref = self.displayedParentRegions[i]

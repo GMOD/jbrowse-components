@@ -184,9 +184,9 @@ function OverviewRubberBand({
     width = currentX - startX
   }
 
+  // calculate the start and end bp of drag
   const leftBpOffset = overview.pxToBp(startX)
   const rightBpOffset = overview.pxToBp(startX + width)
-
   let leftCount = Math.max(0, Math.round(leftBpOffset.offset))
   let rightCount = Math.max(0, Math.round(rightBpOffset.offset))
   if (

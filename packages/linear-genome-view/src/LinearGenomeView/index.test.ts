@@ -313,7 +313,7 @@ test('can zoom to displayed regions given a selection', () => {
   )
   const largestBpPerPx = model.bpPerPx
   expect(model.offsetPx).toBe(0)
-  expect(model.bpPerPx).toBeCloseTo(35.175)
+  expect(model.bpPerPx).toBeCloseTo(28)
 
   // same results if start and end object are swapped
   model.zoomToDisplayedRegions(
