@@ -158,7 +158,7 @@ describe('valid file tests', () => {
     fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
     const zoomMenuItem = await findByText('Zoom to region')
     fireEvent.click(zoomMenuItem)
-    expect(state.session.views[0].bpPerPx).toEqual(0.009375)
+    expect(state.session.views[0].bpPerPx).toEqual(0.02)
   })
 
   it('click and drag to reorder tracks', async () => {

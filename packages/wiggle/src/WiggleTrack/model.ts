@@ -37,6 +37,13 @@ const rendererTypes = new Map([
   ['line', 'LinePlotRenderer'],
 ])
 
+function logb(x: number, y: number) {
+  return Math.log(y) / Math.log(x)
+}
+function round(v: number, b = 2) {
+  return (v >= 0 ? 1 : -1) * Math.pow(b, 1 + Math.floor(logb(b, Math.abs(v))))
+}
+
 const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
   types
     .compose(
@@ -91,14 +98,18 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         },
 
         get domain() {
+          const maxScore = getConf(self, 'maxScore')
+          const minScore = getConf(self, 'minScore')
           const ret = getNiceDomain({
             domain: [self.stats.scoreMin, self.stats.scoreMax],
             scaleType: getConf(self, 'scaleType'),
-            bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
+            bounds: [minScore, maxScore],
           })
-          const headroom = getConf(self, 'headroom')
-          if (headroom) {
-            ret[1] = Math.ceil(ret[1] / headroom) * headroom
+          if (maxScore !== Number.MIN_VALUE && ret[1] > 1.0) {
+            ret[1] = round(ret[1] + 10)
+          }
+          if (minScore !== Number.MAX_VALUE && ret[0] < -1.0) {
+            ret[0] = round(ret[0] - 10)
           }
           if (JSON.stringify(oldDomain) !== JSON.stringify(ret)) {
             oldDomain = ret

@@ -112,6 +112,15 @@
     },
     {
       "files": [
+        "**/jbrowse-cli/**/*.test.ts",
+        "**/jbrowse-cli/**/*.test.tsx"
+      ],
+      "rules": {
+        "tsdoc/syntax": "off"
+      }
+    },
+    {
+      "files": [
         "**/*.test.[t,j]s",
         "**/*.test.[t,j]sx"
       ],

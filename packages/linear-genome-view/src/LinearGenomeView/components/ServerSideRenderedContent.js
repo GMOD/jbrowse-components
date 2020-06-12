@@ -1,37 +1,7 @@
 import React, { Component } from 'react'
-import ReactPropTypes from 'prop-types'
 import { observer, PropTypes } from 'mobx-react'
 import { hydrate, unmountComponentAtNode } from 'react-dom'
 import { isAlive, isStateTreeNode, getSnapshot } from 'mobx-state-tree'
-
-import BlockError from './BlockError'
-
-class RenderErrorBoundary extends Component {
-  constructor(props) {
-    super(props)
-    this.state = { hasError: false }
-  }
-
-  static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI.
-    return { hasError: true, error }
-  }
-
-  componentDidCatch(error, errorInfo) {
-    // You can also log the error to an error reporting service
-    console.error(error, errorInfo)
-  }
-
-  render() {
-    const { hasError, error } = this.state
-    if (hasError) {
-      return <BlockError error={error} />
-    }
-
-    const { children } = this.props
-    return children
-  }
-}
 
 /**
  * A block whose content is rendered outside of the main thread and hydrated by this
@@ -87,12 +57,8 @@ class ServerSideRenderedContent extends Component {
             },
             null,
           )
-          const errorHandler = React.createElement(
-            RenderErrorBoundary,
-            {},
-            mainThreadRendering,
-          )
-          hydrate(errorHandler, domNode.firstChild)
+
+          hydrate(mainThreadRendering, domNode.firstChild)
           this.hydrated = true
         },
         { timeout: 300 },
@@ -114,7 +80,5 @@ class ServerSideRenderedContent extends Component {
 ServerSideRenderedContent.propTypes = {
   model: PropTypes.observableObject.isRequired,
 }
-RenderErrorBoundary.propTypes = {
-  children: ReactPropTypes.node.isRequired,
-}
+
 export default observer(ServerSideRenderedContent)

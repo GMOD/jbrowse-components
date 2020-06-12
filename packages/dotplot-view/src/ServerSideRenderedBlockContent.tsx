@@ -3,7 +3,6 @@ import LinearProgress from '@material-ui/core/LinearProgress'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
-import BlockError from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView/components/BlockError'
 import ServerSideRenderedContent from './ServerSideRenderedContent'
 
 const useStyles = makeStyles({
@@ -26,6 +25,11 @@ const useStyles = makeStyles({
   blockMessage: {
     background: '#f1f1f1',
     padding: '10px',
+  },
+  blockError: {
+    background: '#f1f1f1',
+    padding: '10px',
+    color: 'red',
   },
 })
 
@@ -52,6 +56,11 @@ function BlockMessage({ messageText }: { messageText: string }) {
 }
 BlockMessage.propTypes = {
   messageText: PropTypes.string.isRequired,
+}
+
+function BlockError({ error, reload }: { error: Error; reload: () => void }) {
+  const classes = useStyles()
+  return <div className={classes.blockError}>{error.message}</div>
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
