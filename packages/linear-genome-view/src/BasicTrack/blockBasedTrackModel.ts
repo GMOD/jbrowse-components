@@ -9,14 +9,13 @@ import {
 } from '@gmod/jbrowse-core/util'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import { addDisposer, types, Instance, isAlive } from 'mobx-state-tree'
-import { MenuOption } from '@gmod/jbrowse-core/ui'
 import RBush from 'rbush'
 import { Feature, isFeature } from '@gmod/jbrowse-core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import BlockState from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
-import { BaseBlock, ContentBlock } from './util/blockTypes'
-import BlockBasedTrack from './components/BlockBasedTrack'
+import { BaseBlock } from './util/blockTypes'
+import BlockBasedTrack, { Tooltip } from './components/BlockBasedTrack'
 import { LinearGenomeViewStateModel } from '../LinearGenomeView'
 
 type LayoutRecord = [number, number, number, number]
@@ -29,9 +28,9 @@ const blockBasedTrack = types
         blockState: types.map(BlockState),
       })
       .volatile(() => ({
-        contextMenuOptions: [] as MenuOption[],
         featureIdUnderMouse: undefined as undefined | string,
-        ReactComponent: BlockBasedTrack,
+        ReactComponent: (BlockBasedTrack as unknown) as React.FC, // avoid circular reference
+        contextMenuFeature: undefined as undefined | Feature,
       })),
   )
   .views(self => {
@@ -51,6 +50,11 @@ const blockBasedTrack = types
         return 50
       },
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      get TooltipComponent(): React.FC<any> {
+        return (Tooltip as unknown) as React.FC
+      },
+
       /**
        * a CompositeMap of `featureId -> feature obj` that
        * just looks in all the block data for that feature
@@ -63,6 +67,12 @@ const blockBasedTrack = types
         }
         stale = true
         return new CompositeMap<string, Feature>(featureMaps)
+      },
+
+      get featureUnderMouse() {
+        return self.featureIdUnderMouse
+          ? this.features.get(self.featureIdUnderMouse)
+          : undefined
       },
 
       /**
@@ -174,14 +184,13 @@ const blockBasedTrack = types
       const blockWatchDisposer = autorun(() => {
         // create any blocks that we need to create
         const blocksPresent: { [key: string]: boolean } = {}
-        self.blockDefinitions.forEach(block => {
-          if (!(block instanceof ContentBlock)) return
+        self.blockDefinitions.contentBlocks.forEach(block => {
           blocksPresent[block.key] = true
           if (!self.blockState.has(block.key)) {
             this.addBlock(block.key, block)
           }
         })
-        // delete any blocks we need to delete
+        // delete any blocks we need go delete
         self.blockState.forEach((value, key) => {
           if (!blocksPresent[key]) this.deleteBlock(key)
         })
@@ -219,22 +228,6 @@ const blockBasedTrack = types
       }
     },
 
-    contextMenuFeature(feature: Feature) {
-      self.contextMenuOptions = [
-        {
-          label: 'Open feature details',
-          icon: MenuOpenIcon,
-          onClick: () => {
-            this.selectFeature(feature)
-          },
-        },
-      ]
-    },
-
-    contextMenuNoFeature() {
-      self.contextMenuOptions = []
-    },
-
     clearFeatureSelection() {
       const session = getSession(self)
       session.clearSelection()
@@ -242,6 +235,29 @@ const blockBasedTrack = types
 
     setFeatureIdUnderMouse(feature: string | undefined) {
       self.featureIdUnderMouse = feature
+    },
+  }))
+  .actions(self => ({
+    setContextMenuFeature(feature?: Feature) {
+      self.contextMenuFeature = feature
+    },
+  }))
+
+  .views(self => ({
+    get contextMenuOptions() {
+      return self.contextMenuFeature
+        ? [
+            {
+              label: 'Open feature details',
+              icon: MenuOpenIcon,
+              onClick: () => {
+                if (self.contextMenuFeature) {
+                  self.selectFeature(self.contextMenuFeature)
+                }
+              },
+            },
+          ]
+        : []
     },
   }))
 
@@ -269,12 +285,20 @@ const blockBasedTrack = types
             self.clearFeatureSelection()
           } else {
             // feature id under mouse passed to context menu
-            const feature = self.features.get(f)
-            self.contextMenuFeature(feature as Feature)
+            self.setContextMenuFeature(self.features.get(f))
           }
         },
+
+        onMouseMove(event: unknown, featureId: string | undefined) {
+          self.setFeatureIdUnderMouse(featureId)
+        },
+
+        onMouseLeave(event: unknown) {
+          self.setFeatureIdUnderMouse(undefined)
+        },
+
         onContextMenu() {
-          self.contextMenuNoFeature()
+          self.setContextMenuFeature(undefined)
           self.clearFeatureSelection()
         },
       }

@@ -358,8 +358,12 @@ test('variant track test - opens feature detail view', async () => {
   fireEvent.click(await findByTestId('test-vcf-604452'))
 
   // this text is to confirm a feature detail drawer opened
-  await expect(findByText('ctgA:277..277')).resolves.toBeTruthy()
-})
+  expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
+  fireEvent.click(await findByTestId('drawer-close'))
+  fireEvent.contextMenu(await findByTestId('test-vcf-604452'))
+  fireEvent.click(await findByText('Open feature details'))
+  expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
+}, 10000)
 
 describe('nclist track test with long name', () => {
   it('see that a feature gets ellipses', async () => {
@@ -455,6 +459,48 @@ describe('alignments track', () => {
     // this is to confirm a alignment detail drawer widget opened
     await expect(findAllByTestId('alignment-side-drawer')).resolves.toBeTruthy()
   }, 15000)
+  it('opens a SNPCoverageTrack', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText, findAllByTestId } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(5, 100)
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_snpcoverage'))
+
+    const snpCoverageCanvas = await findAllByTestId('prerendered_canvas')
+    const snpCoverageImg = snpCoverageCanvas[0].toDataURL()
+    const snpCoverageData = snpCoverageImg.replace(
+      /^data:image\/\w+;base64,/,
+      '',
+    )
+    const snpCoverageBuf = Buffer.from(snpCoverageData, 'base64')
+    expect(snpCoverageBuf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
+  }, 15000)
+
+  it('opens a PileupTrack', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText, findAllByTestId } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(5, 100)
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
+
+    const pileupCanvas = await findAllByTestId('prerendered_canvas')
+    const pileupImg = pileupCanvas[0].toDataURL()
+    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
+    const pileupBuf = Buffer.from(pileupData, 'base64')
+    expect(pileupBuf).toMatchImageSnapshot({
+      failureThreshold: 0.5,
+      failureThresholdType: 'percent',
+    })
+  }, 15000)
 
   // Note: tracks with assembly volvox don't have much soft clipping
   it('opens the track menu and enables soft clipping', async () => {
@@ -480,9 +526,7 @@ describe('alignments track', () => {
     await waitForElement(() => getByText('Show soft clipping'))
     fireEvent.click(getByText('Show soft clipping'))
 
-    expect(state.session.views[0].tracks[0].showSoftClipping).toBe(true)
-
-    // wait for blocket to rerender after softclipping
+    // wait for block to rerender after softclipping
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
@@ -499,59 +543,39 @@ describe('alignments track', () => {
     })
   }, 12000)
 
-  // it('access alignments context menu', async () => {
-  //   const pluginManager = getPluginManager()
-  //   const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
-  //   fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
-  //   const track = await findByTestId('track-volvox_alignments')
-
-  //   fireEvent.contextMenu(track, { clientX: 250, clientY: 20 })
-
-  //   expect(await findByTestId('alignments_context_menu')).toBeTruthy()
-  // })
-
   it('selects a sort, updates object and layout', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findByText, getByText } = render(
+    const { findByTestId, findByText, findAllByTestId } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
-    state.session.views[0].setNewView(5, 100)
+    state.session.views[0].setNewView(0.02, 2086500)
 
     // load track
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
-    )
-    await findByTestId('track-volvox_alignments_pileup_coverage')
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+    await findByTestId('track-volvox-long-reads-cram')
     expect(state.session.views[0].tracks[0]).toBeTruthy()
-    const alignmentsTrack = state.session.views[0].tracks[0]
 
-    // open view level menu and chooses item to be sorted by
-    const viewMenu = await findByTestId('view_menu_icon')
-    fireEvent.click(viewMenu)
-    await waitForElement(() => getByText('Sort by'))
-    fireEvent.click(getByText('Sort by'))
-    await waitForElement(() => getByText('Read strand'))
-    fireEvent.click(getByText('Read strand'))
+    // opens the track menu and turns on soft clipping
+    const trackMenu = await findByTestId('track_menu_icon')
 
-    // wait til sort is complete
-    await wait(() => {
-      expect(alignmentsTrack.sortedBy).toBe('Read strand')
-    })
+    fireEvent.click(trackMenu)
+    fireEvent.click(await findByText('Sort by'))
+    fireEvent.click(await findByText('Read strand'))
+
+    // wait for pileup track to render with sort
+    await findAllByTestId('pileup-Read strand')
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
-    const pileupCanvas = await findAllByTestId1('prerendered_canvas')
-    const pileupImg = pileupCanvas[0].toDataURL()
-    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
-    const pileupBuf = Buffer.from(pileupData, 'base64')
-    expect(pileupBuf).toMatchImageSnapshot({
-      failureThreshold: 0.5,
-      failureThresholdType: 'percent',
-    })
+    const canvases = await findAllByTestId1('prerendered_canvas')
+    const img = canvases[1].toDataURL()
+    const data = img.replace(/^data:image\/\w+;base64,/, '')
+    const buf = Buffer.from(data, 'base64')
+    expect(buf).toMatchImageSnapshot()
   }, 10000)
 })
 describe('bigwig', () => {

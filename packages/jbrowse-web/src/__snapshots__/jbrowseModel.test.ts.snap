@@ -141,7 +141,7 @@ Object {
       "category": Array [
         "Integration test",
       ],
-      "name": "volvox-sorted.cram (contigA, svg)",
+      "name": "volvox-sorted.cram (contigA, AlignmentsTrack)",
       "renderers": Object {
         "PileupRenderer": Object {
           "type": "PileupRenderer",
@@ -155,6 +155,179 @@ Object {
       },
       "trackId": "volvox_cram_alignments",
       "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "craiLocation": Object {
+          "uri": "test_data/volvox/volvox-sorted-altname.cram.crai",
+        },
+        "cramLocation": Object {
+          "uri": "test_data/volvox/volvox-sorted-altname.cram",
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "test_data/volvox/volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "volvox-sorted.cram (contigA, PileupTrack)",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox_cram_pileup",
+      "type": "PileupTrack",
+    },
+    Object {
+      "adapter": Object {
+        "subadapter": Object {
+          "craiLocation": Object {
+            "uri": "test_data/volvox/volvox-sorted-altname.cram.crai",
+          },
+          "cramLocation": Object {
+            "uri": "test_data/volvox/volvox-sorted-altname.cram",
+          },
+          "sequenceAdapter": Object {
+            "twoBitLocation": Object {
+              "uri": "test_data/volvox/volvox.2bit",
+            },
+            "type": "TwoBitAdapter",
+          },
+          "type": "CramAdapter",
+        },
+        "type": "SNPCoverageAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "volvox-sorted.cram (contigA, SNPCoverage)",
+      "renderers": Object {
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+      },
+      "trackId": "volvox_cram_snpcoverage",
+      "type": "SNPCoverageTrack",
+    },
+    Object {
+      "adapter": Object {
+        "craiLocation": Object {
+          "uri": "test_data/volvox/volvox-sorted.cram.crai",
+        },
+        "cramLocation": Object {
+          "uri": "test_data/volvox/volvox-sorted.cram",
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "test_data/volvox/volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "volvox-sorted.cram (ctgA, AlignmentsTrack)",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox_cram_alignments_ctga",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "craiLocation": Object {
+          "uri": "test_data/volvox/volvox-sorted.cram.crai",
+        },
+        "cramLocation": Object {
+          "uri": "test_data/volvox/volvox-sorted.cram",
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "test_data/volvox/volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "volvox-sorted.cram (ctgA, PileupTrack)",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox_cram_pileup_ctga",
+      "type": "PileupTrack",
+    },
+    Object {
+      "adapter": Object {
+        "subadapter": Object {
+          "craiLocation": Object {
+            "uri": "test_data/volvox/volvox-sorted.cram.crai",
+          },
+          "cramLocation": Object {
+            "uri": "test_data/volvox/volvox-sorted.cram",
+          },
+          "sequenceAdapter": Object {
+            "twoBitLocation": Object {
+              "uri": "test_data/volvox/volvox.2bit",
+            },
+            "type": "TwoBitAdapter",
+          },
+          "type": "CramAdapter",
+        },
+        "type": "SNPCoverageAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "volvox-sorted.cram (ctgA, SNPCoverage)",
+      "renderers": Object {
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+      },
+      "trackId": "volvox_cram_snpcoverage_ctga",
+      "type": "SNPCoverageTrack",
     },
     Object {
       "adapter": Object {
@@ -175,7 +348,7 @@ Object {
         "Integration test",
       ],
       "defaultRendering": "svg",
-      "name": "volvox-sorted red/blue (ctgA, svg)",
+      "name": "volvox-sorted.bam (ctgA, svg)",
       "renderers": Object {
         "PileupRenderer": Object {
           "type": "PileupRenderer",
@@ -208,7 +381,7 @@ Object {
       "category": Array [
         "Integration test",
       ],
-      "name": "volvox-sorted red/blue (ctgA, canvas)",
+      "name": "volvox-sorted.bam (ctgA, canvas)",
       "renderers": Object {
         "PileupRenderer": Object {
           "type": "PileupRenderer",
@@ -242,7 +415,7 @@ Object {
         "Integration test",
       ],
       "defaultRendering": "svg",
-      "name": "volvox-sorted red/blue (contigA)",
+      "name": "volvox-sorted.bam (contigA)",
       "renderers": Object {
         "PileupRenderer": Object {
           "type": "PileupRenderer",
@@ -275,7 +448,7 @@ Object {
       "category": Array [
         "Integration test",
       ],
-      "name": "volvox-sorted red/blue (small max height)",
+      "name": "volvox-sorted.bam (small max height)",
       "renderers": Object {
         "PileupRenderer": Object {
           "maxHeight": 10,
@@ -388,7 +561,7 @@ Object {
       "category": Array [
         "Integration test",
       ],
-      "name": "volvox-sorted red/blue (bam nonexist 404)",
+      "name": "volvox-sorted.bam (bam nonexist 404)",
       "renderers": Object {
         "PileupRenderer": Object {
           "type": "PileupRenderer",
@@ -421,7 +594,7 @@ Object {
       "category": Array [
         "Integration test",
       ],
-      "name": "volvox-sorted red/blue (bai nonexist 404)",
+      "name": "volvox-sorted.bam (bai nonexist 404)",
       "renderers": Object {
         "PileupRenderer": Object {
           "type": "PileupRenderer",
@@ -1015,7 +1188,7 @@ Object {
       "category": Array [
         "Alignments",
       ],
-      "name": "volvox-sorted red/blue (CRAM)",
+      "name": "volvox-sorted.cram",
       "renderers": Object {
         "PileupRenderer": Object {
           "type": "PileupRenderer",
@@ -1048,7 +1221,7 @@ Object {
       "category": Array [
         "Alignments",
       ],
-      "name": "volvox-sorted red/blue",
+      "name": "volvox-sorted.bam",
       "renderers": Object {
         "PileupRenderer": Object {
           "type": "PileupRenderer",

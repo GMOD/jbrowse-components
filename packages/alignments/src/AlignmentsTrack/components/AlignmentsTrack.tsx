@@ -1,25 +1,11 @@
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer } from 'mobx-react'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 import React, { useEffect } from 'react'
-import { YScaleBar } from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
-import AlignmentsBlockBasedTrack from './AlignmentsBlockBasedTrack'
+import { ResizeHandle } from '@gmod/jbrowse-core/ui'
+import { AlignmentsTrackModel } from '../model'
 
-interface AlignmentsTrackProps {
-  blockState: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
-  model: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  offsetPx: number
-  bpPerPx: number
-  onHorizontalScroll: Function
-}
-
-function AlignmentsTrackComponent(props: AlignmentsTrackProps) {
-  const { model } = props
+function AlignmentsTrackComponent({ model }: { model: AlignmentsTrackModel }) {
   const { PileupTrack, SNPCoverageTrack, showPileup, showCoverage } = model
-
-  let showScalebar = false
-  if (SNPCoverageTrack) {
-    const { ready, stats, needsScalebar } = SNPCoverageTrack
-    if (ready && stats && needsScalebar) showScalebar = true
-  }
 
   // determine height of the model when toggling pileuptrack
   useEffect(() => {
@@ -27,24 +13,42 @@ function AlignmentsTrackComponent(props: AlignmentsTrackProps) {
   }, [SNPCoverageTrack, model, showPileup])
 
   return (
-    <div style={{ position: 'relative' }}>
-      <AlignmentsBlockBasedTrack
-        {...props}
-        {...PileupTrack}
-        {...SNPCoverageTrack}
-        showPileup={showPileup}
-        showSNPCoverage={showCoverage}
-      >
-        {showScalebar && showCoverage ? (
-          <YScaleBar model={SNPCoverageTrack} />
+    <div
+      data-testid={`track-${getConf(model, 'trackId')}`}
+      style={{ position: 'relative' }}
+    >
+      <div data-testid="Blockset-snpcoverage">
+        {showCoverage ? (
+          <SNPCoverageTrack.ReactComponent model={SNPCoverageTrack} />
         ) : null}
-      </AlignmentsBlockBasedTrack>
+      </div>
+      <ResizeHandle
+        onDrag={delta => {
+          if (SNPCoverageTrack) {
+            SNPCoverageTrack.setHeight(SNPCoverageTrack.height + delta)
+            return delta
+          }
+          return 0
+        }}
+        style={{
+          position: 'absolute',
+          top: showCoverage ? SNPCoverageTrack.height + 2 : 0,
+          height: 3,
+        }}
+      />
+
+      <div
+        data-testid="Blockset-pileup"
+        style={{
+          position: 'absolute',
+          top: showCoverage ? SNPCoverageTrack.height + 5 : 0,
+          height: 3,
+        }}
+      >
+        {showPileup ? <PileupTrack.ReactComponent model={PileupTrack} /> : null}
+      </div>
     </div>
   )
-}
-
-AlignmentsTrackComponent.propTypes = {
-  model: MobxPropTypes.observableObject.isRequired,
 }
 
 export default observer(AlignmentsTrackComponent)

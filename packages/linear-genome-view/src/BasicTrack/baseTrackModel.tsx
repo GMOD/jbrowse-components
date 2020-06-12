@@ -107,6 +107,10 @@ const BaseTrack = types
       )
     },
 
+    get TrackBlurb(): React.FC<{ model: typeof self }> | null {
+      return null
+    },
+
     /**
      * the react props that are passed to the Renderer when data
      * is rendered in this track
@@ -161,8 +165,8 @@ const BaseTrack = types
      * if a track-level message should be displayed instead of the blocks,
      * make this return a react component
      */
-    get trackMessageComponent() {
-      return undefined
+    get TrackMessageComponent() {
+      return undefined as undefined | React.FC<any>
     },
 
     get menuOptions(): MenuOption[] {

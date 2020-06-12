@@ -3,21 +3,17 @@ import {
   ConfigurationReference,
 } from '@gmod/jbrowse-core/configuration'
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { MenuOption } from '@gmod/jbrowse-core/ui'
-import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
-import { types, addDisposer } from 'mobx-state-tree'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
-import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { getRpcSessionId } from '@gmod/jbrowse-core/util/tracks'
-import SortIcon from '@material-ui/icons/Sort'
+
 import VisibilityIcon from '@material-ui/icons/Visibility'
-import VisibilityOffIcon from '@material-ui/icons/VisibilityOff'
+import { MenuOption } from '@gmod/jbrowse-core/ui'
 import AlignmentsTrackComponent from './components/AlignmentsTrack'
 import { AlignmentsConfigModel } from './configSchema'
 
-export default (
+const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: AlignmentsConfigModel,
 ) => {
@@ -36,15 +32,11 @@ export default (
           type: types.literal('AlignmentsTrack'),
           configuration: ConfigurationReference(configSchema),
           height: 250,
-          centerLinePosition: types.maybe(types.number),
           showCoverage: true,
           showPileup: true,
-          hideHeader: false,
         })
         .volatile(() => ({
-          ReactComponent: AlignmentsTrackComponent,
-          sortedBy: '',
-          showSoftClipping: false,
+          ReactComponent: (AlignmentsTrackComponent as unknown) as React.FC,
         })),
     )
     .actions(self => ({
@@ -53,13 +45,6 @@ export default (
       },
       togglePileup() {
         self.showPileup = !self.showPileup
-      },
-      toggleSoftClipping() {
-        self.showSoftClipping = !self.showSoftClipping
-      },
-      clearSelected() {
-        self.sortedBy = ''
-        self.centerLinePosition = undefined
       },
     }))
     .views(self => ({
@@ -80,6 +65,20 @@ export default (
         return self.PileupTrack.features
       },
 
+      get TrackBlurb() {
+        return self.PileupTrack.TrackBlurb
+      },
+
+      get sortedBy() {
+        return self.PileupTrack.sortedBy
+      },
+      get sortedByPosition() {
+        return self.PileupTrack.sortedByPosition
+      },
+      get sortedByRefName() {
+        return self.PileupTrack.sortedByRefName
+      },
+
       get snpCoverageTrackConfig() {
         return {
           ...getConf(self),
@@ -92,36 +91,25 @@ export default (
           },
         }
       },
-      get sortOptions() {
-        return ['Start location', 'Read strand', 'Base pair', 'Clear sort']
-      },
+
       get menuOptions(): MenuOption[] {
         return [
           {
-            label: self.showCoverage
-              ? 'Hide coverage track'
-              : 'Show coverage track',
-            icon: self.showCoverage ? VisibilityOffIcon : VisibilityIcon,
+            label: 'Show coverage track',
+            icon: VisibilityIcon,
+            type: 'checkbox',
             onClick: self.toggleCoverage,
-            disabled: !self.showPileup,
+            checked: self.showCoverage,
           },
           {
-            label: self.showPileup ? 'Hide pileup track' : 'Show pileup track',
-            icon: self.showPileup ? VisibilityOffIcon : VisibilityIcon,
+            label: 'Show pileup track',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: self.showPileup,
             onClick: self.togglePileup,
-            disabled: !self.showCoverage,
           },
-          {
-            label: self.showSoftClipping
-              ? 'Hide soft clipping'
-              : 'Show soft clipping',
-            icon: self.showSoftClipping ? VisibilityOffIcon : VisibilityIcon,
-            onClick: () => {
-              self.toggleSoftClipping()
-              // if toggling from off to on, will break sort for this track so clear it
-              if (self.showSoftClipping) self.clearSelected()
-            },
-          },
+          ...self.PileupTrack.menuOptions,
+          ...self.SNPCoverageTrack.menuOptions,
         ]
       },
     }))
@@ -148,69 +136,9 @@ export default (
           configuration: trackConfig,
         }
       },
-      sortSelected(selected: string) {
-        const { rpcManager } = getSession(self)
-        const { centerLineInfo } = getContainingView(
-          self,
-        ) as LinearGenomeViewModel
-        if (!centerLineInfo) return
-        const centerBp = Math.round(centerLineInfo.offset) + 1
-
-        if (centerBp < 0) return
-
-        const regions = [
-          {
-            refName: centerLineInfo.refName,
-            start: centerBp,
-            end: centerBp + 1,
-            assemblyName: centerLineInfo.assemblyName,
-          },
-        ]
-
-        // render just the sorted region first
-        self.PileupTrack.rendererType
-          .renderInClient(rpcManager, {
-            assemblyName: regions[0].assemblyName,
-            regions,
-            adapterConfig: getConf(self, 'adapter'),
-            rendererType: self.PileupTrack.rendererType.name,
-            renderProps: {
-              ...self.PileupTrack.renderProps,
-              sortObject: {
-                position: centerBp,
-                by: selected,
-              },
-            },
-            sessionId: getRpcSessionId(self),
-            timeout: 1000000,
-          })
-          .then(() => {
-            this.applySortSelected(selected, centerBp)
-          })
-      },
-      applySortSelected(selected: string, centerBp: number) {
-        self.sortedBy = selected
-        self.centerLinePosition = centerBp
-      },
-    }))
-    .views(self => ({
-      get viewMenuActions(): MenuOption[] {
-        return [
-          {
-            label: 'Sort by',
-            icon: SortIcon,
-            disabled: self.showSoftClipping,
-            subMenu: self.sortOptions.map((option: string) => {
-              return {
-                label: option,
-                onClick: (object: typeof self) =>
-                  option === 'Clear sort'
-                    ? object.clearSelected()
-                    : object.sortSelected(option),
-              }
-            }),
-          },
-        ]
-      },
     }))
 }
+
+export default stateModelFactory
+export type AlignmentsTrackStateModel = ReturnType<typeof stateModelFactory>
+export type AlignmentsTrackModel = Instance<AlignmentsTrackStateModel>

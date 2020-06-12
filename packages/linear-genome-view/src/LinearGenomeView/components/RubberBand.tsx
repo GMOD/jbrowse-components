@@ -1,5 +1,4 @@
 import { Menu } from '@gmod/jbrowse-core/ui'
-import { useEventListener } from '@gmod/jbrowse-core/util'
 import Popover from '@material-ui/core/Popover'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -102,22 +101,33 @@ function RubberBand({
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
   const classes = useStyles()
-  const mouseDragging = startX !== undefined
+  const mouseDragging = startX !== undefined && anchorPosition === undefined
 
-  useEventListener('mousemove', (event: MouseEvent) => {
-    if (controlsRef.current) {
-      const relativeX =
-        event.clientX - controlsRef.current.getBoundingClientRect().left
-      setCurrentX(relativeX)
+  useEffect(() => {
+    function globalMouseMove(event: MouseEvent) {
+      if (controlsRef.current && mouseDragging) {
+        const relativeX =
+          event.clientX - controlsRef.current.getBoundingClientRect().left
+        setCurrentX(relativeX)
+      }
     }
-  })
 
-  useEventListener('mouseup', (event: MouseEvent) => {
-    if (startX !== undefined) {
-      setAnchorPosition({ left: event.clientX, top: event.clientY })
-      setGuideX(undefined)
+    function globalMouseUp(event: MouseEvent) {
+      if (startX !== undefined) {
+        setAnchorPosition({ left: event.clientX, top: event.clientY })
+        setGuideX(undefined)
+      }
     }
-  })
+    if (mouseDragging) {
+      window.addEventListener('mousemove', globalMouseMove)
+      window.addEventListener('mouseup', globalMouseUp)
+      return () => {
+        window.removeEventListener('mousemove', globalMouseMove)
+        window.removeEventListener('mouseup', globalMouseUp)
+      }
+    }
+    return () => {}
+  }, [startX, mouseDragging])
 
   useEffect(() => {
     if (

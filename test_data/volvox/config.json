@@ -1,5 +1,4 @@
 {
-  "configuration": {},
   "assemblies": [
     {
       "name": "volvox",
@@ -70,7 +69,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram_alignments",
-      "name": "volvox-sorted.cram (contigA, svg)",
+      "name": "volvox-sorted.cram (contigA, AlignmentsTrack)",
       "category": [
         "Integration test"
       ],
@@ -91,20 +90,148 @@
             "uri": "test_data/volvox/volvox.2bit"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
+      }
+    },
+    {
+      "type": "PileupTrack",
+      "trackId": "volvox_cram_pileup",
+      "name": "volvox-sorted.cram (contigA, PileupTrack)",
+      "category": [
+        "Integration test"
+      ],
+      "assemblyNames": [
+        "volvox"
+      ],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "test_data/volvox/volvox-sorted-altname.cram"
         },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
+        "craiLocation": {
+          "uri": "test_data/volvox/volvox-sorted-altname.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "test_data/volvox/volvox.2bit"
+          }
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "volvox_cram_snpcoverage",
+      "name": "volvox-sorted.cram (contigA, SNPCoverage)",
+      "category": [
+        "Integration test"
+      ],
+      "assemblyNames": [
+        "volvox"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "CramAdapter",
+          "cramLocation": {
+            "uri": "test_data/volvox/volvox-sorted-altname.cram"
+          },
+          "craiLocation": {
+            "uri": "test_data/volvox/volvox-sorted-altname.cram.crai"
+          },
+          "sequenceAdapter": {
+            "type": "TwoBitAdapter",
+            "twoBitLocation": {
+              "uri": "test_data/volvox/volvox.2bit"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_cram_alignments_ctga",
+      "name": "volvox-sorted.cram (ctgA, AlignmentsTrack)",
+      "category": [
+        "Integration test"
+      ],
+      "assemblyNames": [
+        "volvox"
+      ],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "test_data/volvox/volvox-sorted.cram"
+        },
+        "craiLocation": {
+          "uri": "test_data/volvox/volvox-sorted.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "test_data/volvox/volvox.2bit"
+          }
+        }
+      }
+    },
+    {
+      "type": "PileupTrack",
+      "trackId": "volvox_cram_pileup_ctga",
+      "name": "volvox-sorted.cram (ctgA, PileupTrack)",
+      "category": [
+        "Integration test"
+      ],
+      "assemblyNames": [
+        "volvox"
+      ],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "test_data/volvox/volvox-sorted.cram"
+        },
+        "craiLocation": {
+          "uri": "test_data/volvox/volvox-sorted.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "test_data/volvox/volvox.2bit"
+          }
+        }
+      }
+    },
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "volvox_cram_snpcoverage_ctga",
+      "name": "volvox-sorted.cram (ctgA, SNPCoverage)",
+      "category": [
+        "Integration test"
+      ],
+      "assemblyNames": [
+        "volvox"
+      ],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "CramAdapter",
+          "cramLocation": {
+            "uri": "test_data/volvox/volvox-sorted.cram"
+          },
+          "craiLocation": {
+            "uri": "test_data/volvox/volvox-sorted.cram.crai"
+          },
+          "sequenceAdapter": {
+            "type": "TwoBitAdapter",
+            "twoBitLocation": {
+              "uri": "test_data/volvox/volvox.2bit"
+            }
+          }
         }
       }
     },
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_alignments",
-      "name": "volvox-sorted red/blue (ctgA, svg)",
+      "name": "volvox-sorted.bam (ctgA, svg)",
       "category": [
         "Integration test"
       ],
@@ -135,7 +262,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_alignments_pileup_coverage",
-      "name": "volvox-sorted red/blue (ctgA, canvas)",
+      "name": "volvox-sorted.bam (ctgA, canvas)",
       "category": [
         "Integration test"
       ],
@@ -168,7 +295,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_bam_altname",
-      "name": "volvox-sorted red/blue (contigA)",
+      "name": "volvox-sorted.bam (contigA)",
       "assemblyNames": [
         "volvox"
       ],
@@ -199,7 +326,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_bam_small_max_height",
-      "name": "volvox-sorted red/blue (small max height)",
+      "name": "volvox-sorted.bam (small max height)",
       "category": [
         "Integration test"
       ],
@@ -301,7 +428,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_alignments_bam_nonexist",
-      "name": "volvox-sorted red/blue (bam nonexist 404)",
+      "name": "volvox-sorted.bam (bam nonexist 404)",
       "assemblyNames": [
         "volvox"
       ],
@@ -323,7 +450,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_alignments_bai_nonexist",
-      "name": "volvox-sorted red/blue (bai nonexist 404)",
+      "name": "volvox-sorted.bam (bai nonexist 404)",
       "assemblyNames": [
         "volvox"
       ],
@@ -875,7 +1002,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram",
-      "name": "volvox-sorted red/blue (CRAM)",
+      "name": "volvox-sorted.cram",
       "assemblyNames": [
         "volvox"
       ],
@@ -909,7 +1036,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_bam",
-      "name": "volvox-sorted red/blue",
+      "name": "volvox-sorted.bam",
       "assemblyNames": [
         "volvox"
       ],

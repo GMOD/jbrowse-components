@@ -8,7 +8,6 @@ import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
 type LGV = Instance<LinearGenomeViewStateModel>
 
 interface BaseTrackWithSort extends Instance<BaseTrackStateModel> {
-  sortedBy: string
   centerLinePosition: number
 }
 
@@ -29,11 +28,6 @@ const useStyles = makeStyles(() => ({
     whiteSpace: 'nowrap',
     fontWeight: 'bold',
   },
-  sortText: {
-    color: 'green',
-    fontWeight: 'bold',
-    pointerEvents: 'none',
-  },
 }))
 
 function CenterLine({ model }: { model: LGV }) {
@@ -41,12 +35,6 @@ function CenterLine({ model }: { model: LGV }) {
   const ref = useRef<HTMLDivElement>(null)
   const classes = useStyles()
   const startingPosition = width / 2
-  let activeSortedTrack: BaseTrackWithSort | undefined
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tracks.forEach((track: any) => {
-    if (track.sortedBy) activeSortedTrack = track
-  })
 
   return tracks.length ? (
     <div
@@ -68,18 +56,12 @@ function CenterLine({ model }: { model: LGV }) {
           role="presentation"
           style={{
             left: Math.max(1 / bpPerPx, 1) + 5,
-            top: activeSortedTrack ? trackHeights - 15 : trackHeights,
+            top: trackHeights,
           }}
         >
           {/* change bp to refName */}
           {centerLineInfo.refName}:{' '}
           {Math.max(Math.round(centerLineInfo.offset) + 1, 0)}
-          {activeSortedTrack && (
-            <div className={classes.sortText}>
-              Sort: {activeSortedTrack.sortedBy.toUpperCase()} at{' '}
-              {activeSortedTrack.centerLinePosition}
-            </div>
-          )}
         </div>
       )}
     </div>
