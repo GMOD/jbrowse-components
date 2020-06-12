@@ -1370,7 +1370,7 @@
     },
     {
       "type": "WiggleTrack",
-      "trackId": "FKQP7kvWcgO",
+      "trackId": "wiggle_track_posneg",
       "name": "Volvox microarray with +/- values",
       "assemblyNames": [
         "volvox"
@@ -1383,6 +1383,36 @@
         "type": "BigWigAdapter",
         "bigWigLocation": {
           "uri": "test_data/volvox/volvox_microarray_posneg.bw"
+        }
+      },
+      "defaultRendering": "line",
+      "renderers": {
+        "DensityRenderer": {
+          "type": "DensityRenderer"
+        },
+        "XYPlotRenderer": {
+          "type": "XYPlotRenderer"
+        },
+        "LinePlotRenderer": {
+          "type": "LinePlotRenderer"
+        }
+      }
+    },
+    {
+      "type": "WiggleTrack",
+      "trackId": "wiggle_track_fractional_posneg",
+      "name": "Volvox microarray with +/- fractional values",
+      "assemblyNames": [
+        "volvox"
+      ],
+      "category": [
+        "BigWig",
+        "Line"
+      ],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "test_data/volvox/volvox_microarray_posneg_frac.bw"
         }
       },
       "defaultRendering": "line",

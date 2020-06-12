@@ -1564,7 +1564,37 @@ Object {
           "type": "XYPlotRenderer",
         },
       },
-      "trackId": "FKQP7kvWcgO",
+      "trackId": "wiggle_track_posneg",
+      "type": "WiggleTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "uri": "test_data/volvox/volvox_microarray_posneg_frac.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "BigWig",
+        "Line",
+      ],
+      "defaultRendering": "line",
+      "name": "Volvox microarray with +/- fractional values",
+      "renderers": Object {
+        "DensityRenderer": Object {
+          "type": "DensityRenderer",
+        },
+        "LinePlotRenderer": Object {
+          "type": "LinePlotRenderer",
+        },
+        "XYPlotRenderer": Object {
+          "type": "XYPlotRenderer",
+        },
+      },
+      "trackId": "wiggle_track_fractional_posneg",
       "type": "WiggleTrack",
     },
     Object {
