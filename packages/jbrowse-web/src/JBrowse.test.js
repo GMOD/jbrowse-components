@@ -293,7 +293,7 @@ describe('test renamed refs', () => {
       failureThresholdType: 'percent',
     })
   }, 10000 /* this test needs more time to run */)
-  it('test that bam with contigA instead of ctgA displays', async () => {
+  xit('test that bam with contigA instead of ctgA displays', async () => {
     const pluginManager = getPluginManager()
     const { findByTestId, findAllByText } = render(
       <JBrowse pluginManager={pluginManager} />,
