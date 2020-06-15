@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-cli",
-  "description": "A tool for working with JBrowse 2",
+  "description": "A command line tool for working with JBrowse 2",
   "version": "0.0.0",
   "bin": {
     "jbrowse": "./bin/run"

@@ -37,8 +37,64 @@ USAGE
 
 <!-- commands -->
 
+- [`jbrowse add-assembly TYPE SEQUENCE`](#jbrowse-add-assembly-type-sequence)
 - [`jbrowse hello [FILE]`](#jbrowse-hello-file)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
+
+## `jbrowse add-assembly TYPE SEQUENCE`
+
+Add an assembly to a JBrowse 2 configuration
+
+```
+USAGE
+  $ jbrowse add-assembly TYPE SEQUENCE
+
+ARGUMENTS
+  TYPE
+      (indexedFasta|bgzipFasta|twoBit|chromSizes|fromConfig) type of sequence
+
+      indexedFasta   An index FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation
+      bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify
+      --faiLocation and/or --gziLocation
+      twoBit         A twoBit (e.g. .2bit) file
+      chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
+      fromConfig     A JBrowse 2 fromConfigAdapter configuration
+
+  SEQUENCE
+      sequence file or URL
+
+      If TYPE is indexedFasta or bgzipFasta, the index file defaults to <location>.fai and can be optionally specified
+      with --faiLocation
+      If TYPE is bgzipFasta, the gzip index file defaults to <location>.gzi and can be optionally specified with
+      --gziLocation
+
+OPTIONS
+  -a, --alias=alias          An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38"); can
+                             be specified multiple times
+
+  -c, --config=config        [default: ./config.json] Config file; if the file does not exist, it will be created
+
+  -f, --force                Overwrite existing assembly if one with the same name exists
+
+  -h, --help                 show CLI help
+
+  -n, --name=name            Name of the assembly; if not specified, will be guessed using the sequence file name
+
+  --copy                     Copy the sequence file(s) to the same directory as the config instead of using in place
+
+  --faiLocation=faiLocation  [default: <fastaLocation>.fai] FASTA index file or URL
+
+  --gziLocation=gziLocation  [default: <fastaLocation>.gzi] FASTA gzip index file or URL
+
+  --skipCheck                Don't check whether or not the sequence file or URL exists
+
+EXAMPLES
+  $ jbrowse add-assembly indexedFasta GRCh38.fa
+  $ jbrowse add-assembly bgzipFasta myFile.fa.gz --name GRCh38 --alias hg38
+  $ jbrowse add-assembly twoBit GRCh38.2bit --config path/to/config.json
+  $ jbrowse add-assembly chromeSizes GRCh38.chrom.sizes
+  $ jbrowse add-assembly fromConfig GRCh38.config.json
+```
 
 ## `jbrowse hello [FILE]`
 
