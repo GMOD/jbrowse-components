@@ -14,6 +14,8 @@ const useStyles = makeStyles({
 })
 
 function BlockError({ error, reload }) {
+  // reload function gets passed here
+  console.log(reload)
   const classes = useStyles()
   return (
     <div className={classes.blockError}>

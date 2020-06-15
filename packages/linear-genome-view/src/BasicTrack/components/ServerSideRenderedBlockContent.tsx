@@ -83,6 +83,8 @@ BlockMessage.propTypes = {
 
 function BlockError({ error, reload }: { error: Error; reload: () => void }) {
   const classes = useStyles()
+  // TODORELOAD: reloads here
+  if (reload) console.log('errored', error, reload)
   return (
     <div className={classes.blockError}>
       {reload ? (
@@ -116,6 +118,30 @@ const ServerSideRenderedBlockContent = observer(
       filled: boolean
     }
   }) => {
+    // model.reload is below
+    // function createActionInvoker(target, name, fn) {
+    //   var res = function () {
+    //       var id = getNextActionId();
+    //       var parentContext = currentActionContext;
+    //       var parentActionContext = getParentActionContext(parentContext);
+    //       return runWithActionContext({
+    //           type: "action",
+    //           name: name,
+    //           id: id,
+    //           args: argsToArray(arguments),
+    //           context: target,
+    //           tree: getRoot(target),
+    //           rootId: parentContext ? parentContext.rootId : id,
+    //           parentId: parentContext ? parentContext.id : 0,
+    //           allParentIds: parentContext
+    //               ? __spread(parentContext.allParentIds, [parentContext.id]) : [],
+    //           parentEvent: parentContext,
+    //           parentActionEvent: parentActionContext
+    //       }, fn);
+    //   };
+    // res._isMSTAction = true;
+    //     return res;
+    // }
     if (model.error) {
       return (
         <Repeater>
