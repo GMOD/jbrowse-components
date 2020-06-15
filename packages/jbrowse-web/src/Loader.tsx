@@ -32,6 +32,8 @@ export default function Loader() {
 
   const [configQueryParam] = useQueryParam('config', StringParam)
   const [sessionQueryParam] = useQueryParam('session', StringParam)
+  const [adminQueryParam] = useQueryParam('admin', StringParam)
+  const adminMode = adminQueryParam === '1' || adminQueryParam === 'true'
 
   const classes = useStyles()
 
@@ -80,7 +82,7 @@ export default function Loader() {
   const pluginManager = new PluginManager(plugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
-  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
+  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)
   let rootModel
   try {
     if (configSnapshot) {
