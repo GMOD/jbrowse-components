@@ -408,6 +408,32 @@ describe.only('Zoom to selected displayed regions', () => {
     expect(model.bpPerPx).toBeCloseTo(8.771)
     expect(model.bpPerPx).toBeLessThan(largestBpPerPx)
   })
+
+  it('can navigate to overlapping regions with a region between', () => {
+    model.setDisplayedRegions([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 5000, end: 20000 },
+      { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 3000 },
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 35000 },
+    ])
+    model.zoomToDisplayedRegions(
+      {
+        start: 0,
+        index: 0,
+        end: 50001,
+        offset: 10000,
+        refName: 'ctgA',
+      },
+      {
+        start: 0,
+        index: 0,
+        end: 50001,
+        offset: 15000,
+        refName: 'ctgA',
+      },
+    )
+    expect(model.offsetPx).toBe(142)
+    expect(model.bpPerPx).toBeCloseTo(35.176)
+  })
 })
 
 test('can instantiate a model that >2 regions', () => {
