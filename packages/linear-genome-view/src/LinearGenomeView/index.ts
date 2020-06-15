@@ -18,6 +18,7 @@ import {
   isSessionModelWithDrawerWidgets,
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { transaction } from 'mobx'
 import { getSnapshot, types, cast, Instance } from 'mobx-state-tree'
 
@@ -149,6 +150,32 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return this.displayedRegionsTotalPx - leftPadding
       },
 
+      get displayedParentRegions() {
+        const wholeRefSeqs = [] as Region[]
+        const { assemblyManager } = getSession(self)
+        self.displayedRegions.forEach(({ refName, assemblyName }) => {
+          const assembly = assemblyManager.get(assemblyName)
+          const r = assembly && (assembly.regions as Region[])
+          if (r) {
+            const wholeSequence = r.find(
+              sequence => sequence.refName === refName,
+            )
+            const alreadyExists = wholeRefSeqs.find(
+              sequence => sequence.refName === refName,
+            )
+            if (wholeSequence && !alreadyExists) {
+              wholeRefSeqs.push(wholeSequence)
+            }
+          }
+        })
+        return wholeRefSeqs
+      },
+
+      get displayedParentRegionsLength() {
+        return this.displayedParentRegions
+          .map(a => a.end - a.start)
+          .reduce((a, b) => a + b, 0)
+      },
       get minOffset() {
         // objectively determined to keep the linear genome on the main screen
         const rightPadding = 30
@@ -176,6 +203,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
             assemblyNames.push(displayedRegion.assemblyName)
         })
         return assemblyNames
+      },
+
+      idxInParentRegion(refName: string | undefined) {
+        return this.displayedParentRegions.findIndex(
+          (region: Region) => region.refName === refName,
+        )
       },
 
       bpToPx({ refName, coord }: { refName: string; coord: number }) {
@@ -623,6 +656,104 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
+      /**
+       * Navigate to a location based on user clicking and dragging on the
+       * overview scale bar to select a region to zoom into.
+       * Can handle if there are multiple displayedRegions from same refName.
+       * Only navigates to a location if it is entirely within a displayedRegion.
+       *
+       * @param leftPx- `object as {start, end, index, offset}`, offset = start of user drag
+       * @param rightPx- `object as {start, end, index, offset}`, offset = end of user drag
+       */
+      zoomToDisplayedRegions(leftPx: BpOffset, rightPx: BpOffset) {
+        if (leftPx === undefined || rightPx === undefined) return
+
+        const singleRefSeq = leftPx.refName === rightPx.refName
+        if (
+          (singleRefSeq && rightPx.offset < leftPx.offset) ||
+          self.idxInParentRegion(leftPx.refName) >
+            self.idxInParentRegion(rightPx.refName)
+        ) {
+          ;[leftPx, rightPx] = [rightPx, leftPx]
+        }
+
+        const selectionStart = Math.round(leftPx.offset)
+        const selectionEnd = Math.round(rightPx.offset)
+        const startIdx = self.idxInParentRegion(leftPx.refName)
+        const endIdx = self.idxInParentRegion(rightPx.refName)
+
+        const refSeqSelections: Region[] = []
+
+        if (singleRefSeq)
+          refSeqSelections.push({
+            ...self.displayedParentRegions[startIdx],
+            start: selectionStart,
+            end: selectionEnd,
+          })
+        else {
+          // when selecting over multiple ref seq, convert into correct selections
+          // ie select from ctgA: 30k - ctgB: 1k -> select from ctgA: 30k - 50k, ctgB: 0 - 1k
+          for (let i = startIdx; i <= endIdx; i++) {
+            const ref = self.displayedParentRegions[i]
+            // modify start of first refSeq
+            if (!refSeqSelections.length && ref.refName === leftPx.refName)
+              refSeqSelections.push({
+                ...ref,
+                start: selectionStart,
+              })
+            // modify end of last refSeq
+            else if (ref.refName === rightPx.refName)
+              refSeqSelections.push({
+                ...ref,
+                end: selectionEnd,
+              })
+            else refSeqSelections.push(ref) // if any inbetween first and last push entire refseq
+          }
+        }
+
+        const pessimisticNewRegions: Region[] = [] // assumes you have not found the final overlap
+        let optimisticNewRegions: Region[] = [] // assumes you have found the final overlap
+        let firstOverlapFound = false
+
+        // go through selections from each refseq and zoom to each displayedRegion contained in selection
+        refSeqSelections.forEach(seq => {
+          const { start, end, refName } = seq
+          self.displayedRegions.forEach(region => {
+            if (region.refName !== refName) return
+            if (doesIntersect2(start, end, region.start, region.end)) {
+              let startValue = region.start
+              // if first instance of overlap modify the first overlapping region's start
+              if (!firstOverlapFound) {
+                startValue = region.start < start ? start : region.start
+                firstOverlapFound = true
+              }
+
+              // current region overlapping means previous region was not region with final overlap
+              // overwrite optimistic with pessimistic since pessimistic still correct
+              optimisticNewRegions = JSON.parse(
+                JSON.stringify(pessimisticNewRegions),
+              )
+
+              // push region with the selected end to optimistic, assume current region is final overlap
+              optimisticNewRegions.push({
+                ...region,
+                start: startValue,
+                end: region.end > end ? end : region.end,
+              })
+              pessimisticNewRegions.push({
+                ...region,
+                start: startValue,
+              })
+            }
+            // add regions that don't overlap to pessimistic, display if overlap is found in later region
+            else if (firstOverlapFound) pessimisticNewRegions.push(region)
+          })
+        })
+
+        if (optimisticNewRegions.length)
+          this.navToMultiple(optimisticNewRegions)
+      },
+
       // schedule something to be run after the next time displayedRegions is set
       afterDisplayedRegionsSet(cb: Function) {
         self.afterDisplayedRegionsSetCallbacks.push(cb)
@@ -638,11 +769,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       moveTo(start: BpOffset, end: BpOffset) {
         // find locations in the modellist
         let bpSoFar = 0
+
         if (start.index === end.index) {
           bpSoFar += end.offset - start.offset
         } else {
           const s = self.displayedRegions[start.index]
-          bpSoFar += (s.reversed ? s.start : s.end) - start.offset
+          bpSoFar += s.end - s.start - start.offset
           if (end.index - start.index >= 2) {
             for (let i = start.index + 1; i < end.index; i += 1) {
               bpSoFar +=

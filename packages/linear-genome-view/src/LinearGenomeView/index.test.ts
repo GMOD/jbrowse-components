@@ -49,6 +49,24 @@ const Session = types
             }
             return refName
           },
+          get regions() {
+            return [
+              {
+                assemblyName: 'volvox',
+                start: 0,
+                end: 50001,
+                refName: 'ctgA',
+                reversed: false,
+              },
+              {
+                assemblyName: 'volvox',
+                start: 0,
+                end: 6079,
+                refName: 'ctgB',
+                reversed: false,
+              },
+            ]
+          },
         },
       ],
     ]),
@@ -256,6 +274,129 @@ test('can navToMultiple', () => {
   ).toThrow(
     'Entered location ctgA:1..5000 does not match with displayed regions',
   )
+})
+
+test('can zoom to displayed regions given a selection', () => {
+  const session = Session.create({
+    configuration: {},
+  })
+  const width = 800
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'testZoomToDisplayed',
+      type: 'LinearGenomeView',
+    }),
+  )
+  model.setWidth(width)
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 5000, end: 20000 },
+    { assemblyName: 'volvox', refName: 'ctgA', start: 30000, end: 40000 },
+    { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 3000 },
+  ])
+
+  // select whole region, should have no offset and largest bpPerPx
+  model.zoomToDisplayedRegions(
+    {
+      start: 0,
+      index: 0,
+      end: 50001,
+      offset: 0,
+      refName: 'ctgA',
+    },
+    {
+      start: 0,
+      index: 1,
+      end: 6079,
+      offset: 6079,
+      refName: 'ctgB',
+    },
+  )
+  const largestBpPerPx = model.bpPerPx
+  expect(model.offsetPx).toBe(0)
+  expect(model.bpPerPx).toBeCloseTo(28)
+
+  // same results if start and end object are swapped
+  model.zoomToDisplayedRegions(
+    {
+      start: 0,
+      index: 1,
+      end: 6079,
+      offset: 6079,
+      refName: 'ctgB',
+    },
+    {
+      start: 0,
+      index: 0,
+      end: 50001,
+      offset: 0,
+      refName: 'ctgA',
+    },
+  )
+  expect(model.offsetPx).toBe(0)
+  expect(model.bpPerPx).toEqual(largestBpPerPx)
+
+  // select over one refSeq
+  model.zoomToDisplayedRegions(
+    {
+      start: 0,
+      index: 0,
+      end: 50001,
+      offset: 10000,
+      refName: 'ctgA',
+    },
+    {
+      start: 0,
+      index: 0,
+      end: 50001,
+      offset: 35000,
+      refName: 'ctgA',
+    },
+  )
+  expect(model.offsetPx).toBe(266)
+  expect(model.bpPerPx).toBeCloseTo(18.796)
+  expect(model.bpPerPx).toBeLessThan(largestBpPerPx)
+
+  // over one, select start and end outside of displayed region
+  model.zoomToDisplayedRegions(
+    {
+      start: 0,
+      index: 0,
+      end: 50001,
+      offset: 29000,
+      refName: 'ctgA',
+    },
+    {
+      start: 0,
+      index: 0,
+      end: 50001,
+      offset: 50000,
+      refName: 'ctgA',
+    },
+  )
+  expect(model.offsetPx).toBe(1202)
+  expect(model.bpPerPx).toBe(12.5)
+  expect(model.bpPerPx).toBeLessThan(largestBpPerPx)
+
+  // over two, select start in ctgA and end in ctgA
+  model.zoomToDisplayedRegions(
+    {
+      start: 0,
+      index: 0,
+      end: 50001,
+      offset: 35000,
+      refName: 'ctgA',
+    },
+    {
+      start: 0,
+      index: 1,
+      end: 6709,
+      offset: 2000,
+      refName: 'ctgB',
+    },
+  )
+  expect(model.offsetPx).toBe(2282)
+  expect(model.bpPerPx).toBeCloseTo(8.771)
+  expect(model.bpPerPx).toBeLessThan(largestBpPerPx)
 })
 
 test('can instantiate a model that >2 regions', () => {
