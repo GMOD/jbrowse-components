@@ -87,7 +87,7 @@ function OverviewRubberBand({
 
     function globalMouseUp(event: MouseEvent) {
       if (controlsRef.current && startX && currentX) {
-        if (startX !== currentX && Math.abs(currentX - startX) > 3)
+        if (Math.abs(currentX - startX) > 3)
           model.zoomToDisplayedRegions(
             overview.pxToBp(startX),
             overview.pxToBp(currentX),
