@@ -74,7 +74,7 @@ OPTIONS
 
   -c, --config=config        [default: ./config.json] Config file; if the file does not exist, it will be created
 
-  -f, --force                Overwrite existing assembly if one with the same name exists
+  -f, --force                Equivalent to `--skipCheck --overwrite`
 
   -h, --help                 show CLI help
 
@@ -85,6 +85,8 @@ OPTIONS
   --faiLocation=faiLocation  [default: <fastaLocation>.fai] FASTA index file or URL
 
   --gziLocation=gziLocation  [default: <fastaLocation>.gzi] FASTA gzip index file or URL
+
+  --overwrite                Overwrite existing assembly if one with the same name exists
 
   --skipCheck                Don't check whether or not the sequence file or URL exists
 

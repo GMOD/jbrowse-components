@@ -75,10 +75,13 @@ If TYPE is bgzipFasta, the gzip index file defaults to <location>.gzi and can be
       description: "Don't check whether or not the sequence file or URL exists",
       exclusive: ['copy'],
     }),
-    force: flags.boolean({
-      char: 'f',
+    overwrite: flags.boolean({
       description:
         'Overwrite existing assembly if one with the same name exists',
+    }),
+    force: flags.boolean({
+      char: 'f',
+      description: 'Equivalent to `--skipCheck --overwrite`',
     }),
   }
 
