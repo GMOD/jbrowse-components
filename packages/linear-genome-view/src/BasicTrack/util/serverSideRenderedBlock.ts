@@ -138,6 +138,8 @@ const blockState = types
         self.renderProps = undefined
         const data = renderBlockData(self as any)
         renderBlockEffect(cast(self), data)
+        // TODORELOAD: here is where the reload is called, maybe do a full track redraw, probably need to write action on base track if its a track redraw
+        // log some stuff in reload and see what difference there is between pileup and coverage
       },
       beforeDestroy() {
         if (renderInProgress && !renderInProgress.signal.aborted) {

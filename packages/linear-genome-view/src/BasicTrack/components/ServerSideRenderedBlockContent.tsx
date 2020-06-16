@@ -33,7 +33,6 @@ const useStyles = makeStyles(theme => ({
   },
   blockError: {
     padding: theme.spacing(2),
-    pointerEvents: 'none',
     width: '100%',
   },
 }))
