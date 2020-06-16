@@ -122,7 +122,6 @@ export default (pluginManager: PluginManager) => {
       regions: Region[] = [],
       opts: BaseOptions = {},
     ) {
-      console.log('in this multi-region stats snpcoverage')
       if (!regions.length) {
         return blankStats()
       }

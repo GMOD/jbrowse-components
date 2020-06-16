@@ -138,6 +138,7 @@ const blockState = types
         self.renderProps = undefined
         const data = renderBlockData(self as any)
         renderBlockEffect(cast(self), data)
+        console.log(JSON.stringify(self))
         // TODORELOAD: here is where the reload is called, maybe do a full track redraw, probably need to write action on base track if its a track redraw
         // log some stuff in reload and see what difference there is between pileup and coverage
       },
@@ -189,6 +190,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
     const { renderProps } = track
     const { rendererType } = track
+    console.log(track) // error exists before return
     const { config } = renderProps
     // This line is to trigger the mobx reaction when the config changes
     // It won't trigger the reaction if it doesn't think we're accessing it
@@ -250,7 +252,10 @@ async function renderBlockEffect(
   } = props as RenderProps
   if (!isAlive(self)) return
 
+  // SNPCoverageTrack has a track error but pileuptrack does not
+  // bc getmultiregionstats returns a track error
   if (trackError) {
+    console.log('stopping')
     self.setError(trackError)
     return
   }
@@ -264,6 +269,7 @@ async function renderBlockEffect(
   if (renderProps.notReady) return
 
   try {
+    console.log('here in try')
     renderArgs.signal = aborter.signal
     // const callId = [
     //   assembleLocString(renderArgs.region),

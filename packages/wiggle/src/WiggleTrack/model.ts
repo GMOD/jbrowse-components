@@ -177,6 +177,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             self,
           ) as Instance<LinearGenomeViewStateModel>
           const sessionId = getRpcSessionId(self)
+          // fallback if await fails?
           const r = (await rpcManager.call(
             sessionId,
             'WiggleGetMultiRegionStats',
