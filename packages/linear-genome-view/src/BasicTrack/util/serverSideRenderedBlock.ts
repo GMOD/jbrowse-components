@@ -136,11 +136,15 @@ const blockState = types
         self.ReactComponent = ServerSideRenderedBlockContent
         self.renderingComponent = undefined
         self.renderProps = undefined
-        const data = renderBlockData(self as any)
-        renderBlockEffect(cast(self), data)
-        console.log(JSON.stringify(self))
+        // call getParent(self, 2).reload
+        getParent(self, 2).reload()
+        // const data = renderBlockData(self as any)
+        // renderBlockEffect(cast(self), data)
+        // console.log(JSON.stringify(self))
         // TODORELOAD: here is where the reload is called, maybe do a full track redraw, probably need to write action on base track if its a track redraw
         // log some stuff in reload and see what difference there is between pileup and coverage
+        // pileup might have to clear sort when doing reload, aka making sortObject = { position: undefined, sortedBy: undefined} or fire the one shot render command again after reloading
+        // wiggle on reload, you run wigglegetregionstats and then the render
       },
       beforeDestroy() {
         if (renderInProgress && !renderInProgress.signal.aborted) {
@@ -150,6 +154,7 @@ const blockState = types
         const { rpcManager } = getSession(self)
         const { rendererType } = track
         const { renderArgs } = renderBlockData(cast(self))
+        // could be doing free resources in a webworker that could be killed, log this to see if called after track reload
         rendererType
           .freeResourcesInClient(
             rpcManager,
@@ -171,6 +176,7 @@ export type BlockModel = Instance<BlockStateModel>
 // work with autorun
 function renderBlockData(self: Instance<BlockStateModel>) {
   try {
+    console.log('calling renderblockData)')
     const { assemblyManager, rpcManager } = getSession(self)
     const track = getParent(self, 2)
     const assemblyNames = getTrackAssemblyNames(track)
@@ -190,7 +196,6 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
     const { renderProps } = track
     const { rendererType } = track
-    console.log(track) // error exists before return
     const { config } = renderProps
     // This line is to trigger the mobx reaction when the config changes
     // It won't trigger the reaction if it doesn't think we're accessing it
@@ -250,6 +255,7 @@ async function renderBlockEffect(
     cannotBeRenderedReason,
     renderArgs,
   } = props as RenderProps
+  console.log('render block effect')
   if (!isAlive(self)) return
 
   // SNPCoverageTrack has a track error but pileuptrack does not
@@ -280,9 +286,11 @@ async function renderBlockEffect(
       maxHeightReached,
       ...data
     } = await rendererType.renderInClient(rpcManager, renderArgs)
+    console.log('finished render in client')
     // if (aborter.signal.aborted) {
     //   console.log(...callId, 'request to abort render was ignored', html, data)
     checkAbortSignal(aborter.signal)
+    console.log('made it past abort signal check')
     self.setRendered(
       data,
       html,
@@ -291,6 +299,7 @@ async function renderBlockEffect(
       renderProps,
     )
   } catch (error) {
+    console.log('in catch', error)
     if (isAbortException(error) && !aborter.signal.aborted) {
       // there is a bug in the underlying code and something is caching aborts. try to refetch once
       const track = getParent<any>(self, 2)

@@ -236,6 +236,20 @@ const blockBasedTrack = types
     setFeatureIdUnderMouse(feature: string | undefined) {
       self.featureIdUnderMouse = feature
     },
+    reload() {
+      // might be able to fail by using volvox data
+      // move bam to separatre location to fail then move it back before reloading
+      console.log('before', JSON.stringify(self.blockState))
+      // recreate self.blockState
+      // something like
+      const temp = JSON.parse(JSON.stringify(self.blockState))
+      Object.keys(temp).forEach(blockState => {
+        temp[blockState].key += '-reload'
+      })
+      self.blockState = temp
+      console.log('after', JSON.stringify(self.blockState))
+      // invalidates from mst view
+    },
   }))
   .actions(self => ({
     setContextMenuFeature(feature?: Feature) {
