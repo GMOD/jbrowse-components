@@ -276,7 +276,7 @@ test('can navToMultiple', () => {
   )
 })
 
-describe.only('Zoom to selected displayed regions', () => {
+describe('Zoom to selected displayed regions', () => {
   let model: Instance<ReturnType<typeof stateModelFactory>>
   let largestBpPerPx: number
   beforeAll(() => {
