@@ -51,10 +51,7 @@
         {
           "id": "MiDMyyWpp",
           "type": "DotplotView",
-          "assemblyNames": [
-            "hg38",
-            "hg19"
-          ],
+          "assemblyNames": ["hg38", "hg19"],
           "hview": {
             "displayedRegions": [],
             "bpPerPx": 100000,

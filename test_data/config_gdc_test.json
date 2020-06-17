@@ -5,9 +5,7 @@
   "assemblies": [
     {
       "name": "hg38",
-      "aliases": [
-        "GRCh38"
-      ],
+      "aliases": ["GRCh38"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "P6R5xbRqRr",
@@ -42,12 +40,8 @@
       "type": "GDCTrack",
       "trackId": "gdc_plugin_track",
       "name": "GDC",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "GDCAdapter"
       },
@@ -61,12 +55,8 @@
       "type": "BasicTrack",
       "trackId": "gencode_nclist_hg38",
       "name": "Gencode v32",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz",

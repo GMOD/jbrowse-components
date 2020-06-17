@@ -19,12 +19,8 @@
       "type": "BasicTrack",
       "trackId": "gencode_nclist_hg38",
       "name": "NCBI RefSeq 104 (NCList)",
-      "assemblyNames": [
-        "amel"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["amel"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104/{refseq}/trackData.jsonz"
@@ -39,13 +35,9 @@
     {
       "type": "BasicTrack",
       "trackId": "gencode_nclist_hg38_gfftabix",
-      "assemblyNames": [
-        "amel"
-      ],
+      "assemblyNames": ["amel"],
       "name": "NCBI RefSeq 104 (GFF3Tabix)",
-      "category": [
-        "Annotation"
-      ],
+      "category": ["Annotation"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {

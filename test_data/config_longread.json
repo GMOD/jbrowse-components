@@ -8,9 +8,7 @@
   "assemblies": [
     {
       "name": "hg19",
-      "aliases": [
-        "GRCh37"
-      ],
+      "aliases": ["GRCh37"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "hg19",
@@ -67,19 +65,13 @@
       "type": "DotplotTrack",
       "trackId": "dotplot_track",
       "name": "dotplot",
-      "assemblyNames": [
-        "longread",
-        "hg19"
-      ],
+      "assemblyNames": ["longread", "hg19"],
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
           "uri": "test_data/longread_vs_ref.paf"
         },
-        "assemblyNames": [
-          "longread",
-          "hg19"
-        ]
+        "assemblyNames": ["longread", "hg19"]
       },
       "renderer": {
         "type": "DotplotRenderer"
@@ -103,10 +95,7 @@
         {
           "id": "MiDMyyWpp",
           "type": "DotplotView",
-          "assemblyNames": [
-            "longread",
-            "hg19"
-          ],
+          "assemblyNames": ["longread", "hg19"],
           "hview": {
             "displayedRegions": [
               {
