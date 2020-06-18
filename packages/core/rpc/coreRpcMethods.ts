@@ -144,6 +144,7 @@ export class CoreRender extends RpcMethodType {
 
   async execute(args: RenderArgs & { signal?: RemoteAbortSignal }) {
     const deserializedArgs = await this.deserializeArguments(args)
+    console.log('deserializedArgs', deserializedArgs)
     const {
       regions,
       sessionId,
@@ -187,6 +188,7 @@ export class CoreRender extends RpcMethodType {
       regions,
       signal,
     })
+    console.log(result)
     checkAbortSignal(signal)
     return result
   }

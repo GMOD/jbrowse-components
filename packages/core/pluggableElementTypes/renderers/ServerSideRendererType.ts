@@ -154,7 +154,6 @@ export default class ServerSideRenderer extends RendererType {
    */
   async renderInClient(rpcManager: { call: Function }, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
-
     const result = await rpcManager.call(
       args.sessionId,
       'CoreRender',

@@ -176,7 +176,6 @@ export type BlockModel = Instance<BlockStateModel>
 // work with autorun
 function renderBlockData(self: Instance<BlockStateModel>) {
   try {
-    console.log('calling renderblockData)')
     const { assemblyManager, rpcManager } = getSession(self)
     const track = getParent(self, 2)
     const assemblyNames = getTrackAssemblyNames(track)
@@ -255,13 +254,11 @@ async function renderBlockEffect(
     cannotBeRenderedReason,
     renderArgs,
   } = props as RenderProps
-  console.log('render block effect')
   if (!isAlive(self)) return
 
   // SNPCoverageTrack has a track error but pileuptrack does not
   // bc getmultiregionstats returns a track error
   if (trackError) {
-    console.log('stopping')
     self.setError(trackError)
     return
   }
@@ -290,7 +287,6 @@ async function renderBlockEffect(
     // if (aborter.signal.aborted) {
     //   console.log(...callId, 'request to abort render was ignored', html, data)
     checkAbortSignal(aborter.signal)
-    console.log('made it past abort signal check')
     self.setRendered(
       data,
       html,

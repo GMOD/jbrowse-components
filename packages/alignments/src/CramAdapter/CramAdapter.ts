@@ -129,6 +129,8 @@ export default (pluginManager: PluginManager) => {
 
     private async setup(opts?: BaseOptions) {
       if (Object.keys(this.samHeader).length === 0) {
+        console.log(this.cram.cram)
+        // progress: this.cram.cram is failing and returning the 404 error currently
         const samHeader = await this.cram.cram.getSamHeader(opts?.signal)
 
         // use the @SQ lines in the header to figure out the
@@ -200,6 +202,7 @@ export default (pluginManager: PluginManager) => {
 
       return ObservableCreate<Feature>(async observer => {
         await this.setup(opts)
+        console.log('setup complete')
         if (this.sequenceAdapter && !this.seqIdToRefName) {
           this.seqIdToRefName = await this.sequenceAdapter.getRefNames(opts)
         }
@@ -217,6 +220,7 @@ export default (pluginManager: PluginManager) => {
           checkAbortSignal(opts.signal)
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           records.forEach((record: any) => {
+            console.log(record)
             observer.next(this.cramRecordToFeature(record))
           })
         }
