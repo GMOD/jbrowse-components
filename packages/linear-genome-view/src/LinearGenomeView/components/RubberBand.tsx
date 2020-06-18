@@ -67,7 +67,7 @@ const VerticalGuide = observer(
       <Tooltip
         open
         placement="top"
-        title={Math.round(model.pxToBp(coordX).offset + 1).toLocaleString()}
+        title={Math.ceil(model.pxToBp(coordX).offset).toLocaleString()}
         arrow
       >
         <div
