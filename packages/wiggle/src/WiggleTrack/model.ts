@@ -215,6 +215,16 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         throw new Error(`invalid autoscaleType '${autoscaleType}'`)
       }
       return {
+        async reload() {
+          console.log('snp cov reload')
+          const aborter = new AbortController()
+          self.setLoading(aborter)
+          const stats = await getStats(aborter.signal)
+          if (isAlive(self)) {
+            self.updateStats(stats)
+          }
+          self.reload()
+        },
         afterAttach() {
           addDisposer(
             self,

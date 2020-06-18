@@ -240,8 +240,6 @@ const blockBasedTrack = types
       // might be able to fail by using volvox data
       // move bam to separatre location to fail then move it back before reloading
       console.log('before', JSON.stringify(self.blockState))
-      // recreate self.blockState
-      // something like
       const temp = JSON.parse(JSON.stringify(self.blockState))
       Object.keys(temp).forEach(blockState => {
         temp[blockState].key += '-reload'
@@ -249,6 +247,10 @@ const blockBasedTrack = types
       self.blockState = temp
       console.log('after', JSON.stringify(self.blockState))
       // invalidates from mst view
+
+      // working for BAM tracks but not CRAM
+      // BAM is able to get the dataadapter and run the core render
+      // cram gets stuck at the core render
     },
   }))
   .actions(self => ({

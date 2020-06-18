@@ -50,6 +50,7 @@ const blockState = types
     let renderInProgress: undefined | AbortController
     return {
       afterAttach() {
+        console.log('in afterattach')
         const track = getParent<any>(self, 2)
         const renderDisposer = reaction(
           () => renderBlockData(self as any),
@@ -136,7 +137,6 @@ const blockState = types
         self.ReactComponent = ServerSideRenderedBlockContent
         self.renderingComponent = undefined
         self.renderProps = undefined
-        // call getParent(self, 2).reload
         getParent(self, 2).reload()
         // const data = renderBlockData(self as any)
         // renderBlockEffect(cast(self), data)
@@ -147,6 +147,7 @@ const blockState = types
         // wiggle on reload, you run wigglegetregionstats and then the render
       },
       beforeDestroy() {
+        console.log('in before destroy')
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
         }

@@ -181,6 +181,7 @@ export class CoreRender extends RpcMethodType {
         'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
       )
 
+    console.log(dataAdapter)
     const result = await RendererType.renderInWorker({
       ...renderProps,
       sessionId,

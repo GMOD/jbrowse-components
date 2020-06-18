@@ -391,6 +391,7 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   async render(renderProps: PileupRenderProps) {
+    console.log('core render')
     const {
       height,
       width,

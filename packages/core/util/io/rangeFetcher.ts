@@ -42,7 +42,6 @@ async function fetchBinaryRange(
     //   )
     // },
   })
-  console.log('res is this', res)
   const responseDate = new Date()
   if (res.status !== 206 && res.status !== 200) {
     throw new Error(
