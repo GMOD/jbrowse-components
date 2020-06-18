@@ -3,9 +3,14 @@ import {
   getConf,
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { getSession } from '@gmod/jbrowse-core/util'
+import {
+  getSession,
+  isSessionModelWithDrawerWidgets,
+} from '@gmod/jbrowse-core/util'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
+import { VariantTrackConfigModel } from './configSchema'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -13,7 +18,7 @@ const rendererTypes = new Map([
   ['svg', 'SvgFeatureRenderer'],
 ])
 
-export default configSchema =>
+export default (configSchema: VariantTrackConfigModel) =>
   types
     .compose(
       'VariantTrack',
@@ -25,14 +30,17 @@ export default configSchema =>
       }),
     )
     .actions(self => ({
-      selectFeature(feature) {
+      selectFeature(feature: Feature) {
         const session = getSession(self)
-        const featureWidget = session.addDrawerWidget(
-          'VariantFeatureDrawerWidget',
-          'variantFeature',
-          { featureData: feature.toJSON() },
-        )
-        session.showDrawerWidget(featureWidget)
+        if (isSessionModelWithDrawerWidgets(session)) {
+          const featureWidget = session.addDrawerWidget(
+            'VariantFeatureDrawerWidget',
+            'variantFeature',
+            { featureData: feature.toJSON() },
+          )
+          session.showDrawerWidget(featureWidget)
+        }
+
         session.setSelection(feature)
       },
     }))

@@ -137,10 +137,7 @@
     {
       "trackId": "grape_peach_synteny_mcscan",
       "type": "LinearSyntenyTrack",
-      "assemblyNames": [
-        "peach",
-        "grape"
-      ],
+      "assemblyNames": ["peach", "grape"],
       "trackIds": [],
       "renderDelay": 100,
       "adapter": {
@@ -157,30 +154,21 @@
             "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
           }
         ],
-        "assemblyNames": [
-          "peach",
-          "grape"
-        ],
+        "assemblyNames": ["peach", "grape"],
         "type": "MCScanAnchorsAdapter"
       },
       "renderer": {
         "type": "LinearSyntenyRenderer"
       },
       "name": "Grape peach synteny (MCScan)",
-      "category": [
-        "Annotation"
-      ]
+      "category": ["Annotation"]
     },
     {
       "trackId": "peach_genes",
       "type": "BasicTrack",
-      "assemblyNames": [
-        "peach"
-      ],
+      "assemblyNames": ["peach"],
       "name": "mcscan",
-      "category": [
-        "Annotation"
-      ],
+      "category": ["Annotation"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
@@ -192,13 +180,9 @@
     {
       "trackId": "peach_genes2",
       "type": "BasicTrack",
-      "assemblyNames": [
-        "peach"
-      ],
+      "assemblyNames": ["peach"],
       "name": "mcscan2",
-      "category": [
-        "Annotation"
-      ],
+      "category": ["Annotation"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
@@ -211,12 +195,8 @@
       "trackId": "grape_genes",
       "type": "BasicTrack",
       "name": "mcscan",
-      "assemblyNames": [
-        "grape"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["grape"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
@@ -229,12 +209,8 @@
       "trackId": "grape_genes2",
       "type": "BasicTrack",
       "name": "mcscan2",
-      "category": [
-        "Annotation"
-      ],
-      "assemblyNames": [
-        "grape"
-      ],
+      "category": ["Annotation"],
+      "assemblyNames": ["grape"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"

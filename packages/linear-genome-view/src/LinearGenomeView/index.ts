@@ -710,48 +710,33 @@ export function stateModelFactory(pluginManager: PluginManager) {
             else refSeqSelections.push(ref) // if any inbetween first and last push entire refseq
           }
         }
-
-        const pessimisticNewRegions: Region[] = [] // assumes you have not found the final overlap
-        let optimisticNewRegions: Region[] = [] // assumes you have found the final overlap
-        let firstOverlapFound = false
-
-        // go through selections from each refseq and zoom to each displayedRegion contained in selection
-        refSeqSelections.forEach(seq => {
-          const { start, end, refName } = seq
-          self.displayedRegions.forEach(region => {
-            if (region.refName !== refName) return
-            if (doesIntersect2(start, end, region.start, region.end)) {
-              let startValue = region.start
-              // if first instance of overlap modify the first overlapping region's start
-              if (!firstOverlapFound) {
-                startValue = region.start < start ? start : region.start
-                firstOverlapFound = true
+        let startOffset: BpOffset | undefined
+        let endOffset: BpOffset | undefined
+        self.displayedRegions.forEach((region, index) => {
+          refSeqSelections.forEach(seq => {
+            if (
+              region.refName === seq.refName &&
+              doesIntersect2(region.start, region.end, seq.start, seq.end)
+            ) {
+              if (!startOffset) {
+                const offset = region.reversed
+                  ? Math.max(region.end - seq.end, 0)
+                  : Math.max(seq.start - region.start, 0)
+                startOffset = { index, offset }
               }
-
-              // current region overlapping means previous region was not region with final overlap
-              // overwrite optimistic with pessimistic since pessimistic still correct
-              optimisticNewRegions = JSON.parse(
-                JSON.stringify(pessimisticNewRegions),
-              )
-
-              // push region with the selected end to optimistic, assume current region is final overlap
-              optimisticNewRegions.push({
-                ...region,
-                start: startValue,
-                end: region.end > end ? end : region.end,
-              })
-              pessimisticNewRegions.push({
-                ...region,
-                start: startValue,
-              })
+              const offset = region.reversed
+                ? Math.min(region.end - seq.start, region.end - region.start)
+                : Math.min(seq.end - region.start, region.end - region.start)
+              endOffset = { index, offset }
             }
-            // add regions that don't overlap to pessimistic, display if overlap is found in later region
-            else if (firstOverlapFound) pessimisticNewRegions.push(region)
           })
         })
-
-        if (optimisticNewRegions.length)
-          this.navToMultiple(optimisticNewRegions)
+        if (startOffset && endOffset) {
+          this.moveTo(startOffset, endOffset)
+        } else {
+          const session = getSession(self)
+          session.notify('No regions found to navigate to', 'warning')
+        }
       },
 
       // schedule something to be run after the next time displayedRegions is set

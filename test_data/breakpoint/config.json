@@ -8,9 +8,7 @@
   "assemblies": [
     {
       "name": "hg19",
-      "aliases": [
-        "GRCh37"
-      ],
+      "aliases": ["GRCh37"],
       "sequence": {
         "trackId": "hg19_seq",
         "type": "ReferenceSequenceTrack",
@@ -31,9 +29,7 @@
       "type": "StructuralVariantChordTrack",
       "trackId": "sv_chord_track",
       "name": "human chord test",
-      "assemblyNames": [
-        "hg19"
-      ],
+      "assemblyNames": ["hg19"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -53,13 +49,8 @@
       "type": "VariantTrack",
       "trackId": "pacbio_vcf",
       "name": "HG002.hs37d5.bnds",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "PacBio",
-        "VCF"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["PacBio", "VCF"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -84,13 +75,8 @@
       "type": "AlignmentsTrack",
       "trackId": "pacbio_hg002_breakpoints",
       "name": "HG002.hs37d5.11kb",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "PacBio",
-        "BAM"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["PacBio", "BAM"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {

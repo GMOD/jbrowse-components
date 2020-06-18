@@ -1,8 +1,9 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import { BaseTrackConfig as LinearGenomeTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { types } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
-export default pluginManager => {
+const VariantTrackConfigFactory = (pluginManager: PluginManager) => {
   const PileupRendererConfigSchema = pluginManager.getRendererType(
     'PileupRenderer',
   ).configSchema
@@ -28,3 +29,9 @@ export default pluginManager => {
     { baseConfiguration: LinearGenomeTrackConfig, explicitlyTyped: true },
   )
 }
+
+export type VariantTrackConfigModel = ReturnType<
+  typeof VariantTrackConfigFactory
+>
+export type VariantTrackConfig = Instance<VariantTrackConfigModel>
+export default VariantTrackConfigFactory

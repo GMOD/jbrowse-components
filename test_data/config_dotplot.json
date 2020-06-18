@@ -43,10 +43,7 @@
     {
       "trackId": "grape_peach_synteny_mcscan",
       "type": "LinearSyntenyTrack",
-      "assemblyNames": [
-        "peach",
-        "grape"
-      ],
+      "assemblyNames": ["peach", "grape"],
       "trackIds": [],
       "renderDelay": 100,
       "adapter": {
@@ -63,37 +60,26 @@
             "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
           }
         ],
-        "assemblyNames": [
-          "peach",
-          "grape"
-        ],
+        "assemblyNames": ["peach", "grape"],
         "type": "MCScanAnchorsAdapter"
       },
       "renderer": {
         "type": "LinearSyntenyRenderer"
       },
       "name": "Grape peach synteny (MCScan)",
-      "category": [
-        "Annotation"
-      ]
+      "category": ["Annotation"]
     },
     {
       "type": "DotplotTrack",
       "trackId": "dotplot_track",
       "name": "dotplot",
-      "assemblyNames": [
-        "grape",
-        "peach"
-      ],
+      "assemblyNames": ["grape", "peach"],
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
           "uri": "test_data/peach_grape.paf"
         },
-        "assemblyNames": [
-          "peach",
-          "grape"
-        ]
+        "assemblyNames": ["peach", "grape"]
       },
       "renderer": {
         "type": "DotplotRenderer"
@@ -117,10 +103,7 @@
         {
           "id": "MiDMyyWpp",
           "type": "DotplotView",
-          "assemblyNames": [
-            "peach",
-            "grape"
-          ],
+          "assemblyNames": ["peach", "grape"],
           "hview": {
             "displayedRegions": [],
             "bpPerPx": 100000,
