@@ -1,3 +1,4 @@
+const path = require('path')
 module.exports = {
   title: 'JBrowse 2',
   url: 'https://jbrowse.org',
@@ -19,7 +20,7 @@ module.exports = {
           label: 'Docs',
           position: 'left',
         },
-        {to: 'blog', label: 'Blog', position: 'left'},
+        { to: 'blog', label: 'Blog', position: 'left' },
         {
           href: 'https://github.com/GMOD/jbrowse-components',
           label: 'GitHub',
@@ -49,7 +50,7 @@ module.exports = {
             {
               label: 'Gitter',
               href: 'https://gitter.im/GMOD/jbrowse2',
-            }
+            },
           ],
         },
         {
@@ -58,10 +59,10 @@ module.exports = {
             {
               label: 'Blog',
               to: 'blog',
-            }
+            },
           ],
         },
-      ]
+      ],
     },
   },
   presets: [
@@ -86,4 +87,6 @@ module.exports = {
       },
     ],
   ],
-};
+
+  plugins: [path.resolve(__dirname, 'webpack-addons')],
+}
