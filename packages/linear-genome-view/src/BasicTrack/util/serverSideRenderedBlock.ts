@@ -96,19 +96,27 @@ const blockState = types
         self.renderProps = undefined
         renderInProgress = undefined
       },
-      setRendered({
-        data,
-        html,
-        maxHeightReached,
-        renderingComponent,
-        renderProps,
-      }: {
-        data: any
-        html: any
-        maxHeightReached: boolean
-        renderingComponent: Component
-        renderProps: any
-      }) {
+      setRendered(
+        props:
+          | {
+              data: any
+              html: any
+              maxHeightReached: boolean
+              renderingComponent: Component
+              renderProps: any
+            }
+          | undefined,
+      ) {
+        if (!props) {
+          return
+        }
+        const {
+          data,
+          html,
+          maxHeightReached,
+          renderingComponent,
+          renderProps,
+        } = props
         self.filled = true
         self.message = undefined
         self.html = html
@@ -135,20 +143,7 @@ const blockState = types
         self.renderProps = undefined
         renderInProgress = undefined
       },
-      reload() {
-        self.renderInProgress = undefined
-        self.filled = false
-        self.data = undefined
-        self.html = ''
-        self.error = undefined
-        self.message = undefined
-        self.maxHeightReached = false
-        self.ReactComponent = ServerSideRenderedBlockContent
-        self.renderingComponent = undefined
-        self.renderProps = undefined
-        const data = renderBlockData(self as any)
-        renderBlockEffect(cast(self), data)
-      },
+
       beforeDestroy() {
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
@@ -253,7 +248,22 @@ async function renderBlockEffect(
     renderProps,
     rpcManager,
     renderArgs,
+    cannotBeRenderedReason,
   } = props as RenderProps
+  if (!isAlive(self)) {
+    return undefined
+  }
+
+  if (cannotBeRenderedReason) {
+    self.setMessage(cannotBeRenderedReason)
+    return undefined
+  }
+
+  if (renderProps.notReady) {
+    return undefined
+  }
+
+  renderArgs.regions = JSON.parse(JSON.stringify(renderArgs.regions))
 
   const { html, maxHeightReached, ...data } = await rendererType.renderInClient(
     rpcManager,
