@@ -16,6 +16,7 @@ import {
   assembleLocString,
   checkAbortSignal,
   isAbortException,
+  makeAbortableReaction,
   getSession,
 } from '@gmod/jbrowse-core/util'
 import {
@@ -51,16 +52,19 @@ const blockState = types
     return {
       afterAttach() {
         const track = getParent<any>(self, 2)
-        const renderDisposer = reaction(
-          () => renderBlockData(self as any),
-          data => (renderBlockEffect(cast(self), data) as unknown) as void, // reaction doesn't expect async here
+        makeAbortableReaction(
+          self as any,
+          renderBlockData,
+          renderBlockEffect as any, // reaction doesn't expect async here
           {
             name: `${track.id}/${assembleLocString(self.region)} rendering`,
             delay: track.renderDelay,
             fireImmediately: true,
           },
+          this.setLoading,
+          this.setRendered,
+          this.setError,
         )
-        addDisposer(self, renderDisposer)
       },
       setLoading(abortController: AbortController) {
         if (renderInProgress !== undefined) {
@@ -92,13 +96,19 @@ const blockState = types
         self.renderProps = undefined
         renderInProgress = undefined
       },
-      setRendered(
-        data: any,
-        html: any,
-        maxHeightReached: boolean,
-        renderingComponent: Component,
-        renderProps: any,
-      ) {
+      setRendered({
+        data,
+        html,
+        maxHeightReached,
+        renderingComponent,
+        renderProps,
+      }: {
+        data: any
+        html: any
+        maxHeightReached: boolean
+        renderingComponent: Component
+        renderProps: any
+      }) {
         self.filled = true
         self.message = undefined
         self.html = html
@@ -234,69 +244,26 @@ interface ErrorProps {
 }
 
 async function renderBlockEffect(
-  self: Instance<BlockStateModel>,
   props: RenderProps | ErrorProps,
-  allowRefetch = true,
+  signal: AbortSignal,
+  self: Instance<BlockStateModel>,
 ) {
   const {
-    trackError,
     rendererType,
     renderProps,
     rpcManager,
-    cannotBeRenderedReason,
     renderArgs,
   } = props as RenderProps
-  if (!isAlive(self)) return
 
-  if (trackError) {
-    self.setError(trackError)
-    return
-  }
-  if (cannotBeRenderedReason) {
-    self.setMessage(cannotBeRenderedReason)
-    return
-  }
-
-  const aborter = new AbortController()
-  self.setLoading(aborter)
-  if (renderProps.notReady) return
-
-  try {
-    renderArgs.signal = aborter.signal
-    // const callId = [
-    //   assembleLocString(renderArgs.region),
-    //   renderArgs.rendererType,
-    // ]
-    const {
-      html,
-      maxHeightReached,
-      ...data
-    } = await rendererType.renderInClient(rpcManager, renderArgs)
-    // if (aborter.signal.aborted) {
-    //   console.log(...callId, 'request to abort render was ignored', html, data)
-    checkAbortSignal(aborter.signal)
-    self.setRendered(
-      data,
-      html,
-      maxHeightReached,
-      rendererType.ReactComponent,
-      renderProps,
-    )
-  } catch (error) {
-    if (isAbortException(error) && !aborter.signal.aborted) {
-      // there is a bug in the underlying code and something is caching aborts. try to refetch once
-      const track = getParent<any>(self, 2)
-      if (allowRefetch) {
-        console.warn(`cached abort detected, refetching "${track.name}"`)
-        renderBlockEffect(self, props, false)
-        return
-      }
-      console.warn(`cached abort detected, failed to recover "${track.name}"`)
-    }
-    if (isAlive(self) && !isAbortException(error)) {
-      // setting the aborted exception as an error will draw the "aborted" error, and we
-      // have not found how to create a re-render if this occurs
-      self.setError(error)
-    }
+  const { html, maxHeightReached, ...data } = await rendererType.renderInClient(
+    rpcManager,
+    renderArgs,
+  )
+  return {
+    data,
+    html,
+    maxHeightReached,
+    renderingComponent: rendererType.ReactComponent,
+    renderProps,
   }
 }
