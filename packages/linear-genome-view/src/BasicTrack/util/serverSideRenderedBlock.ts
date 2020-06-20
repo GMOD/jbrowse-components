@@ -253,8 +253,6 @@ async function renderBlockEffect(
     return undefined
   }
 
-  renderArgs.regions = JSON.parse(JSON.stringify(renderArgs.regions))
-
   const { html, maxHeightReached, ...data } = await rendererType.renderInClient(
     rpcManager,
     renderArgs,
