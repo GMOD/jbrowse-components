@@ -30,30 +30,18 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   }
 
   getFeatures(region: Region, opts: BaseOptions = {}) {
-    console.log('here', region)
     return ObservableCreate<Feature>(async observer => {
       const { refName: chr, start, end } = region
-      const contactRecords = await this.hic.getContactRecords(
+      const records = await this.hic.getContactRecords(
         'KR',
         { start, chr, end },
         { start, chr, end },
         'BP',
-        1000000,
+        10000,
       )
-      console.log(contactRecords)
-      // const { refName, start, end } = region
-      // await this.setup(opts)
-      // const records = await this.bam.getRecordsForRange(
-      //   refName,
-      //   start,
-      //   end,
-      //   opts,
-      // )
-      // checkAbortSignal(opts.signal)
-
-      // records.forEach(record => {
-      //   observer.next(new BamSlightlyLazyFeature(record, this))
-      // })
+      records.forEach(record => {
+        observer.next(record)
+      })
       observer.complete()
     }, opts.signal)
   }

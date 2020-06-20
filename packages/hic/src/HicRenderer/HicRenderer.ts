@@ -7,6 +7,7 @@ import {
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
+import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 export interface PileupRenderProps {
@@ -49,6 +50,30 @@ export default class HicRenderer extends ServerSideRendererType {
     ctx.font = 'bold 10px Courier New,monospace'
     const charSize = ctx.measureText('A')
     charSize.height = 7
+    const offset = features[0].bin1
+    let maxScore = 0
+    let minBin = 0
+    let maxBin = 0
+    for (let i = 0; i < features.length; i++) {
+      maxScore = Math.max(features[i].counts, maxScore)
+      minBin = Math.min(Math.min(features[i].bin1, features[i].bin2), minBin)
+      maxBin = Math.max(Math.max(features[i].bin1, features[i].bin2), maxBin)
+    }
+    const numBins = maxBin - minBin
+    console.log(numBins)
+
+    ctx.fillStyle = 'red'
+    ctx.rotate(-Math.PI / 4)
+    console.log(numBins / width)
+    const w = numBins / width
+
+    for (let i = 0; i < features.length; i++) {
+      let { bin1, bin2, counts } = features[i]
+      bin1 -= offset
+      bin2 -= offset
+      ctx.fillStyle = `rgba(255,0,0,${-Math.log(1 - counts / maxScore)}`
+      ctx.fillRect(bin1 * w, bin2 * w, w, w)
+    }
 
     const imageData = await createImageBitmap(canvas)
     return {
@@ -84,5 +109,36 @@ export default class HicRenderer extends ServerSideRendererType {
       width,
       maxHeightReached,
     }
+  }
+
+  async getFeatures({ dataAdapter, signal, bpPerPx, regions }) {
+    const features = await dataAdapter
+      .getFeatures(regions[0], { signal, bpPerPx })
+      .pipe(toArray())
+      .toPromise()
+    console.log(features)
+    return features
+  }
+
+  serializeResultsInWorker(
+    result: { html: string },
+    features: Map<string, Feature>,
+    args: RenderArgsDeserialized,
+  ): ResultsSerialized {
+    const serialized = ({ ...result } as unknown) as ResultsSerialized
+    return serialized
+  }
+
+  deserializeResultsInClient(
+    result: ResultsSerialized,
+    args: RenderArgs,
+  ): ResultsDeserialized {
+    // deserialize some of the results that came back from the worker
+    const deserialized = ({ ...result } as unknown) as ResultsDeserialized
+    const featuresMap = new Map<string, SimpleFeature>()
+
+    deserialized.features = featuresMap
+    deserialized.blockKey = args.blockKey
+    return deserialized
   }
 }
