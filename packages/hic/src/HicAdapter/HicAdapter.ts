@@ -32,10 +32,10 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const contactRecords = await straw.getContactRecords(
+      const contactRecords = await this.hic.getContactRecords(
         'KR',
-        { chr: '8', start: 50000000, end: 60000000 },
-        { chr: '8', start: 50000000, end: 60000000 },
+        region,
+        region,
         'BP',
         1000000,
       )

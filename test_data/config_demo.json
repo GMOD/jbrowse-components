@@ -1327,6 +1327,21 @@
       "renderer": {
         "type": "StructuralVariantChordRenderer"
       }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "hic",
+      "name": "Hic Track",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "HicAdapter",
+        "hicLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/gaps.bb"
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
     }
   ],
   "connections": [],
