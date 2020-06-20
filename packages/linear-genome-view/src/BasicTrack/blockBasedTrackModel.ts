@@ -12,11 +12,12 @@ import { addDisposer, types, Instance, isAlive } from 'mobx-state-tree'
 import RBush from 'rbush'
 import { Feature, isFeature } from '@gmod/jbrowse-core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
-import BlockState from './util/serverSideRenderedBlock'
+import { saveAs } from 'file-saver'
+import BlockState, { renderBlockData } from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
 import { BaseBlock } from './util/blockTypes'
 import BlockBasedTrack, { Tooltip } from './components/BlockBasedTrack'
-import { LinearGenomeViewStateModel } from '../LinearGenomeView'
+import { LinearGenomeViewModel } from '../LinearGenomeView'
 
 type LayoutRecord = [number, number, number, number]
 const blockBasedTrack = types
@@ -154,9 +155,7 @@ const blockBasedTrack = types
 
       get blockDefinitions() {
         const { blockType } = this
-        const view = getContainingView(self) as Instance<
-          LinearGenomeViewStateModel
-        >
+        const view = getContainingView(self) as LinearGenomeViewModel
         return view[blockType]
       },
 
@@ -235,6 +234,22 @@ const blockBasedTrack = types
 
     setFeatureIdUnderMouse(feature: string | undefined) {
       self.featureIdUnderMouse = feature
+    },
+
+    async renderSvg() {
+      console.log(self.blockState.values())
+      for (const block of self.blockState.values()) {
+        const { rpcManager, renderArgs, rendererType } = renderBlockData(
+          block,
+          true,
+        )
+        const { html } = await rendererType.renderInClient(
+          rpcManager,
+          renderArgs,
+        )
+        const blob = new Blob([html], { type: 'image/svg+xml' })
+        saveAs(blob, 'image.svg')
+      }
     },
   }))
   .actions(self => ({

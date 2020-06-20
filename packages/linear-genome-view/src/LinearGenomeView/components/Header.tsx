@@ -59,22 +59,31 @@ const Controls = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const session = getSession(model)
   return (
-    <ToggleButton
-      onChange={model.activateTrackSelector}
-      className={classes.toggleButton}
-      title="select tracks"
-      value="track_select"
-      color="secondary"
-      selected={
-        isSessionModelWithDrawerWidgets(session) &&
-        session.visibleDrawerWidget &&
-        session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
-        // @ts-ignore
-        session.visibleDrawerWidget.view.id === model.id
-      }
-    >
-      <TrackSelectorIcon fontSize="small" />
-    </ToggleButton>
+    <div>
+      <ToggleButton
+        onChange={model.activateTrackSelector}
+        className={classes.toggleButton}
+        title="select tracks"
+        value="track_select"
+        color="secondary"
+        selected={
+          isSessionModelWithDrawerWidgets(session) &&
+          session.visibleDrawerWidget &&
+          session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
+          // @ts-ignore
+          session.visibleDrawerWidget.view.id === model.id
+        }
+      >
+        <TrackSelectorIcon fontSize="small" />
+      </ToggleButton>
+      <Button
+        onClick={() => model.exportSvg()}
+        variant="contained"
+        color="primary"
+      >
+        Export SVG
+      </Button>
+    </div>
   )
 })
 
@@ -284,8 +293,7 @@ export default observer(({ model }: { model: LGV }) => {
       <PanControls model={model} />
       <Search model={model} />
       <ZoomControls model={model} />
-      <div className={classes.spacer} />
-    </div>
+      <div className={classes.spacer} />    </div>
   )
 
   if (model.hideHeaderOverview) {

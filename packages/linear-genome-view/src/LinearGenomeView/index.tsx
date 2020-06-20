@@ -1,3 +1,4 @@
+import React from 'react'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
 import { Region } from '@gmod/jbrowse-core/util/types'
@@ -328,6 +329,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       setError(error: Error | undefined) {
         self.error = error
+      },
+      exportSvg() {
+        return <svg>{self.tracks.map(track => track.renderSvg())}</svg>
       },
 
       toggleHeader() {

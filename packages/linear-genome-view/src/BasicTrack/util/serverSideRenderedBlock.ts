@@ -166,7 +166,7 @@ export type BlockModel = Instance<BlockStateModel>
 // calls the render worker to render the block content
 // not using a flow for this, because the flow doesn't
 // work with autorun
-function renderBlockData(self: Instance<BlockStateModel>) {
+export function renderBlockData(self: Instance<BlockStateModel>) {
   try {
     const { assemblyManager, rpcManager } = getSession(self)
     const track = getParent(self, 2)
@@ -233,7 +233,7 @@ interface ErrorProps {
   trackError: string
 }
 
-async function renderBlockEffect(
+export async function renderBlockEffect(
   self: Instance<BlockStateModel>,
   props: RenderProps | ErrorProps,
   allowRefetch = true,
