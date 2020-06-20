@@ -73,6 +73,7 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
       adapterConfig,
     )
 
+    console.log('execute wiggleget', dataAdapter)
     if (
       dataAdapter instanceof BaseFeatureDataAdapter &&
       dataAdapterSupportsMultiRegionStats(dataAdapter)

@@ -164,6 +164,7 @@ export default (pluginManager: PluginManager) => {
           .pipe(toArray())
           .toPromise()
 
+        console.log('gettin snp cov features', features)
         const coverageBins = this.generateCoverageBins(
           features,
           region,
@@ -183,6 +184,8 @@ export default (pluginManager: PluginManager) => {
             }),
           )
         })
+
+        console.log('finish get features')
 
         observer.complete()
       }, opts.signal)

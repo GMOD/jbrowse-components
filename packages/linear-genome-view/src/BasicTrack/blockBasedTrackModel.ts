@@ -239,18 +239,15 @@ const blockBasedTrack = types
     reload() {
       // might be able to fail by using volvox data
       // move bam to separatre location to fail then move it back before reloading
-      console.log('before', JSON.stringify(self.blockState))
       const temp = JSON.parse(JSON.stringify(self.blockState))
       Object.keys(temp).forEach(blockState => {
         temp[blockState].key += '-reload'
       })
       self.blockState = temp
-      console.log('after', JSON.stringify(self.blockState))
       // invalidates from mst view
 
-      // working for BAM tracks but not CRAM
-      // BAM is able to get the dataadapter and run the core render
-      // cram gets stuck at the core render
+      // since it is a full track reload, is still prone to timeout since so much data
+      // re-render block can recover better since it is not reloading whole track
     },
   }))
   .actions(self => ({

@@ -191,6 +191,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
               bpPerPx,
             },
           )) as FeatureStats
+          console.log('in get stats', r)
           return autoscaleType === 'localsd'
             ? {
                 ...r,
