@@ -18,11 +18,10 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   public constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
     const hicLocation = readConfObject(config, 'hicLocation')
+    console.log(hicLocation)
 
     this.hic = new HicStraw({
-      //  url: hicLocation,
-      url:
-        'https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic',
+      url: hicLocation.uri,
     })
   }
 
@@ -31,11 +30,13 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   }
 
   getFeatures(region: Region, opts: BaseOptions = {}) {
+    console.log('here', region)
     return ObservableCreate<Feature>(async observer => {
+      const { refName: chr, start, end } = region
       const contactRecords = await this.hic.getContactRecords(
         'KR',
-        region,
-        region,
+        { start, chr, end },
+        { start, chr, end },
         'BP',
         1000000,
       )

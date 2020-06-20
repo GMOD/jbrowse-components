@@ -1329,18 +1329,18 @@
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "DynamicTrack",
       "trackId": "hic",
       "name": "Hic Track",
       "assemblyNames": ["hg19"],
       "adapter": {
         "type": "HicAdapter",
         "hicLocation": {
-          "uri": "https://jbrowse.org/genomes/GRCh38/gaps.bb"
+          "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
         }
       },
       "renderer": {
-        "type": "SvgFeatureRenderer"
+        "type": "HicRenderer"
       }
     }
   ],

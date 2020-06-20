@@ -2,11 +2,11 @@ import { Region } from '@gmod/jbrowse-core/util/types'
 import { PrerenderedCanvas, Tooltip } from '@gmod/jbrowse-core/ui'
 import { bpSpanPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
-import React, { MouseEvent, useRef, useState, useEffect } from 'react'
 import runner from 'mobx-run-in-reactive-context'
+import React, { MouseEvent, useRef, useState, useEffect } from 'react'
 import { BlockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
 
-function PileupRendering(props: {
+function HicRendering(props: {
   blockKey: string
   trackModel: BlockBasedTrackModel
   width: number
@@ -208,4 +208,4 @@ function PileupRendering(props: {
   )
 }
 
-export default observer(PileupRendering)
+export default observer(HicRendering)
