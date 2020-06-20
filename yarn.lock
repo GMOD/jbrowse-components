@@ -9375,6 +9375,11 @@ hex-color-regex@^1.1.0:
   resolved "https://registry.yarnpkg.com/hex-color-regex/-/hex-color-regex-1.1.0.tgz#4c06fccb4602fe2602b3c93df82d7e7dbf1a8a8e"
   integrity sha512-l9sfDFsuqtOqKDsQdqrMRk0U85RZc0RtOR9yPI7mRVOa4FsR/BVnZ0shmQRM96Ji99kYZP/7hn1cedc1+ApsTQ==
 
+hic-straw@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/hic-straw/-/hic-straw-1.2.0.tgz#e85b9e4975a9d157a530513406e5bfbacae38d38"
+  integrity sha512-pAHsN/10sW3WFjRMyF29MeQ7BZK+RAGpLHKqqHuUh2mmTpS8iUtqBxyBctZ8Qa59EC+8pj0QpreLLLPYw94j+Q==
+
 highlight.js@^9.3.0:
   version "9.18.1"
   resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-9.18.1.tgz#ed21aa001fe6252bb10a3d76d47573c6539fe13c"
