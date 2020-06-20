@@ -60,18 +60,15 @@ export default class HicRenderer extends ServerSideRendererType {
       maxBin = Math.max(Math.max(features[i].bin1, features[i].bin2), maxBin)
     }
     const numBins = maxBin - minBin
-    console.log(numBins)
 
     ctx.fillStyle = 'red'
     ctx.rotate(-Math.PI / 4)
-    console.log(numBins / width)
-    const w = numBins / width
-
+    const w = numBins / (width * 5.4)
     for (let i = 0; i < features.length; i++) {
       let { bin1, bin2, counts } = features[i]
       bin1 -= offset
       bin2 -= offset
-      ctx.fillStyle = `rgba(255,0,0,${-Math.log(1 - counts / maxScore)}`
+      ctx.fillStyle = `rgba(255,0,0,${counts / (maxScore / 20)}`
       ctx.fillRect(bin1 * w, bin2 * w, w, w)
     }
 
