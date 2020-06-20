@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`create bam adapter config 1`] = `
+Object {
+  "type": "BamAdapter",
+}
+`;
+
+exports[`create track config 1`] = `
+Object {
+  "adapter": Object {
+    "type": "BamAdapter",
+  },
+  "renderers": Object {
+    "PileupRenderer": Object {
+      "type": "PileupRenderer",
+    },
+    "SNPCoverageRenderer": Object {
+      "type": "SNPCoverageRenderer",
+    },
+    "SvgFeatureRenderer": Object {
+      "type": "SvgFeatureRenderer",
+    },
+  },
+  "trackId": "track0",
+  "type": "AlignmentsTrack",
+}
+`;
+
+exports[`plugin in a stock JBrowse 1`] = `
+Object {
+  "type": "BamAdapter",
+}
+`;
