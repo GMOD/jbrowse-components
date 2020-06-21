@@ -1,7 +1,9 @@
 import React from 'react'
+import { renderToString } from 'react-dom/server'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
 import { Region } from '@gmod/jbrowse-core/util/types'
+import { saveAs } from 'file-saver'
 import {
   ElementId,
   Region as MUIRegion,
@@ -330,8 +332,30 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setError(error: Error | undefined) {
         self.error = error
       },
-      exportSvg() {
-        return <svg>{self.tracks.map(track => track.renderSvg())}</svg>
+      async exportSvg() {
+        let offset = 0
+        const html = renderToString(
+          <svg>
+            {
+              await Promise.all(
+                self.tracks.map(async track => {
+                  const current = offset
+                  offset += track.height + 20
+                  return (
+                    <g
+                      key={track.trackId}
+                      transform={`translate(0 ${current})`}
+                    >
+                      {await track.renderSvg()}
+                    </g>
+                  )
+                }),
+              )
+            }
+          </svg>,
+        )
+        const blob = new Blob([html], { type: 'image/svg+xml' })
+        saveAs(blob, 'image.svg')
       },
 
       toggleHeader() {

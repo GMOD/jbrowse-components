@@ -36,6 +36,7 @@ export interface PileupRenderProps {
     by: string
   }
   showSoftClip: boolean
+  forceSvg: boolean
 }
 
 interface LayoutRecord {
@@ -180,7 +181,181 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  async makeImageData(props: PileupRenderProps) {
+  async makeImageDataSVG(props: PileupRenderProps) {
+    const { features, layout, config, regions, bpPerPx } = props
+    const [region] = regions
+
+    if (!layout) throw new Error(`layout required`)
+    if (!layout.addRect) throw new Error('invalid layout object')
+    const pxPerBp = Math.min(1 / bpPerPx, 2)
+    const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
+    const w = Math.max(minFeatWidth, pxPerBp)
+
+    const layoutRecords = iterMap(
+      features.values(),
+      feature => this.layoutFeature(feature, layout, config, bpPerPx, region),
+      features.size,
+    )
+
+    const width = (region.end - region.start) / bpPerPx
+    const height = layout.getTotalHeight()
+    if (!(width > 0) || !(height > 0))
+      return { height: 0, width: 0, maxHeightReached: false }
+
+    const rects: JSX.Element[] = []
+
+    layoutRecords.forEach(feat => {
+      if (feat === null) {
+        return
+      }
+      const { feature, leftPx, rightPx, topPx, heightPx } = feat
+      const color = readConfObject(config, 'color', [feature])
+      rects.push(
+        <rect
+          x={leftPx}
+          y={topPx}
+          width={rightPx - leftPx}
+          height={heightPx}
+          style={{ fill: color }}
+        />,
+      )
+      const mismatches: Mismatch[] =
+        bpPerPx < 10 ? feature.get('mismatches') : feature.get('skips_and_dels')
+
+      const charSize = { width: 7, height: 10 }
+      if (mismatches) {
+        const colorForBase: { [key: string]: string } = {
+          A: '#00bf00',
+          C: '#4747ff',
+          G: '#ffa500',
+          T: '#f00',
+          deletion: 'grey',
+        }
+        for (let i = 0; i < mismatches.length; i += 1) {
+          const mismatch = mismatches[i]
+          const [mismatchLeftPx, mismatchRightPx] = bpSpanPx(
+            feature.get('start') + mismatch.start,
+            feature.get('start') + mismatch.start + mismatch.length,
+            region,
+            bpPerPx,
+          )
+          const mismatchWidthPx = Math.max(
+            minFeatWidth,
+            Math.abs(mismatchLeftPx - mismatchRightPx),
+          )
+
+          if (mismatch.type === 'mismatch' || mismatch.type === 'deletion') {
+            const mismatchColor =
+              colorForBase[
+                mismatch.type === 'deletion' ? 'deletion' : mismatch.base
+              ] || '#888'
+            rects.push(
+              <rect
+                x={mismatchLeftPx}
+                y={topPx}
+                width={mismatchWidthPx}
+                height={heightPx}
+                style={{ fill: mismatchColor }}
+              />,
+            )
+
+            if (
+              mismatchWidthPx >= charSize.width &&
+              heightPx >= charSize.height - 2
+            ) {
+              const textColor = mismatch.type === 'deletion' ? 'white' : 'black'
+              rects.push(
+                <text
+                  x={
+                    mismatchLeftPx + (mismatchWidthPx - charSize.width) / 2 + 1
+                  }
+                  y={topPx + heightPx}
+                  style={{ fill: textColor }}
+                >
+                  {mismatch.base}
+                </text>,
+              )
+            }
+          } else if (mismatch.type === 'insertion') {
+            rects.push(
+              <rect
+                x={mismatchLeftPx - 1}
+                y={topPx}
+                width={w}
+                height={heightPx}
+                style={{ fill: 'purple' }}
+              />,
+            )
+            // TODO complete I bar
+
+            if (
+              mismatchWidthPx >= charSize.width &&
+              heightPx >= charSize.height - 2
+            ) {
+              rects.push(
+                <text
+                  x={mismatchLeftPx + 2}
+                  y={topPx + heightPx}
+                  style={{ fill: 'purple' }}
+                >
+                  ({mismatch.base})
+                </text>,
+              )
+            }
+          } else if (
+            mismatch.type === 'hardclip' ||
+            mismatch.type === 'softclip'
+          ) {
+            const clipColor = mismatch.type === 'hardclip' ? 'red' : 'blue'
+            rects.push(
+              <rect
+                x={mismatchLeftPx - 1}
+                y={topPx}
+                width={w}
+                height={heightPx}
+                style={{ fill: clipColor }}
+              />,
+            )
+            if (
+              mismatchWidthPx >= charSize.width &&
+              heightPx >= charSize.height - 2
+            ) {
+              rects.push(
+                <text
+                  x={mismatchLeftPx + 2}
+                  y={topPx + heightPx}
+                  style={{ fill: clipColor }}
+                >
+                  ({mismatch.base})
+                </text>,
+              )
+            }
+          } else if (mismatch.type === 'skip') {
+            rects.push(
+              <rect
+                x={mismatchLeftPx}
+                y={topPx + heightPx / 2}
+                width={w}
+                height={2}
+                style={{ fill: '#333' }}
+              />,
+            )
+          }
+        }
+      }
+    })
+
+    const imageData = <>{[...rects]}</>
+
+    return {
+      imageData,
+      height,
+      width,
+      maxHeightReached: layout.maxHeightReached,
+    }
+  }
+
+  async makeImageDataCanvas(props: PileupRenderProps) {
     const {
       features,
       layout,
@@ -391,32 +566,37 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   async render(renderProps: PileupRenderProps) {
-    const {
-      height,
-      width,
-      imageData,
-      maxHeightReached,
-    } = await this.makeImageData(renderProps)
-    const element = React.createElement(
-      this.ReactComponent,
-      {
-        ...renderProps,
-        region: renderProps.regions[0],
-        height,
-        width,
-        imageData,
-      },
-      null,
-    )
+    const { forceSvg, regions } = renderProps
+    const [region] = regions
+    const { height, width, imageData, maxHeightReached } = await (forceSvg
+      ? this.makeImageDataSVG(renderProps)
+      : this.makeImageDataCanvas(renderProps))
 
-    return {
-      element,
-      imageData,
-      height,
-      width,
-      maxHeightReached,
-      layout: renderProps.layout,
-    }
+    const element = forceSvg
+      ? imageData
+      : React.createElement(
+          this.ReactComponent,
+          { ...renderProps, height, width, region, imageData },
+          null,
+        )
+
+    return forceSvg
+      ? {
+          element,
+          height,
+          width,
+          maxHeightReached,
+          layout: renderProps.layout,
+        }
+      : {
+          element,
+          imageData,
+          region,
+          height,
+          width,
+          maxHeightReached,
+          layout: renderProps.layout,
+        }
   }
 
   createSession(args: PileupLayoutSessionProps) {

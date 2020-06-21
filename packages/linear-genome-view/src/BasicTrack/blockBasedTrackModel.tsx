@@ -1,3 +1,4 @@
+import React from 'react'
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { autorun } from 'mobx'
@@ -12,7 +13,6 @@ import { addDisposer, types, Instance, isAlive } from 'mobx-state-tree'
 import RBush from 'rbush'
 import { Feature, isFeature } from '@gmod/jbrowse-core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
-import { saveAs } from 'file-saver'
 import BlockState, { renderBlockData } from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
 import { BaseBlock } from './util/blockTypes'
@@ -34,15 +34,21 @@ const blockBasedTrack = types
         contextMenuFeature: undefined as undefined | Feature,
       })),
   )
+  .views(self => ({
+    get blockType(): 'staticBlocks' | 'dynamicBlocks' {
+      return 'staticBlocks'
+    },
+    get blockDefinitions() {
+      const { blockType } = this
+      const view = getContainingView(self) as LinearGenomeViewModel
+      return view[blockType]
+    },
+  }))
   .views(self => {
     let stale = false // used to make rtree refresh, the mobx reactivity fails for some reason
     let rbush: { [key: string]: typeof RBush | undefined } = {}
 
     return {
-      get blockType(): 'staticBlocks' | 'dynamicBlocks' {
-        return 'staticBlocks'
-      },
-
       /**
        * how many milliseconds to wait for the display to
        * "settle" before re-rendering a block
@@ -153,12 +159,6 @@ const blockBasedTrack = types
         return rtree && rtree.collides(rect) ? rtree.search(rect) : []
       },
 
-      get blockDefinitions() {
-        const { blockType } = this
-        const view = getContainingView(self) as LinearGenomeViewModel
-        return view[blockType]
-      },
-
       /**
        * returns a string feature ID if the globally-selected object
        * is probably a feature
@@ -237,19 +237,36 @@ const blockBasedTrack = types
     },
 
     async renderSvg() {
-      console.log(self.blockState.values())
+      const renderings = []
+      const view = getContainingView(self)
       for (const block of self.blockState.values()) {
-        const { rpcManager, renderArgs, rendererType } = renderBlockData(
-          block,
-          true,
-        )
-        const { html } = await rendererType.renderInClient(
-          rpcManager,
-          renderArgs,
-        )
-        const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, 'image.svg')
+        const { rpcManager, renderArgs, rendererType } = renderBlockData(block)
+        const rendering = rendererType.renderInClient(rpcManager, {
+          ...renderArgs,
+          renderProps: {
+            ...renderArgs.renderProps,
+            forceSvg: true,
+          },
+        })
+        renderings.push(rendering)
       }
+      const results = await Promise.all(renderings)
+      const blocks = self.blockDefinitions
+      return (
+        <>
+          {results.map((rendering, index) => {
+            const { key, offsetPx } = blocks.blocks[index]
+            return (
+              <g
+                key={key}
+                transform={`translate(${offsetPx - view.offsetPx} 0)`}
+                // eslint-disable-next-line react/no-danger
+                dangerouslySetInnerHTML={{ __html: rendering.html }}
+              />
+            )
+          })}
+        </>
+      )
     },
   }))
   .actions(self => ({

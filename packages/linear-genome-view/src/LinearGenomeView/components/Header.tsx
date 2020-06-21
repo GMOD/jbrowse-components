@@ -293,7 +293,8 @@ export default observer(({ model }: { model: LGV }) => {
       <PanControls model={model} />
       <Search model={model} />
       <ZoomControls model={model} />
-      <div className={classes.spacer} />    </div>
+      <div className={classes.spacer} />{' '}
+    </div>
   )
 
   if (model.hideHeaderOverview) {
