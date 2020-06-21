@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   getConf,
   ConfigurationReference,
@@ -135,6 +136,20 @@ const stateModelFactory = (
           type: 'PileupTrack',
           configuration: trackConfig,
         }
+      },
+
+      async renderSvg() {
+        return (
+          <>
+            <g id="snpcov">{await self.SNPCoverageTrack.renderSvg()}</g>
+            <g
+              id="pileup"
+              transform={`translate(0 ${self.SNPCoverageTrack.height})`}
+            >
+              {await self.PileupTrack.renderSvg()}
+            </g>
+          </>
+        )
       },
     }))
 }

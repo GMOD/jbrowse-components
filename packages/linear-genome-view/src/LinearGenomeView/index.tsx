@@ -1,5 +1,5 @@
 import React from 'react'
-import { renderToString } from 'react-dom/server'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
 import { Region } from '@gmod/jbrowse-core/util/types'
@@ -334,7 +334,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       async exportSvg() {
         let offset = 0
-        const html = renderToString(
+        const html = renderToStaticMarkup(
           <svg>
             {
               await Promise.all(
