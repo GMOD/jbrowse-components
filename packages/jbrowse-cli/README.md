@@ -69,26 +69,34 @@ ARGUMENTS
       --gziLocation
 
 OPTIONS
-  -a, --alias=alias          An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38"); can
-                             be specified multiple times
+  -a, --alias=alias                        An alias for the assembly name (e.g. "hg38" if the name of the assembly is
+                                           "GRCh38"); can be specified multiple times
 
-  -c, --config=config        [default: ./config.json] Config file; if the file does not exist, it will be created
+  -c, --config=config                      [default: ./config.json] Config file; if the file does not exist, it will be
+                                           created
 
-  -f, --force                Equivalent to `--skipCheck --overwrite`
+  -f, --force                              Equivalent to `--skipCheck --overwrite`
 
-  -h, --help                 show CLI help
+  -h, --help                               show CLI help
 
-  -n, --name=name            Name of the assembly; if not specified, will be guessed using the sequence file name
+  -n, --name=name                          Name of the assembly; if not specified, will be guessed using the sequence
+                                           file name
 
-  --copy                     Copy the sequence file(s) to the same directory as the config instead of using in place
+  --faiLocation=faiLocation                [default: <fastaLocation>.fai] FASTA index file or URL
 
-  --faiLocation=faiLocation  [default: <fastaLocation>.fai] FASTA index file or URL
+  --gziLocation=gziLocation                [default: <fastaLocation>.gzi] FASTA gzip index file or URL
 
-  --gziLocation=gziLocation  [default: <fastaLocation>.gzi] FASTA gzip index file or URL
+  --overwrite                              Overwrite existing assembly if one with the same name exists
 
-  --overwrite                Overwrite existing assembly if one with the same name exists
+  --refNameAliases=refNameAliases          Reference sequence name aliases file or URL; assumed to be a tab-separated
+                                           aliases file unless --refNameAliasesType is specified
 
-  --skipCheck                Don't check whether or not the sequence file or URL exists
+  --refNameAliasesType=aliases|fromConfig  Reference sequence name aliases file or URL
+
+  --refNameColors=refNameColors            A comma-separated list of color strings for the reference sequence names;
+                                           will cycle through colors if there are fewer colors than sequences
+
+  --skipCheck                              Don't check whether or not the sequence file or URL exists
 
 EXAMPLES
   $ jbrowse add-assembly indexedFasta GRCh38.fa

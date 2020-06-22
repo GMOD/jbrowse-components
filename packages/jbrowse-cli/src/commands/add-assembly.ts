@@ -65,15 +65,28 @@ If TYPE is bgzipFasta, the gzip index file defaults to <location>.gzi and can be
       description:
         '[default: <fastaLocation>.gzi] FASTA gzip index file or URL',
     }),
-    copy: flags.boolean({
+    refNameAliases: flags.string({
       description:
-        'Copy the sequence file(s) to the same directory as the config instead of using in place',
-      exclusive: ['noCheck'],
+        'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases file unless --refNameAliasesType is specified',
     }),
+    refNameAliasesType: flags.string({
+      description: 'Reference sequence name aliases file or URL',
+      options: ['aliases', 'fromConfig'],
+      dependsOn: ['refNameAliases'],
+    }),
+    refNameColors: flags.string({
+      description:
+        'A comma-separated list of color strings for the reference sequence names; will cycle through colors if there are fewer colors than sequences',
+    }),
+    // copy: flags.boolean({
+    //   description:
+    //     'Copy the sequence file(s) to the same directory as the config instead of using in place',
+    //   exclusive: ['skipCheck', 'force'],
+    // }),
     help: flags.help({ char: 'h' }),
     skipCheck: flags.boolean({
       description: "Don't check whether or not the sequence file or URL exists",
-      exclusive: ['copy'],
+      // exclusive: ['copy'],
     }),
     overwrite: flags.boolean({
       description:
@@ -82,6 +95,7 @@ If TYPE is bgzipFasta, the gzip index file defaults to <location>.gzi and can be
     force: flags.boolean({
       char: 'f',
       description: 'Equivalent to `--skipCheck --overwrite`',
+      // exclusive: ['copy'],
     }),
   }
 
