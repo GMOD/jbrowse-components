@@ -4,6 +4,7 @@ title: Powered by MDX
 ---
 
 import MyButton from 'mybutton'
+import JBrowseDemo from '../src/JBrowseDemo'
 
 You can write JSX and use React components within your Markdown thanks to [MDX](https://mdxjs.com/).
 
@@ -22,3 +23,9 @@ I can write **Markdown** alongside my _JSX_!
 Here is mybutton
 
 <MyButton />
+
+
+
+Here is the jbrowse demo
+
+<JBrowseDemo />
