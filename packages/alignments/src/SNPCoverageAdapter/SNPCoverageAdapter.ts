@@ -147,6 +147,7 @@ export default (pluginManager: PluginManager) => {
         .map(s => s.basesCovered)
         .reduce((a, b) => a + b, 0)
 
+      console.log('finish stats')
       return rectifyStats({
         scoreMin,
         scoreMax,
@@ -164,12 +165,12 @@ export default (pluginManager: PluginManager) => {
           .pipe(toArray())
           .toPromise()
 
-        console.log('gettin snp cov features', features)
         const coverageBins = this.generateCoverageBins(
           features,
           region,
           opts.bpPerPx || 1,
         )
+        console.log('getting cov bins', coverageBins)
         coverageBins.forEach((bin: NestedFrequencyTable, index: number) => {
           observer.next(
             new SimpleFeature({
@@ -184,8 +185,6 @@ export default (pluginManager: PluginManager) => {
             }),
           )
         })
-
-        console.log('finish get features')
 
         observer.complete()
       }, opts.signal)

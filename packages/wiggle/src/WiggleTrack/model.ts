@@ -17,6 +17,7 @@ import { autorun, observable } from 'mobx'
 import {
   addDisposer,
   getSnapshot,
+  getParent,
   isAlive,
   types,
   Instance,
@@ -224,7 +225,9 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           if (isAlive(self)) {
             self.updateStats(stats)
           }
-          self.reload()
+          console.log('done')
+          self.reload() // this is calling the same reload recursively, use getParent or getpraentRenderProps or containingview
+          // to somehow call the correct reload
         },
         afterAttach() {
           addDisposer(

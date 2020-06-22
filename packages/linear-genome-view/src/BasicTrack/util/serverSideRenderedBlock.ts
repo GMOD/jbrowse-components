@@ -50,7 +50,6 @@ const blockState = types
     let renderInProgress: undefined | AbortController
     return {
       afterAttach() {
-        console.log('in afterattach')
         const track = getParent<any>(self, 2)
         const renderDisposer = reaction(
           () => renderBlockData(self as any),
@@ -147,7 +146,6 @@ const blockState = types
         // wiggle on reload, you run wigglegetregionstats and then the render
       },
       beforeDestroy() {
-        console.log('in before destroy')
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
         }
@@ -273,7 +271,6 @@ async function renderBlockEffect(
   if (renderProps.notReady) return
 
   try {
-    console.log('here in try')
     renderArgs.signal = aborter.signal
     // const callId = [
     //   assembleLocString(renderArgs.region),
@@ -284,7 +281,6 @@ async function renderBlockEffect(
       maxHeightReached,
       ...data
     } = await rendererType.renderInClient(rpcManager, renderArgs)
-    console.log('finished render in client')
     // if (aborter.signal.aborted) {
     //   console.log(...callId, 'request to abort render was ignored', html, data)
     checkAbortSignal(aborter.signal)
@@ -296,7 +292,6 @@ async function renderBlockEffect(
       renderProps,
     )
   } catch (error) {
-    console.log('in catch', error)
     if (isAbortException(error) && !aborter.signal.aborted) {
       // there is a bug in the underlying code and something is caching aborts. try to refetch once
       const track = getParent<any>(self, 2)
