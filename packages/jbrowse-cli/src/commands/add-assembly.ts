@@ -4,32 +4,15 @@ export default class AddAssembly extends Command {
   static description = 'Add an assembly to a JBrowse 2 configuration'
 
   static examples = [
-    '$ jbrowse add-assembly indexedFasta GRCh38.fa',
-    '$ jbrowse add-assembly bgzipFasta myFile.fa.gz --name GRCh38 --alias hg38',
-    '$ jbrowse add-assembly twoBit GRCh38.2bit --config path/to/config.json',
-    '$ jbrowse add-assembly chromeSizes GRCh38.chrom.sizes',
-    '$ jbrowse add-assembly fromConfig GRCh38.config.json',
+    '$ jbrowse add-assembly GRCh38.fa',
+    '$ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta',
+    '$ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38',
+    '$ jbrowse add-assembly GRCh38.2bit --config path/to/config.json',
+    '$ jbrowse add-assembly GRCh38.chrom.sizes',
+    '$ jbrowse add-assembly GRCh38.config.json',
   ]
 
   static args = [
-    {
-      name: 'type',
-      required: true,
-      description: `type of sequence
-
-indexedFasta   An index FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation
-bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify --faiLocation and/or --gziLocation
-twoBit         A twoBit (e.g. .2bit) file
-chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
-fromConfig     A JBrowse 2 fromConfigAdapter configuration`,
-      options: [
-        'indexedFasta',
-        'bgzipFasta',
-        'twoBit',
-        'chromSizes',
-        'fromConfig',
-      ],
-    },
     {
       name: 'sequence',
       required: true,
@@ -41,6 +24,23 @@ If TYPE is bgzipFasta, the gzip index file defaults to <location>.gzi and can be
   ]
 
   static flags = {
+    type: flags.string({
+      char: 't',
+      description: `type of sequence, by default inferred from sequence file
+
+indexedFasta   An index FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation
+bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify --faiLocation and/or --gziLocation
+twoBit         A twoBit (e.g. .2bit) file
+chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
+fromConfig     A JBrowse 2 FromConfigAdapter configuration, either a file location or inline JSON; must provide --name if using inline JSON`,
+      options: [
+        'indexedFasta',
+        'bgzipFasta',
+        'twoBit',
+        'chromSizes',
+        'fromConfig',
+      ],
+    }),
     config: flags.string({
       char: 'c',
       description:

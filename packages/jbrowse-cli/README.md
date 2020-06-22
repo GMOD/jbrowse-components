@@ -37,29 +37,19 @@ USAGE
 
 <!-- commands -->
 
-- [`jbrowse add-assembly TYPE SEQUENCE`](#jbrowse-add-assembly-type-sequence)
+- [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
 - [`jbrowse hello [FILE]`](#jbrowse-hello-file)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 
-## `jbrowse add-assembly TYPE SEQUENCE`
+## `jbrowse add-assembly SEQUENCE`
 
 Add an assembly to a JBrowse 2 configuration
 
 ```
 USAGE
-  $ jbrowse add-assembly TYPE SEQUENCE
+  $ jbrowse add-assembly SEQUENCE
 
 ARGUMENTS
-  TYPE
-      (indexedFasta|bgzipFasta|twoBit|chromSizes|fromConfig) type of sequence
-
-      indexedFasta   An index FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation
-      bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify
-      --faiLocation and/or --gziLocation
-      twoBit         A twoBit (e.g. .2bit) file
-      chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
-      fromConfig     A JBrowse 2 fromConfigAdapter configuration
-
   SEQUENCE
       sequence file or URL
 
@@ -69,41 +59,63 @@ ARGUMENTS
       --gziLocation
 
 OPTIONS
-  -a, --alias=alias                        An alias for the assembly name (e.g. "hg38" if the name of the assembly is
-                                           "GRCh38"); can be specified multiple times
+  -a, --alias=alias
+      An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38"); can be specified multiple
+      times
 
-  -c, --config=config                      [default: ./config.json] Config file; if the file does not exist, it will be
-                                           created
+  -c, --config=config
+      [default: ./config.json] Config file; if the file does not exist, it will be created
 
-  -f, --force                              Equivalent to `--skipCheck --overwrite`
+  -f, --force
+      Equivalent to `--skipCheck --overwrite`
 
-  -h, --help                               show CLI help
+  -h, --help
+      show CLI help
 
-  -n, --name=name                          Name of the assembly; if not specified, will be guessed using the sequence
-                                           file name
+  -n, --name=name
+      Name of the assembly; if not specified, will be guessed using the sequence file name
 
-  --faiLocation=faiLocation                [default: <fastaLocation>.fai] FASTA index file or URL
+  -t, --type=indexedFasta|bgzipFasta|twoBit|chromSizes|fromConfig
+      type of sequence, by default inferred from sequence file
 
-  --gziLocation=gziLocation                [default: <fastaLocation>.gzi] FASTA gzip index file or URL
+      indexedFasta   An index FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation
+      bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify
+      --faiLocation and/or --gziLocation
+      twoBit         A twoBit (e.g. .2bit) file
+      chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
+      fromConfig     A JBrowse 2 FromConfigAdapter configuration, either a file location or inline JSON; must provide
+      --name if using inline JSON
 
-  --overwrite                              Overwrite existing assembly if one with the same name exists
+  --faiLocation=faiLocation
+      [default: <fastaLocation>.fai] FASTA index file or URL
 
-  --refNameAliases=refNameAliases          Reference sequence name aliases file or URL; assumed to be a tab-separated
-                                           aliases file unless --refNameAliasesType is specified
+  --gziLocation=gziLocation
+      [default: <fastaLocation>.gzi] FASTA gzip index file or URL
 
-  --refNameAliasesType=aliases|fromConfig  Reference sequence name aliases file or URL
+  --overwrite
+      Overwrite existing assembly if one with the same name exists
 
-  --refNameColors=refNameColors            A comma-separated list of color strings for the reference sequence names;
-                                           will cycle through colors if there are fewer colors than sequences
+  --refNameAliases=refNameAliases
+      Reference sequence name aliases file or URL; assumed to be a tab-separated aliases file unless --refNameAliasesType
+      is specified
 
-  --skipCheck                              Don't check whether or not the sequence file or URL exists
+  --refNameAliasesType=aliases|fromConfig
+      Reference sequence name aliases file or URL
+
+  --refNameColors=refNameColors
+      A comma-separated list of color strings for the reference sequence names; will cycle through colors if there are
+      fewer colors than sequences
+
+  --skipCheck
+      Don't check whether or not the sequence file or URL exists
 
 EXAMPLES
-  $ jbrowse add-assembly indexedFasta GRCh38.fa
-  $ jbrowse add-assembly bgzipFasta myFile.fa.gz --name GRCh38 --alias hg38
-  $ jbrowse add-assembly twoBit GRCh38.2bit --config path/to/config.json
-  $ jbrowse add-assembly chromeSizes GRCh38.chrom.sizes
-  $ jbrowse add-assembly fromConfig GRCh38.config.json
+  $ jbrowse add-assembly GRCh38.fa
+  $ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta
+  $ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38
+  $ jbrowse add-assembly GRCh38.2bit --config path/to/config.json
+  $ jbrowse add-assembly GRCh38.chrom.sizes
+  $ jbrowse add-assembly GRCh38.config.json
 ```
 
 ## `jbrowse hello [FILE]`
