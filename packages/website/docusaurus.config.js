@@ -1,28 +1,28 @@
-const path = require('path')
 module.exports = {
-  title: 'JBrowse 2',
-  url: 'https://jbrowse.org',
+  title: 'My Site',
+  tagline: 'The tagline of my site',
+  url: 'https://your-docusaurus-test-site.com',
   baseUrl: '/',
   favicon: 'img/favicon.ico',
-  organizationName: 'GMOD', // Usually your GitHub org/user name.
-  projectName: 'jbrowse-components', // Usually your repo name.
+  organizationName: 'facebook', // Usually your GitHub org/user name.
+  projectName: 'docusaurus', // Usually your repo name.
   themeConfig: {
     navbar: {
-      title: 'JBrowse',
+      title: 'My Site',
       logo: {
-        alt: 'JBrowse Logo',
+        alt: 'My Site Logo',
         src: 'img/logo.svg',
       },
       links: [
         {
-          to: 'docs/intro',
+          to: 'docs/',
           activeBasePath: 'docs',
           label: 'Docs',
           position: 'left',
         },
-        { to: 'blog', label: 'Blog', position: 'left' },
+        {to: 'blog', label: 'Blog', position: 'left'},
         {
-          href: 'https://github.com/GMOD/jbrowse-components',
+          href: 'https://github.com/facebook/docusaurus',
           label: 'GitHub',
           position: 'right',
         },
@@ -35,8 +35,12 @@ module.exports = {
           title: 'Docs',
           items: [
             {
-              label: 'Intro',
-              to: 'docs/intro',
+              label: 'Style Guide',
+              to: 'docs/',
+            },
+            {
+              label: 'Second Doc',
+              to: 'docs/doc2/',
             },
           ],
         },
@@ -44,12 +48,16 @@ module.exports = {
           title: 'Community',
           items: [
             {
-              label: 'GitHub',
-              href: 'https://github.com/GMOD/jbrowse-components',
+              label: 'Stack Overflow',
+              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
             },
             {
-              label: 'Gitter',
-              href: 'https://gitter.im/GMOD/jbrowse2',
+              label: 'Discord',
+              href: 'https://discordapp.com/invite/docusaurus',
+            },
+            {
+              label: 'Twitter',
+              href: 'https://twitter.com/docusaurus',
             },
           ],
         },
@@ -60,9 +68,14 @@ module.exports = {
               label: 'Blog',
               to: 'blog',
             },
+            {
+              label: 'GitHub',
+              href: 'https://github.com/facebook/docusaurus',
+            },
           ],
         },
       ],
+      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
     },
   },
   presets: [
@@ -70,16 +83,18 @@ module.exports = {
       '@docusaurus/preset-classic',
       {
         docs: {
+          // It is recommended to set document id as docs home page (`docs/` path).
+          homePageId: 'doc1',
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl:
-            'https://github.com/GMOD/jbrowse-components/edit/master/website/',
+            'https://github.com/facebook/docusaurus/edit/master/website/',
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
           editUrl:
-            'https://github.com/GMOD/jbrowse-components/edit/master/website/blog/',
+            'https://github.com/facebook/docusaurus/edit/master/website/blog/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -87,6 +102,4 @@ module.exports = {
       },
     ],
   ],
-
-  plugins: [path.resolve(__dirname, 'webpack-addons')],
-}
+};
