@@ -2,10 +2,18 @@
   "name": "@gmod/jbrowse-plugin-gdc",
   "version": "2.0.0",
   "description": "JBrowse 2 GDC plugin",
+  "jbrowse-plugin": {
+    "name": "GDC"
+  },
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/gdc"
+    "test": "cd ../..; jest packages/gdc",
+    "build": "cross-env NODE_ENV=production webpack",
+    "develop": "cross-env NODE_ENV=development webpack --watch"
   },
+  "files": [
+    "dist"
+  ],
   "author": "Andrew Duncan",
   "license": "MIT",
   "dependencies": {

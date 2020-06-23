@@ -21,10 +21,8 @@ import {
   modelFactory as gdcTrackModelFactory,
 } from './GDCTrack'
 
-import {
-  AdapterClass as GDCAdapterClass,
-  configSchema as GDCAdapterConfigSchema,
-} from './GDCAdapter'
+import GDCAdapterConfigSchema from './GDCAdapter/configSchema'
+import GDCAdapterClassF from './GDCAdapter/GDCAdapter'
 
 export default class extends Plugin {
   install(pluginManager: PluginManager) {
@@ -33,7 +31,7 @@ export default class extends Plugin {
         new AdapterType({
           name: 'GDCAdapter',
           configSchema: GDCAdapterConfigSchema,
-          AdapterClass: GDCAdapterClass,
+          AdapterClass: GDCAdapterClassF(pluginManager),
         }),
     )
 

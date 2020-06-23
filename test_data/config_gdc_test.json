@@ -2,6 +2,12 @@
   "configuration": {
     "useUrlSession": true
   },
+  "plugins": [
+    {
+        "name": "GDC",
+        "url": "http://localhost:8080/packages/gdc/dist/plugin.js"
+    }
+  ],
   "assemblies": [
     {
       "name": "hg38",

@@ -2,6 +2,11 @@ import path from 'path'
 import { pascalCase } from 'change-case'
 import webpack from 'webpack'
 
+export interface PackageJson {
+  name: string
+  'jbrowse-plugin'?: { name?: string }
+}
+
 export function baseJBrowsePluginWebpackConfig(
   myWebpack: {
     optimize: {
@@ -9,12 +14,13 @@ export function baseJBrowsePluginWebpackConfig(
     }
   },
   buildDir: string,
-  packageJson: { name: string },
+  packageJson: PackageJson,
 ) {
-  const pluginNameParamCase = packageJson.name.replace(
-    '@gmod/jbrowse-plugin-',
-    '',
-  )
+  const pluginConfiguration = packageJson['jbrowse-plugin']
+
+  const pluginNameParamCase =
+    pluginConfiguration?.name ||
+    packageJson.name.replace('@gmod/jbrowse-plugin-', '')
 
   return {
     mode: process.env.NODE_ENV,

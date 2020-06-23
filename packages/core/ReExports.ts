@@ -43,6 +43,7 @@ import MUITypography from '@material-ui/core/Typography'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 
+import * as BaseAdapterExports from './data_adapters/BaseAdapter'
 import Base1DView from './util/Base1DViewModel'
 import ViewType from './pluggableElementTypes/ViewType'
 import AdapterType from './pluggableElementTypes/AdapterType'
@@ -126,6 +127,8 @@ const libs = {
   '@gmod/jbrowse-core/util/io': coreIo,
   '@gmod/jbrowse-core/util/mst-reflection': coreMstReflection,
   '@gmod/jbrowse-core/BaseViewModel': BaseViewModel,
+
+  '@gmod/jbrowse-core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
 
 export default libs
