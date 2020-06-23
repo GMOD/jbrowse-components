@@ -4,8 +4,12 @@
   "description": "JBrowse 2 alignments adapters, tracks, etc.",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/alignments"
+    "test": "cd ../..; jest packages/alignments",
+    "build": "cross-env NODE_ENV=production webpack"
   },
+  "files": [
+    "dist"
+  ],
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {

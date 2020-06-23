@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop */
 import BaseRpcDriver from './BaseRpcDriver'
 import PluginManager from '../PluginManager'
+import { PluginDefinition } from '../PluginLoader'
 
 declare global {
   interface Window {
@@ -63,7 +64,12 @@ class WindowWorkerHandle {
 export default class ElectronRpcDriver extends BaseRpcDriver {
   makeWorker: () => WindowWorkerHandle
 
-  constructor({ workerCreationChannel }: { workerCreationChannel: string }) {
+  workerBootConfiguration: { plugins: PluginDefinition[] }
+
+  constructor(
+    { workerCreationChannel }: { workerCreationChannel: string },
+    workerBootConfiguration: { plugins: PluginDefinition[] },
+  ) {
     super()
     if (!electron)
       throw new Error(
@@ -81,6 +87,7 @@ export default class ElectronRpcDriver extends BaseRpcDriver {
       const window = electronRemote.BrowserWindow.fromId(workerId)
       return new WindowWorkerHandle(ipcRenderer, window)
     }
+    this.workerBootConfiguration = workerBootConfiguration
   }
 
   call(

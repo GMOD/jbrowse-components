@@ -4,6 +4,7 @@
   "description": "JBrowse 2 variant adapters, tracks, etc.",
   "main": "src/index.ts",
   "scripts": {
+    "build": "cross-env NODE_ENV=production webpack",
     "test": "cd ../..; jest packages/variants"
   },
   "author": "Garrett Stevens",
