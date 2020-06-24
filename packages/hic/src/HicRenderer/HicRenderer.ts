@@ -10,8 +10,13 @@ import React from 'react'
 import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
+interface HicFeature {
+  bin1: number
+  bin2: number
+  count: number
+}
 export interface PileupRenderProps {
-  features: Map<string, Feature>
+  features: HicFeature[]
   config: AnyConfigurationModel
   regions: Region[]
   bpPerPx: number
@@ -34,8 +39,6 @@ export default class HicRenderer extends ServerSideRendererType {
       highResolutionScaling = 1,
     } = props
     const [region] = regions
-    console.log(features)
-
     const width = (region.end - region.start) / bpPerPx
     const height = readConfObject(config, 'maxHeight')
     if (!(width > 0) || !(height > 0))
@@ -50,26 +53,28 @@ export default class HicRenderer extends ServerSideRendererType {
     ctx.font = 'bold 10px Courier New,monospace'
     const charSize = ctx.measureText('A')
     charSize.height = 7
-    const offset = features[0].bin1
-    let maxScore = 0
-    let minBin = 0
-    let maxBin = 0
-    for (let i = 0; i < features.length; i++) {
-      maxScore = Math.max(features[i].counts, maxScore)
-      minBin = Math.min(Math.min(features[i].bin1, features[i].bin2), minBin)
-      maxBin = Math.max(Math.max(features[i].bin1, features[i].bin2), maxBin)
-    }
-    const numBins = maxBin - minBin
+    if (features.length) {
+      const offset = features[0].bin1
+      let maxScore = 0
+      let minBin = 0
+      let maxBin = 0
+      for (let i = 0; i < features.length; i++) {
+        maxScore = Math.max(features[i].counts, maxScore)
+        minBin = Math.min(Math.min(features[i].bin1, features[i].bin2), minBin)
+        maxBin = Math.max(Math.max(features[i].bin1, features[i].bin2), maxBin)
+      }
+      const numBins = maxBin - minBin
 
-    ctx.fillStyle = 'red'
-    ctx.rotate(-Math.PI / 4)
-    const w = numBins / (width * 5.4)
-    for (let i = 0; i < features.length; i++) {
-      let { bin1, bin2, counts } = features[i]
-      bin1 -= offset
-      bin2 -= offset
-      ctx.fillStyle = `rgba(255,0,0,${counts / (maxScore / 20)}`
-      ctx.fillRect(bin1 * w, bin2 * w, w, w)
+      ctx.fillStyle = 'red'
+      ctx.rotate(-Math.PI / 4)
+      const w = numBins / (width * 5.4)
+      for (let i = 0; i < features.length; i++) {
+        let { bin1, bin2, counts } = features[i]
+        bin1 -= offset
+        bin2 -= offset
+        ctx.fillStyle = `rgba(255,0,0,${counts / (maxScore / 20)}`
+        ctx.fillRect(bin1 * w, bin2 * w, w, w)
+      }
     }
 
     const imageData = await createImageBitmap(canvas)
