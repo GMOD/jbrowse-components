@@ -4,6 +4,8 @@ sudo: false
 cache:
 - node_modules
 - yarn
+before_install:
+  - sudo apt -y install p7zip-full
 script:
 - set -e
 - yarn lint
