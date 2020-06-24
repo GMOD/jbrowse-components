@@ -74,7 +74,7 @@ export default class HicRenderer extends ServerSideRendererType {
       ctx.fillStyle = 'red'
       ctx.rotate(-Math.PI / 4)
 
-      const w = numBins / (width * 5.4)
+      const w = 10000 / (bpPerPx * Math.sqrt(2))
       for (let i = 0; i < features.length; i++) {
         const { bin1, bin2, counts } = features[i]
         ctx.fillStyle = `rgba(255,0,0,${counts / (maxScore / 20)}`
