@@ -1,6 +1,11 @@
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import ServerSideRendererType, {
+  RenderArgsDeserialized,
+  RenderArgs,
+  ResultsDeserialized,
+  ResultsSerialized,
+} from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
+import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import {
   createCanvas,
@@ -13,7 +18,7 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 interface HicFeature {
   bin1: number
   bin2: number
-  count: number
+  counts: number
 }
 export interface PileupRenderProps {
   features: HicFeature[]
@@ -59,21 +64,21 @@ export default class HicRenderer extends ServerSideRendererType {
       let minBin = 0
       let maxBin = 0
       for (let i = 0; i < features.length; i++) {
-        maxScore = Math.max(features[i].counts, maxScore)
-        minBin = Math.min(Math.min(features[i].bin1, features[i].bin2), minBin)
-        maxBin = Math.max(Math.max(features[i].bin1, features[i].bin2), maxBin)
+        const { bin1, bin2, counts } = features[i]
+        maxScore = Math.max(counts, maxScore)
+        minBin = Math.min(Math.min(bin1, bin2), minBin)
+        maxBin = Math.max(Math.max(bin1, bin2), maxBin)
       }
       const numBins = maxBin - minBin
 
       ctx.fillStyle = 'red'
       ctx.rotate(-Math.PI / 4)
+
       const w = numBins / (width * 5.4)
       for (let i = 0; i < features.length; i++) {
-        let { bin1, bin2, counts } = features[i]
-        bin1 -= offset
-        bin2 -= offset
+        const { bin1, bin2, counts } = features[i]
         ctx.fillStyle = `rgba(255,0,0,${counts / (maxScore / 20)}`
-        ctx.fillRect(bin1 * w, bin2 * w, w, w)
+        ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
       }
     }
 
@@ -113,13 +118,21 @@ export default class HicRenderer extends ServerSideRendererType {
     }
   }
 
-  async getFeatures({ dataAdapter, signal, bpPerPx, regions }) {
+  async getFeatures({
+    dataAdapter,
+    signal,
+    bpPerPx,
+    regions,
+  }: RenderArgsDeserialized) {
     const features = await dataAdapter
       .getFeatures(regions[0], { signal, bpPerPx })
       .pipe(toArray())
       .toPromise()
-    console.log(features)
-    return features
+    // cast to any to avoid return-type conflict, because the
+    // types of features returned by our getFeatures are quite
+    // different from the base interface
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return features as any
   }
 
   serializeResultsInWorker(
