@@ -3,8 +3,6 @@ import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
-import Button from '@material-ui/core/Button'
-import RefreshIcon from '@material-ui/icons/Refresh'
 import ServerSideRenderedContent from '../../LinearGenomeView/components/ServerSideRenderedContent'
 
 const useStyles = makeStyles(theme => ({
@@ -80,16 +78,11 @@ BlockMessage.propTypes = {
   messageText: PropTypes.string.isRequired,
 }
 
-function BlockError({ error, reload }: { error: Error; reload: () => void }) {
+function BlockError({ error }: { error: Error }) {
   const classes = useStyles()
   // TODORELOAD: reloads here
   return (
     <div className={classes.blockError}>
-      {reload ? (
-        <Button onClick={reload} size="small" startIcon={<RefreshIcon />}>
-          Reload
-        </Button>
-      ) : null}
       <Typography color="error" variant="body2">
         {error.message}
       </Typography>
@@ -98,10 +91,6 @@ function BlockError({ error, reload }: { error: Error; reload: () => void }) {
 }
 BlockError.propTypes = {
   error: MobxPropTypes.objectOrObservableObject.isRequired,
-  reload: PropTypes.func,
-}
-BlockError.defaultProps = {
-  reload: undefined,
 }
 
 const ServerSideRenderedBlockContent = observer(
@@ -111,7 +100,6 @@ const ServerSideRenderedBlockContent = observer(
     // requires typing out to avoid circular reference with this component being referenced in the model itself
     model: {
       error: Error | undefined
-      reload: () => void
       message: string | undefined
       filled: boolean
     }
@@ -143,7 +131,7 @@ const ServerSideRenderedBlockContent = observer(
     if (model.error) {
       return (
         <Repeater>
-          <BlockError error={model.error} reload={model.reload} />
+          <BlockError error={model.error} />
         </Repeater>
       )
     }
