@@ -170,7 +170,6 @@ export default (pluginManager: PluginManager) => {
           region,
           opts.bpPerPx || 1,
         )
-        console.log('getting cov bins', coverageBins)
         coverageBins.forEach((bin: NestedFrequencyTable, index: number) => {
           observer.next(
             new SimpleFeature({
