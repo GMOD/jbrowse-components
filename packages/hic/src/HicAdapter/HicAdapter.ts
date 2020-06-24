@@ -42,7 +42,7 @@ export function openFilehandleWrapper(location: FileLocation) {
 }
 
 export default class HicAdapter extends BaseFeatureDataAdapter {
-  private hic: { getContactRecords: Function }
+  private hic: { getContactRecords: Function; getMetaData: Function }
 
   public constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
@@ -53,19 +53,37 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   }
 
   async getRefNames(opts?: BaseOptions) {
-    return []
+    const metadata = await this.hic.getMetaData()
+    return metadata.chromosomes.map(chr => chr.name)
+  }
+
+  async getResolution(bpPerPx: number) {
+    const metadata = await this.hic.getMetaData()
+    const { resolutions } = metadata
+    let chosenResolution = 10000
+
+    for (let i = resolutions.length - 1; i >= 0; i -= 1) {
+      const r = resolutions[i]
+      if (r <= 2 * bpPerPx) {
+        chosenResolution = r
+      }
+    }
+    return chosenResolution
   }
 
   getFeatures(region: Region, opts: BaseOptions = {}) {
-    // have to cast to any because ContactRecord does not match SimpleFeature interface
     return ObservableCreate<ContactRecord>(async observer => {
       const { refName: chr, start, end } = region
+      const { bpPerPx } = opts
+      const res = await this.getResolution(bpPerPx || 1000)
+      console.log(res)
+
       const records = await this.hic.getContactRecords(
         'KR',
         { start, chr, end },
         { start, chr, end },
         'BP',
-        10000,
+        res,
       )
       records.forEach((record: ContactRecord) => {
         observer.next(record)

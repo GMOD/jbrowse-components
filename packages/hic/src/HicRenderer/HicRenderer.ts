@@ -42,22 +42,24 @@ export default class HicRenderer extends ServerSideRendererType {
       regions,
       bpPerPx,
       highResolutionScaling = 1,
+      dataAdapter,
     } = props
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
     const height = readConfObject(config, 'maxHeight')
-    if (!(width > 0) || !(height > 0))
+    const res = await dataAdapter.getResolution(bpPerPx)
+
+    if (!(width > 0) || !(height > 0)) {
       return { height: 0, width: 0, maxHeightReached: false }
+    }
 
     const canvas = createCanvas(
       Math.ceil(width * highResolutionScaling),
       height * highResolutionScaling,
     )
+    const w = res / (bpPerPx * Math.sqrt(2))
     const ctx = canvas.getContext('2d')
     ctx.scale(highResolutionScaling, highResolutionScaling)
-    ctx.font = 'bold 10px Courier New,monospace'
-    const charSize = ctx.measureText('A')
-    charSize.height = 7
     if (features.length) {
       const offset = features[0].bin1
       let maxScore = 0
@@ -69,12 +71,7 @@ export default class HicRenderer extends ServerSideRendererType {
         minBin = Math.min(Math.min(bin1, bin2), minBin)
         maxBin = Math.max(Math.max(bin1, bin2), maxBin)
       }
-      const numBins = maxBin - minBin
-
-      ctx.fillStyle = 'red'
       ctx.rotate(-Math.PI / 4)
-
-      const w = 10000 / (bpPerPx * Math.sqrt(2))
       for (let i = 0; i < features.length; i++) {
         const { bin1, bin2, counts } = features[i]
         ctx.fillStyle = `rgba(255,0,0,${counts / (maxScore / 20)}`
