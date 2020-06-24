@@ -14,14 +14,21 @@ import {
 import React from 'react'
 import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 
 interface HicFeature {
   bin1: number
   bin2: number
   counts: number
 }
+
+interface HicDataAdapter extends BaseFeatureDataAdapter {
+  getResolution: (bp: number) => number
+}
+
 export interface PileupRenderProps {
   features: HicFeature[]
+  dataAdapter: HicDataAdapter
   config: AnyConfigurationModel
   regions: Region[]
   bpPerPx: number

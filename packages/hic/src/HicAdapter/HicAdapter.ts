@@ -17,6 +17,20 @@ interface ContactRecord {
   counts: number
 }
 
+interface HicMetadata {
+  chromosomes: {
+    name: string
+    length: number
+    id: number
+  }[]
+  resolutions: number[]
+}
+interface Ref {
+  chr: string
+  start: number
+  end: number
+}
+
 // wraps generic-filehandle so the read function only takes a position and length
 // in some ways, generic-filehandle wishes it was just this but it has
 // to adapt to the node.js fs promises API
@@ -42,7 +56,16 @@ export function openFilehandleWrapper(location: FileLocation) {
 }
 
 export default class HicAdapter extends BaseFeatureDataAdapter {
-  private hic: { getContactRecords: Function; getMetaData: Function }
+  private hic: {
+    getContactRecords: (
+      normalize: string,
+      ref: Ref,
+      ref2: Ref,
+      units: string,
+      binsize: number,
+    ) => Promise<ContactRecord[]>
+    getMetaData: () => Promise<HicMetadata>
+  }
 
   public constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
@@ -76,7 +99,6 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       const { refName: chr, start, end } = region
       const { bpPerPx } = opts
       const res = await this.getResolution(bpPerPx || 1000)
-      console.log(res)
 
       const records = await this.hic.getContactRecords(
         'KR',
@@ -85,7 +107,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
         'BP',
         res,
       )
-      records.forEach((record: ContactRecord) => {
+      records.forEach(record => {
         observer.next(record)
       })
       observer.complete()
