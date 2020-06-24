@@ -60,7 +60,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   async getResolution(bpPerPx: number) {
     const metadata = await this.hic.getMetaData()
     const { resolutions } = metadata
-    let chosenResolution = 10000
+    let chosenResolution = resolutions[resolutions.length - 1]
 
     for (let i = resolutions.length - 1; i >= 0; i -= 1) {
       const r = resolutions[i]
