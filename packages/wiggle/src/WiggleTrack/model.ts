@@ -153,8 +153,8 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         headers,
         signal,
       }: {
-        headers: Record<string, string>
-        signal: AbortSignal
+        headers?: Record<string, string>
+        signal?: AbortSignal
       }): Promise<FeatureStats> {
         const { rpcManager } = getSession(self)
         const nd = getConf(self, 'numStdDev')

@@ -22,31 +22,11 @@ import {
 
 import configSchema from './configSchema'
 
-interface StatsRegion {
-  refName: string
-  start: number
-  end: number
-  bpPerPx?: number
-}
-
-class MyCache {
-  private fill: Function
-
-  constructor({ fill }) {
-    this.fill = fill
-  }
-
-  get(key, params) {
-    console.log('here', params)
-    return this.fill(params)
-  }
-}
-
 export default class BigWigAdapter extends BaseFeatureDataAdapter
   implements DataAdapterWithGlobalStats {
   private bigwig: BigWig
 
-  private statsCache = new MyCache({
+  private statsCache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 1000 }),
     fill: async (
       args: {
@@ -54,19 +34,15 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
         start: number
         end: number
         bpPerPx?: number
-        headers: Record<string, string>
+        headers?: Record<string, string>
+        [key: string]: unknown
       },
-      abortSignal?: AbortSignal,
+      signal?: AbortSignal,
     ) => {
-      console.log('testing')
-      const { refName, start, end, bpPerPx, headers } = args
+      const { refName, start, end } = args
       const feats = this.getFeatures(
         { refName, start, end },
-        {
-          signal: abortSignal,
-          basesPerSpan: bpPerPx,
-          headers,
-        },
+        { ...args, signal },
       )
       return scoresToStats({ refName, start, end }, feats)
     },
@@ -79,8 +55,8 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
     })
   }
 
-  public async getRefNames() {
-    const header = await this.bigwig.getHeader()
+  public async getRefNames(opts: BaseOptions = {}) {
+    const header = await this.bigwig.getHeader(opts)
     return Object.keys(header.refsByName)
   }
 
@@ -90,19 +66,17 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
   }
 
   public async getGlobalStats(opts: BaseOptions = {}) {
-    console.log('getGlobalStats')
-    const header = await this.bigwig.getHeader(opts.signal)
+    const header = await this.bigwig.getHeader(opts)
     return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
   }
 
   // todo: incorporate summary blocks
   public getRegionStats(region: NoAssemblyRegion, opts: BaseOptions = {}) {
-    console.log('getRegionStats')
     const { refName, start, end } = region
     const { bpPerPx, signal, headers } = opts
     return this.statsCache.get(
-      `${refName}_${start}_${end}_${bpPerPx}`,
-      { refName, start, end, bpPerPx, headers },
+      `${refName}_${start}_${end}_${bpPerPx}_${headers}`,
+      { refName, start, end, ...opts },
       signal,
     )
   }
