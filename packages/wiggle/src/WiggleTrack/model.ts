@@ -9,7 +9,6 @@ import {
 } from '@gmod/jbrowse-core/util'
 import {
   getParentRenderProps,
-  getTrackAssemblyNames,
   getRpcSessionId,
 } from '@gmod/jbrowse-core/util/tracks'
 import blockBasedTrackModel from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
@@ -105,6 +104,8 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             scaleType: getConf(self, 'scaleType'),
             bounds: [minScore, maxScore],
           })
+
+          // uses a heuristic to just give some extra headroom on bigwig scores
           if (maxScore !== Number.MIN_VALUE && ret[1] > 1.0) {
             ret[1] = round(ret[1] + 10)
           }
@@ -128,6 +129,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', this.rendererTypeName]) || {},
           )
+
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
@@ -161,7 +163,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         const autoscaleType = getConf(self, 'autoscale', [])
         const { adapter } = self.configuration
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
-          const r = (await rpcManager.call(
+          const results = (await rpcManager.call(
             getRpcSessionId(self),
             'WiggleGetGlobalStats',
             {
@@ -170,46 +172,45 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
               headers,
             },
           )) as FeatureStats
+          const { scoreMin, scoreMean, scoreStdDev } = results
+          // globalsd uses heuristic to avoid unnecessary scoreMin<0
+          // if the scoreMin is never less than 0
+          // helps with most coverage bigwigs just being >0
           return autoscaleType === 'globalsd'
             ? {
-                ...r,
-                // avoid unnecessary scoreMin<0 if the scoreMin is never less than 0
-                // helps with most bigwigs just being >0
-                scoreMin:
-                  r.scoreMin >= 0 ? 0 : r.scoreMean - nd * r.scoreStdDev,
-                scoreMax: r.scoreMean + nd * r.scoreStdDev,
+                ...results,
+                scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
+                scoreMax: scoreMean + nd * scoreStdDev,
               }
-            : r
+            : results
         }
         if (autoscaleType === 'local' || autoscaleType === 'localsd') {
           const { dynamicBlocks, bpPerPx } = getContainingView(
             self,
           ) as Instance<LinearGenomeViewStateModel>
           const sessionId = getRpcSessionId(self)
-          // fallback if await fails?
-          const r = (await rpcManager.call(
+          const results = (await rpcManager.call(
             sessionId,
             'WiggleGetMultiRegionStats',
             {
               adapterConfig: getSnapshot(adapter),
-              // TODO: Figure this out for multiple assembly names
-              assemblyName: getTrackAssemblyNames(self)[0],
               regions: JSON.parse(JSON.stringify(dynamicBlocks.contentBlocks)),
               sessionId,
               signal,
               bpPerPx,
             },
           )) as FeatureStats
+          const { scoreMin, scoreMean, scoreStdDev } = results
+          // localsd uses heuristic to avoid unnecessary scoreMin<0
+          // if the scoreMin is never less than 0
+          // helps with most coverage bigwigs just being >0
           return autoscaleType === 'localsd'
             ? {
-                ...r,
-                // avoid unnecessary scoreMin<0 if the scoreMin is never less than 0
-                // helps with most bigwigs just being >0
-                scoreMin:
-                  r.scoreMin >= 0 ? 0 : r.scoreMean - nd * r.scoreStdDev,
-                scoreMax: r.scoreMean + nd * r.scoreStdDev,
+                ...results,
+                scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
+                scoreMax: scoreMean + nd * scoreStdDev,
               }
-            : r
+            : results
         }
         if (autoscaleType === 'zscale') {
           return rpcManager.call(
@@ -227,7 +228,6 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
       return {
         async reload() {
           self.setError('')
-          console.log('snp reloading')
 
           const aborter = new AbortController()
           const stats = await getStats({
