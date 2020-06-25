@@ -151,13 +151,11 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
     .actions(self => {
       const superReload = self.reload
 
-      async function getStats({
-        headers,
-        signal,
-      }: {
+      async function getStats(opts: {
         headers?: Record<string, string>
         signal?: AbortSignal
       }): Promise<FeatureStats> {
+        console.log(opts)
         const { rpcManager } = getSession(self)
         const nd = getConf(self, 'numStdDev')
         const autoscaleType = getConf(self, 'autoscale', [])
@@ -168,8 +166,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             'WiggleGetGlobalStats',
             {
               adapterConfig: getSnapshot(adapter),
-              signal,
-              headers,
+              ...opts,
             },
           )) as FeatureStats
           const { scoreMin, scoreMean, scoreStdDev } = results
@@ -196,8 +193,8 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
               adapterConfig: getSnapshot(adapter),
               regions: JSON.parse(JSON.stringify(dynamicBlocks.contentBlocks)),
               sessionId,
-              signal,
               bpPerPx,
+              ...opts,
             },
           )) as FeatureStats
           const { scoreMin, scoreMean, scoreStdDev } = results
@@ -218,8 +215,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             'WiggleGetGlobalStats',
             {
               adapterConfig: getSnapshot(adapter),
-              signal,
-              headers,
+              ...opts,
             },
           ) as Promise<FeatureStats>
         }
@@ -230,6 +226,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           self.setError('')
 
           const aborter = new AbortController()
+          console.log('here')
           const stats = await getStats({
             signal: aborter.signal,
             headers: { cache: 'no-store,no-cache' },
