@@ -149,7 +149,13 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
     .actions(self => {
       const superReload = self.reload
 
-      async function getStats(signal: AbortSignal): Promise<FeatureStats> {
+      async function getStats({
+        headers,
+        signal,
+      }: {
+        headers: Record<string, string>
+        signal: AbortSignal
+      }): Promise<FeatureStats> {
         const { rpcManager } = getSession(self)
         const nd = getConf(self, 'numStdDev')
         const autoscaleType = getConf(self, 'autoscale', [])
@@ -161,6 +167,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             {
               adapterConfig: getSnapshot(adapter),
               signal,
+              headers,
             },
           )) as FeatureStats
           return autoscaleType === 'globalsd'
@@ -211,6 +218,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             {
               adapterConfig: getSnapshot(adapter),
               signal,
+              headers,
             },
           ) as Promise<FeatureStats>
         }
@@ -222,7 +230,10 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           console.log('snp reloading')
 
           const aborter = new AbortController()
-          const stats = await getStats(aborter.signal)
+          const stats = await getStats({
+            signal: aborter.signal,
+            headers: { cache: 'no-store,no-cache' },
+          })
           self.updateStats(stats)
           superReload()
 
@@ -245,7 +256,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
                     return
                   }
 
-                  const stats = await getStats(aborter.signal)
+                  const stats = await getStats({ signal: aborter.signal })
 
                   if (isAlive(self)) {
                     self.updateStats(stats)
