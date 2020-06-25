@@ -130,6 +130,7 @@ export default (pluginManager: PluginManager) => {
         regions.map((region, index) => this.getRegionStats(region, opts)),
       )
 
+      console.log(feats)
       const scoreMax = feats
         .map(s => s.scoreMax)
         .reduce((acc, curr) => Math.max(acc, curr))

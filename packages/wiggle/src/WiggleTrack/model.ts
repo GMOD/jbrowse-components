@@ -61,7 +61,6 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           ready: false,
           stats: observable({ scoreMin: 0, scoreMax: 50 }),
           statsFetchInProgress: undefined as undefined | AbortController,
-          needsReload: false,
         })),
     )
     .actions(self => {
@@ -218,15 +217,17 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         throw new Error(`invalid autoscaleType '${autoscaleType}'`)
       }
       return {
-        // needs reload boolean gets set to true here
-        setNeedsReload(bool: boolean) {
-          self.needsReload = bool
-        },
-        reload() {
+        async reload() {
           self.setError('')
-          this.setNeedsReload(true)
-          // superReload() // this is calling the same reload recursively, use getParent or getpraentRenderProps or containingview
-          // to somehow call the correct reload
+          console.log('snp reloading')
+
+          const aborter = new AbortController()
+          const stats = await getStats(aborter.signal)
+          self.updateStats(stats)
+          superReload()
+
+          // if it does not hit the ping timeout, reloading the snp coverage track is successful
+          // only fails if worker/ping timesouts before completion. usually, fails on corerender now
         },
         afterAttach() {
           addDisposer(
@@ -236,26 +237,16 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
                 try {
                   const aborter = new AbortController()
                   self.setLoading(aborter)
-                  console.log(self.needsReload)
-                  // have a needsReload boolean
-                  // this.updateTest(self.test)
 
                   const { dynamicBlocks } = getContainingView(self) as Instance<
                     LinearGenomeViewStateModel
                   >
                   if (!dynamicBlocks.contentBlocks.length && !self.ready) {
-                    console.log('not ready')
                     return
                   }
 
-                  // if(needsReload)
                   const stats = await getStats(aborter.signal)
-                  console.log('finish get stats', stats)
-                  if (self.needsReload) {
-                    superReload()
-                    this.setNeedsReload(false)
-                  }
-                  // then set needsReload to false after
+
                   if (isAlive(self)) {
                     self.updateStats(stats)
                   }
