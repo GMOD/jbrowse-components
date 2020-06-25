@@ -29,22 +29,43 @@ interface StatsRegion {
   bpPerPx?: number
 }
 
+class MyCache {
+  private fill: Function
+
+  constructor({ fill }) {
+    this.fill = fill
+  }
+
+  get(key, params) {
+    console.log('here', params)
+    return this.fill(params)
+  }
+}
+
 export default class BigWigAdapter extends BaseFeatureDataAdapter
   implements DataAdapterWithGlobalStats {
   private bigwig: BigWig
 
-  private statsCache = new AbortablePromiseCache({
+  private statsCache = new MyCache({
     cache: new QuickLRU({ maxSize: 1000 }),
     fill: async (
-      args: { refName: string; start: number; end: number; bpPerPx?: number },
+      args: {
+        refName: string
+        start: number
+        end: number
+        bpPerPx?: number
+        headers: Record<string, string>
+      },
       abortSignal?: AbortSignal,
     ) => {
-      const { refName, start, end, bpPerPx } = args
+      console.log('testing')
+      const { refName, start, end, bpPerPx, headers } = args
       const feats = this.getFeatures(
         { refName, start, end },
         {
           signal: abortSignal,
           basesPerSpan: bpPerPx,
+          headers,
         },
       )
       return scoresToStats({ refName, start, end }, feats)
@@ -69,17 +90,19 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
   }
 
   public async getGlobalStats(opts: BaseOptions = {}) {
+    console.log('getGlobalStats')
     const header = await this.bigwig.getHeader(opts.signal)
     return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
   }
 
   // todo: incorporate summary blocks
   public getRegionStats(region: NoAssemblyRegion, opts: BaseOptions = {}) {
+    console.log('getRegionStats')
     const { refName, start, end } = region
-    const { bpPerPx, signal } = opts
+    const { bpPerPx, signal, headers } = opts
     return this.statsCache.get(
       `${refName}_${start}_${end}_${bpPerPx}`,
-      { refName, start, end, bpPerPx },
+      { refName, start, end, bpPerPx, headers },
       signal,
     )
   }
@@ -125,11 +148,12 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
 
   public getFeatures(region: NoAssemblyRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
-    const { signal, bpPerPx } = opts
+    const { signal, bpPerPx, headers } = opts
     return ObservableCreate<Feature>(async observer => {
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
         signal,
         basesPerSpan: bpPerPx,
+        headers,
       })
       ob.pipe(
         mergeAll(),
