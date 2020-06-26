@@ -7,8 +7,6 @@ import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import AbortablePromiseCache from 'abortable-promise-cache'
-import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
 import { map, mergeAll } from 'rxjs/operators'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { Instance } from 'mobx-state-tree'
@@ -22,55 +20,9 @@ import {
 
 import configSchema from './configSchema'
 
-interface StatsRegion {
-  refName: string
-  start: number
-  end: number
-  bpPerPx?: number
-}
-
-class MyCache {
-  private fill: Function
-
-  constructor({ fill }) {
-    this.fill = fill
-  }
-
-  get(key, params) {
-    console.log('here', params)
-    return this.fill(params)
-  }
-}
-
 export default class BigWigAdapter extends BaseFeatureDataAdapter
   implements DataAdapterWithGlobalStats {
   private bigwig: BigWig
-
-  private statsCache = new AbortablePromiseCache({
-    cache: new QuickLRU({ maxSize: 1000 }),
-    fill: async (
-      args: {
-        refName: string
-        start: number
-        end: number
-        bpPerPx?: number
-        headers: Record<string, string>
-      },
-      abortSignal?: AbortSignal,
-    ) => {
-      console.log('testing')
-      const { refName, start, end, bpPerPx, headers } = args
-      const feats = this.getFeatures(
-        { refName, start, end },
-        {
-          signal: abortSignal,
-          basesPerSpan: bpPerPx,
-          headers,
-        },
-      )
-      return scoresToStats({ refName, start, end }, feats)
-    },
-  })
 
   public constructor(config: Instance<typeof configSchema>) {
     super(config)
@@ -79,8 +31,8 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
     })
   }
 
-  public async getRefNames() {
-    const header = await this.bigwig.getHeader()
+  public async getRefNames(opts: BaseOptions = {}) {
+    const header = await this.bigwig.getHeader(opts)
     return Object.keys(header.refsByName)
   }
 
@@ -90,19 +42,14 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
   }
 
   public async getGlobalStats(opts: BaseOptions = {}) {
-    const header = await this.bigwig.getHeader(opts.signal)
+    const header = await this.bigwig.getHeader(opts)
     return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
   }
 
   // todo: incorporate summary blocks
   public getRegionStats(region: NoAssemblyRegion, opts: BaseOptions = {}) {
-    const { refName, start, end } = region
-    const { bpPerPx, signal, headers } = opts
-    return this.statsCache.get(
-      `${refName}_${start}_${end}_${bpPerPx}`,
-      { refName, start, end, bpPerPx, headers },
-      signal,
-    )
+    const feats = this.getFeatures(region, opts)
+    return scoresToStats(region, feats)
   }
 
   // todo: add caching
@@ -114,7 +61,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
       return blankStats()
     }
     const feats = await Promise.all(
-      regions.map(r => this.getRegionStats(r, opts)),
+      regions.map(region => this.getRegionStats(region, opts)),
     )
 
     const scoreMax = feats

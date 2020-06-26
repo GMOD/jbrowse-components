@@ -12,8 +12,8 @@ import { Region, NoAssemblyRegion } from '../util/types'
 export interface BaseOptions {
   signal?: AbortSignal
   bpPerPx?: number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
+  headers?: Record<string, string>
+  [key: string]: unknown
 }
 
 export interface AdapterConstructor {

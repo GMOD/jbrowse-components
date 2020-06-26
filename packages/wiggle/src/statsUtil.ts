@@ -159,7 +159,6 @@ export async function scoresToStats(
     )
     .toPromise()
 
-  console.log('finish scores to stats')
   return rectifyStats({
     scoreMax,
     scoreMin,
@@ -185,7 +184,10 @@ export function blankStats(): FeatureStats {
 }
 
 export interface DataAdapterWithGlobalStats extends BaseFeatureDataAdapter {
-  getGlobalStats(args: { signal?: AbortSignal }): Promise<FeatureStats>
+  getGlobalStats(args: {
+    signal?: AbortSignal
+    headers?: Record<string, string>
+  }): Promise<FeatureStats>
 }
 
 export function dataAdapterSupportsGlobalStats(
@@ -198,7 +200,11 @@ export interface DataAdapterWithMultiRegionStats
   extends BaseFeatureDataAdapter {
   getMultiRegionStats(
     regions: Region[],
-    args: { signal?: AbortSignal; bpPerPx: number },
+    args: {
+      signal?: AbortSignal
+      bpPerPx: number
+      headers?: Record<string, string>
+    },
   ): Promise<FeatureStats>
 }
 
