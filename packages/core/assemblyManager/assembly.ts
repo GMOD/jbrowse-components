@@ -140,18 +140,6 @@ function getAdapterId(adapterConf: unknown) {
 
 type RefNameAliases = Record<string, string[]>
 
-class MyCache {
-  private fill: Function
-
-  constructor({ fill }) {
-    this.fill = fill
-  }
-
-  get(key, params) {
-    console.log('here', params)
-    return this.fill(params)
-  }
-}
 export default function assemblyFactory(assemblyConfigType: IAnyType) {
   interface CacheData {
     adapterConf: unknown
@@ -159,7 +147,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
     self: Assembly
     sessionId: string
   }
-  const adapterLoads = new MyCache({
+  const adapterLoads = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 1000 }),
     async fill(
       { adapterConf, adapterId, self, sessionId }: CacheData,
