@@ -7,9 +7,10 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import HicStraw from 'hic-straw'
 import type { GenericFilehandle } from 'generic-filehandle'
 import MyConfigSchema from './configSchema'
+
+const HicStraw = require('hic-straw')
 
 interface ContactRecord {
   bin1: number
