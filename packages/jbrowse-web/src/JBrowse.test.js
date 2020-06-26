@@ -71,14 +71,14 @@ function getPluginManager(initialState, adminMode = false) {
 
 const getFile = url => new LocalFile(require.resolve(`../${url}`))
 // fakes server responses from local file object with fetchMock
-const readBuffer = async (url, args) => {
+const readBuffer = async request => {
   try {
-    const file = getFile(url)
+    const file = getFile(request.url)
     const maxRangeRequest = 1000000 // kind of arbitrary, part of the rangeParser
-    if (args.headers && 'range' in args.headers) {
-      const range = rangeParser(maxRangeRequest, args.headers.range)
+    if (request.headers.get('range')) {
+      const range = rangeParser(maxRangeRequest, request.headers.get('range'))
       if (range === -2 || range === -1) {
-        throw new Error(`Error parsing range "${args.headers.range}"`)
+        throw new Error(`Error parsing range "${request.headers.get('range')}"`)
       }
       const { start, end } = range[0]
       const len = end - start + 1
@@ -100,7 +100,11 @@ const readBuffer = async (url, args) => {
 
 afterEach(cleanup)
 
-jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
+// jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
+beforeEach(() => {
+  fetch.resetMocks()
+  fetch.mockResponse(readBuffer)
+})
 
 describe('<JBrowse />', () => {
   it('renders with an empty config', async () => {
@@ -411,13 +415,13 @@ describe('test configuration editor', () => {
 describe('reload tests', () => {
   it('reloads alignments track', async () => {
     console.error = jest.fn()
-    jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-      if (url === 'test_data/volvox/volvox-sorted.bam.bai') {
+    fetch.mockResponse(async request => {
+      if (request.url === 'test_data/volvox/volvox-sorted.bam.bai') {
         return {
           status: '404',
         }
       }
-      return readBuffer(url, args)
+      return readBuffer(request)
     })
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
@@ -431,12 +435,12 @@ describe('reload tests', () => {
       await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
     )
 
-    await expect(findAllByText(/HTTP 404 fetching/)).resolves.toBeTruthy()
-    jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
+    await findAllByText(/HTTP 404/)
+    fetch.mockResponse(readBuffer)
     const reload = await findAllByTestId('reload_button')
     fireEvent.click(reload[0])
     await findAllByTestId('prerendered_canvas')
-  }, 20000)
+  })
 })
 
 describe('alignments track', () => {
