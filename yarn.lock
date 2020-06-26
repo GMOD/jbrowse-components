@@ -3680,9 +3680,9 @@ abbrev@1:
   integrity sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==
 
 abortable-promise-cache@^1.0.1, abortable-promise-cache@^1.1.2, abortable-promise-cache@^1.1.3:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/abortable-promise-cache/-/abortable-promise-cache-1.1.3.tgz#8d354779f6583be2250e92aa6306e711318049ef"
-  integrity sha512-yPQiNjcVvDiQ3Y8sexcVDvCnLCtqfKb23SVYfoWxMzKNgk5WuWJhmD6fs5M7Uwor8hN1Ge8Y4+XZHkFV32vX/w==
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/abortable-promise-cache/-/abortable-promise-cache-1.2.0.tgz#cb48bc5583654383d23709cf5d0d5b56d9c8146f"
+  integrity sha512-kKEN5e569SV8br+gqDwMmpglTD2wlJshaBfU97o+5OCYMUQx5terlWTfgb0a0uq1bvt82SrwzEium5gR0n2frQ==
   dependencies:
     "@babel/runtime" "^7.0.0"
     abortcontroller-polyfill "^1.2.9"
