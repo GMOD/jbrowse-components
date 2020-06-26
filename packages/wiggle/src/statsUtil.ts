@@ -159,7 +159,6 @@ export async function scoresToStats(
     )
     .toPromise()
 
-  console.log('finish scores to stats')
   return rectifyStats({
     scoreMax,
     scoreMin,

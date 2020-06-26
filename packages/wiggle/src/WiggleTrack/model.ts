@@ -10,6 +10,7 @@ import {
 import {
   getParentRenderProps,
   getRpcSessionId,
+  getTrackAssemblyNames,
 } from '@gmod/jbrowse-core/util/tracks'
 import blockBasedTrackModel from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
 import { autorun, observable } from 'mobx'
@@ -190,6 +191,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             'WiggleGetMultiRegionStats',
             {
               adapterConfig: getSnapshot(adapter),
+              assemblyName: getTrackAssemblyNames(self)[0],
               regions: JSON.parse(
                 JSON.stringify(
                   dynamicBlocks.contentBlocks.map(region => {

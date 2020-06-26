@@ -163,7 +163,6 @@ export default (pluginManager: PluginManager) => {
           .getFeatures(region, opts)
           .pipe(toArray())
           .toPromise()
-        console.log('prefeat', region, features)
 
         const coverageBins = this.generateCoverageBins(
           features,
