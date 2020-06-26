@@ -21,7 +21,8 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     // because we want to do our own state-group-aware load balancing rather than using librpc's
     // builtin round-robin
     this.makeWorker = (): WebWorkerHandle => {
-      return new WebWorkerHandle({ workers: [new WorkerClass()] })
+      const worker = new WebWorkerHandle({ workers: [new WorkerClass()] })
+      return worker
     }
   }
 }

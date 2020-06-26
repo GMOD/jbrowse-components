@@ -18,6 +18,7 @@ import SerializableFilterChain, {
   SerializedFilterChain,
 } from './util/serializableFilterChain'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
+import RpcManager from '../../../rpc/RpcManager'
 
 interface BaseRenderArgs {
   blockKey: string
@@ -152,7 +153,7 @@ export default class ServerSideRenderer extends RendererType {
    * Render method called on the client. Serializes args, then
    * calls `render` with the RPC manager.
    */
-  async renderInClient(rpcManager: { call: Function }, args: RenderArgs) {
+  async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
     const result = await rpcManager.call(
@@ -261,7 +262,7 @@ export default class ServerSideRenderer extends RendererType {
     )
   }
 
-  freeResourcesInClient(rpcManager: { call: Function }, args: RenderArgs) {
+  freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
     return rpcManager.call(args.sessionId, 'CoreFreeResources', serializedArgs)

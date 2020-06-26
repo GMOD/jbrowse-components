@@ -176,6 +176,7 @@ export default abstract class BaseRpcDriver {
     args: {},
     options = {},
   ) {
+    console.log(args, options)
     if (!sessionId) {
       throw new TypeError('sessionId is required')
     }
@@ -187,6 +188,11 @@ export default abstract class BaseRpcDriver {
       pluginManager,
       sessionId,
     )
+
+    worker.on(`message-${sessionId}`, data => {
+      options.statusCallback(data)
+    })
+
     const result = await worker.call(functionName, filteredAndSerializedArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes
       ...options,

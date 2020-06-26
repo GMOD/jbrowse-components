@@ -48,7 +48,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   private async setup(opts?: BaseOptions) {
     if (Object.keys(this.samHeader).length === 0) {
+      self.rpcServer.emit('message', 'loading index')
       const samHeader = await this.bam.getHeader(opts?.signal)
+      self.rpcServer.emit('message', 'done loading index')
 
       // use the @SQ lines in the header to figure out the
       // mapping between ref ref ID numbers and names
