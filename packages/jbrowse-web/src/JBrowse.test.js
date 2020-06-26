@@ -408,28 +408,35 @@ describe('test configuration editor', () => {
 })
 
 // TODORELOAD finish test
-xdescribe('reload tests', () => {
-  it('recovers from 404 error', async () => {
-    it('opens an alignments track', async () => {
-      jest.spyOn(global, 'fetch').mockImplementation(() => {
-        '404'
-      })
-      const pluginManager = getPluginManager()
-      const state = pluginManager.rootModel
-      const { findByTestId, findByText, findAllByTestId } = render(
-        <JBrowse pluginManager={pluginManager} />,
-      )
-      await findByText('Help')
-      state.session.views[0].setNewView(5, 100)
-
-      await findByText('404')
-      jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
-      const reload = await findByTestId('reload_button')
-      fireEvent.click(reload)
-
-      // expect track to load
+describe('reload tests', () => {
+  it('reloads alignments track', async () => {
+    console.error = jest.fn()
+    jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
+      if (url === 'test_data/volvox/volvox-sorted.bam.bai') {
+        return {
+          status: '404',
+        }
+      }
+      return readBuffer(url, args)
     })
-  })
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+
+    const { findByTestId, findByText, findAllByTestId, findAllByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(5, 100)
+    fireEvent.click(
+      await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+    )
+
+    await expect(findAllByText(/HTTP 404 fetching/)).resolves.toBeTruthy()
+    jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
+    const reload = await findAllByTestId('reload_button')
+    fireEvent.click(reload[0])
+    await findAllByTestId('prerendered_canvas')
+  }, 20000)
 })
 
 describe('alignments track', () => {
