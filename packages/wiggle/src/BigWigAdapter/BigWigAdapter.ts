@@ -7,8 +7,6 @@ import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import AbortablePromiseCache from 'abortable-promise-cache'
-import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
 import { map, mergeAll } from 'rxjs/operators'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { Instance } from 'mobx-state-tree'
@@ -25,28 +23,6 @@ import configSchema from './configSchema'
 export default class BigWigAdapter extends BaseFeatureDataAdapter
   implements DataAdapterWithGlobalStats {
   private bigwig: BigWig
-
-  private statsCache = new AbortablePromiseCache({
-    cache: new QuickLRU({ maxSize: 1000 }),
-    fill: async (
-      args: {
-        refName: string
-        start: number
-        end: number
-        bpPerPx?: number
-        headers?: Record<string, string>
-        [key: string]: unknown
-      },
-      signal?: AbortSignal,
-    ) => {
-      const { refName, start, end } = args
-      const feats = this.getFeatures(
-        { refName, start, end },
-        { ...args, signal },
-      )
-      return scoresToStats({ refName, start, end }, feats)
-    },
-  })
 
   public constructor(config: Instance<typeof configSchema>) {
     super(config)
@@ -72,13 +48,8 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
 
   // todo: incorporate summary blocks
   public getRegionStats(region: NoAssemblyRegion, opts: BaseOptions = {}) {
-    const { refName, start, end } = region
-    const { bpPerPx, signal, headers } = opts
-    return this.statsCache.get(
-      `${refName}_${start}_${end}_${bpPerPx}_${headers}`,
-      { refName, start, end, ...opts },
-      signal,
-    )
+    const feats = this.getFeatures(region, opts)
+    return scoresToStats(region, feats)
   }
 
   // todo: add caching

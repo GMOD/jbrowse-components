@@ -238,16 +238,12 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           self.setError('')
 
           const aborter = new AbortController()
-          console.log('here')
           const stats = await getStats({
             signal: aborter.signal,
             headers: { cache: 'no-store,no-cache' },
           })
           self.updateStats(stats)
           superReload()
-
-          // if it does not hit the ping timeout, reloading the snp coverage track is successful
-          // only fails if worker/ping timesouts before completion. usually, fails on corerender now
         },
         afterAttach() {
           addDisposer(
