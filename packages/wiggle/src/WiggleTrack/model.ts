@@ -155,7 +155,6 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         headers?: Record<string, string>
         signal?: AbortSignal
       }): Promise<FeatureStats> {
-        console.log(opts)
         const { rpcManager } = getSession(self)
         const nd = getConf(self, 'numStdDev')
         const autoscaleType = getConf(self, 'autoscale', [])
@@ -191,7 +190,18 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             'WiggleGetMultiRegionStats',
             {
               adapterConfig: getSnapshot(adapter),
-              regions: JSON.parse(JSON.stringify(dynamicBlocks.contentBlocks)),
+              regions: JSON.parse(
+                JSON.stringify(
+                  dynamicBlocks.contentBlocks.map(region => {
+                    const { start, end } = region
+                    return {
+                      ...region,
+                      start: Math.floor(start),
+                      end: Math.ceil(end),
+                    }
+                  }),
+                ),
+              ),
               sessionId,
               bpPerPx,
               ...opts,

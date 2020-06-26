@@ -127,10 +127,9 @@ export default (pluginManager: PluginManager) => {
       }
 
       const feats = await Promise.all(
-        regions.map((region, index) => this.getRegionStats(region, opts)),
+        regions.map(region => this.getRegionStats(region, opts)),
       )
 
-      console.log(feats)
       const scoreMax = feats
         .map(s => s.scoreMax)
         .reduce((acc, curr) => Math.max(acc, curr))
@@ -148,7 +147,6 @@ export default (pluginManager: PluginManager) => {
         .map(s => s.basesCovered)
         .reduce((a, b) => a + b, 0)
 
-      console.log('finish stats')
       return rectifyStats({
         scoreMin,
         scoreMax,
@@ -165,13 +163,14 @@ export default (pluginManager: PluginManager) => {
           .getFeatures(region, opts)
           .pipe(toArray())
           .toPromise()
+        console.log('prefeat', region, features)
 
         const coverageBins = this.generateCoverageBins(
           features,
           region,
           opts.bpPerPx || 1,
         )
-        coverageBins.forEach((bin: NestedFrequencyTable, index: number) => {
+        coverageBins.forEach((bin, index) => {
           observer.next(
             new SimpleFeature({
               id: `pos_${region.start}${index}`,
