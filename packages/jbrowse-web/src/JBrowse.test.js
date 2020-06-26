@@ -406,6 +406,32 @@ describe('test configuration editor', () => {
     })
   }, 10000)
 })
+
+// TODORELOAD finish test
+xdescribe('reload tests', () => {
+  it('recovers from 404 error', async () => {
+    it('opens an alignments track', async () => {
+      jest.spyOn(global, 'fetch').mockImplementation(() => {
+        '404'
+      })
+      const pluginManager = getPluginManager()
+      const state = pluginManager.rootModel
+      const { findByTestId, findByText, findAllByTestId } = render(
+        <JBrowse pluginManager={pluginManager} />,
+      )
+      await findByText('Help')
+      state.session.views[0].setNewView(5, 100)
+
+      await findByText('404')
+      jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
+      const reload = await findByTestId('reload_button')
+      fireEvent.click(reload)
+
+      // expect track to load
+    })
+  })
+})
+
 describe('alignments track', () => {
   it('opens an alignments track', async () => {
     const pluginManager = getPluginManager()

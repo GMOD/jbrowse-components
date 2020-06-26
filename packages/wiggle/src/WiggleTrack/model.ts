@@ -244,6 +244,8 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           })
           self.updateStats(stats)
           superReload()
+
+          // recover refnames somewhere
         },
         afterAttach() {
           addDisposer(
