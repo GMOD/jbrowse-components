@@ -74,7 +74,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
   public getRegionStats(region: NoAssemblyRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
     const { bpPerPx, signal, headers } = opts
-    console.log('getRegionStats', opts)
     return this.statsCache.get(
       `${refName}_${start}_${end}_${bpPerPx}_${headers}`,
       { refName, start, end, ...opts },
@@ -90,7 +89,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
     if (!regions.length) {
       return blankStats()
     }
-    console.log('getMulti')
     const feats = await Promise.all(
       regions.map(region => this.getRegionStats(region, opts)),
     )
@@ -125,7 +123,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
   public getFeatures(region: NoAssemblyRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
     const { signal, bpPerPx, headers } = opts
-    console.log(headers)
     return ObservableCreate<Feature>(async observer => {
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
         signal,

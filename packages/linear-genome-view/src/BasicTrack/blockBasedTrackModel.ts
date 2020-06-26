@@ -239,7 +239,6 @@ const blockBasedTrack = types
     reload() {
       // might be able to fail by using volvox data
       // move bam to separatre location to fail then move it back before reloading
-      console.log('calling general reload')
       const temp = JSON.parse(JSON.stringify(self.blockState))
       Object.keys(temp).forEach(blockState => {
         temp[blockState].key += '-reload'
