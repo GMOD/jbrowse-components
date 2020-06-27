@@ -415,7 +415,6 @@ describe('test configuration editor', () => {
   }, 10000)
 })
 
-// TODORELOAD finish test
 describe('reload tests', () => {
   // beforeEach(() => {
   //   fetch.mockResponse(async request => {
@@ -436,16 +435,9 @@ describe('reload tests', () => {
       return readBuffer(request)
     })
 
-    const {
-      container,
-      findByTestId,
-      findByText,
-      findAllByTestId,
-      findAllByText,
-    } = render(<JBrowse pluginManager={pluginManager} />)
-    function timeout(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms))
-    }
+    const { findByTestId, findByText, findAllByTestId, findAllByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
     await findByText('Help')
     state.session.views[0].setNewView(5, 100)
     fireEvent.click(
@@ -453,15 +445,10 @@ describe('reload tests', () => {
         'htsTrackEntry-volvox_alignments_pileup_coverage_reload',
       ),
     )
-
-    // await timeout(1000)
-    // expect(container).toMatchSnapshot()
-
     await findAllByText(/HTTP 404/, {}, { timeout: 5000 })
     fetch.mockResponse(readBuffer)
-    // fetch.mockResponse(readBuffer)
-    // const reload = await findAllByTestId('reload_button')
-    // fireEvent.click(reload[0])
+    const buttons = await findAllByTestId('reload_button')
+    fireEvent.click(buttons[0])
     await findAllByTestId('prerendered_canvas')
   }, 10000)
 })
