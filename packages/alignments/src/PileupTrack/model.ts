@@ -144,6 +144,16 @@ const stateModelFactory = (
         self.sortedByRefName = centerRefName
       },
     }))
+    .actions(self => {
+      const superReload = self.reload
+      return {
+        reload() {
+          console.log('pileup reload')
+          self.clearSelected()
+          superReload()
+        },
+      }
+    })
     .views(self => ({
       get rendererTypeName() {
         const viewName = getConf(self, 'defaultRendering')

@@ -237,17 +237,13 @@ const blockBasedTrack = types
       self.featureIdUnderMouse = feature
     },
     reload() {
-      // might be able to fail by using volvox data
-      // move bam to separatre location to fail then move it back before reloading
+      console.log('general reload')
+      console.log(self)
       const temp = JSON.parse(JSON.stringify(self.blockState))
       Object.keys(temp).forEach(blockState => {
         temp[blockState].key += '-reload'
       })
       self.blockState = temp
-      // invalidates from mst view
-
-      // since it is a full track reload, is still prone to timeout since so much data
-      // re-render block can recover better since it is not reloading whole track
     },
   }))
   .actions(self => ({

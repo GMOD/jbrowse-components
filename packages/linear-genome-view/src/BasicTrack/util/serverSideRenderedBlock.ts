@@ -145,13 +145,6 @@ const blockState = types
         self.renderingComponent = undefined
         self.renderProps = undefined
         getParent(self, 2).reload()
-        // const data = renderBlockData(self as any)
-        // renderBlockEffect(cast(self), data)
-        // console.log(JSON.stringify(self))
-        // TODORELOAD: here is where the reload is called, maybe do a full track redraw, probably need to write action on base track if its a track redraw
-        // log some stuff in reload and see what difference there is between pileup and coverage
-        // pileup might have to clear sort when doing reload, aka making sortObject = { position: undefined, sortedBy: undefined} or fire the one shot render command again after reloading
-        // wiggle on reload, you run wigglegetregionstats and then the render
       },
       beforeDestroy() {
         if (renderInProgress && !renderInProgress.signal.aborted) {
