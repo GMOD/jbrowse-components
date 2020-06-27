@@ -75,7 +75,7 @@ OPTIONS
   -n, --name=name
       Name of the assembly; if not specified, will be guessed using the sequence file name
 
-  -t, --type=indexedFasta|bgzipFasta|twoBit|chromSizes|fromConfig
+  -t, --type=indexedFasta|bgzipFasta|twoBit|chromSizes|custom
       type of sequence, by default inferred from sequence file
 
       indexedFasta   An index FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation
@@ -83,7 +83,7 @@ OPTIONS
       --faiLocation and/or --gziLocation
       twoBit         A twoBit (e.g. .2bit) file
       chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
-      fromConfig     A JBrowse 2 FromConfigAdapter configuration, either a file location or inline JSON; must provide
+      custom         Either a JSON file location or inline JSON that defines a custom sequence adapter; must provide
       --name if using inline JSON
 
   --faiLocation=faiLocation
@@ -99,8 +99,9 @@ OPTIONS
       Reference sequence name aliases file or URL; assumed to be a tab-separated aliases file unless --refNameAliasesType
       is specified
 
-  --refNameAliasesType=aliases|fromConfig
-      Reference sequence name aliases file or URL
+  --refNameAliasesType=aliases|custom
+      Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either a JSON file location or inline
+      JSON that defines a custom sequence adapter
 
   --refNameColors=refNameColors
       A comma-separated list of color strings for the reference sequence names; will cycle through colors if there are

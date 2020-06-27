@@ -32,14 +32,8 @@ indexedFasta   An index FASTA (e.g. .fa or .fasta) file; can optionally specify 
 bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify --faiLocation and/or --gziLocation
 twoBit         A twoBit (e.g. .2bit) file
 chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
-fromConfig     A JBrowse 2 FromConfigAdapter configuration, either a file location or inline JSON; must provide --name if using inline JSON`,
-      options: [
-        'indexedFasta',
-        'bgzipFasta',
-        'twoBit',
-        'chromSizes',
-        'fromConfig',
-      ],
+custom         Either a JSON file location or inline JSON that defines a custom sequence adapter; must provide --name if using inline JSON`,
+      options: ['indexedFasta', 'bgzipFasta', 'twoBit', 'chromSizes', 'custom'],
     }),
     config: flags.string({
       char: 'c',
@@ -70,23 +64,18 @@ fromConfig     A JBrowse 2 FromConfigAdapter configuration, either a file locati
         'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases file unless --refNameAliasesType is specified',
     }),
     refNameAliasesType: flags.string({
-      description: 'Reference sequence name aliases file or URL',
-      options: ['aliases', 'fromConfig'],
+      description:
+        'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either a JSON file location or inline JSON that defines a custom sequence adapter',
+      options: ['aliases', 'custom'],
       dependsOn: ['refNameAliases'],
     }),
     refNameColors: flags.string({
       description:
         'A comma-separated list of color strings for the reference sequence names; will cycle through colors if there are fewer colors than sequences',
     }),
-    // copy: flags.boolean({
-    //   description:
-    //     'Copy the sequence file(s) to the same directory as the config instead of using in place',
-    //   exclusive: ['skipCheck', 'force'],
-    // }),
     help: flags.help({ char: 'h' }),
     skipCheck: flags.boolean({
       description: "Don't check whether or not the sequence file or URL exists",
-      // exclusive: ['copy'],
     }),
     overwrite: flags.boolean({
       description:
@@ -95,7 +84,6 @@ fromConfig     A JBrowse 2 FromConfigAdapter configuration, either a file locati
     force: flags.boolean({
       char: 'f',
       description: 'Equivalent to `--skipCheck --overwrite`',
-      // exclusive: ['copy'],
     }),
   }
 
