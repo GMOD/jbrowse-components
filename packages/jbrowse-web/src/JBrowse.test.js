@@ -119,7 +119,11 @@ describe('<JBrowse />', () => {
   })
 })
 
-describe('valid file tests', () => {
+describe('valid file tests reload', () => {
+  beforeEach(() => {
+    fetch.resetMocks()
+    fetch.mockResponse(readBuffer)
+  })
   it('access about menu', async () => {
     const pluginManager = getPluginManager()
     const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
@@ -413,34 +417,53 @@ describe('test configuration editor', () => {
 
 // TODORELOAD finish test
 describe('reload tests', () => {
+  // beforeEach(() => {
+  //   fetch.mockResponse(async request => {
+  //     console.log('wtf', request.url)
+
+  //     return readBuffer(request)
+  //   })
+  // })
   it('reloads alignments track', async () => {
     console.error = jest.fn()
+
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
     fetch.mockResponse(async request => {
-      if (request.url === 'test_data/volvox/volvox-sorted.bam.bai') {
-        return {
-          status: '404',
-        }
+      if (request.url === 'test_data/volvox/volvox-reload.bam.bai') {
+        return { status: 404 }
       }
       return readBuffer(request)
     })
-    const pluginManager = getPluginManager()
-    const state = pluginManager.rootModel
 
-    const { findByTestId, findByText, findAllByTestId, findAllByText } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
+    const {
+      container,
+      findByTestId,
+      findByText,
+      findAllByTestId,
+      findAllByText,
+    } = render(<JBrowse pluginManager={pluginManager} />)
+    function timeout(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms))
+    }
     await findByText('Help')
     state.session.views[0].setNewView(5, 100)
     fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+      await findByTestId(
+        'htsTrackEntry-volvox_alignments_pileup_coverage_reload',
+      ),
     )
 
-    await findAllByText(/HTTP 404/)
+    // await timeout(1000)
+    // expect(container).toMatchSnapshot()
+
+    await findAllByText(/HTTP 404/, {}, { timeout: 5000 })
     fetch.mockResponse(readBuffer)
-    const reload = await findAllByTestId('reload_button')
-    fireEvent.click(reload[0])
+    // fetch.mockResponse(readBuffer)
+    // const reload = await findAllByTestId('reload_button')
+    // fireEvent.click(reload[0])
     await findAllByTestId('prerendered_canvas')
-  })
+  }, 10000)
 })
 
 describe('alignments track', () => {

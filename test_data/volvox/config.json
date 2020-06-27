@@ -223,6 +223,35 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "volvox_alignments_pileup_coverage_reload",
+      "name": "volvox-sorted.bam (ctgA, canvas, reload test)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "test_data/volvox/volvox-reload.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/volvox/volvox-reload.bam.bai"
+          }
+        }
+      },
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer"
+        },
+        "SNPCoverageRenderer": {
+          "type": "SNPCoverageRenderer"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "volvox_alignments_pileup_coverage",
       "name": "volvox-sorted.bam (ctgA, canvas)",
       "category": ["Integration test"],
