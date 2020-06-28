@@ -148,7 +148,6 @@ const stateModelFactory = (
       const superReload = self.reload
       return {
         reload() {
-          console.log('pileup reload')
           self.clearSelected()
           superReload()
         },
