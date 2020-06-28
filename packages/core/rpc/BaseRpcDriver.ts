@@ -189,7 +189,6 @@ export default abstract class BaseRpcDriver {
     )
     const result = await worker.call(functionName, filteredAndSerializedArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes
-      // timeout: 5 * 1000, // 5 seconds TODORELOAD change this back when done!!!!
       ...options,
     })
     return rpcMethod.deserializeReturn(result)
