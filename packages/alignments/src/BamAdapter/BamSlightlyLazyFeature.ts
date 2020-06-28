@@ -3,29 +3,22 @@ import {
   Feature,
   SimpleFeatureSerialized,
 } from '@gmod/jbrowse-core/util/simpleFeature'
+import { BamRecord } from '@gmod/bam'
+import {
+  parseCigar,
+  cigarToMismatches,
+  mdToMismatches,
+  Mismatch,
+} from './MismatchParser'
 
 import BamAdapter from './BamAdapter'
 
-export interface Mismatch {
-  start: number
-  length: number
-  type: string
-  base: string
-  altbase?: string
-  seq?: string
-  cliplen?: number
-}
-
-type CigarOp = [string, number]
-
 export default class implements Feature {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private record: any
+  private record: BamRecord
 
   private adapter: BamAdapter
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(record: any, adapter: BamAdapter) {
+  constructor(record: BamRecord, adapter: BamAdapter) {
     this.record = record
     this.adapter = adapter
   }
@@ -51,10 +44,12 @@ export default class implements Feature {
   }
 
   _get_mapping_quality(): number {
+    // @ts-ignore
     return this.record.mappingQuality
   }
 
   _get_flags(): string {
+    // @ts-ignore
     return `0x${this.record.flags.toString(16)}`
   }
 
@@ -63,6 +58,7 @@ export default class implements Feature {
   }
 
   _get_read_group_id(): number {
+    // @ts-ignore
     return this.record.readGroupId
   }
 
@@ -75,7 +71,7 @@ export default class implements Feature {
   }
 
   _get_refname(): string | undefined {
-    return this.adapter.refIdToName(this.record._refID)
+    return this.adapter.refIdToName(this.record.seq_id())
   }
 
   _get_qc_failed(): boolean {
@@ -208,13 +204,15 @@ export default class implements Feature {
   ): Mismatch[] {
     const { cigarAttributeName } = opts
     let mismatches: Mismatch[] = []
-    let cigarOps: CigarOp[] = []
+    let cigarOps: string[] = []
 
     // parse the CIGAR tag if it has one
     const cigarString = this.get(cigarAttributeName)
     if (cigarString) {
-      cigarOps = this.parseCigar(cigarString)
-      mismatches = mismatches.concat(this.cigarToMismatches(cigarOps))
+      cigarOps = parseCigar(cigarString)
+      mismatches = mismatches.concat(
+        cigarToMismatches(cigarOps, this.get('seq')),
+      )
     }
     return mismatches
   }
@@ -230,20 +228,22 @@ export default class implements Feature {
   ): Mismatch[] {
     const { cigarAttributeName, mdAttributeName } = opts
     let mismatches: Mismatch[] = []
-    let cigarOps: CigarOp[] = []
+    let cigarOps: string[] = []
 
     // parse the CIGAR tag if it has one
     const cigarString = this.get(cigarAttributeName)
     if (cigarString) {
-      cigarOps = this.parseCigar(cigarString)
-      mismatches = mismatches.concat(this.cigarToMismatches(cigarOps))
+      cigarOps = parseCigar(cigarString)
+      mismatches = mismatches.concat(
+        cigarToMismatches(cigarOps, this.get('seq')),
+      )
     }
 
     // now let's look for CRAM or MD mismatches
     const mdString = this.get(mdAttributeName)
     if (mdString) {
       mismatches = mismatches.concat(
-        this.mdToMismatches(mdString, cigarOps, mismatches),
+        mdToMismatches(mdString, cigarOps, mismatches, this.get('seq')),
       )
     }
 
@@ -262,171 +262,5 @@ export default class implements Feature {
     return this.get('strand') === -1
       ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
       : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
-  }
-
-  private cigarToMismatches(ops: CigarOp[]): Mismatch[] {
-    let currOffset = 0
-    let seqOffset = 0
-    const seq = this.get('seq')
-    const mismatches: Mismatch[] = []
-    ops.forEach(oprec => {
-      const op = oprec[0]
-      const len = oprec[1]
-      if (op === 'M' || op === '=' || op === 'E') {
-        seqOffset += len
-      }
-      if (op === 'I') {
-        // GAH: shouldn't length of insertion really by 0, since JBrowse internally uses zero-interbase coordinates?
-        mismatches.push({
-          start: currOffset,
-          type: 'insertion',
-          base: `${len}`,
-          length: 1,
-        })
-        seqOffset += len
-      } else if (op === 'D') {
-        mismatches.push({
-          start: currOffset,
-          type: 'deletion',
-          base: '*',
-          length: len,
-        })
-      } else if (op === 'N') {
-        mismatches.push({
-          start: currOffset,
-          type: 'skip',
-          base: 'N',
-          length: len,
-        })
-      } else if (op === 'X') {
-        const r = seq.slice(seqOffset, seqOffset + len)
-        for (let i = 0; i < len; i++) {
-          mismatches.push({
-            start: currOffset + i,
-            type: 'mismatch',
-            base: r[i],
-            length: 1,
-          })
-        }
-        seqOffset += len
-      } else if (op === 'H') {
-        mismatches.push({
-          start: currOffset,
-          type: 'hardclip',
-          base: `H${len}`,
-          cliplen: len,
-          length: 1,
-        })
-      } else if (op === 'S') {
-        mismatches.push({
-          start: currOffset,
-          type: 'softclip',
-          base: `S${len}`,
-          cliplen: len,
-          length: 1,
-        })
-        seqOffset += len
-      }
-
-      if (op !== 'I' && op !== 'S' && op !== 'H') {
-        currOffset += len
-      }
-    })
-    return mismatches
-  }
-
-  private parseCigar(cigar: string): CigarOp[] {
-    return (cigar.toUpperCase().match(/\d+\D/g) || []).map((op: string) => {
-      // @ts-ignore
-      return [op.match(/\D/)[0], parseInt(op, 10)]
-    })
-  }
-
-  /**
-   * parse a SAM MD tag to find mismatching bases of the template versus the reference
-   * @returns array of mismatches and their positions
-   */
-  private mdToMismatches(
-    mdstring: string,
-    cigarOps: CigarOp[],
-    cigarMismatches: Mismatch[],
-  ): Mismatch[] {
-    const mismatchRecords: Mismatch[] = []
-    let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
-
-    // convert a position on the reference sequence to a position
-    // on the template sequence, taking into account hard and soft
-    // clipping of reads
-
-    function nextRecord(): void {
-      // correct the start of the current mismatch if it comes after a cigar skip
-      ;(cigarMismatches || []).forEach((mismatch: Mismatch) => {
-        if (mismatch.type === 'skip' && curr.start >= mismatch.start) {
-          curr.start += mismatch.length
-        }
-      })
-
-      // record it
-      mismatchRecords.push(curr)
-
-      // get a new mismatch record ready
-      curr = {
-        start: curr.start + curr.length,
-        length: 0,
-        base: '',
-        type: 'mismatch',
-      }
-    }
-
-    const seq = this.get('seq')
-
-    // now actually parse the MD string
-    ;(mdstring.match(/(\d+|\^[a-z]+|[a-z])/gi) || []).forEach(token => {
-      if (token.match(/^\d/)) {
-        // matching bases
-        curr.start += parseInt(token, 10)
-      } else if (token.match(/^\^/)) {
-        // insertion in the template
-        curr.length = token.length - 1
-        curr.base = '*'
-        curr.type = 'deletion'
-        curr.seq = token.substring(1)
-        nextRecord()
-      } else if (token.match(/^[a-z]/i)) {
-        // mismatch
-        for (let i = 0; i < token.length; i += 1) {
-          curr.length = 1
-          curr.base = seq
-            ? seq.substr(
-                cigarOps
-                  ? this.getTemplateCoord(curr.start, cigarOps)
-                  : curr.start,
-                1,
-              )
-            : 'X'
-          curr.altbase = token
-          nextRecord()
-        }
-      }
-    })
-    return mismatchRecords
-  }
-
-  private getTemplateCoord(refCoord: number, cigarOps: CigarOp[]): number {
-    let templateOffset = 0
-    let refOffset = 0
-    for (let i = 0; i < cigarOps.length && refOffset <= refCoord; i += 1) {
-      const op = cigarOps[i][0]
-      const len = cigarOps[i][1]
-      if (op === 'S' || op === 'I') {
-        templateOffset += len
-      } else if (op === 'D' || op === 'P') {
-        refOffset += len
-      } else {
-        templateOffset += len
-        refOffset += len
-      }
-    }
-    return templateOffset - (refOffset - refCoord)
   }
 }

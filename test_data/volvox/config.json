@@ -1,11 +1,8 @@
 {
-  "configuration": {},
   "assemblies": [
     {
       "name": "volvox",
-      "aliases": [
-        "vvx"
-      ],
+      "aliases": ["vvx"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "volvox_refseq",
@@ -26,18 +23,12 @@
             {
               "refName": "ctgA",
               "uniqueId": "alias1",
-              "aliases": [
-                "A",
-                "contigA"
-              ]
+              "aliases": ["A", "contigA"]
             },
             {
               "refName": "ctgB",
               "uniqueId": "alias2",
-              "aliases": [
-                "B",
-                "contigB"
-              ]
+              "aliases": ["B", "contigB"]
             }
           ]
         }
@@ -49,9 +40,7 @@
       "type": "StructuralVariantChordTrack",
       "trackId": "volvox_chord_test",
       "name": "volvox chord test",
-      "assemblyNames": [
-        "volvox"
-      ],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -71,12 +60,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram_alignments",
       "name": "volvox-sorted.cram (contigA, AlignmentsTrack)",
-      "category": [
-        "Integration test"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -97,12 +82,8 @@
       "type": "PileupTrack",
       "trackId": "volvox_cram_pileup",
       "name": "volvox-sorted.cram (contigA, PileupTrack)",
-      "category": [
-        "Integration test"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -123,12 +104,8 @@
       "type": "SNPCoverageTrack",
       "trackId": "volvox_cram_snpcoverage",
       "name": "volvox-sorted.cram (contigA, SNPCoverage)",
-      "category": [
-        "Integration test"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "SNPCoverageAdapter",
         "subadapter": {
@@ -152,12 +129,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram_alignments_ctga",
       "name": "volvox-sorted.cram (ctgA, AlignmentsTrack)",
-      "category": [
-        "Integration test"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -178,12 +151,8 @@
       "type": "PileupTrack",
       "trackId": "volvox_cram_pileup_ctga",
       "name": "volvox-sorted.cram (ctgA, PileupTrack)",
-      "category": [
-        "Integration test"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -204,12 +173,8 @@
       "type": "SNPCoverageTrack",
       "trackId": "volvox_cram_snpcoverage_ctga",
       "name": "volvox-sorted.cram (ctgA, SNPCoverage)",
-      "category": [
-        "Integration test"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "SNPCoverageAdapter",
         "subadapter": {
@@ -233,12 +198,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox_alignments",
       "name": "volvox-sorted.bam (ctgA, svg)",
-      "category": [
-        "Integration test"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -264,12 +225,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox_alignments_pileup_coverage",
       "name": "volvox-sorted.bam (ctgA, canvas)",
-      "category": [
-        "Integration test"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -297,12 +254,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox_bam_altname",
       "name": "volvox-sorted.bam (contigA)",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Integration test"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Integration test"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -328,12 +281,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox_bam_small_max_height",
       "name": "volvox-sorted.bam (small max height)",
-      "category": [
-        "Integration test"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -359,12 +308,8 @@
       "type": "VariantTrack",
       "trackId": "volvox_test_vcf",
       "name": "volvox 1000genomes vcf",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "VCF"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["VCF"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -381,12 +326,8 @@
       "type": "VariantTrack",
       "trackId": "volvox_filtered_vcf",
       "name": "volvox filtered vcf",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "VCF"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["VCF"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -412,12 +353,8 @@
       "type": "BasicTrack",
       "trackId": "nclist_long_names",
       "name": "nclist with long names/descriptions",
-      "category": [
-        "Integration test"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": "test_data/volvox/volvox_long_names_nclist/{refseq}/trackData.json"
@@ -430,12 +367,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox_alignments_bam_nonexist",
       "name": "volvox-sorted.bam (bam nonexist 404)",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Integration test"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Integration test"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -452,12 +385,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox_alignments_bai_nonexist",
       "name": "volvox-sorted.bam (bai nonexist 404)",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Integration test"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Integration test"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -482,12 +411,8 @@
       "type": "WiggleTrack",
       "trackId": "volvox_bigwig_nonexist",
       "name": "wiggle_track 404",
-      "category": [
-        "Integration test"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -499,12 +424,8 @@
       "type": "WiggleTrack",
       "trackId": "volvox_microarray",
       "name": "wiggle_track xyplot",
-      "category": [
-        "Integration test"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -527,12 +448,8 @@
       "type": "WiggleTrack",
       "trackId": "volvox_microarray_line",
       "name": "wiggle_track lineplot",
-      "category": [
-        "Integration test"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -556,12 +473,8 @@
       "type": "WiggleTrack",
       "trackId": "volvox_microarray_density",
       "name": "wiggle_track density",
-      "category": [
-        "Integration test"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -585,12 +498,8 @@
       "type": "WiggleTrack",
       "trackId": "volvox_microarray_density_altname",
       "name": "wiggle_track density (altname)",
-      "category": [
-        "Integration test"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -613,12 +522,8 @@
       "type": "DynamicTrack",
       "trackId": "lollipop_track",
       "name": "Lollipop track",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Miscellaneous"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Miscellaneous"],
       "adapter": {
         "type": "FromConfigAdapter",
         "features": [
@@ -668,12 +573,8 @@
       "type": "DynamicTrack",
       "trackId": "FDN0zpD_B6",
       "name": "Lollipop track",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Miscellaneous"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Miscellaneous"],
       "adapter": {
         "type": "FromConfigAdapter",
         "features": [
@@ -723,12 +624,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox-long-reads-sv-bam",
       "name": "volvox-long reads with SV",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Alignments"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Alignments"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -753,12 +650,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox-long-reads-sv-cram",
       "name": "volvox-long reads with SV (cram)",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Alignments"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Alignments"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -787,12 +680,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox-long-reads-cram",
       "name": "volvox-long reads (cram)",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Alignments"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Alignments"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -821,12 +710,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox-long-reads-bam",
       "name": "volvox-long reads",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Alignments"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Alignments"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -851,12 +736,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox_samspec_cram",
       "name": "volvox-samspec (cram)",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Alignments"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Alignments"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -885,12 +766,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox_samspec",
       "name": "volvox-samspec",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Alignments"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Alignments"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -915,12 +792,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox_sv_cram",
       "name": "volvox-sv (cram)",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Alignments"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Alignments"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -949,12 +822,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox_sv",
       "name": "volvox-sv",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Alignments"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Alignments"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -978,13 +847,9 @@
     {
       "type": "BasicTrack",
       "trackId": "gff3tabix_genes",
-      "assemblyNames": [
-        "volvox"
-      ],
+      "assemblyNames": ["volvox"],
       "name": "GFF3Tabix genes",
-      "category": [
-        "Miscellaneous"
-      ],
+      "category": ["Miscellaneous"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -1004,12 +869,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram",
       "name": "volvox-sorted.cram",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Alignments"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Alignments"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -1038,12 +899,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox_bam",
       "name": "volvox-sorted.bam",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Alignments"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Alignments"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -1071,12 +928,8 @@
       "type": "VariantTrack",
       "trackId": "TBggZ1Rwy_p",
       "name": "volvox filtered vcf",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Variants"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Variants"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1101,12 +954,8 @@
       "type": "BasicTrack",
       "trackId": "bigbed_genes",
       "name": "BigBed genes",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Miscellaneous"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Miscellaneous"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -1121,12 +970,8 @@
       "type": "BasicTrack",
       "trackId": "bedtabix_genes",
       "name": "BedTabix genes",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Miscellaneous"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Miscellaneous"],
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
@@ -1147,12 +992,8 @@
       "type": "FilteringTrack",
       "trackId": "gp2w9yFU-MS",
       "name": "Filter track",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Miscellaneous"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Miscellaneous"],
       "adapter": {
         "type": "FromConfigAdapter",
         "features": [
@@ -1197,23 +1038,14 @@
       "renderer": {
         "type": "SvgFeatureRenderer"
       },
-      "filterAttributes": [
-        "type",
-        "start",
-        "end"
-      ]
+      "filterAttributes": ["type", "start", "end"]
     },
     {
       "type": "WiggleTrack",
       "trackId": "LrM3WWJR0tj",
       "name": "Volvox microarray",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "BigWig",
-        "Line"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["BigWig", "Line"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1237,12 +1069,8 @@
       "type": "BasicTrack",
       "trackId": "EA_0Jp4oPKg",
       "name": "NCList genes",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Miscellaneous"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Miscellaneous"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": "test_data/volvox/volvox_genes_nclist/{refseq}/trackData.json"
@@ -1255,13 +1083,8 @@
       "type": "WiggleTrack",
       "trackId": "VUyE25kYsQo",
       "name": "Volvox microarray",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "BigWig",
-        "Density"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["BigWig", "Density"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1285,13 +1108,8 @@
       "type": "WiggleTrack",
       "trackId": "24eGIUSM86l",
       "name": "Volvox microarray",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "BigWig",
-        "XYPlot"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["BigWig", "XYPlot"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1314,13 +1132,8 @@
       "type": "WiggleTrack",
       "trackId": "oMVFQozR9NO",
       "name": "Volvox microarray - negative",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "BigWig",
-        "Density"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["BigWig", "Density"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1344,13 +1157,8 @@
       "type": "WiggleTrack",
       "trackId": "1at1sLO1Gsl",
       "name": "Volvox microarray - negative",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "BigWig",
-        "XYPlot"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["BigWig", "XYPlot"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1371,15 +1179,10 @@
     },
     {
       "type": "WiggleTrack",
-      "trackId": "FKQP7kvWcgO",
+      "trackId": "wiggle_track_posneg",
       "name": "Volvox microarray with +/- values",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "BigWig",
-        "Line"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["BigWig", "Line"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1401,15 +1204,35 @@
     },
     {
       "type": "WiggleTrack",
+      "trackId": "wiggle_track_fractional_posneg",
+      "name": "Volvox microarray with +/- fractional values",
+      "assemblyNames": ["volvox"],
+      "category": ["BigWig", "Line"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "test_data/volvox/volvox_microarray_posneg_frac.bw"
+        }
+      },
+      "defaultRendering": "line",
+      "renderers": {
+        "DensityRenderer": {
+          "type": "DensityRenderer"
+        },
+        "XYPlotRenderer": {
+          "type": "XYPlotRenderer"
+        },
+        "LinePlotRenderer": {
+          "type": "LinePlotRenderer"
+        }
+      }
+    },
+    {
+      "type": "WiggleTrack",
       "trackId": "jdYHuGnpAc_",
       "name": "Volvox microarray with +/- values",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "BigWig",
-        "XYPlot"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["BigWig", "XYPlot"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1432,13 +1255,8 @@
       "type": "WiggleTrack",
       "trackId": "p7FU-K6WqS_",
       "name": "Volvox - BAM coverage",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "BigWig",
-        "Line"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["BigWig", "Line"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1462,12 +1280,8 @@
       "type": "WiggleTrack",
       "trackId": "pOOtg9wxcUC",
       "name": "Volvox - BAM coverage",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "BigWig"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["BigWig"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {

@@ -120,6 +120,12 @@ const Base1DView = types
       self.features = features
     },
 
+    // this makes a zoomed out view that shows all displayedRegions
+    // that makes the overview bar square with the scale bar
+    showAllRegions() {
+      self.bpPerPx = self.totalBp / self.width
+      self.offsetPx = 0
+    },
     /**
      * offset is the base-pair-offset in the displayed region, index is the index of the
      * displayed region in the linear genome view

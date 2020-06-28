@@ -174,13 +174,13 @@ const Search = observer(({ model }: { model: LGV }) => {
     (region: Region | undefined) => {
       if (region) {
         model.setDisplayedRegions([region])
-        model.showAllRegionsButSlightlyZoomedIn()
+        model.showAllRegions()
       }
     },
     [model],
   )
 
-  const { assemblyName, refName } = contentBlocks[0] || {}
+  const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
   return (
     <>
       <RefNameAutocomplete

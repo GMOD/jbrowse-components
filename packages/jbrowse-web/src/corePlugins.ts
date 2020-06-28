@@ -1,5 +1,6 @@
 import Alignments from '@gmod/jbrowse-plugin-alignments'
 import Bed from '@gmod/jbrowse-plugin-bed'
+import BreakpointSplitView from '@gmod/jbrowse-plugin-breakpoint-split-view'
 import CircularView from '@gmod/jbrowse-plugin-circular-view'
 import Config from '@gmod/jbrowse-plugin-config'
 import DataManagement from '@gmod/jbrowse-plugin-data-management'
@@ -44,4 +45,5 @@ export default [
   SpreadsheetViewPlugin,
   SvInspectorPlugin,
   GDCPlugin,
+  BreakpointSplitView,
 ]

@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { Region, NotificationLevel } from '@gmod/jbrowse-core/util/types'
+import {
+  Region,
+  SessionWithDrawerWidgets,
+  NotificationLevel,
+  AbstractSessionModel,
+} from '@gmod/jbrowse-core/util/types'
 import { getContainingView } from '@gmod/jbrowse-core/util'
 import { observable } from 'mobx'
 import {
@@ -15,6 +20,7 @@ import {
   SnapshotIn,
   types,
   walk,
+  Instance,
 } from 'mobx-state-tree'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
@@ -28,9 +34,12 @@ declare interface ReferringNode {
   key: string
 }
 
-export default function sessionModelFactory(pluginManager: PluginManager) {
+export default function sessionModelFactory(
+  pluginManager: PluginManager,
+  editableConfigs = false,
+) {
   const minDrawerWidth = 128
-  return types
+  const session = types
     .model('JBrowseWebSessionModel', {
       name: types.identifier,
       margin: 0,
@@ -363,25 +372,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         self.selection = undefined
       },
 
-      /**
-       * opens a configuration editor to configure the given thing,
-       * and sets the current task to be configuring it
-       * @param configuration -
-       */
-      editConfiguration(configuration: AnyConfigurationModel) {
-        if (!isConfigurationModel(configuration)) {
-          throw new Error(
-            'must pass a configuration model to editConfiguration',
-          )
-        }
-        const editor = this.addDrawerWidget(
-          'ConfigurationEditorDrawerWidget',
-          'configEditor',
-          { target: configuration },
-        )
-        this.showDrawerWidget(editor)
-      },
-
       clearConnections() {
         self.connectionInstances.clear()
       },
@@ -434,9 +424,43 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         },
       }
     })
+
+  if (!editableConfigs) {
+    return session
+  }
+
+  return types.compose(
+    'EditableConfigSession',
+    session,
+    types.model().actions(self => ({
+      /**
+       * opens a configuration editor to configure the given thing,
+       * and sets the current task to be configuring it
+       * @param configuration -
+       */
+      editConfiguration(configuration: AnyConfigurationModel) {
+        if (!isConfigurationModel(configuration)) {
+          throw new Error(
+            'must pass a configuration model to editConfiguration',
+          )
+        }
+        const editableConfigSession = self as SessionWithDrawerWidgets
+        const editor = editableConfigSession.addDrawerWidget(
+          'ConfigurationEditorDrawerWidget',
+          'configEditor',
+          { target: configuration },
+        )
+        editableConfigSession.showDrawerWidget(editor)
+      },
+    })),
+  )
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
 
-// a track is a combination of an assembly and a renderer, along with some conditions
-// specifying in which contexts it is available (which assemblies, which views, etc)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function z(x: Instance<SessionStateModel>): AbstractSessionModel {
+  // this function's sole purpose is to get typescript to check
+  // that the session model implements all of AbstractSessionModel
+  return x
+}

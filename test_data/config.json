@@ -5,9 +5,7 @@
   "assemblies": [
     {
       "name": "hg19",
-      "aliases": [
-        "GRCh37"
-      ],
+      "aliases": ["GRCh37"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "Pd8Wh30ei9R",
@@ -38,9 +36,7 @@
     },
     {
       "name": "hg38",
-      "aliases": [
-        "GRCh38"
-      ],
+      "aliases": ["GRCh38"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "P6R5xbRqRr",
@@ -75,12 +71,8 @@
       "type": "BasicTrack",
       "trackId": "repeats_hg19",
       "name": "Repeats",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -95,12 +87,8 @@
       "type": "BasicTrack",
       "trackId": "nclist_genes_hg19",
       "name": "Gencode v19",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json",
@@ -144,12 +132,8 @@
       "type": "BasicTrack",
       "trackId": "hg19_gaps",
       "name": "Gaps",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -164,12 +148,8 @@
       "type": "BasicTrack",
       "trackId": "clinvar_cnv_hg19",
       "name": "Clinvar CNV",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -184,12 +164,8 @@
       "type": "BasicTrack",
       "trackId": "clinvar_hg19",
       "name": "Clinvar variants",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -204,12 +180,8 @@
       "type": "BasicTrack",
       "trackId": "repeats_hg38",
       "name": "Repeats",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -224,12 +196,8 @@
       "type": "BasicTrack",
       "trackId": "gencode_nclist_hg38",
       "name": "Gencode v32",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz",
@@ -273,12 +241,8 @@
       "type": "BasicTrack",
       "trackId": "clinvar_cnv_hg38",
       "name": "Clinvar CNV",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -293,12 +257,8 @@
       "type": "BasicTrack",
       "trackId": "clinvar_hg38",
       "name": "Clinvar variants",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -313,12 +273,8 @@
       "type": "BasicTrack",
       "trackId": "mane_hg38",
       "name": "MANE 0.6",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -336,12 +292,8 @@
       "type": "BasicTrack",
       "trackId": "gdc_features",
       "name": "GDC Cancer",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -356,12 +308,8 @@
       "type": "BasicTrack",
       "trackId": "hg38_gaps",
       "name": "Gaps",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {

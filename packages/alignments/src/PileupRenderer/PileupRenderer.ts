@@ -19,7 +19,7 @@ import { BaseLayout } from '@gmod/jbrowse-core/util/layouts/BaseLayout'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { RenderArgsDeserialized } from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { lighten } from '@material-ui/core/styles/colorManipulator'
-import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
+import { Mismatch } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
 
 export interface PileupRenderProps {
@@ -168,11 +168,11 @@ export default class PileupRenderer extends BoxRendererType {
   // and set that as the maxClippingSize/expand region by average read size
   getExpandedRegion(region: Region, renderArgs: RenderArgsSoftClip) {
     if (!region) return region
-    const { bpPerPx, config, showSoftClip } = renderArgs
+    const { config, showSoftClip } = renderArgs
     const maxClippingSize =
       config === undefined ? 0 : readConfObject(config, 'maxClippingSize')
     if (!maxClippingSize || !showSoftClip) return region
-    const bpExpansion = Math.round(maxClippingSize * bpPerPx)
+    const bpExpansion = Math.round(maxClippingSize)
     return {
       ...region,
       start: Math.floor(Math.max(region.start - bpExpansion, 0)),

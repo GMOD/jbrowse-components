@@ -19,8 +19,11 @@ interface Menu {
   menuItems: MenuOption[]
 }
 
-export default function RootModel(pluginManager: PluginManager) {
-  const Session = sessionModelFactory(pluginManager)
+export default function RootModel(
+  pluginManager: PluginManager,
+  adminMode = false,
+) {
+  const Session = sessionModelFactory(pluginManager, adminMode)
   const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
     pluginManager,
   )
@@ -116,6 +119,7 @@ export default function RootModel(pluginManager: PluginManager) {
           MainThreadRpcDriver: {},
         },
       ),
+      adminMode,
     }))
     .actions(self => ({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

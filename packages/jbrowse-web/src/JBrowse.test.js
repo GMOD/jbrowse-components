@@ -48,11 +48,11 @@ Storage.prototype.setItem = jest.fn()
 Storage.prototype.removeItem = jest.fn()
 Storage.prototype.clear = jest.fn()
 
-function getPluginManager(initialState) {
+function getPluginManager(initialState, adminMode = false) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
-  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
+  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)
   const rootModel = JBrowseRootModel.create({
     jbrowse: initialState || configSnapshot,
     assemblyManager: {},
@@ -158,7 +158,7 @@ describe('valid file tests', () => {
     fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
     const zoomMenuItem = await findByText('Zoom to region')
     fireEvent.click(zoomMenuItem)
-    expect(state.session.views[0].bpPerPx).toEqual(0.009375)
+    expect(state.session.views[0].bpPerPx).toEqual(0.02)
   })
 
   it('click and drag to reorder tracks', async () => {
@@ -300,9 +300,9 @@ describe('test renamed refs', () => {
     )
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_bam_altname'))
     await expect(
-      findAllByText('ctgA_110_638_0:0:0_3:0:0_15b'),
+      findAllByText('ctgA_110_638_0:0:0_3:0:0_15b', {}, { timeout: 15000 }),
     ).resolves.toBeTruthy()
-  })
+  }, 20000)
 
   it('open a bigwig with a renamed reference', async () => {
     const pluginManager = getPluginManager()
@@ -384,7 +384,7 @@ describe('nclist track test with long name', () => {
 })
 describe('test configuration editor', () => {
   it('change color on track', async () => {
-    const pluginManager = getPluginManager()
+    const pluginManager = getPluginManager(undefined, true)
     const state = pluginManager.rootModel
     const { findByTestId, findByText, findByDisplayValue } = render(
       <JBrowse pluginManager={pluginManager} />,
@@ -550,13 +550,11 @@ describe('alignments track', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
-    state.session.views[0].setNewView(1, 2000)
+    state.session.views[0].setNewView(0.02, 2086500)
 
     // load track
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox-long-reads-sv-cram'),
-    )
-    await findByTestId('track-volvox-long-reads-sv-cram')
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+    await findByTestId('track-volvox-long-reads-cram')
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu and turns on soft clipping
@@ -574,7 +572,7 @@ describe('alignments track', () => {
       await findByTestId('Blockset-pileup'),
     )
     const canvases = await findAllByTestId1('prerendered_canvas')
-    const img = canvases[0].toDataURL()
+    const img = canvases[1].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
     expect(buf).toMatchImageSnapshot()
