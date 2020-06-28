@@ -205,9 +205,9 @@ const BaseTrack = types
     setScrollTop(scrollTop: number) {
       self.scrollTop = scrollTop
     },
-    // base reload is here
+
     reload() {
-      // maybe empty function, basic function goes in blockBasedTrackModel.ts
+      // base reload does nothing, see specialized tracks for details
     },
   }))
 

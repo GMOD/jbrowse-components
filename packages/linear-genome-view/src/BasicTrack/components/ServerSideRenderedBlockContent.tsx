@@ -82,7 +82,6 @@ BlockMessage.propTypes = {
 
 function BlockError({ error, reload }: { error: Error; reload: () => void }) {
   const classes = useStyles()
-  // TODORELOAD: reloads here
   return (
     <div className={classes.blockError}>
       {reload ? (

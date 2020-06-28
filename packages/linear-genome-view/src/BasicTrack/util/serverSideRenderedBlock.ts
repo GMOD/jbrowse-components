@@ -154,7 +154,6 @@ const blockState = types
         const { rpcManager } = getSession(self)
         const { rendererType } = track
         const { renderArgs } = renderBlockData(cast(self))
-        // could be doing free resources in a webworker that could be killed, log this to see if called after track reload
         rendererType
           .freeResourcesInClient(
             rpcManager,

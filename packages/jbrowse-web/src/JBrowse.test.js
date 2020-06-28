@@ -416,13 +416,6 @@ describe('test configuration editor', () => {
 })
 
 describe('reload tests', () => {
-  // beforeEach(() => {
-  //   fetch.mockResponse(async request => {
-  //     console.log('wtf', request.url)
-
-  //     return readBuffer(request)
-  //   })
-  // })
   it('reloads alignments track', async () => {
     console.error = jest.fn()
 
