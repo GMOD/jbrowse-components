@@ -10,7 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "abortable-promise-cache": "^1.0.1",
-    "hic-straw": "^1.2.0"
+    "hic-straw": "^1.2.2"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",
