@@ -145,6 +145,7 @@ const stateModelFactory = (
       },
     }))
     .actions(self => {
+      // reset the sort object and refresh whole track on reload
       const superReload = self.reload
       return {
         reload() {

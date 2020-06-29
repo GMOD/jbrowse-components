@@ -234,6 +234,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         throw new Error(`invalid autoscaleType '${autoscaleType}'`)
       }
       return {
+        // re-runs stats and refresh whole track on reload
         async reload() {
           self.setError('')
 
@@ -244,8 +245,6 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           })
           self.updateStats(stats)
           superReload()
-
-          // recover refnames somewhere
         },
         afterAttach() {
           addDisposer(
