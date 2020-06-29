@@ -39,7 +39,8 @@
     "build": "cp ../../yarn.lock . && oclif-dev pack && rm yarn.lock",
     "postpack": "rm -f oclif.manifest.json",
     "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
-    "version": "oclif-dev readme && git add README.md"
+    "version": "oclif-dev readme && git add README.md",
+    "docs": "oclif-dev readme && prettier --write README.md"
   },
   "types": "lib/index.d.ts"
 }

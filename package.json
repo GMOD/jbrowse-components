@@ -14,6 +14,11 @@
     "built-test-ci": "jest --ci packages/integration-tests",
     "test": "jest"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "git diff --cached --name-only | if grep --quiet \"jbrowse-cli\"; then lerna run --scope \"@gmod/jbrowse-cli\" docs; git add packages/jbrowse-cli/README.md; fi;"
+    }
+  },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.3.4",
@@ -82,6 +87,7 @@
     "eslint-plugin-tsdoc": "^0.2.4",
     "fastestsmallesttextencoderdecoder": "^1.0.14",
     "find-yarn-workspace-root": "^1.2.1",
+    "husky": "^4.2.5",
     "identity-obj-proxy": "^3.0.0",
     "jest-environment-jsdom-fourteen": "^1.0.1",
     "jest-image-snapshot": "^3.1.0",
