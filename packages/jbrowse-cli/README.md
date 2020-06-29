@@ -13,6 +13,7 @@ A tool for working with JBrowse 2
 - [@gmod/jbrowse-cli](#gmodjbrowse-cli)
 - [Usage](#usage)
 - [Commands](#commands)
+- [Debugging](#debugging)
 <!-- tocstop -->
 
 # Usage
@@ -155,3 +156,11 @@ OPTIONS
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.1.0/src/commands/help.ts)_
 
 <!-- commandsstop -->
+
+# Debugging
+
+Debug logs (provded by [debug](https://github.com/visionmedia/debug)) can be
+printed by setting the `DEBUG` environment variable. Setting `DEBUG=*` will
+print all debug logs. Setting `DEBUG=jbrowse*` will print only logs from this
+tool, and setting e.g. `DEBUG=jbrowse:add-assembly` will print only logs from
+the `add-assembly` command.
