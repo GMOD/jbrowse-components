@@ -179,7 +179,7 @@ export default class ServerSideRenderer extends RendererType {
    * @returns Map of features as `{ id => feature, ... }`
    */
   async getFeatures(renderArgs: RenderArgsDeserialized) {
-    const { dataAdapter, signal, bpPerPx, regions } = renderArgs
+    const { sessionId, dataAdapter, signal, bpPerPx, regions } = renderArgs
     const features = new Map()
 
     if (!regions || regions.length === 0) {
@@ -206,11 +206,13 @@ export default class ServerSideRenderer extends RendererType {
             {
               signal,
               bpPerPx,
+              sessionId,
             },
           )
         : dataAdapter.getFeaturesInMultipleRegions(requestRegions, {
             signal,
             bpPerPx,
+            sessionId,
           })
 
     await featureObservable

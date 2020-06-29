@@ -34,7 +34,7 @@ export class WiggleGetGlobalStats extends RpcMethodType {
       dataAdapter instanceof BaseFeatureDataAdapter &&
       dataAdapterSupportsGlobalStats(dataAdapter)
     ) {
-      return dataAdapter.getGlobalStats({ signal })
+      return dataAdapter.getGlobalStats({ signal, sessionId })
     }
     return blankStats()
   }
@@ -80,6 +80,7 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
       return dataAdapter.getMultiRegionStats(regions, {
         signal,
         bpPerPx,
+        sessionId,
       })
     }
     return blankStats()

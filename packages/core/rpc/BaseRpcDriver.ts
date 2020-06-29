@@ -161,7 +161,6 @@ export default abstract class BaseRpcDriver {
     }
 
     const workerNumber = this.workerAssignments.get(sessionId)
-    // console.log(`${sessionId} -> worker ${workerNumber}`)
     const worker = workers[workerNumber]
     if (!worker) {
       throw new Error('no web workers registered for RPC')
@@ -176,7 +175,6 @@ export default abstract class BaseRpcDriver {
     args: {},
     options = {},
   ) {
-    console.log(args, options)
     if (!sessionId) {
       throw new TypeError('sessionId is required')
     }
@@ -190,7 +188,9 @@ export default abstract class BaseRpcDriver {
     )
 
     worker.on(`message-${sessionId}`, data => {
-      options.statusCallback(data)
+      if (args.statusCallback) {
+        args.statusCallback(data)
+      }
     })
 
     const result = await worker.call(functionName, filteredAndSerializedArgs, {

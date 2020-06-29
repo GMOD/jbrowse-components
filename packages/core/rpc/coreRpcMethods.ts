@@ -62,7 +62,7 @@ export class CoreGetRefNames extends RpcMethodType {
       adapterConfig,
     )
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
-      return dataAdapter.getRefNames({ signal })
+      return dataAdapter.getRefNames({ signal, sessionId })
     }
     return []
   }

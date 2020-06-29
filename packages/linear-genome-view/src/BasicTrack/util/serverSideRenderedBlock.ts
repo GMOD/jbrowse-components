@@ -178,8 +178,9 @@ function renderBlockData(self: Instance<BlockStateModel>) {
         cannotBeRenderedReason = `region assembly (${self.region.assemblyName}) does not match track assemblies (${assemblyNames})`
       }
     }
-    if (!cannotBeRenderedReason)
+    if (!cannotBeRenderedReason) {
       cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
+    }
     const { renderProps } = track
     const { rendererType } = track
     const { config } = renderProps
@@ -198,6 +199,10 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       cannotBeRenderedReason,
       trackError: track.error,
       renderArgs: {
+        statusCallback: (message: string) => {
+          console.log('here', message)
+          getParent(self, 2).setMessage(message)
+        },
         assemblyName: self.region.assemblyName,
         regions: [self.region],
         adapterConfig,

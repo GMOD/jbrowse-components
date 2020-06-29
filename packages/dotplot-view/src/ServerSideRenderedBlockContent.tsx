@@ -41,10 +41,12 @@ function LoadingMessage() {
     const timeout = setTimeout(() => setShown(true), 300)
     return () => clearTimeout(timeout)
   }, [])
+  const { message } = getParent(self, 2)
+  console.log('here', message)
 
   return shown ? (
     <div data-testid="loading-synteny" className={classes.loading}>
-      Loading &hellip;
+      Loading &hellip; {message}
       <LinearProgress />
     </div>
   ) : null

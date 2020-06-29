@@ -59,6 +59,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           // avoid circular reference since WiggleTrackComponent receives this model
           ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
           ready: false,
+          message: undefined as undefined | string,
           stats: observable({ scoreMin: 0, scoreMax: 50 }),
           statsFetchInProgress: undefined as undefined | AbortController,
         })),
@@ -158,6 +159,9 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             'WiggleGetGlobalStats',
             {
               adapterConfig: getSnapshot(adapter),
+              statusCallback: (message: string) => {
+                self.setMessage(message)
+              },
               signal,
             },
           )) as FeatureStats
@@ -182,10 +186,12 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             'WiggleGetMultiRegionStats',
             {
               adapterConfig: getSnapshot(adapter),
-              // TODO: Figure this out for multiple assembly names
               assemblyName: getTrackAssemblyNames(self)[0],
               regions: JSON.parse(JSON.stringify(dynamicBlocks.contentBlocks)),
               sessionId,
+              statusCallback: (message: string) => {
+                self.setMessage(message)
+              },
               signal,
               bpPerPx,
             },
@@ -207,6 +213,9 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             'WiggleGetGlobalStats',
             {
               adapterConfig: getSnapshot(adapter),
+              statusCallback: (message: string) => {
+                self.setMessage(message)
+              },
               signal,
             },
           ) as Promise<FeatureStats>

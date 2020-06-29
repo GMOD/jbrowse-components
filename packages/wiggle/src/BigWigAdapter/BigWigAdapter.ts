@@ -38,17 +38,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
     fill: async (
       args: { refName: string; start: number; end: number; bpPerPx?: number },
       abortSignal?: AbortSignal,
-    ) => {
-      const { refName, start, end, bpPerPx } = args
-      const feats = this.getFeatures(
-        { refName, start, end },
-        {
-          signal: abortSignal,
-          basesPerSpan: bpPerPx,
-        },
-      )
-      return scoresToStats({ refName, start, end }, feats)
-    },
+    ) => {},
   })
 
   public constructor(config: Instance<typeof configSchema>) {
@@ -59,13 +49,15 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
   }
 
   public async getRefNames() {
+    self.rpcServer.emit('message', 'getting header')
     const header = await this.bigwig.getHeader()
+    self.rpcServer.emit('message', 'done header')
     return Object.keys(header.refsByName)
   }
 
   public async refIdToName(refId: number) {
-    const h = await this.bigwig.getHeader()
-    return (h.refsByNumber[refId] || { name: undefined }).name
+    const { refsByNumber } = await this.bigwig.getHeader()
+    return refsByNumber[refId] ? refsByNumber[refId].name : undefined
   }
 
   public async getGlobalStats(opts: BaseOptions = {}) {
@@ -75,13 +67,8 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
 
   // todo: incorporate summary blocks
   public getRegionStats(region: NoAssemblyRegion, opts: BaseOptions = {}) {
-    const { refName, start, end } = region
-    const { bpPerPx, signal } = opts
-    return this.statsCache.get(
-      `${refName}_${start}_${end}_${bpPerPx}`,
-      { refName, start, end, bpPerPx },
-      signal,
-    )
+    const feats = this.getFeatures(region, opts)
+    return scoresToStats(region, feats)
   }
 
   // todo: add caching
@@ -125,12 +112,16 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
 
   public getFeatures(region: NoAssemblyRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
-    const { signal, bpPerPx } = opts
+    const { signal, bpPerPx, sessionId } = opts
+    console.log(opts)
     return ObservableCreate<Feature>(async observer => {
+      self.rpcServer.emit(`message-${sessionId}`, 'getting features')
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
         signal,
         basesPerSpan: bpPerPx,
       })
+      console.log('sessionId', sessionId)
+      self.rpcServer.emit(`message-${sessionId}`, 'feature stream gotten')
       ob.pipe(
         mergeAll(),
         map((record: BBIFeature) => {

@@ -127,9 +127,13 @@ export default (pluginManager: PluginManager) => {
       return sequence
     }
 
-    private async setup(opts?: BaseOptions) {
+    private async setup(opts: BaseOptions = {}) {
+      const { sessionId } = opts
+      console.log(sessionId)
       if (Object.keys(this.samHeader).length === 0) {
+        self.rpcServer.emit(`message-${sessionId}`, 'downloading header')
         const samHeader = await this.cram.cram.getSamHeader(opts?.signal)
+        self.rpcServer.emit(`message-${sessionId}`, 'done downloading header')
 
         // use the @SQ lines in the header to figure out the
         // mapping between ref ref ID numbers and names
@@ -196,6 +200,7 @@ export default (pluginManager: PluginManager) => {
       opts: BaseOptions = {},
     ) {
       // console.log(`CRAM getFeatures ${refName}:${start}-${end}`)
+      console.log(opts)
       const { refName, start, end, originalRefName } = region
 
       return ObservableCreate<Feature>(async observer => {

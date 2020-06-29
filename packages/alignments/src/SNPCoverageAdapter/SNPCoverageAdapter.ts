@@ -75,24 +75,6 @@ export default (pluginManager: PluginManager) => {
   return class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     private subadapter: BaseFeatureDataAdapter
 
-    private statsCache = new AbortablePromiseCache({
-      cache: new QuickLRU({ maxSize: 1000 }),
-      fill: async (
-        args: {
-          region: Region
-          bpPerPx: number
-        },
-        abortSignal?: AbortSignal,
-      ): Promise<FeatureStats> => {
-        const { region, bpPerPx } = args
-        const feats = this.getFeatures(region, {
-          signal: abortSignal,
-          basesPerSpan: bpPerPx,
-        })
-        return scoresToStats(region, feats)
-      },
-    })
-
     public constructor(
       config: Instance<typeof MyConfigSchema>,
       getSubAdapter: getSubAdapterType,
@@ -109,13 +91,8 @@ export default (pluginManager: PluginManager) => {
     }
 
     public getRegionStats(region: Region, opts: BaseOptions = {}) {
-      const { refName, start, end } = region
-      const { bpPerPx, signal } = opts
-      return this.statsCache.get(
-        `${refName}_${start}_${end}_${bpPerPx}`,
-        { region, bpPerPx: bpPerPx || 0 },
-        signal,
-      )
+      const feats = this.getFeatures(region, opts)
+      return scoresToStats(region, feats)
     }
 
     public async getMultiRegionStats(
@@ -127,7 +104,7 @@ export default (pluginManager: PluginManager) => {
       }
 
       const feats = await Promise.all(
-        regions.map((region, index) => this.getRegionStats(region, opts)),
+        regions.map(region => this.getRegionStats(region, opts)),
       )
 
       const scoreMax = feats
@@ -188,8 +165,8 @@ export default (pluginManager: PluginManager) => {
       }, opts.signal)
     }
 
-    async getRefNames() {
-      return this.subadapter.getRefNames()
+    async getRefNames(opts: BaseOptions = {}) {
+      return this.subadapter.getRefNames(opts)
     }
 
     freeResources(/* { region } */): void {}
