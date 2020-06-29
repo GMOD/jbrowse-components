@@ -717,9 +717,10 @@ export async function renameRegionsIfNeeded<
     signal?: AbortSignal
     adapterConfig: unknown
     sessionId: string
+    statusCallback: Function
   }
 >(assemblyManager: AssemblyManager, args: ARGTYPE) {
-  const { assemblyName, signal, regions, adapterConfig } = args
+  const { assemblyName, statusCallback, signal, regions, adapterConfig } = args
   if (!args.sessionId) {
     throw new Error('sessionId is required')
   }
@@ -733,6 +734,7 @@ export async function renameRegionsIfNeeded<
         assemblyManager.getRefNameMapForAdapter(adapterConfig, assemblyName, {
           signal,
           sessionId: newArgs.sessionId,
+          statusCallback,
         }),
       {
         name: `getRefNameMapForAdapter($conf, '${assemblyName}')`,

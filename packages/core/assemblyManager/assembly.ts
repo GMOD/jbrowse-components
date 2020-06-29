@@ -311,10 +311,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       /**
        * get Map of `canonical-name -> adapter-specific-name`
        */
-      getRefNameMapForAdapter(
-        adapterConf: unknown,
-        opts: { signal?: AbortSignal; sessionId: string },
-      ) {
+      getRefNameMapForAdapter(adapterConf: unknown, opts: BaseOptions) {
         if (!opts || !opts.sessionId) {
           throw new Error('sessionId is required')
         }
@@ -324,10 +321,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       /**
        * get Map of `adapter-specific-name -> canonical-name`
        */
-      getReverseRefNameMapForAdapter(
-        adapterConf: unknown,
-        opts: { signal?: AbortSignal; sessionId: string },
-      ) {
+      getReverseRefNameMapForAdapter(adapterConf: unknown, opts: BaseOptions) {
         return this.getAdapterMapEntry(adapterConf, opts)?.reverseMap
       },
     }))

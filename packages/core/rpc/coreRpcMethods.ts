@@ -132,7 +132,9 @@ export interface RenderArgs {
 export class CoreRender extends RpcMethodType {
   name = 'CoreRender'
 
-  async serializeArguments(args: RenderArgs & { signal?: AbortSignal }) {
+  async serializeArguments(
+    args: RenderArgs & { signal?: AbortSignal; statusCallback: Function },
+  ) {
     const assemblyManager = this.pluginManager.rootModel?.session
       ?.assemblyManager
     if (!assemblyManager) {

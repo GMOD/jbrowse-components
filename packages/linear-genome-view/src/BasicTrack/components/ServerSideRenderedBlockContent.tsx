@@ -1,6 +1,7 @@
 import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { getParent } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import ServerSideRenderedContent from '../../LinearGenomeView/components/ServerSideRenderedContent'
@@ -45,7 +46,7 @@ function Repeater({ children }: { children: React.ReactNode }) {
   )
 }
 
-function LoadingMessage() {
+function LoadingMessage({ model }: { model: any }) {
   // only show the loading message after 300ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
   const classes = useStyles()
@@ -60,9 +61,11 @@ function LoadingMessage() {
     return () => clearTimeout(timeout)
   })
 
+  const { message } = getParent(model, 2)
+  console.log(message, getParent(model, 2))
   return shown ? (
     <div className={classes.loading}>
-      Loading {new Array(dots).fill('.').join('')}
+      Loading {new Array(dots).fill('.').join('')} {message}
     </div>
   ) : null
 }
@@ -121,7 +124,7 @@ const ServerSideRenderedBlockContent = observer(
     if (!model.filled) {
       return (
         <Repeater>
-          <LoadingMessage />
+          <LoadingMessage model={model} />
         </Repeater>
       )
     }
