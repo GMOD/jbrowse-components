@@ -119,7 +119,7 @@ describe('<JBrowse />', () => {
   })
 })
 
-describe('valid file tests reload', () => {
+describe('valid file tests', () => {
   beforeEach(() => {
     fetch.resetMocks()
     fetch.mockResponse(readBuffer)
