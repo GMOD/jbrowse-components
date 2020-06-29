@@ -172,6 +172,7 @@ custom         Either a JSON file location or inline JSON that defines a custom 
     await this.checkLocation()
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
     const { sequence: argsSequence } = runArgs as { sequence: string }
+    this.debug(`Sequence location is: ${argsSequence}`)
     let { name } = runFlags
     let { type } = runFlags as {
       type:
@@ -182,8 +183,14 @@ custom         Either a JSON file location or inline JSON that defines a custom 
         | 'custom'
         | undefined
     }
-    if (!type) {
+    if (type) {
+      this.debug(`Type is: ${type}`)
+    } else {
       type = this.guessSequenceType(argsSequence)
+      this.debug(`No type specified, guessing type: ${type}`)
+    }
+    if (name) {
+      this.debug(`Name is: ${name}`)
     }
     let sequence: Sequence
     switch (type) {
@@ -192,16 +199,19 @@ custom         Either a JSON file location or inline JSON that defines a custom 
           argsSequence,
           !runFlags.skipCheck || !runFlags.force,
         )
+        this.debug(`FASTA location resolved to: ${sequenceLocation}`)
         const indexLocation = await this.resolveFileLocation(
           runFlags.faiLocation || `${argsSequence}.fai`,
           !runFlags.skipCheck || !runFlags.force,
         )
+        this.debug(`FASTA index location resolved to: ${indexLocation}`)
         if (!name) {
           if (sequenceLocation.endsWith('.fasta')) {
             name = path.basename(sequenceLocation, '.fasta')
           } else {
             name = path.basename(sequenceLocation, '.fa')
           }
+          this.debug(`Guessing name: ${name}`)
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
@@ -219,20 +229,26 @@ custom         Either a JSON file location or inline JSON that defines a custom 
           argsSequence,
           !runFlags.skipCheck || !runFlags.force,
         )
+        this.debug(`compressed FASTA location resolved to: ${sequenceLocation}`)
         const indexLocation = await this.resolveFileLocation(
           runFlags.faiLocation || `${sequenceLocation}.fai`,
           !runFlags.skipCheck || !runFlags.force,
+        )
+        this.debug(
+          `compressed FASTA index location resolved to: ${indexLocation}`,
         )
         const bgzipIndexLocation = await this.resolveFileLocation(
           runFlags.gziLocation || `${sequenceLocation}.gzi`,
           !runFlags.skipCheck || !runFlags.force,
         )
+        this.debug(`bgzip index location resolved to: ${bgzipIndexLocation}`)
         if (!name) {
           if (sequenceLocation.endsWith('.fasta.gz')) {
             name = path.basename(sequenceLocation, '.fasta.gz')
           } else {
             name = path.basename(sequenceLocation, '.fa.gz')
           }
+          this.debug(`Guessing name: ${name}`)
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
@@ -251,8 +267,10 @@ custom         Either a JSON file location or inline JSON that defines a custom 
           argsSequence,
           !runFlags.skipCheck || !runFlags.force,
         )
+        this.debug(`2bit location resolved to: ${sequenceLocation}`)
         if (!name) {
           name = path.basename(sequenceLocation, '.2bit')
+          this.debug(`Guessing name: ${name}`)
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
@@ -269,8 +287,10 @@ custom         Either a JSON file location or inline JSON that defines a custom 
           argsSequence,
           !runFlags.skipCheck || !runFlags.force,
         )
+        this.debug(`chrome.sizes location resolved to: ${sequenceLocation}`)
         if (!name) {
           name = path.basename(sequenceLocation, '.chrom.sizes')
+          this.debug(`Guessing name: ${name}`)
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
@@ -284,6 +304,7 @@ custom         Either a JSON file location or inline JSON that defines a custom 
       }
       case 'custom': {
         const adapter = await this.readInlineOrFileJson(argsSequence)
+        this.debug(`Custom adapter: ${JSON.stringify(adapter)}`)
         if (!name) {
           if (isValidJSON(argsSequence)) {
             this.error(
@@ -293,6 +314,7 @@ custom         Either a JSON file location or inline JSON that defines a custom 
           } else {
             name = path.basename(argsSequence, '.json')
           }
+          this.debug(`Guessing name: ${name}`)
         }
         if (!('type' in adapter)) {
           this.error(
@@ -314,6 +336,7 @@ custom         Either a JSON file location or inline JSON that defines a custom 
     const assembly: Assembly = { name, sequence }
 
     if (runFlags.alias && runFlags.alias.length) {
+      this.debug(`Adding assembly aliases: ${runFlags.alias}`)
       assembly.aliases = runFlags.alias
     }
 
@@ -321,6 +344,7 @@ custom         Either a JSON file location or inline JSON that defines a custom 
       const colors = runFlags.refNameColors
         .split(',')
         .map(color => color.trim())
+      this.debug(`Adding refName colors: ${colors}`)
       assembly.refNameColors = colors
     }
 
@@ -340,6 +364,11 @@ custom         Either a JSON file location or inline JSON that defines a custom 
             { exit: 30 },
           )
         }
+        this.debug(
+          `Adding custom refNameAliases config: ${JSON.stringify(
+            refNameAliasesConfig,
+          )}`,
+        )
         assembly.refNameAliases = {
           adapter: refNameAliasesConfig,
         }
@@ -347,6 +376,9 @@ custom         Either a JSON file location or inline JSON that defines a custom 
         const refNameAliasesLocation = await this.resolveFileLocation(
           runFlags.refNameAliases,
           !runFlags.skipCheck || !runFlags.force,
+        )
+        this.debug(
+          `refName aliases file location resolved to: ${refNameAliasesLocation}`,
         )
         assembly.refNameAliases = {
           adapter: {
@@ -370,7 +402,9 @@ custom         Either a JSON file location or inline JSON that defines a custom 
     let configContentsJson
     try {
       configContentsJson = await this.readJsonConfig(runFlags.config)
+      this.debug(`Found existing config file ${runFlags.config}`)
     } catch (error) {
+      this.debug('No existing config file found, using default config')
       configContentsJson = JSON.stringify(defaultConfig)
     }
 
@@ -388,7 +422,9 @@ custom         Either a JSON file location or inline JSON that defines a custom 
       configAssembly => configAssembly.name === assembly.name,
     )
     if (idx !== -1) {
+      this.debug(`Found existing assembly ${name} in configuration`)
       if (runFlags.overwrite || runFlags.force) {
+        this.debug(`Overwriting assembly ${name} in configuration`)
         configContents.assemblies[idx] = assembly
       } else {
         this.error(
@@ -400,9 +436,16 @@ custom         Either a JSON file location or inline JSON that defines a custom 
       configContents.assemblies.push(assembly)
     }
 
+    this.debug(`Writing configuration to file ${runFlags.config}`)
     await fsPromises.writeFile(
       runFlags.config,
       JSON.stringify(configContents, undefined, 2),
+    )
+
+    this.log(
+      `${idx !== -1 ? 'Overwrote' : 'Added'} assembly "${name}" ${
+        idx !== -1 ? 'in' : 'to'
+      } ${runFlags.config}`,
     )
   }
 

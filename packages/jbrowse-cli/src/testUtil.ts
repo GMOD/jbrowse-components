@@ -51,12 +51,28 @@ const mockConsoleError = (opts?: { print?: boolean }) => ({
   },
 })
 
+const mockStdoutWrite = (opts?: { print?: boolean }) => ({
+  run(ctx: { stdoutWrite: jest.Mock }) {
+    const stdoutWriteMock = jest.fn((data: Buffer | string) => {
+      if (opts?.print) {
+        // eslint-disable-next-line no-console
+        console.log(data)
+      }
+      return true
+    })
+    process.stdout.write = stdoutWriteMock
+    ctx.stdoutWrite = process.stdout.write as typeof stdoutWriteMock
+  },
+})
+
 export const test = oclifTest
   .register('mockConsoleLog', mockConsoleLog)
   .register('mockConsoleWarn', mockConsoleWarn)
   .register('mockConsoleError', mockConsoleError)
+  .register('mockStdoutWrite', mockStdoutWrite)
 
 export const setup = test
+  .mockStdoutWrite()
   .add('dir', async () => {
     const jbrowseTmpDir = path.join(tmpDir, 'jbrowse')
     await fsPromises.mkdir(jbrowseTmpDir, { recursive: true })
