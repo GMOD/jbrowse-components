@@ -27,7 +27,22 @@ function Home() {
           <img src="img/dell.png" />
         </div>
       </div>
-      <main></main>
+      <table style={{ width: '100%' }}>
+        <thead>
+          <td>JBrowse 2</td>
+          <td>JBrowse 1</td>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Runs on desktop or web</td>
+            <td>Runs on desktop or web</td>
+          </tr>
+          <tr>
+            <td>Supports many different view types</td>
+            <td>Traditional linear view only</td>
+          </tr>
+        </tbody>
+      </table>
     </Layout>
   )
 }
