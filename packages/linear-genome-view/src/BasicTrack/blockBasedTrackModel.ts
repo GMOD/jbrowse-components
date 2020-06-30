@@ -236,6 +236,13 @@ const blockBasedTrack = types
     setFeatureIdUnderMouse(feature: string | undefined) {
       self.featureIdUnderMouse = feature
     },
+    reload() {
+      const temp = JSON.parse(JSON.stringify(self.blockState))
+      Object.keys(temp).forEach(blockState => {
+        temp[blockState].key += '-reload'
+      })
+      self.blockState = temp
+    },
   }))
   .actions(self => ({
     setContextMenuFeature(feature?: Feature) {

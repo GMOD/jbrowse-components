@@ -45,9 +45,7 @@ const readBuffer = async (url: string, args: RequestInit) => {
   }
 }
 
-interface Global extends NodeJS.Global {
-  fetch: (url: string, args: RequestInit) => Promise<Response>
-}
+// @ts-ignore
 jest.spyOn(global as Global, 'fetch').mockImplementation(readBuffer)
 
 function FallbackComponent({ error }: FallbackProps) {
