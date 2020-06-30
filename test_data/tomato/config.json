@@ -1,0 +1,97 @@
+{
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    }
+  },
+  "assemblies": [
+    {
+      "name": "SL4.0",
+      "sequence": {
+        "trackId": "tomato",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "faiLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.fai"
+          },
+          "fastaLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz"
+          },
+          "gziLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.gzi"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "VariantTrack",
+      "trackId": "BGV006906_vcf",
+      "name": "BGV006906 (VCF)",
+      "assemblyNames": ["SL4.0"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.ont.v1.0.s.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.ont.v1.0.s.vcf.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "BGV006906_cram",
+      "name": "BGV006906 (CRAM)",
+      "assemblyNames": ["SL4.0"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.cram"
+        },
+        "craiLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "faiLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.fai"
+          },
+          "fastaLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz"
+          },
+          "gziLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "BGV006906_bam",
+      "name": "BGV006906 (BAM)",
+      "assemblyNames": ["SL4.0"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.bam.bai"
+          }
+        }
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "New Session"
+  }
+}
