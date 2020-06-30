@@ -127,7 +127,7 @@ export default (pluginManager: PluginManager) => {
       }
 
       const feats = await Promise.all(
-        regions.map((region, index) => this.getRegionStats(region, opts)),
+        regions.map(region => this.getRegionStats(region, opts)),
       )
 
       const scoreMax = feats
@@ -169,7 +169,7 @@ export default (pluginManager: PluginManager) => {
           region,
           opts.bpPerPx || 1,
         )
-        coverageBins.forEach((bin: NestedFrequencyTable, index: number) => {
+        coverageBins.forEach((bin, index) => {
           observer.next(
             new SimpleFeature({
               id: `pos_${region.start}${index}`,

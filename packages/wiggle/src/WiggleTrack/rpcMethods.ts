@@ -18,11 +18,13 @@ export class WiggleGetGlobalStats extends RpcMethodType {
   async execute(args: {
     adapterConfig: {}
     signal?: RemoteAbortSignal
+    headers?: Record<string, string>
     sessionId: string
   }): Promise<FeatureStats> {
     const {
       adapterConfig,
       signal,
+      headers,
       sessionId,
     } = await this.deserializeArguments(args)
     const { dataAdapter } = await getAdapter(
@@ -34,7 +36,7 @@ export class WiggleGetGlobalStats extends RpcMethodType {
       dataAdapter instanceof BaseFeatureDataAdapter &&
       dataAdapterSupportsGlobalStats(dataAdapter)
     ) {
-      return dataAdapter.getGlobalStats({ signal })
+      return dataAdapter.getGlobalStats({ signal, headers })
     }
     return blankStats()
   }
@@ -57,6 +59,7 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
     adapterConfig: {}
     signal?: RemoteAbortSignal
     sessionId: string
+    headers?: Record<string, string>
     regions: Region[]
     bpPerPx: number
   }) {
@@ -65,6 +68,7 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
       adapterConfig,
       signal,
       bpPerPx,
+      headers,
       sessionId,
     } = await this.deserializeArguments(args)
     const { dataAdapter } = await getAdapter(
@@ -80,6 +84,7 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
       return dataAdapter.getMultiRegionStats(regions, {
         signal,
         bpPerPx,
+        headers,
       })
     }
     return blankStats()

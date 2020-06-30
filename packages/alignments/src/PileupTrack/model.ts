@@ -144,6 +144,16 @@ const stateModelFactory = (
         self.sortedByRefName = centerRefName
       },
     }))
+    .actions(self => {
+      // reset the sort object and refresh whole track on reload
+      const superReload = self.reload
+      return {
+        reload() {
+          self.clearSelected()
+          superReload()
+        },
+      }
+    })
     .views(self => ({
       get rendererTypeName() {
         const viewName = getConf(self, 'defaultRendering')

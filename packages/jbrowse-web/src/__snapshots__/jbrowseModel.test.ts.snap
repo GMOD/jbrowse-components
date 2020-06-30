@@ -366,6 +366,39 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "uri": "test_data/volvox/volvox-reload.bam",
+        },
+        "index": Object {
+          "location": Object {
+            "uri": "test_data/volvox/volvox-reload.bam.bai",
+          },
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "volvox-sorted.bam (ctgA, canvas, reload test)",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox_alignments_pileup_coverage_reload",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bamLocation": Object {
           "uri": "test_data/volvox/volvox-sorted.bam",
         },
         "index": Object {

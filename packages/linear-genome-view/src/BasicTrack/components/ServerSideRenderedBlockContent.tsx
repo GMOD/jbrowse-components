@@ -3,6 +3,8 @@ import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
+import Button from '@material-ui/core/Button'
+import RefreshIcon from '@material-ui/icons/Refresh'
 import ServerSideRenderedContent from '../../LinearGenomeView/components/ServerSideRenderedContent'
 
 const useStyles = makeStyles(theme => ({
@@ -31,7 +33,6 @@ const useStyles = makeStyles(theme => ({
   },
   blockError: {
     padding: theme.spacing(2),
-    pointerEvents: 'none',
     width: '100%',
   },
 }))
@@ -79,10 +80,20 @@ BlockMessage.propTypes = {
   messageText: PropTypes.string.isRequired,
 }
 
-function BlockError({ error }: { error: Error }) {
+function BlockError({ error, reload }: { error: Error; reload: () => void }) {
   const classes = useStyles()
   return (
     <div className={classes.blockError}>
+      {reload ? (
+        <Button
+          data-testid="reload_button"
+          onClick={reload}
+          size="small"
+          startIcon={<RefreshIcon />}
+        >
+          Reload
+        </Button>
+      ) : null}
       <Typography color="error" variant="body2">
         {error.message}
       </Typography>
@@ -91,6 +102,10 @@ function BlockError({ error }: { error: Error }) {
 }
 BlockError.propTypes = {
   error: MobxPropTypes.objectOrObservableObject.isRequired,
+  reload: PropTypes.func,
+}
+BlockError.defaultProps = {
+  reload: undefined,
 }
 
 const ServerSideRenderedBlockContent = observer(
@@ -100,6 +115,7 @@ const ServerSideRenderedBlockContent = observer(
     // requires typing out to avoid circular reference with this component being referenced in the model itself
     model: {
       error: Error | undefined
+      reload: () => void
       message: string | undefined
       filled: boolean
     }
@@ -107,7 +123,7 @@ const ServerSideRenderedBlockContent = observer(
     if (model.error) {
       return (
         <Repeater>
-          <BlockError error={model.error} />
+          <BlockError error={model.error} reload={model.reload} />
         </Repeater>
       )
     }

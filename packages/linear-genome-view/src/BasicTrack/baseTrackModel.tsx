@@ -205,6 +205,10 @@ const BaseTrack = types
     setScrollTop(scrollTop: number) {
       self.scrollTop = scrollTop
     },
+
+    reload() {
+      // base reload does nothing, see specialized tracks for details
+    },
   }))
 
 export const BaseTrackConfig = generateBaseTrackConfig(BaseTrack)

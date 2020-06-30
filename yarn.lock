@@ -1333,10 +1333,10 @@
     object.entries-ponyfill "^1.0.1"
     quick-lru "^2.0.0"
 
-"@gmod/bbi@^1.0.29":
-  version "1.0.29"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-1.0.29.tgz#621ad48a3d1c87b9558aa2e95941b3f477297b51"
-  integrity sha512-d6k7f8u9N6NqtheFbiDwHy5r6AW37vWjw/ErjJNpWfVQ6Lbu8jQKPCYkRL4lE+1jyeelrZinTgaMbE1ynqqJQw==
+"@gmod/bbi@^1.0.30":
+  version "1.0.30"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-1.0.30.tgz#15b700335056957d48d25cacdde633d63e2cf98d"
+  integrity sha512-YOaNSHBtjBweUdYF8/8HPwQMhLnksIp/p+knnueTP+qOW6ILvfwQ1QYQJVbDs20RGKS8eg/kEv89fvxeWSr7jA==
   dependencies:
     "@babel/runtime" "^7.4.4"
     "@gmod/binary-parser" "^1.3.5"
@@ -1373,10 +1373,10 @@
   dependencies:
     long "^4.0.0"
 
-"@gmod/cram@^1.5.3":
-  version "1.5.4"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-1.5.4.tgz#76fca95a7f43411cb62ac56477f186e498d38efb"
-  integrity sha512-RCJiuTb0E/kgtnegCVsgH0Be/EmnGoR68hZ0cMEi272ui0pWpRQyTAxPeJH/DFaFrhpELvjt99ByWwW10+wSWA==
+"@gmod/cram@^1.5.5":
+  version "1.5.5"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-1.5.5.tgz#802e78d66d2ce824ed1724a23111e0a974591262"
+  integrity sha512-VN3FYNe+pV2AvHVDv8sIuWvYmM3qhG3x4FtL6N2AwhEmvKzHheL+CiVo0pH1jN6sDqzyzWZvx7szIY6KF0ODnw==
   dependencies:
     "@babel/runtime-corejs3" "^7.4.5"
     "@gmod/binary-parser" "^1.3.5"
@@ -3680,9 +3680,9 @@ abbrev@1:
   integrity sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==
 
 abortable-promise-cache@^1.0.1, abortable-promise-cache@^1.1.2, abortable-promise-cache@^1.1.3:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/abortable-promise-cache/-/abortable-promise-cache-1.1.3.tgz#8d354779f6583be2250e92aa6306e711318049ef"
-  integrity sha512-yPQiNjcVvDiQ3Y8sexcVDvCnLCtqfKb23SVYfoWxMzKNgk5WuWJhmD6fs5M7Uwor8hN1Ge8Y4+XZHkFV32vX/w==
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/abortable-promise-cache/-/abortable-promise-cache-1.2.0.tgz#cb48bc5583654383d23709cf5d0d5b56d9c8146f"
+  integrity sha512-kKEN5e569SV8br+gqDwMmpglTD2wlJshaBfU97o+5OCYMUQx5terlWTfgb0a0uq1bvt82SrwzEium5gR0n2frQ==
   dependencies:
     "@babel/runtime" "^7.0.0"
     abortcontroller-polyfill "^1.2.9"
@@ -6152,6 +6152,13 @@ cross-fetch@^3.0.0, cross-fetch@^3.0.2:
   dependencies:
     node-fetch "2.6.0"
     whatwg-fetch "3.0.0"
+
+cross-fetch@^3.0.4:
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-3.0.5.tgz#2739d2981892e7ab488a7ad03b92df2816e03f4c"
+  integrity sha512-FFLcLtraisj5eteosnX1gf01qYDCOc4fDy0+euOt8Kn9YBY2NtXL/pCoYPavw24NIQkQqm5ZOLsGD5Zzj0gyew==
+  dependencies:
+    node-fetch "2.6.0"
 
 cross-spawn@6.0.5, cross-spawn@^6.0.0, cross-spawn@^6.0.5:
   version "6.0.5"
@@ -10725,6 +10732,14 @@ jest-environment-node@^24.9.0:
     jest-mock "^24.9.0"
     jest-util "^24.9.0"
 
+jest-fetch-mock@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/jest-fetch-mock/-/jest-fetch-mock-3.0.3.tgz#31749c456ae27b8919d69824f1c2bd85fe0a1f3b"
+  integrity sha512-Ux1nWprtLrdrH4XwE7O7InRY6psIi3GOsqNESJgMJ+M5cv4A8Lh7SN9d2V2kKRZ8ebAfcd1LNyZguAOb6JiDqw==
+  dependencies:
+    cross-fetch "^3.0.4"
+    promise-polyfill "^8.1.3"
+
 jest-get-type@^24.9.0:
   version "24.9.0"
   resolved "https://registry.yarnpkg.com/jest-get-type/-/jest-get-type-24.9.0.tgz#1684a0c8a50f2e4901b6644ae861f579eed2ef0e"
@@ -14559,6 +14574,11 @@ promise-inflight@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/promise-inflight/-/promise-inflight-1.0.1.tgz#98472870bf228132fcbdd868129bad12c3c029e3"
   integrity sha1-mEcocL8igTL8vdhoEputEsPAKeM=
+
+promise-polyfill@^8.1.3:
+  version "8.1.3"
+  resolved "https://registry.yarnpkg.com/promise-polyfill/-/promise-polyfill-8.1.3.tgz#8c99b3cf53f3a91c68226ffde7bde81d7f904116"
+  integrity sha512-MG5r82wBzh7pSKDRa9y+vllNHz3e3d4CNj1PQE4BQYxLme0gKYYBm9YENq+UkEikyZ0XbiGWxYlVw3Rl9O/U8g==
 
 promise-retry@^1.1.1:
   version "1.1.1"
