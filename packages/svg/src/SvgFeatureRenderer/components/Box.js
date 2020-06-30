@@ -46,6 +46,8 @@ Box.propTypes = {
     get: ReactPropTypes.func.isRequired,
     id: ReactPropTypes.func.isRequired,
   }).isRequired,
+  region: CommonPropTypes.Region.isRequired,
+  bpPerPx: ReactPropTypes.number.isRequired,
   featureLayout: ReactPropTypes.shape({
     absolute: ReactPropTypes.shape({
       top: ReactPropTypes.number.isRequired,
