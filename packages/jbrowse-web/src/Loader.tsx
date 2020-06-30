@@ -114,7 +114,7 @@ export default function Loader() {
       } catch (error) {
         if (configQueryParam && configQueryParam !== 'config.json') {
           setConfigSnapshot(() => {
-            throw new Error(`Could not find config "${configQueryParam}"`)
+            throw new Error(`Problem loading config, "${error.message}"`)
           })
         } else {
           setNoDefaultConfig(true)
