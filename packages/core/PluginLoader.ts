@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 import url from 'url'
 import domLoadScript from 'load-script2'
 
@@ -30,14 +31,15 @@ export default class PluginLoader {
     this.definitions = JSON.parse(JSON.stringify(pluginDefinitions))
   }
 
-  async loadScript(scriptUrl: string) {
+  async loadScript(scriptUrl: string): Promise<void> {
     if (document && document.getElementsByTagName) {
       return domLoadScript(scriptUrl)
     }
-    // eslint-disable-next-line no-restricted-globals
-    if (self && importScripts) {
-      importScripts(scriptUrl)
-      return
+    // @ts-ignore
+    if (self && self.importScripts) {
+      // @ts-ignore
+      self.importScripts(scriptUrl)
+      return undefined
     }
     throw new Error(
       'cannot figure out how to load external JS scripts in this environment',

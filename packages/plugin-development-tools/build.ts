@@ -26,6 +26,7 @@ export function baseJBrowsePluginWebpackConfig(
     mode: process.env.NODE_ENV || 'production',
     entry: './src/index.ts',
     devtool: process.env.NODE_ENV === 'development' ? 'source-map' : false,
+    // @ts-ignore
     output: {
       path: path.resolve(buildDir, 'dist'),
       publicPath: 'dist/',
