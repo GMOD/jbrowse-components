@@ -5,7 +5,7 @@
   "jbrowse-plugin": {
     "name": "GDC"
   },
-  "main": "src/index.ts",
+  "main": "dist/plugin.js",
   "scripts": {
     "test": "cd ../..; jest packages/gdc",
     "build": "cross-env NODE_ENV=production webpack",

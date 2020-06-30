@@ -23,13 +23,14 @@ export function baseJBrowsePluginWebpackConfig(
     packageJson.name.replace('@gmod/jbrowse-plugin-', '')
 
   return {
-    mode: process.env.NODE_ENV,
+    mode: process.env.NODE_ENV || 'production',
     entry: './src/index.ts',
-    devtool: false,
+    devtool: process.env.NODE_ENV === 'development' ? 'source-map' : false,
     output: {
       path: path.resolve(buildDir, 'dist'),
       publicPath: 'dist/',
       filename: `plugin.js`,
+      sourceMapFilename: `plugin.js.map`,
       library: `JBrowsePlugin${pascalCase(pluginNameParamCase)}`,
       libraryTarget: 'umd',
     },

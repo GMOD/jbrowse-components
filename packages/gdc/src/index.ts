@@ -1,69 +1,75 @@
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import type PluginManager from '@gmod/jbrowse-core/PluginManager'
 import Plugin from '@gmod/jbrowse-core/Plugin'
-import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
-import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
-import { lazy } from 'react'
-import {
-  configSchema as ConfigSchema,
-  HeadingComponent,
-  ReactComponent,
-  stateModelFactory as filterDrawerStateModelFactory,
-} from './GDCFilterDrawerWidget'
 
-import {
-  configSchema as gdcFeatureDrawerWidgetConfigSchema,
-  ReactComponent as GDCFeatureDrawerWidgetReactComponent,
-  stateModel as gdcFeatureDrawerWidgetStateModel,
-} from './GDCFeatureDrawerWidget'
-import {
-  configSchemaFactory as gdcTrackConfigSchemaFactory,
-  modelFactory as gdcTrackModelFactory,
-} from './GDCTrack'
+import GDCFilterDrawerWidget from './GDCFilterDrawerWidget'
+import GDCFeatureDrawerWidgetF from './GDCFeatureDrawerWidget'
+import GDCTrack from './GDCTrack'
 
 import GDCAdapterConfigSchema from './GDCAdapter/configSchema'
-import GDCAdapterClassF from './GDCAdapter/GDCAdapter'
+import GDCAdapterClass from './GDCAdapter/GDCAdapter'
 
 export default class extends Plugin {
+  name = 'GDCPlugin'
+
   install(pluginManager: PluginManager) {
+    const AdapterType =
+      pluginManager.lib['@gmod/jbrowse-core/pluggableElementTypes/AdapterType']
+    const TrackType =
+      pluginManager.lib['@gmod/jbrowse-core/pluggableElementTypes/TrackType']
+    const DrawerWidgetType =
+      pluginManager.lib[
+        '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
+      ]
+
+    const { lazy } = pluginManager.lib.react
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
           name: 'GDCAdapter',
           configSchema: GDCAdapterConfigSchema,
-          AdapterClass: GDCAdapterClassF(pluginManager),
+          AdapterClass: pluginManager.load(GDCAdapterClass),
         }),
     )
 
     pluginManager.addTrackType(() => {
-      const configSchema = gdcTrackConfigSchemaFactory(pluginManager)
+      const { configSchema, stateModel } = pluginManager.load(GDCTrack)
       return new TrackType({
         name: 'GDCTrack',
         compatibleView: 'LinearGenomeView',
         configSchema,
-        stateModel: gdcTrackModelFactory(configSchema),
+        stateModel,
       })
     })
 
     pluginManager.addDrawerWidgetType(() => {
+      const {
+        configSchema,
+        HeadingComponent,
+        ReactComponent,
+        stateModel,
+      } = pluginManager.load(GDCFilterDrawerWidget)
+
       return new DrawerWidgetType({
         name: 'GDCFilterDrawerWidget',
         HeadingComponent,
-        configSchema: ConfigSchema,
-        stateModel: filterDrawerStateModelFactory(pluginManager),
-        LazyReactComponent: lazy(() => ReactComponent),
+        configSchema,
+        stateModel,
+        LazyReactComponent: lazy(async () => ReactComponent),
       })
     })
 
-    pluginManager.addDrawerWidgetType(
-      () =>
-        new DrawerWidgetType({
-          name: 'GDCFeatureDrawerWidget',
-          heading: 'Feature Details',
-          configSchema: gdcFeatureDrawerWidgetConfigSchema,
-          stateModel: gdcFeatureDrawerWidgetStateModel,
-          LazyReactComponent: lazy(() => GDCFeatureDrawerWidgetReactComponent),
-        }),
-    )
+    pluginManager.addDrawerWidgetType(() => {
+      const { configSchema, stateModel, ReactComponent } = pluginManager.load(
+        GDCFeatureDrawerWidgetF,
+      )
+
+      return new DrawerWidgetType({
+        name: 'GDCFeatureDrawerWidget',
+        heading: 'Feature Details',
+        configSchema,
+        stateModel,
+        LazyReactComponent: lazy(async () => ReactComponent),
+      })
+    })
   }
 }

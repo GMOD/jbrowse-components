@@ -60,9 +60,15 @@ export default function Loader() {
     async function fetchPlugins() {
       // Load runtime plugins
       if (configSnapshot) {
-        const pluginLoader = new PluginLoader(configSnapshot.plugins)
-        const runtimePlugins = await pluginLoader.load()
-        setPlugins([...corePlugins, ...runtimePlugins])
+        try {
+          const pluginLoader = new PluginLoader(configSnapshot.plugins)
+          const runtimePlugins = await pluginLoader.load()
+          setPlugins([...corePlugins, ...runtimePlugins])
+        } catch (error) {
+          setConfigSnapshot(() => {
+            throw error
+          })
+        }
       }
     }
     fetchPlugins()

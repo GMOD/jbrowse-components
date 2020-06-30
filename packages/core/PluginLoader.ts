@@ -34,6 +34,7 @@ export default class PluginLoader {
     if (document && document.getElementsByTagName) {
       return domLoadScript(scriptUrl)
     }
+    // eslint-disable-next-line no-restricted-globals
     if (self && importScripts) {
       importScripts(scriptUrl)
       return

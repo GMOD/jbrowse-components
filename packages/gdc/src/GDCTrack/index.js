@@ -1,2 +1,6 @@
-export { default as configSchemaFactory } from './configSchema'
-export { default as modelFactory } from './model'
+export default pluginManager => {
+  return {
+    configSchema: pluginManager.jbrequire(require('./configSchema')),
+    stateModel: pluginManager.jbrequire(require('./model')),
+  }
+}

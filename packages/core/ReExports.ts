@@ -9,6 +9,9 @@ import PropTypes from 'prop-types'
 import * as MUIStyles from '@material-ui/core/styles'
 
 // @material-ui components
+import * as MUICore from '@material-ui/core'
+import * as MUILab from '@material-ui/lab'
+import * as MUIIcons from '@material-ui/icons'
 import MUIBox from '@material-ui/core/Box'
 import MUIButton from '@material-ui/core/Button'
 import MUIButtonGroup from '@material-ui/core/ButtonGroup'
@@ -44,10 +47,15 @@ import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 
 import * as BaseAdapterExports from './data_adapters/BaseAdapter'
+
+import * as BaseFeatureDetail from './BaseFeatureDrawerWidget/BaseFeatureDetail'
+
 import Base1DView from './util/Base1DViewModel'
 import ViewType from './pluggableElementTypes/ViewType'
 import AdapterType from './pluggableElementTypes/AdapterType'
 import TrackType from './pluggableElementTypes/TrackType'
+import DrawerWidgetType from './pluggableElementTypes/DrawerWidgetType'
+
 import ServerSideRendererType from './pluggableElementTypes/renderers/ServerSideRendererType'
 import CircularChordRendererType from './pluggableElementTypes/renderers/CircularChordRendererType'
 import BoxRendererType from './pluggableElementTypes/renderers/BoxRendererType'
@@ -72,10 +80,14 @@ const libs = {
   'mobx-react': mxreact,
   'prop-types': PropTypes,
 
+  // material-ui 1st-level components
+  '@material-ui/core': MUICore,
+  '@material-ui/lab': MUILab,
+  '@material-ui/icons': MUIIcons,
+
+  // material-ui subcomponents, should get rid of these
   '@material-ui/core/colors': MUIColors,
   '@material-ui/core/styles': MUIStyles,
-
-  // material-ui components
   '@material-ui/core/Box': MUIBox,
   '@material-ui/core/Button': MUIButton,
   '@material-ui/core/ButtonGroup': MUIButtonGroup,
@@ -114,6 +126,8 @@ const libs = {
   '@gmod/jbrowse-core/pluggableElementTypes/ViewType': ViewType,
   '@gmod/jbrowse-core/pluggableElementTypes/AdapterType': AdapterType,
   '@gmod/jbrowse-core/pluggableElementTypes/TrackType': TrackType,
+  '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType': DrawerWidgetType,
+
   '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType': ServerSideRendererType,
   '@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType': CircularChordRendererType,
   '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType': BoxRendererType,
@@ -127,6 +141,7 @@ const libs = {
   '@gmod/jbrowse-core/util/io': coreIo,
   '@gmod/jbrowse-core/util/mst-reflection': coreMstReflection,
   '@gmod/jbrowse-core/BaseViewModel': BaseViewModel,
+  '@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail': BaseFeatureDetail,
 
   '@gmod/jbrowse-core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
