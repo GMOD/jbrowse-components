@@ -6,6 +6,8 @@ import {
 } from './ProteinReferenceSequenceRenderer'
 
 export default class extends Plugin {
+  name = 'ProteinsPlugin'
+
   install(pluginManager) {
     pluginManager.addRendererType(
       () =>

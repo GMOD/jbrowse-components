@@ -30,6 +30,8 @@ import {
 } from './HierarchicalTrackSelectorDrawerWidget'
 
 export default class extends Plugin {
+  name = 'DataManagementPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addConnectionType(
       () =>

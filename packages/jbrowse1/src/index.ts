@@ -12,6 +12,8 @@ import {
 } from './JBrowse1Connection'
 
 export default class JBrowse1CompatibilityPlugin extends Plugin {
+  name = 'JBrowse1CompatibilityPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>
