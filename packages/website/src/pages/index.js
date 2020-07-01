@@ -115,7 +115,7 @@ function Home() {
         <div className={classes.section}>
           <Typography variant="h4">License</Typography>
           <Typography>
-            Jrowse is released under the GNU LGPL or the Artistic License, see
+            JBrowse is released under the GNU LGPL or the Artistic License, see
             the JBrowse LICENSE file.
           </Typography>
         </div>
