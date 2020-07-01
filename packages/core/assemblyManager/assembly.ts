@@ -318,7 +318,6 @@ async function loadAssemblyReaction(
   props: ReturnType<typeof loadAssemblyData> | undefined,
   signal: AbortSignal,
 ) {
-  console.log('testing', props)
   if (!props) {
     throw new Error('cannot render with no props')
   }
