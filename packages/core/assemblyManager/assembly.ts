@@ -281,7 +281,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
           throw new Error('sessionId is required')
         }
         const map = await this.getAdapterMapEntry(adapterConf, opts)
-        return map?.forwardMap
+        return map.forwardMap
       },
 
       /**
@@ -292,7 +292,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
         const map = await this.getAdapterMapEntry(adapterConf, opts)
-        return map?.reverseMap
+        return map.reverseMap
       },
     }))
 }

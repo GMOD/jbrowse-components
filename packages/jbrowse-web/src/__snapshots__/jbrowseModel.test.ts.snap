@@ -383,18 +383,42 @@ Object {
       ],
       "name": "volvox-sorted.bam (ctgA, canvas, reload test)",
       "renderers": Object {
-        "PileupRenderer": Object {
-          "type": "PileupRenderer",
-        },
         "SNPCoverageRenderer": Object {
           "type": "SNPCoverageRenderer",
+        },
+      },
+      "trackId": "volvox_alignments_pileup_coverage_reload",
+      "type": "SNPCoverageTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bamLocation": Object {
+          "uri": "test_data/volvox/volvox-bam-reload.bam",
+        },
+        "index": Object {
+          "location": Object {
+            "uri": "test_data/volvox/volvox-bam-reload.bam.bai",
+          },
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "volvox-sorted.bam (ctgA, canvas, reload mod test)",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
         },
         "SvgFeatureRenderer": Object {
           "type": "SvgFeatureRenderer",
         },
       },
-      "trackId": "volvox_alignments_pileup_coverage_reload",
-      "type": "AlignmentsTrack",
+      "trackId": "volvox_alignments_pileup_coverage_reload_mod",
+      "type": "PileupTrack",
     },
     Object {
       "adapter": Object {
@@ -696,6 +720,34 @@ Object {
         },
       },
       "trackId": "volvox_microarray",
+      "type": "WiggleTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "uri": "test_data/volvox/volvox_microarray_reload.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "wiggle_track xyplot (reload integration test)",
+      "renderers": Object {
+        "DensityRenderer": Object {
+          "type": "DensityRenderer",
+        },
+        "LinePlotRenderer": Object {
+          "type": "LinePlotRenderer",
+        },
+        "XYPlotRenderer": Object {
+          "type": "XYPlotRenderer",
+        },
+      },
+      "trackId": "volvox_microarray_reload",
       "type": "WiggleTrack",
     },
     Object {

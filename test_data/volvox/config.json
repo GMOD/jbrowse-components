@@ -222,7 +222,7 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
+      "type": "SNPCoverageTrack",
       "trackId": "volvox_alignments_pileup_coverage_reload",
       "name": "volvox-sorted.bam (ctgA, canvas, reload test)",
       "category": ["Integration test"],
@@ -235,6 +235,35 @@
         "index": {
           "location": {
             "uri": "test_data/volvox/volvox-reload.bam.bai"
+          }
+        }
+      },
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer"
+        },
+        "SNPCoverageRenderer": {
+          "type": "SNPCoverageRenderer"
+        }
+      }
+    },
+    {
+      "type": "PileupTrack",
+      "trackId": "volvox_alignments_pileup_coverage_reload_mod",
+      "name": "volvox-sorted.bam (ctgA, canvas, reload mod test)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "test_data/volvox/volvox-bam-reload.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/volvox/volvox-bam-reload.bam.bai"
           }
         }
       },
@@ -459,6 +488,30 @@
         "type": "BigWigAdapter",
         "bigWigLocation": {
           "uri": "test_data/volvox/volvox_microarray.bw"
+        }
+      },
+      "renderers": {
+        "DensityRenderer": {
+          "type": "DensityRenderer"
+        },
+        "XYPlotRenderer": {
+          "type": "XYPlotRenderer"
+        },
+        "LinePlotRenderer": {
+          "type": "LinePlotRenderer"
+        }
+      }
+    },
+    {
+      "type": "WiggleTrack",
+      "trackId": "volvox_microarray_reload",
+      "name": "wiggle_track xyplot (reload integration test)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "test_data/volvox/volvox_microarray_reload.bw"
         }
       },
       "renderers": {
