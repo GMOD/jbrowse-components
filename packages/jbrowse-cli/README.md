@@ -25,7 +25,7 @@ $ npm install -g @gmod/jbrowse-cli
 $ jbrowse COMMAND
 running command...
 $ jbrowse (-v|--version|version)
-@gmod/jbrowse-cli/0.0.0 linux-x64 node-v12.14.1
+@gmod/jbrowse-cli/0.0.0 darwin-x64 node-v14.0.0
 $ jbrowse --help [COMMAND]
 USAGE
   $ jbrowse COMMAND
@@ -39,8 +39,10 @@ USAGE
 <!-- commands -->
 
 - [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
+- [`jbrowse create PATH`](#jbrowse-create-path)
 - [`jbrowse hello [FILE]`](#jbrowse-hello-file)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
+- [`jbrowse upgrade PATH [PLACEHOLDER]`](#jbrowse-upgrade-path-placeholder)
 
 ## `jbrowse add-assembly SEQUENCE`
 
@@ -120,6 +122,26 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.config.json
 ```
 
+## `jbrowse create PATH`
+
+Downloads and installs the latest Jbrowse 2 release
+
+```
+USAGE
+  $ jbrowse create PATH
+
+ARGUMENTS
+  PATH  Location where jbrowse 2 will be installed
+
+OPTIONS
+  -f, --force  Overwrites existing jbrowse installation if present in path
+  -h, --help   show CLI help
+
+EXAMPLES
+  $ jbrowse create /path/to/new/installation
+  $ jbrowse create /path/to/new/installation -force
+```
+
 ## `jbrowse hello [FILE]`
 
 describe the command here
@@ -154,6 +176,25 @@ OPTIONS
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.1.0/src/commands/help.ts)_
+
+## `jbrowse upgrade PATH [PLACEHOLDER]`
+
+Upgrades Jbrowse 2 to latest version
+
+```
+USAGE
+  $ jbrowse upgrade PATH [PLACEHOLDER]
+
+ARGUMENTS
+  PATH         Location where jbrowse 2 will be installed
+  PLACEHOLDER  Placeholder for config file migration scripts
+
+OPTIONS
+  -h, --help  show CLI help
+
+EXAMPLE
+  $ jbrowse upgrade /path/to/new/installation
+```
 
 <!-- commandsstop -->
 
