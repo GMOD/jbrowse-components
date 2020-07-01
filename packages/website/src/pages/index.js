@@ -57,22 +57,22 @@ function Home() {
       title={`${siteConfig.title}`}
       description="Description will go into a meta tag in <head />"
     >
-      <div className={classes.container}>
-        <div style={{ flexBasis: '50%' }}>
-          <h1>JBrowse 2</h1>
-          <p>
-            A pluggable open-source platform for visualizing and integrating
-            biological data
-          </p>
-          <Button variant="contained" color="secondary" disableElevation>
-            Download latest release
-          </Button>
-        </div>
-        <div style={{ flexBasis: '50%' }}>
-          <img src="img/dell.png" />
-        </div>
-      </div>
       <div className={classes.body}>
+        <div className={classes.container}>
+          <div style={{ flexBasis: '50%' }}>
+            <h1>JBrowse 2</h1>
+            <p>
+              A pluggable open-source platform for visualizing and integrating
+              biological data
+            </p>
+            <Button variant="contained" color="secondary" disableElevation>
+              Download latest release
+            </Button>
+          </div>
+          <div style={{ flexBasis: '50%' }}>
+            <img src="img/dell.png" />
+          </div>
+        </div>
         <Table>
           <TableHead>
             <TableRow>
