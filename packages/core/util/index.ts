@@ -22,7 +22,6 @@ import {
   AssemblyManager,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
-import { whenPresent } from './when'
 
 export * from './types'
 export * from './aborting'
