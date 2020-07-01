@@ -1,23 +1,11 @@
 import jsonStableStringify from 'json-stable-stringify'
-import {
-  cast,
-  getParent,
-  IAnyType,
-  types,
-  Instance,
-  SnapshotIn,
-} from 'mobx-state-tree'
+import { cast, getParent, IAnyType, types, Instance } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import { readConfObject } from '../configuration'
 import { Region } from '../util/types'
 import { Region as MSTRegion } from '../util/types/mst'
-import { makeAbortableReaction, isAbortException, when } from '../util'
+import { makeAbortableReaction, when } from '../util'
 import QuickLRU from '../util/QuickLRU'
-
-const refNameAdapterMapSet = types.model('RefNameMappingForAdapter', {
-  forwardMap: types.map(types.string),
-  reverseMap: types.map(types.string),
-})
 
 // Based on the UCSC Genome Browser chromosome color palette:
 // https://github.com/ucscGenomeBrowser/kent/blob/a50ed53aff81d6fb3e34e6913ce18578292bc24e/src/hg/inc/chromColors.h
@@ -157,7 +145,6 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       configuration: types.reference(assemblyConfigType),
       regions: types.maybe(types.array(MSTRegion)),
       refNameAliases: types.maybe(types.map(types.array(types.string))),
-      adapterMaps: types.map(refNameAdapterMapSet), // map of adapter ID => refNameAdapterMap
     })
     .views(self => ({
       get name(): string {
@@ -260,45 +247,27 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
           this.setError,
         )
       },
-      addAdapterMap(
-        adapterId: string,
-        snap: SnapshotIn<typeof refNameAdapterMapSet>,
-      ) {
-        self.adapterMaps.set(adapterId, snap)
-      },
     }))
     .views(self => ({
       getAdapterMapEntry(
         adapterConf: unknown,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
+        const { signal, ...rest } = opts
         if (!opts.sessionId) {
           throw new Error('sessionId is required')
         }
         const adapterId = getAdapterId(adapterConf)
-        const adapterMap = self.adapterMaps.get(adapterId)
-        console.log('in the adapter map downloader')
-        return adapterLoads
-          .get(
+        return adapterLoads.get(
+          adapterId,
+          {
+            adapterConf,
             adapterId,
-            {
-              adapterConf,
-              adapterId,
-              self: self as Assembly,
-              sessionId: opts.sessionId,
-            },
-            opts.signal,
-          )
-          .then(mapData => {
-            console.log('mapData', mapData)
-            return mapData
-            // self.addAdapterMap(adapterId, mapData)
-          })
-          .catch(err => {
-            if (!isAbortException(err)) {
-              console.error(err)
-            }
-          })
+            self: self as Assembly,
+            ...rest,
+          },
+          signal,
+        )
       },
 
       /**
