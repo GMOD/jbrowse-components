@@ -64,27 +64,16 @@ async function loadRefNameMap(
     name: 'when assembly ready',
   })
 
-  let refNames = []
-  try {
-    refNames = await assembly.rpcManager.call(
+  const refNames = await assembly.rpcManager.call(
+    sessionId,
+    'CoreGetRefNames',
+    {
       sessionId,
-      'CoreGetRefNames',
-      {
-        sessionId,
-        adapterConfig: adapterConf,
-        signal,
-      },
-      { timeout: 1000000 },
-    )
-  } catch (error) {
-    if (!isAbortException) {
-      console.error(
-        `Error loading adapter refNames for adapter ${getAdapterId(
-          adapterConf,
-        )}`,
-      )
-    }
-  }
+      adapterConfig: adapterConf,
+      signal,
+    },
+    { timeout: 1000000 },
+  )
 
   const refNameMap: Record<string, string> = {}
   const { refNameAliases } = assembly
@@ -288,52 +277,53 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         }
         const adapterId = getAdapterId(adapterConf)
         const adapterMap = self.adapterMaps.get(adapterId)
-        if (!adapterMap) {
-          adapterLoads
-            .get(
+        console.log('in the adapter map downloader')
+        return adapterLoads
+          .get(
+            adapterId,
+            {
+              adapterConf,
               adapterId,
-              {
-                adapterConf,
-                adapterId,
-                self: self as Assembly,
-                sessionId: opts.sessionId,
-              },
-              opts.signal,
-            )
-            .then(mapData => {
-              self.addAdapterMap(adapterId, mapData)
-            })
-            .catch(err => {
-              if (!isAbortException(err)) {
-                console.error(err)
-              }
-            })
-          return undefined
-        }
-        return adapterMap
+              self: self as Assembly,
+              sessionId: opts.sessionId,
+            },
+            opts.signal,
+          )
+          .then(mapData => {
+            console.log('mapData', mapData)
+            return mapData
+            // self.addAdapterMap(adapterId, mapData)
+          })
+          .catch(err => {
+            if (!isAbortException(err)) {
+              console.error(err)
+            }
+          })
       },
 
       /**
        * get Map of `canonical-name -> adapter-specific-name`
        */
-      getRefNameMapForAdapter(
+      async getRefNameMapForAdapter(
         adapterConf: unknown,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
         if (!opts || !opts.sessionId) {
           throw new Error('sessionId is required')
         }
-        return this.getAdapterMapEntry(adapterConf, opts)?.forwardMap
+        const map = await this.getAdapterMapEntry(adapterConf, opts)
+        return map?.forwardMap
       },
 
       /**
        * get Map of `adapter-specific-name -> canonical-name`
        */
-      getReverseRefNameMapForAdapter(
+      async getReverseRefNameMapForAdapter(
         adapterConf: unknown,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
-        return this.getAdapterMapEntry(adapterConf, opts)?.reverseMap
+        const map = await this.getAdapterMapEntry(adapterConf, opts)
+        return map?.reverseMap
       },
     }))
 }
@@ -359,6 +349,7 @@ async function loadAssemblyReaction(
   props: ReturnType<typeof loadAssemblyData> | undefined,
   signal: AbortSignal,
 ) {
+  console.log('testing', props)
   if (!props) {
     throw new Error('cannot render with no props')
   }
