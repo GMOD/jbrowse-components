@@ -686,7 +686,7 @@ export function makeAbortableReaction<T, U, V>(
 }
 
 export function renameRegionIfNeeded(
-  refNameMap: Map<string, string>,
+  refNameMap: Record<string, string>,
   region: Region,
 ): Region & { originalRefName?: string } {
   if (isStateTreeNode(region) && !isAlive(region)) {
