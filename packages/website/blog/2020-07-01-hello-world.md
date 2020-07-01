@@ -1,18 +1,22 @@
 ---
 id: hello
-title: Hello
+title: JBrowse 2 launch!
 author: Colin Diesh
-author_title: JBrowse Team
 author_url: https://github.com/cmdcolin
 tags: [jbrowse, intro]
 ---
 
+We are happy to now announce the release of JBrowse 2 public beta
 
-## Hello world
+JBrowse 2 has been in development for almost 2 years at this point, and it has now developed features that offer compelling new functionality
 
+Now, it is finally getting more stable, and we invite interested users to try it out!
 
-I am really pleased to announce the first release of JBrowse 2 public beta
+To get started
 
-We have been working on making JBrowse 2 feature compatible and stable for a year now, and we also have new features that are very compelling reasons to get involved!
+- Download a release
+- Set it up
+- Try it with your own data
+- Tell us about your experience!
 
 We are excited to get you involved, and this website will evolve here soon

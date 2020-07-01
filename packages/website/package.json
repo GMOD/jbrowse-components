@@ -6,7 +6,8 @@
     "start": "docusaurus start",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
-    "deploy": "docusaurus deploy"
+    "predeploy": "npm run build",
+    "deploy": "aws s3 sync build s3://jbrowse.org/jb2/"
   },
   "dependencies": {
     "@docusaurus/core": "^2.0.0-alpha.58",
