@@ -64,7 +64,7 @@ describe('<Loader />', () => {
       </ErrorBoundary>,
     )
     expect(
-      await findByText('Error: HTTP 404 fetching doesNotExist.json', {
+      await findByText('HTTP 404 fetching doesNotExist.json', {
         exact: false,
       }),
     ).toBeTruthy()

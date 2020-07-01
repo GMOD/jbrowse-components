@@ -1,10 +1,11 @@
 const fs = require('fs')
 const helpers = require('yeoman-test')
+const path = require('path')
 
 describe('generator-jbrowse:app', () => {
   let originalWorkingDirectory
   beforeAll(() => {
-    originalWorkingDirectory = process.cwd()
+    originalWorkingDirectory = path.join(__dirname, '..', '..', '..', '..')
   })
 
   afterEach(() => process.chdir(originalWorkingDirectory))
