@@ -39,7 +39,7 @@ USAGE
 <!-- commands -->
 
 - [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
-- [`jbrowse create PATH`](#jbrowse-create-path)
+- [`jbrowse create USERPATH`](#jbrowse-create-userpath)
 - [`jbrowse hello [FILE]`](#jbrowse-hello-file)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse upgrade PATH [PLACEHOLDER]`](#jbrowse-upgrade-path-placeholder)
@@ -122,16 +122,16 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.config.json
 ```
 
-## `jbrowse create PATH`
+## `jbrowse create USERPATH`
 
 Downloads and installs the latest Jbrowse 2 release
 
 ```
 USAGE
-  $ jbrowse create PATH
+  $ jbrowse create USERPATH
 
 ARGUMENTS
-  PATH  Location where jbrowse 2 will be installed
+  USERPATH  Location where jbrowse 2 will be installed
 
 OPTIONS
   -f, --force  Overwrites existing jbrowse installation if present in path
