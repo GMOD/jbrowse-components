@@ -22,7 +22,7 @@ const StyledTableCell = withStyles(theme => ({
   },
 }))(TableCell)
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
   button: {
     textTransform: 'none',
   },
@@ -30,7 +30,23 @@ const useStyles = makeStyles({
     marginTop: '24px',
     marginBottom: '32px',
   },
-})
+
+  container: {
+    display: 'flex',
+    [theme.breakpoints.down('md')]: {
+      flexDirection: 'column',
+    },
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  body: {
+    [theme.breakpoints.down('md')]: {
+      margin: '0.5em',
+    },
+    margin: '5em',
+  },
+}))
 
 function Home() {
   const context = useDocusaurusContext()
@@ -41,22 +57,22 @@ function Home() {
       title={`${siteConfig.title}`}
       description="Description will go into a meta tag in <head />"
     >
-      <div style={{ margin: '5em' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div style={{ flexBasis: '50%' }}>
-            <h1>JBrowse 2</h1>
-            <p>
-              A pluggable open-source platform for visualizing and integrating
-              biological data
-            </p>
-            <Button variant="contained" color="secondary" disableElevation>
-              Download latest release
-            </Button>
-          </div>
-          <div style={{ flexBasis: '50%' }}>
-            <img src="img/dell.png" />
-          </div>
+      <div className={classes.container}>
+        <div style={{ flexBasis: '50%' }}>
+          <h1>JBrowse 2</h1>
+          <p>
+            A pluggable open-source platform for visualizing and integrating
+            biological data
+          </p>
+          <Button variant="contained" color="secondary" disableElevation>
+            Download latest release
+          </Button>
         </div>
+        <div style={{ flexBasis: '50%' }}>
+          <img src="img/dell.png" />
+        </div>
+      </div>
+      <div className={classes.body}>
         <Table>
           <TableHead>
             <TableRow>
@@ -98,14 +114,14 @@ function Home() {
         </Table>
         <div className={classes.section}>
           <Typography variant="h4">Citation</Typography>
+          <hr />
           <Typography variant="body1">
             Research citations are one of the main metrics the JBrowse project
             uses to demonstrate our relevance and utility when applying for
             funding to continue our work. If you use JBrowse in research that
             you publish, please cite the most recent JBrowse paper
           </Typography>
-        </div>
-        <div className={classes.section}>
+          <br />
           <Typography variant="body1">
             Buels, Robert, et al. &quot;JBrowse: a dynamic web platform for
             genome visualization and analysis.&quot; Genome Biology 17.1 (2016):
@@ -114,6 +130,7 @@ function Home() {
         </div>
         <div className={classes.section}>
           <Typography variant="h4">License</Typography>
+          <hr />
           <Typography>
             JBrowse is released under the GNU LGPL or the Artistic License, see
             the JBrowse LICENSE file.
@@ -121,6 +138,7 @@ function Home() {
         </div>
         <div className={classes.section}>
           <Typography variant="h4">Funding and Collaboration</Typography>
+          <hr />
           <Typography>
             The development of JBrowse is supported by grants from the US
             National Institutes of Health (R01HG004483 & U24 CA 220441) , The
