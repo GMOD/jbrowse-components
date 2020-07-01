@@ -26,3 +26,6 @@
   padding: 0 var(--ifm-pre-padding);
 }
 
+.navbar__toggle {
+  color: white;
+}
