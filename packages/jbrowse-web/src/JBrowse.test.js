@@ -18,6 +18,8 @@ import React from 'react'
 import ErrorBoundary from 'react-error-boundary'
 
 // locals
+import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
+import { clearAdapterCache } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import breakpointConfig from '../test_data/breakpoint/config.json'
 import chromeSizesConfig from '../test_data/config_chrom_sizes_test.json'
 import dotplotConfig from '../test_data/config_dotplot.json'
@@ -102,6 +104,8 @@ afterEach(cleanup)
 
 // jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
 beforeEach(() => {
+  clearCache()
+  clearAdapterCache()
   fetch.resetMocks()
   fetch.mockResponse(readBuffer)
 })
@@ -297,7 +301,7 @@ describe('test renamed refs', () => {
     // this is needed to do a fuzzy image comparison because
     // the travis-ci was 2 pixels different for some reason, see PR #710
     expect(buf).toMatchImageSnapshot({
-      failureThreshold: 0.5,
+      failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
   }, 10000 /* this test needs more time to run */)
@@ -308,9 +312,9 @@ describe('test renamed refs', () => {
     )
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_bam_altname'))
     await expect(
-      findAllByText('ctgA_110_638_0:0:0_3:0:0_15b', {}, { timeout: 15000 }),
+      findAllByText('ctgA_110_638_0:0:0_3:0:0_15b', {}, { timeout: 60000 }),
     ).resolves.toBeTruthy()
-  }, 20000)
+  }, 60000)
 
   it('open a bigwig with a renamed reference', async () => {
     const pluginManager = getPluginManager()
@@ -319,11 +323,18 @@ describe('test renamed refs', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
-    state.session.views[0].setNewView(0.05, 5000)
+    state.session.views[0].setNewView(5, 0)
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_microarray_density_altname'),
     )
-    await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
+    const canvas = await findAllByTestId('prerendered_canvas')
+    const bigwigImg = canvas[0].toDataURL()
+    const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
+    const bigwigBuf = Buffer.from(bigwigData, 'base64')
+    expect(bigwigBuf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
   })
 })
 
@@ -336,8 +347,8 @@ describe('max height test', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
     )
-    await expect(findAllByText('Max height reached')).resolves.toBeTruthy()
-  })
+    await findAllByText('Max height reached', {}, { timeout: 60000 })
+  }, 60000)
 })
 
 test('lollipop track test', async () => {
@@ -415,14 +426,17 @@ describe('test configuration editor', () => {
   }, 10000)
 })
 
+// this tests reloading after an initial track error
+// it performs a full image snapshot test to ensure that the features are rendered and not
+// just that an empty canvas is rendered (empty canvas can result if ref name renaming failed)
 describe('reload tests', () => {
-  it('reloads alignments track', async () => {
+  it('reloads alignments track (CRAI 404)', async () => {
     console.error = jest.fn()
 
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     fetch.mockResponse(async request => {
-      if (request.url === 'test_data/volvox/volvox-reload.bam.bai') {
+      if (request.url === 'test_data/volvox/volvox-sorted-altname.cram.crai') {
         return { status: 404 }
       }
       return readBuffer(request)
@@ -432,17 +446,146 @@ describe('reload tests', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
-    state.session.views[0].setNewView(5, 100)
-    fireEvent.click(
-      await findByTestId(
-        'htsTrackEntry-volvox_alignments_pileup_coverage_reload',
-      ),
-    )
+    state.session.views[0].setNewView(0.5, 0)
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
     await findAllByText(/HTTP 404/, {}, { timeout: 5000 })
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    await findAllByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId('prerendered_canvas')
+    const pileupImg = canvas[0].toDataURL()
+    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
+    const pileupBuf = Buffer.from(pileupData, 'base64')
+    expect(pileupBuf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
+  }, 10000)
+
+  it('reloads alignments track (CRAM 404)', async () => {
+    console.error = jest.fn()
+
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    fetch.mockResponse(async request => {
+      if (request.url === 'test_data/volvox/volvox-sorted-altname.cram') {
+        return { status: 404 }
+      }
+      return readBuffer(request)
+    })
+
+    const { findByTestId, findByText, findAllByTestId, findAllByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(0.5, 0)
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_snpcoverage'))
+    await findAllByText(/HTTP 404/, {}, { timeout: 5000 })
+    fetch.mockResponse(readBuffer)
+    const buttons = await findAllByTestId('reload_button')
+    fireEvent.click(buttons[0])
+    const canvas = await findAllByTestId('prerendered_canvas')
+    const pileupImg = canvas[0].toDataURL()
+    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
+    const pileupBuf = Buffer.from(pileupData, 'base64')
+    expect(pileupBuf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
+  }, 10000)
+  it('reloads alignments track (BAI 404)', async () => {
+    console.error = jest.fn()
+
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    fetch.mockResponse(async request => {
+      if (request.url === 'test_data/volvox/volvox-sorted-altname.bam.bai') {
+        return { status: 404 }
+      }
+      return readBuffer(request)
+    })
+
+    const { findByTestId, findByText, findAllByTestId, findAllByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(0.5, 0)
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_bam_snpcoverage'))
+    await findAllByText(/HTTP 404/, {}, { timeout: 5000 })
+    fetch.mockResponse(readBuffer)
+    const buttons = await findAllByTestId('reload_button')
+    fireEvent.click(buttons[0])
+    const canvas = await findAllByTestId('prerendered_canvas')
+    const pileupImg = canvas[0].toDataURL()
+    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
+    const pileupBuf = Buffer.from(pileupData, 'base64')
+    expect(pileupBuf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
+  }, 10000)
+  it('reloads alignments track (BAM 404)', async () => {
+    console.error = jest.fn()
+
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    fetch.mockResponse(async request => {
+      if (request.url === 'test_data/volvox/volvox-sorted-altname.bam') {
+        return { status: 404 }
+      }
+      return readBuffer(request)
+    })
+
+    const { findByTestId, findByText, findAllByTestId, findAllByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(0.5, 0)
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_bam_pileup'))
+    await findAllByText(/HTTP 404/, {}, { timeout: 5000 })
+    fetch.mockResponse(readBuffer)
+    const buttons = await findAllByTestId('reload_button')
+    fireEvent.click(buttons[0])
+    const canvas = await findAllByTestId('prerendered_canvas')
+    const pileupImg = canvas[0].toDataURL()
+    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
+    const pileupBuf = Buffer.from(pileupData, 'base64')
+    expect(pileupBuf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
+  }, 10000)
+
+  it('reloads bigwig (BW 404)', async () => {
+    console.error = jest.fn()
+
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    fetch.mockResponse(async request => {
+      if (request.url === 'test_data/volvox/volvox_microarray.bw') {
+        return { status: 404 }
+      }
+      return readBuffer(request)
+    })
+
+    const { findByTestId, findByText, findAllByTestId, findAllByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(10, 0)
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray'))
+    await findAllByText(/HTTP 404/, {}, { timeout: 5000 })
+    fetch.mockResponse(readBuffer)
+    const buttons = await findAllByTestId('reload_button')
+    fireEvent.click(buttons[0])
+    const canvas = await findAllByTestId('prerendered_canvas')
+    const bigwigImg = canvas[0].toDataURL()
+    const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
+    const bigwigBuf = Buffer.from(bigwigData, 'base64')
+    expect(bigwigBuf).toMatchImageSnapshot({
+      failureThreshold: 0.01,
+      failureThresholdType: 'percent',
+    })
   }, 10000)
 })
 
@@ -467,7 +610,7 @@ describe('alignments track', () => {
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
     expect(pileupBuf).toMatchImageSnapshot({
-      failureThreshold: 0.5,
+      failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
 
@@ -482,7 +625,7 @@ describe('alignments track', () => {
     )
     const snpCoverageBuf = Buffer.from(snpCoverageData, 'base64')
     expect(snpCoverageBuf).toMatchImageSnapshot({
-      failureThreshold: 0.5,
+      failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
 
@@ -517,7 +660,7 @@ describe('alignments track', () => {
     )
     const snpCoverageBuf = Buffer.from(snpCoverageData, 'base64')
     expect(snpCoverageBuf).toMatchImageSnapshot({
-      failureThreshold: 0.5,
+      failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
   }, 15000)
@@ -537,7 +680,7 @@ describe('alignments track', () => {
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
     expect(pileupBuf).toMatchImageSnapshot({
-      failureThreshold: 0.5,
+      failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
   }, 15000)
@@ -626,20 +769,34 @@ describe('bigwig', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
-    state.session.views[0].setNewView(0.05, 5000)
+    state.session.views[0].setNewView(5, 0)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray'))
-    await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
+    const canvas = await findAllByTestId('prerendered_canvas')
+    const bigwigImg = canvas[0].toDataURL()
+    const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
+    const bigwigBuf = Buffer.from(bigwigData, 'base64')
+    expect(bigwigBuf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
   })
-  it('open a bigwig line track', async () => {
+  it('open a bigwig line track 2', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
-    state.session.views[0].setNewView(0.05, 5000)
+    state.session.views[0].setNewView(10, 0)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray_line'))
-    await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
+    const canvas = await findAllByTestId('prerendered_canvas')
+    const bigwigImg = canvas[0].toDataURL()
+    const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
+    const bigwigBuf = Buffer.from(bigwigData, 'base64')
+    expect(bigwigBuf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
   })
   it('open a bigwig density track', async () => {
     const pluginManager = getPluginManager()
@@ -648,11 +805,18 @@ describe('bigwig', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
-    state.session.views[0].setNewView(0.05, 5000)
+    state.session.views[0].setNewView(5, 0)
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_microarray_density'),
     )
-    await expect(findAllByTestId('prerendered_canvas')).resolves.toBeTruthy()
+    const canvas = await findAllByTestId('prerendered_canvas')
+    const bigwigImg = canvas[0].toDataURL()
+    const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
+    const bigwigBuf = Buffer.from(bigwigData, 'base64')
+    expect(bigwigBuf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
   })
 })
 
@@ -748,7 +912,7 @@ describe('dotplot view', () => {
     // this is needed to do a fuzzy image comparison because
     // the travis-ci was 2 pixels different for some reason, see PR #710
     expect(buf).toMatchImageSnapshot({
-      failureThreshold: 0.5,
+      failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
   })
