@@ -366,43 +366,12 @@ Object {
     Object {
       "adapter": Object {
         "subadapter": Object {
-          "craiLocation": Object {
-            "uri": "test_data/volvox/volvox-reload.cram.crai",
-          },
-          "cramLocation": Object {
-            "uri": "test_data/volvox/volvox-reload.cram",
-          },
-          "sequenceAdapter": Object {
-            "type": "BamAdapter",
-          },
-          "type": "CramAdapter",
-        },
-        "type": "SNPCoverageAdapter",
-      },
-      "assemblyNames": Array [
-        "volvox",
-      ],
-      "category": Array [
-        "Integration test",
-      ],
-      "name": "volvox-sorted.cram (reload test)",
-      "renderers": Object {
-        "SNPCoverageRenderer": Object {
-          "type": "SNPCoverageRenderer",
-        },
-      },
-      "trackId": "volvox_alignments_pileup_coverage_reload_cram",
-      "type": "SNPCoverageTrack",
-    },
-    Object {
-      "adapter": Object {
-        "subadapter": Object {
           "bamLocation": Object {
-            "uri": "test_data/volvox/volvox-reload.bam",
+            "uri": "test_data/volvox/volvox-sorted-altname.bam",
           },
           "index": Object {
             "location": Object {
-              "uri": "test_data/volvox/volvox-reload.bam.bai",
+              "uri": "test_data/volvox/volvox-sorted-altname.bam.bai",
             },
           },
           "type": "BamAdapter",
@@ -415,23 +384,23 @@ Object {
       "category": Array [
         "Integration test",
       ],
-      "name": "volvox-sorted.bam (reload test)",
+      "name": "volvox-sorted.bam (contigA SNPCoverage)",
       "renderers": Object {
         "SNPCoverageRenderer": Object {
           "type": "SNPCoverageRenderer",
         },
       },
-      "trackId": "volvox_alignments_pileup_coverage_reload",
+      "trackId": "volvox_bam_snpcoverage",
       "type": "SNPCoverageTrack",
     },
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-cram-reload.cram",
+          "uri": "test_data/volvox/volvox-sorted-altname.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox-cram-reload.cram.crai",
+            "uri": "test_data/volvox/volvox-sorted-altname.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -442,7 +411,7 @@ Object {
       "category": Array [
         "Integration test",
       ],
-      "name": "volvox-sorted.cram (reload mod test)",
+      "name": "volvox-sorted.bam (contigA PileupTrack)",
       "renderers": Object {
         "PileupRenderer": Object {
           "type": "PileupRenderer",
@@ -451,37 +420,7 @@ Object {
           "type": "SvgFeatureRenderer",
         },
       },
-      "trackId": "volvox_alignments_pileup_coverage_reload_mod_cram",
-      "type": "PileupTrack",
-    },
-    Object {
-      "adapter": Object {
-        "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-bam-reload.bam",
-        },
-        "index": Object {
-          "location": Object {
-            "uri": "test_data/volvox/volvox-bam-reload.bam.bai",
-          },
-        },
-        "type": "BamAdapter",
-      },
-      "assemblyNames": Array [
-        "volvox",
-      ],
-      "category": Array [
-        "Integration test",
-      ],
-      "name": "volvox-sorted.bam (reload mod test)",
-      "renderers": Object {
-        "PileupRenderer": Object {
-          "type": "PileupRenderer",
-        },
-        "SvgFeatureRenderer": Object {
-          "type": "SvgFeatureRenderer",
-        },
-      },
-      "trackId": "volvox_alignments_pileup_coverage_reload_mod",
+      "trackId": "volvox_bam_pileup",
       "type": "PileupTrack",
     },
     Object {
@@ -784,35 +723,6 @@ Object {
         },
       },
       "trackId": "volvox_microarray",
-      "type": "WiggleTrack",
-    },
-    Object {
-      "adapter": Object {
-        "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox_microarray_reload.bw",
-        },
-        "type": "BigWigAdapter",
-      },
-      "assemblyNames": Array [
-        "volvox",
-      ],
-      "category": Array [
-        "Integration test",
-      ],
-      "defaultRendering": "line",
-      "name": "wiggle_track xyplot (reload integration test)",
-      "renderers": Object {
-        "DensityRenderer": Object {
-          "type": "DensityRenderer",
-        },
-        "LinePlotRenderer": Object {
-          "type": "LinePlotRenderer",
-        },
-        "XYPlotRenderer": Object {
-          "type": "XYPlotRenderer",
-        },
-      },
-      "trackId": "volvox_microarray_reload",
       "type": "WiggleTrack",
     },
     Object {
