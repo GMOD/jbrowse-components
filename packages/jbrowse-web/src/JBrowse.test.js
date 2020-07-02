@@ -308,9 +308,9 @@ describe('test renamed refs', () => {
     )
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_bam_altname'))
     await expect(
-      findAllByText('ctgA_110_638_0:0:0_3:0:0_15b', {}, { timeout: 15000 }),
+      findAllByText('ctgA_110_638_0:0:0_3:0:0_15b', {}, { timeout: 25000 }),
     ).resolves.toBeTruthy()
-  }, 20000)
+  }, 30000)
 
   it('open a bigwig with a renamed reference', async () => {
     const pluginManager = getPluginManager()
