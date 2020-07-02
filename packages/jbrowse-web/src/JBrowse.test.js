@@ -347,8 +347,8 @@ describe('max height test', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
     )
-    await expect(findAllByText('Max height reached')).resolves.toBeTruthy()
-  })
+    await findAllByText('Max height reached', {}, { timeout: 15000 })
+  }, 15000)
 })
 
 test('lollipop track test', async () => {
