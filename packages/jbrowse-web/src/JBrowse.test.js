@@ -426,7 +426,7 @@ describe('test configuration editor', () => {
 // it performs a full image snapshot test to ensure that the features are rendered and not
 // just that an empty canvas is rendered (empty canvas can result if ref name renaming failed)
 describe('reload tests', () => {
-  it('reloads alignments track (BAI 404)', async () => {
+  it('reloads alignments track (BAI 404) 2', async () => {
     console.error = jest.fn()
 
     const pluginManager = getPluginManager()

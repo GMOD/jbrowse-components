@@ -211,15 +211,7 @@
           }
         }
       },
-      "defaultRendering": "svg",
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
-      }
+      "defaultRendering": "svg"
     },
     {
       "type": "SNPCoverageTrack",
@@ -228,25 +220,17 @@
       "category": ["Integration test"],
       "assemblyNames": ["volvox"],
       "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "test_data/volvox/volvox-reload.bam"
-        },
-        "index": {
-          "location": {
-            "uri": "test_data/volvox/volvox-reload.bam.bai"
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "BamAdapter",
+          "bamLocation": {
+            "uri": "test_data/volvox/volvox-reload.bam"
+          },
+          "index": {
+            "location": {
+              "uri": "test_data/volvox/volvox-reload.bam.bai"
+            }
           }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        },
-        "SNPCoverageRenderer": {
-          "type": "SNPCoverageRenderer"
         }
       }
     },

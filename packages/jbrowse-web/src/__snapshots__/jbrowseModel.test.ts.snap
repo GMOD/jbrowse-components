@@ -365,15 +365,18 @@ Object {
     },
     Object {
       "adapter": Object {
-        "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-reload.bam",
-        },
-        "index": Object {
-          "location": Object {
-            "uri": "test_data/volvox/volvox-reload.bam.bai",
+        "subadapter": Object {
+          "bamLocation": Object {
+            "uri": "test_data/volvox/volvox-reload.bam",
           },
+          "index": Object {
+            "location": Object {
+              "uri": "test_data/volvox/volvox-reload.bam.bai",
+            },
+          },
+          "type": "BamAdapter",
         },
-        "type": "BamAdapter",
+        "type": "SNPCoverageAdapter",
       },
       "assemblyNames": Array [
         "volvox",
