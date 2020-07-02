@@ -21,13 +21,12 @@ function Box(props) {
   const { left, top, width, height } = featureLayout.absolute
 
   // clamp the SVG boxes to the current block area
+  // only clamps from the left hand side of the screen and may
+  // create negative width rects if they go off the right hand side
   const x = Math.max(left, 0)
   const diff = x - left
   const w = width - diff
 
-  // the below Math.min/Math.max 10000px limits are because SVG produces
-  // silent non-rendered elements if it's like millions of px
-  // renders -50000 to screenwidth (up to 100000) +50000
   return (
     <rect
       data-testid={feature.id()}
