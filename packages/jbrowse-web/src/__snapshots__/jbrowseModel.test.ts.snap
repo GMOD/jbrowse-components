@@ -735,6 +735,7 @@ Object {
       "category": Array [
         "Integration test",
       ],
+      "defaultRendering": "line",
       "name": "wiggle_track xyplot (reload integration test)",
       "renderers": Object {
         "DensityRenderer": Object {
