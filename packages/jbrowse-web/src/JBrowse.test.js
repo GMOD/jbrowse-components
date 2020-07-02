@@ -312,9 +312,9 @@ describe('test renamed refs', () => {
     )
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_bam_altname'))
     await expect(
-      findAllByText('ctgA_110_638_0:0:0_3:0:0_15b', {}, { timeout: 25000 }),
+      findAllByText('ctgA_110_638_0:0:0_3:0:0_15b', {}, { timeout: 60000 }),
     ).resolves.toBeTruthy()
-  }, 30000)
+  }, 60000)
 
   it('open a bigwig with a renamed reference', async () => {
     const pluginManager = getPluginManager()
@@ -347,8 +347,8 @@ describe('max height test', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
     )
-    await findAllByText('Max height reached', {}, { timeout: 15000 })
-  }, 15000)
+    await findAllByText('Max height reached', {}, { timeout: 60000 })
+  }, 60000)
 })
 
 test('lollipop track test', async () => {
