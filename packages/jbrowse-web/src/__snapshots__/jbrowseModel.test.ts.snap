@@ -366,6 +366,37 @@ Object {
     Object {
       "adapter": Object {
         "subadapter": Object {
+          "craiLocation": Object {
+            "uri": "test_data/volvox/volvox-reload.cram.crai",
+          },
+          "cramLocation": Object {
+            "uri": "test_data/volvox/volvox-reload.cram",
+          },
+          "sequenceAdapter": Object {
+            "type": "BamAdapter",
+          },
+          "type": "CramAdapter",
+        },
+        "type": "SNPCoverageAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "volvox-sorted.cram (reload test)",
+      "renderers": Object {
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+      },
+      "trackId": "volvox_alignments_pileup_coverage_reload_cram",
+      "type": "SNPCoverageTrack",
+    },
+    Object {
+      "adapter": Object {
+        "subadapter": Object {
           "bamLocation": Object {
             "uri": "test_data/volvox/volvox-reload.bam",
           },
@@ -384,7 +415,7 @@ Object {
       "category": Array [
         "Integration test",
       ],
-      "name": "volvox-sorted.bam (ctgA, canvas, reload test)",
+      "name": "volvox-sorted.bam (reload test)",
       "renderers": Object {
         "SNPCoverageRenderer": Object {
           "type": "SNPCoverageRenderer",
@@ -392,6 +423,36 @@ Object {
       },
       "trackId": "volvox_alignments_pileup_coverage_reload",
       "type": "SNPCoverageTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bamLocation": Object {
+          "uri": "test_data/volvox/volvox-cram-reload.cram",
+        },
+        "index": Object {
+          "location": Object {
+            "uri": "test_data/volvox/volvox-cram-reload.cram.crai",
+          },
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "volvox-sorted.cram (reload mod test)",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "trackId": "volvox_alignments_pileup_coverage_reload_mod_cram",
+      "type": "PileupTrack",
     },
     Object {
       "adapter": Object {
@@ -411,7 +472,7 @@ Object {
       "category": Array [
         "Integration test",
       ],
-      "name": "volvox-sorted.bam (ctgA, canvas, reload mod test)",
+      "name": "volvox-sorted.bam (reload mod test)",
       "renderers": Object {
         "PileupRenderer": Object {
           "type": "PileupRenderer",
