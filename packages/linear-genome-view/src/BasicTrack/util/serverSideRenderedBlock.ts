@@ -251,11 +251,15 @@ async function renderBlockEffect(
     rpcManager,
     renderArgs,
     cannotBeRenderedReason,
+    trackError,
   } = props as RenderProps
   if (!isAlive(self)) {
     return undefined
   }
 
+  if (trackError) {
+    self.setError(trackError)
+  }
   if (cannotBeRenderedReason) {
     self.setMessage(cannotBeRenderedReason)
     return undefined

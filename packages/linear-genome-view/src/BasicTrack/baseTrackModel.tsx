@@ -79,7 +79,6 @@ const BaseTrack = types
   .volatile(() => ({
     ReactComponent: undefined as any,
     rendererTypeName: '',
-    ready: false,
     scrollTop: 0,
     error: '',
   }))
@@ -198,7 +197,6 @@ const BaseTrack = types
       return newHeight - oldHeight
     },
     setError(e: string) {
-      self.ready = true
       self.error = e
     },
 
