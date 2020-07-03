@@ -40,12 +40,39 @@ export default class Create extends Command {
 
     const { force } = runFlags
     if (!force) await this.checkPath(JSON.stringify(argsPath))
+
+    // download the zipped file to path given
+    const fileStream = fs.createWriteStream(argsPath)
+    await fetch('https://sampleurl.aws.com', {
+      method: 'GET',
+    })
+      .then(res => res.body)
+      .then(body => {
+        body.pipe(fileStream)
+        fileStream.on('error', err => {
+          fs.unlink(argsPath, () => {})
+          this.error(
+            `Failed to download JBrowse 2 with error: ${err}. Please try again later`,
+          )
+        })
+        fileStream.on('finish', () => fileStream.close())
+      })
+      .catch(err =>
+        this.error(
+          `Failed to download JBrowse 2 with error: ${err}. Please try again later`,
+        ),
+      )
+
+    // read the zipfile in the path
+    fsPromises
+      .readFile(path.join('placeholderJBrowseName.zip', argsPath))
+      .then(/* unzip in the path provided */)
     // get path from args, force from flags
     // if(!pathIsEmpty)
     //  if(!noForceFlag) write error message saying there is existing files, and return
     // else if force flag or path is empty, run rest of code
     // download from s3 bucket the zipped jbrowse 2
-    // unzip in the path provided
+
     // if(forceFlag && !pathIsEmpty) will need to overwrite any files that conflict
     // with new isntallation
   }
