@@ -11,7 +11,7 @@ import {
   modelFactory as jbrowse1ModelFactory,
 } from './JBrowse1Connection'
 
-export default class JBrowse1CompatibilityPlugin extends Plugin {
+export default class LegacyJBrowsePlugin extends Plugin {
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>
