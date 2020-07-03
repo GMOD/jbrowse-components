@@ -3,6 +3,7 @@ import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
+import LinearProgress from '@material-ui/core/LinearProgress'
 import Button from '@material-ui/core/Button'
 import RefreshIcon from '@material-ui/icons/Refresh'
 import ServerSideRenderedContent from '../../LinearGenomeView/components/ServerSideRenderedContent'
@@ -50,20 +51,15 @@ function LoadingMessage() {
   // only show the loading message after 300ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
   const classes = useStyles()
-  const [dots, setDots] = useState(0)
   useEffect(() => {
     const timeout = setTimeout(() => setShown(true), 300)
     return () => clearTimeout(timeout)
   }, [])
 
-  useEffect(() => {
-    const timeout = setTimeout(() => setDots(state => (state + 1) % 4), 400)
-    return () => clearTimeout(timeout)
-  })
-
   return shown ? (
     <div className={classes.loading}>
-      Loading {new Array(dots).fill('.').join('')}
+      Loading &hellip;
+      <LinearProgress />
     </div>
   ) : null
 }

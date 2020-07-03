@@ -312,9 +312,9 @@ describe('test renamed refs', () => {
     )
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_bam_altname'))
     await expect(
-      findAllByText('ctgA_110_638_0:0:0_3:0:0_15b', {}, { timeout: 60000 }),
+      findAllByText('ctgA_110_638_0:0:0_3:0:0_15b'),
     ).resolves.toBeTruthy()
-  }, 60000)
+  })
 
   it('open a bigwig with a renamed reference', async () => {
     const pluginManager = getPluginManager()
@@ -347,8 +347,8 @@ describe('max height test', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
     )
-    await findAllByText('Max height reached', {}, { timeout: 60000 })
-  }, 60000)
+    await findAllByText('Max height reached')
+  })
 })
 
 test('lollipop track test', async () => {
@@ -641,7 +641,7 @@ describe('alignments track', () => {
 
     // this is to confirm a alignment detail drawer widget opened
     await expect(findAllByTestId('alignment-side-drawer')).resolves.toBeTruthy()
-  }, 15000)
+  }, 10000)
   it('opens a SNPCoverageTrack', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
@@ -663,7 +663,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 15000)
+  }, 10000)
 
   it('opens a PileupTrack', async () => {
     const pluginManager = getPluginManager()
@@ -683,7 +683,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 15000)
+  }, 10000)
 
   // Note: tracks with assembly volvox don't have much soft clipping
   it('opens the track menu and enables soft clipping', async () => {
@@ -724,7 +724,7 @@ describe('alignments track', () => {
       failureThreshold: 0.2,
       failureThresholdType: 'percent',
     })
-  }, 12000)
+  }, 10000)
 
   it('selects a sort, updates object and layout', async () => {
     const pluginManager = getPluginManager()
