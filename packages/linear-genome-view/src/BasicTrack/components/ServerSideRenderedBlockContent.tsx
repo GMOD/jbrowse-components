@@ -35,6 +35,26 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(2),
     width: '100%',
   },
+  dots: {
+    '&::after': {
+      display: 'inline-block',
+      animation: '$ellipsis 1.5s infinite',
+      content: '"."',
+      width: '1em',
+      textAlign: 'left',
+    },
+  },
+  '@keyframes ellipsis': {
+    '0%': {
+      content: '"."',
+    },
+    '33%': {
+      content: '".."',
+    },
+    '66%': {
+      content: '"..."',
+    },
+  },
 }))
 
 function Repeater({ children }: { children: React.ReactNode }) {
@@ -55,7 +75,11 @@ function LoadingMessage() {
     return () => clearTimeout(timeout)
   }, [])
 
-  return shown ? <div className={classes.loading}>Loading</div> : null
+  return shown ? (
+    <div className={classes.loading}>
+      <div className={classes.dots}>Loading</div>
+    </div>
+  ) : null
 }
 
 function BlockMessage({ messageText }: { messageText: string }) {
