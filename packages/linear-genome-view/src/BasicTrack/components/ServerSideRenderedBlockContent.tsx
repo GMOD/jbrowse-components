@@ -3,7 +3,6 @@ import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
-import LinearProgress from '@material-ui/core/LinearProgress'
 import Button from '@material-ui/core/Button'
 import RefreshIcon from '@material-ui/icons/Refresh'
 import ServerSideRenderedContent from '../../LinearGenomeView/components/ServerSideRenderedContent'
@@ -36,6 +35,26 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(2),
     width: '100%',
   },
+  dots: {
+    '&::after': {
+      display: 'inline-block',
+      animation: '$ellipsis 1.5s infinite',
+      content: '"."',
+      width: '1em',
+      textAlign: 'left',
+    },
+  },
+  '@keyframes ellipsis': {
+    '0%': {
+      content: '"."',
+    },
+    '33%': {
+      content: '".."',
+    },
+    '66%': {
+      content: '"..."',
+    },
+  },
 }))
 
 function Repeater({ children }: { children: React.ReactNode }) {
@@ -58,8 +77,7 @@ function LoadingMessage() {
 
   return shown ? (
     <div className={classes.loading}>
-      Loading &hellip;
-      <LinearProgress />
+      <div className={classes.dots}>Loading</div>
     </div>
   ) : null
 }
