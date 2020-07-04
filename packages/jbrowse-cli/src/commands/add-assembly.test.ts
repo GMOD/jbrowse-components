@@ -26,7 +26,16 @@ const baseSequence = {
   adapter: {},
 }
 
-xdescribe('add-assembly', () => {
+let cwd = ''
+beforeEach(() => {
+  cwd = process.cwd()
+})
+
+afterEach(() => {
+  process.chdir(cwd)
+})
+
+describe('add-assembly', () => {
   setup
     .command(['add-assembly', '{}'])
     .exit(10)
