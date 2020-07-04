@@ -9,10 +9,7 @@ import ErrorBoundary from 'react-error-boundary'
 // locals
 import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
-import breakpointConfig from '../../test_data/breakpoint/config.json'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
-import dotplotConfig from '../../test_data/config_dotplot.json'
-import configSnapshot from '../../test_data/volvox/config.json'
 import JBrowse from '../JBrowse'
 import { setup, getPluginManager, readBuffer } from './util'
 
@@ -118,64 +115,6 @@ describe('test configuration editor', () => {
     })
   }, 10000)
 })
-describe('circular views', () => {
-  it('open a circular view', async () => {
-    console.warn = jest.fn()
-    const configSnapshotWithCircular = JSON.parse(
-      JSON.stringify(configSnapshot),
-    )
-    configSnapshotWithCircular.savedSessions[0] = {
-      name: 'Integration Test Circular',
-      views: [
-        {
-          id: 'integration_test_circular',
-          type: 'CircularView',
-        },
-      ],
-    }
-    const pluginManager = getPluginManager(configSnapshotWithCircular)
-    const { findByTestId, findAllByTestId, findByText } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
-    // wait for the UI to be loaded
-    await findByText('Help')
-
-    fireEvent.click(await findByText('Open'))
-
-    // open a track selector for the circular view
-    const trackSelectButtons = await findAllByTestId('circular_track_select')
-    expect(trackSelectButtons.length).toBe(1)
-    fireEvent.click(trackSelectButtons[0])
-
-    // wait for the track selector to open and then click the
-    // checkbox for the chord test track to toggle it on
-    fireEvent.click(await findByTestId('htsTrackEntry-volvox_chord_test'))
-
-    // expect the chord track to render eventually
-    await expect(
-      findByTestId('rpc-rendered-circular-chord-track'),
-    ).resolves.toBeTruthy()
-  })
-})
-
-xdescribe('breakpoint split view', () => {
-  it('open a split view', async () => {
-    console.warn = jest.fn()
-    const pluginManager = getPluginManager(breakpointConfig)
-    const { findByTestId, queryAllByTestId } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
-    await wait(() => {
-      const r = queryAllByTestId('r1')
-      expect(r.length).toBe(2)
-    }) // the breakpoint could be partially loaded so explicitly wait for two items
-    expect(
-      await findByTestId('pacbio_hg002_breakpoints-loaded'),
-    ).toMatchSnapshot()
-
-    expect(await findByTestId('pacbio_vcf-loaded')).toMatchSnapshot()
-  }, 10000)
-})
 
 // eslint-disable-next-line react/prop-types
 function FallbackComponent({ error }) {
@@ -195,23 +134,4 @@ test('404 sequence file', async () => {
       exact: false,
     }),
   ).toBeTruthy()
-})
-
-describe('dotplot view', () => {
-  it('open a dotplot view', async () => {
-    const pluginManager = getPluginManager(dotplotConfig)
-    const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
-
-    const canvas = await findByTestId('prerendered_canvas')
-
-    const img = canvas.toDataURL()
-    const data = img.replace(/^data:image\/\w+;base64,/, '')
-    const buf = Buffer.from(data, 'base64')
-    // this is needed to do a fuzzy image comparison because
-    // the travis-ci was 2 pixels different for some reason, see PR #710
-    expect(buf).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    })
-  })
 })
