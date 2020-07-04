@@ -155,6 +155,7 @@ describe('alignments track', () => {
     const buf = Buffer.from(data, 'base64')
     expect(buf).toMatchImageSnapshot()
   }, 10000)
+
   it('test that bam with small max height displays message', async () => {
     const pluginManager = getPluginManager()
     const { findByTestId, findAllByText } = render(
@@ -163,6 +164,6 @@ describe('alignments track', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
     )
-    await findAllByText('Max height reached', {}, { timeout: 60000 })
-  }, 60000)
+    await findAllByText('Max height reached')
+  })
 })
