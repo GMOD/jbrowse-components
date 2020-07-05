@@ -228,38 +228,44 @@ export function getMismatches(
 }
 
 export function generateMD(target: string, query: string, cigar: string) {
-  let q_off = 0
-  let t_off = 0
-  let l_MD = 0
+  let queryOffset = 0
+  let targetOffset = 0
+  let lengthMD = 0
   const cigarOps = parseCigar(cigar)
   let str = ''
   for (let i = 0; i < cigarOps.length; i += 2) {
     const len = +cigarOps[i]
     const op = cigarOps[i + 1]
-    if (op === 'M' || op == 'X' || op == '=') {
+    if (op === 'M' || op === 'X' || op === '=') {
       for (let j = 0; j < len; j++) {
-        // console.log(query[q_off + j], q_off + j, target[t_off + j], t_off + j)
-        if (query[q_off + j].toLowerCase() != target[t_off + j].toLowerCase()) {
-          str += `${l_MD}${target[t_off + j].toUpperCase()}`
+        if (
+          query[queryOffset + j].toLowerCase() !==
+          target[targetOffset + j].toLowerCase()
+        ) {
+          str += `${lengthMD}${target[targetOffset + j].toUpperCase()}`
+          lengthMD = 0
         } else {
-          l_MD++
+          lengthMD++
         }
       }
-      q_off += len
-      t_off += len
+      queryOffset += len
+      targetOffset += len
     } else if (op === 'I') {
-      q_off += len
+      queryOffset += len
     } else if (op === 'D') {
       let tmp = ''
       for (let j = 0; j < len; j++) {
-        tmp += target[t_off + j].toUpperCase()
+        tmp += target[targetOffset + j].toUpperCase()
       }
-      str += `${l_MD}^${tmp}`
-      l_MD = 0
-      t_off += len
+      str += `${lengthMD}^${tmp}`
+      lengthMD = 0
+      targetOffset += len
     } else if (op === 'N') {
-      t_off += len
+      targetOffset += len
     }
+  }
+  if (lengthMD > 0) {
+    str += lengthMD
   }
   return str
 }
