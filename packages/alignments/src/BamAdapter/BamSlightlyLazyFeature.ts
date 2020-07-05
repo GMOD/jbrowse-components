@@ -301,36 +301,4 @@ export default class implements Feature {
     }
     return str
   }
-
-  // note "MIDNSHP=XB" ops
-  // static void write_MD_core(kstring_t *s, const uint8_t *tseq, const uint8_t *qseq, const mm_reg1_t *r, char *tmp, int write_tag)
-  // {
-  //   int i, q_off, t_off, l_MD = 0;
-  //   if (write_tag) mm_sprintf_lite(s, "\tMD:Z:");
-  //   for (i = q_off = t_off = 0; i < (int)r->p->n_cigar; ++i) {
-  //     int j, op = r->p->cigar[i]&0xf, len = r->p->cigar[i]>>4;
-  //     assert((op >= 0 && op <= 3) || op == 7 || op == 8);
-  //     if (op == 0 || op == 7 || op == 8) { // match
-  //       for (j = 0; j < len; ++j) {
-  //         if (qseq[q_off + j] != tseq[t_off + j]) {
-  //           mm_sprintf_lite(s, "%d%c", l_MD, "ACGTN"[tseq[t_off + j]]);
-  //           l_MD = 0;
-  //         } else ++l_MD;
-  //       }
-  //       q_off += len, t_off += len;
-  //     } else if (op == 1) { // insertion to ref
-  //       q_off += len;
-  //     } else if (op == 2) { // deletion from ref
-  //       for (j = 0, tmp[len] = 0; j < len; ++j)
-  //         tmp[j] = "ACGTN"[tseq[t_off + j]];
-  //       mm_sprintf_lite(s, "%d^%s", l_MD, tmp);
-  //       l_MD = 0;
-  //       t_off += len;
-  //     } else if (op == 3) { // reference skip
-  //       t_off += len;
-  //     }
-  //   }
-  //   if (l_MD > 0) mm_sprintf_lite(s, "%d", l_MD);
-  //   assert(t_off == r->re - r->rs && q_off == r->qe - r->qs);
-  // }
 }
