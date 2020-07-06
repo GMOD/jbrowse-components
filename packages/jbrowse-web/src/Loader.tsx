@@ -40,6 +40,9 @@ function NoConfigMessage() {
               <a href="?config=test_data/config_demo.json">Human extended</a>
             </li>
             <li>
+              <a href="?config=test_data/tomato/config.json">Tomato SVs</a>
+            </li>
+            <li>
               <a href="?config=test_data/volvox/config.json">Volvox</a>
             </li>
             <li>
