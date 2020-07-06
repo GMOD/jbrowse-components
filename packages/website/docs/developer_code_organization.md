@@ -23,7 +23,8 @@ hopefully orients you to our codebase
 
 ### packages/jbrowse-web
 
-This is the main jbrowse-web is essentially a `create-react-app` instance
+The jbrowse-web folder is essentially a `create-react-app` instance that is the
+main JBrowse 2 web app
 
 It includes many other packages as core plugins, can load other plugins at
 runtime, and more
@@ -38,13 +39,14 @@ the desktop, be used offline, etc.
 
 ### packages/alignments
 
-This provides the "alignments" related features including
+This package provides the "alignments" related features including
 
 - BamAdapter - our BAM parser that wraps @gmod/bam NPM module
 - CramAdapter - our CRAM parser that wraps the @gmod/cram NPM module
 - PileupTrack type - draws alignments as boxes in a "pileup" style view
 - SNPCoverageTrack - draws calculated coverage with mismatches drawn over the coverage
-- AlignmentsTrack - contains PileupTrack and SNPCoverageTrack as child tracks
+- AlignmentsTrack - a "supertrack" which contains a PileupTrack and
+  SNPCoverageTrack "subtracks"
 - AlignmentsFeatureDrawerWidget for alignments features
 
 ### packages/variants/
