@@ -18,4 +18,3 @@ This requires zero web server setup, and you can ensure that no data ever leaves
 ## JBrowse 2 re-usable components
 
 JBrowse 2 offers re-usable components that can help build visualizations or embed smaller portions of the jbrowse app into your website, e.g. just a linear genome view
-
