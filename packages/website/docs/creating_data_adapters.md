@@ -3,9 +3,13 @@ id: creating_data_adapters
 title: Creating a new data adapter
 ---
 
-# Creating a JBrowse 2 data adapter
+## What is a data adapter
 
 A data adapter is essentially a class that derives from our "BaseFeatureDataAdapter" class
+
+The data adapters commonly run in a web-worker, along with the renderer, but this is just an implementation detail, and is not a requirement
+
+## Outline for a JBrowse 2 data adapter
 
 So we see basically something like this, this is stripped down for simplicity
 
@@ -25,6 +29,12 @@ class MyAdapter extends BaseFeatureDataAdapter {
   }
 }
 ```
+
+So to make a data adapter, you implement the getRefNames function (optional),
+the getFeatures function (returns an rxjs observable stream of features,
+discussed below) and freeResources (optional)
+
+## Fleshed out example
 
 To take this a little slow let's look at each function individually
 
@@ -80,12 +90,26 @@ class MyAdapter extends BaseFeatureDataAdapter {
 }
 ```
 
-Important functions.
+## Discussion
 
-- getRefNames - returns the refNames that are contained in the file, this is
-  used for "refname renaming" and is optional but highly useful in scenarios
-  like human chromosomes which have, for example, chr1 vs 1. Returning the
-  refnames used in the file allows us to automatically smooth this over
-- getFeatures - a function that returns features from the file given a genomic
-  range query e.g. getFeatures(region, options), where region is an object like
-  `{ refName:string, start:number,end:number }`
+What do these functions really do
+
+### getRefNames
+
+Returns the refNames that are contained in the file, this is
+used for "refname renaming" and is optional but highly useful in scenarios
+like human chromosomes which have, for example, chr1 vs 1. Returning the
+refnames used in the file allows us to automatically smooth this over
+
+### getFeatures
+
+A function that returns features from the file given a genomic
+range query e.g. getFeatures(region, options), where region is an object like
+`{ refName:string, start:number,end:number }`
+
+### freeResources
+
+This is uncommonly used, so most data adapters make this an empty function
+
+Most data adapters in fact use an LRU cache to make resources go away over time
+instead of manually cleaning up resources
