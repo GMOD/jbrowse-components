@@ -1,6 +1,11 @@
 module.exports = {
   someSidebar: {
-    'User guide': ['quickstart'],
+    'User guide': [
+      'quickstart',
+      'user_alignments',
+      'user_variants',
+      'user_bigwig',
+    ],
     'Developer resources': [
       'developer_code_organization',
       'developer_pluggable_elements',
