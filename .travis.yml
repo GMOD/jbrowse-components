@@ -10,6 +10,7 @@ before_install:
   - sudo apt -y install p7zip-full
 script:
 - set -e
+- yarn
 - yarn lint
 - yarn checkprettier
 - yarn test-ci
