@@ -1,36 +1,26 @@
 ---
-id: code_organization
-title: JBrowse 2 monorepo code organization
+id: developer_intro
+title: Intro for developers
 ---
 
-# JBrowse 2 code organization
+## Introduction
 
-To help orient users to the JBrowse 2 codebase we will look at the folder
-organization and concepts that we use
+This page is a short introduction to JBrowse 2 for developers
 
-One notable thing is that we organize our code using a "monorepo" setup
+## Table of contents
 
-This makes it so that we have a "packages" folder and each sub-folder in this
-directory is an "individual npm package"
-
-This enables more code modularity in our project
-
-Let's take the following as an example
-
-We have our jbrowse-web package, which is defined in the folder
-`packages/jbrowse-web/`. The folder jbrowse-web is essentially a `create-react-app`
-instance and powers the main jbrowse 2 web application. In order to display BAM
-and CRAM alignments, jbrowse-web depends on the package
-`@gmod/jbrowse-plugin-alignments` which is defined in `packages/alignments`.
-
-In jbrowse 2 terms, the `packages/alignments` folder is said to be a "jbrowse 2
-plugin". It provides the following
+- How is the JBrowse 2 codebase organized
+- Making jbrowse plugins
+  - How to make a new adapter
+  - How to make a new renderer
+  - How to make a new track type
+  - How to make a new view type
 
 ## Data adapters
 
 Data adapters basically are parsers for a given data format. We will review
 what data adapters the alignments plugin has (to write your own data adapter,
-see [creating data adapters](creating_data_adapters))
+see [creating data adapters](developer_creating_data_adapters))
 
 - BamAdapter - a data adapter for the BAM data format. This adapter uses the
   `@gmod/cram` NPM module, and supplies a getFeatures function and a getRefNames

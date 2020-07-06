@@ -1,13 +1,18 @@
 ---
-id: creating_data_adapters
+id: developer_creating_data_adapters
 title: Creating a new data adapter
 ---
 
-## What is a data adapter
+## What is a data adapter?
 
-A data adapter is essentially a class that derives from our "BaseFeatureDataAdapter" class
+A data adapter is essentially a class that parses your data type and returns
+features that jbrowse will draw
 
-The data adapters commonly run in a web-worker, along with the renderer, but this is just an implementation detail, and is not a requirement
+Sometimes, a data adapter can be implemented by itself, e.g. if you are
+adapting a storeclass that returns genes, then you can use our standard track
+types for that. If you are making a data adapter for some custom type of data
+that also needs a custom type of drawing, you may need to implement a data
+adapter along with a track type and/or renderer
 
 ## Outline for a JBrowse 2 data adapter
 

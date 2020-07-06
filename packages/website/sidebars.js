@@ -2,9 +2,10 @@ module.exports = {
   someSidebar: {
     'User guide': ['quickstart'],
     'Developer resources': [
-      'code_organization',
-      'creating_data_adapters',
-      'creating_renderers',
+      'developer_code_organization',
+      'developer_pluggable_elements',
+      'developer_creating_data_adapters',
+      'developer_creating_renderers',
     ],
   },
 }
