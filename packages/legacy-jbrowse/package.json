@@ -1,10 +1,10 @@
 {
-  "name": "@gmod/jbrowse-plugin-jbrowse1",
+  "name": "@gmod/jbrowse-plugin-legacy-jbrowse",
   "version": "2.0.0",
   "description": "JBrowse 2 plugin for connecting to and reading JBrowse 1 data",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/jbrowse1"
+    "test": "cd ../..; jest packages/legacy-jbrowse"
   },
   "author": "Robert Buels",
   "license": "MIT",

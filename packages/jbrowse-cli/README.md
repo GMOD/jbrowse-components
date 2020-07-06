@@ -25,7 +25,7 @@ $ npm install -g @gmod/jbrowse-cli
 $ jbrowse COMMAND
 running command...
 $ jbrowse (-v|--version|version)
-@gmod/jbrowse-cli/0.0.0 linux-x64 node-v14.4.0
+@gmod/jbrowse-cli/0.0.0 darwin-x64 node-v12.16.1
 $ jbrowse --help [COMMAND]
 USAGE
   $ jbrowse COMMAND
