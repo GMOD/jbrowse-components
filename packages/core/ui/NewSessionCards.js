@@ -6,6 +6,9 @@ import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useState } from 'react'
+import emptyIcon from './emptyIcon.png'
+import linearGenomeViewIcon from './linearGenomeViewIcon.png'
+import svInspectorIcon from './svInspectorIcon.png'
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -70,7 +73,7 @@ export function NewEmptySession({ root }) {
   function onClick() {
     root.activateSession(emptySessionSnapshot)
   }
-  return <NewSessionCard name="Empty" onClick={onClick} />
+  return <NewSessionCard name="Empty" onClick={onClick} image={emptyIcon} />
 }
 
 NewEmptySession.propTypes = {
@@ -89,7 +92,13 @@ export function NewLinearGenomeViewSession({ root }) {
     root.activateSession(snapshot)
   }
 
-  return <></>
+  return (
+    <NewSessionCard
+      name="Linear Genome View"
+      onClick={launchLGVSession}
+      image={linearGenomeViewIcon}
+    />
+  )
 }
 
 NewLinearGenomeViewSession.propTypes = {
@@ -97,7 +106,26 @@ NewLinearGenomeViewSession.propTypes = {
 }
 
 export function NewSVInspectorSession({ root }) {
-  return <></>
+  const launchSVSession = () => {
+    const snapshot = {
+      ...emptySessionSnapshot,
+      name: `New SV Inspector Session ${new Date(Date.now()).toISOString()}`,
+      views: [
+        {
+          type: 'SvInspectorView',
+        },
+      ],
+    }
+    root.activateSession(snapshot)
+  }
+  return (
+    <NewSessionCard
+      name="Structural Variant Inspector"
+      onClick={launchSVSession}
+      style={{ padding: 0 }}
+      image={svInspectorIcon}
+    />
+  )
 }
 
 NewSVInspectorSession.propTypes = {

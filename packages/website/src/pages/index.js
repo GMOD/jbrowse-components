@@ -1,17 +1,15 @@
 import React from 'react'
+// eslint-disable-next-line import/no-unresolved
 import Layout from '@theme/Layout'
+// eslint-disable-next-line import/no-unresolved
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
-import useBaseUrl from '@docusaurus/useBaseUrl'
-import styles from './styles.module.css'
 import { withStyles, makeStyles } from '@material-ui/core/styles'
 
 import Button from '@material-ui/core/Button'
-import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
-import TableContainer from '@material-ui/core/TableContainer'
 import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
 
@@ -70,7 +68,7 @@ function Home() {
             </Button>
           </div>
           <div style={{ flexBasis: '50%' }}>
-            <img src="img/dell.png" />
+            <img alt="screenshot of jbrowse2" src="img/dell.png" />
           </div>
         </div>
         <Table>
