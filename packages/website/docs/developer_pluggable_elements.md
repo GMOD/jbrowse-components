@@ -3,10 +3,28 @@ id: developer_pluggable_elements
 title: Pluggable elements
 ---
 
-What types of pluggable elements are there in our codebase?
+## What are pluggable elements?
 
-Let's look at a basic example, the @gmod/jbrowse-plugin-alignments plugin, to
-see what pluggable elements it instantiates
+Pluggable elements are basic "extension points" that you can customize in
+JBrowse 2 plugins
+
+The pluggable types that we have in JBrowse 2 are
+
+- Data adapters
+- Track types
+- Renderer types
+- Drawer widgets
+- RPC calls
+- View types
+
+In additional to creating plugins that create new data adapters, track types,
+etc. note that you can also wrap the behavior of another track so these
+elements are composable
+
+For example we can have adapters that perform calculations on the results of
+another adapter, views that contains other subviews, and tracks that contain
+other tracks, leading to a lot of interesting behavior. Details and examples
+below
 
 ## Data adapters
 
