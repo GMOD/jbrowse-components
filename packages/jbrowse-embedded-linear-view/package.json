@@ -1,0 +1,29 @@
+{
+  "version": "0.1.0",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "prepare": "tsdx build",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
+  },
+  "dependencies": {
+    "prop-types": "^15.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=16"
+  },
+  "name": "jbrowse-embedded-linear-view",
+  "author": "Garrett Stevens",
+  "module": "dist/jbrowse-embedded-linear-view.esm.js"
+}
