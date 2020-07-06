@@ -2047,6 +2047,114 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
           </button>
         </div>
       </div>
+      <div
+        class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
+      >
+        <div
+          class="makeStyles-paperContent"
+        >
+          <div
+            class="MuiFormControl-root"
+          >
+            <label
+              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink"
+              data-shrink="true"
+              for="callback-editor"
+            >
+              sequenceAdapter
+            </label>
+            <div
+              class="makeStyles-callbackEditor"
+              style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
+            >
+              <textarea
+                autocapitalize="off"
+                autocomplete="off"
+                autocorrect="off"
+                class="npm__react-simple-code-editor__textarea"
+                data-gramm="false"
+                spellcheck="false"
+                style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; resize: none; overflow: hidden; padding: 10px 10px 10px 10px;"
+              >
+                null
+              </textarea>
+              <pre
+                aria-hidden="true"
+                style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: relative; pointer-events: none; padding: 10px 10px 10px 10px;"
+              >
+                <span
+                  class="token keyword"
+                >
+                  null
+                </span>
+                <br />
+              </pre>
+              <style
+                type="text/css"
+              >
+                
+/**
+ * Reset the text fill color so that placeholder is visible
+ */
+.npm__react-simple-code-editor__textarea:empty {
+  -webkit-text-fill-color: inherit !important;
+}
+
+/**
+ * Hack to apply on some CSS on IE10 and IE11
+ */
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+  /**
+    * IE doesn't support '-webkit-text-fill-color'
+    * So we use 'color: transparent' to make the text transparent on IE
+    * Unlike other browsers, it doesn't affect caret color in IE
+    */
+  .npm__react-simple-code-editor__textarea {
+    color: transparent !important;
+  }
+
+  .npm__react-simple-code-editor__textarea::selection {
+    background-color: #accef7 !important;
+    color: transparent !important;
+  }
+}
+
+              </style>
+            </div>
+            <p
+              class="MuiFormHelperText-root"
+            />
+          </div>
+        </div>
+        <div
+          class="makeStyles-slotModeSwitch"
+        >
+          <button
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+            tabindex="0"
+            title="convert to callback"
+            type="button"
+          >
+            <span
+              class="MuiIconButton-label"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                />
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+        </div>
+      </div>
     </div>
   </div>
   <div

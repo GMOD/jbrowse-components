@@ -30,7 +30,7 @@ export default types.late(() =>
       },
       sequenceAdapter: {
         type: 'frozen',
-        defaultValue: {},
+        defaultValue: null,
       },
     },
     { explicitlyTyped: true },

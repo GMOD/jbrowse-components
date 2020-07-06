@@ -50,10 +50,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       fetchSizeLimit,
     })
 
-    if (getSubAdapter) {
-      const { dataAdapter } = getSubAdapter(
-        readConfObject(config, 'sequenceAdapter'),
-      )
+    const adapterConfig = readConfObject(config, 'sequenceAdapter')
+    if (adapterConfig && getSubAdapter) {
+      const { dataAdapter } = getSubAdapter(adapterConfig)
       this.sequenceAdapter = dataAdapter as BaseFeatureDataAdapter
     }
   }
