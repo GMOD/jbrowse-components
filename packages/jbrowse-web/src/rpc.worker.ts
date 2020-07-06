@@ -40,7 +40,7 @@ async function getPluginManager() {
   }
   // Load runtime plugins
   const config = await receiveConfiguration()
-  console.log('got worker boot config', config)
+  // console.log('got worker boot config', config)
   const pluginLoader = new PluginLoader(config.plugins)
   const runtimePlugins = await pluginLoader.load()
   const plugins = [...corePlugins, ...runtimePlugins]

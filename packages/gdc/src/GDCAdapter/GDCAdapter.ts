@@ -103,6 +103,7 @@ export default (pluginManager: PluginManager) => {
             'https://api.gdc.cancer.gov/v0/graphql',
             {
               method: 'POST',
+              headers: { 'content-type': 'application/json' },
               body: JSON.stringify(query),
               signal: opts.signal,
             },
