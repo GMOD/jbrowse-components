@@ -293,7 +293,6 @@ export default class PluginManager {
       })
     if (pluggableTypes.length === 0)
       pluggableTypes.push(ConfigurationSchema('Null', {}))
-    console.log(pluggableTypes.length)
     return types.union(...pluggableTypes)
   }
 

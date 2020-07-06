@@ -12,8 +12,8 @@ import {
   Mismatch,
 } from './MismatchParser'
 
-// import BamAdapter from './BamAdapter'
-type BamAdapter = any
+import BamAdapter from './BamAdapter'
+
 export default class implements Feature {
   private record: BamRecord
 
@@ -149,7 +149,7 @@ export default class implements Feature {
   _get_md(): string | undefined {
     const md = this.record.get('md')
     const seq = this.get('seq')
-    if (!md && seq) {
+    if (!md && seq && this.ref) {
       return generateMD(this.ref, this.record.getReadBases(), this.get('cigar'))
     }
     return md
@@ -271,43 +271,5 @@ export default class implements Feature {
     return this.get('strand') === -1
       ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
       : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
-  }
-
-  generateMD(target: string, query: string) {
-    const cigar = this.get('cigar')
-    const seq = this.get('seq')
-    let q_off = 0
-    let t_off = 0
-    let l_MD = 0
-    const cigarOps = parseCigar(cigar)
-    let str = ''
-    for (let i = 0; i < cigarOps.length; i += 2) {
-      const len = +cigarOps[i]
-      const op = cigarOps[i + 1]
-      if (op === 'M' || op == 'X' || op == '=') {
-        for (let j = 0; j < len; j++) {
-          if (query[q_off + j] != target[t_off + j]) {
-            str += l_MD + target[t_off + j]
-          } else {
-            l_MD++
-          }
-        }
-        q_off += len
-        t_off += len
-      } else if (op === 'I') {
-        q_off += len
-      } else if (op === 'D') {
-        let tmp = ''
-        for (let j = 0; j < len; j++) {
-          tmp += target[t_off + j]
-        }
-        str += `${l_MD}^${tmp}`
-        l_MD = 0
-        t_off += len
-      } else if (op === 'N') {
-        t_off += len
-      }
-    }
-    return str
   }
 }
