@@ -107,6 +107,7 @@ export default function RootModel(pluginManager: PluginManager) {
           ElectronRpcDriver: { workerCreationChannel: 'createWindowWorker' },
         },
       ),
+      adminMode: true,
     }))
     .actions(self => ({
       activateSession(sessionSnapshot: SnapshotIn<typeof Session>) {

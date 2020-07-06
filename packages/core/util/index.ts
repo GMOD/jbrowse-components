@@ -22,7 +22,6 @@ import {
   AssemblyManager,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
-import { whenPresent } from './when'
 
 export * from './types'
 export * from './aborting'
@@ -646,7 +645,7 @@ export function makeAbortableReaction<T, U, V>(
         return undefined
       }
     },
-    (data, mobxReactionHandle) => {
+    async (data, mobxReactionHandle) => {
       if (inProgress && !inProgress.signal.aborted) {
         inProgress.abort()
       }
@@ -658,26 +657,22 @@ export function makeAbortableReaction<T, U, V>(
 
       const thisInProgress = inProgress
       startedFunction(thisInProgress)
-      Promise.resolve()
-        .then(() =>
-          asyncReactionFunction(
-            data,
-            thisInProgress.signal,
-            self,
-            mobxReactionHandle,
-          ),
+      try {
+        const result = await asyncReactionFunction(
+          data,
+          thisInProgress.signal,
+          self,
+          mobxReactionHandle,
         )
-        .then(result => {
-          checkAbortSignal(thisInProgress.signal)
-          if (isAlive(self)) {
-            successFunction(result)
-          }
-        })
-        .catch(error => {
-          if (thisInProgress && !thisInProgress.signal.aborted)
-            thisInProgress.abort()
-          handleError(error)
-        })
+        checkAbortSignal(thisInProgress.signal)
+        if (isAlive(self)) {
+          successFunction(result)
+        }
+      } catch (error) {
+        if (thisInProgress && !thisInProgress.signal.aborted)
+          thisInProgress.abort()
+        handleError(error)
+      }
     },
     reactionOptions,
   )
@@ -691,13 +686,13 @@ export function makeAbortableReaction<T, U, V>(
 }
 
 export function renameRegionIfNeeded(
-  refNameMap: Map<string, string>,
+  refNameMap: Record<string, string>,
   region: Region,
 ): Region & { originalRefName?: string } {
   if (isStateTreeNode(region) && !isAlive(region)) {
     return region
   }
-  if (region && refNameMap && refNameMap.has(region.refName)) {
+  if (region && refNameMap && refNameMap[region.refName]) {
     // clone the region so we don't modify it
     if (isStateTreeNode(region)) {
       region = { ...getSnapshot(region) }
@@ -706,7 +701,7 @@ export function renameRegionIfNeeded(
     }
 
     // modify it directly in the container
-    const newRef = refNameMap.get(region.refName)
+    const newRef = refNameMap[region.refName]
     if (newRef) {
       return { ...region, refName: newRef, originalRefName: region.refName }
     }
@@ -732,14 +727,12 @@ export async function renameRegionsIfNeeded<
     regions: [...(args.regions || [])],
   }
   if (assemblyName) {
-    const refNameMap = await whenPresent(
-      () =>
-        assemblyManager.getRefNameMapForAdapter(adapterConfig, assemblyName, {
-          signal,
-          sessionId: newArgs.sessionId,
-        }),
+    const refNameMap = await assemblyManager.getRefNameMapForAdapter(
+      adapterConfig,
+      assemblyName,
       {
-        name: `getRefNameMapForAdapter($conf, '${assemblyName}')`,
+        signal,
+        sessionId: newArgs.sessionId,
       },
     )
 

@@ -8,9 +8,7 @@
   "assemblies": [
     {
       "name": "hg19",
-      "aliases": [
-        "GRCh37"
-      ],
+      "aliases": ["GRCh37"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "hg19",
@@ -67,19 +65,13 @@
       "type": "LinearSyntenyTrack",
       "trackId": "dotplot_track",
       "name": "dotplot",
-      "assemblyNames": [
-        "longread",
-        "hg19"
-      ],
+      "assemblyNames": ["longread", "hg19"],
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
           "uri": "test_data/longread_vs_ref.paf"
         },
-        "assemblyNames": [
-          "longread",
-          "hg19"
-        ]
+        "assemblyNames": ["longread", "hg19"]
       },
       "renderer": {
         "type": "LinearSyntenyRenderer"
@@ -89,12 +81,8 @@
       "type": "BasicTrack",
       "trackId": "nclist_genes_hg19",
       "name": "Gencode v19",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json",
@@ -138,12 +126,8 @@
       "type": "WiggleTrack",
       "trackId": "ngmlr_cov",
       "name": "SKBR3 pacbio coverage (NGMLR)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "SKBR3"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["SKBR3"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -180,10 +164,7 @@
         {
           "id": "MiDMyyWpp",
           "type": "LinearSyntenyView",
-          "assemblyNames": [
-            "longread",
-            "hg19"
-          ],
+          "assemblyNames": ["longread", "hg19"],
           "views": [
             {
               "type": "LinearGenomeView",

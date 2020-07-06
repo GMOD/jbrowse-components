@@ -66,7 +66,13 @@ function BlockError({ error, reload }: { error: Error; reload: () => void }) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ServerSideRenderedBlockContent = observer(({ model }: { model: any }) => {
   if (model.error) {
-    return <BlockError error={model.error} reload={model.reload} />
+    return (
+      <BlockError
+        error={model.error}
+        reload={model.reload}
+        data-testid="reload_button"
+      />
+    )
   }
   if (model.message) {
     return <BlockMessage messageText={model.message} />

@@ -18,6 +18,7 @@ import {
   isSessionModelWithDrawerWidgets,
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { transaction } from 'mobx'
 import { getSnapshot, types, cast, Instance } from 'mobx-state-tree'
 
@@ -149,6 +150,32 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return this.displayedRegionsTotalPx - leftPadding
       },
 
+      get displayedParentRegions() {
+        const wholeRefSeqs = [] as Region[]
+        const { assemblyManager } = getSession(self)
+        self.displayedRegions.forEach(({ refName, assemblyName }) => {
+          const assembly = assemblyManager.get(assemblyName)
+          const r = assembly && (assembly.regions as Region[])
+          if (r) {
+            const wholeSequence = r.find(
+              sequence => sequence.refName === refName,
+            )
+            const alreadyExists = wholeRefSeqs.find(
+              sequence => sequence.refName === refName,
+            )
+            if (wholeSequence && !alreadyExists) {
+              wholeRefSeqs.push(wholeSequence)
+            }
+          }
+        })
+        return wholeRefSeqs
+      },
+
+      get displayedParentRegionsLength() {
+        return this.displayedParentRegions
+          .map(a => a.end - a.start)
+          .reduce((a, b) => a + b, 0)
+      },
       get minOffset() {
         // objectively determined to keep the linear genome on the main screen
         const rightPadding = 30
@@ -176,6 +203,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
             assemblyNames.push(displayedRegion.assemblyName)
         })
         return assemblyNames
+      },
+
+      idxInParentRegion(refName: string | undefined) {
+        return this.displayedParentRegions.findIndex(
+          (region: Region) => region.refName === refName,
+        )
       },
 
       bpToPx({ refName, coord }: { refName: string; coord: number }) {
@@ -623,6 +656,89 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
+      /**
+       * Navigate to a location based on user clicking and dragging on the
+       * overview scale bar to select a region to zoom into.
+       * Can handle if there are multiple displayedRegions from same refName.
+       * Only navigates to a location if it is entirely within a displayedRegion.
+       *
+       * @param leftPx- `object as {start, end, index, offset}`, offset = start of user drag
+       * @param rightPx- `object as {start, end, index, offset}`, offset = end of user drag
+       */
+      zoomToDisplayedRegions(leftPx: BpOffset, rightPx: BpOffset) {
+        if (leftPx === undefined || rightPx === undefined) return
+
+        const singleRefSeq = leftPx.refName === rightPx.refName
+        if (
+          (singleRefSeq && rightPx.offset < leftPx.offset) ||
+          self.idxInParentRegion(leftPx.refName) >
+            self.idxInParentRegion(rightPx.refName)
+        ) {
+          ;[leftPx, rightPx] = [rightPx, leftPx]
+        }
+
+        const selectionStart = Math.round(leftPx.offset)
+        const selectionEnd = Math.round(rightPx.offset)
+        const startIdx = self.idxInParentRegion(leftPx.refName)
+        const endIdx = self.idxInParentRegion(rightPx.refName)
+
+        const refSeqSelections: Region[] = []
+
+        if (singleRefSeq)
+          refSeqSelections.push({
+            ...self.displayedParentRegions[startIdx],
+            start: selectionStart,
+            end: selectionEnd,
+          })
+        else {
+          // when selecting over multiple ref seq, convert into correct selections
+          // ie select from ctgA: 30k - ctgB: 1k -> select from ctgA: 30k - 50k, ctgB: 0 - 1k
+          for (let i = startIdx; i <= endIdx; i++) {
+            const ref = self.displayedParentRegions[i]
+            // modify start of first refSeq
+            if (!refSeqSelections.length && ref.refName === leftPx.refName)
+              refSeqSelections.push({
+                ...ref,
+                start: selectionStart,
+              })
+            // modify end of last refSeq
+            else if (ref.refName === rightPx.refName)
+              refSeqSelections.push({
+                ...ref,
+                end: selectionEnd,
+              })
+            else refSeqSelections.push(ref) // if any inbetween first and last push entire refseq
+          }
+        }
+        let startOffset: BpOffset | undefined
+        let endOffset: BpOffset | undefined
+        self.displayedRegions.forEach((region, index) => {
+          refSeqSelections.forEach(seq => {
+            if (
+              region.refName === seq.refName &&
+              doesIntersect2(region.start, region.end, seq.start, seq.end)
+            ) {
+              if (!startOffset) {
+                const offset = region.reversed
+                  ? Math.max(region.end - seq.end, 0)
+                  : Math.max(seq.start - region.start, 0)
+                startOffset = { index, offset }
+              }
+              const offset = region.reversed
+                ? Math.min(region.end - seq.start, region.end - region.start)
+                : Math.min(seq.end - region.start, region.end - region.start)
+              endOffset = { index, offset }
+            }
+          })
+        })
+        if (startOffset && endOffset) {
+          this.moveTo(startOffset, endOffset)
+        } else {
+          const session = getSession(self)
+          session.notify('No regions found to navigate to', 'warning')
+        }
+      },
+
       // schedule something to be run after the next time displayedRegions is set
       afterDisplayedRegionsSet(cb: Function) {
         self.afterDisplayedRegionsSetCallbacks.push(cb)
@@ -638,11 +754,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       moveTo(start: BpOffset, end: BpOffset) {
         // find locations in the modellist
         let bpSoFar = 0
+
         if (start.index === end.index) {
           bpSoFar += end.offset - start.offset
         } else {
           const s = self.displayedRegions[start.index]
-          bpSoFar += (s.reversed ? s.start : s.end) - start.offset
+          bpSoFar += s.end - s.start - start.offset
           if (end.index - start.index >= 2) {
             for (let i = start.index + 1; i < end.index; i += 1) {
               bpSoFar +=

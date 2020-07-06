@@ -8,9 +8,9 @@ import configSchema from './configSchema'
 test('adapter can fetch features from ensembl_genes test set', async () => {
   const rootTemplate = path
     .join(
-      process.cwd(),
-      'packages',
-      'jbrowse1',
+      __dirname,
+      '..',
+      '..',
       'test_data',
       'ensembl_genes',
       '{refseq}',

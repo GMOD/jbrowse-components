@@ -230,9 +230,11 @@ function HierarchicalTrackSelector({ model }) {
         </>
       ) : null}
 
-      <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
-        <AddIcon />
-      </Fab>
+      {session.editConfiguration ? (
+        <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
+          <AddIcon />
+        </Fab>
+      ) : null}
       <Menu
         id="simple-menu"
         anchorEl={anchorEl}

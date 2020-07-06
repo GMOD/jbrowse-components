@@ -78,28 +78,30 @@ export default class extends Plugin {
 
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
-      pluginManager.rootModel.appendToMenu('File', {
-        label: 'Open new track',
-        icon: NoteAddIcon,
-        onClick: (session: SessionWithDrawerWidgets) => {
-          const drawerWidget = session.addDrawerWidget(
-            'AddTrackDrawerWidget',
-            'addTrackDrawerWidget',
-          )
-          session.showDrawerWidget(drawerWidget)
-        },
-      })
-      pluginManager.rootModel.appendToMenu('File', {
-        label: 'Open new connection',
-        icon: InputIcon,
-        onClick: (session: SessionWithDrawerWidgets) => {
-          const drawerWidget = session.addDrawerWidget(
-            'AddConnectionDrawerWidget',
-            'addConnectionDrawerWidget',
-          )
-          session.showDrawerWidget(drawerWidget)
-        },
-      })
+      if (pluginManager.rootModel.adminMode) {
+        pluginManager.rootModel.appendToMenu('File', {
+          label: 'Open new track',
+          icon: NoteAddIcon,
+          onClick: (session: SessionWithDrawerWidgets) => {
+            const drawerWidget = session.addDrawerWidget(
+              'AddTrackDrawerWidget',
+              'addTrackDrawerWidget',
+            )
+            session.showDrawerWidget(drawerWidget)
+          },
+        })
+        pluginManager.rootModel.appendToMenu('File', {
+          label: 'Open new connection',
+          icon: InputIcon,
+          onClick: (session: SessionWithDrawerWidgets) => {
+            const drawerWidget = session.addDrawerWidget(
+              'AddConnectionDrawerWidget',
+              'addConnectionDrawerWidget',
+            )
+            session.showDrawerWidget(drawerWidget)
+          },
+        })
+      }
     }
   }
 }

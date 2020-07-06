@@ -7,9 +7,7 @@
   "assemblies": [
     {
       "name": "volvox",
-      "aliases": [
-        "vvx"
-      ],
+      "aliases": ["vvx"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "volvox_refseq",
@@ -30,18 +28,12 @@
             {
               "refName": "ctgA",
               "uniqueId": "alias1",
-              "aliases": [
-                "A",
-                "contigA"
-              ]
+              "aliases": ["A", "contigA"]
             },
             {
               "refName": "ctgB",
               "uniqueId": "alias2",
-              "aliases": [
-                "B",
-                "contigB"
-              ]
+              "aliases": ["B", "contigB"]
             }
           ]
         }

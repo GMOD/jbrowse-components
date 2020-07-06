@@ -1,9 +1,13 @@
 language: node_js
-node_js: 10
+node_js:
+  - 10
+  - 14
 sudo: false
 cache:
 - node_modules
 - yarn
+before_install:
+  - sudo apt -y install p7zip-full
 script:
 - set -e
 - yarn lint
@@ -14,6 +18,7 @@ script:
 - BUILT_TESTS=1 yarn built-test-ci
 after_success:
 - bash <(curl -s https://codecov.io/bash)
+- cp ${TRAVIS_BUILD_DIR}/packages/jbrowse-web/build/test_data/config.json ${TRAVIS_BUILD_DIR}/packages/jbrowse-web/build/config.json
 deploy:
   provider: s3
   skip_cleanup: true

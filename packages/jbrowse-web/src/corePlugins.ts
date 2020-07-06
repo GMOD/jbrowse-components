@@ -20,6 +20,7 @@ import Variants from '@gmod/jbrowse-plugin-variants'
 import Wiggle from '@gmod/jbrowse-plugin-wiggle'
 import SpreadsheetViewPlugin from '@gmod/jbrowse-plugin-spreadsheet-view'
 import SvInspectorPlugin from '@gmod/jbrowse-plugin-sv-inspector'
+import HicPlugin from '@gmod/jbrowse-plugin-hic'
 
 export default [
   Alignments,
@@ -44,4 +45,5 @@ export default [
   SpreadsheetViewPlugin,
   SvInspectorPlugin,
   BreakpointSplitView,
+  HicPlugin,
 ]

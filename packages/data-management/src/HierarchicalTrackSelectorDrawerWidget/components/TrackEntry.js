@@ -75,14 +75,16 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
             disabled={disabled || unsupported}
           />
         </Tooltip>
-        <IconButton
-          className={classes.configureButton}
-          onClick={() => session.editConfiguration(trackConf)}
-          color="secondary"
-          data-testid={`htsTrackEntryConfigure-${trackConfigId}`}
-        >
-          <SettingsIcon fontSize="small" />
-        </IconButton>
+        {session.editConfiguration && !assemblyName ? (
+          <IconButton
+            className={classes.configureButton}
+            onClick={() => session.editConfiguration(trackConf)}
+            color="secondary"
+            data-testid={`htsTrackEntryConfigure-${trackConfigId}`}
+          >
+            <SettingsIcon fontSize="small" />
+          </IconButton>
+        ) : null}
       </div>
     </Fade>
   )

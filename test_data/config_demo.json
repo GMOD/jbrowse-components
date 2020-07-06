@@ -3,9 +3,7 @@
   "assemblies": [
     {
       "name": "hg19",
-      "aliases": [
-        "GRCh37"
-      ],
+      "aliases": ["GRCh37"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "Pd8Wh30ei9R",
@@ -36,9 +34,7 @@
     },
     {
       "name": "hg38",
-      "aliases": [
-        "GRCh38"
-      ],
+      "aliases": ["GRCh38"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "P6R5xbRqRr",
@@ -73,13 +69,8 @@
       "type": "BasicTrack",
       "trackId": "ncbi_gff_hg19",
       "name": "NCBI RefSeq (GFF3Tabix)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Annotation test",
-        "blah"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation test", "blah"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -99,12 +90,8 @@
       "type": "BasicTrack",
       "trackId": "repeats_hg19",
       "name": "Repeats",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -119,12 +106,8 @@
       "type": "BasicTrack",
       "trackId": "nclist_genes_hg19",
       "name": "Gencode v19",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json",
@@ -168,12 +151,8 @@
       "type": "BasicTrack",
       "trackId": "hg19_gaps",
       "name": "Gaps",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -188,12 +167,8 @@
       "type": "BasicTrack",
       "trackId": "clinvar_cnv_hg19",
       "name": "Clinvar CNV",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -208,12 +183,8 @@
       "type": "BasicTrack",
       "trackId": "clinvar_hg19",
       "name": "Clinvar variants",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -228,12 +199,8 @@
       "type": "BasicTrack",
       "trackId": "repeats_hg38",
       "name": "Repeats",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -248,12 +215,8 @@
       "type": "BasicTrack",
       "trackId": "gencode_nclist_hg38",
       "name": "Gencode v32",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz",
@@ -297,12 +260,8 @@
       "type": "BasicTrack",
       "trackId": "clinvar_cnv_hg38",
       "name": "Clinvar CNV",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -317,12 +276,8 @@
       "type": "BasicTrack",
       "trackId": "clinvar_hg38",
       "name": "Clinvar variants",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -337,12 +292,8 @@
       "type": "BasicTrack",
       "trackId": "mane_hg38",
       "name": "MANE 0.6",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -360,12 +311,8 @@
       "type": "BasicTrack",
       "trackId": "gdc_features",
       "name": "GDC Cancer",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -380,12 +327,8 @@
       "type": "BasicTrack",
       "trackId": "hg38_gaps",
       "name": "Gaps",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -400,12 +343,8 @@
       "type": "BasicTrack",
       "trackId": "ncbi_refseq_109_hg38",
       "name": "NCBI RefSeq (GFF3Tabix)",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -425,12 +364,8 @@
       "type": "BasicTrack",
       "trackId": "ncbi_refseq_analysis_set",
       "name": "NCBI RefSeq (NCList)",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq_analysis_set/{refseq}/trackData.jsonz",
@@ -471,9 +406,7 @@
       "type": "StructuralVariantChordTrack",
       "trackId": "human_chord_test",
       "name": "HG002 PacBio PBSV BND",
-      "assemblyNames": [
-        "hg19"
-      ],
+      "assemblyNames": ["hg19"],
       "configRelationships": [
         {
           "type": "AlignmentEvidence",
@@ -503,9 +436,7 @@
       "type": "StructuralVariantChordTrack",
       "trackId": "breast_cancer_hg19_chords",
       "name": "SKBR3 Sniffles TRA",
-      "assemblyNames": [
-        "hg19"
-      ],
+      "assemblyNames": ["hg19"],
       "configRelationships": [
         {
           "type": "AlignmentEvidence",
@@ -536,12 +467,8 @@
       "trackId": "nanopore_targetted_alignments_0.1",
       "name": "Nanopore amplicon alignments 0.1x (chr7:55,000,000-56,000,000)",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Deep coverage"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -569,12 +496,8 @@
       "trackId": "nanopore_targetted_alignments",
       "name": "Nanopore amplicon (chr7:55,000,000-56,000,000) [causes out-of-memory]",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Deep coverage"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -601,12 +524,8 @@
       "type": "AlignmentsTrack",
       "trackId": "deep_hg19_bam",
       "name": "Deep sequence chr17:41195312..41276764",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Deep coverage"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -624,12 +543,8 @@
       "trackId": "amplicon_alignments",
       "name": "Amplicon alignments (chr3:178,916,000-178,918,000)",
       "description": "Source https://github.com/umich-brcf-bioinf/Connor/tree/master/examples",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Deep coverage"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Deep coverage"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -646,12 +561,8 @@
       "type": "AlignmentsTrack",
       "trackId": "ngmlr",
       "name": "SKBR3 pacbio (NGMLR)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "SKBR3"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["SKBR3"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -668,12 +579,8 @@
       "type": "AlignmentsTrack",
       "trackId": "ngmlr_splitters",
       "name": "SKBR3 pacbio (NGMLR) splitters only",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "SKBR3"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["SKBR3"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -698,12 +605,8 @@
       "type": "AlignmentsTrack",
       "trackId": "ngmlr_downsample",
       "name": "SKBR3 pacbio (NGMLR) 0.3 downsample",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "SKBR3"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["SKBR3"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -728,12 +631,8 @@
       "type": "WiggleTrack",
       "trackId": "ngmlr_cov",
       "name": "SKBR3 pacbio coverage (NGMLR)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "SKBR3"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["SKBR3"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -756,20 +655,16 @@
       "type": "AlignmentsTrack",
       "trackId": "illumina_hg002",
       "name": "HG002 Illumina hs37d5.2x250",
-      "category": [
-        "GIAB"
-      ],
-      "assemblyNames": [
-        "hg19"
-      ],
+      "category": ["GIAB"],
+      "assemblyNames": ["hg19"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam.bai"
           }
         }
       },
@@ -786,12 +681,8 @@
       "type": "AlignmentsTrack",
       "trackId": "pacbio_hg002",
       "name": "HG002 Pacbio hs37d5.11kb",
-      "category": [
-        "GIAB"
-      ],
-      "assemblyNames": [
-        "hg19"
-      ],
+      "category": ["GIAB"],
+      "assemblyNames": ["hg19"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -816,12 +707,8 @@
       "type": "AlignmentsTrack",
       "trackId": "na12878_exome",
       "name": "NA12878 Exome",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "1000 genomes"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["1000 genomes"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -846,12 +733,8 @@
       "type": "AlignmentsTrack",
       "trackId": "chm1_pacbio",
       "name": "CHM1 pacbio",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "1000 genomes"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["1000 genomes"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -876,12 +759,8 @@
       "type": "AlignmentsTrack",
       "trackId": "hg00096_highcov",
       "name": "HG00096 Illumina high coverage",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "1000 genomes"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["1000 genomes"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -906,12 +785,8 @@
       "type": "WiggleTrack",
       "trackId": "nanopore_ultralong_cram_coverage",
       "name": "HG002 Nanopore ultralong coverage",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["GIAB"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -934,12 +809,8 @@
       "type": "AlignmentsTrack",
       "trackId": "nanopore_ultralong_cram",
       "name": "HG002 Nanopore ultralong (CRAM)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["GIAB"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -974,12 +845,8 @@
       "type": "AlignmentsTrack",
       "trackId": "nanopore_ultralong",
       "name": "HG002 Nanopore ultralong (BAM)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["GIAB"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -1004,12 +871,8 @@
       "type": "AlignmentsTrack",
       "trackId": "rJxR1X2T0yu",
       "name": "HG00096 Illumina low coverage",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "1000 genomes"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["1000 genomes"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -1034,12 +897,8 @@
       "type": "WiggleTrack",
       "trackId": "wiggle_global_autoscale",
       "name": "Encode global autoscale",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "ENCODE bigWigs"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["ENCODE bigWigs"],
       "autoscale": "global",
       "adapter": {
         "type": "BigWigAdapter",
@@ -1063,12 +922,8 @@
       "type": "WiggleTrack",
       "trackId": "wiggle_local_autoscale",
       "name": "Encode local autoscale",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "ENCODE bigWigs"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["ENCODE bigWigs"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1091,12 +946,8 @@
       "type": "BasicTrack",
       "trackId": "bigbed_peaks",
       "name": "Encode peaks",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "ENCODE bigWigs"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["ENCODE bigWigs"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -1111,12 +962,8 @@
       "type": "VariantTrack",
       "trackId": "breast_cancer_sniffles_hg19",
       "name": "SKBR3 pacbio (sniffles VCF)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "SKBR3"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["SKBR3"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1141,12 +988,8 @@
       "type": "VariantTrack",
       "trackId": "1000genomes_indels",
       "name": "InDels",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "1000 genomes"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["1000 genomes"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1171,12 +1014,8 @@
       "type": "VariantTrack",
       "trackId": "pacbio_sv_vcf",
       "name": "HG002 Pacbio SV (VCF)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["GIAB"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1187,34 +1026,43 @@
             "uri": "test_data/breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
       "type": "BasicTrack",
       "trackId": "variants_hg002",
-      "name": "HG002 consensus SV (VCF)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
+      "name": "HG002 GIAB consensus SV (VCF)",
+      "assemblyNames": ["hg19"],
+      "category": ["GIAB"],
       "adapter": {
-        "type": "BedTabixAdapter",
-        "bedGzLocation": {
-          "uri": "test_data/breakpoint/variants.sorted.bed.gz"
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/giab/HG002_SVs_Tier1_v0.6.vcf.gz"
         },
         "index": {
           "location": {
-            "uri": "test_data/breakpoint/variants.sorted.bed.gz.tbi"
+            "uri": "https://jbrowse.org/genomes/hg19/giab/HG002_SVs_Tier1_v0.6.vcf.gz.tbi"
+          }
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "variants_hg002_ncbi",
+      "name": "HG002 GIAB consensus SV NCBI (BED)",
+      "assemblyNames": ["hg19"],
+      "category": ["GIAB"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/giab/variants_for_nstd175.sorted.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/hg19/giab/variants_for_nstd175.sorted.bed.gz.tbi"
           }
         }
       },
@@ -1226,12 +1074,8 @@
       "type": "VariantTrack",
       "trackId": "chm_variants",
       "name": "CHM Pacbio SV (VCF)",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["GIAB"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1256,12 +1100,8 @@
       "type": "BasicTrack",
       "trackId": "sparql_togogenome",
       "name": "TogoGenome SPARQL Genes",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Genes"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Genes"],
       "adapter": {
         "type": "SPARQLAdapter",
         "endpoint": {
@@ -1296,9 +1136,7 @@
           "Y",
           "MT"
         ],
-        "additionalQueryParams": [
-          "format=application%2Fsparql-results%2Bjson"
-        ]
+        "additionalQueryParams": ["format=application%2Fsparql-results%2Bjson"]
       },
       "renderer": {
         "type": "SvgFeatureRenderer"
@@ -1308,12 +1146,8 @@
       "type": "BasicTrack",
       "trackId": "sparql_togovar",
       "name": "TogoVar SPARQL Variants",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "Variants"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["Variants"],
       "adapter": {
         "type": "SPARQLAdapter",
         "endpoint": {
@@ -1348,9 +1182,7 @@
           "Y",
           "MT"
         ],
-        "additionalQueryParams": [
-          "format=application%2Fsparql-results%2Bjson"
-        ]
+        "additionalQueryParams": ["format=application%2Fsparql-results%2Bjson"]
       },
       "renderer": {
         "type": "SvgFeatureRenderer"
@@ -1360,12 +1192,8 @@
       "type": "AlignmentsTrack",
       "trackId": "hg002_cram",
       "name": "HG002 CRAM nanopore+whatshap",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["GIAB"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -1392,12 +1220,8 @@
       "type": "AlignmentsTrack",
       "trackId": "hg002_bai",
       "name": "HG002 BAM nanopore+whatshap",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["GIAB"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -1414,12 +1238,8 @@
       "type": "VariantTrack",
       "trackId": "hg002_vcf_tbi",
       "name": "HG002 trio whatshap VCF+TBI haplotype",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["GIAB"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1436,12 +1256,8 @@
       "type": "VariantTrack",
       "trackId": "hg002_vcf_csi",
       "name": "HG002 trio whatshap VCF+CSI haplotype",
-      "assemblyNames": [
-        "hg19"
-      ],
-      "category": [
-        "GIAB"
-      ],
+      "assemblyNames": ["hg19"],
+      "category": ["GIAB"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1459,9 +1275,7 @@
       "type": "AlignmentsTrack",
       "trackId": "skbr3_pacbio",
       "name": "SKBR3 pacbio",
-      "assemblyNames": [
-        "hg38"
-      ],
+      "assemblyNames": ["hg38"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -1478,9 +1292,7 @@
       "type": "AlignmentsTrack",
       "trackId": "skbr3_10x",
       "name": "SKBR3 10x",
-      "assemblyNames": [
-        "hg38"
-      ],
+      "assemblyNames": ["hg38"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -1500,9 +1312,7 @@
       "type": "AlignmentsTrack",
       "trackId": "skbr3_nanopore",
       "name": "SKBR3 nanopore",
-      "assemblyNames": [
-        "hg38"
-      ],
+      "assemblyNames": ["hg38"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -1516,6 +1326,21 @@
       },
       "renderer": {
         "type": "StructuralVariantChordRenderer"
+      }
+    },
+    {
+      "type": "DynamicTrack",
+      "trackId": "hic",
+      "name": "Hic Track",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "HicAdapter",
+        "hicLocation": {
+          "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+        }
+      },
+      "renderer": {
+        "type": "HicRenderer"
       }
     }
   ],
