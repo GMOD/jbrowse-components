@@ -141,6 +141,7 @@ function makeConfigurationSchemaModel<
         throw new Error(`no type set for config slot ${modelName}.${slotName}`)
       }
       try {
+        console.log('slotName', slotName)
         modelDefinition[slotName] = ConfigSlot(
           slotName,
           slotDefinition as ConfigSlotDefinition,

@@ -231,6 +231,10 @@ export function generateMD(target: string, query: string, cigar: string) {
   let queryOffset = 0
   let targetOffset = 0
   let lengthMD = 0
+  if (!target) {
+    console.warn('no ref supplied to generateMD')
+    return ''
+  }
   const cigarOps = parseCigar(cigar)
   let str = ''
   for (let i = 0; i < cigarOps.length; i += 2) {

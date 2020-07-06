@@ -6,21 +6,25 @@ import {
 import { BamRecord } from '@gmod/bam'
 import {
   parseCigar,
+  generateMD,
   cigarToMismatches,
   mdToMismatches,
   Mismatch,
 } from './MismatchParser'
 
-import BamAdapter from './BamAdapter'
-
+// import BamAdapter from './BamAdapter'
+type BamAdapter = any
 export default class implements Feature {
   private record: BamRecord
 
   private adapter: BamAdapter
 
-  constructor(record: BamRecord, adapter: BamAdapter) {
+  private ref?: string
+
+  constructor(record: BamRecord, adapter: BamAdapter, ref?: string) {
     this.record = record
     this.adapter = adapter
+    this.ref = ref
   }
 
   _get_name(): string {
@@ -143,7 +147,12 @@ export default class implements Feature {
   }
 
   _get_md(): string | undefined {
-    return this.record.get('md')
+    const md = this.record.get('md')
+    const seq = this.get('seq')
+    if (!md && seq) {
+      return generateMD(this.ref, this.record.getReadBases(), this.get('cigar'))
+    }
+    return md
   }
 
   set(): void {}
