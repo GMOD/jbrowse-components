@@ -26,4 +26,3 @@ sessions are saved to your machine for later revisiting.
 JBrowse 2 offers re-usable components that can help build visualizations or embed
 smaller portions of the jbrowse app into your website, e.g. just a linear genome
 view
-
