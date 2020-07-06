@@ -35,6 +35,26 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(2),
     width: '100%',
   },
+  dots: {
+    '&::after': {
+      display: 'inline-block',
+      animation: '$ellipsis 1.5s infinite',
+      content: '"."',
+      width: '1em',
+      textAlign: 'left',
+    },
+  },
+  '@keyframes ellipsis': {
+    '0%': {
+      content: '"."',
+    },
+    '33%': {
+      content: '".."',
+    },
+    '66%': {
+      content: '"..."',
+    },
+  },
 }))
 
 function Repeater({ children }: { children: React.ReactNode }) {
@@ -50,20 +70,14 @@ function LoadingMessage() {
   // only show the loading message after 300ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
   const classes = useStyles()
-  const [dots, setDots] = useState(0)
   useEffect(() => {
     const timeout = setTimeout(() => setShown(true), 300)
     return () => clearTimeout(timeout)
   }, [])
 
-  useEffect(() => {
-    const timeout = setTimeout(() => setDots(state => (state + 1) % 4), 400)
-    return () => clearTimeout(timeout)
-  })
-
   return shown ? (
     <div className={classes.loading}>
-      Loading {new Array(dots).fill('.').join('')}
+      <div className={classes.dots}>Loading</div>
     </div>
   ) : null
 }
