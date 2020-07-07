@@ -4,16 +4,6 @@ import { types } from 'mobx-state-tree'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
 const configModelFactory = (pluginManager: PluginManager) => {
-  const PileupRendererConfigSchema = pluginManager.getRendererType(
-    'PileupRenderer',
-  ).configSchema
-  const SvgFeatureRendererConfigSchema = pluginManager.getRendererType(
-    'SvgFeatureRenderer',
-  ).configSchema
-  const SNPCoverageRendererConfigSchema = pluginManager.getRendererType(
-    'SNPCoverageRenderer',
-  ).configSchema
-
   return ConfigurationSchema(
     'AlignmentsTrack',
     {
@@ -39,23 +29,12 @@ const configModelFactory = (pluginManager: PluginManager) => {
         description: 'The type of scale to use for SNP coverage',
         defaultValue: 'linear',
       },
-      headroom: {
-        type: 'number',
-        description:
-          'round the upper value of the SNP coverage domain scale to the nearest N',
-        defaultValue: 20,
-      },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       defaultRendering: {
         type: 'stringEnum',
         model: types.enumeration('Rendering', ['pileup', 'svg']),
         defaultValue: 'pileup',
       },
-      renderers: ConfigurationSchema('RenderersConfiguration', {
-        PileupRenderer: PileupRendererConfigSchema,
-        SvgFeatureRenderer: SvgFeatureRendererConfigSchema,
-        SNPCoverageRenderer: SNPCoverageRendererConfigSchema,
-      }),
     },
     { baseConfiguration: BaseTrackConfig, explicitlyTyped: true },
   )
