@@ -1,0 +1,32 @@
+---
+id: user_sv_inspector
+title: SV inspector
+---
+
+
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+
+Visualizing variant tracks from the VCF format alongside the original alignment evidence track is a common workflow for validating your results. In JBrowse 2 we can open a variant track and an alignments track as shown below
+
+
+<img alt="Variant with alignments" src={useBaseUrl('img/variant_with_pileup.png')} />
+
+Figure: The variant track indicating a SNP alongside the read evidence. The variant feature details are also shown on the right-side of the screen in our "drawer widget".
+
+
+
+## Future additions
+
+
+We anticipate adding more features to the variant track in the future including
+
+
+1) Ability to visualize individual samples in a multi-sample VCF as subtracks of a variant track
+2) Ability to use FILTER the VCF column via the track menu
+
+
+## Also see
+
+
+Also see our [SV inspector](user_sv_inspector)
