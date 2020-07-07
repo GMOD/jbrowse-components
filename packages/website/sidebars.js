@@ -2,6 +2,7 @@ module.exports = {
   someSidebar: {
     'User guide': [
       'quickstart',
+      'user_navigation',
       'user_alignments',
       'user_variants',
       'user_bigwig',

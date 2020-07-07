@@ -33,4 +33,3 @@ Example HicAdapter config
       "type": "HicAdapter",
       "hicLocation": { "uri": "http://yourhost/file.hic" }
     }
-
