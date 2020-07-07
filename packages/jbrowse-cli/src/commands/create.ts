@@ -3,6 +3,7 @@ import * as fs from 'fs'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
+import { inflate, deflate } from 'pako'
 
 interface UriLocation {
   uri: string
@@ -39,13 +40,18 @@ export default class Create extends Command {
     this.debug(`Want to install path at: ${argsPath}`)
 
     const { force } = runFlags
-    if (!force) await this.checkPath(JSON.stringify(argsPath))
+    if (!force) await this.checkPath(argsPath)
 
     // download the zipped file to path given
-    const fileStream = fs.createWriteStream(argsPath)
-    await fetch('https://sampleurl.aws.com', {
-      method: 'GET',
-    })
+    // fs should overwrite on default
+    const zipLocation = path.join(argsPath, 'JBrowse2.zip')
+    const fileStream = fs.createWriteStream(zipLocation)
+    await fetch(
+      'https://s3.amazonaws.com/jbrowse.org/jb2_releases/JBrowse2_PKX_cli_testing.zip',
+      {
+        method: 'GET',
+      },
+    )
       .then(res => res.body)
       .then(body => {
         body.pipe(fileStream)
@@ -63,15 +69,10 @@ export default class Create extends Command {
         ),
       )
 
-    // read the zipfile in the path
-    fsPromises
-      .readFile(path.join('placeholderJBrowseName.zip', argsPath))
-      .then(/* unzip in the path provided */)
-    // get path from args, force from flags
-    // if(!pathIsEmpty)
-    //  if(!noForceFlag) write error message saying there is existing files, and return
-    // else if force flag or path is empty, run rest of code
-    // download from s3 bucket the zipped jbrowse 2
+    const fileRead = await fsPromises
+      .readFile(zipLocation)
+      .then(file => inflate(file)) // inflate causing a buffer error
+      .catch(err => this.error(`Could not unzip files with ${err}`))
 
     // if(forceFlag && !pathIsEmpty) will need to overwrite any files that conflict
     // with new isntallation
@@ -80,15 +81,13 @@ export default class Create extends Command {
   async checkPath(userPath: string) {
     const pathExists = await fs.existsSync(userPath)
     if (pathExists) {
-      fsPromises.readdir(userPath).then(files => {
-        return files.length === 0
-          ? true
-          : this.error(
-              `This directory has existing files and could cause conflicts with create. 
-              Please choose another directory or use the force flag to overwrite existing files`,
-            )
-      })
-    }
-    return pathExists
+      const allFiles = await fsPromises.readdir(userPath)
+      if (allFiles.length > 0)
+        this.error(
+          `This directory has existing files and could cause conflicts with create. 
+          Please choose another directory or use the force flag to overwrite existing files`,
+          { exit: 10 },
+        )
+    } else await fsPromises.mkdir(userPath, { recursive: true })
   }
 }
