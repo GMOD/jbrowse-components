@@ -11,6 +11,8 @@ before_install:
 script:
 - set -e
 - yarn
+# dev tools need to be built first cause they are written in TS but used in webpack configs
+- cd packages/plugin-development-tools && NODE_ENV=development yarn build
 - yarn lint
 - yarn checkprettier
 - yarn test-ci
