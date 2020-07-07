@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "test": "cd ../..; jest packages/alignments",
-    "build": "cross-env NODE_ENV=production webpack"
+    "disabled-build": "cross-env NODE_ENV=production webpack"
   },
   "files": [
     "dist"
