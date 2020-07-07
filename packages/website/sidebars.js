@@ -5,6 +5,7 @@ module.exports = {
       'user_alignments',
       'user_variants',
       'user_bigwig',
+      'user_sv_inspector',
     ],
     'Developer resources': [
       'developer_code_organization',
