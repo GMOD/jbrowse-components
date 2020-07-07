@@ -3,10 +3,10 @@ id: user_alignments
 title: Alignments tracks
 ---
 
+## Alignments track
+
 Visualizing alignments is an important aspect of genome browsers. This guide
 will go over the main features of the "Alignments track"
-
-### Alignments track
 
 The alignments track is a combination of a pileup and a coverage visualization
 
@@ -62,7 +62,7 @@ dataset. There is a simulated structural variant, a deletion, at this position,
 so the read has bases that map to the other side of the deletion being revealed
 by this.](../img/alignments_soft_clipped.png)
 
-## Sort by options
+### Sort by options
 
 The alignments tracks can also be configured to "sort by" a specific attribute
 for reads that span **the center line**.

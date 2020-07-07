@@ -3,7 +3,7 @@ id: config_wiggle_track
 title: Wiggle track configuration
 ---
 
-### WiggleTrack configuration options
+## WiggleTrack configuration options
 
 - minScore - the minimum score to plot in the coverage track. default: 0
 - maxScore - the maximum score to plot in the coverage track. default: auto calculated

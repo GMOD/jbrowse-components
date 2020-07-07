@@ -3,6 +3,8 @@ id: config_basic
 title: Fundamental JBrowse 2 configuration concepts
 ---
 
+## Intro to the config.json
+
 A JBrowse 2 configuration file, a config.json, is structured as follows
 
     {

@@ -3,7 +3,7 @@ id: config_variant_track
 title: Variant track configuration
 ---
 
-### VariantTrack configuration options
+## VariantTrack configuration options
 
 - defaultRendering - options: 'pileup' or 'svg'. default 'svg'
 - adapter - a variant type adapter config e.g. a VcfTabixAdapter

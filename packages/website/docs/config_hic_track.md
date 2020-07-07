@@ -3,7 +3,7 @@ id: config_hic_track
 title: Hi-C tracks
 ---
 
-### Hi-C track configration
+## Hi-C track configration
 
 Technically there is no Hi-C track type but it can be implemented with a DynamicTrack
 
