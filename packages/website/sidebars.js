@@ -6,6 +6,7 @@ module.exports = {
       'user_variants',
       'user_bigwig',
       'user_sv_inspector',
+      'user_hic',
     ],
     'Configuration guide': [
       'config_alignments_track',
