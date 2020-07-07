@@ -1,4 +1,7 @@
-## JBrowse
+---
+id: developer_config_model
+title: Configuration model concepts
+---
 
 Main object where plugins and pluggable elements are installed, and configuration is loaded.
 
