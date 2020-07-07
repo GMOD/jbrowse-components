@@ -1,22 +1,22 @@
 ---
 id: config_alignments_track
-title: Alignments tracks
+title: Alignments track configuration
 ---
-
-Alignments track configuration options
 
 ### AlignmentsTrack configuration options
 
 - minScore - the minimum score to plot in the coverage track. default: 0
 - maxScore - the maximum score to plot in the coverage track. default: auto calculated
 - scaleType - options: linear, log, to display the coverage data
-- adapter - this corresponds to a [BamAdapter](config_bam_adapter) or
-  [CramAdapter](config_cram_adapter) or any other adapter type that returns
-  alignments-like features
+- adapter - this corresponds to a BamAdapter or CramAdapter or any other
+  adapter type that returns alignments-like features
 
 Example AlignmentsTrack config
 
     {
+      "trackId": "my_alignments_track",
+      "name": "My Alignments",
+      "assemblyNames": ["hg19"],
       "type": "AlignmentsTrack",
       "adapter": {
         "type": "BamAdapter",
@@ -37,6 +37,9 @@ it is not common to use PileupTrack individually, but it is allowed
 Example PileupTrack config
 
     {
+      "trackId": "my_pileup_track",
+      "name": "My Alignments",
+      "assemblyNames": ["hg19"],
       "type": "PileupTrack",
       "adapter": {
         "type": "BamAdapter",
@@ -61,6 +64,9 @@ so it is not common to configure SNPCoverageTrack individually, but it is allowe
 Example SNPCoverageTrack config
 
     {
+      "trackId": "my_snpcov_track",
+      "name": "My Alignments",
+      "assemblyNames": ["hg19"],
       "type": "SNPCoverageTrack",
       "adapter": {
         "type": "BamAdapter",

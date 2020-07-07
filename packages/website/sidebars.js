@@ -7,6 +7,12 @@ module.exports = {
       'user_bigwig',
       'user_sv_inspector',
     ],
+    'Configuration guide': [
+      'config_alignments_track',
+      'config_variant_track',
+      'config_hic_track',
+      'config_wiggle_track',
+    ],
     'Developer resources': [
       'developer_code_organization',
       'developer_pluggable_elements',
