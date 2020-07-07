@@ -21,5 +21,12 @@ module.exports = {
       'developer_creating_data_adapters',
       'developer_creating_renderers',
     ],
+    'JBrowse educational courses': [
+      {
+        type: 'category',
+        label: 'Archive',
+        items: ['bcc2020_plugin_development', 'bcc2020_embedding_jbrowse'],
+      },
+    ],
   },
 }
