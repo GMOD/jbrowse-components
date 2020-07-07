@@ -2,7 +2,6 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import { observer } from 'mobx-react'
 import React from 'react'
-import './DivSequenceRendering.scss'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 

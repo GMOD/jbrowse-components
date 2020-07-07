@@ -39,13 +39,6 @@ export default (pluginManager: PluginManager) => {
         description: 'draw upside down',
         defaultValue: false,
       },
-
-      headroom: {
-        type: 'number',
-        description:
-          'round the upper value of the domain scale to the nearest N',
-        defaultValue: 20,
-      },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
 
       renderers: ConfigurationSchema('RenderersConfiguration', {
