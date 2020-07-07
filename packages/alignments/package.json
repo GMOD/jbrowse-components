@@ -26,6 +26,9 @@
     "mobx-run-in-reactive-context": "^1.0.1",
     "react-d3-axis": "^0.1.2"
   },
+  "devDependencies": {
+    "@gmod/jbrowse-development-tools": "^2.0.0"
+  },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",
     "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",

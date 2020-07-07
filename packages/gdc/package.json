@@ -20,6 +20,9 @@
     "@material-ui/icons": "^4.9.1",
     "uuid": "^7.0.1"
   },
+  "devDependencies": {
+    "@gmod/jbrowse-development-tools": "^2.0.0"
+  },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",
     "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
