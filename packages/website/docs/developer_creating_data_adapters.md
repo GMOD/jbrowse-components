@@ -3,7 +3,9 @@ id: developer_creating_data_adapters
 title: Creating a new data adapter
 ---
 
-## What is a data adapter?
+## Creating a new data adapter
+
+### What is a data adapter?
 
 A data adapter is essentially a class that parses your data type and returns
 features that jbrowse will draw

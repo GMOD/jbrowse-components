@@ -21,7 +21,7 @@ hopefully orients you to our codebase
 
 ## Monorepo overview
 
-### packages/jbrowse-web
+#### packages/jbrowse-web
 
 The jbrowse-web folder is essentially a `create-react-app` instance that is the
 main JBrowse 2 web app
@@ -31,13 +31,13 @@ runtime, and more
 
 The tests in packages/jbrowse-web/src/tests are "integration tests" of the app
 
-### packages/jbrowse-desktop
+#### packages/jbrowse-desktop
 
 This is our electron based packaging of JBrowse 2, which contains all the
 features of jbrowse-web but additionally has the ability to save sessions to
 the desktop, be used offline, etc.
 
-### packages/alignments
+#### packages/alignments
 
 This package provides the "alignments" related features including
 
@@ -49,7 +49,7 @@ This package provides the "alignments" related features including
   SNPCoverageTrack "subtracks"
 - AlignmentsFeatureDrawerWidget for alignments features
 
-### packages/variants/
+#### packages/variants/
 
 Provides variant features including
 
@@ -58,22 +58,22 @@ Provides variant features including
 - VariantTrack that is basically just a normal track, but has logic to popup
   the VariantFeatureDrawerWidget on feature click
 
-### packages/website
+#### packages/website
 
 This provides the website you are currently looking at
 
-### packages/hic
+#### packages/hic
 
 This provides a HicAdapter based on the .hic file format
 ([ref](https://github.com/aidenlab/juicer/wiki/Data#hic-files))
 
 Also a track type and renderer to visualize these
 
-### packages/bed
+#### packages/bed
 
 Provides BigBed and BEDTabix rendering of features
 
-### packages/wiggle
+#### packages/wiggle
 
 Provides wiggle track types with different types of rendering formats including
 
@@ -85,21 +85,21 @@ The WiggleTrack type can swap out these different rendering types, and
 calculates stats such as max and min score over a region before the region is
 rendered
 
-### packages/svg
+#### packages/svg
 
 This is the main gene glyphs, which are rendered using SVG
 
-### packages/spreadsheet-view
+#### packages/spreadsheet-view
 
 This provides a spreadsheet-in-the-browser that can be used as a data backend
 to power other views
 
-### packages/circular-view
+#### packages/circular-view
 
 This provides our 'Circos-style' whole-genome overview of data, especially
 genomic translocations
 
-### packages/sv-inspector
+#### packages/sv-inspector
 
 This is a "superview" type that contains a circular and spreadsheet view as
 child views
