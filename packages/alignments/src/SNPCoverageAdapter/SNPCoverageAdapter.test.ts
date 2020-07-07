@@ -4,10 +4,8 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { SnapshotIn } from 'mobx-state-tree'
 import AdapterF from './index'
 import CramAdapterF from '../CramAdapter'
-import {
-  AdapterClass as BamAdapter,
-  configSchema as BamConfigSchema,
-} from '../BamAdapter'
+import BamAdapterF from '../BamAdapter'
+
 import { SequenceAdapter } from '../CramAdapter/CramTestAdapters'
 
 const pluginManager = new PluginManager()
@@ -18,6 +16,10 @@ const {
   AdapterClass: CramAdapter,
   configSchema: CramConfigSchema,
 } = pluginManager.load(CramAdapterF)
+const {
+  AdapterClass: BamAdapter,
+  configSchema: BamConfigSchema,
+} = pluginManager.load(BamAdapterF)
 
 pluginManager.configure()
 

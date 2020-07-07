@@ -84,7 +84,7 @@ export default pluginManager => {
             ? slice.region.regions
             : [slice.region]
           regions.forEach(region => {
-            const renamed = self.refNameMap.get(region.refName)
+            const renamed = self.refNameMap[region.refName]
             if (renamed && region.refName !== renamed) {
               region.refName = renamed
             }

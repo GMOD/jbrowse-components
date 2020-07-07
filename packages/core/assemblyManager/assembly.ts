@@ -1,23 +1,11 @@
 import jsonStableStringify from 'json-stable-stringify'
-import {
-  cast,
-  getParent,
-  IAnyType,
-  types,
-  Instance,
-  SnapshotIn,
-} from 'mobx-state-tree'
+import { cast, getParent, IAnyType, types, Instance } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import { readConfObject } from '../configuration'
 import { Region } from '../util/types'
 import { Region as MSTRegion } from '../util/types/mst'
-import { makeAbortableReaction, isAbortException, when } from '../util'
+import { makeAbortableReaction, when } from '../util'
 import QuickLRU from '../util/QuickLRU'
-
-const refNameAdapterMapSet = types.model('RefNameMappingForAdapter', {
-  forwardMap: types.map(types.string),
-  reverseMap: types.map(types.string),
-})
 
 // Based on the UCSC Genome Browser chromosome color palette:
 // https://github.com/ucscGenomeBrowser/kent/blob/a50ed53aff81d6fb3e34e6913ce18578292bc24e/src/hg/inc/chromColors.h
@@ -64,27 +52,16 @@ async function loadRefNameMap(
     name: 'when assembly ready',
   })
 
-  let refNames = []
-  try {
-    refNames = await assembly.rpcManager.call(
+  const refNames = await assembly.rpcManager.call(
+    sessionId,
+    'CoreGetRefNames',
+    {
       sessionId,
-      'CoreGetRefNames',
-      {
-        sessionId,
-        adapterConfig: adapterConf,
-        signal,
-      },
-      { timeout: 1000000 },
-    )
-  } catch (error) {
-    if (!isAbortException) {
-      console.error(
-        `Error loading adapter refNames for adapter ${getAdapterId(
-          adapterConf,
-        )}`,
-      )
-    }
-  }
+      adapterConfig: adapterConf,
+      signal,
+    },
+    { timeout: 1000000 },
+  )
 
   const refNameMap: Record<string, string> = {}
   const { refNameAliases } = assembly
@@ -168,7 +145,6 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       configuration: types.reference(assemblyConfigType),
       regions: types.maybe(types.array(MSTRegion)),
       refNameAliases: types.maybe(types.map(types.array(types.string))),
-      adapterMaps: types.map(refNameAdapterMapSet), // map of adapter ID => refNameAdapterMap
     })
     .views(self => ({
       get name(): string {
@@ -271,69 +247,52 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
           this.setError,
         )
       },
-      addAdapterMap(
-        adapterId: string,
-        snap: SnapshotIn<typeof refNameAdapterMapSet>,
-      ) {
-        self.adapterMaps.set(adapterId, snap)
-      },
     }))
     .views(self => ({
       getAdapterMapEntry(
         adapterConf: unknown,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
+        const { signal, ...rest } = opts
         if (!opts.sessionId) {
           throw new Error('sessionId is required')
         }
         const adapterId = getAdapterId(adapterConf)
-        const adapterMap = self.adapterMaps.get(adapterId)
-        if (!adapterMap) {
-          adapterLoads
-            .get(
-              adapterId,
-              {
-                adapterConf,
-                adapterId,
-                self: self as Assembly,
-                sessionId: opts.sessionId,
-              },
-              opts.signal,
-            )
-            .then(mapData => {
-              self.addAdapterMap(adapterId, mapData)
-            })
-            .catch(err => {
-              if (!isAbortException(err)) {
-                console.error(err)
-              }
-            })
-          return undefined
-        }
-        return adapterMap
+        return adapterLoads.get(
+          adapterId,
+          {
+            adapterConf,
+            adapterId,
+            self: self as Assembly,
+            ...rest,
+          },
+          signal,
+        )
       },
 
       /**
        * get Map of `canonical-name -> adapter-specific-name`
        */
-      getRefNameMapForAdapter(
+      async getRefNameMapForAdapter(
         adapterConf: unknown,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
         if (!opts || !opts.sessionId) {
           throw new Error('sessionId is required')
         }
-        return this.getAdapterMapEntry(adapterConf, opts)?.forwardMap
+        const map = await this.getAdapterMapEntry(adapterConf, opts)
+        return map.forwardMap
       },
 
       /**
        * get Map of `adapter-specific-name -> canonical-name`
        */
-      getReverseRefNameMapForAdapter(
+      async getReverseRefNameMapForAdapter(
         adapterConf: unknown,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
-        return this.getAdapterMapEntry(adapterConf, opts)?.reverseMap
+        const map = await this.getAdapterMapEntry(adapterConf, opts)
+        return map.reverseMap
       },
     }))
 }

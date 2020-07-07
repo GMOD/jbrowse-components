@@ -6,7 +6,8 @@ import ReactPropTypes from 'prop-types'
 import React from 'react'
 
 function Box(props) {
-  const { feature, config, featureLayout, selected } = props
+  const { feature, region, config, featureLayout, selected, bpPerPx } = props
+  const screenWidth = (region.end - region.start) / bpPerPx
 
   const color1 = readConfObject(config, 'color1', [feature])
   let emphasizedColor1
@@ -19,15 +20,19 @@ function Box(props) {
 
   const { left, top, width, height } = featureLayout.absolute
 
-  // the below Math.min/Math.max 10000px limits are because SVG produces
-  // silent non-rendered elements if it's like millions of px
-  // renders -50000 to screenwidth (up to 100000) +50000
+  // clamp the SVG boxes to the current block area
+  // only clamps from the left hand side of the screen and may
+  // create negative width rects if they go off the right hand side
+  const x = Math.max(left, 0)
+  const diff = x - left
+  const w = width - diff
+
   return (
     <rect
       data-testid={feature.id()}
-      x={Math.max(left, -50000)}
+      x={x}
       y={top}
-      width={Math.min(Math.max(width, 1), 200000)}
+      width={Math.min(w, screenWidth)}
       height={height}
       fill={selected ? emphasizedColor1 : color1}
       stroke={selected ? color2 : undefined}
@@ -40,6 +45,8 @@ Box.propTypes = {
     get: ReactPropTypes.func.isRequired,
     id: ReactPropTypes.func.isRequired,
   }).isRequired,
+  region: CommonPropTypes.Region.isRequired,
+  bpPerPx: ReactPropTypes.number.isRequired,
   featureLayout: ReactPropTypes.shape({
     absolute: ReactPropTypes.shape({
       top: ReactPropTypes.number.isRequired,

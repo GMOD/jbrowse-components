@@ -365,12 +365,42 @@ Object {
     },
     Object {
       "adapter": Object {
+        "subadapter": Object {
+          "bamLocation": Object {
+            "uri": "test_data/volvox/volvox-sorted-altname.bam",
+          },
+          "index": Object {
+            "location": Object {
+              "uri": "test_data/volvox/volvox-sorted-altname.bam.bai",
+            },
+          },
+          "type": "BamAdapter",
+        },
+        "type": "SNPCoverageAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "name": "volvox-sorted.bam (contigA SNPCoverage)",
+      "renderers": Object {
+        "SNPCoverageRenderer": Object {
+          "type": "SNPCoverageRenderer",
+        },
+      },
+      "trackId": "volvox_bam_snpcoverage",
+      "type": "SNPCoverageTrack",
+    },
+    Object {
+      "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-reload.bam",
+          "uri": "test_data/volvox/volvox-sorted-altname.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox-reload.bam.bai",
+            "uri": "test_data/volvox/volvox-sorted-altname.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -381,20 +411,17 @@ Object {
       "category": Array [
         "Integration test",
       ],
-      "name": "volvox-sorted.bam (ctgA, canvas, reload test)",
+      "name": "volvox-sorted.bam (contigA PileupTrack)",
       "renderers": Object {
         "PileupRenderer": Object {
           "type": "PileupRenderer",
-        },
-        "SNPCoverageRenderer": Object {
-          "type": "SNPCoverageRenderer",
         },
         "SvgFeatureRenderer": Object {
           "type": "SvgFeatureRenderer",
         },
       },
-      "trackId": "volvox_alignments_pileup_coverage_reload",
-      "type": "AlignmentsTrack",
+      "trackId": "volvox_bam_pileup",
+      "type": "PileupTrack",
     },
     Object {
       "adapter": Object {
