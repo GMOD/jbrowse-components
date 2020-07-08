@@ -34,11 +34,11 @@ export default class Create extends Command {
     force: flags.boolean({
       char: 'f',
       description:
-        'Overwrites existing jbrowse installation if present in path',
+        'Overwrites existing JBrowse 2 installation if present in path',
     }),
     listVersions: flags.boolean({
       char: 'l',
-      description: 'Lists out all versions of JBrowse',
+      description: 'Lists out all versions of JBrowse 2',
     }),
     url: flags.string({
       char: 'u',

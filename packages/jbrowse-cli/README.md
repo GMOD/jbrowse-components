@@ -135,9 +135,9 @@ ARGUMENTS
   VERSION    Version of JBrowse to download, defaults to latest
 
 OPTIONS
-  -f, --force         Overwrites existing jbrowse installation if present in path
+  -f, --force         Overwrites existing JBrowse 2 installation if present in path
   -h, --help          show CLI help
-  -l, --listVersions  Lists out all versions of JBrowse
+  -l, --listVersions  Lists out all versions of JBrowse 2
   -u, --url=url       A direct URL to a JBrowse 2 release
 
 EXAMPLES
