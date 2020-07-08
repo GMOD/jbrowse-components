@@ -11,6 +11,7 @@ export default class Upgrade extends Command {
   static examples = [
     '$ jbrowse upgrade',
     '$ jbrowse upgrade /path/to/jbrowse2/installation',
+    '$ jbrowse upgrade -l',
   ]
 
   static args = [
@@ -28,21 +29,38 @@ export default class Upgrade extends Command {
 
   static flags = {
     help: flags.help({ char: 'h' }),
+    latestVersion: flags.boolean({ char: 'l' }),
   }
 
   async run() {
-    const { args: runArgs } = this.parse(Upgrade)
+    const { args: runArgs, flags: runFlags } = this.parse(Upgrade)
     const { userPath: argsPath } = runArgs as { userPath: string }
 
+    if (runFlags.latestVersion) {
+      try {
+        const logLatest = await this.fetchLatestVersion()
+        this.log(logLatest)
+        this.exit()
+      } catch (error) {
+        this.error(error)
+      }
+    }
     const upgradePath = argsPath || '.'
     this.debug(`Want to upgrade at: ${upgradePath}`)
 
     await this.checkLocation(upgradePath)
 
+    let latestVersion
+    try {
+      latestVersion = await this.fetchLatestVersion()
+    } catch (error) {
+      this.error(error)
+    }
+
     let response
     try {
       response = await fetch(
-        'https://s3.amazonaws.com/jbrowse.org/jb2_releases/JBrowse2_PKX_cli_testing.zip',
+        `https://s3.amazonaws.com/jbrowse.org/jb2_releases/JBrowse2_version_${latestVersion}.zip`,
         {
           method: 'GET',
         },
@@ -113,6 +131,30 @@ export default class Upgrade extends Command {
         '"name" in file "manifest.json" is not "JBrowse". Please make sure you are in the top level of a JBrowse 2 installation or provide the path to one.',
         { exit: 30 },
       )
+    }
+  }
+
+  async fetchLatestVersion() {
+    let versionResponse
+    try {
+      versionResponse = await fetch(
+        'https://s3.amazonaws.com/jbrowse.org/jb2_releases/versions.json',
+        {
+          method: 'GET',
+        },
+      )
+    } catch (error) {
+      this.error(error)
+    }
+    if (!versionResponse) {
+      this.error(`Failed to fetch JBrowse versions from server`)
+    }
+
+    try {
+      const res = await versionResponse.json()
+      return res.versions[0]
+    } catch (error) {
+      return error
     }
   }
 }

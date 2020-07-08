@@ -39,7 +39,7 @@ USAGE
 <!-- commands -->
 
 - [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
-- [`jbrowse create USERPATH`](#jbrowse-create-userpath)
+- [`jbrowse create LOCALPATH [VERSION]`](#jbrowse-create-localpath-version)
 - [`jbrowse hello [FILE]`](#jbrowse-hello-file)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse upgrade [USERPATH] [PLACEHOLDER]`](#jbrowse-upgrade-userpath-placeholder)
@@ -122,24 +122,30 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.config.json
 ```
 
-## `jbrowse create USERPATH`
+## `jbrowse create LOCALPATH [VERSION]`
 
 Downloads and installs the latest Jbrowse 2 release
 
 ```
 USAGE
-  $ jbrowse create USERPATH
+  $ jbrowse create LOCALPATH [VERSION]
 
 ARGUMENTS
-  USERPATH  Location where JBrowse 2 will be installed
+  LOCALPATH  Location where JBrowse 2 will be installed
+  VERSION    Version of JBrowse to download, defaults to latest
 
 OPTIONS
-  -f, --force  Overwrites existing jbrowse installation if present in path
-  -h, --help   show CLI help
+  -f, --force         Overwrites existing jbrowse installation if present in path
+  -h, --help          show CLI help
+  -l, --listVersions  Lists out all versions of JBrowse
+  -u, --url=url       A direct URL to a JBrowse 2 release
 
 EXAMPLES
   $ jbrowse create /path/to/new/installation
   $ jbrowse create /path/to/new/installation --force
+  $ jbrowse create /path/to/new/installation -u url.com/directjbrowselink.zip
+  $ jbrowse create /path/to/new/installation 0.0.1
+  $ jbrowse create -l
 ```
 
 ## `jbrowse hello [FILE]`
@@ -190,11 +196,13 @@ ARGUMENTS
   PLACEHOLDER  Placeholder for config file migration scripts
 
 OPTIONS
-  -h, --help  show CLI help
+  -h, --help           show CLI help
+  -l, --latestVersion
 
 EXAMPLES
   $ jbrowse upgrade
   $ jbrowse upgrade /path/to/jbrowse2/installation
+  $ jbrowse upgrade -l
 ```
 
 <!-- commandsstop -->

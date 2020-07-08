@@ -11,13 +11,21 @@ export default class Create extends Command {
   static examples = [
     '$ jbrowse create /path/to/new/installation',
     '$ jbrowse create /path/to/new/installation --force',
+    '$ jbrowse create /path/to/new/installation -u url.com/directjbrowselink.zip',
+    '$ jbrowse create /path/to/new/installation 0.0.1',
+    '$ jbrowse create -l',
   ]
 
   static args = [
     {
-      name: 'userPath',
+      name: 'localPath',
       required: true,
       description: `Location where JBrowse 2 will be installed`,
+    },
+    {
+      name: 'version',
+      required: false,
+      description: `Version of JBrowse to download, defaults to latest`,
     },
   ]
 
@@ -28,14 +36,23 @@ export default class Create extends Command {
       description:
         'Overwrites existing jbrowse installation if present in path',
     }),
+    listVersions: flags.boolean({
+      char: 'l',
+      description: 'Lists out all versions of JBrowse',
+    }),
+    url: flags.string({
+      char: 'u',
+      description: 'A direct URL to a JBrowse 2 release',
+    }),
   }
 
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(Create)
-    const { userPath: argsPath } = runArgs as { userPath: string }
+    const { localPath: argsPath } = runArgs as { localPath: string }
     this.debug(`Want to install path at: ${argsPath}`)
 
-    const { force } = runFlags
+    const { force, url } = runFlags
+    const { version } = runArgs
 
     // mkdir will do nothing if dir exists
     try {
@@ -44,22 +61,29 @@ export default class Create extends Command {
       this.error(error)
     }
 
-    this.log('run')
     if (!force) await this.checkPath(argsPath)
+
+    const locationUrl =
+      url ||
+      `https://s3.amazonaws.com/jbrowse.org/jb2_releases/JBrowse2_version_${
+        version || (await this.fetchVersions()).versions[0]
+      }.zip`
 
     let response
     try {
-      response = await fetch(
-        'https://s3.amazonaws.com/jbrowse.org/jb2_releases/JBrowse2_PKX_cli_testing.zip',
-        {
-          method: 'GET',
-        },
-      )
+      response = await fetch(locationUrl, {
+        method: 'GET',
+      })
     } catch (error) {
       this.error(error)
     }
-    if (!response.ok) this.error(`Failed to fetch JBrowse2 from server`)
+    if (!response.ok)
+      this.error(`Failed to fetch JBrowse2 from server`, { exit: 40 })
 
+    if (url && response.headers.get('content-type') !== 'application/zip')
+      this.error(
+        'The URL provided does not seem to be a JBrowse installation URL',
+      )
     let body
     try {
       body = await response.body
@@ -104,5 +128,34 @@ export default class Create extends Command {
         `${userPath} This directory has existing files and could cause conflicts with create. Please choose another directory or use the force flag to overwrite existing files`,
         { exit: 10 },
       )
+  }
+
+  async fetchVersions() {
+    let versionResponse
+    try {
+      versionResponse = await fetch(
+        'https://s3.amazonaws.com/jbrowse.org/jb2_releases/versions.json',
+        {
+          method: 'GET',
+        },
+      )
+    } catch (error) {
+      this.error(error)
+    }
+    if (!versionResponse) {
+      this.error(`Failed to fetch version from server`)
+    }
+
+    return versionResponse.json()
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async catch(error: any) {
+    if (error.parse && error.parse.output.flags.listVersions) {
+      const res = await this.fetchVersions()
+      this.log(`All JBrowse versions: ${res.versions.join(', ')}`)
+      this.exit()
+    }
+    throw error
   }
 }
