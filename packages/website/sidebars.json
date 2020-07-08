@@ -22,7 +22,9 @@
       "developer_code_organization",
       "developer_pluggable_elements",
       "developer_creating_data_adapters",
-      "developer_creating_renderers"
+      "developer_creating_track_types",
+      "developer_creating_renderers",
+      "developer_config_model"
     ],
     "FAQ": ["faq"],
     "JBrowse educational courses": [
