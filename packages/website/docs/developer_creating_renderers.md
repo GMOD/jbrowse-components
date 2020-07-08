@@ -3,9 +3,9 @@ id: developer_creating_renderers
 title: Creating a renderer
 ---
 
-## Creating a renderer
+## Creating a custom renderer
 
-### What is a renderer?
+### What is a renderer
 
 A JBrowse 2 renderer is a specific concept that is new in JBrowse 2, and it
 uses concepts called "server side rendering". With our renderers, we actually
@@ -19,11 +19,13 @@ responds with contents like a canvas or HTML to dump into the track component.
 
 Here is a conceptual diagram of how a track calls a renderer using the RPC
 
-<img alt="Renderer workflo" src={useBaseUrl('img/renderer.png')} />
+![Renderer workflow](../img/renderer.png)
 
 Note that tracks types are not required to follow this workflow, and custom
 track types can implement their own logic that does not include a renderer
 step, but this is a common workflow and allows us to data parsing and rendering
 logic that runs in the webworker
 
-## How to create a new renderer
+### How to create a new renderer
+
+We will review

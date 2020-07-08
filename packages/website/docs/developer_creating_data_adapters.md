@@ -3,9 +3,9 @@ id: developer_creating_data_adapters
 title: Creating a new data adapter
 ---
 
-## Creating a new data adapter
+## Creating a custom data adapter
 
-### What is a data adapter?
+### What is a data adapter
 
 A data adapter is essentially a class that parses your data type and returns
 features that jbrowse will draw
@@ -16,7 +16,7 @@ types for that. If you are making a data adapter for some custom type of data
 that also needs a custom type of drawing, you may need to implement a data
 adapter along with a track type and/or renderer
 
-## Outline for a JBrowse 2 data adapter
+### Skeleton of a data adapter
 
 So we see basically something like this, this is stripped down for simplicity
 
@@ -41,7 +41,7 @@ So to make a data adapter, you implement the getRefNames function (optional),
 the getFeatures function (returns an rxjs observable stream of features,
 discussed below) and freeResources (optional)
 
-## Fleshed out example
+### Example data adapter
 
 To take this a little slow let's look at each function individually
 
@@ -97,24 +97,22 @@ class MyAdapter extends BaseFeatureDataAdapter {
 }
 ```
 
-## Discussion
+### What is needed from a data adapter
 
-What do these functions really do
-
-### getRefNames
+#### getRefNames
 
 Returns the refNames that are contained in the file, this is
 used for "refname renaming" and is optional but highly useful in scenarios
 like human chromosomes which have, for example, chr1 vs 1. Returning the
 refnames used in the file allows us to automatically smooth this over
 
-### getFeatures
+#### getFeatures
 
 A function that returns features from the file given a genomic
 range query e.g. getFeatures(region, options), where region is an object like
 `{ refName:string, start:number,end:number }`
 
-### freeResources
+#### freeResources
 
 This is uncommonly used, so most data adapters make this an empty function
 

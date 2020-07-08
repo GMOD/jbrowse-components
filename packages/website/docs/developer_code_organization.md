@@ -3,6 +3,8 @@ id: developer_code_organization
 title: Monorepo code organization
 ---
 
+## Code organization
+
 JBrowse 2 code is organized using a "monorepo" setup. The top level packages
 folder is filled with subdirectories that are each individual "npm type
 packages" that can be re-used by other packages in the project.
@@ -11,15 +13,14 @@ This means that instead of having many different github repos for different
 packages that exist inside our project, we have a single github repo that
 conceptually is divided into multiple "npm style packages"
 
-In addition to the modularity provided by the monorepo style, each of the
-folders in the packages directory are also implemented as a jbrowse 2 plugin.
-That means each package provides a variety of [pluggable
-elements](developer_pluggable_elements).
-
 Here is a brief overview of the packages we have, not comprehensive but
 hopefully orients you to our codebase
 
-## Monorepo overview
+### Monorepo packages
+
+Our code is organized into packages in our monorepo as follows. This is not
+comprehensive but hopes to get you oriented to the basic ideas of where things
+are located
 
 #### packages/jbrowse-web
 
@@ -60,7 +61,7 @@ Provides variant features including
 
 #### packages/website
 
-This provides the website you are currently looking at
+This provides the docusaurus website with docs, blog, and pdf documentation
 
 #### packages/hic
 
@@ -71,7 +72,12 @@ Also a track type and renderer to visualize these
 
 #### packages/bed
 
-Provides BigBed and BEDTabix rendering of features
+Provides two bed related data adapters
+
+- BigBedAdapter
+- BedTabixAdapter
+
+These can be used with the SvgFeatureRenderer
 
 #### packages/wiggle
 
@@ -88,6 +94,8 @@ rendered
 #### packages/svg
 
 This is the main gene glyphs, which are rendered using SVG
+
+General usage of this involves referencing the SvgFeatureRenderer
 
 #### packages/spreadsheet-view
 

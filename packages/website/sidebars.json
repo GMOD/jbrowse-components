@@ -25,6 +25,7 @@
     ],
     "JBrowse educational courses": [
       {
+        "omitFromPdf": true,
         "type": "category",
         "label": "Archive",
         "items": ["bcc2020_plugin_development", "bcc2020_embedding_jbrowse"]
