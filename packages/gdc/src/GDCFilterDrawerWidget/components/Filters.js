@@ -1,4 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
+import AddIcon from '@material-ui/icons/Add'
+import ClearIcon from '@material-ui/icons/Clear'
 
 export default jbrowse => {
   const { makeStyles } = jbrowse.jbrequire('@material-ui/core/styles')
@@ -19,10 +21,6 @@ export default jbrowse => {
     ListItem,
     Tooltip,
   } = jbrowse.jbrequire('@material-ui/core')
-
-  const { Add: AddIcon, Clear: ClearIcon } = jbrowse.jbrequire(
-    '@material-ui/icons',
-  )
 
   const useStyles = makeStyles(theme => ({
     root: {

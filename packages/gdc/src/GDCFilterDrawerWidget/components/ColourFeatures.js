@@ -1,3 +1,5 @@
+import HelpIcon from '@material-ui/icons/Help'
+
 import { mutationHighlightFeatures, geneHighlightFeatures } from './Utility'
 
 export default jbrowse => {
@@ -19,8 +21,6 @@ export default jbrowse => {
     TableHead,
     TableRow,
   } = jbrowse.jbrequire('@material-ui/core')
-
-  const { Help: HelpIcon } = jbrowse.jbrequire('@material-ui/icons')
 
   const useStyles = makeStyles(theme => ({
     root: {

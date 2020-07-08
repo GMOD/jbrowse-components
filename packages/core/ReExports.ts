@@ -11,7 +11,6 @@ import * as MUIStyles from '@material-ui/core/styles'
 // @material-ui components
 import * as MUICore from '@material-ui/core'
 import * as MUILab from '@material-ui/lab'
-import * as MUIIcons from '@material-ui/icons'
 import MUIBox from '@material-ui/core/Box'
 import MUIButton from '@material-ui/core/Button'
 import MUIButtonGroup from '@material-ui/core/ButtonGroup'
@@ -83,7 +82,6 @@ const libs = {
   // material-ui 1st-level components
   '@material-ui/core': MUICore,
   '@material-ui/lab': MUILab,
-  '@material-ui/icons': MUIIcons,
 
   // material-ui subcomponents, should get rid of these
   '@material-ui/core/colors': MUIColors,

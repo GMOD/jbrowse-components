@@ -1,10 +1,10 @@
 import { ConfigurationReference } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { getSession } from '@gmod/jbrowse-core/util'
+import FilterListIcon from '@material-ui/icons/FilterList'
 
 export default jbrowse => {
   const { types } = jbrowse.jbrequire('mobx-state-tree')
-  const { FilterList: FilterListIcon } = jbrowse.jbrequire('@material-ui/icons')
 
   const configSchema = jbrowse.jbrequire(require('./configSchema'))
 

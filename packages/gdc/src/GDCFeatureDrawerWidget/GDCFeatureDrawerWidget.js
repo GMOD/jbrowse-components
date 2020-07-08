@@ -1,3 +1,5 @@
+import AddIcon from '@material-ui/icons/Add'
+import RemoveIcon from '@material-ui/icons/Remove'
 import { getGeneProjectsAsync, getMutationProjectsAsync } from './Utility'
 
 export default jbrowse => {
@@ -16,9 +18,6 @@ export default jbrowse => {
 
   const { makeStyles } = jbrowse.jbrequire('@material-ui/core/styles')
 
-  const { Add: AddIcon, Remove: RemoveIcon } = jbrowse.jbrequire(
-    '@material-ui/icons',
-  )
   const { observer, PropTypes: MobxPropTypes } = jbrowse.jbrequire('mobx-react')
   const PropTypes = jbrowse.jbrequire('prop-types')
   const React = jbrowse.jbrequire('react')

@@ -1,3 +1,5 @@
+import HelpIcon from '@material-ui/icons/Help'
+
 export default pluginManager => {
   const { makeStyles } = pluginManager.lib['@material-ui/core/styles']
   const { observer } = pluginManager.lib['mobx-react']
@@ -9,7 +11,6 @@ export default pluginManager => {
   const List = pluginManager.lib['@material-ui/core/List']
   const ListItem = pluginManager.lib['@material-ui/core/ListItem']
   const Tooltip = pluginManager.lib['@material-ui/core/Tooltip']
-  const HelpIcon = pluginManager.lib['@material-ui/icons/Help']
 
   const useStyles = makeStyles(theme => ({
     root: {
