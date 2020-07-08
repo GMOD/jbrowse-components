@@ -18,7 +18,7 @@ script:
 - yarn checkprettier
 - yarn test-ci
 - yarn tsc --noEmit
-- travis_wait 30 yarn build
+- travis_wait 45 yarn build
 - BUILT_TESTS=1 yarn built-test-ci
 after_success:
 - bash <(curl -s https://codecov.io/bash)
