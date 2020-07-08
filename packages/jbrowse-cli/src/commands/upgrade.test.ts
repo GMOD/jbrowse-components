@@ -58,7 +58,6 @@ describe('upgrade', () => {
     .command(['upgrade'])
     .exit(30)
     .it('fails if "name" in manifest.json is not "JBrowse"')
-  // mock call using nock
   setup
     .do(async ctx => {
       prevStat = await fsPromises.stat(path.join(ctx.dir, 'manifest.json'))

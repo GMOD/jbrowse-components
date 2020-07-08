@@ -25,6 +25,7 @@ nock('https://s3.amazonaws.com')
 
 nock('https://s3.amazonaws.com')
   .get('/jbrowse.org/jb2_releases/JBrowse2_version_0.0.2.zip')
+  .twice()
   .replyWithFile(
     200,
     path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
@@ -69,7 +70,6 @@ describe('create', () => {
     .it(
       'fails if user selects a directory that already has existing files, no force flag',
     )
-  // mock requessts using nock
   setup
     .do(async () => {
       await fsPromises.mkdir(testDir)
@@ -78,15 +78,14 @@ describe('create', () => {
     .it('download and unzips JBrowse 2 to new directory', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
     })
-
-  // setup
-  //   .command(['create', testDir, '0.0.2', '--force'])
-  //   .it(
-  //     'overwrites and succeeds in downloading JBrowse in a non-empty directory with version #',
-  //     async ctx => {
-  //       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
-  //     },
-  //   )
+  setup
+    .command(['create', testDir, '0.0.2', '--force'])
+    .it(
+      'overwrites and succeeds in downloading JBrowse in a non-empty directory with version #',
+      async ctx => {
+        expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
+      },
+    )
   setup
     .command(['create', testDir, '999.999.999', '--force'])
     .exit(40)
