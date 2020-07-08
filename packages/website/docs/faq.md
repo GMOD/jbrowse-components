@@ -38,4 +38,3 @@ In JBrowse 1, the app level menu operated on the single linear genome view, but
 with JBrowse 2, the top level menu only performs global operations and the
 linear genome view has it's own hamburger menu. Note that each track also has
 it's own track level menu.
-

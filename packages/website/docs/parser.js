@@ -11,7 +11,7 @@ let topLevel = false
 
 ;(async () => {
   for await (const line of rl) {
-    if (!readingHeader && line == '---') {
+    if (!readingHeader && line === '---') {
       readingHeader = true
       continue
     }

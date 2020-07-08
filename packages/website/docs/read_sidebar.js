@@ -3,7 +3,7 @@ const fs = require('fs')
 const sidebar = JSON.parse(fs.readFileSync('../sidebars.json'))
 
 function readTree(tree, ret = []) {
-  Object.entries(tree).forEach(([key, value]) => {
+  Object.values(tree).forEach(value => {
     // don't push our course archive or faq to the pdf
     if (value.label === 'Archive') {
       return
