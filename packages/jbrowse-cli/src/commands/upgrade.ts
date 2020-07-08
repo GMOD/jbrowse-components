@@ -16,7 +16,7 @@ export default class Upgrade extends Command {
 
   static args = [
     {
-      name: 'userPath',
+      name: 'localPath',
       required: false,
       description: `Location where JBrowse 2 is installed`,
     },
@@ -34,7 +34,7 @@ export default class Upgrade extends Command {
 
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(Upgrade)
-    const { userPath: argsPath } = runArgs as { userPath: string }
+    const { localPath: argsPath } = runArgs as { localPath: string }
 
     if (runFlags.latestVersion) {
       try {
