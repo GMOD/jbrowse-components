@@ -42,7 +42,7 @@ USAGE
 - [`jbrowse create USERPATH`](#jbrowse-create-userpath)
 - [`jbrowse hello [FILE]`](#jbrowse-hello-file)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
-- [`jbrowse upgrade PATH [PLACEHOLDER]`](#jbrowse-upgrade-path-placeholder)
+- [`jbrowse upgrade [USERPATH] [PLACEHOLDER]`](#jbrowse-upgrade-userpath-placeholder)
 
 ## `jbrowse add-assembly SEQUENCE`
 
@@ -131,7 +131,7 @@ USAGE
   $ jbrowse create USERPATH
 
 ARGUMENTS
-  USERPATH  Location where jbrowse 2 will be installed
+  USERPATH  Location where JBrowse 2 will be installed
 
 OPTIONS
   -f, --force  Overwrites existing jbrowse installation if present in path
@@ -139,7 +139,7 @@ OPTIONS
 
 EXAMPLES
   $ jbrowse create /path/to/new/installation
-  $ jbrowse create /path/to/new/installation -force
+  $ jbrowse create /path/to/new/installation --force
 ```
 
 ## `jbrowse hello [FILE]`
@@ -177,23 +177,24 @@ OPTIONS
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.1.0/src/commands/help.ts)_
 
-## `jbrowse upgrade PATH [PLACEHOLDER]`
+## `jbrowse upgrade [USERPATH] [PLACEHOLDER]`
 
-Upgrades Jbrowse 2 to latest version
+Upgrades JBrowse 2 to latest version
 
 ```
 USAGE
-  $ jbrowse upgrade PATH [PLACEHOLDER]
+  $ jbrowse upgrade [USERPATH] [PLACEHOLDER]
 
 ARGUMENTS
-  PATH         Location where jbrowse 2 will be installed
+  USERPATH     Location where JBrowse 2 is installed
   PLACEHOLDER  Placeholder for config file migration scripts
 
 OPTIONS
   -h, --help  show CLI help
 
-EXAMPLE
-  $ jbrowse upgrade /path/to/new/installation
+EXAMPLES
+  $ jbrowse upgrade
+  $ jbrowse upgrade /path/to/jbrowse2/installation
 ```
 
 <!-- commandsstop -->
