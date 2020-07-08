@@ -3,17 +3,19 @@ const fs = require('fs')
 const sidebar = JSON.parse(fs.readFileSync('../sidebars.json'))
 
 function readTree(tree, ret = []) {
-  for (elt in tree) {
-    if (tree[elt] === 'Archive') {
-      return ret
+  Object.values(tree).forEach(value => {
+    if (value === 'Archive') {
+      return
     }
-    if (typeof tree[elt] === 'object') {
-      readTree(tree[elt], ret)
+    if (typeof value === 'object') {
+      readTree(value, ret)
     }
-    if (tree[elt]) {
-      ret.push(tree[elt] + '.md')
+    if (value) {
+      ret.push(`${value}.md`)
     }
-  }
+  })
   return ret
 }
+
+// eslint-disable-next-line no-console
 console.log(readTree(sidebar).join('\n'))
