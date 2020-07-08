@@ -18,7 +18,17 @@ const testDir = path.join(
 )
 let prevStat: Stats
 
+beforeAll(done => {
+  done()
+})
+afterAll(async done => {
+  await fsPromises.rmdir(testDir, { recursive: true })
+  await nock.cleanAll()
+  done()
+})
+
 nock('https://s3.amazonaws.com')
+  .persist()
   .get('/jbrowse.org/jb2_releases/versions.json')
   .reply(200, {
     versions: ['0.0.1'],
