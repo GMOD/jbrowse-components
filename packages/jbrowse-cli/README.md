@@ -42,7 +42,7 @@ USAGE
 - [`jbrowse create LOCALPATH [VERSION]`](#jbrowse-create-localpath-version)
 - [`jbrowse hello [FILE]`](#jbrowse-hello-file)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
-- [`jbrowse upgrade [LOCALPATH] [PLACEHOLDER]`](#jbrowse-upgrade-localpath-placeholder)
+- [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
 ## `jbrowse add-assembly SEQUENCE`
 
@@ -183,17 +183,16 @@ OPTIONS
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.1.0/src/commands/help.ts)_
 
-## `jbrowse upgrade [LOCALPATH] [PLACEHOLDER]`
+## `jbrowse upgrade [LOCALPATH]`
 
 Upgrades JBrowse 2 to latest version
 
 ```
 USAGE
-  $ jbrowse upgrade [LOCALPATH] [PLACEHOLDER]
+  $ jbrowse upgrade [LOCALPATH]
 
 ARGUMENTS
-  LOCALPATH    Location where JBrowse 2 is installed
-  PLACEHOLDER  Placeholder for config file migration scripts
+  LOCALPATH  Location where JBrowse 2 is installed
 
 OPTIONS
   -h, --help           show CLI help

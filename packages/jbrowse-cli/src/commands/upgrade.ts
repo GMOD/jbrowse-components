@@ -24,6 +24,7 @@ export default class Upgrade extends Command {
       name: 'placeholder',
       required: false,
       description: `Placeholder for config file migration scripts`,
+      hidden: true,
     },
   ]
 
