@@ -1,8 +1,7 @@
 ---
 id: introduction
 title: Introduction
----
-
+toplevel: true
 ---
 
 This guide serves to help orient and get you started with the JBrowse 2 project.

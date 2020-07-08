@@ -5,7 +5,6 @@ const rl = readline.createInterface({
   input: process.stdin, // or fileStream
 })
 
-let headerRead = false
 let readingHeader = false
 let title = ''
 let topLevel = false
@@ -24,15 +23,15 @@ let topLevel = false
       topLevel = true
     }
     if (readingHeader && line === '---') {
-      headerRead = true
+      readingHeader = false
       if (topLevel) {
-        console.log(`# ${title}`)
+        console.log(`\\newpage\\pagebreak\n \n\n\n# ${title}`)
       } else {
         console.log(`## ${title}`)
       }
       continue
     }
-    if (headerRead) {
+    if (readingHeader === false) {
       console.log(line)
     }
   }
