@@ -124,7 +124,7 @@ EXAMPLES
 
 ## `jbrowse create LOCALPATH [VERSION]`
 
-Downloads and installs the latest Jbrowse 2 release
+Downloads and installs the latest JBrowse 2 release
 
 ```
 USAGE

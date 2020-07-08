@@ -6,7 +6,7 @@ import fetch from 'node-fetch'
 import * as unzip from 'unzipper'
 
 export default class Create extends Command {
-  static description = 'Downloads and installs the latest Jbrowse 2 release'
+  static description = 'Downloads and installs the latest JBrowse 2 release'
 
   static examples = [
     '$ jbrowse create /path/to/new/installation',
