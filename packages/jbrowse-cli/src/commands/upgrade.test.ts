@@ -4,6 +4,7 @@
 
 import fs, { Stats } from 'fs'
 import * as path from 'path'
+import nock from 'nock'
 import { setup } from '../testUtil'
 
 const fsPromises = fs.promises
@@ -16,6 +17,19 @@ const testDir = path.join(
   'createTestDir',
 )
 let prevStat: Stats
+
+nock('https://s3.amazonaws.com')
+  .get('/jbrowse.org/jb2_releases/versions.json')
+  .reply(200, {
+    versions: ['0.0.2'],
+  })
+
+nock('https://s3.amazonaws.com')
+  .get('/jbrowse.org/jb2_releases/JBrowse2_version_0.0.2.zip')
+  .replyWithFile(
+    200,
+    path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
+  )
 
 describe('upgrade', () => {
   setup
@@ -45,15 +59,15 @@ describe('upgrade', () => {
     .exit(30)
     .it('fails if "name" in manifest.json is not "JBrowse"')
   // mock call using nock
-  //   setup
-  //     .do(async ctx => {
-  //       prevStat = await fsPromises.stat(path.join(ctx.dir, 'manifest.json'))
-  //     })
-  //     .stdout()
-  //     .command(['upgrade'])
-  //     .it('upgrades a directory', async ctx => {
-  //       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
-  //       // upgrade successful if it updates stats of manifest json
-  //       expect(await fsPromises.stat('manifest.json')).not.toEqual(prevStat)
-  //     })
+  setup
+    .do(async ctx => {
+      prevStat = await fsPromises.stat(path.join(ctx.dir, 'manifest.json'))
+    })
+    .stdout()
+    .command(['upgrade'])
+    .it('upgrades a directory', async ctx => {
+      expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
+      // upgrade successful if it updates stats of manifest json
+      expect(await fsPromises.stat('manifest.json')).not.toEqual(prevStat)
+    })
 })

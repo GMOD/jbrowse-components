@@ -4,6 +4,7 @@
 
 import fs from 'fs'
 import * as path from 'path'
+import nock from 'nock'
 import { setup } from '../testUtil'
 
 const fsPromises = fs.promises
@@ -15,6 +16,22 @@ const testDir = path.join(
   'data',
   'createTestDir',
 )
+
+nock('https://s3.amazonaws.com')
+  .get('/jbrowse.org/jb2_releases/versions.json')
+  .reply(200, {
+    versions: ['0.0.2'],
+  })
+
+nock('https://s3.amazonaws.com')
+  .get('/jbrowse.org/jb2_releases/JBrowse2_version_0.0.2.zip')
+  .replyWithFile(
+    200,
+    path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
+  )
+nock('https://s3.amazonaws.com')
+  .get('/jbrowse.org/jb2_releases/JBrowse2_version_999.999.999.zip')
+  .reply(500)
 
 beforeAll(done => {
   done()
@@ -53,14 +70,14 @@ describe('create', () => {
       'fails if user selects a directory that already has existing files, no force flag',
     )
   // mock requessts using nock
-  // setup
-  //   .do(async () => {
-  //     await fsPromises.mkdir(testDir)
-  //   })
-  //   .command(['create', testDir])
-  //   .it('download and unzips JBrowse 2 to new directory', async ctx => {
-  //     expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
-  //   })
+  setup
+    .do(async () => {
+      await fsPromises.mkdir(testDir)
+    })
+    .command(['create', testDir])
+    .it('download and unzips JBrowse 2 to new directory', async ctx => {
+      expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
+    })
 
   // setup
   //   .command(['create', testDir, '0.0.2', '--force'])
@@ -70,12 +87,12 @@ describe('create', () => {
   //       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
   //     },
   //   )
-  // setup
-  //   .command(['create', testDir, '999.999.999', '--force'])
-  //   .exit(40)
-  //   .it('fails to download a version that does not exist')
-  // setup
-  //   .command(['create', testDir])
-  //   .exit(10)
-  //   .it('fails because this directory is already set up')
+  setup
+    .command(['create', testDir, '999.999.999', '--force'])
+    .exit(40)
+    .it('fails to download a version that does not exist')
+  setup
+    .command(['create', testDir])
+    .exit(10)
+    .it('fails because this directory is already set up')
 })
