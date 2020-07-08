@@ -8,8 +8,8 @@
     "swizzle": "docusaurus swizzle",
     "predeploy": "npm run build",
     "deploy": "aws s3 sync build s3://jbrowse.org/jb2/",
-    "makepdf": "cd docs; make; cd -",
-    "predeploypdf": "npm run makepdf",
+    "make": "cd docs; make; cd -",
+    "predeploypdf": "npm run make",
     "deploypdf": "aws s3 cp docs/jbrowse2.pdf s3://jbrowse.org/docs/"
   },
   "dependencies": {
