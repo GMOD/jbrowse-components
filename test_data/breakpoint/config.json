@@ -172,13 +172,11 @@
               ],
               "tracks": [
                 {
-                  "type": "AlignmentsTrack",
                   "height": 100,
                   "configuration": "pacbio_hg002_breakpoints",
                   "selectedRendering": ""
                 },
                 {
-                  "type": "VariantTrack",
                   "height": 100,
                   "configuration": "pacbio_vcf",
                   "selectedRendering": ""
