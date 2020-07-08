@@ -44,15 +44,16 @@ describe('upgrade', () => {
     .command(['upgrade'])
     .exit(30)
     .it('fails if "name" in manifest.json is not "JBrowse"')
-  setup
-    .do(async ctx => {
-      prevStat = await fsPromises.stat(path.join(ctx.dir, 'manifest.json'))
-    })
-    .stdout()
-    .command(['upgrade'])
-    .it('upgrades a directory', async ctx => {
-      expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
-      // upgrade successful if it updates stats of manifest json
-      expect(await fsPromises.stat('manifest.json')).not.toEqual(prevStat)
-    })
+  // mock call using nock
+  //   setup
+  //     .do(async ctx => {
+  //       prevStat = await fsPromises.stat(path.join(ctx.dir, 'manifest.json'))
+  //     })
+  //     .stdout()
+  //     .command(['upgrade'])
+  //     .it('upgrades a directory', async ctx => {
+  //       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
+  //       // upgrade successful if it updates stats of manifest json
+  //       expect(await fsPromises.stat('manifest.json')).not.toEqual(prevStat)
+  //     })
 })
