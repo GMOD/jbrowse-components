@@ -3,8 +3,6 @@ id: user_sv_inspector
 title: SV inspector
 ---
 
-## SV inspector
-
 The SV inspector is a "workflow" that is designed to help users inspect structural variant calls
 
 ### Opening the SV inspector

@@ -3,8 +3,6 @@ id: config_alignments_track
 title: Alignments track configuration
 ---
 
-## AlignmentsTrack configuration options
-
 - minScore - the minimum score to plot in the coverage track. default: 0
 - maxScore - the maximum score to plot in the coverage track. default: auto calculated
 - scaleType - options: linear, log, to display the coverage data

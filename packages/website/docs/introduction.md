@@ -1,6 +1,8 @@
 ---
-id: quickstart
-title: JBrowse 2 quick start guide
+id: introduction
+title: Introduction
+---
+
 ---
 
 This guide serves to help orient and get you started with the JBrowse 2 project.

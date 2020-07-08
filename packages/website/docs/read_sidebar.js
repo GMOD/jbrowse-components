@@ -5,7 +5,7 @@ const sidebar = JSON.parse(fs.readFileSync('../sidebars.json'))
 function readTree(tree, ret = []) {
   Object.entries(tree).forEach(([key, value]) => {
     // don't push our course archive or faq to the pdf
-    if (value.name === 'Archive') {
+    if (value.label === 'Archive') {
       return
     }
     if (typeof value === 'object') {

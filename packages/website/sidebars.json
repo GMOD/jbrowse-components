@@ -1,5 +1,6 @@
 {
   "someSidebar": {
+    "Introduction": ["introduction"],
     "User guide": [
       "user_guide",
       "user_navigation",
@@ -9,7 +10,6 @@
       "user_sv_inspector",
       "user_hic"
     ],
-    "FAQ": ["faq"],
     "Configuration guide": [
       "config_guide",
       "config_alignments_track",
@@ -24,6 +24,7 @@
       "developer_creating_data_adapters",
       "developer_creating_renderers"
     ],
+    "FAQ": ["faq"],
     "JBrowse educational courses": [
       {
         "type": "category",

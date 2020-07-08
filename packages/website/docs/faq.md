@@ -3,8 +3,6 @@ id: faq
 title: FAQ
 ---
 
-\newpage
-
 # FAQ
 
 #### What technologies does JBrowse 2 use

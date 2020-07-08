@@ -1,9 +1,7 @@
 ---
 id: user_guide
 title: User guide
+toplevel: true
 ---
 
-# User guide
-
 We will introduce JBrowse 2 from a user's point of view
-

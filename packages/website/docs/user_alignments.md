@@ -3,8 +3,6 @@ id: user_alignments
 title: Alignments tracks
 ---
 
-## Alignments track
-
 Visualizing alignments is an important aspect of genome browsers. This guide
 will go over the main features of the "Alignments track"
 
