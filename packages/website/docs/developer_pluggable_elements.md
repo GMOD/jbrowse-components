@@ -3,8 +3,6 @@ id: developer_pluggable_elements
 title: Pluggable elements
 ---
 
-## What are pluggable elements?
-
 Pluggable elements are basic "extension points" that you can customize in
 JBrowse 2 plugins
 
@@ -26,7 +24,7 @@ another adapter, views that contains other subviews, and tracks that contain
 other tracks, leading to a lot of interesting behavior. Details and examples
 below
 
-## Data adapters
+### Data adapters
 
 Data adapters basically are parsers for a given data format. We will review
 what data adapters the alignments plugin has (to write your own data adapter,
@@ -49,7 +47,7 @@ multiple data adapters
   and output them to multiple contexts, including (a) contexts which requests
   statistics (b) and contexts that draw features
 
-## Renderers
+### Renderers
 
 Renderers are a new concept in JBrowse 2, and are related to the concept of
 server side rendering (SSR), but can be used not just on the server but also in
@@ -66,7 +64,7 @@ renderer types
   renderer derives from the wiggle renderer, but does the additional step of
   drawing the mismatches over the coverage track
 
-## Track types
+### Track types
 
 Track types are a high level type that controls how features are drawn. In most
 cases, a track combines a renderer and an adapter, and can do additional things like
@@ -85,7 +83,7 @@ track types
 - AlignmentsTrack - this is a "combination track", that contains a
   SNPCoverageTrack and PileupTrack as "subtracks"
 
-## Drawer widgets
+### Drawer widgets
 
 Drawer widgets are custom info panels that show up in our sidebar, and are an
 alternative to modal dialogs
@@ -106,7 +104,7 @@ have custom display of the alignments
   for viewing the feature details of alignments features that customizes the
   basic feature detail widget
 
-## View types
+### View types
 
 Creating view types is one of the most powerful features of JBrowse 2, because
 it allows us to put entirely different visualizations in the same context as
@@ -125,7 +123,7 @@ We have demonstrated a couple new view types in JBrowse 2 already including
 We think the boundaries for this are just your imagination, and there can also
 be interplay between view types e.g. popup dotplot from a linear view, etc.
 
-## RPC methods
+### RPC methods
 
 Plugins can register their own RPC methods, which can allow them to offload
 custom behaviors to a web-worker or server side process. The Wiggle track for

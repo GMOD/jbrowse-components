@@ -7,7 +7,10 @@
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
     "predeploy": "npm run build",
-    "deploy": "aws s3 sync build s3://jbrowse.org/jb2/"
+    "deploy": "aws s3 sync build s3://jbrowse.org/jb2/",
+    "makepdf": "cd docs; make; cd -",
+    "predeploypdf": "npm run makepdf",
+    "deploypdf": "aws s3 cp docs/jbrowse2.pdf s3://jbrowse.org/docs/"
   },
   "dependencies": {
     "@docusaurus/core": "^2.0.0-alpha.58",

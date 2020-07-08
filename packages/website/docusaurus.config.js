@@ -76,9 +76,8 @@ module.exports = {
       '@docusaurus/preset-classic',
       {
         docs: {
-          // It is recommended to set document id as docs home page (`docs/` path).
-          homePageId: 'quickstart',
-          sidebarPath: require.resolve('./sidebars.js'),
+          homePageId: 'introduction',
+          sidebarPath: require.resolve('./sidebars.json'),
           // Please change this to your repo.
           editUrl:
             'https://github.com/GMOD/jbrowse-components/edit/master/website/',
