@@ -9,14 +9,19 @@ Notes:
 
 We build docusaurus and also create a PDF version with pandoc
 
-It deploys to a sub-uri e.g. /jb2/
+### Notes
 
-We keep relative links to ../img/ in the markdown
+- The deployment goes to a sub-uri e.g. /jb2/ but our relative paths should not
+  be affected by a different deployment
 
-We keep a symlink to static/img in the root directory here to enable to ../img/
-symlink to work while pandoc is running
+- We use markdown and not mdx for pandoc compatibility
 
-We do not use mdx so that we can use pandoc
+- We link to images with ../img/file.png in the markdown, which works on both the website and pdf
+
+- read_sidebar.js parses sidebar.js and outputs markdown in order for the pandoc
+
+- parser.js parses markdown files and checks their header e.g. the `---\ntitle: My title\ntoplevel: true\n---`. If it does have, as noted there, `toplevel: true` if they are going to be a top level of the table of contents, and if so
+  outputs a single hash `# ${title}`, otherwise it outputs a double hash `## ${title}`
 
 ### Installation
 

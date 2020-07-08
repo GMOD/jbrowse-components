@@ -3,8 +3,6 @@ id: developer_code_organization
 title: Monorepo code organization
 ---
 
-## Code organization
-
 JBrowse 2 code is organized using a "monorepo" setup. The top level packages
 folder is filled with subdirectories that are each individual "npm type
 packages" that can be re-used by other packages in the project.

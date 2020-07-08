@@ -1,9 +1,8 @@
 ---
 id: faq
 title: FAQ
+toplevel: true
 ---
-
-# FAQ
 
 #### What technologies does JBrowse 2 use
 
