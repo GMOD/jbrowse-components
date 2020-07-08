@@ -25,9 +25,9 @@ let topLevel = false
     if (readingHeader && line === '---') {
       readingHeader = false
       if (topLevel) {
-        console.log(`\\newpage\\pagebreak\n \n\n\n# ${title}`)
+        console.log(`\\newpage\\phantom{blabla}\\newpage\n \n\n\n# ${title}`)
       } else {
-        console.log(`## ${title}`)
+        console.log(`\n## ${title}`)
       }
       continue
     }

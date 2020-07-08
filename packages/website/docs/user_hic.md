@@ -3,8 +3,6 @@ id: user_hic
 title: Hi-C tracks
 ---
 
-## Hi-C tracks
-
 Visualizing Hi-C data can reveal contact points across large regions of the genome
 
 JBrowse 2 offsers some basic Hi-C support.

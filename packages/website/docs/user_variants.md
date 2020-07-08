@@ -3,8 +3,6 @@ id: user_variants
 title: Variant tracks
 ---
 
-## Variant tracks
-
 Visualizing variant tracks from the VCF format alongside the original alignment
 evidence track is a common workflow for validating your results. In JBrowse 2
 we can open a variant track and an alignments track as shown below

@@ -3,8 +3,6 @@ id: developer_pluggable_elements
 title: Pluggable elements
 ---
 
-## Pluggable elements
-
 Pluggable elements are basic "extension points" that you can customize in
 JBrowse 2 plugins
 
