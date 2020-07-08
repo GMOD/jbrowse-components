@@ -108,7 +108,7 @@ export default class Create extends Command {
       .on('error', err => {
         fs.unlink(argsPath, () => {})
         this.error(
-          `Failed to download JBrowse 2 with error: ${err}. Please try again later`,
+          `Failed to download JBrowse 2 with ${err}. Please try again later`,
         )
       })
       .on('close', () => {

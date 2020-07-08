@@ -93,7 +93,7 @@ export default class Upgrade extends Command {
       })
       .on('error', err => {
         this.error(
-          `Failed to upgrade JBrowse 2 with error: ${err}. Please try again later`,
+          `Failed to upgrade JBrowse 2 with ${err}. Please try again later`,
         )
       })
       .on('close', () => {
