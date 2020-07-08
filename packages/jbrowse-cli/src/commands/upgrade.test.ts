@@ -8,21 +8,12 @@ import nock from 'nock'
 import { setup } from '../testUtil'
 
 const fsPromises = fs.promises
-const testDir = path.join(
-  __dirname,
-  '..',
-  '..',
-  'test',
-  'data',
-  'createTestDir',
-)
 let prevStat: Stats
 
 beforeAll(done => {
   done()
 })
 afterAll(async done => {
-  await fsPromises.rmdir(testDir, { recursive: true })
   await nock.cleanAll()
   done()
 })
@@ -49,7 +40,7 @@ describe('upgrade', () => {
       'fails if user selects a directory that does not have a JBrowse installation',
     )
   setup
-    .command(['upgrade', testDir])
+    .command(['upgrade', path.join(__dirname, '..', '..', 'test', 'nonexist')])
     .exit(10)
     .it('fails if user selects a directory that does not exist')
 
