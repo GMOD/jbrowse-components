@@ -26,7 +26,7 @@ class MyAdapter extends BaseFeatureDataAdapter {
     // config
   }
   async getRefNames() {
-    // return ref names used in your data adapter
+    // return ref names used in your data adapter, used for refname renaming
   }
   getFeatures(region) {
     // return features from your data adapter, using rxjs observable
@@ -56,12 +56,12 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 class MyAdapter extends BaseFeatureDataAdapter {
     // @param config - a configuration object
-    // @param getSubAdapter - readSubAdapter
+    // @param getSubAdapter - function to initialize additional subadapters
     constructor(config, getSubAdapter) {
       // use readConfObject to read slots from the config
       const fileLocation = readConfObject(config, 'fileLocation')
 
-      // if you need to initialize extra adapters inside your data adapter, use getSubAdapter
+      // use getSubAdapter to initialize additional data adapters if needed
       const subadapter = readConfObject(config, 'sequenceAdapter')
       const sequenceAdapter = getSubAdapter(subadapter)
     }
@@ -70,12 +70,28 @@ class MyAdapter extends BaseFeatureDataAdapter {
     // @param region - { refName:string, start:number, end:number}
     // @param options - { signal: AbortSignal, bpPerPx: number }
     getFeatures(region, options) {
-      // return an rxjs Observable that returns features
-      return new Observable<Feature>(observer => {
-        // use observer.next to return features that overlap region
-        observer.next(
-          new SimpleFeature({ uniqueID: 'val', refName: 'chr1', start: 0, end: 100})
-        )
+      // instead of feature callback, we use rxjs observables. the main
+      // idea is that we call observer.next(data) for each feature we want
+      // to return. when we are done returning data for the region, we
+      // call observer.complete()
+      return new Observable<Feature>(async observer => {
+
+        const myapi = await fetch('http://myservive/genes/${refName}/${start}-${end}')
+        const features = await result.json()
+        features.forEach(feature => {
+          // call observer.next for each feature, using the SimpleFeature
+          // wrapper, which expects that we can call e.g. feature.get('start')
+          observer.next(
+            new SimpleFeature({
+              uniqueID: 'val',
+              refName: 'chr1',
+              start: 0,
+              end: 100
+            })
+          )
+        })
+
+
 
         // make sure to call observer.complete() when you have returned all
         // features using observer.next
