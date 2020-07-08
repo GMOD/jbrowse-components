@@ -196,7 +196,7 @@ ARGUMENTS
 
 OPTIONS
   -h, --help           show CLI help
-  -l, --latestVersion
+  -l, --latestVersion  Displays the latest JBrowse 2 version
 
 EXAMPLES
   $ jbrowse upgrade

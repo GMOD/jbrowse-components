@@ -30,7 +30,10 @@ export default class Upgrade extends Command {
 
   static flags = {
     help: flags.help({ char: 'h' }),
-    latestVersion: flags.boolean({ char: 'l' }),
+    latestVersion: flags.boolean({
+      char: 'l',
+      description: 'Displays the latest JBrowse 2 version',
+    }),
   }
 
   async run() {
