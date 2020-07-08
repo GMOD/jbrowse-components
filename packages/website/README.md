@@ -18,9 +18,9 @@ We build docusaurus and also create a PDF version with pandoc
 
 - We link to images with ../img/file.png in the markdown, which works on both the website and pdf
 
-- read_sidebar.js parses sidebar.js and outputs markdown in order for the pandoc
+- `docs/read_sidebar.js` parses sidebar.json and outputs markdown in order for the pandoc
 
-- parser.js parses markdown files and checks their header e.g. the `---\ntitle: My title\ntoplevel: true\n---`. If it does have, as noted there, `toplevel: true` if they are going to be a top level of the table of contents, and if so
+- `docs/parser.js` parses markdown files and checks their header e.g. the `---\ntitle: My title\ntoplevel: true\n---`. If it does have, as noted there, `toplevel: true` if they are going to be a top level of the table of contents, and if so
   outputs a single hash `# ${title}`, otherwise it outputs a double hash `## ${title}`
 
 ### Installation
@@ -46,3 +46,7 @@ served using any static contents hosting service.
     yarn deploy
 
 Currently deploys to the jbrowse.org amazon s3 bucket
+
+### Deploy pdf
+
+    yarn deploypdf
