@@ -4,7 +4,8 @@ const sidebar = JSON.parse(fs.readFileSync('../sidebars.json'))
 
 function readTree(tree, ret = []) {
   Object.entries(tree).forEach(([key, value]) => {
-    if (value.omitFromPdf) {
+    // don't push our course archive or faq to the pdf
+    if (value.name === 'Archive') {
       return
     }
     if (typeof value === 'object') {

@@ -9,6 +9,7 @@
       "user_sv_inspector",
       "user_hic"
     ],
+    "FAQ": ["faq"],
     "Configuration guide": [
       "config_guide",
       "config_alignments_track",
@@ -25,7 +26,6 @@
     ],
     "JBrowse educational courses": [
       {
-        "omitFromPdf": true,
         "type": "category",
         "label": "Archive",
         "items": ["bcc2020_plugin_development", "bcc2020_embedding_jbrowse"]
