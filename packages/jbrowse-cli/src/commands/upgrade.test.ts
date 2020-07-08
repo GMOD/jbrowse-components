@@ -21,11 +21,11 @@ let prevStat: Stats
 nock('https://s3.amazonaws.com')
   .get('/jbrowse.org/jb2_releases/versions.json')
   .reply(200, {
-    versions: ['0.0.2'],
+    versions: ['0.0.1'],
   })
 
 nock('https://s3.amazonaws.com')
-  .get('/jbrowse.org/jb2_releases/JBrowse2_version_0.0.2.zip')
+  .get('/jbrowse.org/jb2_releases/JBrowse2_version_0.0.1.zip')
   .replyWithFile(
     200,
     path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),

@@ -18,14 +18,15 @@ const testDir = path.join(
 )
 
 nock('https://s3.amazonaws.com')
+  .persist()
   .get('/jbrowse.org/jb2_releases/versions.json')
   .reply(200, {
-    versions: ['0.0.2'],
+    versions: ['0.0.1'],
   })
 
 nock('https://s3.amazonaws.com')
-  .get('/jbrowse.org/jb2_releases/JBrowse2_version_0.0.2.zip')
-  .twice()
+  .persist()
+  .get('/jbrowse.org/jb2_releases/JBrowse2_version_0.0.1.zip')
   .replyWithFile(
     200,
     path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
@@ -39,6 +40,7 @@ beforeAll(done => {
 })
 afterAll(async done => {
   await fsPromises.rmdir(testDir, { recursive: true })
+  await nock.cleanAll()
   done()
 })
 
@@ -79,7 +81,7 @@ describe('create', () => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
     })
   setup
-    .command(['create', testDir, '0.0.2', '--force'])
+    .command(['create', testDir, '0.0.1', '--force'])
     .it(
       'overwrites and succeeds in downloading JBrowse in a non-empty directory with version #',
       async ctx => {
