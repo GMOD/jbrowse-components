@@ -13,6 +13,12 @@ declare global {
 }
 const { electronBetterIpc = {}, electron } = window
 
+async function wait(ms: number): Promise<void> {
+  return new Promise((resolve): void => {
+    setTimeout(resolve, ms)
+  })
+}
+
 class WindowWorkerHandle {
   private ipcRenderer: import('electron-better-ipc-extra').RendererProcessIpc
 
@@ -26,12 +32,6 @@ class WindowWorkerHandle {
   ) {
     this.ipcRenderer = ipcRenderer
     this.window = window
-  }
-
-  async wait(ms: number): Promise<void> {
-    return new Promise((resolve): void => {
-      setTimeout(resolve, ms)
-    })
   }
 
   destroy(): void {
@@ -48,7 +48,7 @@ class WindowWorkerHandle {
     // instead of an error, which makes failures hard to track down. For now
     // we'll just wait until it's ready until we find a better option.
     while (!this.ready) {
-      await this.wait(1000)
+      await wait(1000)
       this.ready = !!(await this.ipcRenderer.callRenderer(this.window, 'ready'))
     }
     return this.ipcRenderer.callRenderer(
@@ -63,8 +63,6 @@ class WindowWorkerHandle {
 
 export default class ElectronRpcDriver extends BaseRpcDriver {
   makeWorker: () => WindowWorkerHandle
-
-  workerBootConfiguration: { plugins: PluginDefinition[] }
 
   constructor(
     { workerCreationChannel }: { workerCreationChannel: string },
@@ -85,9 +83,39 @@ export default class ElectronRpcDriver extends BaseRpcDriver {
     this.makeWorker = (): WindowWorkerHandle => {
       const workerId = ipcRenderer.sendSync(workerCreationChannel)
       const window = electronRemote.BrowserWindow.fromId(workerId)
-      return new WindowWorkerHandle(ipcRenderer, window)
+      const worker = new WindowWorkerHandle(ipcRenderer, window)
+      // out of band, take care of booting the worker
+      this.bootWorker(ipcRenderer, window, workerBootConfiguration).catch(
+        error => {
+          console.error('worker failed to boot')
+          console.error(error)
+        },
+      )
+      return worker
     }
-    this.workerBootConfiguration = workerBootConfiguration
+  }
+
+  // waits for a new worker to start, and then sends it its bootstrap configuration
+  async bootWorker(
+    ipcRenderer: NonNullable<typeof electronBetterIpc.ipcRenderer>,
+    window: Electron.BrowserWindow,
+    workerBootConfiguration: { plugins: PluginDefinition[] },
+  ) {
+    let readyForConfig = false
+    while (!readyForConfig) {
+      await wait(1000)
+      readyForConfig = !!(await ipcRenderer.callRenderer(
+        window,
+        'ready_for_configuration',
+      ))
+    }
+
+    const result = await ipcRenderer.callRenderer(
+      window,
+      'configure',
+      workerBootConfiguration,
+    )
+    if (!result) throw new Error('failed to configure worker')
   }
 
   call(
