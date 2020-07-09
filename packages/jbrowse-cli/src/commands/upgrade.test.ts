@@ -10,12 +10,8 @@ import { setup } from '../testUtil'
 const fsPromises = fs.promises
 let prevStat: Stats
 
-beforeAll(async done => {
-  done()
-})
-afterAll(async done => {
-  await nock.cleanAll()
-  done()
+afterAll(() => {
+  nock.cleanAll()
 })
 
 nock('https://s3.amazonaws.com')

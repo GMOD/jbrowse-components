@@ -35,13 +35,9 @@ nock('https://s3.amazonaws.com')
   .get('/jbrowse.org/jb2_releases/JBrowse2_version_999.999.999.zip')
   .reply(500)
 
-beforeAll(async done => {
-  done()
-})
-afterAll(async done => {
-  await fsPromises.rmdir(testDir, { recursive: true })
-  await nock.cleanAll()
-  done()
+afterAll(() => {
+  fsPromises.rmdir(testDir, { recursive: true })
+  nock.cleanAll()
 })
 
 describe('create', () => {
