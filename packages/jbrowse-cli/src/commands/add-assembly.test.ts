@@ -35,7 +35,7 @@ afterEach(() => {
   process.chdir(cwd)
 })
 
-describe('add-assembly', () => {
+xdescribe('add-assembly', () => {
   setup
     .command(['add-assembly', '{}'])
     .exit(10)
