@@ -11,10 +11,8 @@ before_install:
   - sudo apt -y install p7zip-full
 script:
 - set -e
-- yarn
 # dev tools need to be built first cause they are written in TS but used in webpack configs
 - (cd packages/plugin-development-tools && NODE_ENV=development yarn build)
-- yarn
 - yarn lint
 - yarn checkprettier
 - yarn test-ci
