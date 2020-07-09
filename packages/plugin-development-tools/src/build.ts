@@ -36,7 +36,7 @@ export function baseJBrowsePluginWebpackConfig(
       libraryTarget: 'umd',
     },
     devServer: {
-      contentBase: path.join(__dirname, 'dist'),
+      contentBase: path.join(buildDir, 'dist'),
       compress: true,
       port: 9000,
     },
