@@ -10,7 +10,7 @@ import { setup } from '../testUtil'
 const fsPromises = fs.promises
 let prevStat: Stats
 
-beforeAll(done => {
+beforeAll(async done => {
   done()
 })
 afterAll(async done => {
