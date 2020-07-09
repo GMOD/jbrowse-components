@@ -5,6 +5,7 @@
 import fs from 'fs'
 import * as path from 'path'
 import nock from 'nock'
+import del from 'del'
 import { setup } from '../testUtil'
 
 const fsPromises = fs.promises
@@ -36,7 +37,7 @@ nock('https://s3.amazonaws.com')
   .reply(500)
 
 afterAll(() => {
-  fsPromises.rmdir(testDir, { recursive: true })
+  del(testDir, { force: true })
   nock.cleanAll()
 })
 
