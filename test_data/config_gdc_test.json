@@ -5,7 +5,7 @@
   "plugins": [
     {
         "name": "GDC",
-        "url": "http://localhost:8080/packages/gdc/dist/plugin.js"
+        "url": "http://localhost:9000/plugin.js"
     }
   ],
   "assemblies": [

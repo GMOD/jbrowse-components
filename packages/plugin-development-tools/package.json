@@ -15,7 +15,9 @@
   },
   "repository": "GMOD/jbrowse-components",
   "main": "dist/index.js",
-  "files": [ "dist" ],
+  "files": [
+    "dist"
+  ],
   "author": {
     "name": "Robert Buels",
     "email": "rbuels@gmail.com",
@@ -25,6 +27,7 @@
   "dependencies": {
     "@types/webpack": "^4.41.18",
     "change-case": "^4.1.1",
-    "webpack": "^4.43.0"
+    "webpack": "^4.43.0",
+    "webpack-dev-server": "^3.11.0"
   }
 }

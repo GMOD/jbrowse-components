@@ -35,6 +35,11 @@ export function baseJBrowsePluginWebpackConfig(
       library: `JBrowsePlugin${pascalCase(pluginNameParamCase)}`,
       libraryTarget: 'umd',
     },
+    devServer: {
+      contentBase: path.join(__dirname, 'dist'),
+      compress: true,
+      port: 9000,
+    },
     plugins: [
       // disable webpack code splitting for plugins
       new myWebpack.optimize.LimitChunkCountPlugin({
