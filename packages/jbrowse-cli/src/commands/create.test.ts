@@ -36,6 +36,14 @@ nock('https://s3.amazonaws.com')
   .get('/jbrowse.org/jb2_releases/JBrowse2_version_999.999.999.zip')
   .reply(500)
 
+let cwd = ''
+beforeEach(() => {
+  cwd = process.cwd()
+})
+
+afterEach(() => {
+  process.chdir(cwd)
+})
 afterAll(() => {
   del(testDir, { force: true })
   nock.cleanAll()

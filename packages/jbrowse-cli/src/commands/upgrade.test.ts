@@ -10,6 +10,14 @@ import { setup } from '../testUtil'
 const fsPromises = fs.promises
 let prevStat: Stats
 
+let cwd = ''
+beforeEach(() => {
+  cwd = process.cwd()
+})
+
+afterEach(() => {
+  process.chdir(cwd)
+})
 afterAll(() => {
   nock.cleanAll()
 })
