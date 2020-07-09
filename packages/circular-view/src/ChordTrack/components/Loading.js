@@ -1,5 +1,3 @@
-import './Loading.scss'
-
 export default ({ jbrequire }) => {
   const React = jbrequire('react')
   const { useState, useEffect } = React

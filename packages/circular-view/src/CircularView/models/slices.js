@@ -6,8 +6,6 @@ export default ({ jbrequire }) => {
   )
 
   class Slice {
-    flipped = false
-
     constructor(view, region, currentRadianOffset, radianWidth) {
       const { bpPerRadian } = view
       this.key = assembleLocString(region)
@@ -15,6 +13,7 @@ export default ({ jbrequire }) => {
       this.offsetRadians = currentRadianOffset
       this.bpPerRadian = bpPerRadian
       this.radianWidth = radianWidth
+      this.flipped = false
 
       this.startRadians = this.offsetRadians
       this.endRadians = region.widthBp / this.bpPerRadian + this.offsetRadians

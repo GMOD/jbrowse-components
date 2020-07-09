@@ -3,54 +3,54 @@ import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
 import { bpToPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { Component } from 'react'
+import React from 'react'
 import Lollipop from './Lollipop'
 import Stick from './Stick'
 
-class LollipopRendering extends Component {
-  onMouseDown = event => {
-    const { onMouseDown: handler } = this.props
+function LollipopRendering(props) {
+  const onMouseDown = event => {
+    const { onMouseDown: handler } = props
     if (!handler) return undefined
     return handler(event)
   }
 
-  onMouseUp = event => {
-    const { onMouseUp: handler } = this.props
+  const onMouseUp = event => {
+    const { onMouseUp: handler } = props
     if (!handler) return undefined
     return handler(event)
   }
 
-  onMouseEnter = event => {
-    const { onMouseEnter: handler } = this.props
+  const onMouseEnter = event => {
+    const { onMouseEnter: handler } = props
     if (!handler) return undefined
     return handler(event)
   }
 
-  onMouseLeave = event => {
-    const { onMouseLeave: handler } = this.props
+  const onMouseLeave = event => {
+    const { onMouseLeave: handler } = props
     if (!handler) return undefined
     return handler(event)
   }
 
-  onMouseOver = event => {
-    const { onMouseOver: handler } = this.props
+  const onMouseOver = event => {
+    const { onMouseOver: handler } = props
     if (!handler) return undefined
     return handler(event)
   }
 
-  onMouseOut = event => {
-    const { onMouseOut: handler } = this.props
+  const onMouseOut = event => {
+    const { onMouseOut: handler } = props
     if (!handler) return undefined
     return handler(event)
   }
 
-  onClick = event => {
-    const { onClick: handler } = this.props
+  const onClick = event => {
+    const { onClick: handler } = props
     if (!handler) return undefined
     return handler(event)
   }
 
-  layout(args) {
+  function layoutFeat(args) {
     const { feature, bpPerPx, region, layout } = args
 
     const centerBp = Math.abs(feature.get('end') + feature.get('start')) / 2
@@ -71,81 +71,79 @@ class LollipopRendering extends Component {
     })
   }
 
-  render() {
-    const {
-      regions,
+  const {
+    regions,
+    bpPerPx,
+    layout,
+    config,
+    features,
+    trackModel: { selectedFeatureId },
+  } = props
+
+  const [region] = regions
+  const sticksRendered = []
+  const lollipopsRendered = []
+  for (const feature of features.values()) {
+    layoutFeat({
+      feature,
       bpPerPx,
-      layout,
+      region,
       config,
-      features,
-      trackModel: { selectedFeatureId },
-    } = this.props
+      layout,
+    })
+  }
 
-    const [region] = regions
-    const sticksRendered = []
-    const lollipopsRendered = []
-    for (const feature of features.values()) {
-      this.layout({
-        feature,
-        bpPerPx,
-        region,
-        config,
-        layout,
-      })
-    }
-
-    for (const layoutRecord of layout.getLayout(config).values()) {
-      const feature = features.get(layoutRecord.data.featureId)
-      lollipopsRendered.push(
-        <Stick
-          {...this.props}
-          layoutRecord={layoutRecord}
-          feature={feature}
-          key={`stick-${feature.id()}`}
-          selectedFeatureId={selectedFeatureId}
-        />,
-      )
-    }
-
-    for (const layoutRecord of layout.getLayout(config).values()) {
-      const feature = features.get(layoutRecord.data.featureId)
-      lollipopsRendered.push(
-        <Lollipop
-          {...this.props}
-          layoutRecord={layoutRecord}
-          feature={feature}
-          key={`body-${feature.id()}`}
-          selectedFeatureId={selectedFeatureId}
-        />,
-      )
-    }
-
-    const width = (region.end - region.start) / bpPerPx
-    const height = layout.getTotalHeight()
-
-    return (
-      <svg
-        className="LollipopRendering"
-        width={width}
-        height={height}
-        style={{
-          position: 'relative',
-        }}
-        onMouseDown={this.onMouseDown}
-        onMouseUp={this.onMouseUp}
-        onMouseEnter={this.onMouseEnter}
-        onMouseLeave={this.onMouseLeave}
-        onMouseOver={this.onMouseOver}
-        onMouseOut={this.onMouseOut}
-        onFocus={this.onMouseEnter}
-        onBlur={this.onMouseLeave}
-        onClick={this.onClick}
-      >
-        {sticksRendered}
-        {lollipopsRendered}
-      </svg>
+  for (const layoutRecord of layout.getLayout(config).values()) {
+    const feature = features.get(layoutRecord.data.featureId)
+    lollipopsRendered.push(
+      <Stick
+        {...props}
+        layoutRecord={layoutRecord}
+        feature={feature}
+        key={`stick-${feature.id()}`}
+        selectedFeatureId={selectedFeatureId}
+      />,
     )
   }
+
+  for (const layoutRecord of layout.getLayout(config).values()) {
+    const feature = features.get(layoutRecord.data.featureId)
+    lollipopsRendered.push(
+      <Lollipop
+        {...props}
+        layoutRecord={layoutRecord}
+        feature={feature}
+        key={`body-${feature.id()}`}
+        selectedFeatureId={selectedFeatureId}
+      />,
+    )
+  }
+
+  const width = (region.end - region.start) / bpPerPx
+  const height = layout.getTotalHeight()
+
+  return (
+    <svg
+      className="LollipopRendering"
+      width={width}
+      height={height}
+      style={{
+        position: 'relative',
+      }}
+      onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onMouseOver={onMouseOver}
+      onMouseOut={onMouseOut}
+      onFocus={onMouseEnter}
+      onBlur={onMouseLeave}
+      onClick={onClick}
+    >
+      {sticksRendered}
+      {lollipopsRendered}
+    </svg>
+  )
 }
 
 LollipopRendering.propTypes = {
