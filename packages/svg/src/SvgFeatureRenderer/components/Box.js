@@ -25,14 +25,14 @@ function Box(props) {
   // create negative width rects if they go off the right hand side
   const x = Math.max(left, 0)
   const diff = x - left
-  const w = width - diff
+  const w = Math.max(1, Math.min(width - diff, screenWidth))
 
   return (
     <rect
       data-testid={feature.id()}
       x={x}
       y={top}
-      width={Math.min(w, screenWidth)}
+      width={w}
       height={height}
       fill={selected ? emphasizedColor1 : color1}
       stroke={selected ? color2 : undefined}
