@@ -4,12 +4,12 @@
   "private": false,
   "scripts": {
     "start": "docusaurus start",
+    "prebuild": "npm run make",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
     "predeploy": "npm run build",
     "deploy": "aws s3 sync build s3://jbrowse.org/jb2/",
     "make": "cd docs; make; cd -",
-    "predeploypdf": "npm run make",
     "deploypdf": "aws s3 cp docs/jbrowse2.pdf s3://jbrowse.org/docs/"
   },
   "dependencies": {
