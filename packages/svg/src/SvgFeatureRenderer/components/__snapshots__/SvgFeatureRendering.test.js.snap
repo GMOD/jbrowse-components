@@ -119,7 +119,7 @@ exports[`one feature 1`] = `
         data-testid="one"
         fill="goldenrod"
         height="10"
-        width="0.6666666666666666"
+        width="1"
         x="0.3"
         y="0"
       />
