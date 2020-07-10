@@ -20,19 +20,19 @@ function Box(props) {
 
   const { left, top, width, height } = featureLayout.absolute
 
-  // clamp the SVG boxes to the current block area
-  // only clamps from the left hand side of the screen and may
-  // create negative width rects if they go off the right hand side
-  const x = Math.max(left, 0)
-  const diff = x - left
-  const w = Math.max(1, Math.min(width - diff, screenWidth))
+  if (left + width < 0) {
+    return null
+  }
+  const leftWithinBlock = Math.max(left, 0)
+  const diff = leftWithinBlock - left
+  const widthWithinBlock = Math.max(1, Math.min(width - diff, screenWidth))
 
   return (
     <rect
       data-testid={feature.id()}
-      x={x}
+      x={leftWithinBlock}
       y={top}
-      width={w}
+      width={widthWithinBlock}
       height={height}
       fill={selected ? emphasizedColor1 : color1}
       stroke={selected ? color2 : undefined}
