@@ -62,8 +62,6 @@ export default abstract class BaseRpcDriver {
 
   private workerPool?: (() => WorkerHandle)[]
 
-  private inFlightCalls = new Map<WorkerHandle, boolean>()
-
   // filter the given object and just remove any non-clonable things from it
   filterArgs<THING_TYPE>(
     thing: THING_TYPE,
@@ -204,9 +202,6 @@ export default abstract class BaseRpcDriver {
       ...options,
     })
 
-    if (!this.inFlightCalls.has(worker)) {
-      this.inFlightCalls.set(worker, true)
-    }
     let handle: ReturnType<typeof setInterval>
     const result = await Promise.race([
       resultP,
