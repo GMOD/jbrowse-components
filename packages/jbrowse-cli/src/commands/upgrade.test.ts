@@ -2,49 +2,40 @@
  * @jest-environment node
  */
 
-import fs, { Stats } from 'fs'
+import fs from 'fs'
 import * as path from 'path'
-import nock from 'nock'
+import { Scope } from 'nock'
 import { setup } from '../testUtil'
 
 const fsPromises = fs.promises
-let prevStat: Stats
 
-let cwd = ''
-beforeEach(() => {
-  cwd = process.cwd()
-})
-
-afterEach(() => {
-  process.chdir(cwd)
-})
-afterAll(() => {
-  nock.cleanAll()
-})
-
-nock('https://s3.amazonaws.com')
-  .persist()
-  .get('/jbrowse.org/jb2_releases/versions.json')
-  .reply(200, {
+function mockVersionsJson(s3: Scope) {
+  return s3.get('/jbrowse.org/jb2_releases/versions.json').reply(200, {
     versions: ['0.0.1'],
   })
+}
 
-nock('https://s3.amazonaws.com')
-  .get('/jbrowse.org/jb2_releases/JBrowse2_version_0.0.1.zip')
-  .replyWithFile(
-    200,
-    path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
-  )
+function mockZipFile(s3: Scope) {
+  return s3
+    .get('/jbrowse.org/jb2_releases/JBrowse2_version_0.0.1.zip')
+    .replyWithFile(
+      200,
+      path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
+    )
+}
 
 describe('upgrade', () => {
   setup
-    .command(['upgrade', path.join(__dirname, '..', '..', 'test')])
+    .do(() => {
+      fsPromises.mkdir('jbrowse')
+    })
+    .command(['upgrade', 'jbrowse'])
     .exit(10)
     .it(
       'fails if user selects a directory that does not have a JBrowse installation',
     )
   setup
-    .command(['upgrade', path.join(__dirname, '..', '..', 'test', 'nonexist')])
+    .command(['upgrade', 'jbrowse'])
     .exit(10)
     .it('fails if user selects a directory that does not exist')
 
@@ -64,14 +55,15 @@ describe('upgrade', () => {
     .exit(30)
     .it('fails if "name" in manifest.json is not "JBrowse"')
   setup
-    .do(async ctx => {
-      prevStat = await fsPromises.stat(path.join(ctx.dir, 'manifest.json'))
-    })
-    .stdout()
+    .nock('https://s3.amazonaws.com', mockVersionsJson)
+    .nock('https://s3.amazonaws.com', mockZipFile)
+    .add('prevStat', ctx =>
+      fsPromises.stat(path.join(ctx.dir, 'manifest.json')),
+    )
     .command(['upgrade'])
     .it('upgrades a directory', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
       // upgrade successful if it updates stats of manifest json
-      expect(await fsPromises.stat('manifest.json')).not.toEqual(prevStat)
+      expect(await fsPromises.stat('manifest.json')).not.toEqual(ctx.prevStat)
     })
 })
