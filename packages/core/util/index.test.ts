@@ -57,6 +57,10 @@ describe('assembleLocString', () => {
     [{ refName: 'chr1', start: 0, end: 100 }, 'chr1:1..100'],
     [{ refName: 'chr1', start: 0, end: 200 }, 'chr1:1..200'],
     [
+      { refName: 'chr1', start: 1000000, end: 2000000 },
+      'chr1:1,000,001..2,000,000',
+    ],
+    [
       { assemblyName: 'hg19', refName: 'chr1', start: 0, end: 100 },
       '{hg19}chr1:1..100',
     ],
