@@ -24,6 +24,10 @@ function mockZipFile(s3: Scope) {
     )
 }
 
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 describe('create', () => {
   setup
     .command(['create'])
@@ -56,6 +60,7 @@ describe('create', () => {
     .nock('https://s3.amazonaws.com', mockZipFile)
     .command(['create', 'jbrowse'])
     .it('download and unzips JBrowse 2 to new directory', async ctx => {
+      await sleep(500)
       expect(await fsPromises.readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
         'manifest.json',
       )
@@ -66,6 +71,7 @@ describe('create', () => {
     .it(
       'overwrites and succeeds in downloading JBrowse in a non-empty directory with version #',
       async ctx => {
+        await sleep(500)
         expect(
           await fsPromises.readdir(path.join(ctx.dir, 'jbrowse')),
         ).toContain('manifest.json')
