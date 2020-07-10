@@ -132,7 +132,7 @@ export default abstract class BaseRpcDriver {
             // @ts-ignore
             this.worker.destroy()
             // @ts-ignore
-            this.worker = workerGenerator()
+            this.worker = workerGenerator.call(this)
           })
         }
         // @ts-ignore
