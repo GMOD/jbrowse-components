@@ -62,6 +62,8 @@ export default abstract class BaseRpcDriver {
 
   private workerPool?: (() => WorkerHandle)[]
 
+  private inFlightCalls = new Map<WorkerHandle, boolean>()
+
   // filter the given object and just remove any non-clonable things from it
   filterArgs<THING_TYPE>(
     thing: THING_TYPE,
@@ -132,6 +134,8 @@ export default abstract class BaseRpcDriver {
             // @ts-ignore
             this.worker.destroy()
             // @ts-ignore
+            this.worker.status = 'killed'
+            // @ts-ignore
             this.worker = workerGenerator.call(this)
           })
         }
@@ -195,10 +199,29 @@ export default abstract class BaseRpcDriver {
       pluginManager,
       sessionId,
     )
-    const result = await worker.call(functionName, filteredAndSerializedArgs, {
+    const resultP = worker.call(functionName, filteredAndSerializedArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes
       ...options,
     })
+
+    if (!this.inFlightCalls.has(worker)) {
+      this.inFlightCalls.set(worker, true)
+    }
+    let handle: ReturnType<typeof setInterval>
+    const result = await Promise.race([
+      resultP,
+      new Promise((resolve, reject) => {
+        handle = setInterval(() => {
+          // must've been killed
+          // @ts-ignore
+          if (worker.status === 'killed') {
+            reject(new Error('operation timed out'))
+          }
+        }, 5000)
+      }).finally(() => {
+        clearInterval(handle)
+      }),
+    ])
     return rpcMethod.deserializeReturn(result)
   }
 }
