@@ -285,7 +285,7 @@ export function assembleLocString(region: ParsedLocString): string {
   const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
   let startString
   if (start !== undefined) {
-    startString = `:${(start + 1).toLocaleString()}`
+    startString = `:${(start + 1).toLocaleString('en-US')}`
   } else if (end !== undefined) {
     startString = ':1'
   } else {
@@ -296,7 +296,7 @@ export function assembleLocString(region: ParsedLocString): string {
     endString =
       start !== undefined && start + 1 === end
         ? ''
-        : `..${end.toLocaleString()}`
+        : `..${end.toLocaleString('en-US')}`
   } else {
     endString = start !== undefined ? '..' : ''
   }
