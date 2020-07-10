@@ -1,7 +1,10 @@
 {
-  "version": "0.1.0",
+  "name": "@gmod/jbrowse-linear-view",
+  "author": "JBrowse Team",
+  "version": "0.0.1",
   "license": "MIT",
   "main": "dist/index.js",
+  "module": "dist/jbrowse-linear-view.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist",
@@ -22,8 +25,5 @@
   },
   "peerDependencies": {
     "react": ">=16"
-  },
-  "name": "jbrowse-embedded-linear-view",
-  "author": "Garrett Stevens",
-  "module": "dist/jbrowse-embedded-linear-view.esm.js"
+  }
 }
