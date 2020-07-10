@@ -18,23 +18,29 @@ const testDir = path.join(
   'createTestDir',
 )
 
-nock('https://s3.amazonaws.com')
+const releaseArray = [
+  {
+    tag_name: '0.0.1',
+    prerelease: false,
+    assets: [
+      {
+        browser_download_url: 'https://example.com/JBrowse2-0.0.1.zip',
+      },
+    ],
+  },
+]
+nock('https://api.github.com')
   .persist()
-  .get('/jbrowse.org/jb2_releases/versions.json')
-  .reply(200, {
-    versions: ['0.0.1'],
-  })
+  .get('/repos/GMOD/jbrowse-components/releases')
+  .reply(200, releaseArray)
 
-nock('https://s3.amazonaws.com')
+nock('https://example.com')
   .persist()
-  .get('/jbrowse.org/jb2_releases/JBrowse2_version_0.0.1.zip')
+  .get('/JBrowse2-0.0.1.zip')
   .replyWithFile(
     200,
     path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
   )
-nock('https://s3.amazonaws.com')
-  .get('/jbrowse.org/jb2_releases/JBrowse2_version_999.999.999.zip')
-  .reply(500)
 
 let cwd = ''
 beforeEach(() => {
@@ -86,7 +92,7 @@ describe('create', () => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
     })
   setup
-    .command(['create', testDir, '0.0.1', '--force'])
+    .command(['create', testDir, '--jbVersion', '0.0.1', '--force'])
     .it(
       'overwrites and succeeds in downloading JBrowse in a non-empty directory with version #',
       async ctx => {
@@ -94,7 +100,7 @@ describe('create', () => {
       },
     )
   setup
-    .command(['create', testDir, '999.999.999', '--force'])
+    .command(['create', testDir, '--jbVersion', '999.999.999', '--force'])
     .exit(40)
     .it('fails to download a version that does not exist')
   setup

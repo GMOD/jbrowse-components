@@ -9,6 +9,26 @@ import { setup } from '../testUtil'
 
 const fsPromises = fs.promises
 let prevStat: Stats
+const releaseArray = [
+  {
+    tag_name: '0.0.1',
+    prerelease: false,
+    assets: [
+      {
+        browser_download_url: 'https://example.com/JBrowse2-0.0.1.zip',
+      },
+    ],
+  },
+  {
+    tag_name: '0.0.2',
+    prerelease: false,
+    assets: [
+      {
+        browser_download_url: 'https://example.com/JBrowse2-0.0.2.zip',
+      },
+    ],
+  },
+]
 
 let cwd = ''
 beforeEach(() => {
@@ -22,15 +42,19 @@ afterAll(() => {
   nock.cleanAll()
 })
 
-nock('https://s3.amazonaws.com')
+nock('https://api.github.com')
   .persist()
-  .get('/jbrowse.org/jb2_releases/versions.json')
-  .reply(200, {
-    versions: ['0.0.1'],
-  })
+  .get('/repos/GMOD/jbrowse-components/releases')
+  .reply(200, releaseArray)
 
-nock('https://s3.amazonaws.com')
-  .get('/jbrowse.org/jb2_releases/JBrowse2_version_0.0.1.zip')
+nock('https://example.com')
+  .get('/JBrowse2-0.0.1.zip')
+  .replyWithFile(
+    200,
+    path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
+  )
+nock('https://example.com')
+  .get('/JBrowse2-0.0.2.zip')
   .replyWithFile(
     200,
     path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
@@ -67,11 +91,19 @@ describe('upgrade', () => {
     .do(async ctx => {
       prevStat = await fsPromises.stat(path.join(ctx.dir, 'manifest.json'))
     })
-    .stdout()
     .command(['upgrade'])
     .it('upgrades a directory', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
       // upgrade successful if it updates stats of manifest json
       expect(await fsPromises.stat('manifest.json')).not.toEqual(prevStat)
     })
+  setup
+    .command(['upgrade', '--jbVersion', '0.0.2'])
+    .it('upgrades a directory with a specific version', async ctx => {
+      expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
+    })
+  setup
+    .command(['upgrade', '--jbVersion', '999.999.999'])
+    .exit(40)
+    .it('fails to upgrade if version does not exist')
 })

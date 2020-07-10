@@ -5,6 +5,15 @@ import * as path from 'path'
 import fetch from 'node-fetch'
 import * as unzip from 'unzipper'
 
+interface GithubRelease {
+  tag_name: string
+  prerelease: boolean
+  assets: [
+    {
+      browser_download_url: string
+    },
+  ]
+}
 export default class Create extends Command {
   static description = 'Downloads and installs the latest JBrowse 2 release'
 
@@ -12,8 +21,8 @@ export default class Create extends Command {
     '$ jbrowse create /path/to/new/installation',
     '$ jbrowse create /path/to/new/installation --force',
     '$ jbrowse create /path/to/new/installation -u url.com/directjbrowselink.zip',
-    '$ jbrowse create /path/to/new/installation 0.0.1',
-    '$ jbrowse create -l',
+    '$ jbrowse create /path/to/new/installation --jbVersion 0.0.1',
+    '$ jbrowse create --listVersion',
   ]
 
   static args = [
@@ -21,11 +30,6 @@ export default class Create extends Command {
       name: 'localPath',
       required: true,
       description: `Location where JBrowse 2 will be installed`,
-    },
-    {
-      name: 'version',
-      required: false,
-      description: `Version of JBrowse to download, defaults to latest`,
     },
   ]
 
@@ -44,6 +48,10 @@ export default class Create extends Command {
       char: 'u',
       description: 'A direct URL to a JBrowse 2 release',
     }),
+    jbVersion: flags.string({
+      description:
+        'Version of JBrowse 2 to install. Format is JBrowse-2@v1.2.3. Defaults to latest',
+    }),
   }
 
   async run() {
@@ -51,8 +59,19 @@ export default class Create extends Command {
     const { localPath: argsPath } = runArgs as { localPath: string }
     this.debug(`Want to install path at: ${argsPath}`)
 
-    const { force, url } = runFlags
-    const { version } = runArgs
+    const { force, url, listVersions, jbVersion } = runFlags
+
+    if (listVersions) {
+      try {
+        const versions = (await this.fetchGithubVersions()).map(
+          (version: GithubRelease) => version.tag_name,
+        )
+        this.log(`All JBrowse versions: ${versions.join(', ')}`)
+        this.exit()
+      } catch (error) {
+        this.error(error)
+      }
+    }
 
     // mkdir will do nothing if dir exists
     try {
@@ -63,11 +82,28 @@ export default class Create extends Command {
 
     if (!force) await this.checkPath(argsPath)
 
-    const locationUrl =
-      url ||
-      `https://s3.amazonaws.com/jbrowse.org/jb2_releases/JBrowse2_version_${
-        version || (await this.fetchVersions()).versions[0]
-      }.zip`
+    let locationUrl
+    let versionRes
+    if (url) locationUrl = url
+    else {
+      try {
+        versionRes = await this.fetchGithubVersions()
+      } catch (error) {
+        this.error(error)
+      }
+      const versionObj = jbVersion
+        ? versionRes.find(
+            (version: GithubRelease) => version.tag_name === jbVersion,
+          )
+        : versionRes[0]
+
+      locationUrl = versionObj
+        ? versionObj.assets[0].browser_download_url
+        : this.error(
+            'Could not find version specified. Use --listVersions to see all available versions',
+            { exit: 40 },
+          )
+    }
 
     let response
     try {
@@ -78,19 +114,14 @@ export default class Create extends Command {
       this.error(error)
     }
     if (!response.ok)
-      this.error(`Failed to fetch JBrowse2 from server`, { exit: 40 })
+      this.error(`Failed to fetch JBrowse2 from server`, { exit: 50 })
 
     if (url && response.headers.get('content-type') !== 'application/zip')
       this.error(
         'The URL provided does not seem to be a JBrowse installation URL',
       )
-    let body
-    try {
-      body = await response.body
-    } catch (error) {
-      this.error(error)
-    }
-    body
+
+    response.body
       .pipe(unzip.Parse())
       .on('entry', async entry => {
         const { path: fileName, type } = entry
@@ -130,11 +161,11 @@ export default class Create extends Command {
       )
   }
 
-  async fetchVersions() {
+  async fetchGithubVersions() {
     let versionResponse
     try {
       versionResponse = await fetch(
-        'https://s3.amazonaws.com/jbrowse.org/jb2_releases/versions.json',
+        'https://api.github.com/repos/GMOD/jbrowse-components/releases',
         {
           method: 'GET',
         },
@@ -142,18 +173,29 @@ export default class Create extends Command {
     } catch (error) {
       this.error(error)
     }
-    if (!versionResponse) {
-      this.error(`Failed to fetch version from server`)
-    }
 
-    return versionResponse.json()
+    if (!versionResponse.ok) this.error('Failed to fetch version from server')
+    // use all release only if there are only pre-release in repo
+    const allReleaseArray = (
+      await versionResponse.json()
+    ).filter((release: GithubRelease) =>
+      release.tag_name.includes('JBrowse-2@v'),
+    )
+
+    const releaseArray = allReleaseArray.filter(
+      (release: GithubRelease) => release.prerelease === false,
+    )
+
+    return releaseArray.length === 0 ? allReleaseArray : releaseArray
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async catch(error: any) {
     if (error.parse && error.parse.output.flags.listVersions) {
-      const res = await this.fetchVersions()
-      this.log(`All JBrowse versions: ${res.versions.join(', ')}`)
+      const versions = (await this.fetchGithubVersions()).map(
+        (version: GithubRelease) => version.tag_name,
+      )
+      this.log(`All JBrowse versions: ${versions.join(', ')}`)
       this.exit()
     }
     throw error
