@@ -44,10 +44,10 @@ creates a development server on port 3000
 
 You can use `PORT=8080 yarn start` to manually specify a different port
 
-Note that this is a development server that gets started up. To install on your
-web server, see below
+Note that this is a development server that gets started up. To install jbrowse
+2 in production on your webserver, see below
 
-#### How can I setup JBrowse 2 on a web server
+#### How can I setup JBrowse 2 in production
 
 JBrowse 2 is distributed as basically a bundle of javascript, CSS, and html. It
 is a 'static website'. Therefore, to setup JBrowse 2 on your web server looks

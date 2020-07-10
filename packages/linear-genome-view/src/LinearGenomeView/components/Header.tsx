@@ -243,7 +243,7 @@ const Search = observer(({ model }: { model: LGV }) => {
                 (previousValue, currentValue) => previousValue + currentValue,
                 0,
               ),
-          ).toLocaleString()} bp`}
+          ).toLocaleString('en-US')} bp`}
         </Typography>
       </div>
     </>
