@@ -60,7 +60,7 @@ export default abstract class BaseRpcDriver {
 
   abstract makeWorker(): WorkerHandle
 
-  private workerPool?: WorkerHandle[]
+  private workerPool?: (() => WorkerHandle)[]
 
   // filter the given object and just remove any non-clonable things from it
   filterArgs<THING_TYPE>(
@@ -107,37 +107,37 @@ export default abstract class BaseRpcDriver {
     worker.call(functionName, signalId, { timeout: 1000000 })
   }
 
-  createWorkerPool(): WorkerHandle[] {
+  createWorkerPool() {
     const hardwareConcurrency = detectHardwareConcurrency()
 
     const workerCount =
       this.workerCount || Math.max(1, Math.ceil((hardwareConcurrency - 2) / 3))
 
-    const workerHandles: WorkerHandle[] = new Array(workerCount)
+    const workerHandles: (() => WorkerHandle)[] = new Array(workerCount)
+
+    // eslint-disable-next-line  @typescript-eslint/no-this-alias
     const thisB = this
+
     for (let i = 0; i < workerCount; i += 1) {
-      workerHandles[i] = function () {
+      workerHandles[i] = function workerGenerator() {
+        // @ts-ignore
         if (!this.worker) {
+          // @ts-ignore
           this.worker = thisB.makeWorker()
+          // @ts-ignore
+          watchWorker(this.worker, WORKER_MAX_PING_TIME).catch(() => {
+            console.warn(
+              'worker did not respond, killing and generating new one',
+            )
+            // @ts-ignore
+            this.worker.destroy()
+            // @ts-ignore
+            this.worker = workerGenerator()
+          })
         }
+        // @ts-ignore
         return this.worker
       }
-    }
-
-    const watchAndReplaceWorker = (
-      worker: WorkerHandle,
-      workerIndex: number,
-    ): void => {
-      watchWorker(worker, WORKER_MAX_PING_TIME).catch(() => {
-        console.warn(
-          `worker ${
-            workerIndex + 1
-          } did not respond within ${WORKER_MAX_PING_TIME} ms, terminating and replacing.`,
-        )
-        worker.destroy()
-        workerHandles[workerIndex] = this.makeWorker()
-        watchAndReplaceWorker(workerHandles[workerIndex], workerIndex)
-      })
     }
 
     // for each worker, make a ping timer that will kill it and start a new one if it does not
@@ -147,9 +147,11 @@ export default abstract class BaseRpcDriver {
     return workerHandles
   }
 
-  getWorkerPool(): WorkerHandle[] {
+  getWorkerPool() {
     if (!this.workerPool) {
-      this.workerPool = this.createWorkerPool()
+      const res = this.createWorkerPool()
+      this.workerPool = res
+      return res
     }
     return this.workerPool
   }
