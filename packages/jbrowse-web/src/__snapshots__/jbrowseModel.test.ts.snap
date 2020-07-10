@@ -556,37 +556,6 @@ Object {
     },
     Object {
       "adapter": Object {
-        "index": Object {
-          "location": Object {
-            "uri": "test_data/volvox/volvox.filtered.vcf.gz.tbi",
-          },
-        },
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": Object {
-          "uri": "test_data/volvox/volvox.filtered.vcf.gz",
-        },
-      },
-      "assemblyNames": Array [
-        "volvox",
-      ],
-      "category": Array [
-        "VCF",
-      ],
-      "name": "volvox filtered vcf",
-      "renderers": Object {
-        "PileupRenderer": Object {
-          "type": "PileupRenderer",
-        },
-        "SvgFeatureRenderer": Object {
-          "maxFeatureGlyphExpansion": 0,
-          "type": "SvgFeatureRenderer",
-        },
-      },
-      "trackId": "volvox_filtered_vcf",
-      "type": "VariantTrack",
-    },
-    Object {
-      "adapter": Object {
         "rootUrlTemplate": "test_data/volvox/volvox_long_names_nclist/{refseq}/trackData.json",
         "type": "NCListAdapter",
       },
@@ -1312,7 +1281,7 @@ Object {
         "volvox",
       ],
       "category": Array [
-        "Variants",
+        "VCF",
       ],
       "name": "volvox filtered vcf",
       "renderers": Object {
@@ -1323,7 +1292,7 @@ Object {
           "type": "SvgFeatureRenderer",
         },
       },
-      "trackId": "TBggZ1Rwy_p",
+      "trackId": "volvox_filtered_vcf",
       "type": "VariantTrack",
     },
     Object {
