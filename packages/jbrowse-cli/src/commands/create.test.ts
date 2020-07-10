@@ -90,6 +90,9 @@ describe('create', () => {
     .nock('https://s3.amazonaws.com', mockVersionsJson)
     .nock('https://s3.amazonaws.com', mockZipFile)
     .command(['create', 'jbrowse'])
+    .do(async () => {
+      await sleep(500)
+    })
     .command(['create', 'jbrowse'])
     .exit(10)
     .it('fails because this directory is already set up')
