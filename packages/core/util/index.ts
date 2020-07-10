@@ -340,22 +340,38 @@ export function parseLocStringOneBased(
   } else if (isValidRefName(prefix, assemblyName)) {
     if (suffix) {
       // see if it's a range
-      const rangeMatch = suffix.match(/^(-?\d+)(\.\.|-)(-?\d+)$/)
+      const rangeMatch = suffix.match(
+        /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)(-?(\d+|\d{1,3}(,\d{3})*))$/,
+      )
       // see if it's a single point
-      const singleMatch = suffix.match(/^(-?\d+)(\.\.|-)?$/)
+      const singleMatch = suffix.match(/^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)?$/)
       if (rangeMatch) {
-        const [, start, , end] = rangeMatch
+        const [, start, , , , end] = rangeMatch
         if (start !== undefined && end !== undefined) {
-          return { assemblyName, refName: prefix, start: +start, end: +end }
+          return {
+            assemblyName,
+            refName: prefix,
+            start: +start.replace(/,/g, ''),
+            end: +end.replace(/,/g, ''),
+          }
         }
       } else if (singleMatch) {
-        const [, start, separator] = singleMatch
+        const [, start, , , separator] = singleMatch
         if (start !== undefined) {
           if (separator) {
             // indefinite end
-            return { assemblyName, refName: prefix, start: +start }
+            return {
+              assemblyName,
+              refName: prefix,
+              start: +start.replace(/,/g, ''),
+            }
           }
-          return { assemblyName, refName: prefix, start: +start, end: +start }
+          return {
+            assemblyName,
+            refName: prefix,
+            start: +start.replace(/,/g, ''),
+            end: +start.replace(/,/g, ''),
+          }
         }
       } else {
         throw new Error(
