@@ -1078,7 +1078,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
                 style="padding: 8px;"
                 type="text"
-                value="ctgA:1..100;ctgB:1001..1698"
+                value="ctgA:1..100;ctgB:1,001..1,698"
               />
               <fieldset
                 aria-hidden="true"

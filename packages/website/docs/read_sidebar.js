@@ -2,22 +2,27 @@ const fs = require('fs')
 
 const sidebar = JSON.parse(fs.readFileSync('../sidebars.json'))
 
-function readTree(tree, ret = []) {
-  Object.values(tree).forEach(value => {
-    // don't push our course archive or faq to the pdf
-    if (value.label === 'Archive') {
-      return
-    }
-    if (typeof value === 'object') {
-      readTree(value, ret)
-      return
-    }
-    if (value) {
-      ret.push(`${value}.md`)
-    }
-  })
-  return ret
+function readTree(tree) {
+  let res = []
+  res.push('introduction')
+  tree.sidebar
+    .filter(f =>
+      ['User guide', 'Configuration guide', 'Developer guide'].includes(
+        f.label,
+      ),
+    )
+    .forEach(subtree => {
+      if (subtree.items) {
+        res = res.concat(subtree.items)
+      } else res.push(subtree)
+    })
+  res.push('faq')
+  return res
 }
 
 // eslint-disable-next-line no-console
-console.log(readTree(sidebar).join('\n'))
+console.log(
+  readTree(sidebar)
+    .map(elt => `${elt}.md`)
+    .join('\n'),
+)
