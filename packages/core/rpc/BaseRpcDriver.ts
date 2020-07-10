@@ -114,8 +114,14 @@ export default abstract class BaseRpcDriver {
       this.workerCount || Math.max(1, Math.ceil((hardwareConcurrency - 2) / 3))
 
     const workerHandles: WorkerHandle[] = new Array(workerCount)
+    const thisB = this
     for (let i = 0; i < workerCount; i += 1) {
-      workerHandles[i] = this.makeWorker()
+      workerHandles[i] = function () {
+        if (!this.worker) {
+          this.worker = thisB.makeWorker()
+        }
+        return this.worker
+      }
     }
 
     const watchAndReplaceWorker = (
@@ -136,7 +142,7 @@ export default abstract class BaseRpcDriver {
 
     // for each worker, make a ping timer that will kill it and start a new one if it does not
     // respond to a ping within a certain time
-    workerHandles.forEach(watchAndReplaceWorker)
+    // workerHandles.forEach(watchAndReplaceWorker)
 
     return workerHandles
   }
@@ -162,7 +168,7 @@ export default abstract class BaseRpcDriver {
 
     const workerNumber = this.workerAssignments.get(sessionId)
     // console.log(`${sessionId} -> worker ${workerNumber}`)
-    const worker = workers[workerNumber]
+    const worker = workers[workerNumber]()
     if (!worker) {
       throw new Error('no web workers registered for RPC')
     }
@@ -179,7 +185,7 @@ export default abstract class BaseRpcDriver {
     if (!sessionId) {
       throw new TypeError('sessionId is required')
     }
-    const worker = this.getWorker(sessionId, functionName, pluginManager)
+    const worker = await this.getWorker(sessionId, functionName, pluginManager)
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
     const serializedArgs = await rpcMethod.serializeArguments(args)
     const filteredAndSerializedArgs = this.filterArgs(
