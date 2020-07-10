@@ -2426,6 +2426,11 @@
   resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.1.2.tgz#a02fcbcbafe5bc471798d54d667c272148122c91"
   integrity sha512-le/LUeGujO5J4pYdDEsNXTP6M9z8Y3YbCyds53rRwB2/yBmh1q0AHRA2fNrhiM8QqaIvoF8QAHwj4lz/Y6mQWw==
 
+"@gmod/ucsc-hub@^0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.1.3.tgz#37d20b59be9e5153d68a529407237782ed15562d"
+  integrity sha512-F60rkM5AdcOXiOqmiNG5ZdoMCwbAQAU6oGBs5UMFCE0vIX7X8i2Mv4X9HrQbmJupZJvyQRuXQNW6SEaUVa+KsQ==
+
 "@gmod/vcf@^4.0.0", "@gmod/vcf@^4.0.1":
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-4.0.1.tgz#a07e991030bd140df78ed6279ffb8956218f464d"
