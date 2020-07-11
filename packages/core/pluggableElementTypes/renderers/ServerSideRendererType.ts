@@ -243,14 +243,17 @@ export default class ServerSideRenderer extends RendererType {
 
   // render method called on the worker
   async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
-    checkAbortSignal(args.signal)
+    const { signal, sessionId } = args
+    checkAbortSignal(signal)
     const deserialized = this.deserializeArgsInWorker(args)
 
     const features = await this.getFeatures(deserialized)
-    checkAbortSignal(args.signal)
+    checkAbortSignal(signal)
+    self.rpcServer.emit(`message-${sessionId}`, 'rendering plot')
 
     const results = await this.render({ ...deserialized, features })
-    checkAbortSignal(args.signal)
+    self.rpcServer.emit(`message-${sessionId}`, '')
+    checkAbortSignal(signal)
     const html = renderToString(results.element)
     delete results.element
 

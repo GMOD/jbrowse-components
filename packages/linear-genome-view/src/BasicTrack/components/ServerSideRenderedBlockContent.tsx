@@ -56,9 +56,8 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
   }, [])
 
   const { message } = getParent(model, 2)
-  console.log(message, getParent(model, 2))
   return shown ? (
-    <div className={classes.loading}>Loading ({message})</div>
+    <div className={classes.loading}>{`${message}...` || 'Loading...'}</div>
   ) : null
 })
 

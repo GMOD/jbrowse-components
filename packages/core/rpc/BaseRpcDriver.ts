@@ -187,16 +187,19 @@ export default abstract class BaseRpcDriver {
       sessionId,
     )
 
-    worker.on(`message-${sessionId}`, data => {
+    const channel = `message-${sessionId}`
+    const listener = data => {
       if (args.statusCallback) {
         args.statusCallback(data)
       }
-    })
+    }
+    worker.on(channel, listener)
 
     const result = await worker.call(functionName, filteredAndSerializedArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes
       ...options,
     })
+    worker.off(channel, listener)
     return rpcMethod.deserializeReturn(result)
   }
 }

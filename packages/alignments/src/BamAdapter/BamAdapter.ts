@@ -49,7 +49,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   private async setup(opts: BaseOptions = {}) {
     const { sessionId } = opts
     if (Object.keys(this.samHeader).length === 0) {
-      self.rpcServer.emit(`message-${sessionId}`, 'downloading header')
+      self.rpcServer.emit(`message-${sessionId}`, 'Downloading index file')
       const samHeader = await this.bam.getHeader(opts?.signal)
       self.rpcServer.emit(`message-${sessionId}`, '')
 
@@ -87,7 +87,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const { refName, start, end } = region
       const { sessionId } = opts
       await this.setup(opts)
-      self.rpcServer.emit(`message-${sessionId}`, 'downloading features')
+      self.rpcServer.emit(`message-${sessionId}`, 'Fetching BAM records')
       const records = await this.bam.getRecordsForRange(
         refName,
         start,
