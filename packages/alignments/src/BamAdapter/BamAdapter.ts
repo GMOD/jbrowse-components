@@ -51,7 +51,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     if (Object.keys(this.samHeader).length === 0) {
       self.rpcServer.emit(`message-${sessionId}`, 'Downloading index file')
       const samHeader = await this.bam.getHeader(opts?.signal)
-      self.rpcServer.emit(`message-${sessionId}`, '')
 
       // use the @SQ lines in the header to figure out the
       // mapping between ref ref ID numbers and names
@@ -87,14 +86,13 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const { refName, start, end } = region
       const { sessionId } = opts
       await this.setup(opts)
-      self.rpcServer.emit(`message-${sessionId}`, 'Fetching BAM records')
+      self.rpcServer.emit(`message-${sessionId}`, 'Downloading alignments')
       const records = await this.bam.getRecordsForRange(
         refName,
         start,
         end,
         opts,
       )
-      self.rpcServer.emit(`message-${sessionId}`, '')
       checkAbortSignal(opts.signal)
 
       records.forEach(record => {

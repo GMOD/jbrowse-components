@@ -57,7 +57,9 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
 
   const { message } = getParent(model, 2)
   return shown ? (
-    <div className={classes.loading}>{`${message}...` || 'Loading...'}</div>
+    <div className={classes.loading}>
+      {message ? `${message}...` : 'Loading...'}
+    </div>
   ) : null
 })
 

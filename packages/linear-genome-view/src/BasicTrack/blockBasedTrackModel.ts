@@ -200,7 +200,6 @@ const blockBasedTrack = types
       addDisposer(self, blockWatchDisposer)
     },
     setMessage(message: string) {
-      console.log('setMessage blockBased', message)
       self.message = message
     },
 

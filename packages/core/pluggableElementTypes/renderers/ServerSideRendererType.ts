@@ -249,10 +249,8 @@ export default class ServerSideRenderer extends RendererType {
 
     const features = await this.getFeatures(deserialized)
     checkAbortSignal(signal)
-    self.rpcServer.emit(`message-${sessionId}`, 'rendering plot')
-
+    self.rpcServer.emit(`message-${sessionId}`, 'Rendering plot')
     const results = await this.render({ ...deserialized, features })
-    self.rpcServer.emit(`message-${sessionId}`, '')
     checkAbortSignal(signal)
     const html = renderToString(results.element)
     delete results.element

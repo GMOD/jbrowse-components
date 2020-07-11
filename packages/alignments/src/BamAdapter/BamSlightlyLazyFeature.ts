@@ -182,9 +182,11 @@ export default class implements Feature {
   toJSON(): SimpleFeatureSerialized {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tags: Record<string, any> = {}
-    this.tags().forEach((t: string) => {
-      tags[t] = this.get(t)
-    })
+    this.tags()
+      .filter(t => t !== 'seq' && t !== 'qual')
+      .forEach((t: string) => {
+        tags[t] = this.get(t)
+      })
     return {
       ...tags,
       refName: this.get('refName'),

@@ -200,11 +200,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       trackError: track.error,
       renderArgs: {
         statusCallback: (message: string) => {
-          console.log('getting status')
-          if (isAlive(self)) {
-            const track = getParent(self, 2)
-            console.log('setting status', message)
-            console.log(track)
+          if (isAlive(track)) {
             track.setMessage(message)
           }
         },

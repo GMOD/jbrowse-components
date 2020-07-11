@@ -86,7 +86,6 @@ export default (pluginManager: PluginManager) => {
       const refSeqStore = this.sequenceAdapter
       if (!refSeqStore) return undefined
       const refName = this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
-      // console.log(`CRAM seq ID ${seqId} -> ${refName}`)
       if (!refName) return undefined
 
       const features = refSeqStore.getFeatures(
@@ -129,11 +128,9 @@ export default (pluginManager: PluginManager) => {
 
     private async setup(opts: BaseOptions = {}) {
       const { sessionId } = opts
-      console.log(sessionId)
       if (Object.keys(this.samHeader).length === 0) {
-        self.rpcServer.emit(`message-${sessionId}`, 'downloading header')
+        self.rpcServer.emit(`message-${sessionId}`, 'Downloading index')
         const samHeader = await this.cram.cram.getSamHeader(opts?.signal)
-        self.rpcServer.emit(`message-${sessionId}`, 'done downloading header')
 
         // use the @SQ lines in the header to figure out the
         // mapping between ref ref ID numbers and names
@@ -200,7 +197,7 @@ export default (pluginManager: PluginManager) => {
       opts: BaseOptions = {},
     ) {
       // console.log(`CRAM getFeatures ${refName}:${start}-${end}`)
-      console.log(opts)
+      const { sessionId } = opts
       const { refName, start, end, originalRefName } = region
 
       return ObservableCreate<Feature>(async observer => {
@@ -213,6 +210,7 @@ export default (pluginManager: PluginManager) => {
           if (originalRefName) {
             this.seqIdToOriginalRefName[refId] = originalRefName
           }
+          self.rpcServer.emit(`message-${sessionId}`, 'Downloading alignments')
           const records = await this.cram.getRecordsForRange(
             refId,
             start,
