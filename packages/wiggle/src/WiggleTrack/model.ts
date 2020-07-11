@@ -168,7 +168,9 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             {
               adapterConfig: getSnapshot(adapter),
               statusCallback: (message: string) => {
-                self.setMessage(message)
+                if (isAlive(self)) {
+                  self.setMessage(message)
+                }
               },
               ...opts,
             },
