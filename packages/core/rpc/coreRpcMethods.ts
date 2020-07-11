@@ -142,6 +142,7 @@ export class CoreRender extends RpcMethodType {
       adapterConfig,
       rendererType,
       renderProps,
+      regions,
       signal,
     } = deserializedArgs
     if (!sessionId) {
@@ -166,8 +167,8 @@ export class CoreRender extends RpcMethodType {
     )
 
     const result = await RendererType.renderInWorker({
-      ...renderProps,
       ...deserializedArgs,
+      ...renderProps,
       dataAdapter,
     })
 
