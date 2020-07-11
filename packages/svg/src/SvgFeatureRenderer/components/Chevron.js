@@ -9,8 +9,17 @@ import { isUTR } from './util'
 const utrHeightFraction = 0.65
 
 function Chevron(props) {
-  const { feature, config, featureLayout, selected, reversed } = props
+  const {
+    feature,
+    bpPerPx,
+    region,
+    config,
+    featureLayout,
+    selected,
+    reversed,
+  } = props
 
+  const screenWidth = (region.end - region.start) / bpPerPx
   const width = Math.max(featureLayout.absolute.width, 1)
   const { left } = featureLayout.absolute
   let { top, height } = featureLayout.absolute
@@ -41,6 +50,26 @@ function Chevron(props) {
   }
   const color2 = readConfObject(config, 'color2', [feature])
 
+  if (left + width < 0) {
+    return null
+  }
+  const leftWithinBlock = Math.max(left, 0)
+  const diff = leftWithinBlock - left
+  const widthWithinBlock = Math.max(1, Math.min(width - diff, screenWidth))
+  if (width - diff > screenWidth) {
+    return (
+      <rect
+        {...shapeProps}
+        stroke={selected ? color2 : undefined}
+        fill={selected ? emphasizedColor : color}
+        x={leftWithinBlock}
+        y={top}
+        width={widthWithinBlock}
+        height={height}
+      />
+    )
+  }
+
   // To restore indents on back of Chevron: un-comment the last point in the
   // first polygon and replace the second polygon with the commented-out polyline
   return width > height / 2 ? (
@@ -49,11 +78,11 @@ function Chevron(props) {
       stroke={selected ? color2 : undefined}
       fill={selected ? emphasizedColor : color}
       points={[
-        [left, top],
-        [left + width - height / 2, top],
-        [left + width, top + height / 2],
-        [left + width - height / 2, top + height],
-        [left, top + height],
+        [leftWithinBlock, top],
+        [leftWithinBlock + widthWithinBlock - height / 2, top],
+        [leftWithinBlock + widthWithinBlock, top + height / 2],
+        [leftWithinBlock + widthWithinBlock - height / 2, top + height],
+        [leftWithinBlock, top + height],
         // [left + height / 2, top + height / 2],
       ]}
     />
@@ -62,9 +91,9 @@ function Chevron(props) {
       {...shapeProps}
       fill={selected ? emphasizedColor : color}
       points={[
-        [left, top],
-        [left + width, top + height / 2],
-        [left, top + height],
+        [leftWithinBlock, top],
+        [leftWithinBlock + widthWithinBlock, top + height / 2],
+        [leftWithinBlock, top + height],
       ]}
       stroke={selected ? emphasizedColor : color}
     />
@@ -86,6 +115,8 @@ Chevron.propTypes = {
     id: ReactPropTypes.func.isRequired,
     get: ReactPropTypes.func.isRequired,
   }).isRequired,
+  region: CommonPropTypes.Region.isRequired,
+  bpPerPx: ReactPropTypes.number.isRequired,
   featureLayout: ReactPropTypes.shape({
     absolute: ReactPropTypes.shape({
       top: ReactPropTypes.number.isRequired,
