@@ -4,7 +4,7 @@ import React, { FunctionComponent } from 'react'
 import {
   BaseCoreDetails,
   BaseAttributes,
-} from '@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail'
+} from '@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail'
 
 interface AlnCardProps {
   title: string

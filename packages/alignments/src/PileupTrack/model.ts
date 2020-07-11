@@ -8,7 +8,7 @@ import {
 } from '@gmod/jbrowse-core/util/tracks'
 import {
   getSession,
-  isSessionModelWithDrawerWidgets,
+  isSessionModelWithWidgets,
   getContainingView,
 } from '@gmod/jbrowse-core/util'
 
@@ -54,13 +54,13 @@ const stateModelFactory = (
     .actions(self => ({
       selectFeature(feature: Feature) {
         const session = getSession(self)
-        if (isSessionModelWithDrawerWidgets(session)) {
-          const featureWidget = session.addDrawerWidget(
-            'AlignmentsFeatureDrawerWidget',
+        if (isSessionModelWithWidgets(session)) {
+          const featureWidget = session.addWidget(
+            'AlignmentsFeatureWidget',
             'alignmentFeature',
             { featureData: feature.toJSON() },
           )
-          session.showDrawerWidget(featureWidget)
+          session.showWidget(featureWidget)
         }
         session.setSelection(feature)
       },

@@ -1,10 +1,10 @@
 import { lazy } from 'react'
 import ConnectionType from '@gmod/jbrowse-core/pluggableElementTypes/ConnectionType'
-import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
+import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
-  SessionWithDrawerWidgets,
+  SessionWithWidgets,
   isAbstractMenuManager,
 } from '@gmod/jbrowse-core/util'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
@@ -17,17 +17,17 @@ import {
   ReactComponent as AddTrackReactComponent,
   stateModelFactory as AddTrackStateModelFactory,
   configSchema as AddTrackConfigSchema,
-} from './AddTrackDrawerWidget'
+} from './AddTrackWidget'
 import {
   ReactComponent as AddConnectionReactComponent,
   stateModel as AddConnectionStateModel,
   configSchema as AddConnectionConfigSchema,
-} from './AddConnectionDrawerWidget'
+} from './AddConnectionWidget'
 import {
   ReactComponent as HierarchicalTrackSelectorReactComponent,
   stateModelFactory as HierarchicalTrackSelectorStateModelFactory,
   configSchema as HierarchicalTrackSelectorConfigSchema,
-} from './HierarchicalTrackSelectorDrawerWidget'
+} from './HierarchicalTrackSelectorWidget'
 
 export default class extends Plugin {
   install(pluginManager: PluginManager) {
@@ -43,9 +43,9 @@ export default class extends Plugin {
         }),
     )
 
-    pluginManager.addDrawerWidgetType(() => {
-      return new DrawerWidgetType({
-        name: 'HierarchicalTrackSelectorDrawerWidget',
+    pluginManager.addWidgetType(() => {
+      return new WidgetType({
+        name: 'HierarchicalTrackSelectorWidget',
         heading: 'Available Tracks',
         configSchema: HierarchicalTrackSelectorConfigSchema,
         stateModel: HierarchicalTrackSelectorStateModelFactory(pluginManager),
@@ -53,9 +53,9 @@ export default class extends Plugin {
       })
     })
 
-    pluginManager.addDrawerWidgetType(() => {
-      return new DrawerWidgetType({
-        name: 'AddTrackDrawerWidget',
+    pluginManager.addWidgetType(() => {
+      return new WidgetType({
+        name: 'AddTrackWidget',
         heading: 'Add a track',
         configSchema: AddTrackConfigSchema,
         stateModel: AddTrackStateModelFactory(pluginManager),
@@ -63,9 +63,9 @@ export default class extends Plugin {
       })
     })
 
-    pluginManager.addDrawerWidgetType(() => {
-      return new DrawerWidgetType({
-        name: 'AddConnectionDrawerWidget',
+    pluginManager.addWidgetType(() => {
+      return new WidgetType({
+        name: 'AddConnectionWidget',
         heading: 'Add a connection',
         configSchema: AddConnectionConfigSchema,
         stateModel: AddConnectionStateModel,
@@ -80,23 +80,20 @@ export default class extends Plugin {
         pluginManager.rootModel.appendToMenu('File', {
           label: 'Open new track',
           icon: NoteAddIcon,
-          onClick: (session: SessionWithDrawerWidgets) => {
-            const drawerWidget = session.addDrawerWidget(
-              'AddTrackDrawerWidget',
-              'addTrackDrawerWidget',
-            )
-            session.showDrawerWidget(drawerWidget)
+          onClick: (session: SessionWithWidgets) => {
+            const widget = session.addWidget('AddTrackWidget', 'addTrackWidget')
+            session.showWidget(widget)
           },
         })
         pluginManager.rootModel.appendToMenu('File', {
           label: 'Open new connection',
           icon: InputIcon,
-          onClick: (session: SessionWithDrawerWidgets) => {
-            const drawerWidget = session.addDrawerWidget(
-              'AddConnectionDrawerWidget',
-              'addConnectionDrawerWidget',
+          onClick: (session: SessionWithWidgets) => {
+            const widget = session.addWidget(
+              'AddConnectionWidget',
+              'addConnectionWidget',
             )
-            session.showDrawerWidget(drawerWidget)
+            session.showWidget(widget)
           },
         })
       }

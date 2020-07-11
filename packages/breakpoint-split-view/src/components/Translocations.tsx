@@ -104,8 +104,8 @@ export default (pluginManager: any) => {
                     key={JSON.stringify(path)}
                     strokeWidth={id === mouseoverElt ? 10 : 5}
                     onClick={() => {
-                      const featureWidget = session.addDrawerWidget(
-                        'VariantFeatureDrawerWidget',
+                      const featureWidget = session.addWidget(
+                        'VariantFeatureWidget',
                         'variantFeature',
                         {
                           featureData: (
@@ -113,7 +113,7 @@ export default (pluginManager: any) => {
                           ).toJSON(),
                         },
                       )
-                      session.showDrawerWidget(featureWidget)
+                      session.showWidget(featureWidget)
                     }}
                     onMouseOver={() => setMouseoverElt(id)}
                     onMouseOut={() => setMouseoverElt(undefined)}

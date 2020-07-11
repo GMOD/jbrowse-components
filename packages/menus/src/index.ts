@@ -1,10 +1,10 @@
-import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
+import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { lazy } from 'react'
 import {
   AbstractSessionModel,
-  SessionWithDrawerWidgets,
+  SessionWithWidgets,
   isAbstractMenuManager,
 } from '@gmod/jbrowse-core/util'
 import FileCopyIcon from '@material-ui/icons/FileCopy'
@@ -15,17 +15,17 @@ import {
   configSchema as aboutConfigSchema,
   ReactComponent as AboutReactComponent,
   stateModel as aboutStateModel,
-} from './AboutDrawerWidget'
+} from './AboutWidget'
 import {
   configSchema as helpConfigSchema,
   ReactComponent as HelpReactComponent,
   stateModel as helpStateModel,
-} from './HelpDrawerWidget'
+} from './HelpWidget'
 import {
   configSchema as importConfigurationConfigSchema,
   ReactComponent as ImportConfigurationReactComponent,
   stateModel as importConfigurationStateModel,
-} from './ImportConfigurationDrawerWidget'
+} from './ImportConfigurationWidget'
 import {
   configSchema as sessionManagerConfigSchema,
   ReactComponent as SessionManagerReactComponent,
@@ -34,9 +34,9 @@ import {
 
 export default class extends Plugin {
   install(pluginManager: PluginManager) {
-    pluginManager.addDrawerWidgetType(() => {
-      return new DrawerWidgetType({
-        name: 'AboutDrawerWidget',
+    pluginManager.addWidgetType(() => {
+      return new WidgetType({
+        name: 'AboutWidget',
         heading: 'About',
         configSchema: aboutConfigSchema,
         stateModel: aboutStateModel,
@@ -44,9 +44,9 @@ export default class extends Plugin {
       })
     })
 
-    pluginManager.addDrawerWidgetType(() => {
-      return new DrawerWidgetType({
-        name: 'HelpDrawerWidget',
+    pluginManager.addWidgetType(() => {
+      return new WidgetType({
+        name: 'HelpWidget',
         heading: 'Help',
         configSchema: helpConfigSchema,
         stateModel: helpStateModel,
@@ -54,9 +54,9 @@ export default class extends Plugin {
       })
     })
 
-    pluginManager.addDrawerWidgetType(() => {
-      return new DrawerWidgetType({
-        name: 'ImportConfigurationDrawerWidget',
+    pluginManager.addWidgetType(() => {
+      return new WidgetType({
+        name: 'ImportConfigurationWidget',
         heading: 'Import Configuration',
         configSchema: importConfigurationConfigSchema,
         stateModel: importConfigurationStateModel,
@@ -64,8 +64,8 @@ export default class extends Plugin {
       })
     })
 
-    pluginManager.addDrawerWidgetType(() => {
-      return new DrawerWidgetType({
+    pluginManager.addWidgetType(() => {
+      return new WidgetType({
         name: 'SessionManager',
         heading: 'Sessions',
         configSchema: sessionManagerConfigSchema,
@@ -80,23 +80,17 @@ export default class extends Plugin {
       pluginManager.rootModel.appendToMenu('Help', {
         label: 'About',
         icon: InfoIcon,
-        onClick: (session: SessionWithDrawerWidgets) => {
-          const drawerWidget = session.addDrawerWidget(
-            'AboutDrawerWidget',
-            'aboutDrawerWidget',
-          )
-          session.showDrawerWidget(drawerWidget)
+        onClick: (session: SessionWithWidgets) => {
+          const widget = session.addWidget('AboutWidget', 'aboutWidget')
+          session.showWidget(widget)
         },
       })
       pluginManager.rootModel.appendToMenu('Help', {
         label: 'Help',
         icon: HelpIcon,
-        onClick: (session: SessionWithDrawerWidgets) => {
-          const drawerWidget = session.addDrawerWidget(
-            'HelpDrawerWidget',
-            'helpDrawerWidget',
-          )
-          session.showDrawerWidget(drawerWidget)
+        onClick: (session: SessionWithWidgets) => {
+          const widget = session.addWidget('HelpWidget', 'helpWidget')
+          session.showWidget(widget)
         },
       })
       pluginManager.rootModel.insertInMenu(
@@ -104,12 +98,9 @@ export default class extends Plugin {
         {
           label: 'Open Session…',
           icon: FolderOpenIcon,
-          onClick: (session: SessionWithDrawerWidgets) => {
-            const drawerWidget = session.addDrawerWidget(
-              'SessionManager',
-              'sessionManager',
-            )
-            session.showDrawerWidget(drawerWidget)
+          onClick: (session: SessionWithWidgets) => {
+            const widget = session.addWidget('SessionManager', 'sessionManager')
+            session.showWidget(widget)
           },
         },
         1,

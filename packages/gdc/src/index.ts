@@ -2,20 +2,20 @@ import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
-import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
+import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
 import { lazy } from 'react'
 import {
   configSchema as ConfigSchema,
   HeadingComponent,
   ReactComponent,
   stateModelFactory as filterDrawerStateModelFactory,
-} from './GDCFilterDrawerWidget'
+} from './GDCFilterWidget'
 
 import {
-  configSchema as gdcFeatureDrawerWidgetConfigSchema,
-  ReactComponent as GDCFeatureDrawerWidgetReactComponent,
-  stateModel as gdcFeatureDrawerWidgetStateModel,
-} from './GDCFeatureDrawerWidget'
+  configSchema as gdcFeatureWidgetConfigSchema,
+  ReactComponent as GDCFeatureWidgetReactComponent,
+  stateModel as gdcFeatureWidgetStateModel,
+} from './GDCFeatureWidget'
 import {
   configSchemaFactory as gdcTrackConfigSchemaFactory,
   modelFactory as gdcTrackModelFactory,
@@ -47,9 +47,9 @@ export default class extends Plugin {
       })
     })
 
-    pluginManager.addDrawerWidgetType(() => {
-      return new DrawerWidgetType({
-        name: 'GDCFilterDrawerWidget',
+    pluginManager.addWidgetType(() => {
+      return new WidgetType({
+        name: 'GDCFilterWidget',
         HeadingComponent,
         configSchema: ConfigSchema,
         stateModel: filterDrawerStateModelFactory(pluginManager),
@@ -57,14 +57,14 @@ export default class extends Plugin {
       })
     })
 
-    pluginManager.addDrawerWidgetType(
+    pluginManager.addWidgetType(
       () =>
-        new DrawerWidgetType({
-          name: 'GDCFeatureDrawerWidget',
+        new WidgetType({
+          name: 'GDCFeatureWidget',
           heading: 'Feature Details',
-          configSchema: gdcFeatureDrawerWidgetConfigSchema,
-          stateModel: gdcFeatureDrawerWidgetStateModel,
-          LazyReactComponent: lazy(() => GDCFeatureDrawerWidgetReactComponent),
+          configSchema: gdcFeatureWidgetConfigSchema,
+          stateModel: gdcFeatureWidgetStateModel,
+          LazyReactComponent: lazy(() => GDCFeatureWidgetReactComponent),
         }),
     )
   }

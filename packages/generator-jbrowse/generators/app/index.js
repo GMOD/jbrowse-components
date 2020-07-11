@@ -42,7 +42,7 @@ module.exports = class extends Generator {
           },
           {
             name: '"Hello World" Menu Bar and Drawer Widget',
-            value: 'helloWorldMenuBarAndDrawerWidget',
+            value: 'helloWorldMenuBarAndWidget',
           },
         ],
       },
@@ -54,8 +54,8 @@ module.exports = class extends Generator {
       case 'helloWorldMenuBar':
         this._writeHelloWorldMenuBar()
         break
-      case 'helloWorldMenuBarAndDrawerWidget':
-        this._writeHelloWorldMenuBarAndDrawerWidget()
+      case 'helloWorldMenuBarAndWidget':
+        this._writeHelloWorldMenuBarAndWidget()
         break
       default:
         // unknown plugin type
@@ -73,20 +73,18 @@ module.exports = class extends Generator {
     )
   }
 
-  _writeHelloWorldMenuBarAndDrawerWidget() {
+  _writeHelloWorldMenuBarAndWidget() {
     const pluginFiles = [
-      'components/HelloWorldDrawerWidget.js',
+      'components/HelloWorldWidget.js',
       'components/HelloWorldMenuBar.js',
       'index.js',
       'model.js',
     ]
     pluginFiles.forEach(pluginFile =>
       this.fs.copy(
-        this.templatePath(
-          path.join('HelloWorldMenuBarAndDrawerWidget', pluginFile),
-        ),
+        this.templatePath(path.join('HelloWorldMenuBarAndWidget', pluginFile)),
         this.destinationPath(
-          path.join('HelloWorldMenuBarAndDrawerWidget', pluginFile),
+          path.join('HelloWorldMenuBarAndWidget', pluginFile),
         ),
       ),
     )

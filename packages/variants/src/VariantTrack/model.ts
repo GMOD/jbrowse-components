@@ -3,10 +3,7 @@ import {
   getConf,
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import {
-  getSession,
-  isSessionModelWithDrawerWidgets,
-} from '@gmod/jbrowse-core/util'
+import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
@@ -32,13 +29,13 @@ export default (configSchema: VariantTrackConfigModel) =>
     .actions(self => ({
       selectFeature(feature: Feature) {
         const session = getSession(self)
-        if (isSessionModelWithDrawerWidgets(session)) {
-          const featureWidget = session.addDrawerWidget(
-            'VariantFeatureDrawerWidget',
+        if (isSessionModelWithWidgets(session)) {
+          const featureWidget = session.addWidget(
+            'VariantFeatureWidget',
             'variantFeature',
             { featureData: feature.toJSON() },
           )
-          session.showDrawerWidget(featureWidget)
+          session.showWidget(featureWidget)
         }
 
         session.setSelection(feature)

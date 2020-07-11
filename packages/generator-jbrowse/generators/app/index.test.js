@@ -24,13 +24,13 @@ describe('generator-jbrowse:app', () => {
   it('creates a "Hello World" menu bar and drawer widget', async () => {
     await helpers.run(__dirname).withPrompts({
       correctDir: true,
-      type: 'helloWorldMenuBarAndDrawerWidget',
+      type: 'helloWorldMenuBarAndWidget',
     })
     ;[
-      'HelloWorldMenuBarAndDrawerWidget/components/HelloWorldDrawerWidget.js',
-      'HelloWorldMenuBarAndDrawerWidget/components/HelloWorldMenuBar.js',
-      'HelloWorldMenuBarAndDrawerWidget/index.js',
-      'HelloWorldMenuBarAndDrawerWidget/model.js',
+      'HelloWorldMenuBarAndWidget/components/HelloWorldWidget.js',
+      'HelloWorldMenuBarAndWidget/components/HelloWorldMenuBar.js',
+      'HelloWorldMenuBarAndWidget/index.js',
+      'HelloWorldMenuBarAndWidget/model.js',
     ].forEach(file => expect(fs.existsSync(file)).toBe(true))
   })
 })

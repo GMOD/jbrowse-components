@@ -1,5 +1,5 @@
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
+import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { lazy } from 'react'
@@ -8,7 +8,7 @@ import {
   HeadingComponent as ConfigurationEditorHeadingComponent,
   ReactComponent as ConfigurationEditorReactComponent,
   stateModelFactory as ConfigurationEditorStateModelFactory,
-} from './ConfigurationEditorDrawerWidget'
+} from './ConfigurationEditorWidget'
 import {
   AdapterClass as FromConfigAdapterClass,
   SequenceAdapterClass as FromConfigSequenceAdapterClass,
@@ -47,9 +47,9 @@ export default class extends Plugin {
         }),
     )
 
-    pluginManager.addDrawerWidgetType(() => {
-      return new DrawerWidgetType({
-        name: 'ConfigurationEditorDrawerWidget',
+    pluginManager.addWidgetType(() => {
+      return new WidgetType({
+        name: 'ConfigurationEditorWidget',
         HeadingComponent: ConfigurationEditorHeadingComponent,
         configSchema: ConfigurationEditorConfigSchema,
         stateModel: ConfigurationEditorStateModelFactory(pluginManager),
@@ -59,5 +59,5 @@ export default class extends Plugin {
   }
 }
 
-export { default as ConfigurationEditor } from './ConfigurationEditorDrawerWidget/components/ConfigurationEditor'
-export { default as JsonEditor } from './ConfigurationEditorDrawerWidget/components/JsonEditor'
+export { default as ConfigurationEditor } from './ConfigurationEditorWidget/components/ConfigurationEditor'
+export { default as JsonEditor } from './ConfigurationEditorWidget/components/JsonEditor'

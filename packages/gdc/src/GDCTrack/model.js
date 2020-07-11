@@ -23,22 +23,20 @@ export default function stateModelFactory(configSchema) {
     .actions(self => ({
       openFilterConfig() {
         const session = getSession(self)
-        const editor = session.addDrawerWidget(
-          'GDCFilterDrawerWidget',
-          'gdcFilter',
-          { target: self.configuration },
-        )
-        session.showDrawerWidget(editor)
+        const editor = session.addWidget('GDCFilterWidget', 'gdcFilter', {
+          target: self.configuration,
+        })
+        session.showWidget(editor)
       },
 
       selectFeature(feature) {
         const session = getSession(self)
-        const featureWidget = session.addDrawerWidget(
-          'GDCFeatureDrawerWidget',
+        const featureWidget = session.addWidget(
+          'GDCFeatureWidget',
           'gdcFeature',
           { featureData: feature.toJSON() },
         )
-        session.showDrawerWidget(featureWidget)
+        session.showWidget(featureWidget)
         session.setSelection(feature)
       },
     }))

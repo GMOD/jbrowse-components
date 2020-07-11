@@ -11,7 +11,7 @@ import RendererType from './pluggableElementTypes/renderers/RendererType'
 import AdapterType from './pluggableElementTypes/AdapterType'
 import TrackType from './pluggableElementTypes/TrackType'
 import ViewType from './pluggableElementTypes/ViewType'
-import DrawerWidgetType from './pluggableElementTypes/DrawerWidgetType'
+import WidgetType from './pluggableElementTypes/WidgetType'
 import ConnectionType from './pluggableElementTypes/ConnectionType'
 import RpcMethodType from './pluggableElementTypes/RpcMethodType'
 
@@ -138,7 +138,7 @@ export default class PluginManager {
 
   viewTypes = new TypeRecord('ViewType', ViewType)
 
-  drawerWidgetTypes = new TypeRecord('DrawerWidgetType', DrawerWidgetType)
+  widgetTypes = new TypeRecord('WidgetType', WidgetType)
 
   rpcMethods = new TypeRecord('RpcMethodType', RpcMethodType)
 
@@ -201,7 +201,7 @@ export default class PluginManager {
       case 'connection':
         return this.connectionTypes
       case 'drawer widget':
-        return this.drawerWidgetTypes
+        return this.widgetTypes
       case 'renderer':
         return this.rendererTypes
       case 'track':
@@ -355,8 +355,8 @@ export default class PluginManager {
     return this.viewTypes.get(typeName)
   }
 
-  getDrawerWidgetType(typeName: string): DrawerWidgetType {
-    return this.drawerWidgetTypes.get(typeName)
+  getWidgetType(typeName: string): WidgetType {
+    return this.widgetTypes.get(typeName)
   }
 
   getConnectionType(typeName: string): ConnectionType {
@@ -391,8 +391,8 @@ export default class PluginManager {
     return this.addElementType('view', creationCallback)
   }
 
-  addDrawerWidgetType(
-    creationCallback: (pluginManager: PluginManager) => DrawerWidgetType,
+  addWidgetType(
+    creationCallback: (pluginManager: PluginManager) => WidgetType,
   ): this {
     return this.addElementType('drawer widget', creationCallback)
   }

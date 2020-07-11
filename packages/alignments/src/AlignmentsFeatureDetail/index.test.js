@@ -4,7 +4,7 @@ import { stateModel } from '.'
 import ReactComponent from './AlignmentsFeatureDetail'
 
 test('open up a drawer widget', () => {
-  const model = stateModel.create({ type: 'AlignmentsFeatureDrawerWidget' })
+  const model = stateModel.create({ type: 'AlignmentsFeatureWidget' })
   const { container, getByText } = render(<ReactComponent model={model} />)
   model.setFeatureData({
     seq:

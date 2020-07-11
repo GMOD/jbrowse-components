@@ -1,5 +1,5 @@
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
+import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import { lazy } from 'react'
@@ -9,10 +9,10 @@ import {
   configSchema as vcfTabixAdapterConfigSchema,
 } from './VcfTabixAdapter'
 import {
-  configSchema as variantFeatureDrawerWidgetConfigSchema,
-  ReactComponent as VariantFeatureDrawerWidgetReactComponent,
-  stateModel as variantFeatureDrawerWidgetStateModel,
-} from './VariantFeatureDrawerWidget'
+  configSchema as variantFeatureWidgetConfigSchema,
+  ReactComponent as VariantFeatureWidgetReactComponent,
+  stateModel as variantFeatureWidgetStateModel,
+} from './VariantFeatureWidget'
 import {
   configSchemaFactory as variantTrackConfigSchemaFactory,
   modelFactory as variantTrackModelFactory,
@@ -39,16 +39,14 @@ export default class VariantsPlugin extends Plugin {
       })
     })
 
-    pluginManager.addDrawerWidgetType(
+    pluginManager.addWidgetType(
       () =>
-        new DrawerWidgetType({
-          name: 'VariantFeatureDrawerWidget',
+        new WidgetType({
+          name: 'VariantFeatureWidget',
           heading: 'Feature Details',
-          configSchema: variantFeatureDrawerWidgetConfigSchema,
-          stateModel: variantFeatureDrawerWidgetStateModel,
-          LazyReactComponent: lazy(
-            () => VariantFeatureDrawerWidgetReactComponent,
-          ),
+          configSchema: variantFeatureWidgetConfigSchema,
+          stateModel: variantFeatureWidgetStateModel,
+          LazyReactComponent: lazy(() => VariantFeatureWidgetReactComponent),
         }),
     )
   }

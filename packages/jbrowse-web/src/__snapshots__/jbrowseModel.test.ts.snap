@@ -66,16 +66,8 @@ Object {
   },
   "savedSessions": Array [
     Object {
-      "activeDrawerWidgets": Object {
+      "activeWidgets": Object {
         "hierarchicalTrackSelector": "hierarchicalTrackSelector",
-      },
-      "drawerWidgets": Object {
-        "hierarchicalTrackSelector": Object {
-          "filterText": "",
-          "id": "hierarchicalTrackSelector",
-          "type": "HierarchicalTrackSelectorDrawerWidget",
-          "view": "integration_test",
-        },
       },
       "name": "Integration test example",
       "views": Array [
@@ -94,6 +86,14 @@ Object {
           "type": "LinearGenomeView",
         },
       ],
+      "widgets": Object {
+        "hierarchicalTrackSelector": Object {
+          "filterText": "",
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorWidget",
+          "view": "integration_test",
+        },
+      },
     },
   ],
   "tracks": Array [
