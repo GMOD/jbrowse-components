@@ -65,7 +65,7 @@ function wrapForRpc(
           ...args,
           statusCallback: (message: string) => {
             // @ts-ignore
-            self.rpcServer.emit(`message-${args.sessionId}`, message)
+            self.rpcServer.emit(args.channel, message)
           },
         }),
       )

@@ -1,4 +1,5 @@
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
+import shortid from 'shortid'
 import { objectFromEntries } from '../util'
 import { serializeAbortSignal } from './remoteAbortSignals'
 import PluginManager from '../PluginManager'
@@ -187,7 +188,7 @@ export default abstract class BaseRpcDriver {
       sessionId,
     )
 
-    const channel = `message-${sessionId}`
+    const channel = `message-${shortid.generate()}`
     const listener = data => {
       if (args.statusCallback) {
         args.statusCallback(data)
@@ -196,10 +197,14 @@ export default abstract class BaseRpcDriver {
     // @ts-ignore
     worker.on(channel, listener)
 
-    const result = await worker.call(functionName, filteredAndSerializedArgs, {
-      timeout: 5 * 60 * 1000, // 5 minutes
-      ...options,
-    })
+    const result = await worker.call(
+      functionName,
+      { ...filteredAndSerializedArgs, channel },
+      {
+        timeout: 5 * 60 * 1000, // 5 minutes
+        ...options,
+      },
+    )
     // @ts-ignore
     worker.off(channel, listener)
     return rpcMethod.deserializeReturn(result)
