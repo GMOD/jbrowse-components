@@ -237,7 +237,7 @@ export default class ServerSideRenderer extends RendererType {
 
   // render method called on the worker
   async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
-    const { signal, statusCallback } = args
+    const { signal, statusCallback = () => {} } = args
     checkAbortSignal(signal)
     const deserializedArgs = this.deserializeArgsInWorker(args)
 
