@@ -20,7 +20,7 @@ export default class Create extends Command {
   static examples = [
     '$ jbrowse create /path/to/new/installation',
     '$ jbrowse create /path/to/new/installation --force',
-    '$ jbrowse create /path/to/new/installation -u url.com/directjbrowselink.zip',
+    '$ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip',
     '$ jbrowse create /path/to/new/installation --tag JBrowse-2@v0.0.1',
     '$ jbrowse create --listVersion',
   ]
