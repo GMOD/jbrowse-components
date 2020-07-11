@@ -53,7 +53,7 @@ const stateModelFactory = (
           ...getConf(self),
           type: 'PileupTrack',
           name: `${getConf(self, 'name')} pileup`,
-          trackId: `${self.configuration.trackId}_pileup`,
+          trackId: `${self.configuration.trackId}_pileup_xyz`, // xyz to avoid someone accidentally namign the trackId similar to this
         }
       },
 
@@ -84,7 +84,7 @@ const stateModelFactory = (
           ...getConf(self),
           type: 'SNPCoverageTrack',
           name: `${getConf(self, 'name')} snpcoverage`,
-          trackId: `${self.configuration.trackId}_snpcoverage`,
+          trackId: `${self.configuration.trackId}_snpcoverage_xyz`, // xyz to avoid someone accidentally namign the trackId similar to this
           adapter: {
             type: 'SNPCoverageAdapter',
             subadapter: getConf(self, 'adapter'),
