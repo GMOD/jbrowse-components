@@ -43,6 +43,7 @@ export interface RenderArgs extends BaseRenderArgs {
 }
 
 export interface RenderArgsSerialized extends BaseRenderArgs {
+  statusCallback: Function
   config: SnapshotIn<AnyConfigurationModel>
   filters: SerializedFilterChain
 }
@@ -178,7 +179,7 @@ export default class ServerSideRenderer extends RendererType {
    * @returns Map of features as `{ id => feature, ... }`
    */
   async getFeatures(renderArgs: RenderArgsDeserialized) {
-    const { sessionId, dataAdapter, signal, bpPerPx, regions } = renderArgs
+    const { dataAdapter, signal, regions } = renderArgs
     const features = new Map()
 
     if (!regions || regions.length === 0) {
@@ -198,21 +199,15 @@ export default class ServerSideRenderer extends RendererType {
       return requestRegion
     })
 
+    const region = requestRegions[0]
+
     const featureObservable =
       requestRegions.length === 1
         ? dataAdapter.getFeatures(
-            this.getExpandedRegion(requestRegions[0], renderArgs),
-            {
-              signal,
-              bpPerPx,
-              sessionId,
-            },
+            this.getExpandedRegion(region, renderArgs),
+            renderArgs,
           )
-        : dataAdapter.getFeaturesInMultipleRegions(requestRegions, {
-            signal,
-            bpPerPx,
-            sessionId,
-          })
+        : dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
 
     await featureObservable
       .pipe(
@@ -242,13 +237,13 @@ export default class ServerSideRenderer extends RendererType {
 
   // render method called on the worker
   async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
-    const { signal, sessionId } = args
+    const { signal, statusCallback } = args
     checkAbortSignal(signal)
     const deserialized = this.deserializeArgsInWorker(args)
 
     const features = await this.getFeatures(deserialized)
     checkAbortSignal(signal)
-    self.rpcServer.emit(`message-${sessionId}`, 'Rendering plot')
+    statusCallback('Rendering plot')
     const results = await this.render({ ...deserialized, features })
     checkAbortSignal(signal)
     const html = renderToString(results.element)

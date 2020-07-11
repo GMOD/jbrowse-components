@@ -58,10 +58,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   }
 
   private async setup(opts: BaseOptions = {}) {
-    const { sessionId } = opts
+    const { statusCallback } = opts
     if (Object.keys(this.samHeader).length === 0) {
       // @ts-ignore
-      self.rpcServer.emit(`message-${sessionId}`, 'Downloading index file')
+      statusCallback('Downloading index file')
       const samHeader = await this.bam.getHeader(opts?.signal)
 
       // use the @SQ lines in the header to figure out the
@@ -141,11 +141,11 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     opts: BaseOptions = {},
   ) {
     const { refName, start, end, originalRefName } = region
-    const { sessionId } = opts
+    const { statusCallback } = opts
     return ObservableCreate<Feature>(async observer => {
       await this.setup(opts)
       // @ts-ignore
-      self.rpcServer.emit(`message-${sessionId}`, 'Downloading alignments')
+      statusCallback('Downloading alignments')
       const records = await this.bam.getRecordsForRange(
         refName,
         start,

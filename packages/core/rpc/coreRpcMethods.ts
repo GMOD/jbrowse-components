@@ -23,12 +23,9 @@ export class CoreGetRegions extends RpcMethodType {
     signal: RemoteAbortSignal
     adapterConfig: {}
   }) {
-    const {
-      sessionId,
-      signal,
-      adapterConfig,
-    } = await this.deserializeArguments(args)
-    const { dataAdapter } = await getAdapter(
+    const deserializedArgs = await this.deserializeArguments(args)
+    const { sessionId, adapterConfig } = deserializedArgs
+    const { dataAdapter } = getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
@@ -37,7 +34,7 @@ export class CoreGetRegions extends RpcMethodType {
       dataAdapter instanceof BaseFeatureDataAdapter &&
       isRegionsAdapter(dataAdapter)
     ) {
-      return dataAdapter.getRegions({ signal })
+      return dataAdapter.getRegions(deserializedArgs)
     }
     return []
   }
@@ -51,18 +48,15 @@ export class CoreGetRefNames extends RpcMethodType {
     signal: RemoteAbortSignal
     adapterConfig: {}
   }) {
-    const {
-      sessionId,
-      signal,
-      adapterConfig,
-    } = await this.deserializeArguments(args)
-    const { dataAdapter } = await getAdapter(
+    const deserializedArgs = await this.deserializeArguments(args)
+    const { sessionId, adapterConfig } = deserializedArgs
+    const { dataAdapter } = getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
     )
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
-      return dataAdapter.getRefNames({ signal, sessionId })
+      return dataAdapter.getRefNames(deserializedArgs)
     }
     return []
   }
@@ -76,18 +70,15 @@ export class CoreGetRefNameAliases extends RpcMethodType {
     signal: RemoteAbortSignal
     adapterConfig: {}
   }) {
-    const {
-      sessionId,
-      signal,
-      adapterConfig,
-    } = await this.deserializeArguments(args)
-    const { dataAdapter } = await getAdapter(
+    const deserializedArgs = await this.deserializeArguments(args)
+    const { sessionId, signal, adapterConfig } = deserializedArgs
+    const { dataAdapter } = getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
     )
     if (isRefNameAliasAdapter(dataAdapter)) {
-      return dataAdapter.getRefNameAliases({ signal })
+      return dataAdapter.getRefNameAliases(deserializedArgs)
     }
     return []
   }
@@ -170,26 +161,43 @@ export class CoreRender extends RpcMethodType {
         `CoreRender cannot handle this type of data adapter ${dataAdapter}`,
       )
 
-    const RendererType = this.pluginManager.getRendererType(rendererType)
-    if (!RendererType) throw new Error(`renderer "${rendererType}" not found`)
-    if (!RendererType.ReactComponent)
-      throw new Error(
-        `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
-      )
-
-    if (!(RendererType instanceof ServerSideRendererType))
-      throw new Error(
-        'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
-      )
+    const RendererType = validateRendererType(
+      rendererType,
+      this.pluginManager.getRendererType(rendererType),
+    )
 
     const result = await RendererType.renderInWorker({
-      ...renderProps,
-      sessionId,
       dataAdapter,
-      regions,
-      signal,
+      ...renderProps,
+      ...deserializedArgs,
     })
+    // {
+    //   ...renderProps,
+    //   sessionId,
+    //   dataAdapter,
+    //   regions,
+    //   signal,
+    //   deserializedArgs,
+    // })
     checkAbortSignal(signal)
     return result
   }
+}
+
+function validateRendererType<T>(rendererType: string, RendererType: T) {
+  if (!RendererType) {
+    throw new Error(`renderer "${rendererType}" not found`)
+  }
+  if (!RendererType.ReactComponent) {
+    throw new Error(
+      `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
+    )
+  }
+
+  if (!(RendererType instanceof ServerSideRendererType)) {
+    throw new Error(
+      'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
+    )
+  }
+  return RendererType
 }

@@ -54,13 +54,21 @@ function wrapForRpc(
   func: (args: unknown) => unknown,
   funcName: string = func.name,
 ) {
-  return (args: unknown) => {
+  return (args: Record<string, unknown>) => {
     callCounter += 1
     const myId = callCounter
     // logBuffer.push(['rpc-call', myId, funcName, args])
     const retP = Promise.resolve()
       .then(() => getPluginManager())
-      .then(pluginManager => func(args))
+      .then(pluginManager =>
+        func({
+          ...args,
+          statusCallback: (message: string) => {
+            // @ts-ignore
+            self.rpcServer.emit(`message-${args.sessionId}`, message)
+          },
+        }),
+      )
       .catch(error => {
         if (isAbortException(error)) {
           // logBuffer.push(['rpc-abort', myId, funcName, args])
