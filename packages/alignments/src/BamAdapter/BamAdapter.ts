@@ -154,19 +154,17 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       )
       checkAbortSignal(opts.signal)
 
-      await Promise.all(
-        records.map(async record => {
-          let ref: string | undefined
-          if (!record.get('md')) {
-            ref = await this.seqFetch(
-              originalRefName || refName,
-              record.get('start'),
-              record.get('end'),
-            )
-          }
-          observer.next(new BamSlightlyLazyFeature(record, this, ref))
-        }),
-      )
+      for (const record of records) {
+        let ref: string | undefined
+        if (!record.get('md')) {
+          ref = await this.seqFetch(
+            originalRefName || refName,
+            record.get('start'),
+            record.get('end'),
+          )
+        }
+        observer.next(new BamSlightlyLazyFeature(record, this, ref))
+      }
       observer.complete()
     }, opts.signal)
   }
