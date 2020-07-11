@@ -267,6 +267,8 @@ export function generateMD(target: string, query: string, cigar: string) {
       targetOffset += len
     } else if (op === 'N') {
       targetOffset += len
+    } else if (op === 'S') {
+      queryOffset += len
     }
   }
   if (lengthMD > 0) {
