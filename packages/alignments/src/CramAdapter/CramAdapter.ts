@@ -126,8 +126,8 @@ export default (pluginManager: PluginManager) => {
       return sequence
     }
 
-    private async setup(opts: BaseOptions = {}) {
-      const { statusCallback } = opts
+    private async setup(opts?: BaseOptions) {
+      const { statusCallback = () => {} } = opts || {}
       if (Object.keys(this.samHeader).length === 0) {
         statusCallback('Downloading index')
         const samHeader = await this.cram.cram.getSamHeader(opts?.signal)
@@ -194,9 +194,9 @@ export default (pluginManager: PluginManager) => {
 
     getFeatures(
       region: Region & { originalRefName?: string },
-      opts: BaseOptions = {},
+      opts?: BaseOptions,
     ) {
-      const { statusCallback } = opts
+      const { signal, statusCallback = () => {} } = opts || {}
       const { refName, start, end, originalRefName } = region
 
       return ObservableCreate<Feature>(async observer => {
@@ -216,14 +216,14 @@ export default (pluginManager: PluginManager) => {
             end,
             opts,
           )
-          checkAbortSignal(opts.signal)
+          checkAbortSignal(signal)
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           records.forEach((record: any) => {
             observer.next(this.cramRecordToFeature(record))
           })
         }
         observer.complete()
-      }, opts.signal)
+      }, signal)
     }
 
     freeResources(/* { region } */): void {}
