@@ -31,18 +31,24 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
     })
   }
 
+  private getHeader(opts: BaseOptions = {}) {
+    const { statusCallback = () => {} } = opts
+    statusCallback('Downloading bigwig header')
+    return this.bigwig.getHeader(opts)
+  }
+
   public async getRefNames(opts: BaseOptions = {}) {
-    const header = await this.bigwig.getHeader(opts)
+    const header = await this.getHeader(opts)
     return Object.keys(header.refsByName)
   }
 
   public async refIdToName(refId: number) {
-    const h = await this.bigwig.getHeader()
+    const h = await this.getHeader()
     return (h.refsByNumber[refId] || { name: undefined }).name
   }
 
   public async getGlobalStats(opts: BaseOptions = {}) {
-    const header = await this.bigwig.getHeader(opts)
+    const header = await this.getHeader(opts)
     return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
   }
 
@@ -95,7 +101,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
     const { refName, start, end } = region
     const { bpPerPx, statusCallback } = opts
     return ObservableCreate<Feature>(async observer => {
-      statusCallback('Downloading bigwig')
+      statusCallback('Downloading bigwig data')
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
         ...opts,
         basesPerSpan: bpPerPx,
