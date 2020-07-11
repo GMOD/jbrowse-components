@@ -57,8 +57,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     }
   }
 
-  private async setup(opts: BaseOptions = {}) {
-    const { statusCallback } = opts
+  private async setup(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
     if (Object.keys(this.samHeader).length === 0) {
       // @ts-ignore
       statusCallback('Downloading index file')
@@ -98,15 +98,12 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     if (!refSeqStore) return undefined
     if (!refName) return undefined
 
-    const features = refSeqStore.getFeatures(
-      {
-        refName,
-        start,
-        end,
-        assemblyName: '',
-      },
-      {},
-    )
+    const features = refSeqStore.getFeatures({
+      refName,
+      start,
+      end,
+      assemblyName: '',
+    })
 
     const seqChunks = await features.pipe(toArray()).toPromise()
 
@@ -138,10 +135,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(
     region: Region & { originalRefName?: string },
-    opts: BaseOptions = {},
+    opts?: BaseOptions,
   ) {
     const { refName, start, end, originalRefName } = region
-    const { statusCallback } = opts
+    const { signal, statusCallback = () => {} } = opts || {}
     return ObservableCreate<Feature>(async observer => {
       await this.setup(opts)
       // @ts-ignore
@@ -152,7 +149,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         end,
         opts,
       )
-      checkAbortSignal(opts.signal)
+      checkAbortSignal(signal)
 
       for (const record of records) {
         let ref: string | undefined
@@ -167,7 +164,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         observer.next(new BamSlightlyLazyFeature(record, this, ref))
       }
       observer.complete()
-    }, opts.signal)
+    }, signal)
   }
 
   freeResources(/* { region } */): void {}

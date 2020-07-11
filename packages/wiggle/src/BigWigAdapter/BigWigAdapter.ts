@@ -31,13 +31,13 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
     })
   }
 
-  private getHeader(opts: BaseOptions = {}) {
-    const { statusCallback = () => {} } = opts
+  private getHeader(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
     statusCallback('Downloading bigwig header')
     return this.bigwig.getHeader(opts)
   }
 
-  public async getRefNames(opts: BaseOptions = {}) {
+  public async getRefNames(opts?: BaseOptions) {
     const header = await this.getHeader(opts)
     return Object.keys(header.refsByName)
   }
@@ -47,13 +47,13 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
     return (h.refsByNumber[refId] || { name: undefined }).name
   }
 
-  public async getGlobalStats(opts: BaseOptions = {}) {
+  public async getGlobalStats(opts?: BaseOptions) {
     const header = await this.getHeader(opts)
     return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
   }
 
   // todo: incorporate summary blocks
-  public getRegionStats(region: NoAssemblyRegion, opts: BaseOptions = {}) {
+  public getRegionStats(region: NoAssemblyRegion, opts?: BaseOptions) {
     const feats = this.getFeatures(region, opts)
     return scoresToStats(region, feats)
   }
@@ -61,7 +61,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
   // todo: add caching
   public async getMultiRegionStats(
     regions: NoAssemblyRegion[] = [],
-    opts: BaseOptions = {},
+    opts?: BaseOptions,
   ) {
     if (!regions.length) {
       return blankStats()
@@ -97,9 +97,9 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
     })
   }
 
-  public getFeatures(region: NoAssemblyRegion, opts: BaseOptions = {}) {
+  public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
     const { refName, start, end } = region
-    const { bpPerPx, statusCallback } = opts
+    const { bpPerPx, signal, statusCallback = () => {} } = opts || {}
     return ObservableCreate<Feature>(async observer => {
       statusCallback('Downloading bigwig data')
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
@@ -115,7 +115,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
           })
         }),
       ).subscribe(observer)
-    }, opts.signal)
+    }, signal)
   }
 
   public freeResources(): void {}

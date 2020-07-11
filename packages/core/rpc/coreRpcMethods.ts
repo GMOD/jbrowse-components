@@ -166,9 +166,9 @@ export class CoreRender extends RpcMethodType {
     )
 
     const result = await RendererType.renderInWorker({
-      dataAdapter,
       ...renderProps,
       ...deserializedArgs,
+      dataAdapter,
     })
 
     checkAbortSignal(signal)
