@@ -9,7 +9,7 @@ export interface Mismatch {
 }
 
 export function parseCigar(cigar: string) {
-  return cigar.split(/([MIDNSHPX=])/)
+  return (cigar || '').split(/([MIDNSHPX=])/)
 }
 export function cigarToMismatches(ops: string[], seq: string): Mismatch[] {
   let currOffset = 0
