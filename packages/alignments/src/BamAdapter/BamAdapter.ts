@@ -46,11 +46,12 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  private async setup(opts?: BaseOptions) {
+  private async setup(opts: BaseOptions = {}) {
+    const { sessionId } = opts
     if (Object.keys(this.samHeader).length === 0) {
-      self.rpcServer.emit('message', 'loading index')
+      self.rpcServer.emit(`message-${sessionId}`, 'downloading header')
       const samHeader = await this.bam.getHeader(opts?.signal)
-      self.rpcServer.emit('message', 'done loading index')
+      self.rpcServer.emit(`message-${sessionId}`, '')
 
       // use the @SQ lines in the header to figure out the
       // mapping between ref ref ID numbers and names
@@ -84,13 +85,16 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { refName, start, end } = region
+      const { sessionId } = opts
       await this.setup(opts)
+      self.rpcServer.emit(`message-${sessionId}`, 'downloading features')
       const records = await this.bam.getRecordsForRange(
         refName,
         start,
         end,
         opts,
       )
+      self.rpcServer.emit(`message-${sessionId}`, '')
       checkAbortSignal(opts.signal)
 
       records.forEach(record => {
