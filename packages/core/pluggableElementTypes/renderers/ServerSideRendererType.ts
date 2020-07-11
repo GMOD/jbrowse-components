@@ -239,12 +239,12 @@ export default class ServerSideRenderer extends RendererType {
   async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
     const { signal, statusCallback } = args
     checkAbortSignal(signal)
-    const deserialized = this.deserializeArgsInWorker(args)
+    const deserializedArgs = this.deserializeArgsInWorker(args)
 
-    const features = await this.getFeatures(deserialized)
+    const features = await this.getFeatures(deserializedArgs)
     checkAbortSignal(signal)
     statusCallback('Rendering plot')
-    const results = await this.render({ ...deserialized, features })
+    const results = await this.render({ ...deserializedArgs, features })
     checkAbortSignal(signal)
     const html = renderToString(results.element)
     delete results.element
@@ -255,7 +255,7 @@ export default class ServerSideRenderer extends RendererType {
     return this.serializeResultsInWorker(
       { ...results, html },
       features,
-      deserialized,
+      deserializedArgs,
     )
   }
 

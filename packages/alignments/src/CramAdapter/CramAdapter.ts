@@ -127,10 +127,9 @@ export default (pluginManager: PluginManager) => {
     }
 
     private async setup(opts: BaseOptions = {}) {
-      const { sessionId } = opts
+      const { statusCallback } = opts
       if (Object.keys(this.samHeader).length === 0) {
-        // @ts-ignore
-        self.rpcServer.emit(`message-${sessionId}`, 'Downloading index')
+        statusCallback('Downloading index')
         const samHeader = await this.cram.cram.getSamHeader(opts?.signal)
 
         // use the @SQ lines in the header to figure out the
@@ -197,8 +196,7 @@ export default (pluginManager: PluginManager) => {
       region: Region & { originalRefName?: string },
       opts: BaseOptions = {},
     ) {
-      // console.log(`CRAM getFeatures ${refName}:${start}-${end}`)
-      const { sessionId } = opts
+      const { statusCallback } = opts
       const { refName, start, end, originalRefName } = region
 
       return ObservableCreate<Feature>(async observer => {
@@ -211,8 +209,7 @@ export default (pluginManager: PluginManager) => {
           if (originalRefName) {
             this.seqIdToOriginalRefName[refId] = originalRefName
           }
-          // @ts-ignore
-          self.rpcServer.emit(`message-${sessionId}`, 'Downloading alignments')
+          statusCallback('Downloading alignments')
           const records = await this.cram.getRecordsForRange(
             refId,
             start,

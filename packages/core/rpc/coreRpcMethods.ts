@@ -71,7 +71,7 @@ export class CoreGetRefNameAliases extends RpcMethodType {
     adapterConfig: {}
   }) {
     const deserializedArgs = await this.deserializeArguments(args)
-    const { sessionId, signal, adapterConfig } = deserializedArgs
+    const { sessionId, adapterConfig } = deserializedArgs
     const { dataAdapter } = getAdapter(
       this.pluginManager,
       sessionId,
@@ -138,7 +138,6 @@ export class CoreRender extends RpcMethodType {
   async execute(args: RenderArgs & { signal?: RemoteAbortSignal }) {
     const deserializedArgs = await this.deserializeArguments(args)
     const {
-      regions,
       sessionId,
       adapterConfig,
       rendererType,
@@ -171,14 +170,7 @@ export class CoreRender extends RpcMethodType {
       ...renderProps,
       ...deserializedArgs,
     })
-    // {
-    //   ...renderProps,
-    //   sessionId,
-    //   dataAdapter,
-    //   regions,
-    //   signal,
-    //   deserializedArgs,
-    // })
+
     checkAbortSignal(signal)
     return result
   }
@@ -188,6 +180,7 @@ function validateRendererType<T>(rendererType: string, RendererType: T) {
   if (!RendererType) {
     throw new Error(`renderer "${rendererType}" not found`)
   }
+  // @ts-ignore
   if (!RendererType.ReactComponent) {
     throw new Error(
       `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,

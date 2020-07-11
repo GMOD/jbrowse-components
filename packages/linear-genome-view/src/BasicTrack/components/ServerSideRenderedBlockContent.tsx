@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react'
 import Button from '@material-ui/core/Button'
 import RefreshIcon from '@material-ui/icons/Refresh'
 import ServerSideRenderedContent from '../../LinearGenomeView/components/ServerSideRenderedContent'
+import { BlockModel } from '../util/serverSideRenderedBlock'
 
 const useStyles = makeStyles(theme => ({
   loading: {
@@ -67,7 +68,7 @@ function Repeater({ children }: { children: React.ReactNode }) {
   )
 }
 
-const LoadingMessage = observer(({ model }: { model: any }) => {
+const LoadingMessage = observer(({ model }: { model: BlockModel }) => {
   // only show the loading message after 300ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
   const classes = useStyles()

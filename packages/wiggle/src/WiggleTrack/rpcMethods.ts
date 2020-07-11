@@ -21,13 +21,9 @@ export class WiggleGetGlobalStats extends RpcMethodType {
     headers?: Record<string, string>
     sessionId: string
   }): Promise<FeatureStats> {
-    const {
-      adapterConfig,
-      signal,
-      headers,
-      sessionId,
-    } = await this.deserializeArguments(args)
-    const { dataAdapter } = await getAdapter(
+    const deserializedArgs = await this.deserializeArguments(args)
+    const { adapterConfig, sessionId } = deserializedArgs
+    const { dataAdapter } = getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
@@ -36,7 +32,7 @@ export class WiggleGetGlobalStats extends RpcMethodType {
       dataAdapter instanceof BaseFeatureDataAdapter &&
       dataAdapterSupportsGlobalStats(dataAdapter)
     ) {
-      return dataAdapter.getGlobalStats({ signal, headers, sessionId })
+      return dataAdapter.getGlobalStats(deserializedArgs)
     }
     return blankStats()
   }
@@ -65,15 +61,9 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
     regions: Region[]
     bpPerPx: number
   }) {
-    const {
-      regions,
-      adapterConfig,
-      signal,
-      bpPerPx,
-      headers,
-      sessionId,
-    } = await this.deserializeArguments(args)
-    const { dataAdapter } = await getAdapter(
+    const deserializedArgs = await this.deserializeArguments(args)
+    const { regions, adapterConfig, sessionId } = deserializedArgs
+    const { dataAdapter } = getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
@@ -83,12 +73,7 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
       dataAdapter instanceof BaseFeatureDataAdapter &&
       dataAdapterSupportsMultiRegionStats(dataAdapter)
     ) {
-      return dataAdapter.getMultiRegionStats(regions, {
-        signal,
-        bpPerPx,
-        headers,
-        sessionId,
-      })
+      return dataAdapter.getMultiRegionStats(regions, deserializedArgs)
     }
     return blankStats()
   }

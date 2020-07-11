@@ -93,14 +93,12 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
 
   public getFeatures(region: NoAssemblyRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
-    const { signal, bpPerPx, headers, sessionId } = opts
+    const { bpPerPx, statusCallback } = opts
     return ObservableCreate<Feature>(async observer => {
-      // @ts-ignore
-      self.rpcServer.emit(`message-${sessionId}`, 'Downloading bigwig')
+      statusCallback('Downloading bigwig')
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
-        signal,
+        ...opts,
         basesPerSpan: bpPerPx,
-        headers,
       })
       ob.pipe(
         mergeAll(),
