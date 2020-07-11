@@ -2,6 +2,7 @@ import { Command, flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
+import { guessAdapter, guessTrackType } from '@gmod/jbrowse-core/util/tracks'
 
 export default class AddTrack extends Command {
   static description = 'Add a track to a JBrowse 2 configuration'
@@ -58,8 +59,46 @@ export default class AddTrack extends Command {
   }
 
   async run() {
+    await this.checkLocation()
     const { args: runArgs, flags: runFlags } = this.parse(AddTrack)
     const { track: argsTrack } = runArgs as { track: string }
+
+    const { track } = runArgs
+    let { type, name, trackId } = runFlags
+    const { config } = runFlags
+
+    const trackLocation = await this.resolveFileLocation(argsTrack)
+    const { location, protocol } = trackLocation
+    if (type) {
+      this.debug(`Type is: ${type}`)
+    } else {
+      const adapter = guessAdapter(location, protocol)
+      type = guessTrackType(adapter.type)
+    }
+
+    let response
+    let file
+    if (protocol === 'uri') {
+      try {
+        response = await fetch(trackLocation.location, {
+          method: 'GET',
+        })
+      } catch (error) {
+        this.error(error)
+      }
+      file = response.json()
+    } else {
+      file = await fsPromises.readFile(trackLocation.location, {
+        encoding: 'utf8',
+      })
+    }
+    if (trackId) {
+      this.debug(`Track is :${track}`)
+    } else trackId = location.substring(location.lastIndexOf('/') + 1) // get filename and set as name
+
+    if (name) {
+      this.debug(`Name is: ${name}`)
+    } else name = trackId
 
     // if type is not specificed, guess the track type based off track extension
     // infer the index file based off the track extension
@@ -79,6 +118,10 @@ export default class AddTrack extends Command {
   async resolveFileLocation(location: string) {
     let locationUrl: URL | undefined
     let locationPath: string | undefined
+    let locationObj: {
+      location: string
+      protocol: 'uri' | 'localPath'
+    }
     try {
       locationUrl = new URL(location)
     } catch (error) {
@@ -89,7 +132,11 @@ export default class AddTrack extends Command {
       try {
         response = await fetch(locationUrl, { method: 'HEAD' })
         if (response.ok) {
-          return locationUrl.href
+          locationObj = {
+            location: locationUrl.href,
+            protocol: 'uri',
+          }
+          return locationObj
         }
       } catch (error) {
         // ignore
@@ -107,10 +154,43 @@ export default class AddTrack extends Command {
           `Location ${filePath} is not in the JBrowse directory. Make sure it is still in your server directory.`,
         )
       }
-      return filePath
+      locationObj = {
+        location: filePath,
+        protocol: 'localPath',
+      }
+      return locationObj
     }
     return this.error(`Could not resolve to a file or a URL: "${location}"`, {
       exit: 90,
     })
+  }
+
+  async checkLocation() {
+    let manifestJson: string
+    try {
+      manifestJson = await fsPromises.readFile('manifest.json', {
+        encoding: 'utf8',
+      })
+    } catch (error) {
+      this.error(
+        'Could not find the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
+        { exit: 50 },
+      )
+    }
+    let manifest: { name?: string } = {}
+    try {
+      manifest = JSON.parse(manifestJson)
+    } catch (error) {
+      this.error(
+        'Could not parse the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
+        { exit: 60 },
+      )
+    }
+    if (manifest.name !== 'JBrowse') {
+      this.error(
+        '"name" in file "manifest.json" is not "JBrowse". Please make sure you are in the top level of a JBrowse 2 installation.',
+        { exit: 70 },
+      )
+    }
   }
 }

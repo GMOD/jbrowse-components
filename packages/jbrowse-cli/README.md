@@ -39,7 +39,6 @@ USAGE
 <!-- commands -->
 
 - [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
-- [`jbrowse add-track TRACK`](#jbrowse-add-track-track)
 - [`jbrowse hello [FILE]`](#jbrowse-hello-file)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 
@@ -119,42 +118,6 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.2bit --config path/to/config.json
   $ jbrowse add-assembly GRCh38.chrom.sizes
   $ jbrowse add-assembly GRCh38.config.json
-```
-
-## `jbrowse add-track TRACK`
-
-Add a track to a JBrowse 2 configuration
-
-```
-USAGE
-  $ jbrowse add-track TRACK
-
-ARGUMENTS
-  TRACK  track file or URL
-
-OPTIONS
-  -c, --config=config
-      JSON config for track, will be updated into existing config
-
-  -d, --description=description
-      Optional description of the track
-
-  -h, --help
-      show CLI help
-
-  -n, --name=name
-      Name of the track. Will be defaulted to the trackId if none specified
-
-  -t,
-  --type=AlignmentsTrack|StructuralVariantChordTrack|WiggleTrack|VariantTrack|DotplotTrack|LinearComparativeTrack|Linear
-  SyntenyTrack|SequenceTrack|ReferenceSequenceTrack
-      type of track, by default inferred from track file
-
-  --category=category
-      Optional Comma separated string of categories to group tracks
-
-  --trackId=trackId
-      Id for the track, by default inferred from filename, must be unique to JBrowse config
 ```
 
 ## `jbrowse hello [FILE]`
