@@ -79,9 +79,7 @@ export default class Upgrade extends Command {
       this.error(error)
     }
     const versionObj = tag
-      ? versionRes.find(
-          (version: GithubRelease) => version.tag_name === tag,
-        )
+      ? versionRes.find((version: GithubRelease) => version.tag_name === tag)
       : versionRes[0]
 
     const locationUrl = versionObj
