@@ -20,7 +20,7 @@ export default class Upgrade extends Command {
   static examples = [
     '$ jbrowse upgrade',
     '$ jbrowse upgrade /path/to/jbrowse2/installation',
-    '$ jbrowse upgrade /path/to/jbrowse2/installation --jbVersion 0.0.1',
+    '$ jbrowse upgrade /path/to/jbrowse2/installation --tag JBrowse-2@v0.0.1',
     '$ jbrowse upgrade --listVersions',
   ]
 
@@ -44,7 +44,8 @@ export default class Upgrade extends Command {
       char: 'l',
       description: 'Lists out all versions of JBrowse 2',
     }),
-    jbVersion: flags.string({
+    tag: flags.string({
+      char: 't',
       description: 'Version of JBrowse 2 to upgrade to. Defaults to latest',
     }),
   }
@@ -53,7 +54,7 @@ export default class Upgrade extends Command {
     const { args: runArgs, flags: runFlags } = this.parse(Upgrade)
     const { localPath: argsPath } = runArgs as { localPath: string }
 
-    const { listVersions, jbVersion } = runFlags
+    const { listVersions, tag } = runFlags
 
     if (listVersions) {
       try {
@@ -77,9 +78,9 @@ export default class Upgrade extends Command {
     } catch (error) {
       this.error(error)
     }
-    const versionObj = jbVersion
+    const versionObj = tag
       ? versionRes.find(
-          (version: GithubRelease) => version.tag_name === jbVersion,
+          (version: GithubRelease) => version.tag_name === tag,
         )
       : versionRes[0]
 

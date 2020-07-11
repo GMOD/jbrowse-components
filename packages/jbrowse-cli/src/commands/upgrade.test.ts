@@ -11,7 +11,7 @@ const fsPromises = fs.promises
 let prevStat: Stats
 const releaseArray = [
   {
-    tag_name: '0.0.1',
+    tag_name: 'JBrowse-2@v0.0.1',
     prerelease: false,
     assets: [
       {
@@ -20,7 +20,7 @@ const releaseArray = [
     ],
   },
   {
-    tag_name: '0.0.2',
+    tag_name: 'JBrowse-2@v0.0.2',
     prerelease: false,
     assets: [
       {
@@ -98,12 +98,12 @@ describe('upgrade', () => {
       expect(await fsPromises.stat('manifest.json')).not.toEqual(prevStat)
     })
   setup
-    .command(['upgrade', '--jbVersion', '0.0.2'])
+    .command(['upgrade', '--tag', 'JBrowse-2@v0.0.2'])
     .it('upgrades a directory with a specific version', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
     })
   setup
-    .command(['upgrade', '--jbVersion', '999.999.999'])
+    .command(['upgrade', '--tag', 'JBrowse-2@v999.999.999'])
     .exit(40)
     .it('fails to upgrade if version does not exist')
 })

@@ -21,7 +21,7 @@ export default class Create extends Command {
     '$ jbrowse create /path/to/new/installation',
     '$ jbrowse create /path/to/new/installation --force',
     '$ jbrowse create /path/to/new/installation -u url.com/directjbrowselink.zip',
-    '$ jbrowse create /path/to/new/installation --jbVersion 0.0.1',
+    '$ jbrowse create /path/to/new/installation --tag JBrowse-2@v0.0.1',
     '$ jbrowse create --listVersion',
   ]
 
@@ -48,7 +48,8 @@ export default class Create extends Command {
       char: 'u',
       description: 'A direct URL to a JBrowse 2 release',
     }),
-    jbVersion: flags.string({
+    tag: flags.string({
+      char: 't',
       description:
         'Version of JBrowse 2 to install. Format is JBrowse-2@v1.2.3. Defaults to latest',
     }),
@@ -59,7 +60,7 @@ export default class Create extends Command {
     const { localPath: argsPath } = runArgs as { localPath: string }
     this.debug(`Want to install path at: ${argsPath}`)
 
-    const { force, url, listVersions, jbVersion } = runFlags
+    const { force, url, listVersions, tag } = runFlags
 
     if (listVersions) {
       try {
@@ -91,10 +92,8 @@ export default class Create extends Command {
       } catch (error) {
         this.error(error)
       }
-      const versionObj = jbVersion
-        ? versionRes.find(
-            (version: GithubRelease) => version.tag_name === jbVersion,
-          )
+      const versionObj = tag
+        ? versionRes.find((version: GithubRelease) => version.tag_name === tag)
         : versionRes[0]
 
       locationUrl = versionObj

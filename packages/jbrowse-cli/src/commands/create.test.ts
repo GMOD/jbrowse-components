@@ -20,7 +20,7 @@ const testDir = path.join(
 
 const releaseArray = [
   {
-    tag_name: '0.0.1',
+    tag_name: 'JBrowse-2@v0.0.1',
     prerelease: false,
     assets: [
       {
@@ -92,7 +92,7 @@ describe('create', () => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
     })
   setup
-    .command(['create', testDir, '--jbVersion', '0.0.1', '--force'])
+    .command(['create', testDir, '--tag', 'JBrowse-2@v0.0.1', '--force'])
     .it(
       'overwrites and succeeds in downloading JBrowse in a non-empty directory with version #',
       async ctx => {
@@ -100,7 +100,7 @@ describe('create', () => {
       },
     )
   setup
-    .command(['create', testDir, '--jbVersion', '999.999.999', '--force'])
+    .command(['create', testDir, '--tag', 'JBrowse-2@v999.999.999', '--force'])
     .exit(40)
     .it('fails to download a version that does not exist')
   setup

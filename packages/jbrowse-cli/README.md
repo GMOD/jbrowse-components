@@ -130,17 +130,17 @@ ARGUMENTS
   LOCALPATH  Location where JBrowse 2 will be installed
 
 OPTIONS
-  -f, --force            Overwrites existing JBrowse 2 installation if present in path
-  -h, --help             show CLI help
-  -l, --listVersions     Lists out all versions of JBrowse 2
-  -u, --url=url          A direct URL to a JBrowse 2 release
-  --jbVersion=jbVersion  Version of JBrowse 2 to install. Format is JBrowse-2@v1.2.3. Defaults to latest
+  -f, --force         Overwrites existing JBrowse 2 installation if present in path
+  -h, --help          show CLI help
+  -l, --listVersions  Lists out all versions of JBrowse 2
+  -t, --tag=tag       Version of JBrowse 2 to install. Format is JBrowse-2@v1.2.3. Defaults to latest
+  -u, --url=url       A direct URL to a JBrowse 2 release
 
 EXAMPLES
   $ jbrowse create /path/to/new/installation
   $ jbrowse create /path/to/new/installation --force
   $ jbrowse create /path/to/new/installation -u url.com/directjbrowselink.zip
-  $ jbrowse create /path/to/new/installation --jbVersion 0.0.1
+  $ jbrowse create /path/to/new/installation --tag JBrowse-2@v0.0.1
   $ jbrowse create --listVersion
 ```
 
@@ -191,14 +191,14 @@ ARGUMENTS
   LOCALPATH  Location where JBrowse 2 is installed. Defaults to .
 
 OPTIONS
-  -h, --help             show CLI help
-  -l, --listVersions     Lists out all versions of JBrowse 2
-  --jbVersion=jbVersion  Version of JBrowse 2 to upgrade to. Defaults to latest
+  -h, --help          show CLI help
+  -l, --listVersions  Lists out all versions of JBrowse 2
+  -t, --tag=tag       Version of JBrowse 2 to upgrade to. Defaults to latest
 
 EXAMPLES
   $ jbrowse upgrade
   $ jbrowse upgrade /path/to/jbrowse2/installation
-  $ jbrowse upgrade /path/to/jbrowse2/installation --jbVersion 0.0.1
+  $ jbrowse upgrade /path/to/jbrowse2/installation --tag JBrowse-2@v0.0.1
   $ jbrowse upgrade --listVersions
 ```
 
