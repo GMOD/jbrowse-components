@@ -6,11 +6,8 @@ import { Region } from '@gmod/jbrowse-core/util/types'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
-import AbortablePromiseCache from 'abortable-promise-cache'
-import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
 import {
   blankStats,
-  FeatureStats,
   rectifyStats,
   scoresToStats,
 } from '@gmod/jbrowse-plugin-wiggle/src/statsUtil'

@@ -140,8 +140,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     opts: BaseOptions = {},
   ) {
     const { refName, start, end, originalRefName } = region
-          const { sessionId } = opts
-return ObservableCreate<Feature>(async observer => {
+    const { sessionId } = opts
+    return ObservableCreate<Feature>(async observer => {
       await this.setup(opts)
       self.rpcServer.emit(`message-${sessionId}`, 'Downloading alignments')
       const records = await this.bam.getRecordsForRange(

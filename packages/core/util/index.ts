@@ -753,7 +753,7 @@ export async function renameRegionsIfNeeded<
       {
         signal,
         sessionId: newArgs.sessionId,
-statusCallback
+        statusCallback,
       },
     )
 
