@@ -60,6 +60,7 @@ async function loadRefNameMap(
       sessionId,
       adapterConfig: adapterConf,
       signal,
+      ...options,
     },
     { timeout: 1000000 },
   )
