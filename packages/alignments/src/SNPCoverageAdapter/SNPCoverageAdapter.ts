@@ -146,7 +146,7 @@ export default (pluginManager: PluginManager) => {
           region,
           opts.bpPerPx || 1,
         )
-        coverageBins.forEach((bin: NestedFrequencyTable, index: number) => {
+        coverageBins.forEach((bin, index) => {
           observer.next(
             new SimpleFeature({
               id: `pos_${region.start}${index}`,

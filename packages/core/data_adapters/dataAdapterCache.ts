@@ -16,7 +16,7 @@ interface AdapterCacheEntry {
   sessionIds: Set<string>
 }
 
-const adapterCache: Record<string, AdapterCacheEntry> = {}
+let adapterCache: Record<string, AdapterCacheEntry> = {}
 
 /**
  * instantiate a data adapter, or return an already-instantiated one if we have one with the same
@@ -121,4 +121,8 @@ export function freeAdapterResources(specification: Record<string, any>) {
   }
 
   return deleteCount
+}
+
+export function clearAdapterCache() {
+  adapterCache = {}
 }

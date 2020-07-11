@@ -9,8 +9,8 @@ import {
 } from '@gmod/jbrowse-core/util'
 import {
   getParentRenderProps,
-  getTrackAssemblyNames,
   getRpcSessionId,
+  getTrackAssemblyNames,
 } from '@gmod/jbrowse-core/util/tracks'
 import blockBasedTrackModel from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
 import { autorun, observable } from 'mobx'
@@ -106,6 +106,8 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             scaleType: getConf(self, 'scaleType'),
             bounds: [minScore, maxScore],
           })
+
+          // uses a heuristic to just give some extra headroom on bigwig scores
           if (maxScore !== Number.MIN_VALUE && ret[1] > 1.0) {
             ret[1] = round(ret[1] + 10)
           }
@@ -129,6 +131,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', this.rendererTypeName]) || {},
           )
+
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
@@ -148,13 +151,18 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
       }
     })
     .actions(self => {
-      async function getStats(signal: AbortSignal): Promise<FeatureStats> {
+      const superReload = self.reload
+
+      async function getStats(opts: {
+        headers?: Record<string, string>
+        signal?: AbortSignal
+      }): Promise<FeatureStats> {
         const { rpcManager } = getSession(self)
         const nd = getConf(self, 'numStdDev')
         const autoscaleType = getConf(self, 'autoscale', [])
         const { adapter } = self.configuration
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
-          const r = (await rpcManager.call(
+          const results = (await rpcManager.call(
             getRpcSessionId(self),
             'WiggleGetGlobalStats',
             {
@@ -162,50 +170,64 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
               statusCallback: (message: string) => {
                 self.setMessage(message)
               },
-              signal,
+              ...opts,
             },
           )) as FeatureStats
+          const { scoreMin, scoreMean, scoreStdDev } = results
+          // globalsd uses heuristic to avoid unnecessary scoreMin<0
+          // if the scoreMin is never less than 0
+          // helps with most coverage bigwigs just being >0
           return autoscaleType === 'globalsd'
             ? {
-                ...r,
-                // avoid unnecessary scoreMin<0 if the scoreMin is never less than 0
-                // helps with most bigwigs just being >0
-                scoreMin:
-                  r.scoreMin >= 0 ? 0 : r.scoreMean - nd * r.scoreStdDev,
-                scoreMax: r.scoreMean + nd * r.scoreStdDev,
+                ...results,
+                scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
+                scoreMax: scoreMean + nd * scoreStdDev,
               }
-            : r
+            : results
         }
         if (autoscaleType === 'local' || autoscaleType === 'localsd') {
           const { dynamicBlocks, bpPerPx } = getContainingView(
             self,
           ) as Instance<LinearGenomeViewStateModel>
           const sessionId = getRpcSessionId(self)
-          const r = (await rpcManager.call(
+          const results = (await rpcManager.call(
             sessionId,
             'WiggleGetMultiRegionStats',
             {
               adapterConfig: getSnapshot(adapter),
               assemblyName: getTrackAssemblyNames(self)[0],
-              regions: JSON.parse(JSON.stringify(dynamicBlocks.contentBlocks)),
+              regions: JSON.parse(
+                JSON.stringify(
+                  dynamicBlocks.contentBlocks.map(region => {
+                    const { start, end } = region
+                    return {
+                      ...region,
+                      start: Math.floor(start),
+                      end: Math.ceil(end),
+                    }
+                  }),
+                ),
+              ),
               sessionId,
               statusCallback: (message: string) => {
                 self.setMessage(message)
               },
               signal,
               bpPerPx,
+              ...opts,
             },
           )) as FeatureStats
+          const { scoreMin, scoreMean, scoreStdDev } = results
+          // localsd uses heuristic to avoid unnecessary scoreMin<0
+          // if the scoreMin is never less than 0
+          // helps with most coverage bigwigs just being >0
           return autoscaleType === 'localsd'
             ? {
-                ...r,
-                // avoid unnecessary scoreMin<0 if the scoreMin is never less than 0
-                // helps with most bigwigs just being >0
-                scoreMin:
-                  r.scoreMin >= 0 ? 0 : r.scoreMean - nd * r.scoreStdDev,
-                scoreMax: r.scoreMean + nd * r.scoreStdDev,
+                ...results,
+                scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
+                scoreMax: scoreMean + nd * scoreStdDev,
               }
-            : r
+            : results
         }
         if (autoscaleType === 'zscale') {
           return rpcManager.call(
@@ -216,13 +238,25 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
               statusCallback: (message: string) => {
                 self.setMessage(message)
               },
-              signal,
+              ...opts,
             },
           ) as Promise<FeatureStats>
         }
         throw new Error(`invalid autoscaleType '${autoscaleType}'`)
       }
       return {
+        // re-runs stats and refresh whole track on reload
+        async reload() {
+          self.setError('')
+
+          const aborter = new AbortController()
+          const stats = await getStats({
+            signal: aborter.signal,
+            headers: { cache: 'no-store,no-cache' },
+          })
+          self.updateStats(stats)
+          superReload()
+        },
         afterAttach() {
           addDisposer(
             self,
@@ -239,7 +273,8 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
                     return
                   }
 
-                  const stats = await getStats(aborter.signal)
+                  const stats = await getStats({ signal: aborter.signal })
+
                   if (isAlive(self)) {
                     self.updateStats(stats)
                   }

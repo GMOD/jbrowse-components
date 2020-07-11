@@ -9,8 +9,8 @@
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {
-    "@gmod/bbi": "^1.0.29",
-    "@gmod/bed": "^2.0.2",
+    "@gmod/bbi": "^1.0.30",
+    "@gmod/bed": "^2.0.3",
     "@gmod/tabix": "^1.4.6"
   },
   "peerDependencies": {

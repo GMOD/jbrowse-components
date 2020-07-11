@@ -6,9 +6,17 @@
     "outDir": "lib",
     "rootDir": "src",
     "strict": true,
-    "target": "es2017"
+    "target": "es2017",
+    // Can possibly remove skipLibCheck if fancy-tests stops having
+    // @types/mocha as a dependency or if @types/jest stops using the same
+    // global namespace as @types/mocha
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*"
+  ],
+  "exclude": [
+    "**/*.test.ts",
+    "**/testUtil.ts"
   ]
 }

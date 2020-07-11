@@ -20,7 +20,7 @@ serviceWorker.register()
 function factoryReset() {
   localStorage.removeItem('jbrowse-web-data')
   localStorage.removeItem('jbrowse-web-session')
-  window.location.reload()
+  window.location = window.location.pathname
 }
 
 const PlatformSpecificFatalErrorDialog = props => {

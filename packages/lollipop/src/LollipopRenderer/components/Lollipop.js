@@ -3,7 +3,7 @@ import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
 import { contrastingTextColor } from '@gmod/jbrowse-core/util/color'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { Component } from 'react'
+import React from 'react'
 
 function ScoreText({
   feature,
@@ -49,122 +49,120 @@ ScoreText.propTypes = {
   config: CommonPropTypes.ConfigSchema.isRequired,
 }
 
-class Lollipop extends Component {
-  onFeatureMouseDown = event => {
-    const { onFeatureMouseDown: handler, feature } = this.props
+function Lollipop(props) {
+  const onFeatureMouseDown = event => {
+    const { onFeatureMouseDown: handler, feature } = props
     if (!handler) return undefined
     return handler(event, feature.id())
   }
 
-  onFeatureMouseEnter = event => {
-    const { onFeatureMouseEnter: handler, feature } = this.props
+  const onFeatureMouseEnter = event => {
+    const { onFeatureMouseEnter: handler, feature } = props
     if (!handler) return undefined
     return handler(event, feature.id())
   }
 
-  onFeatureMouseOut = event => {
-    const { onFeatureMouseOut: handler, feature } = this.props
+  const onFeatureMouseOut = event => {
+    const { onFeatureMouseOut: handler, feature } = props
     if (!handler) return undefined
     return handler(event, feature.id())
   }
 
-  onFeatureMouseOver = event => {
-    const { onFeatureMouseOver: handler, feature } = this.props
+  const onFeatureMouseOver = event => {
+    const { onFeatureMouseOver: handler, feature } = props
     if (!handler) return undefined
     return handler(event, feature.id())
   }
 
-  onFeatureMouseUp = event => {
-    const { onFeatureMouseUp: handler, feature } = this.props
+  const onFeatureMouseUp = event => {
+    const { onFeatureMouseUp: handler, feature } = props
     if (!handler) return undefined
     return handler(event, feature.id())
   }
 
-  onFeatureMouseLeave = event => {
-    const { onFeatureMouseLeave: handler, feature } = this.props
+  const onFeatureMouseLeave = event => {
+    const { onFeatureMouseLeave: handler, feature } = props
     if (!handler) return undefined
     return handler(event, feature.id())
   }
 
-  onFeatureMouseMove = event => {
-    const { onFeatureMouseMove: handler, feature } = this.props
+  const onFeatureMouseMove = event => {
+    const { onFeatureMouseMove: handler, feature } = props
     if (!handler) return undefined
     return handler(event, feature.id())
   }
 
-  onFeatureClick = event => {
-    const { onFeatureClick: handler, feature } = this.props
+  const onFeatureClick = event => {
+    const { onFeatureClick: handler, feature } = props
     if (!handler) return undefined
     event.stopPropagation()
     return handler(event, feature.id())
   }
 
-  render() {
-    const {
-      feature,
-      config,
-      layoutRecord: {
-        anchorLocation,
-        y,
-        data: { radiusPx, score },
-      },
-      selectedFeatureId,
-    } = this.props
+  const {
+    feature,
+    config,
+    layoutRecord: {
+      anchorLocation,
+      y,
+      data: { radiusPx, score },
+    },
+    selectedFeatureId,
+  } = props
 
-    const styleOuter = {
-      fill: readConfObject(config, 'strokeColor', [feature]),
-    }
-    if (String(selectedFeatureId) === String(feature.id())) {
-      styleOuter.fill = 'red'
-    }
+  const styleOuter = {
+    fill: readConfObject(config, 'strokeColor', [feature]),
+  }
+  if (String(selectedFeatureId) === String(feature.id())) {
+    styleOuter.fill = 'red'
+  }
 
-    const styleInner = {
-      fill: readConfObject(config, 'innerColor', [feature]),
-    }
+  const styleInner = {
+    fill: readConfObject(config, 'innerColor', [feature]),
+  }
 
-    const strokeWidth = readConfObject(config, 'strokeWidth', [feature])
+  const strokeWidth = readConfObject(config, 'strokeWidth', [feature])
 
-    return (
-      <g data-testid={feature.id()}>
-        <title>{readConfObject(config, 'caption', [feature])}</title>
+  return (
+    <g data-testid={feature.id()}>
+      <title>{readConfObject(config, 'caption', [feature])}</title>
+      <circle
+        cx={anchorLocation}
+        cy={y + radiusPx}
+        r={radiusPx}
+        style={styleOuter}
+        onMouseDown={onFeatureMouseDown}
+        onMouseEnter={onFeatureMouseEnter}
+        onMouseOut={onFeatureMouseOut}
+        onMouseOver={onFeatureMouseOver}
+        onMouseUp={onFeatureMouseUp}
+        onMouseLeave={onFeatureMouseLeave}
+        onMouseMove={onFeatureMouseMove}
+        onClick={onFeatureClick}
+        onFocus={onFeatureMouseOver}
+        onBlur={onFeatureMouseOut}
+      />
+      {radiusPx - strokeWidth <= 2 ? null : (
         <circle
           cx={anchorLocation}
           cy={y + radiusPx}
-          r={radiusPx}
-          style={styleOuter}
-          onMouseDown={this.onFeatureMouseDown}
-          onMouseEnter={this.onFeatureMouseEnter}
-          onMouseOut={this.onFeatureMouseOut}
-          onMouseOver={this.onFeatureMouseOver}
-          onMouseUp={this.onFeatureMouseUp}
-          onMouseLeave={this.onFeatureMouseLeave}
-          onMouseMove={this.onFeatureMouseMove}
-          onClick={this.onFeatureClick}
-          onFocus={this.onFeatureMouseOver}
-          onBlur={this.onFeatureMouseOut}
+          r={radiusPx - strokeWidth}
+          style={styleInner}
+          onMouseDown={onFeatureMouseDown}
+          onMouseEnter={onFeatureMouseEnter}
+          onMouseOut={onFeatureMouseOut}
+          onMouseOver={onFeatureMouseOver}
+          onMouseUp={onFeatureMouseUp}
+          onMouseLeave={onFeatureMouseLeave}
+          onMouseMove={onFeatureMouseMove}
+          onClick={onFeatureClick}
+          onFocus={onFeatureMouseOver}
+          onBlur={onFeatureMouseOut}
         />
-        {radiusPx - strokeWidth <= 2 ? null : (
-          <circle
-            cx={anchorLocation}
-            cy={y + radiusPx}
-            r={radiusPx - strokeWidth}
-            style={styleInner}
-            onMouseDown={this.onFeatureMouseDown}
-            onMouseEnter={this.onFeatureMouseEnter}
-            onMouseOut={this.onFeatureMouseOut}
-            onMouseOver={this.onFeatureMouseOver}
-            onMouseUp={this.onFeatureMouseUp}
-            onMouseLeave={this.onFeatureMouseLeave}
-            onMouseMove={this.onFeatureMouseMove}
-            onClick={this.onFeatureClick}
-            onFocus={this.onFeatureMouseOver}
-            onBlur={this.onFeatureMouseOut}
-          />
-        )}
-        <ScoreText {...this.props} score={score} />
-      </g>
-    )
-  }
+      )}
+      <ScoreText {...props} score={score} />
+    </g>
+  )
 }
 Lollipop.propTypes = {
   feature: ReactPropTypes.shape({

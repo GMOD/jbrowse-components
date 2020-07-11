@@ -1,6 +1,7 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import { promises as fsPromises } from 'fs'
+import path from 'path'
 import { parseSTARFusionBuffer } from './STARFusionImport'
 
 window.TextEncoder = TextEncoder
@@ -12,7 +13,12 @@ const SpreadsheetModel = pluginManager.jbrequire(
 )
 
 test('starfusion import', async () => {
-  const filepath = `${process.cwd()}/packages/spreadsheet-view/src/SpreadsheetView/test_data/starfusion_example.fusion_predictions.tsv`
+  const filepath = path.join(
+    __dirname,
+    '..',
+    'test_data',
+    'starfusion_example.fusion_predictions.tsv',
+  )
   const buf = await fsPromises.readFile(filepath)
   const spreadsheetSnap = await parseSTARFusionBuffer(buf, {
     selectedAssemblyName: 'fogbat',

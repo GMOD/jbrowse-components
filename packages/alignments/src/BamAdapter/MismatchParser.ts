@@ -226,3 +226,51 @@ export function getMismatches(
     return !s
   })
 }
+
+// adapted from minimap2 code static void write_MD_core function
+export function generateMD(target: string, query: string, cigar: string) {
+  let queryOffset = 0
+  let targetOffset = 0
+  let lengthMD = 0
+  if (!target) {
+    console.warn('no ref supplied to generateMD')
+    return ''
+  }
+  const cigarOps = parseCigar(cigar)
+  let str = ''
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+    if (op === 'M' || op === 'X' || op === '=') {
+      for (let j = 0; j < len; j++) {
+        if (
+          query[queryOffset + j].toLowerCase() !==
+          target[targetOffset + j].toLowerCase()
+        ) {
+          str += `${lengthMD}${target[targetOffset + j].toUpperCase()}`
+          lengthMD = 0
+        } else {
+          lengthMD++
+        }
+      }
+      queryOffset += len
+      targetOffset += len
+    } else if (op === 'I') {
+      queryOffset += len
+    } else if (op === 'D') {
+      let tmp = ''
+      for (let j = 0; j < len; j++) {
+        tmp += target[targetOffset + j].toUpperCase()
+      }
+      str += `${lengthMD}^${tmp}`
+      lengthMD = 0
+      targetOffset += len
+    } else if (op === 'N') {
+      targetOffset += len
+    }
+  }
+  if (lengthMD > 0) {
+    str += lengthMD
+  }
+  return str
+}

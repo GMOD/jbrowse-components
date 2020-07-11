@@ -211,16 +211,49 @@
           }
         }
       },
-      "defaultRendering": "svg",
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
+      "defaultRendering": "svg"
+    },
+
+    {
+      "type": "SNPCoverageTrack",
+      "trackId": "volvox_bam_snpcoverage",
+      "name": "volvox-sorted.bam (contigA SNPCoverage)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "SNPCoverageAdapter",
+        "subadapter": {
+          "type": "BamAdapter",
+          "bamLocation": {
+            "uri": "test_data/volvox/volvox-sorted-altname.bam"
+          },
+          "index": {
+            "location": {
+              "uri": "test_data/volvox/volvox-sorted-altname.bam.bai"
+            }
+          }
         }
       }
     },
+    {
+      "type": "PileupTrack",
+      "trackId": "volvox_bam_pileup",
+      "name": "volvox-sorted.bam (contigA PileupTrack)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "test_data/volvox/volvox-sorted-altname.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/volvox/volvox-sorted-altname.bam.bai"
+          }
+        }
+      }
+    },
+
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_alignments_pileup_coverage",
@@ -322,33 +355,7 @@
         }
       }
     },
-    {
-      "type": "VariantTrack",
-      "trackId": "volvox_filtered_vcf",
-      "name": "volvox filtered vcf",
-      "assemblyNames": ["volvox"],
-      "category": ["VCF"],
-      "adapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "test_data/volvox/volvox.filtered.vcf.gz"
-        },
-        "index": {
-          "location": {
-            "uri": "test_data/volvox/volvox.filtered.vcf.gz.tbi"
-          }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer",
-          "maxFeatureGlyphExpansion": 0
-        }
-      }
-    },
+
     {
       "type": "BasicTrack",
       "trackId": "nclist_long_names",
@@ -397,14 +404,6 @@
             "uri": "test_data/volvox/volvox-sorted.bam.bai.nonexist"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
@@ -431,17 +430,6 @@
         "bigWigLocation": {
           "uri": "test_data/volvox/volvox_microarray.bw"
         }
-      },
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
-        }
       }
     },
     {
@@ -456,18 +444,7 @@
           "uri": "test_data/volvox/volvox_microarray.bw"
         }
       },
-      "defaultRendering": "line",
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
-        }
-      }
+      "defaultRendering": "line"
     },
     {
       "type": "WiggleTrack",
@@ -481,18 +458,7 @@
           "uri": "test_data/volvox/volvox_microarray.bw"
         }
       },
-      "defaultRendering": "density",
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
-        }
-      }
+      "defaultRendering": "density"
     },
     {
       "type": "WiggleTrack",
@@ -504,17 +470,6 @@
         "type": "BigWigAdapter",
         "bigWigLocation": {
           "uri": "test_data/volvox/volvox_microarray.altname.bw"
-        }
-      },
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
         }
       }
     },
@@ -926,10 +881,10 @@
     },
     {
       "type": "VariantTrack",
-      "trackId": "TBggZ1Rwy_p",
+      "trackId": "volvox_filtered_vcf",
       "name": "volvox filtered vcf",
       "assemblyNames": ["volvox"],
-      "category": ["Variants"],
+      "category": ["VCF"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1052,18 +1007,7 @@
           "uri": "test_data/volvox/volvox_microarray.bw"
         }
       },
-      "defaultRendering": "line",
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
-        }
-      }
+      "defaultRendering": "line"
     },
     {
       "type": "BasicTrack",
@@ -1091,18 +1035,7 @@
           "uri": "test_data/volvox/volvox_microarray.bw"
         }
       },
-      "defaultRendering": "density",
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
-        }
-      }
+      "defaultRendering": "density"
     },
     {
       "type": "WiggleTrack",
@@ -1114,17 +1047,6 @@
         "type": "BigWigAdapter",
         "bigWigLocation": {
           "uri": "test_data/volvox/volvox_microarray.bw"
-        }
-      },
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
         }
       }
     },
@@ -1140,18 +1062,7 @@
           "uri": "test_data/volvox/volvox_microarray_negative.bw"
         }
       },
-      "defaultRendering": "density",
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
-        }
-      }
+      "defaultRendering": "density"
     },
     {
       "type": "WiggleTrack",
@@ -1163,17 +1074,6 @@
         "type": "BigWigAdapter",
         "bigWigLocation": {
           "uri": "test_data/volvox/volvox_microarray_negative.bw"
-        }
-      },
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
         }
       }
     },
@@ -1189,18 +1089,7 @@
           "uri": "test_data/volvox/volvox_microarray_posneg.bw"
         }
       },
-      "defaultRendering": "line",
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
-        }
-      }
+      "defaultRendering": "line"
     },
     {
       "type": "WiggleTrack",
@@ -1214,18 +1103,7 @@
           "uri": "test_data/volvox/volvox_microarray_posneg_frac.bw"
         }
       },
-      "defaultRendering": "line",
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
-        }
-      }
+      "defaultRendering": "line"
     },
     {
       "type": "WiggleTrack",
@@ -1237,17 +1115,6 @@
         "type": "BigWigAdapter",
         "bigWigLocation": {
           "uri": "test_data/volvox/volvox_microarray_posneg.bw"
-        }
-      },
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
         }
       }
     },
@@ -1263,18 +1130,7 @@
           "uri": "test_data/volvox/volvox-sorted.bam.coverage.bw"
         }
       },
-      "defaultRendering": "line",
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
-        }
-      }
+      "defaultRendering": "line"
     },
     {
       "type": "WiggleTrack",
@@ -1286,17 +1142,6 @@
         "type": "BigWigAdapter",
         "bigWigLocation": {
           "uri": "test_data/volvox/volvox-sorted.bam.coverage.bw"
-        }
-      },
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
         }
       }
     }

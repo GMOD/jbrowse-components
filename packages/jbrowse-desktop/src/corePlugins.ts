@@ -6,7 +6,7 @@ import DataManagement from '@gmod/jbrowse-plugin-data-management'
 import DotplotView from '@gmod/jbrowse-plugin-dotplot-view'
 import Filtering from '@gmod/jbrowse-plugin-filtering'
 import Gff3Tabix from '@gmod/jbrowse-plugin-gff3tabix'
-import JBrowse1 from '@gmod/jbrowse-plugin-jbrowse1'
+import LegacyJBrowse from '@gmod/jbrowse-plugin-legacy-jbrowse'
 import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 import LinearComparativeView from '@gmod/jbrowse-plugin-linear-comparative-view'
 import Lollipop from '@gmod/jbrowse-plugin-lollipop'
@@ -30,7 +30,7 @@ export default [
   DotplotView,
   Filtering,
   Gff3Tabix,
-  JBrowse1,
+  LegacyJBrowse,
   LinearGenomeView,
   LinearComparativeView,
   Lollipop,

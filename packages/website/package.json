@@ -1,0 +1,36 @@
+{
+  "name": "website",
+  "version": "0.0.0",
+  "private": false,
+  "scripts": {
+    "start": "docusaurus start",
+    "prebuild": "cd docs; make md; cd -",
+    "build": "docusaurus build",
+    "swizzle": "docusaurus swizzle",
+    "predeploy": "npm run build",
+    "deploy": "aws s3 sync build s3://jbrowse.org/jb2/",
+    "make": "cd docs; make; cd -",
+    "deploypdf": "aws s3 cp docs/jbrowse2.pdf s3://jbrowse.org/docs/"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^2.0.0-alpha.58",
+    "@docusaurus/preset-classic": "^2.0.0-alpha.58",
+    "@material-ui/core": "^4.11.0",
+    "clsx": "^1.1.1",
+    "react": "^16.8.4",
+    "react-dom": "^16.8.4"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "homepage": "."
+}

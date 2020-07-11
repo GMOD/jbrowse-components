@@ -38,20 +38,7 @@ describe('adapter can fetch features from volvox.bw', () => {
       }),
     ).toMatchSnapshot()
   })
-  it('get region stats', async () => {
-    const ret = await adapter.getRegionStats({
-      refName: 'ctgA',
-      start: 10000,
-      end: 40000,
-    })
 
-    const ret2 = await adapter.getRegionStats({
-      refName: 'ctgA',
-      start: 10000,
-      end: 40000,
-    })
-    expect(ret2).toBe(ret)
-  })
   it('get local stats', async () => {
     expect(
       await adapter.getMultiRegionStats([

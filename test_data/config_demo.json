@@ -1353,6 +1353,21 @@
       "renderer": {
         "type": "StructuralVariantChordRenderer"
       }
+    },
+    {
+      "type": "DynamicTrack",
+      "trackId": "hic",
+      "name": "Hic Track",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "HicAdapter",
+        "hicLocation": {
+          "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+        }
+      },
+      "renderer": {
+        "type": "HicRenderer"
+      }
     }
   ],
   "connections": [],

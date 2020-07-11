@@ -22,7 +22,6 @@ import {
   AssemblyManager,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
-import { whenPresent } from './when'
 
 export * from './types'
 export * from './aborting'
@@ -286,7 +285,7 @@ export function assembleLocString(region: ParsedLocString): string {
   const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
   let startString
   if (start !== undefined) {
-    startString = `:${start + 1}`
+    startString = `:${(start + 1).toLocaleString('en-US')}`
   } else if (end !== undefined) {
     startString = ':1'
   } else {
@@ -294,7 +293,10 @@ export function assembleLocString(region: ParsedLocString): string {
   }
   let endString
   if (end !== undefined) {
-    endString = start !== undefined && start + 1 === end ? '' : `..${end}`
+    endString =
+      start !== undefined && start + 1 === end
+        ? ''
+        : `..${end.toLocaleString('en-US')}`
   } else {
     endString = start !== undefined ? '..' : ''
   }
@@ -341,22 +343,38 @@ export function parseLocStringOneBased(
   } else if (isValidRefName(prefix, assemblyName)) {
     if (suffix) {
       // see if it's a range
-      const rangeMatch = suffix.match(/^(-?\d+)(\.\.|-)(-?\d+)$/)
+      const rangeMatch = suffix.match(
+        /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)(-?(\d+|\d{1,3}(,\d{3})*))$/,
+      )
       // see if it's a single point
-      const singleMatch = suffix.match(/^(-?\d+)(\.\.|-)?$/)
+      const singleMatch = suffix.match(/^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)?$/)
       if (rangeMatch) {
-        const [, start, , end] = rangeMatch
+        const [, start, , , , end] = rangeMatch
         if (start !== undefined && end !== undefined) {
-          return { assemblyName, refName: prefix, start: +start, end: +end }
+          return {
+            assemblyName,
+            refName: prefix,
+            start: +start.replace(/,/g, ''),
+            end: +end.replace(/,/g, ''),
+          }
         }
       } else if (singleMatch) {
-        const [, start, separator] = singleMatch
+        const [, start, , , separator] = singleMatch
         if (start !== undefined) {
           if (separator) {
             // indefinite end
-            return { assemblyName, refName: prefix, start: +start }
+            return {
+              assemblyName,
+              refName: prefix,
+              start: +start.replace(/,/g, ''),
+            }
           }
-          return { assemblyName, refName: prefix, start: +start, end: +start }
+          return {
+            assemblyName,
+            refName: prefix,
+            start: +start.replace(/,/g, ''),
+            end: +start.replace(/,/g, ''),
+          }
         }
       } else {
         throw new Error(
@@ -687,13 +705,13 @@ export function makeAbortableReaction<T, U, V>(
 }
 
 export function renameRegionIfNeeded(
-  refNameMap: Map<string, string>,
+  refNameMap: Record<string, string>,
   region: Region,
 ): Region & { originalRefName?: string } {
   if (isStateTreeNode(region) && !isAlive(region)) {
     return region
   }
-  if (region && refNameMap && refNameMap.has(region.refName)) {
+  if (region && refNameMap && refNameMap[region.refName]) {
     // clone the region so we don't modify it
     if (isStateTreeNode(region)) {
       region = { ...getSnapshot(region) }
@@ -702,7 +720,7 @@ export function renameRegionIfNeeded(
     }
 
     // modify it directly in the container
-    const newRef = refNameMap.get(region.refName)
+    const newRef = refNameMap[region.refName]
     if (newRef) {
       return { ...region, refName: newRef, originalRefName: region.refName }
     }
@@ -729,15 +747,13 @@ export async function renameRegionsIfNeeded<
     regions: [...(args.regions || [])],
   }
   if (assemblyName) {
-    const refNameMap = await whenPresent(
-      () =>
-        assemblyManager.getRefNameMapForAdapter(adapterConfig, assemblyName, {
-          signal,
-          sessionId: newArgs.sessionId,
-          statusCallback,
-        }),
+    const refNameMap = await assemblyManager.getRefNameMapForAdapter(
+      adapterConfig,
+      assemblyName,
       {
-        name: `getRefNameMapForAdapter($conf, '${assemblyName}')`,
+        signal,
+        sessionId: newArgs.sessionId,
+statusCallback
       },
     )
 

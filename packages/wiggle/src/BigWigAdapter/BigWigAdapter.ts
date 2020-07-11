@@ -7,8 +7,6 @@ import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import AbortablePromiseCache from 'abortable-promise-cache'
-import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
 import { map, mergeAll } from 'rxjs/operators'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { Instance } from 'mobx-state-tree'
@@ -22,24 +20,9 @@ import {
 
 import configSchema from './configSchema'
 
-interface StatsRegion {
-  refName: string
-  start: number
-  end: number
-  bpPerPx?: number
-}
-
 export default class BigWigAdapter extends BaseFeatureDataAdapter
   implements DataAdapterWithGlobalStats {
   private bigwig: BigWig
-
-  private statsCache = new AbortablePromiseCache({
-    cache: new QuickLRU({ maxSize: 1000 }),
-    fill: async (
-      args: { refName: string; start: number; end: number; bpPerPx?: number },
-      abortSignal?: AbortSignal,
-    ) => {},
-  })
 
   public constructor(config: Instance<typeof configSchema>) {
     super(config)
@@ -48,20 +31,18 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
     })
   }
 
-  public async getRefNames() {
-    self.rpcServer.emit('message', 'getting header')
-    const header = await this.bigwig.getHeader()
-    self.rpcServer.emit('message', 'done header')
+  public async getRefNames(opts: BaseOptions = {}) {
+    const header = await this.bigwig.getHeader(opts)
     return Object.keys(header.refsByName)
   }
 
   public async refIdToName(refId: number) {
-    const { refsByNumber } = await this.bigwig.getHeader()
-    return refsByNumber[refId] ? refsByNumber[refId].name : undefined
+    const h = await this.bigwig.getHeader()
+    return (h.refsByNumber[refId] || { name: undefined }).name
   }
 
   public async getGlobalStats(opts: BaseOptions = {}) {
-    const header = await this.bigwig.getHeader(opts.signal)
+    const header = await this.bigwig.getHeader(opts)
     return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
   }
 
@@ -80,7 +61,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
       return blankStats()
     }
     const feats = await Promise.all(
-      regions.map(r => this.getRegionStats(r, opts)),
+      regions.map(region => this.getRegionStats(region, opts)),
     )
 
     const scoreMax = feats
@@ -112,16 +93,14 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
 
   public getFeatures(region: NoAssemblyRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
-    const { signal, bpPerPx, sessionId } = opts
-    console.log(opts)
+    const { signal, bpPerPx, headers, sessionId } = opts
     return ObservableCreate<Feature>(async observer => {
-      self.rpcServer.emit(`message-${sessionId}`, 'getting features')
+      self.rpcServer.emit(`message-${sessionId}`, 'Downloading bigwig')
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
         signal,
         basesPerSpan: bpPerPx,
+        headers,
       })
-      console.log('sessionId', sessionId)
-      self.rpcServer.emit(`message-${sessionId}`, 'feature stream gotten')
       ob.pipe(
         mergeAll(),
         map((record: BBIFeature) => {

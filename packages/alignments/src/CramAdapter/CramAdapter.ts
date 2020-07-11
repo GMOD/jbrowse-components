@@ -61,7 +61,6 @@ export default (pluginManager: PluginManager) => {
         checkSequenceMD5: false,
         fetchSizeLimit: config.fetchSizeLimit || 600000000,
       })
-
       // instantiate the sequence adapter
       const sequenceAdapterType = readConfObject(config, [
         'sequenceAdapter',
@@ -86,6 +85,7 @@ export default (pluginManager: PluginManager) => {
       const refSeqStore = this.sequenceAdapter
       if (!refSeqStore) return undefined
       const refName = this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
+      // console.log(`CRAM seq ID ${seqId} -> ${refName}`)
       if (!refName) return undefined
 
       const features = refSeqStore.getFeatures(

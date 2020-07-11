@@ -1,0 +1,28 @@
+const fs = require('fs')
+
+const sidebar = JSON.parse(fs.readFileSync('../sidebars.json'))
+
+function readTree(tree) {
+  let res = []
+  res.push('introduction')
+  tree.sidebar
+    .filter(f =>
+      ['User guide', 'Configuration guide', 'Developer guide'].includes(
+        f.label,
+      ),
+    )
+    .forEach(subtree => {
+      if (subtree.items) {
+        res = res.concat(subtree.items)
+      } else res.push(subtree)
+    })
+  res.push('faq')
+  return res
+}
+
+// eslint-disable-next-line no-console
+console.log(
+  readTree(sidebar)
+    .map(elt => `${elt}.md`)
+    .join('\n'),
+)

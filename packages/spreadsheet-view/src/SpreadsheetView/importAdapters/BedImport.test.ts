@@ -1,9 +1,10 @@
 import { promises as fsPromises } from 'fs'
+import path from 'path'
 
 import { removeBedHeaders } from './BedImport'
 
 test('bed header trimming', async () => {
-  const filepath = `${process.cwd()}/packages/spreadsheet-view/src/SpreadsheetView/test_data/foo.bed`
+  const filepath = path.join(__dirname, '..', 'test_data', 'foo.bed')
   const buf = await fsPromises.readFile(filepath)
   expect(buf[0]).toEqual(98)
   expect(buf[1]).toEqual(114)
