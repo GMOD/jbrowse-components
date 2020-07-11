@@ -249,8 +249,8 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
     }))
     .views(self => ({
       getAdapterMapEntry(adapterConf: unknown, options: BaseOptions) {
-        const { signal, sessionId } = opts
-        if (!sessionId) {
+        const { signal, ...rest } = options
+        if (!options.sessionId) {
           throw new Error('sessionId is required')
         }
         const adapterId = getAdapterId(adapterConf)
@@ -260,7 +260,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
             adapterConf,
             adapterId,
             self: self as Assembly,
-            options,
+            options: rest,
           },
           signal,
         )
@@ -269,18 +269,23 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       /**
        * get Map of `canonical-name -> adapter-specific-name`
        */
-      getRefNameMapForAdapter(adapterConf: unknown, opts: BaseOptions) {
+      async getRefNameMapForAdapter(adapterConf: unknown, opts: BaseOptions) {
         if (!opts || !opts.sessionId) {
           throw new Error('sessionId is required')
         }
-        return this.getAdapterMapEntry(adapterConf, opts).forwardMap
+        const map = await this.getAdapterMapEntry(adapterConf, opts)
+        return map.forwardMap
       },
 
       /**
        * get Map of `adapter-specific-name -> canonical-name`
        */
-      getReverseRefNameMapForAdapter(adapterConf: unknown, opts: BaseOptions) {
-        return this.getAdapterMapEntry(adapterConf, opts).reverseMap
+      async getReverseRefNameMapForAdapter(
+        adapterConf: unknown,
+        opts: BaseOptions,
+      ) {
+        const map = await this.getAdapterMapEntry(adapterConf, opts)
+        return map.reverseMap
       },
     }))
 }

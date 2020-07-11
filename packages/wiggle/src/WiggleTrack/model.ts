@@ -212,7 +212,6 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
               statusCallback: (message: string) => {
                 self.setMessage(message)
               },
-              signal,
               bpPerPx,
               ...opts,
             },
