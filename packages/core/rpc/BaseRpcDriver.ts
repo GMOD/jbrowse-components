@@ -172,7 +172,7 @@ export default abstract class BaseRpcDriver {
     pluginManager: PluginManager,
     sessionId: string,
     functionName: string,
-    args: {},
+    args: { statusCallback?: Function },
     options = {},
   ) {
     if (!sessionId) {
@@ -193,12 +193,14 @@ export default abstract class BaseRpcDriver {
         args.statusCallback(data)
       }
     }
+    // @ts-ignore
     worker.on(channel, listener)
 
     const result = await worker.call(functionName, filteredAndSerializedArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes
       ...options,
     })
+    // @ts-ignore
     worker.off(channel, listener)
     return rpcMethod.deserializeReturn(result)
   }

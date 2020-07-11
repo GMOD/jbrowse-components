@@ -45,7 +45,9 @@ export class WiggleGetGlobalStats extends RpcMethodType {
 export class WiggleGetMultiRegionStats extends RpcMethodType {
   name = 'WiggleGetMultiRegionStats'
 
-  async serializeArguments(args: RenderArgs & { signal?: AbortSignal }) {
+  async serializeArguments(
+    args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
+  ) {
     const assemblyManager = this.pluginManager.rootModel?.session
       ?.assemblyManager
     if (!assemblyManager) {

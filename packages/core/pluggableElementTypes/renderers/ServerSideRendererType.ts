@@ -18,7 +18,7 @@ import SerializableFilterChain, {
   SerializedFilterChain,
 } from './util/serializableFilterChain'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
-import RpcManager from '../../../rpc/RpcManager'
+import RpcManager from '../../rpc/RpcManager'
 
 interface BaseRenderArgs {
   blockKey: string

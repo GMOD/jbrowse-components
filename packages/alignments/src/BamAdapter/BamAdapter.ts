@@ -60,6 +60,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   private async setup(opts: BaseOptions = {}) {
     const { sessionId } = opts
     if (Object.keys(this.samHeader).length === 0) {
+      // @ts-ignore
       self.rpcServer.emit(`message-${sessionId}`, 'Downloading index file')
       const samHeader = await this.bam.getHeader(opts?.signal)
 
@@ -143,6 +144,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     const { sessionId } = opts
     return ObservableCreate<Feature>(async observer => {
       await this.setup(opts)
+      // @ts-ignore
       self.rpcServer.emit(`message-${sessionId}`, 'Downloading alignments')
       const records = await this.bam.getRecordsForRange(
         refName,

@@ -129,6 +129,7 @@ export default (pluginManager: PluginManager) => {
     private async setup(opts: BaseOptions = {}) {
       const { sessionId } = opts
       if (Object.keys(this.samHeader).length === 0) {
+        // @ts-ignore
         self.rpcServer.emit(`message-${sessionId}`, 'Downloading index')
         const samHeader = await this.cram.cram.getSamHeader(opts?.signal)
 
@@ -210,6 +211,7 @@ export default (pluginManager: PluginManager) => {
           if (originalRefName) {
             this.seqIdToOriginalRefName[refId] = originalRefName
           }
+          // @ts-ignore
           self.rpcServer.emit(`message-${sessionId}`, 'Downloading alignments')
           const records = await this.cram.getRecordsForRange(
             refId,
