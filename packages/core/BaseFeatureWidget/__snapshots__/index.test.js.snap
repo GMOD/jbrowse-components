@@ -68,34 +68,30 @@ exports[`open up a drawer widget 1`] = `
               <div
                 style="display: flex;"
               >
-                <div
-                  class="makeStyles-fieldName"
+                <p
+                  class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                 >
                   Position
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
+                </p>
+                <p
+                  class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                 >
-                  <div>
-                    ctgA:3..102 (+)
-                  </div>
-                </div>
+                  ctgA:3..102 (+)
+                </p>
               </div>
               <div
                 style="display: flex;"
               >
-                <div
-                  class="makeStyles-fieldName"
+                <p
+                  class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                 >
                   Length
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
+                </p>
+                <p
+                  class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                 >
-                  <div>
-                    100
-                  </div>
-                </div>
+                  100
+                </p>
               </div>
             </div>
           </div>
@@ -170,18 +166,16 @@ exports[`open up a drawer widget 1`] = `
               <div
                 style="display: flex;"
               >
-                <div
-                  class="makeStyles-fieldName"
+                <p
+                  class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                 >
                   score
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
+                </p>
+                <p
+                  class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                 >
-                  <div>
-                    37
-                  </div>
-                </div>
+                  37
+                </p>
               </div>
             </div>
           </div>

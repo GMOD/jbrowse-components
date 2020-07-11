@@ -11,7 +11,7 @@ import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { FunctionComponent } from 'react'
 import isObject from 'is-object'
-import SanitizedHTML from '../ui/SanitizedHTML'
+import { SanitizedHTML, isHTML } from '../ui'
 
 export const useStyles = makeStyles(theme => ({
   expansionPanelDetails: {
@@ -110,10 +110,14 @@ const BaseCoreDetails = (props: BaseProps) => {
         const strValue = String(value)
         return value ? (
           <div key={key} style={{ display: 'flex' }}>
-            <div className={classes.fieldName}>{key}</div>
-            <div className={classes.fieldValue}>
+            <Typography variant="body2" className={classes.fieldName}>
+              {key}
+            </Typography>
+            {isHTML(strValue) ? (
               <SanitizedHTML html={strValue} />
-            </div>
+            ) : (
+              <Typography className={classes.fieldValue}>{strValue}</Typography>
+            )}
           </div>
         ) : null
       })}
@@ -144,24 +148,32 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
   const { attributes } = props
   const SimpleValue = ({ name, value }: { name: string; value: any }) => (
     <div style={{ display: 'flex' }}>
-      <div className={classes.fieldName}>{name}</div>
-      <div className={classes.fieldValue}>
-        <SanitizedHTML
-          html={isObject(value) ? JSON.stringify(value) : String(value)}
-        />
-      </div>
+      <Typography variant="body2" className={classes.fieldName}>
+        {name}
+      </Typography>
+      {typeof value === 'string' && isHTML(value) ? (
+        <SanitizedHTML html={value} />
+      ) : (
+        <Typography className={classes.fieldValue}>
+          {isObject(value) ? JSON.stringify(value) : String(value)}
+        </Typography>
+      )}
     </div>
   )
   const ArrayValue = ({ name, value }: { name: string; value: any[] }) => (
     <div style={{ display: 'flex' }}>
-      <div className={classes.fieldName}>{name}</div>
-      {value.map((val, i) => (
-        <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
-          <SanitizedHTML
-            html={isObject(val) ? JSON.stringify(val) : String(val)}
-          />
-        </div>
-      ))}
+      <Typography variant="body2" className={classes.fieldName}>
+        {name}
+      </Typography>
+      {value.map((val, i) =>
+        typeof val === 'string' && isHTML(val) ? (
+          <SanitizedHTML html={val} />
+        ) : (
+          <Typography key={`${name}-${i}`} className={classes.fieldSubvalue}>
+            {isObject(val) ? JSON.stringify(val) : String(val)}
+          </Typography>
+        ),
+      )}
     </div>
   )
 

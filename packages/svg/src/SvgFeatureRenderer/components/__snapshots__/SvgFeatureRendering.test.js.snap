@@ -238,7 +238,7 @@ exports[`processed transcript 1`] = `
       />
       <text
         dominant-baseline="hanging"
-        style="font-size: 13px; fill: black; cursor: default;"
+        style="font-size: 13px; fill: black; cursor: default; font-family: \\"Roboto\\", \\"Helvetica\\", \\"Arial\\", sans-serif;"
         x="1991.7"
         y="12"
       >

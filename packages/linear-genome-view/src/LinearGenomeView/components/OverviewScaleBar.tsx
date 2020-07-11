@@ -224,9 +224,10 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
             })}
             {/* the numbers */}
             {labels.map((label, labelIdx) => (
-              <div
+              <Typography
                 key={label}
                 className={classes.scaleBarLabel}
+                variant="body2"
                 style={{
                   left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
                   pointerEvents: 'none',
@@ -234,7 +235,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                 }}
               >
                 {label.toLocaleString()}
-              </div>
+              </Typography>
             ))}
           </Paper>
         )

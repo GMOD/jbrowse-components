@@ -179,34 +179,38 @@ function HierarchicalTrackSelector({ model }) {
       />
       <FormGroup>
         {session.connections
-          .filter(
-            connectionConf =>
-              readConfObject(connectionConf, 'assemblyName') === assemblyName,
-          )
-          .map(connectionConf => (
-            <FormControlLabel
-              key={readConfObject(connectionConf, 'name')}
-              control={
-                <Switch
-                  checked={
-                    session.connectionInstances.has(assemblyName) &&
-                    !!session.connectionInstances
-                      .get(assemblyName)
-                      .find(
-                        connection =>
-                          connection.name ===
-                          readConfObject(connectionConf, 'name'),
-                      )
+          ? session.connections
+              .filter(
+                connectionConf =>
+                  readConfObject(connectionConf, 'assemblyName') ===
+                  assemblyName,
+              )
+              .map(connectionConf => (
+                <FormControlLabel
+                  key={readConfObject(connectionConf, 'name')}
+                  control={
+                    <Switch
+                      checked={
+                        session.connectionInstances.has(assemblyName) &&
+                        !!session.connectionInstances
+                          .get(assemblyName)
+                          .find(
+                            connection =>
+                              connection.name ===
+                              readConfObject(connectionConf, 'name'),
+                          )
+                      }
+                      onChange={() => handleConnectionToggle(connectionConf)}
+                      // value="checkedA"
+                    />
                   }
-                  onChange={() => handleConnectionToggle(connectionConf)}
-                  // value="checkedA"
+                  label={readConfObject(connectionConf, 'name')}
                 />
-              }
-              label={readConfObject(connectionConf, 'name')}
-            />
-          ))}
+              ))
+          : null}
       </FormGroup>
-      {session.connectionInstances.has(assemblyName) ? (
+      {session.connectionInstances &&
+      session.connectionInstances.has(assemblyName) ? (
         <>
           <Typography variant="h5">Connections</Typography>
           {session.connectionInstances.get(assemblyName).map(connection => (

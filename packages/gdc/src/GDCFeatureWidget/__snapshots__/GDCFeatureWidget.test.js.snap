@@ -72,82 +72,72 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     Position
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      3:196596..409417 
-                    </div>
-                  </div>
+                    3:196596..409417 
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     Description
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      The protein encoded by this gene is a member of the L1 gene family of neural cell adhesion molecules. It is a neural recognition molecule that may be involved in signal transduction pathways. The deletion of one copy of this gene may be responsible for mental defects in patients with 3p- syndrome. This protein may also play a role in the growth of certain cancers. Alternate splicing results in both coding and non-coding variants. [provided by RefSeq, Nov 2011]
-                    </div>
-                  </div>
+                    The protein encoded by this gene is a member of the L1 gene family of neural cell adhesion molecules. It is a neural recognition molecule that may be involved in signal transduction pathways. The deletion of one copy of this gene may be responsible for mental defects in patients with 3p- syndrome. This protein may also play a role in the growth of certain cancers. Alternate splicing results in both coding and non-coding variants. [provided by RefSeq, Nov 2011]
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     Name
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      cell adhesion molecule L1-like
-                    </div>
-                  </div>
+                    cell adhesion molecule L1-like
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     Length
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      212822
-                    </div>
-                  </div>
+                    212822
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     Type
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      protein_coding
-                    </div>
-                  </div>
+                    protein_coding
+                  </p>
                 </div>
               </div>
             </div>
@@ -222,183 +212,157 @@ exports[`GDCTrack drawer widget renders gene with just the required model elemen
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     biotype
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      protein_coding
-                    </div>
-                  </div>
+                    protein_coding
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     description
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      The protein encoded by this gene is a member of the L1 gene family of neural cell adhesion molecules. It is a neural recognition molecule that may be involved in signal transduction pathways. The deletion of one copy of this gene may be responsible for mental defects in patients with 3p- syndrome. This protein may also play a role in the growth of certain cancers. Alternate splicing results in both coding and non-coding variants. [provided by RefSeq, Nov 2011]
-                    </div>
-                  </div>
+                    The protein encoded by this gene is a member of the L1 gene family of neural cell adhesion molecules. It is a neural recognition molecule that may be involved in signal transduction pathways. The deletion of one copy of this gene may be responsible for mental defects in patients with 3p- syndrome. This protein may also play a role in the growth of certain cancers. Alternate splicing results in both coding and non-coding variants. [provided by RefSeq, Nov 2011]
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     geneChromosome
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      3
-                    </div>
-                  </div>
+                    3
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     geneEnd
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      409417
-                    </div>
-                  </div>
+                    409417
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     geneStart
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      196596
-                    </div>
-                  </div>
+                    196596
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     geneStrand
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      1
-                    </div>
-                  </div>
+                    1
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     id
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      R2VuZTpFTlNHMDAwMDAxMzQxMjEjZTQ2MDk1NGM4MmZiMjczYjIwNTk1MDliODFkZTZmYjEj
-                    </div>
-                  </div>
+                    R2VuZTpFTlNHMDAwMDAxMzQxMjEjZTQ2MDk1NGM4MmZiMjczYjIwNTk1MDliODFkZTZmYjEj
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     isCancerGeneCensus
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      null
-                    </div>
-                  </div>
+                    null
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     symbol
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      CHL1
-                    </div>
-                  </div>
+                    CHL1
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     synonyms
-                  </div>
-                  <div
-                    class="makeStyles-fieldSubvalue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldSubvalue MuiTypography-body1"
                   >
-                    <div>
-                      CALL
-                    </div>
-                  </div>
-                  <div
-                    class="makeStyles-fieldSubvalue"
+                    CALL
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldSubvalue MuiTypography-body1"
                   >
-                    <div>
-                      FLJ44930
-                    </div>
-                  </div>
-                  <div
-                    class="makeStyles-fieldSubvalue"
+                    FLJ44930
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldSubvalue MuiTypography-body1"
                   >
-                    <div>
-                      L1CAM2
-                    </div>
-                  </div>
-                  <div
-                    class="makeStyles-fieldSubvalue"
+                    L1CAM2
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldSubvalue MuiTypography-body1"
                   >
-                    <div>
-                      MGC132578
-                    </div>
-                  </div>
+                    MGC132578
+                  </p>
                 </div>
               </div>
             </div>
@@ -491,50 +455,44 @@ exports[`GDCTrack drawer widget renders mutation with just the required model el
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     Position
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      chr3:377918..377918 
-                    </div>
-                  </div>
+                    chr3:377918..377918 
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     Length
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      1
-                    </div>
-                  </div>
+                    1
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     Type
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      Simple Somatic Mutation
-                    </div>
-                  </div>
+                    Simple Somatic Mutation
+                  </p>
                 </div>
               </div>
             </div>
@@ -609,146 +567,128 @@ exports[`GDCTrack drawer widget renders mutation with just the required model el
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     chromosome
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      chr3
-                    </div>
-                  </div>
+                    chr3
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     endPosition
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      377918
-                    </div>
-                  </div>
+                    377918
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     genomicDnaChange
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      chr3:g.377918G&gt;A
-                    </div>
-                  </div>
+                    chr3:g.377918G&gt;A
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     mutationSubtype
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      Single base substitution
-                    </div>
-                  </div>
+                    Single base substitution
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     mutationType
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      Simple Somatic Mutation
-                    </div>
-                  </div>
+                    Simple Somatic Mutation
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     ncbiBuild
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      GRCh38
-                    </div>
-                  </div>
+                    GRCh38
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     referenceAllele
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      G
-                    </div>
-                  </div>
+                    G
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     score
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      3
-                    </div>
-                  </div>
+                    3
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     startPosition
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      377918
-                    </div>
-                  </div>
+                    377918
+                  </p>
                 </div>
               </div>
             </div>

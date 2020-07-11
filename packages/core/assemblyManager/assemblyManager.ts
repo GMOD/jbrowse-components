@@ -94,7 +94,7 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
           self,
           reaction(
             // have to slice it to be properly reacted to
-            () => getParent(self).jbrowse.assemblies.slice(),
+            () => getParent(self).session.assemblies.slice(),
             (
               assemblyConfigs: Instance<typeof Assembly> &
                 AnyConfigurationModel[],

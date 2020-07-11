@@ -72,50 +72,44 @@ exports[`VariantTrack drawer widget renders with just the required model element
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     Position
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      ctgA:177..177 
-                    </div>
-                  </div>
+                    ctgA:177..177 
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     Name
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      rs123
-                    </div>
-                  </div>
+                    rs123
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     Length
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      1
-                    </div>
-                  </div>
+                    1
+                  </p>
                 </div>
               </div>
             </div>
@@ -190,66 +184,58 @@ exports[`VariantTrack drawer widget renders with just the required model element
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     REF
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      A
-                    </div>
-                  </div>
+                    A
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     ALT
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      &lt;TRA&gt;
-                    </div>
-                  </div>
+                    &lt;TRA&gt;
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     QUAL
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      10.4
-                    </div>
-                  </div>
+                    10.4
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     MQ
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      5
-                    </div>
-                  </div>
+                    5
+                  </p>
                 </div>
               </div>
             </div>

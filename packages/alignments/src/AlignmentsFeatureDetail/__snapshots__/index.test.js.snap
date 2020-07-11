@@ -72,66 +72,58 @@ exports[`open up a drawer widget 1`] = `
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     Position
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      ctgA:3..102 (+)
-                    </div>
-                  </div>
+                    ctgA:3..102 (+)
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     Name
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      ctgA_3_555_0:0:0_2:0:0_102d
-                    </div>
-                  </div>
+                    ctgA_3_555_0:0:0_2:0:0_102d
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     Length
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      100
-                    </div>
-                  </div>
+                    100
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     Type
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      match
-                    </div>
-                  </div>
+                    match
+                  </p>
                 </div>
               </div>
             </div>
@@ -206,210 +198,184 @@ exports[`open up a drawer widget 1`] = `
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     seq
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
-                    </div>
-                  </div>
+                    TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     unmapped
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      false
-                    </div>
-                  </div>
+                    false
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     qc_failed
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      false
-                    </div>
-                  </div>
+                    false
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     duplicate
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      false
-                    </div>
-                  </div>
+                    false
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     secondary_alignment
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      false
-                    </div>
-                  </div>
+                    false
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     supplementary_alignment
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      false
-                    </div>
-                  </div>
+                    false
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     score
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      37
-                    </div>
-                  </div>
+                    37
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     qual
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
-                    </div>
-                  </div>
+                    17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     MQ
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      37
-                    </div>
-                  </div>
+                    37
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     CIGAR
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      100M
-                    </div>
-                  </div>
+                    100M
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     length_on_ref
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      100
-                    </div>
-                  </div>
+                    100
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     template_length
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      0
-                    </div>
-                  </div>
+                    0
+                  </p>
                 </div>
                 <div
                   style="display: flex;"
                 >
-                  <div
-                    class="makeStyles-fieldName"
+                  <p
+                    class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                   >
                     seq_length
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
+                  </p>
+                  <p
+                    class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                   >
-                    <div>
-                      100
-                    </div>
-                  </div>
+                    100
+                  </p>
                 </div>
               </div>
             </div>
@@ -480,64 +446,64 @@ exports[`open up a drawer widget 1`] = `
               class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
             >
               <div>
-                <div
-                  class="makeStyles-fieldName"
+                <p
+                  class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                 >
                   unmapped
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
+                </p>
+                <p
+                  class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                 >
                   false
-                </div>
+                </p>
               </div>
               <div>
-                <div
-                  class="makeStyles-fieldName"
+                <p
+                  class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                 >
                   qc_failed
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
+                </p>
+                <p
+                  class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                 >
                   false
-                </div>
+                </p>
               </div>
               <div>
-                <div
-                  class="makeStyles-fieldName"
+                <p
+                  class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                 >
                   duplicate
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
+                </p>
+                <p
+                  class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                 >
                   false
-                </div>
+                </p>
               </div>
               <div>
-                <div
-                  class="makeStyles-fieldName"
+                <p
+                  class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                 >
                   secondary_alignment
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
+                </p>
+                <p
+                  class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                 >
                   false
-                </div>
+                </p>
               </div>
               <div>
-                <div
-                  class="makeStyles-fieldName"
+                <p
+                  class="MuiTypography-root makeStyles-fieldName MuiTypography-body2"
                 >
                   supplementary_alignment
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
+                </p>
+                <p
+                  class="MuiTypography-root makeStyles-fieldValue MuiTypography-body1"
                 >
                   false
-                </div>
+                </p>
               </div>
             </div>
           </div>

@@ -28,18 +28,18 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               class="makeStyles-scaleBarVisibleRegion"
               style="width: 8000px; left: -1px; pointer-events: none;"
             />
-            <div
-              class="makeStyles-scaleBarLabel"
+            <p
+              class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
               style="left: 400px; pointer-events: none; color: rgb(153, 102, 0);"
             >
               5
-            </div>
-            <div
-              class="makeStyles-scaleBarLabel"
+            </p>
+            <p
+              class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
               style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
             >
               10
-            </div>
+            </p>
           </div>
         </div>
       </div>
@@ -853,18 +853,18 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               class="makeStyles-scaleBarVisibleRegion"
               style="width: 8000px; left: -1px; pointer-events: none;"
             />
-            <div
-              class="makeStyles-scaleBarLabel"
+            <p
+              class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
               style="left: 400px; pointer-events: none; color: rgb(153, 102, 0);"
             >
               5
-            </div>
-            <div
-              class="makeStyles-scaleBarLabel"
+            </p>
+            <p
+              class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
               style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
             >
               10
-            </div>
+            </p>
           </div>
         </div>
       </div>

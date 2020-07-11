@@ -6,6 +6,7 @@ import BaseFeatureDetails, {
   BaseCard,
   useStyles,
 } from '@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail'
+import { Typography } from '@material-ui/core'
 
 interface AlnCardProps {
   title: string
@@ -30,8 +31,12 @@ const AlignmentFlags: FunctionComponent<AlnProps> = props => {
     <BaseCard {...props} title="Flags">
       {flags.map(key => (
         <div key={key}>
-          <div className={classes.fieldName}>{key}</div>
-          <div className={classes.fieldValue}>{String(feature[key])}</div>
+          <Typography variant="body2" className={classes.fieldName}>
+            {key}
+          </Typography>
+          <Typography className={classes.fieldValue}>
+            {String(feature[key])}
+          </Typography>
         </div>
       ))}
     </BaseCard>

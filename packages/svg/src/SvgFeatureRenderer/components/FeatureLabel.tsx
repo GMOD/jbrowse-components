@@ -33,7 +33,12 @@ export default function Label(props: {
     <text
       x={reversed ? x + (featureWidth || 0) - fontWidth * text.length : x}
       y={y}
-      style={{ fontSize: fontHeight, fill: color, cursor: 'default' }}
+      style={{
+        fontSize: fontHeight,
+        fill: color,
+        cursor: 'default',
+        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+      }}
       dominantBaseline="hanging"
     >
       {fontWidth * text.length > totalWidth
