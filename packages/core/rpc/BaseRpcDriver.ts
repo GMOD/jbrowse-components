@@ -7,6 +7,8 @@ import PluginManager from '../PluginManager'
 interface WorkerHandle {
   destroy(): void
   call(functionName: string, args?: unknown, options?: {}): Promise<unknown>
+  on<T>(channel: string, callback: (arg: T) => void): void
+  off<T>(channel: string, callback: (arg: T) => void): void
 }
 
 function isClonable(thing: unknown): boolean {
@@ -194,7 +196,6 @@ export default abstract class BaseRpcDriver {
         args.statusCallback(message)
       }
     }
-    // @ts-ignore
     worker.on(channel, listener)
 
     const result = await worker.call(
@@ -205,7 +206,6 @@ export default abstract class BaseRpcDriver {
         ...options,
       },
     )
-    // @ts-ignore
     worker.off(channel, listener)
     return rpcMethod.deserializeReturn(result)
   }
