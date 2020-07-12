@@ -1,7 +1,12 @@
 import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
 
-type ViewReactComponent = React.ComponentType<{ model: never }>
+type ViewReactComponent = React.ComponentType<{
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  model: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  session?: any
+}>
 
 export default class ViewType extends PluggableElementBase {
   ReactComponent: ViewReactComponent

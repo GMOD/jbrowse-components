@@ -2,6 +2,7 @@
   "include": ["src", "types"],
   "compilerOptions": {
     "module": "esnext",
+    "target": "esnext",
     "lib": ["dom", "esnext"],
     "importHelpers": true,
     "declaration": true,
@@ -19,6 +20,7 @@
       "*": ["src/*", "node_modules/*"]
     },
     "jsx": "react",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "isolatedModules": true,
   }
 }

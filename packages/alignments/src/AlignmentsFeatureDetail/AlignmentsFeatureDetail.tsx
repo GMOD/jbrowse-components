@@ -12,7 +12,7 @@ interface AlnCardProps {
   title: string
 }
 
-interface AlnProps extends AlnCardProps {
+interface AlnProps extends Partial<AlnCardProps> {
   feature: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
@@ -46,7 +46,7 @@ AlignmentFlags.propTypes = {
   feature: PropTypes.objectOf(PropTypes.any).isRequired,
 }
 
-interface AlnInputProps extends AlnCardProps {
+interface AlnInputProps extends Partial<AlnCardProps> {
   model: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
@@ -56,7 +56,7 @@ const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
   return (
     <Paper data-testid="alignment-side-drawer">
       <BaseFeatureDetails {...props} />
-      <AlignmentFlags feature={feat} {...props} />
+      <AlignmentFlags feature={feat} />
     </Paper>
   )
 }

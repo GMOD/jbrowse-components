@@ -83,13 +83,13 @@ BaseCard.propTypes = {
   title: PropTypes.string.isRequired,
 }
 
-interface BaseProps extends BaseCardProps {
+interface BaseProps extends Partial<BaseCardProps> {
   feature: Record<string, any>
 }
 
 const BaseCoreDetails = (props: BaseProps) => {
   const classes = useStyles()
-  const { feature } = props
+  const { feature, title } = props
   const { refName, start, end, strand } = feature
   const strandMap: Record<number, string> = {
     '-1': '-',
@@ -104,7 +104,7 @@ const BaseCoreDetails = (props: BaseProps) => {
   }
 
   return (
-    <BaseCard {...props} title="Primary data">
+    <BaseCard {...props} title={title || 'Primary data'}>
       {coreRenderedDetails.map(key => {
         const value = displayedDetails[key.toLowerCase()]
         const strValue = String(value)
@@ -211,7 +211,7 @@ const BaseAttributes = (props: BaseProps) => {
   )
 }
 
-interface BaseInputProps extends BaseCardProps {
+interface BaseInputProps extends Partial<BaseCardProps> {
   model: any
 }
 

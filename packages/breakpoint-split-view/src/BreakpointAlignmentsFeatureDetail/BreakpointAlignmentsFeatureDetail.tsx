@@ -10,7 +10,7 @@ interface AlnCardProps {
   title: string
 }
 
-interface AlnInputProps extends AlnCardProps {
+interface AlnInputProps extends Partial<AlnCardProps> {
   model: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 

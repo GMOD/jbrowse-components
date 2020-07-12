@@ -1,5 +1,5 @@
-import { ComponentType } from 'react'
-import { IAnyModelType } from 'mobx-state-tree'
+import { ComponentType, LazyExoticComponent } from 'react'
+import { IAnyModelType, IAnyStateTreeNode } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
 import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
 
@@ -8,19 +8,23 @@ export default class WidgetType extends PluggableElementBase {
 
   configSchema: AnyConfigurationSchemaType
 
-  HeadingComponent?: ComponentType
+  HeadingComponent?: ComponentType<{ model: IAnyStateTreeNode }>
 
-  LazyReactComponent: unknown
+  LazyReactComponent: LazyExoticComponent<
+    ComponentType<{ model: IAnyStateTreeNode; session: IAnyStateTreeNode }>
+  >
 
   stateModel: IAnyModelType
 
   constructor(stuff: {
     name: string
     heading?: string
-    HeadingComponent?: ComponentType
+    HeadingComponent?: ComponentType<{ model: IAnyStateTreeNode }>
     configSchema: AnyConfigurationSchemaType
     stateModel: IAnyModelType
-    LazyReactComponent: unknown
+    LazyReactComponent: LazyExoticComponent<
+      ComponentType<{ model: IAnyStateTreeNode; session: IAnyStateTreeNode }>
+    >
   }) {
     super(stuff)
     this.heading = stuff.heading

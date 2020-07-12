@@ -1,1 +1,6 @@
-export { Thing, ThingProps } from './Thing'
+export { theme as defaultJBrowseTheme } from '@gmod/jbrowse-core/ui'
+export { ThemeProvider } from '@material-ui/core/styles'
+export { default as JBrowseLinearView } from './JBrowseLinearView'
+export { default as createModel } from './createModel'
+export { default as createViewState } from './createViewState'
+export { default as loadPlugins } from './loadPlugins'
