@@ -266,26 +266,28 @@ export default (pluginManager: PluginManager) => {
           if (mismatches) {
             for (let i = 0; i < mismatches.length; i++) {
               const mismatch = mismatches[i]
-              forEachBin(
-                start + mismatch.start,
-                start + mismatch.start + mismatch.length,
-                (binNum, overlap) => {
-                  // Note: we decrement 'reference' so that total of the score is the total coverage
-                  const bin = coverageBins[binNum]
-                  bin.getNested('reference').decrement(strand, overlap)
-                  let { base } = mismatch
+              if (mismatch.type !== 'insertion') {
+                forEachBin(
+                  start + mismatch.start,
+                  start + mismatch.start + mismatch.length,
+                  (binNum, overlap) => {
+                    // Note: we decrement 'reference' so that total of the score is the total coverage
+                    const bin = coverageBins[binNum]
+                    bin.getNested('reference').decrement(strand, overlap)
+                    let { base } = mismatch
 
-                  if (mismatch.type === 'insertion') {
-                    base = `ins ${base}`
-                  } else if (mismatch.type === 'skip') {
-                    base = 'skip'
-                  }
+                    if (mismatch.type === 'insertion') {
+                      base = `ins ${base}`
+                    } else if (mismatch.type === 'skip') {
+                      base = 'skip'
+                    }
 
-                  if (base && base !== '*') {
-                    bin.getNested(base).increment(strand, overlap)
-                  }
-                },
-              )
+                    if (base && base !== '*') {
+                      bin.getNested(base).increment(strand, overlap)
+                    }
+                  },
+                )
+              }
             }
           }
         }
