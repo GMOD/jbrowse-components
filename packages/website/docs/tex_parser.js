@@ -36,7 +36,6 @@ let caption = ''
     if (line.startsWith('![')) {
       const res = line.match(/\(([^)]+)\)/)
       if (res) {
-        // eslint-disable-next-line prefer-destructuring
         figure = res[1].replace('/jb2', '..')
         continue
       }
