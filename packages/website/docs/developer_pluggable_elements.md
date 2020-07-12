@@ -28,24 +28,18 @@ below
 
 Data adapters basically are parsers for a given data format. We will review
 what data adapters the alignments plugin has (to write your own data adapter,
-see [creating data adapters](developer_creating_data_adapters))
+see [creating data adapters](/jb2/docs/developer_creating_data_adapters))
 
-Example data adapter: in @gmod/jbrowse-plugin-alignments plugin, we have
-multiple data adapters
+Example data adapters: the `@gmod/jbrowse-plugin-alignments` plugin creates
+multiple data adapter types
 
-- BamAdapter - a data adapter for the BAM data format. This adapter uses the
-  `@gmod/cram` NPM module, and supplies a getFeatures function and a getRefNames
-  function, which satisfies the needs of our BaseFeatureDataAdapter type
-- CramAdapter - a data adapter for the CRAM data format. This adapter uses the
-  @gmod/cram NPM module, and supplies a getFeatures function and a getRefNames
-  function which satisfies our BaseFeatureDataAdapter type. Note that
+- `BamAdapter` - This adapter uses the `@gmod/bam` NPM module, and adapts it
+  for use by the browser.
+- `CramAdapter` - This adapter uses the `@gmod/cram` NPM module. Note that
   CramAdapter also takes a sequenceAdapter as a subadapter configuration, and
   uses getSubAdapter to instantiate it
-- SNPCoverageAdapter - this adapter is a wrapper around a BamAdapter or
-  CramAdapter, and it uses getSubAdapter to instantiate the subAdapter config.
-  By wrapping the BAM or CRAM adapter, it can run calculations of the features
-  and output them to multiple contexts, including (a) contexts which requests
-  statistics (b) and contexts that draw features
+- `SNPCoverageAdapter` - this adapter takes a `BamAdapter` or `CramAdapter` as a
+  subadapter, and calculates feature coverage from it
 
 ### Renderers
 
@@ -53,14 +47,14 @@ Renderers are a new concept in JBrowse 2, and are related to the concept of
 server side rendering (SSR), but can be used not just on the server but also in
 contexts like the web worker (e.g. the webworker can draw the features to an
 OffscreenCanvas). For more info see [creating
-renderers](developer_creating_renderers)
+renderers](/jb2/docs/developer_creating_renderers)
 
-Example renderers: in @gmod/jbrowse-plugin-alignments, we have multiple
+Example renderers: the `@gmod/jbrowse-plugin-alignments` exports several
 renderer types
 
-- PileupRenderer - a renderer type that renders Pileup type display of
-  alignments fetched from the BamAdapter/CramAdapter
-- SNPCoverageRenderer - a renderer that draws the coverage. Note that this
+- `PileupRenderer` - a renderer type that renders Pileup type display of
+  alignments fetched from the `BamAdapter`/`CramAdapter`
+- `SNPCoverageRenderer` - a renderer that draws the coverage. Note that this
   renderer derives from the wiggle renderer, but does the additional step of
   drawing the mismatches over the coverage track
 
@@ -71,17 +65,16 @@ cases, a track combines a renderer and an adapter, and can do additional things 
 
 - Control what drawer widget pops up on feature click
 - Add extra menu items to the track menu
-- Create subtracks (See AlignmentsTrack)
+- Create subtracks (See `AlignmentsTrack`)
 - Choose "static-blocks" rendering styles, which keeps contents stable while
   the user scrolls, or "dynamic-blocks" that update on each scroll
 
-Example tracks: in @gmod/jbrowse-plugin-alignments, we have multiple
-track types
+Example tracks: the `@gmod/jbrowse-plugin-alignments` exports multiple track
+types
 
-- SNPCoverageTrack - this track type actually derives from the WiggleTrack type
-- PileupTrack - a track type that draws alignment pileup results
-- AlignmentsTrack - this is a "combination track", that contains a
-  SNPCoverageTrack and PileupTrack as "subtracks"
+- `SNPCoverageTrack` - this track type actually derives from the WiggleTrack type
+- `PileupTrack` - a track type that draws alignment pileup results
+- `AlignmentsTrack` - combines `SNPCoverageTrack` and `PileupTrack` as "subtracks"
 
 ### Drawer widgets
 
@@ -97,10 +90,10 @@ Drawer widgets can do multiple types of things including
 - etc.
 
 These drawer widgets can be extended via plugins, so for example, the
-@gmod/jbrowse-plugin-alignments extends the BaseFeatureDetailDrawerWidget to
+`@gmod/jbrowse-plugin-alignments` extends the `BaseFeatureDetailDrawerWidget` to
 have custom display of the alignments
 
-- AlignmentsFeatureDetailDrawerWidget - this provides a custom drawer widget
+- `AlignmentsFeatureDetailDrawerWidget` - this provides a custom drawer widget
   for viewing the feature details of alignments features that customizes the
   basic feature detail widget
 
@@ -112,12 +105,11 @@ the standard linear-genome-view.
 
 We have demonstrated a couple new view types in JBrowse 2 already including
 
-- LinearGenomeView - the classic linear view of a genome
-- CircularView - a circular whole genome overview that can show
-  interchromosomal translocation arcs
-- DotplotView - a comparative 2-D genome view
-- SV inspector - packages/sv-inspector, which is a "combo view" containing
-  CircularView and SpreadsheetView child views
+- `LinearGenomeView` - the classic linear view of a genome
+- `CircularView` - a Circos-style whole genome view
+- `DotplotView` - a comparative 2-D genome view
+- `SvInspectorView` - superview containing `CircularView` and `SpreadsheetView`
+  subviews
 - And more!
 
 We think the boundaries for this are just your imagination, and there can also
@@ -127,4 +119,4 @@ be interplay between view types e.g. popup dotplot from a linear view, etc.
 
 Plugins can register their own RPC methods, which can allow them to offload
 custom behaviors to a web-worker or server side process. The Wiggle track for
-example registers WiggleGetGlobalStats and WiggleGetMultiRegionStats
+example registers `WiggleGetGlobalStats` and `WiggleGetMultiRegionStats`
