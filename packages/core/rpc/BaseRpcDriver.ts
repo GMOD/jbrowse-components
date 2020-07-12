@@ -189,9 +189,9 @@ export default abstract class BaseRpcDriver {
     )
 
     const channel = `message-${shortid.generate()}`
-    const listener = data => {
+    const listener = (message: string) => {
       if (args.statusCallback) {
-        args.statusCallback(data)
+        args.statusCallback(message)
       }
     }
     // @ts-ignore

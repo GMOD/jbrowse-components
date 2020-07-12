@@ -7,7 +7,6 @@ import React, { useEffect, useState } from 'react'
 import Button from '@material-ui/core/Button'
 import RefreshIcon from '@material-ui/icons/Refresh'
 import ServerSideRenderedContent from '../../LinearGenomeView/components/ServerSideRenderedContent'
-import { BlockModel } from '../util/serverSideRenderedBlock'
 
 const useStyles = makeStyles(theme => ({
   loading: {
@@ -68,7 +67,8 @@ function Repeater({ children }: { children: React.ReactNode }) {
   )
 }
 
-const LoadingMessage = observer(({ model }: { model: BlockModel }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const LoadingMessage = observer(({ model }: { model: any }) => {
   // only show the loading message after 300ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
   const classes = useStyles()
@@ -129,13 +129,8 @@ const ServerSideRenderedBlockContent = observer(
   ({
     model,
   }: {
-    // requires typing out to avoid circular reference with this component being referenced in the model itself
-    model: {
-      error: Error | undefined
-      reload: () => void
-      message: string | undefined
-      filled: boolean
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    model: any
   }) => {
     if (model.error) {
       return (

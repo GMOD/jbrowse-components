@@ -735,10 +735,10 @@ export async function renameRegionsIfNeeded<
     signal?: AbortSignal
     adapterConfig: unknown
     sessionId: string
-    statusCallback: Function
+    statusCallback?: Function
   }
 >(assemblyManager: AssemblyManager, args: ARGTYPE) {
-  const { assemblyName, statusCallback, signal, regions, adapterConfig } = args
+  const { assemblyName, regions, adapterConfig } = args
   if (!args.sessionId) {
     throw new Error('sessionId is required')
   }
@@ -750,11 +750,7 @@ export async function renameRegionsIfNeeded<
     const refNameMap = await assemblyManager.getRefNameMapForAdapter(
       adapterConfig,
       assemblyName,
-      {
-        signal,
-        sessionId: newArgs.sessionId,
-        statusCallback,
-      },
+      newArgs,
     )
 
     // console.log(`${JSON.stringify(regions)} ${JSON.stringify(refNameMap)}`)

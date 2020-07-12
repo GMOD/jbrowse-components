@@ -50,6 +50,7 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
       return args
     }
 
+    // @ts-ignore
     return renameRegionsIfNeeded(assemblyManager, args)
   }
 

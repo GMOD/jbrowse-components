@@ -142,7 +142,6 @@ export class CoreRender extends RpcMethodType {
       adapterConfig,
       rendererType,
       renderProps,
-      regions,
       signal,
     } = deserializedArgs
     if (!sessionId) {

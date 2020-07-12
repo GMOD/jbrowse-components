@@ -43,7 +43,7 @@ export interface RenderArgs extends BaseRenderArgs {
 }
 
 export interface RenderArgsSerialized extends BaseRenderArgs {
-  statusCallback: Function
+  statusCallback?: Function
   config: SnapshotIn<AnyConfigurationModel>
   filters: SerializedFilterChain
 }
@@ -163,6 +163,7 @@ export default class ServerSideRenderer extends RendererType {
     )
     // const result = await renderRegionWithWorker(session, serializedArgs)
 
+    // @ts-ignore
     const deserialized = this.deserializeResultsInClient(result, args)
     return deserialized
   }
@@ -205,9 +206,11 @@ export default class ServerSideRenderer extends RendererType {
       requestRegions.length === 1
         ? dataAdapter.getFeatures(
             this.getExpandedRegion(region, renderArgs),
+            // @ts-ignore
             renderArgs,
           )
-        : dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
+        : // @ts-ignore
+          dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
 
     await featureObservable
       .pipe(

@@ -57,7 +57,6 @@ async function loadRefNameMap(
     sessionId,
     'CoreGetRefNames',
     {
-      sessionId,
       adapterConfig: adapterConf,
       signal,
       ...options,
@@ -122,7 +121,7 @@ type RefNameAliases = Record<string, string[]>
 interface BaseOptions {
   signal?: AbortSignal
   sessionId: string
-  statusCallback: Function
+  statusCallback?: Function
 }
 interface CacheData {
   adapterConf: unknown
@@ -262,7 +261,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
             adapterId,
             self: self as Assembly,
             options: rest,
-          },
+          } as CacheData,
           signal,
         )
       },
