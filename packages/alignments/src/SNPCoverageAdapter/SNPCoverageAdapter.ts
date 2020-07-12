@@ -282,7 +282,11 @@ export default (pluginManager: PluginManager) => {
                       base = 'skip'
                     }
 
-                    if (base && base !== '*') {
+                    if (base === 'skip') {
+                      bin.getNested(base).decrement('reference', overlap)
+                    }
+
+                    if (base && base !== '*' && base !== 'skip') {
                       bin.getNested(base).increment(strand, overlap)
                     }
                   },
