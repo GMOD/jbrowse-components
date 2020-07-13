@@ -1,32 +1,38 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import { types } from 'mobx-state-tree'
 
-export default ConfigurationSchema(
-  'BamAdapter',
-  {
-    bamLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bam' },
-    },
-    index: ConfigurationSchema('BamIndex', {
-      indexType: {
-        model: types.enumeration('IndexType', ['BAI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'BAI',
-      },
-      location: {
+export default types.late(() =>
+  ConfigurationSchema(
+    'BamAdapter',
+    {
+      bamLocation: {
         type: 'fileLocation',
-        defaultValue: { uri: '/path/to/my.bam.bai' },
+        defaultValue: { uri: '/path/to/my.bam' },
       },
-    }),
-    chunkSizeLimit: {
-      type: 'number',
-      defaultValue: 100000000,
+      index: ConfigurationSchema('BamIndex', {
+        indexType: {
+          model: types.enumeration('IndexType', ['BAI', 'CSI']),
+          type: 'stringEnum',
+          defaultValue: 'BAI',
+        },
+        location: {
+          type: 'fileLocation',
+          defaultValue: { uri: '/path/to/my.bam.bai' },
+        },
+      }),
+      chunkSizeLimit: {
+        type: 'number',
+        defaultValue: 100000000,
+      },
+      fetchSizeLimit: {
+        type: 'number',
+        defaultValue: 500000000,
+      },
+      sequenceAdapter: {
+        type: 'frozen',
+        defaultValue: null,
+      },
     },
-    fetchSizeLimit: {
-      type: 'number',
-      defaultValue: 500000000,
-    },
-  },
-  { explicitlyTyped: true },
+    { explicitlyTyped: true },
+  ),
 )

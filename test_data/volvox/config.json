@@ -355,33 +355,7 @@
         }
       }
     },
-    {
-      "type": "VariantTrack",
-      "trackId": "volvox_filtered_vcf",
-      "name": "volvox filtered vcf",
-      "assemblyNames": ["volvox"],
-      "category": ["VCF"],
-      "adapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "test_data/volvox/volvox.filtered.vcf.gz"
-        },
-        "index": {
-          "location": {
-            "uri": "test_data/volvox/volvox.filtered.vcf.gz.tbi"
-          }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer",
-          "maxFeatureGlyphExpansion": 0
-        }
-      }
-    },
+
     {
       "type": "BasicTrack",
       "trackId": "nclist_long_names",
@@ -907,10 +881,10 @@
     },
     {
       "type": "VariantTrack",
-      "trackId": "TBggZ1Rwy_p",
+      "trackId": "volvox_filtered_vcf",
       "name": "volvox filtered vcf",
       "assemblyNames": ["volvox"],
-      "category": ["Variants"],
+      "category": ["VCF"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {

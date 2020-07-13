@@ -243,8 +243,7 @@ export default class PileupRenderer extends BoxRendererType {
       const { feature, leftPx, rightPx, topPx, heightPx } = feat
       ctx.fillStyle = readConfObject(config, 'color', [feature])
       ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
-      const mismatches: Mismatch[] =
-        bpPerPx < 10 ? feature.get('mismatches') : feature.get('skips_and_dels')
+      const mismatches: Mismatch[] = feature.get('mismatches')
 
       if (mismatches) {
         const colorForBase: { [key: string]: string } = {

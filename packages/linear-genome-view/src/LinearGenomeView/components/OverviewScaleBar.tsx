@@ -32,6 +32,7 @@ const useStyles = makeStyles(theme => {
       display: 'flex',
       width: '100%',
       height: HEADER_OVERVIEW_HEIGHT,
+      overflow: 'hidden',
     },
     scaleBarContig: {
       backgroundColor: theme.palette.background.default,
