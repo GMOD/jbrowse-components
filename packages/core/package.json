@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-core",
-  "version": "2.0.0",
+  "version": "0.0.1-beta.1",
   "description": "JBrowse 2 core libraries used by plugins",
   "license": "MIT",
   "repository": "GMOD/jbrowse-components",
