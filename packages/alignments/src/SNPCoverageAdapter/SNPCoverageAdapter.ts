@@ -6,11 +6,8 @@ import { Region } from '@gmod/jbrowse-core/util/types'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
-import AbortablePromiseCache from 'abortable-promise-cache'
-import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
 import {
   blankStats,
-  FeatureStats,
   rectifyStats,
   scoresToStats,
 } from '@gmod/jbrowse-plugin-wiggle/src/statsUtil'
@@ -75,24 +72,6 @@ export default (pluginManager: PluginManager) => {
   return class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     private subadapter: BaseFeatureDataAdapter
 
-    private statsCache = new AbortablePromiseCache({
-      cache: new QuickLRU({ maxSize: 1000 }),
-      fill: async (
-        args: {
-          region: Region
-          bpPerPx: number
-        },
-        abortSignal?: AbortSignal,
-      ): Promise<FeatureStats> => {
-        const { region, bpPerPx } = args
-        const feats = this.getFeatures(region, {
-          signal: abortSignal,
-          basesPerSpan: bpPerPx,
-        })
-        return scoresToStats(region, feats)
-      },
-    })
-
     public constructor(
       config: Instance<typeof MyConfigSchema>,
       getSubAdapter: getSubAdapterType,
@@ -109,13 +88,8 @@ export default (pluginManager: PluginManager) => {
     }
 
     public getRegionStats(region: Region, opts: BaseOptions = {}) {
-      const { refName, start, end } = region
-      const { bpPerPx, signal } = opts
-      return this.statsCache.get(
-        `${refName}_${start}_${end}_${bpPerPx}`,
-        { region, bpPerPx: bpPerPx || 0 },
-        signal,
-      )
+      const feats = this.getFeatures(region, opts)
+      return scoresToStats(region, feats)
     }
 
     public async getMultiRegionStats(
@@ -188,8 +162,8 @@ export default (pluginManager: PluginManager) => {
       }, opts.signal)
     }
 
-    async getRefNames() {
-      return this.subadapter.getRefNames()
+    async getRefNames(opts: BaseOptions = {}) {
+      return this.subadapter.getRefNames(opts)
     }
 
     freeResources(/* { region } */): void {}
@@ -292,26 +266,32 @@ export default (pluginManager: PluginManager) => {
           if (mismatches) {
             for (let i = 0; i < mismatches.length; i++) {
               const mismatch = mismatches[i]
-              forEachBin(
-                start + mismatch.start,
-                start + mismatch.start + mismatch.length,
-                (binNum, overlap) => {
-                  // Note: we decrement 'reference' so that total of the score is the total coverage
-                  const bin = coverageBins[binNum]
-                  bin.getNested('reference').decrement(strand, overlap)
-                  let { base } = mismatch
+              if (mismatch.type !== 'insertion') {
+                forEachBin(
+                  start + mismatch.start,
+                  start + mismatch.start + mismatch.length,
+                  (binNum, overlap) => {
+                    // Note: we decrement 'reference' so that total of the score is the total coverage
+                    const bin = coverageBins[binNum]
+                    bin.getNested('reference').decrement(strand, overlap)
+                    let { base } = mismatch
 
-                  if (mismatch.type === 'insertion') {
-                    base = `ins ${base}`
-                  } else if (mismatch.type === 'skip') {
-                    base = 'skip'
-                  }
+                    if (mismatch.type === 'insertion') {
+                      base = `ins ${base}`
+                    } else if (mismatch.type === 'skip') {
+                      base = 'skip'
+                    }
 
-                  if (base && base !== '*') {
-                    bin.getNested(base).increment(strand, overlap)
-                  }
-                },
-              )
+                    if (base === 'skip') {
+                      bin.getNested(base).decrement('reference', overlap)
+                    }
+
+                    if (base && base !== '*' && base !== 'skip') {
+                      bin.getNested(base).increment(strand, overlap)
+                    }
+                  },
+                )
+              }
             }
           }
         }

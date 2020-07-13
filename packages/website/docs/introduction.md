@@ -4,26 +4,21 @@ title: Introduction
 toplevel: true
 ---
 
-This guide serves to help orient and get you started with the JBrowse 2 project.
-To start with, JBrowse 2 can mean different things for different people.
+Welcome to the JBrowse 2 documentation. The JBrowse ecosystem is widely varied
+and can be approached from different contexts. In our docs, we provide a quick
+start guides for users who are installing JBrowse 2 on their website, another
+quick start guide for desktop users, and then detailed user guide,
+configuration guide, and developers guide.
 
-## JBrowse 2 web, aka jbrowse-web
+### Contact information
 
-The JBrowse 2 web app is a static set of html, javascript, and static resources
-that you can setup on your own site. Setting up the site requires ability to
-upload some files to your server. We also provide command line data loading scripts.
+Please let us know if you have any feedback on our documentation or jbrowse in
+general
 
-## JBrowse 2 desktop, aka jbrowse-desktop
+You can contact us via github https://github.com/gmod/jbrowse-components
 
-We packaged the JBrowse 2 app as a desktop application that can be installed and
-run as an exe on your system
+You can also contact us via our chat channel on Gitter at
+https://gitter.im/GMOD/jbrowse
 
-This requires zero web server setup, and you can ensure that no data ever leaves
-your machine (note that jbrowse-web. Files can be loaded in the GUI and your
-sessions are saved to your machine for later revisiting.
-
-## JBrowse 2 re-usable components
-
-JBrowse 2 offers re-usable components that can help build visualizations or embed
-smaller portions of the jbrowse app into your website, e.g. just a linear genome
-view
+Finally you can send an email to `gmod-ajax@lists.sourceforge.net` for assistance
+also!

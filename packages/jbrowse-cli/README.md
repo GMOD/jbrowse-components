@@ -18,21 +18,17 @@ A tool for working with JBrowse 2
 
 # Usage
 
-<!-- usage -->
-
 ```sh-session
 $ npm install -g @gmod/jbrowse-cli
 $ jbrowse COMMAND
 running command...
 $ jbrowse (-v|--version|version)
-@gmod/jbrowse-cli/0.0.0 darwin-x64 node-v12.16.1
+@gmod/jbrowse-cli/0.0.0 darwin-x64 node-v14.0.0
 $ jbrowse --help [COMMAND]
 USAGE
   $ jbrowse COMMAND
 ...
 ```
-
-<!-- usagestop -->
 
 # Commands
 

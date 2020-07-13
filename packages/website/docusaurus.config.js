@@ -21,7 +21,22 @@ module.exports = {
           label: 'Docs',
           position: 'left',
         },
-        { to: 'blog', label: 'Blog', position: 'left' },
+        {
+          to: 'blog',
+          label: 'Blog',
+          position: 'left',
+        },
+        {
+          to: 'demos',
+          label: 'Demos',
+          position: 'left',
+        },
+        {
+          to: 'contact/',
+          label: 'Contact',
+          position: 'left',
+        },
+
         {
           href: 'https://github.com/GMOD/jbrowse-components',
           label: 'GitHub',
@@ -60,6 +75,10 @@ module.exports = {
             {
               label: 'Blog',
               to: 'blog',
+            },
+            {
+              label: 'Contact',
+              to: 'contact',
             },
             {
               label: 'GitHub',
