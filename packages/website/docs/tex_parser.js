@@ -8,6 +8,8 @@ const rl = readline.createInterface({
 let readingHeader = false
 let title = ''
 let topLevel = false
+let figure = ''
+let caption = ''
 
 ;(async () => {
   for await (const line of rl) {
@@ -29,6 +31,23 @@ let topLevel = false
       } else {
         console.log(`\n## ${title}`)
       }
+      continue
+    }
+    if (line.startsWith('![')) {
+      const res = line.match(/\(([^)]+)\)/)
+      if (res) {
+        figure = res[1].replace('/jb2', '..')
+        continue
+      }
+    }
+    if (figure && line.trim() !== '') {
+      caption += `${line} `
+      continue
+    }
+    if (figure && caption) {
+      console.log(`![${caption}](${figure})\n\n`)
+      figure = ''
+      caption = ''
       continue
     }
     if (readingHeader === false) {
