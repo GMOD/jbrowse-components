@@ -18,7 +18,7 @@
     "@gmod/jbrowse-development-tools": "^0.0.1"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^2.0.0",
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
     "@gmod/jbrowse-plugin-alignments": "^2.0.0",
     "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
     "@material-ui/core": "^4.0.0",
