@@ -132,5 +132,8 @@
     "whatwg-fetch": "^3.0.0",
     "worker-loader": "^2.0.0",
     "yeoman-test": "^2.5.0"
+  },
+  "resolutions": {
+    "webpack": "4.42.0"
   }
 }
