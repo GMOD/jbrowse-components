@@ -58,6 +58,7 @@ export default function Loader() {
       if (configSnapshot) {
         try {
           const pluginLoader = new PluginLoader(configSnapshot.plugins)
+          pluginLoader.installGlobalReExports(window)
           const runtimePlugins = await pluginLoader.load()
           setPlugins([...corePlugins, ...runtimePlugins])
         } catch (error) {
@@ -81,7 +82,6 @@ export default function Loader() {
   }
 
   const pluginManager = new PluginManager(plugins.map(P => new P()))
-  pluginManager.installGlobalReExports(window)
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)

@@ -156,15 +156,6 @@ export default class PluginManager {
     })
   }
 
-  installGlobalReExports(target: WindowOrWorkerGlobalScope | NodeJS.Global) {
-    // @ts-ignore
-    target.JBrowseExports = {}
-    Object.entries(ReExports).forEach(([moduleName, module]) => {
-      // @ts-ignore
-      target.JBrowseExports[moduleName] = module
-    })
-  }
-
   addPlugin(plugin: Plugin) {
     if (this.configured) {
       throw new Error('JBrowse already configured, cannot add plugins')

@@ -5,6 +5,8 @@ import domLoadScript from 'load-script2'
 import { PluginConstructor } from './Plugin'
 import { ConfigurationSchema } from './configuration'
 
+import ReExports from './ReExports'
+
 export const PluginSourceConfigurationSchema = ConfigurationSchema(
   'PluginSource',
   {
@@ -64,6 +66,15 @@ export default class PluginLoader {
       return plugin.default
     }
     throw new Error(`cannot load plugins using from ${parsedUrl.protocol}`)
+  }
+
+  installGlobalReExports(target: WindowOrWorkerGlobalScope | NodeJS.Global) {
+    // @ts-ignore
+    target.JBrowseExports = {}
+    Object.entries(ReExports).forEach(([moduleName, module]) => {
+      // @ts-ignore
+      target.JBrowseExports[moduleName] = module
+    })
   }
 
   moduleNameFromParsedUrl(parsedUrl: url.UrlWithStringQuery): string {
