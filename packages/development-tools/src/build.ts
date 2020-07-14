@@ -3,11 +3,16 @@ import { pascalCase } from 'change-case'
 import webpack from 'webpack'
 import CopyPlugin from 'copy-webpack-plugin'
 
+import { objectFromEntries } from '@gmod/jbrowse-core/util'
 import ReExportsList from '@gmod/jbrowse-core/ReExports/list'
 
 export interface PackageJson {
   name: string
   'jbrowse-plugin'?: { name?: string }
+}
+
+if (Object.fromEntries) {
+  Object.fromEntries = objectFromEntries
 }
 
 const externals = Object.fromEntries(
