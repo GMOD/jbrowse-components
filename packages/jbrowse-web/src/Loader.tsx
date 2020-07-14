@@ -75,9 +75,6 @@ function NoConfigMessage() {
               </a>
             </li>
             <li>
-              <a href="?config=test_data/config_gdc_test.json">GDC</a>
-            </li>
-            <li>
               <a href="?config=test_data/config_many_contigs.json">
                 Many Contigs
               </a>
