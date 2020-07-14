@@ -12,12 +12,7 @@
   "dependencies": {
     "@gmod/tabix": "^1.4.6",
     "@gmod/vcf": "^4.0.1",
-    "generic-filehandle": "^2.0.0"
-  },
-  "devDependencies": {
-    "@gmod/jbrowse-development-tools": "^0.0.1"
-  },
-  "peerDependencies": {
+    "generic-filehandle": "^2.0.0",
     "@gmod/jbrowse-core": "^0.0.1-beta.1",
     "@gmod/jbrowse-plugin-alignments": "^2.0.0",
     "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
@@ -27,6 +22,9 @@
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "rxjs": "^6.0.0"
+  },
+  "devDependencies": {
+    "@gmod/jbrowse-development-tools": "^0.0.1"
   },
   "private": true
 }

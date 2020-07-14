@@ -8,7 +8,7 @@
   },
   "author": "Garrett Stevens",
   "license": "MIT",
-  "peerDependencies": {
+  "dependencies": {
     "@gmod/jbrowse-core": "^0.0.1-beta.1",
     "mobx-react": "^6.0.0",
     "prop-types": "^15.0.0",

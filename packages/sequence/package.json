@@ -11,9 +11,7 @@
   "dependencies": {
     "@gmod/indexedfasta": "^1.0.13",
     "@gmod/twobit": "^1.1.10",
-    "generic-filehandle": "^2.0.1"
-  },
-  "peerDependencies": {
+    "generic-filehandle": "^2.0.1",
     "@gmod/jbrowse-core": "^0.0.1-beta.1",
     "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
     "mobx-react": "^6.0.0",

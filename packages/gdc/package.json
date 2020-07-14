@@ -16,15 +16,13 @@
   ],
   "author": "Andrew Duncan",
   "license": "MIT",
-  "dependencies": {
-    "@material-ui/icons": "^4.9.1",
-    "uuid": "^7.0.1"
-  },
   "private": true,
   "devDependencies": {
     "@gmod/jbrowse-development-tools": "^0.0.1"
   },
-  "peerDependencies": {
+  "dependencies": {
+    "@material-ui/icons": "^4.9.1",
+    "uuid": "^7.0.1",
     "@gmod/jbrowse-core": "^0.0.1-beta.1",
     "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
     "@material-ui/core": "^4.0.0",

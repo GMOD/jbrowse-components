@@ -10,9 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "@material-ui/icons": "^4.9.1",
-    "classnames": "^2.2.6"
-  },
-  "peerDependencies": {
+    "classnames": "^2.2.6",
     "@gmod/jbrowse-core": "^0.0.1-beta.1",
     "@material-ui/core": "^4.0.0",
     "mobx-react": "^6.0.0",

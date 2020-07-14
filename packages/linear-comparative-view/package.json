@@ -8,7 +8,7 @@
   },
   "author": "Colin Diesh",
   "license": "MIT",
-  "peerDependencies": {
+  "dependencies": {
     "@gmod/jbrowse-core": "^0.0.1-beta.1",
     "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
     "@material-ui/core": "^4.0.0",
@@ -20,9 +20,7 @@
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
-    "rxjs": "^6.0.0"
-  },
-  "dependencies": {
+    "rxjs": "^6.0.0",
     "@material-ui/icons": "^4.9.1",
     "@rehooks/component-size": "^1.0.3",
     "abortable-promise-cache": "^1.1.3",
