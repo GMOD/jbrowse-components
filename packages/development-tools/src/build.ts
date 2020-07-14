@@ -2,7 +2,7 @@ import path from 'path'
 import { pascalCase } from 'change-case'
 import webpack from 'webpack'
 
-import ReExports from '@gmod/jbrowse-core/ReExports'
+import ReExportsList from '@gmod/jbrowse-core/ReExports/list'
 
 export interface PackageJson {
   name: string
@@ -10,7 +10,7 @@ export interface PackageJson {
 }
 
 const externals = Object.fromEntries(
-  Object.keys(ReExports).map(moduleName => {
+  ReExportsList.map(moduleName => {
     return [
       moduleName,
       {
