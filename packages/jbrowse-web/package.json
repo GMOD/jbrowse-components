@@ -25,7 +25,6 @@
     "@gmod/jbrowse-plugin-data-management": "^0.0.1-beta.10",
     "@gmod/jbrowse-plugin-dotplot-view": "^0.0.1-beta.10",
     "@gmod/jbrowse-plugin-filtering": "^0.0.1-beta.10",
-    "@gmod/jbrowse-plugin-gdc": "^0.0.1-beta.10",
     "@gmod/jbrowse-plugin-gff3tabix": "^0.0.1-beta.10",
     "@gmod/jbrowse-plugin-hic": "^0.0.1-beta.10",
     "@gmod/jbrowse-plugin-legacy-jbrowse": "^0.0.1-beta.10",
