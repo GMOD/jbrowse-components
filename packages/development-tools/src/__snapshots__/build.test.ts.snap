@@ -267,63 +267,6 @@ Object {
     },
   },
   "mode": "test",
-  "module": Object {
-    "rules": Array [
-      Object {
-        "oneOf": Array [
-          Object {
-            "exclude": /\\(node_modules\\|bower_components\\)/,
-            "test": /\\\\\\.m\\?\\[tj\\]sx\\?\\$/,
-            "use": Object {
-              "loader": "babel-loader",
-              "options": Object {
-                "comments": true,
-                "ignore": Array [
-                  "./node_modules",
-                  "./packages/*/node_modules",
-                ],
-                "plugins": Array [
-                  "@babel/plugin-syntax-dynamic-import",
-                  "@babel/plugin-proposal-class-properties",
-                  "@babel/plugin-proposal-export-default-from",
-                  Array [
-                    "@babel/transform-runtime",
-                    Object {
-                      "regenerator": true,
-                    },
-                  ],
-                ],
-                "presets": Array [
-                  "@babel/preset-typescript",
-                  "@babel/preset-react",
-                  Array [
-                    "@babel/preset-env",
-                    Object {
-                      "targets": Object {
-                        "browsers": Array [
-                          "> 0.5%",
-                          "last 2 versions",
-                        ],
-                        "node": "current",
-                      },
-                    },
-                  ],
-                ],
-              },
-            },
-          },
-          Object {
-            "exclude": Array [
-              /\\\\\\.\\(js\\|mjs\\|jsx\\|ts\\|tsx\\)\\$/,
-              /\\\\\\.html\\$/,
-              /\\\\\\.json\\$/,
-            ],
-            "loader": "/Users/rbuels/dev/jbc/node_modules/file-loader/dist/cjs.js",
-          },
-        ],
-      },
-    ],
-  },
   "output": Object {
     "filename": "plugin.js",
     "library": "JBrowsePluginFakePlugin",

@@ -5,5 +5,6 @@ it('produces something', () => {
   const output = baseJBrowsePluginWebpackConfig(webpack, '/fake/directory', {
     name: 'FakePlugin',
   })
+  delete output.module
   expect(output).toMatchSnapshot()
 })
