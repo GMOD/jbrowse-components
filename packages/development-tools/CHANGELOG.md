@@ -1,3 +1,8 @@
+<a name="0.0.1-beta.13"></a>
+## [0.0.1-beta.13](https://github.com/GMOD/jbrowse-components/compare/v0.0.1-beta.12...v0.0.1-beta.13) (2020-07-14)
+
+
+
 <a name="0.0.1-beta.12"></a>
 ## [0.0.1-beta.12](https://github.com/GMOD/jbrowse-components/compare/v0.0.1-beta.10...v0.0.1-beta.12) (2020-07-14)
 

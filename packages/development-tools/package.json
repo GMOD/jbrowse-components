@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-development-tools",
-  "version": "0.0.1-beta.12",
+  "version": "0.0.1-beta.13",
   "description": "Tools to help with developing and building JBrowse 2 plugins",
   "scripts": {
     "test": "jest",
