@@ -35,9 +35,9 @@ export function baseJBrowsePluginWebpackConfig(
 ) {
   const pluginConfiguration = packageJson['jbrowse-plugin']
 
-  const pluginNameParamCase =
+  const pluginName =
     pluginConfiguration?.name ||
-    packageJson.name.replace('@gmod/jbrowse-plugin-', '')
+    pascalCase(packageJson.name.replace('@gmod/jbrowse-plugin-', ''))
 
   const distDir = path.resolve(buildDir, 'dist')
 
@@ -50,7 +50,7 @@ export function baseJBrowsePluginWebpackConfig(
       path: distDir,
       filename: `plugin.js`,
       sourceMapFilename: `plugin.js.map`,
-      library: `JBrowsePlugin${pascalCase(pluginNameParamCase)}`,
+      library: `JBrowsePlugin${pluginName}`,
       libraryTarget: 'umd',
     },
     devServer: {
@@ -63,9 +63,6 @@ export function baseJBrowsePluginWebpackConfig(
     },
     externals,
     plugins: [
-      // new myWebpack.optimize.LimitChunkCountPlugin({
-      //   maxChunks: 1,
-      // }),
       new CopyPlugin({
         patterns: [{ from: path.resolve(buildDir, 'assets'), to: distDir }],
         options: {
