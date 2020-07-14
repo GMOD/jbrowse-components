@@ -1,7 +1,7 @@
 {
   "name": "jbrowse-desktop",
   "productName": "JBrowse 2",
-  "version": "0.0.1-beta.6",
+  "version": "0.0.1-beta.7",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "author": {
     "name": "JBrowse 2 Developers",
@@ -15,7 +15,7 @@
     "last 1 chrome version"
   ],
   "dependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.6",
+    "@gmod/jbrowse-core": "^0.0.1-beta.7",
     "@gmod/jbrowse-plugin-alignments": "^0.0.1-beta.5.0",
     "@gmod/jbrowse-plugin-bed": "^0.0.1-beta.5.0",
     "@gmod/jbrowse-plugin-circular-view": "^0.0.1-beta.5.0",

@@ -1,3 +1,7 @@
+## [0.0.1-beta.7](https://github.com/GMOD/jbrowse-components/compare/v0.0.1-beta.6...v0.0.1-beta.7) (2020-07-14)
+
+
+
 ## [0.0.1-beta.6](https://github.com/GMOD/jbrowse-components/compare/v0.0.1-beta.5.0...v0.0.1-beta.6) (2020-07-14)
 
 
