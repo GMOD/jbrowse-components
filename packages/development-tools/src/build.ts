@@ -95,8 +95,32 @@ export function baseJBrowsePluginWebpackConfig(
               use: {
                 loader: 'babel-loader',
                 options: {
-                  rootMode: 'upward',
-                  presets: ['@babel/preset-react'],
+                  comments: true,
+                  presets: [
+                    '@babel/preset-typescript',
+                    '@babel/preset-react',
+                    [
+                      '@babel/preset-env',
+                      {
+                        targets: {
+                          node: 'current',
+                          browsers: ['> 0.5%', 'last 2 versions'],
+                        },
+                      },
+                    ],
+                  ],
+                  ignore: ['./node_modules', './packages/*/node_modules'],
+                  plugins: [
+                    '@babel/plugin-syntax-dynamic-import',
+                    '@babel/plugin-proposal-class-properties',
+                    '@babel/plugin-proposal-export-default-from',
+                    [
+                      '@babel/transform-runtime',
+                      {
+                        regenerator: true,
+                      },
+                    ],
+                  ],
                 },
               },
             },
