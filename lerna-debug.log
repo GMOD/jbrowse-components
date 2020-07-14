@@ -1,0 +1,338 @@
+0 silly argv {
+0 silly argv   _: [ 'publish' ],
+0 silly argv   composed: 'publish',
+0 silly argv   lernaVersion: '3.22.0',
+0 silly argv   '$0': 'node_modules/.bin/lerna'
+0 silly argv }
+1 notice cli v3.22.0
+2 verbose rootPath /Users/rbuels/dev/jbc
+3 verbose session f22c85d0abdb8158
+4 verbose user-agent lerna/3.22.0/node@v12.16.1+x64 (darwin)
+5 warn Yarn's registry proxy is broken, replacing with public npm registry
+6 warn If you don't have an npm token, you should exit and run `npm login`
+7 silly argv { _: [ 'publish' ], composed: 'publish', lernaVersion: '3.22.0' }
+8 verbose rootPath /Users/rbuels/dev/jbc
+9 info current version 0.0.0
+10 silly isAnythingCommitted
+11 verbose isAnythingCommitted 1
+12 silly currentBranch
+13 verbose currentBranch release-core
+14 silly remoteBranchExists
+15 silly isBehindUpstream
+16 silly isBehindUpstream release-core is behind origin/release-core by 0 commit(s) and ahead by 0
+17 silly hasTags
+18 verbose hasTags true
+19 silly git-describe.sync "v0.0.1-beta.4-3-gc875a03f" => {"lastTagName":"v0.0.1-beta.4","lastVersion":"v0.0.1-beta.4","refCount":"3","sha":"c875a03f","isDirty":false}
+20 info Looking for changed packages since v0.0.1-beta.4
+21 silly checking diff packages/alignments
+22 silly found diff in packages/alignments/package.json
+23 verbose filtered diff [ 'packages/alignments/package.json' ]
+24 silly checking diff packages/bed
+25 silly found diff in packages/bed/package.json
+26 verbose filtered diff [ 'packages/bed/package.json' ]
+27 silly checking diff packages/breakpoint-split-view
+28 silly found diff in packages/breakpoint-split-view/package.json
+29 verbose filtered diff [ 'packages/breakpoint-split-view/package.json' ]
+30 silly checking diff packages/circular-view
+31 silly found diff in packages/circular-view/package.json
+32 verbose filtered diff [ 'packages/circular-view/package.json' ]
+33 silly checking diff packages/config
+34 silly found diff in packages/config/package.json
+35 verbose filtered diff [ 'packages/config/package.json' ]
+36 silly checking diff packages/core
+37 silly found diff in packages/core/package.json
+38 verbose filtered diff [ 'packages/core/package.json' ]
+39 silly checking diff packages/data-management
+40 silly found diff in packages/data-management/package.json
+41 verbose filtered diff [ 'packages/data-management/package.json' ]
+42 silly checking diff packages/development-tools
+43 silly no diff found in @gmod/jbrowse-development-tools
+44 silly checking diff packages/dotplot-view
+45 silly found diff in packages/dotplot-view/package.json
+46 verbose filtered diff [ 'packages/dotplot-view/package.json' ]
+47 silly checking diff packages/filtering
+48 silly found diff in packages/filtering/package.json
+49 verbose filtered diff [ 'packages/filtering/package.json' ]
+50 silly checking diff packages/gdc
+51 silly found diff in packages/gdc/package.json
+52 verbose filtered diff [ 'packages/gdc/package.json' ]
+53 silly checking diff packages/generator-jbrowse
+54 silly no diff found in generator-jbrowse
+55 silly checking diff packages/gff3tabix
+56 silly found diff in packages/gff3tabix/package.json
+57 verbose filtered diff [ 'packages/gff3tabix/package.json' ]
+58 silly checking diff packages/hic
+59 silly found diff in packages/hic/package.json
+60 verbose filtered diff [ 'packages/hic/package.json' ]
+61 silly checking diff packages/jbrowse-cli
+62 silly found diff in packages/jbrowse-cli/README.md
+62 silly found diff in packages/jbrowse-cli/package.json
+63 verbose filtered diff [
+63 verbose filtered diff   'packages/jbrowse-cli/README.md',
+63 verbose filtered diff   'packages/jbrowse-cli/package.json'
+63 verbose filtered diff ]
+64 silly checking diff packages/jbrowse-desktop
+65 silly found diff in packages/jbrowse-desktop/package.json
+66 verbose filtered diff [ 'packages/jbrowse-desktop/package.json' ]
+67 silly checking diff packages/jbrowse-protein-widget
+68 silly found diff in packages/jbrowse-protein-widget/package.json
+69 verbose filtered diff [ 'packages/jbrowse-protein-widget/package.json' ]
+70 silly checking diff packages/jbrowse-web
+71 silly found diff in packages/jbrowse-web/package.json
+72 verbose filtered diff [ 'packages/jbrowse-web/package.json' ]
+73 silly checking diff packages/legacy-jbrowse
+74 silly found diff in packages/legacy-jbrowse/package.json
+75 verbose filtered diff [ 'packages/legacy-jbrowse/package.json' ]
+76 silly checking diff packages/linear-comparative-view
+77 silly found diff in packages/linear-comparative-view/package.json
+78 verbose filtered diff [ 'packages/linear-comparative-view/package.json' ]
+79 silly checking diff packages/linear-genome-view
+80 silly found diff in packages/linear-genome-view/package.json
+81 verbose filtered diff [ 'packages/linear-genome-view/package.json' ]
+82 silly checking diff packages/lollipop
+83 silly found diff in packages/lollipop/package.json
+84 verbose filtered diff [ 'packages/lollipop/package.json' ]
+85 silly checking diff packages/menus
+86 silly found diff in packages/menus/package.json
+87 verbose filtered diff [ 'packages/menus/package.json' ]
+88 silly checking diff packages/protein
+89 silly found diff in packages/protein/package.json
+90 verbose filtered diff [ 'packages/protein/package.json' ]
+91 silly checking diff packages/rdf
+92 silly found diff in packages/rdf/package.json
+93 verbose filtered diff [ 'packages/rdf/package.json' ]
+94 silly checking diff packages/sequence
+95 silly found diff in packages/sequence/package.json
+96 verbose filtered diff [ 'packages/sequence/package.json' ]
+97 silly checking diff packages/spreadsheet-view
+98 silly found diff in packages/spreadsheet-view/package.json
+99 verbose filtered diff [ 'packages/spreadsheet-view/package.json' ]
+100 silly checking diff packages/sv-inspector
+101 silly found diff in packages/sv-inspector/package.json
+102 verbose filtered diff [ 'packages/sv-inspector/package.json' ]
+103 silly checking diff packages/svg
+104 silly found diff in packages/svg/package.json
+105 verbose filtered diff [ 'packages/svg/package.json' ]
+106 silly checking diff packages/trackhub-registry
+107 silly found diff in packages/trackhub-registry/package.json
+108 verbose filtered diff [ 'packages/trackhub-registry/package.json' ]
+109 silly checking diff packages/variants
+110 silly found diff in packages/variants/package.json
+111 verbose filtered diff [ 'packages/variants/package.json' ]
+112 silly checking diff packages/website
+113 silly found diff in packages/website/package.json
+114 verbose filtered diff [ 'packages/website/package.json' ]
+115 silly checking diff packages/wiggle
+116 silly found diff in packages/wiggle/package.json
+117 verbose filtered diff [ 'packages/wiggle/package.json' ]
+118 verbose updated @gmod/jbrowse-plugin-alignments
+119 verbose updated @gmod/jbrowse-plugin-bed
+120 verbose updated @gmod/jbrowse-plugin-breakpoint-split-view
+121 verbose updated @gmod/jbrowse-plugin-circular-view
+122 verbose updated @gmod/jbrowse-plugin-config
+123 verbose updated @gmod/jbrowse-core
+124 verbose updated @gmod/jbrowse-plugin-data-management
+125 verbose updated @gmod/jbrowse-plugin-dotplot-view
+126 verbose updated @gmod/jbrowse-plugin-filtering
+127 verbose updated @gmod/jbrowse-plugin-gdc
+128 verbose updated @gmod/jbrowse-plugin-gff3tabix
+129 verbose updated @gmod/jbrowse-plugin-hic
+130 verbose updated @gmod/jbrowse-cli
+131 verbose updated jbrowse-desktop
+132 verbose updated @gmod/jbrowse-protein-widget
+133 verbose updated @gmod/jbrowse-web
+134 verbose updated @gmod/jbrowse-plugin-legacy-jbrowse
+135 verbose updated @gmod/jbrowse-plugin-linear-comparative-view
+136 verbose updated @gmod/jbrowse-plugin-linear-genome-view
+137 verbose updated @gmod/jbrowse-plugin-lollipop
+138 verbose updated @gmod/jbrowse-plugin-menus
+139 verbose updated @gmod/jbrowse-plugin-protein
+140 verbose updated @gmod/jbrowse-plugin-rdf
+141 verbose updated @gmod/jbrowse-plugin-sequence
+142 verbose updated @gmod/jbrowse-plugin-spreadsheet-view
+143 verbose updated @gmod/jbrowse-plugin-sv-inspector
+144 verbose updated @gmod/jbrowse-plugin-svg
+145 verbose updated @gmod/jbrowse-plugin-trackhub-registry
+146 verbose updated @gmod/jbrowse-plugin-variants
+147 verbose updated website
+148 verbose updated @gmod/jbrowse-plugin-wiggle
+149 verbose git-describe undefined => "v0.0.1-beta.4-3-gc875a03f"
+150 silly git-describe parsed => {"lastTagName":"v0.0.1-beta.4","lastVersion":"v0.0.1-beta.4","refCount":"3","sha":"c875a03f","isDirty":false}
+151 info execute Skipping releases
+152 silly lifecycle No script for "preversion" in "root", continuing
+153 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-alignments", continuing
+154 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-bed", continuing
+155 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-breakpoint-split-view", continuing
+156 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-circular-view", continuing
+157 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-config", continuing
+158 silly lifecycle No script for "preversion" in "@gmod/jbrowse-core", continuing
+159 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-data-management", continuing
+160 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-dotplot-view", continuing
+161 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-data-management", continuing
+162 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-filtering", continuing
+163 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-dotplot-view", continuing
+164 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-gdc", continuing
+165 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-config", continuing
+166 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-gff3tabix", continuing
+167 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-alignments", continuing
+168 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-hic", continuing
+169 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-breakpoint-split-view", continuing
+170 silly lifecycle No script for "preversion" in "@gmod/jbrowse-cli", continuing
+171 silly lifecycle "version" starting in "@gmod/jbrowse-core"
+172 info lifecycle @gmod/jbrowse-core@0.0.1-beta.5.0~version: @gmod/jbrowse-core@0.0.1-beta.5.0
+173 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-bed", continuing
+174 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-legacy-jbrowse", continuing
+175 warn lifecycle The node binary used for scripts is /var/folders/1v/j24lf4js3c141601jwy4w6j00000gn/T/yarn--1594704803605-0.8094490571178357/node but npm is using /Users/rbuels/.nvm/versions/node/v12.16.1/bin/node itself. Use the `--scripts-prepend-node-path` option to include the path for the node binary npm was executed with.
+176 verbose lifecycle @gmod/jbrowse-core@0.0.1-beta.5.0~version: unsafe-perm in lifecycle true
+177 verbose lifecycle @gmod/jbrowse-core@0.0.1-beta.5.0~version: PATH: /Users/rbuels/dev/jbc/node_modules/npm-lifecycle/node-gyp-bin:/Users/rbuels/dev/jbc/packages/core/node_modules/.bin:/var/folders/1v/j24lf4js3c141601jwy4w6j00000gn/T/yarn--1594704803605-0.8094490571178357:/Users/rbuels/dev/jbc/node_modules/.bin:/Users/rbuels/.config/yarn/link/node_modules/.bin:/Users/rbuels/dev/jbc/node_modules/.bin:/Users/rbuels/.nvm/versions/node/v12.16.1/libexec/lib/node_modules/npm/bin/node-gyp-bin:/Users/rbuels/.nvm/versions/node/v12.16.1/lib/node_modules/npm/bin/node-gyp-bin:/Users/rbuels/.nvm/versions/node/v12.16.1/bin/node_modules/npm/bin/node-gyp-bin:/Users/rbuels/.yarn/bin:/Users/rbuels/.config/yarn/global/node_modules/.bin:/Users/rbuels/.nvm/versions/node/v12.16.1/bin:/Users/rbuels/dev/kent-bin:/Users/rbuels/Library/Python/3.6/bin:/Users/rbuels/perl5/perlbrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/opt/X11/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands
+178 verbose lifecycle @gmod/jbrowse-core@0.0.1-beta.5.0~version: CWD: /Users/rbuels/dev/jbc/packages/core
+179 silly lifecycle @gmod/jbrowse-core@0.0.1-beta.5.0~version: Args: [ '-c', 'standard-changelog && git add CHANGELOG.md' ]
+180 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-circular-view", continuing
+181 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-linear-comparative-view", continuing
+182 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-gdc", continuing
+183 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-linear-genome-view", continuing
+184 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-gff3tabix", continuing
+185 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-lollipop", continuing
+186 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-filtering", continuing
+187 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-menus", continuing
+188 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-legacy-jbrowse", continuing
+189 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-protein", continuing
+190 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-hic", continuing
+191 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-rdf", continuing
+192 silly lifecycle "version" starting in "@gmod/jbrowse-cli"
+193 info lifecycle @gmod/jbrowse-cli@0.0.1-beta.5.0~version: @gmod/jbrowse-cli@0.0.1-beta.5.0
+194 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-linear-comparative-view", continuing
+195 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-sequence", continuing
+196 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-linear-genome-view", continuing
+197 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-sv-inspector", continuing
+198 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-lollipop", continuing
+199 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-svg", continuing
+200 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-sequence", continuing
+201 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-trackhub-registry", continuing
+202 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-rdf", continuing
+203 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-variants", continuing
+204 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-protein", continuing
+205 silly lifecycle No script for "preversion" in "website", continuing
+206 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-menus", continuing
+207 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-wiggle", continuing
+208 silly lifecycle No script for "version" in "website", continuing
+209 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-sv-inspector", continuing
+210 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-variants", continuing
+211 silly lifecycle No script for "preversion" in "@gmod/jbrowse-plugin-spreadsheet-view", continuing
+212 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-trackhub-registry", continuing
+213 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-svg", continuing
+214 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-spreadsheet-view", continuing
+215 silly lifecycle No script for "version" in "@gmod/jbrowse-plugin-wiggle", continuing
+216 silly lifecycle @gmod/jbrowse-core@0.0.1-beta.5.0~version: Returned: code: 0  signal: null
+217 verbose lifecycle @gmod/jbrowse-cli@0.0.1-beta.5.0~version: unsafe-perm in lifecycle true
+218 verbose lifecycle @gmod/jbrowse-cli@0.0.1-beta.5.0~version: PATH: /Users/rbuels/dev/jbc/node_modules/npm-lifecycle/node-gyp-bin:/Users/rbuels/dev/jbc/packages/jbrowse-cli/node_modules/.bin:/var/folders/1v/j24lf4js3c141601jwy4w6j00000gn/T/yarn--1594704803605-0.8094490571178357:/Users/rbuels/dev/jbc/node_modules/.bin:/Users/rbuels/.config/yarn/link/node_modules/.bin:/Users/rbuels/dev/jbc/node_modules/.bin:/Users/rbuels/.nvm/versions/node/v12.16.1/libexec/lib/node_modules/npm/bin/node-gyp-bin:/Users/rbuels/.nvm/versions/node/v12.16.1/lib/node_modules/npm/bin/node-gyp-bin:/Users/rbuels/.nvm/versions/node/v12.16.1/bin/node_modules/npm/bin/node-gyp-bin:/Users/rbuels/.yarn/bin:/Users/rbuels/.config/yarn/global/node_modules/.bin:/Users/rbuels/.nvm/versions/node/v12.16.1/bin:/Users/rbuels/dev/kent-bin:/Users/rbuels/Library/Python/3.6/bin:/Users/rbuels/perl5/perlbrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/opt/X11/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands
+219 verbose lifecycle @gmod/jbrowse-cli@0.0.1-beta.5.0~version: CWD: /Users/rbuels/dev/jbc/packages/jbrowse-cli
+220 silly lifecycle @gmod/jbrowse-cli@0.0.1-beta.5.0~version: Args: [ '-c', 'oclif-dev readme && git add README.md' ]
+221 silly lifecycle "version" finished in "@gmod/jbrowse-core"
+222 silly lifecycle No script for "preversion" in "jbrowse-desktop", continuing
+223 silly lifecycle No script for "preversion" in "@gmod/jbrowse-protein-widget", continuing
+224 silly lifecycle No script for "preversion" in "@gmod/jbrowse-web", continuing
+225 silly lifecycle No script for "version" in "@gmod/jbrowse-protein-widget", continuing
+226 silly lifecycle No script for "version" in "jbrowse-desktop", continuing
+227 silly lifecycle No script for "version" in "@gmod/jbrowse-web", continuing
+228 silly lifecycle @gmod/jbrowse-cli@0.0.1-beta.5.0~version: Returned: code: 0  signal: null
+229 silly lifecycle "version" finished in "@gmod/jbrowse-cli"
+230 silly lifecycle No script for "version" in "root", continuing
+231 silly gitAdd [
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/data-management/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/dotplot-view/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/config/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/alignments/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/breakpoint-split-view/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/core/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/bed/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/circular-view/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/gdc/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/gff3tabix/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/filtering/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/legacy-jbrowse/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/hic/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/jbrowse-cli/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/linear-comparative-view/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/linear-genome-view/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/lollipop/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/sequence/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/rdf/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/protein/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/menus/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/website/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/sv-inspector/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/variants/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/trackhub-registry/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/svg/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/spreadsheet-view/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/wiggle/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/jbrowse-protein-widget/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/jbrowse-desktop/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/packages/jbrowse-web/package.json',
+231 silly gitAdd   '/Users/rbuels/dev/jbc/lerna.json'
+231 silly gitAdd ]
+232 silly gitCommit v0.0.1-beta.5.0
+233 verbose git [ 'commit', '-m', 'v0.0.1-beta.5.0' ]
+234 silly gitTag v0.0.1-beta.5.0
+235 verbose git [ 'tag', 'v0.0.1-beta.5.0', '-m', 'v0.0.1-beta.5.0' ]
+236 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-alignments", continuing
+237 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-bed", continuing
+238 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-breakpoint-split-view", continuing
+239 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-circular-view", continuing
+240 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-config", continuing
+241 silly lifecycle No script for "postversion" in "@gmod/jbrowse-core", continuing
+242 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-data-management", continuing
+243 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-dotplot-view", continuing
+244 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-filtering", continuing
+245 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-gdc", continuing
+246 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-gff3tabix", continuing
+247 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-hic", continuing
+248 silly lifecycle No script for "postversion" in "@gmod/jbrowse-cli", continuing
+249 silly lifecycle No script for "postversion" in "jbrowse-desktop", continuing
+250 silly lifecycle No script for "postversion" in "@gmod/jbrowse-protein-widget", continuing
+251 silly lifecycle No script for "postversion" in "@gmod/jbrowse-web", continuing
+252 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-legacy-jbrowse", continuing
+253 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-linear-comparative-view", continuing
+254 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-linear-genome-view", continuing
+255 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-lollipop", continuing
+256 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-menus", continuing
+257 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-protein", continuing
+258 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-rdf", continuing
+259 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-sequence", continuing
+260 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-spreadsheet-view", continuing
+261 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-sv-inspector", continuing
+262 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-svg", continuing
+263 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-trackhub-registry", continuing
+264 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-variants", continuing
+265 silly lifecycle No script for "postversion" in "website", continuing
+266 silly lifecycle No script for "postversion" in "@gmod/jbrowse-plugin-wiggle", continuing
+267 silly lifecycle No script for "postversion" in "root", continuing
+268 info git Pushing tags...
+269 silly gitPush origin release-core
+270 info publish Publishing packages to npm...
+271 info Verifying npm credentials
+272 verbose Retrieving npm user profile
+273 http fetch GET 200 https://registry.npmjs.org/-/npm/v1/user 320ms
+274 silly npm profile get received {"tfa":{"pending":false,"mode":"auth-only"},"name":"rbuels","email":"rbuels@gmail.com","email_verified":true,"created":"2018-02-07T21:56:42.647Z","updated":"2020-02-27T18:53:03.906Z","cidr_whitelist":null,"fullname":"Robert Buels","twitter":"rbuels","github":"rbuels"}
+275 silly get npm username received {"username":"rbuels","tfa":{"pending":false,"mode":"auth-only"},"name":"rbuels","email":"rbuels@gmail.com","email_verified":true,"created":"2018-02-07T21:56:42.647Z","updated":"2020-02-27T18:53:03.906Z","cidr_whitelist":null,"fullname":"Robert Buels","twitter":"rbuels","github":"rbuels"}
+276 silly verifyNpmPackageAccess
+277 http fetch GET 200 https://registry.npmjs.org/-/org/rbuels/package?format=cli 98ms
+278 info Checking two-factor auth mode
+279 verbose Retrieving npm user profile
+280 http fetch GET 200 https://registry.npmjs.org/-/npm/v1/user 91ms
+281 silly npm profile get received {"tfa":{"pending":false,"mode":"auth-only"},"name":"rbuels","email":"rbuels@gmail.com","email_verified":true,"created":"2018-02-07T21:56:42.647Z","updated":"2020-02-27T18:53:03.906Z","cidr_whitelist":null,"fullname":"Robert Buels","twitter":"rbuels","github":"rbuels"}
+282 silly 2FA { pending: false, mode: 'auth-only' }
+283 silly getCurrentSHA
+284 verbose getCurrentSHA 335d053f5a5df5a3746ec777781e50482c2197a5
+285 warn lifecycle Skipping root "prepublish" because it has already been called
+286 silly lifecycle No script for "prepare" in "root", continuing
+287 silly lifecycle No script for "prepublishOnly" in "root", continuing
+288 silly lifecycle No script for "prepack" in "root", continuing
+289 verbose pack-directory packages/core/dist
+290 silly lifecycle No script for "prepublish" in "@gmod/jbrowse-core", continuing
+291 silly lifecycle No script for "prepare" in "@gmod/jbrowse-core", continuing
+292 silly lifecycle No script for "prepublishOnly" in "@gmod/jbrowse-core", continuing
+293 silly lifecycle No script for "prepack" in "@gmod/jbrowse-core", continuing
+294 error TypeError: no files or directories specified
+294 error     at Object.module.exports (/Users/rbuels/dev/jbc/node_modules/tar/lib/create.js:20:11)
