@@ -3,8 +3,11 @@
 exports[`produces something 1`] = `
 Object {
   "devServer": Object {
-    "compress": true,
-    "contentBase": "/fake/directory/dist",
+    "contentBase": "/fake/directory/assets",
+    "headers": Object {
+      "Access-Control-Allow-Headers": "*",
+      "Access-Control-Allow-Origin": "*",
+    },
     "port": 9000,
   },
   "devtool": false,
@@ -274,10 +277,38 @@ Object {
             "use": Object {
               "loader": "babel-loader",
               "options": Object {
-                "presets": Array [
-                  "@babel/preset-react",
+                "comments": true,
+                "ignore": Array [
+                  "./node_modules",
+                  "./packages/*/node_modules",
                 ],
-                "rootMode": "upward",
+                "plugins": Array [
+                  "@babel/plugin-syntax-dynamic-import",
+                  "@babel/plugin-proposal-class-properties",
+                  "@babel/plugin-proposal-export-default-from",
+                  Array [
+                    "@babel/transform-runtime",
+                    Object {
+                      "regenerator": true,
+                    },
+                  ],
+                ],
+                "presets": Array [
+                  "@babel/preset-typescript",
+                  "@babel/preset-react",
+                  Array [
+                    "@babel/preset-env",
+                    Object {
+                      "targets": Object {
+                        "browsers": Array [
+                          "> 0.5%",
+                          "last 2 versions",
+                        ],
+                        "node": "current",
+                      },
+                    },
+                  ],
+                ],
               },
             },
           },
@@ -298,14 +329,19 @@ Object {
     "library": "JBrowsePluginFakePlugin",
     "libraryTarget": "umd",
     "path": "/fake/directory/dist",
-    "publicPath": "dist/",
     "sourceMapFilename": "plugin.js.map",
   },
   "plugins": Array [
-    LimitChunkCountPlugin {
+    CopyPlugin {
       "options": Object {
-        "maxChunks": 1,
+        "concurrency": 100,
       },
+      "patterns": Array [
+        Object {
+          "from": "/fake/directory/assets",
+          "to": "/fake/directory/dist",
+        },
+      ],
     },
   ],
   "resolve": Object {
