@@ -51,16 +51,18 @@ function detectHardwareConcurrency() {
   return 1
 }
 
+
+type LazyWorkerHandle = () => WorkerHandle
 export default abstract class BaseRpcDriver {
   private lastWorkerAssignment = -1
 
-  private workerAssignments = new Map() // sessionId -> worker number
+  private workerAssignments = new Map<string, number>() // sessionId -> worker number
 
   private workerCount = 0
 
-  abstract makeWorker(): WorkerHandle
+  abstract makeWorker(pluginManager: PluginManager): WorkerHandle
 
-  private workerPool?: (() => WorkerHandle)[]
+  private workerPool?: LazyWorkerHandle[]
 
   // filter the given object and just remove any non-clonable things from it
   filterArgs<THING_TYPE>(
@@ -107,14 +109,14 @@ export default abstract class BaseRpcDriver {
     worker.call(functionName, signalId, { timeout: 1000000 })
   }
 
-  createWorkerPool() {
+  createWorkerPool(pluginManager: PluginManager): WorkerHandle[] {
     const hardwareConcurrency = detectHardwareConcurrency()
 
     const workerCount =
       this.workerCount || Math.max(1, Math.ceil((hardwareConcurrency - 2) / 3))
 
-    const workerHandles: (() => WorkerHandle)[] = new Array(workerCount)
-
+    const workerHandles: LazyWorkerHandle[] = new Array(workerCount)
+    
     // eslint-disable-next-line  @typescript-eslint/no-this-alias
     const thisB = this
 
@@ -142,18 +144,14 @@ export default abstract class BaseRpcDriver {
       }
     }
 
-    // for each worker, make a ping timer that will kill it and start a new one if it does not
-    // respond to a ping within a certain time
-    // workerHandles.forEach(watchAndReplaceWorker)
-
     return workerHandles
   }
 
-  getWorkerPool() {
+  getWorkerPool(pluginManager: PluginManager) {
     if (!this.workerPool) {
-      const res = this.createWorkerPool()
+      const res = this.createWorkerPool(pluginManager)
       this.workerPool = res
-      return res
+      return res // making this several steps makes TS happy
     }
     return this.workerPool
   }
@@ -163,14 +161,15 @@ export default abstract class BaseRpcDriver {
     functionName: string,
     pluginManager: PluginManager,
   ): WorkerHandle {
-    const workers = this.getWorkerPool()
-    if (!this.workerAssignments.has(sessionId)) {
+    const workers = this.getWorkerPool(pluginManager)
+    let workerNumber = this.workerAssignments.get(sessionId)
+    if (workerNumber === undefined) {
       const workerAssignment = (this.lastWorkerAssignment + 1) % workers.length
       this.workerAssignments.set(sessionId, workerAssignment)
       this.lastWorkerAssignment = workerAssignment
+      workerNumber = workerAssignment
     }
 
-    const workerNumber = this.workerAssignments.get(sessionId)
     // console.log(`${sessionId} -> worker ${workerNumber}`)
     const worker = workers[workerNumber]()
     if (!worker) {
@@ -201,7 +200,6 @@ export default abstract class BaseRpcDriver {
       timeout: 5 * 60 * 1000, // 5 minutes
       ...options,
     })
-
     let handle: ReturnType<typeof setInterval>
     const result = await Promise.race([
       resultP,
@@ -217,6 +215,7 @@ export default abstract class BaseRpcDriver {
         clearInterval(handle)
       }),
     ])
+
     return rpcMethod.deserializeReturn(result)
   }
 }

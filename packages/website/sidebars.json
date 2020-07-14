@@ -9,6 +9,14 @@
       "id": "single_page"
     },
     {
+      "type": "doc",
+      "id": "quickstart_web"
+    },
+    {
+      "type": "doc",
+      "id": "quickstart_desktop"
+    },
+    {
       "type": "category",
       "label": "User guide",
       "items": [

@@ -15,7 +15,7 @@
     "set-value": "^3.0.0"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^2.0.0",
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
     "mobx-state-tree": "^3.14.1",
     "rxjs": "^6.0.0"
   }

@@ -28,6 +28,8 @@ import {
 } from './WiggleTrack/rpcMethods'
 
 export default class extends Plugin {
+  name = 'WigglePlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addTrackType(() => {
       const configSchema = wiggleTrackConfigSchemaFactory(pluginManager)

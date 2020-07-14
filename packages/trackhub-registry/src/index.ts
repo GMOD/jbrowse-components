@@ -5,6 +5,8 @@ import { configSchema, modelFactory } from './trackhub-registry'
 import TrackHubRegistrySelect from './trackhub-registry/TrackHubRegistrySelect'
 
 export default class TrackHubRegistryPlugin extends Plugin {
+  name = 'TrackHubRegistryPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addConnectionType(
       () =>

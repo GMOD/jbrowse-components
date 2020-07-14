@@ -17,7 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "@gmod/gff": "^1.1.2",
-    "@gmod/jbrowse-core": "^2.0.0",
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
     "@gmod/jbrowse-plugin-config": "^2.0.0",
     "@gmod/jbrowse-plugin-filtering": "^2.0.0",
     "@gmod/jbrowse-plugin-legacy-jbrowse": "^2.0.0",

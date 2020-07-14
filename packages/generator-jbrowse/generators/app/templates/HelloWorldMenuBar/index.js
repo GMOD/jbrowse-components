@@ -6,6 +6,8 @@ import HelloWorldMenuBarModelFactory from './model'
 const HelloWorld = lazy(() => import('./components/HelloWorld'))
 
 export default class extends Plugin {
+  name = 'HelloWorldPlugin'
+
   install(pluginManager) {
     pluginManager.addMenuBarType(() => {
       const stateModel = HelloWorldMenuBarModelFactory(pluginManager)

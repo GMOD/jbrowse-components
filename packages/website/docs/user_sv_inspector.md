@@ -9,7 +9,8 @@ The SV inspector is a "workflow" that is designed to help users inspect structur
 
 We can start the SV inspector by launching it from the App level menu bar
 
-![Accessing the SV inspector from the main menu bar](../img/sv_inspector_begin.png)
+!](/jb2/img/sv_inspector_begin.png)
+Accessing the SV inspector from the main menu bar
 
 This will bring up an "import form" that asks you for your SV evidence. This
 can be provided using a URL in these formats:
@@ -19,7 +20,8 @@ can be provided using a URL in these formats:
 - STAR-fusion result file
 - or other formats
 
-![SV inspector import form](../img/sv_inspector_importform.png)
+![](/jb2/img/sv_inspector_importform.png)
+SV inspector import form
 
 ### Example SV inspector workflow
 
@@ -31,7 +33,8 @@ these published data http://schatz-lab.org/publications/SKBR3/
 
 Copy this URL and paste it into the import form and select hg19
 
-![SV inspector import form with URL](../img/sv_inspector_importform_after.png)
+![](/jb2/img/sv_inspector_importform_after.png)
+SV inspector import form with URL
 
 ### SV inspector results
 
@@ -39,7 +42,8 @@ After loading the user's requested file, you will have a spreadsheet with each
 row representing a row of the file you opened, along with a whole-genome
 overview of the SVs on the right
 
-![SV inspector with loaded results](../img/sv_inspector_importform_loaded.png)
+![](/jb2/img/sv_inspector_importform_loaded.png)
+SV inspector with loaded results
 
 Now here is where things can become interesting
 
@@ -47,7 +51,8 @@ We can perform searching and filtering on the table, which can filter down the
 number of rows being displayed, and then this dynamically filters the circos
 view on the right also.
 
-![SV inspector with filter applied](../img/sv_inspector_importform_filtered.png)
+![](/jb2/img/sv_inspector_importform_filtered.png)
+SV inspector with filter applied
 
 ### Launching breakpoint split view
 

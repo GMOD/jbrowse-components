@@ -7,6 +7,8 @@ import {
 } from './Gff3TabixAdapter'
 
 export default class extends Plugin {
+  name = 'GFF3TabixPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>

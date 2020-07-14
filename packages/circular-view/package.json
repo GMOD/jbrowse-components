@@ -13,7 +13,7 @@
   },
   "peerDependencies": {
     "@material-ui/core": "^4.0.0",
-    "@gmod/jbrowse-core": "^2.0.0",
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   }
