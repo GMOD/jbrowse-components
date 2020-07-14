@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-gff3tabix",
-  "version": "0.0.1-beta.5.0",
+  "version": "0.0.1-beta.10",
   "description": "JBrowse 2 gff3tabix.",
   "main": "src/index.ts",
   "scripts": {

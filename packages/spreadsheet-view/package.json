@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-spreadsheet-view",
-  "version": "0.0.1-beta.5.0",
+  "version": "0.0.1-beta.10",
   "description": "JBrowse 2 spreadsheet view",
   "main": "src/index.ts",
   "scripts": {
@@ -9,7 +9,7 @@
   "author": "Robert Buels",
   "license": "MIT",
   "dependencies": {
-    "@gmod/jbrowse-plugin-variants": "^0.0.1-beta.5.0",
+    "@gmod/jbrowse-plugin-variants": "^0.0.1-beta.10",
     "@gmod/vcf": "^4.0.0",
     "@material-ui/icons": "^4.9.1",
     "classnames": "^2.2.6",
