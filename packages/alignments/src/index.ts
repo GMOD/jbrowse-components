@@ -35,6 +35,8 @@ import CramAdapterF from './CramAdapter'
 import SNPCoverageAdapterF from './SNPCoverageAdapter'
 
 export default class AlignmentsPlugin extends Plugin {
+  name = 'AlignmentsPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addTrackType(() => {
       const configSchema = pileupTrackConfigSchemaFactory(pluginManager)

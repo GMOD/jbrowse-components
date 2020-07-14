@@ -11,6 +11,8 @@ import {
 } from './BedTabixAdapter'
 
 export default class BedPlugin extends Plugin {
+  name = 'BedPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>

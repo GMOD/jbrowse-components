@@ -9,6 +9,8 @@ import {
 } from './BreakpointAlignmentsFeatureDetail'
 
 export default class BreakpointSplitViewPlugin extends Plugin {
+  name = 'BreakpointSplitViewPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(require('./BreakpointSplitView')),

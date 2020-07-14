@@ -24,6 +24,8 @@ import {
 import ComparativeRender from './DotplotRenderer/ComparativeRenderRpc'
 
 export default class DotplotPlugin extends Plugin {
+  name = 'DotplotPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(require('./DotplotView')),

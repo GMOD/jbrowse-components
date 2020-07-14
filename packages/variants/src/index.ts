@@ -19,6 +19,8 @@ import {
 } from './VariantTrack'
 
 export default class VariantsPlugin extends Plugin {
+  name = 'VariantsPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>

@@ -168,6 +168,14 @@ export default class PluginManager {
     return this
   }
 
+  getPlugin(name: string) {
+    return this.plugins.find(p => p.name === name)
+  }
+
+  hasPlugin(name: string) {
+    return this.getPlugin(name) !== undefined
+  }
+
   createPluggableElements() {
     // run the creation callbacks for each element type in order.
     // see elementCreationSchedule above for the creation order
@@ -317,10 +325,11 @@ export default class PluginManager {
   ): any => {
     if (typeof lib === 'string') {
       const pack = this.lib[lib]
-      if (!pack)
-        throw new Error(
+      if (!pack) {
+        throw new TypeError(
           `No jbrequire re-export defined for package '${lib}'. If this package must be shared between plugins, add it to ReExports.js. If it does not need to be shared, just import it normally.`,
         )
+      }
       return pack
     }
 

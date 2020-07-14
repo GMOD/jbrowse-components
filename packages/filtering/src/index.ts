@@ -7,6 +7,8 @@ import {
 } from './FilteringTrack'
 
 export default class extends Plugin {
+  name = 'FilteringTrackPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addTrackType(() => {
       const configSchema = filteringTrackConfigSchemaFactory(pluginManager)

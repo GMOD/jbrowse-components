@@ -7,6 +7,8 @@ import {
 } from './SvgFeatureRenderer'
 
 export default class SVGPlugin extends Plugin {
+  name = 'SVGPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addRendererType(
       () =>
