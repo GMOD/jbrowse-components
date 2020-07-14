@@ -45,5 +45,7 @@
     "docs": "oclif-dev readme && prettier --write README.md"
   },
   "types": "lib/index.d.ts",
-  "private": true
+  "publishConfig": {
+    "access": "public"
+  }
 }
