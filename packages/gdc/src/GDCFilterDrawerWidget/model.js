@@ -1,36 +1,35 @@
-import { types } from 'mobx-state-tree'
 import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 
-const Filter = types
-  .model({
+export default jbrowse => {
+  const { types } = jbrowse.jbrequire('mobx-state-tree')
+
+  const Filter = types
+    .model({
+      id: types.identifier,
+      category: types.string,
+      type: types.string,
+      filter: types.string,
+    })
+    .actions(self => ({
+      setCategory(newCategory) {
+        self.category = newCategory
+        self.filter = ''
+      },
+      setFilter(newFilter) {
+        self.filter = newFilter
+      },
+    }))
+
+  const ColourBy = types.model({
     id: types.identifier,
-    category: types.string,
-    type: types.string,
-    filter: types.string,
+    value: types.string,
   })
-  .actions(self => ({
-    setCategory(newCategory) {
-      self.category = newCategory
-      self.filter = ''
-    },
-    setFilter(newFilter) {
-      self.filter = newFilter
-    },
-  }))
 
-const ColourBy = types.model({
-  id: types.identifier,
-  value: types.string,
-})
-
-export default pluginManager =>
-  types
+  return types
     .model('GDCFilterDrawerWidget', {
       id: ElementId,
       type: types.literal('GDCFilterDrawerWidget'),
-      target: types.safeReference(
-        pluginManager.pluggableConfigSchemaType('track'),
-      ),
+      target: types.safeReference(jbrowse.pluggableConfigSchemaType('track')),
       filters: types.array(Filter),
       colourBy: types.map(ColourBy),
     })
@@ -63,3 +62,4 @@ export default pluginManager =>
         return self.colourBy[0] ? self.colourBy[0] : {}
       },
     }))
+}

@@ -14,7 +14,7 @@
     "generic-filehandle": "^2.0.1"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^2.0.0",
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
     "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "^3.14.1",

@@ -1,4 +1,5 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginLoader from '@gmod/jbrowse-core/PluginLoader'
 import { inDevelopment, fromUrlSafeB64 } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import CircularProgress from '@material-ui/core/CircularProgress'
@@ -140,15 +141,21 @@ export default function Loader() {
 
   useEffect(() => {
     async function fetchPlugins() {
-      // TODO: Runtime plugins
-      // Loading runtime plugins will look something like this
-      // const pluginLoader = new PluginLoader(config.plugins)
-      // const runtimePlugins = await pluginLoader.load()
-      // setPlugins([...corePlugins, ...runtimePlugins])
-      setPlugins(corePlugins)
+      // Load runtime plugins
+      if (configSnapshot) {
+        try {
+          const pluginLoader = new PluginLoader(configSnapshot.plugins)
+          const runtimePlugins = await pluginLoader.load()
+          setPlugins([...corePlugins, ...runtimePlugins])
+        } catch (error) {
+          setConfigSnapshot(() => {
+            throw error
+          })
+        }
+      }
     }
     fetchPlugins()
-  }, [])
+  }, [configSnapshot])
 
   if (noDefaultConfig) {
     return <NoConfigMessage />

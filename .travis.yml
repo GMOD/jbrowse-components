@@ -7,14 +7,17 @@ cache:
 - node_modules
 - yarn
 before_install:
+  - cat /proc/meminfo
   - sudo apt -y install p7zip-full
 script:
 - set -e
+# dev tools need to be built first cause they are written in TS but used in webpack configs
+- (cd packages/development-tools && NODE_ENV=development yarn build)
 - yarn lint
 - yarn checkprettier
 - yarn test-ci
 - yarn tsc --noEmit
-- yarn build
+- travis_wait 45 yarn build
 - BUILT_TESTS=1 yarn built-test-ci
 after_success:
 - bash <(curl -s https://codecov.io/bash)

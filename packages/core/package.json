@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-core",
-  "version": "2.0.0",
+  "version": "0.0.1-beta.1",
   "description": "JBrowse 2 core libraries used by plugins",
   "license": "MIT",
   "repository": "GMOD/jbrowse-components",
@@ -48,6 +48,7 @@
     "http-range-fetcher": "^1.2.2",
     "is-object": "^1.0.1",
     "json-stable-stringify": "^1.0.1",
+    "load-script2": "^2.0.5",
     "object-hash": "^1.3.1",
     "object.fromentries": "^2.0.0",
     "pako": "^1.0.10",
