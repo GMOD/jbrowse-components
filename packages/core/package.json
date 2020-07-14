@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-core",
-  "version": "0.0.1-beta.1",
+  "version": "0.0.1-beta.4",
   "description": "JBrowse 2 core libraries used by plugins",
   "license": "MIT",
   "repository": "GMOD/jbrowse-components",
@@ -23,7 +23,6 @@
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "babel . --root-mode upward --out-dir dist --extensions '.ts,.js'",
-    "preversion": "npm run lint && npm test && npm run docs && npm run build",
     "version": "standard-changelog && git add CHANGELOG.md",
     "postpublish": "git push origin master --follow-tags"
   },
