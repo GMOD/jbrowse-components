@@ -51,7 +51,6 @@ function detectHardwareConcurrency() {
   return 1
 }
 
-
 type LazyWorkerHandle = () => WorkerHandle
 export default abstract class BaseRpcDriver {
   private lastWorkerAssignment = -1
@@ -109,14 +108,14 @@ export default abstract class BaseRpcDriver {
     worker.call(functionName, signalId, { timeout: 1000000 })
   }
 
-  createWorkerPool(pluginManager: PluginManager): WorkerHandle[] {
+  createWorkerPool(pluginManager: PluginManager): LazyWorkerHandle[] {
     const hardwareConcurrency = detectHardwareConcurrency()
 
     const workerCount =
       this.workerCount || Math.max(1, Math.ceil((hardwareConcurrency - 2) / 3))
 
     const workerHandles: LazyWorkerHandle[] = new Array(workerCount)
-    
+
     // eslint-disable-next-line  @typescript-eslint/no-this-alias
     const thisB = this
 
