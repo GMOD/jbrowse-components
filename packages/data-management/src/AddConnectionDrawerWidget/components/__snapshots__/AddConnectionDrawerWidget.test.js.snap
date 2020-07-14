@@ -87,8 +87,10 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                       </span>
                     </div>
                     <input
+                      aria-hidden="true"
+                      class="MuiSelect-nativeInput"
                       data-testid="assemblyNameSelect"
-                      type="hidden"
+                      tabindex="-1"
                       value=""
                     />
                     <svg
@@ -131,7 +133,9 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                       </span>
                     </div>
                     <input
-                      type="hidden"
+                      aria-hidden="true"
+                      class="MuiSelect-nativeInput"
+                      tabindex="-1"
                       value=""
                     />
                     <svg
