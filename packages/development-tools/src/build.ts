@@ -2,10 +2,26 @@ import path from 'path'
 import { pascalCase } from 'change-case'
 import webpack from 'webpack'
 
+import ReExports from '@gmod/jbrowse-core/ReExports'
+
 export interface PackageJson {
   name: string
   'jbrowse-plugin'?: { name?: string }
 }
+
+const externals = Object.fromEntries(
+  Object.keys(ReExports).map(moduleName => {
+    return [
+      moduleName,
+      {
+        root: ['JBrowseExports', moduleName],
+        commonjs: moduleName,
+        commonjs2: moduleName,
+        amd: moduleName,
+      },
+    ]
+  }),
+)
 
 export function baseJBrowsePluginWebpackConfig(
   myWebpack: {
@@ -40,6 +56,7 @@ export function baseJBrowsePluginWebpackConfig(
       compress: true,
       port: 9000,
     },
+    externals,
     plugins: [
       // disable webpack code splitting for plugins
       new myWebpack.optimize.LimitChunkCountPlugin({
