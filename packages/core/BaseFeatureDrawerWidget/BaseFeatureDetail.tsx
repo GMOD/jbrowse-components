@@ -87,7 +87,7 @@ interface BaseProps extends BaseCardProps {
   feature: Record<string, any>
 }
 
-const BaseCoreDetails = (props: BaseProps) => {
+export const BaseCoreDetails = (props: BaseProps) => {
   const classes = useStyles()
   const { feature } = props
   const { refName, start, end, strand } = feature
@@ -190,7 +190,7 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
 Attributes.propTypes = {
   attributes: PropTypes.objectOf(PropTypes.any).isRequired,
 }
-const BaseAttributes = (props: BaseProps) => {
+export const BaseAttributes = (props: BaseProps) => {
   const { feature } = props
   return (
     <BaseCard {...props} title="Attributes">
@@ -203,7 +203,7 @@ interface BaseInputProps extends BaseCardProps {
   model: any
 }
 
-const BaseFeatureDetails = (props: BaseInputProps) => {
+export const BaseFeatureDetails = observer((props: BaseInputProps) => {
   const classes = useStyles()
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
@@ -214,7 +214,4 @@ const BaseFeatureDetails = (props: BaseInputProps) => {
       <BaseAttributes feature={feat} {...props} />
     </Paper>
   )
-}
-
-export { BaseCoreDetails, BaseAttributes }
-export default observer(BaseFeatureDetails)
+})

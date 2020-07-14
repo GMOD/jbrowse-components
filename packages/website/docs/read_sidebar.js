@@ -5,6 +5,8 @@ const sidebar = JSON.parse(fs.readFileSync('../sidebars.json'))
 function readTree(tree) {
   let res = []
   res.push('introduction')
+  res.push('quickstart_web')
+  res.push('quickstart_desktop')
   tree.sidebar
     .filter(f =>
       ['User guide', 'Configuration guide', 'Developer guide'].includes(

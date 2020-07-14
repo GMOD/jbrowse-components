@@ -70,6 +70,7 @@ export default (pluginManager: PluginManager) => {
       const { dataAdapter } = getSubAdapter(
         readConfObject(config, 'sequenceAdapter'),
       )
+      // TODO: BaseFeatureDataAdapter is different inside of the plugin build, needs to be gotten from pluginManager.lib
       if (dataAdapter instanceof BaseFeatureDataAdapter) {
         this.sequenceAdapter = dataAdapter
       } else {

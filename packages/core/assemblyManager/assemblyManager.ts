@@ -8,6 +8,9 @@ import {
   types,
   Instance,
 } from 'mobx-state-tree'
+
+import { when } from '../util'
+
 import { readConfObject } from '../configuration'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import assemblyFactory from './assembly'
@@ -51,22 +54,31 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       },
     }))
     .views(self => ({
-      getRefNameMapForAdapter(
+      async getRefNameMapForAdapter(
         adapterConf: unknown,
         assemblyName: string,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
+        await when(() => Boolean(self.get(assemblyName)), {
+          signal: opts.signal,
+          name: 'when assembly ready',
+        })
+
         const assembly = self.get(assemblyName)
         if (assembly) {
           return assembly.getRefNameMapForAdapter(adapterConf, opts)
         }
         return undefined
       },
-      getReverseRefNameMapForAdapter(
+      async getReverseRefNameMapForAdapter(
         adapterConf: unknown,
         assemblyName: string,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
+        await when(() => Boolean(self.get(assemblyName)), {
+          signal: opts.signal,
+          name: 'when assembly ready',
+        })
         const assembly = self.get(assemblyName)
         if (assembly) {
           return assembly.getReverseRefNameMapForAdapter(adapterConf, opts)

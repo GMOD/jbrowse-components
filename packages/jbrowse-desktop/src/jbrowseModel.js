@@ -20,7 +20,7 @@ export default function JBrowseDesktop(
   assemblyConfigSchemasType,
 ) {
   return types
-    .model('JBrowseWeb', {
+    .model('JBrowseDesktop', {
       configuration: ConfigurationSchema('Root', {
         rpc: RpcManager.configSchema,
         // possibly consider this for global config editor
@@ -37,6 +37,7 @@ export default function JBrowseDesktop(
           defaultValue: false,
         },
       }),
+      plugins: types.frozen(),
       assemblies: types.array(assemblyConfigSchemasType),
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration

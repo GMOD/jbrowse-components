@@ -7,6 +7,8 @@ import {
 import TableChartIcon from '@material-ui/icons/TableChart'
 
 export default class SvInspectorViewPlugin extends Plugin {
+  name = 'SvInspectorViewPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(require('./SvInspectorView/SvInspectorViewType')),

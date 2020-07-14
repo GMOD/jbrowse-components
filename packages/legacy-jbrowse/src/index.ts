@@ -12,6 +12,8 @@ import {
 } from './JBrowse1Connection'
 
 export default class LegacyJBrowsePlugin extends Plugin {
+  name = 'LegacyJBrowsePlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>
