@@ -660,9 +660,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
             volMyt1
           </div>
           <input
-            aria-hidden="true"
-            class="MuiSelect-nativeInput"
-            tabindex="-1"
+            type="hidden"
             value="0"
           />
           <svg

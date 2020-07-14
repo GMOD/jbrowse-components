@@ -16,16 +16,18 @@
   ],
   "author": "Andrew Duncan",
   "license": "MIT",
+  "dependencies": {
+    "@material-ui/icons": "^4.9.1",
+    "uuid": "^7.0.1"
+  },
   "private": true,
   "devDependencies": {
     "@gmod/jbrowse-development-tools": "^0.0.1"
   },
-  "dependencies": {
-    "@material-ui/icons": "^4.9.1",
-    "uuid": "^7.0.1",
+  "peerDependencies": {
     "@gmod/jbrowse-core": "^0.0.1-beta.1",
     "@gmod/jbrowse-plugin-linear-genome-view": "^0.0.1-beta.1",
-    "@material-ui/core": "^4.11.0",
+    "@material-ui/core": "^4.9.13",
     "@material-ui/lab": "^4.0.0-alpha.45",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",

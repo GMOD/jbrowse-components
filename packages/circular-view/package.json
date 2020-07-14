@@ -9,9 +9,11 @@
   "author": "Robert Buels",
   "license": "MIT",
   "dependencies": {
-    "@material-ui/icons": "^4.9.1",
+    "@material-ui/icons": "^4.9.1"
+  },
+  "peerDependencies": {
     "@gmod/jbrowse-core": "^0.0.1-beta.1",
-    "@material-ui/core": "^4.11.0",
+    "@material-ui/core": "^4.9.13",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },

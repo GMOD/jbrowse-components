@@ -1602,9 +1602,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
               BamAdapter
             </div>
             <input
-              aria-hidden="true"
-              class="MuiSelect-nativeInput"
-              tabindex="-1"
+              type="hidden"
               value="BamAdapter"
             />
             <svg
@@ -1777,9 +1775,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                     BAI
                   </div>
                   <input
-                    aria-hidden="true"
-                    class="MuiSelect-nativeInput"
-                    tabindex="-1"
+                    type="hidden"
                     value="BAI"
                   />
                   <svg
@@ -2188,9 +2184,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
             pileup
           </div>
           <input
-            aria-hidden="true"
-            class="MuiSelect-nativeInput"
-            tabindex="-1"
+            type="hidden"
             value="pileup"
           />
           <svg
@@ -2517,9 +2511,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                     normal
                   </div>
                   <input
-                    aria-hidden="true"
-                    class="MuiSelect-nativeInput"
-                    tabindex="-1"
+                    type="hidden"
                     value="normal"
                   />
                   <svg
@@ -3700,9 +3692,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the PileupTr
                     normal
                   </div>
                   <input
-                    aria-hidden="true"
-                    class="MuiSelect-nativeInput"
-                    tabindex="-1"
+                    type="hidden"
                     value="normal"
                   />
                   <svg
