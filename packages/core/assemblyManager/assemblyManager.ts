@@ -59,7 +59,7 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
         assemblyName: string,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
-        await when(() => self.get(assemblyName), {
+        await when(() => Boolean(self.get(assemblyName)), {
           signal: opts.signal,
           name: 'when assembly ready',
         })
@@ -75,7 +75,7 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
         assemblyName: string,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
-        await when(() => self.get(assemblyName), {
+        await when(() => Boolean(self.get(assemblyName)), {
           signal: opts.signal,
           name: 'when assembly ready',
         })
