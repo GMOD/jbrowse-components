@@ -25,6 +25,7 @@
   "license": "MIT",
   "dependencies": {
     "@gmod/jbrowse-core": "^0.0.1-beta.14",
+    "@types/copy-webpack-plugin": "^6.0.0",
     "@types/webpack": "^4.41.18",
     "change-case": "^4.1.1",
     "copy-webpack-plugin": "^6.0.3",

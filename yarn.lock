@@ -4161,6 +4161,14 @@
   dependencies:
     "@types/color-convert" "*"
 
+"@types/copy-webpack-plugin@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@types/copy-webpack-plugin/-/copy-webpack-plugin-6.0.0.tgz#ad4a4d7be859ba6a6adcb970aab3256a705cd049"
+  integrity sha512-Ousy+sNap1j44eG+C9FZvTUybpp9lFmKjBRF7L0NDs/+SDA9OXKo2OpsHJfD/LMWflz+uvfTCBXH1CgdL6AW/g==
+  dependencies:
+    "@types/node" "*"
+    "@types/webpack" "*"
+
 "@types/d3-scale@^2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@types/d3-scale/-/d3-scale-2.2.0.tgz#e5987a2857365823eb26ed5eb21bc566c4dcf1c0"
@@ -4524,10 +4532,10 @@
     "@types/source-list-map" "*"
     source-map "^0.7.3"
 
-"@types/webpack@^4.41.0", "@types/webpack@^4.41.8":
-  version "4.41.17"
-  resolved "https://registry.yarnpkg.com/@types/webpack/-/webpack-4.41.17.tgz#0a69005e644d657c85b7d6ec1c826a71bebd1c93"
-  integrity sha512-6FfeCidTSHozwKI67gIVQQ5Mp0g4X96c2IXxX75hYEQJwST/i6NyZexP//zzMOBb+wG9jJ7oO8fk9yObP2HWAw==
+"@types/webpack@*", "@types/webpack@^4.41.18":
+  version "4.41.21"
+  resolved "https://registry.yarnpkg.com/@types/webpack/-/webpack-4.41.21.tgz#cc685b332c33f153bb2f5fc1fa3ac8adeb592dee"
+  integrity sha512-2j9WVnNrr/8PLAB5csW44xzQSJwS26aOnICsP3pSGCEdsu6KYtfQ6QJsVUKHWRnm1bL7HziJsfh5fHqth87yKA==
   dependencies:
     "@types/anymatch" "*"
     "@types/node" "*"
@@ -4536,10 +4544,10 @@
     "@types/webpack-sources" "*"
     source-map "^0.6.0"
 
-"@types/webpack@^4.41.18":
-  version "4.41.21"
-  resolved "https://registry.yarnpkg.com/@types/webpack/-/webpack-4.41.21.tgz#cc685b332c33f153bb2f5fc1fa3ac8adeb592dee"
-  integrity sha512-2j9WVnNrr/8PLAB5csW44xzQSJwS26aOnICsP3pSGCEdsu6KYtfQ6QJsVUKHWRnm1bL7HziJsfh5fHqth87yKA==
+"@types/webpack@^4.41.0", "@types/webpack@^4.41.8":
+  version "4.41.17"
+  resolved "https://registry.yarnpkg.com/@types/webpack/-/webpack-4.41.17.tgz#0a69005e644d657c85b7d6ec1c826a71bebd1c93"
+  integrity sha512-6FfeCidTSHozwKI67gIVQQ5Mp0g4X96c2IXxX75hYEQJwST/i6NyZexP//zzMOBb+wG9jJ7oO8fk9yObP2HWAw==
   dependencies:
     "@types/anymatch" "*"
     "@types/node" "*"
