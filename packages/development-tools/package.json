@@ -9,7 +9,6 @@
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "babel src --root-mode upward --out-dir dist --extensions '.ts,.js'",
-    "preversion": "npm run lint && npm test && npm run docs && npm run build",
     "version": "standard-changelog && git add CHANGELOG.md",
     "postpublish": "git push origin master --follow-tags"
   },
