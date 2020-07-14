@@ -45,6 +45,7 @@ async function getPluginManager() {
   const runtimePlugins = await pluginLoader.load()
   const plugins = [...corePlugins, ...runtimePlugins]
   const pluginManager = new PluginManager(plugins.map(P => new P()))
+  pluginManager.installGlobalReExports(self)
   pluginManager.createPluggableElements()
   pluginManager.configure()
   jbPluginManager = pluginManager

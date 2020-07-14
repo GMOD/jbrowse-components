@@ -261,6 +261,7 @@ export default function RootModel(
 
 export function createTestSession(snapshot = {}) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
+  pluginManager.installGlobalReExports(global)
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = RootModel(pluginManager)

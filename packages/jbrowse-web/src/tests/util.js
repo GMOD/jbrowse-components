@@ -15,6 +15,7 @@ configSnapshot.configuration = {
 
 export function getPluginManager(initialState, adminMode = false) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
+  pluginManager.installGlobalReExports(global)
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)

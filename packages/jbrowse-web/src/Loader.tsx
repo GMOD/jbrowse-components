@@ -172,6 +172,8 @@ export default function Loader() {
   }
 
   const pluginManager = new PluginManager(plugins.map(P => new P()))
+  pluginManager.installGlobalReExports(window)
+
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)
