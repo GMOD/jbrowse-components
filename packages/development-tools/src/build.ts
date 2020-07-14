@@ -1,6 +1,7 @@
 import path from 'path'
 import { pascalCase } from 'change-case'
 import webpack from 'webpack'
+import CopyPlugin from 'copy-webpack-plugin'
 
 import ReExportsList from '@gmod/jbrowse-core/ReExports/list'
 
@@ -38,29 +39,38 @@ export function baseJBrowsePluginWebpackConfig(
     pluginConfiguration?.name ||
     packageJson.name.replace('@gmod/jbrowse-plugin-', '')
 
+  const distDir = path.resolve(buildDir, 'dist')
+
   return {
     mode: process.env.NODE_ENV || 'production',
     entry: './src/index.ts',
     devtool: process.env.NODE_ENV === 'development' ? 'source-map' : false,
     // @ts-ignore
     output: {
-      path: path.resolve(buildDir, 'dist'),
-      publicPath: 'dist/',
+      path: distDir,
       filename: `plugin.js`,
       sourceMapFilename: `plugin.js.map`,
       library: `JBrowsePlugin${pascalCase(pluginNameParamCase)}`,
       libraryTarget: 'umd',
     },
     devServer: {
-      contentBase: path.join(buildDir, 'dist'),
-      compress: true,
+      contentBase: path.join(buildDir, 'assets'),
       port: 9000,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+      },
     },
     externals,
     plugins: [
-      // disable webpack code splitting for plugins
-      new myWebpack.optimize.LimitChunkCountPlugin({
-        maxChunks: 1,
+      // new myWebpack.optimize.LimitChunkCountPlugin({
+      //   maxChunks: 1,
+      // }),
+      new CopyPlugin({
+        patterns: [{ from: path.resolve(buildDir, 'assets'), to: distDir }],
+        options: {
+          concurrency: 100,
+        },
       }),
     ],
     resolve: {
