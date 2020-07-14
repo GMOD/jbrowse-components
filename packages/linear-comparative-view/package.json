@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-linear-comparative-view",
-  "version": "2.0.0",
+  "version": "0.0.1-beta.5.0",
   "description": "JBrowse 2 linear comparative view",
   "main": "src/index.ts",
   "scripts": {
@@ -31,5 +31,6 @@
     "json-stable-stringify": "^1.0.1",
     "mobx-run-in-reactive-context": "^1.0.1",
     "react-sizeme": "^2.6.12"
-  }
+  },
+  "private": true
 }

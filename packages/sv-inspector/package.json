@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-sv-inspector",
-  "version": "2.0.0",
+  "version": "0.0.1-beta.5.0",
   "description": "JBrowse 2 SV inspector view",
   "main": "src/index.ts",
   "scripts": {
@@ -20,5 +20,6 @@
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
-  }
+  },
+  "private": true
 }

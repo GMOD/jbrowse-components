@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-hic",
-  "version": "2.0.0",
+  "version": "0.0.1-beta.5.0",
   "description": "JBrowse 2 hic adapters, tracks, etc.",
   "main": "src/index.ts",
   "scripts": {
@@ -22,5 +22,6 @@
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "rxjs": "^6.0.0"
-  }
+  },
+  "private": true
 }

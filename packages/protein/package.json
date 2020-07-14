@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-protein",
-  "version": "2.0.0",
+  "version": "0.0.1-beta.5.0",
   "description": "JBrowse 2 protein-specific renderers, etc.",
   "main": "src/index.js",
   "scripts": {
@@ -13,5 +13,6 @@
     "mobx-react": "^6.0.0",
     "prop-types": "^15.0.0",
     "react": "^16.8.0"
-  }
+  },
+  "private": true
 }
