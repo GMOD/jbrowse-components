@@ -33,15 +33,22 @@ export default class PluginLoader {
     this.definitions = JSON.parse(JSON.stringify(pluginDefinitions))
   }
 
-  async loadScript(scriptUrl: string): Promise<void> {
+  loadScript(scriptUrl: string): Promise<void> {
     if (document && document.getElementsByTagName) {
       return domLoadScript(scriptUrl)
     }
     // @ts-ignore
     if (self && self.importScripts) {
-      // @ts-ignore
-      self.importScripts(scriptUrl)
-      return undefined
+      return new Promise((resolve, reject) => {
+        try {
+          // @ts-ignore
+          self.importScripts(scriptUrl)
+        } catch (error) {
+          reject(error || new Error(`failed to load ${scriptUrl}`))
+          return
+        }
+        resolve()
+      })
     }
     throw new Error(
       'cannot figure out how to load external JS scripts in this environment',
@@ -50,9 +57,11 @@ export default class PluginLoader {
 
   async loadPlugin(definition: PluginDefinition): Promise<PluginConstructor> {
     const parsedUrl = url.parse(definition.url)
-    if (!parsedUrl.protocol)
-      throw new TypeError(`invalid plugin url '${definition.url}'`)
-    if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
+    if (
+      !parsedUrl.protocol ||
+      parsedUrl.protocol === 'http:' ||
+      parsedUrl.protocol === 'https:'
+    ) {
       await this.loadScript(definition.url)
       const moduleName =
         definition.name || this.moduleNameFromParsedUrl(parsedUrl)
@@ -63,9 +72,12 @@ export default class PluginLoader {
         throw new Error(
           `plugin ${moduleName} failed to load, window.${umdName} is undefined`,
         )
+
       return plugin.default
     }
-    throw new Error(`cannot load plugins using from ${parsedUrl.protocol}`)
+    throw new Error(
+      `cannot load plugins using protocol "${parsedUrl.protocol}"`,
+    )
   }
 
   installGlobalReExports(target: WindowOrWorkerGlobalScope | NodeJS.Global) {

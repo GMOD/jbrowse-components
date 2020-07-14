@@ -42,7 +42,7 @@ async function getPluginManager() {
   const config = await receiveConfiguration()
   // console.log('got worker boot config', config)
   const pluginLoader = new PluginLoader(config.plugins)
-  pluginLoader.installGlobalReExports(self)
+  pluginLoader.installGlobalReExports(self.window)
   const runtimePlugins = await pluginLoader.load()
   const plugins = [...corePlugins, ...runtimePlugins]
   const pluginManager = new PluginManager(plugins.map(P => new P()))
