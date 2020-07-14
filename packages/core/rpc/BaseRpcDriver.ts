@@ -55,11 +55,11 @@ function detectHardwareConcurrency() {
 export default abstract class BaseRpcDriver {
   private lastWorkerAssignment = -1
 
-  private workerAssignments = new Map() // sessionId -> worker number
+  private workerAssignments = new Map<string, number>() // sessionId -> worker number
 
   private workerCount = 0
 
-  abstract makeWorker(): WorkerHandle
+  abstract makeWorker(pluginManager: PluginManager): WorkerHandle
 
   private workerPool?: WorkerHandle[]
 
@@ -108,7 +108,7 @@ export default abstract class BaseRpcDriver {
     worker.call(functionName, signalId, { timeout: 1000000 })
   }
 
-  createWorkerPool(): WorkerHandle[] {
+  createWorkerPool(pluginManager: PluginManager): WorkerHandle[] {
     const hardwareConcurrency = detectHardwareConcurrency()
 
     const workerCount =
@@ -116,7 +116,7 @@ export default abstract class BaseRpcDriver {
 
     const workerHandles: WorkerHandle[] = new Array(workerCount)
     for (let i = 0; i < workerCount; i += 1) {
-      workerHandles[i] = this.makeWorker()
+      workerHandles[i] = this.makeWorker(pluginManager)
     }
 
     const watchAndReplaceWorker = (
@@ -130,7 +130,7 @@ export default abstract class BaseRpcDriver {
           } did not respond within ${WORKER_MAX_PING_TIME} ms, terminating and replacing.`,
         )
         worker.destroy()
-        workerHandles[workerIndex] = this.makeWorker()
+        workerHandles[workerIndex] = this.makeWorker(pluginManager)
         watchAndReplaceWorker(workerHandles[workerIndex], workerIndex)
       })
     }
@@ -142,9 +142,9 @@ export default abstract class BaseRpcDriver {
     return workerHandles
   }
 
-  getWorkerPool(): WorkerHandle[] {
+  getWorkerPool(pluginManager: PluginManager): WorkerHandle[] {
     if (!this.workerPool) {
-      this.workerPool = this.createWorkerPool()
+      this.workerPool = this.createWorkerPool(pluginManager)
     }
     return this.workerPool
   }
@@ -154,14 +154,16 @@ export default abstract class BaseRpcDriver {
     functionName: string,
     pluginManager: PluginManager,
   ): WorkerHandle {
-    const workers = this.getWorkerPool()
-    if (!this.workerAssignments.has(sessionId)) {
+    const workers = this.getWorkerPool(pluginManager)
+    let workerNumber = this.workerAssignments.get(sessionId)
+    if (workerNumber === undefined) {
       const workerAssignment = (this.lastWorkerAssignment + 1) % workers.length
       this.workerAssignments.set(sessionId, workerAssignment)
       this.lastWorkerAssignment = workerAssignment
+      workerNumber = workerAssignment
     }
 
-    const workerNumber = this.workerAssignments.get(sessionId)
+    // console.log(`${sessionId} -> worker ${workerNumber}`)
     const worker = workers[workerNumber]
     if (!worker) {
       throw new Error('no web workers registered for RPC')

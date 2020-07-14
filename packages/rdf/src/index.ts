@@ -7,6 +7,8 @@ import {
 } from './SPARQLAdapter'
 
 export default class RdfPlugin extends Plugin {
+  name = 'RdfPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>
