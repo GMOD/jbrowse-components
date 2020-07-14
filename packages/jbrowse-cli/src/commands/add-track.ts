@@ -2,8 +2,24 @@ import { Command, flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
-import { guessAdapter, guessTrackType } from '@gmod/jbrowse-core/util/tracks'
+import {
+  guessAdapter,
+  guessSubadapter,
+  guessTrackType,
+} from '@gmod/jbrowse-core/util/tracks'
 
+interface Track {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
+}
+
+interface Config {
+  assemblies?: unknown[]
+  configuration?: {}
+  connections?: unknown[]
+  defaultSession?: {}
+  tracks?: Track[]
+}
 export default class AddTrack extends Command {
   static description = 'Add a track to a JBrowse 2 configuration'
 
@@ -15,6 +31,11 @@ export default class AddTrack extends Command {
       required: true,
       description: `track file or URL`,
     },
+    {
+      name: 'assemblyNames',
+      required: false,
+      description: `assembly name or names as comma separated string`,
+    },
   ]
 
   static flags = {
@@ -23,14 +44,14 @@ export default class AddTrack extends Command {
       description: `type of track, by default inferred from track file`,
       options: [
         'AlignmentsTrack',
+        'PileupTrack',
+        'SNPCoverageTrack',
         'StructuralVariantChordTrack',
         'WiggleTrack',
         'VariantTrack',
         'DotplotTrack',
-        'LinearComparativeTrack',
         'LinearSyntenyTrack',
-        'SequenceTrack',
-        'ReferenceSequenceTrack',
+        'BasicTrack',
       ],
     }),
     name: flags.string({
@@ -38,10 +59,11 @@ export default class AddTrack extends Command {
       description:
         'Name of the track. Will be defaulted to the trackId if none specified',
     }),
-    config: flags.string({
+    configLocation: flags.string({
       char: 'c',
       description:
-        'JSON config for track, will be updated into existing config',
+        'Config file; if the file does not exist, it will be created',
+      default: './config.json',
     }),
     description: flags.string({
       char: 'd',
@@ -56,62 +78,162 @@ export default class AddTrack extends Command {
       description:
         'Optional Comma separated string of categories to group tracks',
     }),
+    config: flags.string({
+      description:
+        'Any extra config settings to add to a track. i.e defaultRendering: { density }',
+    }),
+    // consider renderer
+    force: flags.boolean({
+      char: 'f',
+      description: 'Overwrites any existing tracks if same track id',
+    }),
   }
 
   async run() {
     await this.checkLocation()
     const { args: runArgs, flags: runFlags } = this.parse(AddTrack)
     const { track: argsTrack } = runArgs as { track: string }
-
-    const { track } = runArgs
-    let { type, name, trackId } = runFlags
-    const { config } = runFlags
+    const {
+      type,
+      name,
+      trackId,
+      configLocation,
+      config,
+      category,
+      description,
+    } = runFlags
 
     const trackLocation = await this.resolveFileLocation(argsTrack)
     const { location, protocol } = trackLocation
-    if (type) {
-      this.debug(`Type is: ${type}`)
-    } else {
-      const adapter = guessAdapter(location, protocol)
-      type = guessTrackType(adapter.type)
-    }
+    const adapter = guessAdapter(location, protocol)
 
-    let response
-    let file
-    if (protocol === 'uri') {
-      try {
-        response = await fetch(trackLocation.location, {
-          method: 'GET',
-        })
-      } catch (error) {
-        this.error(error)
+    // if (type) {
+    //   this.debug(`Type is: ${type}`)
+    // } else {
+    //   type = guessTrackType(adapter.type)
+    // }
+
+    // if (trackId) {
+    //   this.debug(`Track is :${trackId}`)
+    // } else
+    //   trackId = path.basename(
+    //     trackLocation.location,
+    //     path.extname(trackLocation.location),
+    //   ) // get filename and set as name
+
+    // if (name) {
+    //   this.debug(`Name is: ${name}`)
+    // } else name = trackId
+
+    let configObj = {}
+    if (config) configObj = JSON.parse(config)
+    const trackConfig: Track = {
+      type: type || guessTrackType(adapter.type),
+      trackId:
+        trackId ||
+        path.basename(
+          trackLocation.location,
+          path.extname(trackLocation.location),
+        ),
+      name: name || trackId,
+      assemblyNames: runArgs.assemblyNames
+        ? runArgs.assemblyNames.split(/,\s?/)
+        : [''], // logic to get the assemblyname
+      category: category ? category.split(/,\s?/) : ['Default'],
+      adapter,
+      ...configObj,
+    }
+    this.debug(
+      `Track location: ${trackLocation.location}, index: ${
+        adapter ? adapter.index : ''
+      }`,
+    )
+    if (description) trackConfig.description = description
+
+    switch (type) {
+      case 'SNPCoverageTrack': {
+        const subAdapter = guessSubadapter(
+          trackLocation.location,
+          trackLocation.protocol,
+          'SNPCoverageAdapter',
+        )
+
+        trackConfig.adapter.subAdapter = subAdapter
       }
-      file = response.json()
-    } else {
-      file = await fsPromises.readFile(trackLocation.location, {
-        encoding: 'utf8',
-      })
     }
-    if (trackId) {
-      this.debug(`Track is :${track}`)
-    } else trackId = location.substring(location.lastIndexOf('/') + 1) // get filename and set as name
 
-    if (name) {
-      this.debug(`Name is: ${name}`)
-    } else name = trackId
+    let configContentsJson
+    const defaultConfig: Config = {
+      assemblies: [],
+      configuration: {},
+      connections: [],
+      defaultSession: {
+        name: 'New Session',
+      },
+      tracks: [],
+    }
+    try {
+      configContentsJson = await this.readJsonConfig(configLocation)
+      this.debug(`Found existing config file ${configLocation}`)
+    } catch (error) {
+      this.debug('No existing config file found, using default config')
+      configContentsJson = JSON.stringify(defaultConfig)
+    }
 
-    // if type is not specificed, guess the track type based off track extension
-    // infer the index file based off the track extension
-    // if name and track id not specificed, const name = and const track id = based off file
-    // if no category, put in default category
-    // confirm track exists using this.resolveFileLocation(argsTrack)
-    // add track to config with above info
+    let configContents: Config
+    try {
+      configContents = { ...defaultConfig, ...JSON.parse(configContentsJson) }
+    } catch (error) {
+      this.error('Could not parse existing config file')
+    }
+
+    if (!configContents.tracks) {
+      configContents.tracks = []
+    }
+
+    const idx = configContents.tracks.findIndex(
+      configTrack => configTrack.trackId === trackId,
+    )
+
+    if (idx !== -1) {
+      this.debug(
+        `Found existing trackId ${trackConfig.trackId} in configuration`,
+      )
+      if (runFlags.force) {
+        this.debug(`Overwriting track ${trackConfig.trackId} in configuration`)
+        configContents.tracks[idx] = trackConfig
+      } else
+        this.error(
+          `Cannot add track with name ${trackConfig.trackId}, a track with that name already exists.`,
+          { exit: 10 },
+        )
+    } else configContents.tracks.push(trackConfig)
+
+    this.debug(`Writing configuration to file ${configLocation}`)
+    await fsPromises.writeFile(
+      runFlags.configLocation,
+      JSON.stringify(configContents, undefined, 2),
+    )
+
+    this.log(
+      `${idx !== -1 ? 'Overwrote' : 'Added'} track "${name}" ${
+        idx !== -1 ? 'in' : 'to'
+      } ${runFlags.configLocation}`,
+    )
   }
 
-  guessTrackType(track: string) {
-    // if track ends with return 'track'
-    // if isvalidJSON/isvalidtrack return basictrack or let them choose
-    // else error out
+  async readJsonConfig(location: string) {
+    let locationUrl: URL | undefined
+    try {
+      locationUrl = new URL(location)
+    } catch (error) {
+      // ignore
+    }
+    if (locationUrl) {
+      const response = await fetch(locationUrl)
+      return response.json()
+    }
+    return fsPromises.readFile(location, { encoding: 'utf8' })
   }
 
   // pretty much same as add-assembly, dont need skipCheck flag
