@@ -2390,6 +2390,15 @@
     "@gmod/bgzf-filehandle" "^1.2.4"
     es6-promisify "^6.0.1"
 
+"@gmod/jbrowse-development-tools@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@gmod/jbrowse-development-tools/-/jbrowse-development-tools-0.0.1.tgz#f5c42615204581ad3ad90b58274fcc630e5b1068"
+  integrity sha512-erjILZrW3YYvR4UuUH2kWnPO9nKJKge+29el8dMRzlQzaZUGULkqtv3zlhdxO5NjEbkg1Gf2R7SGnyFEcNq0eg==
+  dependencies:
+    "@types/webpack" "^4.41.18"
+    change-case "^4.1.1"
+    webpack "^4.43.0"
+
 "@gmod/nclist@^0.1.1":
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-0.1.1.tgz#9038c4d809f825edc2a4dceb43754aa3dfb6d090"
@@ -3369,7 +3378,7 @@
   dependencies:
     "@librpc/ee" "1.0.4"
 
-"@material-ui/core@^4.0.0", "@material-ui/core@^4.11.0":
+"@material-ui/core@^4.11.0":
   version "4.11.0"
   resolved "https://registry.yarnpkg.com/@material-ui/core/-/core-4.11.0.tgz#b69b26e4553c9e53f2bfaf1053e216a0af9be15a"
   integrity sha512-bYo9uIub8wGhZySHqLQ833zi4ZML+XCBE1XwJ8EuUVSpTWWG57Pm+YugQToJNFsEyiKFhPh8DPD0bgupz8n01g==
@@ -14339,7 +14348,7 @@ mobx-state-tree@3.14.1:
   resolved "https://registry.yarnpkg.com/mobx-state-tree/-/mobx-state-tree-3.14.1.tgz#0a523876b87817f5c8553a162e71b38044f0c9da"
   integrity sha512-cmwO1jvYPgaJTGJtqId0Qod4cDqcJEWWCwSu/Uns7jFT+kWKzLFhzb9jxPub8YM3HSXg7HPGpKiLe970he9FOw==
 
-mobx@*, mobx@^5.0.0, mobx@^5.10.1, mobx@^5.15.2:
+mobx@*, mobx@^5.0.0, mobx@^5.10.1:
   version "5.15.4"
   resolved "https://registry.yarnpkg.com/mobx/-/mobx-5.15.4.tgz#9da1a84e97ba624622f4e55a0bf3300fb931c2ab"
   integrity sha512-xRFJxSU2Im3nrGCdjSuOTFmxVDGeqOHL+TyADCGbT0k4HHqGmx5u2yaHNryvoORpI4DfbzjJ5jPmuv+d7sioFw==
@@ -17214,7 +17223,7 @@ react-window@^1.8.5:
     "@babel/runtime" "^7.0.0"
     memoize-one ">=3.1.1 <6"
 
-react@^16.8.0, react@^16.8.4, react@^16.9.0:
+react@^16.8.0, react@^16.8.4:
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react/-/react-16.13.1.tgz#2e818822f1a9743122c063d6410d85c1e3afe48e"
   integrity sha512-YMZQQq32xHLX0bz5Mnibv1/LHb3Sqzngu7xstSM+vrkE5Kzr9xE0yMByK5kMoTK30YVJE61WfbxIFFvfeDKT1w==

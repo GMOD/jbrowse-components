@@ -17,7 +17,7 @@
     "react-sizeme": "^2.6.7",
     "react-window": "^1.8.5",
     "@gmod/jbrowse-core": "^0.0.1-beta.1",
-    "@material-ui/core": "^4.0.0",
+    "@material-ui/core": "^4.11.0",
     "@material-ui/lab": "^4.0.0-alpha.45",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",

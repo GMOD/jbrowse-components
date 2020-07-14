@@ -31,7 +31,7 @@
   ],
   "dependencies": {
     "@librpc/web": "rbuels/librpc-web#737bb9706762a52a87169a12c9b59fb241febab0",
-    "@material-ui/core": "^4.0.0",
+    "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.0.0",
     "@material-ui/lab": "^4.0.0-alpha.45",
     "abortable-promise-cache": "^1.1.3",
