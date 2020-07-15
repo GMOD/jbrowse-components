@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": false,
   "scripts": {
-    "copycli": "cp ../jbrowse-cli/README.md docs/",
+    "copycli": "cp ../jbrowse-cli/README.md docs/cli.md",
     "prestart": "npm run copycli",
     "start": "docusaurus start",
     "prebuild": "npm run copycli && npm run make",
