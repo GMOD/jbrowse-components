@@ -45,31 +45,33 @@ import MUITypography from '@material-ui/core/Typography'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 
-import * as BaseAdapterExports from './data_adapters/BaseAdapter'
+import * as BaseAdapterExports from '../data_adapters/BaseAdapter'
 
-import * as BaseFeatureDetail from './BaseFeatureDrawerWidget/BaseFeatureDetail'
+import * as BaseFeatureDetail from '../BaseFeatureDrawerWidget/BaseFeatureDetail'
 
-import Base1DView from './util/Base1DViewModel'
-import ViewType from './pluggableElementTypes/ViewType'
-import AdapterType from './pluggableElementTypes/AdapterType'
-import TrackType from './pluggableElementTypes/TrackType'
-import DrawerWidgetType from './pluggableElementTypes/DrawerWidgetType'
+import Base1DView from '../util/Base1DViewModel'
+import ViewType from '../pluggableElementTypes/ViewType'
+import AdapterType from '../pluggableElementTypes/AdapterType'
+import TrackType from '../pluggableElementTypes/TrackType'
+import DrawerWidgetType from '../pluggableElementTypes/DrawerWidgetType'
 
-import ServerSideRendererType from './pluggableElementTypes/renderers/ServerSideRendererType'
-import CircularChordRendererType from './pluggableElementTypes/renderers/CircularChordRendererType'
-import BoxRendererType from './pluggableElementTypes/renderers/BoxRendererType'
+import ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
+import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType'
+import BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType'
 
-import * as Configuration from './configuration'
-import Plugin from './Plugin'
-import * as coreUi from './ui'
-import * as coreUtil from './util'
-import * as coreColor from './util/color'
-import * as trackUtils from './util/tracks'
-import * as coreIo from './util/io'
-import * as coreMstReflection from './util/mst-reflection'
-import * as MUIColors from './ReExports/material-ui-colors'
-import * as mstTypes from './util/types/mst'
-import BaseViewModel from './BaseViewModel'
+import * as Configuration from '../configuration'
+import Plugin from '../Plugin'
+import * as coreUi from '../ui'
+import * as coreUtil from '../util'
+import * as coreColor from '../util/color'
+import * as trackUtils from '../util/tracks'
+import * as coreIo from '../util/io'
+import * as coreMstReflection from '../util/mst-reflection'
+import * as MUIColors from './material-ui-colors'
+import * as mstTypes from '../util/types/mst'
+import BaseViewModel from '../BaseViewModel'
+
+import ReExportsList from './list'
 
 const libs = {
   mobx,
@@ -143,5 +145,13 @@ const libs = {
 
   '@gmod/jbrowse-core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
+
+// make sure that all the items in the ReExports/list array (used by build systems and such)
+// are included here. it's OK if there are some additional ones that are not in the list
+ReExportsList.forEach(name => {
+  if (!(name in libs)) {
+    throw new Error(`ReExports/modules is missing ${name}`)
+  }
+})
 
 export default libs

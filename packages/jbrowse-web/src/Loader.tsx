@@ -75,9 +75,6 @@ function NoConfigMessage() {
               </a>
             </li>
             <li>
-              <a href="?config=test_data/config_gdc_test.json">GDC</a>
-            </li>
-            <li>
               <a href="?config=test_data/config_many_contigs.json">
                 Many Contigs
               </a>
@@ -145,6 +142,7 @@ export default function Loader() {
       if (configSnapshot) {
         try {
           const pluginLoader = new PluginLoader(configSnapshot.plugins)
+          pluginLoader.installGlobalReExports(window)
           const runtimePlugins = await pluginLoader.load()
           setPlugins([...corePlugins, ...runtimePlugins])
         } catch (error) {
@@ -172,6 +170,7 @@ export default function Loader() {
   }
 
   const pluginManager = new PluginManager(plugins.map(P => new P()))
+
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)

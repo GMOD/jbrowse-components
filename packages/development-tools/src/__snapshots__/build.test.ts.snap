@@ -1,0 +1,303 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`produces something 1`] = `
+Object {
+  "devServer": Object {
+    "contentBase": "/fake/directory/assets",
+    "headers": Object {
+      "Access-Control-Allow-Headers": "*",
+      "Access-Control-Allow-Origin": "*",
+    },
+    "port": 9000,
+  },
+  "devtool": false,
+  "entry": "./src/index.ts",
+  "externals": Object {
+    "@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail": Object {
+      "amd": "@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail",
+      "commonjs": "@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail",
+      "commonjs2": "@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail",
+      ],
+    },
+    "@gmod/jbrowse-core/BaseViewModel": Object {
+      "amd": "@gmod/jbrowse-core/BaseViewModel",
+      "commonjs": "@gmod/jbrowse-core/BaseViewModel",
+      "commonjs2": "@gmod/jbrowse-core/BaseViewModel",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/BaseViewModel",
+      ],
+    },
+    "@gmod/jbrowse-core/Plugin": Object {
+      "amd": "@gmod/jbrowse-core/Plugin",
+      "commonjs": "@gmod/jbrowse-core/Plugin",
+      "commonjs2": "@gmod/jbrowse-core/Plugin",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/Plugin",
+      ],
+    },
+    "@gmod/jbrowse-core/configuration": Object {
+      "amd": "@gmod/jbrowse-core/configuration",
+      "commonjs": "@gmod/jbrowse-core/configuration",
+      "commonjs2": "@gmod/jbrowse-core/configuration",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/configuration",
+      ],
+    },
+    "@gmod/jbrowse-core/data_adapters/BaseAdapter": Object {
+      "amd": "@gmod/jbrowse-core/data_adapters/BaseAdapter",
+      "commonjs": "@gmod/jbrowse-core/data_adapters/BaseAdapter",
+      "commonjs2": "@gmod/jbrowse-core/data_adapters/BaseAdapter",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/data_adapters/BaseAdapter",
+      ],
+    },
+    "@gmod/jbrowse-core/pluggableElementTypes/AdapterType": Object {
+      "amd": "@gmod/jbrowse-core/pluggableElementTypes/AdapterType",
+      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/AdapterType",
+      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/AdapterType",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/pluggableElementTypes/AdapterType",
+      ],
+    },
+    "@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType": Object {
+      "amd": "@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType",
+      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType",
+      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType",
+      ],
+    },
+    "@gmod/jbrowse-core/pluggableElementTypes/TrackType": Object {
+      "amd": "@gmod/jbrowse-core/pluggableElementTypes/TrackType",
+      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/TrackType",
+      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/TrackType",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/pluggableElementTypes/TrackType",
+      ],
+    },
+    "@gmod/jbrowse-core/pluggableElementTypes/ViewType": Object {
+      "amd": "@gmod/jbrowse-core/pluggableElementTypes/ViewType",
+      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/ViewType",
+      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/ViewType",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/pluggableElementTypes/ViewType",
+      ],
+    },
+    "@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType": Object {
+      "amd": "@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType",
+      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType",
+      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType",
+      ],
+    },
+    "@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType": Object {
+      "amd": "@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType",
+      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType",
+      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType",
+      ],
+    },
+    "@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType": Object {
+      "amd": "@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType",
+      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType",
+      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType",
+      ],
+    },
+    "@gmod/jbrowse-core/ui": Object {
+      "amd": "@gmod/jbrowse-core/ui",
+      "commonjs": "@gmod/jbrowse-core/ui",
+      "commonjs2": "@gmod/jbrowse-core/ui",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/ui",
+      ],
+    },
+    "@gmod/jbrowse-core/util": Object {
+      "amd": "@gmod/jbrowse-core/util",
+      "commonjs": "@gmod/jbrowse-core/util",
+      "commonjs2": "@gmod/jbrowse-core/util",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/util",
+      ],
+    },
+    "@gmod/jbrowse-core/util/Base1DViewModel": Object {
+      "amd": "@gmod/jbrowse-core/util/Base1DViewModel",
+      "commonjs": "@gmod/jbrowse-core/util/Base1DViewModel",
+      "commonjs2": "@gmod/jbrowse-core/util/Base1DViewModel",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/util/Base1DViewModel",
+      ],
+    },
+    "@gmod/jbrowse-core/util/color": Object {
+      "amd": "@gmod/jbrowse-core/util/color",
+      "commonjs": "@gmod/jbrowse-core/util/color",
+      "commonjs2": "@gmod/jbrowse-core/util/color",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/util/color",
+      ],
+    },
+    "@gmod/jbrowse-core/util/io": Object {
+      "amd": "@gmod/jbrowse-core/util/io",
+      "commonjs": "@gmod/jbrowse-core/util/io",
+      "commonjs2": "@gmod/jbrowse-core/util/io",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/util/io",
+      ],
+    },
+    "@gmod/jbrowse-core/util/mst-reflection": Object {
+      "amd": "@gmod/jbrowse-core/util/mst-reflection",
+      "commonjs": "@gmod/jbrowse-core/util/mst-reflection",
+      "commonjs2": "@gmod/jbrowse-core/util/mst-reflection",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/util/mst-reflection",
+      ],
+    },
+    "@gmod/jbrowse-core/util/tracks": Object {
+      "amd": "@gmod/jbrowse-core/util/tracks",
+      "commonjs": "@gmod/jbrowse-core/util/tracks",
+      "commonjs2": "@gmod/jbrowse-core/util/tracks",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/util/tracks",
+      ],
+    },
+    "@gmod/jbrowse-core/util/types/mst": Object {
+      "amd": "@gmod/jbrowse-core/util/types/mst",
+      "commonjs": "@gmod/jbrowse-core/util/types/mst",
+      "commonjs2": "@gmod/jbrowse-core/util/types/mst",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/util/types/mst",
+      ],
+    },
+    "@material-ui/core": Object {
+      "amd": "@material-ui/core",
+      "commonjs": "@material-ui/core",
+      "commonjs2": "@material-ui/core",
+      "root": Array [
+        "JBrowseExports",
+        "@material-ui/core",
+      ],
+    },
+    "@material-ui/lab": Object {
+      "amd": "@material-ui/lab",
+      "commonjs": "@material-ui/lab",
+      "commonjs2": "@material-ui/lab",
+      "root": Array [
+        "JBrowseExports",
+        "@material-ui/lab",
+      ],
+    },
+    "mobx": Object {
+      "amd": "mobx",
+      "commonjs": "mobx",
+      "commonjs2": "mobx",
+      "root": Array [
+        "JBrowseExports",
+        "mobx",
+      ],
+    },
+    "mobx-react": Object {
+      "amd": "mobx-react",
+      "commonjs": "mobx-react",
+      "commonjs2": "mobx-react",
+      "root": Array [
+        "JBrowseExports",
+        "mobx-react",
+      ],
+    },
+    "mobx-state-tree": Object {
+      "amd": "mobx-state-tree",
+      "commonjs": "mobx-state-tree",
+      "commonjs2": "mobx-state-tree",
+      "root": Array [
+        "JBrowseExports",
+        "mobx-state-tree",
+      ],
+    },
+    "prop-types": Object {
+      "amd": "prop-types",
+      "commonjs": "prop-types",
+      "commonjs2": "prop-types",
+      "root": Array [
+        "JBrowseExports",
+        "prop-types",
+      ],
+    },
+    "react": Object {
+      "amd": "react",
+      "commonjs": "react",
+      "commonjs2": "react",
+      "root": Array [
+        "JBrowseExports",
+        "react",
+      ],
+    },
+    "react-dom": Object {
+      "amd": "react-dom",
+      "commonjs": "react-dom",
+      "commonjs2": "react-dom",
+      "root": Array [
+        "JBrowseExports",
+        "react-dom",
+      ],
+    },
+  },
+  "mode": "test",
+  "output": Object {
+    "filename": "plugin.js",
+    "library": "JBrowsePluginFakePlugin",
+    "libraryTarget": "umd",
+    "path": "/fake/directory/dist",
+    "sourceMapFilename": "plugin.js.map",
+  },
+  "plugins": Array [
+    CopyPlugin {
+      "options": Object {
+        "concurrency": 100,
+      },
+      "patterns": Array [
+        Object {
+          "from": "/fake/directory/assets",
+          "to": "/fake/directory/dist",
+        },
+      ],
+    },
+  ],
+  "resolve": Object {
+    "extensions": Array [
+      ".mjs",
+      ".web.js",
+      ".js",
+      ".ts",
+      ".tsx",
+      ".json",
+      ".web.jsx",
+      ".jsx",
+    ],
+  },
+}
+`;
