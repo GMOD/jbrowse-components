@@ -43,6 +43,11 @@
     },
     {
       "type": "category",
+      "label": "Command line guide",
+      "items": ["cli_guide", "cli"]
+    },
+    {
+      "type": "category",
       "label": "Developer guide",
       "items": [
         "developer_guide",

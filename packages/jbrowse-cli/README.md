@@ -1,42 +1,38 @@
-# @gmod/jbrowse-cli
+---
+title: Command line tools
+id: cli
+---
 
-A tool for working with JBrowse 2
+This document covers the CLI tools.
 
-[![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
+## Installation
 
-<!-- [![Version](https://img.shields.io/npm/v/@gmod/jbrowse-cli.svg)](https://npmjs.org/package/@gmod/jbrowse-cli)
-[![Downloads/week](https://img.shields.io/npm/dw/@gmod/jbrowse-cli.svg)](https://npmjs.org/package/@gmod/jbrowse-cli)
-[![License](https://img.shields.io/npm/l/@gmod/jbrowse-cli.svg)](https://github.com/@gmod/@gmod/jbrowse-components/blob/master/package.json) -->
-
-<!-- toc -->
-
-- [@gmod/jbrowse-cli](#gmodjbrowse-cli)
-- [Usage](#usage)
-- [Commands](#commands)
-- [Debugging](#debugging)
-<!-- tocstop -->
-
-# Usage
+The command line tools can be installed using `npm` as follows
 
 ```sh-session
 $ npm install -g @gmod/jbrowse-cli
-$ jbrowse COMMAND
-running command...
-$ jbrowse (-v|--version|version)
-@gmod/jbrowse-cli/0.0.0 darwin-x64 node-v14.0.0
-$ jbrowse --help [COMMAND]
-USAGE
-  $ jbrowse COMMAND
-...
 ```
 
-# Commands
+You can test your installation with
+
+```sh-session
+$ jbrowse --version
+```
+
+It is also possible to do one-off executions using npx, e.g.
+
+```sh-session
+npx @gmod/jbrowse-cli create myfolder
+```
+
+It is likely preferable in most cases to install the tools first however
+
+## Commands
 
 <!-- commands -->
 
 - [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
-- [`jbrowse hello [FILE]`](#jbrowse-hello-file)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
@@ -52,15 +48,15 @@ ARGUMENTS
   SEQUENCE
       sequence file or URL
 
-      If TYPE is indexedFasta or bgzipFasta, the index file defaults to <location>.fai and can be optionally specified
-      with --faiLocation
-      If TYPE is bgzipFasta, the gzip index file defaults to <location>.gzi and can be optionally specified with
-      --gziLocation
+      If TYPE is indexedFasta or bgzipFasta, the index file defaults to <location>.fai
+      and can be optionally specified with --faiLocation
+      If TYPE is bgzipFasta, the gzip index file defaults to <location>.gzi and can be
+      optionally specified with --gziLocation
 
 OPTIONS
   -a, --alias=alias
-      An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38"); can be specified multiple
-      times
+      An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38");
+      can be specified multiple times
 
   -c, --config=config
       [default: ./config.json] Config file; if the file does not exist, it will be created
@@ -77,13 +73,18 @@ OPTIONS
   -t, --type=indexedFasta|bgzipFasta|twoBit|chromSizes|custom
       type of sequence, by default inferred from sequence file
 
-      indexedFasta   An index FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation
-      bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify
-      --faiLocation and/or --gziLocation
+      indexedFasta   An index FASTA (e.g. .fa or .fasta) file;
+                      can optionally specify --faiLocation
+
+      bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file;
+                      can optionally specify --faiLocation and/or --gziLocation
+
       twoBit         A twoBit (e.g. .2bit) file
+
       chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
-      custom         Either a JSON file location or inline JSON that defines a custom sequence adapter; must provide
-      --name if using inline JSON
+
+      custom         Either a JSON file location or inline JSON that defines a custom
+                      sequence adapter; must provide --name if using inline JSON
 
   --faiLocation=faiLocation
       [default: <fastaLocation>.fai] FASTA index file or URL
@@ -95,16 +96,16 @@ OPTIONS
       Overwrite existing assembly if one with the same name exists
 
   --refNameAliases=refNameAliases
-      Reference sequence name aliases file or URL; assumed to be a tab-separated aliases file unless --refNameAliasesType
-      is specified
+      Reference sequence name aliases file or URL; assumed to be a tab-separated aliases
+      file unless --refNameAliasesType is specified
 
   --refNameAliasesType=aliases|custom
-      Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either a JSON file location or inline
-      JSON that defines a custom sequence adapter
+      Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either
+      a JSON file location or inline JSON that defines a custom sequence adapter
 
   --refNameColors=refNameColors
-      A comma-separated list of color strings for the reference sequence names; will cycle through colors if there are
-      fewer colors than sequences
+      A comma-separated list of color strings for the reference sequence names; will cycle
+      through colors if there are fewer colors than sequences
 
   --skipCheck
       Don't check whether or not the sequence file or URL exists
@@ -133,7 +134,10 @@ OPTIONS
   -f, --force         Overwrites existing JBrowse 2 installation if present in path
   -h, --help          show CLI help
   -l, --listVersions  Lists out all versions of JBrowse 2
-  -t, --tag=tag       Version of JBrowse 2 to install. Format is JBrowse-2@v1.2.3. Defaults to latest
+
+  -t, --tag=tag       Version of JBrowse 2 to install. Format is JBrowse-2@v0.0.1.
+                      Defaults to latest
+
   -u, --url=url       A direct URL to a JBrowse 2 release
 
 EXAMPLES
@@ -142,24 +146,6 @@ EXAMPLES
   $ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip
   $ jbrowse create /path/to/new/installation --tag JBrowse-2@v0.0.1
   $ jbrowse create --listVersion
-```
-
-## `jbrowse hello [FILE]`
-
-describe the command here
-
-```
-USAGE
-  $ jbrowse hello [FILE]
-
-OPTIONS
-  -f, --force
-  -h, --help       show CLI help
-  -n, --name=name  name to print
-
-EXAMPLE
-  $ jbrowse hello
-  hello world from ./src/hello.ts!
 ```
 
 ## `jbrowse help [COMMAND]`
@@ -204,7 +190,7 @@ EXAMPLES
 
 <!-- commandsstop -->
 
-# Debugging
+## Debugging
 
 Debug logs (provded by [debug](https://github.com/visionmedia/debug)) can be
 printed by setting the `DEBUG` environment variable. Setting `DEBUG=*` will
