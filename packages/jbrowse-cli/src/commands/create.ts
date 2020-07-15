@@ -51,7 +51,7 @@ export default class Create extends Command {
     tag: flags.string({
       char: 't',
       description:
-        'Version of JBrowse 2 to install. Format is JBrowse-2@v1.2.3. Defaults to latest',
+        'Version of JBrowse 2 to install. Format is JBrowse-2@v0.0.1.\nDefaults to latest',
     }),
   }
 

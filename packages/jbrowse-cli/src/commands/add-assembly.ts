@@ -152,17 +152,17 @@ custom         Either a JSON file location or inline JSON that defines a custom
     }),
     refNameAliases: flags.string({
       description:
-        'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases file unless --refNameAliasesType is specified',
+        'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases\nfile unless --refNameAliasesType is specified',
     }),
     refNameAliasesType: flags.string({
       description:
-        'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either a JSON file location or inline JSON that defines a custom sequence adapter',
+        'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either\na JSON file location or inline JSON that defines a custom sequence adapter',
       options: ['aliases', 'custom'],
       dependsOn: ['refNameAliases'],
     }),
     refNameColors: flags.string({
       description:
-        'A comma-separated list of color strings for the reference sequence names; will cycle through colors if there are fewer colors than sequences',
+        'A comma-separated list of color strings for the reference sequence names; will cycle\nthrough colors if there are fewer colors than sequences',
     }),
     help: flags.help({ char: 'h' }),
     skipCheck: flags.boolean({
