@@ -35,6 +35,7 @@ USAGE
 <!-- commands -->
 
 - [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
+- [`jbrowse add-track TRACK [LOCATION] [ASSEMBLYNAMES]`](#jbrowse-add-track-track-location-assemblynames)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse hello [FILE]`](#jbrowse-hello-file)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
@@ -116,6 +117,50 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.2bit --config path/to/config.json
   $ jbrowse add-assembly GRCh38.chrom.sizes
   $ jbrowse add-assembly GRCh38.config.json
+```
+
+## `jbrowse add-track TRACK [LOCATION] [ASSEMBLYNAMES]`
+
+Add a track to a JBrowse 2 configuration
+
+```
+USAGE
+  $ jbrowse add-track TRACK [LOCATION] [ASSEMBLYNAMES]
+
+ARGUMENTS
+  TRACK          track file or URL
+  LOCATION       location of JBrowse 2 installation. Defaults to .
+  ASSEMBLYNAMES  assembly name or names as comma separated string
+
+OPTIONS
+  -c, --configLocation=configLocation
+      [default: ./config.json] Config file; if the file does not exist, it will be created
+
+  -d, --description=description
+      Optional description of the track
+
+  -f, --force
+      Overwrites any existing tracks if same track id
+
+  -h, --help
+      show CLI help
+
+  -n, --name=name
+      Name of the track. Will be defaulted to the trackId if none specified
+
+  -t,
+  --type=AlignmentsTrack|PileupTrack|SNPCoverageTrack|StructuralVariantChordTrack|WiggleTrack|VariantTrack|DotplotTrack|
+  LinearSyntenyTrack|BasicTrack
+      type of track, by default inferred from track file
+
+  --category=category
+      Optional Comma separated string of categories to group tracks
+
+  --config=config
+      Any extra config settings to add to a track. i.e defaultRendering: { density }
+
+  --trackId=trackId
+      Id for the track, by default inferred from filename, must be unique to JBrowse config
 ```
 
 ## `jbrowse create LOCALPATH`
