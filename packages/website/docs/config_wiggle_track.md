@@ -11,16 +11,18 @@ title: Wiggle track configuration
 
 Example WiggleTrack config
 
-    {
-      "trackId": "my_wiggle_track",
-      "name": "My Wiggle Track",
-      "assemblyNames": ["hg19"],
-      "type": "WiggleTrack",
-      "adapter": {
-        "type": "BigWig",
-        "bigWigLocation": { "uri": "http://yourhost/file.bw" }
-      }
-    }
+```json
+{
+  "trackId": "my_wiggle_track",
+  "name": "My Wiggle Track",
+  "assemblyNames": ["hg19"],
+  "type": "WiggleTrack",
+  "adapter": {
+    "type": "BigWig",
+    "bigWigLocation": { "uri": "http://yourhost/file.bw" }
+  }
+}
+```
 
 ### BigWig adapter configuration options
 
@@ -28,7 +30,9 @@ Example WiggleTrack config
 
 Example BigWig adapter config
 
-    {
-      "type": "BigWig",
-      "bigWigLocation": { "uri": "http://yourhost/file.bw" }
-    }
+```json
+{
+  "type": "BigWig",
+  "bigWigLocation": { "uri": "http://yourhost/file.bw" }
+}
+```

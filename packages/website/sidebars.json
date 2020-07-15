@@ -34,6 +34,7 @@
       "label": "Configuration guide",
       "items": [
         "config_guide",
+        "config_basic",
         "config_alignments_track",
         "config_variant_track",
         "config_hic_track",
@@ -42,9 +43,15 @@
     },
     {
       "type": "category",
+      "label": "Command line guide",
+      "items": ["cli_guide", "cli"]
+    },
+    {
+      "type": "category",
       "label": "Developer guide",
       "items": [
         "developer_guide",
+        "developer_creating_plugin",
         "developer_code_organization",
         "developer_pluggable_elements",
         "developer_creating_data_adapters",

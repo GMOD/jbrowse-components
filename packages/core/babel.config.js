@@ -5,7 +5,7 @@ module.exports = api => {
     comments: true,
     presets: [
       '@babel/preset-typescript',
-      'react-app',
+      '@babel/preset-react',
       [
         '@babel/preset-env',
         {
@@ -28,23 +28,6 @@ module.exports = api => {
           useESModules: false,
         },
       ],
-    ],
-    overrides: [
-      {
-        test: /generator-jbrowse/,
-        presets: [
-          '@babel/preset-typescript',
-          'react-app',
-          [
-            '@babel/preset-env',
-            {
-              targets: {
-                node: 'current',
-              },
-            },
-          ],
-        ],
-      },
     ],
   }
 }

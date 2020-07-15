@@ -3,14 +3,15 @@ id: user_sv_inspector
 title: SV inspector
 ---
 
-The SV inspector is a "workflow" that is designed to help users inspect structural variant calls
+The SV inspector is a "workflow" that is designed to help users inspect
+structural variant calls
 
 ### Opening the SV inspector
 
 We can start the SV inspector by launching it from the App level menu bar
 
-!](/jb2/img/sv_inspector_begin.png)
-Accessing the SV inspector from the main menu bar
+![](/jb2/img/sv_inspector_begin.png)
+The SV inspector can be launched from the main menu bar
 
 This will bring up an "import form" that asks you for your SV evidence. This
 can be provided using a URL in these formats:

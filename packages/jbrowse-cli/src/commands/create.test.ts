@@ -4,19 +4,10 @@
 
 import fs from 'fs'
 import * as path from 'path'
-import nock from 'nock'
-import del from 'del'
+import { Scope } from 'nock'
 import { setup } from '../testUtil'
 
 const fsPromises = fs.promises
-const testDir = path.join(
-  __dirname,
-  '..',
-  '..',
-  'test',
-  'data',
-  'createTestDir',
-)
 
 const releaseArray = [
   {
@@ -29,31 +20,25 @@ const releaseArray = [
     ],
   },
 ]
-nock('https://api.github.com')
-  .persist()
-  .get('/repos/GMOD/jbrowse-components/releases')
-  .reply(200, releaseArray)
 
-nock('https://example.com')
-  .persist()
-  .get('/JBrowse2-0.0.1.zip')
-  .replyWithFile(
-    200,
-    path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
-  )
+function mockReleases(gitHubApi: Scope) {
+  return gitHubApi
+    .get('/repos/GMOD/jbrowse-components/releases')
+    .reply(200, releaseArray)
+}
 
-let cwd = ''
-beforeEach(() => {
-  cwd = process.cwd()
-})
+function mockZip(exampleSite: Scope) {
+  return exampleSite
+    .get('/JBrowse2-0.0.1.zip')
+    .replyWithFile(
+      200,
+      path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
+    )
+}
 
-afterEach(() => {
-  process.chdir(cwd)
-})
-afterAll(() => {
-  del(testDir, { force: true })
-  nock.cleanAll()
-})
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 
 describe('create', () => {
   setup
@@ -66,7 +51,6 @@ describe('create', () => {
       expect(err.message).toContain('See more help with --help')
     })
     .it('fails if no path is provided to the command')
-
   setup
     .command(['create', '--force'])
     .catch(err => {
@@ -78,33 +62,62 @@ describe('create', () => {
     })
     .it('fails if no path is provided to the command even with force')
   setup
-    .command(['create', path.join(__dirname, '..', '..', 'test')])
+    .command(['create', '.'])
     .exit(10)
     .it(
       'fails if user selects a directory that already has existing files, no force flag',
     )
   setup
-    .do(async () => {
-      await fsPromises.mkdir(testDir)
-    })
-    .command(['create', testDir])
+    .nock('https://api.github.com', mockReleases)
+    .nock('https://example.com', mockZip)
+    .command(['create', 'jbrowse'])
     .it('download and unzips JBrowse 2 to new directory', async ctx => {
-      expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
+      await sleep(500)
+      expect(await fsPromises.readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
+        'manifest.json',
+      )
     })
   setup
-    .command(['create', testDir, '--tag', 'JBrowse-2@v0.0.1', '--force'])
+    .nock('https://api.github.com', mockReleases)
+    .nock('https://example.com', mockZip)
+    .command(['create', 'jbrowse', '--tag', 'JBrowse-2@v0.0.1', '--force'])
     .it(
       'overwrites and succeeds in downloading JBrowse in a non-empty directory with version #',
       async ctx => {
-        expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
+        await sleep(500)
+        expect(
+          await fsPromises.readdir(path.join(ctx.dir, 'jbrowse')),
+        ).toContain('manifest.json')
       },
     )
   setup
-    .command(['create', testDir, '--tag', 'JBrowse-2@v999.999.999', '--force'])
+    .nock('https://api.github.com', mockReleases)
+    .command([
+      'create',
+      'jbrowse',
+      '--tag',
+      'JBrowse-2@v999.999.999',
+      '--force',
+    ])
     .exit(40)
     .it('fails to download a version that does not exist')
   setup
-    .command(['create', testDir])
+    .nock('https://api.github.com', mockReleases)
+    .nock('https://example.com', mockZip)
+    .command(['create', 'jbrowse'])
+    .do(async () => {
+      await sleep(500)
+    })
+    .command(['create', 'jbrowse'])
     .exit(10)
     .it('fails because this directory is already set up')
+  setup
+    .nock('https://api.github.com', mockReleases)
+    .command(['create', '--listVersions'])
+    .catch(/0/)
+    .it('lists versions', ctx => {
+      expect(ctx.stdoutWrite).toHaveBeenCalledWith(
+        'All JBrowse versions: JBrowse-2@v0.0.1\n',
+      )
+    })
 })
