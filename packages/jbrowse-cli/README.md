@@ -1,36 +1,23 @@
-# @gmod/jbrowse-cli
+---
+title: Command line tools
+id: cli
+---
 
-A tool for working with JBrowse 2
+## Usage
 
-[![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-
-<!-- [![Version](https://img.shields.io/npm/v/@gmod/jbrowse-cli.svg)](https://npmjs.org/package/@gmod/jbrowse-cli)
-[![Downloads/week](https://img.shields.io/npm/dw/@gmod/jbrowse-cli.svg)](https://npmjs.org/package/@gmod/jbrowse-cli)
-[![License](https://img.shields.io/npm/l/@gmod/jbrowse-cli.svg)](https://github.com/@gmod/@gmod/jbrowse-components/blob/master/package.json) -->
-
-<!-- toc -->
-
-- [@gmod/jbrowse-cli](#gmodjbrowse-cli)
-- [Usage](#usage)
-- [Commands](#commands)
-- [Debugging](#debugging)
-<!-- tocstop -->
-
-# Usage
+The command line tools can be installed using `npm` as follows
 
 ```sh-session
 $ npm install -g @gmod/jbrowse-cli
-$ jbrowse COMMAND
-running command...
-$ jbrowse (-v|--version|version)
-@gmod/jbrowse-cli/0.0.0 darwin-x64 node-v14.0.0
-$ jbrowse --help [COMMAND]
-USAGE
-  $ jbrowse COMMAND
-...
 ```
 
-# Commands
+You can test your installation with
+
+```sh-session
+$ jbrowse --version
+```
+
+## Commands
 
 <!-- commands -->
 
@@ -40,7 +27,7 @@ USAGE
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
-## `jbrowse add-assembly SEQUENCE`
+### `jbrowse add-assembly SEQUENCE`
 
 Add an assembly to a JBrowse 2 configuration
 
@@ -118,7 +105,7 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.config.json
 ```
 
-## `jbrowse create LOCALPATH`
+### `jbrowse create LOCALPATH`
 
 Downloads and installs the latest JBrowse 2 release
 
@@ -144,7 +131,7 @@ EXAMPLES
   $ jbrowse create --listVersion
 ```
 
-## `jbrowse hello [FILE]`
+### `jbrowse hello [FILE]`
 
 describe the command here
 
@@ -162,7 +149,7 @@ EXAMPLE
   hello world from ./src/hello.ts!
 ```
 
-## `jbrowse help [COMMAND]`
+### `jbrowse help [COMMAND]`
 
 display help for jbrowse
 
