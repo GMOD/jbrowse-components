@@ -39,15 +39,15 @@ ARGUMENTS
   SEQUENCE
       sequence file or URL
 
-      If TYPE is indexedFasta or bgzipFasta, the index file defaults to <location>.fai and can be optionally specified
-      with --faiLocation
-      If TYPE is bgzipFasta, the gzip index file defaults to <location>.gzi and can be optionally specified with
-      --gziLocation
+      If TYPE is indexedFasta or bgzipFasta, the index file defaults to <location>.fai
+      and can be optionally specified with --faiLocation
+      If TYPE is bgzipFasta, the gzip index file defaults to <location>.gzi and can be
+      optionally specified with --gziLocation
 
 OPTIONS
   -a, --alias=alias
-      An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38"); can be specified multiple
-      times
+      An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38");
+      can be specified multiple times
 
   -c, --config=config
       [default: ./config.json] Config file; if the file does not exist, it will be created
@@ -64,13 +64,18 @@ OPTIONS
   -t, --type=indexedFasta|bgzipFasta|twoBit|chromSizes|custom
       type of sequence, by default inferred from sequence file
 
-      indexedFasta   An index FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation
-      bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify
-      --faiLocation and/or --gziLocation
+      indexedFasta   An index FASTA (e.g. .fa or .fasta) file;
+                      can optionally specify --faiLocation
+
+      bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file;
+                      can optionally specify --faiLocation and/or --gziLocation
+
       twoBit         A twoBit (e.g. .2bit) file
+
       chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
-      custom         Either a JSON file location or inline JSON that defines a custom sequence adapter; must provide
-      --name if using inline JSON
+
+      custom         Either a JSON file location or inline JSON that defines a custom
+                      sequence adapter; must provide --name if using inline JSON
 
   --faiLocation=faiLocation
       [default: <fastaLocation>.fai] FASTA index file or URL
