@@ -27,7 +27,7 @@ $ jbrowse --version
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
-### `jbrowse add-assembly SEQUENCE`
+## `jbrowse add-assembly SEQUENCE`
 
 Add an assembly to a JBrowse 2 configuration
 
@@ -105,7 +105,7 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.config.json
 ```
 
-### `jbrowse create LOCALPATH`
+## `jbrowse create LOCALPATH`
 
 Downloads and installs the latest JBrowse 2 release
 
@@ -131,7 +131,7 @@ EXAMPLES
   $ jbrowse create --listVersion
 ```
 
-### `jbrowse hello [FILE]`
+## `jbrowse hello [FILE]`
 
 describe the command here
 
@@ -149,7 +149,7 @@ EXAMPLE
   hello world from ./src/hello.ts!
 ```
 
-### `jbrowse help [COMMAND]`
+## `jbrowse help [COMMAND]`
 
 display help for jbrowse
 
@@ -191,7 +191,7 @@ EXAMPLES
 
 <!-- commandsstop -->
 
-# Debugging
+## Debugging
 
 Debug logs (provded by [debug](https://github.com/visionmedia/debug)) can be
 printed by setting the `DEBUG` environment variable. Setting `DEBUG=*` will
