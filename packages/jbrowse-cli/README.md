@@ -3,6 +3,10 @@ title: Command line tools
 id: cli
 ---
 
+This document covers the CLI tools.
+
+## Installation
+
 The command line tools can be installed using `npm` as follows
 
 ```sh-session
@@ -14,6 +18,14 @@ You can test your installation with
 ```sh-session
 $ jbrowse --version
 ```
+
+It is also possible to do one-off executions using npx, e.g.
+
+```sh-session
+npx @gmod/jbrowse-cli create myfolder
+```
+
+It is likely preferable in most cases to install the tools first however
 
 ## Commands
 
