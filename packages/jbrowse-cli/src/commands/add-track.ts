@@ -2,13 +2,6 @@ import { Command, flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
-// import {
-//   guessAdapter,
-//   guessSubadapter,
-//   guessTrackType,
-//   UNKNOWN,
-//   UNSUPPORTED,
-// } from '@gmod/jbrowse-core/util/tracks'
 
 interface Track {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -16,7 +9,8 @@ interface Track {
 }
 
 interface Config {
-  assemblies?: unknown[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  assemblies?: { name: string; sequence: { [key: string]: any } }[]
   configuration?: {}
   connections?: unknown[]
   defaultSession?: {}
@@ -34,7 +28,14 @@ interface LocalPathLocation {
 export default class AddTrack extends Command {
   static description = 'Add a track to a JBrowse 2 configuration'
 
-  static examples = []
+  static examples = [
+    '$ jbrowse add-track /path/to/my.bam --load copy',
+    '$ jbrowse add-track /path/to/my.bam /path/to/jbrowse2/installation --load symlink',
+    '$ jbrowse add-track https://mywebsite.com/my.bam',
+    `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' -- load move`,
+    `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --force`,
+    `$ jbrowse add-track /path/to/my.bam --config '{'defaultRendering': 'density'}' `,
+  ]
 
   static args = [
     {
@@ -47,48 +48,26 @@ export default class AddTrack extends Command {
       required: false,
       description: `location of JBrowse 2 installation. Defaults to .`,
     },
-    {
-      name: 'assemblyNames',
-      required: false,
-      description: `assembly name or names as comma separated string`,
-    },
   ]
 
   static flags = {
     type: flags.string({
       char: 't',
       description: `type of track, by default inferred from track file`,
-      options: [
-        'AlignmentsTrack',
-        'PileupTrack',
-        'SNPCoverageTrack',
-        'StructuralVariantChordTrack',
-        'WiggleTrack',
-        'VariantTrack',
-        'DotplotTrack',
-        'LinearSyntenyTrack',
-        'BasicTrack',
-      ],
     }),
     name: flags.string({
       char: 'n',
       description:
         'Name of the track. Will be defaulted to the trackId if none specified',
     }),
-    configLocation: flags.string({
-      char: 'c',
-      description:
-        'Config file; if the file does not exist, it will be created',
-      default: './config.json',
-    }),
     description: flags.string({
       char: 'd',
       description: 'Optional description of the track',
     }),
-    help: flags.help({ char: 'h' }),
-    trackId: flags.string({
+    assemblyNames: flags.string({
+      char: 'a',
       description:
-        'Id for the track, by default inferred from filename, must be unique to JBrowse config',
+        'Assembly name or names for track as comma separated string. If none, will default to the assembly in your config file',
     }),
     category: flags.string({
       description:
@@ -96,9 +75,19 @@ export default class AddTrack extends Command {
     }),
     config: flags.string({
       description:
-        'Any extra config settings to add to a track. i.e defaultRendering: { density }',
+        'Any extra config settings to add to a track. i.e {"defaultrendering": "density"}',
     }),
-    // consider renderer
+    help: flags.help({ char: 'h' }),
+    trackId: flags.string({
+      description:
+        'Id for the track, by default inferred from filename, must be unique to JBrowse config',
+    }),
+    load: flags.string({
+      char: 'l',
+      description:
+        'Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or trust to leave data directory alone',
+      options: ['copy', 'symlink', 'move', 'trust'],
+    }),
     force: flags.boolean({
       char: 'f',
       description: 'Overwrites any existing tracks if same track id',
@@ -108,15 +97,112 @@ export default class AddTrack extends Command {
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddTrack)
     const { track: argsTrack } = runArgs as { track: string }
-    const { configLocation, config, category, description } = runFlags
-    let { type, trackId, name } = runFlags
+    const { config, category, description, load } = runFlags
+    let { type, trackId, name, assemblyNames } = runFlags
 
     await this.checkLocation(runArgs.location || '')
+    const { location, protocol } = await this.resolveFileLocation(argsTrack)
+    const configPath = path.join(runArgs.location || '.', 'config.json')
 
-    const trackLocation = await this.resolveFileLocation(argsTrack)
-    const { location, protocol } = trackLocation
-    const adapter = this.guessAdapter(location, protocol)
+    let dataDirectoryLocation
+    if (protocol === 'uri') dataDirectoryLocation = location
+    else if (!load)
+      this.error(
+        'Local file detected. Please select a load option for the data directory with the --load flag',
+      )
+    else
+      dataDirectoryLocation = path.join(
+        runArgs.location,
+        path.basename(location),
+      )
 
+    // copy/symlinks/moves the data directory into the jbrowse installation directory
+    const filePaths = Object.values(this.guessFileNames(location))
+    switch (load) {
+      case 'copy': {
+        await Promise.all(
+          filePaths.map(async filePath => {
+            if (!filePath) return
+            const dataLocation = path.join(
+              runArgs.location,
+              path.basename(filePath),
+            )
+
+            try {
+              await fsPromises.copyFile(filePath, dataLocation)
+            } catch (error) {
+              this.error(`${filePath} does not exist`)
+            }
+          }),
+        )
+        break
+      }
+      case 'symlink': {
+        await Promise.all(
+          filePaths.map(async filePath => {
+            if (!filePath) return
+            const dataLocation = path.join(
+              runArgs.location,
+              path.basename(filePath),
+            )
+
+            try {
+              await fsPromises.symlink(filePath, dataLocation)
+            } catch (error) {
+              this.error(error)
+            }
+          }),
+        )
+        break
+      }
+      case 'move': {
+        await Promise.all(
+          filePaths.map(async filePath => {
+            if (!filePath) return
+            const dataLocation = path.join(
+              runArgs.location,
+              path.basename(filePath),
+            )
+
+            try {
+              await fsPromises.rename(filePath, dataLocation)
+            } catch (error) {
+              this.error(`${filePath} does not exist`)
+            }
+          }),
+        )
+        break
+      }
+      case 'trust': {
+        dataDirectoryLocation = location
+      }
+    }
+
+    const adapter = this.guessAdapter(dataDirectoryLocation, protocol)
+
+    // only add track if there is an existing config.json
+    let configContentsJson
+    try {
+      configContentsJson = await this.readJsonConfig(configPath)
+      this.debug(`Found existing config file ${configPath}`)
+    } catch (error) {
+      this.error('No existing config file found')
+    }
+    let configContents: Config
+    try {
+      configContents = { ...JSON.parse(configContentsJson) }
+    } catch (error) {
+      this.error('Could not parse existing config file')
+    }
+    if (!configContents.assemblies || !configContents.assemblies.length) {
+      this.error('No assemblies found. Please add one before adding tracks')
+    } else if (configContents.assemblies.length > 1) {
+      this.error(
+        'Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
+      )
+    }
+
+    // set up the track information
     if (type) {
       this.debug(`Type is: ${type}`)
     } else {
@@ -125,72 +211,56 @@ export default class AddTrack extends Command {
 
     if (trackId) {
       this.debug(`Track is :${trackId}`)
-    } else
-      trackId = path.basename(
-        trackLocation.location,
-        path.extname(trackLocation.location),
-      ) // get filename and set as name
+    } else trackId = path.basename(location, path.extname(location)) // get filename and set as name
 
     if (name) {
       this.debug(`Name is: ${name}`)
     } else name = trackId
 
+    if (assemblyNames) {
+      this.debug(`Assembly name(s) is :${assemblyNames}`)
+    } else {
+      assemblyNames = configContents.assemblies[0].name
+      this.log(`Inferred default assembly name ${assemblyNames}`)
+    }
+
     let configObj = {}
+    this.log(config)
     if (config) configObj = JSON.parse(config)
     const trackConfig: Track = {
       type,
       trackId,
       name,
-      category: category ? category.split(/,\s?/) : ['Default'],
-      assemblyNames: runArgs.assemblyNames
-        ? runArgs.assemblyNames.split(/,\s?/)
-        : [''], // logic to get the assemblyname
+      category: category ? category.split(/,\s?/) : undefined,
+      assemblyNames: assemblyNames.split(/,\s?/),
       adapter,
       ...configObj,
     }
     this.debug(
-      `Track location: ${trackLocation.location}, index: ${
-        adapter ? adapter.index : ''
-      }`,
+      `Track location: ${location}, index: ${adapter ? adapter.index : ''}`,
     )
     if (description) trackConfig.description = description
 
+    // any special track modifications go here
     switch (type) {
+      case 'AlignmentsTrack': {
+        const idx = configContents.assemblies.findIndex(
+          assemblies => assemblies.name === assemblyNames,
+        )
+        const sequenceAdapter = configContents.assemblies[idx].sequence.adapter
+        trackConfig.adapter.sequenceAdapter = sequenceAdapter
+        break
+      }
       case 'SNPCoverageTrack': {
         const subAdapter = this.guessSubadapter(
-          trackLocation.location,
-          trackLocation.protocol,
+          location,
+          protocol,
           'SNPCoverageAdapter',
         )
 
         trackConfig.adapter = subAdapter
+        break
       }
-    }
-
-    let configContentsJson
-    const fullPath = path.join(runArgs.location || '', configLocation)
-    const defaultConfig: Config = {
-      assemblies: [],
-      configuration: {},
-      connections: [],
-      defaultSession: {
-        name: 'New Session',
-      },
-      tracks: [],
-    }
-    try {
-      configContentsJson = await this.readJsonConfig(fullPath)
-      this.debug(`Found existing config file ${fullPath}`)
-    } catch (error) {
-      this.debug('No existing config file found, using default config')
-      configContentsJson = JSON.stringify(defaultConfig)
-    }
-
-    let configContents: Config
-    try {
-      configContents = { ...defaultConfig, ...JSON.parse(configContentsJson) }
-    } catch (error) {
-      this.error('Could not parse existing config file')
     }
 
     if (!configContents.tracks) {
@@ -213,16 +283,16 @@ export default class AddTrack extends Command {
         )
     } else configContents.tracks.push(trackConfig)
 
-    this.debug(`Writing configuration to file ${fullPath}`)
+    this.debug(`Writing configuration to file ${configPath}`)
     await fsPromises.writeFile(
-      fullPath,
+      configPath,
       JSON.stringify(configContents, undefined, 2),
     )
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} track "${name}" ${
         idx !== -1 ? 'in' : 'to'
-      } ${fullPath}`,
+      } ${configPath}`,
     )
   }
 
@@ -321,6 +391,132 @@ export default class AddTrack extends Command {
         { exit: 70 },
       )
     }
+  }
+
+  guessFileNames(fileName: string) {
+    if (/\.bam$/i.test(fileName))
+      return {
+        file: fileName,
+        index: `${fileName}.bai`,
+      }
+    if (/\.bai$/i.test(fileName))
+      return {
+        file: fileName.replace(/\.bai$/i, ''),
+        index: fileName,
+      }
+    if (/\.bam.csi$/i.test(fileName))
+      return {
+        file: fileName.replace(/\.csi$/i, ''),
+        index: fileName,
+      }
+
+    if (/\.cram$/i.test(fileName))
+      return {
+        file: fileName,
+        index: `${fileName}.crai`,
+      }
+    if (/\.crai$/i.test(fileName))
+      return {
+        file: fileName.replace(/\.crai$/i, ''),
+        index: fileName,
+      }
+
+    if (/\.gff3?$/i.test(fileName)) return {}
+
+    if (/\.gff3?\.b?gz$/i.test(fileName)) return {}
+    if (/\.gff3?\.b?gz.tbi$/i.test(fileName)) return {}
+    if (/\.gff3?\.b?gz.csi$/i.test(fileName)) return {}
+
+    if (/\.gtf?$/i.test(fileName)) return {}
+
+    if (/\.vcf$/i.test(fileName)) return {}
+
+    if (/\.vcf\.b?gz$/i.test(fileName))
+      return {
+        file: fileName,
+        index: `${fileName}.tbi`,
+      }
+    if (/\.vcf\.b?gz\.tbi$/i.test(fileName))
+      return {
+        file: fileName.replace(/\.tbi$/i, ''),
+        index: fileName,
+      }
+    if (/\.vcf\.b?gz\.csi$/i.test(fileName))
+      return {
+        file: fileName.replace(/\.csi$/i, ''),
+        index: fileName,
+      }
+
+    if (/\.vcf\.idx$/i.test(fileName)) return {}
+
+    if (/\.bed$/i.test(fileName)) return {}
+
+    if (/\.bed\.b?gz$/i.test(fileName)) return {}
+    if (/\.bed.b?gz.tbi$/i.test(fileName)) return {}
+    if (/\.bed.b?gz.csi/i.test(fileName)) return {}
+
+    if (/\.bed\.idx$/i.test(fileName)) return {}
+
+    if (/\.(bb|bigbed)$/i.test(fileName))
+      return {
+        file: fileName,
+        index: undefined,
+      }
+
+    if (/\.(bw|bigwig)$/i.test(fileName))
+      return {
+        file: fileName,
+        index: undefined,
+      }
+
+    if (/\.(fa|fasta|fna|mfa)$/i.test(fileName))
+      return {
+        file: fileName,
+        index: `${fileName}.fai`,
+      }
+    if (/\.(fa|fasta|fna|mfa)\.fai$/i.test(fileName))
+      return {
+        file: fileName.replace(/\.fai$/i, ''),
+        index: fileName,
+      }
+
+    if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(fileName))
+      return {
+        file: fileName,
+        index: `${fileName}.fai`,
+        index2: `${fileName}.gzi`,
+      }
+    if (/\.(fa|fasta|fna|mfa)\.b?gz\.fai$/i.test(fileName))
+      return {
+        file: fileName.replace(/\.fai$/i, ''),
+        index: fileName,
+        index2: `${fileName.replace(/\.fai$/i, '')}.gzi`,
+      }
+    if (/\.(fa|fasta|fna|mfa)\.b?gz\.gzi$/i.test(fileName))
+      return {
+        file: fileName.replace(/\.gzi$/i, ''),
+        index: `${fileName.replace(/\.gzi$/i, '')}.fai`,
+        index2: fileName,
+      }
+
+    if (/\.2bit$/i.test(fileName))
+      return {
+        file: fileName,
+      }
+
+    if (/\.sizes$/i.test(fileName)) return {}
+
+    if (/\/trackData.jsonz?$/i.test(fileName))
+      return {
+        file: fileName,
+      }
+
+    if (/\/sparql$/i.test(fileName))
+      return {
+        file: fileName,
+      }
+
+    return {}
   }
 
   // find way to import this instead of having to paste it

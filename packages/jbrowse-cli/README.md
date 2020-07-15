@@ -35,7 +35,7 @@ USAGE
 <!-- commands -->
 
 - [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
-- [`jbrowse add-track TRACK [LOCATION] [ASSEMBLYNAMES]`](#jbrowse-add-track-track-location-assemblynames)
+- [`jbrowse add-track TRACK [LOCATION]`](#jbrowse-add-track-track-location)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse hello [FILE]`](#jbrowse-hello-file)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
@@ -119,48 +119,49 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.config.json
 ```
 
-## `jbrowse add-track TRACK [LOCATION] [ASSEMBLYNAMES]`
+## `jbrowse add-track TRACK [LOCATION]`
 
 Add a track to a JBrowse 2 configuration
 
 ```
 USAGE
-  $ jbrowse add-track TRACK [LOCATION] [ASSEMBLYNAMES]
+  $ jbrowse add-track TRACK [LOCATION]
 
 ARGUMENTS
-  TRACK          track file or URL
-  LOCATION       location of JBrowse 2 installation. Defaults to .
-  ASSEMBLYNAMES  assembly name or names as comma separated string
+  TRACK     track file or URL
+  LOCATION  location of JBrowse 2 installation. Defaults to .
 
 OPTIONS
-  -c, --configLocation=configLocation
-      [default: ./config.json] Config file; if the file does not exist, it will be created
+  -a, --assemblyNames=assemblyNames   Assembly name or names for track as comma separated string. If none, will default
+                                      to the assembly in your config file
 
-  -d, --description=description
-      Optional description of the track
+  -d, --description=description       Optional description of the track
 
-  -f, --force
-      Overwrites any existing tracks if same track id
+  -f, --force                         Overwrites any existing tracks if same track id
 
-  -h, --help
-      show CLI help
+  -h, --help                          show CLI help
 
-  -n, --name=name
-      Name of the track. Will be defaulted to the trackId if none specified
+  -l, --load=copy|symlink|move|trust  Choose how to manage the data directory. Copy, symlink, or move the data directory
+                                      to the JBrowse directory. Or trust to leave data directory alone
 
-  -t,
-  --type=AlignmentsTrack|PileupTrack|SNPCoverageTrack|StructuralVariantChordTrack|WiggleTrack|VariantTrack|DotplotTrack|
-  LinearSyntenyTrack|BasicTrack
-      type of track, by default inferred from track file
+  -n, --name=name                     Name of the track. Will be defaulted to the trackId if none specified
 
-  --category=category
-      Optional Comma separated string of categories to group tracks
+  -t, --type=type                     type of track, by default inferred from track file
 
-  --config=config
-      Any extra config settings to add to a track. i.e defaultRendering: { density }
+  --category=category                 Optional Comma separated string of categories to group tracks
 
-  --trackId=trackId
-      Id for the track, by default inferred from filename, must be unique to JBrowse config
+  --config=config                     Any extra config settings to add to a track. i.e {"defaultrendering": "density"}
+
+  --trackId=trackId                   Id for the track, by default inferred from filename, must be unique to JBrowse
+                                      config
+
+EXAMPLES
+  $ jbrowse add-track /path/to/my.bam --load copy
+  $ jbrowse add-track /path/to/my.bam /path/to/jbrowse2/installation --load symlink
+  $ jbrowse add-track https://mywebsite.com/my.bam
+  $ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' -- load move
+  $ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --force
+  $ jbrowse add-track /path/to/my.bam --config '{'defaultRendering': 'density'}'
 ```
 
 ## `jbrowse create LOCALPATH`
