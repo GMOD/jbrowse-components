@@ -3,7 +3,8 @@ import * as fs from 'fs'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
-import * as unzip from 'unzipper'
+// @ts-ignore says it needs esModuleInterop
+import extract from 'extract-zip'
 
 interface GithubRelease {
   tag_name: string
@@ -55,96 +56,62 @@ export default class Create extends Command {
     }),
   }
 
-  async run() {
-    const { args: runArgs, flags: runFlags } = this.parse(Create)
-    const { localPath: argsPath } = runArgs as { localPath: string }
-    this.debug(`Want to install path at: ${argsPath}`)
+  async getTagOrLatest(tag?: string) {
+    const response = await this.fetchGithubVersions()
+    const versions = tag
+      ? response.find(version => version.tag_name === tag)
+      : response[0]
 
-    const { force, url, listVersions, tag } = runFlags
+    return versions
+      ? versions.assets[0].browser_download_url
+      : this.error(
+          'Could not find version specified. Use --listVersions to see all available versions',
+          { exit: 40 },
+        )
+  }
+
+  async run() {
+    const {
+      args,
+      flags: { force, url, listVersions, tag },
+    } = this.parse(Create)
+    const { localPath } = args as { localPath: string }
+    this.debug(`Want to install path at: ${localPath}`)
 
     if (listVersions) {
-      try {
-        const versions = (await this.fetchGithubVersions()).map(
-          (version: GithubRelease) => version.tag_name,
-        )
-        this.log(`All JBrowse versions: ${versions.join(', ')}`)
-        this.exit()
-      } catch (error) {
-        this.error(error)
-      }
+      const releases = await this.fetchGithubVersions()
+      const versions = releases.map(release => release.tag_name)
+      this.log(`All JBrowse versions: ${versions.join(', ')}`)
+      this.exit()
     }
 
-    // mkdir will do nothing if dir exists
-    try {
-      await fsPromises.mkdir(argsPath, { recursive: true })
-    } catch (error) {
-      this.error(error)
+    fs.mkdirSync(localPath, { recursive: true })
+    if (!force) {
+      await this.checkPath(localPath)
     }
 
-    if (!force) await this.checkPath(argsPath)
+    const locationUrl = url || (await this.getTagOrLatest(tag))
+    const response = await fetch(locationUrl)
 
-    let locationUrl
-    let versionRes
-    if (url) locationUrl = url
-    else {
-      try {
-        versionRes = await this.fetchGithubVersions()
-      } catch (error) {
-        this.error(error)
-      }
-      const versionObj = tag
-        ? versionRes.find((version: GithubRelease) => version.tag_name === tag)
-        : versionRes[0]
-
-      locationUrl = versionObj
-        ? versionObj.assets[0].browser_download_url
-        : this.error(
-            'Could not find version specified. Use --listVersions to see all available versions',
-            { exit: 40 },
-          )
+    if (!response.ok) {
+      this.error(
+        `Failed to fetch JBrowse2 from server. Error ${response.status}`,
+        { exit: 50 },
+      )
     }
 
-    let response
-    try {
-      response = await fetch(locationUrl, {
-        method: 'GET',
-      })
-    } catch (error) {
-      this.error(error)
-    }
-    if (!response.ok)
-      this.error(`Failed to fetch JBrowse2 from server`, { exit: 50 })
-
-    if (url && response.headers.get('content-type') !== 'application/zip')
+    if (url && response.headers.get('content-type') !== 'application/zip') {
       this.error(
         'The URL provided does not seem to be a JBrowse installation URL',
       )
-
-    response.body
-      .pipe(unzip.Parse())
-      .on('entry', async (entry: unzip.Entry) => {
-        const { path: fileName, type } = entry
-        if (type === 'File') {
-          try {
-            const location = path.join(argsPath, fileName)
-            await fsPromises.mkdir(path.dirname(location), {
-              recursive: true,
-            })
-            entry.pipe(fs.createWriteStream(path.join(argsPath, fileName)))
-          } catch (error) {
-            this.error(error)
-          }
-        } else entry.autodrain()
-      })
-      .on('error', err => {
-        fs.unlink(argsPath, () => {})
-        this.error(
-          `Failed to download JBrowse 2 with ${err}. Please try again later`,
-        )
-      })
-      .on('close', () => {
-        this.log(`Your JBrowse 2 setup has been created at ${argsPath}`)
-      })
+    }
+    await new Promise((resolve, reject) => {
+      const dest = fs.createWriteStream('tmp.zip')
+      response.body.pipe(dest)
+      dest.on('close', () => resolve())
+      dest.on('error', reject)
+    })
+    return extract('tmp.zip', { dir: path.resolve(localPath) })
   }
 
   async checkPath(userPath: string) {
@@ -162,39 +129,31 @@ export default class Create extends Command {
   }
 
   async fetchGithubVersions() {
-    let versionResponse
-    try {
-      versionResponse = await fetch(
-        'https://api.github.com/repos/GMOD/jbrowse-components/releases',
-        {
-          method: 'GET',
-        },
-      )
-    } catch (error) {
-      this.error(error)
-    }
+    const response = await fetch(
+      'https://api.github.com/repos/GMOD/jbrowse-components/releases',
+    )
 
-    if (!versionResponse.ok) this.error('Failed to fetch version from server')
+    if (!response.ok) {
+      this.error('Failed to fetch version from server')
+    }
     // use all release only if there are only pre-release in repo
-    const allReleaseArray = (
-      await versionResponse.json()
-    ).filter((release: GithubRelease) =>
+    const releases = (await response.json()) as GithubRelease[]
+    const jb2releases = releases.filter(release =>
       release.tag_name.includes('JBrowse-2@v'),
     )
 
-    const releaseArray = allReleaseArray.filter(
-      (release: GithubRelease) => release.prerelease === false,
+    const nonprereleases = jb2releases.filter(
+      release => release.prerelease === false,
     )
 
-    return releaseArray.length === 0 ? allReleaseArray : releaseArray
+    return nonprereleases.length === 0 ? jb2releases : nonprereleases
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async catch(error: any) {
     if (error.parse && error.parse.output.flags.listVersions) {
-      const versions = (await this.fetchGithubVersions()).map(
-        (version: GithubRelease) => version.tag_name,
-      )
+      const releases = await this.fetchGithubVersions()
+      const versions = releases.map(version => version.tag_name)
       this.log(`All JBrowse versions: ${versions.join(', ')}`)
       this.exit()
     }
