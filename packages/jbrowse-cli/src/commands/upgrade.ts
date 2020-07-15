@@ -4,6 +4,7 @@ import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
 import extract from 'extract-zip'
+import os from 'os'
 
 interface GithubRelease {
   tag_name: string
@@ -101,13 +102,22 @@ export default class Upgrade extends Command {
         'The URL provided does not seem to be a JBrowse installation URL',
       )
     }
-    await new Promise((resolve, reject) => {
-      const dest = fs.createWriteStream('tmp.zip')
-      response.body.pipe(dest)
-      dest.on('close', () => resolve())
-      dest.on('error', reject)
-    })
-    return extract('tmp.zip', { dir: path.resolve(upgradePath) })
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'jbrowse-'))
+    const file = path.join(tmp, 'jbrowse.zip')
+    try {
+      await new Promise((resolve, reject) => {
+        const dest = fs.createWriteStream(file)
+        response.body.pipe(dest)
+        dest.on('close', () => {
+          resolve()
+        })
+        dest.on('error', reject)
+      })
+      await extract(file, { dir: path.resolve(upgradePath) })
+    } finally {
+      fs.unlinkSync(file)
+      fs.rmdirSync(tmp)
+    }
   }
 
   async checkLocation(userPath: string) {
