@@ -3,8 +3,6 @@ title: Command line tools
 id: cli
 ---
 
-## Usage
-
 The command line tools can be installed using `npm` as follows
 
 ```sh-session
