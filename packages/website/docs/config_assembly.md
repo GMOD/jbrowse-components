@@ -1,6 +1,6 @@
 ---
 id: config_assembly
-title: Configuring assemblies
+title: Assembly config
 ---
 
 Because JBrowse 2 can potentially have multiple assemblies loaded at once, it

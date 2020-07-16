@@ -57,12 +57,6 @@ https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
 
 We recommend following the steps in the [quickstart web](quickstart_web) guide
 
-Note that the `jbrowse create` command simply automates the download of the
-release from github
-
-Also note that JBrowse 2 is distributed as basically a bundle of javascript,
-CSS, and html.
-
 #### How can I setup JBrowse 2 without the CLI tools
 
 The jbrowse CLI tools are basically a convenience, and are not strictly required

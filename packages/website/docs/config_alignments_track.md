@@ -1,6 +1,6 @@
 ---
 id: config_alignments_track
-title: Alignments track configuration
+title: Alignments config
 ---
 
 - minScore - the minimum score to plot in the coverage track. default: 0

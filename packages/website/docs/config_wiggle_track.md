@@ -1,6 +1,6 @@
 ---
 id: config_wiggle_track
-title: Wiggle track configuration
+title: Wiggle config
 ---
 
 ### General

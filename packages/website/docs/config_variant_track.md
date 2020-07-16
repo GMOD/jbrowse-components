@@ -1,6 +1,6 @@
 ---
 id: config_variant_track
-title: Variant track configuration
+title: Variant config
 ---
 
 - defaultRendering - options: 'pileup' or 'svg'. default 'svg'

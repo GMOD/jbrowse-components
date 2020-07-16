@@ -1,6 +1,6 @@
 ---
 id: developer_creating_data_adapters
-title: Creating a new data adapter
+title: Creating custom data adapters
 ---
 
 ### What is a data adapter

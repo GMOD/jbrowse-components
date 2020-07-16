@@ -23,3 +23,8 @@ One can also launch a dotplot view that compares a long read to the reference ge
 ![](/jb2/img/dotplot_longread.png)
 
 Right click on an alignments feature and select "Open dotplot view"
+
+### Notes
+
+The dotplot view is still very new and without much polish, but we wanted to
+make it available to demonstrate new comparative views

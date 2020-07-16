@@ -26,6 +26,8 @@
         "user_variants",
         "user_bigwig",
         "user_sv_inspector",
+        "user_dotplot_view",
+        "user_synteny_view",
         "user_hic"
       ]
     },
