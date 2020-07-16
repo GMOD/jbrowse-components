@@ -677,14 +677,8 @@ custom         Either a JSON file location or inline JSON that defines a custom
             if (!filePath) return
             const dataLocation = path.join('.', path.basename(filePath))
 
-            // if file already exists at location, do nothing
             try {
-              await fsPromises.readdir(dataLocation)
-            } catch (error) {
-              return
-            }
-            try {
-              await fsPromises.symlink(filePath, dataLocation)
+              await fsPromises.copyFile(filePath, dataLocation)
             } catch (error) {
               this.error(error, { exit: 20 })
             }
@@ -698,12 +692,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
             if (!filePath) return
             const dataLocation = path.join('.', path.basename(filePath))
 
-            // if file already exists at location, do nothing
-            try {
-              await fsPromises.readdir(dataLocation)
-            } catch (error) {
-              return
-            }
             try {
               await fsPromises.symlink(filePath, dataLocation)
             } catch (error) {
@@ -719,12 +707,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
             if (!filePath) return
             const dataLocation = path.join('.', path.basename(filePath))
 
-            // if file already exists at location, do nothing
-            try {
-              await fsPromises.readdir(dataLocation)
-            } catch (error) {
-              return
-            }
             try {
               await fsPromises.rename(filePath, dataLocation)
             } catch (error) {
