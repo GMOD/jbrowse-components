@@ -13,6 +13,7 @@ script:
 - set -e
 # dev tools need to be built first cause they are written in TS but used in webpack configs
 - (cd packages/development-tools && NODE_ENV=development yarn build)
+- (cd packages/jbrowse-react-linear-view && yarn build)
 - yarn lint
 - yarn checkprettier
 - yarn test-ci
