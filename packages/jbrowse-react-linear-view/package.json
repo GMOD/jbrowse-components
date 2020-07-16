@@ -1,10 +1,10 @@
 {
-  "name": "@gmod/jbrowse-linear-view",
+  "name": "@gmod/jbrowse-react-linear-view",
   "author": "JBrowse Team",
   "version": "0.0.1",
   "license": "MIT",
   "main": "dist/index.js",
-  "module": "dist/jbrowse-linear-view.esm.js",
+  "module": "dist/jbrowse-react-linear-view.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist",
