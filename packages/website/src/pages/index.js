@@ -14,8 +14,6 @@ import TableCell from '@material-ui/core/TableCell'
 import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
 
-const Slide = props => <img {...props} alt="slide" />
-
 const StyledTableCell = withStyles(theme => ({
   head: {
     backgroundColor: theme.palette.action.selected,
@@ -71,7 +69,7 @@ function Home() {
             </Button>
           </div>
           <div style={{ flexBasis: '50%', padding: 20 }}>
-            <img src="img/hic.png" />
+            <img alt="screenshot of jbrowse 2" src="img/hic.png" />
           </div>
         </div>
         <Table>
