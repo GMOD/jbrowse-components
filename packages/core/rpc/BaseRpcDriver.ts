@@ -9,6 +9,10 @@ interface WorkerHandle {
   call(functionName: string, args?: unknown, options?: {}): Promise<unknown>
 }
 
+interface WorkerGenerator {
+  worker?: WorkerHandle
+}
+
 function isClonable(thing: unknown): boolean {
   if (typeof thing === 'function') return false
   if (thing instanceof Error) return false
@@ -120,9 +124,6 @@ export default abstract class BaseRpcDriver {
     // eslint-disable-next-line  @typescript-eslint/no-this-alias
     const thisB = this
 
-    interface WorkerGenerator {
-      worker?: WorkerHandle
-    }
     for (let i = 0; i < workerCount; i += 1) {
       workerHandles[i] = function workerGenerator(this: WorkerGenerator) {
         if (!this.worker) {
