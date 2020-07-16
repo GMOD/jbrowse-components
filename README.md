@@ -39,3 +39,20 @@ yarn
 ## Quick start
 
 Either cd to packages/jbrowse-web or packages/jbrowse-desktop and run `yarn start`
+
+## Developers
+
+To make a release of jbrowse-components tools, go into the package you want to bump the version for
+
+```
+cd packages/jbrowse-cli
+yarn version
+```
+
+Then choose the new version number from the prompt
+
+Then cd back to the root directory and run
+
+```sh
+yarn run publish
+```

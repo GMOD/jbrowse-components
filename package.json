@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test-ci": "jest --ci --coverage",
     "built-test-ci": "jest --ci packages/integration-tests",
-    "test": "jest"
+    "test": "jest",
+    "version": "cross-env lerna version"
   },
   "husky": {
     "hooks": {
@@ -120,5 +121,6 @@
     "whatwg-fetch": "^3.0.0",
     "worker-loader": "^2.0.0",
     "yeoman-test": "^2.5.0"
-  }
+  },
+  "version": "0.0.0"
 }

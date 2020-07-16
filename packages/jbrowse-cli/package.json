@@ -1,11 +1,11 @@
 {
   "name": "@gmod/jbrowse-cli",
   "description": "A command line tool for working with JBrowse 2",
-  "version": "0.0.1-beta.10",
+  "version": "0.0.1-beta.11",
   "bin": {
     "jbrowse": "./bin/run"
   },
-  "bugs": "https://github.com/@gmod/jbrowse-components/issues",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
   "dependencies": {
     "@oclif/command": "^1",
     "@oclif/config": "^1",
@@ -24,7 +24,7 @@
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json"
   ],
-  "homepage": "https://github.com/@gmod/jbrowse-components",
+  "homepage": "https://github.com/GMOD/jbrowse-components",
   "keywords": [
     "oclif"
   ],

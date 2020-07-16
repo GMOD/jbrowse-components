@@ -40,7 +40,7 @@ const rendererTypes = new Map([
 function logb(x: number, y: number) {
   return Math.log(y) / Math.log(x)
 }
-function round(v: number, b = 2) {
+function round(v: number, b = 1.5) {
   return (v >= 0 ? 1 : -1) * Math.pow(b, 1 + Math.floor(logb(b, Math.abs(v))))
 }
 
@@ -108,10 +108,10 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
 
           // uses a heuristic to just give some extra headroom on bigwig scores
           if (maxScore !== Number.MIN_VALUE && ret[1] > 1.0) {
-            ret[1] = round(ret[1] + 10)
+            ret[1] = round(ret[1])
           }
           if (minScore !== Number.MAX_VALUE && ret[0] < -1.0) {
-            ret[0] = round(ret[0] - 10)
+            ret[0] = round(ret[0])
           }
           if (JSON.stringify(oldDomain) !== JSON.stringify(ret)) {
             oldDomain = ret
