@@ -67,6 +67,10 @@ OPTIONS
   -h, --help
       show CLI help
 
+  -l, --load=copy|symlink|move|trust
+      Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or
+      trust to leave data directory alone
+
   -n, --name=name
       Name of the assembly; if not specified, will be guessed using the sequence file name
 
@@ -111,12 +115,12 @@ OPTIONS
       Don't check whether or not the sequence file or URL exists
 
 EXAMPLES
-  $ jbrowse add-assembly GRCh38.fa
-  $ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta
-  $ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38
-  $ jbrowse add-assembly GRCh38.2bit --config path/to/config.json
-  $ jbrowse add-assembly GRCh38.chrom.sizes
-  $ jbrowse add-assembly GRCh38.config.json
+  $ jbrowse add-assembly GRCh38.fa --load copy
+  $ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta --load move
+  $ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load trust
+  $ jbrowse add-assembly GRCh38.2bit --config path/to/config.json --load copy
+  $ jbrowse add-assembly GRCh38.chrom.sizes --load trust
+  $ jbrowse add-assembly GRCh38.config.json --load copy
 ```
 
 ## `jbrowse create LOCALPATH`
