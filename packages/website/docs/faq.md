@@ -47,53 +47,45 @@ You can use `PORT=8080 yarn start` to manually specify a different port
 Note that this is a development server that gets started up. To install jbrowse
 2 in production on your webserver, see below
 
+### Do you have any tips for learning React and mobx-state-tree
+
+Here is a short guide to React and mobx-state-tree that could help get you oriented
+
+https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
+
 #### How can I setup JBrowse 2 in production
 
-JBrowse 2 is distributed as basically a bundle of javascript, CSS, and html. It
-is a 'static website'. Therefore, to setup JBrowse 2 on your web server looks
-something like the following
+We recommend following the steps in the [quickstart web](quickstart_web) guide
 
-1. ssh into your web server
-2. `cd /var/www/html`
-3. `curl https://github.com/jbrowse-components/releases/JBrowse-2.0.0.zip -o jbrowse2`
-4. `sudo unzip jbrowse2.zip`
+Note that the `jbrowse create` command simply automates the download of the
+release from github
 
-At this point, you have a jbrowse2 folder in your web directory, so you can
-visit http://yoursite/jbrowse2/ to see if it has worked. Once this is done, you
-can proceed to load data into your instance. Note: we also provide a command
-line tool for automating this deployment. The steps are similar, but we hope
-this also helps for people who want to keep their instance upgraded too
+Also note that JBrowse 2 is distributed as basically a bundle of javascript,
+CSS, and html.
 
-1. ssh into your web server
-2. `cd /var/www/html`
-3. `sudo npm install -g @gmod/jbrowse-cli`
-4. `sudo jbrowse create jbrowse2`
+#### How can I setup JBrowse 2 without the CLI tools
 
-This 'creates' a folder named jbrowse2 in your web directory that contains the
-latest jbrowse 2 source code. We also have a CLI command `jbrowse update jbrowse2`,
-where jbrowse2 is the folder name our your instance. This will
-update an existing folder to the latest jbrowse 2 version. This helps, we hope,
-with people being able to update their older jbrowse versions to the latest
-version
+The jbrowse CLI tools are basically a convenience, and are not strictly required
 
-Note: It may also help to configure permissions on your web folder e.g.
-`chown $(whoami):$(whoami) jbrowse2` to make it so that you don't have to use
-sudo
+Simple tasks can be done without it
 
-#### How do I load my genome assembly into JBrowse 2
+For example, for jbrowse create, you can visit
+https://github.com/jbrowse-components/releases/latest and download the latest
+jbrowse-web release tag, and unzip it into your web directory
 
-To load a new genome assembly, we offer the command line tools. If you have
-followed the steps above to setup JBrowse 2 on your web server, use the
-following steps to load your genome assembly
+For other things, like add-assembly and add-track, you can manually edit the
+config.json, reviewing the config docs and sample configs will be valuable
 
-1. ssh into your web server
-2. sudo npm install -g @gmod/jbrowse-cli
-3. cd /var/www/html/jbrowse2/
-4. jbrowse add-assembly hg19.fa
+Understanding the [config basics](config_basic) will come in handy also
+because you can manually edit in advanced configs after your tracks are loaded
+however be careful because corrupt configs can produce hard to understand errors,
+because our config system is strongly typed
 
-This will automatically load the hg19 assembly, and will infer the assemblyname
-of hg19. In subsequent commands to load tracks, you can reference the hg19
-assembly
+Feel free to message the team if you encounter these
+
+#### How can I setup JBrowse 2 with the CLI tools
+
+See the [quickstart guide](quickstart_web)
 
 #### How do I load a track into JBrowse 2
 
@@ -118,17 +110,6 @@ Note that you can also use remote URLs
 The add-track command will do as much as possible to infer from the file
 extension how to configure this track
 
-#### How do I connect a JBrowse 1 to JBrowse 2?
-
-We have a concept of connections in JBrowse 2
-
-We will have a CLI tool so that we can say
-
-    jbrowse add-connection http://yoursite/jbrowse1/hg19_dir -a hg19
-
-This will add a "connection" to your jbrowse 1 data. You still have to manually
-configure assemblies
-
 ### Curiosities
 
 #### Why do all the tracks need an assembly specified
@@ -144,12 +125,3 @@ In JBrowse 1, the app level menu operated on the single linear genome view, but
 with JBrowse 2, the top level menu only performs global operations and the
 linear genome view has it's own hamburger menu. Note that each track also has
 it's own track level menu.
-
-#### What is the startup sequence of JBrowse 2
-
-If we look at the jbrowse-web codebase the startup sequence might look
-something like this
-
-- Scripts download
-
-### Troubleshooting

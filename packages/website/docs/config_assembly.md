@@ -1,6 +1,6 @@
 ---
 id: config_assembly
-title: Configuring genome assemblies/sequences
+title: Configuring assemblies
 ---
 
 Because JBrowse 2 can potentially have multiple assemblies loaded at once, it
