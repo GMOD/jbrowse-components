@@ -45,5 +45,6 @@ Either cd to packages/jbrowse-web or packages/jbrowse-desktop and run `yarn star
 To make a release of jbrowse-components tools
 
 ```sh
+yarn run version
 yarn run publish
 ```
