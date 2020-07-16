@@ -4,6 +4,7 @@ import { serializeAbortSignal } from './remoteAbortSignals'
 import PluginManager from '../PluginManager'
 
 interface WorkerHandle {
+  status?: string
   destroy(): void
   call(functionName: string, args?: unknown, options?: {}): Promise<unknown>
 }
@@ -119,26 +120,26 @@ export default abstract class BaseRpcDriver {
     // eslint-disable-next-line  @typescript-eslint/no-this-alias
     const thisB = this
 
+    interface WorkerGenerator {
+      worker?: WorkerHandle
+    }
     for (let i = 0; i < workerCount; i += 1) {
-      workerHandles[i] = function workerGenerator() {
-        // @ts-ignore
+      workerHandles[i] = function workerGenerator(this: WorkerGenerator) {
         if (!this.worker) {
-          // @ts-ignore
-          this.worker = thisB.makeWorker()
-          // @ts-ignore
-          watchWorker(this.worker, WORKER_MAX_PING_TIME).catch(() => {
-            console.warn(
-              'worker did not respond, killing and generating new one',
-            )
-            // @ts-ignore
-            this.worker.destroy()
-            // @ts-ignore
-            this.worker.status = 'killed'
-            // @ts-ignore
-            this.worker = workerGenerator.call(this)
+          const worker = thisB.makeWorker()
+          watchWorker(worker, WORKER_MAX_PING_TIME).catch(() => {
+            if (this.worker) {
+              console.warn(
+                'worker did not respond, killing and generating new one',
+              )
+              this.worker.destroy()
+              this.worker.status = 'killed'
+              this.worker = workerGenerator.call(this)
+            }
           })
+          this.worker = worker
+          return worker
         }
-        // @ts-ignore
         return this.worker
       }
     }
@@ -205,7 +206,6 @@ export default abstract class BaseRpcDriver {
       new Promise((resolve, reject) => {
         handle = setInterval(() => {
           // must've been killed
-          // @ts-ignore
           if (worker.status === 'killed') {
             reject(new Error('operation timed out'))
           }
