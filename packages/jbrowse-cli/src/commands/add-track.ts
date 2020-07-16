@@ -39,14 +39,15 @@ export default class AddTrack extends Command {
 
   static args = [
     {
-      name: 'track',
+      name: 'dataDirectory',
       required: true,
-      description: `track file or URL`,
+      description: `Data directory file or URL`,
     },
     {
       name: 'location',
       required: false,
       description: `location of JBrowse 2 installation. Defaults to .`,
+      default: '.',
     },
   ]
 
@@ -77,6 +78,10 @@ export default class AddTrack extends Command {
       description:
         'Any extra config settings to add to a track. i.e {"defaultrendering": "density"}',
     }),
+    configLocation: flags.string({
+      description:
+        'Write to a certain config.json file. Defaults to location/config.json if not specified',
+    }),
     help: flags.help({ char: 'h' }),
     trackId: flags.string({
       description:
@@ -96,26 +101,28 @@ export default class AddTrack extends Command {
 
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddTrack)
-    const { track: argsTrack } = runArgs as { track: string }
-    const { config, category, description, load } = runFlags
+    const { dataDirectory: argsTrack } = runArgs as { dataDirectory: string }
+    const { config, configLocation, category, description, load } = runFlags
     let { type, trackId, name, assemblyNames } = runFlags
 
-    await this.checkLocation(runArgs.location || '')
+    await this.checkLocation(runArgs.location)
     const { location, protocol } = await this.resolveFileLocation(argsTrack)
-    const configPath = path.join(runArgs.location || '.', 'config.json')
+    const configPath =
+      configLocation || path.join(runArgs.location, 'config.json')
 
     let dataDirectoryLocation
     if (protocol === 'uri') dataDirectoryLocation = location
     else if (!load)
       this.error(
         'Local file detected. Please select a load option for the data directory with the --load flag',
+        { exit: 10 },
       )
-    else
+    else {
       dataDirectoryLocation = path.join(
         runArgs.location,
         path.basename(location),
       )
-
+    }
     // copy/symlinks/moves the data directory into the jbrowse installation directory
     const filePaths = Object.values(this.guessFileNames(location))
     switch (load) {
@@ -128,10 +135,16 @@ export default class AddTrack extends Command {
               path.basename(filePath),
             )
 
+            // if file already exists at location, do nothing
             try {
-              await fsPromises.copyFile(filePath, dataLocation)
+              await fsPromises.readdir(dataLocation)
             } catch (error) {
-              this.error(`${filePath} does not exist`)
+              return
+            }
+            try {
+              await fsPromises.symlink(filePath, dataLocation)
+            } catch (error) {
+              this.error(error, { exit: 20 })
             }
           }),
         )
@@ -146,10 +159,16 @@ export default class AddTrack extends Command {
               path.basename(filePath),
             )
 
+            // if file already exists at location, do nothing
+            try {
+              await fsPromises.readdir(dataLocation)
+            } catch (error) {
+              return
+            }
             try {
               await fsPromises.symlink(filePath, dataLocation)
             } catch (error) {
-              this.error(error)
+              this.error(error, { exit: 20 })
             }
           }),
         )
@@ -164,10 +183,16 @@ export default class AddTrack extends Command {
               path.basename(filePath),
             )
 
+            // if file already exists at location, do nothing
+            try {
+              await fsPromises.readdir(dataLocation)
+            } catch (error) {
+              return
+            }
             try {
               await fsPromises.rename(filePath, dataLocation)
             } catch (error) {
-              this.error(`${filePath} does not exist`)
+              this.error(error, { exit: 20 })
             }
           }),
         )
@@ -186,16 +211,18 @@ export default class AddTrack extends Command {
       configContentsJson = await this.readJsonConfig(configPath)
       this.debug(`Found existing config file ${configPath}`)
     } catch (error) {
-      this.error('No existing config file found')
+      this.error('No existing config file found', { exit: 30 })
     }
     let configContents: Config
     try {
       configContents = { ...JSON.parse(configContentsJson) }
     } catch (error) {
-      this.error('Could not parse existing config file')
+      this.error('Could not parse existing config file', { exit: 35 })
     }
     if (!configContents.assemblies || !configContents.assemblies.length) {
-      this.error('No assemblies found. Please add one before adding tracks')
+      this.error('No assemblies found. Please add one before adding tracks', {
+        exit: 100,
+      })
     } else if (configContents.assemblies.length > 1) {
       this.error(
         'Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
@@ -225,7 +252,6 @@ export default class AddTrack extends Command {
     }
 
     let configObj = {}
-    this.log(config)
     if (config) configObj = JSON.parse(config)
     const trackConfig: Track = {
       type,
@@ -243,6 +269,7 @@ export default class AddTrack extends Command {
 
     // any special track modifications go here
     switch (type) {
+      case 'PileupTrack':
       case 'AlignmentsTrack': {
         const idx = configContents.assemblies.findIndex(
           assemblies => assemblies.name === assemblyNames,
@@ -252,6 +279,10 @@ export default class AddTrack extends Command {
         break
       }
       case 'SNPCoverageTrack': {
+        const idx = configContents.assemblies.findIndex(
+          assemblies => assemblies.name === assemblyNames,
+        )
+        const sequenceAdapter = configContents.assemblies[idx].sequence.adapter
         const subAdapter = this.guessSubadapter(
           location,
           protocol,
@@ -259,6 +290,7 @@ export default class AddTrack extends Command {
         )
 
         trackConfig.adapter = subAdapter
+        trackConfig.adapter.subadapter.sequenceAdapter = sequenceAdapter
         break
       }
     }
@@ -279,7 +311,7 @@ export default class AddTrack extends Command {
       } else
         this.error(
           `Cannot add track with name ${trackId}, a track with that name already exists.`,
-          { exit: 10 },
+          { exit: 40 },
         )
     } else configContents.tracks.push(trackConfig)
 
@@ -361,7 +393,6 @@ export default class AddTrack extends Command {
   }
 
   async checkLocation(location: string) {
-    this.log(location)
     let manifestJson: string
     try {
       manifestJson = await fsPromises.readFile(

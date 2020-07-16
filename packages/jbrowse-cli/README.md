@@ -32,7 +32,7 @@ It is likely preferable in most cases to install the tools first however
 <!-- commands -->
 
 - [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
-- [`jbrowse add-track TRACK [LOCATION]`](#jbrowse-add-track-track-location)
+- [`jbrowse add-track DATADIRECTORY [LOCATION]`](#jbrowse-add-track-datadirectory-location)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
@@ -120,17 +120,17 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.config.json
 ```
 
-## `jbrowse add-track TRACK [LOCATION]`
+## `jbrowse add-track DATADIRECTORY [LOCATION]`
 
 Add a track to a JBrowse 2 configuration
 
 ```
 USAGE
-  $ jbrowse add-track TRACK [LOCATION]
+  $ jbrowse add-track DATADIRECTORY [LOCATION]
 
 ARGUMENTS
-  TRACK     track file or URL
-  LOCATION  location of JBrowse 2 installation. Defaults to .
+  DATADIRECTORY  Data directory file or URL
+  LOCATION       [default: .] location of JBrowse 2 installation. Defaults to .
 
 OPTIONS
   -a, --assemblyNames=assemblyNames   Assembly name or names for track as comma separated string. If none, will default
@@ -152,6 +152,9 @@ OPTIONS
   --category=category                 Optional Comma separated string of categories to group tracks
 
   --config=config                     Any extra config settings to add to a track. i.e {"defaultrendering": "density"}
+
+  --configLocation=configLocation     Write to a certain config.json file. Defaults to location/config.json if not
+                                      specified
 
   --trackId=trackId                   Id for the track, by default inferred from filename, must be unique to JBrowse
                                       config
