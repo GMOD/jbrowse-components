@@ -5,6 +5,8 @@ import { serializeAbortSignal } from './remoteAbortSignals'
 import PluginManager from '../PluginManager'
 
 interface WorkerHandle {
+  on?: (channel: string, callback: (message: string) => void) => void
+  off?: (channel: string, callback: (message: string) => void) => void
   destroy(): void
   call(functionName: string, args?: unknown, options?: {}): Promise<unknown>
 }
@@ -196,9 +198,7 @@ export default abstract class BaseRpcDriver {
         args.statusCallback(message)
       }
     }
-    // @ts-ignore
     if (worker.on) {
-      // @ts-ignore
       worker.on(channel, listener)
     }
 
@@ -210,9 +210,7 @@ export default abstract class BaseRpcDriver {
         ...options,
       },
     )
-    // @ts-ignore
     if (worker.off) {
-      // @ts-ignore
       worker.off(channel, listener)
     }
     return rpcMethod.deserializeReturn(result)
