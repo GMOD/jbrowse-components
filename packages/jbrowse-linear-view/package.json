@@ -1,0 +1,23 @@
+{
+  "name": "@gmod/jbrowse-linear-view",
+  "author": "JBrowse Team",
+  "version": "0.0.1",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "test": "cd ../..; jest packages/gdc",
+    "build": "cross-env NODE_ENV=production webpack",
+    "build:dev": "cross-env NODE_ENV=development webpack",
+    "develop": "cross-env NODE_ENV=development webpack-dev-server"
+  },
+  "dependencies": {
+    "@gmod/jbrowse-react-linear-view": "^0.0.1"
+  },
+  "peerDependencies": {
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0"
+  }
+}

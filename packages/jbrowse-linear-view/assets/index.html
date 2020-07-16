@@ -1,0 +1,96 @@
+<html>
+
+<head>
+  <script src="./jbrowse-linear-view.js"></script>
+</head>
+
+<body>
+  <div id="jb2_lgv"></div>
+  <script>
+
+    const genomeView = new JBrowseLinearView({
+      container: document.getElementById('jb2_lgv'),
+      assembly: {
+        name: 'volvox',
+        aliases: ['vvx'],
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'volvox_refseq',
+          adapter: {
+            type: 'TwoBitAdapter',
+            twoBitLocation: {
+              uri: 'test_data/volvox/volvox.2bit',
+            },
+          },
+          rendering: {
+            type: 'DivSequenceRenderer',
+          },
+        },
+        refNameAliases: {
+          adapter: {
+            type: 'FromConfigAdapter',
+            features: [
+              {
+                refName: 'ctgA',
+                uniqueId: 'alias1',
+                aliases: ['A', 'contigA'],
+              },
+              {
+                refName: 'ctgB',
+                uniqueId: 'alias2',
+                aliases: ['B', 'contigB'],
+              },
+            ],
+          },
+        },
+      },
+      tracks: [{
+        type: 'VariantTrack',
+        trackId: 'volvox_test_vcf',
+        name: 'volvox 1000genomes vcf',
+        assemblyNames: ['volvox'],
+        category: ['VCF'],
+        adapter: {
+          type: 'VcfTabixAdapter',
+          vcfGzLocation: {
+            uri: 'test_data/volvox/volvox.test.vcf.gz',
+          },
+          index: {
+            location: {
+              uri: 'test_data/volvox/volvox.test.vcf.gz.tbi',
+            },
+          },
+        },
+      }],
+      plugins: [],
+      defaultSession: {
+        name: 'this session',
+        view: {
+          id: 'linearGenomeView',
+          type: 'LinearGenomeView',
+          displayName: 'myView',
+          bpPerPx: 0.5,
+          displayedRegions: [
+            {
+              refName: 'ctgA',
+              start: 0,
+              end: 50001,
+              reversed: false,
+              assemblyName: 'volvox',
+            },
+          ],
+          tracks: [
+            {
+              type: 'ReferenceSequenceTrack',
+              height: 100,
+              configuration: 'volvox_refseq',
+            },
+          ],
+        },
+      },
+      location: 'ctgA:1105..1221',
+    })
+  </script>
+</body>
+
+</html>
