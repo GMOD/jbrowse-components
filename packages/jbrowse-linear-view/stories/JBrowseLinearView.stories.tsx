@@ -61,7 +61,12 @@ export const WithRuntimePlugins = () => {
   useEffect(() => {
     async function getPlugins() {
       const loadedPlugins = await loadPlugins([
-        /* array of plugin URLs */
+        /* array of plugin definitions like:
+        {
+          "name": "GDC",
+          "url": "http://localhost:9000/plugin.js"
+        }
+        */
       ])
       setPlugins(loadedPlugins)
     }
