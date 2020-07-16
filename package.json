@@ -6,15 +6,14 @@
   ],
   "scripts": {
     "build": "cross-env NODE_ENV=production lerna run build",
-    "publish": "cross-env lerna publish from-package",
+    "publish": "cross-env lerna publish",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
     "runprettier": "prettier --write \"./**/*.{css,scss,md}\"",
     "checkprettier": "prettier --check \"./**/*.{css,scss,md}\"",
     "typecheck": "tsc --noEmit",
     "test-ci": "jest --ci --coverage",
     "built-test-ci": "jest --ci packages/integration-tests",
-    "test": "jest",
-    "version": "cross-env lerna version"
+    "test": "jest"
   },
   "husky": {
     "hooks": {
