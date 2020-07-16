@@ -114,7 +114,7 @@ export default class AddTrack extends Command {
       configLocation || path.join(runArgs.location, 'config.json')
 
     let dataDirectoryLocation
-    if (!local) {
+    if (!local || load === 'trust') {
       dataDirectoryLocation = location
     } else if (!load)
       this.error(
@@ -126,67 +126,6 @@ export default class AddTrack extends Command {
         runArgs.location,
         path.basename(location),
       )
-    }
-    // copy/symlinks/moves the data directory into the jbrowse installation directory
-    const filePaths = Object.values(this.guessFileNames(location))
-    switch (load) {
-      case 'copy': {
-        await Promise.all(
-          filePaths.map(async filePath => {
-            if (!filePath) return
-            const dataLocation = path.join(
-              runArgs.location,
-              path.basename(filePath),
-            )
-
-            try {
-              await fsPromises.copyFile(filePath, dataLocation)
-            } catch (error) {
-              this.error(error, { exit: 20 })
-            }
-          }),
-        )
-        break
-      }
-      case 'symlink': {
-        await Promise.all(
-          filePaths.map(async filePath => {
-            if (!filePath) return
-            const dataLocation = path.join(
-              runArgs.location,
-              path.basename(filePath),
-            )
-
-            try {
-              await fsPromises.symlink(filePath, dataLocation)
-            } catch (error) {
-              this.error(error, { exit: 20 })
-            }
-          }),
-        )
-        break
-      }
-      case 'move': {
-        await Promise.all(
-          filePaths.map(async filePath => {
-            if (!filePath) return
-            const dataLocation = path.join(
-              runArgs.location,
-              path.basename(filePath),
-            )
-
-            try {
-              await fsPromises.rename(filePath, dataLocation)
-            } catch (error) {
-              this.error(error, { exit: 20 })
-            }
-          }),
-        )
-        break
-      }
-      case 'trust': {
-        dataDirectoryLocation = location
-      }
     }
 
     const adapter = this.guessAdapter(dataDirectoryLocation, protocol)
@@ -300,6 +239,68 @@ export default class AddTrack extends Command {
           { exit: 40 },
         )
     } else configContents.tracks.push(trackConfig)
+
+    // copy/symlinks/moves the data directory into the jbrowse installation directory
+    const filePaths = Object.values(this.guessFileNames(location))
+    switch (load) {
+      case 'copy': {
+        await Promise.all(
+          filePaths.map(async filePath => {
+            if (!filePath) return
+            const dataLocation = path.join(
+              runArgs.location,
+              path.basename(filePath),
+            )
+
+            try {
+              await fsPromises.copyFile(filePath, dataLocation)
+            } catch (error) {
+              this.error(error, { exit: 20 })
+            }
+          }),
+        )
+        break
+      }
+      case 'symlink': {
+        await Promise.all(
+          filePaths.map(async filePath => {
+            if (!filePath) return
+            const dataLocation = path.join(
+              runArgs.location,
+              path.basename(filePath),
+            )
+
+            try {
+              await fsPromises.symlink(filePath, dataLocation)
+            } catch (error) {
+              this.error(error, { exit: 20 })
+            }
+          }),
+        )
+        break
+      }
+      case 'move': {
+        await Promise.all(
+          filePaths.map(async filePath => {
+            if (!filePath) return
+            const dataLocation = path.join(
+              runArgs.location,
+              path.basename(filePath),
+            )
+
+            try {
+              await fsPromises.rename(filePath, dataLocation)
+            } catch (error) {
+              this.error(error, { exit: 20 })
+            }
+          }),
+        )
+        break
+      }
+      case 'trust': {
+        dataDirectoryLocation = location
+      }
+    }
 
     this.debug(`Writing configuration to file ${configPath}`)
     await fsPromises.writeFile(
