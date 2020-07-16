@@ -11,7 +11,7 @@ export interface PackageJson {
   'jbrowse-plugin'?: { name?: string }
 }
 
-if (Object.fromEntries) {
+if (!Object.fromEntries) {
   Object.fromEntries = objectFromEntries
 }
 
