@@ -99,8 +99,10 @@ export default class AddAssembly extends Command {
       required: true,
       description: `sequence file or URL
 
-If TYPE is indexedFasta or bgzipFasta, the index file defaults to <location>.fai and can be optionally specified with --faiLocation
-If TYPE is bgzipFasta, the gzip index file defaults to <location>.gzi and can be optionally specified with --gziLocation`,
+If TYPE is indexedFasta or bgzipFasta, the index file defaults to <location>.fai
+and can be optionally specified with --faiLocation
+If TYPE is bgzipFasta, the gzip index file defaults to <location>.gzi and can be
+optionally specified with --gziLocation`,
     },
   ]
 
@@ -109,11 +111,19 @@ If TYPE is bgzipFasta, the gzip index file defaults to <location>.gzi and can be
       char: 't',
       description: `type of sequence, by default inferred from sequence file
 
-indexedFasta   An index FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation
-bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify --faiLocation and/or --gziLocation
+indexedFasta   An index FASTA (e.g. .fa or .fasta) file;
+               can optionally specify --faiLocation
+
+bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file;
+               can optionally specify --faiLocation and/or --gziLocation
+
 twoBit         A twoBit (e.g. .2bit) file
+
 chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
-custom         Either a JSON file location or inline JSON that defines a custom sequence adapter; must provide --name if using inline JSON`,
+
+custom         Either a JSON file location or inline JSON that defines a custom
+               sequence adapter; must provide --name if using inline JSON`,
+
       options: ['indexedFasta', 'bgzipFasta', 'twoBit', 'chromSizes', 'custom'],
     }),
     config: flags.string({
@@ -130,7 +140,7 @@ custom         Either a JSON file location or inline JSON that defines a custom 
     alias: flags.string({
       char: 'a',
       description:
-        'An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38"); can be specified multiple times',
+        'An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38");\ncan be specified multiple times',
       multiple: true,
     }),
     faiLocation: flags.string({
@@ -142,17 +152,17 @@ custom         Either a JSON file location or inline JSON that defines a custom 
     }),
     refNameAliases: flags.string({
       description:
-        'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases file unless --refNameAliasesType is specified',
+        'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases\nfile unless --refNameAliasesType is specified',
     }),
     refNameAliasesType: flags.string({
       description:
-        'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either a JSON file location or inline JSON that defines a custom sequence adapter',
+        'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either\na JSON file location or inline JSON that defines a custom sequence adapter',
       options: ['aliases', 'custom'],
       dependsOn: ['refNameAliases'],
     }),
     refNameColors: flags.string({
       description:
-        'A comma-separated list of color strings for the reference sequence names; will cycle through colors if there are fewer colors than sequences',
+        'A comma-separated list of color strings for the reference sequence names; will cycle\nthrough colors if there are fewer colors than sequences',
     }),
     help: flags.help({ char: 'h' }),
     skipCheck: flags.boolean({

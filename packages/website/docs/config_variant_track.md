@@ -8,17 +8,19 @@ title: Variant track configuration
 
 Example config
 
-    {
-      "type": "VariantTrack",
-      "trackId": "my track",
-      "name": "My Variants",
-      "assemblyNames": ["hg19"],
-      "adapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz" },
-        "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi" } }
-      }
-    }
+```json
+{
+  "type": "VariantTrack",
+  "trackId": "my track",
+  "name": "My Variants",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz" },
+    "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi" } }
+  }
+}
+```
 
 ### VcfTabixAdapter configuration options
 
@@ -29,8 +31,10 @@ Example config
 
 Example VcfTabixAdapter adapter config
 
-    {
-      "type": "VcfTabixAdapter",
-      "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz" },
-      "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi" } }
-    }
+```json
+{
+  "type": "VcfTabixAdapter",
+  "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz" },
+  "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi" } }
+}
+```

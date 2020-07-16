@@ -11,17 +11,19 @@ title: Alignments track configuration
 
 Example AlignmentsTrack config
 
-    {
-      "trackId": "my_alignments_track",
-      "name": "My Alignments",
-      "assemblyNames": ["hg19"],
-      "type": "AlignmentsTrack",
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": { "uri": "http://yourhost/file.bam" },
-        "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
-      }
-    }
+```json
+{
+  "trackId": "my_alignments_track",
+  "name": "My Alignments",
+  "assemblyNames": ["hg19"],
+  "type": "AlignmentsTrack",
+  "adapter": {
+    "type": "BamAdapter",
+    "bamLocation": { "uri": "http://yourhost/file.bam" },
+    "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
+  }
+}
+```
 
 ### PileupTrack configuration options
 
@@ -34,17 +36,19 @@ it is not common to use PileupTrack individually, but it is allowed
 
 Example PileupTrack config
 
-    {
-      "trackId": "my_pileup_track",
-      "name": "My Alignments",
-      "assemblyNames": ["hg19"],
-      "type": "PileupTrack",
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": { "uri": "http://yourhost/file.bam" },
-        "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
-      }
-    }
+```json
+{
+  "trackId": "my_pileup_track",
+  "name": "My Alignments",
+  "assemblyNames": ["hg19"],
+  "type": "PileupTrack",
+  "adapter": {
+    "type": "BamAdapter",
+    "bamLocation": { "uri": "http://yourhost/file.bam" },
+    "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
+  }
+}
+```
 
 ### SNPCoverageTrack configuration options
 
@@ -61,17 +65,19 @@ so it is not common to configure SNPCoverageTrack individually, but it is allowe
 
 Example SNPCoverageTrack config
 
-    {
-      "trackId": "my_snpcov_track",
-      "name": "My Alignments",
-      "assemblyNames": ["hg19"],
-      "type": "SNPCoverageTrack",
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": { "uri": "http://yourhost/file.bam" },
-        "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
-      }
-    }
+```json
+{
+  "trackId": "my_snpcov_track",
+  "name": "My Alignments",
+  "assemblyNames": ["hg19"],
+  "type": "SNPCoverageTrack",
+  "adapter": {
+    "type": "BamAdapter",
+    "bamLocation": { "uri": "http://yourhost/file.bam" },
+    "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
+  }
+}
+```
 
 ### BamAdapter configuration options
 
@@ -82,11 +88,13 @@ Example SNPCoverageTrack config
 
 Example BamAdapter config
 
-    {
-      "type": "BamAdapter",
-      "bamLocation": { "uri": "http://yourhost/file.bam" },
-      "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
-    }
+```json
+{
+  "type": "BamAdapter",
+  "bamLocation": { "uri": "http://yourhost/file.bam" },
+  "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
+}
+```
 
 ### CramAdapter configuration options
 
@@ -95,8 +103,10 @@ Example BamAdapter config
 
 Example CramAdapter config
 
-    {
-      "type": "CramAdapter",
-      "cramLocation": { "uri": "http://yourhost/file.cram" },
-      "craiLocation": { "uri": "http://yourhost/file.cram.crai" }
-    }
+```json
+{
+  "type": "CramAdapter",
+  "cramLocation": { "uri": "http://yourhost/file.cram" },
+  "craiLocation": { "uri": "http://yourhost/file.cram.crai" }
+}
+```

@@ -15,7 +15,7 @@ import {
   BlobLocation,
 } from '../util/types'
 
-const isElectron = !!window.electron
+const isElectron = typeof window !== 'undefined' && Boolean(window.electron)
 
 function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location

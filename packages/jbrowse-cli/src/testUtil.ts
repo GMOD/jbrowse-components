@@ -73,6 +73,7 @@ export const test = oclifTest
 
 export const setup = test
   .mockStdoutWrite()
+  .add('originalDir', () => process.cwd())
   .add('dir', async () => {
     const jbrowseTmpDir = path.join(tmpDir, 'jbrowse')
     await fsPromises.mkdir(jbrowseTmpDir, { recursive: true })
@@ -80,6 +81,7 @@ export const setup = test
   })
   .finally(async ctx => {
     await del([`${ctx.dir}/**`, ctx.dir], { force: true })
+    process.chdir(ctx.originalDir)
   })
   .do(async ctx => {
     process.chdir(ctx.dir)

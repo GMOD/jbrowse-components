@@ -126,7 +126,7 @@ export default abstract class BaseRpcDriver {
     for (let i = 0; i < workerCount; i += 1) {
       workerHandles[i] = function workerGenerator(this: WorkerGenerator) {
         if (!this.worker) {
-          const worker = thisB.makeWorker()
+          const worker = thisB.makeWorker(pluginManager)
           watchWorker(worker, WORKER_MAX_PING_TIME).catch(() => {
             if (this.worker) {
               console.warn(

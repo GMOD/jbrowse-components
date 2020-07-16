@@ -46,68 +46,58 @@ To take this a little slow let's look at each function individually
 This is a more complete description of the class interface that you can implement
 
 ```js
-import {
-  BaseFeatureDataAdapter,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 
 class MyAdapter extends BaseFeatureDataAdapter {
-    // @param config - a configuration object
-    // @param getSubAdapter - function to initialize additional subadapters
-    constructor(config, getSubAdapter) {
-      // use readConfObject to read slots from the config
-      const fileLocation = readConfObject(config, 'fileLocation')
+  // @param config - a configuration object
+  // @param getSubAdapter - function to initialize additional subadapters
+  constructor(config, getSubAdapter) {
+    const fileLocation = readConfObject(config, 'fileLocation')
+    const subadapter = readConfObject(config, 'sequenceAdapter')
+    const sequenceAdapter = getSubAdapter(subadapter)
+  }
 
-      // use getSubAdapter to initialize additional data adapters if needed
-      const subadapter = readConfObject(config, 'sequenceAdapter')
-      const sequenceAdapter = getSubAdapter(subadapter)
-    }
-
-
-    // @param region - { refName:string, start:number, end:number}
-    // @param options - { signal: AbortSignal, bpPerPx: number }
-    getFeatures(region, options) {
-      // instead of feature callback, we use rxjs observables. the main
-      // idea is that we call observer.next(data) for each feature we want
-      // to return. when we are done returning data for the region, we
-      // call observer.complete()
-      return new Observable<Feature>(async observer => {
-
-        const myapi = await fetch('http://myservive/genes/${refName}/${start}-${end}')
-        const features = await result.json()
+  // @param region - { refName:string, start:number, end:number}
+  // @param options - { signal: AbortSignal, bpPerPx: number }
+  // @return an rxjs Observable
+  getFeatures(region, options) {
+    return ObservableCreate(async observer => {
+      try {
+        const myapi = await fetch(
+          'http://myservice/genes/${refName}/${start}-${end}',
+        )
+        if (result.ok) const features = await result.json()
         features.forEach(feature => {
-          // call observer.next for each feature, using the SimpleFeature
-          // wrapper, which expects that we can call e.g. feature.get('start')
           observer.next(
             new SimpleFeature({
-              uniqueID: 'val',
-              refName: 'chr1',
-              start: 0,
-              end: 100
-            })
+              uniqueID: `${feature.chr}-${feature.start}-${feature.end}`,
+              refName: feature.chr,
+              start: feature.start,
+              end: feature.end,
+            }),
           )
         })
-
-
-
-        // make sure to call observer.complete() when you have returned all
-        // features using observer.next
         observer.complete()
-      })
-    }
+      } catch (e) {
+        observer.error(e)
+      }
+    })
+  }
 
-    async getRefNames() {
-        // returns the list of refseq names in the file, used for refseq renaming
-        // you can hardcode this if you know it ahead of time e.g. for your own
-        // remote data API or fetch this from your data file e.g. from the bam header
-        return ['chr1','chr2','chr3',...]
-    }
+  async getRefNames() {
+    // returns the list of refseq names in the file, used for refseq renaming
+    // you can hardcode this if you know it ahead of time e.g. for your own
+    // remote data API or fetch this from your data file e.g. from the bam header
+    return ['chr1', 'chr2', 'chr3'] /// etc
+  }
 
-    freeResources(region) {
-        // optionally remove cache resources for a region
-        // can just be an empty function
-    }
+  freeResources(region) {
+    // optionally remove cache resources for a region
+    // can just be an empty function
+  }
 }
 ```
 
@@ -117,14 +107,59 @@ class MyAdapter extends BaseFeatureDataAdapter {
 
 Returns the refNames that are contained in the file, this is
 used for "refname renaming" and is optional but highly useful in scenarios
-like human chromosomes which have, for example, chr1 vs 1. Returning the
-refnames used in the file allows us to automatically smooth this over
+like human chromosomes which have, for example, chr1 vs 1.
+
+Returning the refNames used by a given file or resource allows JBrowse to
+automatically smooth these small naming disparities over. See [reference
+renaming](developer_refrenaming)
 
 #### getFeatures
 
 A function that returns features from the file given a genomic
 range query e.g. getFeatures(region, options), where region is an object like
-`{ refName:string, start:number,end:number }`
+
+The region contains
+
+```typescript
+interface Region {
+  refName: string
+  start: number
+  end: number
+  originalRefName: string
+  assemblyName: string
+}
+```
+
+The options can contain any number of things
+
+```typescript
+interface Options {
+  bpPerPx: number
+  signal: AbortSignal
+  statusCallback: Function
+  headers: Record<string, string>
+}
+```
+
+- bpPerPx - number: resolution of the genome browser when the features were
+  fetched
+- signal - can be used to abort a fetch request when it is no longer needed,
+  from AbortController
+- statusCallback - not implemented yet but in the future may allow you to
+  report the status of your loading operations
+- headers - set of HTTP headers as a JSON object
+
+We return an rxjs Observable. This is similar to a JBrowse 1 getFeatures call,
+where we pass each feature to a featureCallback, tell it when we are done with
+finishCallback, and send errors to errorCallback, except we do all those things
+with the Observable
+
+Here is a "conversion" of JBrowse 1 getFeatures callbacks to JBrowse 2
+observable calls
+
+- `featureCallback(new SimpleFeature(...))` -> `observer.next(new SimpleFeature(...))`
+- `finishCallback()` -> `observer.complete()`
+- `errorCallback(error)` -> `observer.error(error)`
 
 #### freeResources
 
