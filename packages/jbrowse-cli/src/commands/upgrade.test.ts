@@ -2,23 +2,14 @@
  * @jest-environment node
  */
 
-import fs, { Stats } from 'fs'
+import fs from 'fs'
 import * as path from 'path'
-import nock from 'nock'
+import { Scope } from 'nock'
 import { setup } from '../testUtil'
 
 const fsPromises = fs.promises
-let prevStat: Stats
+
 const releaseArray = [
-  {
-    tag_name: 'JBrowse-2@v0.0.1',
-    prerelease: false,
-    assets: [
-      {
-        browser_download_url: 'https://example.com/JBrowse2-0.0.1.zip',
-      },
-    ],
-  },
   {
     tag_name: 'JBrowse-2@v0.0.2',
     prerelease: false,
@@ -28,47 +19,53 @@ const releaseArray = [
       },
     ],
   },
+  {
+    tag_name: 'JBrowse-2@v0.0.1',
+    prerelease: false,
+    assets: [
+      {
+        browser_download_url: 'https://example.com/JBrowse2-0.0.1.zip',
+      },
+    ],
+  },
 ]
 
-let cwd = ''
-beforeEach(() => {
-  cwd = process.cwd()
-})
+function mockReleases(gitHubApi: Scope) {
+  return gitHubApi
+    .get('/repos/GMOD/jbrowse-components/releases')
+    .reply(200, releaseArray)
+}
 
-afterEach(() => {
-  process.chdir(cwd)
-})
-afterAll(() => {
-  nock.cleanAll()
-})
+function mockV1Zip(exampleSite: Scope) {
+  return exampleSite
+    .get('/JBrowse2-0.0.1.zip')
+    .replyWithFile(
+      200,
+      path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
+    )
+}
 
-nock('https://api.github.com')
-  .persist()
-  .get('/repos/GMOD/jbrowse-components/releases')
-  .reply(200, releaseArray)
-
-nock('https://example.com')
-  .get('/JBrowse2-0.0.1.zip')
-  .replyWithFile(
-    200,
-    path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
-  )
-nock('https://example.com')
-  .get('/JBrowse2-0.0.2.zip')
-  .replyWithFile(
-    200,
-    path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
-  )
+function mockV2Zip(exampleSite: Scope) {
+  return exampleSite
+    .get('/JBrowse2-0.0.2.zip')
+    .replyWithFile(
+      200,
+      path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
+    )
+}
 
 describe('upgrade', () => {
   setup
-    .command(['upgrade', path.join(__dirname, '..', '..', 'test')])
+    .do(() => {
+      fsPromises.mkdir('jbrowse')
+    })
+    .command(['upgrade', 'jbrowse'])
     .exit(10)
     .it(
       'fails if user selects a directory that does not have a JBrowse installation',
     )
   setup
-    .command(['upgrade', path.join(__dirname, '..', '..', 'test', 'nonexist')])
+    .command(['upgrade', 'jbrowse'])
     .exit(10)
     .it('fails if user selects a directory that does not exist')
 
@@ -88,21 +85,26 @@ describe('upgrade', () => {
     .exit(30)
     .it('fails if "name" in manifest.json is not "JBrowse"')
   setup
-    .do(async ctx => {
-      prevStat = await fsPromises.stat(path.join(ctx.dir, 'manifest.json'))
-    })
+    .nock('https://api.github.com', mockReleases)
+    .nock('https://example.com', mockV2Zip)
+    .add('prevStat', ctx =>
+      fsPromises.stat(path.join(ctx.dir, 'manifest.json')),
+    )
     .command(['upgrade'])
     .it('upgrades a directory', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
       // upgrade successful if it updates stats of manifest json
-      expect(await fsPromises.stat('manifest.json')).not.toEqual(prevStat)
+      expect(await fsPromises.stat('manifest.json')).not.toEqual(ctx.prevStat)
     })
   setup
-    .command(['upgrade', '--tag', 'JBrowse-2@v0.0.2'])
+    .nock('https://api.github.com', mockReleases)
+    .nock('https://example.com', mockV1Zip)
+    .command(['upgrade', '--tag', 'JBrowse-2@v0.0.1'])
     .it('upgrades a directory with a specific version', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
     })
   setup
+    .nock('https://api.github.com', mockReleases)
     .command(['upgrade', '--tag', 'JBrowse-2@v999.999.999'])
     .exit(40)
     .it('fails to upgrade if version does not exist')

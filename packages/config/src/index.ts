@@ -21,6 +21,8 @@ import {
 } from './RefNameAliasAdapter'
 
 export default class extends Plugin {
+  name = 'ConfigurationPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>

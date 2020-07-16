@@ -8,6 +8,7 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { remoteAbortRpcHandler } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
 import { isAbortException } from '@gmod/jbrowse-core/util'
 import RpcMethodType from '@gmod/jbrowse-core/pluggableElementTypes/RpcMethodType'
+import PluginLoader, { PluginDefinition } from '@gmod/jbrowse-core/PluginLoader'
 import corePlugins from './corePlugins'
 
 // prevent mobx-react from doing funny things when we render in the worker.
@@ -15,18 +16,36 @@ import corePlugins from './corePlugins'
 // @ts-ignore
 if (typeof __webpack_require__ === 'function') useStaticRendering(true)
 
+interface WorkerConfiguration {
+  plugins: PluginDefinition[]
+}
+
 let jbPluginManager: PluginManager | undefined
+
+// waits for a message from the main thread containing our configuration,
+// which must be sent on boot
+function receiveConfiguration(): Promise<WorkerConfiguration> {
+  return new Promise((resolve, reject) => {
+    // listen for the configuration
+    self.onmessage = (event: MessageEvent) => {
+      resolve(event.data as WorkerConfiguration)
+      self.onmessage = () => {}
+    }
+  })
+}
 
 async function getPluginManager() {
   if (jbPluginManager) {
     return jbPluginManager
   }
-  // TODO: Runtime plugins
-  // Loading runtime plugins will look something like this
-  // const pluginLoader = new PluginLoader(config.plugins)
-  // const runtimePlugins = await pluginLoader.load()
-  // const plugins = [...corePlugins, ...runtimePlugins]
-  const pluginManager = new PluginManager(corePlugins.map(P => new P()))
+  // Load runtime plugins
+  const config = await receiveConfiguration()
+  // console.log('got worker boot config', config)
+  const pluginLoader = new PluginLoader(config.plugins)
+  pluginLoader.installGlobalReExports(self.window)
+  const runtimePlugins = await pluginLoader.load()
+  const plugins = [...corePlugins, ...runtimePlugins]
+  const pluginManager = new PluginManager(plugins.map(P => new P()))
   pluginManager.createPluggableElements()
   pluginManager.configure()
   jbPluginManager = pluginManager
@@ -81,23 +100,28 @@ function wrapForRpc(
   }
 }
 
-getPluginManager().then(pluginManager => {
-  const rpcConfig: { [methodName: string]: Function } = {}
-  const rpcMethods = pluginManager.getElementTypesInGroup('rpc method')
-  rpcMethods.forEach(rpcMethod => {
-    if (!(rpcMethod instanceof RpcMethodType))
-      throw new Error('invalid rpc method??')
+getPluginManager()
+  .then(pluginManager => {
+    const rpcConfig: { [methodName: string]: Function } = {}
+    const rpcMethods = pluginManager.getElementTypesInGroup('rpc method')
+    rpcMethods.forEach(rpcMethod => {
+      if (!(rpcMethod instanceof RpcMethodType))
+        throw new Error('invalid rpc method??')
 
-    rpcConfig[rpcMethod.name] = wrapForRpc(
-      rpcMethod.execute.bind(rpcMethod),
-      rpcMethod.name,
-    )
-  })
+      rpcConfig[rpcMethod.name] = wrapForRpc(
+        rpcMethod.execute.bind(rpcMethod),
+        rpcMethod.name,
+      )
+    })
 
-  // @ts-ignore
-  self.rpcServer = new RpcServer.Server({
-    ...rpcConfig,
-    ...remoteAbortRpcHandler(),
-    ping: () => {}, // < the ping method is required by the worker driver for checking the health of the worker
+    // @ts-ignore
+    self.rpcServer = new RpcServer.Server({
+      ...rpcConfig,
+      ...remoteAbortRpcHandler(),
+      ping: () => {}, // < the ping method is required by the worker driver for checking the health of the worker
+    })
   })
-})
+  .catch(error => {
+    console.error('Worker failed to start:')
+    console.error(error)
+  })

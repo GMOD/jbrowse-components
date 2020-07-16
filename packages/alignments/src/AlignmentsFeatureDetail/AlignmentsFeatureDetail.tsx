@@ -2,7 +2,8 @@ import Paper from '@material-ui/core/Paper'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { FunctionComponent } from 'react'
-import BaseFeatureDetails, {
+import {
+  BaseFeatureDetails,
   BaseCard,
   useStyles,
 } from '@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail'

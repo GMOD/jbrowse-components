@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-bed",
-  "version": "2.0.0",
+  "version": "0.0.1-beta.10",
   "description": "JBrowse 2 bed adapters, tracks, etc.",
   "main": "src/index.ts",
   "scripts": {
@@ -8,13 +8,14 @@
   },
   "author": "Garrett Stevens",
   "license": "MIT",
+  "private": true,
   "dependencies": {
     "@gmod/bbi": "^1.0.30",
     "@gmod/bed": "^2.0.3",
     "@gmod/tabix": "^1.4.6"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^2.0.0",
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
     "mobx-state-tree": "3.14.1",
     "rxjs": "^6.0.0"
   }

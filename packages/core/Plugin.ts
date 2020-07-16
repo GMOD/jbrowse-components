@@ -1,17 +1,14 @@
 import PluginManager from './PluginManager'
 
-export default class Plugin {
-  installed = false
+/**
+ * base class for a JBrowse plugin
+ */
+export default abstract class Plugin {
+  abstract name: string
 
-  configured = false
+  install(pluginManager: PluginManager): void {}
 
-  install(pluginManager: PluginManager) {
-    this.installed = true
-  }
-
-  configure(pluginManager: PluginManager) {
-    this.configured = true
-  }
+  configure(pluginManager: PluginManager): void {}
 }
 
 export type PluginConstructor = new (...args: unknown[]) => Plugin

@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-svg",
-  "version": "2.0.0",
+  "version": "0.0.1-beta.10",
   "description": "JBrowse 2 plugin for svg features",
   "main": "src/index.ts",
   "scripts": {
@@ -9,10 +9,11 @@
   "author": "Garrett Stevens",
   "license": "MIT",
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^2.0.0",
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
     "mobx-react": "^6.0.0",
-    "mobx-state-tree": "^3.14.1",
+    "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
     "react": "^16.8.0"
-  }
+  },
+  "private": true
 }

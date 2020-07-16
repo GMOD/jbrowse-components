@@ -9,7 +9,8 @@ import TableRow from '@material-ui/core/TableRow'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
-import BaseFeatureDetail, {
+import {
+  BaseFeatureDetails,
   BaseCard,
 } from '@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail'
 
@@ -105,7 +106,7 @@ function VariantFeatureDetails(props) {
   const { samples, ...rest } = feat
   return (
     <Paper className={classes.root} data-testid="variant-side-drawer">
-      <BaseFeatureDetail feature={rest} {...props} />
+      <BaseFeatureDetails feature={rest} {...props} />
       <Divider />
       <VariantSamples feature={feat} {...props} />
     </Paper>

@@ -6,7 +6,9 @@ import HicRenderer, {
   ReactComponent as HicRendererReactComponent,
 } from './HicRenderer'
 
-export default class AlignmentsPlugin extends Plugin {
+export default class HicPlugin extends Plugin {
+  name = 'HicPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>

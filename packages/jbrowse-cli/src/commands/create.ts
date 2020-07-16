@@ -51,7 +51,7 @@ export default class Create extends Command {
     tag: flags.string({
       char: 't',
       description:
-        'Version of JBrowse 2 to install. Format is JBrowse-2@v1.2.3. Defaults to latest',
+        'Version of JBrowse 2 to install. Format is JBrowse-2@v0.0.1.\nDefaults to latest',
     }),
   }
 
@@ -122,18 +122,19 @@ export default class Create extends Command {
 
     response.body
       .pipe(unzip.Parse())
-      .on('entry', async entry => {
+      .on('entry', async (entry: unzip.Entry) => {
         const { path: fileName, type } = entry
-        if (type === 'Directory') {
+        if (type === 'File') {
           try {
-            await fsPromises.mkdir(path.join(argsPath, fileName), {
+            const location = path.join(argsPath, fileName)
+            await fsPromises.mkdir(path.dirname(location), {
               recursive: true,
             })
+            entry.pipe(fs.createWriteStream(path.join(argsPath, fileName)))
           } catch (error) {
             this.error(error)
           }
-        }
-        entry.pipe(fs.createWriteStream(path.join(argsPath, fileName)))
+        } else entry.autodrain()
       })
       .on('error', err => {
         fs.unlink(argsPath, () => {})

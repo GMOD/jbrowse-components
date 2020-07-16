@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-dotplot-view",
-  "version": "2.0.0",
+  "version": "0.0.1-beta.10",
   "description": "JBrowse 2 dotplot view",
   "main": "src/index.ts",
   "scripts": {
@@ -9,11 +9,10 @@
   "author": "Colin Diesh",
   "license": "MIT",
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^2.0.0",
-    "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
-    "@material-ui/core": "^4.0.0",
-    "@material-ui/lab": "^4.0.0-alpha.20",
-    "@material-ui/styles": "^4.0.0",
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@gmod/jbrowse-plugin-linear-genome-view": "^0.0.1-beta.1",
+    "@material-ui/core": "^4.9.13",
+    "@material-ui/lab": "^4.0.0-alpha.45",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
@@ -29,5 +28,6 @@
     "generic-filehandle": "^2.0.0",
     "json-stable-stringify": "^1.0.1",
     "react-sizeme": "^2.0.0"
-  }
+  },
+  "private": true
 }

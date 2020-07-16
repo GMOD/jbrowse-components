@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-sv-inspector",
-  "version": "2.0.0",
+  "version": "0.0.1-beta.10",
   "description": "JBrowse 2 SV inspector view",
   "main": "src/index.ts",
   "scripts": {
@@ -13,12 +13,13 @@
     "classnames": "^2.2.6"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^2.0.0",
-    "@material-ui/core": "^4.0.0",
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@material-ui/core": "^4.9.13",
     "mobx-react": "^6.0.0",
-    "mobx-state-tree": "^3.14.1",
+    "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
-  }
+  },
+  "private": true
 }

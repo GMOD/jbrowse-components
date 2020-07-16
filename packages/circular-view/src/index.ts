@@ -7,6 +7,8 @@ import Plugin from '@gmod/jbrowse-core/Plugin'
 import DataUsageIcon from '@material-ui/icons/DataUsage'
 
 export default class CircularViewPlugin extends Plugin {
+  name = 'CircularViewPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(require('./CircularView')),

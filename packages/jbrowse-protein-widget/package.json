@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-protein-widget",
-  "version": "1.0.0",
+  "version": "0.0.1-beta.14",
   "description": "an embeddable protein viewer widget",
   "main": "umd/jbrowse-protein-viewer.js",
   "scripts": {
@@ -17,16 +17,15 @@
   "license": "MIT",
   "dependencies": {
     "@gmod/gff": "^1.1.2",
-    "@gmod/jbrowse-core": "^2.0.0",
-    "@gmod/jbrowse-plugin-config": "^2.0.0",
-    "@gmod/jbrowse-plugin-filtering": "^2.0.0",
-    "@gmod/jbrowse-plugin-legacy-jbrowse": "^2.0.0",
-    "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
-    "@gmod/jbrowse-plugin-lollipop": "^2.0.0",
-    "@gmod/jbrowse-plugin-protein": "^2.0.0",
-    "@gmod/jbrowse-plugin-svg": "^2.0.0",
+    "@gmod/jbrowse-core": "^0.0.1-beta.14",
+    "@gmod/jbrowse-plugin-config": "^0.0.1-beta.10",
+    "@gmod/jbrowse-plugin-filtering": "^0.0.1-beta.10",
+    "@gmod/jbrowse-plugin-legacy-jbrowse": "^0.0.1-beta.10",
+    "@gmod/jbrowse-plugin-linear-genome-view": "^0.0.1-beta.10",
+    "@gmod/jbrowse-plugin-lollipop": "^0.0.1-beta.10",
+    "@gmod/jbrowse-plugin-protein": "^0.0.1-beta.10",
+    "@gmod/jbrowse-plugin-svg": "^0.0.1-beta.10",
     "@material-ui/core": "^4.9.5",
-    "@material-ui/lab": "^4.0.0-alpha.45",
     "mobx": "^5.10.1",
     "mobx-react": "^6.0.3",
     "mobx-state-tree": "3.14.1",
@@ -35,5 +34,6 @@
     "react-dom": "^16.8.0",
     "rxjs": "^6.5.2",
     "typeface-roboto": "^0.0.54"
-  }
+  },
+  "private": true
 }

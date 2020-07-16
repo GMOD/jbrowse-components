@@ -46,8 +46,11 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
       },
     }))
     .volatile(self => ({
-      rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
-        MainThreadRpcDriver: {},
-      }),
+      rpcManager: new RpcManager(
+        pluginManager,
+        [],
+        self.config.configuration.rpc,
+        { MainThreadRpcDriver: {} },
+      ),
     }))
 }

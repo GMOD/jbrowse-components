@@ -4,6 +4,7 @@ import { remoteAbortRpcHandler } from '@gmod/jbrowse-core/rpc/remoteAbortSignals
 import { isAbortException } from '@gmod/jbrowse-core/util'
 import { useStaticRendering } from 'mobx-react'
 import RpcMethodType from '@gmod/jbrowse-core/pluggableElementTypes/RpcMethodType'
+import PluginLoader, { PluginDefinition } from '@gmod/jbrowse-core/PluginLoader'
 import corePlugins from './corePlugins'
 
 const { electron, electronBetterIpc } = window
@@ -49,16 +50,43 @@ useStaticRendering(true)
 
 let jbPluginManager: PluginManager
 
+interface WorkerConfiguration {
+  plugins: PluginDefinition[]
+}
+
+// waits for a message from the main thread containing our configuration,
+// which must be sent on boot
+function receiveConfiguration(): Promise<WorkerConfiguration> {
+  return new Promise((resolve, reject) => {
+    if (!ipcRenderer) {
+      reject(new Error('ipcRenderer not ready'))
+      return
+    }
+    ipcRenderer.answerRenderer('ready_for_configuration', () => true)
+    // listen for the configuration
+    ipcRenderer.answerRenderer(
+      'configure',
+      (configuration: WorkerConfiguration) => {
+        resolve(configuration)
+        return true
+      },
+    )
+  })
+}
+
 async function getPluginManager() {
   if (jbPluginManager) {
     return jbPluginManager
   }
-  // TODO: Runtime plugins
-  // Loading runtime plugins will look something like this
-  // const pluginLoader = new PluginLoader(config.plugins)
-  // const runtimePlugins = await pluginLoader.load()
-  // const plugins = [...corePlugins, ...runtimePlugins]
-  const pluginManager = new PluginManager(corePlugins.map(P => new P()))
+  // Load runtime plugins
+  const config = await receiveConfiguration()
+  // console.log('got worker boot config', config)
+  const pluginLoader = new PluginLoader(config.plugins)
+  pluginLoader.installGlobalReExports(window)
+  const runtimePlugins = await pluginLoader.load()
+  const plugins = [...corePlugins, ...runtimePlugins]
+  const pluginManager = new PluginManager(plugins.map(P => new P()))
+
   pluginManager.createPluggableElements()
   pluginManager.configure()
   jbPluginManager = pluginManager

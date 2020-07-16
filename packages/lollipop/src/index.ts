@@ -6,6 +6,8 @@ import LollipopRenderer, {
 } from './LollipopRenderer'
 
 export default class extends Plugin {
+  name = 'LollipopPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addRendererType(
       () =>

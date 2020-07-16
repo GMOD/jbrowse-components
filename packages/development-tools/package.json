@@ -1,0 +1,37 @@
+{
+  "name": "@gmod/jbrowse-development-tools",
+  "version": "0.0.1-beta.18",
+  "description": "Tools to help with developing and building JBrowse 2 plugins",
+  "scripts": {
+    "test": "jest",
+    "coverage": "npm test -- --coverage",
+    "lint": "tsc --noEmit && eslint --ext .js,.ts,.jsx,.tsx src",
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
+    "build": "babel src --root-mode upward --out-dir dist --extensions '.ts,.js'",
+    "version": "standard-changelog && git add CHANGELOG.md",
+    "postpublish": "git push origin master --follow-tags"
+  },
+  "repository": "GMOD/jbrowse-components",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "author": {
+    "name": "Robert Buels",
+    "email": "rbuels@gmail.com",
+    "url": "https://github.com/rbuels"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@gmod/jbrowse-core": "^0.0.1-beta.14",
+    "@types/copy-webpack-plugin": "^6.0.0",
+    "@types/webpack": "^4.41.18",
+    "change-case": "^4.1.1",
+    "copy-webpack-plugin": "^6.0.3",
+    "webpack": "^4.43.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

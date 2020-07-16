@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-linear-genome-view",
-  "version": "2.0.0",
+  "version": "0.0.1-beta.10",
   "description": "JBrowse 2 linear genome view",
   "main": "src/index.ts",
   "scripts": {
@@ -18,14 +18,15 @@
     "react-window": "^1.8.5"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^2.0.0",
-    "@material-ui/core": "^4.0.0",
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@material-ui/core": "^4.9.13",
     "@material-ui/lab": "^4.0.0-alpha.45",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
-    "mobx-state-tree": "^3.14.1",
+    "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
-  }
+  },
+  "private": true
 }

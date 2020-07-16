@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react'
 import React from 'react'
 import { stateModel } from '.'
-import ReactComponent from './BaseFeatureDetail'
+import { BaseFeatureDetails as ReactComponent } from './BaseFeatureDetail'
 
 test('open up a drawer widget', () => {
   const model = stateModel.create({ type: 'BaseFeatureWidget' })

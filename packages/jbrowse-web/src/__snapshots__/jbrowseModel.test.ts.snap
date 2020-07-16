@@ -8,6 +8,7 @@ Object {
   "defaultSession": Object {
     "name": "New Session",
   },
+  "plugins": undefined,
   "savedSessions": Array [],
   "tracks": Array [],
 }
@@ -64,6 +65,7 @@ Object {
   "defaultSession": Object {
     "name": "New Session",
   },
+  "plugins": undefined,
   "savedSessions": Array [
     Object {
       "activeWidgets": Object {

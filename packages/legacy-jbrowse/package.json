@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-legacy-jbrowse",
-  "version": "2.0.0",
+  "version": "0.0.1-beta.10",
   "description": "JBrowse 2 plugin for connecting to and reading JBrowse 1 data",
   "main": "src/index.ts",
   "scripts": {
@@ -15,8 +15,9 @@
     "set-value": "^3.0.0"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^2.0.0",
-    "mobx-state-tree": "^3.14.1",
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "mobx-state-tree": "3.14.1",
     "rxjs": "^6.0.0"
-  }
+  },
+  "private": true
 }

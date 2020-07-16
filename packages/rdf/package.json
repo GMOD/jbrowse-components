@@ -1,19 +1,20 @@
 {
-    "name": "@gmod/jbrowse-plugin-rdf",
-    "version": "2.0.0",
-    "description": "JBrowse 2 RDF resources",
-    "main": "src/index.ts",
-    "scripts": {
-      "test": "cd ../..; jest packages/rdf"
-    },
-    "author": "Garrett Stevens",
-    "license": "MIT",
-    "dependencies": {
-      "string-template": "^1.0.0"
-    },
-    "peerDependencies": {
-      "@gmod/jbrowse-core": "^2.0.0",
-      "mobx-state-tree": "3.14.1",
-      "rxjs": "^6.0.0"
-    }
-  }
+  "name": "@gmod/jbrowse-plugin-rdf",
+  "version": "0.0.1-beta.10",
+  "description": "JBrowse 2 RDF resources",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "cd ../..; jest packages/rdf"
+  },
+  "author": "Garrett Stevens",
+  "license": "MIT",
+  "dependencies": {
+    "string-template": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "mobx-state-tree": "3.14.1",
+    "rxjs": "^6.0.0"
+  },
+  "private": true
+}

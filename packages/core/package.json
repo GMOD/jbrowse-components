@@ -1,10 +1,10 @@
 {
   "name": "@gmod/jbrowse-core",
-  "version": "2.0.0",
+  "version": "0.0.1-beta.17",
   "description": "JBrowse 2 core libraries used by plugins",
   "license": "MIT",
   "repository": "GMOD/jbrowse-components",
-  "main": "dist/index.js",
+  "main": "index.js",
   "author": {
     "name": "Robert Buels",
     "email": "rbuels@gmail.com",
@@ -13,17 +13,14 @@
   "engines": {
     "node": ">=8"
   },
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "test": "jest",
     "coverage": "npm test -- --coverage",
     "lint": "tsc --noEmit && eslint --ext .js,.ts,.jsx,.tsx .",
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
-    "build": "babel . --root-mode upward --out-dir dist --extensions '.ts,.js'",
-    "preversion": "npm run lint && npm test && npm run docs && npm run build",
+    "prepare": "npm run build",
+    "build": "NODE_ENV=production babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json CHANGELOG.md LICENSE dist/",
     "version": "standard-changelog && git add CHANGELOG.md",
     "postpublish": "git push origin master --follow-tags"
   },
@@ -48,6 +45,7 @@
     "http-range-fetcher": "^1.2.2",
     "is-object": "^1.0.1",
     "json-stable-stringify": "^1.0.1",
+    "load-script2": "^2.0.5",
     "object-hash": "^1.3.1",
     "object.fromentries": "^2.0.0",
     "pako": "^1.0.10",
@@ -71,6 +69,7 @@
     "rxjs": "^6.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "directory": "dist"
   }
 }

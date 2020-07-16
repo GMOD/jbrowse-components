@@ -1,9 +1,10 @@
 {
   "name": "@gmod/jbrowse-plugin-variants",
-  "version": "2.0.0",
+  "version": "0.0.1-beta.10",
   "description": "JBrowse 2 variant adapters, tracks, etc.",
   "main": "src/index.ts",
   "scripts": {
+    "disabled-build": "cross-env NODE_ENV=production webpack",
     "test": "cd ../..; jest packages/variants"
   },
   "author": "Garrett Stevens",
@@ -13,15 +14,19 @@
     "@gmod/vcf": "^4.0.1",
     "generic-filehandle": "^2.0.0"
   },
+  "devDependencies": {
+    "@gmod/jbrowse-development-tools": "^0.0.1"
+  },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^2.0.0",
-    "@gmod/jbrowse-plugin-alignments": "^2.0.0",
-    "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
-    "@material-ui/core": "^4.0.0",
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@gmod/jbrowse-plugin-alignments": "^0.0.1-beta.1",
+    "@gmod/jbrowse-plugin-linear-genome-view": "^0.0.1-beta.1",
+    "@material-ui/core": "^4.9.13",
     "mobx-react": "^6.0.0",
-    "mobx-state-tree": "^3.14.1",
+    "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "rxjs": "^6.0.0"
-  }
+  },
+  "private": true
 }

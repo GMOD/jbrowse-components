@@ -20,4 +20,6 @@ const stateModel = types
   }))
 
 export { configSchema, stateModel }
-export const ReactComponent = import('./BaseFeatureDetail')
+export const ReactComponent = import('./BaseFeatureDetail').then(
+  d => d.BaseFeatureDetails,
+)

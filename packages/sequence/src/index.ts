@@ -33,6 +33,8 @@ import {
 } from './TwoBitAdapter'
 
 export default class SequencePlugin extends Plugin {
+  name = 'SequencePlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>

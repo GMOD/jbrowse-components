@@ -33,6 +33,8 @@ import {
 } from './SessionManager'
 
 export default class extends Plugin {
+  name = 'MenusPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addWidgetType(() => {
       return new WidgetType({
