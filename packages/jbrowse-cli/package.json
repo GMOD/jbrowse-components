@@ -5,7 +5,7 @@
   "bin": {
     "jbrowse": "./bin/run"
   },
-  "bugs": "https://github.com/@gmod/jbrowse-components/issues",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
   "dependencies": {
     "@oclif/command": "^1",
     "@oclif/config": "^1",
@@ -24,7 +24,7 @@
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json"
   ],
-  "homepage": "https://github.com/@gmod/jbrowse-components",
+  "homepage": "https://github.com/GMOD/jbrowse-components",
   "keywords": [
     "oclif"
   ],

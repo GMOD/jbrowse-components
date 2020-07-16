@@ -39,3 +39,11 @@ yarn
 ## Quick start
 
 Either cd to packages/jbrowse-web or packages/jbrowse-desktop and run `yarn start`
+
+## Developers
+
+To make a release of jbrowse-components tools
+
+```sh
+yarn run publish
+```
