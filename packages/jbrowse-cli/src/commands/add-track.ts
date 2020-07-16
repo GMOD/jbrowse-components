@@ -34,7 +34,8 @@ export default class AddTrack extends Command {
     '$ jbrowse add-track https://mywebsite.com/my.bam',
     `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' -- load move`,
     `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --force`,
-    `$ jbrowse add-track /path/to/my.bam --config '{'defaultRendering': 'density'}' `,
+    `$ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'`,
+    `$ jbrowse add-track config.json' `,
   ]
 
   static args = [
@@ -76,7 +77,7 @@ export default class AddTrack extends Command {
     }),
     config: flags.string({
       description:
-        'Any extra config settings to add to a track. i.e {"defaultrendering": "density"}',
+        'Any extra config settings to add to a track. i.e {"defaultRendering": "density"}',
     }),
     configLocation: flags.string({
       description:
@@ -106,13 +107,16 @@ export default class AddTrack extends Command {
     let { type, trackId, name, assemblyNames } = runFlags
 
     await this.checkLocation(runArgs.location)
-    const { location, protocol } = await this.resolveFileLocation(argsTrack)
+    const { location, protocol, local } = await this.resolveFileLocation(
+      argsTrack,
+    )
     const configPath =
       configLocation || path.join(runArgs.location, 'config.json')
 
     let dataDirectoryLocation
-    if (protocol === 'uri') dataDirectoryLocation = location
-    else if (!load)
+    if (!local) {
+      dataDirectoryLocation = location
+    } else if (!load)
       this.error(
         'Local file detected. Please select a load option for the data directory with the --load flag',
         { exit: 10 },
@@ -125,6 +129,7 @@ export default class AddTrack extends Command {
     }
     // copy/symlinks/moves the data directory into the jbrowse installation directory
     const filePaths = Object.values(this.guessFileNames(location))
+    console.log(load)
     switch (load) {
       case 'copy': {
         await Promise.all(
@@ -135,14 +140,8 @@ export default class AddTrack extends Command {
               path.basename(filePath),
             )
 
-            // if file already exists at location, do nothing
             try {
-              await fsPromises.readdir(dataLocation)
-            } catch (error) {
-              return
-            }
-            try {
-              await fsPromises.symlink(filePath, dataLocation)
+              await fsPromises.copyFile(filePath, dataLocation)
             } catch (error) {
               this.error(error, { exit: 20 })
             }
@@ -159,12 +158,6 @@ export default class AddTrack extends Command {
               path.basename(filePath),
             )
 
-            // if file already exists at location, do nothing
-            try {
-              await fsPromises.readdir(dataLocation)
-            } catch (error) {
-              return
-            }
             try {
               await fsPromises.symlink(filePath, dataLocation)
             } catch (error) {
@@ -183,12 +176,6 @@ export default class AddTrack extends Command {
               path.basename(filePath),
             )
 
-            // if file already exists at location, do nothing
-            try {
-              await fsPromises.readdir(dataLocation)
-            } catch (error) {
-              return
-            }
             try {
               await fsPromises.rename(filePath, dataLocation)
             } catch (error) {
@@ -383,7 +370,8 @@ export default class AddTrack extends Command {
       //   }
       locationObj = {
         location: filePath,
-        protocol: 'localPath',
+        protocol: 'uri',
+        local: true,
       }
       return locationObj
     }

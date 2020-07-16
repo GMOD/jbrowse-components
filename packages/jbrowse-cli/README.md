@@ -151,7 +151,7 @@ OPTIONS
 
   --category=category                 Optional Comma separated string of categories to group tracks
 
-  --config=config                     Any extra config settings to add to a track. i.e {"defaultrendering": "density"}
+  --config=config                     Any extra config settings to add to a track. i.e {"defaultRendering": "density"}
 
   --configLocation=configLocation     Write to a certain config.json file. Defaults to location/config.json if not
                                       specified
@@ -165,7 +165,8 @@ EXAMPLES
   $ jbrowse add-track https://mywebsite.com/my.bam
   $ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' -- load move
   $ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --force
-  $ jbrowse add-track /path/to/my.bam --config '{'defaultRendering': 'density'}'
+  $ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'
+  $ jbrowse add-track config.json'
 ```
 
 ## `jbrowse create LOCALPATH`
