@@ -20,6 +20,7 @@ import Plugin from '@gmod/jbrowse-core/Plugin'
 import { AdapterClass, configSchema } from './UCSCAdapter'
 
 export default class UCSCPlugin extends Plugin {
+  name = 'UCSCPlugin'
   install(pluginManager) {
     pluginManager.addAdapterType(
       () =>
@@ -36,18 +37,24 @@ export default class UCSCPlugin extends Plugin {
 src/UCSCAdapter/index.ts
 
 ```js
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import {
+  ConfigurationSchema,
+  readConfObject,
+} from '@gmod/jbrowse-core/configuration'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import stringify from 'json-stable-stringify'
 
 export const configSchema = ConfigurationSchema(
   'UCSCAdapter',
   {
-    baseUrl: {
+    base: {
       type: 'fileLocation',
       description: 'base URL for the UCSC API',
-      defaultValue: { uri: 'https://api.genome.ucsc.edu/' },
+      defaultValue: {
+        uri: 'https://cors-anywhere.herokuapp.com/https://api.genome.ucsc.edu/',
+      },
     },
     track: {
       type: 'string',
@@ -64,15 +71,14 @@ export class AdapterClass extends BaseFeatureDataAdapter {
     this.config = config
   }
 
-  getFeatures(region, options) {
+  getFeatures(region) {
     const { assemblyName, start, end, refName } = region
-
-    return new ObservableCreate(async observer => {
-      const base = readConfObject(this.config, 'baseUrl')
+    return ObservableCreate(async observer => {
+      const { uri } = readConfObject(this.config, 'base')
       const track = readConfObject(this.config, 'track')
       try {
         const result = await fetch(
-          `${base}/getData/track?` +
+          `${uri}/getData/track?` +
             `genome=${assemblyName};track=${track};` +
             `chrom=${refName};start=${start};end=${end}`,
         )
@@ -96,12 +102,18 @@ export class AdapterClass extends BaseFeatureDataAdapter {
       }
     })
   }
+
+  async getRefNames() {
+    const arr = []
+    for (let i = 0; i < 23; i++) {
+      arr.push(`chr${i}`)
+    }
+    return arr
+  }
+
+  freeResources() {}
 }
 ```
-
-The above is a large block of code, but I hope it has not too much
-complication. See the page on [creating a data
-adapter](developer_creating_data_adapter) for more details the code.
 
 ### Adding this track to our configuration
 
@@ -160,16 +172,23 @@ src/index.js
 
 ```js
 import Plugin from '@gmod/jbrowse-core/Plugin'
-import { ArcRenderer, ReactComponent, configSchema } from './ArcRenderer'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
-export default class UCSCPlugin extends Plugin {
+import ArcRenderer, {
+  configSchema as ArcRendererConfigSchema,
+  ReactComponent as ArcRendererReactComponent,
+} from './ArcRenderer'
+
+export default class ArcRendererPlugin extends Plugin {
+  name = 'ArcPlugin'
   install(pluginManager) {
     pluginManager.addRendererType(
       () =>
+        // @ts-ignore error "expected 0 arguments, but got 1"?
         new ArcRenderer({
           name: 'ArcRenderer',
-          configSchema,
-          AdapterClass,
+          ReactComponent: ArcRendererReactComponent,
+          configSchema: ArcRendererConfigSchema,
         }),
     )
   }
@@ -179,9 +198,15 @@ export default class UCSCPlugin extends Plugin {
 src/ArcRenderer/index.js
 
 ```js
+import React from 'react'
 // prettier-ignore
-import ServerSideRendererType
-    from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
+import {
+  ServerSideRendererType
+} from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
+import {
+  ConfigurationSchema,
+  readConfObject,
+} from '@gmod/jbrowse-core/configuration'
 
 import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
 import { bpSpanPx } from '@gmod/jbrowse-core/util'
@@ -203,7 +228,7 @@ export const configSchema = ConfigurationSchema(
   { explicitlyTyped: true },
 )
 
-// This ReactComponent the so called "rendering" which is the component
+// This ReactComponent is the so called "rendering" which is the component
 // that contains the contents of what was rendered.
 export const ReactComponent = props => {
   return (
@@ -215,25 +240,37 @@ export const ReactComponent = props => {
 
 // Our ArcRenderer class does the main work in it's render method
 // which draws to a canvas and returns the results in a React component
-export class ArcRenderer extends ServerSideRendererType {
+export default class ArcRenderer extends ServerSideRendererType {
   async render(renderProps) {
-    const { width, features, config, regions } = renderProps
-    const height = 500
-    const canvas = createCanvas(width, height)
-    const ctx = canvas.getContext('2d')
+    const {
+      features,
+      config,
+      regions,
+      bpPerPx,
+      highResolutionScaling,
+    } = renderProps
     const region = regions[0]
-    for (const feature of features.values) {
+    const width = (region.end - region.start) / bpPerPx
+    const height = 500
+    const canvas = createCanvas(
+      width * highResolutionScaling,
+      height * highResolutionScaling,
+    )
+    const ctx = canvas.getContext('2d')
+    ctx.scale(highResolutionScaling, highResolutionScaling)
+    for (const feature of features.values()) {
       const [left, right] = bpSpanPx(
         feature.get('start'),
         feature.get('end'),
         region,
         bpPerPx,
       )
+
       ctx.beginPath()
       ctx.strokeStyle = readConfObject(config, 'color', [feature])
       ctx.lineWidth = 3
       ctx.moveTo(left, 0)
-      ctx.bezierCurveTo(left, height / 2, right, height / 2, right, 0)
+      ctx.bezierCurveTo(left, 200, right, 200, right, 0)
       ctx.stroke()
     }
     const imageData = await createImageBitmap(canvas)

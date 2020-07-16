@@ -33,6 +33,7 @@ It is likely preferable in most cases to install the tools first however
 
 - [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
 - [`jbrowse add-track DATADIRECTORY [LOCATION]`](#jbrowse-add-track-datadirectory-location)
+- [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
@@ -167,6 +168,26 @@ EXAMPLES
   $ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --force
   $ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'
   $ jbrowse add-track config.json'
+```
+
+## `jbrowse add-track-json TRACK`
+
+Add a track configuration directly from a JSON hunk to the JBrowse 2 configuration
+
+```
+USAGE
+  $ jbrowse add-track-json TRACK
+
+ARGUMENTS
+  TRACK  track JSON file or command line arg blob
+
+OPTIONS
+  -c, --config=config  [default: ./config.json] Config file; if the file does not exist, it will be created
+  -u, --update         update the contents of an existing track, matched based on trackId
+
+EXAMPLES
+  $ jbrowse add-track-json track.json
+  $ jbrowse add-track-json track.json --update
 ```
 
 ## `jbrowse create LOCALPATH`

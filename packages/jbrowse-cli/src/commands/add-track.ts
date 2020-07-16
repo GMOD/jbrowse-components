@@ -129,7 +129,6 @@ export default class AddTrack extends Command {
     }
     // copy/symlinks/moves the data directory into the jbrowse installation directory
     const filePaths = Object.values(this.guessFileNames(location))
-    console.log(load)
     switch (load) {
       case 'copy': {
         await Promise.all(
@@ -335,6 +334,7 @@ export default class AddTrack extends Command {
     let locationObj: {
       location: string
       protocol: 'uri' | 'localPath'
+      local: boolean
     }
     try {
       locationUrl = new URL(location)
@@ -349,6 +349,7 @@ export default class AddTrack extends Command {
           locationObj = {
             location: locationUrl.href,
             protocol: 'uri',
+            local: false,
           }
           return locationObj
         }

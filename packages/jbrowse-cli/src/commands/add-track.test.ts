@@ -146,11 +146,11 @@ describe('add-track', () => {
             adapter: {
               type: 'BamAdapter',
               bamLocation: {
-                localPath: 'simple.bam',
+                uri: 'simple.bam',
               },
               index: {
                 location: {
-                  localPath: 'simple.bam.bai',
+                  uri: 'simple.bam.bai',
                 },
               },
               sequenceAdapter: {
@@ -214,11 +214,11 @@ describe('add-track', () => {
             adapter: {
               type: 'BamAdapter',
               bamLocation: {
-                localPath: 'simple.bam',
+                uri: 'simple.bam',
               },
               index: {
                 location: {
-                  localPath: 'simple.bam.bai',
+                  uri: 'simple.bam.bai',
                 },
               },
             },
