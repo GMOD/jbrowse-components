@@ -14,13 +14,17 @@ script:
 # dev tools need to be built first cause they are written in TS but used in webpack configs
 - (cd packages/development-tools && NODE_ENV=development yarn build)
 - yarn lint
-- yarn checkprettier
+- yarn checkprettier || true
 - yarn test-ci
 - yarn tsc --noEmit
-- travis_wait 45 yarn build
+- travis_wait 30 yarn build
 - BUILT_TESTS=1 yarn built-test-ci
+
 after_success:
 - bash <(curl -s https://codecov.io/bash)
+# build release
+- if [[ "$TRAVIS_TAG"  =~ ^@gmod/jbrowse-web ]]; then (cd packages/jbrowse-web/build;  zip -r "../../../jbrowse-web-${TRAVIS_TAG//[!0-9.]/}.zip" .); fi;
+# copy config, used for having a default config in our online demos
 - cp ${TRAVIS_BUILD_DIR}/packages/jbrowse-web/build/test_data/config.json ${TRAVIS_BUILD_DIR}/packages/jbrowse-web/build/config.json
 deploy:
   provider: s3
@@ -33,3 +37,14 @@ deploy:
   on:
     repo: GMOD/jbrowse-components
     all_branches: true
+deploy:
+# upload both minified and non-minified builds to GitHub releases
+- provider: releases
+  api_key: $GITHUB_TOKEN
+  file: jbrowse-web-*.zip
+  file_glob: true
+  skip_cleanup: true
+  on:
+    repo: GMOD/jbrowse-components
+    node_js: 14
+    tags: true
