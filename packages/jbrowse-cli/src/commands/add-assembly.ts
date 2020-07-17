@@ -185,8 +185,8 @@ custom         Either a JSON file location or inline JSON that defines a custom
     }),
   }
 
-  async run() {
-    await this.checkLocation()
+  async getAssembly(): Promise<Assembly> {
+    let sequence: Sequence
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
     const { sequence: argsSequence } = runArgs as { sequence: string }
 
@@ -200,7 +200,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
         `URL detected with --load flag. Please rerun the function without the --load flag`,
         { exit: 35 },
       )
-    this.debug(`Sequence location is: ${argsSequence}`)
+
     let { name } = runFlags
     let { type } = runFlags as {
       type:
@@ -220,7 +220,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
     if (name) {
       this.debug(`Name is: ${name}`)
     }
-    let sequence: Sequence
     switch (type) {
       case 'indexedFasta': {
         let sequenceLocation = await this.resolveFileLocation(
@@ -409,8 +408,17 @@ custom         Either a JSON file location or inline JSON that defines a custom
       }
     }
 
-    const assembly: Assembly = { name, sequence }
+    return { name, sequence }
+  }
 
+  async run() {
+    await this.checkLocation()
+    const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
+    const { sequence: argsSequence } = runArgs as { sequence: string }
+    this.debug(`Sequence location is: ${argsSequence}`)
+    const { name } = runFlags
+
+    const assembly = await this.getAssembly()
     if (runFlags.alias && runFlags.alias.length) {
       this.debug(`Adding assembly aliases: ${runFlags.alias}`)
       assembly.aliases = runFlags.alias
@@ -555,7 +563,11 @@ custom         Either a JSON file location or inline JSON that defines a custom
   }
 
   guessSequenceType(sequence: string) {
-    if (sequence.endsWith('.fa') || sequence.endsWith('.fasta')) {
+    if (
+      sequence.endsWith('.fa') ||
+      sequence.endsWith('.fna') ||
+      sequence.endsWith('.fasta')
+    ) {
       return 'indexedFasta'
     }
     if (sequence.endsWith('.fa.gz') || sequence.endsWith('.fasta.gz')) {

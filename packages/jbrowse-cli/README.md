@@ -257,6 +257,7 @@ OPTIONS
   -h, --help          show CLI help
   -l, --listVersions  Lists out all versions of JBrowse 2
   -t, --tag=tag       Version of JBrowse 2 to upgrade to. Defaults to latest
+  -u, --url=url       A direct URL to a JBrowse 2 release
 
 EXAMPLES
   $ jbrowse upgrade
