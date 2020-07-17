@@ -25,6 +25,11 @@ provided and it will import itself into VirtualBox (the name of the VM will be
 "JBrowse 2 BOSC"). Then just click `Start` and it will start an Ubuntu Linux
 machine with everything you need pre-installed.
 
+A second option is to use an AWS AMI Ubuntu 2020 server set up to work with
+this course.  The AMI ID for the course machine is ami-06d3d077f91ea603e and
+is located in us-east-1 (Northern Virginia). If you choose to run this machine,
+be sure to open incoming access on port 80 and 3000 in the security groups.
+
 If you're not using the provided virtual Machine, you can do most of the
 tutorial with a simple text editor and some way to serve files (just opening
 the HTML files we create in a browser won't work, you'll need a server). If you
