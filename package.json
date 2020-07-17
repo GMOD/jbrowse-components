@@ -7,7 +7,7 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production lerna run build",
     "publish": "cross-env lerna publish",
-    "lint": "eslint --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
+    "lint": "eslint --report-unused-disable-directives --ext .js,.ts,.jsx,.tsx .",
     "runprettier": "prettier --write \"./**/*.{css,scss,md}\"",
     "checkprettier": "prettier --check \"./**/*.{css,scss,md}\"",
     "typecheck": "tsc --noEmit",
