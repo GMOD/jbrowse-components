@@ -864,12 +864,7 @@ describe('add-assembly', () => {
       '--load',
       'trust',
     ])
-    .it('warns when a data file is not in the JBrowse directory', async ctx => {
-      expect(ctx.consoleLog).not.toHaveBeenCalled()
-      expect(ctx.consoleError.mock.calls[0][0]).toContain(
-        'is not in the JBrowse directory',
-      )
-    })
+
 
   setup
     .nock('https://mysite.com', site =>

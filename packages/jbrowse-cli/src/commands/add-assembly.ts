@@ -169,7 +169,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     load: flags.string({
       char: 'l',
       description:
-        'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or trust to leave data directory alone',
+        'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use trust to modify the config without doing any file operations',
       options: ['copy', 'symlink', 'move', 'trust'],
     }),
     skipCheck: flags.boolean({
@@ -192,7 +192,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
     if (this.needLoadData(argsSequence) && !runFlags.load)
       this.error(
-        `Local file detected. Please select a load option for the data directory with the --load flag`,
+        `Please specify the loading operation for this file with --load copy|symlink|move|trust`,
         { exit: 25 },
       )
     else if (!this.needLoadData(argsSequence) && runFlags.load)
@@ -527,7 +527,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     )
 
     this.log(
-      `${idx !== -1 ? 'Overwrote' : 'Added'} assembly "${name}" ${
+      `${idx !== -1 ? 'Overwrote' : 'Added'} assembly "${assembly.name}" ${
         idx !== -1 ? 'in' : 'to'
       } ${runFlags.config}`,
     )
@@ -622,11 +622,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
     }
     if (locationPath) {
       const filePath = path.relative(process.cwd(), locationPath)
-      if (filePath.startsWith('..')) {
-        this.warn(
-          `Location ${filePath} is not in the JBrowse directory. Make sure it is still in your server directory.`,
-        )
-      }
       return filePath
     }
     return this.error(`Could not resolve to a file or a URL: "${location}"`, {

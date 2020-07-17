@@ -71,7 +71,7 @@ OPTIONS
 
   -l, --load=copy|symlink|move|trust
       Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data
-      directory to the JBrowse directory. Or trust to leave data directory alone
+      directory to the JBrowse directory. Or use trust to modify the config without doing any file operations
 
   -n, --name=name
       Name of the assembly; if not specified, will be guessed using the sequence file name
