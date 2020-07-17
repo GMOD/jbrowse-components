@@ -256,7 +256,10 @@ ARGUMENTS
 OPTIONS
   -h, --help          show CLI help
   -l, --listVersions  Lists out all versions of JBrowse 2
-  -t, --tag=tag       Version of JBrowse 2 to upgrade to. Defaults to latest
+
+  -t, --tag=tag       Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@v0.0.1.
+                      Defaults to latest
+
   -u, --url=url       A direct URL to a JBrowse 2 release
 
 EXAMPLES

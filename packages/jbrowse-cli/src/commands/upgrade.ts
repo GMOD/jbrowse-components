@@ -47,7 +47,8 @@ export default class Upgrade extends Command {
     }),
     tag: flags.string({
       char: 't',
-      description: 'Version of JBrowse 2 to upgrade to. Defaults to latest',
+      description:
+        'Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@v0.0.1.\nDefaults to latest',
     }),
     url: flags.string({
       char: 'u',
