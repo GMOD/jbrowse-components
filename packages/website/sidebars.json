@@ -71,7 +71,18 @@
         {
           "type": "category",
           "label": "Archive",
-          "items": ["bcc2020_plugin_development", "bcc2020_embedding_jbrowse"]
+          "items": [
+            "bcc2020_plugin_development",
+            {
+              "type": "category",
+              "label": "BCC2020 - Embedding JBrowse 2 in your website",
+              "items": [
+                "bcc2020_embedding_jbrowse_getting_started",
+                "bcc2020_embedding_jbrowse_introduction",
+                "bcc2020_embedding_jbrowse_simple_site"
+              ]
+            }
+          ]
         }
       ]
     }
