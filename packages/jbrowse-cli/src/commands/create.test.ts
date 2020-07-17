@@ -33,7 +33,14 @@ function mockZip(exampleSite: Scope) {
     .replyWithFile(
       200,
       path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
+      { 'Content-Type': 'application/zip' },
     )
+}
+
+function mockWrongSite(exampleSite: Scope) {
+  return exampleSite
+    .get('/JBrowse2-0.0.1.json')
+    .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
 }
 
 function sleep(ms: number) {
@@ -68,10 +75,34 @@ describe('create', () => {
       'fails if user selects a directory that already has existing files, no force flag',
     )
   setup
+    .nock('https://example.com', mockWrongSite)
+    .command([
+      'create',
+      'jbrowse',
+      '--url',
+      'https://example.com/JBrowse2-0.0.1.json',
+    ])
+    .exit(2)
+    .it('fails if the fetch does not return the right file')
+  setup
     .nock('https://api.github.com', mockReleases)
     .nock('https://example.com', mockZip)
     .command(['create', 'jbrowse'])
     .it('download and unzips JBrowse 2 to new directory', async ctx => {
+      await sleep(500)
+      expect(await fsPromises.readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
+        'manifest.json',
+      )
+    })
+  setup
+    .nock('https://example.com', mockZip)
+    .command([
+      'create',
+      'jbrowse',
+      '--url',
+      'https://example.com/JBrowse2-0.0.1.zip',
+    ])
+    .it('upgrades a directory from a url', async ctx => {
       await sleep(500)
       expect(await fsPromises.readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
         'manifest.json',

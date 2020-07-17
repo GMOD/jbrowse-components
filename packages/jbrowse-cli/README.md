@@ -264,6 +264,7 @@ EXAMPLES
   $ jbrowse upgrade /path/to/jbrowse2/installation
   $ jbrowse upgrade /path/to/jbrowse2/installation --tag @gmod/jbrowse-web@v0.0.1
   $ jbrowse upgrade --listVersions
+  $ jbrowse upgrade https://sample.com/jbrowse2.zip
 ```
 
 <!-- commandsstop -->

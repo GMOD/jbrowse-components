@@ -36,12 +36,19 @@ function mockReleases(gitHubApi: Scope) {
     .reply(200, releaseArray)
 }
 
+function mockWrongSite(exampleSite: Scope) {
+  return exampleSite
+    .get('/JBrowse2-0.0.1.json')
+    .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
+}
+
 function mockV1Zip(exampleSite: Scope) {
   return exampleSite
     .get('/JBrowse2-0.0.1.zip')
     .replyWithFile(
       200,
       path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
+      { 'Content-Type': 'application/zip' },
     )
 }
 
@@ -104,8 +111,19 @@ describe('upgrade', () => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
     })
   setup
+    .nock('https://example.com', mockV1Zip)
+    .command(['upgrade', '--url', 'https://example.com/JBrowse2-0.0.1.zip'])
+    .it('upgrades a directory from a url', async ctx => {
+      expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
+    })
+  setup
     .nock('https://api.github.com', mockReleases)
     .command(['upgrade', '--tag', '@gmod/jbrowse-web@v999.999.999'])
     .exit(40)
     .it('fails to upgrade if version does not exist')
+  setup
+    .nock('https://example.com', mockWrongSite)
+    .command(['upgrade', '--url', 'https://example.com/JBrowse2-0.0.1.json'])
+    .exit(2)
+    .it('fails if the fetch does not return the right file')
 })
