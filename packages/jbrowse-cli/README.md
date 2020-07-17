@@ -69,6 +69,10 @@ OPTIONS
   -h, --help
       show CLI help
 
+  -l, --load=copy|symlink|move|trust
+      Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data
+      directory to the JBrowse directory. Or trust to leave data directory alone
+
   -n, --name=name
       Name of the assembly; if not specified, will be guessed using the sequence file name
 
@@ -113,12 +117,13 @@ OPTIONS
       Don't check whether or not the sequence file or URL exists
 
 EXAMPLES
-  $ jbrowse add-assembly GRCh38.fa
-  $ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta
-  $ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38
-  $ jbrowse add-assembly GRCh38.2bit --config path/to/config.json
-  $ jbrowse add-assembly GRCh38.chrom.sizes
-  $ jbrowse add-assembly GRCh38.config.json
+  $ jbrowse add-assembly GRCh38.fa --load copy
+  $ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta --load move
+  $ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load trust
+  $ jbrowse add-assembly GRCh38.2bit --config path/to/config.json --load copy
+  $ jbrowse add-assembly GRCh38.chrom.sizes --load trust
+  $ jbrowse add-assembly GRCh38.config.json --load copy
+  $ jbrowse add-assembly https://example.com/data/sample.2bit
 ```
 
 ## `jbrowse add-track DATADIRECTORY [LOCATION]`
@@ -143,8 +148,9 @@ OPTIONS
 
   -h, --help                          show CLI help
 
-  -l, --load=copy|symlink|move|trust  Choose how to manage the data directory. Copy, symlink, or move the data directory
-                                      to the JBrowse directory. Or trust to leave data directory alone
+  -l, --load=copy|symlink|move|trust  Required flag when using a local file. Choose how to manage the data directory.
+                                      Copy, symlink, or move the data directory to the JBrowse directory. Or trust to
+                                      leave data directory alone
 
   -n, --name=name                     Name of the track. Will be defaulted to the trackId if none specified
 
@@ -206,7 +212,7 @@ OPTIONS
   -h, --help          show CLI help
   -l, --listVersions  Lists out all versions of JBrowse 2
 
-  -t, --tag=tag       Version of JBrowse 2 to install. Format is JBrowse-2@v0.0.1.
+  -t, --tag=tag       Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@v0.0.1.
                       Defaults to latest
 
   -u, --url=url       A direct URL to a JBrowse 2 release
@@ -215,7 +221,7 @@ EXAMPLES
   $ jbrowse create /path/to/new/installation
   $ jbrowse create /path/to/new/installation --force
   $ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip
-  $ jbrowse create /path/to/new/installation --tag JBrowse-2@v0.0.1
+  $ jbrowse create /path/to/new/installation --tag @gmod/jbrowse-web@v0.0.1
   $ jbrowse create --listVersion
 ```
 
@@ -250,13 +256,18 @@ ARGUMENTS
 OPTIONS
   -h, --help          show CLI help
   -l, --listVersions  Lists out all versions of JBrowse 2
-  -t, --tag=tag       Version of JBrowse 2 to upgrade to. Defaults to latest
+
+  -t, --tag=tag       Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@v0.0.1.
+                      Defaults to latest
+
+  -u, --url=url       A direct URL to a JBrowse 2 release
 
 EXAMPLES
   $ jbrowse upgrade
   $ jbrowse upgrade /path/to/jbrowse2/installation
-  $ jbrowse upgrade /path/to/jbrowse2/installation --tag JBrowse-2@v0.0.1
+  $ jbrowse upgrade /path/to/jbrowse2/installation --tag @gmod/jbrowse-web@v0.0.1
   $ jbrowse upgrade --listVersions
+  $ jbrowse upgrade https://sample.com/jbrowse2.zip
 ```
 
 <!-- commandsstop -->

@@ -11,7 +11,7 @@ const fsPromises = fs.promises
 
 const releaseArray = [
   {
-    tag_name: 'JBrowse-2@v0.0.1',
+    tag_name: '@gmod/jbrowse-web@v0.0.1',
     prerelease: false,
     assets: [
       {
@@ -33,7 +33,14 @@ function mockZip(exampleSite: Scope) {
     .replyWithFile(
       200,
       path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
+      { 'Content-Type': 'application/zip' },
     )
+}
+
+function mockWrongSite(exampleSite: Scope) {
+  return exampleSite
+    .get('/JBrowse2-0.0.1.json')
+    .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
 }
 
 function sleep(ms: number) {
@@ -68,6 +75,16 @@ describe('create', () => {
       'fails if user selects a directory that already has existing files, no force flag',
     )
   setup
+    .nock('https://example.com', mockWrongSite)
+    .command([
+      'create',
+      'jbrowse',
+      '--url',
+      'https://example.com/JBrowse2-0.0.1.json',
+    ])
+    .exit(2)
+    .it('fails if the fetch does not return the right file')
+  setup
     .nock('https://api.github.com', mockReleases)
     .nock('https://example.com', mockZip)
     .command(['create', 'jbrowse'])
@@ -78,9 +95,29 @@ describe('create', () => {
       )
     })
   setup
+    .nock('https://example.com', mockZip)
+    .command([
+      'create',
+      'jbrowse',
+      '--url',
+      'https://example.com/JBrowse2-0.0.1.zip',
+    ])
+    .it('upgrades a directory from a url', async ctx => {
+      await sleep(500)
+      expect(await fsPromises.readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
+        'manifest.json',
+      )
+    })
+  setup
     .nock('https://api.github.com', mockReleases)
     .nock('https://example.com', mockZip)
-    .command(['create', 'jbrowse', '--tag', 'JBrowse-2@v0.0.1', '--force'])
+    .command([
+      'create',
+      'jbrowse',
+      '--tag',
+      '@gmod/jbrowse-web@v0.0.1',
+      '--force',
+    ])
     .it(
       'overwrites and succeeds in downloading JBrowse in a non-empty directory with version #',
       async ctx => {
@@ -96,7 +133,7 @@ describe('create', () => {
       'create',
       'jbrowse',
       '--tag',
-      'JBrowse-2@v999.999.999',
+      '@gmod/jbrowse-web@v999.999.999',
       '--force',
     ])
     .exit(40)
@@ -117,7 +154,7 @@ describe('create', () => {
     .catch(/0/)
     .it('lists versions', ctx => {
       expect(ctx.stdoutWrite).toHaveBeenCalledWith(
-        'All JBrowse versions: JBrowse-2@v0.0.1\n',
+        'All JBrowse versions: @gmod/jbrowse-web@v0.0.1\n',
       )
     })
 })

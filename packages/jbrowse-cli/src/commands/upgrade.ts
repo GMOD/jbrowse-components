@@ -20,8 +20,9 @@ export default class Upgrade extends Command {
   static examples = [
     '$ jbrowse upgrade',
     '$ jbrowse upgrade /path/to/jbrowse2/installation',
-    '$ jbrowse upgrade /path/to/jbrowse2/installation --tag JBrowse-2@v0.0.1',
+    '$ jbrowse upgrade /path/to/jbrowse2/installation --tag @gmod/jbrowse-web@v0.0.1',
     '$ jbrowse upgrade --listVersions',
+    '$ jbrowse upgrade https://sample.com/jbrowse2.zip',
   ]
 
   static args = [
@@ -46,7 +47,12 @@ export default class Upgrade extends Command {
     }),
     tag: flags.string({
       char: 't',
-      description: 'Version of JBrowse 2 to upgrade to. Defaults to latest',
+      description:
+        'Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@v0.0.1.\nDefaults to latest',
+    }),
+    url: flags.string({
+      char: 'u',
+      description: 'A direct URL to a JBrowse 2 release',
     }),
   }
 
@@ -54,7 +60,7 @@ export default class Upgrade extends Command {
     const { args: runArgs, flags: runFlags } = this.parse(Upgrade)
     const { localPath: argsPath } = runArgs as { localPath: string }
 
-    const { listVersions, tag } = runFlags
+    const { listVersions, tag, url } = runFlags
 
     if (listVersions) {
       try {
@@ -72,22 +78,7 @@ export default class Upgrade extends Command {
 
     await this.checkLocation(upgradePath)
 
-    let versionRes
-    try {
-      versionRes = await this.fetchGithubVersions()
-    } catch (error) {
-      this.error(error)
-    }
-    const versionObj = tag
-      ? versionRes.find((version: GithubRelease) => version.tag_name === tag)
-      : versionRes[0]
-
-    const locationUrl = versionObj
-      ? versionObj.assets[0].browser_download_url
-      : this.error(
-          'Could not find version specified. Use --listVersions to see all available versions',
-          { exit: 40 },
-        )
+    const locationUrl = url || (await this.getTagOrLatest(tag))
 
     let response
     try {
@@ -98,6 +89,15 @@ export default class Upgrade extends Command {
       this.error(error)
     }
     if (!response.ok) this.error(`Failed to fetch JBrowse2 from server`)
+
+    if (
+      url &&
+      response.headers.get('content-type') !== 'application/zip' &&
+      response.headers.get('content-type') !== 'application/octet-stream'
+    )
+      this.error(
+        'The URL provided does not seem to be a JBrowse installation URL',
+      )
 
     response.body
       .pipe(unzip.Parse())
@@ -172,16 +172,30 @@ export default class Upgrade extends Command {
 
     if (!versionResponse.ok) this.error('Failed to fetch version from server')
     // use all release only if there are only pre-release in repo
-    const allReleaseArray = (
+    const jb2releases = (
       await versionResponse.json()
     ).filter((release: GithubRelease) =>
-      release.tag_name.includes('JBrowse-2@v'),
+      release.tag_name.includes('@gmod/jbrowse-web@v'),
     )
 
-    const releaseArray = allReleaseArray.filter(
+    const nonprereleases = jb2releases.filter(
       (release: GithubRelease) => release.prerelease === false,
     )
 
-    return releaseArray.length === 0 ? allReleaseArray : releaseArray
+    return nonprereleases.length === 0 ? jb2releases : nonprereleases
+  }
+
+  async getTagOrLatest(tag?: string) {
+    const response = await this.fetchGithubVersions()
+    const versions = tag
+      ? response.find((version: GithubRelease) => version.tag_name === tag)
+      : response[0]
+
+    return versions
+      ? versions.assets[0].browser_download_url
+      : this.error(
+          'Could not find version specified. Use --listVersions to see all available versions',
+          { exit: 40 },
+        )
   }
 }

@@ -56,6 +56,18 @@ describe('add-track', () => {
     .exit(10)
     .it('fails if load flag isnt passed')
   setup
+    .nock('https://mysite.com', site =>
+      site.head('/data/simple.bam').reply(200),
+    )
+    .command([
+      'add-track',
+      'https://mysite.com/data/simple.bam',
+      '--load',
+      'trust',
+    ])
+    .exit(25)
+    .it('fails if URL with load flag is passed')
+  setup
     .do(async () => {
       await fsPromises.unlink('manifest.json')
     })
@@ -223,6 +235,57 @@ describe('add-track', () => {
               },
             },
             defaultrendering: 'test',
+          },
+        ],
+      })
+    })
+
+  setup
+    .do(async ctx => {
+      await fsPromises.copyFile(
+        testConfig,
+        path.join(ctx.dir, path.basename(testConfig)),
+      )
+
+      await fsPromises.rename(
+        path.join(ctx.dir, path.basename(testConfig)),
+        path.join(ctx.dir, 'config.json'),
+      )
+    })
+    .nock('https://mysite.com', site =>
+      site.head('/data/simple.bam').replyWithFile(200, simpleBam),
+    )
+    .command(['add-track', 'https://mysite.com/data/simple.bam'])
+    .it('adds a track from a url', async ctx => {
+      const contents = await fsPromises.readFile(
+        path.join(ctx.dir, 'config.json'),
+        { encoding: 'utf8' },
+      )
+      expect(JSON.parse(contents)).toEqual({
+        ...defaultConfig,
+        tracks: [
+          {
+            type: 'AlignmentsTrack',
+            trackId: 'simple',
+            name: 'simple',
+            assemblyNames: ['testAssembly'],
+            adapter: {
+              type: 'BamAdapter',
+              bamLocation: {
+                uri: 'https://mysite.com/data/simple.bam',
+              },
+              index: {
+                location: {
+                  uri: 'https://mysite.com/data/simple.bam.bai',
+                },
+              },
+              sequenceAdapter: {
+                type: 'testSeqAdapter',
+                twoBitLocation: {
+                  uri: 'test.2bit',
+                },
+              },
+            },
           },
         ],
       })

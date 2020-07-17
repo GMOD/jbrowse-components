@@ -85,12 +85,13 @@ export default class AddAssembly extends Command {
   static description = 'Add an assembly to a JBrowse 2 configuration'
 
   static examples = [
-    '$ jbrowse add-assembly GRCh38.fa',
-    '$ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta',
-    '$ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38',
-    '$ jbrowse add-assembly GRCh38.2bit --config path/to/config.json',
-    '$ jbrowse add-assembly GRCh38.chrom.sizes',
-    '$ jbrowse add-assembly GRCh38.config.json',
+    '$ jbrowse add-assembly GRCh38.fa --load copy',
+    '$ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta --load move',
+    '$ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load trust',
+    '$ jbrowse add-assembly GRCh38.2bit --config path/to/config.json --load copy',
+    '$ jbrowse add-assembly GRCh38.chrom.sizes --load trust',
+    '$ jbrowse add-assembly GRCh38.config.json --load copy',
+    '$ jbrowse add-assembly https://example.com/data/sample.2bit',
   ]
 
   static args = [
@@ -165,6 +166,12 @@ custom         Either a JSON file location or inline JSON that defines a custom
         'A comma-separated list of color strings for the reference sequence names; will cycle\nthrough colors if there are fewer colors than sequences',
     }),
     help: flags.help({ char: 'h' }),
+    load: flags.string({
+      char: 'l',
+      description:
+        'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or trust to leave data directory alone',
+      options: ['copy', 'symlink', 'move', 'trust'],
+    }),
     skipCheck: flags.boolean({
       description: "Don't check whether or not the sequence file or URL exists",
     }),
@@ -182,6 +189,18 @@ custom         Either a JSON file location or inline JSON that defines a custom
     let sequence: Sequence
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
     const { sequence: argsSequence } = runArgs as { sequence: string }
+
+    if (this.needLoadData(argsSequence) && !runFlags.load)
+      this.error(
+        `Local file detected. Please select a load option for the data directory with the --load flag`,
+        { exit: 25 },
+      )
+    else if (!this.needLoadData(argsSequence) && runFlags.load)
+      this.error(
+        `URL detected with --load flag. Please rerun the function without the --load flag`,
+        { exit: 35 },
+      )
+
     let { name } = runFlags
     let { type } = runFlags as {
       type:
@@ -203,12 +222,12 @@ custom         Either a JSON file location or inline JSON that defines a custom
     }
     switch (type) {
       case 'indexedFasta': {
-        const sequenceLocation = await this.resolveFileLocation(
+        let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
           !runFlags.skipCheck || !runFlags.force,
         )
         this.debug(`FASTA location resolved to: ${sequenceLocation}`)
-        const indexLocation = await this.resolveFileLocation(
+        let indexLocation = await this.resolveFileLocation(
           runFlags.faiLocation || `${argsSequence}.fai`,
           !runFlags.skipCheck || !runFlags.force,
         )
@@ -220,6 +239,20 @@ custom         Either a JSON file location or inline JSON that defines a custom
             name = path.basename(sequenceLocation, '.fa')
           }
           this.debug(`Guessing name: ${name}`)
+        }
+        const loaded = runFlags.load
+          ? await this.loadData(runFlags.load, [
+              sequenceLocation,
+              indexLocation,
+            ])
+          : false
+        if (loaded) {
+          sequenceLocation = await this.resolveFileLocation(
+            path.join('.', path.basename(sequenceLocation)),
+          )
+          indexLocation = await this.resolveFileLocation(
+            path.join('.', path.basename(indexLocation)),
+          )
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
@@ -233,19 +266,19 @@ custom         Either a JSON file location or inline JSON that defines a custom
         break
       }
       case 'bgzipFasta': {
-        const sequenceLocation = await this.resolveFileLocation(
+        let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
           !runFlags.skipCheck || !runFlags.force,
         )
         this.debug(`compressed FASTA location resolved to: ${sequenceLocation}`)
-        const indexLocation = await this.resolveFileLocation(
+        let indexLocation = await this.resolveFileLocation(
           runFlags.faiLocation || `${sequenceLocation}.fai`,
           !runFlags.skipCheck || !runFlags.force,
         )
         this.debug(
           `compressed FASTA index location resolved to: ${indexLocation}`,
         )
-        const bgzipIndexLocation = await this.resolveFileLocation(
+        let bgzipIndexLocation = await this.resolveFileLocation(
           runFlags.gziLocation || `${sequenceLocation}.gzi`,
           !runFlags.skipCheck || !runFlags.force,
         )
@@ -257,6 +290,24 @@ custom         Either a JSON file location or inline JSON that defines a custom
             name = path.basename(sequenceLocation, '.fa.gz')
           }
           this.debug(`Guessing name: ${name}`)
+        }
+        const loaded = runFlags.load
+          ? await this.loadData(runFlags.load, [
+              sequenceLocation,
+              indexLocation,
+              bgzipIndexLocation,
+            ])
+          : false
+        if (loaded) {
+          sequenceLocation = await this.resolveFileLocation(
+            path.join('.', path.basename(sequenceLocation)),
+          )
+          indexLocation = await this.resolveFileLocation(
+            path.join('.', path.basename(indexLocation)),
+          )
+          bgzipIndexLocation = await this.resolveFileLocation(
+            path.join('.', path.basename(bgzipIndexLocation)),
+          )
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
@@ -271,7 +322,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
         break
       }
       case 'twoBit': {
-        const sequenceLocation = await this.resolveFileLocation(
+        let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
           !runFlags.skipCheck || !runFlags.force,
         )
@@ -279,6 +330,14 @@ custom         Either a JSON file location or inline JSON that defines a custom
         if (!name) {
           name = path.basename(sequenceLocation, '.2bit')
           this.debug(`Guessing name: ${name}`)
+        }
+        const loaded = runFlags.load
+          ? await this.loadData(runFlags.load, [sequenceLocation])
+          : false
+        if (loaded) {
+          sequenceLocation = await this.resolveFileLocation(
+            path.join('.', path.basename(sequenceLocation)),
+          )
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
@@ -291,7 +350,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
         break
       }
       case 'chromSizes': {
-        const sequenceLocation = await this.resolveFileLocation(
+        let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
           !runFlags.skipCheck || !runFlags.force,
         )
@@ -299,6 +358,14 @@ custom         Either a JSON file location or inline JSON that defines a custom
         if (!name) {
           name = path.basename(sequenceLocation, '.chrom.sizes')
           this.debug(`Guessing name: ${name}`)
+        }
+        const loaded = runFlags.load
+          ? await this.loadData(runFlags.load, [sequenceLocation])
+          : false
+        if (loaded) {
+          sequenceLocation = await this.resolveFileLocation(
+            path.join('.', path.basename(sequenceLocation)),
+          )
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
@@ -599,5 +666,78 @@ custom         Either a JSON file location or inline JSON that defines a custom
       return response.json()
     }
     return fsPromises.readFile(location, { encoding: 'utf8' })
+  }
+
+  needLoadData(location: string) {
+    let locationUrl: URL | undefined
+    try {
+      locationUrl = new URL(location)
+    } catch (error) {
+      // ignore
+    }
+    if (locationUrl) return false
+    return true
+  }
+
+  async loadData(load: string, filePaths: string[]) {
+    let locationUrl: URL | undefined
+    try {
+      locationUrl = new URL(filePaths[0])
+    } catch (error) {
+      // ignore
+    }
+
+    if (locationUrl) return false
+    switch (load) {
+      case 'copy': {
+        await Promise.all(
+          filePaths.map(async filePath => {
+            if (!filePath) return
+            const dataLocation = path.join('.', path.basename(filePath))
+
+            try {
+              await fsPromises.copyFile(filePath, dataLocation)
+            } catch (error) {
+              this.error(error, { exit: 20 })
+            }
+          }),
+        )
+        return true
+      }
+      case 'symlink': {
+        await Promise.all(
+          filePaths.map(async filePath => {
+            if (!filePath) return
+            const dataLocation = path.join('.', path.basename(filePath))
+
+            try {
+              await fsPromises.symlink(filePath, dataLocation)
+            } catch (error) {
+              this.error(error, { exit: 20 })
+            }
+          }),
+        )
+        return true
+      }
+      case 'move': {
+        await Promise.all(
+          filePaths.map(async filePath => {
+            if (!filePath) return
+            const dataLocation = path.join('.', path.basename(filePath))
+
+            try {
+              await fsPromises.rename(filePath, dataLocation)
+            } catch (error) {
+              this.error(error, { exit: 20 })
+            }
+          }),
+        )
+        return true
+      }
+      case 'trust': {
+        return false
+      }
+    }
+    return false
   }
 }
