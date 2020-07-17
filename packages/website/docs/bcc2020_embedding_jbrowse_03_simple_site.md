@@ -52,4 +52,60 @@ for `serve` the default is "http://localhost:5000").
 ## Add JBrowse
 
 To add JBrowse Linear View, you need to add the source to your page and then
-create an instance.
+create an instance. We'll start by adding a `head` to our page and use it to
+load the source and a `div` that will hold JBrowse. Update your "index.html" so
+matches what's below, then save it, switch over to your browser, and refresh the
+page.
+
+```html title="index.html"
+<html>
+
+<head>
+  <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
+</head>
+
+<body>
+  <h1>We're using JBrowse Linear View!</h1>
+  <div id="jbrowse_linear_view"></div>
+</body>
+
+</html>
+```
+
+Now we can check if the script loaded properly. In Chrome, open the developer
+tools (You can use `F12` or `Ctrl-Shift-I` or right-click the page and select
+`Inspect`) and go to the "Network" tab. If you see something like the below with
+a status of 200 for "jbrowse-linear-view.js", then you are good to go!
+
+![](/jb2/img/bcc2020_network_success.png)
+Network tab of developer tools showing that script has loaded correctly
+
+Now we need to actually instantiate a view. The code to do so looks like this:
+
+```javascript
+const genomeView = new JBrowseLinearView({
+  container: document.getElementById('jbrowse_linear_view'),
+  assembly: {
+    /* assembly */
+  },
+  tracks: [
+    /* tracks */
+  ],
+  configuration: {
+    /* extra configuration */
+  },
+  plugins: [
+    /* runtime plugin definitions */
+  ],
+  defaultSession: {
+    /* default session */
+  },
+  location: '', // location
+  onChange: () => {
+    /* onChange */
+  },
+})
+```
+
+But first we need to know what to put in all these options. Let's explore that
+next.
