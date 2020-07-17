@@ -8,8 +8,8 @@ title: Beginnings of a simple site
 Let's get started! The first thing we're going to do is create a simple web page
 into which we can embed JBrowse Linear View. If you're using the VM, the
 easiest way to get started is to open the terminal (second icon from the top on
-the left side), and run `code /var/www/html/`. This opens the Visual Studio Code
-(VS Code) editor in the `/var/www/html/` directory. There is a server already
+the left side), and run `code ~/html/`. This opens the Visual Studio Code
+(VS Code) editor in the `~/html/` directory. There is a server already
 set up that will serve any files we put in this folder.
 
 In VS Code, in the left sidebar you will see the `HTML` folder, which has a file
@@ -57,7 +57,7 @@ load the source and a `div` that will hold JBrowse. Update your "index.html" so
 matches what's below, then save it, switch over to your browser, and refresh the
 page.
 
-```html title="index.html"
+```html {3-6,8} title="index.html"
 <html>
 
 <head>
@@ -77,8 +77,7 @@ tools (You can use `F12` or `Ctrl-Shift-I` or right-click the page and select
 `Inspect`) and go to the "Network" tab. If you see something like the below with
 a status of 200 for "jbrowse-linear-view.js", then you are good to go!
 
-![](/jb2/img/bcc2020_network_success.png)
-Network tab of developer tools showing that script has loaded correctly
+![Network tab of developer tools showing that script has loaded correctly](/jb2/img/bcc2020_network_success.png)
 
 Now we need to actually instantiate a view. The code to do so looks like this:
 
