@@ -16,8 +16,9 @@ https://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/master/index.html?config=tes
 -->
 
 ![](/jb2/img/linear_synteny.png)
+Figure showing grape vs peach synteny
 
-See the [linear synteny configuration](config_linear_synteny)
+See the [linear synteny configuration](config_linear_synteny) for more details on manually configuring the synteny view
 
 ### Long read vs reference
 
@@ -25,3 +26,4 @@ One can also launch a linear synteny view that compares a long read to the
 reference genome
 
 ![](/jb2/img/linear_synteny_longread.png)
+Figure showing a PacBio long read versus the reference genome, with additional tracks
