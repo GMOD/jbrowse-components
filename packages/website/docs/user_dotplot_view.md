@@ -26,5 +26,5 @@ Right click on an alignments feature and select "Open dotplot view"
 
 ### Notes
 
-The dotplot view is still very new and without much polish, but we wanted to
-make it available to demonstrate new comparative views
+The dotplot view is still very new, but we wanted to make it available to
+demonstrate new comparative views

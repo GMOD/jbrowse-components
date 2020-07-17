@@ -25,10 +25,10 @@
         "user_alignments",
         "user_variants",
         "user_bigwig",
+        "user_hic",
         "user_sv_inspector",
         "user_dotplot_view",
-        "user_synteny_view",
-        "user_hic"
+        "user_synteny_view"
       ]
     },
     {

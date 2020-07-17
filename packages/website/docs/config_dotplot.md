@@ -1,6 +1,7 @@
----
+-;--
 id: config_dotplot_view
 title: Dotplot view config
+
 ---
 
 ### Setup
@@ -99,5 +100,5 @@ let's step through it
 
 ### Notes
 
-The dotplot view is still very new and has not received much polish, and parts
-of this config could change in the future
+The dotplot view is still very new, and parts of this config could change in
+the future
