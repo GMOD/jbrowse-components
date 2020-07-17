@@ -91,7 +91,7 @@ export default class AddTrack extends Command {
     load: flags.string({
       char: 'l',
       description:
-        'Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or trust to leave data directory alone',
+        'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or trust to leave data directory alone',
       options: ['copy', 'symlink', 'move', 'trust'],
     }),
     force: flags.boolean({
@@ -114,19 +114,23 @@ export default class AddTrack extends Command {
       configLocation || path.join(runArgs.location, 'config.json')
 
     let dataDirectoryLocation
-    if (!local || load === 'trust') {
-      dataDirectoryLocation = location
-    } else if (!load)
+    if (load) {
+      if (!local)
+        this.error(
+          `URL detected with --load flag. Please rerun the function without the --load flag`,
+          { exit: 25 },
+        )
+
+      dataDirectoryLocation =
+        load === 'trust'
+          ? location
+          : path.join(runArgs.location, path.basename(location))
+    } else if (local)
       this.error(
         'Local file detected. Please select a load option for the data directory with the --load flag',
         { exit: 10 },
       )
-    else {
-      dataDirectoryLocation = path.join(
-        runArgs.location,
-        path.basename(location),
-      )
-    }
+    else dataDirectoryLocation = location
 
     const adapter = this.guessAdapter(dataDirectoryLocation, protocol)
 
@@ -296,9 +300,6 @@ export default class AddTrack extends Command {
           }),
         )
         break
-      }
-      case 'trust': {
-        dataDirectoryLocation = location
       }
     }
 

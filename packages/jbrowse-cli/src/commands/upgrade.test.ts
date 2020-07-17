@@ -11,7 +11,7 @@ const fsPromises = fs.promises
 
 const releaseArray = [
   {
-    tag_name: 'JBrowse-2@v0.0.2',
+    tag_name: '@gmod/jbrowse-web@v0.0.2',
     prerelease: false,
     assets: [
       {
@@ -20,7 +20,7 @@ const releaseArray = [
     ],
   },
   {
-    tag_name: 'JBrowse-2@v0.0.1',
+    tag_name: '@gmod/jbrowse-web@v0.0.1',
     prerelease: false,
     assets: [
       {
@@ -99,13 +99,13 @@ describe('upgrade', () => {
   setup
     .nock('https://api.github.com', mockReleases)
     .nock('https://example.com', mockV1Zip)
-    .command(['upgrade', '--tag', 'JBrowse-2@v0.0.1'])
+    .command(['upgrade', '--tag', '@gmod/jbrowse-web@v0.0.1'])
     .it('upgrades a directory with a specific version', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
     })
   setup
     .nock('https://api.github.com', mockReleases)
-    .command(['upgrade', '--tag', 'JBrowse-2@v999.999.999'])
+    .command(['upgrade', '--tag', '@gmod/jbrowse-web@v999.999.999'])
     .exit(40)
     .it('fails to upgrade if version does not exist')
 })

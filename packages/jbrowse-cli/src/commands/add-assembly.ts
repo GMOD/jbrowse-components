@@ -91,6 +91,7 @@ export default class AddAssembly extends Command {
     '$ jbrowse add-assembly GRCh38.2bit --config path/to/config.json --load copy',
     '$ jbrowse add-assembly GRCh38.chrom.sizes --load trust',
     '$ jbrowse add-assembly GRCh38.config.json --load copy',
+    '$ jbrowse add-assembly https://example.com/data/sample.2bit',
   ]
 
   static args = [
@@ -168,7 +169,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     load: flags.string({
       char: 'l',
       description:
-        'Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or trust to leave data directory alone',
+        'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or trust to leave data directory alone',
       options: ['copy', 'symlink', 'move', 'trust'],
     }),
     skipCheck: flags.boolean({
@@ -193,6 +194,11 @@ custom         Either a JSON file location or inline JSON that defines a custom
       this.error(
         `Local file detected. Please select a load option for the data directory with the --load flag`,
         { exit: 25 },
+      )
+    else if (!this.needLoadData(argsSequence) && runFlags.load)
+      this.error(
+        `URL detected with --load flag. Please rerun the function without the --load flag`,
+        { exit: 35 },
       )
     this.debug(`Sequence location is: ${argsSequence}`)
     let { name } = runFlags
@@ -715,6 +721,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
           }),
         )
         return true
+      }
+      case 'trust': {
+        return false
       }
     }
     return false

@@ -11,7 +11,7 @@ const fsPromises = fs.promises
 
 const releaseArray = [
   {
-    tag_name: 'JBrowse-2@v0.0.1',
+    tag_name: '@gmod/jbrowse-web@v0.0.1',
     prerelease: false,
     assets: [
       {
@@ -80,7 +80,13 @@ describe('create', () => {
   setup
     .nock('https://api.github.com', mockReleases)
     .nock('https://example.com', mockZip)
-    .command(['create', 'jbrowse', '--tag', 'JBrowse-2@v0.0.1', '--force'])
+    .command([
+      'create',
+      'jbrowse',
+      '--tag',
+      '@gmod/jbrowse-web@v0.0.1',
+      '--force',
+    ])
     .it(
       'overwrites and succeeds in downloading JBrowse in a non-empty directory with version #',
       async ctx => {
@@ -96,7 +102,7 @@ describe('create', () => {
       'create',
       'jbrowse',
       '--tag',
-      'JBrowse-2@v999.999.999',
+      '@gmod/jbrowse-web@v999.999.999',
       '--force',
     ])
     .exit(40)
@@ -117,7 +123,7 @@ describe('create', () => {
     .catch(/0/)
     .it('lists versions', ctx => {
       expect(ctx.stdoutWrite).toHaveBeenCalledWith(
-        'All JBrowse versions: JBrowse-2@v0.0.1\n',
+        'All JBrowse versions: @gmod/jbrowse-web@v0.0.1\n',
       )
     })
 })

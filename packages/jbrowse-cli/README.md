@@ -30,12 +30,13 @@ It is likely preferable in most cases to install the tools first however
 ## Commands
 
 <!-- commands -->
-* [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
-* [`jbrowse add-track DATADIRECTORY [LOCATION]`](#jbrowse-add-track-datadirectory-location)
-* [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
-* [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
-* [`jbrowse help [COMMAND]`](#jbrowse-help-command)
-* [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
+
+- [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
+- [`jbrowse add-track DATADIRECTORY [LOCATION]`](#jbrowse-add-track-datadirectory-location)
+- [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
+- [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
+- [`jbrowse help [COMMAND]`](#jbrowse-help-command)
+- [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
 ## `jbrowse add-assembly SEQUENCE`
 
@@ -69,8 +70,8 @@ OPTIONS
       show CLI help
 
   -l, --load=copy|symlink|move|trust
-      Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or
-      trust to leave data directory alone
+      Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data
+      directory to the JBrowse directory. Or trust to leave data directory alone
 
   -n, --name=name
       Name of the assembly; if not specified, will be guessed using the sequence file name
@@ -122,6 +123,7 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.2bit --config path/to/config.json --load copy
   $ jbrowse add-assembly GRCh38.chrom.sizes --load trust
   $ jbrowse add-assembly GRCh38.config.json --load copy
+  $ jbrowse add-assembly https://example.com/data/sample.2bit
 ```
 
 ## `jbrowse add-track DATADIRECTORY [LOCATION]`
@@ -146,8 +148,9 @@ OPTIONS
 
   -h, --help                          show CLI help
 
-  -l, --load=copy|symlink|move|trust  Choose how to manage the data directory. Copy, symlink, or move the data directory
-                                      to the JBrowse directory. Or trust to leave data directory alone
+  -l, --load=copy|symlink|move|trust  Required flag when using a local file. Choose how to manage the data directory.
+                                      Copy, symlink, or move the data directory to the JBrowse directory. Or trust to
+                                      leave data directory alone
 
   -n, --name=name                     Name of the track. Will be defaulted to the trackId if none specified
 
@@ -209,7 +212,7 @@ OPTIONS
   -h, --help          show CLI help
   -l, --listVersions  Lists out all versions of JBrowse 2
 
-  -t, --tag=tag       Version of JBrowse 2 to install. Format is JBrowse-2@v0.0.1.
+  -t, --tag=tag       Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@v0.0.1.
                       Defaults to latest
 
   -u, --url=url       A direct URL to a JBrowse 2 release
@@ -218,7 +221,7 @@ EXAMPLES
   $ jbrowse create /path/to/new/installation
   $ jbrowse create /path/to/new/installation --force
   $ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip
-  $ jbrowse create /path/to/new/installation --tag JBrowse-2@v0.0.1
+  $ jbrowse create /path/to/new/installation --tag @gmod/jbrowse-web@v0.0.1
   $ jbrowse create --listVersion
 ```
 
@@ -258,9 +261,10 @@ OPTIONS
 EXAMPLES
   $ jbrowse upgrade
   $ jbrowse upgrade /path/to/jbrowse2/installation
-  $ jbrowse upgrade /path/to/jbrowse2/installation --tag JBrowse-2@v0.0.1
+  $ jbrowse upgrade /path/to/jbrowse2/installation --tag @gmod/jbrowse-web@v0.0.1
   $ jbrowse upgrade --listVersions
 ```
+
 <!-- commandsstop -->
 
 ## Debugging

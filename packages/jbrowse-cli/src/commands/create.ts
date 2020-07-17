@@ -21,7 +21,7 @@ export default class Create extends Command {
     '$ jbrowse create /path/to/new/installation',
     '$ jbrowse create /path/to/new/installation --force',
     '$ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip',
-    '$ jbrowse create /path/to/new/installation --tag JBrowse-2@v0.0.1',
+    '$ jbrowse create /path/to/new/installation --tag @gmod/jbrowse-web@v0.0.1',
     '$ jbrowse create --listVersion',
   ]
 
@@ -51,7 +51,7 @@ export default class Create extends Command {
     tag: flags.string({
       char: 't',
       description:
-        'Version of JBrowse 2 to install. Format is JBrowse-2@v0.0.1.\nDefaults to latest',
+        'Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@v0.0.1.\nDefaults to latest',
     }),
   }
 
@@ -179,7 +179,7 @@ export default class Create extends Command {
     const allReleaseArray = (
       await versionResponse.json()
     ).filter((release: GithubRelease) =>
-      release.tag_name.includes('JBrowse-2@v'),
+      release.tag_name.includes('@gmod/jbrowse-web@v'),
     )
 
     const releaseArray = allReleaseArray.filter(

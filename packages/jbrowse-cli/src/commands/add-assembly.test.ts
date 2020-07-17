@@ -127,6 +127,15 @@ describe('add-assembly', () => {
     ])
     .exit(100)
     .it('fails if using invalid inline JSON')
+  setup
+    .command([
+      'add-assembly',
+      'https://mysite.com/data/simple.2bit',
+      '--load',
+      'copy',
+    ])
+    .exit(35)
+    .it('fails if load flag is passed with a URL')
 
   setup
     .do(async ctx => {

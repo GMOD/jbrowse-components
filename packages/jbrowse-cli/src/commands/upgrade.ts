@@ -20,7 +20,7 @@ export default class Upgrade extends Command {
   static examples = [
     '$ jbrowse upgrade',
     '$ jbrowse upgrade /path/to/jbrowse2/installation',
-    '$ jbrowse upgrade /path/to/jbrowse2/installation --tag JBrowse-2@v0.0.1',
+    '$ jbrowse upgrade /path/to/jbrowse2/installation --tag @gmod/jbrowse-web@v0.0.1',
     '$ jbrowse upgrade --listVersions',
   ]
 
@@ -175,7 +175,7 @@ export default class Upgrade extends Command {
     const allReleaseArray = (
       await versionResponse.json()
     ).filter((release: GithubRelease) =>
-      release.tag_name.includes('JBrowse-2@v'),
+      release.tag_name.includes('@gmod/jbrowse-web@v'),
     )
 
     const releaseArray = allReleaseArray.filter(
