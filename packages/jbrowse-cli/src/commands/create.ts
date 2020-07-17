@@ -65,7 +65,7 @@ export default class Create extends Command {
     if (listVersions) {
       try {
         const versions = (await this.fetchGithubVersions()).map(
-          (version: GithubRelease) => version.tag_name,
+          version => version.tag_name,
         )
         this.log(`All JBrowse versions: ${versions.join(', ')}`)
         this.exit()
@@ -147,28 +147,22 @@ export default class Create extends Command {
   }
 
   async fetchGithubVersions() {
-    let versionResponse
-    try {
-      versionResponse = await fetch(
-        'https://api.github.com/repos/GMOD/jbrowse-components/releases',
-        {
-          method: 'GET',
-        },
-      )
-    } catch (error) {
-      this.error(error)
-    }
-
-    if (!versionResponse.ok) this.error('Failed to fetch version from server')
-    // use all release only if there are only pre-release in repo
-    const jb2releases = (
-      await versionResponse.json()
-    ).filter((release: GithubRelease) =>
-      release.tag_name.includes('@gmod/jbrowse-web@v'),
+    const response = await fetch(
+      'https://api.github.com/repos/GMOD/jbrowse-components/releases',
     )
 
-    const nonprereleases = jb2releases.filter(
-      (release: GithubRelease) => release.prerelease === false,
+    if (!response.ok) {
+      this.error('Failed to fetch version from server')
+    }
+
+    // use all release only if there are only pre-release in repo
+    const jb2releases: GithubRelease[] = await response.json()
+    const versions = jb2releases.filter(release =>
+      release.tag_name.startsWith('@gmod/jbrowse-web'),
+    )
+
+    const nonprereleases = versions.filter(
+      release => release.prerelease === false,
     )
 
     return nonprereleases.length === 0 ? jb2releases : nonprereleases
@@ -177,7 +171,7 @@ export default class Create extends Command {
   async getTagOrLatest(tag?: string) {
     const response = await this.fetchGithubVersions()
     const versions = tag
-      ? response.find((version: GithubRelease) => version.tag_name === tag)
+      ? response.find(version => version.tag_name === tag)
       : response[0]
 
     return versions
@@ -192,7 +186,7 @@ export default class Create extends Command {
   async catch(error: any) {
     if (error.parse && error.parse.output.flags.listVersions) {
       const versions = (await this.fetchGithubVersions()).map(
-        (version: GithubRelease) => version.tag_name,
+        version => version.tag_name,
       )
       this.log(`All JBrowse versions: ${versions.join(', ')}`)
       this.exit()
