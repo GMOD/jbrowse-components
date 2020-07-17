@@ -30,12 +30,13 @@ It is likely preferable in most cases to install the tools first however
 ## Commands
 
 <!-- commands -->
-* [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
-* [`jbrowse add-track DATADIRECTORY [LOCATION]`](#jbrowse-add-track-datadirectory-location)
-* [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
-* [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
-* [`jbrowse help [COMMAND]`](#jbrowse-help-command)
-* [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
+
+- [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
+- [`jbrowse add-track DATADIRECTORY [LOCATION]`](#jbrowse-add-track-datadirectory-location)
+- [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
+- [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
+- [`jbrowse help [COMMAND]`](#jbrowse-help-command)
+- [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
 ## `jbrowse add-assembly SEQUENCE`
 
@@ -257,6 +258,7 @@ EXAMPLES
   $ jbrowse upgrade /path/to/jbrowse2/installation --tag JBrowse-2@v0.0.1
   $ jbrowse upgrade --listVersions
 ```
+
 <!-- commandsstop -->
 
 ## Debugging

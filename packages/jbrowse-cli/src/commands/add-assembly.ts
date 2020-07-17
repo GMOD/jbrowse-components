@@ -178,7 +178,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     }),
   }
 
-  async getAssembly(): Assembly {
+  async getAssembly(): Promise<Assembly> {
     let sequence: Sequence
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
     const { sequence: argsSequence } = runArgs as { sequence: string }
