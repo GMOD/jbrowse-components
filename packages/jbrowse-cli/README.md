@@ -114,7 +114,7 @@ OPTIONS
       through colors if there are fewer colors than sequences
 
   --skipCheck
-      Don't check whether or not the sequence file or URL exists
+      Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory
 
 EXAMPLES
   $ jbrowse add-assembly GRCh38.fa --load copy
