@@ -865,7 +865,6 @@ describe('add-assembly', () => {
       'trust',
     ])
 
-
   setup
     .nock('https://mysite.com', site =>
       site.head('/data/simple.2bit').reply(200),
