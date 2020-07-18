@@ -202,8 +202,8 @@ export default class AddTrack extends Command {
       type,
       trackId,
       name,
-      category: category ? category.split(/,\s?/) : undefined,
-      assemblyNames: assemblyNames.split(/,\s?/),
+      category: category ? category.split(',').map(c => c.trim()) : undefined,
+      assemblyNames: assemblyNames.split(',').map(a => a.trim()),
       adapter,
       ...configObj,
     }
