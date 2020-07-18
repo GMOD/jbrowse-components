@@ -14,6 +14,7 @@ import { PluginConstructor } from '@gmod/jbrowse-core/Plugin'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
+import packagedef from '../package.json'
 
 const useStyles = makeStyles({
   loadingIndicator: {
@@ -180,6 +181,7 @@ export default function Loader() {
       rootModel = JBrowseRootModel.create({
         jbrowse: configSnapshot,
         assemblyManager: {},
+        version: packagedef.version,
       })
     }
   } catch (error) {
@@ -193,6 +195,7 @@ export default function Loader() {
       rootModel = JBrowseRootModel.create({
         jbrowse: { ...configSnapshot, savedSessions: [] },
         assemblyManager: {},
+        version: packagedef.version,
       })
     } catch (e) {
       console.error(e)
