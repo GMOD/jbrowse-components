@@ -143,6 +143,12 @@ export default class AddTrack extends Command {
     else dataDirectoryLocation = location
 
     const adapter = this.guessAdapter(dataDirectoryLocation, protocol)
+    if (adapter.type === 'UNKNOWN') {
+      this.error('Track type is not recognized', { exit: 110 })
+    }
+    if (adapter.type === 'UNSUPPORTED') {
+      this.error('Track type is not supported', { exit: 115 })
+    }
 
     // only add track if there is an existing config.json
     let configContentsJson
