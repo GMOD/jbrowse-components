@@ -13,6 +13,7 @@ exports[`<HelpDrawerWidget /> renders 1`] = `
     class="MuiTypography-root makeStyles-subtitle MuiTypography-h6 MuiTypography-alignCenter"
   >
     JBrowse 
+    
   </h6>
   <p
     class="MuiTypography-root MuiTypography-body1"

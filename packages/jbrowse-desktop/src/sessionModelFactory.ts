@@ -100,6 +100,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       get assemblyManager() {
         return getParent(self).assemblyManager
       },
+      get version() {
+        return getParent(self).version
+      },
 
       get visibleDrawerWidget() {
         if (isAlive(self))
