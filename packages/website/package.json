@@ -1,6 +1,6 @@
 {
   "name": "website",
-  "version": "0.0.1-beta.10",
+  "version": "0.0.1-beta.11",
   "private": true,
   "scripts": {
     "copycli": "cp ../jbrowse-cli/README.md docs/cli.md",

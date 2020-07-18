@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-web",
-  "version": "0.0.1-beta.15",
+  "version": "0.0.1-beta.16",
   "main": "build",
   "dir": "src",
   "browserslist": {
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@gmod/bam": "^1.0.37",
-    "@gmod/jbrowse-core": "^0.0.1-beta.14",
+    "@gmod/jbrowse-core": "^0.0.1-beta.18",
     "@gmod/jbrowse-plugin-alignments": "^0.0.1-beta.10",
     "@gmod/jbrowse-plugin-bed": "^0.0.1-beta.10",
     "@gmod/jbrowse-plugin-breakpoint-split-view": "^0.0.1-beta.10",
