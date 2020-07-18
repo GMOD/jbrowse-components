@@ -255,7 +255,7 @@ export default class AddTrack extends Command {
         configContents.tracks[idx] = trackConfig
       } else
         this.error(
-          `Cannot add track with name ${trackId}, a track with that name already exists.`,
+          `Cannot add track with id ${trackId}, a track with that id already exists.`,
           { exit: 40 },
         )
     } else configContents.tracks.push(trackConfig)
