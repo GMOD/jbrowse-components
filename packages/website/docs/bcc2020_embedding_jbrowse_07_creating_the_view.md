@@ -82,7 +82,7 @@ Modify "index.html" so that it looks like the following:
     const buttons = document.getElementsByTagName('button')
     for (const button of buttons) {
       if (button.dataset.type === 'gene_button') {
-        button.addEventListener("click", navTo)
+        button.addEventListener('click', navTo)
       }
     }
   </script>
