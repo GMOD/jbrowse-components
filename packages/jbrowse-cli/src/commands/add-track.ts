@@ -33,7 +33,7 @@ export default class AddTrack extends Command {
     '$ jbrowse add-track /path/to/my.bam /path/to/jbrowse2/installation --load symlink',
     '$ jbrowse add-track https://mywebsite.com/my.bam',
     `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' -- load move`,
-    `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --force`,
+    `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite`,
     `$ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'`,
     `$ jbrowse add-track config.json' `,
   ]
@@ -94,9 +94,16 @@ export default class AddTrack extends Command {
         'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or trust to leave data directory alone',
       options: ['copy', 'symlink', 'move', 'trust'],
     }),
+    skipCheck: flags.boolean({
+      description:
+        "Don't check whether or not the file or URL exists or if you are in a JBrowse directory",
+    }),
+    overwrite: flags.boolean({
+      description: 'Overwrites any existing tracks if same track id',
+    }),
     force: flags.boolean({
       char: 'f',
-      description: 'Overwrites any existing tracks if same track id',
+      description: 'Equivalent to `--skipCheck --overwrite`',
     }),
   }
 
@@ -106,9 +113,12 @@ export default class AddTrack extends Command {
     const { config, configLocation, category, description, load } = runFlags
     let { type, trackId, name, assemblyNames } = runFlags
 
-    await this.checkLocation(runArgs.location)
+    if (!(runFlags.skipCheck || runFlags.force)) {
+      await this.checkLocation(runArgs.location)
+    }
     const { location, protocol, local } = await this.resolveFileLocation(
       argsTrack,
+      !(runFlags.skipCheck || runFlags.force),
     )
     const configPath =
       configLocation || path.join(runArgs.location, 'config.json')
@@ -234,7 +244,7 @@ export default class AddTrack extends Command {
 
     if (idx !== -1) {
       this.debug(`Found existing trackId ${trackId} in configuration`)
-      if (runFlags.force) {
+      if (runFlags.force || runFlags.overwrite) {
         this.debug(`Overwriting track ${trackId} in configuration`)
         configContents.tracks[idx] = trackConfig
       } else
@@ -330,7 +340,7 @@ export default class AddTrack extends Command {
     return fsPromises.readFile(location, { encoding: 'utf8' })
   }
 
-  async resolveFileLocation(location: string) {
+  async resolveFileLocation(location: string, check = true) {
     let locationUrl: URL | undefined
     let locationPath: string | undefined
     let locationObj: {
@@ -346,8 +356,10 @@ export default class AddTrack extends Command {
     if (locationUrl) {
       let response
       try {
-        response = await fetch(locationUrl, { method: 'HEAD' })
-        if (response.ok) {
+        if (check) {
+          response = await fetch(locationUrl, { method: 'HEAD' })
+        }
+        if (!response || response.ok) {
           locationObj = {
             location: locationUrl.href,
             protocol: 'uri',
