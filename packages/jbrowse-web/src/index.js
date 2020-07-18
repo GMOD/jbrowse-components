@@ -1,5 +1,4 @@
 import React, { lazy, Suspense } from 'react'
-import 'core-js/stable'
 import ReactDOM from 'react-dom'
 import Loading from './Loading'
 import * as serviceWorker from './serviceWorker'

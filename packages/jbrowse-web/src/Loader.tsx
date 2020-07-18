@@ -10,20 +10,21 @@ import {
   useQueryParam,
   QueryParamProvider,
 } from 'use-query-params'
-import 'mobx-react/batchingForReactDom'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { SnapshotOut } from 'mobx-state-tree'
 import { PluginConstructor } from '@gmod/jbrowse-core/Plugin'
 import { FatalErrorDialog } from '@gmod/jbrowse-core/ui'
+import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
+import 'typeface-roboto'
+import 'requestidlecallback-polyfill'
+import 'mobx-react/batchingForReactDom'
+import 'core-js/stable'
 
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
-import 'typeface-roboto'
-import 'requestidlecallback-polyfill'
-import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 
 if (!window.TextEncoder) {
   window.TextEncoder = TextEncoder
@@ -98,7 +99,7 @@ function NoConfigMessage() {
 
 type Config = SnapshotOut<AnyConfigurationModel>
 
-function Loader() {
+export function Loader() {
   const [configSnapshot, setConfigSnapshot] = useState<Config>()
   const [noDefaultConfig, setNoDefaultConfig] = useState(false)
   const [plugins, setPlugins] = useState<PluginConstructor[]>()
@@ -264,7 +265,7 @@ function factoryReset() {
   // @ts-ignore
   window.location = window.location.pathname
 }
-const PlatformSpecificFatalErrorDialog = (props: any) => {
+const PlatformSpecificFatalErrorDialog = (props: unknown) => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
 }
 export default () => {
