@@ -34,7 +34,7 @@ The state can be gotten by JSON stringifying the view's view attribute. We're
 going to add a button to our page that will show the current view state when
 clicked. Update "index.html" like this:
 
-```html {42-50,52-53} title="index.html"
+```html {35-43,45-46} title="index.html"
 <html>
 
 <head>
@@ -58,13 +58,6 @@ clicked. Update "index.html" like this:
       assembly,
       tracks,
       location: '1:100,987,269..100,987,368',
-      defaultSession: {
-        name: 'this session',
-        view: {
-          id: 'linearGenomeView',
-          type: 'LinearGenomeView',
-        },
-      }
     })
 
     function navTo(event) {
