@@ -82,7 +82,8 @@
                 "bcc2020_embedding_jbrowse_simple_site",
                 "bcc2020_embedding_jbrowse_assemblies",
                 "bcc2020_embedding_jbrowse_tracks",
-                "bcc2020_embedding_jbrowse_other_options"
+                "bcc2020_embedding_jbrowse_other_options",
+                "bcc2020_embedding_jbrowse_creating_the_view"
               ]
             }
           ]

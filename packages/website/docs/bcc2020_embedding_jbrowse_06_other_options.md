@@ -38,5 +38,3 @@ changes. We'll also talk about this more later in the tutorial.
 
 This is a place to put top-level configuration. It's mostly reserved for future
 use, so you won't need to worry about it right now.
-
-##

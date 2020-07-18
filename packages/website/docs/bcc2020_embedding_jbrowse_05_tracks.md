@@ -37,7 +37,7 @@ https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_in
 ### Creating track configurations with the CLI
 
 ```sh
-jbrowse add-track https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz --name "NCBI RefSeq Genes" --category "Genes" --skipCheck
+jbrowse add-track https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz --name "NCBI RefSeq Genes" --category "Genes" --config '{"renderer": {"type": "SvgFeatureRenderer"}}' --skipCheck
 jbrowse add-track https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram --name "NA12878 Exome" --category "1000 Genomes, Alignments" --skipCheck
 jbrowse add-track https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz --name "1000 Genomes Variant Calls" --category "1000 Genomes, Variants" --skipCheck
 ```
@@ -70,6 +70,9 @@ export default [
         },
         "indexType": "TBI"
       }
+    },
+    "renderer": {
+      "type": "SvgFeatureRenderer"
     }
   },
   {
@@ -132,7 +135,7 @@ export default [
 ]
 ```
 
-Now update "index.js" to import this file.
+Now update "index.html" to import this file.
 
 ```html {12} title="index.html"
 <html>
