@@ -619,19 +619,19 @@ export default class AddTrack extends Command {
       return {
         type: 'Gff3TabixAdapter',
         gffGzLocation: makeLocation(fileName),
-        index: makeLocation(`${fileName}.tbi`),
+        index: { location: makeLocation(`${fileName}.tbi`), indexType: 'TBI' },
       }
     if (/\.gff3?\.b?gz.tbi$/i.test(fileName))
       return {
         type: 'Gff3TabixAdapter',
         gffGzLocation: makeLocation(fileName.replace(/\.tbi$/i, '')),
-        index: makeLocation(fileName),
+        index: { location: makeLocation(fileName), indexType: 'TBI' },
       }
     if (/\.gff3?\.b?gz.csi$/i.test(fileName))
       return {
         type: 'Gff3TabixAdapter',
         gffGzLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
-        index: makeLocation(fileName),
+        index: { location: makeLocation(fileName), indexType: 'CSI' },
       }
 
     if (/\.gtf?$/i.test(fileName))
