@@ -97,7 +97,7 @@ assembly (or add an assembly to an existing config file) with the
 all the options. We'll run it as below:
 
 ```sh
-cd ~/html/jbrowse
+cd ~/html
 jbrowse add-assembly http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz --name GRCh38 --alias hg38 --refNameAliases GRCh38.aliases.txt --skipCheck
 ```
 
