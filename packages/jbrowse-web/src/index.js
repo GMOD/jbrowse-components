@@ -1,14 +1,14 @@
+import React, { lazy, Suspense } from 'react'
 import { FatalErrorDialog } from '@gmod/jbrowse-core/ui'
 import 'core-js/stable'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import 'mobx-react/batchingForReactDom'
-import React from 'react'
 import ReactDOM from 'react-dom'
 import ErrorBoundary from 'react-error-boundary'
 import 'requestidlecallback-polyfill'
 import 'typeface-roboto'
 import { QueryParamProvider } from 'use-query-params'
-import Loader from './Loader'
+import Loading from './Loading'
 import * as serviceWorker from './serviceWorker'
 
 if (!window.TextEncoder) window.TextEncoder = TextEncoder
@@ -27,10 +27,14 @@ const PlatformSpecificFatalErrorDialog = props => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
 }
 
+const Main = lazy(() => import('./Loader'))
+
 ReactDOM.render(
   <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
     <QueryParamProvider>
-      <Loader />
+      <Suspense fallback={<Loading />}>
+        <Main />
+      </Suspense>
     </QueryParamProvider>
   </ErrorBoundary>,
   document.getElementById('root'),

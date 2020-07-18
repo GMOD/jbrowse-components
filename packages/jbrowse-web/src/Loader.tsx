@@ -2,8 +2,6 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import PluginLoader from '@gmod/jbrowse-core/PluginLoader'
 import { inDevelopment, fromUrlSafeB64 } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import CircularProgress from '@material-ui/core/CircularProgress'
-import { makeStyles } from '@material-ui/core/styles'
 import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
 import { StringParam, useQueryParam } from 'use-query-params'
@@ -11,19 +9,10 @@ import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configur
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { SnapshotOut } from 'mobx-state-tree'
 import { PluginConstructor } from '@gmod/jbrowse-core/Plugin'
+import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
-
-const useStyles = makeStyles({
-  loadingIndicator: {
-    position: 'fixed',
-    top: '50%',
-    left: '50%',
-    marginTop: -25,
-    marginLeft: -25,
-  },
-})
 
 function NoConfigMessage() {
   // TODO: Link to docs for how to configure JBrowse
@@ -89,10 +78,9 @@ function NoConfigMessage() {
   )
 }
 
+type Config = SnapshotOut<AnyConfigurationModel>
 export default function Loader() {
-  const [configSnapshot, setConfigSnapshot] = useState<
-    SnapshotOut<AnyConfigurationModel>
-  >()
+  const [configSnapshot, setConfigSnapshot] = useState<Config>()
   const [noDefaultConfig, setNoDefaultConfig] = useState(false)
   const [plugins, setPlugins] = useState<PluginConstructor[]>()
 
@@ -100,8 +88,6 @@ export default function Loader() {
   const [sessionQueryParam] = useQueryParam('session', StringParam)
   const [adminQueryParam] = useQueryParam('admin', StringParam)
   const adminMode = adminQueryParam === '1' || adminQueryParam === 'true'
-
-  const classes = useStyles()
 
   useEffect(() => {
     async function fetchConfig() {
@@ -160,13 +146,7 @@ export default function Loader() {
   }
 
   if (!(configSnapshot && plugins)) {
-    return (
-      <CircularProgress
-        disableShrink
-        className={classes.loadingIndicator}
-        size={50}
-      />
-    )
+    return <Loading />
   }
 
   const pluginManager = new PluginManager(plugins.map(P => new P()))
