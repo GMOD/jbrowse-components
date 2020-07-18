@@ -2,17 +2,35 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import PluginLoader from '@gmod/jbrowse-core/PluginLoader'
 import { inDevelopment, fromUrlSafeB64 } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
+import ErrorBoundary from 'react-error-boundary'
 import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
-import { StringParam, useQueryParam } from 'use-query-params'
+import {
+  StringParam,
+  useQueryParam,
+  QueryParamProvider,
+} from 'use-query-params'
+import 'mobx-react/batchingForReactDom'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { SnapshotOut } from 'mobx-state-tree'
 import { PluginConstructor } from '@gmod/jbrowse-core/Plugin'
+import { FatalErrorDialog } from '@gmod/jbrowse-core/ui'
+
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
+import 'typeface-roboto'
+import 'requestidlecallback-polyfill'
+import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
+
+if (!window.TextEncoder) {
+  window.TextEncoder = TextEncoder
+}
+if (!window.TextDecoder) {
+  window.TextDecoder = TextDecoder
+}
 
 function NoConfigMessage() {
   // TODO: Link to docs for how to configure JBrowse
@@ -79,7 +97,8 @@ function NoConfigMessage() {
 }
 
 type Config = SnapshotOut<AnyConfigurationModel>
-export default function Loader() {
+
+function Loader() {
   const [configSnapshot, setConfigSnapshot] = useState<Config>()
   const [noDefaultConfig, setNoDefaultConfig] = useState(false)
   const [plugins, setPlugins] = useState<PluginConstructor[]>()
@@ -237,4 +256,23 @@ export default function Loader() {
   pluginManager.configure()
 
   return <JBrowse pluginManager={pluginManager} />
+}
+
+function factoryReset() {
+  localStorage.removeItem('jbrowse-web-data')
+  localStorage.removeItem('jbrowse-web-session')
+  // @ts-ignore
+  window.location = window.location.pathname
+}
+const PlatformSpecificFatalErrorDialog = (props: any) => {
+  return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
+}
+export default () => {
+  return (
+    <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
+      <QueryParamProvider>
+        <Loader />
+      </QueryParamProvider>
+    </ErrorBoundary>
+  )
 }
