@@ -445,9 +445,21 @@ export default class AddTrack extends Command {
 
     if (/\.gff3?$/i.test(fileName)) return {}
 
-    if (/\.gff3?\.b?gz$/i.test(fileName)) return {}
-    if (/\.gff3?\.b?gz.tbi$/i.test(fileName)) return {}
-    if (/\.gff3?\.b?gz.csi$/i.test(fileName)) return {}
+    if (/\.gff3?\.b?gz$/i.test(fileName))
+      return {
+        file: fileName,
+        index: `${fileName}.tbi`,
+      }
+    if (/\.gff3?\.b?gz.tbi$/i.test(fileName))
+      return {
+        file: fileName.replace(/\.tbi$/i, ''),
+        index: fileName,
+      }
+    if (/\.gff3?\.b?gz.csi$/i.test(fileName))
+      return {
+        file: fileName.replace(/\.csi$/i, ''),
+        index: fileName,
+      }
 
     if (/\.gtf?$/i.test(fileName)) return {}
 
@@ -587,15 +599,21 @@ export default class AddTrack extends Command {
 
     if (/\.gff3?\.b?gz$/i.test(fileName))
       return {
-        type: 'UNSUPPORTED',
+        type: 'Gff3TabixAdapter',
+        gffGzLocation: makeLocation(fileName),
+        index: makeLocation(`${fileName}.tbi`),
       }
     if (/\.gff3?\.b?gz.tbi$/i.test(fileName))
       return {
-        type: 'UNSUPPORTED',
+        type: 'Gff3TabixAdapter',
+        gffGzLocation: makeLocation(fileName.replace(/\.tbi$/i, '')),
+        index: makeLocation(fileName),
       }
     if (/\.gff3?\.b?gz.csi$/i.test(fileName))
       return {
-        type: 'UNSUPPORTED',
+        type: 'Gff3TabixAdapter',
+        gffGzLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
+        index: makeLocation(fileName),
       }
 
     if (/\.gtf?$/i.test(fileName))
