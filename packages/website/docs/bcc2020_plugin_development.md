@@ -15,7 +15,7 @@ Please have the following
 - node v10 or greater, installed via https://github.com/nodesource/distributions#installation-instructions
 
 These links above provide more reliable installation than the apt repositories
-version, but you can try to install these however you feel confortable
+version, but you can try to install these however you feel comfortable
 
 ### Install CLI tools
 
@@ -193,6 +193,6 @@ production
 
 ### Conclusion
 
-This is an initial look into jborwse 2 plugin development. I strongly encourage
+This is an initial look into jbrowse 2 plugin development. I strongly encourage
 reading the developer guide in the main documentation for more info, and let us
 know if you have any feeback or questions. Thanks!

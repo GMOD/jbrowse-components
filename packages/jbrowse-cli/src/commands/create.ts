@@ -21,7 +21,7 @@ export default class Create extends Command {
     '$ jbrowse create /path/to/new/installation',
     '$ jbrowse create /path/to/new/installation --force',
     '$ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip',
-    '$ jbrowse create /path/to/new/installation --tag @gmod/jbrowse-web@v0.0.1',
+    '$ jbrowse create /path/to/new/installation --tag @gmod/jbrowse-web@0.0.1',
     '$ jbrowse create --listVersion',
   ]
 
@@ -51,7 +51,7 @@ export default class Create extends Command {
     tag: flags.string({
       char: 't',
       description:
-        'Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@v0.0.1.\nDefaults to latest',
+        'Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@0.0.1.\nDefaults to latest',
     }),
   }
 
