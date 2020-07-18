@@ -33,7 +33,7 @@ export default class AddTrack extends Command {
     '$ jbrowse add-track /path/to/my.bam /path/to/jbrowse2/installation --load symlink',
     '$ jbrowse add-track https://mywebsite.com/my.bam',
     `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' -- load move`,
-    `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --force`,
+    `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite`,
     `$ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'`,
     `$ jbrowse add-track config.json' `,
   ]
@@ -94,9 +94,16 @@ export default class AddTrack extends Command {
         'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or trust to leave data directory alone',
       options: ['copy', 'symlink', 'move', 'trust'],
     }),
+    skipCheck: flags.boolean({
+      description:
+        "Don't check whether or not the file or URL exists or if you are in a JBrowse directory",
+    }),
+    overwrite: flags.boolean({
+      description: 'Overwrites any existing tracks if same track id',
+    }),
     force: flags.boolean({
       char: 'f',
-      description: 'Overwrites any existing tracks if same track id',
+      description: 'Equivalent to `--skipCheck --overwrite`',
     }),
   }
 
@@ -106,9 +113,12 @@ export default class AddTrack extends Command {
     const { config, configLocation, category, description, load } = runFlags
     let { type, trackId, name, assemblyNames } = runFlags
 
-    await this.checkLocation(runArgs.location)
+    if (!(runFlags.skipCheck || runFlags.force)) {
+      await this.checkLocation(runArgs.location)
+    }
     const { location, protocol, local } = await this.resolveFileLocation(
       argsTrack,
+      !(runFlags.skipCheck || runFlags.force),
     )
     const configPath =
       configLocation || path.join(runArgs.location, 'config.json')
@@ -133,6 +143,12 @@ export default class AddTrack extends Command {
     else dataDirectoryLocation = location
 
     const adapter = this.guessAdapter(dataDirectoryLocation, protocol)
+    if (adapter.type === 'UNKNOWN') {
+      this.error('Track type is not recognized', { exit: 110 })
+    }
+    if (adapter.type === 'UNSUPPORTED') {
+      this.error('Track type is not supported', { exit: 115 })
+    }
 
     // only add track if there is an existing config.json
     let configContentsJson
@@ -186,8 +202,8 @@ export default class AddTrack extends Command {
       type,
       trackId,
       name,
-      category: category ? category.split(/,\s?/) : undefined,
-      assemblyNames: assemblyNames.split(/,\s?/),
+      category: category ? category.split(',').map(c => c.trim()) : undefined,
+      assemblyNames: assemblyNames.split(',').map(a => a.trim()),
       adapter,
       ...configObj,
     }
@@ -234,12 +250,12 @@ export default class AddTrack extends Command {
 
     if (idx !== -1) {
       this.debug(`Found existing trackId ${trackId} in configuration`)
-      if (runFlags.force) {
+      if (runFlags.force || runFlags.overwrite) {
         this.debug(`Overwriting track ${trackId} in configuration`)
         configContents.tracks[idx] = trackConfig
       } else
         this.error(
-          `Cannot add track with name ${trackId}, a track with that name already exists.`,
+          `Cannot add track with id ${trackId}, a track with that id already exists.`,
           { exit: 40 },
         )
     } else configContents.tracks.push(trackConfig)
@@ -330,7 +346,7 @@ export default class AddTrack extends Command {
     return fsPromises.readFile(location, { encoding: 'utf8' })
   }
 
-  async resolveFileLocation(location: string) {
+  async resolveFileLocation(location: string, check = true) {
     let locationUrl: URL | undefined
     let locationPath: string | undefined
     let locationObj: {
@@ -346,8 +362,10 @@ export default class AddTrack extends Command {
     if (locationUrl) {
       let response
       try {
-        response = await fetch(locationUrl, { method: 'HEAD' })
-        if (response.ok) {
+        if (check) {
+          response = await fetch(locationUrl, { method: 'HEAD' })
+        }
+        if (!response || response.ok) {
           locationObj = {
             location: locationUrl.href,
             protocol: 'uri',
@@ -445,9 +463,21 @@ export default class AddTrack extends Command {
 
     if (/\.gff3?$/i.test(fileName)) return {}
 
-    if (/\.gff3?\.b?gz$/i.test(fileName)) return {}
-    if (/\.gff3?\.b?gz.tbi$/i.test(fileName)) return {}
-    if (/\.gff3?\.b?gz.csi$/i.test(fileName)) return {}
+    if (/\.gff3?\.b?gz$/i.test(fileName))
+      return {
+        file: fileName,
+        index: `${fileName}.tbi`,
+      }
+    if (/\.gff3?\.b?gz.tbi$/i.test(fileName))
+      return {
+        file: fileName.replace(/\.tbi$/i, ''),
+        index: fileName,
+      }
+    if (/\.gff3?\.b?gz.csi$/i.test(fileName))
+      return {
+        file: fileName.replace(/\.csi$/i, ''),
+        index: fileName,
+      }
 
     if (/\.gtf?$/i.test(fileName)) return {}
 
@@ -587,15 +617,21 @@ export default class AddTrack extends Command {
 
     if (/\.gff3?\.b?gz$/i.test(fileName))
       return {
-        type: 'UNSUPPORTED',
+        type: 'Gff3TabixAdapter',
+        gffGzLocation: makeLocation(fileName),
+        index: { location: makeLocation(`${fileName}.tbi`), indexType: 'TBI' },
       }
     if (/\.gff3?\.b?gz.tbi$/i.test(fileName))
       return {
-        type: 'UNSUPPORTED',
+        type: 'Gff3TabixAdapter',
+        gffGzLocation: makeLocation(fileName.replace(/\.tbi$/i, '')),
+        index: { location: makeLocation(fileName), indexType: 'TBI' },
       }
     if (/\.gff3?\.b?gz.csi$/i.test(fileName))
       return {
-        type: 'UNSUPPORTED',
+        type: 'Gff3TabixAdapter',
+        gffGzLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
+        index: { location: makeLocation(fileName), indexType: 'CSI' },
       }
 
     if (/\.gtf?$/i.test(fileName))

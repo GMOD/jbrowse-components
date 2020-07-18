@@ -113,15 +113,21 @@ export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
 
   if (/\.gff3?\.b?gz$/i.test(fileName))
     return {
-      type: UNSUPPORTED,
+      type: 'Gff3TabixAdapter',
+      gffGzLocation: makeLocation(fileName),
+      index: { location: makeLocation(`${fileName}.tbi`), indexType: 'TBI' },
     }
   if (/\.gff3?\.b?gz.tbi$/i.test(fileName))
     return {
-      type: UNSUPPORTED,
+      type: 'Gff3TabixAdapter',
+      gffGzLocation: makeLocation(fileName.replace(/\.tbi$/i, '')),
+      index: { location: makeLocation(fileName), indexType: 'TBI' },
     }
   if (/\.gff3?\.b?gz.csi$/i.test(fileName))
     return {
-      type: UNSUPPORTED,
+      type: 'Gff3TabixAdapter',
+      gffGzLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
+      index: { location: makeLocation(fileName), indexType: 'CSI' },
     }
 
   if (/\.gtf?$/i.test(fileName))

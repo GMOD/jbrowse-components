@@ -114,7 +114,7 @@ OPTIONS
       through colors if there are fewer colors than sequences
 
   --skipCheck
-      Don't check whether or not the sequence file or URL exists
+      Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory
 
 EXAMPLES
   $ jbrowse add-assembly GRCh38.fa --load copy
@@ -144,7 +144,7 @@ OPTIONS
 
   -d, --description=description       Optional description of the track
 
-  -f, --force                         Overwrites any existing tracks if same track id
+  -f, --force                         Equivalent to `--skipCheck --overwrite`
 
   -h, --help                          show CLI help
 
@@ -163,6 +163,11 @@ OPTIONS
   --configLocation=configLocation     Write to a certain config.json file. Defaults to location/config.json if not
                                       specified
 
+  --overwrite                         Overwrites any existing tracks if same track id
+
+  --skipCheck                         Don't check whether or not the file or URL exists or if you are in a JBrowse
+                                      directory
+
   --trackId=trackId                   Id for the track, by default inferred from filename, must be unique to JBrowse
                                       config
 
@@ -171,7 +176,7 @@ EXAMPLES
   $ jbrowse add-track /path/to/my.bam /path/to/jbrowse2/installation --load symlink
   $ jbrowse add-track https://mywebsite.com/my.bam
   $ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' -- load move
-  $ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --force
+  $ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite
   $ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'
   $ jbrowse add-track config.json'
 ```

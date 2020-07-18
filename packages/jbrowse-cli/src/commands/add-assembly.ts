@@ -173,7 +173,8 @@ custom         Either a JSON file location or inline JSON that defines a custom
       options: ['copy', 'symlink', 'move', 'trust'],
     }),
     skipCheck: flags.boolean({
-      description: "Don't check whether or not the sequence file or URL exists",
+      description:
+        "Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory",
     }),
     overwrite: flags.boolean({
       description:
@@ -224,12 +225,12 @@ custom         Either a JSON file location or inline JSON that defines a custom
       case 'indexedFasta': {
         let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
-          !runFlags.skipCheck || !runFlags.force,
+          !(runFlags.skipCheck || runFlags.force),
         )
         this.debug(`FASTA location resolved to: ${sequenceLocation}`)
         let indexLocation = await this.resolveFileLocation(
           runFlags.faiLocation || `${argsSequence}.fai`,
-          !runFlags.skipCheck || !runFlags.force,
+          !(runFlags.skipCheck || runFlags.force),
         )
         this.debug(`FASTA index location resolved to: ${indexLocation}`)
         if (!name) {
@@ -268,19 +269,19 @@ custom         Either a JSON file location or inline JSON that defines a custom
       case 'bgzipFasta': {
         let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
-          !runFlags.skipCheck || !runFlags.force,
+          !(runFlags.skipCheck || runFlags.force),
         )
         this.debug(`compressed FASTA location resolved to: ${sequenceLocation}`)
         let indexLocation = await this.resolveFileLocation(
           runFlags.faiLocation || `${sequenceLocation}.fai`,
-          !runFlags.skipCheck || !runFlags.force,
+          !(runFlags.skipCheck || runFlags.force),
         )
         this.debug(
           `compressed FASTA index location resolved to: ${indexLocation}`,
         )
         let bgzipIndexLocation = await this.resolveFileLocation(
           runFlags.gziLocation || `${sequenceLocation}.gzi`,
-          !runFlags.skipCheck || !runFlags.force,
+          !(runFlags.skipCheck || runFlags.force),
         )
         this.debug(`bgzip index location resolved to: ${bgzipIndexLocation}`)
         if (!name) {
@@ -324,7 +325,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
       case 'twoBit': {
         let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
-          !runFlags.skipCheck || !runFlags.force,
+          !(runFlags.skipCheck || runFlags.force),
         )
         this.debug(`2bit location resolved to: ${sequenceLocation}`)
         if (!name) {
@@ -352,7 +353,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
       case 'chromSizes': {
         let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
-          !runFlags.skipCheck || !runFlags.force,
+          !(runFlags.skipCheck || runFlags.force),
         )
         this.debug(`chrome.sizes location resolved to: ${sequenceLocation}`)
         if (!name) {
@@ -412,8 +413,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
   }
 
   async run() {
-    await this.checkLocation()
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
+    if (!(runFlags.skipCheck || runFlags.force)) {
+      await this.checkLocation()
+    }
     const { sequence: argsSequence } = runArgs as { sequence: string }
     this.debug(`Sequence location is: ${argsSequence}`)
     const { name } = runFlags
@@ -459,7 +462,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
       } else {
         const refNameAliasesLocation = await this.resolveFileLocation(
           runFlags.refNameAliases,
-          !runFlags.skipCheck || !runFlags.force,
+          !(runFlags.skipCheck || runFlags.force),
         )
         this.debug(
           `refName aliases file location resolved to: ${refNameAliasesLocation}`,
