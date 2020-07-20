@@ -23,7 +23,11 @@ script:
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 # build release
-- if [[ "$TRAVIS_TAG"  =~ ^@gmod/jbrowse-web ]]; then (cd packages/jbrowse-web/build;  zip -r "../../../jbrowse-web-${TRAVIS_TAG//[!0-9.]/}.zip" .); fi;
+- if [[ "$TRAVIS_TAG"  =~ ^@gmod/jbrowse-web ]]; then
+     (cd packages/jbrowse-web/build; zip -r "../../../jbrowse-web-${TRAVIS_TAG//[!0-9.]/}.zip" .);
+  else
+     (cd packages/jbrowse-web/build; zip -r "../../../jbrowse-web-${TRAVIS_BRANCH}.zip" .);
+  fi;
 # copy config, used for having a default config in our online demos
 - cp ${TRAVIS_BUILD_DIR}/packages/jbrowse-web/build/test_data/config.json ${TRAVIS_BUILD_DIR}/packages/jbrowse-web/build/config.json
 deploy:
@@ -34,6 +38,17 @@ deploy:
   bucket: "jbrowse.org"
   local-dir: packages/jbrowse-web/build
   upload-dir: code/jb2/alpha/$TRAVIS_BRANCH
+  on:
+    repo: GMOD/jbrowse-components
+    all_branches: true
+deploy:
+  provider: s3
+  skip_cleanup: true
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET
+  bucket: "jbrowse.org"
+  local-dir: jbrowse-web-*.zip
+  upload-dir: code/jb2/alpha/
   on:
     repo: GMOD/jbrowse-components
     all_branches: true
