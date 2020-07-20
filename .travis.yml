@@ -51,6 +51,7 @@ deploy:
   upload-dir: code/jb2/alpha/
   on:
     repo: GMOD/jbrowse-components
+    condition: true
     all_branches: true
 deploy:
 # upload both minified and non-minified builds to GitHub releases
