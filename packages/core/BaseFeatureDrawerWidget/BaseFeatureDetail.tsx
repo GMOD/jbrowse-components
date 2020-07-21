@@ -8,7 +8,6 @@ import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
-import PropTypes from 'prop-types'
 import React, { FunctionComponent } from 'react'
 import isObject from 'is-object'
 import SanitizedHTML from '../ui/SanitizedHTML'
@@ -76,11 +75,6 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
       </ExpansionPanelDetails>
     </ExpansionPanel>
   )
-}
-BaseCard.propTypes = {
-  // @ts-ignore
-  children: PropTypes.node.isRequired,
-  title: PropTypes.string.isRequired,
 }
 
 interface BaseProps extends BaseCardProps {
@@ -183,7 +177,6 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
         )
         .map(([key, value]) => {
           if (Array.isArray(value)) {
-            // eslint-disable-next-line react/prop-types
             return value.length === 1 ? (
               <SimpleValue key={key} name={key} value={value[0]} />
             ) : (
@@ -199,9 +192,7 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
     </>
   )
 }
-Attributes.propTypes = {
-  attributes: PropTypes.objectOf(PropTypes.any).isRequired,
-}
+
 export const BaseAttributes = (props: BaseProps) => {
   const { feature } = props
   return (
