@@ -383,69 +383,143 @@ exports[`open up a drawer widget 1`] = `
                 <div
                   class="makeStyles-fieldName"
                 >
-                  unmapped
+                  Flag
                 </div>
                 <div
                   class="makeStyles-fieldValue"
-                >
-                  false
-                </div>
+                />
               </div>
-              <div
-                style="display: flex;"
-              >
-                <div
-                  class="makeStyles-fieldName"
+              <div>
+                <input
+                  id="read paired_0"
+                  type="checkbox"
+                />
+                <label
+                  for="read paired_0"
                 >
-                  qc_failed
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
-                >
-                  false
-                </div>
+                  read paired
+                </label>
               </div>
-              <div
-                style="display: flex;"
-              >
-                <div
-                  class="makeStyles-fieldName"
+              <div>
+                <input
+                  id="read mapped in proper pair_0"
+                  type="checkbox"
+                />
+                <label
+                  for="read mapped in proper pair_0"
                 >
-                  duplicate
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
-                >
-                  false
-                </div>
+                  read mapped in proper pair
+                </label>
               </div>
-              <div
-                style="display: flex;"
-              >
-                <div
-                  class="makeStyles-fieldName"
+              <div>
+                <input
+                  id="read unmapped_0"
+                  type="checkbox"
+                />
+                <label
+                  for="read unmapped_0"
                 >
-                  secondary_alignment
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
-                >
-                  false
-                </div>
+                  read unmapped
+                </label>
               </div>
-              <div
-                style="display: flex;"
-              >
-                <div
-                  class="makeStyles-fieldName"
+              <div>
+                <input
+                  id="mate unmapped_0"
+                  type="checkbox"
+                />
+                <label
+                  for="mate unmapped_0"
                 >
-                  supplementary_alignment
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
+                  mate unmapped
+                </label>
+              </div>
+              <div>
+                <input
+                  id="read reverse strand_0"
+                  type="checkbox"
+                />
+                <label
+                  for="read reverse strand_0"
                 >
-                  false
-                </div>
+                  read reverse strand
+                </label>
+              </div>
+              <div>
+                <input
+                  id="mate reverse strand_0"
+                  type="checkbox"
+                />
+                <label
+                  for="mate reverse strand_0"
+                >
+                  mate reverse strand
+                </label>
+              </div>
+              <div>
+                <input
+                  id="first in pair_0"
+                  type="checkbox"
+                />
+                <label
+                  for="first in pair_0"
+                >
+                  first in pair
+                </label>
+              </div>
+              <div>
+                <input
+                  id="second in pair_0"
+                  type="checkbox"
+                />
+                <label
+                  for="second in pair_0"
+                >
+                  second in pair
+                </label>
+              </div>
+              <div>
+                <input
+                  id="not primary alignment_0"
+                  type="checkbox"
+                />
+                <label
+                  for="not primary alignment_0"
+                >
+                  not primary alignment
+                </label>
+              </div>
+              <div>
+                <input
+                  id="read fails platform/vendor quality checks_0"
+                  type="checkbox"
+                />
+                <label
+                  for="read fails platform/vendor quality checks_0"
+                >
+                  read fails platform/vendor quality checks
+                </label>
+              </div>
+              <div>
+                <input
+                  id="read is PCR or optical duplicate_0"
+                  type="checkbox"
+                />
+                <label
+                  for="read is PCR or optical duplicate_0"
+                >
+                  read is PCR or optical duplicate
+                </label>
+              </div>
+              <div>
+                <input
+                  id="supplementary alignment_0"
+                  type="checkbox"
+                />
+                <label
+                  for="supplementary alignment_0"
+                >
+                  supplementary alignment
+                </label>
               </div>
             </div>
           </div>

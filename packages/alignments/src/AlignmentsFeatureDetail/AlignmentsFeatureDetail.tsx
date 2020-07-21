@@ -17,7 +17,7 @@ interface AlnProps extends AlnCardProps {
   feature: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-const flags = [
+const featureFlags = [
   'unmapped',
   'qc_failed',
   'duplicate',
@@ -52,11 +52,12 @@ const AlignmentFlags: FunctionComponent<AlnProps> = props => {
         <div className={classes.fieldValue}>{flags}</div>
       </div>
       {flagNames.map((name, index) => {
+        // eslint-disable-next-line no-bitwise
         const val = flags & (1 << index)
         const key = `${name}_${val}`
         return (
           <div>
-            <input type="checkbox" checked={Boolean(val)} id={key} />
+            <input type="checkbox" checked={Boolean(val)} id={key} readOnly />
             <label htmlFor={key}>{name}</label>
           </div>
         )
@@ -98,7 +99,7 @@ const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
     <Paper data-testid="alignment-side-drawer">
       <BaseFeatureDetails
         {...props}
-        omit={flags.concat(omit)}
+        omit={featureFlags.concat(omit)}
         formatter={(value: unknown) => <Formatter value={value} />}
       />
       <AlignmentFlags feature={feat} {...props} />
