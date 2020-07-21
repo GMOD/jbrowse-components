@@ -106,21 +106,7 @@ export default class Create extends Command {
       )
 
     response.body
-      .pipe(unzip.Parse())
-      .on('entry', async (entry: unzip.Entry) => {
-        const { path: fileName, type } = entry
-        if (type === 'File') {
-          try {
-            const location = path.join(argsPath, fileName)
-            await fsPromises.mkdir(path.dirname(location), {
-              recursive: true,
-            })
-            entry.pipe(fs.createWriteStream(path.join(argsPath, fileName)))
-          } catch (error) {
-            this.error(error)
-          }
-        } else entry.autodrain()
-      })
+      .pipe(unzip.Extract({ path: argsPath }))
       .on('error', err => {
         fs.unlink(argsPath, () => {})
         this.error(

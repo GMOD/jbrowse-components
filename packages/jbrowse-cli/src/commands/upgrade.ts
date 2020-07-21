@@ -100,20 +100,7 @@ export default class Upgrade extends Command {
       )
 
     response.body
-      .pipe(unzip.Parse())
-      .on('entry', async entry => {
-        const { path: fileName, type } = entry
-        if (type === 'Directory') {
-          try {
-            await fsPromises.mkdir(path.join(upgradePath, fileName), {
-              recursive: true,
-            })
-          } catch (error) {
-            this.error(error)
-          }
-        }
-        entry.pipe(fs.createWriteStream(path.join(upgradePath, fileName)))
-      })
+      .pipe(unzip.Extract({ path: upgradePath }))
       .on('error', err => {
         this.error(
           `Failed to upgrade JBrowse 2 with ${err}. Please try again later`,
