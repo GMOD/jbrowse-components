@@ -25,13 +25,15 @@ const flags = [
   'supplementary_alignment',
 ]
 
+const omit = ['length_on_ref', 'clipPos', 'template_length']
+
 const AlignmentFlags: FunctionComponent<AlnProps> = props => {
   const classes = useStyles()
   const { feature } = props
   return (
     <BaseCard {...props} title="Flags">
       {flags.map(key => (
-        <div key={key}>
+        <div key={key} style={{ display: 'flex' }}>
           <div className={classes.fieldName}>{key}</div>
           <div className={classes.fieldValue}>{String(feature[key])}</div>
         </div>
@@ -72,7 +74,7 @@ const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
     <Paper data-testid="alignment-side-drawer">
       <BaseFeatureDetails
         {...props}
-        omit={flags}
+        omit={flags.concat(omit)}
         formatter={(value: string) => <Formatter value={value} />}
       />
       <AlignmentFlags feature={feat} {...props} />
