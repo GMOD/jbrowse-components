@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
@@ -137,21 +137,30 @@ const omit = [
 
 interface AttributeProps {
   attributes: Record<string, any>
+  omit: string[]
+  formatter: (val: unknown) => JSX.Element
 }
 
 const Attributes: FunctionComponent<AttributeProps> = props => {
   const classes = useStyles()
-  const { attributes } = props
-  const SimpleValue = ({ name, value }: { name: string; value: any }) => (
-    <div style={{ display: 'flex' }}>
-      <div className={classes.fieldName}>{name}</div>
-      <div className={classes.fieldValue}>
-        <SanitizedHTML
-          html={isObject(value) ? JSON.stringify(value) : String(value)}
-        />
+  const {
+    attributes,
+    omit: propOmit = [],
+    formatter = (value: unknown) => (
+      <SanitizedHTML
+        html={isObject(value) ? JSON.stringify(value) : String(value)}
+      />
+    ),
+  } = props
+
+  const SimpleValue = ({ name, value }: { name: string; value: any }) => {
+    return (
+      <div style={{ display: 'flex' }}>
+        <div className={classes.fieldName}>{name}</div>
+        <div className={classes.fieldValue}>{formatter(value)}</div>
       </div>
-    </div>
-  )
+    )
+  }
   const ArrayValue = ({ name, value }: { name: string; value: any[] }) => (
     <div style={{ display: 'flex' }}>
       <div className={classes.fieldName}>{name}</div>
@@ -168,7 +177,10 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
   return (
     <>
       {Object.entries(attributes)
-        .filter(([k, v]) => v !== undefined && !omit.includes(k))
+        .filter(
+          ([k, v]) =>
+            v !== undefined && !omit.includes(k) && !propOmit.includes(k),
+        )
         .map(([key, value]) => {
           if (Array.isArray(value)) {
             // eslint-disable-next-line react/prop-types
