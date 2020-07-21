@@ -5,6 +5,11 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
+const fsPromises = fs.promises
+
+// On macOS, os.tmpdir() is not a real path: https://github.com/nodejs/node/issues/11422
+const tmpDir = fs.realpathSync(os.tmpdir())
+
 /* eslint-disable no-console */
 const mockConsoleLog = (opts?: { print?: boolean }) => ({
   run(ctx: { consoleLog: jest.Mock }) {
@@ -69,17 +74,16 @@ export const test = oclifTest
 export const setup = test
   .mockStdoutWrite()
   .add('originalDir', () => process.cwd())
-  .add('dir', () => {
-    const tmpDir = fs.realpathSync(os.tmpdir())
+  .add('dir', async () => {
     const jbrowseTmpDir = path.join(tmpDir, 'jbrowse')
-    fs.mkdirSync(jbrowseTmpDir, { recursive: true })
-    return fs.mkdtempSync(path.join(jbrowseTmpDir, path.sep))
+    await fsPromises.mkdir(jbrowseTmpDir, { recursive: true })
+    return fsPromises.mkdtemp(path.join(jbrowseTmpDir, path.sep))
   })
   .finally(async ctx => {
     await del([`${ctx.dir}/**`, ctx.dir], { force: true })
     process.chdir(ctx.originalDir)
   })
-  .do(ctx => {
+  .do(async ctx => {
     process.chdir(ctx.dir)
-    fs.writeFileSync('manifest.json', '{"name":"JBrowse"}')
+    await fsPromises.writeFile('manifest.json', '{"name":"JBrowse"}')
   })
