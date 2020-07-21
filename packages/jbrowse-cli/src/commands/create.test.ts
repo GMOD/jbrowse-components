@@ -43,10 +43,6 @@ function mockWrongSite(exampleSite: Scope) {
     .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
 }
 
-function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 describe('create', () => {
   setup
     .command(['create'])
@@ -89,7 +85,6 @@ describe('create', () => {
     .nock('https://example.com', mockZip)
     .command(['create', 'jbrowse'])
     .it('download and unzips JBrowse 2 to new directory', async ctx => {
-      await sleep(500)
       expect(await fsPromises.readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
         'manifest.json',
       )
@@ -103,7 +98,6 @@ describe('create', () => {
       'https://example.com/JBrowse2-0.0.1.zip',
     ])
     .it('upgrades a directory from a url', async ctx => {
-      await sleep(500)
       expect(await fsPromises.readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
         'manifest.json',
       )
@@ -121,7 +115,6 @@ describe('create', () => {
     .it(
       'overwrites and succeeds in downloading JBrowse in a non-empty directory with version #',
       async ctx => {
-        await sleep(500)
         expect(
           await fsPromises.readdir(path.join(ctx.dir, 'jbrowse')),
         ).toContain('manifest.json')
@@ -142,9 +135,6 @@ describe('create', () => {
     .nock('https://api.github.com', mockReleases)
     .nock('https://example.com', mockZip)
     .command(['create', 'jbrowse'])
-    .do(async () => {
-      await sleep(500)
-    })
     .command(['create', 'jbrowse'])
     .exit(10)
     .it('fails because this directory is already set up')
