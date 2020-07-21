@@ -30,14 +30,37 @@ const omit = ['length_on_ref', 'clipPos', 'template_length']
 const AlignmentFlags: FunctionComponent<AlnProps> = props => {
   const classes = useStyles()
   const { feature } = props
+  const flagNames = [
+    'read paired',
+    'read mapped in proper pair',
+    'read unmapped',
+    'mate unmapped',
+    'read reverse strand',
+    'mate reverse strand',
+    'first in pair',
+    'second in pair',
+    'not primary alignment',
+    'read fails platform/vendor quality checks',
+    'read is PCR or optical duplicate',
+    'supplementary alignment',
+  ]
+  const { flags } = feature
   return (
     <BaseCard {...props} title="Flags">
-      {flags.map(key => (
-        <div key={key} style={{ display: 'flex' }}>
-          <div className={classes.fieldName}>{key}</div>
-          <div className={classes.fieldValue}>{String(feature[key])}</div>
-        </div>
-      ))}
+      <div style={{ display: 'flex' }}>
+        <div className={classes.fieldName}>Flag</div>
+        <div className={classes.fieldValue}>{flags}</div>
+      </div>
+      {flagNames.map((name, index) => {
+        const val = flags & (1 << index)
+        const key = `${name}_${val}`
+        return (
+          <div>
+            <input type="checkbox" checked={Boolean(val)} id={key} />
+            <label htmlFor={key}>{name}</label>
+          </div>
+        )
+      })}
     </BaseCard>
   )
 }

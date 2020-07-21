@@ -54,7 +54,7 @@ export default class implements Feature {
 
   _get_flags(): string {
     // @ts-ignore
-    return `0x${this.record.flags.toString(16)}`
+    return this.record.flags
   }
 
   _get_strand(): number {
@@ -200,6 +200,7 @@ export default class implements Feature {
       name: this.get('name'),
       type: this.get('type'),
       uniqueId: this.id(),
+      flags: this.get('flags'),
       clipPos: this._get_clippos(),
     }
   }
