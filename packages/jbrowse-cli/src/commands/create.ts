@@ -1,7 +1,5 @@
 import { Command, flags } from '@oclif/command'
-import * as fs from 'fs'
 import { promises as fsPromises } from 'fs'
-import * as path from 'path'
 import fetch from 'node-fetch'
 import * as unzip from 'unzipper'
 
@@ -101,7 +99,8 @@ export default class Create extends Command {
       )
     }
 
-    return response.body.pipe(unzip.Extract({ path: argsPath })).promise()
+    await response.body.pipe(unzip.Extract({ path: argsPath })).promise()
+    this.log('Finished')
   }
 
   async checkPath(userPath: string) {
