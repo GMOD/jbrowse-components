@@ -21,10 +21,6 @@ import {
   configSchemaFactory as snpCoverageTrackConfigSchemaFactory,
   modelFactory as snpCoverageTrackModelFactory,
 } from './SNPCoverageTrack'
-import {
-  AdapterClass as BamAdapterClass,
-  configSchema as bamAdapterConfigSchema,
-} from './BamAdapter'
 import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
   ReactComponent as PileupRendererReactComponent,
@@ -34,10 +30,13 @@ import SNPCoverageRenderer, {
   ReactComponent as SNPCoverageRendererReactComponent,
 } from './SNPCoverageRenderer'
 
+import BamAdapterF from './BamAdapter'
 import CramAdapterF from './CramAdapter'
 import SNPCoverageAdapterF from './SNPCoverageAdapter'
 
 export default class AlignmentsPlugin extends Plugin {
+  name = 'AlignmentsPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addTrackType(() => {
       const configSchema = pileupTrackConfigSchemaFactory(pluginManager)
@@ -80,8 +79,7 @@ export default class AlignmentsPlugin extends Plugin {
       () =>
         new AdapterType({
           name: 'BamAdapter',
-          configSchema: bamAdapterConfigSchema,
-          AdapterClass: BamAdapterClass,
+          ...pluginManager.load(BamAdapterF),
         }),
     )
     pluginManager.addAdapterType(

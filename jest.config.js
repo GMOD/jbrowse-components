@@ -23,7 +23,10 @@ module.exports = {
     'packages/core/**/*.{js,jsx,ts,tsx}',
   ],
   resolver: 'jest-pnp-resolver',
-  setupFiles: ['<rootDir>/config/jest/createRange.js'],
+  setupFiles: [
+    '<rootDir>/config/jest/createRange.js',
+    '<rootDir>/config/jest/fetchMock.js',
+  ],
   setupFilesAfterEnv: ['mobx-react/batchingForReactDom'],
   testEnvironment: 'jest-environment-jsdom-fourteen',
   testURL: 'http://localhost',

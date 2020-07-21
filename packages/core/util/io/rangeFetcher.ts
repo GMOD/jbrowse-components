@@ -113,6 +113,9 @@ async function globalCacheFetch(
 
   return getfetch(url, opts)
 }
+export function clearCache() {
+  globalRangeCache.reset()
+}
 
 export function openUrl(url: string): GenericFilehandle {
   return new RemoteFile(String(url), {

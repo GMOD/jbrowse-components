@@ -1,6 +1,7 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import { promises as fsPromises } from 'fs'
+import path from 'path'
 import { parseVcfBuffer, splitVcfFileHeaderAndBody } from './VcfImport'
 
 window.TextEncoder = TextEncoder
@@ -34,7 +35,12 @@ describe('vcf file splitter', () => {
 })
 
 test('vcf file import', async () => {
-  const filepath = `${process.cwd()}/packages/spreadsheet-view/src/SpreadsheetView/test_data/1801160099-N32519_26611_S51_56704.hard-filtered.vcf`
+  const filepath = path.join(
+    __dirname,
+    '..',
+    'test_data',
+    '1801160099-N32519_26611_S51_56704.hard-filtered.vcf',
+  )
   const buf = await fsPromises.readFile(filepath)
   const spreadsheetSnap = parseVcfBuffer(buf)
   expect(spreadsheetSnap).toMatchSnapshot()

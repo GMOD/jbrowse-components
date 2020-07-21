@@ -61,7 +61,6 @@ export default (pluginManager: PluginManager) => {
         checkSequenceMD5: false,
         fetchSizeLimit: config.fetchSizeLimit || 600000000,
       })
-
       // instantiate the sequence adapter
       const sequenceAdapterType = readConfObject(config, [
         'sequenceAdapter',
@@ -71,6 +70,7 @@ export default (pluginManager: PluginManager) => {
       const { dataAdapter } = getSubAdapter(
         readConfObject(config, 'sequenceAdapter'),
       )
+      // TODO: BaseFeatureDataAdapter is different inside of the plugin build, needs to be gotten from pluginManager.lib
       if (dataAdapter instanceof BaseFeatureDataAdapter) {
         this.sequenceAdapter = dataAdapter
       } else {
@@ -129,6 +129,7 @@ export default (pluginManager: PluginManager) => {
 
     private async setup(opts?: BaseOptions) {
       if (Object.keys(this.samHeader).length === 0) {
+        // progress: this.cram.cram is failing and returning the 404 error currently
         const samHeader = await this.cram.cram.getSamHeader(opts?.signal)
 
         // use the @SQ lines in the header to figure out the

@@ -634,9 +634,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   throw new Error(
                     `${
                       region.reversed ? 'End' : 'Start'
-                    } of region ${assembleLocString(location)} should be ${
-                      region.reversed ? region.end : region.start + 1
-                    }, but it is not`,
+                    } of region ${assembleLocString(
+                      location,
+                    )} should be ${(region.reversed
+                      ? region.end
+                      : region.start + 1
+                    ).toLocaleString('en-US')}, but it is not`,
                   )
                 }
               }
@@ -650,9 +653,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   throw new Error(
                     `${
                       region.reversed ? 'Start' : 'End'
-                    } of region ${assembleLocString(location)} should be ${
-                      region.reversed ? region.start + 1 : region.end
-                    }, but it is not`,
+                    } of region ${assembleLocString(
+                      location,
+                    )} should be ${(region.reversed
+                      ? region.start + 1
+                      : region.end
+                    ).toLocaleString('en-US')}, but it is not`,
                   )
                 }
               }

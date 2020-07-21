@@ -29,6 +29,8 @@ import LinearSyntenyRenderer, {
 // } from './BreakpointSplitRenderer'
 
 export default class extends Plugin {
+  name = 'LinearComparativeViewPlugin'
+
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(require('./LinearComparativeView')),

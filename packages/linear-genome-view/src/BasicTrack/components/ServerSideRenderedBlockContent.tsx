@@ -33,8 +33,27 @@ const useStyles = makeStyles(theme => ({
   },
   blockError: {
     padding: theme.spacing(2),
-    pointerEvents: 'none',
     width: '100%',
+  },
+  dots: {
+    '&::after': {
+      display: 'inline-block',
+      animation: '$ellipsis 1.5s infinite',
+      content: '"."',
+      width: '1em',
+      textAlign: 'left',
+    },
+  },
+  '@keyframes ellipsis': {
+    '0%': {
+      content: '"."',
+    },
+    '33%': {
+      content: '".."',
+    },
+    '66%': {
+      content: '"..."',
+    },
   },
 }))
 
@@ -51,20 +70,14 @@ function LoadingMessage() {
   // only show the loading message after 300ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
   const classes = useStyles()
-  const [dots, setDots] = useState(0)
   useEffect(() => {
     const timeout = setTimeout(() => setShown(true), 300)
     return () => clearTimeout(timeout)
   }, [])
 
-  useEffect(() => {
-    const timeout = setTimeout(() => setDots(state => (state + 1) % 4), 400)
-    return () => clearTimeout(timeout)
-  })
-
   return shown ? (
     <div className={classes.loading}>
-      Loading {new Array(dots).fill('.').join('')}
+      <div className={classes.dots}>Loading</div>
     </div>
   ) : null
 }
@@ -86,7 +99,12 @@ function BlockError({ error, reload }: { error: Error; reload: () => void }) {
   return (
     <div className={classes.blockError}>
       {reload ? (
-        <Button onClick={reload} size="small" startIcon={<RefreshIcon />}>
+        <Button
+          data-testid="reload_button"
+          onClick={reload}
+          size="small"
+          startIcon={<RefreshIcon />}
+        >
           Reload
         </Button>
       ) : null}

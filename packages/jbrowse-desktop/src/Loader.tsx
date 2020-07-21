@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react'
 import { PluginConstructor } from '@gmod/jbrowse-core/Plugin'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { SnapshotIn } from 'mobx-state-tree'
+import PluginLoader from '@gmod/jbrowse-core/PluginLoader'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
@@ -53,15 +54,22 @@ export default function Loader() {
 
   useEffect(() => {
     async function fetchPlugins() {
-      // TODO: Runtime plugins
-      // Loading runtime plugins will look something like this
-      // const pluginLoader = new PluginLoader(config.plugins)
-      // const runtimePlugins = await pluginLoader.load()
-      // setPlugins([...corePlugins, ...runtimePlugins])
-      setPlugins(corePlugins)
+      // Load runtime plugins
+      if (configSnapshot) {
+        try {
+          const pluginLoader = new PluginLoader(configSnapshot.plugins)
+          pluginLoader.installGlobalReExports(window)
+          const runtimePlugins = await pluginLoader.load()
+          setPlugins([...corePlugins, ...runtimePlugins])
+        } catch (error) {
+          setConfigSnapshot(() => {
+            throw error
+          })
+        }
+      }
     }
     fetchPlugins()
-  }, [])
+  }, [configSnapshot])
 
   if (!(configSnapshot && plugins)) {
     return (

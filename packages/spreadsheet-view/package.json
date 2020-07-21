@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-spreadsheet-view",
-  "version": "2.0.0",
+  "version": "0.0.1-beta.10",
   "description": "JBrowse 2 spreadsheet view",
   "main": "src/index.ts",
   "scripts": {
@@ -9,21 +9,21 @@
   "author": "Robert Buels",
   "license": "MIT",
   "dependencies": {
-    "@gmod/jbrowse-plugin-variants": "^2.0.0",
+    "@gmod/jbrowse-plugin-variants": "^0.0.1-beta.10",
     "@gmod/vcf": "^4.0.0",
     "@material-ui/icons": "^4.9.1",
     "classnames": "^2.2.6",
     "csvtojson": "^2.0.10"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^2.0.0",
-    "@material-ui/core": "^4.0.0",
-    "react": "^1.16.8",
-    "react-dom": "^1.16.8",
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@material-ui/core": "^4.9.13",
     "mobx-react": "^6.0.0",
-    "mobx-state-tree": "^3.14.1",
+    "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
+    "react-dom": "^16.8.0",
     "rxjs": "^6.0.0"
-  }
+  },
+  "private": true
 }

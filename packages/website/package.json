@@ -1,0 +1,37 @@
+{
+  "name": "website",
+  "version": "0.0.1-beta.11",
+  "private": true,
+  "scripts": {
+    "copycli": "cp ../jbrowse-cli/README.md docs/cli.md",
+    "prestart": "npm run copycli",
+    "start": "docusaurus start",
+    "prebuild": "npm run make",
+    "build": "docusaurus build",
+    "swizzle": "docusaurus swizzle",
+    "predeploy": "npm run build",
+    "deploy": "aws s3 sync --delete build s3://jbrowse.org/jb2/ && aws s3 cp docs/jbrowse2.pdf s3://jbrowse.org/jb2/",
+    "make": "npm run copycli && cd docs; make; cd -"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^2.0.0-alpha.58",
+    "@docusaurus/preset-classic": "^2.0.0-alpha.58",
+    "@material-ui/core": "^4.9.13",
+    "clsx": "^1.1.1",
+    "react": "^16.8.4",
+    "react-dom": "^16.8.4"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "homepage": "."
+}

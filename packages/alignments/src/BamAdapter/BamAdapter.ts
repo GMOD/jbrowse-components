@@ -8,12 +8,12 @@ import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { toArray } from 'rxjs/operators'
 
-import { Instance } from 'mobx-state-tree'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
-
-import MyConfigSchema from './configSchema'
 
 interface HeaderLine {
   tag: string
@@ -29,7 +29,12 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   private samHeader: Header = {}
 
-  public constructor(config: Instance<typeof MyConfigSchema>) {
+  private sequenceAdapter?: BaseFeatureDataAdapter
+
+  public constructor(
+    config: AnyConfigurationModel,
+    getSubAdapter?: getSubAdapterType,
+  ) {
     super(config)
     const bamLocation = readConfObject(config, 'bamLocation')
     const location = readConfObject(config, ['index', 'location'])
@@ -44,6 +49,12 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       chunkSizeLimit,
       fetchSizeLimit,
     })
+
+    const adapterConfig = readConfObject(config, 'sequenceAdapter')
+    if (adapterConfig && getSubAdapter) {
+      const { dataAdapter } = getSubAdapter(adapterConfig)
+      this.sequenceAdapter = dataAdapter as BaseFeatureDataAdapter
+    }
   }
 
   private async setup(opts?: BaseOptions) {
@@ -79,9 +90,55 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     throw new Error('unable to get refnames')
   }
 
-  getFeatures(region: Region, opts: BaseOptions = {}) {
+  private async seqFetch(refName: string, start: number, end: number) {
+    const refSeqStore = this.sequenceAdapter
+    if (!refSeqStore) return undefined
+    if (!refName) return undefined
+
+    const features = refSeqStore.getFeatures(
+      {
+        refName,
+        start,
+        end,
+        assemblyName: '',
+      },
+      {},
+    )
+
+    const seqChunks = await features.pipe(toArray()).toPromise()
+
+    const trimmed: string[] = []
+    seqChunks
+      .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
+      .forEach((chunk: Feature) => {
+        const chunkStart = chunk.get('start')
+        const chunkEnd = chunk.get('end')
+        const trimStart = Math.max(start - chunkStart, 0)
+        const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
+        const trimLength = trimEnd - trimStart
+        const chunkSeq = chunk.get('seq') || chunk.get('residues')
+        trimmed.push(chunkSeq.substr(trimStart, trimLength))
+      })
+
+    const sequence = trimmed.join('')
+    if (sequence.length !== end - start) {
+      throw new Error(
+        `sequence fetch failed: fetching ${refName}:${(
+          start - 1
+        ).toLocaleString()}-${end.toLocaleString()} returned ${sequence.length.toLocaleString()} bases, but should have returned ${(
+          end - start
+        ).toLocaleString()}`,
+      )
+    }
+    return sequence
+  }
+
+  getFeatures(
+    region: Region & { originalRefName?: string },
+    opts: BaseOptions = {},
+  ) {
+    const { refName, start, end, originalRefName } = region
     return ObservableCreate<Feature>(async observer => {
-      const { refName, start, end } = region
       await this.setup(opts)
       const records = await this.bam.getRecordsForRange(
         refName,
@@ -91,9 +148,18 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       )
       checkAbortSignal(opts.signal)
 
-      records.forEach(record => {
-        observer.next(new BamSlightlyLazyFeature(record, this))
-      })
+      for (const record of records) {
+        let ref: string | undefined
+        if (!record.get('md')) {
+          // eslint-disable-next-line no-await-in-loop
+          ref = await this.seqFetch(
+            originalRefName || refName,
+            record.get('start'),
+            record.get('end'),
+          )
+        }
+        observer.next(new BamSlightlyLazyFeature(record, this, ref))
+      }
       observer.complete()
     }, opts.signal)
   }

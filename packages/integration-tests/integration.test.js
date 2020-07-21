@@ -13,7 +13,9 @@ if (process.env.BUILT_TESTS) {
 
   test('Protein Widget built', () => {
     expect(
-      fs.existsSync('packages/protein-widget/umd/jbrowse-protein-viewer.js'),
+      fs.existsSync(
+        'packages/jbrowse-protein-widget/umd/jbrowse-protein-viewer.js',
+      ),
     ).toBeTruthy()
   })
 }

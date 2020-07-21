@@ -1,5 +1,6 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { fromUrlSafeB64 } from '@gmod/jbrowse-core/util'
+import PluginLoader from '@gmod/jbrowse-core/PluginLoader'
+import { inDevelopment, fromUrlSafeB64 } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { makeStyles } from '@material-ui/core/styles'
@@ -24,10 +25,75 @@ const useStyles = makeStyles({
   },
 })
 
+function NoConfigMessage() {
+  // TODO: Link to docs for how to configure JBrowse
+  return (
+    <>
+      <h4>JBrowse has not been configured yet.</h4>
+      {inDevelopment ? (
+        <>
+          <div>Available development configs:</div>
+          <ul>
+            <li>
+              <a href="?config=test_data/config.json">Human basic</a>
+            </li>
+            <li>
+              <a href="?config=test_data/config_demo.json">Human extended</a>
+            </li>
+            <li>
+              <a href="?config=test_data/tomato/config.json">Tomato SVs</a>
+            </li>
+            <li>
+              <a href="?config=test_data/volvox/config.json">Volvox</a>
+            </li>
+            <li>
+              <a href="?config=test_data/breakpoint/config.json">Breakpoint</a>
+            </li>
+            <li>
+              <a href="?config=test_data/config_dotplot.json">
+                Grape/Peach Dotplot
+              </a>
+            </li>
+            <li>
+              <a href="?config=test_data/config_human_dotplot.json">
+                hg19/hg38 Dotplot
+              </a>
+            </li>
+            <li>
+              <a href="?config=test_data/config_synteny_grape_peach.json">
+                Grape/Peach Syteny
+              </a>
+            </li>
+            <li>
+              <a href="?config=test_data/config_longread.json">
+                Long Read vs. Reference Dotplot
+              </a>
+            </li>
+            <li>
+              <a href="?config=test_data/config_longread_linear.json">
+                Long Read vs. Reference Linear
+              </a>
+            </li>
+            <li>
+              <a href="?config=test_data/config_many_contigs.json">
+                Many Contigs
+              </a>
+            </li>
+            <li>
+              <a href="?config=test_data/config_honeybee.json">Honeybee</a>
+            </li>
+          </ul>
+        </>
+      ) : null}
+    </>
+  )
+}
+
 export default function Loader() {
   const [configSnapshot, setConfigSnapshot] = useState<
     SnapshotOut<AnyConfigurationModel>
   >()
+  const [noDefaultConfig, setNoDefaultConfig] = useState(false)
   const [plugins, setPlugins] = useState<PluginConstructor[]>()
 
   const [configQueryParam] = useQueryParam('config', StringParam)
@@ -40,34 +106,58 @@ export default function Loader() {
   useEffect(() => {
     async function fetchConfig() {
       const configLocation = {
-        uri: configQueryParam || 'test_data/config.json',
+        uri: configQueryParam || 'config.json',
+      }
+      let configText = ''
+      try {
+        const location = openLocation(configLocation)
+        configText = (await location.readFile('utf8')) as string
+      } catch (error) {
+        if (configQueryParam && configQueryParam !== 'config.json') {
+          setConfigSnapshot(() => {
+            throw new Error(`Problem loading config, "${error.message}"`)
+          })
+        } else {
+          setNoDefaultConfig(true)
+        }
       }
       let config
-      try {
-        config = JSON.parse(
-          (await openLocation(configLocation).readFile('utf8')) as string,
-        )
-      } catch (error) {
-        setConfigSnapshot(() => {
-          throw error
-        })
+      if (configText) {
+        try {
+          config = JSON.parse(configText)
+        } catch (error) {
+          setConfigSnapshot(() => {
+            throw new Error(`Can't parse config JSON: ${error.message}`)
+          })
+        }
+        setConfigSnapshot(config)
       }
-      setConfigSnapshot(config)
     }
     fetchConfig()
   }, [configQueryParam])
 
   useEffect(() => {
     async function fetchPlugins() {
-      // TODO: Runtime plugins
-      // Loading runtime plugins will look something like this
-      // const pluginLoader = new PluginLoader(config.plugins)
-      // const runtimePlugins = await pluginLoader.load()
-      // setPlugins([...corePlugins, ...runtimePlugins])
-      setPlugins(corePlugins)
+      // Load runtime plugins
+      if (configSnapshot) {
+        try {
+          const pluginLoader = new PluginLoader(configSnapshot.plugins)
+          pluginLoader.installGlobalReExports(window)
+          const runtimePlugins = await pluginLoader.load()
+          setPlugins([...corePlugins, ...runtimePlugins])
+        } catch (error) {
+          setConfigSnapshot(() => {
+            throw error
+          })
+        }
+      }
     }
     fetchPlugins()
-  }, [])
+  }, [configSnapshot])
+
+  if (noDefaultConfig) {
+    return <NoConfigMessage />
+  }
 
   if (!(configSnapshot && plugins)) {
     return (
@@ -80,6 +170,7 @@ export default function Loader() {
   }
 
   const pluginManager = new PluginManager(plugins.map(P => new P()))
+
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)

@@ -7,7 +7,7 @@ import DataManagement from '@gmod/jbrowse-plugin-data-management'
 import DotplotView from '@gmod/jbrowse-plugin-dotplot-view'
 import Filtering from '@gmod/jbrowse-plugin-filtering'
 import Gff3Tabix from '@gmod/jbrowse-plugin-gff3tabix'
-import JBrowse1 from '@gmod/jbrowse-plugin-jbrowse1'
+import LegacyJBrowse from '@gmod/jbrowse-plugin-legacy-jbrowse'
 import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 import LinearComparativeView from '@gmod/jbrowse-plugin-linear-comparative-view'
 import Lollipop from '@gmod/jbrowse-plugin-lollipop'
@@ -20,7 +20,7 @@ import Variants from '@gmod/jbrowse-plugin-variants'
 import Wiggle from '@gmod/jbrowse-plugin-wiggle'
 import SpreadsheetViewPlugin from '@gmod/jbrowse-plugin-spreadsheet-view'
 import SvInspectorPlugin from '@gmod/jbrowse-plugin-sv-inspector'
-import GDCPlugin from '@gmod/jbrowse-plugin-gdc'
+import HicPlugin from '@gmod/jbrowse-plugin-hic'
 
 export default [
   Alignments,
@@ -31,7 +31,7 @@ export default [
   DotplotView,
   Filtering,
   Gff3Tabix,
-  JBrowse1,
+  LegacyJBrowse,
   LinearGenomeView,
   LinearComparativeView,
   Lollipop,
@@ -44,6 +44,6 @@ export default [
   Wiggle,
   SpreadsheetViewPlugin,
   SvInspectorPlugin,
-  GDCPlugin,
   BreakpointSplitView,
+  HicPlugin,
 ]

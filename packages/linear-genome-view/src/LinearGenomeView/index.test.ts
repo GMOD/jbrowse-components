@@ -198,11 +198,11 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
   expect(() =>
     model.navTo({ refName: 'ctgA', start: 20000, end: 20100 }),
   ).toThrow(
-    'could not find a region that completely contained "ctgA:20001..20100"',
+    'could not find a region that completely contained "ctgA:20,001..20,100"',
   )
 
   expect(() => model.navTo({ refName: 'ctgA', start: 0, end: 20000 })).toThrow(
-    'could not find a region that completely contained "ctgA:1..20000"',
+    'could not find a region that completely contained "ctgA:1..20,000"',
   )
 })
 
@@ -257,14 +257,14 @@ test('can navToMultiple', () => {
       { refName: 'ctgB', start: 5000, end: 10000 },
       { refName: 'ctgC', start: 5000, end: 10000 },
     ]),
-  ).toThrow('Start of region ctgC:5001..10000 should be 1, but it is not')
+  ).toThrow('Start of region ctgC:5,001..10,000 should be 1, but it is not')
 
   expect(() =>
     model.navToMultiple([
       { refName: 'ctgB', start: 0, end: 5000 },
       { refName: 'ctgC', start: 0, end: 5000 },
     ]),
-  ).toThrow('End of region ctgB:1..5000 should be 10000, but it is not')
+  ).toThrow('End of region ctgB:1..5,000 should be 10,000, but it is not')
 
   expect(() =>
     model.navToMultiple([
@@ -272,7 +272,7 @@ test('can navToMultiple', () => {
       { refName: 'ctgA', start: 0, end: 5000 },
     ]),
   ).toThrow(
-    'Entered location ctgA:1..5000 does not match with displayed regions',
+    'Entered location ctgA:1..5,000 does not match with displayed regions',
   )
 })
 

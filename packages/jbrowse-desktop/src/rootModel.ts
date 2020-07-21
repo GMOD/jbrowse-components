@@ -7,6 +7,7 @@ import { MenuOption } from '@gmod/jbrowse-core/ui'
 import AddIcon from '@material-ui/icons/Add'
 import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import JBrowseDesktop from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
 
@@ -100,6 +101,7 @@ export default function RootModel(pluginManager: PluginManager) {
       ] as Menu[],
       rpcManager: new RpcManager(
         pluginManager,
+        readConfObject(self.jbrowse.configuration, 'plugins'),
         self.jbrowse.configuration.rpc,
         {
           ElectronRpcDriver: { workerCreationChannel: 'createWindowWorker' },

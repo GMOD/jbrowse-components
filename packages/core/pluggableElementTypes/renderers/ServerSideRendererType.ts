@@ -94,7 +94,7 @@ export default class ServerSideRenderer extends RendererType {
       config: isStateTreeNode(args.config)
         ? getSnapshot(args.config)
         : args.config,
-      regions: [...args.regions],
+      regions: JSON.parse(JSON.stringify(args.regions)),
       filters: args.filters ? args.filters.toJSON().filters : [],
     }
   }
@@ -154,7 +154,6 @@ export default class ServerSideRenderer extends RendererType {
    */
   async renderInClient(rpcManager: { call: Function }, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
-
     const result = await rpcManager.call(
       args.sessionId,
       'CoreRender',

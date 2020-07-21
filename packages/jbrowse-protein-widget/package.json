@@ -1,0 +1,39 @@
+{
+  "name": "@gmod/jbrowse-protein-widget",
+  "version": "0.0.1-beta.15",
+  "description": "an embeddable protein viewer widget",
+  "main": "umd/jbrowse-protein-viewer.js",
+  "scripts": {
+    "build": "cross-env NODE_ENV=production webpack",
+    "start": "echo opening app in file:/// to demonstrate the simplicity of this setup. refresh when webpack --watch is done building && sleep 3 && open-cli umd.html && cross-env NODE_ENV=development webpack -w",
+    "test": "jest --config ../../jest.config.js --roots packages/jbrowse-protein-widget/",
+    "lint": "eslint src/"
+  },
+  "unpkg": "umd/jbrowse-protein-viewer.js",
+  "files": [
+    "umd"
+  ],
+  "author": "Robert Buels (rbuels@gmail.com)",
+  "license": "MIT",
+  "dependencies": {
+    "@gmod/gff": "^1.1.2",
+    "@gmod/jbrowse-core": "^0.0.1-beta.18",
+    "@gmod/jbrowse-plugin-config": "^0.0.1-beta.10",
+    "@gmod/jbrowse-plugin-filtering": "^0.0.1-beta.10",
+    "@gmod/jbrowse-plugin-legacy-jbrowse": "^0.0.1-beta.10",
+    "@gmod/jbrowse-plugin-linear-genome-view": "^0.0.1-beta.10",
+    "@gmod/jbrowse-plugin-lollipop": "^0.0.1-beta.10",
+    "@gmod/jbrowse-plugin-protein": "^0.0.1-beta.10",
+    "@gmod/jbrowse-plugin-svg": "^0.0.1-beta.10",
+    "@material-ui/core": "^4.9.5",
+    "mobx": "^5.10.1",
+    "mobx-react": "^6.0.3",
+    "mobx-state-tree": "3.14.1",
+    "prop-types": "^15.7.2",
+    "react": "^16.8.0",
+    "react-dom": "^16.8.0",
+    "rxjs": "^6.5.2",
+    "typeface-roboto": "^0.0.54"
+  },
+  "private": true
+}

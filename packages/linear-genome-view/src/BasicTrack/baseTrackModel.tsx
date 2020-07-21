@@ -79,7 +79,6 @@ const BaseTrack = types
   .volatile(() => ({
     ReactComponent: undefined as any,
     rendererTypeName: '',
-    ready: false,
     scrollTop: 0,
     error: '',
   }))
@@ -198,12 +197,15 @@ const BaseTrack = types
       return newHeight - oldHeight
     },
     setError(e: string) {
-      self.ready = true
       self.error = e
     },
 
     setScrollTop(scrollTop: number) {
       self.scrollTop = scrollTop
+    },
+
+    reload() {
+      // base reload does nothing, see specialized tracks for details
     },
   }))
 
