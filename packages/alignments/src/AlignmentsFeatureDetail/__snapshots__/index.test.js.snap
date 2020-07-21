@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`open up a drawer widget 1`] = `
+exports[`open up a widget 1`] = `
 <div
   class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
   data-testid="alignment-side-drawer"

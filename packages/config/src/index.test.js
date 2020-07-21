@@ -20,12 +20,12 @@ describe('Config editing', () => {
     )
   })
 
-  it('adds config editor drawer widget', () => {
-    const ConfigurationEditorDrawerWidget = pluginManager.getDrawerWidgetType(
-      'ConfigurationEditorDrawerWidget',
+  it('adds config editor widget', () => {
+    const ConfigurationEditorWidget = pluginManager.getWidgetType(
+      'ConfigurationEditorWidget',
     )
-    const config = ConfigurationEditorDrawerWidget.configSchema.create({
-      type: 'ConfigurationEditorDrawerWidget',
+    const config = ConfigurationEditorWidget.configSchema.create({
+      type: 'ConfigurationEditorWidget',
     })
     expect(getSnapshot(config)).toMatchSnapshot()
   })

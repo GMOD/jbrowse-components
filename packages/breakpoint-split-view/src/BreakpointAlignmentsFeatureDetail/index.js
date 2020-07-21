@@ -2,12 +2,12 @@ import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 import { types } from 'mobx-state-tree'
 
-const configSchema = ConfigurationSchema('BreakpointAlignmentsDrawerWidget', {})
+const configSchema = ConfigurationSchema('BreakpointAlignmentsWidget', {})
 
 const stateModel = types
-  .model('BreakpointAlignmentsDrawerWidget', {
+  .model('BreakpointAlignmentsWidget', {
     id: ElementId,
-    type: types.literal('BreakpointAlignmentsDrawerWidget'),
+    type: types.literal('BreakpointAlignmentsWidget'),
     featureData: types.frozen({}),
   })
   .actions(self => ({

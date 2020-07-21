@@ -189,10 +189,10 @@
           ]
         }
       ],
-      "drawerWidgets": {
+      "widgets": {
         "hierarchicalTrackSelector": {
           "id": "hierarchicalTrackSelector",
-          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "type": "HierarchicalTrackSelectorWidget",
           "collapsed": {},
           "filterText": ""
         },
@@ -201,7 +201,7 @@
           "type": "SessionManager"
         }
       },
-      "activeDrawerWidgets": {},
+      "activeWidgets": {},
       "connections": {}
     }
   ]

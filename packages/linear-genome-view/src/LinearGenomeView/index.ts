@@ -15,7 +15,7 @@ import {
   isViewContainer,
   parseLocString,
   springAnimate,
-  isSessionModelWithDrawerWidgets,
+  isSessionModelWithWidgets,
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
@@ -453,13 +453,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
-          if (isSessionModelWithDrawerWidgets(session)) {
-            const selector = session.addDrawerWidget(
-              'HierarchicalTrackSelectorDrawerWidget',
+          if (isSessionModelWithWidgets(session)) {
+            const selector = session.addWidget(
+              'HierarchicalTrackSelectorWidget',
               'hierarchicalTrackSelector',
               { view: self },
             )
-            session.showDrawerWidget(selector)
+            session.showWidget(selector)
             return selector
           }
         }
@@ -889,12 +889,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
               onClick: self.activateTrackSelector,
               icon: LineStyleIcon,
               disabled:
-                isSessionModelWithDrawerWidgets(session) &&
-                session.visibleDrawerWidget &&
-                session.visibleDrawerWidget.id ===
-                  'hierarchicalTrackSelector' &&
+                isSessionModelWithWidgets(session) &&
+                session.visibleWidget &&
+                session.visibleWidget.id === 'hierarchicalTrackSelector' &&
                 // @ts-ignore
-                session.visibleDrawerWidget.view.id === self.id,
+                session.visibleWidget.view.id === self.id,
             },
             {
               label: 'Horizontally flip',

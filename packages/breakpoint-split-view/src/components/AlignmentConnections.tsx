@@ -99,8 +99,8 @@ export default (pluginManager: any) => {
                   data-testid="r1"
                   strokeWidth={mouseoverElt === id ? 5 : 1}
                   onClick={() => {
-                    const featureWidget = session.addDrawerWidget(
-                      'BreakpointAlignmentsDrawerWidget',
+                    const featureWidget = session.addWidget(
+                      'BreakpointAlignmentsWidget',
                       'breakpointAlignments',
                       {
                         featureData: {
@@ -113,7 +113,7 @@ export default (pluginManager: any) => {
                         },
                       },
                     )
-                    session.showDrawerWidget(featureWidget)
+                    session.showWidget(featureWidget)
                   }}
                   onMouseOver={() => setMouseoverElt(id)}
                   onMouseOut={() => setMouseoverElt(undefined)}

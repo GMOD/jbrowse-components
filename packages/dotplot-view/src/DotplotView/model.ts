@@ -18,7 +18,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
   const { ElementId } = lib['@gmod/jbrowse-core/util/types/mst']
   const Base1DView = lib['@gmod/jbrowse-core/util/Base1DViewModel']
   const { readConfObject } = lib['@gmod/jbrowse-core/configuration']
-  const { getSession, minmax, isSessionModelWithDrawerWidgets } = lib[
+  const { getSession, minmax, isSessionModelWithWidgets } = lib[
     '@gmod/jbrowse-core/util'
   ]
 
@@ -185,12 +185,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         if (self.trackSelectorType === 'hierarchical') {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const session: any = getSession(self)
-          const selector = session.addDrawerWidget(
-            'HierarchicalTrackSelectorDrawerWidget',
+          const selector = session.addWidget(
+            'HierarchicalTrackSelectorWidget',
             'hierarchicalTrackSelector',
             { view: self },
           )
-          session.showDrawerWidget(selector)
+          session.showWidget(selector)
           return selector
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
@@ -309,19 +309,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       get menuOptions() {
         const session = getSession(self)
-        if (isSessionModelWithDrawerWidgets(session)) {
+        if (isSessionModelWithWidgets(session)) {
           return [
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
               disabled:
-                session.visibleDrawerWidget &&
-                session.visibleDrawerWidget.id ===
-                  'hierarchicalTrackSelector' &&
+                session.visibleWidget &&
+                session.visibleWidget.id === 'hierarchicalTrackSelector' &&
                 // @ts-ignore
-                session.visibleDrawerWidget.view &&
+                session.visibleWidget.view &&
                 // @ts-ignore
-                session.visibleDrawerWidget.view.id === self.id,
+                session.visibleWidget.view.id === self.id,
             },
           ]
         }

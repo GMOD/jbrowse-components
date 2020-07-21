@@ -1,16 +1,16 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import ViewType from '@gmod/jbrowse-core/pluggableElementTypes/ViewType'
-import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
+import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 import { lazy } from 'react'
 
 import {
-  configSchema as baseFeatureDrawerWidgetConfigSchema,
-  ReactComponent as baseFeatureDrawerWidgetReactComponent,
-  stateModel as baseFeatureDrawerWidgetStateModel,
-} from '@gmod/jbrowse-core/BaseFeatureDrawerWidget'
+  configSchema as baseFeatureWidgetConfigSchema,
+  ReactComponent as baseFeatureWidgetReactComponent,
+  stateModel as baseFeatureWidgetStateModel,
+} from '@gmod/jbrowse-core/BaseFeatureWidget'
 import {
   AbstractViewContainer,
   isAbstractMenuManager,
@@ -73,15 +73,15 @@ export default class LinearGenomeViewPlugin extends Plugin {
           ReactComponent: LinearGenomeViewReactComponent,
         }),
     )
-    pluginManager.addDrawerWidgetType(
+    pluginManager.addWidgetType(
       () =>
-        new DrawerWidgetType({
-          name: 'BaseFeatureDrawerWidget',
+        new WidgetType({
+          name: 'BaseFeatureWidget',
           heading: 'Feature Details',
-          configSchema: baseFeatureDrawerWidgetConfigSchema,
-          stateModel: baseFeatureDrawerWidgetStateModel,
+          configSchema: baseFeatureWidgetConfigSchema,
+          stateModel: baseFeatureWidgetStateModel,
           LazyReactComponent: lazy(async () => {
-            return { default: await baseFeatureDrawerWidgetReactComponent }
+            return { default: await baseFeatureWidgetReactComponent }
           }),
         }),
     )

@@ -51,7 +51,7 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
 })
 
-test('test usage of cramSlightlyLazyFeature toJSON (used in the drawer widget)', async () => {
+test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async () => {
   const adapter = new Adapter(
     configSchema.create({
       cramLocation: {
