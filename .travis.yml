@@ -24,9 +24,9 @@ after_success:
 - bash <(curl -s https://codecov.io/bash)
 # build release
 - if [[ "$TRAVIS_TAG"  =~ ^@gmod/jbrowse-web ]]; then
-     (cd packages/jbrowse-web/build; zip -r "../../../jbrowse-web-${TRAVIS_TAG//[!0-9.]/}.zip" .);
+     (cd packages/jbrowse-web/build; zip -r "jbrowse-web-${TRAVIS_TAG//[!0-9.]/}.zip" .);
   else
-     (cd packages/jbrowse-web/build; zip -r "../../../jbrowse-web-${TRAVIS_BRANCH}.zip" .);
+     (cd packages/jbrowse-web/build; zip -r "jbrowse-web-${TRAVIS_BRANCH}.zip" .);
   fi;
 # copy config, used for having a default config in our online demos
 - cp ${TRAVIS_BUILD_DIR}/packages/jbrowse-web/build/test_data/config.json ${TRAVIS_BUILD_DIR}/packages/jbrowse-web/build/config.json
@@ -43,7 +43,7 @@ deploy:
     all_branches: true
 - provider: releases
   api_key: $GITHUB_TOKEN
-  file: jbrowse-web-*.zip
+  file: packages/jbrowse-web/build/jbrowse-web-*.zip
   file_glob: true
   skip_cleanup: true
   on:
