@@ -83,36 +83,33 @@ export default class Create extends Command {
 
     const locationUrl = url || (await this.getTagOrLatest(tag))
 
-    let response
-    try {
-      response = await fetch(locationUrl, {
-        method: 'GET',
-      })
-    } catch (error) {
-      this.error(error)
+    const response = await fetch(locationUrl)
+    if (!response.ok) {
+      this.error(`Failed to fetch: ${response.statusText}`, { exit: 50 })
     }
-    if (!response.ok)
-      this.error(`Failed to fetch JBrowse2 from server`, { exit: 50 })
 
+    const type = response.headers.get('content-type')
     if (
       url &&
-      response.headers.get('content-type') !== 'application/zip' &&
-      response.headers.get('content-type') !== 'application/octet-stream'
-    )
+      type !== 'application/zip' &&
+      type !== 'application/octet-stream'
+    ) {
       this.error(
         'The URL provided does not seem to be a JBrowse installation URL',
       )
+    }
 
-    response.body
-      .pipe(unzip.Extract({ path: argsPath }))
-      .on('error', err => {
-        this.error(
-          `Failed to download JBrowse 2 with ${err}. Please try again later`,
-        )
-      })
-      .on('close', () => {
-        this.log(`Your JBrowse 2 setup has been created at ${argsPath}`)
-      })
+    return new Promise((resolve, reject) => {
+      response.body
+        .pipe(unzip.Extract({ path: argsPath }))
+        .on('error', err => {
+          reject(err)
+        })
+        .on('close', () => {
+          this.log(`Your JBrowse 2 setup has been upgraded`)
+          resolve()
+        })
+    })
   }
 
   async checkPath(userPath: string) {
