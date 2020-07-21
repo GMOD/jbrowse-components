@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
@@ -137,8 +137,8 @@ const omit = [
 
 interface AttributeProps {
   attributes: Record<string, any>
-  omit: string[]
-  formatter: (val: unknown) => JSX.Element
+  omit?: string[]
+  formatter?: (val: unknown) => JSX.Element
 }
 
 const Attributes: FunctionComponent<AttributeProps> = props => {
@@ -212,7 +212,9 @@ export const BaseAttributes = (props: BaseProps) => {
 }
 
 interface BaseInputProps extends BaseCardProps {
+  omit?: string[]
   model: any
+  formatter?: (val: unknown) => JSX.Element
 }
 
 export const BaseFeatureDetails = observer((props: BaseInputProps) => {

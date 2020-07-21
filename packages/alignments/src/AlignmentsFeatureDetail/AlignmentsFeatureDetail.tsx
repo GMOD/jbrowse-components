@@ -49,22 +49,23 @@ interface AlnInputProps extends AlnCardProps {
   model: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-function Formatter({ value }: { value: string }) {
+function Formatter({ value }: { value: unknown }) {
   const [show, setShow] = useState(false)
-  if (String(value).length > 100) {
+  const display = String(value)
+  if (display.length > 100) {
     return (
       <>
-        <button type="button" onClick={() => copy(value)}>
+        <button type="button" onClick={() => copy(display)}>
           Copy
         </button>
         <button type="button" onClick={() => setShow(val => !val)}>
           {show ? 'Show less' : 'Show more'}
         </button>
-        <div>{show ? value : `${value.slice(0, 100)}...`}</div>
+        <div>{show ? display : `${display.slice(0, 100)}...`}</div>
       </>
     )
   }
-  return <div>{value}</div>
+  return <div>{display}</div>
 }
 
 const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
@@ -75,7 +76,7 @@ const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
       <BaseFeatureDetails
         {...props}
         omit={flags.concat(omit)}
-        formatter={(value: string) => <Formatter value={value} />}
+        formatter={(value: unknown) => <Formatter value={value} />}
       />
       <AlignmentFlags feature={feat} {...props} />
     </Paper>
