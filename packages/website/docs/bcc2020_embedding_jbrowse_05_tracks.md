@@ -50,88 +50,85 @@ and have it exported, like this:
 ```javascript title="tracks.js"
 export default [
   {
-    "type": "BasicTrack",
-    "trackId": "GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff",
-    "name": "NCBI RefSeq Genes",
-    "category": [
-      "Genes"
-    ],
-    "assemblyNames": [
-      "GRCh38"
-    ],
-    "adapter": {
-      "type": "Gff3TabixAdapter",
-      "gffGzLocation": {
-        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz"
+    type: 'BasicTrack',
+    trackId:
+      'GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff',
+    name: 'NCBI RefSeq Genes',
+    category: ['Genes'],
+    assemblyNames: ['GRCh38'],
+    adapter: {
+      type: 'Gff3TabixAdapter',
+      gffGzLocation: {
+        uri:
+          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
       },
-      "index": {
-        "location": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi"
+      index: {
+        location: {
+          uri:
+            'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi',
         },
-        "indexType": "TBI"
-      }
+        indexType: 'TBI',
+      },
     },
-    "renderer": {
-      "type": "SvgFeatureRenderer"
-    }
+    renderer: {
+      type: 'SvgFeatureRenderer',
+    },
   },
   {
-    "type": "AlignmentsTrack",
-    "trackId": "NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome",
-    "name": "NA12878 Exome",
-    "category": [
-      "1000 Genomes",
-      "Alignments"
-    ],
-    "assemblyNames": [
-      "GRCh38"
-    ],
-    "adapter": {
-      "type": "CramAdapter",
-      "cramLocation": {
-        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram"
+    type: 'AlignmentsTrack',
+    trackId: 'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
+    name: 'NA12878 Exome',
+    category: ['1000 Genomes', 'Alignments'],
+    assemblyNames: ['GRCh38'],
+    adapter: {
+      type: 'CramAdapter',
+      cramLocation: {
+        uri:
+          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
       },
-      "craiLocation": {
-        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram.crai"
+      craiLocation: {
+        uri:
+          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram.crai',
       },
-      "sequenceAdapter": {
-        "type": "BgzipFastaAdapter",
-        "fastaLocation": {
-          "uri": "http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz"
+      sequenceAdapter: {
+        type: 'BgzipFastaAdapter',
+        fastaLocation: {
+          uri:
+            'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz',
         },
-        "faiLocation": {
-          "uri": "http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.fai"
+        faiLocation: {
+          uri:
+            'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.fai',
         },
-        "gziLocation": {
-          "uri": "http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.gzi"
-        }
-      }
-    }
+        gziLocation: {
+          uri:
+            'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.gzi',
+        },
+      },
+    },
   },
   {
-    "type": "VariantTrack",
-    "trackId": "ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf",
-    "name": "1000 Genomes Variant Calls",
-    "category": [
-      "1000 Genomes",
-      "Variants"
-    ],
-    "assemblyNames": [
-      "GRCh38"
-    ],
-    "adapter": {
-      "type": "VcfTabixAdapter",
-      "vcfGzLocation": {
-        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz"
+    type: 'VariantTrack',
+    trackId:
+      'ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf',
+    name: '1000 Genomes Variant Calls',
+    category: ['1000 Genomes', 'Variants'],
+    assemblyNames: ['GRCh38'],
+    adapter: {
+      type: 'VcfTabixAdapter',
+      vcfGzLocation: {
+        uri:
+          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz',
       },
-      "index": {
-        "location": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz.tbi"
+      index: {
+        location: {
+          uri:
+            'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz.tbi',
         },
-        "indexType": "TBI"
-      }
-    }
-  }
+        indexType: 'TBI',
+      },
+    },
+  },
 ]
 ```
 
@@ -139,19 +136,17 @@ Now update "index.html" to import this file.
 
 ```html {12} title="index.html"
 <html>
+  <head>
+    <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
+  </head>
 
-<head>
-  <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
-</head>
-
-<body>
-  <h1>We're using JBrowse Linear View!</h1>
-  <div id="jbrowse_linear_view"></div>
-  <script type="module">
-    import assembly from './assembly.js'
-    import tracks from './tracks.js'
-  </script>
-</body>
-
+  <body>
+    <h1>We're using JBrowse Linear View!</h1>
+    <div id="jbrowse_linear_view"></div>
+    <script type="module">
+      import assembly from './assembly.js'
+      import tracks from './tracks.js'
+    </script>
+  </body>
 </html>
 ```

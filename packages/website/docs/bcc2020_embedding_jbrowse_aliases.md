@@ -5,7 +5,7 @@ title: GRCh38 Reference Name Aliases
 
 This should be the content of your "GRCh38.aliases.txt" file.
 
-``` title="GRCh38.aliases.txt"
+```title="GRCh38.aliases.txt"
 1	CM000663.2	chr1	NC_000001.11
 10	CM000672.2	chr10	NC_000010.11
 11	CM000673.2	chr11	NC_000011.10

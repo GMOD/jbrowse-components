@@ -161,7 +161,8 @@ API like this
 
 ```sh
 curl 'https://api.genome.ucsc.edu/getData/track?genome=hg19;\
-track=geneHancerInteractionsDoubleElite;chrom=chr1;start=750000;end=505700000'|less
+track=geneHancerInteractionsDoubleElite;chrom=chr1;start=750000;\
+end=505700000'|less
 ```
 
 Given that the functionality of rendering arcs is so distinct from UCSC API
