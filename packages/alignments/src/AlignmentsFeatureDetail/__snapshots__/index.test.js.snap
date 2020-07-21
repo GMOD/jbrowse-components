@@ -392,6 +392,7 @@ exports[`open up a drawer widget 1`] = `
               <div>
                 <input
                   id="read paired_0"
+                  readonly=""
                   type="checkbox"
                 />
                 <label
@@ -403,6 +404,7 @@ exports[`open up a drawer widget 1`] = `
               <div>
                 <input
                   id="read mapped in proper pair_0"
+                  readonly=""
                   type="checkbox"
                 />
                 <label
@@ -414,6 +416,7 @@ exports[`open up a drawer widget 1`] = `
               <div>
                 <input
                   id="read unmapped_0"
+                  readonly=""
                   type="checkbox"
                 />
                 <label
@@ -425,6 +428,7 @@ exports[`open up a drawer widget 1`] = `
               <div>
                 <input
                   id="mate unmapped_0"
+                  readonly=""
                   type="checkbox"
                 />
                 <label
@@ -436,6 +440,7 @@ exports[`open up a drawer widget 1`] = `
               <div>
                 <input
                   id="read reverse strand_0"
+                  readonly=""
                   type="checkbox"
                 />
                 <label
@@ -447,6 +452,7 @@ exports[`open up a drawer widget 1`] = `
               <div>
                 <input
                   id="mate reverse strand_0"
+                  readonly=""
                   type="checkbox"
                 />
                 <label
@@ -458,6 +464,7 @@ exports[`open up a drawer widget 1`] = `
               <div>
                 <input
                   id="first in pair_0"
+                  readonly=""
                   type="checkbox"
                 />
                 <label
@@ -469,6 +476,7 @@ exports[`open up a drawer widget 1`] = `
               <div>
                 <input
                   id="second in pair_0"
+                  readonly=""
                   type="checkbox"
                 />
                 <label
@@ -480,6 +488,7 @@ exports[`open up a drawer widget 1`] = `
               <div>
                 <input
                   id="not primary alignment_0"
+                  readonly=""
                   type="checkbox"
                 />
                 <label
@@ -491,6 +500,7 @@ exports[`open up a drawer widget 1`] = `
               <div>
                 <input
                   id="read fails platform/vendor quality checks_0"
+                  readonly=""
                   type="checkbox"
                 />
                 <label
@@ -502,6 +512,7 @@ exports[`open up a drawer widget 1`] = `
               <div>
                 <input
                   id="read is PCR or optical duplicate_0"
+                  readonly=""
                   type="checkbox"
                 />
                 <label
@@ -513,6 +524,7 @@ exports[`open up a drawer widget 1`] = `
               <div>
                 <input
                   id="supplementary alignment_0"
+                  readonly=""
                   type="checkbox"
                 />
                 <label

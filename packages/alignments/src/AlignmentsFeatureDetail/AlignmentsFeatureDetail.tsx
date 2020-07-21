@@ -56,7 +56,7 @@ const AlignmentFlags: FunctionComponent<AlnProps> = props => {
         const val = flags & (1 << index)
         const key = `${name}_${val}`
         return (
-          <div>
+          <div key={key}>
             <input type="checkbox" checked={Boolean(val)} id={key} readOnly />
             <label htmlFor={key}>{name}</label>
           </div>
