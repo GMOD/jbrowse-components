@@ -1,7 +1,5 @@
 import { Command, flags } from '@oclif/command'
-import * as fs from 'fs'
 import { promises as fsPromises } from 'fs'
-import * as path from 'path'
 import fetch from 'node-fetch'
 import * as unzip from 'unzipper'
 
@@ -108,7 +106,6 @@ export default class Create extends Command {
     response.body
       .pipe(unzip.Extract({ path: argsPath }))
       .on('error', err => {
-        fs.unlink(argsPath, () => {})
         this.error(
           `Failed to download JBrowse 2 with ${err}. Please try again later`,
         )
