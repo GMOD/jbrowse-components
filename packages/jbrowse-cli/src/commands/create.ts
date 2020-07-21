@@ -1,5 +1,7 @@
 import { Command, flags } from '@oclif/command'
+import * as fs from 'fs'
 import { promises as fsPromises } from 'fs'
+import * as path from 'path'
 import fetch from 'node-fetch'
 import * as unzip from 'unzipper'
 
@@ -99,17 +101,7 @@ export default class Create extends Command {
       )
     }
 
-    return new Promise((resolve, reject) => {
-      response.body
-        .pipe(unzip.Extract({ path: argsPath }))
-        .on('error', err => {
-          reject(err)
-        })
-        .on('close', () => {
-          this.log(`Your JBrowse 2 setup has been upgraded`)
-          resolve()
-        })
-    })
+    return response.body.pipe(unzip.Extract({ path: argsPath })).promise()
   }
 
   async checkPath(userPath: string) {
