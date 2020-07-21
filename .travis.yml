@@ -31,7 +31,7 @@ after_success:
 # copy config, used for having a default config in our online demos
 - cp ${TRAVIS_BUILD_DIR}/packages/jbrowse-web/build/test_data/config.json ${TRAVIS_BUILD_DIR}/packages/jbrowse-web/build/config.json
 deploy:
-  provider: s3
+- provider: s3
   skip_cleanup: true
   access_key_id: $AWS_ACCESS_KEY
   secret_access_key: $AWS_SECRET
@@ -41,8 +41,6 @@ deploy:
   on:
     repo: GMOD/jbrowse-components
     all_branches: true
-deploy:
-# upload both minified and non-minified builds to GitHub releases
 - provider: releases
   api_key: $GITHUB_TOKEN
   file: jbrowse-web-*.zip
