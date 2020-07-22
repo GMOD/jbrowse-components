@@ -20,4 +20,4 @@ const stateModel = types
   }))
 
 export { configSchema, stateModel }
-export const ReactComponent = import('./AlignmentsFeatureDetail')
+export { default as ReactComponent } from './AlignmentsFeatureDetail'

@@ -9,4 +9,4 @@ export const stateModel = types.model('ImportConfigurationWidget', {
   type: types.literal('ImportConfigurationWidget'),
 })
 
-export const ReactComponent = import('./components/ImportConfigurationWidget')
+export { default as ReactComponent } from './components/ImportConfigurationWidget'

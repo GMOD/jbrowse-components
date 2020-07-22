@@ -2,7 +2,6 @@ import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { lazy } from 'react'
 import {
   configSchema as ConfigurationEditorConfigSchema,
   HeadingComponent as ConfigurationEditorHeadingComponent,
@@ -55,7 +54,7 @@ export default class extends Plugin {
         HeadingComponent: ConfigurationEditorHeadingComponent,
         configSchema: ConfigurationEditorConfigSchema,
         stateModel: ConfigurationEditorStateModelFactory(pluginManager),
-        LazyReactComponent: lazy(() => ConfigurationEditorReactComponent),
+        ReactComponent: ConfigurationEditorReactComponent,
       })
     })
   }

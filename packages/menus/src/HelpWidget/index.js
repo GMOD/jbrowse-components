@@ -9,4 +9,4 @@ export const stateModel = types.model('HelpWidget', {
   type: types.literal('HelpWidget'),
 })
 
-export const ReactComponent = import('./components/HelpWidget')
+export { default as ReactComponent } from './components/HelpWidget'

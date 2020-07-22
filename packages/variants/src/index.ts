@@ -2,7 +2,6 @@ import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
-import { lazy } from 'react'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
   AdapterClass as VcfTabixAdapterClass,
@@ -48,7 +47,7 @@ export default class VariantsPlugin extends Plugin {
           heading: 'Feature Details',
           configSchema: variantFeatureWidgetConfigSchema,
           stateModel: variantFeatureWidgetStateModel,
-          LazyReactComponent: lazy(() => VariantFeatureWidgetReactComponent),
+          ReactComponent: VariantFeatureWidgetReactComponent,
         }),
     )
   }

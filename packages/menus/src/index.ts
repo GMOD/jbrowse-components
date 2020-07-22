@@ -1,7 +1,6 @@
 import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { lazy } from 'react'
 import {
   AbstractSessionModel,
   SessionWithWidgets,
@@ -42,7 +41,7 @@ export default class extends Plugin {
         heading: 'About',
         configSchema: aboutConfigSchema,
         stateModel: aboutStateModel,
-        LazyReactComponent: lazy(() => AboutReactComponent),
+        ReactComponent: AboutReactComponent,
       })
     })
 
@@ -52,7 +51,7 @@ export default class extends Plugin {
         heading: 'Help',
         configSchema: helpConfigSchema,
         stateModel: helpStateModel,
-        LazyReactComponent: lazy(() => HelpReactComponent),
+        ReactComponent: HelpReactComponent,
       })
     })
 
@@ -62,7 +61,7 @@ export default class extends Plugin {
         heading: 'Import Configuration',
         configSchema: importConfigurationConfigSchema,
         stateModel: importConfigurationStateModel,
-        LazyReactComponent: lazy(() => ImportConfigurationReactComponent),
+        ReactComponent: ImportConfigurationReactComponent,
       })
     })
 
@@ -72,7 +71,7 @@ export default class extends Plugin {
         heading: 'Sessions',
         configSchema: sessionManagerConfigSchema,
         stateModel: sessionManagerStateModel,
-        LazyReactComponent: lazy(() => SessionManagerReactComponent),
+        ReactComponent: SessionManagerReactComponent,
       })
     })
   }

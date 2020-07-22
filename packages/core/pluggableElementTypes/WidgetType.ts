@@ -10,7 +10,7 @@ export default class WidgetType extends PluggableElementBase {
 
   HeadingComponent?: ComponentType
 
-  LazyReactComponent: unknown
+  ReactComponent: unknown
 
   stateModel: IAnyModelType
 
@@ -20,16 +20,16 @@ export default class WidgetType extends PluggableElementBase {
     HeadingComponent?: ComponentType
     configSchema: AnyConfigurationSchemaType
     stateModel: IAnyModelType
-    LazyReactComponent: unknown
+    ReactComponent: unknown
   }) {
     super(stuff)
     this.heading = stuff.heading
     this.HeadingComponent = stuff.HeadingComponent
     this.configSchema = stuff.configSchema
     this.stateModel = stuff.stateModel
-    this.LazyReactComponent = stuff.LazyReactComponent
-    if (!this.LazyReactComponent) {
-      throw new Error(`no LazyReactComponent defined for widget ${this.name}`)
+    this.ReactComponent = stuff.ReactComponent
+    if (!this.ReactComponent) {
+      throw new Error(`no ReactComponent defined for widget ${this.name}`)
     }
     if (!this.stateModel) {
       throw new Error(`no stateModel defined for widget ${this.name}`)

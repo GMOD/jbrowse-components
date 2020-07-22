@@ -18,4 +18,4 @@ export const stateModel = types
     },
   }))
 
-export const ReactComponent = import('./VariantFeatureWidget')
+export { default as ReactComponent } from './VariantFeatureWidget'
