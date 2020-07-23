@@ -32,6 +32,7 @@ It is likely preferable in most cases to install the tools first however
 <!-- commands -->
 
 - [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
+- [`jbrowse add-connection ASSEMBLYNAME [DATADIRECTORY] [LOCATION]`](#jbrowse-add-connection-assemblyname-datadirectory-location)
 - [`jbrowse add-track DATADIRECTORY [LOCATION]`](#jbrowse-add-track-datadirectory-location)
 - [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
@@ -124,6 +125,25 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.chrom.sizes --load trust
   $ jbrowse add-assembly GRCh38.config.json --load copy
   $ jbrowse add-assembly https://example.com/data/sample.2bit
+```
+
+## `jbrowse add-connection ASSEMBLYNAME [DATADIRECTORY] [LOCATION]`
+
+Add a connection to a JBrowse 2 configuration
+
+```
+USAGE
+  $ jbrowse add-connection ASSEMBLYNAME [DATADIRECTORY] [LOCATION]
+
+ARGUMENTS
+  ASSEMBLYNAME   Assembly name of the configuration to add to'
+  DATADIRECTORY  Data directory URL
+  LOCATION       [default: .] Location of JBrowse installation. Defaults to .
+
+OPTIONS
+  -c, --config=config  Any extra config settings to add to connection as JSON object format
+  -n, --name=name      Name of the connection. Will be guessed on default
+  -t, --type=type      [default: custom] type of connection, ex. JBrowse 1 or UCSCTrackHub
 ```
 
 ## `jbrowse add-track DATADIRECTORY [LOCATION]`
