@@ -141,9 +141,15 @@ ARGUMENTS
   LOCATION       [default: .] Location of JBrowse installation. Defaults to .
 
 OPTIONS
-  -c, --config=config  Any extra config settings to add to connection as JSON object format
-  -n, --name=name      Name of the connection. Will be guessed on default
-  -t, --type=type      [default: custom] type of connection, ex. JBrowse 1 or UCSCTrackHub
+  -c, --config=config              Any extra config settings to add to connection as JSON object format
+  -d, --description=description    Optional description of the connection
+  -n, --name=name                  Name of the connection. Will be guessed on default
+  -t, --type=type                  [default: custom] type of connection, ex. JBrowse 1 or UCSCTrackHub
+
+  --configLocation=configLocation  Write to a certain config.json file. Defaults to location/config.json if not
+                                   specified
+
+  --displayName=displayName        Optional display name of the connection. Will default to name
 ```
 
 ## `jbrowse add-track DATADIRECTORY [LOCATION]`

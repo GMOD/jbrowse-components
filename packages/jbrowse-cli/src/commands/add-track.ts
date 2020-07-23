@@ -168,7 +168,7 @@ export default class AddTrack extends Command {
       this.error('No assemblies found. Please add one before adding tracks', {
         exit: 100,
       })
-    } else if (configContents.assemblies.length > 1) {
+    } else if (configContents.assemblies.length > 1 && !assemblyNames) {
       this.error(
         'Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
       )
