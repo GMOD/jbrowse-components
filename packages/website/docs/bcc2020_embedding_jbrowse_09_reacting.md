@@ -17,59 +17,58 @@ Make the following changes to "index.html":
 
 ```html {19,25-27,51-52} title="index.html"
 <html>
+  <head>
+    <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
+  </head>
 
-<head>
-  <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
-</head>
+  <body>
+    <h1>We're using JBrowse Linear View!</h1>
+    <button data-type="gene_button" data-location="10:94762681..94855547">
+      CYP2C19
+    </button>
+    <button data-type="gene_button" data-location="13:32315086..32400266">
+      BRCA2
+    </button>
+    <div id="jbrowse_linear_view"></div>
+    <script type="module">
+      import assembly from './assembly.js'
+      import tracks from './tracks.js'
+      const updates = document.getElementById('update')
+      const genomeView = new JBrowseLinearView({
+        container: document.getElementById('jbrowse_linear_view'),
+        assembly,
+        tracks,
+        location: '1:100,987,269..100,987,368',
+        onChange: patch => {
+          updates.innerHTML += JSON.stringify(patch) + '\n'
+        },
+      })
 
-<body>
-  <h1>We're using JBrowse Linear View!</h1>
-  <button data-type="gene_button" data-location="10:94762681..94855547">
-    CYP2C19
-  </button>
-  <button data-type="gene_button" data-location="13:32315086..32400266">
-    BRCA2
-  </button>
-  <div id="jbrowse_linear_view"></div>
-  <script type="module">
-    import assembly from './assembly.js'
-    import tracks from './tracks.js'
-    const updates = document.getElementById('update')
-    const genomeView = new JBrowseLinearView({
-      container: document.getElementById('jbrowse_linear_view'),
-      assembly,
-      tracks,
-      location: '1:100,987,269..100,987,368',
-      onChange: patch => {
-        updates.innerHTML += JSON.stringify(patch) + '\n'
-      },
-    })
-
-    function navTo(event) {
-      genomeView.view.navToLocString(event.target.dataset.location)
-    }
-    const buttons = document.getElementsByTagName('button')
-    for (const button of buttons) {
-      if (button.dataset.type === 'gene_button') {
-        button.addEventListener('click', navTo)
+      function navTo(event) {
+        genomeView.view.navToLocString(event.target.dataset.location)
       }
-    }
-    const textArea = document.getElementById('viewstate')
-    document
-      .getElementById('showviewstate')
-      .addEventListener(
-        'click',
-        () => {
-          textArea.innerHTML = JSON.stringify(genomeView.view, undefined, 2)
+      const buttons = document.getElementsByTagName('button')
+      for (const button of buttons) {
+        if (button.dataset.type === 'gene_button') {
+          button.addEventListener('click', navTo)
         }
-      )
-  </script>
-  <button id="showviewstate">Show view state</button>
-  <textarea id="viewstate" name="viewstate" rows="20" cols="80"></textarea>
-  <p>updates:</p>
-  <textarea id="update" name="update" rows="5" cols="80" wrap="off"></textarea>
-</body>
-
+      }
+      const textArea = document.getElementById('viewstate')
+      document.getElementById('showviewstate').addEventListener('click', () => {
+        textArea.innerHTML = JSON.stringify(genomeView.view, undefined, 2)
+      })
+    </script>
+    <button id="showviewstate">Show view state</button>
+    <textarea id="viewstate" name="viewstate" rows="20" cols="80"></textarea>
+    <p>updates:</p>
+    <textarea
+      id="update"
+      name="update"
+      rows="5"
+      cols="80"
+      wrap="off"
+    ></textarea>
+  </body>
 </html>
 ```
 

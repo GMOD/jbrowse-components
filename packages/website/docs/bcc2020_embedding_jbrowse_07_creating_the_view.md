@@ -9,26 +9,24 @@ We're now ready to add the JBrowse Linear View constructor to "index.html".
 
 ```html {13-18} title="index.html"
 <html>
+  <head>
+    <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
+  </head>
 
-<head>
-  <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
-</head>
-
-<body>
-  <h1>We're using JBrowse Linear View!</h1>
-  <div id="jbrowse_linear_view"></div>
-  <script type="module">
-    import assembly from './assembly.js'
-    import tracks from './tracks.js'
-    const genomeView = new JBrowseLinearView({
-      container: document.getElementById('jbrowse_linear_view'),
-      assembly,
-      tracks,
-      location: '1:100,987,269..100,987,368',
-    })
-  </script>
-</body>
-
+  <body>
+    <h1>We're using JBrowse Linear View!</h1>
+    <div id="jbrowse_linear_view"></div>
+    <script type="module">
+      import assembly from './assembly.js'
+      import tracks from './tracks.js'
+      const genomeView = new JBrowseLinearView({
+        container: document.getElementById('jbrowse_linear_view'),
+        assembly,
+        tracks,
+        location: '1:100,987,269..100,987,368',
+      })
+    </script>
+  </body>
 </html>
 ```
 
@@ -52,42 +50,40 @@ Modify "index.html" so that it looks like the following:
 
 ```html {9-14,25-34} title="index.html"
 <html>
+  <head>
+    <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
+  </head>
 
-<head>
-  <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
-</head>
+  <body>
+    <h1>We're using JBrowse Linear View!</h1>
+    <button data-type="gene_button" data-location="10:94762681..94855547">
+      CYP2C19
+    </button>
+    <button data-type="gene_button" data-location="13:32315086..32400266">
+      BRCA2
+    </button>
+    <div id="jbrowse_linear_view"></div>
+    <script type="module">
+      import assembly from './assembly.js'
+      import tracks from './tracks.js'
+      const genomeView = new JBrowseLinearView({
+        container: document.getElementById('jbrowse_linear_view'),
+        assembly,
+        tracks,
+        location: '1:100,987,269..100,987,368',
+      })
 
-<body>
-  <h1>We're using JBrowse Linear View!</h1>
-  <button data-type="gene_button" data-location="10:94762681..94855547">
-    CYP2C19
-  </button>
-  <button data-type="gene_button" data-location="13:32315086..32400266">
-    BRCA2
-  </button>
-  <div id="jbrowse_linear_view"></div>
-  <script type="module">
-    import assembly from './assembly.js'
-    import tracks from './tracks.js'
-    const genomeView = new JBrowseLinearView({
-      container: document.getElementById('jbrowse_linear_view'),
-      assembly,
-      tracks,
-      location: '1:100,987,269..100,987,368',
-    })
-
-    function navTo(event) {
-      genomeView.view.navToLocString(event.target.dataset.location)
-    }
-    const buttons = document.getElementsByTagName('button')
-    for (const button of buttons) {
-      if (button.dataset.type === 'gene_button') {
-        button.addEventListener('click', navTo)
+      function navTo(event) {
+        genomeView.view.navToLocString(event.target.dataset.location)
       }
-    }
-  </script>
-</body>
-
+      const buttons = document.getElementsByTagName('button')
+      for (const button of buttons) {
+        if (button.dataset.type === 'gene_button') {
+          button.addEventListener('click', navTo)
+        }
+      }
+    </script>
+  </body>
 </html>
 ```
 

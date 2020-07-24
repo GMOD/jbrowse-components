@@ -26,6 +26,10 @@ types via our plugin system. For example, we have already developed
 This makes JBrowse 2 more than just a genome browser-- it is really a platform
 that can be built on.
 
+#### Can the linear genome view be reverse complemented?
+
+Yes! See [here](user navigation)
+
 ### Setup
 
 #### How can I start the JBrowse 2 app as a developer

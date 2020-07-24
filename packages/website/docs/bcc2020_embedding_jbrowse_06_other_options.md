@@ -12,10 +12,10 @@ This is the location you would like the view to be in when it opens. For
 example, if you wanted to have the view open to chromosome 1 from position
 100,987,269 to position 100,987,368, you could specify it in one of these ways:
 
-* `1:100987269..100987368`
-* `1:100987269-100987368`
-* `1:100,987,269..100,987,368`
-* `chr1:100987269..100987368` (if you have aliases set up)
+- `1:100987269..100987368`
+- `1:100987269-100987368`
+- `1:100,987,269..100,987,368`
+- `chr1:100987269..100987368` (if you have aliases set up)
 
 ## plugins
 

@@ -42,3 +42,10 @@ http://localhost:3000/?config=test_data%2Fconfig.json&session=eJx1klFP4zAQhP8K8n
 
 ![](/jb2/img/rubberband.png)
 Rubberband selection can be performed on both the region and overview scale bars
+
+#### Horizontally flip
+
+The view can be horizontally flipped, or reverse complemented, to make the
+coordinates go from right to left instead of left to right
+
+![](/jb2/img/horizontally_flip.png)

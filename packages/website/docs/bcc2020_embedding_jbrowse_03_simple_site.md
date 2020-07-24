@@ -19,11 +19,9 @@ Then paste the following into the file and save it:
 
 ```html title="index.html"
 <html>
-
-<body>
-  <h1>We're using JBrowse Linear View!</h1>
-</body>
-
+  <body>
+    <h1>We're using JBrowse Linear View!</h1>
+  </body>
 </html>
 ```
 
@@ -59,16 +57,14 @@ page.
 
 ```html {3-6,8} title="index.html"
 <html>
+  <head>
+    <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
+  </head>
 
-<head>
-  <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
-</head>
-
-<body>
-  <h1>We're using JBrowse Linear View!</h1>
-  <div id="jbrowse_linear_view"></div>
-</body>
-
+  <body>
+    <h1>We're using JBrowse Linear View!</h1>
+    <div id="jbrowse_linear_view"></div>
+  </body>
 </html>
 ```
 
