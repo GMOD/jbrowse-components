@@ -110,6 +110,9 @@ export default function sessionModelFactory(
       get assemblyManager() {
         return getParent(self).assemblyManager
       },
+      get version() {
+        return getParent(self).version
+      },
 
       get visibleDrawerWidget() {
         if (isAlive(self))

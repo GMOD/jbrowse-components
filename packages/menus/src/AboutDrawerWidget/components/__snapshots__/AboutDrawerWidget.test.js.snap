@@ -11,9 +11,7 @@ exports[`<AboutDrawerWidget /> renders 1`] = `
   </h4>
   <h6
     class="MuiTypography-root makeStyles-subtitle MuiTypography-h6 MuiTypography-alignCenter"
-  >
-    JBrowse 2.0.0-alpha.2
-  </h6>
+  />
   <p
     class="MuiTypography-root MuiTypography-body2 MuiTypography-alignCenter"
   >

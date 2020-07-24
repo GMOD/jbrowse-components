@@ -49,6 +49,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   duplicateCurrentSession(): void
   notify(message: string, level?: NotificationLevel): void
   assemblyManager: AssemblyManager
+  version: string
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
