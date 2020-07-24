@@ -13,7 +13,7 @@ script:
 - set -e
 # dev tools need to be built first cause they are written in TS but used in webpack configs
 - (cd packages/development-tools && NODE_ENV=development yarn build)
-- if [[ "x$TRAVIS_PULL_REQUEST_BRANCH" != "x" ]]; then yarn lint; fi;
+- if [[ "x$TRAVIS_PULL_REQUEST_BRANCH" == "x" ]]; then yarn lint; fi;
 - yarn checkprettier || true
 - yarn test-ci
 - yarn tsc --noEmit
