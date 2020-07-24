@@ -137,19 +137,25 @@ USAGE
 
 ARGUMENTS
   ASSEMBLYNAME   Assembly name of the configuration to add to'
-  DATADIRECTORY  Data directory URL
+  DATADIRECTORY  URL of the hub file (usually called hub.txt)
   LOCATION       [default: .] Location of JBrowse installation. Defaults to .
 
 OPTIONS
   -c, --config=config              Any extra config settings to add to connection as JSON object format
-  -d, --description=description    Optional description of the connection
-  -n, --name=name                  Name of the connection. Will be guessed on default
-  -t, --type=type                  [default: custom] type of connection, ex. JBrowse 1 or UCSCTrackHub
+  -f, --force                      Equivalent to `--skipCheck --overwrite`
+  -n, --name=name                  Name of the connection. Will be guessed bu default
+  -t, --type=type                  [default: custom] type of connection, ex. JBrowse1, UCSCTrackHub, custom
 
   --configLocation=configLocation  Write to a certain config.json file. Defaults to location/config.json if not
                                    specified
 
-  --displayName=displayName        Optional display name of the connection. Will default to name
+  --connectionId=connectionId      Id for the connection, by default is type-assemblyName-dateAdded, must be unique to
+                                   JBrowse
+
+  --overwrite                      Overwrites any existing tracks if same track id
+
+  --skipCheck                      Don't check whether or not the file or URL exists or if you are in a JBrowse
+                                   directory
 ```
 
 ## `jbrowse add-track DATADIRECTORY [LOCATION]`
