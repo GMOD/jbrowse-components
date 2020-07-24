@@ -7,9 +7,6 @@ import * as path from 'path'
 
 import { setup } from '../testUtil'
 
-interface Config {
-  assemblies: []
-}
 const fsPromises = fs.promises
 
 const defaultConfig = {

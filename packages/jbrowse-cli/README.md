@@ -32,7 +32,7 @@ It is likely preferable in most cases to install the tools first however
 <!-- commands -->
 
 - [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
-- [`jbrowse add-connection ASSEMBLYNAME [DATADIRECTORY] [LOCATION]`](#jbrowse-add-connection-assemblyname-datadirectory-location)
+- [`jbrowse add-connection ASSEMBLYNAME DATADIRECTORY [LOCATION]`](#jbrowse-add-connection-assemblyname-datadirectory-location)
 - [`jbrowse add-track TRACK [LOCATION]`](#jbrowse-add-track-track-location)
 - [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
@@ -127,24 +127,29 @@ EXAMPLES
   $ jbrowse add-assembly https://example.com/data/sample.2bit
 ```
 
-## `jbrowse add-connection ASSEMBLYNAME [DATADIRECTORY] [LOCATION]`
+## `jbrowse add-connection ASSEMBLYNAME DATADIRECTORY [LOCATION]`
 
 Add a connection to a JBrowse 2 configuration
 
 ```
 USAGE
-  $ jbrowse add-connection ASSEMBLYNAME [DATADIRECTORY] [LOCATION]
+  $ jbrowse add-connection ASSEMBLYNAME DATADIRECTORY [LOCATION]
 
 ARGUMENTS
   ASSEMBLYNAME   Assembly name of the configuration to add to'
-  DATADIRECTORY  URL of the hub file (usually called hub.txt)
+
+  DATADIRECTORY  URL of data directory
+                 For hub file, usually called hub.txt
+                 For JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/
+
   LOCATION       [default: .] Location of JBrowse installation. Defaults to .
 
 OPTIONS
   -c, --config=config              Any extra config settings to add to connection as JSON object format
   -f, --force                      Equivalent to `--skipCheck --overwrite`
+  -h, --help                       show CLI help
   -n, --name=name                  Name of the connection. Will be guessed bu default
-  -t, --type=type                  [default: custom] type of connection, ex. JBrowse1, UCSCTrackHub, custom
+  -t, --type=type                  type of connection, ex. JBrowse1Connection, UCSCTrackHubConnection, custom
 
   --configLocation=configLocation  Write to a certain config.json file. Defaults to location/config.json if not
                                    specified
@@ -156,6 +161,14 @@ OPTIONS
 
   --skipCheck                      Don't check whether or not the file or URL exists or if you are in a JBrowse
                                    directory
+
+EXAMPLES
+  $ jbrowse add-connection hg19 http://mysite.com/jbrowse/data/
+  $ jbrowse add-connection hg19 http://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection
+  $ jbrowse add-connection hg19 http://mysite.com/path/to/hub.txt
+  $ jbrowse add-connection hg19 http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection
+  $ jbrowse add-connection hg19 --type custom --config {config here}
+  $ jbrowse add-connection hg19 https://mysite.com/path/to/hub.txt --connectionId newId --name newName
 ```
 
 ## `jbrowse add-track TRACK [LOCATION]`

@@ -20,7 +20,14 @@ interface Config {
 export default class AddConnection extends Command {
   static description = 'Add a connection to a JBrowse 2 configuration'
 
-  static examples = []
+  static examples = [
+    '$ jbrowse add-connection hg19 http://mysite.com/jbrowse/data/',
+    '$ jbrowse add-connection hg19 http://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection',
+    '$ jbrowse add-connection hg19 http://mysite.com/path/to/hub.txt',
+    '$ jbrowse add-connection hg19 http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection',
+    '$ jbrowse add-connection hg19 --type custom --config {config here}',
+    '$ jbrowse add-connection hg19 https://mysite.com/path/to/hub.txt --connectionId newId --name newName',
+  ]
 
   static args = [
     {
@@ -31,8 +38,8 @@ export default class AddConnection extends Command {
     },
     {
       name: 'dataDirectory',
-      required: false,
-      description: `URL of the hub file (usually called hub.txt)`,
+      required: true,
+      description: `URL of data directory\nFor hub file, usually called hub.txt\nFor JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/ `,
     },
     {
       name: 'location',
@@ -45,8 +52,8 @@ export default class AddConnection extends Command {
   static flags = {
     type: flags.string({
       char: 't',
-      description: 'type of connection, ex. JBrowse1, UCSCTrackHub, custom',
-      default: 'custom',
+      description:
+        'type of connection, ex. JBrowse1Connection, UCSCTrackHubConnection, custom',
     }),
     config: flags.string({
       char: 'c',
@@ -65,6 +72,7 @@ export default class AddConnection extends Command {
       char: 'n',
       description: 'Name of the connection. Will be guessed bu default',
     }),
+    help: flags.help({ char: 'h' }),
     skipCheck: flags.boolean({
       description:
         "Don't check whether or not the file or URL exists or if you are in a JBrowse directory",
@@ -82,8 +90,8 @@ export default class AddConnection extends Command {
     const { args: runArgs, flags: runFlags } = this.parse(AddConnection)
     const { dataDirectory: argsPath } = runArgs as { dataDirectory: string }
     const { assemblyName } = runArgs
-    const { type, config, configLocation } = runFlags
-    let { name, connectionId } = runFlags
+    const { config, configLocation } = runFlags
+    let { type, name, connectionId } = runFlags
 
     const configPath =
       configLocation || path.join(runArgs.location, 'config.json')
@@ -97,27 +105,24 @@ export default class AddConnection extends Command {
       !(runFlags.skipCheck || runFlags.force),
     )
 
-    // set up the connection obj like above
-    // add it the the correct place
-
     let configContentsJson
     try {
       configContentsJson = await this.readJsonConfig(configPath)
       this.debug(`Found existing config file ${configPath}`)
     } catch (error) {
-      this.error('No existing config file found', { exit: 30 })
+      this.error('No existing config file found', { exit: 10 })
     }
     let configContents: Config
     try {
       configContents = { ...JSON.parse(configContentsJson) }
     } catch (error) {
-      this.error('Could not parse existing config file', { exit: 35 })
+      this.error('Could not parse existing config file', { exit: 20 })
     }
     if (!configContents.assemblies || !configContents.assemblies.length) {
       this.error(
         'No assemblies found. Please add one before adding connections',
         {
-          exit: 100,
+          exit: 30,
         },
       )
     }
@@ -127,9 +132,19 @@ export default class AddConnection extends Command {
         assemblies => assemblies.name === assemblyName,
       ) === -1
     )
-      this.error('Assembly name provided does not match any in config')
+      this.error(
+        `Assembly name provided does not match any in config. Valid assembly names are ${configContents.assemblies.map(
+          assembly => assembly.name,
+        )}`,
+        { exit: 40 },
+      )
     this.debug(`Assembly name(s) is :${assemblyName}`)
 
+    if (type) {
+      this.debug(`Type is ${type}`)
+    } else {
+      type = this.determineConnectionType(url)
+    }
     if (connectionId) {
       this.debug(`Connection Id is ${connectionId}`)
     } else connectionId = `${type}-${assemblyName}-${Date.now()}`
@@ -137,14 +152,6 @@ export default class AddConnection extends Command {
     if (name) {
       this.debug(`Name is: ${name}`)
     } else name = connectionId
-
-    // "type": "JBrowse1Connection",
-    // "connectionId": "COSMIC_connection_grch37",
-    // "name": "COSMIC (GRCh37)",
-    // "assemblyName": "hg19",
-    // "dataDirLocation": {
-    //   "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch37/v90/cosmic"
-    // }
 
     let configObj = {}
     if (config) configObj = JSON.parse(config)
@@ -157,11 +164,11 @@ export default class AddConnection extends Command {
     }
 
     switch (type) {
-      case 'UCSCTrackHub': {
+      case 'UCSCTrackHubConnection': {
         connectionConfig.hubTxtLocation = { uri: url }
         break
       }
-      case 'JBrowse1': {
+      case 'JBrowse1Connection': {
         connectionConfig.dataDirLocation = { uri: url }
         break
       }
@@ -186,7 +193,7 @@ export default class AddConnection extends Command {
         configContents.connections[idx] = connectionConfig
       } else
         this.error(
-          `Cannot add track with id ${connectionId}, a track with that id already exists.`,
+          `Cannot add connection with id ${connectionId}, a connection with that id already exists.`,
           { exit: 40 },
         )
     } else configContents.connections.push(connectionConfig)
@@ -241,7 +248,7 @@ export default class AddConnection extends Command {
     try {
       locationUrl = new URL(location)
     } catch (error) {
-      this.error('The location provided is not a valid URL', { exit: 10 })
+      this.error('The location provided is not a valid URL', { exit: 80 })
     }
     if (locationUrl) {
       let response
@@ -252,11 +259,11 @@ export default class AddConnection extends Command {
         if (!response || response.ok) return locationUrl.href
       } catch (error) {
         // ignore
-        this.error('Unable to fetch from URL', { exit: 20 })
+        this.error('Unable to fetch from URL', { exit: 90 })
       }
     }
     return this.error(`Could not resolve to a URL: "${location}"`, {
-      exit: 30,
+      exit: 100,
     })
   }
 
@@ -272,5 +279,14 @@ export default class AddConnection extends Command {
       return response.json()
     }
     return fsPromises.readFile(location, { encoding: 'utf8' })
+  }
+
+  determineConnectionType(url: string) {
+    if (path.basename(url) === 'hub.txt') return 'UCSCTrackHubConnection'
+    if (url.includes('jbrowse/data')) return 'JBrowse1Connection'
+    this.log(
+      `Unable to determine a specific connection from URL given, setting type to custom.\nIf you know the type connection, rerun with --overwrite and specifiy type with --type`,
+    )
+    return 'custom'
   }
 }
