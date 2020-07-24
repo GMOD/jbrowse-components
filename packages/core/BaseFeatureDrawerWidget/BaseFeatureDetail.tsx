@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
@@ -8,7 +8,6 @@ import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
-import PropTypes from 'prop-types'
 import React, { FunctionComponent } from 'react'
 import isObject from 'is-object'
 import SanitizedHTML from '../ui/SanitizedHTML'
@@ -77,11 +76,6 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
     </ExpansionPanel>
   )
 }
-BaseCard.propTypes = {
-  // @ts-ignore
-  children: PropTypes.node.isRequired,
-  title: PropTypes.string.isRequired,
-}
 
 interface BaseProps extends BaseCardProps {
   feature: Record<string, any>
@@ -137,21 +131,30 @@ const omit = [
 
 interface AttributeProps {
   attributes: Record<string, any>
+  omit?: string[]
+  formatter?: (val: unknown) => JSX.Element
 }
 
 const Attributes: FunctionComponent<AttributeProps> = props => {
   const classes = useStyles()
-  const { attributes } = props
-  const SimpleValue = ({ name, value }: { name: string; value: any }) => (
-    <div style={{ display: 'flex' }}>
-      <div className={classes.fieldName}>{name}</div>
-      <div className={classes.fieldValue}>
-        <SanitizedHTML
-          html={isObject(value) ? JSON.stringify(value) : String(value)}
-        />
+  const {
+    attributes,
+    omit: propOmit = [],
+    formatter = (value: unknown) => (
+      <SanitizedHTML
+        html={isObject(value) ? JSON.stringify(value) : String(value)}
+      />
+    ),
+  } = props
+
+  const SimpleValue = ({ name, value }: { name: string; value: any }) => {
+    return (
+      <div style={{ display: 'flex' }}>
+        <div className={classes.fieldName}>{name}</div>
+        <div className={classes.fieldValue}>{formatter(value)}</div>
       </div>
-    </div>
-  )
+    )
+  }
   const ArrayValue = ({ name, value }: { name: string; value: any[] }) => (
     <div style={{ display: 'flex' }}>
       <div className={classes.fieldName}>{name}</div>
@@ -168,10 +171,12 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
   return (
     <>
       {Object.entries(attributes)
-        .filter(([k, v]) => v !== undefined && !omit.includes(k))
+        .filter(
+          ([k, v]) =>
+            v !== undefined && !omit.includes(k) && !propOmit.includes(k),
+        )
         .map(([key, value]) => {
           if (Array.isArray(value)) {
-            // eslint-disable-next-line react/prop-types
             return value.length === 1 ? (
               <SimpleValue key={key} name={key} value={value[0]} />
             ) : (
@@ -187,9 +192,7 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
     </>
   )
 }
-Attributes.propTypes = {
-  attributes: PropTypes.objectOf(PropTypes.any).isRequired,
-}
+
 export const BaseAttributes = (props: BaseProps) => {
   const { feature } = props
   return (
@@ -200,7 +203,9 @@ export const BaseAttributes = (props: BaseProps) => {
 }
 
 interface BaseInputProps extends BaseCardProps {
+  omit?: string[]
   model: any
+  formatter?: (val: unknown) => JSX.Element
 }
 
 export const BaseFeatureDetails = observer((props: BaseInputProps) => {
