@@ -40,14 +40,14 @@ export default class AddTrack extends Command {
 
   static args = [
     {
-      name: 'dataDirectory',
+      name: 'track',
       required: true,
-      description: `Data directory file or URL`,
+      description: `Track file or URL`,
     },
     {
       name: 'location',
       required: false,
-      description: `location of JBrowse 2 installation. Defaults to .`,
+      description: `Location of JBrowse 2 installation. Defaults to .`,
       default: '.',
     },
   ]
@@ -55,7 +55,7 @@ export default class AddTrack extends Command {
   static flags = {
     type: flags.string({
       char: 't',
-      description: `type of track, by default inferred from track file`,
+      description: `Type of track, by default inferred from track file`,
     }),
     name: flags.string({
       char: 'n',
@@ -86,20 +86,20 @@ export default class AddTrack extends Command {
     help: flags.help({ char: 'h' }),
     trackId: flags.string({
       description:
-        'Id for the track, by default inferred from filename, must be unique to JBrowse config',
+        'trackId for the track, by default inferred from filename, must be unique throughout config',
     }),
     load: flags.string({
       char: 'l',
       description:
-        'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or trust to leave data directory alone',
+        'Required flag when using a local file. Choose how to manage the track. Copy, symlink, or move the track to the JBrowse directory. Or trust to leave track alone',
       options: ['copy', 'symlink', 'move', 'trust'],
     }),
     skipCheck: flags.boolean({
       description:
-        "Don't check whether or not the file or URL exists or if you are in a JBrowse directory",
+        'Skip check for whether or not the file or URL exists or if you are in a JBrowse directory',
     }),
     overwrite: flags.boolean({
-      description: 'Overwrites any existing tracks if same track id',
+      description: 'Overwrites existing track if it shares the same trackId',
     }),
     force: flags.boolean({
       char: 'f',
@@ -109,7 +109,7 @@ export default class AddTrack extends Command {
 
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddTrack)
-    const { dataDirectory: argsTrack } = runArgs as { dataDirectory: string }
+    const { track: argsTrack } = runArgs
     const { config, configLocation, category, description, load } = runFlags
     let { type, trackId, name, assemblyNames } = runFlags
 
@@ -123,7 +123,7 @@ export default class AddTrack extends Command {
     const configPath =
       configLocation || path.join(runArgs.location, 'config.json')
 
-    let dataDirectoryLocation
+    let trackLocation
     if (load) {
       if (!local)
         this.error(
@@ -131,18 +131,18 @@ export default class AddTrack extends Command {
           { exit: 25 },
         )
 
-      dataDirectoryLocation =
+      trackLocation =
         load === 'trust'
           ? location
           : path.join(runArgs.location, path.basename(location))
     } else if (local)
       this.error(
-        'Local file detected. Please select a load option for the data directory with the --load flag',
+        'Local file detected. Please select a load option for the track with the --load flag',
         { exit: 10 },
       )
-    else dataDirectoryLocation = location
+    else trackLocation = location
 
-    const adapter = this.guessAdapter(dataDirectoryLocation, protocol)
+    const adapter = this.guessAdapter(trackLocation, protocol)
     if (adapter.type === 'UNKNOWN') {
       this.error('Track type is not recognized', { exit: 110 })
     }
@@ -156,7 +156,12 @@ export default class AddTrack extends Command {
       configContentsJson = await this.readJsonConfig(configPath)
       this.debug(`Found existing config file ${configPath}`)
     } catch (error) {
-      this.error('No existing config file found', { exit: 30 })
+      this.error(
+        'No existing config file found, run add-assembly first to bootstrap config',
+        {
+          exit: 30,
+        },
+      )
     }
     let configContents: Config
     try {
@@ -260,7 +265,7 @@ export default class AddTrack extends Command {
         )
     } else configContents.tracks.push(trackConfig)
 
-    // copy/symlinks/moves the data directory into the jbrowse installation directory
+    // copy/symlinks/moves the track into the jbrowse installation directory
     const filePaths = Object.values(this.guessFileNames(location))
     switch (load) {
       case 'copy': {

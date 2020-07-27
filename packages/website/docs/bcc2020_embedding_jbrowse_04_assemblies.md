@@ -14,21 +14,21 @@ focused and allows just one assembly.
 
 These are the options you can specify for an assembly:
 
-* **Name** - The name of your assembly, often something like "GRCh38," "hg19,"
-or "mm10".
-* **Aliases** - Potential aliases for your assembly, such as "hg38" being an
-alias for "GRCh38".
-* **Reference Sequence** - The file that has the genome sequence for your
-organism. JBrowse natively supports indexed FASTA (compressed or not), 2BIT, and
-chrom.sizes sequence files.
-* **Reference Sequence Name Aliases** - You can define aliases for the names in
-your reference sequence file, so if for example your reference sequence uses
-"chr1", you can add an alias for it so that data file that use "1" instead will
-still display correctly.
-* **Colors** - You can define a list of colors that will be used to color the
-reference sequences. If you supply fewer colors than reference sequences,
-JBrowse will cycle through them. By default JBrowse will use its built-in color
-scheme of 26 colors based on the UCSC Genome Browser color scheme.
+- **Name** - The name of your assembly, often something like "GRCh38," "hg19,"
+  or "mm10".
+- **Aliases** - Potential aliases for your assembly, such as "hg38" being an
+  alias for "GRCh38".
+- **Reference Sequence** - The file that has the genome sequence for your
+  organism. JBrowse natively supports indexed FASTA (compressed or not), 2BIT, and
+  chrom.sizes sequence files.
+- **Reference Sequence Name Aliases** - You can define aliases for the names in
+  your reference sequence file, so if for example your reference sequence uses
+  "chr1", you can add an alias for it so that data file that use "1" instead will
+  still display correctly.
+- **Colors** - You can define a list of colors that will be used to color the
+  reference sequences. If you supply fewer colors than reference sequences,
+  JBrowse will cycle through them. By default JBrowse will use its built-in color
+  scheme of 26 colors based on the UCSC Genome Browser color scheme.
 
 ## Adding an assembly
 
@@ -71,6 +71,7 @@ would run
 ```sh
 npx @gmod/jbrowse-cli --help
 ```
+
 :::
 
 ### Preparing the files
@@ -111,34 +112,35 @@ were unusually named, you could change them in the "faiLocation" and
 
 ```javascript title="assemblies.js"
 export default {
-  "name": "GRCh38",
-  "sequence": {
-    "type": "ReferenceSequenceTrack",
-    "trackId": "GRCh38-ReferenceSequenceTrack",
-    "adapter": {
-      "type": "BgzipFastaAdapter",
-      "fastaLocation": {
-        "uri": "http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz"
+  name: 'GRCh38',
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'GRCh38-ReferenceSequenceTrack',
+    adapter: {
+      type: 'BgzipFastaAdapter',
+      fastaLocation: {
+        uri:
+          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz',
       },
-      "faiLocation": {
-        "uri": "http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.fai"
+      faiLocation: {
+        uri:
+          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.fai',
       },
-      "gziLocation": {
-        "uri": "http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.gzi"
-      }
-    }
+      gziLocation: {
+        uri:
+          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.gzi',
+      },
+    },
   },
-  "aliases": [
-    "hg38"
-  ],
-  "refNameAliases": {
-    "adapter": {
-      "type": "RefNameAliasAdapter",
-      "location": {
-        "uri": "GRCh38.aliases.txt"
-      }
-    }
-  }
+  aliases: ['hg38'],
+  refNameAliases: {
+    adapter: {
+      type: 'RefNameAliasAdapter',
+      location: {
+        uri: 'GRCh38.aliases.txt',
+      },
+    },
+  },
 }
 ```
 
@@ -146,18 +148,16 @@ Then add an import to your "index.html" adding this data:
 
 ```html {10-12} title="index.html"
 <html>
+  <head>
+    <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
+  </head>
 
-<head>
-  <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
-</head>
-
-<body>
-  <h1>We're using JBrowse Linear View!</h1>
-  <div id="jbrowse_linear_view"></div>
-  <script type="module">
-    import assembly from './assembly.js'
-  </script>
-</body>
-
+  <body>
+    <h1>We're using JBrowse Linear View!</h1>
+    <div id="jbrowse_linear_view"></div>
+    <script type="module">
+      import assembly from './assembly.js'
+    </script>
+  </body>
 </html>
 ```

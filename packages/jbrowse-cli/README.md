@@ -32,7 +32,7 @@ It is likely preferable in most cases to install the tools first however
 <!-- commands -->
 
 - [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
-- [`jbrowse add-track DATADIRECTORY [LOCATION]`](#jbrowse-add-track-datadirectory-location)
+- [`jbrowse add-track TRACK [LOCATION]`](#jbrowse-add-track-track-location)
 - [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
@@ -126,17 +126,17 @@ EXAMPLES
   $ jbrowse add-assembly https://example.com/data/sample.2bit
 ```
 
-## `jbrowse add-track DATADIRECTORY [LOCATION]`
+## `jbrowse add-track TRACK [LOCATION]`
 
 Add a track to a JBrowse 2 configuration
 
 ```
 USAGE
-  $ jbrowse add-track DATADIRECTORY [LOCATION]
+  $ jbrowse add-track TRACK [LOCATION]
 
 ARGUMENTS
-  DATADIRECTORY  Data directory file or URL
-  LOCATION       [default: .] location of JBrowse 2 installation. Defaults to .
+  TRACK     Track file or URL
+  LOCATION  [default: .] Location of JBrowse 2 installation. Defaults to .
 
 OPTIONS
   -a, --assemblyNames=assemblyNames   Assembly name or names for track as comma separated string. If none, will default
@@ -148,13 +148,12 @@ OPTIONS
 
   -h, --help                          show CLI help
 
-  -l, --load=copy|symlink|move|trust  Required flag when using a local file. Choose how to manage the data directory.
-                                      Copy, symlink, or move the data directory to the JBrowse directory. Or trust to
-                                      leave data directory alone
+  -l, --load=copy|symlink|move|trust  Required flag when using a local file. Choose how to manage the track. Copy,
+                                      symlink, or move the track to the JBrowse directory. Or trust to leave track alone
 
   -n, --name=name                     Name of the track. Will be defaulted to the trackId if none specified
 
-  -t, --type=type                     type of track, by default inferred from track file
+  -t, --type=type                     Type of track, by default inferred from track file
 
   --category=category                 Optional Comma separated string of categories to group tracks
 
@@ -163,13 +162,13 @@ OPTIONS
   --configLocation=configLocation     Write to a certain config.json file. Defaults to location/config.json if not
                                       specified
 
-  --overwrite                         Overwrites any existing tracks if same track id
+  --overwrite                         Overwrites existing track if it shares the same trackId
 
-  --skipCheck                         Don't check whether or not the file or URL exists or if you are in a JBrowse
+  --skipCheck                         Skip check for whether or not the file or URL exists or if you are in a JBrowse
                                       directory
 
-  --trackId=trackId                   Id for the track, by default inferred from filename, must be unique to JBrowse
-                                      config
+  --trackId=trackId                   trackId for the track, by default inferred from filename, must be unique
+                                      throughout config
 
 EXAMPLES
   $ jbrowse add-track /path/to/my.bam --load copy

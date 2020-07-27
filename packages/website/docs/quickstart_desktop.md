@@ -6,9 +6,8 @@ toplevel: true
 
 **_Important note on JBrowse desktop_**
 
-JBrowse 2 desktop is still in very early development as we have focused on our
-web product more. Please use at your own caution, and very likely old
-configurations will have to be deleted when or if you upgrade JBrowse desktop
+We do not have downloads of JBrowse 2 Desktop yet, it is expecting a release
+in late 2020
 
 ### Installing JBrowse desktop
 
