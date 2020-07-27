@@ -47,13 +47,13 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 
 import * as BaseAdapterExports from '../data_adapters/BaseAdapter'
 
-import * as BaseFeatureDetail from '../BaseFeatureDrawerWidget/BaseFeatureDetail'
+import * as BaseFeatureDetail from '../BaseFeatureWidget/BaseFeatureDetail'
 
 import Base1DView from '../util/Base1DViewModel'
 import ViewType from '../pluggableElementTypes/ViewType'
 import AdapterType from '../pluggableElementTypes/AdapterType'
 import TrackType from '../pluggableElementTypes/TrackType'
-import DrawerWidgetType from '../pluggableElementTypes/DrawerWidgetType'
+import WidgetType from '../pluggableElementTypes/WidgetType'
 
 import ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
 import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType'
@@ -126,7 +126,7 @@ const libs = {
   '@gmod/jbrowse-core/pluggableElementTypes/ViewType': ViewType,
   '@gmod/jbrowse-core/pluggableElementTypes/AdapterType': AdapterType,
   '@gmod/jbrowse-core/pluggableElementTypes/TrackType': TrackType,
-  '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType': DrawerWidgetType,
+  '@gmod/jbrowse-core/pluggableElementTypes/WidgetType': WidgetType,
 
   '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType': ServerSideRendererType,
   '@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType': CircularChordRendererType,
@@ -141,7 +141,7 @@ const libs = {
   '@gmod/jbrowse-core/util/io': coreIo,
   '@gmod/jbrowse-core/util/mst-reflection': coreMstReflection,
   '@gmod/jbrowse-core/BaseViewModel': BaseViewModel,
-  '@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail': BaseFeatureDetail,
+  '@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
 
   '@gmod/jbrowse-core/data_adapters/BaseAdapter': BaseAdapterExports,
 }

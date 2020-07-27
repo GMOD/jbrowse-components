@@ -137,12 +137,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
           const session: any = getSession(self)
-          const selector = session.addDrawerWidget(
-            'HierarchicalTrackSelectorDrawerWidget',
+          const selector = session.addWidget(
+            'HierarchicalTrackSelectorWidget',
             'hierarchicalTrackSelector',
             { view: self },
           )
-          session.showDrawerWidget(selector)
+          session.showWidget(selector)
           return selector
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
@@ -201,9 +201,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           onClick: self.activateTrackSelector,
           icon: LineStyleIcon,
           disabled:
-            session.visibleDrawerWidget &&
-            session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
-            session.visibleDrawerWidget.view.id === self.id,
+            session.visibleWidget &&
+            session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+            session.visibleWidget.view.id === self.id,
         })
         return menuOptions
       },

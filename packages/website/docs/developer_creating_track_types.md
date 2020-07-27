@@ -11,7 +11,7 @@ instead of a track, but here are some reasons you might want a custom track
   in the wiggle track)
 - Implementing custom track menu items (e.g. Show soft clipping in the
   alignments track)
-- Adding custom drawer widgets (e.g. custom VariantFeatureDrawerWidget in
+- Adding custom widgets (e.g. custom VariantFeatureWidget in
   variant track)
 - You want to bundle your renderer and adapter as a specific thing that is
   automatically initialized rather than the BasicTrack (which combines any

@@ -1,8 +1,7 @@
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
+import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
-import { lazy } from 'react'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
   configSchemaFactory as alignmentsTrackConfigSchemaFactory,
@@ -47,14 +46,14 @@ export default class AlignmentsPlugin extends Plugin {
         stateModel: pileupTrackModelFactory(pluginManager, configSchema),
       })
     })
-    pluginManager.addDrawerWidgetType(
+    pluginManager.addWidgetType(
       () =>
-        new DrawerWidgetType({
-          name: 'AlignmentsFeatureDrawerWidget',
+        new WidgetType({
+          name: 'AlignmentsFeatureWidget',
           heading: 'Feature Details',
           configSchema: alignmentsFeatureDetailConfigSchema,
           stateModel: alignmentsFeatureDetailStateModel,
-          LazyReactComponent: lazy(() => AlignmentsFeatureDetailReactComponent),
+          ReactComponent: AlignmentsFeatureDetailReactComponent,
         }),
     )
     pluginManager.addTrackType(() => {

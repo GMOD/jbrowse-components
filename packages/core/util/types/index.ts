@@ -70,22 +70,22 @@ export function isSessionModelWithConfigEditing(
   return isSessionModel(thing) && 'editConfiguration' in thing
 }
 
-/** abstract interface for a session that manages drawer widgets */
-export interface SessionWithDrawerWidgets extends AbstractSessionModel {
-  visibleDrawerWidget?: { id: string }
-  drawerWidgets?: unknown[]
-  addDrawerWidget(
+/** abstract interface for a session that manages widgets */
+export interface SessionWithWidgets extends AbstractSessionModel {
+  visibleWidget?: { id: string }
+  widgets?: unknown[]
+  addWidget(
     typeName: string,
     id: string,
     initialState?: Record<string, unknown>,
     configuration?: { type: string },
   ): void
-  showDrawerWidget(drawerWidget: unknown): void
+  showWidget(widget: unknown): void
 }
-export function isSessionModelWithDrawerWidgets(
+export function isSessionModelWithWidgets(
   thing: unknown,
-): thing is SessionWithDrawerWidgets {
-  return isSessionModel(thing) && 'drawerWidgets' in thing
+): thing is SessionWithWidgets {
+  return isSessionModel(thing) && 'widgets' in thing
 }
 
 /** abstract interface for a session that manages a global selection */

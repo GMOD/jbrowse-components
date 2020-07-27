@@ -7,7 +7,7 @@ import {
   BaseFeatureDetails,
   BaseCard,
   useStyles,
-} from '@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail'
+} from '@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail'
 
 interface AlnCardProps {
   title: string

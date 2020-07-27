@@ -10,9 +10,9 @@ we can open a variant track and an alignments track as shown below
 ![](/jb2/img/variant_with_pileup.png)
 Variant track indicating a SNP alongside the alignment track evidence
 
-### Variant drawer widget
+### Variant widget
 
-The variant features have a specialized drawer widget that contains a table
+The variant features have a specialized widget that contains a table
 indicating all the calls that were made in a multi-sample VCF. Some VCF files,
 like the 1000 genomes VCF, can contain thousands of samples in a single file.
 This table can display the details

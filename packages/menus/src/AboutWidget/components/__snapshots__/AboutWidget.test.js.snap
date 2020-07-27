@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<AboutWidget /> renders 1`] = `
+<div
+  class="makeStyles-root"
+>
+  <h4
+    class="MuiTypography-root MuiTypography-h4 MuiTypography-colorPrimary MuiTypography-alignCenter"
+  >
+    JBrowse 2
+  </h4>
+  <h6
+    class="MuiTypography-root makeStyles-subtitle MuiTypography-h6 MuiTypography-alignCenter"
+  />
+  <p
+    class="MuiTypography-root MuiTypography-body2 MuiTypography-alignCenter"
+  >
+    JBrowse is a
+     
+    <a
+      class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+      href="http://gmod.org/"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      GMOD
+    </a>
+     
+    project
+  </p>
+  <br />
+  <p
+    class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter"
+  >
+    © 2019 The Evolutionary Software Foundation
+  </p>
+</div>
+`;
