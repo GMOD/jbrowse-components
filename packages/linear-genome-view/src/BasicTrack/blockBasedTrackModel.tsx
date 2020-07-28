@@ -260,9 +260,10 @@ const blockBasedTrack = types
       const results = await Promise.all(renderings)
       const blocks = self.blockDefinitions
       return (
-        <>
+        <g>
           {results.map((rendering, index) => {
-            const { key, offsetPx } = blocks.blocks[index]
+            const block = blocks.blocks[index]
+            const { key, offsetPx } = block
             return (
               <g
                 key={key}
@@ -272,7 +273,7 @@ const blockBasedTrack = types
               />
             )
           })}
-        </>
+        </g>
       )
     },
   }))

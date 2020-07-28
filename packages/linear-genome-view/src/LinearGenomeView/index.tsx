@@ -1003,11 +1003,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
             xmlns="http://www.w3.org/2000/svg"
           >
             {self.staticBlocks.map(block => {
-              console.log('here', block, offset, block.offsetPx)
               const offsetLeft = block.offsetPx - self.offsetPx
-              console.log(offsetLeft)
               return (
-                <g transform={`translate(${offsetLeft} 0)`}>
+                <g key={block.key} transform={`translate(${offsetLeft} 0)`}>
                   <Ruler
                     start={block.start}
                     end={block.end}
@@ -1022,7 +1020,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 self.tracks.map(async track => {
                   const current = offset
                   offset += track.height + 20
-                  const { trackId } = track
+                  const trackId = getConf(track, 'trackId')
                   return (
                     <g key={trackId} transform={`translate(0 ${current})`}>
                       {await track.renderSvg()}
