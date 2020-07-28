@@ -335,17 +335,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
       async exportSvg() {
         let offset = 0
         const html = renderToStaticMarkup(
-          <svg>
+          <svg
+            width="100%"
+            height="100%"
+            viewBox="0,0,2000,1000"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             {
               await Promise.all(
                 self.tracks.map(async track => {
                   const current = offset
                   offset += track.height + 20
+                  const {trackId} = track
                   return (
-                    <g
-                      key={track.trackId}
-                      transform={`translate(0 ${current})`}
-                    >
+                    <g key={trackId} transform={`translate(0 ${current})`}>
                       {await track.renderSvg()}
                     </g>
                   )
@@ -354,6 +357,34 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
           </svg>,
         )
+
+        //         // adapted from https://observablehq.com/@mbostock/saving-svg
+        //         export function serialize(svg) {
+        //           const xmlns = 'http://www.w3.org/2000/xmlns/'
+        //           const xlinkns = 'http://www.w3.org/1999/xlink'
+        //           const svgns = 'http://www.w3.org/2000/svg'
+
+        //           svg = svg.cloneNode(true)
+        //           const fragment = `${window.location.href}#`
+        //           const walker = document.createTreeWalker(
+        //             svg,
+        //             NodeFilter.SHOW_ELEMENT,
+        //             null,
+        //             false,
+        //           )
+        //           while (walker.nextNode()) {
+        //             for (const attr of walker.currentNode.attributes) {
+        //               if (attr.value.includes(fragment)) {
+        //                 attr.value = attr.value.replace(fragment, '#')
+        //               }
+        //             }
+        //           }
+        //           svg.setAttributeNS(xmlns, 'xmlns', svgns)
+        //           svg.setAttributeNS(xmlns, 'xmlns:xlink', xlinkns)
+        //           const serializer = new window.XMLSerializer()
+        //           const string = serializer.serializeToString(svg)
+        //           return new Blob([string], { type: 'image/svg+xml' })
+        //         }
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, 'image.svg')
       },
