@@ -1001,6 +1001,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   const current = offset
                   offset += track.height + 20
                   const trackId = getConf(track, 'trackId')
+                  console.log(trackId)
                   return (
                     <g key={trackId} transform={`translate(0 ${current})`}>
                       {await track.renderSvg()}

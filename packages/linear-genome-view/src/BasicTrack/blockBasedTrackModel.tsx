@@ -1,6 +1,7 @@
 import React from 'react'
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 import { autorun } from 'mobx'
 import {
   getSession,
@@ -268,6 +269,7 @@ const blockBasedTrack = types
           {results.map((rendering, index) => {
             const block = blocks.blocks[index]
             const { key, offsetPx } = block
+            console.log({ t: getConf(self, 'name'), rendering })
             return (
               <g
                 key={key}

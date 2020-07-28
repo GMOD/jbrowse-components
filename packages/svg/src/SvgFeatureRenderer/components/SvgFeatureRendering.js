@@ -252,6 +252,7 @@ function SvgFeatureRendering(props) {
     features,
     trackModel,
     config,
+    forceSvg,
   } = props
   const [region] = regions || []
   const width = (region.end - region.start) / bpPerPx
@@ -402,36 +403,44 @@ function SvgFeatureRendering(props) {
     setHeight(layout.getTotalHeight())
   }, [layout])
 
+  if (forceSvg) {
+    return (
+      <RenderedFeatures
+        features={features}
+        displayMode={displayMode}
+        {...props}
+        region={region}
+      />
+    )
+  }
   return (
-    <div style={renderingStyle}>
-      <svg
-        ref={ref}
-        className="SvgFeatureRendering"
-        width={`${width}px`}
-        height={`${height}px`}
-        onMouseDown={mouseDown}
-        onMouseUp={mouseUp}
-        onMouseEnter={mouseEnter}
-        onMouseLeave={mouseLeave}
-        onMouseOver={mouseOver}
-        onMouseOut={mouseOut}
-        onMouseMove={mouseMove}
-        onFocus={mouseEnter}
-        onBlur={mouseLeave}
-        onClick={click}
-        onContextMenu={contextMenu}
-        style={{ display: 'block' }}
-      >
-        <RenderedFeatures
-          features={features}
-          displayMode={displayMode}
-          {...props}
-          region={region}
-        />
-        <SvgSelected {...props} region={region} />
-        <SvgMouseover {...props} region={region} />
-      </svg>
-    </div>
+    <svg
+      ref={ref}
+      className="SvgFeatureRendering"
+      width={`${width}px`}
+      height={`${height}px`}
+      onMouseDown={mouseDown}
+      onMouseUp={mouseUp}
+      onMouseEnter={mouseEnter}
+      onMouseLeave={mouseLeave}
+      onMouseOver={mouseOver}
+      onMouseOut={mouseOut}
+      onMouseMove={mouseMove}
+      onFocus={mouseEnter}
+      onBlur={mouseLeave}
+      onClick={click}
+      onContextMenu={contextMenu}
+      style={{ display: 'block' }}
+    >
+      <RenderedFeatures
+        features={features}
+        displayMode={displayMode}
+        {...props}
+        region={region}
+      />
+      <SvgSelected {...props} region={region} />
+      <SvgMouseover {...props} region={region} />
+    </svg>
   )
 }
 
