@@ -60,7 +60,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   private async setup(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
     if (Object.keys(this.samHeader).length === 0) {
-      // @ts-ignore
       statusCallback('Downloading index file')
       const samHeader = await this.bam.getHeader(opts?.signal)
 
