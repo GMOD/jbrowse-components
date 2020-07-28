@@ -1,5 +1,5 @@
 import { Region } from '@gmod/jbrowse-core/util/types'
-import { getSession } from '@gmod/jbrowse-core/util'
+import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
 
 // material ui things
 import Button from '@material-ui/core/Button'
@@ -13,17 +13,14 @@ import Typography from '@material-ui/core/Typography'
 
 // misc
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
 import React, { useState } from 'react'
 
 // locals
-import { LinearGenomeViewStateModel } from '..'
+import { LinearGenomeViewModel as LGV } from '..'
 import Header from './Header'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
-
-type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles(theme => ({
   importFormContainer: {
@@ -145,8 +142,10 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
                 color="primary"
                 onClick={model.activateTrackSelector}
                 disabled={
+                  isSessionModelWithWidgets(session) &&
                   session.visibleWidget &&
                   session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+                  // @ts-ignore
                   session.visibleWidget.view.id === model.id
                 }
               >

@@ -247,7 +247,11 @@ const blockBasedTrack = types
       const renderings = []
       const view = getContainingView(self) as LinearGenomeViewModel
       for (const block of self.blockState.values()) {
-        const { rpcManager, renderArgs, rendererType } = renderBlockData(block)
+        const {
+          rpcManager,
+          renderArgs = { renderProps: {} },
+          rendererType,
+        } = renderBlockData(block)
         const rendering = rendererType.renderInClient(rpcManager, {
           ...renderArgs,
           renderProps: {

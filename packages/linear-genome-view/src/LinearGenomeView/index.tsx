@@ -881,82 +881,83 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       return { zoom }
     })
+    .views(self => ({
+      get menuOptions(): MenuOption[] {
+        const session = getSession(self)
+        const menuOptions: MenuOption[] = [
+          {
+            label: 'Open track selector',
+            onClick: self.activateTrackSelector,
+            icon: LineStyleIcon,
+            disabled:
+              isSessionModelWithWidgets(session) &&
+              session.visibleWidget &&
+              session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+              // @ts-ignore
+              session.visibleWidget.view.id === self.id,
+          },
+          {
+            label: 'Horizontally flip',
+            icon: SyncAltIcon,
+            onClick: self.horizontallyFlip,
+          },
+          {
+            label: 'Show all regions',
+            icon: VisibilityIcon,
+            onClick: self.showAllRegions,
+          },
+          {
+            label: 'Show header',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: !self.hideHeader,
+            onClick: self.toggleHeader,
+          },
+          {
+            label: 'Show header overview',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: !self.hideHeaderOverview,
+            onClick: self.toggleHeaderOverview,
+            disabled: self.hideHeader,
+          },
+          {
+            label: 'Show track labels',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: self.showTrackLabels,
+            onClick: self.toggleTrackLabels,
+          },
+          {
+            label: 'Show center line',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: self.showCenterLine,
+            onClick: self.toggleCenterLine,
+          },
+        ]
+
+        // add track's view level menu options
+        for (const [key, value] of self.trackTypeActions.entries()) {
+          if (value.length) {
+            menuOptions.push(
+              { type: 'divider' },
+              { type: 'subHeader', label: key },
+            )
+            value.forEach(action => {
+              menuOptions.push(action)
+            })
+          }
+        }
+
+        return menuOptions
+      },
+    }))
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
-        get menuOptions(): MenuOption[] {
-          const session = getSession(self)
-          const menuOptions: MenuOption[] = [
-            {
-              label: 'Open track selector',
-              onClick: self.activateTrackSelector,
-              icon: LineStyleIcon,
-              disabled:
-                isSessionModelWithWidgets(session) &&
-                session.visibleWidget &&
-                session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-                // @ts-ignore
-                session.visibleWidget.view.id === self.id,
-            },
-            {
-              label: 'Horizontally flip',
-              icon: SyncAltIcon,
-              onClick: self.horizontallyFlip,
-            },
-            {
-              label: 'Show all regions',
-              icon: VisibilityIcon,
-              onClick: self.showAllRegions,
-            },
-            {
-              label: 'Show header',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: !self.hideHeader,
-              onClick: self.toggleHeader,
-            },
-            {
-              label: 'Show header overview',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: !self.hideHeaderOverview,
-              onClick: self.toggleHeaderOverview,
-              disabled: self.hideHeader,
-            },
-            {
-              label: 'Show track labels',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showTrackLabels,
-              onClick: self.toggleTrackLabels,
-            },
-            {
-              label: 'Show center line',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showCenterLine,
-              onClick: self.toggleCenterLine,
-            },
-          ]
-
-          // add track's view level menu options
-          for (const [key, value] of self.trackTypeActions.entries()) {
-            if (value.length) {
-              menuOptions.push(
-                { type: 'divider' },
-                { type: 'subHeader', label: key },
-              )
-              value.forEach(action => {
-                menuOptions.push(action)
-              })
-            }
-          }
-
-          return menuOptions
-        },
-
-        get staticBlocks() {
+        get staticBlocks(): BlockSet {
           const ret = calculateStaticBlocks(cast(self), 1)
           const sret = JSON.stringify(ret)
           if (stringifiedCurrentlyCalculatedStaticBlocks !== sret) {
@@ -965,29 +966,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
           return currentlyCalculatedStaticBlocks as BlockSet
         },
-
-        get dynamicBlocks() {
+        get dynamicBlocks(): BlockSet {
           return calculateDynamicBlocks(cast(self))
-        },
-        get visibleLocStrings() {
-          const { contentBlocks } = this.dynamicBlocks
-          if (!contentBlocks.length) {
-            return ''
-          }
-          const isSingleAssemblyName = contentBlocks.every(
-            block => block.assemblyName === contentBlocks[0].assemblyName,
-          )
-          const locs = contentBlocks.map(block =>
-            assembleLocString({
-              ...block,
-              start: Math.round(block.start),
-              end: Math.round(block.end),
-              assemblyName: isSingleAssemblyName
-                ? undefined
-                : block.assemblyName,
-            }),
-          )
-          return locs.join(';')
         },
       }
     })
@@ -1031,9 +1011,28 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
           </svg>,
         )
-
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, 'image.svg')
+      },
+    }))
+    .views(self => ({
+      get visibleLocStrings() {
+        const { contentBlocks } = self.dynamicBlocks as BlockSet
+        if (!contentBlocks.length) {
+          return ''
+        }
+        const isSingleAssemblyName = contentBlocks.every(
+          block => block.assemblyName === contentBlocks[0].assemblyName,
+        )
+        const locs = contentBlocks.map(block =>
+          assembleLocString({
+            ...block,
+            start: Math.round(block.start),
+            end: Math.round(block.end),
+            assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
+          }),
+        )
+        return locs.join(';')
       },
     }))
 
