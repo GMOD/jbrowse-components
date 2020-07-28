@@ -9,9 +9,6 @@ import FeatureGlyph from './FeatureGlyph'
 import { chooseGlyphComponent, layOut } from './util'
 
 const fontWidthScaleFactor = 0.6
-const renderingStyle = {
-  position: 'relative',
-}
 
 export const SvgSelected = observer(
   ({
@@ -476,10 +473,12 @@ SvgFeatureRendering.propTypes = {
   onFeatureClick: ReactPropTypes.func,
   onFeatureContextMenu: ReactPropTypes.func,
   blockKey: ReactPropTypes.string,
+  forceSvg: ReactPropTypes.bool,
 }
 
 SvgFeatureRendering.defaultProps = {
   trackModel: {},
+  forceSvg: false,
 
   features: new Map(),
   blockKey: undefined,
