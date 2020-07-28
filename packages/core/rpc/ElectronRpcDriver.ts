@@ -1,4 +1,5 @@
 /* eslint-disable no-await-in-loop */
+import shortid from 'shortid'
 import BaseRpcDriver from './BaseRpcDriver'
 import PluginManager from '../PluginManager'
 import { PluginDefinition } from '../PluginLoader'
@@ -38,22 +39,10 @@ class WindowWorkerHandle {
     this.window.destroy()
   }
 
-  on(channel, listener) {
-    return this.ipcRenderer.callRenderer(
-      this.window,
-      'call',
-      functionName,
-      filteredArgs,
-      options,
-    )
-  }
-
-  off(channel, listener) {}
-
   async call(
     functionName: string,
-    filteredArgs?: unknown,
-    options: { statusCallback?: (arg0: string) => void } = {},
+    filteredArgs?: Record<string, unknown>,
+    opts: { statusCallback?: (arg0: string) => void } = {},
   ): Promise<unknown> {
     // The window can have been created, but still not be ready, and any
     // `callRenderer` call to that window just returns Promise<undefined>
@@ -64,14 +53,23 @@ class WindowWorkerHandle {
       this.ready = !!(await this.ipcRenderer.callRenderer(this.window, 'ready'))
     }
 
-    delete options.statusCallback
-    return this.ipcRenderer.callRenderer(
+    const { statusCallback, ...rest } = opts
+    const channel = `message-${shortid.generate()}`
+    const listener = (event: unknown, message: string) => {
+      if (opts.statusCallback) {
+        opts.statusCallback(message)
+      }
+    }
+    this.ipcRenderer.on(channel, listener)
+    const result = await this.ipcRenderer.callRenderer(
       this.window,
       'call',
       functionName,
-      filteredArgs,
-      options,
+      { ...filteredArgs, channel },
+      rest,
     )
+    this.ipcRenderer.removeListener(channel, listener)
+    return result
   }
 }
 

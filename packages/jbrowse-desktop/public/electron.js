@@ -265,10 +265,6 @@ ipcMain.handle('listSessions', async () => {
         if (!sessions[sessionName]) {
           sessions[sessionName] = {}
         } else if (path.extname(sessionFile) === '.json') {
-          const sessionName = decodeURIComponent(
-            path.basename(sessionFile, '.json'),
-          )
-
           if (!sessions[sessionName]) {
             sessions[sessionName] = {}
           }
