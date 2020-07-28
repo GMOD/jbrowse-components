@@ -13,8 +13,8 @@ declare global {
 }
 const { electronBetterIpc = {}, electron } = window
 
-async function wait(ms: number): Promise<void> {
-  return new Promise((resolve): void => {
+async function wait(ms: number) {
+  return new Promise(resolve => {
     setTimeout(resolve, ms)
   })
 }
@@ -38,10 +38,22 @@ class WindowWorkerHandle {
     this.window.destroy()
   }
 
+  on(channel, listener) {
+    return this.ipcRenderer.callRenderer(
+      this.window,
+      'call',
+      functionName,
+      filteredArgs,
+      options,
+    )
+  }
+
+  off(channel, listener) {}
+
   async call(
     functionName: string,
     filteredArgs?: unknown,
-    options = {},
+    options: { statusCallback?: (arg0: string) => void } = {},
   ): Promise<unknown> {
     // The window can have been created, but still not be ready, and any
     // `callRenderer` call to that window just returns Promise<undefined>
@@ -51,6 +63,8 @@ class WindowWorkerHandle {
       await wait(1000)
       this.ready = !!(await this.ipcRenderer.callRenderer(this.window, 'ready'))
     }
+
+    delete options.statusCallback
     return this.ipcRenderer.callRenderer(
       this.window,
       'call',
@@ -118,24 +132,27 @@ export default class ElectronRpcDriver extends BaseRpcDriver {
     if (!result) throw new Error('failed to configure worker')
   }
 
-  call(
+  async call(
     pluginManager: PluginManager,
     sessionId: string,
     functionName: string,
     args: {},
     options = {},
-  ): Promise<unknown> {
-    return super
-      .call(pluginManager, sessionId, functionName, args, options)
-      .then(r => {
-        if (typeof r === 'object' && r !== null && 'imageData' in r) {
-          const img = new Image()
-          // @ts-ignore
-          img.src = r.imageData.dataURL
-          // @ts-ignore
-          r.imageData = img
-        }
-        return r
-      })
+  ) {
+    const r = await super.call(
+      pluginManager,
+      sessionId,
+      functionName,
+      args,
+      options,
+    )
+    if (typeof r === 'object' && r !== null && 'imageData' in r) {
+      const img = new Image()
+      // @ts-ignore
+      img.src = r.imageData.dataURL
+      // @ts-ignore
+      r.imageData = img
+    }
+    return r
   }
 }

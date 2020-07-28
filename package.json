@@ -75,7 +75,7 @@
     "cross-spawn": "^7.0.1",
     "del": "^5.1.0",
     "devtron": "^1.4.0",
-    "electron": "^8.2.5",
+    "electron": "^9.0.0",
     "electron-builder": "^22.1.0",
     "electron-mock-ipc": "^0.3.1",
     "eslint-config-airbnb-typescript": "^7.0.0",
