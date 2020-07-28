@@ -254,12 +254,12 @@ export default pluginManager => {
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
-          const selector = session.addDrawerWidget(
-            'HierarchicalTrackSelectorDrawerWidget',
+          const selector = session.addWidget(
+            'HierarchicalTrackSelectorWidget',
             'hierarchicalTrackSelector',
             { view: self },
           )
-          session.showDrawerWidget(selector)
+          session.showWidget(selector)
           return selector
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)

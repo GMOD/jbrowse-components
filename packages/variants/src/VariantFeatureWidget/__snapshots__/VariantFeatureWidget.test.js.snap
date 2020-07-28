@@ -1,0 +1,265 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`VariantTrack widget renders with just the required model elements 1`] = `
+<div
+  class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
+  data-testid="variant-side-drawer"
+>
+  <div
+    class="MuiPaper-root makeStyles-paperRoot MuiPaper-elevation1 MuiPaper-rounded"
+  >
+    <div
+      class="MuiPaper-root MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-elevation1 MuiPaper-rounded"
+      style="margin-top: 4px;"
+    >
+      <div
+        aria-disabled="false"
+        aria-expanded="true"
+        class="MuiButtonBase-root MuiExpansionPanelSummary-root MuiExpansionPanelSummary-expanded"
+        role="button"
+        tabindex="0"
+      >
+        <div
+          class="MuiExpansionPanelSummary-content MuiExpansionPanelSummary-expanded"
+        >
+          <span
+            class="MuiTypography-root MuiTypography-button"
+          >
+             
+            Primary data
+          </span>
+        </div>
+        <div
+          aria-disabled="false"
+          aria-hidden="true"
+          class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded MuiIconButton-edgeEnd"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root makeStyles-expandIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
+              />
+            </svg>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </div>
+      </div>
+      <div
+        class="MuiCollapse-container MuiCollapse-entered"
+        style="min-height: 0px;"
+      >
+        <div
+          class="MuiCollapse-wrapper"
+        >
+          <div
+            class="MuiCollapse-wrapperInner"
+          >
+            <div
+              role="region"
+            >
+              <div
+                class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
+              >
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    Position
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      ctgA:177..177 
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    Name
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      rs123
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    Length
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      1
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr
+      class="MuiDivider-root"
+    />
+    <div
+      class="MuiPaper-root MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-elevation1 MuiPaper-rounded"
+      style="margin-top: 4px;"
+    >
+      <div
+        aria-disabled="false"
+        aria-expanded="true"
+        class="MuiButtonBase-root MuiExpansionPanelSummary-root MuiExpansionPanelSummary-expanded"
+        role="button"
+        tabindex="0"
+      >
+        <div
+          class="MuiExpansionPanelSummary-content MuiExpansionPanelSummary-expanded"
+        >
+          <span
+            class="MuiTypography-root MuiTypography-button"
+          >
+             
+            Attributes
+          </span>
+        </div>
+        <div
+          aria-disabled="false"
+          aria-hidden="true"
+          class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded MuiIconButton-edgeEnd"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root makeStyles-expandIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
+              />
+            </svg>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </div>
+      </div>
+      <div
+        class="MuiCollapse-container MuiCollapse-entered"
+        style="min-height: 0px;"
+      >
+        <div
+          class="MuiCollapse-wrapper"
+        >
+          <div
+            class="MuiCollapse-wrapperInner"
+          >
+            <div
+              role="region"
+            >
+              <div
+                class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
+              >
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    REF
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      A
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    ALT
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      &lt;TRA&gt;
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    QUAL
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      10.4
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    MQ
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      5
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr
+    class="MuiDivider-root"
+  />
+</div>
+`;

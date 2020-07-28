@@ -11,7 +11,6 @@ biological data. At its core, it is a
 been built as an extensible platform to enable visualization of all kinds of
 biological data.
 
-
 For those of you who have used the original JBrowse, you'll recognize many of
 the ideas and use cases JBrowse 2 was built around. JBrowse 2 is a complete
 rewrite of the original JBrowse, however, and so there are some differences. We

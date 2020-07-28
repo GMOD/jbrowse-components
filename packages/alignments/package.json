@@ -27,7 +27,7 @@
     "react-d3-axis": "^0.1.2"
   },
   "devDependencies": {
-    "@gmod/jbrowse-development-tools": "^0.0.1"
+    "@gmod/jbrowse-development-tools": "^0.0.1-beta.19"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^0.0.1-beta.1",

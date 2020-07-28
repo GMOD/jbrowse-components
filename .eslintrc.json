@@ -18,14 +18,11 @@
     },
     "project": "./tsconfig.json"
   },
-  "plugins": [
-    "@typescript-eslint",
-    "eslint-plugin-tsdoc"
-  ],
+  "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc"],
   "rules": {
     "@typescript-eslint/await-thenable": "off",
     "@typescript-eslint/ban-ts-ignore": "off",
-    "@typescript-eslint/camelcase": "warn",
+    "@typescript-eslint/camelcase": "error",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-member-accessibility": "off",
     "@typescript-eslint/no-empty-function": "off",
@@ -45,10 +42,7 @@
     "no-console": [
       "warn",
       {
-        "allow": [
-          "error",
-          "warn"
-        ]
+        "allow": ["error", "warn"]
       }
     ],
     "no-debugger": "warn",
@@ -59,7 +53,7 @@
     "no-underscore-dangle": "warn",
     "no-use-before-define": "off",
     "prettier/prettier": [
-      "error",
+      "warn",
       {
         "singleQuote": true,
         "semi": false,
@@ -67,64 +61,47 @@
         "trailingComma": "all"
       }
     ],
-    "react/destructuring-assignment": "warn",
+    "react/destructuring-assignment": "error",
     "react/forbid-prop-types": "off",
     "react/jsx-filename-extension": "off",
     "react/jsx-no-bind": "off",
     "react/jsx-props-no-spreading": "off",
     "react/no-array-index-key": "off",
-    "react/no-unused-prop-types": "warn",
-    "react/no-unused-state": "warn",
-    "react/prefer-stateless-function": "warn",
-    "react/prop-types": "warn",
-    "react/require-default-props": "warn",
+    "react/no-unused-prop-types": "error",
+    "react/no-unused-state": "error",
+    "react/prefer-stateless-function": "error",
+    "react/prop-types": "error",
+    "react/require-default-props": "error",
     "spaced-comment": [
       "error",
       "always",
       {
-        "markers": [
-          "/"
-        ]
+        "markers": ["/"]
       }
     ]
   },
   "settings": {
     "import/resolver": {
       "node": {
-        "extensions": [
-          ".js",
-          ".jsx",
-          ".ts",
-          ".tsx"
-        ]
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
       }
     }
   },
   "overrides": [
     {
-      "files": [
-        "**/*.ts",
-        "**/*.tsx"
-      ],
+      "files": ["**/*.ts", "**/*.tsx"],
       "rules": {
         "tsdoc/syntax": "warn"
       }
     },
     {
-      "files": [
-        "**/jbrowse-cli/**/*.test.ts",
-        "**/jbrowse-cli/**/*.test.tsx"
-      ],
+      "files": ["**/jbrowse-cli/**/*.test.ts", "**/jbrowse-cli/**/*.test.tsx"],
       "rules": {
         "tsdoc/syntax": "off"
       }
     },
     {
-      "files": [
-        "**/test/**",
-        "**/*.test.[t,j]s",
-        "**/*.test.[t,j]sx"
-      ],
+      "files": ["**/test/**", "**/*.test.[t,j]s", "**/*.test.[t,j]sx"],
       "env": {
         "jest": true
       },

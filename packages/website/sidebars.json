@@ -6,15 +6,16 @@
     },
     {
       "type": "doc",
-      "id": "single_page"
+      "id": "combined"
     },
     {
       "type": "doc",
-      "id": "quickstart_web"
+      "id": "combined_pdf"
     },
     {
-      "type": "doc",
-      "id": "quickstart_desktop"
+      "type": "category",
+      "label": "Quickstart guide",
+      "items": ["quickstart_web", "quickstart_desktop"]
     },
     {
       "type": "category",

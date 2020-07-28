@@ -1,5 +1,4 @@
 import { Command, flags } from '@oclif/command'
-import * as fs from 'fs'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
@@ -80,48 +79,24 @@ export default class Upgrade extends Command {
 
     const locationUrl = url || (await this.getTagOrLatest(tag))
 
-    let response
-    try {
-      response = await fetch(locationUrl, {
-        method: 'GET',
-      })
-    } catch (error) {
-      this.error(error)
+    const response = await fetch(locationUrl)
+    if (!response.ok) {
+      this.error(`Failed to fetch: ${response.statusText}`, { exit: 50 })
     }
-    if (!response.ok) this.error(`Failed to fetch JBrowse2 from server`)
 
+    const type = response.headers.get('content-type')
     if (
       url &&
-      response.headers.get('content-type') !== 'application/zip' &&
-      response.headers.get('content-type') !== 'application/octet-stream'
-    )
+      type !== 'application/zip' &&
+      type !== 'application/octet-stream'
+    ) {
       this.error(
         'The URL provided does not seem to be a JBrowse installation URL',
       )
+    }
 
-    response.body
-      .pipe(unzip.Parse())
-      .on('entry', async entry => {
-        const { path: fileName, type } = entry
-        if (type === 'Directory') {
-          try {
-            await fsPromises.mkdir(path.join(upgradePath, fileName), {
-              recursive: true,
-            })
-          } catch (error) {
-            this.error(error)
-          }
-        }
-        entry.pipe(fs.createWriteStream(path.join(upgradePath, fileName)))
-      })
-      .on('error', err => {
-        this.error(
-          `Failed to upgrade JBrowse 2 with ${err}. Please try again later`,
-        )
-      })
-      .on('close', () => {
-        this.log(`Your JBrowse 2 setup has been upgraded`)
-      })
+    await response.body.pipe(unzip.Extract({ path: upgradePath })).promise()
+    this.log('Upgrade finished')
   }
 
   async checkLocation(userPath: string) {

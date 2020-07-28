@@ -5,7 +5,7 @@ import { autorun } from 'mobx'
 import {
   getSession,
   getContainingView,
-  isSessionModelWithDrawerWidgets,
+  isSessionModelWithWidgets,
   isSelectionContainer,
 } from '@gmod/jbrowse-core/util'
 import { Region } from '@gmod/jbrowse-core/util/types'
@@ -214,13 +214,13 @@ const blockBasedTrack = types
 
     selectFeature(feature: Feature) {
       const session = getSession(self)
-      if (isSessionModelWithDrawerWidgets(session)) {
-        const featureWidget = session.addDrawerWidget(
-          'BaseFeatureDrawerWidget',
+      if (isSessionModelWithWidgets(session)) {
+        const featureWidget = session.addWidget(
+          'BaseFeatureWidget',
           'baseFeature',
           { featureData: feature.toJSON() },
         )
-        session.showDrawerWidget(featureWidget)
+        session.showWidget(featureWidget)
       }
       if (isSelectionContainer(session)) {
         session.setSelection(feature)

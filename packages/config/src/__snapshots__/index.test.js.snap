@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Config editing adds config editor drawer widget 1`] = `Object {}`;
+exports[`Config editing adds config editor widget 1`] = `Object {}`;
 
 exports[`Config editing creates proper FromConfigAdapter 1`] = `
 Object {

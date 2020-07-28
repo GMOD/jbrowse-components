@@ -36,53 +36,46 @@ clicked. Update "index.html" like this:
 
 ```html {35-43,45-46} title="index.html"
 <html>
+  <head>
+    <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
+  </head>
 
-<head>
-  <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
-</head>
+  <body>
+    <h1>We're using JBrowse Linear View!</h1>
+    <button data-type="gene_button" data-location="10:94762681..94855547">
+      CYP2C19
+    </button>
+    <button data-type="gene_button" data-location="13:32315086..32400266">
+      BRCA2
+    </button>
+    <div id="jbrowse_linear_view"></div>
+    <script type="module">
+      import assembly from './assembly.js'
+      import tracks from './tracks.js'
+      const genomeView = new JBrowseLinearView({
+        container: document.getElementById('jbrowse_linear_view'),
+        assembly,
+        tracks,
+        location: '1:100,987,269..100,987,368',
+      })
 
-<body>
-  <h1>We're using JBrowse Linear View!</h1>
-  <button data-type="gene_button" data-location="10:94762681..94855547">
-    CYP2C19
-  </button>
-  <button data-type="gene_button" data-location="13:32315086..32400266">
-    BRCA2
-  </button>
-  <div id="jbrowse_linear_view"></div>
-  <script type="module">
-    import assembly from './assembly.js'
-    import tracks from './tracks.js'
-    const genomeView = new JBrowseLinearView({
-      container: document.getElementById('jbrowse_linear_view'),
-      assembly,
-      tracks,
-      location: '1:100,987,269..100,987,368',
-    })
-
-    function navTo(event) {
-      genomeView.view.navToLocString(event.target.dataset.location)
-    }
-    const buttons = document.getElementsByTagName('button')
-    for (const button of buttons) {
-      if (button.dataset.type === 'gene_button') {
-        button.addEventListener('click', navTo)
+      function navTo(event) {
+        genomeView.view.navToLocString(event.target.dataset.location)
       }
-    }
-    const textArea = document.getElementById('viewstate')
-    document
-      .getElementById('showviewstate')
-      .addEventListener(
-        'click',
-        () => {
-          textArea.innerHTML = JSON.stringify(genomeView.view, undefined, 2)
+      const buttons = document.getElementsByTagName('button')
+      for (const button of buttons) {
+        if (button.dataset.type === 'gene_button') {
+          button.addEventListener('click', navTo)
         }
-      )
-  </script>
-  <button id="showviewstate">Show view state</button>
-  <textarea id="viewstate" name="viewstate" rows="20" cols="80"></textarea>
-</body>
-
+      }
+      const textArea = document.getElementById('viewstate')
+      document.getElementById('showviewstate').addEventListener('click', () => {
+        textArea.innerHTML = JSON.stringify(genomeView.view, undefined, 2)
+      })
+    </script>
+    <button id="showviewstate">Show view state</button>
+    <textarea id="viewstate" name="viewstate" rows="20" cols="80"></textarea>
+  </body>
 </html>
 ```
 
@@ -93,9 +86,9 @@ with the view and see what in the view state changes when you do certain things.
 
 Some of the view state entries are:
 
-* `bpPerPx` - This is a zoom level. A smaller number is more zoomed in.
-* `displayedRegions` - The extent of the areas currently in view. By default
-it will be the full extent of a single chromosome, but you can add multiple
-regions, have the regions cover only part of a chromosome, reverse the regions,
-etc.
-* `hideHeader` - Whether or not the header is hidden.
+- `bpPerPx` - This is a zoom level. A smaller number is more zoomed in.
+- `displayedRegions` - The extent of the areas currently in view. By default
+  it will be the full extent of a single chromosome, but you can add multiple
+  regions, have the regions cover only part of a chromosome, reverse the regions,
+  etc.
+- `hideHeader` - Whether or not the header is hidden.

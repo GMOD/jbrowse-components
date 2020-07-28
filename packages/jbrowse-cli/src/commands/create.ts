@@ -1,7 +1,5 @@
 import { Command, flags } from '@oclif/command'
-import * as fs from 'fs'
 import { promises as fsPromises } from 'fs'
-import * as path from 'path'
 import fetch from 'node-fetch'
 import * as unzip from 'unzipper'
 
@@ -85,51 +83,24 @@ export default class Create extends Command {
 
     const locationUrl = url || (await this.getTagOrLatest(tag))
 
-    let response
-    try {
-      response = await fetch(locationUrl, {
-        method: 'GET',
-      })
-    } catch (error) {
-      this.error(error)
+    const response = await fetch(locationUrl)
+    if (!response.ok) {
+      this.error(`Failed to fetch: ${response.statusText}`, { exit: 50 })
     }
-    if (!response.ok)
-      this.error(`Failed to fetch JBrowse2 from server`, { exit: 50 })
 
+    const type = response.headers.get('content-type')
     if (
       url &&
-      response.headers.get('content-type') !== 'application/zip' &&
-      response.headers.get('content-type') !== 'application/octet-stream'
-    )
+      type !== 'application/zip' &&
+      type !== 'application/octet-stream'
+    ) {
       this.error(
         'The URL provided does not seem to be a JBrowse installation URL',
       )
+    }
 
-    response.body
-      .pipe(unzip.Parse())
-      .on('entry', async (entry: unzip.Entry) => {
-        const { path: fileName, type } = entry
-        if (type === 'File') {
-          try {
-            const location = path.join(argsPath, fileName)
-            await fsPromises.mkdir(path.dirname(location), {
-              recursive: true,
-            })
-            entry.pipe(fs.createWriteStream(path.join(argsPath, fileName)))
-          } catch (error) {
-            this.error(error)
-          }
-        } else entry.autodrain()
-      })
-      .on('error', err => {
-        fs.unlink(argsPath, () => {})
-        this.error(
-          `Failed to download JBrowse 2 with ${err}. Please try again later`,
-        )
-      })
-      .on('close', () => {
-        this.log(`Your JBrowse 2 setup has been created at ${argsPath}`)
-      })
+    await response.body.pipe(unzip.Extract({ path: argsPath })).promise()
+    this.log('Finished')
   }
 
   async checkPath(userPath: string) {

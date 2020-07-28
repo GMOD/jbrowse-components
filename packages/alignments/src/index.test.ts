@@ -116,7 +116,7 @@ test('test selection in alignments track model with mock session', () => {
     pluginManager.getTrackType('SNPCoverageTrack'),
   )
 
-  // TODO: requires having actual session.addDrawerWidget
+  // TODO: requires having actual session.addWidget
   // sessionModel.track.selectFeature({
   //   id() {
   //     return 1234

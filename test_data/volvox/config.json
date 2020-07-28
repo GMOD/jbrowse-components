@@ -1168,15 +1168,15 @@
           ]
         }
       ],
-      "drawerWidgets": {
+      "widgets": {
         "hierarchicalTrackSelector": {
           "id": "hierarchicalTrackSelector",
-          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "type": "HierarchicalTrackSelectorWidget",
           "filterText": "",
           "view": "integration_test"
         }
       },
-      "activeDrawerWidgets": {
+      "activeWidgets": {
         "hierarchicalTrackSelector": "hierarchicalTrackSelector"
       }
     }

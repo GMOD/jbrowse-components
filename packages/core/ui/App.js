@@ -59,7 +59,7 @@ function App({ session }) {
   const classes = useStyles()
   const { pluginManager } = session
 
-  const { visibleDrawerWidget, drawerWidth } = session
+  const { visibleWidget, drawerWidth } = session
 
   function handleNameChange(newName) {
     if (
@@ -80,7 +80,7 @@ function App({ session }) {
       className={classes.root}
       style={{
         gridTemplateColumns: `[main] 1fr${
-          visibleDrawerWidget ? ` [drawer] ${drawerWidth}px` : ''
+          visibleWidget ? ` [drawer] ${drawerWidth}px` : ''
         }`,
       }}
     >
@@ -141,7 +141,7 @@ function App({ session }) {
         </div>
       </div>
 
-      {visibleDrawerWidget ? <DrawerWidget session={session} /> : null}
+      {visibleWidget ? <DrawerWidget session={session} /> : null}
       <Snackbar session={session} />
     </div>
   )

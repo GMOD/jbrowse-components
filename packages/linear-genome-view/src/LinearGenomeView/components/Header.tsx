@@ -1,7 +1,7 @@
 import { Region } from '@gmod/jbrowse-core/util/types'
 import {
   getSession,
-  isSessionModelWithDrawerWidgets,
+  isSessionModelWithWidgets,
   parseLocString,
 } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
@@ -67,11 +67,11 @@ const Controls = observer(({ model }: { model: LGV }) => {
         value="track_select"
         color="secondary"
         selected={
-          isSessionModelWithDrawerWidgets(session) &&
-          session.visibleDrawerWidget &&
-          session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
+          isSessionModelWithWidgets(session) &&
+          session.visibleWidget &&
+          session.visibleWidget.id === 'hierarchicalTrackSelector' &&
           // @ts-ignore
-          session.visibleDrawerWidget.view.id === model.id
+          session.visibleWidget.view.id === model.id
         }
       >
         <TrackSelectorIcon fontSize="small" />
@@ -293,7 +293,7 @@ export default observer(({ model }: { model: LGV }) => {
       <PanControls model={model} />
       <Search model={model} />
       <ZoomControls model={model} />
-      <div className={classes.spacer} />{' '}
+      <div className={classes.spacer} />
     </div>
   )
 
