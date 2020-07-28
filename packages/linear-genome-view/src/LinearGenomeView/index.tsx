@@ -338,7 +338,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           <svg
             width="100%"
             height="100%"
-            viewBox="0,0,2000,1000"
+            viewBox="-2000,0,2000,1000"
             xmlns="http://www.w3.org/2000/svg"
           >
             {
@@ -346,7 +346,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 self.tracks.map(async track => {
                   const current = offset
                   offset += track.height + 20
-                  const {trackId} = track
+                  const { trackId } = track
                   return (
                     <g key={trackId} transform={`translate(0 ${current})`}>
                       {await track.renderSvg()}
