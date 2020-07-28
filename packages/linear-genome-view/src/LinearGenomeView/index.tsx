@@ -994,11 +994,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       async exportSvg() {
         let offset = 20
+        const { width } = self
         const html = renderToStaticMarkup(
           <svg
             width="100%"
             height="100%"
-            viewBox="-2000,0,2000,1000"
+            viewBox={[0, 0, width, 1000].toString()}
             xmlns="http://www.w3.org/2000/svg"
           >
             {self.staticBlocks.map(block => {
@@ -1006,7 +1007,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               const offsetLeft = block.offsetPx - self.offsetPx
               console.log(offsetLeft)
               return (
-                <g transform={`translate(${offsetLeft - 1848} 0)`}>
+                <g transform={`translate(${offsetLeft} 0)`}>
                   <Ruler
                     start={block.start}
                     end={block.end}
