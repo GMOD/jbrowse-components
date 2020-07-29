@@ -192,6 +192,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 >
                   <div
                     class="makeStyles-fieldName"
+                    title="reference base(s): Each base must be one of A,C,G,T,N (case insensitive)."
                   >
                     REF
                   </div>
@@ -208,6 +209,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 >
                   <div
                     class="makeStyles-fieldName"
+                    title=" alternate base(s): Comma-separated list of alternate non-reference alleles"
                   >
                     ALT
                   </div>
@@ -224,6 +226,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 >
                   <div
                     class="makeStyles-fieldName"
+                    title="quality: Phred-scaled quality score for the assertion made in ALT"
                   >
                     QUAL
                   </div>
