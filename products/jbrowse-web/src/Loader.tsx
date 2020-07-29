@@ -70,7 +70,12 @@ function NoConfigMessage() {
             </li>
             <li>
               <a href="?config=test_data/config_synteny_grape_peach.json">
-                Grape/Peach Syteny
+                Grape/Peach Synteny
+              </a>
+            </li>
+            <li>
+              <a href="?config=test_data/yeast_synteny/config.json">
+                Yeast Synteny
               </a>
             </li>
             <li>
