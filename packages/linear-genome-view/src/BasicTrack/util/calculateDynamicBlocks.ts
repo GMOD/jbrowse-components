@@ -74,13 +74,19 @@ export default function calculateDynamicBlocks(model: LGV) {
       let blockOffsetPx
       if (reversed) {
         start = regionEnd - (rightPx - displayedRegionLeftPx) * bpPerPx
-        end = regionEnd - (leftPx - displayedRegionLeftPx) * bpPerPx
+        end = Math.max(
+          regionStart,
+          regionEnd - (leftPx - displayedRegionLeftPx) * bpPerPx,
+        )
         isLeftEndOfDisplayedRegion = end === regionEnd
         isRightEndOfDisplayedRegion = start === regionStart
         blockOffsetPx = displayedRegionLeftPx + (regionEnd - end) / bpPerPx
       } else {
         start = (leftPx - displayedRegionLeftPx) * bpPerPx + regionStart
-        end = (rightPx - displayedRegionLeftPx) * bpPerPx + regionStart
+        end = Math.min(
+          regionEnd,
+          (rightPx - displayedRegionLeftPx) * bpPerPx + regionStart,
+        )
         isLeftEndOfDisplayedRegion = start === regionStart
         isRightEndOfDisplayedRegion = end === regionEnd
         blockOffsetPx = displayedRegionLeftPx + (start - regionStart) / bpPerPx
