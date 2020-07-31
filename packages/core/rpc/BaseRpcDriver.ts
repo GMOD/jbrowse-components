@@ -19,30 +19,27 @@ function isClonable(thing: unknown): boolean {
   return true
 }
 
-const WORKER_MAX_PING_TIME = 30 * 1000 // 30 secs
+const WORKER_MAX_PING_TIME = 30 * 1000
 
 // watches the given worker object, returns a promise that will be rejected if
 // the worker times out
-function watchWorker(worker: WorkerHandle, pingTime: number): Promise<void> {
-  return new Promise((resolve, reject): void => {
-    let pingIsOK = true
-    const watcherInterval = setInterval(() => {
-      if (!pingIsOK) {
-        clearInterval(watcherInterval)
-        reject(
-          new Error(
-            `worker look longer than ${pingTime} ms to respond. terminated.`,
-          ),
-        )
-      } else {
-        pingIsOK = false
-        worker
-          .call('ping', [], { timeout: 2 * WORKER_MAX_PING_TIME })
-          .then(() => {
-            pingIsOK = true
-          })
+async function watchWorker(worker: WorkerHandle, pingTime: number) {
+  let handle: ReturnType<typeof setInterval>
+
+  // first ping call has no timeout, wait for worker download
+  await worker.call('ping', [], { timeout: 100000000 })
+
+  // after first ping succeeds, apply wait for timeout
+  return new Promise((resolve, reject) => {
+    handle = setInterval(async () => {
+      try {
+        await worker.call('ping', [], { timeout: WORKER_MAX_PING_TIME })
+      } catch (e) {
+        reject(e)
       }
     }, pingTime)
+  }).finally(() => {
+    clearInterval(handle)
   })
 }
 
@@ -201,6 +198,7 @@ export default abstract class BaseRpcDriver {
       timeout: 5 * 60 * 1000, // 5 minutes
       ...options,
     })
+
     let handle: ReturnType<typeof setInterval>
     const result = await Promise.race([
       resultP,
