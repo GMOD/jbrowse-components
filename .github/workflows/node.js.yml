@@ -1,0 +1,66 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Node.js CI
+
+on: [push]
+
+jobs:
+  lint:
+    name: Lint on node 10.x and ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js 10.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 10.x
+    - name: Install deps and build (with cache)
+      uses: bahmutov/npm-install@v1
+    - name: Lint codebase
+      run: yarn eslint --config .eslintrc.base.json --no-eslintrc --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .
+
+  test:
+    name: Test on node 10.x and ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js 10.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 10.x
+    - name: Install deps and build (with cache)
+      uses: bahmutov/npm-install@v1
+    - name: test codebase
+      run: yarn jest --ci --coverage
+
+  format:
+    name: Format on node 10.x and ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js 10.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 10.x
+    - name: Install deps and build (with cache)
+      uses: bahmutov/npm-install@v1
+    - name: check codebase format
+      run: yarn prettier --check .
+
+  build:
+    name: Build on node 10.x and ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js 10.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 10.x
+    - name: Install deps and build (with cache)
+      uses: bahmutov/npm-install@v1
+    - name: Build codebase
+      run: yarn build
+    - name: Build web
+      run: yarn build:web
+    - run: yarn jest --ci packages/integration-tests
