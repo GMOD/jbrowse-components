@@ -977,12 +977,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const { width } = self
         const html = renderToStaticMarkup(
           <svg
-            width="100%"
-            height="100%"
-            viewBox={[0, 0, width, 1000].toString()}
             xmlns="http://www.w3.org/2000/svg"
+            viewBox={[0, 0, width, 1000].toString()}
           >
-            {self.staticBlocks.map(block => {
+            {self.dynamicBlocks.map(block => {
               const offsetLeft = block.offsetPx - self.offsetPx
               return (
                 <g key={block.key} transform={`translate(${offsetLeft} 0)`}>

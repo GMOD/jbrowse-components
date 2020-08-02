@@ -108,6 +108,7 @@ function LineRendering(props) {
 
           curr += info.score
           const y = scale(curr)
+          const height = -scale(curr + info.score) + y
           const element = (
             <rect
               key={`${feature.get('id')}-${info.base}`}
@@ -115,7 +116,7 @@ function LineRendering(props) {
               y={y}
               fill={fillStyle}
               width={w}
-              height={-scale(curr + info.score) + y}
+              height={height}
             />
           )
           return element

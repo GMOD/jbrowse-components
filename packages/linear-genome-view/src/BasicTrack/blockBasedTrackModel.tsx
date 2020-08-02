@@ -249,7 +249,6 @@ const blockBasedTrack = types
       const { dynamicBlocks } = view
       const renderings = await Promise.all(
         dynamicBlocks.contentBlocks.map(block => {
-          console.log({ block })
           const blockState = BlockState.create({
             key: block.key,
             region: block.toRegion(),
@@ -272,11 +271,11 @@ const blockBasedTrack = types
       return (
         <>
           {renderings.map((rendering, index) => {
-            const { offset, key } = dynamicBlocks.contentBlocks[index]
+            const { offsetPx, key } = dynamicBlocks.contentBlocks[index]
             return (
               <g
                 key={key}
-                transform={`translate(${offset - viewOffset} 0)`}
+                transform={`translate(${offsetPx - viewOffset} 0)`}
                 // eslint-disable-next-line react/no-danger
                 dangerouslySetInnerHTML={{ __html: rendering.html }}
               />
