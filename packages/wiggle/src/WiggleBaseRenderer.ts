@@ -28,7 +28,7 @@ export interface WiggleBaseRendererProps {
 }
 
 export default abstract class extends ServerSideRendererType {
-  getExpandedRegion(region: Region, renderArgs: RenderArgsSoftClip) {
+  getExpandedRegion(region: Region) {
     const bpExpansion = Math.round((region.end - region.start) / 4)
     return {
       ...region,
@@ -37,38 +37,12 @@ export default abstract class extends ServerSideRendererType {
     }
   }
 
-  async makeImageData(props: WiggleBaseRendererProps) {
-    const { height, regions, bpPerPx, highResolutionScaling = 1 } = props
-    const [region] = regions
-    const width = (region.end - region.start) / bpPerPx
-    if (!(width > 0) || !(height > 0)) {
-      return { height: 0, width: 0 }
-    }
-    const canvas = createCanvas(
-      Math.ceil(width * highResolutionScaling),
-      height * highResolutionScaling,
-    )
-    const ctx = canvas.getContext('2d')
-    ctx.scale(highResolutionScaling, highResolutionScaling)
-    this.draw(ctx, props)
-
-    const imageData = await createImageBitmap(canvas)
-    return { imageData, height, width }
-  }
-
-  /** draw features to context given props */
-  abstract draw(
-    ctx: CanvasRenderingContext2D,
-    props: WiggleBaseRendererProps,
-  ): void
-
   async render(renderProps: WiggleBaseRendererProps) {
-    const { height, width, imageData } = await this.makeImageData(renderProps)
     const element = React.createElement(
       this.ReactComponent,
-      { ...renderProps, height, width, imageData },
+      { ...renderProps },
       null,
     )
-    return { element, imageData, height, width }
+    return { element }
   }
 }

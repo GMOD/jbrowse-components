@@ -1,9 +1,10 @@
+import * as d3 from 'd3'
 import { observer } from 'mobx-react'
 import React, { useRef } from 'react'
-
+import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
+import { getScale } from './util'
 
 function WiggleRendering(props: {
   regions: Region[]
@@ -19,15 +20,15 @@ function WiggleRendering(props: {
     features,
     bpPerPx,
     width,
-    height,
     onMouseLeave = () => {},
     onMouseMove = () => {},
   } = props
   const [region] = regions
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef<SVGSVGElement>(null)
 
   return (
-    <div
+    <svg
+      style={{ width: '100%', height: '100%' }}
       ref={ref}
       onMouseMove={event => {
         let offset = 0
@@ -56,15 +57,31 @@ function WiggleRendering(props: {
       onMouseLeave={event => onMouseLeave(event)}
       role="presentation"
       className="WiggleRendering"
-      style={{
-        overflow: 'visible',
-        position: 'relative',
-        height,
-      }}
     >
-      <PrerenderedCanvas {...props} />
-    </div>
+      <LineRendering {...props} />
+    </svg>
   )
+}
+
+function LineRendering(props: any) {
+  const { features, regions, height, scaleOpts, bpPerPx } = props
+  const [region] = regions
+  const scale = getScale({ ...scaleOpts, range: [height, 0] })
+
+  const line = d3
+    .line()
+    .y(d => scale(d[1]))
+    .context(null)
+  const data = []
+
+  for (const feature of features.values()) {
+    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+    const score = feature.get('score')
+    data.push([leftPx, score])
+    data.push([rightPx, score])
+  }
+
+  return <path d={line(data)} fill="none" stroke="blue" />
 }
 
 export default observer(WiggleRendering)
