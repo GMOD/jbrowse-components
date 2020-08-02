@@ -5,18 +5,9 @@ import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getScale } from './util'
+import { WiggleBaseRendererProps } from './WiggleBaseRenderer'
 
-interface BaseProps {
-  regions: Region[]
-  features: Map<string, Feature>
-  bpPerPx: number
-  width: number
-  height: number
-  onMouseLeave: Function
-  onMouseMove: Function
-  forceSvg: boolean
-}
-function WiggleRendering(props: BaseProps) {
+function WiggleRendering(props: WiggleBaseRendererProps) {
   const {
     regions,
     features,
@@ -68,7 +59,7 @@ function WiggleRendering(props: BaseProps) {
   )
 }
 
-function LineRendering(props: any) {
+function LineRendering(props: WiggleBaseRendererProps) {
   const { features, regions, height, scaleOpts, bpPerPx } = props
   const [region] = regions
   const scale = getScale({ ...scaleOpts, range: [height, 0] })
