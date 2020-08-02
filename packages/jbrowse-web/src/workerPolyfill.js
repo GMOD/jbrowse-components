@@ -20,6 +20,7 @@ self.document = {
   querySelector() {
     return { appendChild() {} }
   },
+  documentElement: {},
   createElement() {
     return {
       style: {},

@@ -28,6 +28,15 @@ export interface WiggleBaseRendererProps {
 }
 
 export default abstract class extends ServerSideRendererType {
+  getExpandedRegion(region: Region, renderArgs: RenderArgsSoftClip) {
+    const bpExpansion = Math.round((region.end - region.start) / 4)
+    return {
+      ...region,
+      start: Math.floor(Math.max(region.start - bpExpansion, 0)),
+      end: Math.ceil(region.end + bpExpansion),
+    }
+  }
+
   async makeImageData(props: WiggleBaseRendererProps) {
     const { height, regions, bpPerPx, highResolutionScaling = 1 } = props
     const [region] = regions
