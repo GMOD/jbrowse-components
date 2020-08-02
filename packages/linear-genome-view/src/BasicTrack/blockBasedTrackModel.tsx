@@ -249,6 +249,7 @@ const blockBasedTrack = types
       const { dynamicBlocks } = view
       const renderings = await Promise.all(
         dynamicBlocks.contentBlocks.map(block => {
+          console.log({ block })
           const blockState = BlockState.create({
             key: block.key,
             region: block.toRegion(),

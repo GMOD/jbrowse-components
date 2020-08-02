@@ -28,15 +28,6 @@ export interface WiggleBaseRendererProps {
 }
 
 export default abstract class extends ServerSideRendererType {
-  getExpandedRegion(region: Region) {
-    const bpExpansion = Math.round((region.end - region.start) / 4)
-    return {
-      ...region,
-      start: Math.floor(Math.max(region.start - bpExpansion, 0)),
-      end: Math.ceil(region.end + bpExpansion),
-    }
-  }
-
   async render(renderProps: WiggleBaseRendererProps) {
     const element = React.createElement(
       this.ReactComponent,
