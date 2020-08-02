@@ -6,7 +6,7 @@ import { Region } from '@gmod/jbrowse-core/util/types'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getScale } from './util'
 
-function WiggleRendering(props: {
+interface BaseProps {
   regions: Region[]
   features: Map<string, Feature>
   bpPerPx: number
@@ -14,7 +14,9 @@ function WiggleRendering(props: {
   height: number
   onMouseLeave: Function
   onMouseMove: Function
-}) {
+  forceSvg: boolean
+}
+function WiggleRendering(props: BaseProps) {
   const {
     regions,
     features,
@@ -22,11 +24,14 @@ function WiggleRendering(props: {
     width,
     onMouseLeave = () => {},
     onMouseMove = () => {},
+    forceSvg,
   } = props
-  const [region] = regions
+  const region = regions[0]
   const ref = useRef<SVGSVGElement>(null)
 
-  return (
+  return forceSvg ? (
+    <LineRendering {...props} />
+  ) : (
     <svg
       style={{ width: '100%', height: '100%' }}
       ref={ref}
