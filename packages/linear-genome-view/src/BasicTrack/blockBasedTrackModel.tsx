@@ -244,40 +244,44 @@ const blockBasedTrack = types
     },
 
     async renderSvg() {
-      const renderings = []
       const view = getContainingView(self) as LinearGenomeViewModel
-      for (const block of self.blockState.values()) {
-        const {
-          rpcManager,
-          renderArgs = { renderProps: {} },
-          rendererType,
-        } = renderBlockData(block)
-        const rendering = rendererType.renderInClient(rpcManager, {
-          ...renderArgs,
-          renderProps: {
-            ...renderArgs.renderProps,
-            forceSvg: true,
-          },
-        })
-        renderings.push(rendering)
-      }
-      const results = await Promise.all(renderings)
-      const blocks = self.blockDefinitions
+      const viewOffset = view.offsetPx
+      const { dynamicBlocks } = view
+      const renderings = await Promise.all(
+        dynamicBlocks.contentBlocks.map(block => {
+          const blockState = BlockState.create({
+            key: block.key,
+            region: block.toRegion(),
+          })
+          const {
+            rpcManager,
+            renderArgs = { renderProps: {} },
+            rendererType,
+          } = renderBlockData(blockState, self)
+
+          return rendererType.renderInClient(rpcManager, {
+            ...renderArgs,
+            renderProps: {
+              ...renderArgs.renderProps,
+              forceSvg: true,
+            },
+          })
+        }),
+      )
       return (
-        <g>
-          {results.map((rendering, index) => {
-            const block = blocks.blocks[index]
-            const { key, offsetPx } = block
+        <>
+          {renderings.map((rendering, index) => {
+            const { offset, key } = dynamicBlocks.contentBlocks[index]
             return (
               <g
                 key={key}
-                transform={`translate(${offsetPx - view.offsetPx} 0)`}
+                transform={`translate(${offset - viewOffset} 0)`}
                 // eslint-disable-next-line react/no-danger
                 dangerouslySetInnerHTML={{ __html: rendering.html }}
               />
             )
           })}
-        </g>
+        </>
       )
     },
   }))

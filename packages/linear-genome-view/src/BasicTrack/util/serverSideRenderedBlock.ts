@@ -170,13 +170,23 @@ const blockState = types
 export default blockState
 export type BlockStateModel = typeof blockState
 export type BlockModel = Instance<BlockStateModel>
-// calls the render worker to render the block content
+
+// renderBlockData prepares data for the autorun, and renderBlockEffect calls
+// the worker to render the results
+//
 // not using a flow for this, because the flow doesn't
 // work with autorun
-export function renderBlockData(self: Instance<BlockStateModel>) {
+//
+// note that self refers to a BlockState, optTrack refers to, optionally, a
+// track, which is used for SVG export because the blocks are disconnected
+// from the tree and cannot use getParent
+export function renderBlockData(
+  self: Instance<BlockStateModel>,
+  optTrack?: any,
+) {
   try {
-    const { assemblyManager, rpcManager } = getSession(self)
-    const track = getParent(self, 2)
+    const { assemblyManager, rpcManager } = getSession(optTrack || self)
+    const track = optTrack || getParent(self, 2)
     const assemblyNames = getTrackAssemblyNames(track)
     let cannotBeRenderedReason
     if (!assemblyNames.includes(self.region.assemblyName)) {
