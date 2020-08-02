@@ -79,6 +79,7 @@ function LineRendering(props: WiggleRenderingProps) {
     .area()
     .y0((d: D) => scale(d[1].get('minScore')))
     .y1((d: D) => scale(d[1].get('maxScore')))
+    .defined((d: D) => d[1].get('summary'))
     .context(null)
   const data = []
 
