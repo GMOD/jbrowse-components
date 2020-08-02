@@ -8,21 +8,37 @@ export default class extends WiggleBaseRenderer {
   draw(context, props) {
     const { features, regions, bpPerPx, scaleOpts, height, config } = props
     const region = regions[0]
-    const scale = getScale({ ...scaleOpts, range: [0, height] })
+    const scale = getScale({ ...scaleOpts, range: [height, 0] })
     const line = d3
       .line()
-      .curve(d3.curveBasis)
       .y(d => scale(d[1]))
       .context(context)
-    const data = []
-    context.beginPath()
+    const data1 = []
+    const data2 = []
+    const data3 = []
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const score = feature.get('score')
-      data.push([(leftPx + rightPx) / 2, score])
+      const maxScore = feature.get('maxScore')
+      const minScore = feature.get('maxScore')
+      data1.push([(leftPx + rightPx) / 2, score])
+      data2.push([(leftPx + rightPx) / 2, maxScore])
+      data3.push([(leftPx + rightPx) / 2, minScore])
     }
 
-    line(data)
+    context.beginPath()
+    context.strokeStyle = 'green'
+    line(data1)
+    context.stroke()
+
+    context.beginPath()
+    context.strokeStyle = 'blue'
+    line(data2)
+    context.stroke()
+
+    context.beginPath()
+    context.strokeStyle = 'red'
+    line(data3)
     context.stroke()
   }
 }

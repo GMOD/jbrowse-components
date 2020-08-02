@@ -954,6 +954,7 @@
           "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
         }
       },
+      "defaultRendering": "line",
       "renderers": {
         "DensityRenderer": {
           "type": "DensityRenderer"
