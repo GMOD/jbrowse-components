@@ -7,12 +7,17 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getScale } from './util'
 import { WiggleBaseRendererProps } from './WiggleBaseRenderer'
 
-function WiggleRendering(props: WiggleBaseRendererProps) {
+interface WiggleRenderingProps extends WiggleBaseRendererProps {
+  onMouseLeave: Function
+  onMouseMove: Function
+}
+function WiggleRendering(props: WiggleRenderingProps) {
   const {
     regions,
     features,
     bpPerPx,
     width,
+    height,
     onMouseLeave = () => {},
     onMouseMove = () => {},
     forceSvg,
@@ -24,7 +29,7 @@ function WiggleRendering(props: WiggleBaseRendererProps) {
     <LineRendering {...props} />
   ) : (
     <svg
-      style={{ width: '100%', height: '100%' }}
+      style={{ width: '100%', height }}
       ref={ref}
       onMouseMove={event => {
         let offset = 0
@@ -59,25 +64,36 @@ function WiggleRendering(props: WiggleBaseRendererProps) {
   )
 }
 
-function LineRendering(props: WiggleBaseRendererProps) {
+function LineRendering(props: WiggleRenderingProps) {
   const { features, regions, height, scaleOpts, bpPerPx } = props
   const [region] = regions
   const scale = getScale({ ...scaleOpts, range: [height, 0] })
 
+  type D = [number, Feature]
   const line = d3
     .line()
-    .y(d => scale(d[1]))
+    .y((d: D) => scale(d[1].get('score')))
+    .context(null)
+
+  const area = d3
+    .area()
+    .y0((d: D) => scale(d[1].get('minScore')))
+    .y1((d: D) => scale(d[1].get('maxScore')))
     .context(null)
   const data = []
 
   for (const feature of features.values()) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-    const score = feature.get('score')
-    data.push([leftPx, score])
-    data.push([rightPx, score])
+    data.push([leftPx, feature])
+    data.push([rightPx, feature])
   }
 
-  return <path d={line(data)} fill="none" stroke="blue" />
+  return (
+    <>
+      <path d={line(data)} fill="none" stroke="rgb(0,0,255)" />
+      <path d={area(data)} fill="rgb(0,0,255,0.5)" stroke="none" />
+    </>
+  )
 }
 
 export default observer(WiggleRendering)
