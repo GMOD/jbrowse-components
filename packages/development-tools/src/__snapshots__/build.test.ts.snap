@@ -13,13 +13,13 @@ Object {
   "devtool": false,
   "entry": "./src/index.ts",
   "externals": Object {
-    "@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail": Object {
-      "amd": "@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail",
-      "commonjs": "@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail",
-      "commonjs2": "@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail",
+    "@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail": Object {
+      "amd": "@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail",
+      "commonjs": "@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail",
+      "commonjs2": "@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail",
+        "@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail",
       ],
     },
     "@gmod/jbrowse-core/BaseViewModel": Object {
@@ -67,15 +67,6 @@ Object {
         "@gmod/jbrowse-core/pluggableElementTypes/AdapterType",
       ],
     },
-    "@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType": Object {
-      "amd": "@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType",
-      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType",
-      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType",
-      "root": Array [
-        "JBrowseExports",
-        "@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType",
-      ],
-    },
     "@gmod/jbrowse-core/pluggableElementTypes/TrackType": Object {
       "amd": "@gmod/jbrowse-core/pluggableElementTypes/TrackType",
       "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/TrackType",
@@ -92,6 +83,15 @@ Object {
       "root": Array [
         "JBrowseExports",
         "@gmod/jbrowse-core/pluggableElementTypes/ViewType",
+      ],
+    },
+    "@gmod/jbrowse-core/pluggableElementTypes/WidgetType": Object {
+      "amd": "@gmod/jbrowse-core/pluggableElementTypes/WidgetType",
+      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/WidgetType",
+      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/WidgetType",
+      "root": Array [
+        "JBrowseExports",
+        "@gmod/jbrowse-core/pluggableElementTypes/WidgetType",
       ],
     },
     "@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType": Object {

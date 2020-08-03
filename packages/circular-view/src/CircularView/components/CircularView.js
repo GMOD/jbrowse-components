@@ -169,9 +169,9 @@ export default pluginManager => {
             onClick={model.activateTrackSelector}
             title="select tracks"
             selected={
-              session.visibleDrawerWidget &&
-              session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
-              session.visibleDrawerWidget.view.id === model.id
+              session.visibleWidget &&
+              session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+              session.visibleWidget.view.id === model.id
             }
             value="track_select"
             data-testid="circular_track_select"

@@ -46,16 +46,16 @@ This package provides the "alignments" related features including
 - SNPCoverageTrack - draws calculated coverage with mismatches drawn over the coverage
 - AlignmentsTrack - a "supertrack" which contains a PileupTrack and
   SNPCoverageTrack "subtracks"
-- AlignmentsFeatureDrawerWidget for alignments features
+- AlignmentsFeatureWidget for alignments features
 
 #### packages/variants/
 
 Provides variant features including
 
 - VCF tabix parser
-- VariantFeatureDrawerWidget
+- VariantFeatureWidget
 - VariantTrack that is basically just a normal track, but has logic to popup
-  the VariantFeatureDrawerWidget on feature click
+  the VariantFeatureWidget on feature click
 
 #### packages/website
 

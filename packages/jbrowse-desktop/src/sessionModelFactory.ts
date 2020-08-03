@@ -38,12 +38,12 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         384,
       ),
       views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
-      drawerWidgets: types.map(
-        pluginManager.pluggableMstType('drawer widget', 'stateModel'),
+      widgets: types.map(
+        pluginManager.pluggableMstType('widget', 'stateModel'),
       ),
-      activeDrawerWidgets: types.map(
+      activeWidgets: types.map(
         types.safeReference(
-          pluginManager.pluggableMstType('drawer widget', 'stateModel'),
+          pluginManager.pluggableMstType('widget', 'stateModel'),
         ),
       ),
       connectionInstances: types.map(
@@ -104,11 +104,11 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return getParent(self).version
       },
 
-      get visibleDrawerWidget() {
+      get visibleWidget() {
         if (isAlive(self))
-          // returns most recently added item in active drawer widgets
-          return Array.from(self.activeDrawerWidgets.values())[
-            self.activeDrawerWidgets.size - 1
+          // returns most recently added item in active widgets
+          return Array.from(self.activeWidgets.values())[
+            self.activeWidgets.size - 1
           ]
         return undefined
       },
@@ -185,13 +185,11 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             } catch (err1) {
               // ignore
             }
-            if (this.hasDrawerWidget(node)) {
-              // If a configuration editor drawer widget has the track config
-              // open, close the drawer widget
-              const type = 'configuration editor drawer widget(s)'
-              callbacksToDereferenceTrack.push(() =>
-                this.hideDrawerWidget(node),
-              )
+            if (this.hasWidget(node)) {
+              // If a configuration editor widget has the track config
+              // open, close the widget
+              const type = 'configuration editor widget(s)'
+              callbacksToDereferenceTrack.push(() => this.hideWidget(node))
               dereferenced = true
               if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
               dereferenceTypeCount[type] += 1
@@ -248,13 +246,13 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       removeView(view: any) {
-        for (const [id, drawerWidget] of self.activeDrawerWidgets) {
+        for (const [id, widget] of self.activeWidgets) {
           if (
             id === 'hierarchicalTrackSelector' &&
-            drawerWidget.view &&
-            drawerWidget.view.id === view.id
+            widget.view &&
+            widget.view.id === view.id
           )
-            this.hideDrawerWidget(drawerWidget)
+            this.hideWidget(widget)
         }
         self.views.remove(view)
       },
@@ -309,44 +307,40 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return this.addView(viewType, state)
       },
 
-      addDrawerWidget(
+      addWidget(
         typeName: string,
         id: string,
         initialState = {},
         configuration = { type: typeName },
       ) {
-        const typeDefinition = pluginManager.getElementType(
-          'drawer widget',
-          typeName,
-        )
-        if (!typeDefinition)
-          throw new Error(`unknown drawer widget type ${typeName}`)
+        const typeDefinition = pluginManager.getElementType('widget', typeName)
+        if (!typeDefinition) throw new Error(`unknown widget type ${typeName}`)
         const data = {
           ...initialState,
           id,
           type: typeName,
           configuration,
         }
-        self.drawerWidgets.set(id, data)
-        return self.drawerWidgets.get(id)
+        self.widgets.set(id, data)
+        return self.widgets.get(id)
       },
 
-      showDrawerWidget(drawerWidget: any) {
-        if (self.activeDrawerWidgets.has(drawerWidget.id))
-          self.activeDrawerWidgets.delete(drawerWidget.id)
-        self.activeDrawerWidgets.set(drawerWidget.id, drawerWidget)
+      showWidget(widget: any) {
+        if (self.activeWidgets.has(widget.id))
+          self.activeWidgets.delete(widget.id)
+        self.activeWidgets.set(widget.id, widget)
       },
 
-      hasDrawerWidget(drawerWidget: any) {
-        return self.activeDrawerWidgets.has(drawerWidget.id)
+      hasWidget(widget: any) {
+        return self.activeWidgets.has(widget.id)
       },
 
-      hideDrawerWidget(drawerWidget: any) {
-        self.activeDrawerWidgets.delete(drawerWidget.id)
+      hideWidget(widget: any) {
+        self.activeWidgets.delete(widget.id)
       },
 
-      hideAllDrawerWidgets() {
-        self.activeDrawerWidgets.clear()
+      hideAllWidgets() {
+        self.activeWidgets.clear()
       },
 
       /**
@@ -376,12 +370,12 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             'must pass a configuration model to editConfiguration',
           )
         }
-        const editor = this.addDrawerWidget(
-          'ConfigurationEditorDrawerWidget',
+        const editor = this.addWidget(
+          'ConfigurationEditorWidget',
           'configEditor',
           { target: configuration },
         )
-        this.showDrawerWidget(editor)
+        this.showWidget(editor)
       },
 
       clearConnections() {

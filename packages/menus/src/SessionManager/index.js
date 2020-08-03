@@ -9,4 +9,4 @@ export const stateModel = types.model('SessionManager', {
   type: types.literal('SessionManager'),
 })
 
-export const ReactComponent = import('./components/SessionManager')
+export { default as ReactComponent } from './components/SessionManager'
