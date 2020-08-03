@@ -110,15 +110,23 @@ export default class AddTrack extends Command {
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddTrack)
     const { track: argsTrack } = runArgs
-    const { config, configLocation, category, description, load } = runFlags
+    const {
+      config,
+      skipCheck,
+      force,
+      configLocation,
+      category,
+      description,
+      load,
+    } = runFlags
     let { type, trackId, name, assemblyNames } = runFlags
 
-    if (!(runFlags.skipCheck || runFlags.force)) {
+    if (!(skipCheck || force)) {
       await this.checkLocation(runArgs.location)
     }
     const { location, protocol, local } = await this.resolveFileLocation(
       argsTrack,
-      !(runFlags.skipCheck || runFlags.force),
+      !(skipCheck || force),
     )
     const configPath =
       configLocation || path.join(runArgs.location, 'config.json')
@@ -225,9 +233,8 @@ export default class AddTrack extends Command {
           asm => asm.name === assemblyNames,
         )
         if (assembly) {
-          const sequenceAdapter = assembly.sequence.adapter
           trackConfig.adapter.sequenceAdapter = assembly.sequence.adapter
-        } else {
+        } else if (!skipCheck) {
           this.error(`Failed to find assemblyName ${assemblyNames}`)
         }
         break
