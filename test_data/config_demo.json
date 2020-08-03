@@ -744,6 +744,18 @@
           "location": {
             "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam.bai"
           }
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
         }
       },
       "renderers": {
