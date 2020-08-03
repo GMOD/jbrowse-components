@@ -52,8 +52,36 @@ function detectHardwareConcurrency() {
   }
   return 1
 }
+class LazyWorker {
+  worker?: WorkerHandle
 
-type LazyWorkerHandle = () => WorkerHandle
+  pluginManager: PluginManager
+
+  driver: BaseRpcDriver
+
+  constructor(pluginManager: PluginManager, driver: BaseRpcDriver) {
+    this.pluginManager = pluginManager
+    this.driver = driver
+  }
+
+  getWorker() {
+    if (!this.worker) {
+      const worker = this.driver.makeWorker()
+      watchWorker(worker, WORKER_MAX_PING_TIME).catch(() => {
+        if (this.worker) {
+          console.warn('worker did not respond, killing and generating new one')
+          this.worker.destroy()
+          this.worker.status = 'killed'
+          this.worker = this.getWorker()
+        }
+      })
+      this.worker = worker
+      return worker
+    }
+    return this.worker
+  }
+}
+
 export default abstract class BaseRpcDriver {
   private lastWorkerAssignment = -1
 
@@ -63,7 +91,7 @@ export default abstract class BaseRpcDriver {
 
   abstract makeWorker(pluginManager: PluginManager): WorkerHandle
 
-  private workerPool?: LazyWorkerHandle[]
+  private workerPool?: LazyWorker[]
 
   // filter the given object and just remove any non-clonable things from it
   filterArgs<THING_TYPE>(
@@ -110,36 +138,16 @@ export default abstract class BaseRpcDriver {
     worker.call(functionName, signalId, { timeout: 1000000 })
   }
 
-  createWorkerPool(pluginManager: PluginManager): LazyWorkerHandle[] {
+  createWorkerPool(pluginManager: PluginManager): LazyWorker[] {
     const hardwareConcurrency = detectHardwareConcurrency()
 
     const workerCount =
       this.workerCount || Math.max(1, Math.ceil((hardwareConcurrency - 2) / 3))
 
-    const workerHandles: LazyWorkerHandle[] = new Array(workerCount)
-
-    // eslint-disable-next-line  @typescript-eslint/no-this-alias
-    const thisB = this
+    const workerHandles: LazyWorker[] = new Array(workerCount)
 
     for (let i = 0; i < workerCount; i += 1) {
-      workerHandles[i] = function workerGenerator(this: WorkerGenerator) {
-        if (!this.worker) {
-          const worker = thisB.makeWorker(pluginManager)
-          watchWorker(worker, WORKER_MAX_PING_TIME).catch(() => {
-            if (this.worker) {
-              console.warn(
-                'worker did not respond, killing and generating new one',
-              )
-              this.worker.destroy()
-              this.worker.status = 'killed'
-              this.worker = workerGenerator.call(this)
-            }
-          })
-          this.worker = worker
-          return worker
-        }
-        return this.worker
-      }
+      workerHandles[i] = new LazyWorker(pluginManager, this)
     }
 
     return workerHandles
@@ -169,7 +177,7 @@ export default abstract class BaseRpcDriver {
     }
 
     // console.log(`${sessionId} -> worker ${workerNumber}`)
-    const worker = workers[workerNumber]()
+    const worker = workers[workerNumber].getWorker()
     if (!worker) {
       throw new Error('no web workers registered for RPC')
     }
