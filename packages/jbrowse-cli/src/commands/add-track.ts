@@ -221,11 +221,15 @@ export default class AddTrack extends Command {
     switch (type) {
       case 'PileupTrack':
       case 'AlignmentsTrack': {
-        const idx = configContents.assemblies.findIndex(
-          assemblies => assemblies.name === assemblyNames,
+        const assembly = configContents.assemblies.find(
+          asm => asm.name === assemblyNames,
         )
-        const sequenceAdapter = configContents.assemblies[idx].sequence.adapter
-        trackConfig.adapter.sequenceAdapter = sequenceAdapter
+        if (assembly) {
+          const sequenceAdapter = assembly.sequence.adapter
+          trackConfig.adapter.sequenceAdapter = assembly.sequence.adapter
+        } else {
+          this.error(`Failed to find assemblyName ${assemblyNames}`)
+        }
         break
       }
       case 'SNPCoverageTrack': {

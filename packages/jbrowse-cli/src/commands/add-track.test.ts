@@ -7,34 +7,7 @@ import * as path from 'path'
 
 import { setup } from '../testUtil'
 
-interface Config {
-  assemblies: []
-}
 const fsPromises = fs.promises
-
-const defaultConfig = {
-  assemblies: [
-    {
-      name: 'testAssembly',
-      sequence: {
-        type: 'testSequenceTrack',
-        trackId: '',
-        adapter: {
-          type: 'testSeqAdapter',
-          twoBitLocation: {
-            uri: 'test.2bit',
-          },
-        },
-      },
-    },
-  ],
-  configuration: {},
-  connections: [],
-  defaultSession: {
-    name: 'New Session',
-  },
-  tracks: [],
-}
 
 const simpleBam = path.join(__dirname, '..', '..', 'test', 'data', 'simple.bam')
 const testConfig = path.join(
@@ -147,34 +120,31 @@ describe('add-track', () => {
         path.join(ctx.dir, 'config.json'),
         { encoding: 'utf8' },
       )
-      expect(JSON.parse(contents)).toEqual({
-        ...defaultConfig,
-        tracks: [
-          {
-            type: 'AlignmentsTrack',
-            trackId: 'simple',
-            name: 'simple',
-            assemblyNames: ['testAssembly'],
-            adapter: {
-              type: 'BamAdapter',
-              bamLocation: {
-                uri: 'simple.bam',
+      expect(JSON.parse(contents).tracks).toEqual([
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'simple',
+          name: 'simple',
+          assemblyNames: ['testAssembly'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: 'simple.bam',
+            },
+            index: {
+              location: {
+                uri: 'simple.bam.bai',
               },
-              index: {
-                location: {
-                  uri: 'simple.bam.bai',
-                },
-              },
-              sequenceAdapter: {
-                type: 'testSeqAdapter',
-                twoBitLocation: {
-                  uri: 'test.2bit',
-                },
+            },
+            sequenceAdapter: {
+              type: 'testSeqAdapter',
+              twoBitLocation: {
+                uri: 'test.2bit',
               },
             },
           },
-        ],
-      })
+        },
+      ])
     })
   setup
     .do(async ctx => {
@@ -206,38 +176,35 @@ describe('add-track', () => {
       '--assemblyNames',
       'customAssemblyName',
       '--config',
-      '{"defaultrendering": "test"}',
+      '{"defaultRendering": "test"}',
     ])
     .it('adds a track with all the custom fields', async ctx => {
       const contents = await fsPromises.readFile(
         path.join(ctx.dir, 'config.json'),
         { encoding: 'utf8' },
       )
-      expect(JSON.parse(contents)).toEqual({
-        ...defaultConfig,
-        tracks: [
-          {
-            type: 'CustomTrackType',
-            trackId: 'customTrackId',
-            name: 'customName',
-            description: 'new description',
-            category: ['newcategory'],
-            assemblyNames: ['customAssemblyName'],
-            adapter: {
-              type: 'BamAdapter',
-              bamLocation: {
-                uri: 'simple.bam',
-              },
-              index: {
-                location: {
-                  uri: 'simple.bam.bai',
-                },
+      expect(JSON.parse(contents).tracks).toEqual([
+        {
+          type: 'CustomTrackType',
+          trackId: 'customTrackId',
+          name: 'customName',
+          description: 'new description',
+          category: ['newcategory'],
+          assemblyNames: ['customAssemblyName'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: 'simple.bam',
+            },
+            index: {
+              location: {
+                uri: 'simple.bam.bai',
               },
             },
-            defaultrendering: 'test',
           },
-        ],
-      })
+          defaultRendering: 'test',
+        },
+      ])
     })
 
   setup
@@ -261,33 +228,129 @@ describe('add-track', () => {
         path.join(ctx.dir, 'config.json'),
         { encoding: 'utf8' },
       )
-      expect(JSON.parse(contents)).toEqual({
-        ...defaultConfig,
-        tracks: [
-          {
-            type: 'AlignmentsTrack',
-            trackId: 'simple',
-            name: 'simple',
-            assemblyNames: ['testAssembly'],
-            adapter: {
-              type: 'BamAdapter',
-              bamLocation: {
-                uri: 'https://mysite.com/data/simple.bam',
+      expect(JSON.parse(contents).tracks).toEqual([
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'simple',
+          name: 'simple',
+          assemblyNames: ['testAssembly'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: 'https://mysite.com/data/simple.bam',
+            },
+            index: {
+              location: {
+                uri: 'https://mysite.com/data/simple.bam.bai',
               },
-              index: {
-                location: {
-                  uri: 'https://mysite.com/data/simple.bam.bai',
-                },
-              },
-              sequenceAdapter: {
-                type: 'testSeqAdapter',
-                twoBitLocation: {
-                  uri: 'test.2bit',
-                },
+            },
+            sequenceAdapter: {
+              type: 'testSeqAdapter',
+              twoBitLocation: {
+                uri: 'test.2bit',
               },
             },
           },
-        ],
-      })
+        },
+      ])
+    })
+
+  // fails when there is more than one assembly and none is specified on the
+  // command line
+  setup
+    .do(async ctx => {
+      await fsPromises.copyFile(
+        testConfig,
+        path.join(ctx.dir, path.basename(testConfig)),
+      )
+
+      await fsPromises.rename(
+        path.join(ctx.dir, path.basename(testConfig)),
+        path.join(ctx.dir, 'config.json'),
+      )
+      const simple2bit = path.join(
+        __dirname,
+        '..',
+        '..',
+        'test',
+        'data',
+        'simple.2bit',
+      )
+      await fsPromises.copyFile(
+        simple2bit,
+        path.join(ctx.dir, path.basename(simple2bit)),
+      )
+    })
+    .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    .command(['add-track', simpleBam, '--load', 'copy'])
+    .exit(2)
+    .it('fails multiple assemblies exist but no assemblyNames passed')
+
+  // fails when there is more than one assembly and none is specified on the
+  // command line
+  setup
+    .do(async ctx => {
+      await fsPromises.copyFile(
+        testConfig,
+        path.join(ctx.dir, path.basename(testConfig)),
+      )
+
+      await fsPromises.rename(
+        path.join(ctx.dir, path.basename(testConfig)),
+        path.join(ctx.dir, 'config.json'),
+      )
+      const simple2bit = path.join(
+        __dirname,
+        '..',
+        '..',
+        'test',
+        'data',
+        'simple.2bit',
+      )
+      await fsPromises.copyFile(
+        simple2bit,
+        path.join(ctx.dir, path.basename(simple2bit)),
+      )
+    })
+    .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    .command([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+      '--assemblyNames',
+      'testAssembly',
+    ])
+    .it('adds a track to a config with multiple assemblies', async ctx => {
+      const contents = await fsPromises.readFile(
+        path.join(ctx.dir, 'config.json'),
+        { encoding: 'utf8' },
+      )
+      expect(JSON.parse(contents).tracks).toEqual([
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'simple',
+          name: 'simple',
+          assemblyNames: ['testAssembly'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: 'simple.bam',
+            },
+            index: {
+              location: {
+                uri: 'simple.bam.bai',
+              },
+            },
+
+            sequenceAdapter: {
+              twoBitLocation: {
+                uri: 'test.2bit',
+              },
+              type: 'testSeqAdapter',
+            },
+          },
+        },
+      ])
     })
 })
