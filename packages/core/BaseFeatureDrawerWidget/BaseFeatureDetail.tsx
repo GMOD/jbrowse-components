@@ -202,7 +202,7 @@ export const BaseAttributes = (props: BaseProps) => {
   )
 }
 
-interface BaseInputProps extends BaseCardProps {
+export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
   model: any
   formatter?: (val: unknown) => JSX.Element

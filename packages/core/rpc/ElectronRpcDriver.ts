@@ -97,7 +97,7 @@ export default class ElectronRpcDriver extends BaseRpcDriver {
 
   // waits for a new worker to start, and then sends it its bootstrap configuration
   async bootWorker(
-    ipcRenderer: NonNullable<typeof electronBetterIpc.ipcRenderer>,
+    ipcRenderer: import('electron-better-ipc-extra').RendererProcessIpc,
     window: Electron.BrowserWindow,
     workerBootConfiguration: { plugins: PluginDefinition[] },
   ) {
