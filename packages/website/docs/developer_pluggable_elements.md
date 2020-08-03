@@ -11,7 +11,7 @@ The pluggable types that we have in JBrowse 2 are
 - Data adapters
 - Track types
 - Renderer types
-- Drawer widgets
+- Widgets
 - RPC calls
 - View types
 
@@ -63,7 +63,7 @@ renderer types
 Track types are a high level type that controls how features are drawn. In most
 cases, a track combines a renderer and an adapter, and can do additional things like
 
-- Control what drawer widget pops up on feature click
+- Control what widget pops up on feature click
 - Add extra menu items to the track menu
 - Create subtracks (See `AlignmentsTrack`)
 - Choose "static-blocks" rendering styles, which keeps contents stable while
@@ -76,24 +76,24 @@ types
 - `PileupTrack` - a track type that draws alignment pileup results
 - `AlignmentsTrack` - combines `SNPCoverageTrack` and `PileupTrack` as "subtracks"
 
-### Drawer widgets
+### Widgets
 
-Drawer widgets are custom info panels that show up in our sidebar, and are an
-alternative to modal dialogs
+Widgets are custom info panels that can show up in side panels, modals, or other
+places in an app
 
-Drawer widgets can do multiple types of things including
+Widgets can do multiple types of things including
 
-- Configuration drawer widget
-- Feature detail drawer widget
-- Add track drawer widget
-- Add connection drawer widget
+- Configuration widget
+- Feature detail widget
+- Add track widget
+- Add connection widget
 - etc.
 
-These drawer widgets can be extended via plugins, so for example, the
-`@gmod/jbrowse-plugin-alignments` extends the `BaseFeatureDetailDrawerWidget` to
+These widgets can be extended via plugins, so for example, the
+`@gmod/jbrowse-plugin-alignments` extends the `BaseFeatureDetailWidget` to
 have custom display of the alignments
 
-- `AlignmentsFeatureDetailDrawerWidget` - this provides a custom drawer widget
+- `AlignmentsFeatureDetailWidget` - this provides a custom widget
   for viewing the feature details of alignments features that customizes the
   basic feature detail widget
 

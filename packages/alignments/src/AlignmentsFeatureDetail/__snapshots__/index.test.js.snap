@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`open up a drawer widget 1`] = `
+exports[`open up a widget 1`] = `
 <div
   class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
   data-testid="alignment-side-drawer"
@@ -225,86 +225,6 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldName"
                   >
-                    unmapped
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      false
-                    </div>
-                  </div>
-                </div>
-                <div
-                  style="display: flex;"
-                >
-                  <div
-                    class="makeStyles-fieldName"
-                  >
-                    qc_failed
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      false
-                    </div>
-                  </div>
-                </div>
-                <div
-                  style="display: flex;"
-                >
-                  <div
-                    class="makeStyles-fieldName"
-                  >
-                    duplicate
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      false
-                    </div>
-                  </div>
-                </div>
-                <div
-                  style="display: flex;"
-                >
-                  <div
-                    class="makeStyles-fieldName"
-                  >
-                    secondary_alignment
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      false
-                    </div>
-                  </div>
-                </div>
-                <div
-                  style="display: flex;"
-                >
-                  <div
-                    class="makeStyles-fieldName"
-                  >
-                    supplementary_alignment
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      false
-                    </div>
-                  </div>
-                </div>
-                <div
-                  style="display: flex;"
-                >
-                  <div
-                    class="makeStyles-fieldName"
-                  >
                     score
                   </div>
                   <div
@@ -326,8 +246,18 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
+                    <button
+                      type="button"
+                    >
+                      Copy
+                    </button>
+                    <button
+                      type="button"
+                    >
+                      Show more
+                    </button>
                     <div>
-                      17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
+                      17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 1...
                     </div>
                   </div>
                 </div>
@@ -360,38 +290,6 @@ exports[`open up a drawer widget 1`] = `
                   >
                     <div>
                       100M
-                    </div>
-                  </div>
-                </div>
-                <div
-                  style="display: flex;"
-                >
-                  <div
-                    class="makeStyles-fieldName"
-                  >
-                    length_on_ref
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      100
-                    </div>
-                  </div>
-                </div>
-                <div
-                  style="display: flex;"
-                >
-                  <div
-                    class="makeStyles-fieldName"
-                  >
-                    template_length
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      0
                     </div>
                   </div>
                 </div>
@@ -479,65 +377,161 @@ exports[`open up a drawer widget 1`] = `
             <div
               class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
             >
-              <div>
+              <div
+                style="display: flex;"
+              >
                 <div
                   class="makeStyles-fieldName"
                 >
-                  unmapped
+                  Flag
                 </div>
                 <div
                   class="makeStyles-fieldValue"
-                >
-                  false
-                </div>
+                />
               </div>
               <div>
-                <div
-                  class="makeStyles-fieldName"
+                <input
+                  id="read paired_0"
+                  readonly=""
+                  type="checkbox"
+                />
+                <label
+                  for="read paired_0"
                 >
-                  qc_failed
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
-                >
-                  false
-                </div>
+                  read paired
+                </label>
               </div>
               <div>
-                <div
-                  class="makeStyles-fieldName"
+                <input
+                  id="read mapped in proper pair_0"
+                  readonly=""
+                  type="checkbox"
+                />
+                <label
+                  for="read mapped in proper pair_0"
                 >
-                  duplicate
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
-                >
-                  false
-                </div>
+                  read mapped in proper pair
+                </label>
               </div>
               <div>
-                <div
-                  class="makeStyles-fieldName"
+                <input
+                  id="read unmapped_0"
+                  readonly=""
+                  type="checkbox"
+                />
+                <label
+                  for="read unmapped_0"
                 >
-                  secondary_alignment
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
-                >
-                  false
-                </div>
+                  read unmapped
+                </label>
               </div>
               <div>
-                <div
-                  class="makeStyles-fieldName"
+                <input
+                  id="mate unmapped_0"
+                  readonly=""
+                  type="checkbox"
+                />
+                <label
+                  for="mate unmapped_0"
                 >
-                  supplementary_alignment
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
+                  mate unmapped
+                </label>
+              </div>
+              <div>
+                <input
+                  id="read reverse strand_0"
+                  readonly=""
+                  type="checkbox"
+                />
+                <label
+                  for="read reverse strand_0"
                 >
-                  false
-                </div>
+                  read reverse strand
+                </label>
+              </div>
+              <div>
+                <input
+                  id="mate reverse strand_0"
+                  readonly=""
+                  type="checkbox"
+                />
+                <label
+                  for="mate reverse strand_0"
+                >
+                  mate reverse strand
+                </label>
+              </div>
+              <div>
+                <input
+                  id="first in pair_0"
+                  readonly=""
+                  type="checkbox"
+                />
+                <label
+                  for="first in pair_0"
+                >
+                  first in pair
+                </label>
+              </div>
+              <div>
+                <input
+                  id="second in pair_0"
+                  readonly=""
+                  type="checkbox"
+                />
+                <label
+                  for="second in pair_0"
+                >
+                  second in pair
+                </label>
+              </div>
+              <div>
+                <input
+                  id="not primary alignment_0"
+                  readonly=""
+                  type="checkbox"
+                />
+                <label
+                  for="not primary alignment_0"
+                >
+                  not primary alignment
+                </label>
+              </div>
+              <div>
+                <input
+                  id="read fails platform/vendor quality checks_0"
+                  readonly=""
+                  type="checkbox"
+                />
+                <label
+                  for="read fails platform/vendor quality checks_0"
+                >
+                  read fails platform/vendor quality checks
+                </label>
+              </div>
+              <div>
+                <input
+                  id="read is PCR or optical duplicate_0"
+                  readonly=""
+                  type="checkbox"
+                />
+                <label
+                  for="read is PCR or optical duplicate_0"
+                >
+                  read is PCR or optical duplicate
+                </label>
+              </div>
+              <div>
+                <input
+                  id="supplementary alignment_0"
+                  readonly=""
+                  type="checkbox"
+                />
+                <label
+                  for="supplementary alignment_0"
+                >
+                  supplementary alignment
+                </label>
               </div>
             </div>
           </div>

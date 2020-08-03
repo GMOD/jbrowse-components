@@ -76,7 +76,7 @@ describe('alignments track', () => {
     fireEvent.mouseUp(track[0], { clientX: 300, clientY: 20 })
     fireEvent.mouseMove(track[0], { clientX: -100, clientY: -100 })
 
-    // this is to confirm a alignment detail drawer widget opened
+    // this is to confirm a alignment detail widget opened
     await expect(findAllByTestId('alignment-side-drawer')).resolves.toBeTruthy()
   }, 15000)
 

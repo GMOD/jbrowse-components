@@ -59,7 +59,7 @@ test('adapter can fetch features from volvox.bam', async () => {
   expect(featuresJsonArrayCSI).toEqual(featuresJsonArray)
 })
 
-test('test usage of BamSlightlyLazyFeature toJSON (used in the drawer widget)', async () => {
+test('test usage of BamSlightlyLazyFeature toJSON (used in the widget)', async () => {
   const adapter = new Adapter(
     configSchema.create({
       bamLocation: {

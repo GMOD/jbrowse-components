@@ -72,16 +72,16 @@
           ]
         }
       ],
-      "drawerWidgets": {
+      "widgets": {
         "hierarchicalTrackSelector": {
           "id": "hierarchicalTrackSelector",
-          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "type": "HierarchicalTrackSelectorWidget",
           "collapsed": {},
           "filterText": "",
           "view": "chrom_sizes"
         }
       },
-      "activeDrawerWidgets": {
+      "activeWidgets": {
         "hierarchicalTrackSelector": "hierarchicalTrackSelector"
       }
     }

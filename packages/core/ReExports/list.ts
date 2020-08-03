@@ -13,7 +13,7 @@ export default [
   '@gmod/jbrowse-core/pluggableElementTypes/ViewType',
   '@gmod/jbrowse-core/pluggableElementTypes/AdapterType',
   '@gmod/jbrowse-core/pluggableElementTypes/TrackType',
-  '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType',
+  '@gmod/jbrowse-core/pluggableElementTypes/WidgetType',
 
   '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType',
   '@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType',
@@ -28,7 +28,7 @@ export default [
   '@gmod/jbrowse-core/util/io',
   '@gmod/jbrowse-core/util/mst-reflection',
   '@gmod/jbrowse-core/BaseViewModel',
-  '@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail',
+  '@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail',
 
   '@gmod/jbrowse-core/data_adapters/BaseAdapter',
 ]

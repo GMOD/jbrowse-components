@@ -1,0 +1,239 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<AddConnectionWidget /> renders 1`] = `
+<div
+  class="makeStyles-root"
+>
+  <div
+    class="MuiPaper-root MuiStepper-root MuiStepper-vertical makeStyles-stepper MuiPaper-elevation0"
+  >
+    <div
+      class="MuiStep-root MuiStep-vertical"
+    >
+      <span
+        class="MuiStepLabel-root MuiStepLabel-vertical"
+      >
+        <span
+          class="MuiStepLabel-iconContainer"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiStepIcon-root MuiStepIcon-active"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="12"
+            />
+            <text
+              class="MuiStepIcon-text"
+              text-anchor="middle"
+              x="12"
+              y="16"
+            >
+              1
+            </text>
+          </svg>
+        </span>
+        <span
+          class="MuiStepLabel-labelContainer"
+        >
+          <span
+            class="MuiTypography-root MuiStepLabel-label MuiStepLabel-active MuiTypography-body2 MuiTypography-displayBlock"
+          >
+            Select a Connection Type
+          </span>
+        </span>
+      </span>
+      <div
+        class="MuiStepContent-root"
+        icon="1"
+      >
+        <div
+          class="MuiCollapse-container MuiStepContent-transition MuiCollapse-entered"
+          style="min-height: 0px;"
+        >
+          <div
+            class="MuiCollapse-wrapper"
+          >
+            <div
+              class="MuiCollapse-wrapperInner"
+            >
+              <form
+                autocomplete="off"
+              >
+                <div
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+                >
+                  <label
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
+                    data-shrink="false"
+                  >
+                    assemblyName
+                  </label>
+                  <div
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+                  >
+                    <div
+                      aria-haspopup="listbox"
+                      class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
+                      role="button"
+                      tabindex="0"
+                    >
+                      <span>
+                        ​
+                      </span>
+                    </div>
+                    <input
+                      data-testid="assemblyNameSelect"
+                      type="hidden"
+                      value=""
+                    />
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSelect-icon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M7 10l5 5 5-5z"
+                      />
+                    </svg>
+                  </div>
+                  <p
+                    class="MuiFormHelperText-root"
+                  >
+                    Assembly to which the track will be added
+                  </p>
+                </div>
+                <div
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+                >
+                  <label
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
+                    data-shrink="false"
+                  >
+                    connectionType
+                  </label>
+                  <div
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+                  >
+                    <div
+                      aria-haspopup="listbox"
+                      class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
+                      role="button"
+                      tabindex="0"
+                    >
+                      <span>
+                        ​
+                      </span>
+                    </div>
+                    <input
+                      type="hidden"
+                      value=""
+                    />
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSelect-icon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M7 10l5 5 5-5z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </form>
+              <div
+                class="makeStyles-actionsContainer"
+              >
+                <button
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text makeStyles-button MuiButton-disabled MuiButtonBase-disabled"
+                  disabled=""
+                  tabindex="-1"
+                  type="button"
+                >
+                  <span
+                    class="MuiButton-label"
+                  >
+                    Back
+                  </span>
+                </button>
+                <button
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedPrimary MuiButton-disabled MuiButtonBase-disabled"
+                  data-testid="addConnectionNext"
+                  disabled=""
+                  tabindex="-1"
+                  type="button"
+                >
+                  <span
+                    class="MuiButton-label"
+                  >
+                    Next
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="MuiStepConnector-root MuiStepConnector-vertical MuiStepConnector-disabled"
+    >
+      <span
+        class="MuiStepConnector-line MuiStepConnector-lineVertical"
+      />
+    </div>
+    <div
+      class="MuiStep-root MuiStep-vertical"
+    >
+      <span
+        class="MuiStepLabel-root MuiStepLabel-vertical MuiStepLabel-disabled"
+      >
+        <span
+          class="MuiStepLabel-iconContainer"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiStepIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="12"
+            />
+            <text
+              class="MuiStepIcon-text"
+              text-anchor="middle"
+              x="12"
+              y="16"
+            >
+              2
+            </text>
+          </svg>
+        </span>
+        <span
+          class="MuiStepLabel-labelContainer"
+        >
+          <span
+            class="MuiTypography-root MuiStepLabel-label MuiTypography-body2 MuiTypography-displayBlock"
+          >
+            Configure Connection
+          </span>
+        </span>
+      </span>
+      <div
+        class="MuiStepContent-root MuiStepContent-last"
+        disabled=""
+        icon="2"
+      />
+    </div>
+  </div>
+</div>
+`;

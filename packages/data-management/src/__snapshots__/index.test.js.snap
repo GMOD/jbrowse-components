@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Data management adds config editor drawer widget 1`] = `Object {}`;
+exports[`Data management adds config editor widget 1`] = `Object {}`;
 
 exports[`Data management adds connection add widget 1`] = `Object {}`;
 
