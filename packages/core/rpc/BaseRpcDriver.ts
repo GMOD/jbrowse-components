@@ -55,24 +55,21 @@ function detectHardwareConcurrency() {
 class LazyWorker {
   worker?: WorkerHandle
 
-  pluginManager: PluginManager
-
   driver: BaseRpcDriver
 
   constructor(pluginManager: PluginManager, driver: BaseRpcDriver) {
-    this.pluginManager = pluginManager
     this.driver = driver
   }
 
-  getWorker() {
+  getWorker(pluginManager: PluginManager) {
     if (!this.worker) {
-      const worker = this.driver.makeWorker()
+      const worker = this.driver.makeWorker(pluginManager)
       watchWorker(worker, WORKER_MAX_PING_TIME).catch(() => {
         if (this.worker) {
           console.warn('worker did not respond, killing and generating new one')
           this.worker.destroy()
           this.worker.status = 'killed'
-          this.worker = this.getWorker()
+          this.worker = this.getWorker(pluginManager)
         }
       })
       this.worker = worker
@@ -177,7 +174,7 @@ export default abstract class BaseRpcDriver {
     }
 
     // console.log(`${sessionId} -> worker ${workerNumber}`)
-    const worker = workers[workerNumber].getWorker()
+    const worker = workers[workerNumber].getWorker(pluginManager)
     if (!worker) {
       throw new Error('no web workers registered for RPC')
     }
