@@ -34,7 +34,7 @@ export default class AddConnection extends Command {
       // TODO: ask if assemblyname should be required or can guess the default
       name: 'assemblyName',
       required: true,
-      description: `Assembly name of the configuration to add to'`,
+      description: `Assembly name of the configuration to add a connection to'`,
     },
     {
       name: 'dataDirectory',
@@ -65,20 +65,20 @@ export default class AddConnection extends Command {
         'Write to a certain config.json file. Defaults to location/config.json if not specified',
     }),
     connectionId: flags.string({
-      description:
-        'Id for the connection, by default is type-assemblyName-dateAdded, must be unique to JBrowse',
+      description: `Id for the connection that must be unique to JBrowse.  Defaults to 'connectionType-assemblyName-currentTime'`,
     }),
     name: flags.string({
       char: 'n',
-      description: 'Name of the connection. Will be guessed bu default',
+      description:
+        'Name of the connection. Defaults to connectionId if not provided',
     }),
     help: flags.help({ char: 'h' }),
     skipCheck: flags.boolean({
       description:
-        "Don't check whether or not the file or URL exists or if you are in a JBrowse directory",
+        "Don't check whether or not the data directory URL exists or if you are in a JBrowse directory",
     }),
     overwrite: flags.boolean({
-      description: 'Overwrites any existing tracks if same track id',
+      description: 'Overwrites any existing connections if same connection id',
     }),
     force: flags.boolean({
       char: 'f',
@@ -146,7 +146,7 @@ export default class AddConnection extends Command {
       type = this.determineConnectionType(url)
     }
     if (connectionId) {
-      this.debug(`Connection Id is ${connectionId}`)
+      this.debug(`Connection id is ${connectionId}`)
     } else connectionId = `${type}-${assemblyName}-${Date.now()}`
 
     if (name) {
@@ -185,9 +185,7 @@ export default class AddConnection extends Command {
     )
 
     if (idx !== -1) {
-      this.debug(
-        `Found existing connectionkId ${connectionId} in configuration`,
-      )
+      this.debug(`Found existing connectionId ${connectionId} in configuration`)
       if (runFlags.force || runFlags.overwrite) {
         this.debug(`Overwriting connection ${connectionId} in configuration`)
         configContents.connections[idx] = connectionConfig

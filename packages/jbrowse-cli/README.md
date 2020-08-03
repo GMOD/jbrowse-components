@@ -136,7 +136,7 @@ USAGE
   $ jbrowse add-connection ASSEMBLYNAME DATADIRECTORY [LOCATION]
 
 ARGUMENTS
-  ASSEMBLYNAME   Assembly name of the configuration to add to'
+  ASSEMBLYNAME   Assembly name of the configuration to add a connection to'
 
   DATADIRECTORY  URL of data directory
                  For hub file, usually called hub.txt
@@ -148,18 +148,18 @@ OPTIONS
   -c, --config=config              Any extra config settings to add to connection as JSON object format
   -f, --force                      Equivalent to `--skipCheck --overwrite`
   -h, --help                       show CLI help
-  -n, --name=name                  Name of the connection. Will be guessed bu default
+  -n, --name=name                  Name of the connection. Defaults to connectionId if not provided
   -t, --type=type                  type of connection, ex. JBrowse1Connection, UCSCTrackHubConnection, custom
 
   --configLocation=configLocation  Write to a certain config.json file. Defaults to location/config.json if not
                                    specified
 
-  --connectionId=connectionId      Id for the connection, by default is type-assemblyName-dateAdded, must be unique to
-                                   JBrowse
+  --connectionId=connectionId      Id for the connection that must be unique to JBrowse.  Defaults to
+                                   'connectionType-assemblyName-currentTime'
 
-  --overwrite                      Overwrites any existing tracks if same track id
+  --overwrite                      Overwrites any existing connections if same connection id
 
-  --skipCheck                      Don't check whether or not the file or URL exists or if you are in a JBrowse
+  --skipCheck                      Don't check whether or not the data directory URL exists or if you are in a JBrowse
                                    directory
 
 EXAMPLES

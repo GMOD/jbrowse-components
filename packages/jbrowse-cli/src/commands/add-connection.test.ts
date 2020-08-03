@@ -64,7 +64,7 @@ describe('add-track', () => {
   setup
     .command(['add-connection', 'testAssembly', '.'])
     .exit(80)
-    .it('fails if data directory is not a url')
+    .it('fails if data directory is not an url')
   setup
     .nock('https://mysite.com', site => site.head('/notafile.txt').reply(500))
     .command([
@@ -262,4 +262,55 @@ describe('add-track', () => {
     ])
     .exit(40)
     .it('Fails to add a duplicate connection Id')
+  setup
+    .do(async ctx => {
+      await fsPromises.copyFile(
+        testConfig,
+        path.join(ctx.dir, path.basename(testConfig)),
+      )
+
+      await fsPromises.rename(
+        path.join(ctx.dir, path.basename(testConfig)),
+        path.join(ctx.dir, 'config.json'),
+      )
+    })
+    .command([
+      'add-connection',
+      'testAssembly',
+      'https://mysite.com/custom',
+      '--connectionId',
+      'newConnectionId',
+      '--force',
+    ])
+    .command([
+      'add-connection',
+      'testAssembly',
+      'https://mysite.com/custom',
+      '--connectionId',
+      'newConnectionId',
+      '--force',
+    ])
+    .it(
+      'overwrites an existing custom connection and does not check URL',
+      async ctx => {
+        const contents = await fsPromises.readFile(
+          path.join(ctx.dir, 'config.json'),
+          { encoding: 'utf8' },
+        )
+        expect(JSON.parse(contents)).toEqual({
+          ...defaultConfig,
+          connections: [
+            {
+              type: 'custom',
+              assemblyName: 'testAssembly',
+              connectionId: `newConnectionId`,
+              url: {
+                uri: 'https://mysite.com/custom',
+              },
+              name: `newConnectionId`,
+            },
+          ],
+        })
+      },
+    )
 })
