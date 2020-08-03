@@ -57,7 +57,7 @@ class LazyWorker {
 
   driver: BaseRpcDriver
 
-  constructor(pluginManager: PluginManager, driver: BaseRpcDriver) {
+  constructor(driver: BaseRpcDriver) {
     this.driver = driver
   }
 
@@ -141,13 +141,7 @@ export default abstract class BaseRpcDriver {
     const workerCount =
       this.workerCount || Math.max(1, Math.ceil((hardwareConcurrency - 2) / 3))
 
-    const workerHandles: LazyWorker[] = new Array(workerCount)
-
-    for (let i = 0; i < workerCount; i += 1) {
-      workerHandles[i] = new LazyWorker(pluginManager, this)
-    }
-
-    return workerHandles
+    return [...new Array(workerCount)].map(() => new LazyWorker(this))
   }
 
   getWorkerPool(pluginManager: PluginManager) {
