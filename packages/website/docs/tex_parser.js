@@ -54,4 +54,7 @@ let caption = ''
       console.log(line)
     }
   }
+  if (figure && caption) {
+    console.log(`![${caption}](${figure})\n\n`)
+  }
 })()

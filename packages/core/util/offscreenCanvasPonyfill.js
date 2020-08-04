@@ -8,7 +8,7 @@ export let createImageBitmap
 export let ImageBitmapType
 
 // sniff environments
-const isElectron = !!window.electron
+const isElectron = typeof window !== 'undefined' && Boolean(window.electron)
 
 const weHave = {
   realOffscreenCanvas:

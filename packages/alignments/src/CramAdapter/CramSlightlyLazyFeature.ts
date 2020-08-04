@@ -64,7 +64,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   _get_flags() {
-    return `0x${this.record.flags.toString(16)}`
+    return this.record.flags
   }
 
   _get_cramFlags() {

@@ -42,6 +42,7 @@ export default function RootModel(
       session: types.maybe(Session),
       assemblyManager: assemblyManagerType,
       error: types.maybe(types.string),
+      version: types.maybe(types.string),
     })
     .actions(self => ({
       setSession(sessionSnapshot: SnapshotIn<typeof Session>) {

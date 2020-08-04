@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-development-tools",
-  "version": "0.0.1",
+  "version": "0.0.1-beta.19",
   "description": "Tools to help with developing and building JBrowse 2 plugins",
   "scripts": {
     "test": "jest",
@@ -9,7 +9,6 @@
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "babel src --root-mode upward --out-dir dist --extensions '.ts,.js'",
-    "preversion": "npm run lint && npm test && npm run docs && npm run build",
     "version": "standard-changelog && git add CHANGELOG.md",
     "postpublish": "git push origin master --follow-tags"
   },
@@ -25,9 +24,21 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@gmod/jbrowse-core": "^0.0.1-beta.18",
+    "@types/copy-webpack-plugin": "^6.0.0",
     "@types/webpack": "^4.41.18",
     "change-case": "^4.1.1",
-    "webpack": "^4.43.0"
+    "copy-webpack-plugin": "^6.0.3",
+    "css-loader": "^3.6.0",
+    "postcss-flexbugs-fixes": "^4.2.1",
+    "postcss-loader": "^3.0.0",
+    "postcss-preset-env": "^6.7.0",
+    "sass": "^1.26.10",
+    "sass-loader": "^9.0.2",
+    "style-loader": "^1.2.1"
+  },
+  "peerDependencies": {
+    "webpack": "^4.42.0"
   },
   "publishConfig": {
     "access": "public"

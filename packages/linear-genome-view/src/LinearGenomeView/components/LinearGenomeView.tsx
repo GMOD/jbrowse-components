@@ -147,10 +147,9 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
                 color="primary"
                 onClick={model.activateTrackSelector}
                 disabled={
-                  session.visibleDrawerWidget &&
-                  session.visibleDrawerWidget.id ===
-                    'hierarchicalTrackSelector' &&
-                  session.visibleDrawerWidget.view.id === model.id
+                  session.visibleWidget &&
+                  session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+                  session.visibleWidget.view.id === model.id
                 }
               >
                 Select Tracks

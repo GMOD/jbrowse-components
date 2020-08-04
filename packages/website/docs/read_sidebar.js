@@ -9,9 +9,12 @@ function readTree(tree) {
   res.push('quickstart_desktop')
   tree.sidebar
     .filter(f =>
-      ['User guide', 'Configuration guide', 'Developer guide'].includes(
-        f.label,
-      ),
+      [
+        'Command line guide',
+        'User guide',
+        'Configuration guide',
+        'Developer guide',
+      ].includes(f.label),
     )
     .forEach(subtree => {
       if (subtree.items) {

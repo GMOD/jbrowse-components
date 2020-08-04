@@ -22,41 +22,39 @@ describe('Data management', () => {
   })
 
   it('adds track add widget', () => {
-    const AddTrackDrawerWidget = pluginManager.getDrawerWidgetType(
-      'AddTrackDrawerWidget',
-    )
-    const config = AddTrackDrawerWidget.configSchema.create({
-      type: 'AddTrackDrawerWidget',
+    const AddTrackWidget = pluginManager.getWidgetType('AddTrackWidget')
+    const config = AddTrackWidget.configSchema.create({
+      type: 'AddTrackWidget',
     })
     expect(getSnapshot(config)).toMatchSnapshot()
   })
 
-  it('adds config editor drawer widget', () => {
-    const ConfigurationEditorDrawerWidget = pluginManager.getDrawerWidgetType(
-      'ConfigurationEditorDrawerWidget',
+  it('adds config editor widget', () => {
+    const ConfigurationEditorWidget = pluginManager.getWidgetType(
+      'ConfigurationEditorWidget',
     )
-    const config = ConfigurationEditorDrawerWidget.configSchema.create({
-      type: 'ConfigurationEditorDrawerWidget',
+    const config = ConfigurationEditorWidget.configSchema.create({
+      type: 'ConfigurationEditorWidget',
     })
     expect(getSnapshot(config)).toMatchSnapshot()
   })
 
   it('adds connection add widget', () => {
-    const AddConnectionDrawerWidget = pluginManager.getDrawerWidgetType(
-      'AddConnectionDrawerWidget',
+    const AddConnectionWidget = pluginManager.getWidgetType(
+      'AddConnectionWidget',
     )
-    const config = AddConnectionDrawerWidget.configSchema.create({
-      type: 'AddConnectionDrawerWidget',
+    const config = AddConnectionWidget.configSchema.create({
+      type: 'AddConnectionWidget',
     })
     expect(getSnapshot(config)).toMatchSnapshot()
   })
 
   it('adds hierarchical track selector', () => {
-    const HierarchicalTrackSelectorDrawerWidget = pluginManager.getDrawerWidgetType(
-      'HierarchicalTrackSelectorDrawerWidget',
+    const HierarchicalTrackSelectorWidget = pluginManager.getWidgetType(
+      'HierarchicalTrackSelectorWidget',
     )
-    const config = HierarchicalTrackSelectorDrawerWidget.configSchema.create({
-      type: 'HierarchicalTrackSelectorDrawerWidget',
+    const config = HierarchicalTrackSelectorWidget.configSchema.create({
+      type: 'HierarchicalTrackSelectorWidget',
     })
     expect(getSnapshot(config)).toMatchSnapshot()
   })

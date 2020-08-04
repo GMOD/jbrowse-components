@@ -9,6 +9,7 @@ import PluginLoader from '@gmod/jbrowse-core/PluginLoader'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
+import packagedef from '../package.json'
 
 const { electron } = window
 
@@ -58,6 +59,7 @@ export default function Loader() {
       if (configSnapshot) {
         try {
           const pluginLoader = new PluginLoader(configSnapshot.plugins)
+          pluginLoader.installGlobalReExports(window)
           const runtimePlugins = await pluginLoader.load()
           setPlugins([...corePlugins, ...runtimePlugins])
         } catch (error) {
@@ -90,6 +92,7 @@ export default function Loader() {
       rootModel = JBrowseRootModel.create({
         jbrowse: configSnapshot,
         assemblyManager: {},
+        version: packagedef.version,
       })
     }
   } catch (e) {

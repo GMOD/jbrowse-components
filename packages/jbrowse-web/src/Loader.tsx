@@ -2,28 +2,37 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import PluginLoader from '@gmod/jbrowse-core/PluginLoader'
 import { inDevelopment, fromUrlSafeB64 } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import CircularProgress from '@material-ui/core/CircularProgress'
-import { makeStyles } from '@material-ui/core/styles'
+import ErrorBoundary from 'react-error-boundary'
 import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
-import { StringParam, useQueryParam } from 'use-query-params'
+import {
+  StringParam,
+  useQueryParam,
+  QueryParamProvider,
+} from 'use-query-params'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { SnapshotOut } from 'mobx-state-tree'
 import { PluginConstructor } from '@gmod/jbrowse-core/Plugin'
+import { FatalErrorDialog } from '@gmod/jbrowse-core/ui'
+import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
+import 'typeface-roboto'
+import 'requestidlecallback-polyfill'
+import 'mobx-react/batchingForReactDom'
+import 'core-js/stable'
+
+import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
+import packagedef from '../package.json'
 
-const useStyles = makeStyles({
-  loadingIndicator: {
-    position: 'fixed',
-    top: '50%',
-    left: '50%',
-    marginTop: -25,
-    marginLeft: -25,
-  },
-})
+if (!window.TextEncoder) {
+  window.TextEncoder = TextEncoder
+}
+if (!window.TextDecoder) {
+  window.TextDecoder = TextDecoder
+}
 
 function NoConfigMessage() {
   // TODO: Link to docs for how to configure JBrowse
@@ -75,9 +84,6 @@ function NoConfigMessage() {
               </a>
             </li>
             <li>
-              <a href="?config=test_data/config_gdc_test.json">GDC</a>
-            </li>
-            <li>
               <a href="?config=test_data/config_many_contigs.json">
                 Many Contigs
               </a>
@@ -92,10 +98,10 @@ function NoConfigMessage() {
   )
 }
 
-export default function Loader() {
-  const [configSnapshot, setConfigSnapshot] = useState<
-    SnapshotOut<AnyConfigurationModel>
-  >()
+type Config = SnapshotOut<AnyConfigurationModel>
+
+export function Loader() {
+  const [configSnapshot, setConfigSnapshot] = useState<Config>()
   const [noDefaultConfig, setNoDefaultConfig] = useState(false)
   const [plugins, setPlugins] = useState<PluginConstructor[]>()
 
@@ -103,8 +109,6 @@ export default function Loader() {
   const [sessionQueryParam] = useQueryParam('session', StringParam)
   const [adminQueryParam] = useQueryParam('admin', StringParam)
   const adminMode = adminQueryParam === '1' || adminQueryParam === 'true'
-
-  const classes = useStyles()
 
   useEffect(() => {
     async function fetchConfig() {
@@ -145,6 +149,7 @@ export default function Loader() {
       if (configSnapshot) {
         try {
           const pluginLoader = new PluginLoader(configSnapshot.plugins)
+          pluginLoader.installGlobalReExports(window)
           const runtimePlugins = await pluginLoader.load()
           setPlugins([...corePlugins, ...runtimePlugins])
         } catch (error) {
@@ -162,16 +167,11 @@ export default function Loader() {
   }
 
   if (!(configSnapshot && plugins)) {
-    return (
-      <CircularProgress
-        disableShrink
-        className={classes.loadingIndicator}
-        size={50}
-      />
-    )
+    return <Loading />
   }
 
   const pluginManager = new PluginManager(plugins.map(P => new P()))
+
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)
@@ -181,6 +181,7 @@ export default function Loader() {
       rootModel = JBrowseRootModel.create({
         jbrowse: configSnapshot,
         assemblyManager: {},
+        version: packagedef.version,
       })
     }
   } catch (error) {
@@ -194,6 +195,7 @@ export default function Loader() {
       rootModel = JBrowseRootModel.create({
         jbrowse: { ...configSnapshot, savedSessions: [] },
         assemblyManager: {},
+        version: packagedef.version,
       })
     } catch (e) {
       console.error(e)
@@ -258,4 +260,23 @@ export default function Loader() {
   pluginManager.configure()
 
   return <JBrowse pluginManager={pluginManager} />
+}
+
+function factoryReset() {
+  localStorage.removeItem('jbrowse-web-data')
+  localStorage.removeItem('jbrowse-web-session')
+  // @ts-ignore
+  window.location = window.location.pathname
+}
+const PlatformSpecificFatalErrorDialog = (props: unknown) => {
+  return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
+}
+export default () => {
+  return (
+    <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
+      <QueryParamProvider>
+        <Loader />
+      </QueryParamProvider>
+    </ErrorBoundary>
+  )
 }

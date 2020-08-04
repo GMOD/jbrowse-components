@@ -1,5 +1,4 @@
 import { Command, flags } from '@oclif/command'
-import * as fs from 'fs'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
@@ -20,8 +19,9 @@ export default class Upgrade extends Command {
   static examples = [
     '$ jbrowse upgrade',
     '$ jbrowse upgrade /path/to/jbrowse2/installation',
-    '$ jbrowse upgrade /path/to/jbrowse2/installation --tag JBrowse-2@v0.0.1',
+    '$ jbrowse upgrade /path/to/jbrowse2/installation --tag @gmod/jbrowse-web@0.0.1',
     '$ jbrowse upgrade --listVersions',
+    '$ jbrowse upgrade https://sample.com/jbrowse2.zip',
   ]
 
   static args = [
@@ -46,7 +46,12 @@ export default class Upgrade extends Command {
     }),
     tag: flags.string({
       char: 't',
-      description: 'Version of JBrowse 2 to upgrade to. Defaults to latest',
+      description:
+        'Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@0.0.1.\nDefaults to latest',
+    }),
+    url: flags.string({
+      char: 'u',
+      description: 'A direct URL to a JBrowse 2 release',
     }),
   }
 
@@ -54,12 +59,12 @@ export default class Upgrade extends Command {
     const { args: runArgs, flags: runFlags } = this.parse(Upgrade)
     const { localPath: argsPath } = runArgs as { localPath: string }
 
-    const { listVersions, tag } = runFlags
+    const { listVersions, tag, url } = runFlags
 
     if (listVersions) {
       try {
         const versions = (await this.fetchGithubVersions()).map(
-          (version: GithubRelease) => version.tag_name,
+          version => version.tag_name,
         )
         this.log(`All JBrowse versions: ${versions.join(', ')}`)
         this.exit()
@@ -72,56 +77,26 @@ export default class Upgrade extends Command {
 
     await this.checkLocation(upgradePath)
 
-    let versionRes
-    try {
-      versionRes = await this.fetchGithubVersions()
-    } catch (error) {
-      this.error(error)
+    const locationUrl = url || (await this.getTagOrLatest(tag))
+
+    const response = await fetch(locationUrl)
+    if (!response.ok) {
+      this.error(`Failed to fetch: ${response.statusText}`, { exit: 50 })
     }
-    const versionObj = tag
-      ? versionRes.find((version: GithubRelease) => version.tag_name === tag)
-      : versionRes[0]
 
-    const locationUrl = versionObj
-      ? versionObj.assets[0].browser_download_url
-      : this.error(
-          'Could not find version specified. Use --listVersions to see all available versions',
-          { exit: 40 },
-        )
-
-    let response
-    try {
-      response = await fetch(locationUrl, {
-        method: 'GET',
-      })
-    } catch (error) {
-      this.error(error)
+    const type = response.headers.get('content-type')
+    if (
+      url &&
+      type !== 'application/zip' &&
+      type !== 'application/octet-stream'
+    ) {
+      this.error(
+        'The URL provided does not seem to be a JBrowse installation URL',
+      )
     }
-    if (!response.ok) this.error(`Failed to fetch JBrowse2 from server`)
 
-    response.body
-      .pipe(unzip.Parse())
-      .on('entry', async entry => {
-        const { path: fileName, type } = entry
-        if (type === 'Directory') {
-          try {
-            await fsPromises.mkdir(path.join(upgradePath, fileName), {
-              recursive: true,
-            })
-          } catch (error) {
-            this.error(error)
-          }
-        }
-        entry.pipe(fs.createWriteStream(path.join(upgradePath, fileName)))
-      })
-      .on('error', err => {
-        this.error(
-          `Failed to upgrade JBrowse 2 with ${err}. Please try again later`,
-        )
-      })
-      .on('close', () => {
-        this.log(`Your JBrowse 2 setup has been upgraded`)
-      })
+    await response.body.pipe(unzip.Extract({ path: upgradePath })).promise()
+    this.log('Upgrade finished')
   }
 
   async checkLocation(userPath: string) {
@@ -158,30 +133,38 @@ export default class Upgrade extends Command {
   }
 
   async fetchGithubVersions() {
-    let versionResponse
-    try {
-      versionResponse = await fetch(
-        'https://api.github.com/repos/GMOD/jbrowse-components/releases',
-        {
-          method: 'GET',
-        },
-      )
-    } catch (error) {
-      this.error(error)
+    const response = await fetch(
+      'https://api.github.com/repos/GMOD/jbrowse-components/releases',
+    )
+
+    if (!response.ok) {
+      this.error('Failed to fetch version from server')
     }
 
-    if (!versionResponse.ok) this.error('Failed to fetch version from server')
     // use all release only if there are only pre-release in repo
-    const allReleaseArray = (
-      await versionResponse.json()
-    ).filter((release: GithubRelease) =>
-      release.tag_name.includes('JBrowse-2@v'),
+    const jb2releases: GithubRelease[] = await response.json()
+    const versions = jb2releases.filter(release =>
+      release.tag_name.startsWith('@gmod/jbrowse-web'),
     )
 
-    const releaseArray = allReleaseArray.filter(
-      (release: GithubRelease) => release.prerelease === false,
+    const nonprereleases = versions.filter(
+      release => release.prerelease === false,
     )
 
-    return releaseArray.length === 0 ? allReleaseArray : releaseArray
+    return nonprereleases.length === 0 ? jb2releases : nonprereleases
+  }
+
+  async getTagOrLatest(tag?: string) {
+    const response = await this.fetchGithubVersions()
+    const versions = tag
+      ? response.find(version => version.tag_name === tag)
+      : response[0]
+
+    return versions
+      ? versions.assets[0].browser_download_url
+      : this.error(
+          'Could not find version specified. Use --listVersions to see all available versions',
+          { exit: 40 },
+        )
   }
 }

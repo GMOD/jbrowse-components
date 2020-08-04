@@ -1,10 +1,70 @@
 import path from 'path'
 import { pascalCase } from 'change-case'
 import webpack from 'webpack'
+import CopyPlugin from 'copy-webpack-plugin'
+
+import { objectFromEntries } from '@gmod/jbrowse-core/util'
+import ReExportsList from '@gmod/jbrowse-core/ReExports/list'
 
 export interface PackageJson {
   name: string
   'jbrowse-plugin'?: { name?: string }
+}
+
+if (!Object.fromEntries) {
+  Object.fromEntries = objectFromEntries
+}
+
+const externals = Object.fromEntries(
+  ReExportsList.map(moduleName => {
+    return [
+      moduleName,
+      {
+        root: ['JBrowseExports', moduleName],
+        commonjs: moduleName,
+        commonjs2: moduleName,
+        amd: moduleName,
+      },
+    ]
+  }),
+)
+
+// style files regexes
+const cssRegex = /\.css$/
+const sassRegex = /\.(scss|sass)$/
+
+// common function to get style loaders, stolen from create-react-app
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getStyleLoaders = (cssOptions: any, preProcessor?: string) => {
+  const loaders = [
+    require.resolve('style-loader'),
+    {
+      loader: require.resolve('css-loader'),
+      options: cssOptions,
+    },
+    {
+      // Options for PostCSS as we reference these options twice
+      // Adds vendor prefixing based on your specified browser support in
+      // package.json
+      loader: require.resolve('postcss-loader'),
+      options: {
+        // Necessary for external CSS imports to work
+        // https://github.com/facebook/create-react-app/issues/2677
+        ident: 'postcss',
+        plugins: () => [
+          require('postcss-flexbugs-fixes'),
+          require('postcss-preset-env')({
+            autoprefixer: { flexbox: 'no-2009' },
+            stage: 3,
+          }),
+        ],
+      },
+    },
+  ]
+  if (preProcessor) {
+    loaders.push(require.resolve(preProcessor))
+  }
+  return loaders
 }
 
 export function baseJBrowsePluginWebpackConfig(
@@ -18,9 +78,11 @@ export function baseJBrowsePluginWebpackConfig(
 ) {
   const pluginConfiguration = packageJson['jbrowse-plugin']
 
-  const pluginNameParamCase =
+  const pluginName =
     pluginConfiguration?.name ||
-    packageJson.name.replace('@gmod/jbrowse-plugin-', '')
+    pascalCase(packageJson.name.replace('@gmod/jbrowse-plugin-', ''))
+
+  const distDir = path.resolve(buildDir, 'dist')
 
   return {
     mode: process.env.NODE_ENV || 'production',
@@ -28,22 +90,27 @@ export function baseJBrowsePluginWebpackConfig(
     devtool: process.env.NODE_ENV === 'development' ? 'source-map' : false,
     // @ts-ignore
     output: {
-      path: path.resolve(buildDir, 'dist'),
-      publicPath: 'dist/',
+      path: distDir,
       filename: `plugin.js`,
       sourceMapFilename: `plugin.js.map`,
-      library: `JBrowsePlugin${pascalCase(pluginNameParamCase)}`,
+      library: `JBrowsePlugin${pluginName}`,
       libraryTarget: 'umd',
     },
     devServer: {
-      contentBase: path.join(buildDir, 'dist'),
-      compress: true,
+      contentBase: path.join(buildDir, 'assets'),
       port: 9000,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+      },
     },
+    externals,
     plugins: [
-      // disable webpack code splitting for plugins
-      new myWebpack.optimize.LimitChunkCountPlugin({
-        maxChunks: 1,
+      new CopyPlugin({
+        patterns: [{ from: path.resolve(buildDir, 'assets'), to: distDir }],
+        options: {
+          concurrency: 100,
+        },
       }),
     ],
     resolve: {
@@ -68,10 +135,42 @@ export function baseJBrowsePluginWebpackConfig(
               use: {
                 loader: 'babel-loader',
                 options: {
-                  rootMode: 'upward',
-                  presets: ['@babel/preset-react'],
+                  comments: true,
+                  presets: [
+                    '@babel/preset-typescript',
+                    '@babel/preset-react',
+                    [
+                      '@babel/preset-env',
+                      {
+                        targets: {
+                          node: 'current',
+                          browsers: ['> 0.5%', 'last 2 versions'],
+                        },
+                      },
+                    ],
+                  ],
+                  ignore: ['./node_modules', './packages/*/node_modules'],
+                  plugins: [
+                    '@babel/plugin-syntax-dynamic-import',
+                    '@babel/plugin-proposal-class-properties',
+                    '@babel/plugin-proposal-export-default-from',
+                    [
+                      '@babel/transform-runtime',
+                      {
+                        regenerator: true,
+                      },
+                    ],
+                  ],
                 },
               },
+            },
+            {
+              test: cssRegex,
+              use: getStyleLoaders({ importLoaders: 1 }),
+            },
+            {
+              test: sassRegex,
+              use: getStyleLoaders({ importLoaders: 2 }, 'sass-loader'),
             },
             {
               loader: require.resolve('file-loader'),

@@ -6,9 +6,8 @@ toplevel: true
 
 **_Important note on JBrowse desktop_**
 
-JBrowse 2 desktop is still in very early development as we have focused on our
-web product more. Please use at your own caution, and very likely old
-configurations will have to be deleted when or if you upgrade JBrowse desktop
+We do not have downloads of JBrowse 2 Desktop yet, it is expecting a release
+in late 2020
 
 ### Installing JBrowse desktop
 
@@ -36,7 +35,7 @@ latest MacOS release artifact in our latest builds
 You can then unzip this download and the "JBrowse 2" app will be unzipped to
 this folder. You can then run JBrowse 2 from clicking this file.
 
-![](/jb2/img/installation_mac_download.png)
+![](./img/installation_mac_download.png)
 Finder window showing the downloaded zip file and unzipped contents
 
 To run JBrowse 2, you can launch the unzipped app, however if you double click
@@ -52,7 +51,7 @@ In order to properly launch JBrowse 2
 Reference
 https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac
 
-![](/jb2/img/installation_mac_protect2.png)
+![](./img/installation_mac_protect2.png)
 The "open app from unauthorized developer" after right-clicking and selecting "open"
 
 #### Installing on Windows
@@ -63,12 +62,12 @@ You can then unzip this file and run the file that comes from unzipping it.
 Moving this file to the Applications folder is also equivalent to "installing"
 JBrowse 2
 
-![](/jb2/img/installation_win_unzip.png)
-![](/jb2/img/installation_win_run.png)
+![](./img/installation_win_unzip.png)
+![](./img/installation_win_run.png)
 
 Then open up the Windows Explorer in the unzipped directory and run "JBrowse
 2.exe". This may give a "Windows protected your PC" warning, but select "More
 info..." and then "Run anyway"
 
-![](/jb2/img/installation_win_protect2.png)
-![](/jb2/img/installation_win_protect.png)
+![](./img/installation_win_protect2.png)
+![](./img/installation_win_protect.png)

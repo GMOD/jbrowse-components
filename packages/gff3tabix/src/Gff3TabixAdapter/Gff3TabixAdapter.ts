@@ -44,9 +44,9 @@ export default class extends BaseFeatureDataAdapter {
   public constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
     const gffGzLocation = readConfObject(config, 'gffGzLocation')
-    const index = readConfObject(config, 'index')
+    const indexType = readConfObject(config, ['index', 'indexType'])
+    const location = readConfObject(config, ['index', 'location'])
     const dontRedispatch = readConfObject(config, 'dontRedispatch')
-    const { location, index: indexType } = index
 
     this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
     this.gff = new TabixIndexedFile({

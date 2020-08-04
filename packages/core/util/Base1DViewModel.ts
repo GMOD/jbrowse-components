@@ -76,7 +76,7 @@ const Base1DView = types
 
       const index = self.displayedRegions.findIndex(r => {
         if (refName === r.refName && coord >= r.start && coord <= r.end) {
-          offsetBp += coord - r.start
+          offsetBp += r.reversed ? r.end - coord : coord - r.start
           return true
         }
         offsetBp += r.end - r.start

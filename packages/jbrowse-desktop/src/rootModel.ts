@@ -41,6 +41,7 @@ export default function RootModel(pluginManager: PluginManager) {
       assemblyManager: assemblyManagerType,
       error: types.maybe(types.string),
       savedSessionNames: types.maybe(types.array(types.string)),
+      version: types.maybe(types.string),
     })
     .actions(self => ({
       setSavedSessionNames(sessionNames: string[]) {

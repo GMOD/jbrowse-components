@@ -26,23 +26,19 @@ const baseSequence = {
   adapter: {},
 }
 
-let cwd = ''
-beforeEach(() => {
-  cwd = process.cwd()
-})
-
-afterEach(() => {
-  process.chdir(cwd)
-})
-
 describe('add-assembly', () => {
   setup
     .command(['add-assembly', '{}'])
+    .exit(25)
+    .it('fails if no load flag is passed')
+
+  setup
+    .command(['add-assembly', '{}', '--load', 'copy'])
     .exit(10)
     .it('fails if using inline JSON sequence custom with no --name')
 
   setup
-    .command(['add-assembly', '{}', '--name', 'simple'])
+    .command(['add-assembly', '{}', '--name', 'simple', '--load', 'copy'])
     .exit(20)
     .it('fails if custom sequence adapter has no type')
 
@@ -56,6 +52,8 @@ describe('add-assembly', () => {
       '{}',
       '--refNameAliasesType',
       'custom',
+      '--load',
+      'copy',
     ])
     .exit(30)
     .it('fails if custom refNameAliases adapter has no type')
@@ -75,8 +73,8 @@ describe('add-assembly', () => {
         path.join(ctx.dir, path.basename(simple2bit)),
       )
     })
-    .command(['add-assembly', 'simple.2bit'])
-    .command(['add-assembly', 'simple.2bit'])
+    .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
     .exit(40)
     .it('fails if trying to add an assembly with a name that already exists')
 
@@ -105,12 +103,12 @@ describe('add-assembly', () => {
     .it('fails if "name" in manifest.json is not "JBrowse"')
 
   setup
-    .command(['add-assembly', 'simple.unusual.extension.xyz'])
+    .command(['add-assembly', 'simple.unusual.extension.xyz', '--load', 'copy'])
     .exit(80)
     .it('fails if it cannot guess the sequence type')
 
   setup
-    .command(['add-assembly', 'simple.doesNotExist.fasta'])
+    .command(['add-assembly', 'simple.doesNotExist.fasta', '--load', 'copy'])
     .exit(90)
     .it('fails if it cannot find a file')
 
@@ -124,9 +122,20 @@ describe('add-assembly', () => {
       'notValidJSON',
       '--refNameAliasesType',
       'custom',
+      '--load',
+      'copy',
     ])
     .exit(100)
     .it('fails if using invalid inline JSON')
+  setup
+    .command([
+      'add-assembly',
+      'https://mysite.com/data/simple.2bit',
+      '--load',
+      'copy',
+    ])
+    .exit(35)
+    .it('fails if load flag is passed with a URL')
 
   setup
     .do(async ctx => {
@@ -147,7 +156,7 @@ describe('add-assembly', () => {
         path.join(ctx.dir, path.basename(`${simpleFasta}.fai`)),
       )
     })
-    .command(['add-assembly', 'simple.fasta'])
+    .command(['add-assembly', 'simple.fasta', '--load', 'copy'])
     .it('adds an assembly from a FASTA', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('config.json')
       const contents = await fsPromises.readFile(
@@ -195,7 +204,7 @@ describe('add-assembly', () => {
         path.join(ctx.dir, `${simpleFastaFaExtensionBasename}.fai`),
       )
     })
-    .command(['add-assembly', 'simple.fa'])
+    .command(['add-assembly', 'simple.fa', '--load', 'copy'])
     .it('adds an assembly from a FASTA (.fa extension)', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('config.json')
       const contents = await fsPromises.readFile(
@@ -243,7 +252,7 @@ describe('add-assembly', () => {
         path.join(ctx.dir, path.basename(`${simpleCompressedFasta}.gzi`)),
       )
     })
-    .command(['add-assembly', 'simple.fasta.gz'])
+    .command(['add-assembly', 'simple.fasta.gz', '--load', 'copy'])
     .it('adds an assembly from a compressed FASTA', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('config.json')
       const contents = await fsPromises.readFile(
@@ -284,7 +293,7 @@ describe('add-assembly', () => {
         path.join(ctx.dir, path.basename(simple2bit)),
       )
     })
-    .command(['add-assembly', 'simple.2bit'])
+    .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
     .it('adds an assembly from a 2bit', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('config.json')
       const contents = await fsPromises.readFile(
@@ -323,7 +332,7 @@ describe('add-assembly', () => {
         path.join(ctx.dir, path.basename(simpleChromSizes)),
       )
     })
-    .command(['add-assembly', 'simple.chrom.sizes'])
+    .command(['add-assembly', 'simple.chrom.sizes', '--load', 'copy'])
     .it('adds an assembly from a chrom.sizes', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('config.json')
       const contents = await fsPromises.readFile(
@@ -362,7 +371,7 @@ describe('add-assembly', () => {
         path.join(ctx.dir, path.basename(simpleFromConfig)),
       )
     })
-    .command(['add-assembly', 'simple.json'])
+    .command(['add-assembly', 'simple.json', '--load', 'copy'])
     .it('adds an assembly from a custom adapter JSON file', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('config.json')
       const contents = await fsPromises.readFile(
@@ -409,6 +418,8 @@ describe('add-assembly', () => {
       '{"type":"FromConfigAdapter","features":[{"refName":"SEQUENCE_1","uniqueId":"firstId","start":0,"end":233},{"refName":"SEQUENCE_2","uniqueId":"secondId","start":0,"end":120}]}',
       '--name',
       'simple',
+      '--load',
+      'copy',
     ])
     .it('adds an assembly from a custom adapter inline JSON', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('config.json')
@@ -461,7 +472,14 @@ describe('add-assembly', () => {
         path.join(ctx.dir, `${path.basename(simple2bit)}.xyz`),
       )
     })
-    .command(['add-assembly', 'simple.2bit.xyz', '--type', 'twoBit'])
+    .command([
+      'add-assembly',
+      'simple.2bit.xyz',
+      '--type',
+      'twoBit',
+      '--load',
+      'copy',
+    ])
     .it(
       "can specify --type when the type can't be inferred from the extension",
       async ctx => {
@@ -520,6 +538,8 @@ describe('add-assembly', () => {
       'simple.fasta.gz.fai.abc',
       '--gziLocation',
       'simple.fasta.gz.gzi.def',
+      '--load',
+      'copy',
     ])
     .it('can specify a custom faiLocation and gziLocation', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('config.json')
@@ -554,6 +574,8 @@ describe('add-assembly', () => {
       'customName',
       '--alias',
       'customAlias',
+      '--load',
+      'copy',
     ])
     .it('can specify a custom name and and alias', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('config.json')
@@ -591,6 +613,8 @@ describe('add-assembly', () => {
       'firstAlias',
       '--alias',
       'secondAlias',
+      '--load',
+      'copy',
     ])
     .it('can specify a multiple aliases', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('config.json')
@@ -635,6 +659,8 @@ describe('add-assembly', () => {
       'simple',
       '--refNameAliases',
       'simple.aliases',
+      '--load',
+      'copy',
     ])
     .it('can specify a refNameAliases file', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('config.json')
@@ -686,6 +712,8 @@ describe('add-assembly', () => {
       '{"type": "CustomAdapter"}',
       '--refNameAliasesType',
       'custom',
+      '--load',
+      'copy',
     ])
     .it('can specify a custom refNameAliases adapter', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('config.json')
@@ -718,6 +746,8 @@ describe('add-assembly', () => {
       'simple',
       '--refNameColors',
       'red,orange,yellow, green, blue, purple',
+      '--load',
+      'copy',
     ])
     .it('can specify a custom name and and alias', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('config.json')
@@ -751,7 +781,14 @@ describe('add-assembly', () => {
     .do(async () => {
       await fsPromises.writeFile('config.json', '{}')
     })
-    .command(['add-assembly', '{"type":"CustomAdapter"}', '--name', 'simple'])
+    .command([
+      'add-assembly',
+      '{"type":"CustomAdapter"}',
+      '--name',
+      'simple',
+      '--load',
+      'copy',
+    ])
     .it('can use an existing config file', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('config.json')
       const contents = await fsPromises.readFile(
@@ -787,8 +824,8 @@ describe('add-assembly', () => {
         path.join(ctx.dir, path.basename(simple2bit)),
       )
     })
-    .command(['add-assembly', 'simple.2bit'])
-    .command(['add-assembly', 'simple.2bit', '--overwrite'])
+    .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    .command(['add-assembly', 'simple.2bit', '--overwrite', '--load', 'copy'])
     .it('can use --overwrite to replace an existing assembly', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('config.json')
       const contents = await fsPromises.readFile(
@@ -821,13 +858,12 @@ describe('add-assembly', () => {
     })
     .mockConsoleLog()
     .mockConsoleError()
-    .command(['add-assembly', path.join('..', 'simple.2bit')])
-    .it('warns when a data file is not in the JBrowse directory', async ctx => {
-      expect(ctx.consoleLog).not.toHaveBeenCalled()
-      expect(ctx.consoleError.mock.calls[0][0]).toContain(
-        'is not in the JBrowse directory',
-      )
-    })
+    .command([
+      'add-assembly',
+      path.join('..', 'simple.2bit'),
+      '--load',
+      'trust',
+    ])
 
   setup
     .nock('https://mysite.com', site =>

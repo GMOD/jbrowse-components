@@ -1,6 +1,6 @@
 {
   "name": "generator-jbrowse",
-  "version": "0.0.0",
+  "version": "0.0.1-beta.10",
   "private": true,
   "description": "Generator for JBrowse plugins",
   "files": [

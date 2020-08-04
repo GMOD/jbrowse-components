@@ -21,4 +21,5 @@ yarn-error.log*
 
 **.pdf
 titlemod.md
-single_page.md
+combined.md
+cli.md

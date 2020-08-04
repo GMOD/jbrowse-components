@@ -39,11 +39,15 @@ system, but the CLI tool will help automate tasks for you
 To install the JBrowse CLI tools, we expect node v10 or greater to be installed
 already, then you can use
 
-    npm install -g @gmod/jbrowse-cli
+```sh-session
+npm install -g @gmod/jbrowse-cli
+```
 
 After running this command you can then test it with
 
-    jbrowse --version
+```sh-session
+jbrowse --version
+```
 
 This will output the current version of our CLI tools
 
@@ -57,19 +61,72 @@ assemblies, etc. to your installation
 If you are running a web server such as apache2 or nginx, you may have your web
 server in a directory such as `/var/www/html`
 
-    jbrowse create /var/www/html/jbrowse2
+```sh-session
+jbrowse create /var/www/html/jbrowse2
+```
 
 This will download the latest JBrowse 2 release from github releases and
-download it to the folder specified. See the docs for jbrowse CLI for more
-options, which includes supplying a specific URL. Note that we also have
+download it to the folder specified.
 
-    jbrowse upgrade /var/www/html/jbrowse2
+Note that `jbrowse create` simply downloads a release from github and unzips it to
+the folder specified
 
-This will update jbrowse to the latest release, or to any specific tag if --tag
-is supplied. If you cannot get these commands to work feel free to [let us
-know](https://github.com/gmod/jbrowse-components/issues). You can also download
-a release manually from our [releases
-page](https://github.com/GMOD/jbrowse-components/releases) and unzip it instead
-of using the `jbrowse create` command
+#### Loading a genome assembly
 
-#### Loading an assembly
+After you have run the previous step, you will load a genome assembly, which we
+refer to simply as an assembly. This is basically a FASTA file
+
+```sh-session
+cd /var/www/html/jbrowse2
+jbrowse add-assembly ~/hg19.fa --load copy
+```
+
+This will copy the hg19.fa to the current folder, and initialize a file called
+config.json with the hg19 assembly. Note that other options include
+
+See [configuring assemblies](config_assembly) for more info on formats
+supported for the sequence file.
+
+#### Adding a BAM track
+
+Once you have loaded an assembly, we can try adding a BAM track
+
+```sh-session
+jbrowse add-track ~/myfile.bam --load copy
+```
+
+This would copy myfile.bam and myfile.bam.bai (inferred filename) from the home
+directory
+
+Note that URLs are also allowed
+
+```sh-session
+jbrowse add-track http://myhost/myfile.bam
+```
+
+In this case it would not download the file, but simply put the URL in the
+config.json
+
+#### Adding a VCF track
+
+We generally expect VCF files to be tabix indexed. If you have tabix installed
+(sudo apt install tabix) then you can run
+
+```sh-session
+bgzip yourfile.vcf
+tabix yourfile.vcf.gz
+```
+
+Then run
+
+```sh-session
+jbrowse add-track yourfile.vcf.gz --load copy
+```
+
+#### Conclusion
+
+Hopefully this helps you get started with JBrowse 2
+
+Check out the rest of the docs, for more information, and also see the CLI docs
+for more info [CLI tools](cli_guide) especially for details on some of the
+steps shown here.

@@ -7,14 +7,13 @@ module.exports = {
   organizationName: 'GMOD', // Usually your GitHub org/user name.
   projectName: 'jbrowse-components', // Usually your repo name.
   themeConfig: {
-    disableDarkMode: true,
     navbar: {
       title: 'JBrowse',
       logo: {
         alt: 'My Site Logo',
         src: 'img/logo.svg',
       },
-      links: [
+      items: [
         {
           to: 'docs/',
           activeBasePath: 'docs',
@@ -51,7 +50,7 @@ module.exports = {
           title: 'Docs',
           items: [
             {
-              label: 'Style Guide',
+              label: 'Documentation',
               to: 'docs/',
             },
           ],
@@ -99,13 +98,13 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.json'),
           // Please change this to your repo.
           editUrl:
-            'https://github.com/GMOD/jbrowse-components/edit/master/website/',
+            'https://github.com/GMOD/jbrowse-components/edit/master/packages/website/',
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
           editUrl:
-            'https://github.com/GMOD/jbrowse-components/edit/master/website/blog/',
+            'https://github.com/GMOD/jbrowse-components/edit/master/packages/website/blog/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

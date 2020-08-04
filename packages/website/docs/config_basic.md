@@ -7,23 +7,26 @@ title: Intro to the JBrowse 2 configuration
 
 A JBrowse 2 configuration file, a config.json, is structured as follows
 
-    {
-        "configuration": {
-            /* global configs here */
-        },
-        "assemblies": [
-            /* list of assembly configurations, e.g. the genomes being viewed */
-        ],
-        "tracks": [
-            /* array of tracks being loaded, contain reference to which assembl(ies) they belong to */
-        ],
-        "defaultSession": {
-            /* optional default session */
-        },
-        "savedSessions": [
-            /* optional saved sessions */
-        ]
-    }
+```json
+{
+  "configuration": {
+    /* global configs here */
+  },
+  "assemblies": [
+    /* list of assembly configurations, e.g. the genomes being viewed */
+  ],
+  "tracks": [
+    /* array of tracks being loaded, contain reference to which assembl(ies)
+    they belong to */
+  ],
+  "defaultSession": {
+    /* optional default session */
+  },
+  "savedSessions": [
+    /* optional saved sessions */
+  ]
+}
+```
 
 The most important thing to configure are your assemblies and your tracks
 
@@ -37,41 +40,43 @@ normal track config
 
 Here is a complete config.json file containing only a hg19
 
+```json
+{
+  "assemblies": [
     {
-      "assemblies": [
-        {
-          "name": "hg19",
-          "aliases": ["GRCh37"],
-          "sequence": {
-            "type": "ReferenceSequenceTrack",
-            "trackId": "Pd8Wh30ei9R",
-            "adapter": {
-              "type": "BgzipFastaAdapter",
-              "fastaLocation": {
-                "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
-              },
-              "faiLocation": {
-                "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
-              },
-              "gziLocation": {
-                "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
-              }
-            },
-            "rendering": {
-              "type": "DivSequenceRenderer"
-            }
+      "name": "hg19",
+      "aliases": ["GRCh37"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg19_config",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
           },
-          "refNameAliases": {
-            "adapter": {
-              "type": "RefNameAliasAdapter",
-              "location": {
-                "uri": "test_data/hg19_aliases.txt"
-              }
-            }
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "test_data/hg19_aliases.txt"
           }
         }
-      ]
+      }
     }
+  ]
+}
+```
 
 ## Adding an assembly with the CLI
 
@@ -89,61 +94,63 @@ All tracks contain
 
 Example config.json containing a track config
 
+```json
+{
+  "assemblies": [
     {
-      "assemblies": [
-        {
-          "name": "hg19",
-          "aliases": ["GRCh37"],
-          "sequence": {
-            "type": "ReferenceSequenceTrack",
-            "trackId": "Pd8Wh30ei9R",
-            "adapter": {
-              "type": "BgzipFastaAdapter",
-              "fastaLocation": {
-                "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
-              },
-              "faiLocation": {
-                "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
-              },
-              "gziLocation": {
-                "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
-              }
-            },
-            "rendering": {
-              "type": "DivSequenceRenderer"
-            }
+      "name": "hg19",
+      "aliases": ["GRCh37"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg19_config",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
           },
-          "refNameAliases": {
-            "adapter": {
-              "type": "RefNameAliasAdapter",
-              "location": {
-                "uri": "test_data/hg19_aliases.txt"
-              }
-            }
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "test_data/hg19_aliases.txt"
           }
         }
-      ]
-      "tracks": [
-         {
-           "type": "BasicTrack",
-           "trackId": "ncbi_gff_hg19",
-           "name": "NCBI RefSeq (GFF3Tabix)",
-           "assemblyNames": ["hg19"],
-           "category": ["Annotation test", "blah"],
-           "adapter": {
-             "type": "Gff3TabixAdapter",
-             "gffGzLocation": {
-               "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/GRCh37_latest_genomic.sort.gff.gz"
-             },
-             "index": {
-               "location": {
-                 "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/GRCh37_latest_genomic.sort.gff.gz.tbi"
-               }
-             }
-           },
-           "renderer": {
-             "type": "SvgFeatureRenderer"
-           }
-         }
-       ]
-     }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "BasicTrack",
+      "trackId": "ncbi_gff_hg19",
+      "name": "NCBI RefSeq (GFF3Tabix)",
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation test", "blah"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/GRCh37_latest_genomic.sort.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/GRCh37_latest_genomic.sort.gff.gz.tbi"
+          }
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    }
+  ]
+}
+```
