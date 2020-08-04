@@ -7,7 +7,7 @@ Visualizing variant tracks from the VCF format alongside the original alignment
 evidence track is a common workflow for validating your results. In JBrowse 2
 we can open a variant track and an alignments track as shown below
 
-![](/jb2/img/variant_with_pileup.png)
+![](./img/variant_with_pileup.png)
 Variant track indicating a SNP alongside the alignment track evidence
 
 ### Variant widget
