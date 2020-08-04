@@ -10,7 +10,7 @@ it's own rendering. In JBrowse 2, the data parsing and rendering is offloaded
 to a web-worker or other RPC. This allows things to be faster in many cases.
 This is conceptually related to "server side rendering" or SSR in React terms.
 
-![](/jb2/img/renderer.png)
+![](./img/renderer.png)
 Conceptual diagram of how a track calls a renderer using the RPC
 
 Important note: you can make custom tracks types that do not use this workflow,

@@ -12,7 +12,7 @@ versus the genome
 Currently the workflow for launching a dotplot is not fully fleshed out
 in a way that one can add dotplot tracks in the UI but it can be manually configured
 
-![](/jb2/img/dotplot.png)
+![](./img/dotplot.png)
 
 See the [dotplot configuration](config_dotplot)
 
@@ -20,7 +20,7 @@ See the [dotplot configuration](config_dotplot)
 
 One can also launch a dotplot view that compares a long read to the reference genome
 
-![](/jb2/img/dotplot_longread.png)
+![](./img/dotplot_longread.png)
 
 Right click on an alignments feature and select "Open dotplot view"
 
