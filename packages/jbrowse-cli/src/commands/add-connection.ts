@@ -58,7 +58,7 @@ export default class AddConnection extends Command {
     }),
     config: flags.string({
       char: 'c',
-      description: `Any extra config settings to add to connection as JSON object format, such as '{"uri":"url":"https://sample.com"}}'`,
+      description: `Any extra config settings to add to connection in JSON object format, such as '{"uri":"url":"https://sample.com"}}'`,
     }),
     configLocation: flags.string({
       description:

@@ -146,7 +146,7 @@ OPTIONS
   -a, --assemblyName=assemblyName  Assembly name of the connection If none, will default to the assembly in your config
                                    file
 
-  -c, --config=config              Any extra config settings to add to connection as JSON object format, such as
+  -c, --config=config              Any extra config settings to add to connection in JSON object format, such as
                                    '{"uri":"url":"https://sample.com"}}'
 
   -f, --force                      Equivalent to `--skipCheck --overwrite`
