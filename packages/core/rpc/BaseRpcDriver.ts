@@ -193,26 +193,33 @@ export default abstract class BaseRpcDriver {
       pluginManager,
       sessionId,
     )
-    const resultP = worker.call(functionName, filteredAndSerializedArgs, {
+
+    // now actually call the worker
+    const callP = worker.call(functionName, filteredAndSerializedArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes
       ...options,
     })
 
-    let handle: ReturnType<typeof setInterval>
-    const result = await Promise.race([
-      resultP,
-      new Promise((resolve, reject) => {
-        handle = setInterval(() => {
-          // must've been killed
-          if (worker.status === 'killed') {
-            reject(new Error('operation timed out'))
-          }
-        }, 5000)
-      }).finally(() => {
-        clearInterval(handle)
-      }),
-    ])
+    // check every 5 seconds to see if the worker has been killed, and
+    // reject the killedP promise if it has
+    let killedCheckInterval: ReturnType<typeof setInterval>
+    const killedP = new Promise((resolve, reject) => {
+      killedCheckInterval = setInterval(() => {
+        // must've been killed
+        if (worker.status === 'killed') {
+          reject(new Error('operation timed out'))
+        }
+      }, 5000)
+    })
 
-    return rpcMethod.deserializeReturn(result)
+    // the result is a race between the actual result promise, and the "killed"
+    // promise. the killed promise will only actually win if the worker was
+    // killed before the call could return
+    const resultP = Promise.race([callP, killedP])
+    resultP.finally(() => {
+      clearInterval(killedCheckInterval)
+    })
+
+    return rpcMethod.deserializeReturn(await resultP)
   }
 }
