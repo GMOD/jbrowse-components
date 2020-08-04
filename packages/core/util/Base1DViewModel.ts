@@ -55,21 +55,16 @@ const Base1DView = types
       const rightPadding = 30
       return -this.width + rightPadding
     },
-    get dynamicBlocks() {
-      return calculateDynamicBlocks(self)
-    },
-    get staticBlocks() {
-      return calculateStaticBlocks(cast(self))
-    },
     get totalBp() {
       return self.displayedRegions
         .map(a => a.end - a.start)
         .reduce((a, b) => a + b, 0)
     },
-    get currBp() {
-      return this.dynamicBlocks
-        .map(a => a.end - a.start)
-        .reduce((a, b) => a + b, 0)
+    get interRegionPaddingWidth() {
+      return 2
+    },
+    get minimumBlockWidth() {
+      return 20
     },
     bpToPx({ refName, coord }: { refName: string; coord: number }) {
       let offsetBp = 0
@@ -113,6 +108,19 @@ const Base1DView = types
         offset: bp - bpSoFar,
         index: self.displayedRegions.length - 1,
       }
+    },
+  }))
+  .views(self => ({
+    get dynamicBlocks() {
+      return calculateDynamicBlocks(self)
+    },
+    get staticBlocks() {
+      return calculateStaticBlocks(self)
+    },
+    get currBp() {
+      return this.dynamicBlocks
+        .map(a => a.end - a.start)
+        .reduce((a, b) => a + b, 0)
     },
   }))
   .actions(self => ({

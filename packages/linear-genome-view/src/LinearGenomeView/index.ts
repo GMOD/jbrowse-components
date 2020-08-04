@@ -17,6 +17,9 @@ import {
   springAnimate,
   isSessionModelWithWidgets,
 } from '@gmod/jbrowse-core/util'
+import { BlockSet } from '@gmod/jbrowse-core/util/blockTypes'
+import calculateDynamicBlocks from '@gmod/jbrowse-core/util/calculateDynamicBlocks'
+import calculateStaticBlocks from '@gmod/jbrowse-core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { transaction } from 'mobx'
@@ -28,10 +31,6 @@ import LineStyleIcon from '@material-ui/icons/LineStyle'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import clone from 'clone'
-import { BlockSet } from '../BasicTrack/util/blockTypes'
-
-import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
-import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -953,7 +952,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         },
 
         get staticBlocks() {
-          const ret = calculateStaticBlocks(cast(self), 1)
+          const ret = calculateStaticBlocks(self, true, true, 1)
           const sret = JSON.stringify(ret)
           if (stringifiedCurrentlyCalculatedStaticBlocks !== sret) {
             currentlyCalculatedStaticBlocks = ret
@@ -963,7 +962,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         },
 
         get dynamicBlocks() {
-          return calculateDynamicBlocks(cast(self))
+          return calculateDynamicBlocks(self)
         },
         get visibleLocStrings() {
           const { contentBlocks } = this.dynamicBlocks
