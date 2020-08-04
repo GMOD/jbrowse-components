@@ -207,7 +207,7 @@ export default abstract class BaseRpcDriver {
       killedCheckInterval = setInterval(() => {
         // must've been killed
         if (worker.status === 'killed') {
-          reject(new Error('operation timed out'))
+          reject(new Error('operation timed out, worker process stopped responding'))
         }
       }, 5000)
     })
