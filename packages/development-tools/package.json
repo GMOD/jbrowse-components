@@ -10,6 +10,7 @@
     "prebuild": "npm run clean",
     "build": "babel src --out-dir dist --extensions '.ts,.js'",
     "version": "standard-changelog && git add CHANGELOG.md",
+    "prepare": "npm run build",
     "postpublish": "git push origin master --follow-tags"
   },
   "repository": "GMOD/jbrowse-components",
