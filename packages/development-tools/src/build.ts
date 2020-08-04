@@ -143,7 +143,7 @@ export function baseJBrowsePluginWebpackConfig(
                       '@babel/preset-env',
                       {
                         targets: {
-                          node: 'current',
+                          node: 10,
                           browsers: ['> 0.5%', 'last 2 versions'],
                         },
                       },

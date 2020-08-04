@@ -69,7 +69,7 @@ function Home() {
             </Button>
           </div>
           <div style={{ flexBasis: '50%', padding: 20 }}>
-            <img alt="screenshot of jbrowse 2" src="img/hic.png" />
+            <img alt="screenshot of jbrowse 2" src="img/screenshot.png" />
           </div>
         </div>
         <Table>

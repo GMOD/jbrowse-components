@@ -5,7 +5,7 @@ title: Creating a new plugin
 
 JBrowse 2 plugins can be used to add track types, view types, data adapter. For
 a full list, see the [pluggable
-elements](/jb2/docs/developer_pluggable_elements) page. The plugins can also
+elements](developer_pluggable_elements) page. The plugins can also
 extend logic in many arbitary ways beyond even adding these elements too.
 
 We will go over creating an example plugin. The first thing that we have is a

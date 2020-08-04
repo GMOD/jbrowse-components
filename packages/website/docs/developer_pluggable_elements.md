@@ -28,7 +28,7 @@ below
 
 Data adapters basically are parsers for a given data format. We will review
 what data adapters the alignments plugin has (to write your own data adapter,
-see [creating data adapters](/jb2/docs/developer_creating_data_adapters))
+see [creating data adapters](developer_creating_data_adapters))
 
 Example data adapters: the `@gmod/jbrowse-plugin-alignments` plugin creates
 multiple data adapter types
@@ -47,7 +47,7 @@ Renderers are a new concept in JBrowse 2, and are related to the concept of
 server side rendering (SSR), but can be used not just on the server but also in
 contexts like the web worker (e.g. the webworker can draw the features to an
 OffscreenCanvas). For more info see [creating
-renderers](/jb2/docs/developer_creating_renderers)
+renderers](developer_creating_renderers)
 
 Example renderers: the `@gmod/jbrowse-plugin-alignments` exports several
 renderer types

@@ -109,15 +109,23 @@ export default class AddTrack extends Command {
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddTrack)
     const { track: argsTrack } = runArgs
-    const { config, configLocation, category, description, load } = runFlags
+    const {
+      config,
+      skipCheck,
+      force,
+      configLocation,
+      category,
+      description,
+      load,
+    } = runFlags
     let { type, trackId, name, assemblyNames } = runFlags
 
-    if (!(runFlags.skipCheck || runFlags.force)) {
+    if (!(skipCheck || force)) {
       await this.checkLocation(runArgs.location)
     }
     const { location, protocol, local } = await this.resolveFileLocation(
       argsTrack,
-      !(runFlags.skipCheck || runFlags.force),
+      !(skipCheck || force),
     )
     const configPath =
       configLocation || path.join(runArgs.location, 'config.json')
@@ -172,7 +180,7 @@ export default class AddTrack extends Command {
       this.error('No assemblies found. Please add one before adding tracks', {
         exit: 100,
       })
-    } else if (configContents.assemblies.length > 1) {
+    } else if (configContents.assemblies.length > 1 && !assemblyNames) {
       this.error(
         'Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
       )
@@ -226,11 +234,14 @@ export default class AddTrack extends Command {
     switch (type) {
       case 'PileupTrack':
       case 'AlignmentsTrack': {
-        const idx = configContents.assemblies.findIndex(
-          assemblies => assemblies.name === assemblyNames,
+        const assembly = configContents.assemblies.find(
+          asm => asm.name === assemblyNames,
         )
-        const sequenceAdapter = configContents.assemblies[idx].sequence.adapter
-        trackConfig.adapter.sequenceAdapter = sequenceAdapter
+        if (assembly) {
+          trackConfig.adapter.sequenceAdapter = assembly.sequence.adapter
+        } else if (!skipCheck) {
+          this.error(`Failed to find assemblyName ${assemblyNames}`)
+        }
         break
       }
       case 'SNPCoverageTrack': {
