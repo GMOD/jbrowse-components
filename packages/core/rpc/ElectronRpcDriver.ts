@@ -65,8 +65,8 @@ class WindowWorkerHandle {
       if (!result) {
         throw new Error('failed to configure worker')
       }
+      this.ready = true
     }
-    this.ready = true
   }
 
   async call(
