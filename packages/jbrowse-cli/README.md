@@ -30,13 +30,12 @@ It is likely preferable in most cases to install the tools first however
 ## Commands
 
 <!-- commands -->
-
-- [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
-- [`jbrowse add-track TRACK [LOCATION]`](#jbrowse-add-track-track-location)
-- [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
-- [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
-- [`jbrowse help [COMMAND]`](#jbrowse-help-command)
-- [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
+* [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
+* [`jbrowse add-track TRACK [LOCATION]`](#jbrowse-add-track-track-location)
+* [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
+* [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
+* [`jbrowse help [COMMAND]`](#jbrowse-help-command)
+* [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
 ## `jbrowse add-assembly SEQUENCE`
 
@@ -70,7 +69,7 @@ OPTIONS
       show CLI help
 
   -l, --load=copy|symlink|move|trust
-      Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data
+      Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data 
       directory to the JBrowse directory. Or use trust to modify the config without doing any file operations
 
   -n, --name=name
@@ -273,7 +272,6 @@ EXAMPLES
   $ jbrowse upgrade --listVersions
   $ jbrowse upgrade https://sample.com/jbrowse2.zip
 ```
-
 <!-- commandsstop -->
 
 ## Debugging

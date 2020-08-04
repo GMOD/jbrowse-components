@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-variants",
-  "version": "0.0.1-beta.10",
+  "version": "0.0.1-beta.11",
   "description": "JBrowse 2 variant adapters, tracks, etc.",
   "main": "src/index.ts",
   "scripts": {
@@ -15,7 +15,7 @@
     "generic-filehandle": "^2.0.0"
   },
   "devDependencies": {
-    "@gmod/jbrowse-development-tools": "^0.0.1-beta.19"
+    "@gmod/jbrowse-development-tools": "^0.0.1-beta.20"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^0.0.1-beta.1",
