@@ -76,8 +76,7 @@ export default class AddTrack extends Command {
         'Optional Comma separated string of categories to group tracks',
     }),
     config: flags.string({
-      description:
-        'Any extra config settings to add to a track. i.e {"defaultRendering": "density"}',
+      description: `Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'`,
     }),
     configLocation: flags.string({
       description:
@@ -202,7 +201,13 @@ export default class AddTrack extends Command {
     }
 
     let configObj = {}
-    if (config) configObj = JSON.parse(config)
+    if (config) {
+      try {
+        configObj = JSON.parse(config)
+      } catch (error) {
+        this.error('Could not parse provided JSON object')
+      }
+    }
     const trackConfig: Track = {
       type,
       trackId,
