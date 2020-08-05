@@ -30,12 +30,14 @@ It is likely preferable in most cases to install the tools first however
 ## Commands
 
 <!-- commands -->
-* [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
-* [`jbrowse add-track TRACK [LOCATION]`](#jbrowse-add-track-track-location)
-* [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
-* [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
-* [`jbrowse help [COMMAND]`](#jbrowse-help-command)
-* [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
+
+- [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
+- [`jbrowse add-track TRACK [LOCATION]`](#jbrowse-add-track-track-location)
+- [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
+- [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
+- [`jbrowse help [COMMAND]`](#jbrowse-help-command)
+- [`jbrowse set-default-session [DEFAULTSESSION] [LOCATION]`](#jbrowse-set-default-session-defaultsession-location)
+- [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
 ## `jbrowse add-assembly SEQUENCE`
 
@@ -69,7 +71,7 @@ OPTIONS
       show CLI help
 
   -l, --load=copy|symlink|move|trust
-      Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data 
+      Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data
       directory to the JBrowse directory. Or use trust to modify the config without doing any file operations
 
   -n, --name=name
@@ -245,6 +247,28 @@ OPTIONS
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.1.0/src/commands/help.ts)_
 
+## `jbrowse set-default-session [DEFAULTSESSION] [LOCATION]`
+
+Set a default session with views and tracks
+
+```
+USAGE
+  $ jbrowse set-default-session [DEFAULTSESSION] [LOCATION]
+
+ARGUMENTS
+  DEFAULTSESSION  path to a default session setup
+  LOCATION        path to JB2 installation. Defaults to .
+
+OPTIONS
+  -c, --currentSession             List out the current default session
+  -h, --help                       show CLI help
+  -t, --tracks=tracks              Track id or track ids as comma separated string to put into default session
+  -v, --view=view                  Name for the view, will be guessed on default
+
+  --configLocation=configLocation  Write to a certain config.json file. Defaults to location/config.json if not
+                                   specified
+```
+
 ## `jbrowse upgrade [LOCALPATH]`
 
 Upgrades JBrowse 2 to latest version
@@ -272,6 +296,7 @@ EXAMPLES
   $ jbrowse upgrade --listVersions
   $ jbrowse upgrade https://sample.com/jbrowse2.zip
 ```
+
 <!-- commandsstop -->
 
 ## Debugging
