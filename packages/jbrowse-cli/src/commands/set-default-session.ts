@@ -41,9 +41,14 @@ export default class SetDefaultSession extends Command {
   ]
 
   static flags = {
+    name: flags.string({
+      char: 'n',
+      description: 'Give a name for the default session, blank on default',
+    }),
     view: flags.string({
       char: 'v',
-      description: 'Name for the view, will be guessed on default',
+      description:
+        'Name for the view in config to be added as default session, will be guessed on default',
     }),
     tracks: flags.string({
       char: 't',
@@ -66,7 +71,7 @@ export default class SetDefaultSession extends Command {
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(SetDefaultSession)
     const { defaultSession, location } = runArgs
-    const { configLocation, view, tracks, currentSession, help } = runFlags
+    const { name, configLocation, view, tracks, currentSession } = runFlags
 
     const configPath = configLocation || path.join(location, 'config.json')
 
@@ -93,37 +98,64 @@ export default class SetDefaultSession extends Command {
     }
 
     if (!configContents.defaultSession) configContents.defaultSession = {}
-    else if (currentSession) {
+
+    // if user passes current session flag, print out and exit
+    if (currentSession) {
       this.log(
         `The current default session is ${configContents.defaultSession}`,
       )
       this.exit()
     }
 
-    if (defaultSession) await this.checkDefaultSessionFile(defaultSession)
-
-    // if trackid, check the tracks array in the config and find the trackid
-    // information. if it doesnt exist, make sure add track first before doing default session?
-    let trackIds = []
-    if (tracks && configContents.tracks) {
-      trackIds = tracks.split(',').map(c => c.trim())
-      trackIds.forEach(trackId => {
-        const idx = configContents.tracks.findIndex(
-          track => trackId === track.trackId,
-        )
-        if (idx === -1)
-          this.error(
-            `Track ${trackId} has not been added to config yet.\nPlease add the track with  the add-track command before adding to the default session`,
-            { exit: 10 },
-          )
-      })
+    if (!defaultSession && !view) {
+      this.error(
+        `No default session information provided, Please either provide a default session file or enter information to build a default session`,
+        { exit: 15 },
+      )
     }
+    // if user provides a file, process and set as default session and exit
+    else if (defaultSession) {
+      const defaultJson = await this.readDefaultSessionFile(defaultSession)
+      const message = `Set default session to session from ${defaultSession}${
+        configContents.defaultSession.length
+      }. ${
+        configContents.defaultSession.length > 0 &&
+        'Overwrote previous default session.'
+      }`
+      configContents.defaultSession = { ...defaultJson }
+      this.log(message)
+      this.exit()
+    } else {
+      // if trackid, check the tracks array in the config and find the trackid
+      // information. if it doesnt exist, make sure add track first before doing default session?
+      let trackIds = []
+      if (tracks && configContents.tracks) {
+        trackIds = tracks.split(',').map(c => c.trim())
+        trackIds.forEach(trackId => {
+          const idx = configContents.tracks.findIndex(
+            track => trackId === track.trackId,
+          )
+          if (idx === -1)
+            this.error(
+              `Track ${trackId} has not been added to config yet.\nPlease add the track with  the add-track command before adding to the default session`,
+              { exit: 10 },
+            )
+        })
+      }
 
-    // need to set up object
-    // see other config.json saved session, should look similar
-    // take in view names, trackids, do not need menu bar info those are outdated
-    // see if other flags are needed to set up a default session
-    // need to log a message when it is not a fresh default session saying the default will be overwritten
+      // to set up object somehow getSession from jbrowse setup then
+      // get the views array, find the view that the user wants to set as the default session
+      // then add the tracks that the user selected into the view object
+      // once that is done, can add to configContents and return
+      // maybe need to check that it is a valid default session so it doesnt break on load
+
+      const sessionObj = {
+        name: name || 'New Default Session',
+        width: 1850, // probably not needed
+        drawerWidth: 384, // probably not needed
+        views: [],
+      }
+    }
   }
 
   async readJsonConfig(location: string) {
@@ -173,20 +205,23 @@ export default class SetDefaultSession extends Command {
     }
   }
 
-  async checkDefaultSessionFile(defaultSessionFile: string) {
+  async readDefaultSessionFile(defaultSessionFile: string) {
     let defaultSessionJson: string
     try {
       defaultSessionJson = await fsPromises.readFile(defaultSessionFile, {
         encoding: 'utf8',
       })
     } catch (error) {
-      this.error('Could not read the provided file', { exit: 40 })
+      return this.error('Could not read the provided file', { exit: 40 })
     }
 
     try {
-      JSON.parse(defaultSessionJson)
+      const defaultSession = JSON.parse(defaultSessionJson)
+      return defaultSession
     } catch (error) {
-      this.error('Could not parse the given default session file', { exit: 50 })
+      return this.error('Could not parse the given default session file', {
+        exit: 50,
+      })
     }
   }
 }
