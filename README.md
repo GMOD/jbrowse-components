@@ -45,7 +45,7 @@ Either cd to packages/jbrowse-web or packages/jbrowse-desktop and run `yarn star
 To make a release of jbrowse-components tools, run the following
 
 ```sh
-yarn run publish
+yarn run lerna-publish
 ```
 
 This will analyze which packages have changed, and prompt you to publish each

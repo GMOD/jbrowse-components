@@ -75,9 +75,9 @@ async function fetchBinaryRange(
 
 const globalRangeCache = new HttpRangeFetcher({
   fetch: fetchBinaryRange,
-  size: 100 * 1024 * 1024, // 100MB
-  chunkSize: 2 ** 16, // 64KB
-  aggregationTime: 500,
+  size: 500 * 1024 * 1024, // 500MB
+  chunkSize: 2 ** 17, // 128KB
+  maxFetchSize: 100 * 1024 * 1024,
   minimumTTL: 300000000,
 })
 

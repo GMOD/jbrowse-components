@@ -1,3 +1,8 @@
+import {
+  ContentBlock,
+  ElidedBlock,
+  InterRegionPaddingBlock,
+} from '@gmod/jbrowse-core/util/blockTypes'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
@@ -11,11 +16,6 @@ import {
   ElidedBlockMarker,
   InterRegionPaddingBlockMarker,
 } from '../../BasicTrack/components/MarkerBlocks'
-import {
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
-} from '../../BasicTrack/util/blockTypes'
 import { makeTicks } from '../util'
 
 type LGV = Instance<LinearGenomeViewStateModel>
