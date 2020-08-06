@@ -3,13 +3,14 @@
 exports[`five 1`] = `
 Array [
   ContentBlock {
-    "assemblyName": undefined,
+    "assemblyName": "test",
     "end": 72.4,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:27.05..72.4",
+    "key": "{test}ctgA:27.05..72.4-0",
     "offsetPx": 521,
     "parentRegion": Object {
+      "assemblyName": "test",
       "end": 50000,
       "refName": "ctgA",
       "reversed": false,
@@ -28,7 +29,7 @@ Array [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
     "end": undefined,
-    "key": "ctgA:1..250-beforeFirstRegion",
+    "key": "{test}ctgA:1..250-0-beforeFirstRegion",
     "offsetPx": -100,
     "refName": undefined,
     "start": undefined,
@@ -36,13 +37,14 @@ Array [
     "widthPx": 100,
   },
   ContentBlock {
-    "assemblyName": undefined,
+    "assemblyName": "test",
     "end": 250,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:1..250",
+    "key": "{test}ctgA:1..250-0",
     "offsetPx": 0,
     "parentRegion": Object {
+      "assemblyName": "test",
       "end": 50000,
       "refName": "ctgA",
       "start": 0,
@@ -60,7 +62,7 @@ Array [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
     "end": undefined,
-    "key": "ctgA:1..200-beforeFirstRegion",
+    "key": "{test}ctgA:1..200-0-beforeFirstRegion",
     "offsetPx": 0,
     "refName": undefined,
     "start": undefined,
@@ -68,13 +70,14 @@ Array [
     "widthPx": -0,
   },
   ContentBlock {
-    "assemblyName": undefined,
+    "assemblyName": "test",
     "end": 200,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:1..200",
+    "key": "{test}ctgA:1..200-0",
     "offsetPx": 0,
     "parentRegion": Object {
+      "assemblyName": "test",
       "end": 50000,
       "refName": "ctgA",
       "start": 0,
@@ -92,7 +95,7 @@ Array [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
     "end": undefined,
-    "key": "ctgA:49,901..50,000-reversed-beforeFirstRegion",
+    "key": "{test}ctgA:49,901..50,000-0-reversed-beforeFirstRegion",
     "offsetPx": -100,
     "refName": undefined,
     "start": undefined,
@@ -100,13 +103,14 @@ Array [
     "widthPx": 100,
   },
   ContentBlock {
-    "assemblyName": undefined,
+    "assemblyName": "test",
     "end": 50000,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:49,901..50,000-reversed",
+    "key": "{test}ctgA:49,901..50,000-0-reversed",
     "offsetPx": 0,
     "parentRegion": Object {
+      "assemblyName": "test",
       "end": 50000,
       "refName": "ctgA",
       "reversed": true,
@@ -125,7 +129,7 @@ Array [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
     "end": undefined,
-    "key": "ctgA:49,801..50,000-reversed-beforeFirstRegion",
+    "key": "{test}ctgA:49,801..50,000-0-reversed-beforeFirstRegion",
     "offsetPx": 0,
     "refName": undefined,
     "start": undefined,
@@ -133,13 +137,14 @@ Array [
     "widthPx": -0,
   },
   ContentBlock {
-    "assemblyName": undefined,
+    "assemblyName": "test",
     "end": 50000,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:49,801..50,000-reversed",
+    "key": "{test}ctgA:49,801..50,000-0-reversed",
     "offsetPx": 0,
     "parentRegion": Object {
+      "assemblyName": "test",
       "end": 50000,
       "refName": "ctgA",
       "reversed": true,

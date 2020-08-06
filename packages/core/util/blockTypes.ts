@@ -25,6 +25,10 @@ export class BlockSet {
     return this.blocks
   }
 
+  getRegions() {
+    return this.blocks.map(block => block.toRegion())
+  }
+
   map<T, U = this>(func: Func<T>, thisarg?: U) {
     return this.blocks.map(func, thisarg)
   }
@@ -79,6 +83,13 @@ export class BaseBlock {
     this.key = data.key
   }
 
+  /**
+   * rename the reference sequence of this block and return a new one
+   *
+   * @param refName -
+   * @returns either a new block with a renamed reference sequence,
+   * or the same block, if the ref name is not actually different
+   */
   renameReference(refName: string) {
     if (this.refName && refName !== this.refName) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -105,8 +116,6 @@ export class ContentBlock extends BaseBlock {}
  * too small to be shown at the current zoom level
  */
 export class ElidedBlock extends BaseBlock {
-  private elidedBlockCount = 1
-
   public widthPx: number
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -2,6 +2,7 @@
 import { Instance, SnapshotIn } from 'mobx-state-tree'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 import { Base1DViewModel } from '@gmod/jbrowse-core/util/Base1DViewModel'
+import calculateDynamicBlocks from '@gmod/jbrowse-core/util/calculateDynamicBlocks'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
 function approxPixelStringLen(str: string) {
@@ -42,6 +43,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             get width() {
               return getParent(self).viewWidth
             },
+            get interRegionPaddingWidth() {
+              return 0
+            },
+            get minimumBlockWidth() {
+              return 0
+            },
+            get dynamicBlocks() {
+              return calculateDynamicBlocks(self, false, false)
+            },
           },
         })),
         {},
@@ -51,6 +61,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           views: {
             get width() {
               return getParent(self).viewHeight
+            },
+            get interRegionPaddingWidth() {
+              return 0
+            },
+            get minimumBlockWidth() {
+              return 0
+            },
+            get dynamicBlocks() {
+              return calculateDynamicBlocks(self, false, false)
             },
           },
         })),

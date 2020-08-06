@@ -7,6 +7,7 @@ import {
   isSessionModelWithWidgets,
   isSelectionContainer,
 } from '@gmod/jbrowse-core/util'
+import { BaseBlock } from '@gmod/jbrowse-core/util/blockTypes'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import { addDisposer, types, Instance, isAlive } from 'mobx-state-tree'
 import RBush from 'rbush'
@@ -14,7 +15,6 @@ import { Feature, isFeature } from '@gmod/jbrowse-core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import BlockState from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
-import { BaseBlock } from './util/blockTypes'
 import BlockBasedTrack, { Tooltip } from './components/BlockBasedTrack'
 import { LinearGenomeViewStateModel } from '../LinearGenomeView'
 
