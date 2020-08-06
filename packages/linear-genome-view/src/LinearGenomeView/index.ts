@@ -467,18 +467,80 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       navToLocString(locString: string) {
-        const session = getSession(self)
-        const { isValidRefName } = session.assemblyManager
-        this.navTo(parseLocString(locString, isValidRefName))
-      },
-
-      navToLocStrings(locStrings: string) {
-        const session = getSession(self)
-        const { isValidRefName } = session.assemblyManager
-        const locations = locStrings
-          .split(';')
-          .map(locString => parseLocString(locString, isValidRefName))
-        this.navToMultiple(locations)
+        const { assemblyManager } = getSession(self)
+        const { isValidRefName } = assemblyManager
+        const locStrings = locString.split(';')
+        if (self.displayedRegions.length > 1) {
+          const locations = locStrings.map(ls =>
+            parseLocString(ls, isValidRefName),
+          )
+          this.navToMultiple(locations)
+          return
+        }
+        const displayedRegion = self.displayedRegions[0]
+        let assembly = assemblyManager.get(displayedRegion.assemblyName)
+        if (!assembly) {
+          throw new Error(
+            `Could not find assembly ${displayedRegion.assemblyName}`,
+          )
+        }
+        const { regions } = assembly
+        if (!regions) {
+          throw new Error(
+            `Regions for assembly ${displayedRegion.assemblyName} not yet loaded`,
+          )
+        }
+        const matchedRegion = regions.find(
+          region =>
+            region.refName === displayedRegion.refName &&
+            region.start === displayedRegion.start &&
+            region.end === displayedRegion.end,
+        )
+        if (matchedRegion) {
+          if (locStrings.length > 1) {
+            throw new Error(
+              'Navigating to multiple locations is not allowed when viewing a whole chromosome',
+            )
+          }
+          const parsedLocString = parseLocString(locStrings[0], isValidRefName)
+          let changedAssembly = false
+          if (
+            parsedLocString.assemblyName &&
+            parsedLocString.assemblyName !== displayedRegion.assemblyName
+          ) {
+            const newAssembly = assemblyManager.get(
+              parsedLocString.assemblyName,
+            )
+            if (!newAssembly) {
+              throw new Error(
+                `Could not find assembly ${parsedLocString.assemblyName}`,
+              )
+            }
+            assembly = newAssembly
+            changedAssembly = true
+          }
+          const canonicalRefName = assembly.getCanonicalRefName(
+            parsedLocString.refName,
+          )
+          if (!canonicalRefName) {
+            throw new Error(
+              `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
+            )
+          }
+          if (changedAssembly || canonicalRefName !== displayedRegion.refName) {
+            const newDisplayedRegion = regions.find(
+              region => region.refName === canonicalRefName,
+            )
+            if (newDisplayedRegion) {
+              this.setDisplayedRegions([getSnapshot(newDisplayedRegion)])
+            } else {
+              throw new Error(
+                `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
+              )
+            }
+          }
+          this.navTo(parsedLocString)
+        }
       },
 
       /**
