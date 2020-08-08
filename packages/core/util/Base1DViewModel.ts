@@ -36,7 +36,7 @@ const Base1DView = types
     },
   }))
   .views(self => ({
-    get width() {
+    get width(): number {
       return self.volatileWidth
     },
 
