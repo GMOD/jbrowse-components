@@ -190,7 +190,8 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             : results
         }
         if (autoscaleType === 'local' || autoscaleType === 'localsd') {
-          const { dynamicBlocks, bpPerPx } = getContainingView(self) as LGV
+          const view = getContainingView(self) as LGV
+          const { dynamicBlocks, bpPerPx } = view
           const sessionId = getRpcSessionId(self)
           const results = (await rpcManager.call(
             sessionId,
@@ -265,6 +266,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
               async () => {
                 try {
                   const aborter = new AbortController()
+                  const { signal } = aborter
                   self.setLoading(aborter)
 
                   const view = getContainingView(self) as LGV
@@ -272,7 +274,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
                     return
                   }
 
-                  const stats = await getStats({ signal: aborter.signal })
+                  const stats = await getStats({ signal })
 
                   if (isAlive(self)) {
                     self.updateStats(stats)
