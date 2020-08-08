@@ -190,6 +190,7 @@ export default class PileupRenderer extends BoxRendererType {
       sortObject,
       highResolutionScaling = 1,
       showSoftClip,
+      blockKey,
     } = props
     const [region] = regions
     if (!layout) {
