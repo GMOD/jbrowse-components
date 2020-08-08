@@ -48,7 +48,7 @@ export default class SetDefaultSession extends Command {
     view: flags.string({
       char: 'v',
       description:
-        'Name for the view in config to be added as default session, will be guessed on default',
+        'View type in config to be added as default session, will be guessed on default, i.e LinearGenomeView, CircularView, DotplotView',
     }),
     tracks: flags.string({
       char: 't',
@@ -71,7 +71,8 @@ export default class SetDefaultSession extends Command {
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(SetDefaultSession)
     const { defaultSession, location } = runArgs
-    const { name, configLocation, view, tracks, currentSession } = runFlags
+    const { name, configLocation, tracks, currentSession } = runFlags
+    let { view } = runFlags
 
     const configPath = configLocation || path.join(location, 'config.json')
 
@@ -107,7 +108,8 @@ export default class SetDefaultSession extends Command {
       this.exit()
     }
 
-    if (!defaultSession && !view) {
+    const foundTracks: Track[] = []
+    if (!defaultSession && (!view || !tracks)) {
       this.error(
         `No default session information provided, Please either provide a default session file or enter information to build a default session`,
         { exit: 15 },
@@ -129,6 +131,7 @@ export default class SetDefaultSession extends Command {
       // if trackid, check the tracks array in the config and find the trackid
       // information. if it doesnt exist, make sure add track first before doing default session?
       let trackIds = []
+      if (view) this.debug(`View type is ${view}`)
       if (tracks && configContents.tracks) {
         trackIds = tracks.split(',').map(c => c.trim())
         trackIds.forEach(trackId => {
@@ -140,6 +143,16 @@ export default class SetDefaultSession extends Command {
               `Track ${trackId} has not been added to config yet.\nPlease add the track with  the add-track command before adding to the default session`,
               { exit: 10 },
             )
+          else foundTracks.push(configContents.tracks[idx])
+          const trackViewType = this.guessViewFromTrack(
+            configContents.tracks[idx].type,
+          )
+          view =
+            !view || view === trackViewType
+              ? trackViewType
+              : this.error(
+                  'Tracks seem to consist of multiple view types. Please rerun with only one view type per command',
+                )
         })
       }
 
@@ -148,12 +161,16 @@ export default class SetDefaultSession extends Command {
       // then add the tracks that the user selected into the view object
       // once that is done, can add to configContents and return
       // maybe need to check that it is a valid default session so it doesnt break on load
+      // view is just type of view, don't need other information
 
       const sessionObj = {
         name: name || 'New Default Session',
-        width: 1850, // probably not needed
-        drawerWidth: 384, // probably not needed
-        views: [],
+        views: [
+          {
+            type: view,
+            tracks: foundTracks,
+          },
+        ],
       }
     }
   }
@@ -222,6 +239,21 @@ export default class SetDefaultSession extends Command {
       return this.error('Could not parse the given default session file', {
         exit: 50,
       })
+    }
+  }
+
+  guessViewFromTrack(trackType: string) {
+    switch (trackType) {
+      case 'AlignmentsTrack':
+      case 'SNPCoverageTrack':
+      case 'PileupTrack':
+        return 'LinearGenomeView'
+      case 'DotplotTrack':
+        return 'DotplotView'
+      case 'StructuralVariantChordTrack':
+        return 'CircularView'
+      default:
+        return 'CustomView'
     }
   }
 }
