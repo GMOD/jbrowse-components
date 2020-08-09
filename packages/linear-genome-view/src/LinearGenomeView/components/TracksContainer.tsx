@@ -14,8 +14,8 @@ import CenterLine from './CenterLine'
 const useStyles = makeStyles(theme => ({
   tracksContainer: {
     position: 'relative',
-    touchAction: 'none',
     borderRadius: theme.shape.borderRadius,
+    touchAction: 'none',
     overflow: 'hidden',
   },
   spacer: {
@@ -68,6 +68,7 @@ function TracksContainer(props: { children: React.ReactNode; model: LGV }) {
   }
 
   function pointerMove(event: React.PointerEvent) {
+    event.preventDefault()
     if (!pointerDragging) {
       return
     }
@@ -85,8 +86,8 @@ function TracksContainer(props: { children: React.ReactNode; model: LGV }) {
   }
 
   function pointerUp(event: React.PointerEvent) {
-    const target = event.target as HTMLElement
     event.preventDefault()
+    const target = event.target as HTMLElement
     target.releasePointerCapture(event.pointerId)
     setPointerDragging(false)
   }
