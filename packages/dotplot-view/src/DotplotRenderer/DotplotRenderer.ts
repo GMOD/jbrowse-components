@@ -1,10 +1,9 @@
+import React from 'react'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { Region } from '@gmod/jbrowse-core/util/types'
 import {
   createCanvas,
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
-import React from 'react'
 import Base1DView, {
   Base1DViewModel,
 } from '@gmod/jbrowse-core/util/Base1DViewModel'
@@ -13,11 +12,6 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Instance } from 'mobx-state-tree'
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import MyConfig from './configSchema'
-
-interface Block extends Region {
-  offsetPx: number
-  widthPx: number
-}
 
 export interface DotplotRenderProps {
   dataAdapter: BaseFeatureDataAdapter
@@ -77,7 +71,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         e2 !== undefined
       ) {
         if (Math.abs(b1 - b2) < 3 && Math.abs(e1 - e2) < 3) {
-          ctx.fillRect(b1 - 1, height - e1 - 1, 3, 3)
+          ctx.fillRect(b1 - 0.5, height - e1 - 0.5, 1.5, 1.5)
         } else {
           let currX = b1
           let currY = e1
