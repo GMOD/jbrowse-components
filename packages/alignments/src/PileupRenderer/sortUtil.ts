@@ -44,9 +44,13 @@ export const sortFeature = (
         const mismatches: Mismatch[] = feature.get('mismatches')
         mismatches.forEach(mismatch => {
           const start = feature.get('start')
+          const offset = start + mismatch.start + 1
+          const consuming =
+            mismatch.type === 'insertion' || mismatch.type === 'softclip'
+          const len = consuming ? 0 : mismatch.length
           if (
-            sortObject.position >= start + mismatch.start &&
-            sortObject.position <= start + mismatch.start + mismatch.length
+            sortObject.position >= offset &&
+            sortObject.position < offset + len
           ) {
             baseSortArray.push([feature.id(), mismatch])
           }
