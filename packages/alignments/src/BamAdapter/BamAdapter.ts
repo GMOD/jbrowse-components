@@ -1,4 +1,4 @@
-import { BamFile } from '@gmod/bam'
+import { HtsgetFile, BamFile } from '@gmod/bam'
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -42,13 +42,22 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     const chunkSizeLimit = readConfObject(config, 'chunkSizeLimit')
     const fetchSizeLimit = readConfObject(config, 'fetchSizeLimit')
 
-    this.bam = new BamFile({
-      bamFilehandle: openLocation(bamLocation),
-      csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
-      baiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
-      chunkSizeLimit,
-      fetchSizeLimit,
-    })
+    const htsgetBase = readConfObject(config, 'htsgetBase')
+    const htsgetTrackId = readConfObject(config, 'htsgetTrackId')
+    if (htsgetBase) {
+      this.bam = new HtsgetFile({
+        baseUrl: htsgetBase,
+        trackId: htsgetTrackId,
+      })
+    } else {
+      this.bam = new BamFile({
+        bamFilehandle: openLocation(bamLocation),
+        csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
+        baiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
+        chunkSizeLimit,
+        fetchSizeLimit,
+      })
+    }
 
     const adapterConfig = readConfObject(config, 'sequenceAdapter')
     if (adapterConfig && getSubAdapter) {

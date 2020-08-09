@@ -5,6 +5,14 @@ export default types.late(() =>
   ConfigurationSchema(
     'BamAdapter',
     {
+      htsgetBase: {
+        type: 'string',
+        defaultValue: '',
+      },
+      htsgetTrackId: {
+        type: 'string',
+        defaultValue: '',
+      },
       bamLocation: {
         type: 'fileLocation',
         defaultValue: { uri: '/path/to/my.bam' },
