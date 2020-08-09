@@ -64,7 +64,7 @@ function TracksContainer({
     }
 
     function globalMouseUp() {
-      prevX.current = null
+      prevX.current = 0
       if (mouseDragging) {
         setMouseDragging(false)
       }
@@ -80,38 +80,6 @@ function TracksContainer({
     }
     return cleanup
   }, [model, mouseDragging, prevX])
-
-  function onWheel(event: React.WheelEvent) {
-    const { deltaX, deltaY, deltaMode } = event
-    if (event.ctrlKey == true) {
-      event.preventDefault()
-      delta.current += deltaY / 10
-      if (!scheduled.current) {
-        scheduled.current = true
-        window.requestAnimationFrame(() => {
-          model.zoom(
-            delta.current > 1
-              ? model.bpPerPx * (1 + delta.current)
-              : model.bpPerPx / (1 - delta.current),
-          )
-          delta.current = 0
-          scheduled.current = false
-        })
-      }
-    }
-
-    delta.current += deltaX
-    if (!scheduled.current) {
-      // use rAF to make it so multiple event handlers aren't fired per-frame
-      // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-      scheduled.current = true
-      window.requestAnimationFrame(() => {
-        model.horizontalScroll(delta.current * (1 + 50 * deltaMode))
-        delta.current = 0
-        scheduled.current = false
-      })
-    }
-  }
 
   function mouseDown(event: React.MouseEvent) {
     if ((event.target as HTMLElement).draggable) return
@@ -139,15 +107,46 @@ function TracksContainer({
   }
 
   useEffect(() => {
-    if (ref.current) {
-      ref.current.addEventListener('wheel', onWheel)
-    }
-    return () => {
-      if (ref.current) {
-        ref.current.removeEventListener('wheel', onWheel)
+    const curr = ref.current
+    function onWheel(event: WheelEvent) {
+      const { deltaX, deltaY, deltaMode } = event
+      if (event.ctrlKey === true) {
+        event.preventDefault()
+        delta.current += deltaY / 10
+        if (!scheduled.current) {
+          scheduled.current = true
+          window.requestAnimationFrame(() => {
+            model.zoom(
+              delta.current > 1
+                ? model.bpPerPx * (1 + delta.current)
+                : model.bpPerPx / (1 - delta.current),
+            )
+            delta.current = 0
+            scheduled.current = false
+          })
+        }
+      }
+
+      delta.current += deltaX
+      if (!scheduled.current) {
+        // use rAF to make it so multiple event handlers aren't fired per-frame
+        // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
+        scheduled.current = true
+        window.requestAnimationFrame(() => {
+          model.horizontalScroll(delta.current * (1 + 50 * deltaMode))
+          delta.current = 0
+          scheduled.current = false
+        })
       }
     }
-  }, [])
+    if (curr) {
+      curr.addEventListener('wheel', onWheel)
+      return () => {
+        curr.removeEventListener('wheel', onWheel)
+      }
+    }
+    return () => {}
+  }, [model])
 
   return (
     <div
