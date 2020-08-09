@@ -352,8 +352,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.bpPerPx = newBpPerPx
 
         if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
-          console.warn('rounding error?')
-          return
+          console.warn('zoomTo bpPerPx rounding error')
+          return oldBpPerPx
         }
 
         // tweak the offset so that the center of the view remains at the same coordinate
