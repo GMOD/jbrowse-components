@@ -37,17 +37,18 @@ function TracksContainer({
   // refs are to store these variables to avoid repeated rerenders associated with useState/setState
   const delta = useRef(0)
   const scheduled = useRef(false)
+  const ref = useRef<HTMLDivElement>(null)
 
   const [mouseDragging, setMouseDragging] = useState(false)
-  const prevX = useRef<number | null>(null)
+  const prevX = useRef<number>(0)
 
   useEffect(() => {
     let cleanup = () => {}
 
     function globalMouseMove(event: MouseEvent) {
       event.preventDefault()
-      const distance =
-        prevX.current !== null ? event.clientX - prevX.current : event.clientX
+      const currX = event.clientX
+      const distance = currX - prevX.current
       if (distance) {
         // use rAF to make it so multiple event handlers aren't fired per-frame
         // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
@@ -81,7 +82,24 @@ function TracksContainer({
   }, [model, mouseDragging, prevX])
 
   function onWheel(event: React.WheelEvent) {
-    const { deltaX, deltaMode } = event
+    const { deltaX, deltaY, deltaMode } = event
+    if (event.ctrlKey == true) {
+      event.preventDefault()
+      delta.current += deltaY / 10
+      if (!scheduled.current) {
+        scheduled.current = true
+        window.requestAnimationFrame(() => {
+          model.zoom(
+            delta.current > 1
+              ? model.bpPerPx * (1 + delta.current)
+              : model.bpPerPx / (1 - delta.current),
+          )
+          delta.current = 0
+          scheduled.current = false
+        })
+      }
+    }
+
     delta.current += deltaX
     if (!scheduled.current) {
       // use rAF to make it so multiple event handlers aren't fired per-frame
@@ -120,11 +138,22 @@ function TracksContainer({
     event.preventDefault()
   }
 
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.addEventListener('wheel', onWheel)
+    }
+    return () => {
+      if (ref.current) {
+        ref.current.removeEventListener('wheel', onWheel)
+      }
+    }
+  }, [])
+
   return (
     <div
+      ref={ref}
       role="presentation"
       className={classes.tracksContainer}
-      onWheel={onWheel}
       onMouseDown={mouseDown}
       onMouseUp={mouseUp}
       onMouseLeave={mouseLeave}
