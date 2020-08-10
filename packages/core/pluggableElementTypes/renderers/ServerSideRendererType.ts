@@ -18,6 +18,7 @@ import SerializableFilterChain, {
   SerializedFilterChain,
 } from './util/serializableFilterChain'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
+import RpcManager from '../../rpc/RpcManager'
 
 interface BaseRenderArgs {
   blockKey: string
@@ -42,6 +43,7 @@ export interface RenderArgs extends BaseRenderArgs {
 }
 
 export interface RenderArgsSerialized extends BaseRenderArgs {
+  statusCallback?: Function
   config: SnapshotIn<AnyConfigurationModel>
   filters: SerializedFilterChain
 }
@@ -152,7 +154,7 @@ export default class ServerSideRenderer extends RendererType {
    * Render method called on the client. Serializes args, then
    * calls `render` with the RPC manager.
    */
-  async renderInClient(rpcManager: { call: Function }, args: RenderArgs) {
+  async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
     const result = await rpcManager.call(
       args.sessionId,
@@ -161,6 +163,7 @@ export default class ServerSideRenderer extends RendererType {
     )
     // const result = await renderRegionWithWorker(session, serializedArgs)
 
+    // @ts-ignore
     const deserialized = this.deserializeResultsInClient(result, args)
     return deserialized
   }
@@ -177,7 +180,7 @@ export default class ServerSideRenderer extends RendererType {
    * @returns Map of features as `{ id => feature, ... }`
    */
   async getFeatures(renderArgs: RenderArgsDeserialized) {
-    const { dataAdapter, signal, bpPerPx, regions } = renderArgs
+    const { dataAdapter, signal, regions } = renderArgs
     const features = new Map()
 
     if (!regions || regions.length === 0) {
@@ -197,19 +200,17 @@ export default class ServerSideRenderer extends RendererType {
       return requestRegion
     })
 
+    const region = requestRegions[0]
+
     const featureObservable =
       requestRegions.length === 1
         ? dataAdapter.getFeatures(
-            this.getExpandedRegion(requestRegions[0], renderArgs),
-            {
-              signal,
-              bpPerPx,
-            },
+            this.getExpandedRegion(region, renderArgs),
+            // @ts-ignore
+            renderArgs,
           )
-        : dataAdapter.getFeaturesInMultipleRegions(requestRegions, {
-            signal,
-            bpPerPx,
-          })
+        : // @ts-ignore
+          dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
 
     await featureObservable
       .pipe(
@@ -239,14 +240,15 @@ export default class ServerSideRenderer extends RendererType {
 
   // render method called on the worker
   async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
-    checkAbortSignal(args.signal)
-    const deserialized = this.deserializeArgsInWorker(args)
+    const { signal, statusCallback = () => {} } = args
+    checkAbortSignal(signal)
+    const deserializedArgs = this.deserializeArgsInWorker(args)
 
-    const features = await this.getFeatures(deserialized)
-    checkAbortSignal(args.signal)
-
-    const results = await this.render({ ...deserialized, features })
-    checkAbortSignal(args.signal)
+    const features = await this.getFeatures(deserializedArgs)
+    checkAbortSignal(signal)
+    statusCallback('Rendering plot')
+    const results = await this.render({ ...deserializedArgs, features })
+    checkAbortSignal(signal)
     const html = renderToString(results.element)
     delete results.element
 
@@ -256,11 +258,11 @@ export default class ServerSideRenderer extends RendererType {
     return this.serializeResultsInWorker(
       { ...results, html },
       features,
-      deserialized,
+      deserializedArgs,
     )
   }
 
-  freeResourcesInClient(rpcManager: { call: Function }, args: RenderArgs) {
+  freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
     return rpcManager.call(args.sessionId, 'CoreFreeResources', serializedArgs)

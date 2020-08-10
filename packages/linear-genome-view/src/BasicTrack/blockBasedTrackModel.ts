@@ -28,6 +28,7 @@ const blockBasedTrack = types
         blockState: types.map(BlockState),
       })
       .volatile(() => ({
+        message: '',
         featureIdUnderMouse: undefined as undefined | string,
         ReactComponent: (BlockBasedTrack as unknown) as React.FC, // avoid circular reference
         contextMenuFeature: undefined as undefined | Feature,
@@ -197,6 +198,9 @@ const blockBasedTrack = types
       })
 
       addDisposer(self, blockWatchDisposer)
+    },
+    setMessage(message: string) {
+      self.message = message
     },
 
     addBlock(key: string, block: BaseBlock) {

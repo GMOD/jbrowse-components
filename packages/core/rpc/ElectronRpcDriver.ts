@@ -1,4 +1,5 @@
 /* eslint-disable no-await-in-loop */
+import shortid from 'shortid'
 import BaseRpcDriver from './BaseRpcDriver'
 import PluginManager from '../PluginManager'
 import { PluginDefinition } from '../PluginLoader'
@@ -13,8 +14,8 @@ declare global {
 }
 const { electronBetterIpc = {}, electron } = window
 
-async function wait(ms: number): Promise<void> {
-  return new Promise((resolve): void => {
+async function wait(ms: number) {
+  return new Promise(resolve => {
     setTimeout(resolve, ms)
   })
 }
@@ -71,18 +72,28 @@ class WindowWorkerHandle {
 
   async call(
     functionName: string,
-    filteredArgs?: unknown,
-    options = {},
+    filteredArgs?: Record<string, unknown>,
+    opts: { statusCallback?: (arg0: string) => void } = {},
   ): Promise<unknown> {
     await this.setup()
 
-    return this.ipcRenderer.callRenderer(
+    const { statusCallback, ...rest } = opts
+    const channel = `message-${shortid.generate()}`
+    const listener = (event: unknown, message: string) => {
+      if (opts.statusCallback) {
+        opts.statusCallback(message)
+      }
+    }
+    this.ipcRenderer.on(channel, listener)
+    const result = await this.ipcRenderer.callRenderer(
       this.window,
       'call',
       functionName,
-      filteredArgs,
-      options,
+      { ...filteredArgs, channel },
+      rest,
     )
+    this.ipcRenderer.removeListener(channel, listener)
+    return result
   }
 }
 

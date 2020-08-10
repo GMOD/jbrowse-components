@@ -12,6 +12,8 @@ import { Region, NoAssemblyRegion } from '../util/types'
 export interface BaseOptions {
   signal?: AbortSignal
   bpPerPx?: number
+  sessionId?: string
+  statusCallback?: (message: string) => void
   headers?: Record<string, string>
   [key: string]: unknown
 }
