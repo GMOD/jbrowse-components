@@ -20,7 +20,7 @@
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "prepare": "npm run build",
-    "build": "NODE_ENV=production babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json CHANGELOG.md LICENSE dist/",
+    "build": "NODE_ENV=production babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json CHANGELOG.md LICENSE dist/ && tsc",
     "version": "standard-changelog && git add CHANGELOG.md",
     "postpublish": "git push origin master --follow-tags"
   },

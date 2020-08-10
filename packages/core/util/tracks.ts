@@ -1,9 +1,4 @@
-import {
-  getParent,
-  isRoot,
-  IStateTreeNode,
-  IAnyStateTreeNode,
-} from 'mobx-state-tree'
+import { getParent, isRoot, IAnyStateTreeNode } from 'mobx-state-tree'
 import objectHash from 'object-hash'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { UriLocation, LocalPathLocation } from './types'
@@ -12,7 +7,7 @@ import { readConfObject } from '../configuration'
 /* utility functions for use by track models and so forth */
 
 export function getTrackAssemblyNames(
-  track: IStateTreeNode & { configuration: AnyConfigurationModel },
+  track: IAnyStateTreeNode & { configuration: AnyConfigurationModel },
 ) {
   const trackConf = track.configuration
   const trackAssemblyNames = readConfObject(trackConf, 'assemblyNames')
@@ -51,7 +46,7 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
  * @param node -
  * @returns renderprops, or empty object if none found
  */
-export function getParentRenderProps(node: IStateTreeNode) {
+export function getParentRenderProps(node: IAnyStateTreeNode) {
   for (
     let currentNode = getParent(node);
     !isRoot(currentNode);
