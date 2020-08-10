@@ -8,6 +8,7 @@ import { Menu } from '@gmod/jbrowse-core/ui'
 import { BaseBlock } from '@gmod/jbrowse-core/util/blockTypes'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { DotplotViewModel } from '../model'
+import DotplotView from '..'
 
 export default (pluginManager: PluginManager) => {
   const { jbrequire } = pluginManager
@@ -96,6 +97,8 @@ export default (pluginManager: PluginManager) => {
     return blockLabelKeysToHide
   }
 
+  const Grid = observer(({ model }: { model: DotplotViewModel }) => {})
+
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
     const ref = useRef<SVGSVGElement | null>(null)
@@ -103,16 +106,6 @@ export default (pluginManager: PluginManager) => {
     const [mousedown, setMouseDown] = useState<Coord>()
     const [mouseup, setMouseUp] = useState<Coord>()
     const [tracking, setTracking] = useState(false)
-
-    useEventListener(
-      'wheel',
-      (event: WheelEvent) => {
-        model.hview.scroll(event.deltaX)
-        model.vview.scroll(-event.deltaY)
-        event.preventDefault()
-      },
-      ref.current as any,
-    )
 
     const {
       initialized,
@@ -127,26 +120,6 @@ export default (pluginManager: PluginManager) => {
       htextRotation,
       vtextRotation,
     } = model
-
-    useEventListener(
-      'mousemove',
-      (event: MouseEvent) => {
-        if (tracking) {
-          setMouseCurr([event.offsetX, event.offsetY])
-        }
-      },
-      ref.current as any,
-    )
-    useEventListener(
-      'mouseup',
-      (event: MouseEvent) => {
-        if (mousedown) {
-          setMouseUp([event.offsetX, event.offsetY])
-          setTracking(false)
-        }
-      },
-      ref.current as any,
-    )
 
     if (!initialized && !loading) {
       return <ImportForm model={model} />
@@ -212,6 +185,28 @@ export default (pluginManager: PluginManager) => {
               width={viewWidth}
               height={viewHeight}
               ref={ref}
+              onWheel={event => {
+                model.hview.scroll(event.deltaX)
+                model.vview.scroll(-event.deltaY)
+                event.preventDefault()
+              }}
+              onMouseMove={event => {
+                if (tracking) {
+                  setMouseCurr([
+                    event.nativeEvent.offsetX,
+                    event.nativeEvent.offsetY,
+                  ])
+                }
+              }}
+              onMouseUp={event => {
+                if (mousedown) {
+                  setMouseUp([
+                    event.nativeEvent.offsetX,
+                    event.nativeEvent.offsetY,
+                  ])
+                  setTracking(false)
+                }
+              }}
               onMouseDown={event => {
                 if (event.button === 0) {
                   setMouseDown([
