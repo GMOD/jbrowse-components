@@ -112,7 +112,7 @@ const Base1DView = types
   }))
   .views(self => ({
     get dynamicBlocks() {
-      return calculateDynamicBlocks(self)
+      return calculateDynamicBlocks(self, false, false)
     },
     get staticBlocks() {
       return calculateStaticBlocks(self)
