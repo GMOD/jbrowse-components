@@ -3,12 +3,10 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { LinearProgress } from '@material-ui/core'
 import { getConf } from '@gmod/jbrowse-core/configuration'
-import { useEventListener } from '@gmod/jbrowse-core/util'
 import { Menu } from '@gmod/jbrowse-core/ui'
 import { BaseBlock } from '@gmod/jbrowse-core/util/blockTypes'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { DotplotViewModel } from '../model'
-import DotplotView from '..'
 
 export default (pluginManager: PluginManager) => {
   const { jbrequire } = pluginManager
@@ -96,8 +94,6 @@ export default (pluginManager: PluginManager) => {
     })
     return blockLabelKeysToHide
   }
-
-  const Grid = observer(({ model }: { model: DotplotViewModel }) => {})
 
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
