@@ -21,23 +21,23 @@ const WORKER_MAX_PING_TIME = 30 * 1000
 
 // watches the given worker object, returns a promise that will be rejected if
 // the worker times out
-async function watchWorker(worker: WorkerHandle, pingTime: number) {
-  let handle: ReturnType<typeof setInterval>
-
+export async function watchWorker(worker: WorkerHandle, pingTime: number) {
   // first ping call has no timeout, wait for worker download
   await worker.call('ping', [], { timeout: 100000000 })
 
   // after first ping succeeds, apply wait for timeout
   return new Promise((resolve, reject) => {
-    handle = setInterval(async () => {
-      try {
-        await worker.call('ping', [], { timeout: WORKER_MAX_PING_TIME })
-      } catch (e) {
-        reject(e)
-      }
-    }, pingTime)
-  }).finally(() => {
-    clearInterval(handle)
+    function delay() {
+      setTimeout(async () => {
+        try {
+          await worker.call('ping', [], { timeout: pingTime * 2 })
+          delay()
+        } catch (e) {
+          reject(e)
+        }
+      }, pingTime)
+    }
+    delay()
   })
 }
 
