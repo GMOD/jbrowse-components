@@ -140,7 +140,7 @@ ARGUMENTS
                  For hub file, usually called hub.txt
                  For JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/
 
-  LOCATION       [default: .] Location of JBrowse installation. Defaults to .
+  LOCATION       [default: .] Location of JBrowse installation.
 
 OPTIONS
   -a, --assemblyName=assemblyName  Assembly name of the connection If none, will default to the assembly in your config
