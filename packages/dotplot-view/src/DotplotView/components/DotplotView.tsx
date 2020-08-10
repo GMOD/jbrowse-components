@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { LinearProgress } from '@material-ui/core'
@@ -97,7 +97,6 @@ export default (pluginManager: PluginManager) => {
 
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const ref = useRef<SVGSVGElement | null>(null)
     const [mousecurr, setMouseCurr] = useState([0, 0])
     const [mousedown, setMouseDown] = useState<Coord>()
     const [mouseup, setMouseUp] = useState<Coord>()
@@ -180,7 +179,6 @@ export default (pluginManager: PluginManager) => {
               className={classes.content}
               width={viewWidth}
               height={viewHeight}
-              ref={ref}
               onWheel={event => {
                 model.hview.scroll(event.deltaX)
                 model.vview.scroll(-event.deltaY)
