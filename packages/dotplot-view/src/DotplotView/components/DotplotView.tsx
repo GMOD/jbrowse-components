@@ -1,30 +1,20 @@
-import { makeStyles as muiMakeStyles } from '@material-ui/core/styles'
-import { useRef as reactUseRef, useState as reactUseState } from 'react'
-import { Menu as CoreMenu } from '@gmod/jbrowse-core/ui'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import React, { useRef, useState } from 'react'
+import { makeStyles } from '@material-ui/core/styles'
+import { observer } from 'mobx-react'
+import { LinearProgress } from '@material-ui/core'
+import { getConf } from '@gmod/jbrowse-core/configuration'
+import { useEventListener } from '@gmod/jbrowse-core/util'
+import { Menu } from '@gmod/jbrowse-core/ui'
 import { BaseBlock } from '@gmod/jbrowse-core/util/blockTypes'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { DotplotViewModel } from '../model'
-
-type UI = { Menu: typeof CoreMenu }
 
 export default (pluginManager: PluginManager) => {
   const { jbrequire } = pluginManager
-  const { observer, PropTypes } = jbrequire('mobx-react')
-  const React = jbrequire('react')
-  const { useRef, useState } = React
-  const { useEventListener } = jbrequire('@gmod/jbrowse-core/util')
-  const { Menu } = jbrequire('@gmod/jbrowse-core/ui') as UI
-  const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
-  const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const LinearProgress = jbrequire('@material-ui/core/LinearProgress')
   const ImportForm = jbrequire(require('./ImportForm'))
   const Controls = jbrequire(require('./Controls'))
 
-  type useRefR = typeof reactUseRef
-  type useStateR = typeof reactUseState
-  type makeStylesR = typeof muiMakeStyles
-
-  const useStyles = (makeStyles as makeStylesR)(theme => {
+  const useStyles = makeStyles(theme => {
     return {
       root: {
         position: 'relative',
@@ -108,10 +98,10 @@ export default (pluginManager: PluginManager) => {
 
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const ref = (useRef as useRefR)<SVGSVGElement | null>(null)
-    const [mousecurr, setMouseCurr] = (useState as useStateR)([0, 0])
-    const [mousedown, setMouseDown] = (useState as useStateR)<Coord>()
-    const [mouseup, setMouseUp] = (useState as useStateR)<Coord>()
+    const ref = useRef<SVGSVGElement | null>(null)
+    const [mousecurr, setMouseCurr] = useState([0, 0])
+    const [mousedown, setMouseDown] = useState<Coord>()
+    const [mouseup, setMouseUp] = useState<Coord>()
     const [tracking, setTracking] = useState(false)
 
     useEventListener(
@@ -121,7 +111,7 @@ export default (pluginManager: PluginManager) => {
         model.vview.scroll(-event.deltaY)
         event.preventDefault()
       },
-      ref.current,
+      ref.current as any,
     )
 
     const {
@@ -145,7 +135,7 @@ export default (pluginManager: PluginManager) => {
           setMouseCurr([event.offsetX, event.offsetY])
         }
       },
-      ref.current,
+      ref.current as any,
     )
     useEventListener(
       'mouseup',
@@ -155,7 +145,7 @@ export default (pluginManager: PluginManager) => {
           setTracking(false)
         }
       },
-      ref.current,
+      ref.current as any,
     )
 
     if (!initialized && !loading) {
@@ -362,10 +352,6 @@ export default (pluginManager: PluginManager) => {
       </div>
     )
   })
-
-  DotplotView.propTypes = {
-    model: PropTypes.objectOrObservableObject.isRequired,
-  }
 
   return DotplotView
 }
