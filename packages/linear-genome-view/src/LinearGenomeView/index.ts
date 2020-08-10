@@ -360,7 +360,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const viewWidth = self.width
         this.scrollTo(
           Math.round(
-            ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
+            ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / newBpPerPx -
               viewWidth / 2,
           ),
         )
