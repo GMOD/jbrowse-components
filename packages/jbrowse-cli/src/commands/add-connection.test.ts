@@ -52,7 +52,7 @@ const setupWithDateMock = setup
     Date.now = originalDateNow
   })
 
-describe('add-track', () => {
+describe('add-connection', () => {
   setup
     .command(['add-connection', 'https://example.com'])
     .exit(10)
@@ -64,7 +64,7 @@ describe('add-track', () => {
   setup
     .nock('https://mysite.com', site => site.head('/notafile.txt').reply(500))
     .command(['add-connection', 'https://mysite.com/notafile.txt'])
-    .exit(100)
+    .exit(90)
     .it('fails when fetching from url fails')
   setup
     .do(async ctx => {
