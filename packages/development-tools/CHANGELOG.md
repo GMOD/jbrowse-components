@@ -1,3 +1,12 @@
+## [0.0.1-beta.24](https://github.com/GMOD/jbrowse-components/compare/v0.0.1-beta.14...v0.0.1-beta.24) (2020-08-05)
+
+
+### Reverts
+
+* Revert "Simplify command unzip (#1075)" ([9c0b975](https://github.com/GMOD/jbrowse-components/commit/9c0b97504b7a423a9c356ac3ffffc2754224c65a)), closes [#1075](https://github.com/GMOD/jbrowse-components/issues/1075)
+
+
+
 ## 0.0.1-beta.23 (2020-08-04)
 
 

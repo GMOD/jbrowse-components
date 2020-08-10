@@ -2,13 +2,14 @@ import { makeStyles } from '@material-ui/core/styles'
 import { getContainingView } from '@gmod/jbrowse-core/util'
 import { observer, PropTypes } from 'mobx-react'
 import React from 'react'
-import { BlockBasedTrackModel } from '../blockBasedTrackModel'
 import {
   BaseBlock,
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
-} from '../util/blockTypes'
+} from '@gmod/jbrowse-core/util/blockTypes'
+import { BlockBasedTrackModel } from '../blockBasedTrackModel'
+
 import Block from './Block'
 
 import {

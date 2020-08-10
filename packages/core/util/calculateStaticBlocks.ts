@@ -1,20 +1,38 @@
 import { assembleLocString } from '.'
-import { Region } from './types'
 import {
   BlockSet,
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
 } from './blockTypes'
+import { Region } from './types'
 
-const interRegionPaddingWidth = 2
+export interface Base1DViewModel {
+  offsetPx: number
+  width: number
+  displayedRegions: Region[]
+  bpPerPx: number
+  minimumBlockWidth: number
+  interRegionPaddingWidth: number
+}
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function calculateBlocks(self: any, extra = 0) {
-  const { offsetPx, bpPerPx, width, displayedRegions, minimumBlockWidth } = self
-
-  if (!width)
+export default function calculateStaticBlocks(
+  model: Base1DViewModel,
+  padding = true,
+  elision = true,
+  extra = 0,
+) {
+  const {
+    offsetPx,
+    width,
+    displayedRegions,
+    bpPerPx,
+    minimumBlockWidth,
+    interRegionPaddingWidth,
+  } = model
+  if (!width) {
     throw new Error('view has no width, cannot calculate displayed blocks')
+  }
   const windowLeftBp = offsetPx * bpPerPx
   const windowRightBp = (offsetPx + width) * bpPerPx
   const blockSizePx = Math.ceil(width / 200) * 200
@@ -22,8 +40,7 @@ export default function calculateBlocks(self: any, extra = 0) {
   // for each displayed region
   let regionBpOffset = 0
   const blocks = new BlockSet()
-
-  displayedRegions.forEach((region: Region, index: number) => {
+  displayedRegions.forEach((region, regionNumber) => {
     // find the block numbers of the left and right window sides,
     // clamp those to the region range, and then make blocks for that range
     const {
@@ -51,10 +68,10 @@ export default function calculateBlocks(self: any, extra = 0) {
       blockNum <= windowRightBlockNum;
       blockNum += 1
     ) {
-      let start
-      let end
-      let isLeftEndOfDisplayedRegion
-      let isRightEndOfDisplayedRegion
+      let start: number
+      let end: number
+      let isLeftEndOfDisplayedRegion: boolean
+      let isRightEndOfDisplayedRegion: boolean
       if (reversed) {
         start = Math.max(regionStart, regionEnd - (blockNum + 1) * blockSizeBp)
         end = regionEnd - blockNum * blockSizeBp
@@ -80,9 +97,11 @@ export default function calculateBlocks(self: any, extra = 0) {
         isRightEndOfDisplayedRegion,
         key: '',
       }
-      const locstring = assembleLocString(blockData)
-      blockData.key = `${locstring}-${index}-${reversed ? '-reversed' : ''}`
-      if (index === 0 && blockNum === 0) {
+      blockData.key = `${assembleLocString(blockData)}-${regionNumber}${
+        reversed ? '-reversed' : ''
+      }`
+
+      if (padding && regionNumber === 0 && blockNum === 0) {
         blocks.push(
           new InterRegionPaddingBlock({
             key: `${blockData.key}-beforeFirstRegion`,
@@ -92,38 +111,41 @@ export default function calculateBlocks(self: any, extra = 0) {
           }),
         )
       }
-      if (regionWidthPx < minimumBlockWidth) {
+
+      if (elision && regionWidthPx < minimumBlockWidth) {
         blocks.push(new ElidedBlock(blockData))
       } else {
         blocks.push(new ContentBlock(blockData))
       }
 
-      // insert a inter-region padding block if we are crossing a displayed region
-      if (
-        regionWidthPx >= minimumBlockWidth &&
-        blockData.isRightEndOfDisplayedRegion &&
-        index < displayedRegions.length - 1
-      ) {
-        blocks.push(
-          new InterRegionPaddingBlock({
-            key: `${blockData.key}-rightpad`,
-            widthPx: interRegionPaddingWidth,
-            offsetPx: blockData.offsetPx + blockData.widthPx,
-          }),
-        )
-      }
-      if (
-        index === displayedRegions.length - 1 &&
-        blockData.isRightEndOfDisplayedRegion
-      ) {
-        blocks.push(
-          new InterRegionPaddingBlock({
-            key: `${blockData.key}-afterLastRegion`,
-            widthPx: width,
-            offsetPx: blockData.offsetPx + blockData.widthPx,
-            variant: 'boundary',
-          }),
-        )
+      if (padding) {
+        // insert a inter-region padding block if we are crossing a displayed region
+        if (
+          regionWidthPx >= minimumBlockWidth &&
+          blockData.isRightEndOfDisplayedRegion &&
+          regionNumber < displayedRegions.length - 1
+        ) {
+          blocks.push(
+            new InterRegionPaddingBlock({
+              key: `${blockData.key}-rightpad`,
+              widthPx: interRegionPaddingWidth,
+              offsetPx: blockData.offsetPx + blockData.widthPx,
+            }),
+          )
+        }
+        if (
+          regionNumber === displayedRegions.length - 1 &&
+          blockData.isRightEndOfDisplayedRegion
+        ) {
+          blocks.push(
+            new InterRegionPaddingBlock({
+              key: `${blockData.key}-afterLastRegion`,
+              widthPx: width,
+              offsetPx: blockData.offsetPx + blockData.widthPx,
+              variant: 'boundary',
+            }),
+          )
+        }
       }
     }
     regionBpOffset += interRegionPaddingWidth * bpPerPx

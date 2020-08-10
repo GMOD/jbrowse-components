@@ -65,7 +65,7 @@ class LazyWorker {
           console.warn('worker did not respond, killing and generating new one')
           this.worker.destroy()
           this.worker.status = 'killed'
-          this.worker = this.getWorker(pluginManager)
+          this.worker = undefined
         }
       })
       this.worker = worker

@@ -1,6 +1,6 @@
 import calculateVisibleRegions from './calculateDynamicBlocks'
 
-const ctgA = { refName: 'ctgA', start: 0, end: 50000 }
+const ctgA = { assemblyName: 'test', refName: 'ctgA', start: 0, end: 50000 }
 
 test('one', () => {
   expect(
