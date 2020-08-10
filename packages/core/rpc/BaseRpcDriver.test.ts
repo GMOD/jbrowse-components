@@ -13,7 +13,11 @@ class MockWorkerHandle {
 
   destroy() {}
 
-  async call(name: string, args: unknown, opts: { timeout: number }) {
+  async call(
+    name: string,
+    args = [],
+    opts: { timeout: number } = { timeout: 3000 },
+  ) {
     const start = Date.now()
     if (name === 'ping') {
       while (this.busy) {
