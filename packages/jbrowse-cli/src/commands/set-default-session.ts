@@ -1,6 +1,7 @@
 import { Command, flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
+import * as os from 'os'
 import fetch from 'node-fetch'
 
 interface DefaultSession {
@@ -36,14 +37,16 @@ export default class SetDefaultSession extends Command {
     {
       name: 'location',
       required: false,
-      description: 'path to JB2 installation. Defaults to .',
+      description: 'path to JB2 installation',
+      default: '.',
     },
   ]
 
   static flags = {
     name: flags.string({
       char: 'n',
-      description: 'Give a name for the default session, blank on default',
+      description: 'Give a name for the default session',
+      default: 'New Default Sesssion',
     }),
     view: flags.string({
       char: 'v',
@@ -109,7 +112,8 @@ export default class SetDefaultSession extends Command {
     }
 
     const foundTracks: Track[] = []
-    if (!defaultSession && (!view || !tracks)) {
+    const existingDefaultSession = configContents.defaultSession.length > 0
+    if (!defaultSession && !view && !tracks) {
       this.error(
         `No default session information provided, Please either provide a default session file or enter information to build a default session`,
         { exit: 15 },
@@ -118,18 +122,14 @@ export default class SetDefaultSession extends Command {
     // if user provides a file, process and set as default session and exit
     else if (defaultSession) {
       const defaultJson = await this.readDefaultSessionFile(defaultSession)
-      const message = `Set default session to session from ${defaultSession}${
-        configContents.defaultSession.length
-      }. ${
-        configContents.defaultSession.length > 0 &&
-        'Overwrote previous default session.'
+      const message = `Set default session to session from ${defaultSession}. ${
+        existingDefaultSession && 'Overwrote previous default session.'
       }`
       configContents.defaultSession = { ...defaultJson }
       this.log(message)
       this.exit()
     } else {
-      // if trackid, check the tracks array in the config and find the trackid
-      // information. if it doesnt exist, make sure add track first before doing default session?
+      // use trackids if any to match to tracks in the config and either guess or set the viewType
       let trackIds = []
       if (view) this.debug(`View type is ${view}`)
       if (tracks && configContents.tracks) {
@@ -140,7 +140,7 @@ export default class SetDefaultSession extends Command {
           )
           if (idx === -1)
             this.error(
-              `Track ${trackId} has not been added to config yet.\nPlease add the track with  the add-track command before adding to the default session`,
+              `Track ${trackId} has not been added to config yet.${os.EOL}Please add the track with the add-track command before adding to the default session`,
               { exit: 10 },
             )
           else foundTracks.push(configContents.tracks[idx])
@@ -156,22 +156,30 @@ export default class SetDefaultSession extends Command {
         })
       }
 
-      // to set up object somehow getSession from jbrowse setup then
-      // get the views array, find the view that the user wants to set as the default session
-      // then add the tracks that the user selected into the view object
-      // once that is done, can add to configContents and return
-      // maybe need to check that it is a valid default session so it doesnt break on load
-      // view is just type of view, don't need other information
-
       const sessionObj = {
-        name: name || 'New Default Session',
+        name,
         views: [
           {
             type: view,
-            tracks: foundTracks,
+            tracks: [...foundTracks],
           },
         ],
       }
+
+      configContents.defaultSession.push(sessionObj)
+      this.debug(`Writing configuration to file ${configPath}`)
+      await fsPromises.writeFile(
+        configPath,
+        JSON.stringify(configContents, undefined, 2),
+      )
+
+      this.log(
+        `${
+          existingDefaultSession ? 'Overwrote' : 'Added'
+        } defaultSession "${name}" ${
+          existingDefaultSession ? 'in' : 'to'
+        } ${configPath}`,
+      )
     }
   }
 
