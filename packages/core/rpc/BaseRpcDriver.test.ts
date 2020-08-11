@@ -70,12 +70,13 @@ export class MockRenderer extends RpcMethodType {
 }
 
 test('base rpc driver', async () => {
-  try {
+  console.warn = jest.fn()
   const driver = new MockRpcDriver()
   const pluginManager = new PluginManager()
 
   pluginManager.addRpcMethod(() => new MockRenderer(pluginManager))
   pluginManager.createPluggableElements()
+  try {
     await driver.call(pluginManager, 'sessionId', 'MockRender', {}, {})
   } catch (e) {
     expect(e.message).toMatch(/operation timed out/)
