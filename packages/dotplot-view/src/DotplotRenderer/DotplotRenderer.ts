@@ -4,13 +4,11 @@ import {
   createCanvas,
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
-import Base1DView, {
-  Base1DViewModel,
-} from '@gmod/jbrowse-core/util/Base1DViewModel'
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Instance } from 'mobx-state-tree'
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import { Dotplot1DView } from '../DotplotView/model'
 import MyConfig from './configSchema'
 
 export interface DotplotRenderProps {
@@ -22,7 +20,7 @@ export interface DotplotRenderProps {
   fontSize: number
   highResolutionScaling: number
   pluginManager: PluginManager
-  views: Base1DViewModel[]
+  views: Instance<typeof Dotplot1DView>[]
 }
 
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
@@ -115,7 +113,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const { width, height, views } = renderProps
     const dimensions = [width, height]
     const realizedViews = views.map((snap, idx) => {
-      const view = Base1DView.create(snap)
+      const view = Dotplot1DView.create(snap)
       view.setVolatileWidth(dimensions[idx])
       return view
     })
