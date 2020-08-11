@@ -1,7 +1,6 @@
 import { Command, flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
-import * as os from 'os'
 import fetch from 'node-fetch'
 
 interface Connection {
@@ -304,7 +303,7 @@ export default class AddConnection extends Command {
     if (url.includes('jbrowse/data')) return 'JBrowse1Connection'
     if (config && this.isValidJSON(config)) return 'custom'
     return this.error(
-      `Unable to determine a specific connection from URL given.\nPlease specify a type with --type.${os.EOL}If you want a custom type, please provide the config object with --config`,
+      `Unable to determine a specific connection from URL given.\nPlease specify a type with --type.\nIf you want a custom type, please provide the config object with --config`,
     )
   }
 
