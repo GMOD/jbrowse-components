@@ -118,7 +118,7 @@ function getAdapterId(adapterConf: unknown) {
 
 type RefNameAliases = Record<string, string[]>
 
-interface BaseOptions {
+export interface BaseOptions {
   signal?: AbortSignal
   sessionId: string
   statusCallback?: Function
