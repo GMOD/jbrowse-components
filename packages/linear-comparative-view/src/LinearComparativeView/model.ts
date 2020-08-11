@@ -2,19 +2,18 @@
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 
 import { MenuOption } from '@gmod/jbrowse-core/ui'
-import { getSession } from '@gmod/jbrowse-core/util'
-import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
+import {
+  LinearGenomeViewModel,
+  LinearGenomeViewStateModel,
+} from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { types, Instance } from 'mobx-state-tree'
 import { transaction } from 'mobx'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
-
-export type LGV = Instance<LinearGenomeViewStateModel>
-type ConfigRelationship = { type: string; target: string }
 
 export default function stateModelFactory(pluginManager: PluginManager) {
   const { jbrequire } = pluginManager
@@ -112,7 +111,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.height = newHeight
       },
 
-      removeView(view: LGV) {
+      removeView(view: LinearGenomeViewModel) {
         self.views.remove(view)
       },
 
@@ -136,14 +135,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
-          const session: any = getSession(self)
-          const selector = session.addWidget(
-            'HierarchicalTrackSelectorWidget',
-            'hierarchicalTrackSelector',
-            { view: self },
-          )
-          session.showWidget(selector)
-          return selector
+          const session = getSession(self)
+          if (isSessionModelWithWidgets(self)) {
+            // @ts-ignore
+            const selector = session.addWidget(
+              'HierarchicalTrackSelectorWidget',
+              'hierarchicalTrackSelector',
+              { view: self },
+            )
+            // @ts-ignore
+            session.showWidget(selector)
+            return selector
+          }
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
@@ -186,7 +189,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get menuOptions(): MenuOption[] {
-        const session = getSession(self) as any
+        const session = getSession(self)
         const menuOptions: MenuOption[] = []
         self.views.forEach((view, idx) => {
           if (view.menuOptions) {
@@ -201,8 +204,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           onClick: self.activateTrackSelector,
           icon: LineStyleIcon,
           disabled:
+            isSessionModelWithWidgets(session) &&
             session.visibleWidget &&
             session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+            // @ts-ignore
             session.visibleWidget.view.id === self.id,
         })
         return menuOptions
