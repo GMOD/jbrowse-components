@@ -35,15 +35,31 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
     setError('No configured assemblies')
   }
 
-  function onOpenClick() {
+  async function onOpenClick() {
+    const { assemblyManager } = getSession(model)
+    const asm1 = assemblyNames[selectedAssemblyIdx1]
+    const asm2 = assemblyNames[selectedAssemblyIdx2]
+    const assembly1 = assemblyManager.get(asm1)
+    const assembly2 = assemblyManager.get(asm2)
+    const regions1 = assembly1.regions
+    const regions2 = assembly2.regions
+    console.log(regions1)
     model.setViews([
-      { type: 'LinearGenomeView', bpPerPx: 0.1, offsetPx: 0 },
-      { type: 'LinearGenomeView', bpPerPx: 0.1, offsetPx: 0 },
+      {
+        type: 'LinearGenomeView',
+        bpPerPx: 0.1,
+        offsetPx: 0,
+        hideHeader: true,
+        displayedRegions: regions1,
+      },
+      {
+        type: 'LinearGenomeView',
+        bpPerPx: 0.1,
+        offsetPx: 0,
+        hideHeader: true,
+        displayedRegions: regions2,
+      },
     ])
-    // model.setAssemblyNames([
-    //   assemblyNames[selectedAssemblyIdx1],
-    //   assemblyNames[selectedAssemblyIdx2],
-    // ])
   }
 
   return (
