@@ -1,23 +1,15 @@
+import React from 'react'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { Region } from '@gmod/jbrowse-core/util/types'
 import {
   createCanvas,
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
-import React from 'react'
-import Base1DView, {
-  Base1DViewModel,
-} from '@gmod/jbrowse-core/util/Base1DViewModel'
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Instance } from 'mobx-state-tree'
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import { Dotplot1DView } from '../DotplotView/model'
 import MyConfig from './configSchema'
-
-interface Block extends Region {
-  offsetPx: number
-  widthPx: number
-}
 
 export interface DotplotRenderProps {
   dataAdapter: BaseFeatureDataAdapter
@@ -28,7 +20,7 @@ export interface DotplotRenderProps {
   fontSize: number
   highResolutionScaling: number
   pluginManager: PluginManager
-  views: Base1DViewModel[]
+  views: Instance<typeof Dotplot1DView>[]
 }
 
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
@@ -77,7 +69,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         e2 !== undefined
       ) {
         if (Math.abs(b1 - b2) < 3 && Math.abs(e1 - e2) < 3) {
-          ctx.fillRect(b1 - 1, height - e1 - 1, 3, 3)
+          ctx.fillRect(b1 - 0.5, height - e1 - 0.5, 1.5, 1.5)
         } else {
           let currX = b1
           let currY = e1
@@ -121,7 +113,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const { width, height, views } = renderProps
     const dimensions = [width, height]
     const realizedViews = views.map((snap, idx) => {
-      const view = Base1DView.create(snap)
+      const view = Dotplot1DView.create(snap)
       view.setVolatileWidth(dimensions[idx])
       return view
     })

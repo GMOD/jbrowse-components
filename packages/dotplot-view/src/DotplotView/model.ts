@@ -1,7 +1,19 @@
 // typescript only imports, runtime imports below loaded via pluginManager
-import { Instance, SnapshotIn } from 'mobx-state-tree'
+import {
+  Instance,
+  SnapshotIn,
+  cast,
+  types,
+  getParent,
+  getSnapshot,
+  addDisposer,
+} from 'mobx-state-tree'
+
+import { autorun, transaction } from 'mobx'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
-import { Base1DViewModel } from '@gmod/jbrowse-core/util/Base1DViewModel'
+import Base1DView, {
+  Base1DViewModel,
+} from '@gmod/jbrowse-core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@gmod/jbrowse-core/util/calculateDynamicBlocks'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
@@ -10,14 +22,43 @@ function approxPixelStringLen(str: string) {
 }
 
 type Coord = [number, number]
+
+// Used in the renderer
+export const Dotplot1DView = Base1DView.extend(self => {
+  return {
+    views: {
+      get interRegionPaddingWidth() {
+        return 0
+      },
+      get minimumBlockWidth() {
+        return 0
+      },
+      get dynamicBlocks() {
+        return calculateDynamicBlocks(self, false, false)
+      },
+    },
+  }
+})
+
+const DotplotHView = Dotplot1DView.extend(self => ({
+  views: {
+    get width() {
+      return getParent(self).viewWidth
+    },
+  },
+}))
+
+const DotplotVView = Dotplot1DView.extend(self => ({
+  views: {
+    get width() {
+      return getParent(self).viewHeight
+    },
+  },
+}))
+
 export default function stateModelFactory(pluginManager: PluginManager) {
   const { lib } = pluginManager
-  const { cast, types, getParent, getSnapshot, addDisposer } = lib[
-    'mobx-state-tree'
-  ]
-  const { autorun, transaction } = lib.mobx
   const { ElementId } = lib['@gmod/jbrowse-core/util/types/mst']
-  const Base1DView = lib['@gmod/jbrowse-core/util/Base1DViewModel']
   const { readConfObject } = lib['@gmod/jbrowse-core/configuration']
   const { getSession, minmax, isSessionModelWithWidgets } = lib[
     '@gmod/jbrowse-core/util'
@@ -37,44 +78,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       displayName: 'dotplot',
       trackSelectorType: 'hierarchical',
       assemblyNames: types.array(types.string),
-      hview: types.optional(
-        Base1DView.extend(self => ({
-          views: {
-            get width() {
-              return getParent(self).viewWidth
-            },
-            get interRegionPaddingWidth() {
-              return 0
-            },
-            get minimumBlockWidth() {
-              return 0
-            },
-            get dynamicBlocks() {
-              return calculateDynamicBlocks(self, false, false)
-            },
-          },
-        })),
-        {},
-      ),
-      vview: types.optional(
-        Base1DView.extend(self => ({
-          views: {
-            get width() {
-              return getParent(self).viewHeight
-            },
-            get interRegionPaddingWidth() {
-              return 0
-            },
-            get minimumBlockWidth() {
-              return 0
-            },
-            get dynamicBlocks() {
-              return calculateDynamicBlocks(self, false, false)
-            },
-          },
-        })),
-        {},
-      ),
+      hview: types.optional(DotplotHView, {}),
+      vview: types.optional(DotplotVView, {}),
+
       tracks: types.array(
         pluginManager.pluggableMstType(
           'track',

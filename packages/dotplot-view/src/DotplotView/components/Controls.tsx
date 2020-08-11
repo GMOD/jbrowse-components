@@ -1,4 +1,6 @@
-import { makeStyles as makeStylesMUI } from '@material-ui/core/styles'
+import React from 'react'
+
+import { makeStyles } from '@material-ui/core/styles'
 import ZoomOut from '@material-ui/icons/ZoomOut'
 import ZoomIn from '@material-ui/icons/ZoomIn'
 import ArrowUp from '@material-ui/icons/KeyboardArrowUp'
@@ -6,19 +8,15 @@ import ArrowDown from '@material-ui/icons/KeyboardArrowDown'
 import ArrowLeft from '@material-ui/icons/KeyboardArrowLeft'
 import ArrowRight from '@material-ui/icons/KeyboardArrowRight'
 import TrackSelectorIcon from '@material-ui/icons/LineStyle'
+import IconButton from '@material-ui/core/IconButton'
+import ToggleButton from '@material-ui/lab/ToggleButton'
+
+import { observer } from 'mobx-react'
+import { isSessionModelWithWidgets, getSession } from '@gmod/jbrowse-core/util'
 import { DotplotViewModel } from '../model'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default (pluginManager: any) => {
-  const { jbrequire } = pluginManager
-  const { observer } = jbrequire('mobx-react')
-  const React = jbrequire('react')
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const IconButton = jbrequire('@material-ui/core/IconButton')
-  const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
-
-  const useStyles = (makeStyles as typeof makeStylesMUI)({
+export default () => {
+  const useStyles = makeStyles({
     iconButton: {
       padding: '4px',
       margin: '0 2px 0 2px',
@@ -103,8 +101,10 @@ export default (pluginManager: any) => {
           onClick={model.activateTrackSelector}
           title="select tracks"
           selected={
+            isSessionModelWithWidgets(session) &&
             session.visibleWidget &&
             session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+            // @ts-ignore
             session.visibleWidget.view.id === model.id
           }
           value="track_select"
