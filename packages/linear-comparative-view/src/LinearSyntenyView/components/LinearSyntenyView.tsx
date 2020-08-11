@@ -38,13 +38,13 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
 
   function onOpenClick() {
     model.setViews([
-      { bpPerPx: 0.1, offsetPx: 0 },
-      { bpPerPx: 0.1, offsetPx: 0 },
+      { type: 'LinearGenomeView', bpPerPx: 0.1, offsetPx: 0 },
+      { type: 'LinearGenomeView', bpPerPx: 0.1, offsetPx: 0 },
     ])
-    model.setAssemblyNames([
-      assemblyNames[selectedAssemblyIdx1],
-      assemblyNames[selectedAssemblyIdx2],
-    ])
+    // model.setAssemblyNames([
+    //   assemblyNames[selectedAssemblyIdx1],
+    //   assemblyNames[selectedAssemblyIdx2],
+    // ])
   }
 
   return (
@@ -114,6 +114,10 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
 
 const LinearSyntenyView = observer(
   ({ model }: { model: LinearSyntenyViewModel }) => {
+    const { initialized, loading } = model
+    if (!initialized && !loading) {
+      return <ImportForm model={model} />
+    }
     return <LinearComparativeViewComponent model={model} />
   },
 )

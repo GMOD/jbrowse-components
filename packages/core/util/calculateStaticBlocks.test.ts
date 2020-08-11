@@ -46,7 +46,7 @@ describe('block calculation', () => {
     const blockSet = calculateBlocks({
       bpPerPx: 1,
       width: 800,
-      offsetPx: 1000,
+      offsetPx: 3000,
       displayedRegions: [
         { assemblyName: 'test', refName: 'ctgA', start: 0, end: 100 },
         { assemblyName: 'test', refName: 'ctgB', start: 100, end: 200 },
@@ -61,7 +61,7 @@ describe('block calculation', () => {
     const blockSet = calculateBlocks({
       bpPerPx: 1,
       width: 800,
-      offsetPx: -1000,
+      offsetPx: -10000,
       displayedRegions: [
         { assemblyName: 'test', refName: 'ctgA', start: 0, end: 100 },
         { assemblyName: 'test', refName: 'ctgB', start: 100, end: 200 },

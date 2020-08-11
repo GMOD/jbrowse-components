@@ -7,28 +7,29 @@ import {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
-import { types, Instance } from 'mobx-state-tree'
 import { transaction } from 'mobx'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
+import {
+  types,
+  getParent,
+  onAction,
+  addDisposer,
+  Instance,
+  resolveIdentifier,
+  getPath,
+  cast,
+} from 'mobx-state-tree'
 
 export default function stateModelFactory(pluginManager: PluginManager) {
   const { jbrequire } = pluginManager
-  const {
-    types: jbrequiredTypes,
-    getParent,
-    onAction,
-    addDisposer,
-    resolveIdentifier,
-    getPath,
-  } = jbrequire('mobx-state-tree')
   const { ElementId } = jbrequire('@gmod/jbrowse-core/util/types/mst')
 
   const defaultHeight = 400
-  return (jbrequiredTypes as Instance<typeof types>)
+  return types
     .model('LinearComparativeView', {
       id: ElementId,
       type: types.literal('LinearComparativeView'),
@@ -54,6 +55,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       width: 800,
     }))
     .views(self => ({
+      get initialized() {
+        return self.views.length > 0
+      },
+
       get refNames() {
         return (self.views || []).map(v => [
           ...new Set(v.staticBlocks.map(m => m.refName)),
@@ -109,6 +114,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       setHeight(newHeight: number) {
         self.height = newHeight
+      },
+
+      setViews(views: LinearGenomeViewModel[]) {
+        self.views = cast(views)
       },
 
       removeView(view: LinearGenomeViewModel) {
