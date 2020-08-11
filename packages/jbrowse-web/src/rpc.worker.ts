@@ -40,7 +40,6 @@ async function getPluginManager() {
   }
   // Load runtime plugins
   const config = await receiveConfiguration()
-  // console.log('got worker boot config', config)
   const pluginLoader = new PluginLoader(config.plugins)
   pluginLoader.installGlobalReExports(self.window)
   const runtimePlugins = await pluginLoader.load()
@@ -73,13 +72,21 @@ function wrapForRpc(
   func: (args: unknown) => unknown,
   funcName: string = func.name,
 ) {
-  return (args: unknown) => {
+  return (args: Record<string, unknown>) => {
     callCounter += 1
     const myId = callCounter
     // logBuffer.push(['rpc-call', myId, funcName, args])
     const retP = Promise.resolve()
       .then(() => getPluginManager())
-      .then(pluginManager => func(args))
+      .then(pluginManager =>
+        func({
+          ...args,
+          statusCallback: (message: string) => {
+            // @ts-ignore
+            self.rpcServer.emit(args.channel, message)
+          },
+        }),
+      )
       .catch(error => {
         if (isAbortException(error)) {
           // logBuffer.push(['rpc-abort', myId, funcName, args])

@@ -44,9 +44,10 @@ async function loadRefNameMap(
   assembly: Assembly,
   adapterId: string,
   adapterConf: unknown,
-  sessionId: string,
+  options: BaseOptions,
   signal?: AbortSignal,
 ) {
+  const { sessionId } = options
   await when(() => Boolean(assembly.regions && assembly.refNameAliases), {
     signal,
     name: 'when assembly ready',
@@ -56,9 +57,9 @@ async function loadRefNameMap(
     sessionId,
     'CoreGetRefNames',
     {
-      sessionId,
       adapterConfig: adapterConf,
       signal,
+      ...options,
     },
     { timeout: 1000000 },
   )
@@ -117,26 +118,24 @@ function getAdapterId(adapterConf: unknown) {
 
 type RefNameAliases = Record<string, string[]>
 
+interface BaseOptions {
+  signal?: AbortSignal
+  sessionId: string
+  statusCallback?: Function
+}
+interface CacheData {
+  adapterConf: unknown
+  adapterId: string
+  self: Assembly
+  sessionId: string
+  options: BaseOptions
+}
 export default function assemblyFactory(assemblyConfigType: IAnyType) {
-  interface CacheData {
-    adapterConf: unknown
-    adapterId: string
-    self: Assembly
-    sessionId: string
-  }
   const adapterLoads = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 1000 }),
-    async fill(
-      { adapterConf, adapterId, self, sessionId }: CacheData,
-      abortSignal?: AbortSignal,
-    ) {
-      return loadRefNameMap(
-        self,
-        adapterId,
-        adapterConf,
-        sessionId,
-        abortSignal,
-      )
+    async fill(args: CacheData, abortSignal?: AbortSignal) {
+      const { adapterConf, adapterId, self, options } = args
+      return loadRefNameMap(self, adapterId, adapterConf, options, abortSignal)
     },
   })
 
@@ -249,12 +248,9 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       },
     }))
     .views(self => ({
-      getAdapterMapEntry(
-        adapterConf: unknown,
-        opts: { signal?: AbortSignal; sessionId: string },
-      ) {
-        const { signal, ...rest } = opts
-        if (!opts.sessionId) {
+      getAdapterMapEntry(adapterConf: unknown, options: BaseOptions) {
+        const { signal, ...rest } = options
+        if (!options.sessionId) {
           throw new Error('sessionId is required')
         }
         const adapterId = getAdapterId(adapterConf)
@@ -264,8 +260,8 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
             adapterConf,
             adapterId,
             self: self as Assembly,
-            ...rest,
-          },
+            options: rest,
+          } as CacheData,
           signal,
         )
       },
@@ -273,10 +269,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       /**
        * get Map of `canonical-name -> adapter-specific-name`
        */
-      async getRefNameMapForAdapter(
-        adapterConf: unknown,
-        opts: { signal?: AbortSignal; sessionId: string },
-      ) {
+      async getRefNameMapForAdapter(adapterConf: unknown, opts: BaseOptions) {
         if (!opts || !opts.sessionId) {
           throw new Error('sessionId is required')
         }
@@ -289,7 +282,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
        */
       async getReverseRefNameMapForAdapter(
         adapterConf: unknown,
-        opts: { signal?: AbortSignal; sessionId: string },
+        opts: BaseOptions,
       ) {
         const map = await this.getAdapterMapEntry(adapterConf, opts)
         return map.reverseMap

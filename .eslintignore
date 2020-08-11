@@ -5,6 +5,7 @@
 **/dist/**
 **/umd/**
 **/lib/**
+**/tmp/**
 # TODO: decide whether or not to bring these up to eslint standards
 packages/jbrowse-web/scripts/**
 /config/

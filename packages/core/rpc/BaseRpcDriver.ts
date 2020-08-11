@@ -5,6 +5,8 @@ import PluginManager from '../PluginManager'
 
 interface WorkerHandle {
   status?: string
+  on?: (channel: string, callback: (message: string) => void) => void
+  off?: (channel: string, callback: (message: string) => void) => void
   destroy(): void
   call(functionName: string, args?: unknown, options?: {}): Promise<unknown>
 }
@@ -65,7 +67,7 @@ class LazyWorker {
           console.warn('worker did not respond, killing and generating new one')
           this.worker.destroy()
           this.worker.status = 'killed'
-          this.worker = this.getWorker(pluginManager)
+          this.worker = undefined
         }
       })
       this.worker = worker
@@ -175,7 +177,7 @@ export default abstract class BaseRpcDriver {
     pluginManager: PluginManager,
     sessionId: string,
     functionName: string,
-    args: {},
+    args: { statusCallback?: Function },
     options = {},
   ) {
     if (!sessionId) {
@@ -193,6 +195,7 @@ export default abstract class BaseRpcDriver {
     // now actually call the worker
     const callP = worker.call(functionName, filteredAndSerializedArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes
+      statusCallback: args.statusCallback,
       ...options,
     })
 

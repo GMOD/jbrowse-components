@@ -58,7 +58,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   }
 
   private async setup(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
     if (Object.keys(this.samHeader).length === 0) {
+      statusCallback('Downloading index file')
       const samHeader = await this.bam.getHeader(opts?.signal)
 
       // use the @SQ lines in the header to figure out the
@@ -95,15 +97,12 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     if (!refSeqStore) return undefined
     if (!refName) return undefined
 
-    const features = refSeqStore.getFeatures(
-      {
-        refName,
-        start,
-        end,
-        assemblyName: '',
-      },
-      {},
-    )
+    const features = refSeqStore.getFeatures({
+      refName,
+      start,
+      end,
+      assemblyName: '',
+    })
 
     const seqChunks = await features.pipe(toArray()).toPromise()
 
@@ -135,18 +134,21 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(
     region: Region & { originalRefName?: string },
-    opts: BaseOptions = {},
+    opts?: BaseOptions,
   ) {
     const { refName, start, end, originalRefName } = region
+    const { signal, statusCallback = () => {} } = opts || {}
     return ObservableCreate<Feature>(async observer => {
       await this.setup(opts)
+      // @ts-ignore
+      statusCallback('Downloading alignments')
       const records = await this.bam.getRecordsForRange(
         refName,
         start,
         end,
         opts,
       )
-      checkAbortSignal(opts.signal)
+      checkAbortSignal(signal)
 
       for (const record of records) {
         let ref: string | undefined
@@ -161,7 +163,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         observer.next(new BamSlightlyLazyFeature(record, this, ref))
       }
       observer.complete()
-    }, opts.signal)
+    }, signal)
   }
 
   freeResources(/* { region } */): void {}

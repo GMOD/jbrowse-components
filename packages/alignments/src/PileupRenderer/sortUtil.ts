@@ -10,13 +10,13 @@ export const sortFeature = (
   features: Map<string, Feature>,
   sortObject: SortObject,
 ) => {
-  const featureArray = Array.from(features)
-  const featuresInCenterLine: typeof featureArray = []
-  const featuresOutsideCenter: typeof featureArray = []
+  const featureArray = Array.from(features.values())
+  const featuresInCenterLine: Feature[] = []
+  const featuresOutsideCenter: Feature[] = []
 
   // only sort on features that intersect center line, append those outside post-sort
   featureArray.forEach(innerArray => {
-    const feature = innerArray[1]
+    const feature = innerArray
     if (
       doesIntersect2(
         sortObject.position - 1,
@@ -33,22 +33,25 @@ export const sortFeature = (
 
   switch (sortObject.by) {
     case 'Start location': {
-      featuresInCenterLine.sort(
-        (a: [string, Feature], b: [string, Feature]) =>
-          a[1].get('start') - b[1].get('start'),
-      )
+      featuresInCenterLine.sort((a, b) => a.get('start') - b.get('start'))
       break
     }
 
     // first sort all mismatches, then all reference bases at the end
     case 'Base pair': {
       const baseSortArray: [string, Mismatch][] = []
-      featuresInCenterLine.forEach(array => {
-        const feature = array[1]
+      featuresInCenterLine.forEach(feature => {
         const mismatches: Mismatch[] = feature.get('mismatches')
         mismatches.forEach(mismatch => {
-          const positionOfMismatch = feature.get('start') + mismatch.start + 1
-          if (positionOfMismatch === sortObject.position) {
+          const start = feature.get('start')
+          const offset = start + mismatch.start + 1
+          const consuming =
+            mismatch.type === 'insertion' || mismatch.type === 'softclip'
+          const len = consuming ? 0 : mismatch.length
+          if (
+            sortObject.position >= offset &&
+            sortObject.position < offset + len
+          ) {
             baseSortArray.push([feature.id(), mismatch])
           }
         })
@@ -56,12 +59,16 @@ export const sortFeature = (
 
       const baseMap = new Map(baseSortArray)
       featuresInCenterLine.sort((a, b) => {
-        const aMismatch = baseMap.get(a[1].id())
-        const bMismatch = baseMap.get(b[1].id())
-
+        const aMismatch = baseMap.get(a.id())
+        const bMismatch = baseMap.get(b.id())
+        const acode = bMismatch && bMismatch.base.toUpperCase()
+        const bcode = aMismatch && aMismatch.base.toUpperCase()
+        if (acode === bcode && acode === '*') {
+          // @ts-ignore
+          return aMismatch.length - bMismatch.length
+        }
         return (
-          (bMismatch ? bMismatch.base.toUpperCase().charCodeAt(0) : 0) -
-          (aMismatch ? aMismatch.base.toUpperCase().charCodeAt(0) : 0)
+          (acode ? acode.charCodeAt(0) : 0) - (bcode ? bcode.charCodeAt(0) : 0)
         )
       })
 
@@ -70,19 +77,18 @@ export const sortFeature = (
 
     // sorts positive strands then negative strands
     case 'Read strand': {
-      featuresInCenterLine.sort(
-        (a: [string, Feature], b: [string, Feature]) => {
-          return a[1].get('strand') <= b[1].get('strand') ? 1 : -1
-        },
+      featuresInCenterLine.sort((a, b) =>
+        a.get('strand') <= b.get('strand') ? 1 : -1,
       )
       break
     }
-
-    default:
-      break
   }
 
-  const sortedMap = new Map(featuresInCenterLine.concat(featuresOutsideCenter))
+  const sortedMap = new Map(
+    featuresInCenterLine
+      .concat(featuresOutsideCenter)
+      .map(feature => [feature.id(), feature]),
+  )
 
   return sortedMap
 }

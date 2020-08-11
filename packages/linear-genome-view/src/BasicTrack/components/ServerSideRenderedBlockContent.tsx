@@ -1,6 +1,7 @@
 import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { getParent } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import Button from '@material-ui/core/Button'
@@ -66,7 +67,8 @@ function Repeater({ children }: { children: React.ReactNode }) {
   )
 }
 
-function LoadingMessage() {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const LoadingMessage = observer(({ model }: { model: any }) => {
   // only show the loading message after 300ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
   const classes = useStyles()
@@ -75,12 +77,13 @@ function LoadingMessage() {
     return () => clearTimeout(timeout)
   }, [])
 
+  const { message } = getParent(model, 2)
   return shown ? (
     <div className={classes.loading}>
-      <div className={classes.dots}>Loading</div>
+      <div className={classes.dots}>{message ? `${message}` : 'Loading'}</div>
     </div>
   ) : null
-}
+})
 
 function BlockMessage({ messageText }: { messageText: string }) {
   const classes = useStyles()
@@ -126,13 +129,8 @@ const ServerSideRenderedBlockContent = observer(
   ({
     model,
   }: {
-    // requires typing out to avoid circular reference with this component being referenced in the model itself
-    model: {
-      error: Error | undefined
-      reload: () => void
-      message: string | undefined
-      filled: boolean
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    model: any
   }) => {
     if (model.error) {
       return (
@@ -151,7 +149,7 @@ const ServerSideRenderedBlockContent = observer(
     if (!model.filled) {
       return (
         <Repeater>
-          <LoadingMessage />
+          <LoadingMessage model={model} />
         </Repeater>
       )
     }
