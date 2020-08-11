@@ -72,8 +72,8 @@ test('watch worker with long ping, generates timeout', async () => {
 
   try {
     const workerWatcher = watchWorker(worker, 200)
-    worker.call('doWorkLongPingTime')
-    await workerWatcher // should throw
+    const result = worker.call('doWorkLongPingTime')
+    await Promise.race([result, workerWatcher])
   } catch (e) {
     expect(e.message).toMatch(/timeout/)
   }
@@ -82,8 +82,8 @@ test('watch worker with long ping, generates timeout', async () => {
 test('watch worker generates multiple pings', async () => {
   const worker = new MockWorkerHandle()
   const workerWatcher = watchWorker(worker, 200)
-
-  await worker.call('doWorkShortPingTime')
+  const result = worker.call('doWorkShortPingTime')
+  await Promise.race([result, workerWatcher])
 })
 
 class MockRpcDriver extends BaseRpcDriver {
