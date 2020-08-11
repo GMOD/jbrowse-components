@@ -72,7 +72,6 @@ class LazyWorker {
         }
       })
       this.worker = worker
-      return worker
     }
     return this.worker
   }
@@ -185,6 +184,7 @@ export default abstract class BaseRpcDriver {
     args: { statusCallback?: Function },
     options = {},
   ) {
+    console.log({ functionName })
     if (!sessionId) {
       throw new TypeError('sessionId is required')
     }

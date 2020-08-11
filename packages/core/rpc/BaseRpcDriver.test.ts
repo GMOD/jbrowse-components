@@ -28,12 +28,30 @@ class MockWorkerHandle {
         }
 
         // eslint-disable-next-line no-await-in-loop
-        await timeout(500)
+        await timeout(50)
       }
     }
-    if (name === 'doWork') {
+    if (name === 'doWorkShortPingTime') {
       this.busy = true
-      await timeout(2000)
+      await timeout(50)
+      this.busy = false
+      await timeout(50)
+      this.busy = true
+      await timeout(50)
+      this.busy = false
+      await timeout(50)
+      this.busy = true
+      await timeout(50)
+      this.busy = false
+    }
+
+    if (name === 'doWorkLongPingTime') {
+      this.busy = true
+      await timeout(500)
+      this.busy = false
+      await timeout(500)
+      this.busy = true
+      await timeout(500)
       this.busy = false
     }
     if (name === 'MockRender') {
@@ -43,16 +61,23 @@ class MockWorkerHandle {
     }
   }
 }
-test('watch worker', async () => {
+test('watch worker with timeout', async () => {
   const worker = new MockWorkerHandle()
 
   try {
-    const workerWatcher = watchWorker(worker, 100)
-    worker.call('doWork')
+    const workerWatcher = watchWorker(worker, 200)
+    worker.call('doWorkLongPingTime')
     await workerWatcher // should throw
   } catch (e) {
     expect(e.message).toMatch(/timeout/)
   }
+})
+
+test('watch worker without timeout', async () => {
+  const worker = new MockWorkerHandle()
+  const workerWatcher = watchWorker(worker, 200)
+
+  await worker.call('doWorkShortPingTime')
 })
 
 class MockRpcDriver extends BaseRpcDriver {
