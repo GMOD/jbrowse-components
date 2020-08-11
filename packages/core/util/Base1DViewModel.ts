@@ -1,4 +1,4 @@
-import { types, cast, Instance } from 'mobx-state-tree'
+import { types, cast, getSnapshot, Instance } from 'mobx-state-tree'
 import { clamp } from './index'
 import { Feature } from './simpleFeature'
 import { Region } from './types/mst'
@@ -6,7 +6,7 @@ import { Region as IRegion } from './types'
 import calculateDynamicBlocks from './calculateDynamicBlocks'
 import calculateStaticBlocks from './calculateStaticBlocks'
 
-interface BpOffset {
+export interface BpOffset {
   refName?: string
   index: number
   offset: number
@@ -87,7 +87,7 @@ const Base1DView = types
     pxToBp(px: number) {
       const bp = (self.offsetPx + px) * self.bpPerPx
       let bpSoFar = 0
-      let r = self.displayedRegions[0]
+      let r = getSnapshot(self.displayedRegions[0])
       if (bp < 0) {
         return {
           ...r,

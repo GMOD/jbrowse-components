@@ -1,3 +1,4 @@
+/* eslint curly:error */
 // eslint-disable-next-line import/no-extraneous-dependencies
 const electron = require('electron')
 const debug = require('electron-debug')
@@ -31,9 +32,11 @@ const sessionDirectory = path.join(app.getPath('userData'), 'sessions')
 try {
   fs.statSync(sessionDirectory)
 } catch (error) {
-  if (error.code === 'ENOENT' || error.code === 'ENOTDIR')
+  if (error.code === 'ENOENT' || error.code === 'ENOTDIR') {
     fs.mkdirSync(sessionDirectory, { recursive: true })
-  else throw error
+  } else {
+    throw error
+  }
 }
 
 let mainWindow
@@ -234,14 +237,15 @@ ipcMain.handle('listSessions', async () => {
     const sessionFiles = await fsReaddir(sessionDirectory)
     const sessionFilesData = []
     for (const sessionFile of sessionFiles) {
-      if (path.extname(sessionFile) === '.thumbnail')
+      if (path.extname(sessionFile) === '.thumbnail') {
         sessionFilesData.push(
           fsReadFile(path.join(sessionDirectory, sessionFile), {
             encoding: 'utf8',
           }),
         )
-      else
+      } else {
         sessionFilesData.push(fsStat(path.join(sessionDirectory, sessionFile)))
+      }
     }
     const data = await Promise.all(sessionFilesData)
     const sessions = {}
@@ -250,14 +254,22 @@ ipcMain.handle('listSessions', async () => {
         const sessionName = decodeURIComponent(
           path.basename(sessionFile, '.thumbnail'),
         )
-        if (!sessions[sessionName]) sessions[sessionName] = {}
+        if (!sessions[sessionName]) {
+          sessions[sessionName] = {}
+        }
         sessions[sessionName].screenshot = data[idx]
       } else if (path.extname(sessionFile) === '.json') {
         const sessionName = decodeURIComponent(
           path.basename(sessionFile, '.json'),
         )
-        if (!sessions[sessionName]) sessions[sessionName] = {}
-        sessions[sessionName].stats = data[idx]
+        if (!sessions[sessionName]) {
+          sessions[sessionName] = {}
+        } else if (path.extname(sessionFile) === '.json') {
+          if (!sessions[sessionName]) {
+            sessions[sessionName] = {}
+          }
+          sessions[sessionName].stats = data[idx]
+        }
       }
     })
     return sessions
@@ -344,12 +356,13 @@ ipcMain.handle('deleteSession', async (event, sessionName) => {
 
 ipcMain.handle('fetch', async (event, ...args) => {
   const response = await fetch(...args)
-  const serializableResponse = {}
-  serializableResponse.headers = Array.from(response.headers)
-  serializableResponse.url = response.url
-  serializableResponse.status = response.status
-  serializableResponse.statusText = response.statusText
-  serializableResponse.buffer = await response.buffer()
+  const serializableResponse = {
+    headers: Array.from(response.headers),
+    url: response.url,
+    status: response.status,
+    statusText: response.statusText,
+    buffer: await response.buffer(),
+  }
   return serializableResponse
 })
 

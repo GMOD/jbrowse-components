@@ -128,8 +128,9 @@ export default (pluginManager: PluginManager) => {
     }
 
     private async setup(opts?: BaseOptions) {
+      const { statusCallback = () => {} } = opts || {}
       if (Object.keys(this.samHeader).length === 0) {
-        // progress: this.cram.cram is failing and returning the 404 error currently
+        statusCallback('Downloading index')
         const samHeader = await this.cram.cram.getSamHeader(opts?.signal)
 
         // use the @SQ lines in the header to figure out the
@@ -194,9 +195,9 @@ export default (pluginManager: PluginManager) => {
 
     getFeatures(
       region: Region & { originalRefName?: string },
-      opts: BaseOptions = {},
+      opts?: BaseOptions,
     ) {
-      // console.log(`CRAM getFeatures ${refName}:${start}-${end}`)
+      const { signal, statusCallback = () => {} } = opts || {}
       const { refName, start, end, originalRefName } = region
 
       return ObservableCreate<Feature>(async observer => {
@@ -209,20 +210,21 @@ export default (pluginManager: PluginManager) => {
           if (originalRefName) {
             this.seqIdToOriginalRefName[refId] = originalRefName
           }
+          statusCallback('Downloading alignments')
           const records = await this.cram.getRecordsForRange(
             refId,
             start,
             end,
             opts,
           )
-          checkAbortSignal(opts.signal)
+          checkAbortSignal(signal)
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           records.forEach((record: any) => {
             observer.next(this.cramRecordToFeature(record))
           })
         }
         observer.complete()
-      }, opts.signal)
+      }, signal)
     }
 
     freeResources(/* { region } */): void {}

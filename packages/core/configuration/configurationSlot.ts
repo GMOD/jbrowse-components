@@ -294,11 +294,7 @@ export default function ConfigSlot(
     description,
     value: defaultValue,
   })
-  type GeneratedConfigSlot = typeof completeModel
-  interface ConfigurationSlot extends GeneratedConfigSlot {
-    isJBrowseConfigurationSlot?: boolean
-  }
-  const m: ConfigurationSlot = completeModel
-  m.isJBrowseConfigurationSlot = true
+  const m = completeModel
+  Object.defineProperty(m, 'isJBrowseConfigurationSlot', { value: true })
   return m
 }

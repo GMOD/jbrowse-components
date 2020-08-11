@@ -59,6 +59,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           // avoid circular reference since WiggleTrackComponent receives this model
           ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
           ready: false,
+          message: undefined as undefined | string,
           stats: observable({ scoreMin: 0, scoreMax: 50 }),
           statsFetchInProgress: undefined as undefined | AbortController,
         })),
@@ -166,6 +167,11 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             'WiggleGetGlobalStats',
             {
               adapterConfig: getSnapshot(adapter),
+              statusCallback: (message: string) => {
+                if (isAlive(self)) {
+                  self.setMessage(message)
+                }
+              },
               ...opts,
             },
           )) as FeatureStats
@@ -205,6 +211,9 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
                 ),
               ),
               sessionId,
+              statusCallback: (message: string) => {
+                self.setMessage(message)
+              },
               bpPerPx,
               ...opts,
             },
@@ -227,6 +236,9 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             'WiggleGetGlobalStats',
             {
               adapterConfig: getSnapshot(adapter),
+              statusCallback: (message: string) => {
+                self.setMessage(message)
+              },
               ...opts,
             },
           ) as Promise<FeatureStats>
