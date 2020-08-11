@@ -1,4 +1,6 @@
-import { watchWorker } from './BaseRpcDriver'
+import PluginManager from '../PluginManager'
+import BaseRpcDriver, { watchWorker } from './BaseRpcDriver'
+import RpcMethodType from '../pluggableElementTypes/RpcMethodType'
 
 function timeout(ms: number) {
   return new Promise(resolve => {
@@ -34,6 +36,11 @@ class MockWorkerHandle {
       await timeout(2000)
       this.busy = false
     }
+    if (name === 'MockRender') {
+      this.busy = true
+      await timeout(10000)
+      this.busy = false
+    }
   }
 }
 test('watch worker', async () => {
@@ -45,5 +52,32 @@ test('watch worker', async () => {
     await workerWatcher // should throw
   } catch (e) {
     expect(e.message).toMatch(/timeout/)
+  }
+})
+
+class MockRpcDriver extends BaseRpcDriver {
+  maxPingTime = 1000
+
+  workerCheckFrequency = 500
+
+  makeWorker() {
+    return new MockWorkerHandle()
+  }
+}
+
+export class MockRenderer extends RpcMethodType {
+  name = 'MockRender'
+}
+
+test('base rpc driver', async () => {
+  const driver = new MockRpcDriver()
+  const pluginManager = new PluginManager()
+
+  pluginManager.addRpcMethod(() => new MockRenderer(pluginManager))
+  pluginManager.createPluggableElements()
+  try {
+    await driver.call(pluginManager, 'sessionId', 'MockRender', {}, {})
+  } catch (e) {
+    expect(e.message).toMatch(/operation timed out/)
   }
 })

@@ -12,12 +12,14 @@ interface WorkerHandle {
 }
 
 function isClonable(thing: unknown): boolean {
-  if (typeof thing === 'function') return false
-  if (thing instanceof Error) return false
+  if (typeof thing === 'function') {
+    return false
+  }
+  if (thing instanceof Error) {
+    return false
+  }
   return true
 }
-
-const WORKER_MAX_PING_TIME = 30 * 1000
 
 // watches the given worker object, returns a promise that will be rejected if
 // the worker times out
@@ -42,10 +44,9 @@ export async function watchWorker(worker: WorkerHandle, pingTime: number) {
 }
 
 function detectHardwareConcurrency() {
-  if (
-    typeof window !== 'undefined' &&
-    'hardwareConcurrency' in window.navigator
-  ) {
+  const mainThread = typeof window !== 'undefined'
+  const canDetect = 'hardwareConcurrency' in window.navigator
+  if (mainThread && canDetect) {
     return window.navigator.hardwareConcurrency
   }
   return 1
@@ -62,7 +63,7 @@ class LazyWorker {
   getWorker(pluginManager: PluginManager) {
     if (!this.worker) {
       const worker = this.driver.makeWorker(pluginManager)
-      watchWorker(worker, WORKER_MAX_PING_TIME).catch(() => {
+      watchWorker(worker, this.driver.maxPingTime).catch(() => {
         if (this.worker) {
           console.warn('worker did not respond, killing and generating new one')
           this.worker.destroy()
@@ -88,6 +89,10 @@ export default abstract class BaseRpcDriver {
 
   private workerPool?: LazyWorker[]
 
+  maxPingTime = 30000
+
+  workerCheckFrequency = 5000
+
   // filter the given object and just remove any non-clonable things from it
   filterArgs<THING_TYPE>(
     thing: THING_TYPE,
@@ -110,15 +115,15 @@ export default abstract class BaseRpcDriver {
         ) as unknown) as THING_TYPE
       }
 
-      if (isStateTreeNode(thing) && !isAlive(thing))
+      if (isStateTreeNode(thing) && !isAlive(thing)) {
         throw new Error('dead state tree node passed to RPC call')
+      }
 
-      const newobj = objectFromEntries(
+      return objectFromEntries(
         Object.entries(thing)
           .filter(e => isClonable(e[1]))
           .map(([k, v]) => [k, this.filterArgs(v, pluginManager, sessionId)]),
-      )
-      return newobj as THING_TYPE
+      ) as THING_TYPE
     }
     return thing
   }
@@ -210,7 +215,7 @@ export default abstract class BaseRpcDriver {
             new Error('operation timed out, worker process stopped responding'),
           )
         }
-      }, 5000)
+      }, this.workerCheckFrequency)
     })
 
     // the result is a race between the actual result promise, and the "killed"
