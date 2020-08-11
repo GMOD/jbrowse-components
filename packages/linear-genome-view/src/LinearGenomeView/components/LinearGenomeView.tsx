@@ -56,7 +56,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
                   isSessionModelWithWidgets(session) &&
                   session.visibleWidget &&
                   session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-                  // @ts-ignore
+                  session.visibleWidget.view &&
                   session.visibleWidget.view.id === model.id
                 }
               >

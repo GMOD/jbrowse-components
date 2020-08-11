@@ -145,7 +145,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
-          if (isSessionModelWithWidgets(self)) {
+          if (isSessionModelWithWidgets(session)) {
             // @ts-ignore
             const selector = session.addWidget(
               'HierarchicalTrackSelectorWidget',
@@ -156,6 +156,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             session.showWidget(selector)
             return selector
           }
+          return undefined
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
@@ -216,6 +217,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             isSessionModelWithWidgets(session) &&
             session.visibleWidget &&
             session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+            session.visibleWidget.view &&
             // @ts-ignore
             session.visibleWidget.view.id === self.id,
         })

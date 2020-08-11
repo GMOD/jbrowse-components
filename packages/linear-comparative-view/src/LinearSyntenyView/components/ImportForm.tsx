@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
+import { cast, getSnapshot } from 'mobx-state-tree'
 import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
 
 import Button from '@material-ui/core/Button'
@@ -41,9 +42,10 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
     const asm2 = assemblyNames[selectedAssemblyIdx2]
     const assembly1 = assemblyManager.get(asm1)
     const assembly2 = assemblyManager.get(asm2)
-    const regions1 = assembly1.regions
-    const regions2 = assembly2.regions
-    console.log(regions1)
+    const regions1 = getSnapshot(assembly1.regions)
+    const regions2 = getSnapshot(assembly2.regions)
+    console.log({ regions1, regions2 })
+    console.log(assembly1, assembly2, regions1, regions2)
     model.setViews([
       {
         type: 'LinearGenomeView',

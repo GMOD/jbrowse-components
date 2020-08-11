@@ -37,6 +37,22 @@
   ],
   "tracks": [
     {
+      "type": "LinearSyntenyTrack",
+      "trackId": "synteny_track",
+      "name": "Synteny (volvox vs volvox)",
+      "assemblyNames": ["volvox", "volvox"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "test_data/volvox/volvox_fake_synteny.paf"
+        },
+        "assemblyNames": ["volvox", "volvox"]
+      },
+      "renderer": {
+        "type": "LinearSyntenyRenderer"
+      }
+    },
+    {
       "type": "StructuralVariantChordTrack",
       "trackId": "volvox_chord_test",
       "name": "volvox chord test",
