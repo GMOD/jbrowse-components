@@ -216,15 +216,14 @@ export default abstract class BaseRpcDriver {
           )
         }
       }, this.workerCheckFrequency)
+    }).finally(() => {
+      clearInterval(killedCheckInterval)
     })
 
     // the result is a race between the actual result promise, and the "killed"
     // promise. the killed promise will only actually win if the worker was
     // killed before the call could return
     const resultP = Promise.race([callP, killedP])
-    resultP.finally(() => {
-      clearInterval(killedCheckInterval)
-    })
 
     return rpcMethod.deserializeReturn(await resultP)
   }
