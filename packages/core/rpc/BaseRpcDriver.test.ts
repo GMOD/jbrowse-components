@@ -59,9 +59,15 @@ class MockWorkerHandle {
       await timeout(10000)
       this.busy = false
     }
+
+    if (name === 'MockRenderShort') {
+      this.busy = true
+      await timeout(100)
+      this.busy = false
+    }
   }
 }
-test('watch worker with timeout', async () => {
+test('watch worker with long ping, generates timeout', async () => {
   const worker = new MockWorkerHandle()
 
   try {
@@ -73,7 +79,7 @@ test('watch worker with timeout', async () => {
   }
 })
 
-test('watch worker without timeout', async () => {
+test('watch worker generates multiple pings', async () => {
   const worker = new MockWorkerHandle()
   const workerWatcher = watchWorker(worker, 200)
 
@@ -90,20 +96,26 @@ class MockRpcDriver extends BaseRpcDriver {
   }
 }
 
-export class MockRenderer extends RpcMethodType {
-  name = 'MockRender'
+export class MockRendererTimeout extends RpcMethodType {
+  name = 'MockRenderTimeout'
 }
 
-test('base rpc driver', async () => {
+export class MockRendererShort extends RpcMethodType {
+  name = 'MockRenderShort'
+}
+
+test('test RPC driver operation timeout and worker replace', async () => {
   console.warn = jest.fn()
   const driver = new MockRpcDriver()
   const pluginManager = new PluginManager()
 
-  pluginManager.addRpcMethod(() => new MockRenderer(pluginManager))
+  pluginManager.addRpcMethod(() => new MockRendererTimeout(pluginManager))
+  pluginManager.addRpcMethod(() => new MockRendererShort(pluginManager))
   pluginManager.createPluggableElements()
   try {
-    await driver.call(pluginManager, 'sessionId', 'MockRender', {}, {})
+    await driver.call(pluginManager, 'sessionId', 'MockRenderTimeout', {}, {})
   } catch (e) {
     expect(e.message).toMatch(/operation timed out/)
   }
+  await driver.call(pluginManager, 'sessionId', 'MockRenderShort', {}, {})
 })
