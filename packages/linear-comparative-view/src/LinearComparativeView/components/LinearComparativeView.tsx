@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { observer } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
 import { getConf } from '@gmod/jbrowse-core/configuration'
+import { getSession } from '@gmod/jbrowse-core/util'
 import { makeStyles } from '@material-ui/core/styles'
 import useComponentSize from '@rehooks/component-size'
 import { LinearComparativeViewModel } from '../model'
@@ -63,7 +63,7 @@ const MiddleComparativeView = observer(
   ({ model }: { model: LinearComparativeViewModel }) => {
     const classes = useStyles()
     const { views } = model
-    const { pluginManager } = getRoot(model).jbrowse
+    const { pluginManager } = getSession(model)
     const { ReactComponent } = pluginManager.getViewType(views[0].type)
     model.setHeight(100)
     return (
@@ -92,7 +92,7 @@ const OverlayComparativeView = observer(
   ({ model }: { model: LinearComparativeViewModel }) => {
     const classes = useStyles()
     const { views } = model
-    const { pluginManager } = getRoot(model).jbrowse
+    const { pluginManager } = getSession(model)
     const ref = useRef(null)
     const size = useComponentSize(ref)
     model.setHeight(size.height - 20)
