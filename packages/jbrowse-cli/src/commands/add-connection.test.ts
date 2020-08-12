@@ -54,7 +54,8 @@ const setupWithDateMock = setup
 
 describe('add-connection', () => {
   setup
-    .command(['add-connection', 'https://example.com'])
+    .nock('https://example.com', site => site.head('/hub.txt').reply(200))
+    .command(['add-connection', 'https://example.com/hub.txt'])
     .exit(10)
     .it('fails if no config file')
   setup
@@ -67,6 +68,7 @@ describe('add-connection', () => {
     .exit(90)
     .it('fails when fetching from url fails')
   setup
+    .nock('https://example.com', site => site.head('/hub.txt').reply(200))
     .do(async ctx => {
       await fsPromises.copyFile(
         testConfig,
@@ -80,7 +82,7 @@ describe('add-connection', () => {
     })
     .command([
       'add-connection',
-      'https://example.com',
+      'https://example.com/hub.txt',
       '--assemblyName',
       'nonexistAssembly',
     ])
