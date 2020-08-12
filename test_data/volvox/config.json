@@ -33,6 +33,22 @@
           ]
         }
       }
+    },
+    {
+      "name": "volvox2",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq2",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "test_data/volvox/volvox.2bit"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
     }
   ],
   "tracks": [
@@ -40,13 +56,13 @@
       "type": "LinearSyntenyTrack",
       "trackId": "synteny_track",
       "name": "Synteny (volvox vs volvox)",
-      "assemblyNames": ["volvox", "volvox"],
+      "assemblyNames": ["volvox", "volvox2"],
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
           "uri": "test_data/volvox/volvox_fake_synteny.paf"
         },
-        "assemblyNames": ["volvox", "volvox"]
+        "assemblyNames": ["volvox", "volvox2"]
       },
       "renderer": {
         "type": "LinearSyntenyRenderer"

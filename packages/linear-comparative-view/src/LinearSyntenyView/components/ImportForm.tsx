@@ -1,7 +1,11 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { cast, getSnapshot } from 'mobx-state-tree'
-import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
+import { getSnapshot } from 'mobx-state-tree'
+import {
+  getSession,
+  when,
+  isSessionModelWithWidgets,
+} from '@gmod/jbrowse-core/util'
 
 import Button from '@material-ui/core/Button'
 import Container from '@material-ui/core/Container'
@@ -42,26 +46,28 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
     const asm2 = assemblyNames[selectedAssemblyIdx2]
     const assembly1 = assemblyManager.get(asm1)
     const assembly2 = assemblyManager.get(asm2)
-    const regions1 = getSnapshot(assembly1.regions)
-    const regions2 = getSnapshot(assembly2.regions)
-    console.log({ regions1, regions2 })
-    console.log(assembly1, assembly2, regions1, regions2)
-    model.setViews([
-      {
-        type: 'LinearGenomeView',
-        bpPerPx: 0.1,
-        offsetPx: 0,
-        hideHeader: true,
-        displayedRegions: regions1,
-      },
-      {
-        type: 'LinearGenomeView',
-        bpPerPx: 0.1,
-        offsetPx: 0,
-        hideHeader: true,
-        displayedRegions: regions2,
-      },
-    ])
+    if (assembly1 && assembly2) {
+      await when(() => Boolean(assembly1.regions) && Boolean(assembly2.regions))
+      const regions1 = getSnapshot(assembly1.regions)
+      const regions2 = getSnapshot(assembly2.regions)
+      model.setViews([
+        {
+          type: 'LinearGenomeView',
+          bpPerPx: 1,
+          offsetPx: 0,
+          hideHeader: true,
+          displayedRegions: regions1,
+        },
+        {
+          type: 'LinearGenomeView',
+          bpPerPx: 1,
+          offsetPx: 0,
+          hideHeader: true,
+          displayedRegions: regions2,
+        },
+      ])
+      model.views.forEach(view => view.showAllRegions())
+    }
   }
 
   return (
