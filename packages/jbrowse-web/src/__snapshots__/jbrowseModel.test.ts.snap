@@ -59,6 +59,22 @@ Object {
         "type": "ReferenceSequenceTrack",
       },
     },
+    Object {
+      "name": "volvox2",
+      "sequence": Object {
+        "adapter": Object {
+          "twoBitLocation": Object {
+            "uri": "test_data/volvox/volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "rendering": Object {
+          "type": "DivSequenceRenderer",
+        },
+        "trackId": "volvox_refseq2",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
   ],
   "configuration": Object {},
   "connections": Array [],
@@ -99,6 +115,28 @@ Object {
     },
   ],
   "tracks": Array [
+    Object {
+      "adapter": Object {
+        "assemblyNames": Array [
+          "volvox",
+          "volvox2",
+        ],
+        "pafLocation": Object {
+          "uri": "test_data/volvox/volvox_fake_synteny.paf",
+        },
+        "type": "PAFAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+        "volvox2",
+      ],
+      "name": "Synteny (volvox vs volvox)",
+      "renderer": Object {
+        "type": "LinearSyntenyRenderer",
+      },
+      "trackId": "synteny_track",
+      "type": "LinearSyntenyTrack",
+    },
     Object {
       "adapter": Object {
         "index": Object {
