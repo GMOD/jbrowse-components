@@ -44,6 +44,7 @@ export const SvgSelected = observer(
 
           return (
             <rect
+              style={{ pointerEvents: 'none' }}
               x={leftWithinBlock - 2}
               y={rectTop - 2}
               width={widthWithinBlock + 4}
@@ -95,6 +96,7 @@ export const SvgMouseover = observer(
 
           return (
             <rect
+              style={{ pointerEvents: 'none' }}
               x={leftWithinBlock - 2}
               y={rectTop - 2}
               width={widthWithinBlock + 4}
@@ -276,8 +278,8 @@ function SvgFeatureRendering(props) {
     onMouseOver,
     onMouseMove,
     onMouseUp,
-    onFeatureClick,
-    onFeatureContextMenu,
+    onClick,
+    onContextMenu,
   } = props
 
   const mouseDown = useCallback(
@@ -384,11 +386,11 @@ function SvgFeatureRendering(props) {
       if (movedDuringLastMouseDown) {
         return
       }
-      if (onFeatureClick) {
-        onFeatureClick(event)
+      if (onClick) {
+        onClick(event)
       }
     },
-    [movedDuringLastMouseDown, onFeatureClick],
+    [movedDuringLastMouseDown, onClick],
   )
 
   const contextMenu = useCallback(
@@ -396,11 +398,11 @@ function SvgFeatureRendering(props) {
       if (movedDuringLastMouseDown) {
         return
       }
-      if (onFeatureContextMenu) {
-        onFeatureContextMenu(event)
+      if (onContextMenu) {
+        onContextMenu(event)
       }
     },
-    [movedDuringLastMouseDown, onFeatureContextMenu],
+    [movedDuringLastMouseDown, onContextMenu],
   )
 
   useEffect(() => {
@@ -432,6 +434,7 @@ function SvgFeatureRendering(props) {
           displayMode={displayMode}
           {...props}
           region={region}
+          movedDuringLastMouseDown={movedDuringLastMouseDown}
         />
         <SvgSelected {...props} region={region} />
         <SvgMouseover {...props} region={region} />

@@ -118,7 +118,7 @@ function PileupRendering(props: {
 
   function onClick(event: MouseEvent) {
     if (!movedDuringLastMouseDown) {
-      callMouseHandler('Click', event, true)
+      callMouseHandler('Click', event)
     }
   }
 
@@ -128,9 +128,7 @@ function PileupRendering(props: {
   }
 
   function onContextMenu(event: MouseEvent) {
-    if (!movedDuringLastMouseDown) {
-      callMouseHandler('ContextMenu', event)
-    }
+    callMouseHandler('ContextMenu', event)
   }
 
   function mouseMove(event: MouseEvent) {
@@ -156,16 +154,12 @@ function PileupRendering(props: {
     }
   }
 
-  function callMouseHandler(
-    handlerName: string,
-    event: MouseEvent,
-    always = false,
-  ) {
+  function callMouseHandler(handlerName: string, event: MouseEvent) {
     // @ts-ignore
     const featureHandler = props[`onFeature${handlerName}`]
     // @ts-ignore
     const canvasHandler = props[`on${handlerName}`]
-    if (featureHandler && (always || featureIdUnderMouse)) {
+    if (featureHandler && featureIdUnderMouse) {
       featureHandler(event, featureIdUnderMouse)
     } else if (canvasHandler) {
       canvasHandler(event, featureIdUnderMouse)
