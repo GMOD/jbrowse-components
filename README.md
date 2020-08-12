@@ -7,6 +7,15 @@
 Monorepo using Lerna and Yarn workspaces containing many related packages for
 next-generation JBrowse development.
 
+
+
+Homepage https://jbrowse.org/jb2
+
+Docs http://jbrowse.org/jb2/docs/
+
+Live demo http://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/master/index.html?config=test_data%2Fconfig_demo.json&session=eJyNkm9vmzAQxr9Kda9JZZwEEl620tZNVRetaGydqsgxB1gDE9lOaBXx3XuGijYvOvWl7x4_97s_J9CiQUjgDruLe7RWtfqCM85mLJpxlrIw4fNkGV8u16sHCKARplQaEhZAbkSHJlO5qyCZrxYBHBV2FpK_J1A5WVbZ9-z3Rj8c6F-u7L4Wz3djsaoM1xR0z3v_ulUahfmKum3wF1lQpi0Ki27zBEnIYsbjAHb7DRofiFeLy3DJWTSPebhesGgyx_wnlsQ_IhgsXquFZGidMG7ARk1sfLHmSxbxMCDdEY1FChaithiAsBabXX3G2j8SrRHy37v2ousvzXbGr_68dXIlrJKp11GsQlVWVJOHPADZ6kKVByMcAZJSy53alkWxnewrleMNihzNRPIW-kGMfrpTaoC5xxqla006Vq8UGmFkpaSofctV2w0st2KHNYE7c8AxfI3aofFzfzX0AJ3KS3SkO505pe8r-eS42w8V0zBuPpJkQyHwQ6lrsR9mf-oDKFRNVCk-0dAAxnM6O6OeREI6dcTsU6z_yfXDSjQ9aB_fNJ2Hluj9-v4FCuwIbQ
+
+
 ## Pre-requisites
 
 - [git](https://git-scm.com/downloads)
