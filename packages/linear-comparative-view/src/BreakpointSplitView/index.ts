@@ -9,7 +9,7 @@ export default ({ lib, load }: PluginManager) => {
   const ViewType = lib['@gmod/jbrowse-core/pluggableElementTypes/ViewType']
   const { getSession } = lib['@gmod/jbrowse-core/util']
 
-  const ReactComponent = load(componentF)
+  const ReactComponent = load(componentF) as any
   const stateModel = load(modelF)
 
   class BreakpointSplitViewType extends ViewType {
