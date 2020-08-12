@@ -1,7 +1,9 @@
-// import { Region } from '@jbrowse/core/util/types'
-// import { Region as MSTRegion } from '@jbrowse/core/util/types/mst'
-import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import { getSession } from '@jbrowse/core/util'
+// import { Region } from '@gmod/jbrowse-core/util/types'
+// import { Region as MSTRegion } from '@gmod/jbrowse-core/util/types/mst'
+import Base1DView, {
+  Base1DViewModel,
+} from '@gmod/jbrowse-core/util/Base1DViewModel'
+import { getSession } from '@gmod/jbrowse-core/util'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import LinearProgress from '@material-ui/core/LinearProgress'
@@ -19,8 +21,11 @@ import { chooseGridPitch } from '../util'
 import OverviewRubberBand from './OverviewRubberBand'
 
 const useStyles = makeStyles(theme => {
+  // @ts-ignore
   const scaleBarColor = theme.palette.tertiary
-    ? theme.palette.tertiary.light
+    ? // prettier-ignore
+      // @ts-ignore
+      theme.palette.tertiary.light
     : theme.palette.primary.light
   return {
     scaleBar: {
@@ -72,9 +77,11 @@ const Polygon = observer(
   ({
     model,
     overview,
+    scale,
   }: {
     model: LGV
     overview: Instance<Base1DViewModel>
+    scale: number
   }) => {
     const theme = useTheme()
     const classes = useStyles()
@@ -89,8 +96,11 @@ const Polygon = observer(
     overview.setVolatileWidth(width)
     overview.showAllRegions()
 
+    // @ts-ignore
     const polygonColor = theme.palette.tertiary
-      ? theme.palette.tertiary.light
+      ? // prettier-ignore
+        // @ts-ignore
+        theme.palette.tertiary.light
       : theme.palette.primary.light
     return (
       <svg
@@ -150,12 +160,20 @@ type LGV = Instance<LinearGenomeViewStateModel>
 
 const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
   const classes = useStyles()
+
   const { displayedParentRegions, dynamicBlocks: visibleRegions } = model
+  const { assemblyManager } = getSession(model)
+
   const gridPitch = chooseGridPitch(scale, 120, 15)
 
   return (
     <div className={classes.scaleBar}>
       {displayedParentRegions.map((seq, idx) => {
+        const assembly = assemblyManager.get(seq.assemblyName)
+        let refNameColor: string | undefined
+        if (assembly) {
+          refNameColor = assembly.getRefNameColor(seq.refName)
+        }
         const regionLength = seq.end - seq.start
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
         const labels = []
@@ -173,12 +191,16 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                 idx === displayedParentRegions.length - 1
                   ? undefined
                   : wholeSeqSpacer,
+              borderColor: refNameColor,
             }}
             className={classes.scaleBarContig}
             variant="outlined"
           >
             {/* name of sequence */}
-            <Typography className={classes.scaleBarRefName}>
+            <Typography
+              style={{ color: refNameColor }}
+              className={classes.scaleBarRefName}
+            >
               {seq.refName}
             </Typography>
             {/* where the boxes actually get drawn   */}
@@ -209,6 +231,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                 style={{
                   left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
                   pointerEvents: 'none',
+                  color: refNameColor,
                 }}
               >
                 {label.toLocaleString()}
@@ -254,14 +277,74 @@ function OverviewScaleBar({
   }
 
   return (
+<<<<<<< HEAD
     <div>
       <OverviewRubberBand
         model={model}
         overview={overview}
         ControlComponent={<ScaleBar model={model} scale={scale} />}
       />
+=======
+    <>
+      <div className={classes.scaleBar}>
+        {wholeRefSeqs.map((seq, idx) => {
+          const regionLength = seq.end - seq.start
+          const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
+          const labels = []
+          for (let index = 0; index < numLabels; index++) {
+            labels.push((index + 1) * gridPitch.majorPitch)
+          }
+
+          return (
+            <Paper
+              key={seq.refName}
+              style={{
+                minWidth: regionLength / scale,
+                marginRight:
+                  idx === wholeRefSeqs.length - 1 ? undefined : wholeSeqSpacer,
+              }}
+              className={classes.scaleBarContig}
+              variant="outlined"
+            >
+              <Typography className={classes.scaleBarRefName}>
+                {seq.refName}
+              </Typography>
+              {visibleRegions.map((r, visibleRegionIdx) => {
+                if (
+                  seq.assemblyName === r.assemblyName &&
+                  seq.refName === r.refName
+                ) {
+                  return (
+                    <div
+                      key={`${r.key}-${visibleRegionIdx}`}
+                      className={classes.scaleBarVisibleRegion}
+                      style={{
+                        width: Math.max((r.end - r.start) / scale, 1),
+                        left: r.start / scale - 1,
+                      }}
+                    />
+                  )
+                }
+                return null
+              })}
+              {labels.map((label, labelIdx) => (
+                <div
+                  key={label}
+                  className={classes.scaleBarLabel}
+                  style={{
+                    left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
+                  }}
+                >
+                  {label.toLocaleString()}
+                </div>
+              ))}
+            </Paper>
+          )
+        })}
+      </div>
+>>>>>>> parent of 45aea5d7e... Add refNameColor to LGV overview
       <div className={classes.overview}>
-        <Polygon model={model} overview={overview} />
+        <Polygon model={model} overview={overview} scale={scale} />
         {children}
       </div>
     </div>
