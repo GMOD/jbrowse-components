@@ -173,6 +173,7 @@ const ScaleBar = React.forwardRef(
     const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
     return (
       <Paper
+        data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
         className={clsx(classes.scaleBarContainer, className)}
         variant="outlined"
         ref={ref}
