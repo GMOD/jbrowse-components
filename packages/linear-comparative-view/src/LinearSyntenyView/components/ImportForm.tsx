@@ -1,18 +1,12 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { cast, getSnapshot } from 'mobx-state-tree'
-import {
-  getSession,
-  when,
-  isSessionModelWithWidgets,
-} from '@gmod/jbrowse-core/util'
-
+import { getSnapshot } from 'mobx-state-tree'
+import { getSession, when } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import Container from '@material-ui/core/Container'
 import Grid from '@material-ui/core/Grid'
 import MenuItem from '@material-ui/core/MenuItem'
 import TextField from '@material-ui/core/TextField'
-
 import { makeStyles } from '@material-ui/core/styles'
 import { LinearSyntenyViewModel } from '../model'
 

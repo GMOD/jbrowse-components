@@ -4,7 +4,6 @@ import { getConf } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { makeStyles } from '@material-ui/core/styles'
 import useComponentSize from '@rehooks/component-size'
-import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { LinearComparativeViewModel } from '../model'
 import Header from './Header'
 
@@ -65,6 +64,8 @@ const MiddleComparativeView = observer(
     const classes = useStyles()
     const { views } = model
     const { pluginManager } = getSession(model)
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { ReactComponent } = pluginManager.getViewType(views[0].type) as any
     model.setHeight(100)
     return (
@@ -106,6 +107,7 @@ const OverlayComparativeView = observer(
               {views.map(view => {
                 const { ReactComponent } = pluginManager.getViewType(
                   view.type,
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ) as any
                 return (
                   <div key={view.id} className={classes.viewContainer}>
