@@ -61,15 +61,20 @@ export const SvgSelected = observer(
 
 export const SvgMouseover = observer(
   ({
-    trackModel: { blockLayoutFeatures, featureIdUnderMouse },
+    trackModel: {
+      blockLayoutFeatures,
+      featureIdUnderMouse,
+      contextMenuFeature,
+    },
     region,
     bpPerPx,
     blockKey,
   }) => {
-    if (featureIdUnderMouse && blockLayoutFeatures) {
+    const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
+    if (highlightedFeature && blockLayoutFeatures) {
       const blockLayout = blockLayoutFeatures.get(blockKey)
       if (blockLayout) {
-        const rect = blockLayout.get(featureIdUnderMouse)
+        const rect = blockLayout.get(highlightedFeature)
         if (rect) {
           const [leftBp, topPx, rightBp, bottomPx] = rect
           const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)

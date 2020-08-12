@@ -26,8 +26,12 @@ function PileupRendering(props: {
     bpPerPx,
     sortObject,
   } = props
-  const { selectedFeatureId, featureIdUnderMouse, blockLayoutFeatures } =
-    trackModel || {}
+  const {
+    selectedFeatureId,
+    featureIdUnderMouse,
+    contextMenuFeature,
+    blockLayoutFeatures,
+  } = trackModel || {}
   const [region] = regions
   const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
@@ -65,10 +69,11 @@ function PileupRendering(props: {
       )
       ctx.clearRect(leftPx, rectTop, rightPx - leftPx, rectHeight)
     }
+    const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
     if (
-      featureIdUnderMouse &&
+      highlightedFeature &&
       (blockLayout = blockLayoutFeatures.get(blockKey)) &&
-      (rect = blockLayout.get(featureIdUnderMouse))
+      (rect = blockLayout.get(highlightedFeature))
     ) {
       const [leftBp, topPx, rightBp, bottomPx] = rect
       const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
@@ -82,6 +87,7 @@ function PileupRendering(props: {
     region,
     selectedFeatureId,
     featureIdUnderMouse,
+    contextMenuFeature,
     blockKey,
     blockLayoutFeatures,
   ])
