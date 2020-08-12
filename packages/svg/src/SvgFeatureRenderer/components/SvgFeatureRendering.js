@@ -409,13 +409,13 @@ function SvgFeatureRendering(props) {
         className="SvgFeatureRendering"
         width={`${width}px`}
         height={`${height}px`}
-        onMouseDown={mouseDown}
-        onMouseUp={mouseUp}
+        onPointerDown={mouseDown}
+        onPointerUp={mouseUp}
         onMouseEnter={mouseEnter}
         onMouseLeave={mouseLeave}
         onMouseOver={mouseOver}
         onMouseOut={mouseOut}
-        onMouseMove={mouseMove}
+        onPointerMove={mouseMove}
         onFocus={mouseEnter}
         onBlur={mouseLeave}
         onClick={click}

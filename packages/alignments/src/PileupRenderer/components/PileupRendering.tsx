@@ -185,13 +185,13 @@ function PileupRendering(props: {
         style={{ position: 'absolute', left: 0, top: 0 }}
         className="highlightOverlayCanvas"
         ref={highlightOverlayCanvas}
-        onMouseDown={event => runner(() => onMouseDown(event))}
+        onPointerDown={event => runner(() => onMouseDown(event))}
         onMouseEnter={event => runner(() => onMouseEnter(event))}
         onMouseOut={event => runner(() => onMouseOut(event))}
         onMouseOver={event => runner(() => onMouseOver(event))}
-        onMouseUp={event => runner(() => onMouseUp(event))}
+        onPointerUp={event => runner(() => onMouseUp(event))}
         onMouseLeave={event => runner(() => onMouseLeave(event))}
-        onMouseMove={event => runner(() => mouseMove(event))}
+        onPointerMove={event => runner(() => mouseMove(event))}
         onClick={event => runner(() => onClick(event))}
         onContextMenu={event => runner(() => onContextMenu(event))}
         onFocus={() => {}}
