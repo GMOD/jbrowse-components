@@ -3,7 +3,6 @@ import { observer } from 'mobx-react'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { makeStyles } from '@material-ui/core/styles'
-import useComponentSize from '@rehooks/component-size'
 import { LinearComparativeViewModel } from '../model'
 import Header from './Header'
 

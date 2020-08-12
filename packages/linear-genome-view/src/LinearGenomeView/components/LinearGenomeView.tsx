@@ -1,17 +1,24 @@
-import React, { useState } from 'react'
-import { observer } from 'mobx-react'
 import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
+
+// material ui things
 import Button from '@material-ui/core/Button'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
-import { LinearGenomeViewModel } from '..'
+
+// misc
+import { observer } from 'mobx-react'
+import { Instance } from 'mobx-state-tree'
+import React from 'react'
+
+// locals
+import { LinearGenomeViewStateModel } from '..'
 import Header from './Header'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
 import ImportForm from './ImportForm'
 
-type LGV = LinearGenomeViewModel
+type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles(theme => ({
   errorMessage: {
@@ -21,37 +28,11 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const NoTracksMessage = observer(({ model }: { model: LGV }) => {
-  const session = getSession(model)
-  const classes = useStyles()
-  return model.showNoTracksMessage ? (
-    <Paper variant="outlined" className={classes.errorMessage}>
-      <Typography>No tracks active.</Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={model.activateTrackSelector}
-        disabled={
-          isSessionModelWithWidgets(session) &&
-          session.visibleWidget &&
-          session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-          // @ts-ignore
-          session.visibleWidget.view.id === model.id
-        }
-      >
-        Select Tracks
-      </Button>
-      <Button onClick={() => model.setShowNoTracksMessage(false)}>
-        Hide message
-      </Button>
-    </Paper>
-  ) : null
-})
-
 const LinearGenomeView = observer((props: { model: LGV }) => {
   const { model } = props
   const { tracks, error, hideHeader, initialized } = model
   const classes = useStyles()
+  const session = getSession(model)
 
   return !initialized ? (
     <ImportForm model={model} />
@@ -65,7 +46,23 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
       ) : (
         <TracksContainer model={model}>
           {!tracks.length ? (
-            <NoTracksMessage model={model} />
+            <Paper variant="outlined" className={classes.errorMessage}>
+              <Typography>No tracks active.</Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={model.activateTrackSelector}
+                disabled={
+                  isSessionModelWithWidgets(session) &&
+                  session.visibleWidget &&
+                  session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+                  // @ts-ignore
+                  session.visibleWidget.view.id === model.id
+                }
+              >
+                Select Tracks
+              </Button>
+            </Paper>
           ) : (
             tracks.map(track => (
               <TrackContainer key={track.id} model={model} track={track} />
