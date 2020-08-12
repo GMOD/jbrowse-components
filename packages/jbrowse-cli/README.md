@@ -32,6 +32,7 @@ It is likely preferable in most cases to install the tools first however
 <!-- commands -->
 
 - [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
+- [`jbrowse add-connection DATADIRECTORY [LOCATION]`](#jbrowse-add-connection-datadirectory-location)
 - [`jbrowse add-track TRACK [LOCATION]`](#jbrowse-add-track-track-location)
 - [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
@@ -127,6 +128,58 @@ EXAMPLES
   $ jbrowse add-assembly https://example.com/data/sample.2bit
 ```
 
+## `jbrowse add-connection DATADIRECTORY [LOCATION]`
+
+Add a connection to a JBrowse 2 configuration
+
+```
+USAGE
+  $ jbrowse add-connection DATADIRECTORY [LOCATION]
+
+ARGUMENTS
+  DATADIRECTORY  URL of data directory
+                 For hub file, usually called hub.txt
+                 For JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/
+
+  LOCATION       [default: .] Location of JBrowse installation.
+
+OPTIONS
+  -a, --assemblyName=assemblyName  Assembly name of the connection If none, will default to the assembly in your config
+                                   file
+
+  -c, --config=config              Any extra config settings to add to connection in JSON object format, such as
+                                   '{"uri":"url":"https://sample.com"}}'
+
+  -f, --force                      Equivalent to `--skipCheck --overwrite`
+
+  -h, --help                       show CLI help
+
+  -n, --name=name                  Name of the connection. Defaults to connectionId if not provided
+
+  -t, --type=type                  type of connection, ex. JBrowse1Connection, UCSCTrackHubConnection, custom
+
+  --configLocation=configLocation  Write to a certain config.json file. Defaults to location/config.json if not
+                                   specified
+
+  --connectionId=connectionId      Id for the connection that must be unique to JBrowse.  Defaults to
+                                   'connectionType-assemblyName-currentTime'
+
+  --overwrite                      Overwrites any existing connections if same connection id
+
+  --skipCheck                      Don't check whether or not the data directory URL exists or if you are in a JBrowse
+                                   directory
+
+EXAMPLES
+  $ jbrowse add-connection http://mysite.com/jbrowse/data/
+  $ jbrowse add-connection http://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection
+  $ jbrowse add-connection http://mysite.com/path/to/hub.txt --assemblyName hg19
+  $ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection --assemblyName
+  hg19
+  $ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config
+  '{"uri":{"url":"https://mysite.com/path/to/custom"}}' --assemblyName hg19
+  $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName
+```
+
 ## `jbrowse add-track TRACK [LOCATION]`
 
 Add a track to a JBrowse 2 configuration
@@ -158,7 +211,7 @@ OPTIONS
 
   --category=category                 Optional Comma separated string of categories to group tracks
 
-  --config=config                     Any extra config settings to add to a track. i.e {"defaultRendering": "density"}
+  --config=config                     Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'
 
   --configLocation=configLocation     Write to a certain config.json file. Defaults to location/config.json if not
                                       specified

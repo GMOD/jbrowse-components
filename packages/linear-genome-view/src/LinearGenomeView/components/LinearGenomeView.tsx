@@ -1,5 +1,5 @@
 import { Region } from '@gmod/jbrowse-core/util/types'
-import { getSession } from '@gmod/jbrowse-core/util'
+import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
 
 // material ui things
 import Button from '@material-ui/core/Button'
@@ -125,8 +125,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   const { tracks, error, hideHeader, initialized } = model
   const classes = useStyles()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const session = getSession(model) as any
+  const session = getSession(model)
 
   return !initialized ? (
     <ImportForm model={model} />
@@ -147,8 +146,10 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
                 color="primary"
                 onClick={model.activateTrackSelector}
                 disabled={
+                  isSessionModelWithWidgets(session) &&
                   session.visibleWidget &&
                   session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+                  // @ts-ignore
                   session.visibleWidget.view.id === model.id
                 }
               >

@@ -2,20 +2,16 @@ import CloseIcon from '@material-ui/icons/Close'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 import clsx from 'clsx'
 import { withSize } from 'react-sizeme'
+import { observer } from 'mobx-react'
+import React, { useState } from 'react'
+import IconButton from '@material-ui/core/IconButton'
+import TextField from '@material-ui/core/TextField'
+import Typography from '@material-ui/core/Typography'
+import { makeStyles } from '@material-ui/core/styles'
 import { DotplotViewModel } from '../model'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default ({ jbrequire }: { jbrequire: any }) => {
-  const { observer, PropTypes } = jbrequire('mobx-react')
-  const React = jbrequire('react')
-  const { useState } = React
-  const IconButton = jbrequire('@material-ui/core/IconButton')
-  const TextField = jbrequire('@material-ui/core/TextField')
-  const Typography = jbrequire('@material-ui/core/Typography')
-  const { makeStyles } = jbrequire('@material-ui/core/styles')
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const useStyles = makeStyles((theme: any) => ({
+export default () => {
+  const useStyles = makeStyles(theme => ({
     headerBar: {
       gridArea: '1/1/auto/span 2',
       display: 'flex',
@@ -36,65 +32,52 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   }))
 
   const Controls = observer(({ model }: { model: DotplotViewModel }) => {
-    const classes = useStyles()
     return (
-      <>
-        <IconButton
-          onClick={model.closeView}
-          className={classes.iconButton}
-          title="close this view"
-        >
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </>
+      <IconButton onClick={model.closeView} title="close this view">
+        <CloseIcon fontSize="small" />
+      </IconButton>
     )
   })
 
-  Controls.propTypes = {
-    model: PropTypes.objectOrObservableObject.isRequired,
-  }
-
-  function TextFieldOrTypography({ model }: { model: DotplotViewModel }) {
-    const classes = useStyles()
-    const [name, setName] = useState(model.displayName)
-    const [edit, setEdit] = useState(false)
-    const [hover, setHover] = useState(false)
-    return edit ? (
-      <form
-        onSubmit={(event: React.FormEvent) => {
-          setEdit(false)
-          model.setDisplayName(name)
-          event.preventDefault()
-        }}
-      >
-        <TextField
-          value={name}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            setName(event.target.value)
-          }}
-          onBlur={() => {
+  const TextFieldOrTypography = observer(
+    ({ model }: { model: DotplotViewModel }) => {
+      const classes = useStyles()
+      const [name, setName] = useState(model.displayName)
+      const [edit, setEdit] = useState(false)
+      const [hover, setHover] = useState(false)
+      return edit ? (
+        <form
+          onSubmit={(event: React.FormEvent) => {
             setEdit(false)
             model.setDisplayName(name)
+            event.preventDefault()
           }}
-        />
-      </form>
-    ) : (
-      <div className={clsx(classes.emphasis, hover ? classes.hovered : null)}>
-        <Typography
-          className={classes.viewName}
-          onClick={() => setEdit(true)}
-          onMouseOver={() => setHover(true)}
-          onMouseLeave={() => setHover(false)}
-          style={{ color: '#FFFFFF' }}
         >
-          {name}
-        </Typography>
-      </div>
-    )
-  }
-  TextFieldOrTypography.propTypes = {
-    model: PropTypes.objectOrObservableObject.isRequired,
-  }
+          <TextField
+            value={name}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              setName(event.target.value)
+            }}
+            onBlur={() => {
+              setEdit(false)
+              model.setDisplayName(name)
+            }}
+          />
+        </form>
+      ) : (
+        <div className={clsx(classes.emphasis, hover ? classes.hovered : null)}>
+          <Typography
+            onClick={() => setEdit(true)}
+            onMouseOver={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+            style={{ color: '#FFFFFF' }}
+          >
+            {name}
+          </Typography>
+        </div>
+      )
+    },
+  )
 
   const Header = observer(
     ({
@@ -125,10 +108,6 @@ export default ({ jbrequire }: { jbrequire: any }) => {
       )
     },
   )
-
-  Header.propTypes = {
-    model: PropTypes.objectOrObservableObject.isRequired,
-  }
 
   return withSize({ monitorHeight: true })(Header)
 }
