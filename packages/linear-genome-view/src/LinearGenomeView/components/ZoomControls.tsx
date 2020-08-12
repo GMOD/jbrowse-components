@@ -1,8 +1,8 @@
+import React, { useState } from 'react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import IconButton from '@material-ui/core/IconButton'
 import Slider from '@material-ui/core/Slider'
 import { makeStyles } from '@material-ui/core/styles'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React from 'react'
 import ZoomIn from '@material-ui/icons/ZoomIn'
 import ZoomOut from '@material-ui/icons/ZoomOut'
 import { LinearGenomeViewModel } from '..'
@@ -21,7 +21,7 @@ const useStyles = makeStyles({
 function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
   const classes = useStyles()
   const { maxBpPerPx, minBpPerPx, bpPerPx, scaleFactor } = model
-
+  const [value, setValue] = useState(-Math.log2(bpPerPx) * 100)
   return (
     <div className={classes.container}>
       <IconButton
@@ -37,10 +37,11 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
 
       <Slider
         className={classes.slider}
-        defaultValue={-Math.log2(bpPerPx) * 100}
+        value={value}
         min={-Math.log2(maxBpPerPx) * 100}
         max={-Math.log2(minBpPerPx) * 100}
-        onChangeCommitted={(event, value) => model.zoomTo(2 ** (-value / 100))}
+        onChange={(event, val) => setValue(val as number)}
+        onChangeCommitted={event => model.zoomTo(2 ** (-value / 100))}
       />
       <IconButton
         data-testid="zoom_in"
