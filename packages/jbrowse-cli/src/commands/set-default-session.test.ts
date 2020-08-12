@@ -4,7 +4,6 @@
 
 import fs from 'fs'
 import * as path from 'path'
-
 import { setup } from '../testUtil'
 
 const fsPromises = fs.promises
@@ -31,31 +30,29 @@ const defaultConfig = {
     name: 'New Session',
   },
   tracks: [
-    [
-      {
-        type: 'AlignmentsTrack',
-        trackId: 'simple',
-        name: 'simple',
-        assemblyNames: ['testAssembly'],
-        adapter: {
-          type: 'BamAdapter',
-          bamLocation: {
-            uri: 'simple.bam',
+    {
+      type: 'AlignmentsTrack',
+      trackId: 'simple',
+      name: 'simple',
+      assemblyNames: ['testAssembly'],
+      adapter: {
+        type: 'BamAdapter',
+        bamLocation: {
+          uri: 'simple.bam',
+        },
+        index: {
+          location: {
+            uri: 'simple.bam.bai',
           },
-          index: {
-            location: {
-              uri: 'simple.bam.bai',
-            },
-          },
-          sequenceAdapter: {
-            type: 'testSeqAdapter',
-            twoBitLocation: {
-              uri: 'test.2bit',
-            },
+        },
+        sequenceAdapter: {
+          type: 'testSeqAdapter',
+          twoBitLocation: {
+            uri: 'test.2bit',
           },
         },
       },
-    ],
+    },
   ],
 }
 
@@ -135,9 +132,27 @@ describe('set-default-session', () => {
         path.join(ctx.dir, 'config.json'),
       )
     })
-    .command(['set-default-session', '--tracks', 'track-id-nonexist'])
-    .exit(10)
-    .it('fails when specifying a track that is not in the config yet')
+    .command([
+      'set-default-session',
+      path.join(simpleDefaultSession, 'nonexist.json'),
+    ])
+    .exit(40)
+    .it('fails when file does not exist')
+  setup
+    .do(async ctx => {
+      await fsPromises.copyFile(
+        testConfig,
+        path.join(ctx.dir, path.basename(testConfig)),
+      )
+
+      await fsPromises.rename(
+        path.join(ctx.dir, path.basename(testConfig)),
+        path.join(ctx.dir, 'config.json'),
+      )
+    })
+    .command(['set-default-session', simpleBam])
+    .exit(50)
+    .it('fails when file is does not have a default session to read')
   setup
     .do(async () => {
       await fsPromises.unlink('manifest.json')
@@ -160,4 +175,102 @@ describe('set-default-session', () => {
     .command(['set-default-session', simpleDefaultSession])
     .exit(30)
     .it('fails if "name" in manifest.json is not "JBrowse"')
+  setupWithAddTrack
+    .do(async ctx => {
+      await fsPromises.copyFile(
+        testConfig,
+        path.join(ctx.dir, path.basename(testConfig)),
+      )
+
+      await fsPromises.rename(
+        path.join(ctx.dir, path.basename(testConfig)),
+        path.join(ctx.dir, 'config.json'),
+      )
+    })
+    .command(['set-default-session', '--tracks', 'simple'])
+    .exit(80)
+    .it('fails when specifying a track without specifying a view')
+  setupWithAddTrack
+    .command([
+      'set-default-session',
+      '--view',
+      'LinearGenomeView',
+      '--tracks',
+      'track-non-exist',
+    ])
+    .exit(90)
+    .it('fails when specifying a track that does not exist')
+  setup
+    .do(async ctx => {
+      await fsPromises.copyFile(
+        testConfig,
+        path.join(ctx.dir, path.basename(testConfig)),
+      )
+
+      await fsPromises.rename(
+        path.join(ctx.dir, path.basename(testConfig)),
+        path.join(ctx.dir, 'config.json'),
+      )
+    })
+    .command(['set-default-session', simpleDefaultSession])
+    .it('adds a default session from a file', async ctx => {
+      const contents = await fsPromises.readFile(
+        path.join(ctx.dir, 'config.json'),
+        { encoding: 'utf8' },
+      )
+      expect(JSON.parse(contents)).toEqual({
+        ...defaultConfig,
+        tracks: [],
+        defaultSession: {
+          name: 'test new session',
+          views: [
+            {
+              id: '823WX',
+              type: 'LinearGenomeView',
+              tracks: [
+                {
+                  type: 'AlignmentsTrack',
+                  configuration: 'simple',
+                },
+              ],
+            },
+          ],
+        },
+      })
+    })
+  setupWithAddTrack
+    .command([
+      'set-default-session',
+      '--view',
+      'LinearGenomeView',
+      '--tracks',
+      'simple',
+    ])
+    .it(
+      'adds a default session that is a linear genome view and a simple track',
+      async ctx => {
+        const contents = await fsPromises.readFile(
+          path.join(ctx.dir, 'config.json'),
+          { encoding: 'utf8' },
+        )
+        expect(JSON.parse(contents)).toEqual({
+          ...defaultConfig,
+          defaultSession: {
+            name: 'New Default Session',
+            views: [
+              {
+                id: 'LinearGenomeView-1',
+                type: 'LinearGenomeView',
+                tracks: [
+                  {
+                    type: 'AlignmentsTrack',
+                    configuration: 'simple',
+                  },
+                ],
+              },
+            ],
+          },
+        })
+      },
+    )
 })

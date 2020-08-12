@@ -262,7 +262,7 @@ ARGUMENTS
 OPTIONS
   -c, --currentSession             List out the current default session
   -h, --help                       show CLI help
-  -n, --name=name                  [default: New Default Sesssion] Give a name for the default session
+  -n, --name=name                  [default: New Default Session] Give a name for the default session
   -t, --tracks=tracks              Track id or track ids as comma separated string to put into default session
 
   -v, --view=view                  View type in config to be added as default session, will be guessed on default, i.e
@@ -270,6 +270,8 @@ OPTIONS
 
   --configLocation=configLocation  Write to a certain config.json file. Defaults to location/config.json if not
                                    specified
+
+  --viewid=viewid                  Identifier for the view. Will be generated on default
 ```
 
 ## `jbrowse upgrade [LOCALPATH]`

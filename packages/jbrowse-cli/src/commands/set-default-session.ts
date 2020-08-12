@@ -1,7 +1,6 @@
 import { Command, flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
-import * as os from 'os'
 import fetch from 'node-fetch'
 
 interface DefaultSession {
@@ -46,12 +45,15 @@ export default class SetDefaultSession extends Command {
     name: flags.string({
       char: 'n',
       description: 'Give a name for the default session',
-      default: 'New Default Sesssion',
+      default: 'New Default Session',
     }),
     view: flags.string({
       char: 'v',
       description:
         'View type in config to be added as default session, will be guessed on default, i.e LinearGenomeView, CircularView, DotplotView',
+    }),
+    viewid: flags.string({
+      description: 'Identifier for the view. Will be generated on default',
     }),
     tracks: flags.string({
       char: 't',
@@ -74,8 +76,14 @@ export default class SetDefaultSession extends Command {
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(SetDefaultSession)
     const { defaultSession, location } = runArgs
-    const { name, configLocation, tracks, currentSession } = runFlags
-    let { view } = runFlags
+    const {
+      name,
+      configLocation,
+      tracks,
+      currentSession,
+      view,
+      viewid,
+    } = runFlags
 
     const configPath = configLocation || path.join(location, 'config.json')
 
@@ -119,68 +127,64 @@ export default class SetDefaultSession extends Command {
         { exit: 15 },
       )
     }
+
+    // must provide default session, or view, or tracks + view, cannot provide just tracks
     // if user provides a file, process and set as default session and exit
     else if (defaultSession) {
       const defaultJson = await this.readDefaultSessionFile(defaultSession)
-      const message = `Set default session to session from ${defaultSession}. ${
-        existingDefaultSession && 'Overwrote previous default session.'
-      }`
-      configContents.defaultSession = { ...defaultJson }
-      this.log(message)
-      this.exit()
+      configContents.defaultSession = defaultJson
     } else {
-      // use trackids if any to match to tracks in the config and either guess or set the viewType
+      // use trackids if any to match to tracks in the config
       let trackIds = []
-      if (view) this.debug(`View type is ${view}`)
       if (tracks && configContents.tracks) {
+        if (!view)
+          this.error(
+            'Tracks must have a view type specified. Please rerun using the --view flag',
+            { exit: 80 },
+          )
         trackIds = tracks.split(',').map(c => c.trim())
         trackIds.forEach(trackId => {
-          const idx = configContents.tracks.findIndex(
+          this.log(trackId)
+          const matchingTrack = configContents.tracks.find(
             track => trackId === track.trackId,
           )
-          if (idx === -1)
+          if (!matchingTrack)
             this.error(
-              `Track ${trackId} has not been added to config yet.${os.EOL}Please add the track with the add-track command before adding to the default session`,
-              { exit: 10 },
+              `Track ${trackId} has not been added to config yet.\nPlease add the track with the add-track command before adding to the default session`,
+              { exit: 90 },
             )
-          else foundTracks.push(configContents.tracks[idx])
-          const trackViewType = this.guessViewFromTrack(
-            configContents.tracks[idx].type,
-          )
-          view =
-            !view || view === trackViewType
-              ? trackViewType
-              : this.error(
-                  'Tracks seem to consist of multiple view types. Please rerun with only one view type per command',
-                )
+          else
+            foundTracks.push({
+              type: matchingTrack.type,
+              configuration: matchingTrack.trackId,
+            })
         })
       }
 
-      const sessionObj = {
+      configContents.defaultSession = {
         name,
         views: [
           {
+            id: viewid || `${view}-${foundTracks.length}`,
             type: view,
-            tracks: [...foundTracks],
+            tracks: foundTracks,
           },
         ],
       }
-
-      configContents.defaultSession.push(sessionObj)
-      this.debug(`Writing configuration to file ${configPath}`)
-      await fsPromises.writeFile(
-        configPath,
-        JSON.stringify(configContents, undefined, 2),
-      )
-
-      this.log(
-        `${
-          existingDefaultSession ? 'Overwrote' : 'Added'
-        } defaultSession "${name}" ${
-          existingDefaultSession ? 'in' : 'to'
-        } ${configPath}`,
-      )
     }
+    this.debug(`Writing configuration to file ${configPath}`)
+    await fsPromises.writeFile(
+      configPath,
+      JSON.stringify(configContents, undefined, 2),
+    )
+
+    this.log(
+      `${
+        existingDefaultSession ? 'Overwrote' : 'Added'
+      } defaultSession "${name}" ${
+        existingDefaultSession ? 'in' : 'to'
+      } ${configPath}`,
+    )
   }
 
   async readJsonConfig(location: string) {
@@ -241,27 +245,12 @@ export default class SetDefaultSession extends Command {
     }
 
     try {
-      const defaultSession = JSON.parse(defaultSessionJson)
+      const { defaultSession } = JSON.parse(defaultSessionJson)
       return defaultSession
     } catch (error) {
       return this.error('Could not parse the given default session file', {
         exit: 50,
       })
-    }
-  }
-
-  guessViewFromTrack(trackType: string) {
-    switch (trackType) {
-      case 'AlignmentsTrack':
-      case 'SNPCoverageTrack':
-      case 'PileupTrack':
-        return 'LinearGenomeView'
-      case 'DotplotTrack':
-        return 'DotplotView'
-      case 'StructuralVariantChordTrack':
-        return 'CircularView'
-      default:
-        return 'CustomView'
     }
   }
 }

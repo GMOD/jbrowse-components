@@ -1,36 +1,17 @@
 {
     "defaultSession": {
-    "name": "test new session",
-    "views": [{
-        "type": "LinearGenomeView",
-        "tracks": [
-            [
-              {
-                "type": "AlignmentsTrack",
-                "trackId": "simple",
-                "name": "simple",
-                "assemblyNames": ["testAssembly"],
-                "adapter": {
-                  "type": "BamAdapter",
-                  "bamLocation": {
-                    "uri": "simple.bam"
-                  },
-                  "index": {
-                    "location": {
-                      "uri": "simple.bam.bai"
+        "name": "test new session",
+        "views": [
+            {
+                "id": "823WX",
+                "type": "LinearGenomeView",
+                "tracks": [
+                    {
+                        "type": "AlignmentsTrack",
+                        "configuration": "simple"
                     }
-                  },
-                  "sequenceAdapter": {
-                    "type": "testSeqAdapter",
-                    "twoBitLocation": {
-                      "uri": "test.2bit"
-                    }
-                  }
-                }
-              }
-            ]
-          ]
+                ]
+            }
+        ]
     }
-    ]
-  }
 }
