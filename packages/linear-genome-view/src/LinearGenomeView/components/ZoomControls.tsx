@@ -14,7 +14,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
   },
   slider: {
-    width: 48,
+    width: 70,
   },
 })
 
@@ -40,7 +40,7 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
         value={-Math.log2(bpPerPx)}
         min={-Math.log2(maxBpPerPx)}
         max={-Math.log2(minBpPerPx)}
-        onChange={(event, value) => model.zoomTo(2 ** -value)}
+        onChangeCommitted={(event, value) => model.zoomTo(2 ** -value)}
       />
       <IconButton
         data-testid="zoom_in"
