@@ -23,6 +23,7 @@ import {
   getPath,
   SnapshotIn,
   cast,
+  ISerializedActionCall,
 } from 'mobx-state-tree'
 
 export default function stateModelFactory(pluginManager: PluginManager) {
@@ -73,6 +74,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       // Get a composite map of featureId->feature map for a track
       // across multiple views
       getTrackFeatures(trackIds: string[]) {
+        // @ts-ignore
         const tracks = trackIds.map(t => resolveIdentifier(getSession(self), t))
         return new CompositeMap<string, Feature>(tracks.map(t => t.features))
       },
@@ -81,21 +83,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          onAction(
-            self,
-            (param: { name: string; path: string; args: any[] }) => {
-              if (self.linkViews) {
-                const { name, path, args } = param
-                if (['horizontalScroll', 'zoomTo'].includes(name)) {
-                  this.onSubviewAction(name, path, args)
-                }
+          onAction(self, (param: ISerializedActionCall) => {
+            if (self.linkViews) {
+              const { name, path, args } = param
+              if (['horizontalScroll', 'zoomTo'].includes(name) && path) {
+                this.onSubviewAction(name, path, args)
               }
-            },
-          ),
+            }
+          }),
         )
       },
 
-      onSubviewAction(actionName: string, path: string, args: any[]) {
+      onSubviewAction(actionName: string, path: string, args: any[] = []) {
         self.views.forEach(view => {
           const ret = getPath(view)
           if (ret.lastIndexOf(path) !== ret.length - path.length) {
