@@ -1,8 +1,9 @@
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
-import React, { useRef, useState } from 'react'
+import { Instance } from 'mobx-state-tree'
+import React, { useEffect, useRef, useState } from 'react'
 import {
-  LinearGenomeViewModel,
+  LinearGenomeViewStateModel,
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
 } from '..'
@@ -15,7 +16,6 @@ const useStyles = makeStyles(theme => ({
   tracksContainer: {
     position: 'relative',
     borderRadius: theme.shape.borderRadius,
-    touchAction: 'none',
     overflow: 'hidden',
   },
   spacer: {
@@ -24,22 +24,61 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-type LGV = LinearGenomeViewModel
+type LGV = Instance<LinearGenomeViewStateModel>
 
-function TracksContainer(props: { children: React.ReactNode; model: LGV }) {
-  const { children, model } = props
+function TracksContainer({
+  children,
+  model,
+}: {
+  children: React.ReactNode
+  model: LGV
+}) {
   const classes = useStyles()
+  // refs are to store these variables to avoid repeated rerenders associated with useState/setState
   const delta = useRef(0)
   const scheduled = useRef(false)
-  const prevX = useRef(0)
-  const [pointerDragging, setPointerDragging] = useState(false)
 
-  function extractPositionDelta(event: React.PointerEvent) {
-    const left = event.clientX
-    const deltaX = left - prevX.current
-    prevX.current = left
-    return deltaX
-  }
+  const [mouseDragging, setMouseDragging] = useState(false)
+  const prevX = useRef<number | null>(null)
+
+  useEffect(() => {
+    let cleanup = () => {}
+
+    function globalMouseMove(event: MouseEvent) {
+      event.preventDefault()
+      const distance =
+        prevX.current !== null ? event.clientX - prevX.current : event.clientX
+      if (distance) {
+        // use rAF to make it so multiple event handlers aren't fired per-frame
+        // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
+        if (!scheduled.current) {
+          scheduled.current = true
+          window.requestAnimationFrame(() => {
+            model.horizontalScroll(-distance)
+            scheduled.current = false
+            prevX.current = event.clientX
+          })
+        }
+      }
+    }
+
+    function globalMouseUp() {
+      prevX.current = null
+      if (mouseDragging) {
+        setMouseDragging(false)
+      }
+    }
+
+    if (mouseDragging) {
+      window.addEventListener('mousemove', globalMouseMove, true)
+      window.addEventListener('mouseup', globalMouseUp, true)
+      cleanup = () => {
+        window.removeEventListener('mousemove', globalMouseMove, true)
+        window.removeEventListener('mouseup', globalMouseUp, true)
+      }
+    }
+    return cleanup
+  }, [model, mouseDragging, prevX])
 
   function onWheel(event: React.WheelEvent) {
     const { deltaX, deltaMode } = event
@@ -56,40 +95,29 @@ function TracksContainer(props: { children: React.ReactNode; model: LGV }) {
     }
   }
 
-  function pointerDown(event: React.PointerEvent) {
+  function mouseDown(event: React.MouseEvent) {
+    if ((event.target as HTMLElement).draggable) return
     const target = event.target as HTMLElement
     if (target.draggable || target.dataset.resizer) {
+      // either a track label draggable element or a resize handle
       return
     }
-    event.preventDefault()
-    setPointerDragging(true)
-    extractPositionDelta(event)
-    target.setPointerCapture(event.pointerId)
-  }
-
-  function pointerMove(event: React.PointerEvent) {
-    event.preventDefault()
-    if (!pointerDragging) {
-      return
-    }
-    delta.current += extractPositionDelta(event)
-    if (!scheduled.current) {
-      // use rAF to make it so multiple event handlers aren't fired per-frame
-      // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-      scheduled.current = true
-      window.requestAnimationFrame(() => {
-        model.horizontalScroll(-delta.current)
-        delta.current = 0
-        scheduled.current = false
-      })
+    if (event.button === 0) {
+      event.preventDefault()
+      prevX.current = event.clientX
+      setMouseDragging(true)
     }
   }
 
-  function pointerUp(event: React.PointerEvent) {
+  // this local mouseup is used in addition to the global because sometimes
+  // the global add/remove are not called in time, resulting in issue #533
+  function mouseUp(event: React.MouseEvent) {
     event.preventDefault()
-    const target = event.target as HTMLElement
-    target.releasePointerCapture(event.pointerId)
-    setPointerDragging(false)
+    setMouseDragging(false)
+  }
+
+  function mouseLeave(event: React.MouseEvent) {
+    event.preventDefault()
   }
 
   return (
@@ -97,9 +125,9 @@ function TracksContainer(props: { children: React.ReactNode; model: LGV }) {
       role="presentation"
       className={classes.tracksContainer}
       onWheel={onWheel}
-      onPointerDown={pointerDown}
-      onPointerUp={pointerUp}
-      onPointerMove={pointerMove}
+      onMouseDown={mouseDown}
+      onMouseUp={mouseUp}
+      onMouseLeave={mouseLeave}
     >
       <VerticalGuides model={model} />
       {model.showCenterLine ? <CenterLine model={model} /> : null}

@@ -40,7 +40,7 @@ describe('valid file tests', () => {
     expect(dlg).toBeTruthy()
   })
 
-  xit('click and drag to move sideways', async () => {
+  it('click and drag to move sideways', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)

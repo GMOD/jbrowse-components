@@ -22,7 +22,6 @@ const useStyles = makeStyles({
     whiteSpace: 'nowrap',
     textAlign: 'left',
     position: 'absolute',
-    touchAction: 'none',
     display: 'flex',
     minHeight: '100%',
   },
