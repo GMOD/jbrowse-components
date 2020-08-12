@@ -427,6 +427,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
     >
       <div
         class="MuiPaper-root makeStyles-scaleBarContainer MuiPaper-outlined MuiPaper-rounded"
+        data-resizer="true"
         style="height: 17px; box-sizing: border-box;"
       >
         <div
@@ -1484,6 +1485,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
     >
       <div
         class="MuiPaper-root makeStyles-scaleBarContainer MuiPaper-outlined MuiPaper-rounded"
+        data-resizer="true"
         style="height: 17px; box-sizing: border-box;"
       >
         <div
