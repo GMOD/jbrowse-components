@@ -8,9 +8,7 @@ import {
   types,
   Instance,
 } from 'mobx-state-tree'
-
 import { when } from '../util'
-
 import { readConfObject } from '../configuration'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
