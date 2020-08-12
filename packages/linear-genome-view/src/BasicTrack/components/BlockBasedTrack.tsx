@@ -57,6 +57,7 @@ function BlockBasedTrack(props: {
     TrackMessageComponent,
     contextMenuOptions,
     height,
+    setContextMenuFeature,
   } = model
 
   return (
@@ -66,7 +67,9 @@ function BlockBasedTrack(props: {
       className={classes.track}
       onContextMenu={event => {
         event.preventDefault()
-        if (ref.current) {
+        if (contextCoord) {
+          setContextCoord(undefined)
+        } else if (ref.current) {
           setContextCoord([event.clientX, event.clientY])
         }
       }}
@@ -94,6 +97,11 @@ function BlockBasedTrack(props: {
         }}
         onClose={() => {
           setContextCoord(undefined)
+          setContextMenuFeature(undefined)
+        }}
+        onExit={() => {
+          setContextCoord(undefined)
+          setContextMenuFeature(undefined)
         }}
         anchorReference="anchorPosition"
         anchorPosition={
@@ -103,7 +111,7 @@ function BlockBasedTrack(props: {
         }
         style={{ zIndex: theme.zIndex.tooltip }}
         menuOptions={contextMenuOptions}
-        data-testid="alignments_context_menu"
+        data-testid="block_based_track_context_menu"
       />
     </div>
   )
