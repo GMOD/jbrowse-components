@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const ImportForm = observer(({ model }: { model: LinearGenomeViewModelt }) => {
+const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const classes = useStyles()
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<Region | undefined>()

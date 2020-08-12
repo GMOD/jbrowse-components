@@ -21,6 +21,7 @@ import {
   Instance,
   resolveIdentifier,
   getPath,
+  SnapshotIn,
   cast,
 } from 'mobx-state-tree'
 
@@ -116,7 +117,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.height = newHeight
       },
 
-      setViews(views: LinearGenomeViewModel[]) {
+      setViews(views: SnapshotIn<LinearGenomeViewModel>[]) {
         self.views = cast(views)
       },
 
@@ -217,7 +218,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             isSessionModelWithWidgets(session) &&
             session.visibleWidget &&
             session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-            session.visibleWidget.view &&
             // @ts-ignore
             session.visibleWidget.view.id === self.id,
         })

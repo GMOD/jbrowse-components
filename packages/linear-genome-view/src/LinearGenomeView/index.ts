@@ -953,7 +953,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 isSessionModelWithWidgets(session) &&
                 session.visibleWidget &&
                 session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-                session.visibleWidget.view &&
+                // @ts-ignore
                 session.visibleWidget.view.id === self.id,
             },
             {

@@ -27,11 +27,11 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(1),
   },
 }))
+
 const LinearGenomeView = observer((props: { model: LGV }) => {
   const { model } = props
   const { tracks, error, hideHeader, initialized } = model
   const classes = useStyles()
-
   const session = getSession(model)
 
   return !initialized ? (
@@ -56,7 +56,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
                   isSessionModelWithWidgets(session) &&
                   session.visibleWidget &&
                   session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-                  session.visibleWidget.view &&
+                  // @ts-ignore
                   session.visibleWidget.view.id === model.id
                 }
               >

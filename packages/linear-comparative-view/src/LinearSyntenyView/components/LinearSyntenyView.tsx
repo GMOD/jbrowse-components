@@ -6,8 +6,8 @@ import ImportForm from './ImportForm'
 
 const LinearSyntenyView = observer(
   ({ model }: { model: LinearSyntenyViewModel }) => {
-    const { initialized, loading } = model
-    if (!initialized && !loading) {
+    const { initialized } = model
+    if (!initialized) {
       return <ImportForm model={model} />
     }
     return <LinearComparativeViewComponent model={model} />
