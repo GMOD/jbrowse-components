@@ -232,7 +232,7 @@ const BaseTrack = types
       ]
     },
 
-    get trackMenuOptions(): MenuItem[] {
+    get trackMenuItems(): MenuItem[] {
       return []
     },
   }))

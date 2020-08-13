@@ -1,3 +1,6 @@
+import React from 'react'
+import { observer } from 'mobx-react'
+import { isAlive } from 'mobx-state-tree'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { ResizeHandle } from '@gmod/jbrowse-core/ui'
 import {
@@ -5,18 +8,13 @@ import {
   getContainingView,
 } from '@gmod/jbrowse-core/util'
 import Paper from '@material-ui/core/Paper'
-import Dialog from '@material-ui/core/Dialog'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import DialogContentText from '@material-ui/core/DialogContentText'
 import Slide from '@material-ui/core/Slide'
 import { makeStyles } from '@material-ui/core/styles'
-import { observer } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
-import React from 'react'
+
 import { LinearGenomeViewModel, RESIZE_HANDLE_HEIGHT } from '..'
 import { BaseTrackModel } from '../../BasicTrack/baseTrackModel'
 import TrackLabel from './TrackLabel'
+import AboutDialog from './AboutDialog'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -59,38 +57,6 @@ const useStyles = makeStyles(theme => ({
     boxSizing: 'content-box',
   },
 }))
-
-function AboutDialog({
-  model,
-  handleClose,
-}: {
-  model: BaseTrackModel
-  handleClose: () => void
-}) {
-  const data = getConf(model, 'metadata') as Record<string, string>
-  return (
-    <Dialog
-      open
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
-      <DialogTitle id="alert-dialog-title">
-        {getConf(model, 'name')}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          {Object.entries(data).map(([key, value]) => (
-            <>
-              <div>{key}</div>
-              <div>{value}</div>
-            </>
-          ))}
-        </DialogContentText>
-      </DialogContent>
-    </Dialog>
-  )
-}
 
 function TrackContainer(props: {
   model: LinearGenomeViewModel

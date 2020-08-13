@@ -218,6 +218,9 @@ Object {
       "category": Array [
         "Integration test",
       ],
+      "metadata": Object {
+        "source": "We generated 150bp paired end reads from a <i>Volvox mythicus</i>, an imaginary species, for this jbrowse demo",
+      },
       "name": "volvox-sorted.cram (contigA, PileupTrack)",
       "renderers": Object {
         "PileupRenderer": Object {
