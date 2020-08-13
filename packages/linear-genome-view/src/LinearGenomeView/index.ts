@@ -5,7 +5,7 @@ import {
   ElementId,
   Region as MUIRegion,
 } from '@gmod/jbrowse-core/util/types/mst'
-import { MenuOption } from '@gmod/jbrowse-core/ui'
+import { MenuItem } from '@gmod/jbrowse-core/ui'
 import {
   assembleLocString,
   clamp,
@@ -34,13 +34,6 @@ import clone from 'clone'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
-export interface LGVMenuOption {
-  title: string
-  key: string
-  callback: Function
-  checked?: boolean
-  isCheckbox: boolean
-}
 interface BpOffset {
   refName?: string
   index: number
@@ -277,8 +270,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       // modifies view menu action onClick to apply to all tracks of same type
-      rewriteOnClicks(trackType: string, viewMenuActions: MenuOption[]) {
-        viewMenuActions.forEach((action: MenuOption) => {
+      rewriteOnClicks(trackType: string, viewMenuActions: MenuItem[]) {
+        viewMenuActions.forEach((action: MenuItem) => {
           // go to lowest level menu
           if ('subMenu' in action) {
             // @ts-ignore
@@ -299,7 +292,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       get trackTypeActions() {
-        const allActions: Map<string, MenuOption[]> = new Map()
+        const allActions: Map<string, MenuItem[]> = new Map()
         self.tracks.forEach(track => {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
@@ -947,9 +940,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
-        get menuOptions(): MenuOption[] {
+        get menuItems(): MenuItem[] {
           const session = getSession(self)
-          const menuOptions: MenuOption[] = [
+          const menuItems: MenuItem[] = [
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
@@ -1005,17 +998,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
           // add track's view level menu options
           for (const [key, value] of self.trackTypeActions.entries()) {
             if (value.length) {
-              menuOptions.push(
+              menuItems.push(
                 { type: 'divider' },
                 { type: 'subHeader', label: key },
               )
               value.forEach(action => {
-                menuOptions.push(action)
+                menuItems.push(action)
               })
             }
           }
 
-          return menuOptions
+          return menuItems
         },
 
         get staticBlocks() {

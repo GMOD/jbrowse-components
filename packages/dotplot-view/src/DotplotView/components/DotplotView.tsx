@@ -317,7 +317,7 @@ export default (pluginManager: PluginManager) => {
                 mouseup ? { top: mouseup[1], left: mouseup[0] } : undefined
               }
               style={{ zIndex: 1000 }}
-              menuOptions={[
+              menuItems={[
                 {
                   label: 'Zoom in',
                   onClick: () => {
