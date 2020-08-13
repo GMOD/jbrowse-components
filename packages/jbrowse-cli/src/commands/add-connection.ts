@@ -253,20 +253,6 @@ export default class AddConnection extends JBrowseCommand {
     })
   }
 
-  async readJsonConfig(location: string) {
-    let locationUrl: URL | undefined
-    try {
-      locationUrl = new URL(location)
-    } catch (error) {
-      // ignore
-    }
-    if (locationUrl) {
-      const response = await fetch(locationUrl)
-      return response.json()
-    }
-    return fsPromises.readFile(location, { encoding: 'utf8' })
-  }
-
   determineConnectionType(url: string, config: string | undefined) {
     if (path.basename(url) === 'hub.txt') return 'UCSCTrackHubConnection'
     if (url.includes('jbrowse/data')) return 'JBrowse1Connection'

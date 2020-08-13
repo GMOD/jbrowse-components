@@ -354,20 +354,6 @@ export default class AddTrack extends JBrowseCommand {
     )
   }
 
-  async readJsonConfig(location: string) {
-    let locationUrl: URL | undefined
-    try {
-      locationUrl = new URL(location)
-    } catch (error) {
-      // ignore
-    }
-    if (locationUrl) {
-      const response = await fetch(locationUrl)
-      return response.json()
-    }
-    return fsPromises.readFile(location, { encoding: 'utf8' })
-  }
-
   async resolveFileLocation(location: string, check = true) {
     let locationUrl: URL | undefined
     let locationPath: string | undefined

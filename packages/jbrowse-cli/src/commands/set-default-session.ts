@@ -188,20 +188,6 @@ export default class SetDefaultSession extends JBrowseCommand {
     )
   }
 
-  async readJsonConfig(location: string) {
-    let locationUrl: URL | undefined
-    try {
-      locationUrl = new URL(location)
-    } catch (error) {
-      // ignore
-    }
-    if (locationUrl) {
-      const response = await fetch(locationUrl)
-      return response.json()
-    }
-    return fsPromises.readFile(location, { encoding: 'utf8' })
-  }
-
   async readDefaultSessionFile(defaultSessionFile: string) {
     let defaultSessionJson: string
     try {
