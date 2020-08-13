@@ -47,72 +47,76 @@ const stateModelFactory = (
         self.showPileup = !self.showPileup
       },
     }))
-    .views(self => ({
-      get pileupTrackConfig() {
-        return {
-          ...getConf(self),
-          type: 'PileupTrack',
-          name: `${getConf(self, 'name')} pileup`,
-          trackId: `${self.configuration.trackId}_pileup_xyz`, // xyz to avoid someone accidentally namign the trackId similar to this
-        }
-      },
+    .views(self => {
+      const { menuItems } = self
+      return {
+        get pileupTrackConfig() {
+          return {
+            ...getConf(self),
+            type: 'PileupTrack',
+            name: `${getConf(self, 'name')} pileup`,
+            trackId: `${self.configuration.trackId}_pileup_xyz`, // xyz to avoid someone accidentally namign the trackId similar to this
+          }
+        },
 
-      get layoutFeatures() {
-        return self.PileupTrack.layoutFeatures
-      },
+        get layoutFeatures() {
+          return self.PileupTrack.layoutFeatures
+        },
 
-      get features() {
-        return self.PileupTrack.features
-      },
+        get features() {
+          return self.PileupTrack.features
+        },
 
-      get TrackBlurb() {
-        return self.PileupTrack.TrackBlurb
-      },
+        get TrackBlurb() {
+          return self.PileupTrack.TrackBlurb
+        },
 
-      get sortedBy() {
-        return self.PileupTrack.sortedBy
-      },
-      get sortedByPosition() {
-        return self.PileupTrack.sortedByPosition
-      },
-      get sortedByRefName() {
-        return self.PileupTrack.sortedByRefName
-      },
+        get sortedBy() {
+          return self.PileupTrack.sortedBy
+        },
+        get sortedByPosition() {
+          return self.PileupTrack.sortedByPosition
+        },
+        get sortedByRefName() {
+          return self.PileupTrack.sortedByRefName
+        },
 
-      get snpCoverageTrackConfig() {
-        return {
-          ...getConf(self),
-          type: 'SNPCoverageTrack',
-          name: `${getConf(self, 'name')} snpcoverage`,
-          trackId: `${self.configuration.trackId}_snpcoverage_xyz`, // xyz to avoid someone accidentally namign the trackId similar to this
-          adapter: {
-            type: 'SNPCoverageAdapter',
-            subadapter: getConf(self, 'adapter'),
-          },
-        }
-      },
+        get snpCoverageTrackConfig() {
+          return {
+            ...getConf(self),
+            type: 'SNPCoverageTrack',
+            name: `${getConf(self, 'name')} snpcoverage`,
+            trackId: `${self.configuration.trackId}_snpcoverage_xyz`, // xyz to avoid someone accidentally namign the trackId similar to this
+            adapter: {
+              type: 'SNPCoverageAdapter',
+              subadapter: getConf(self, 'adapter'),
+            },
+          }
+        },
 
-      get menuItems(): MenuItem[] {
-        return [
-          {
-            label: 'Show coverage track',
-            icon: VisibilityIcon,
-            type: 'checkbox',
-            onClick: self.toggleCoverage,
-            checked: self.showCoverage,
-          },
-          {
-            label: 'Show pileup track',
-            icon: VisibilityIcon,
-            type: 'checkbox',
-            checked: self.showPileup,
-            onClick: self.togglePileup,
-          },
-          ...self.PileupTrack.menuItems,
-          ...self.SNPCoverageTrack.menuItems,
-        ]
-      },
-    }))
+        get menuItems(): MenuItem[] {
+          return [
+            ...menuItems,
+            {
+              label: 'Show coverage track',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              onClick: self.toggleCoverage,
+              checked: self.showCoverage,
+            },
+            {
+              label: 'Show pileup track',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.showPileup,
+              onClick: self.togglePileup,
+            },
+            ...self.PileupTrack.trackMenuItems,
+            ...self.SNPCoverageTrack.trackMenuItems,
+          ]
+        },
+      }
+    })
     .actions(self => ({
       afterAttach() {
         addDisposer(

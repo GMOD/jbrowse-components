@@ -115,6 +115,9 @@
       "trackId": "volvox_cram_pileup",
       "name": "volvox-sorted.cram (contigA, PileupTrack)",
       "category": ["Integration test"],
+      "metadata": {
+        "source": "We generated 150bp paired end reads from a <i>Volvox mythicus</i>, an imaginary species, for this jbrowse demo"
+      },
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "CramAdapter",
