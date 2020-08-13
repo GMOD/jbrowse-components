@@ -355,11 +355,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const oldBpPerPx = self.bpPerPx
         self.bpPerPx = newBpPerPx
 
+        if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
+          console.warn('zoomTo bpPerPx rounding error')
+          return oldBpPerPx
+        }
+
         // tweak the offset so that the center of the view remains at the same coordinate
         const viewWidth = self.width
         this.scrollTo(
           Math.round(
-            ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
+            ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / newBpPerPx -
               viewWidth / 2,
           ),
         )
