@@ -5,13 +5,17 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
-import { types, getParent, getSnapshot, Instance } from 'mobx-state-tree'
+import { types, getSnapshot, Instance } from 'mobx-state-tree'
 import {
   BaseTrackConfig,
   BaseTrack,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { getSession, makeAbortableReaction } from '@gmod/jbrowse-core/util'
-import jsonStableStringify from 'json-stable-stringify'
+import {
+  getContainingView,
+  getSession,
+  makeAbortableReaction,
+} from '@gmod/jbrowse-core/util'
+import { getRpcSessionId } from '@gmod/jbrowse-core/util/tracks'
 import LinearComparativeTrackComponent from './components/LinearComparativeTrack'
 import { LinearComparativeViewModel } from '../LinearComparativeView/model'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
@@ -151,10 +155,9 @@ function renderBlockData(self: LinearComparativeTrack) {
   readConfObject(self.configuration)
 
   const { adapterConfig } = self
-  const adapterConfigId = jsonStableStringify(adapterConfig)
-  const parent = getParent<LinearComparativeViewModel>(self, 2)
+  const parent = getContainingView(self) as LinearComparativeViewModel
+  const sessionId = getRpcSessionId(self)
   getSnapshot(parent)
-  const { views } = parent
 
   return {
     rendererType,
@@ -165,11 +168,10 @@ function renderBlockData(self: LinearComparativeTrack) {
       rendererType: rendererType.name,
       renderProps: {
         ...renderProps,
-        parentView: getSnapshot(parent),
-        views: views.map(view => getSnapshot(view)),
+        view: getSnapshot(parent),
       },
-      sessionId: adapterConfigId,
-      timeout: 1000000, // 10000,
+      sessionId,
+      timeout: 1000000,
     },
   }
 }
