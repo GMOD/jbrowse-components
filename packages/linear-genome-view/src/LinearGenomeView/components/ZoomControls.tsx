@@ -1,14 +1,11 @@
+import React, { useState } from 'react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import IconButton from '@material-ui/core/IconButton'
 import Slider from '@material-ui/core/Slider'
 import { makeStyles } from '@material-ui/core/styles'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
-import React from 'react'
 import ZoomIn from '@material-ui/icons/ZoomIn'
 import ZoomOut from '@material-ui/icons/ZoomOut'
-import { LinearGenomeViewStateModel } from '..'
-
-type LGV = Instance<LinearGenomeViewStateModel>
+import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles({
   container: {
@@ -17,21 +14,22 @@ const useStyles = makeStyles({
     alignItems: 'center',
   },
   slider: {
-    width: 48,
+    width: 70,
   },
 })
 
-function ZoomControls({ model }: { model: LGV }) {
+function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
   const classes = useStyles()
-
+  const { maxBpPerPx, minBpPerPx, bpPerPx, scaleFactor } = model
+  const [value, setValue] = useState(-Math.log2(bpPerPx) * 100)
   return (
     <div className={classes.container}>
       <IconButton
         data-testid="zoom_out"
         onClick={() => {
-          model.zoom(model.bpPerPx * 2)
+          model.zoom(bpPerPx * 2)
         }}
-        disabled={model.bpPerPx >= model.maxBpPerPx || model.scaleFactor !== 1}
+        disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
         color="secondary"
       >
         <ZoomOut fontSize="small" />
@@ -39,17 +37,18 @@ function ZoomControls({ model }: { model: LGV }) {
 
       <Slider
         className={classes.slider}
-        value={-Math.log2(model.bpPerPx)}
-        min={-Math.log2(model.maxBpPerPx)}
-        max={-Math.log2(model.minBpPerPx)}
-        onChange={(event, value) => model.zoomTo(2 ** -value)}
+        value={value}
+        min={-Math.log2(maxBpPerPx) * 100}
+        max={-Math.log2(minBpPerPx) * 100}
+        onChange={(event, val) => setValue(val as number)}
+        onChangeCommitted={event => model.zoomTo(2 ** (-value / 100))}
       />
       <IconButton
         data-testid="zoom_in"
         onClick={() => {
           model.zoom(model.bpPerPx / 2)
         }}
-        disabled={model.bpPerPx <= model.minBpPerPx || model.scaleFactor !== 1}
+        disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
         color="secondary"
       >
         <ZoomIn fontSize="small" />
