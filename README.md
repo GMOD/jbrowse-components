@@ -7,6 +7,13 @@
 Monorepo using Lerna and Yarn workspaces containing many related packages for
 next-generation JBrowse development.
 
+
+
+Homepage https://jbrowse.org/jb2
+
+Docs http://jbrowse.org/jb2/docs/
+
+
 ## Pre-requisites
 
 - [git](https://git-scm.com/downloads)
