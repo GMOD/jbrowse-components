@@ -9,7 +9,7 @@ import { AbstractSessionModel, NotificationLevel } from '../util'
 
 type SnackbarMessage = [string, NotificationLevel]
 
-interface SnackbarSession extends AbstractSessionModel {
+type SnackbarSession = AbstractSessionModel & {
   snackbarMessages: SnackbarMessage[]
   popSnackbarMessage: () => unknown
 }

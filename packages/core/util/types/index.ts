@@ -22,14 +22,36 @@ import { Feature } from '../simpleFeature'
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
-export interface AbstractViewContainer {
+export interface AbstractSingleViewContainer {
+  view: AbstractViewModel
+}
+export function isSingleViewContainer(
+  thing: unknown,
+): thing is AbstractSingleViewContainer {
+  return isStateTreeNode(thing) && 'view' in thing
+}
+export interface AbstractMultipleViewContainer {
+  views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(typeName: string, initialState: Record<string, unknown>): void
 }
+export function isMultipleViewContainer(
+  thing: unknown,
+): thing is AbstractMultipleViewContainer {
+  return (
+    isStateTreeNode(thing) &&
+    'views' in thing &&
+    'addView' in thing &&
+    'removeView' in thing
+  )
+}
+export type AbstractViewContainer =
+  | AbstractSingleViewContainer
+  | AbstractMultipleViewContainer
 export function isViewContainer(
   thing: unknown,
 ): thing is AbstractViewContainer {
-  return isStateTreeNode(thing) && 'removeView' in thing
+  return isStateTreeNode(thing) && ('view' in thing || 'views' in thing)
 }
 
 export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
@@ -37,7 +59,7 @@ export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
 export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
 
 /** minimum interface that all session state models must implement */
-export interface AbstractSessionModel extends AbstractViewContainer {
+export type AbstractSessionModel = AbstractViewContainer & {
   setSelection(feature: Feature): void
   clearSelection(): void
   configuration: AnyConfigurationModel
@@ -61,7 +83,7 @@ export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
 }
 
 /** abstract interface for a session allows editing configurations */
-export interface SessionWithConfigEditing extends AbstractSessionModel {
+export type SessionWithConfigEditing = AbstractSessionModel & {
   editConfiguration(configuration: AnyConfigurationModel): void
 }
 export function isSessionModelWithConfigEditing(
@@ -71,7 +93,7 @@ export function isSessionModelWithConfigEditing(
 }
 
 /** abstract interface for a session that manages widgets */
-export interface SessionWithWidgets extends AbstractSessionModel {
+export type SessionWithWidgets = AbstractSessionModel & {
   visibleWidget?: { id: string }
   widgets?: unknown[]
   addWidget(
@@ -89,9 +111,9 @@ export function isSessionModelWithWidgets(
 }
 
 /** abstract interface for a session that manages a global selection */
-export interface SelectionContainer extends AbstractSessionModel {
+export type SelectionContainer = AbstractSessionModel & {
   selection?: unknown
-  setSelection: (thing: unknown) => void
+  setSelection(thing: unknown): void
 }
 export function isSelectionContainer(
   thing: unknown,
@@ -107,10 +129,23 @@ export function isSelectionContainer(
 /** minimum interface that all view state models must implement */
 export interface AbstractViewModel {
   id: string
+  type: string
+  width: number
+  setWidth(width: number): void
+}
+export function isViewModel(thing: unknown): thing is AbstractViewModel {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'width' in thing &&
+    'setWidth' in thing
+  )
+}
+export interface TrackViewModel extends AbstractViewModel {
   showTrack(configuration: AnyConfigurationModel): void
   hideTrack(configuration: AnyConfigurationModel): void
 }
-export function isViewModel(thing: unknown): thing is AbstractViewModel {
+export function isTrackViewModel(thing: unknown): thing is TrackViewModel {
   return (
     typeof thing === 'object' &&
     thing !== null &&

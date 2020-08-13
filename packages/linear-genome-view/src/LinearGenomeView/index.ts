@@ -12,7 +12,7 @@ import {
   findLastIndex,
   getContainingView,
   getSession,
-  isViewContainer,
+  isMultipleViewContainer,
   parseLocString,
   springAnimate,
   isSessionModelWithWidgets,
@@ -425,12 +425,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       closeView() {
         const parent = getContainingView(self)
-        if (parent) {
+        if (parent && isMultipleViewContainer(parent)) {
           // I am embedded in a some other view
-          if (isViewContainer(parent)) parent.removeView(self)
+          parent.removeView(self)
         } else {
-          // I am part of a session
-          getSession(self).removeView(self)
+          const session = getSession(self)
+          if (isMultipleViewContainer(session)) {
+            // I am part of a session
+            session.removeView(self)
+          }
         }
       },
 

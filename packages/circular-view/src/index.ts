@@ -1,5 +1,5 @@
 import {
-  AbstractViewContainer,
+  AbstractSessionModel,
   isAbstractMenuManager,
 } from '@gmod/jbrowse-core/util'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
@@ -28,8 +28,12 @@ export default class CircularViewPlugin extends Plugin {
       pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
         label: 'Circular view',
         icon: DataUsageIcon,
-        onClick: (session: AbstractViewContainer) => {
-          session.addView('CircularView', {})
+        onClick: (session: AbstractSessionModel) => {
+          if ('addView' in session) {
+            session.addView('CircularView', {})
+          } else {
+            session.notify('Adding views not supported')
+          }
         },
       })
     }

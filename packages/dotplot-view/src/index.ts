@@ -4,7 +4,7 @@ import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
-  AbstractViewContainer,
+  AbstractSessionModel,
   isAbstractMenuManager,
 } from '@gmod/jbrowse-core/util'
 import TimelineIcon from '@material-ui/icons/Timeline'
@@ -67,8 +67,12 @@ export default class DotplotPlugin extends Plugin {
       pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
         label: 'Dotplot view',
         icon: TimelineIcon,
-        onClick: (session: AbstractViewContainer) => {
-          session.addView('DotplotView', {})
+        onClick: (session: AbstractSessionModel) => {
+          if ('addView' in session) {
+            session.addView('CircularView', {})
+          } else {
+            session.notify('Adding views not supported')
+          }
         },
       })
     }
