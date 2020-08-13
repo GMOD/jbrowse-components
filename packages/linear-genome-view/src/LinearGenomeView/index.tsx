@@ -1,4 +1,5 @@
-import React, {renderToStaticMarkup} from 'react'
+import React from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
 import { Region } from '@gmod/jbrowse-core/util/types'
@@ -19,7 +20,6 @@ import {
   springAnimate,
   isSessionModelWithWidgets,
 } from '@gmod/jbrowse-core/util'
-import Ruler from './components/Ruler'
 import { BlockSet } from '@gmod/jbrowse-core/util/blockTypes'
 import calculateDynamicBlocks from '@gmod/jbrowse-core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@gmod/jbrowse-core/util/calculateStaticBlocks'
@@ -34,6 +34,7 @@ import LineStyleIcon from '@material-ui/icons/LineStyle'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import clone from 'clone'
+import Ruler from './components/Ruler'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -1057,6 +1058,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const { width } = self
         const html = renderToStaticMarkup(
           <svg
+            width={width}
+            height={1000}
             xmlns="http://www.w3.org/2000/svg"
             viewBox={[0, 0, width, 1000].toString()}
           >

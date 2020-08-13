@@ -43,7 +43,7 @@ function Ruler({
   minor: boolean
 }) {
   const classes = useStyles()
-  const ticks = makeTicks(start, end, bpPerPx, major, minor)
+  const ticks = makeTicks(start, end, bpPerPx, major, minor, false)
   return (
     <>
       {ticks.map(tick => {
