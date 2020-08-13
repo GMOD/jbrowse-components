@@ -1,4 +1,5 @@
 import Rpc from '@librpc/web'
+import shortid from 'shortid'
 import BaseRpcDriver from './BaseRpcDriver'
 import PluginManager from '../PluginManager'
 import { PluginDefinition } from '../PluginLoader'
@@ -11,6 +12,25 @@ interface WebpackWorker {
 class WebWorkerHandle extends Rpc.Client {
   destroy(): void {
     this.workers[0].terminate()
+  }
+
+  async call(
+    functionName: string,
+    args: Record<string, unknown>,
+    opts: { statusCallback?: (arg0: string) => void },
+  ) {
+    const channel = `message-${shortid.generate()}`
+    const listener = (message: string) => {
+      if (opts.statusCallback) {
+        opts.statusCallback(message)
+      }
+    }
+    // @ts-ignore
+    this.on(channel, listener)
+    const result = await super.call(functionName, { ...args, channel }, opts)
+    // @ts-ignore
+    this.off(channel, listener)
+    return result
   }
 }
 

@@ -3,7 +3,6 @@ import { pascalCase } from 'change-case'
 import webpack from 'webpack'
 import CopyPlugin from 'copy-webpack-plugin'
 
-import { objectFromEntries } from '@gmod/jbrowse-core/util'
 import ReExportsList from '@gmod/jbrowse-core/ReExports/list'
 
 export interface PackageJson {
@@ -11,23 +10,22 @@ export interface PackageJson {
   'jbrowse-plugin'?: { name?: string }
 }
 
-if (!Object.fromEntries) {
-  Object.fromEntries = objectFromEntries
-}
-
-const externals = Object.fromEntries(
-  ReExportsList.map(moduleName => {
-    return [
-      moduleName,
-      {
-        root: ['JBrowseExports', moduleName],
-        commonjs: moduleName,
-        commonjs2: moduleName,
-        amd: moduleName,
-      },
-    ]
-  }),
-)
+const externals: {
+  [k: string]: {
+    root: string[]
+    commonjs: string
+    commonjs2: string
+    amd: string
+  }
+} = {}
+ReExportsList.forEach(moduleName => {
+  externals[moduleName] = {
+    root: ['JBrowseExports', moduleName],
+    commonjs: moduleName,
+    commonjs2: moduleName,
+    amd: moduleName,
+  }
+})
 
 // style files regexes
 const cssRegex = /\.css$/
@@ -143,7 +141,7 @@ export function baseJBrowsePluginWebpackConfig(
                       '@babel/preset-env',
                       {
                         targets: {
-                          node: 'current',
+                          node: 10,
                           browsers: ['> 0.5%', 'last 2 versions'],
                         },
                       },

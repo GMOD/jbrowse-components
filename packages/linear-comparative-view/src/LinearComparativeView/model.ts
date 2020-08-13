@@ -2,34 +2,36 @@
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 
 import { MenuOption } from '@gmod/jbrowse-core/ui'
-import { getSession } from '@gmod/jbrowse-core/util'
-import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
-import { types, Instance } from 'mobx-state-tree'
+import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
+import {
+  LinearGenomeViewModel,
+  LinearGenomeViewStateModel,
+} from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { transaction } from 'mobx'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
-
-export type LGV = Instance<LinearGenomeViewStateModel>
-type ConfigRelationship = { type: string; target: string }
+import {
+  types,
+  getParent,
+  onAction,
+  addDisposer,
+  Instance,
+  resolveIdentifier,
+  getPath,
+  SnapshotIn,
+  cast,
+  ISerializedActionCall,
+} from 'mobx-state-tree'
 
 export default function stateModelFactory(pluginManager: PluginManager) {
   const { jbrequire } = pluginManager
-  const {
-    types: jbrequiredTypes,
-    getParent,
-    onAction,
-    addDisposer,
-    resolveIdentifier,
-    getPath,
-  } = jbrequire('mobx-state-tree')
   const { ElementId } = jbrequire('@gmod/jbrowse-core/util/types/mst')
 
   const defaultHeight = 400
-  return (jbrequiredTypes as Instance<typeof types>)
+  return types
     .model('LinearComparativeView', {
       id: ElementId,
       type: types.literal('LinearComparativeView'),
@@ -55,6 +57,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       width: 800,
     }))
     .views(self => ({
+      get initialized() {
+        return self.views.length > 0
+      },
+
       get refNames() {
         return (self.views || []).map(v => [
           ...new Set(v.staticBlocks.map(m => m.refName)),
@@ -68,6 +74,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       // Get a composite map of featureId->feature map for a track
       // across multiple views
       getTrackFeatures(trackIds: string[]) {
+        // @ts-ignore
         const tracks = trackIds.map(t => resolveIdentifier(getSession(self), t))
         return new CompositeMap<string, Feature>(tracks.map(t => t.features))
       },
@@ -76,21 +83,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          onAction(
-            self,
-            (param: { name: string; path: string; args: any[] }) => {
-              if (self.linkViews) {
-                const { name, path, args } = param
-                if (['horizontalScroll', 'zoomTo'].includes(name)) {
-                  this.onSubviewAction(name, path, args)
-                }
+          onAction(self, (param: ISerializedActionCall) => {
+            if (self.linkViews) {
+              const { name, path, args } = param
+              if (['horizontalScroll', 'zoomTo'].includes(name) && path) {
+                this.onSubviewAction(name, path, args)
               }
-            },
-          ),
+            }
+          }),
         )
       },
 
-      onSubviewAction(actionName: string, path: string, args: any[]) {
+      onSubviewAction(actionName: string, path: string, args: any[] = []) {
         self.views.forEach(view => {
           const ret = getPath(view)
           if (ret.lastIndexOf(path) !== ret.length - path.length) {
@@ -112,7 +116,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.height = newHeight
       },
 
-      removeView(view: LGV) {
+      setViews(views: SnapshotIn<LinearGenomeViewModel>[]) {
+        self.views = cast(views)
+      },
+
+      removeView(view: LinearGenomeViewModel) {
         self.views.remove(view)
       },
 
@@ -136,14 +144,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
-          const session: any = getSession(self)
-          const selector = session.addWidget(
-            'HierarchicalTrackSelectorWidget',
-            'hierarchicalTrackSelector',
-            { view: self },
-          )
-          session.showWidget(selector)
-          return selector
+          const session = getSession(self)
+          if (isSessionModelWithWidgets(session)) {
+            // @ts-ignore
+            const selector = session.addWidget(
+              'HierarchicalTrackSelectorWidget',
+              'hierarchicalTrackSelector',
+              { view: self },
+            )
+            // @ts-ignore
+            session.showWidget(selector)
+            return selector
+          }
+          return undefined
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
@@ -186,7 +199,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get menuOptions(): MenuOption[] {
-        const session = getSession(self) as any
+        const session = getSession(self)
         const menuOptions: MenuOption[] = []
         self.views.forEach((view, idx) => {
           if (view.menuOptions) {
@@ -201,8 +214,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           onClick: self.activateTrackSelector,
           icon: LineStyleIcon,
           disabled:
+            isSessionModelWithWidgets(session) &&
             session.visibleWidget &&
             session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+            // @ts-ignore
             session.visibleWidget.view.id === self.id,
         })
         return menuOptions

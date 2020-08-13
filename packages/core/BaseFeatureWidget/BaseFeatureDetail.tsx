@@ -6,6 +6,7 @@ import Typography from '@material-ui/core/Typography'
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
+import Tooltip from '@material-ui/core/Tooltip'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import React, { FunctionComponent } from 'react'
@@ -79,6 +80,7 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
 
 interface BaseProps extends BaseCardProps {
   feature: Record<string, any>
+  descriptions?: Record<string, React.ReactNode>
 }
 
 export const BaseCoreDetails = (props: BaseProps) => {
@@ -133,6 +135,7 @@ interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]
   formatter?: (val: unknown) => JSX.Element
+  descriptions?: Record<string, React.ReactNode>
 }
 
 const Attributes: FunctionComponent<AttributeProps> = props => {
@@ -145,28 +148,45 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
         html={isObject(value) ? JSON.stringify(value) : String(value)}
       />
     ),
+    descriptions,
   } = props
 
   const SimpleValue = ({ name, value }: { name: string; value: any }) => {
+    const description = descriptions && descriptions[name]
     return (
       <div style={{ display: 'flex' }}>
-        <div className={classes.fieldName}>{name}</div>
+        {description ? (
+          <Tooltip title={description} placement="left">
+            <div className={classes.fieldName}>{name}</div>
+          </Tooltip>
+        ) : (
+          <div className={classes.fieldName}>{name}</div>
+        )}
         <div className={classes.fieldValue}>{formatter(value)}</div>
       </div>
     )
   }
-  const ArrayValue = ({ name, value }: { name: string; value: any[] }) => (
-    <div style={{ display: 'flex' }}>
-      <div className={classes.fieldName}>{name}</div>
-      {value.map((val, i) => (
-        <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
-          <SanitizedHTML
-            html={isObject(val) ? JSON.stringify(val) : String(val)}
-          />
-        </div>
-      ))}
-    </div>
-  )
+  const ArrayValue = ({ name, value }: { name: string; value: any[] }) => {
+    const description = descriptions && descriptions[name]
+    return (
+      <div style={{ display: 'flex' }}>
+        {description ? (
+          <Tooltip title={description} placement="left">
+            <div className={classes.fieldName}>{name}</div>
+          </Tooltip>
+        ) : (
+          <div className={classes.fieldName}>{name}</div>
+        )}
+        {value.map((val, i) => (
+          <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
+            <SanitizedHTML
+              html={isObject(val) ? JSON.stringify(val) : String(val)}
+            />
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <>
@@ -184,7 +204,13 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
             )
           }
           if (isObject(value)) {
-            return <Attributes key={key} attributes={value} />
+            return (
+              <Attributes
+                key={key}
+                attributes={value}
+                descriptions={descriptions}
+              />
+            )
           }
 
           return <SimpleValue key={key} name={key} value={value} />
@@ -194,29 +220,30 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
 }
 
 export const BaseAttributes = (props: BaseProps) => {
-  const { feature } = props
+  const { feature, descriptions } = props
   return (
     <BaseCard {...props} title="Attributes">
-      <Attributes {...props} attributes={feature} />
+      <Attributes {...props} attributes={feature} descriptions={descriptions} />
     </BaseCard>
   )
 }
 
-interface BaseInputProps extends BaseCardProps {
+export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
   model: any
   formatter?: (val: unknown) => JSX.Element
+  descriptions?: Record<string, React.ReactNode>
 }
 
 export const BaseFeatureDetails = observer((props: BaseInputProps) => {
   const classes = useStyles()
-  const { model } = props
+  const { model, descriptions } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
   return (
     <Paper className={classes.paperRoot}>
       <BaseCoreDetails feature={feat} {...props} />
       <Divider />
-      <BaseAttributes feature={feat} {...props} />
+      <BaseAttributes feature={feat} {...props} descriptions={descriptions} />
     </Paper>
   )
 })

@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-alignments",
-  "version": "0.0.1-beta.10",
+  "version": "0.0.1-beta.15",
   "description": "JBrowse 2 alignments adapters, tracks, etc.",
   "main": "src/index.ts",
   "scripts": {
@@ -13,7 +13,7 @@
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {
-    "@gmod/bam": "^1.0.37",
+    "@gmod/bam": "^1.0.40",
     "@gmod/cram": "^1.5.6",
     "@material-ui/icons": "^4.9.1",
     "abortable-promise-cache": "^1.1.3",
@@ -27,7 +27,7 @@
     "react-d3-axis": "^0.1.2"
   },
   "devDependencies": {
-    "@gmod/jbrowse-development-tools": "^0.0.1-beta.19"
+    "@gmod/jbrowse-development-tools": "^0.0.1-beta.24"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^0.0.1-beta.1",

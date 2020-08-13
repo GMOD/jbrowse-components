@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+/* eslint curly:error */
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { remoteAbortRpcHandler } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
 import { isAbortException } from '@gmod/jbrowse-core/util'
@@ -8,10 +9,14 @@ import PluginLoader, { PluginDefinition } from '@gmod/jbrowse-core/PluginLoader'
 import corePlugins from './corePlugins'
 
 const { electron, electronBetterIpc } = window
-if (!electron) throw new Error('Electron not available??')
+if (!electron) {
+  throw new Error('Electron not available??')
+}
 
 const { ipcRenderer } = electronBetterIpc
-if (!ipcRenderer) throw new Error('IPC renderer not available??')
+if (!ipcRenderer) {
+  throw new Error('IPC renderer not available??')
+}
 
 let mainWindow: Electron.BrowserWindow
 
@@ -80,7 +85,6 @@ async function getPluginManager() {
   }
   // Load runtime plugins
   const config = await receiveConfiguration()
-  // console.log('got worker boot config', config)
   const pluginLoader = new PluginLoader(config.plugins)
   pluginLoader.installGlobalReExports(window)
   const runtimePlugins = await pluginLoader.load()
@@ -94,19 +98,30 @@ async function getPluginManager() {
 }
 
 let callCounter = 0
-function wrapForRpc(func: Function) {
-  return (args: unknown) => {
+function wrapForRpc(
+  func: (args: unknown) => unknown,
+  funcName: string = func.name,
+) {
+  return (args: Record<string, unknown>) => {
     callCounter += 1
     const myId = callCounter
     // logBuffer.push(['rpc-call', myId, func.name, args])
     const retP = Promise.resolve()
       .then(() => getPluginManager())
-      .then(pluginManager => func(args))
+      .then(pluginManager =>
+        func({
+          ...args,
+          statusCallback: (message: string) => {
+            // @ts-ignore
+            ipcRenderer.sendTo(mainWindow.webContents.id, args.channel, message)
+          },
+        }),
+      )
       .catch(error => {
         if (isAbortException(error)) {
           // logBuffer.push(['rpc-abort', myId, func.name, args])
         } else {
-          console.error('rpc-error', myId, func.name, error)
+          console.error('rpc-error', myId, funcName, error)
         }
         throw error
       })
@@ -125,10 +140,14 @@ getPluginManager().then(pluginManager => {
   const rpcConfig: { [methodName: string]: Function } = {}
   const rpcMethods = pluginManager.getElementTypesInGroup('rpc method')
   rpcMethods.forEach(rpcMethod => {
-    if (!(rpcMethod instanceof RpcMethodType))
+    if (!(rpcMethod instanceof RpcMethodType)) {
       throw new Error('invalid rpc method??')
+    }
 
-    rpcConfig[rpcMethod.name] = wrapForRpc(rpcMethod.execute.bind(rpcMethod))
+    rpcConfig[rpcMethod.name] = wrapForRpc(
+      rpcMethod.execute.bind(rpcMethod),
+      rpcMethod.name,
+    )
   })
 
   const allMethods: { [methodName: string]: Function } = {
@@ -141,8 +160,9 @@ getPluginManager().then(pluginManager => {
 
   ipcRenderer.answerRenderer('call', (functionName, args /* , opts */) => {
     // TODO: implement opts.timeout
-    if (!(functionName in allMethods))
+    if (!(functionName in allMethods)) {
       throw new Error(`function ${functionName} not found`)
+    }
     const requestedFunc = allMethods[functionName]
     return requestedFunc(args)
   })

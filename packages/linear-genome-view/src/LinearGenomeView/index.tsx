@@ -1,5 +1,4 @@
-import React from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
+import React, {renderToStaticMarkup} from 'react'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
 import { Region } from '@gmod/jbrowse-core/util/types'
@@ -20,6 +19,10 @@ import {
   springAnimate,
   isSessionModelWithWidgets,
 } from '@gmod/jbrowse-core/util'
+import Ruler from './components/Ruler'
+import { BlockSet } from '@gmod/jbrowse-core/util/blockTypes'
+import calculateDynamicBlocks from '@gmod/jbrowse-core/util/calculateDynamicBlocks'
+import calculateStaticBlocks from '@gmod/jbrowse-core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { transaction } from 'mobx'
@@ -31,11 +34,6 @@ import LineStyleIcon from '@material-ui/icons/LineStyle'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import clone from 'clone'
-import Ruler from './components/Ruler'
-import { BlockSet } from '../BasicTrack/util/blockTypes'
-
-import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
-import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -471,18 +469,80 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       navToLocString(locString: string) {
-        const session = getSession(self)
-        const { isValidRefName } = session.assemblyManager
-        this.navTo(parseLocString(locString, isValidRefName))
-      },
-
-      navToLocStrings(locStrings: string) {
-        const session = getSession(self)
-        const { isValidRefName } = session.assemblyManager
-        const locations = locStrings
-          .split(';')
-          .map(locString => parseLocString(locString, isValidRefName))
-        this.navToMultiple(locations)
+        const { assemblyManager } = getSession(self)
+        const { isValidRefName } = assemblyManager
+        const locStrings = locString.split(';')
+        if (self.displayedRegions.length > 1) {
+          const locations = locStrings.map(ls =>
+            parseLocString(ls, isValidRefName),
+          )
+          this.navToMultiple(locations)
+          return
+        }
+        const displayedRegion = self.displayedRegions[0]
+        let assembly = assemblyManager.get(displayedRegion.assemblyName)
+        if (!assembly) {
+          throw new Error(
+            `Could not find assembly ${displayedRegion.assemblyName}`,
+          )
+        }
+        const { regions } = assembly
+        if (!regions) {
+          throw new Error(
+            `Regions for assembly ${displayedRegion.assemblyName} not yet loaded`,
+          )
+        }
+        const matchedRegion = regions.find(
+          region =>
+            region.refName === displayedRegion.refName &&
+            region.start === displayedRegion.start &&
+            region.end === displayedRegion.end,
+        )
+        if (matchedRegion) {
+          if (locStrings.length > 1) {
+            throw new Error(
+              'Navigating to multiple locations is not allowed when viewing a whole chromosome',
+            )
+          }
+          const parsedLocString = parseLocString(locStrings[0], isValidRefName)
+          let changedAssembly = false
+          if (
+            parsedLocString.assemblyName &&
+            parsedLocString.assemblyName !== displayedRegion.assemblyName
+          ) {
+            const newAssembly = assemblyManager.get(
+              parsedLocString.assemblyName,
+            )
+            if (!newAssembly) {
+              throw new Error(
+                `Could not find assembly ${parsedLocString.assemblyName}`,
+              )
+            }
+            assembly = newAssembly
+            changedAssembly = true
+          }
+          const canonicalRefName = assembly.getCanonicalRefName(
+            parsedLocString.refName,
+          )
+          if (!canonicalRefName) {
+            throw new Error(
+              `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
+            )
+          }
+          if (changedAssembly || canonicalRefName !== displayedRegion.refName) {
+            const newDisplayedRegion = regions.find(
+              region => region.refName === canonicalRefName,
+            )
+            if (newDisplayedRegion) {
+              this.setDisplayedRegions([getSnapshot(newDisplayedRegion)])
+            } else {
+              throw new Error(
+                `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
+              )
+            }
+          }
+          this.navTo(parsedLocString)
+        }
       },
 
       /**
@@ -881,84 +941,83 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       return { zoom }
     })
-    .views(self => ({
-      get menuOptions(): MenuOption[] {
-        const session = getSession(self)
-        const menuOptions: MenuOption[] = [
-          {
-            label: 'Open track selector',
-            onClick: self.activateTrackSelector,
-            icon: LineStyleIcon,
-            disabled:
-              isSessionModelWithWidgets(session) &&
-              session.visibleWidget &&
-              session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-              // @ts-ignore
-              session.visibleWidget.view.id === self.id,
-          },
-          {
-            label: 'Horizontally flip',
-            icon: SyncAltIcon,
-            onClick: self.horizontallyFlip,
-          },
-          {
-            label: 'Show all regions',
-            icon: VisibilityIcon,
-            onClick: self.showAllRegions,
-          },
-          {
-            label: 'Show header',
-            icon: VisibilityIcon,
-            type: 'checkbox',
-            checked: !self.hideHeader,
-            onClick: self.toggleHeader,
-          },
-          {
-            label: 'Show header overview',
-            icon: VisibilityIcon,
-            type: 'checkbox',
-            checked: !self.hideHeaderOverview,
-            onClick: self.toggleHeaderOverview,
-            disabled: self.hideHeader,
-          },
-          {
-            label: 'Show track labels',
-            icon: VisibilityIcon,
-            type: 'checkbox',
-            checked: self.showTrackLabels,
-            onClick: self.toggleTrackLabels,
-          },
-          {
-            label: 'Show center line',
-            icon: VisibilityIcon,
-            type: 'checkbox',
-            checked: self.showCenterLine,
-            onClick: self.toggleCenterLine,
-          },
-        ]
-
-        // add track's view level menu options
-        for (const [key, value] of self.trackTypeActions.entries()) {
-          if (value.length) {
-            menuOptions.push(
-              { type: 'divider' },
-              { type: 'subHeader', label: key },
-            )
-            value.forEach(action => {
-              menuOptions.push(action)
-            })
-          }
-        }
-
-        return menuOptions
-      },
-    }))
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
-        get staticBlocks(): BlockSet {
-          const ret = calculateStaticBlocks(cast(self), 1)
+        get menuOptions(): MenuOption[] {
+          const session = getSession(self)
+          const menuOptions: MenuOption[] = [
+            {
+              label: 'Open track selector',
+              onClick: self.activateTrackSelector,
+              icon: LineStyleIcon,
+              disabled:
+                isSessionModelWithWidgets(session) &&
+                session.visibleWidget &&
+                session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+                // @ts-ignore
+                session.visibleWidget.view.id === self.id,
+            },
+            {
+              label: 'Horizontally flip',
+              icon: SyncAltIcon,
+              onClick: self.horizontallyFlip,
+            },
+            {
+              label: 'Show all regions',
+              icon: VisibilityIcon,
+              onClick: self.showAllRegions,
+            },
+            {
+              label: 'Show header',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: !self.hideHeader,
+              onClick: self.toggleHeader,
+            },
+            {
+              label: 'Show header overview',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: !self.hideHeaderOverview,
+              onClick: self.toggleHeaderOverview,
+              disabled: self.hideHeader,
+            },
+            {
+              label: 'Show track labels',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.showTrackLabels,
+              onClick: self.toggleTrackLabels,
+            },
+            {
+              label: 'Show center line',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.showCenterLine,
+              onClick: self.toggleCenterLine,
+            },
+          ]
+
+          // add track's view level menu options
+          for (const [key, value] of self.trackTypeActions.entries()) {
+            if (value.length) {
+              menuOptions.push(
+                { type: 'divider' },
+                { type: 'subHeader', label: key },
+              )
+              value.forEach(action => {
+                menuOptions.push(action)
+              })
+            }
+          }
+
+          return menuOptions
+        },
+
+        get staticBlocks() {
+          const ret = calculateStaticBlocks(self, true, true, 1)
           const sret = JSON.stringify(ret)
           if (stringifiedCurrentlyCalculatedStaticBlocks !== sret) {
             currentlyCalculatedStaticBlocks = ret
@@ -966,8 +1025,29 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
           return currentlyCalculatedStaticBlocks as BlockSet
         },
-        get dynamicBlocks(): BlockSet {
-          return calculateDynamicBlocks(cast(self))
+
+        get dynamicBlocks() {
+          return calculateDynamicBlocks(self)
+        },
+        get visibleLocStrings() {
+          const { contentBlocks } = this.dynamicBlocks
+          if (!contentBlocks.length) {
+            return ''
+          }
+          const isSingleAssemblyName = contentBlocks.every(
+            block => block.assemblyName === contentBlocks[0].assemblyName,
+          )
+          const locs = contentBlocks.map(block =>
+            assembleLocString({
+              ...block,
+              start: Math.round(block.start),
+              end: Math.round(block.end),
+              assemblyName: isSingleAssemblyName
+                ? undefined
+                : block.assemblyName,
+            }),
+          )
+          return locs.join(';')
         },
       }
     })
@@ -1011,26 +1091,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, 'image.svg')
-      },
-    }))
-    .views(self => ({
-      get visibleLocStrings() {
-        const { contentBlocks } = self.dynamicBlocks as BlockSet
-        if (!contentBlocks.length) {
-          return ''
-        }
-        const isSingleAssemblyName = contentBlocks.every(
-          block => block.assemblyName === contentBlocks[0].assemblyName,
-        )
-        const locs = contentBlocks.map(block =>
-          assembleLocString({
-            ...block,
-            start: Math.round(block.start),
-            end: Math.round(block.end),
-            assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
-          }),
-        )
-        return locs.join(';')
       },
     }))
 

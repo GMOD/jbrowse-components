@@ -4,51 +4,77 @@ import { serializeAbortSignal } from './remoteAbortSignals'
 import PluginManager from '../PluginManager'
 
 interface WorkerHandle {
+  status?: string
+  on?: (channel: string, callback: (message: string) => void) => void
+  off?: (channel: string, callback: (message: string) => void) => void
   destroy(): void
   call(functionName: string, args?: unknown, options?: {}): Promise<unknown>
 }
 
 function isClonable(thing: unknown): boolean {
-  if (typeof thing === 'function') return false
-  if (thing instanceof Error) return false
+  if (typeof thing === 'function') {
+    return false
+  }
+  if (thing instanceof Error) {
+    return false
+  }
   return true
 }
 
-const WORKER_MAX_PING_TIME = 30 * 1000 // 30 secs
-
 // watches the given worker object, returns a promise that will be rejected if
 // the worker times out
-function watchWorker(worker: WorkerHandle, pingTime: number): Promise<void> {
-  return new Promise((resolve, reject): void => {
-    let pingIsOK = true
-    const watcherInterval = setInterval(() => {
-      if (!pingIsOK) {
-        clearInterval(watcherInterval)
-        reject(
-          new Error(
-            `worker look longer than ${pingTime} ms to respond. terminated.`,
-          ),
-        )
-      } else {
-        pingIsOK = false
-        worker
-          .call('ping', [], { timeout: 2 * WORKER_MAX_PING_TIME })
-          .then(() => {
-            pingIsOK = true
-          })
-      }
-    }, pingTime)
+export async function watchWorker(worker: WorkerHandle, pingTime: number) {
+  // first ping call has no timeout, wait for worker download
+  await worker.call('ping', [], { timeout: 100000000 })
+
+  // after first ping succeeds, apply wait for timeout
+  return new Promise((resolve, reject) => {
+    function delay() {
+      setTimeout(async () => {
+        try {
+          await worker.call('ping', [], { timeout: pingTime * 2 })
+          delay()
+        } catch (e) {
+          reject(e)
+        }
+      }, pingTime)
+    }
+    delay()
   })
 }
 
 function detectHardwareConcurrency() {
-  if (
-    typeof window !== 'undefined' &&
-    'hardwareConcurrency' in window.navigator
-  ) {
+  const mainThread = typeof window !== 'undefined'
+  const canDetect = 'hardwareConcurrency' in window.navigator
+  if (mainThread && canDetect) {
     return window.navigator.hardwareConcurrency
   }
   return 1
+}
+class LazyWorker {
+  worker?: WorkerHandle
+
+  driver: BaseRpcDriver
+
+  constructor(driver: BaseRpcDriver) {
+    this.driver = driver
+  }
+
+  getWorker(pluginManager: PluginManager) {
+    if (!this.worker) {
+      const worker = this.driver.makeWorker(pluginManager)
+      watchWorker(worker, this.driver.maxPingTime).catch(() => {
+        if (this.worker) {
+          console.warn('worker did not respond, killing and generating new one')
+          this.worker.destroy()
+          this.worker.status = 'killed'
+          this.worker = undefined
+        }
+      })
+      this.worker = worker
+    }
+    return this.worker
+  }
 }
 
 export default abstract class BaseRpcDriver {
@@ -60,7 +86,11 @@ export default abstract class BaseRpcDriver {
 
   abstract makeWorker(pluginManager: PluginManager): WorkerHandle
 
-  private workerPool?: WorkerHandle[]
+  private workerPool?: LazyWorker[]
+
+  maxPingTime = 30000
+
+  workerCheckFrequency = 5000
 
   // filter the given object and just remove any non-clonable things from it
   filterArgs<THING_TYPE>(
@@ -84,15 +114,15 @@ export default abstract class BaseRpcDriver {
         ) as unknown) as THING_TYPE
       }
 
-      if (isStateTreeNode(thing) && !isAlive(thing))
+      if (isStateTreeNode(thing) && !isAlive(thing)) {
         throw new Error('dead state tree node passed to RPC call')
+      }
 
-      const newobj = objectFromEntries(
+      return objectFromEntries(
         Object.entries(thing)
           .filter(e => isClonable(e[1]))
           .map(([k, v]) => [k, this.filterArgs(v, pluginManager, sessionId)]),
-      )
-      return newobj as THING_TYPE
+      ) as THING_TYPE
     }
     return thing
   }
@@ -107,43 +137,20 @@ export default abstract class BaseRpcDriver {
     worker.call(functionName, signalId, { timeout: 1000000 })
   }
 
-  createWorkerPool(pluginManager: PluginManager): WorkerHandle[] {
+  createWorkerPool(pluginManager: PluginManager): LazyWorker[] {
     const hardwareConcurrency = detectHardwareConcurrency()
 
     const workerCount =
       this.workerCount || Math.max(1, Math.ceil((hardwareConcurrency - 2) / 3))
 
-    const workerHandles: WorkerHandle[] = new Array(workerCount)
-    for (let i = 0; i < workerCount; i += 1) {
-      workerHandles[i] = this.makeWorker(pluginManager)
-    }
-
-    const watchAndReplaceWorker = (
-      worker: WorkerHandle,
-      workerIndex: number,
-    ): void => {
-      watchWorker(worker, WORKER_MAX_PING_TIME).catch(() => {
-        console.warn(
-          `worker ${
-            workerIndex + 1
-          } did not respond within ${WORKER_MAX_PING_TIME} ms, terminating and replacing.`,
-        )
-        worker.destroy()
-        workerHandles[workerIndex] = this.makeWorker(pluginManager)
-        watchAndReplaceWorker(workerHandles[workerIndex], workerIndex)
-      })
-    }
-
-    // for each worker, make a ping timer that will kill it and start a new one if it does not
-    // respond to a ping within a certain time
-    workerHandles.forEach(watchAndReplaceWorker)
-
-    return workerHandles
+    return [...new Array(workerCount)].map(() => new LazyWorker(this))
   }
 
-  getWorkerPool(pluginManager: PluginManager): WorkerHandle[] {
+  getWorkerPool(pluginManager: PluginManager) {
     if (!this.workerPool) {
-      this.workerPool = this.createWorkerPool(pluginManager)
+      const res = this.createWorkerPool(pluginManager)
+      this.workerPool = res
+      return res // making this several steps makes TS happy
     }
     return this.workerPool
   }
@@ -163,7 +170,7 @@ export default abstract class BaseRpcDriver {
     }
 
     // console.log(`${sessionId} -> worker ${workerNumber}`)
-    const worker = workers[workerNumber]
+    const worker = workers[workerNumber].getWorker(pluginManager)
     if (!worker) {
       throw new Error('no web workers registered for RPC')
     }
@@ -174,7 +181,7 @@ export default abstract class BaseRpcDriver {
     pluginManager: PluginManager,
     sessionId: string,
     functionName: string,
-    args: {},
+    args: { statusCallback?: Function },
     options = {},
   ) {
     if (!sessionId) {
@@ -188,10 +195,35 @@ export default abstract class BaseRpcDriver {
       pluginManager,
       sessionId,
     )
-    const result = await worker.call(functionName, filteredAndSerializedArgs, {
+
+    // now actually call the worker
+    const callP = worker.call(functionName, filteredAndSerializedArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes
+      statusCallback: args.statusCallback,
       ...options,
     })
-    return rpcMethod.deserializeReturn(result)
+
+    // check every 5 seconds to see if the worker has been killed, and
+    // reject the killedP promise if it has
+    let killedCheckInterval: ReturnType<typeof setInterval>
+    const killedP = new Promise((resolve, reject) => {
+      killedCheckInterval = setInterval(() => {
+        // must've been killed
+        if (worker.status === 'killed') {
+          reject(
+            new Error('operation timed out, worker process stopped responding'),
+          )
+        }
+      }, this.workerCheckFrequency)
+    }).finally(() => {
+      clearInterval(killedCheckInterval)
+    })
+
+    // the result is a race between the actual result promise, and the "killed"
+    // promise. the killed promise will only actually win if the worker was
+    // killed before the call could return
+    const resultP = Promise.race([callP, killedP])
+
+    return rpcMethod.deserializeReturn(await resultP)
   }
 }

@@ -1,121 +1,32 @@
-import { Region } from '@gmod/jbrowse-core/util/types'
 import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
 
 // material ui things
 import Button from '@material-ui/core/Button'
-import Container from '@material-ui/core/Container'
-import Grid from '@material-ui/core/Grid'
-import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
-import { makeStyles } from '@material-ui/core/styles'
-import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
+import { makeStyles } from '@material-ui/core/styles'
 
 // misc
 import { observer } from 'mobx-react'
-import React, { useState } from 'react'
+import { Instance } from 'mobx-state-tree'
+import React from 'react'
 
 // locals
-import { LinearGenomeViewModel as LGV } from '..'
+import { LinearGenomeViewStateModel } from '..'
 import Header from './Header'
-import RefNameAutocomplete from './RefNameAutocomplete'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
+import ImportForm from './ImportForm'
+
+type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles(theme => ({
-  importFormContainer: {
-    marginBottom: theme.spacing(4),
-  },
-  importFormEntry: {
-    minWidth: 180,
-  },
   errorMessage: {
     textAlign: 'center',
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
   },
 }))
-
-const ImportForm = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
-  const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-  const [selectedRegion, setSelectedRegion] = useState<Region | undefined>()
-  const [error, setError] = useState('')
-  const { assemblyNames } = getSession(model)
-  if (!error && !assemblyNames.length) {
-    setError('No configured assemblies')
-  }
-
-  function onAssemblyChange(
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) {
-    setSelectedAssemblyIdx(Number(event.target.value))
-  }
-
-  function onOpenClick() {
-    if (selectedRegion) {
-      model.setDisplayedRegions([selectedRegion])
-      model.setDisplayName(selectedRegion.assemblyName)
-    }
-  }
-
-  return (
-    <Container className={classes.importFormContainer}>
-      <Grid container spacing={1} justify="center" alignItems="center">
-        <Grid item>
-          <TextField
-            select
-            variant="outlined"
-            value={
-              assemblyNames[selectedAssemblyIdx] && !error
-                ? selectedAssemblyIdx
-                : ''
-            }
-            onChange={onAssemblyChange}
-            label="Assembly"
-            helperText={error || 'Select assembly to view'}
-            error={!!error}
-            disabled={!!error}
-            margin="normal"
-            className={classes.importFormEntry}
-          >
-            {assemblyNames.map((name, idx) => (
-              <MenuItem key={name} value={idx}>
-                {name}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-        <Grid item>
-          <RefNameAutocomplete
-            model={model}
-            assemblyName={
-              error ? undefined : assemblyNames[selectedAssemblyIdx]
-            }
-            onSelect={setSelectedRegion}
-            TextFieldProps={{
-              margin: 'normal',
-              variant: 'outlined',
-              label: 'Sequence',
-              className: classes.importFormEntry,
-              helperText: 'Select sequence to view',
-            }}
-          />
-        </Grid>
-        <Grid item>
-          <Button
-            disabled={!selectedRegion}
-            onClick={onOpenClick}
-            variant="contained"
-            color="primary"
-          >
-            Open
-          </Button>
-        </Grid>
-      </Grid>
-    </Container>
-  )
-})
 
 const LinearGenomeView = observer((props: { model: LGV }) => {
   const { model } = props

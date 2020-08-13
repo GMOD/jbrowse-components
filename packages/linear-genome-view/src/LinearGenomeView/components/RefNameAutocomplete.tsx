@@ -14,9 +14,7 @@ import { observer } from 'mobx-react'
 import { getSnapshot, Instance } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
 import { ListChildComponentProps, VariableSizeList } from 'react-window'
-import { LinearGenomeViewStateModel } from '..'
-
-type LGV = Instance<LinearGenomeViewStateModel>
+import { LinearGenomeViewModel } from '..'
 
 const LISTBOX_PADDING = 8 // px
 
@@ -97,9 +95,9 @@ function RefNameAutocomplete({
   onSelect,
   assemblyName,
   defaultRegionName,
-  TextFieldProps,
+  TextFieldProps = {},
 }: {
-  model: LGV
+  model: LinearGenomeViewModel
   onSelect: (region: Region | undefined) => void
   assemblyName?: string
   defaultRegionName?: string
@@ -166,11 +164,10 @@ function RefNameAutocomplete({
       disabled={!assemblyName || loading}
       onChange={onChange}
       renderInput={params => {
-        const helperText =
-          (TextFieldProps && TextFieldProps.helperText) || undefined
+        const { helperText, InputProps = {} } = TextFieldProps
         const TextFieldInputProps = {
           ...params.InputProps,
-          ...((TextFieldProps && TextFieldProps.InputProps) || {}),
+          ...InputProps,
           endAdornment: (
             <>
               {loading ? <CircularProgress color="inherit" size={20} /> : null}
@@ -181,7 +178,7 @@ function RefNameAutocomplete({
         return (
           <TextField
             {...params}
-            {...(TextFieldProps || {})}
+            {...TextFieldProps}
             helperText={helperText}
             InputProps={TextFieldInputProps}
           />

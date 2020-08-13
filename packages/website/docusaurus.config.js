@@ -7,14 +7,13 @@ module.exports = {
   organizationName: 'GMOD', // Usually your GitHub org/user name.
   projectName: 'jbrowse-components', // Usually your repo name.
   themeConfig: {
-    disableDarkMode: true,
     navbar: {
       title: 'JBrowse',
       logo: {
         alt: 'My Site Logo',
         src: 'img/logo.svg',
       },
-      links: [
+      items: [
         {
           to: 'docs/',
           activeBasePath: 'docs',
@@ -51,7 +50,7 @@ module.exports = {
           title: 'Docs',
           items: [
             {
-              label: 'Style Guide',
+              label: 'Documentation',
               to: 'docs/',
             },
           ],

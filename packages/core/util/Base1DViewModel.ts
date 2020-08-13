@@ -1,4 +1,4 @@
-import { types, cast, Instance } from 'mobx-state-tree'
+import { types, cast, getSnapshot, Instance } from 'mobx-state-tree'
 import { clamp } from './index'
 import { Feature } from './simpleFeature'
 import { Region } from './types/mst'
@@ -6,7 +6,7 @@ import { Region as IRegion } from './types'
 import calculateDynamicBlocks from './calculateDynamicBlocks'
 import calculateStaticBlocks from './calculateStaticBlocks'
 
-interface BpOffset {
+export interface BpOffset {
   refName?: string
   index: number
   offset: number
@@ -55,21 +55,16 @@ const Base1DView = types
       const rightPadding = 30
       return -this.width + rightPadding
     },
-    get dynamicBlocks() {
-      return calculateDynamicBlocks(self)
-    },
-    get staticBlocks() {
-      return calculateStaticBlocks(cast(self))
-    },
     get totalBp() {
       return self.displayedRegions
         .map(a => a.end - a.start)
         .reduce((a, b) => a + b, 0)
     },
-    get currBp() {
-      return this.dynamicBlocks
-        .map(a => a.end - a.start)
-        .reduce((a, b) => a + b, 0)
+    get interRegionPaddingWidth() {
+      return 2
+    },
+    get minimumBlockWidth() {
+      return 20
     },
     bpToPx({ refName, coord }: { refName: string; coord: number }) {
       let offsetBp = 0
@@ -92,7 +87,7 @@ const Base1DView = types
     pxToBp(px: number) {
       const bp = (self.offsetPx + px) * self.bpPerPx
       let bpSoFar = 0
-      let r = self.displayedRegions[0]
+      let r = getSnapshot(self.displayedRegions[0])
       if (bp < 0) {
         return {
           ...r,
@@ -113,6 +108,19 @@ const Base1DView = types
         offset: bp - bpSoFar,
         index: self.displayedRegions.length - 1,
       }
+    },
+  }))
+  .views(self => ({
+    get dynamicBlocks() {
+      return calculateDynamicBlocks(self)
+    },
+    get staticBlocks() {
+      return calculateStaticBlocks(self)
+    },
+    get currBp() {
+      return this.dynamicBlocks
+        .map(a => a.end - a.start)
+        .reduce((a, b) => a + b, 0)
     },
   }))
   .actions(self => ({

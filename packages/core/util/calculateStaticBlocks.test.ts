@@ -6,7 +6,9 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
-      displayedRegions: [{ refName: 'ctgA', start: 0, end: 10000 }],
+      displayedRegions: [
+        { assemblyName: 'test', refName: 'ctgA', start: 0, end: 10000 },
+      ],
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
     })
@@ -15,7 +17,9 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
-      displayedRegions: [{ refName: 'ctgA', start: 0, end: 10000 }],
+      displayedRegions: [
+        { assemblyName: 'test', refName: 'ctgA', start: 0, end: 10000 },
+      ],
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
     })
@@ -29,8 +33,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 30,
       displayedRegions: [
-        { refName: 'ctgA', start: 0, end: 100 },
-        { refName: 'ctgB', start: 100, end: 200 },
+        { assemblyName: 'test', refName: 'ctgA', start: 0, end: 100 },
+        { assemblyName: 'test', refName: 'ctgB', start: 100, end: 200 },
       ],
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
@@ -44,8 +48,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 1000,
       displayedRegions: [
-        { refName: 'ctgA', start: 0, end: 100 },
-        { refName: 'ctgB', start: 100, end: 200 },
+        { assemblyName: 'test', refName: 'ctgA', start: 0, end: 100 },
+        { assemblyName: 'test', refName: 'ctgB', start: 100, end: 200 },
       ],
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
@@ -59,8 +63,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: -1000,
       displayedRegions: [
-        { refName: 'ctgA', start: 0, end: 100 },
-        { refName: 'ctgB', start: 100, end: 200 },
+        { assemblyName: 'test', refName: 'ctgA', start: 0, end: 100 },
+        { assemblyName: 'test', refName: 'ctgB', start: 100, end: 200 },
       ],
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
@@ -74,8 +78,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 5000,
       displayedRegions: [
-        { refName: 'ctgA', start: 0, end: 10000 },
-        { refName: 'ctgB', start: 100, end: 10000 },
+        { assemblyName: 'test', refName: 'ctgA', start: 0, end: 10000 },
+        { assemblyName: 'test', refName: 'ctgB', start: 100, end: 10000 },
       ],
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
@@ -89,8 +93,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 0,
       displayedRegions: [
-        { refName: 'ctgA', start: 0, end: 200 },
-        { refName: 'ctgB', start: 0, end: 1000 },
+        { assemblyName: 'test', refName: 'ctgA', start: 0, end: 200 },
+        { assemblyName: 'test', refName: 'ctgB', start: 0, end: 1000 },
       ],
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
@@ -105,8 +109,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 801,
       displayedRegions: [
-        { refName: 'ctgA', start: 0, end: 200 },
-        { refName: 'ctgB', start: 0, end: 1000 },
+        { assemblyName: 'test', refName: 'ctgA', start: 0, end: 200 },
+        { assemblyName: 'test', refName: 'ctgB', start: 0, end: 1000 },
       ],
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
@@ -120,8 +124,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 1600,
       displayedRegions: [
-        { refName: 'ctgA', start: 0, end: 200 },
-        { refName: 'ctgB', start: 0, end: 10000000 },
+        { assemblyName: 'test', refName: 'ctgA', start: 0, end: 200 },
+        { assemblyName: 'test', refName: 'ctgB', start: 0, end: 10000000 },
       ],
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
@@ -135,8 +139,8 @@ describe('block calculation', () => {
       offsetPx: 1069,
       bpPerPx: 2,
       displayedRegions: [
-        { refName: 'ctgA', start: 0, end: 50000 },
-        { refName: 'ctgB', start: 0, end: 300 },
+        { assemblyName: 'test', refName: 'ctgA', start: 0, end: 50000 },
+        { assemblyName: 'test', refName: 'ctgB', start: 0, end: 300 },
       ],
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
@@ -150,8 +154,8 @@ describe('block calculation', () => {
       offsetPx: 0,
       bpPerPx: 0.05,
       displayedRegions: [
-        { refName: 'ctgA', start: 100, end: 200 },
-        { refName: 'ctgA', start: 300, end: 400 },
+        { assemblyName: 'test', refName: 'ctgA', start: 100, end: 200 },
+        { assemblyName: 'test', refName: 'ctgA', start: 300, end: 400 },
       ],
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
@@ -169,7 +173,13 @@ describe('reverse block calculation', () => {
       width: 800,
       offsetPx: 0,
       displayedRegions: [
-        { refName: 'ctgA', start: 0, end: 10000, reversed: true },
+        {
+          assemblyName: 'test',
+          refName: 'ctgA',
+          start: 0,
+          end: 10000,
+          reversed: true,
+        },
       ],
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
@@ -185,8 +195,20 @@ describe('reversed displayed regions', () => {
       width: 800,
       offsetPx: 0,
       displayedRegions: [
-        { refName: 'ctgA', start: 100, end: 200, reversed: true },
-        { refName: 'ctgA', start: 500, end: 600, reversed: true },
+        {
+          assemblyName: 'test',
+          refName: 'ctgA',
+          start: 100,
+          end: 200,
+          reversed: true,
+        },
+        {
+          assemblyName: 'test',
+          refName: 'ctgA',
+          start: 500,
+          end: 600,
+          reversed: true,
+        },
       ],
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
@@ -201,11 +223,25 @@ describe('reversed displayed regions', () => {
         offsetPx: 0,
         minimumBlockWidth: 2,
         displayedRegions: [
-          { refName: 'ctgA', start: 0, end: 1, reversed: true },
-          { refName: 'ctgA', start: 0, end: 10000, reversed: true },
+          {
+            assemblyName: 'test',
+            refName: 'ctgA',
+            start: 0,
+            end: 1,
+            reversed: true,
+          },
+          {
+            assemblyName: 'test',
+            refName: 'ctgA',
+            start: 0,
+            end: 10000,
+            reversed: true,
+          },
         ],
         interRegionPaddingWidth: 2,
       },
+      true,
+      true,
       1,
     )
     expect(blocks).toMatchSnapshot()

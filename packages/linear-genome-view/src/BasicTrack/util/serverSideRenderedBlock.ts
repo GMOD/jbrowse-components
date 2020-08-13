@@ -200,8 +200,9 @@ export function renderBlockData(
         cannotBeRenderedReason = `region assembly (${self.region.assemblyName}) does not match track assemblies (${assemblyNames})`
       }
     }
-    if (!cannotBeRenderedReason)
+    if (!cannotBeRenderedReason) {
       cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
+    }
     const { renderProps } = track
     const { rendererType } = track
     const { config } = renderProps
@@ -220,6 +221,11 @@ export function renderBlockData(
       cannotBeRenderedReason,
       trackError: track.error,
       renderArgs: {
+        statusCallback: (message: string) => {
+          if (isAlive(track)) {
+            track.setMessage(message)
+          }
+        },
         assemblyName: self.region.assemblyName,
         regions: [self.region],
         adapterConfig,
