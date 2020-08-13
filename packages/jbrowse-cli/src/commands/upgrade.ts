@@ -1,8 +1,9 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
 import * as unzip from 'unzipper'
+import JBrowseCommand from '../base'
 
 interface GithubRelease {
   tag_name: string
@@ -13,7 +14,7 @@ interface GithubRelease {
     },
   ]
 }
-export default class Upgrade extends Command {
+export default class Upgrade extends JBrowseCommand {
   static description = 'Upgrades JBrowse 2 to latest version'
 
   static examples = [
@@ -81,7 +82,7 @@ export default class Upgrade extends Command {
 
     const response = await fetch(locationUrl)
     if (!response.ok) {
-      this.error(`Failed to fetch: ${response.statusText}`, { exit: 50 })
+      this.error(`Failed to fetch: ${response.statusText}`, { exit: 10 })
     }
 
     const type = response.headers.get('content-type')
@@ -97,39 +98,6 @@ export default class Upgrade extends Command {
 
     await response.body.pipe(unzip.Extract({ path: upgradePath })).promise()
     this.log('Upgrade finished')
-  }
-
-  async checkLocation(userPath: string) {
-    let manifestJson: string
-    try {
-      manifestJson = await fsPromises.readFile(
-        path.join(userPath, 'manifest.json'),
-        {
-          encoding: 'utf8',
-        },
-      )
-    } catch (error) {
-      this.error(
-        'Could not find the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation or provide the path to one.',
-        { exit: 10 },
-      )
-    }
-
-    let manifest: { name?: string } = {}
-    try {
-      manifest = JSON.parse(manifestJson)
-    } catch (error) {
-      this.error(
-        'Could not parse the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation or provide the path to one.',
-        { exit: 20 },
-      )
-    }
-    if (manifest.name !== 'JBrowse') {
-      this.error(
-        '"name" in file "manifest.json" is not "JBrowse". Please make sure you are in the top level of a JBrowse 2 installation or provide the path to one.',
-        { exit: 30 },
-      )
-    }
   }
 
   async fetchGithubVersions() {

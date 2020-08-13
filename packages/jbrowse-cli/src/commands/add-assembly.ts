@@ -1,7 +1,8 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
+import JBrowseCommand from '../base'
 
 interface UriLocation {
   uri: string
@@ -81,7 +82,7 @@ function isValidJSON(string: string) {
   }
 }
 
-export default class AddAssembly extends Command {
+export default class AddAssembly extends JBrowseCommand {
   static description = 'Add an assembly to a JBrowse 2 configuration'
 
   static examples = [
@@ -536,35 +537,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
     )
   }
 
-  async checkLocation() {
-    let manifestJson: string
-    try {
-      manifestJson = await fsPromises.readFile('manifest.json', {
-        encoding: 'utf8',
-      })
-    } catch (error) {
-      this.error(
-        'Could not find the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 50 },
-      )
-    }
-    let manifest: { name?: string } = {}
-    try {
-      manifest = JSON.parse(manifestJson)
-    } catch (error) {
-      this.error(
-        'Could not parse the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 60 },
-      )
-    }
-    if (manifest.name !== 'JBrowse') {
-      this.error(
-        '"name" in file "manifest.json" is not "JBrowse". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 70 },
-      )
-    }
-  }
-
   guessSequenceType(sequence: string) {
     if (
       sequence.endsWith('.fa') ||
@@ -650,20 +622,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
       }
     }
     return result
-  }
-
-  async readJsonConfig(location: string) {
-    let locationUrl: URL | undefined
-    try {
-      locationUrl = new URL(location)
-    } catch (error) {
-      // ignore
-    }
-    if (locationUrl) {
-      const response = await fetch(locationUrl)
-      return response.json()
-    }
-    return fsPromises.readFile(location, { encoding: 'utf8' })
   }
 
   needLoadData(location: string) {

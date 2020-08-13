@@ -1,7 +1,8 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
+import JBrowseCommand from '../base'
 
 interface Track {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,7 +26,7 @@ interface LocalPathLocation {
   localPath: string
 }
 
-export default class AddTrack extends Command {
+export default class AddTrack extends JBrowseCommand {
   static description = 'Add a track to a JBrowse 2 configuration'
 
   static examples = [
@@ -420,38 +421,6 @@ export default class AddTrack extends Command {
     return this.error(`Could not resolve to a file or a URL: "${location}"`, {
       exit: 90,
     })
-  }
-
-  async checkLocation(location: string) {
-    let manifestJson: string
-    try {
-      manifestJson = await fsPromises.readFile(
-        path.join(location, 'manifest.json'),
-        {
-          encoding: 'utf8',
-        },
-      )
-    } catch (error) {
-      this.error(
-        'Could not find the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 50 },
-      )
-    }
-    let manifest: { name?: string } = {}
-    try {
-      manifest = JSON.parse(manifestJson)
-    } catch (error) {
-      this.error(
-        'Could not parse the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 60 },
-      )
-    }
-    if (manifest.name !== 'JBrowse') {
-      this.error(
-        '"name" in file "manifest.json" is not "JBrowse". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 70 },
-      )
-    }
   }
 
   guessFileNames(fileName: string) {

@@ -1,9 +1,10 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
+import JBrowseCommand from '../base'
 
-export default class AddTrackJson extends Command {
+export default class AddTrackJson extends JBrowseCommand {
   static description =
     'Add a track configuration directly from a JSON hunk to the JBrowse 2 configuration'
 
@@ -72,35 +73,6 @@ export default class AddTrackJson extends Command {
         idx !== -1 ? 'in' : 'to'
       } ${inputtedConfig}`,
     )
-  }
-
-  async checkLocation() {
-    let manifestJson: string
-    try {
-      manifestJson = await fsPromises.readFile('manifest.json', {
-        encoding: 'utf8',
-      })
-    } catch (error) {
-      this.error(
-        'Could not find the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 50 },
-      )
-    }
-    let manifest: { name?: string } = {}
-    try {
-      manifest = JSON.parse(manifestJson)
-    } catch (error) {
-      this.error(
-        'Could not parse the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 60 },
-      )
-    }
-    if (manifest.name !== 'JBrowse') {
-      this.error(
-        '"name" in file "manifest.json" is not "JBrowse". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 70 },
-      )
-    }
   }
 
   async resolveFileLocation(location: string, check = true) {

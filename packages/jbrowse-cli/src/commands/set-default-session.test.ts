@@ -118,7 +118,7 @@ describe('set-default-session', () => {
       )
     })
     .command(['set-default-session', '{}'])
-    .exit(40)
+    .exit(10)
     .it('fails when default session is not readable')
   setup
     .do(async ctx => {
@@ -136,7 +136,7 @@ describe('set-default-session', () => {
       'set-default-session',
       path.join(simpleDefaultSession, 'nonexist.json'),
     ])
-    .exit(40)
+    .exit(10)
     .it('fails when file does not exist')
   setup
     .do(async ctx => {
@@ -151,21 +151,21 @@ describe('set-default-session', () => {
       )
     })
     .command(['set-default-session', simpleBam])
-    .exit(50)
+    .exit(20)
     .it('fails when file is does not have a default session to read')
   setup
     .do(async () => {
       await fsPromises.unlink('manifest.json')
     })
     .command(['set-default-session', simpleDefaultSession])
-    .exit(10)
+    .exit(50)
     .it('fails if no manifest.json found in cwd')
   setup
     .do(async () => {
       await fsPromises.writeFile('manifest.json', 'This Is Invalid JSON')
     })
     .command(['set-default-session', simpleDefaultSession])
-    .exit(20)
+    .exit(60)
     .it("fails if it can't parse manifest.json")
 
   setup
@@ -173,7 +173,7 @@ describe('set-default-session', () => {
       await fsPromises.writeFile('manifest.json', '{"name":"NotJBrowse"}')
     })
     .command(['set-default-session', simpleDefaultSession])
-    .exit(30)
+    .exit(70)
     .it('fails if "name" in manifest.json is not "JBrowse"')
   setupWithAddTrack
     .do(async ctx => {

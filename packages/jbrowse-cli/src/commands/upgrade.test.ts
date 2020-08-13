@@ -67,13 +67,13 @@ describe('upgrade', () => {
       fsPromises.mkdir('jbrowse')
     })
     .command(['upgrade', 'jbrowse'])
-    .exit(10)
+    .exit(50)
     .it(
       'fails if user selects a directory that does not have a JBrowse installation',
     )
   setup
     .command(['upgrade', 'jbrowse'])
-    .exit(10)
+    .exit(50)
     .it('fails if user selects a directory that does not exist')
 
   setup
@@ -81,7 +81,7 @@ describe('upgrade', () => {
       await fsPromises.writeFile('manifest.json', 'This Is Invalid JSON')
     })
     .command(['upgrade'])
-    .exit(20)
+    .exit(60)
     .it("fails if it can't parse manifest.json")
 
   setup
@@ -89,7 +89,7 @@ describe('upgrade', () => {
       await fsPromises.writeFile('manifest.json', '{"name":"NotJBrowse"}')
     })
     .command(['upgrade'])
-    .exit(30)
+    .exit(70)
     .it('fails if "name" in manifest.json is not "JBrowse"')
   setup
     .nock('https://api.github.com', mockReleases)

@@ -1,7 +1,8 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import fetch from 'node-fetch'
 import * as unzip from 'unzipper'
+import JBrowseCommand from '../base'
 
 interface GithubRelease {
   tag_name: string
@@ -12,7 +13,7 @@ interface GithubRelease {
     },
   ]
 }
-export default class Create extends Command {
+export default class Create extends JBrowseCommand {
   static description = 'Downloads and installs the latest JBrowse 2 release'
 
   static examples = [

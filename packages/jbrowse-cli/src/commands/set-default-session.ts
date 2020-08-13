@@ -1,7 +1,8 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
+import JBrowseCommand from '../base'
 
 interface DefaultSession {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,7 +23,7 @@ interface Config {
   tracks: Track[]
 }
 
-export default class SetDefaultSession extends Command {
+export default class SetDefaultSession extends JBrowseCommand {
   static description = 'Set a default session with views and tracks'
 
   static examples = []
@@ -201,39 +202,6 @@ export default class SetDefaultSession extends Command {
     return fsPromises.readFile(location, { encoding: 'utf8' })
   }
 
-  async checkLocation(userPath: string) {
-    let manifestJson: string
-    try {
-      manifestJson = await fsPromises.readFile(
-        path.join(userPath, 'manifest.json'),
-        {
-          encoding: 'utf8',
-        },
-      )
-    } catch (error) {
-      this.error(
-        'Could not find the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation or provide the path to one.',
-        { exit: 10 },
-      )
-    }
-
-    let manifest: { name?: string } = {}
-    try {
-      manifest = JSON.parse(manifestJson)
-    } catch (error) {
-      this.error(
-        'Could not parse the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation or provide the path to one.',
-        { exit: 20 },
-      )
-    }
-    if (manifest.name !== 'JBrowse') {
-      this.error(
-        '"name" in file "manifest.json" is not "JBrowse". Please make sure you are in the top level of a JBrowse 2 installation or provide the path to one.',
-        { exit: 30 },
-      )
-    }
-  }
-
   async readDefaultSessionFile(defaultSessionFile: string) {
     let defaultSessionJson: string
     try {
@@ -241,7 +209,7 @@ export default class SetDefaultSession extends Command {
         encoding: 'utf8',
       })
     } catch (error) {
-      return this.error('Could not read the provided file', { exit: 40 })
+      return this.error('Could not read the provided file', { exit: 10 })
     }
 
     try {
@@ -249,7 +217,7 @@ export default class SetDefaultSession extends Command {
       return defaultSession
     } catch (error) {
       return this.error('Could not parse the given default session file', {
-        exit: 50,
+        exit: 20,
       })
     }
   }
