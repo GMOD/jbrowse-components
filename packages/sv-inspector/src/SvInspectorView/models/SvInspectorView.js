@@ -294,7 +294,7 @@ export default pluginManager => {
           self,
           autorun(() => {
             self.spreadsheetView.setRowMenuItems(
-              // these are the MenuOption entries for the row menu actions in the spreadsheet view.
+              // these are the MenuItem entries for the row menu actions in the spreadsheet view.
               // these are installed into the child SpreadsheetView using an autorun below
               [
                 {

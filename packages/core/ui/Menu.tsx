@@ -122,10 +122,10 @@ interface RadioMenuItem extends BaseMenuItem {
 
 interface SubMenuItem extends BaseMenuItem {
   type?: 'subMenu'
-  subMenu: MenuOption[]
+  subMenu: MenuItem[]
 }
 
-export type MenuOption =
+export type MenuItem =
   | MenuDivider
   | MenuSubHeader
   | NormalMenuItem
@@ -138,7 +138,7 @@ type OpenProp = MUIMenuProps['open']
 type OnCloseProp = MUIMenuProps['onClose']
 
 interface MenuPageProps {
-  menuOptions: MenuOption[]
+  menuItems: MenuItem[]
   onMenuItemClick: (
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
     callback: Function,
@@ -151,14 +151,14 @@ interface MenuPageProps {
 
 type MenuItemStyleProp = MenuItemProps['style']
 
-function findNextValidIdx(menuOptions: MenuOption[], currentIdx: number) {
-  const idx = menuOptions
+function findNextValidIdx(menuItems: MenuItem[], currentIdx: number) {
+  const idx = menuItems
     .slice(currentIdx + 1)
     .findIndex(
-      menuOption =>
-        menuOption.type !== 'divider' &&
-        menuOption.type !== 'subHeader' &&
-        !menuOption.disabled,
+      menuItem =>
+        menuItem.type !== 'divider' &&
+        menuItem.type !== 'subHeader' &&
+        !menuItem.disabled,
     )
   if (idx === -1) {
     return idx
@@ -166,13 +166,13 @@ function findNextValidIdx(menuOptions: MenuOption[], currentIdx: number) {
   return currentIdx + 1 + idx
 }
 
-function findPreviousValidIdx(menuOptions: MenuOption[], currentIdx: number) {
+function findPreviousValidIdx(menuItems: MenuItem[], currentIdx: number) {
   return findLastIndex(
-    menuOptions.slice(0, currentIdx),
-    menuOption =>
-      menuOption.type !== 'divider' &&
-      menuOption.type !== 'subHeader' &&
-      !menuOption.disabled,
+    menuItems.slice(0, currentIdx),
+    menuItem =>
+      menuItem.type !== 'divider' &&
+      menuItem.type !== 'subHeader' &&
+      !menuItem.disabled,
   )
 }
 
@@ -193,7 +193,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
   const classes = useStyles()
 
   const {
-    menuOptions,
+    menuItems,
     onMenuItemClick,
     open,
     onClose,
@@ -243,14 +243,14 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
     }
   }, [position, anchorEl])
 
-  const hasEndDecoration = menuOptions.some(
-    menuOption =>
-      'subMenu' in menuOption ||
-      menuOption.type === 'checkbox' ||
-      menuOption.type === 'radio',
+  const hasEndDecoration = menuItems.some(
+    menuItem =>
+      'subMenu' in menuItem ||
+      menuItem.type === 'checkbox' ||
+      menuItem.type === 'radio',
   )
-  const hasIcon = menuOptions.some(
-    menuOption => 'icon' in menuOption && menuOption.icon,
+  const hasIcon = menuItems.some(
+    menuItem => 'icon' in menuItem && menuItem.icon,
   )
   const menuItemStyle: MenuItemStyleProp = {}
   if (hasEndDecoration) {
@@ -266,48 +266,46 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
   const ListContents = (
     <>
       <MenuList autoFocusItem={open && !isSubMenuOpen}>
-        {menuOptions.map((menuOption, idx) => {
-          if (menuOption.type === 'divider') {
+        {menuItems.map((menuItem, idx) => {
+          if (menuItem.type === 'divider') {
             return <Divider key={`divider-${idx}`} component="li" />
           }
-          if (menuOption.type === 'subHeader') {
+          if (menuItem.type === 'subHeader') {
             return (
-              <ListSubheader key={`subHeader-${menuOption.label}-${idx}`}>
-                {menuOption.label}
+              <ListSubheader key={`subHeader-${menuItem.label}-${idx}`}>
+                {menuItem.label}
               </ListSubheader>
             )
           }
           let icon = null
           let endDecoration = null
-          if (menuOption.icon) {
-            const Icon = menuOption.icon
+          if (menuItem.icon) {
+            const Icon = menuItem.icon
             icon = (
               <ListItemIcon>
                 <Icon />
               </ListItemIcon>
             )
           }
-          if ('subMenu' in menuOption) {
+          if ('subMenu' in menuItem) {
             endDecoration = <MenuItemEndDecoration type="subMenu" />
           } else if (
-            menuOption.type === 'checkbox' ||
-            menuOption.type === 'radio'
+            menuItem.type === 'checkbox' ||
+            menuItem.type === 'radio'
           ) {
             endDecoration = (
               <MenuItemEndDecoration
-                type={menuOption.type}
-                checked={menuOption.checked}
-                disabled={menuOption.disabled}
+                type={menuItem.type}
+                checked={menuItem.checked}
+                disabled={menuItem.disabled}
               />
             )
           }
           const onClick =
-            'onClick' in menuOption
-              ? handleClick(menuOption.onClick)
-              : undefined
+            'onClick' in menuItem ? handleClick(menuItem.onClick) : undefined
           return (
             <MenuItem
-              key={menuOption.label}
+              key={menuItem.label}
               style={menuItemStyle}
               selected={idx === selectedMenuItemIdx}
               onClick={onClick}
@@ -316,7 +314,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
                   e.currentTarget.focus()
                   setSelectedMenuItemIdx(idx)
                 }
-                if ('subMenu' in menuOption) {
+                if ('subMenu' in menuItem) {
                   if (openSubMenuIdx !== idx) {
                     setSubMenuAnchorEl(e.currentTarget)
                     setOpenSubMenuIdx(idx)
@@ -330,11 +328,11 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
                 if (e.key === 'ArrowLeft' || e.key === 'Escape') {
                   onClose && onClose(e, 'escapeKeyDown')
                 } else if (e.key === 'ArrowUp') {
-                  setSelectedMenuItemIdx(findPreviousValidIdx(menuOptions, idx))
+                  setSelectedMenuItemIdx(findPreviousValidIdx(menuItems, idx))
                 } else if (e.key === 'ArrowDown') {
-                  const a = findNextValidIdx(menuOptions, idx)
+                  const a = findNextValidIdx(menuItems, idx)
                   setSelectedMenuItemIdx(a)
-                } else if ('subMenu' in menuOption) {
+                } else if ('subMenu' in menuItem) {
                   if (e.key === 'ArrowRight' || e.key === 'Enter') {
                     setSubMenuAnchorEl(e.currentTarget)
                     setOpenSubMenuIdx(idx)
@@ -342,25 +340,25 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
                   }
                 }
               }}
-              disabled={Boolean(menuOption.disabled)}
+              disabled={Boolean(menuItem.disabled)}
             >
               {icon}
               <ListItemText
-                primary={menuOption.label}
-                secondary={menuOption.subLabel}
-                inset={hasIcon && !menuOption.icon}
+                primary={menuItem.label}
+                secondary={menuItem.subLabel}
+                inset={hasIcon && !menuItem.icon}
               />
               {endDecoration}
             </MenuItem>
           )
         })}
       </MenuList>
-      {menuOptions.map((menuOption, idx) => {
+      {menuItems.map((menuItem, idx) => {
         let subMenu = null
-        if ('subMenu' in menuOption) {
+        if ('subMenu' in menuItem) {
           subMenu = (
             <MenuPage
-              key={menuOption.label}
+              key={menuItem.label}
               anchorEl={subMenuAnchorEl}
               open={isSubMenuOpen && openSubMenuIdx === idx}
               onClose={() => {
@@ -368,7 +366,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
                 setSubMenuAnchorEl(null)
               }}
               onMenuItemClick={onMenuItemClick}
-              menuOptions={menuOption.subMenu}
+              menuItems={menuItem.subMenu}
             />
           )
         }
@@ -396,7 +394,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
 })
 
 interface MenuProps extends PopoverProps {
-  menuOptions: MenuOption[]
+  menuItems: MenuItem[]
   onMenuItemClick: (
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
     callback: Function,
@@ -404,7 +402,7 @@ interface MenuProps extends PopoverProps {
 }
 
 function Menu(props: MenuProps) {
-  const { open, onClose, menuOptions, onMenuItemClick, ...other } = props
+  const { open, onClose, menuItems, onMenuItemClick, ...other } = props
   return (
     <Popover
       open={open}
@@ -415,7 +413,7 @@ function Menu(props: MenuProps) {
       <MenuPage
         open={open}
         onClose={onClose}
-        menuOptions={menuOptions}
+        menuItems={menuItems}
         onMenuItemClick={onMenuItemClick}
         top
       />

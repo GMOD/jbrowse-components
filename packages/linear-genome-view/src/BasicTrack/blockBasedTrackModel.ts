@@ -255,7 +255,7 @@ const blockBasedTrack = types
   }))
 
   .views(self => ({
-    get contextMenuOptions() {
+    get contextMenuItems() {
       return self.contextMenuFeature
         ? [
             {

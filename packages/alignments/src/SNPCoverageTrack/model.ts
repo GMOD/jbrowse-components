@@ -30,7 +30,7 @@ const stateModelFactory = (configSchema: any) =>
         return true
       },
 
-      get contextMenuOptions() {
+      get contextMenuItems() {
         return []
       },
     }))

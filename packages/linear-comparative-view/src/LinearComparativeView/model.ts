@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 
-import { MenuOption } from '@gmod/jbrowse-core/ui'
+import { MenuItem } from '@gmod/jbrowse-core/ui'
 import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
 import {
   LinearGenomeViewModel,
@@ -198,18 +198,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
-      get menuOptions(): MenuOption[] {
+      get menuItems(): MenuItem[] {
         const session = getSession(self)
-        const menuOptions: MenuOption[] = []
+        const menuItems: MenuItem[] = []
         self.views.forEach((view, idx) => {
-          if (view.menuOptions) {
-            menuOptions.push({
+          if (view.menuItems) {
+            menuItems.push({
               label: `View ${idx + 1} Menu`,
-              subMenu: view.menuOptions,
+              subMenu: view.menuItems,
             })
           }
         })
-        menuOptions.push({
+        menuItems.push({
           label: 'Open track selector',
           onClick: self.activateTrackSelector,
           icon: LineStyleIcon,
@@ -220,7 +220,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             // @ts-ignore
             session.visibleWidget.view.id === self.id,
         })
-        return menuOptions
+        return menuItems
       },
     }))
 }
