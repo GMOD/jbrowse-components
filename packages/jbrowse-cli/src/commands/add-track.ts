@@ -124,7 +124,11 @@ export default class AddTrack extends JBrowseCommand {
     if (!(skipCheck || force)) {
       await this.checkLocation(runArgs.location)
     }
-    const { location, protocol, local } = await this.resolveFileLocation(
+    const {
+      location,
+      protocol,
+      local,
+    } = await this.resolveFileLocationWithProtocol(
       argsTrack,
       !(skipCheck || force),
     )
@@ -354,7 +358,7 @@ export default class AddTrack extends JBrowseCommand {
     )
   }
 
-  async resolveFileLocation(location: string, check = true) {
+  async resolveFileLocationWithProtocol(location: string, check = true) {
     let locationUrl: URL | undefined
     let locationPath: string | undefined
     let locationObj: {

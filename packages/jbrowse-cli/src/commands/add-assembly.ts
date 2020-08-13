@@ -563,67 +563,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
     return this.error('Could not determine sequence type', { exit: 80 })
   }
 
-  async resolveFileLocation(location: string, check = true) {
-    let locationUrl: URL | undefined
-    let locationPath: string | undefined
-    try {
-      locationUrl = new URL(location)
-    } catch (error) {
-      // ignore
-    }
-    if (locationUrl) {
-      let response
-      try {
-        if (check) {
-          response = await fetch(locationUrl, { method: 'HEAD' })
-          if (response.ok) {
-            return locationUrl.href
-          }
-        } else {
-          return locationUrl.href
-        }
-      } catch (error) {
-        // ignore
-      }
-    }
-    try {
-      if (check) {
-        locationPath = await fsPromises.realpath(location)
-      } else {
-        locationPath = location
-      }
-    } catch (e) {
-      // ignore
-    }
-    if (locationPath) {
-      const filePath = path.relative(process.cwd(), locationPath)
-      return filePath
-    }
-    return this.error(`Could not resolve to a file or a URL: "${location}"`, {
-      exit: 90,
-    })
-  }
-
-  async readInlineOrFileJson(inlineOrFileName: string) {
-    let result
-    // see if it's inline JSON
-    try {
-      result = JSON.parse(inlineOrFileName)
-    } catch (error) {
-      // not inline JSON, must be location of a JSON file
-      try {
-        const fileLocation = await this.resolveFileLocation(inlineOrFileName)
-        const resultJSON = await this.readJsonConfig(fileLocation)
-        result = JSON.parse(resultJSON)
-      } catch (err) {
-        this.error(`Not valid inline JSON or JSON file ${inlineOrFileName}`, {
-          exit: 100,
-        })
-      }
-    }
-    return result
-  }
-
   needLoadData(location: string) {
     let locationUrl: URL | undefined
     try {
