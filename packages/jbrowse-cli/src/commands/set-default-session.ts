@@ -1,7 +1,6 @@
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
-import fetch from 'node-fetch'
 import JBrowseCommand from '../base'
 
 interface DefaultSession {
@@ -51,7 +50,7 @@ export default class SetDefaultSession extends JBrowseCommand {
     view: flags.string({
       char: 'v',
       description:
-        'View type in config to be added as default session, will be guessed on default, i.e LinearGenomeView, CircularView, DotplotView',
+        'View type in config to be added as default session, i.e LinearGenomeView, CircularView, DotplotView.\nMust be provided if no default session file provided',
     }),
     viewid: flags.string({
       description: 'Identifier for the view. Will be generated on default',
@@ -115,23 +114,24 @@ export default class SetDefaultSession extends JBrowseCommand {
     // if user passes current session flag, print out and exit
     if (currentSession) {
       this.log(
-        `The current default session is ${configContents.defaultSession}`,
+        `The current default session is ${JSON.stringify(
+          configContents.defaultSession,
+        )}`,
       )
       this.exit()
     }
 
     const foundTracks: Track[] = []
     const existingDefaultSession = configContents.defaultSession.length > 0
+
+    // must provide default session, or view, or tracks + view
     if (!defaultSession && !view && !tracks) {
       this.error(
         `No default session information provided, Please either provide a default session file or enter information to build a default session`,
         { exit: 15 },
       )
-    }
-
-    // must provide default session, or view, or tracks + view, cannot provide just tracks
-    // if user provides a file, process and set as default session and exit
-    else if (defaultSession) {
+    } else if (defaultSession) {
+      // if user provides a file, process and set as default session and exit
       const defaultJson = await this.readDefaultSessionFile(defaultSession)
       configContents.defaultSession = defaultJson
     } else {
