@@ -83,10 +83,7 @@ export default (pluginManager: PluginManager) => {
     const positions = new Array(Math.round(length))
     sortedBlocks.forEach(({ key, offsetPx }) => {
       const y = Math.round(length - offsetPx + viewOffsetPx)
-      if (
-        y === positions.length ||
-        positions.slice(y, y + 12).some(pos => pos)
-      ) {
+      if (positions.slice(y, y + 12).some(pos => pos)) {
         blockLabelKeysToHide.push(key)
       } else {
         positions.fill(true, y, y + 12)
