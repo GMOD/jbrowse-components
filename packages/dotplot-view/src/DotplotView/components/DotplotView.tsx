@@ -83,10 +83,11 @@ export default (pluginManager: PluginManager) => {
     const positions = new Array(Math.round(length))
     sortedBlocks.forEach(({ key, offsetPx }) => {
       const y = Math.round(length - offsetPx + viewOffsetPx)
-      if (positions.slice(y, y + 12).some(pos => pos)) {
+      const labelBounds = [Math.max(y - 12, 0), y]
+      if (y === 0 || positions.slice(...labelBounds).some(Boolean)) {
         blockLabelKeysToHide.push(key)
       } else {
-        positions.fill(true, y, y + 12)
+        positions.fill(true, ...labelBounds)
       }
     })
     return blockLabelKeysToHide
