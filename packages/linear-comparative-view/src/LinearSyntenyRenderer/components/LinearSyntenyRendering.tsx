@@ -8,12 +8,13 @@ import SimpleFeature, {
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { getContainingView } from '@gmod/jbrowse-core/util'
 import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
-import { RectTuple } from '@gmod/jbrowse-core/layouts/BaseLayout'
 import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import { LinearSyntenyTrackModel } from '../../LinearSyntenyTrack'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
+
+type RectTuple = [number, number, number, number]
 
 function px(
   view: LinearGenomeViewModel,
