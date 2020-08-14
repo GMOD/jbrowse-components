@@ -158,7 +158,10 @@ const blockBasedTrack = types
         const view = getContainingView(self) as Instance<
           LinearGenomeViewStateModel
         >
-        return view.initialized ? view[blockType] : undefined
+        if (!view.initialized) {
+          throw new Error('view not initialized yet')
+        }
+        return view[blockType]
       },
 
       /**
