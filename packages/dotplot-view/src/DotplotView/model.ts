@@ -1,4 +1,3 @@
-/* eslint curly:error */
 import {
   Instance,
   SnapshotIn,
