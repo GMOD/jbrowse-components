@@ -44,51 +44,49 @@ const RenderedBlocks = observer((props: { model: BlockBasedTrackModel }) => {
   const { blockDefinitions, blockState } = model
   return (
     <>
-      {blockDefinitions
-        ? blockDefinitions.map((block: BaseBlock, idx: number) => {
-            if (block instanceof ContentBlock) {
-              const state = blockState.get(block.key)
-              return (
-                <Block block={block} key={`${model.id}-${block.key}`}>
-                  {state && state.ReactComponent ? (
-                    <state.ReactComponent model={state} />
-                  ) : null}
-                  {state && state.maxHeightReached ? (
-                    <div
-                      className={classes.heightOverflowed}
-                      style={{
-                        top: state.data.layout.totalHeight - 16,
-                        pointerEvents: 'none',
-                        height: 16,
-                      }}
-                    >
-                      Max height reached
-                    </div>
-                  ) : null}
-                </Block>
-              )
-            }
-            if (block instanceof ElidedBlock) {
-              return (
-                <ElidedBlockMarker
-                  key={`${model.id}-${block.key}`}
-                  width={block.widthPx}
-                />
-              )
-            }
-            if (block instanceof InterRegionPaddingBlock) {
-              return (
-                <InterRegionPaddingBlockMarker
-                  key={block.key}
-                  width={block.widthPx}
-                  style={{ background: 'none' }}
-                  boundary={block.variant === 'boundary'}
-                />
-              )
-            }
-            throw new Error(`invalid block type ${typeof block}`)
-          })
-        : null}
+      {blockDefinitions.map((block: BaseBlock, idx: number) => {
+        if (block instanceof ContentBlock) {
+          const state = blockState.get(block.key)
+          return (
+            <Block block={block} key={`${model.id}-${block.key}`}>
+              {state && state.ReactComponent ? (
+                <state.ReactComponent model={state} />
+              ) : null}
+              {state && state.maxHeightReached ? (
+                <div
+                  className={classes.heightOverflowed}
+                  style={{
+                    top: state.data.layout.totalHeight - 16,
+                    pointerEvents: 'none',
+                    height: 16,
+                  }}
+                >
+                  Max height reached
+                </div>
+              ) : null}
+            </Block>
+          )
+        }
+        if (block instanceof ElidedBlock) {
+          return (
+            <ElidedBlockMarker
+              key={`${model.id}-${block.key}`}
+              width={block.widthPx}
+            />
+          )
+        }
+        if (block instanceof InterRegionPaddingBlock) {
+          return (
+            <InterRegionPaddingBlockMarker
+              key={block.key}
+              width={block.widthPx}
+              style={{ background: 'none' }}
+              boundary={block.variant === 'boundary'}
+            />
+          )
+        }
+        throw new Error(`invalid block type ${typeof block}`)
+      })}
     </>
   )
 })
@@ -98,19 +96,15 @@ function TrackBlocks({ model }: { model: BlockBasedTrackModel }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const viewModel = getContainingView(model) as any
   return (
-    <>
-      {blockDefinitions ? (
-        <div
-          data-testid="Blockset"
-          className={classes.trackBlocks}
-          style={{
-            left: blockDefinitions.offsetPx - viewModel.offsetPx,
-          }}
-        >
-          <RenderedBlocks model={model} />
-        </div>
-      ) : null}
-    </>
+    <div
+      data-testid="Blockset"
+      className={classes.trackBlocks}
+      style={{
+        left: blockDefinitions.offsetPx - viewModel.offsetPx,
+      }}
+    >
+      <RenderedBlocks model={model} />
+    </div>
   )
 }
 
