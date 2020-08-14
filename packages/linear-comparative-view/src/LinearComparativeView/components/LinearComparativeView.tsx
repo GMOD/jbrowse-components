@@ -27,6 +27,7 @@ const useStyles = makeStyles(theme => {
       display: 'grid',
     },
     overlay: {
+      zIndex: 100,
       gridArea: '1/1',
     },
     content: {
