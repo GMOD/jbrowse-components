@@ -67,6 +67,7 @@ describe('<LinearGenomeView />', () => {
       configuration: {},
     })
     const model = session.views[0]
+    model.setWidth(800)
     const { container, findByText } = render(<LinearGenomeView model={model} />)
     await findByText('Foo Track')
     expect(container.firstChild).toMatchSnapshot()
@@ -118,6 +119,7 @@ describe('<LinearGenomeView />', () => {
       configuration: {},
     })
     const model = session.views[0]
+    model.setWidth(800)
     const { container, findByText } = render(<LinearGenomeView model={model} />)
     await findByText('Foo Track')
     expect(container.firstChild).toMatchSnapshot()

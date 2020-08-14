@@ -276,6 +276,8 @@ export function createTestSession(snapshot = {}) {
     ...snapshot,
   })
   root.setHistory(UndoManager.create({}, { targetStore: root.session }))
+  // @ts-ignore
+  root.session.views.map(view => view.setWidth(800))
   pluginManager.setRootModel(root)
 
   pluginManager.configure()

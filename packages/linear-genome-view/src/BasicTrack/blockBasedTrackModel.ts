@@ -16,7 +16,7 @@ import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import BlockState from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
 import BlockBasedTrack, { Tooltip } from './components/BlockBasedTrack'
-import { LinearGenomeViewStateModel } from '../LinearGenomeView'
+import { LinearGenomeViewModel } from '../LinearGenomeView'
 
 type LayoutRecord = [number, number, number, number]
 const blockBasedTrack = types
@@ -155,9 +155,10 @@ const blockBasedTrack = types
 
       get blockDefinitions() {
         const { blockType } = this
-        const view = getContainingView(self) as Instance<
-          LinearGenomeViewStateModel
-        >
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized) {
+          throw new Error('view not initialized yet')
+        }
         return view[blockType]
       },
 
@@ -185,16 +186,19 @@ const blockBasedTrack = types
       const blockWatchDisposer = autorun(() => {
         // create any blocks that we need to create
         const blocksPresent: { [key: string]: boolean } = {}
-        self.blockDefinitions.contentBlocks.forEach(block => {
-          blocksPresent[block.key] = true
-          if (!self.blockState.has(block.key)) {
-            this.addBlock(block.key, block)
-          }
-        })
-        // delete any blocks we need go delete
-        self.blockState.forEach((value, key) => {
-          if (!blocksPresent[key]) this.deleteBlock(key)
-        })
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (view.initialized) {
+          self.blockDefinitions.contentBlocks.forEach(block => {
+            blocksPresent[block.key] = true
+            if (!self.blockState.has(block.key)) {
+              this.addBlock(block.key, block)
+            }
+          })
+          // delete any blocks we need go delete
+          self.blockState.forEach((value, key) => {
+            if (!blocksPresent[key]) this.deleteBlock(key)
+          })
+        }
       })
 
       addDisposer(self, blockWatchDisposer)

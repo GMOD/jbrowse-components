@@ -78,7 +78,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       showCenterLine: false,
     })
     .volatile(() => ({
-      width: 800,
+      volatileWidth: undefined as number | undefined,
       minimumBlockWidth: 20,
       draggingTrackId: undefined as undefined | string,
       error: undefined as undefined | Error,
@@ -89,8 +89,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
       scaleFactor: 1,
     }))
     .views(self => ({
+      get width(): number {
+        if (self.volatileWidth === undefined) {
+          throw new Error(
+            'width undefined, make sure to check for model.initialized',
+          )
+        }
+        return self.volatileWidth
+      },
+    }))
+    .views(self => ({
       get initialized() {
-        return self.displayedRegions.length > 0
+        return (
+          self.volatileWidth !== undefined && self.displayedRegions.length > 0
+        )
       },
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
@@ -315,7 +327,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       setWidth(newWidth: number) {
-        self.width = newWidth
+        self.volatileWidth = newWidth
       },
 
       setError(error: Error | undefined) {
