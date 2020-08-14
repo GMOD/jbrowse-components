@@ -11,6 +11,8 @@ import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableEleme
 import { Dotplot1DView } from '../DotplotView/model'
 import MyConfig from './configSchema'
 
+type Dim = Instance<typeof Dotplot1DView>
+
 export interface DotplotRenderProps {
   dataAdapter: BaseFeatureDataAdapter
   signal?: AbortSignal
@@ -20,11 +22,11 @@ export interface DotplotRenderProps {
   fontSize: number
   highResolutionScaling: number
   pluginManager: PluginManager
-  views: Instance<typeof Dotplot1DView>[]
+  view: { hview: Dim; vview: Dim }
 }
 
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
-  async makeImageData(props: DotplotRenderProps) {
+  async makeImageData(props: DotplotRenderProps & { views: Dim[] }) {
     const {
       highResolutionScaling: scale = 1,
       width,
@@ -41,9 +43,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
 
     ctx.lineWidth = 3
     ctx.fillStyle = readConfObject(config, 'color')
-    const db1 = views[0].dynamicBlocks.contentBlocks
-    const db2 = views[1].dynamicBlocks.contentBlocks
-    ;(views[0].features || []).forEach(feature => {
+    const [hview, vview] = views
+    const db1 = hview.dynamicBlocks.contentBlocks
+    const db2 = vview.dynamicBlocks.contentBlocks
+    ;(hview.features || []).forEach(feature => {
       const start = feature.get('start')
       const end = feature.get('end')
       const refName = feature.get('refName')
@@ -51,12 +54,12 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       // const identity = feature.get('numMatches') / feature.get('blockLen')
       // ctx.fillStyle = `hsl(${identity * 150},50%,50%)`
       ctx.fillStyle = 'black'
-      const b10 = views[0].bpToPx({ refName, coord: start }) || 0
-      const b20 = views[0].bpToPx({ refName, coord: end }) || 0
+      const b10 = hview.bpToPx({ refName, coord: start }) || 0
+      const b20 = hview.bpToPx({ refName, coord: end }) || 0
 
       const { refName: mateRef } = mate
-      const e10 = views[1].bpToPx({ refName: mateRef, coord: mate.start }) || 0
-      const e20 = views[1].bpToPx({ refName: mateRef, coord: mate.end }) || 0
+      const e10 = vview.bpToPx({ refName: mateRef, coord: mate.start }) || 0
+      const e20 = vview.bpToPx({ refName: mateRef, coord: mate.end }) || 0
 
       const b1 = b10 - db1[0].offsetPx
       const b2 = b20 - db1[0].offsetPx
@@ -85,12 +88,12 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
                 const prevY = currY
 
                 if (op === 'M') {
-                  currX += val / views[0].bpPerPx - 0.01
-                  currY += val / views[1].bpPerPx - 0.01
+                  currX += val / hview.bpPerPx - 0.01
+                  currY += val / vview.bpPerPx - 0.01
                 } else if (op === 'D') {
-                  currX += val / views[0].bpPerPx
+                  currX += val / hview.bpPerPx
                 } else if (op === 'I') {
-                  currY += val / views[1].bpPerPx
+                  currY += val / vview.bpPerPx
                 }
                 ctx.beginPath()
                 ctx.moveTo(prevX, height - prevY)
@@ -110,9 +113,13 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
   }
 
   async render(renderProps: DotplotRenderProps) {
-    const { width, height, views } = renderProps
+    const {
+      width,
+      height,
+      view: { hview, vview },
+    } = renderProps
     const dimensions = [width, height]
-    const realizedViews = views.map((snap, idx) => {
+    const realizedViews = [hview, vview].map((snap, idx) => {
       const view = Dotplot1DView.create(snap)
       view.setVolatileWidth(dimensions[idx])
       return view

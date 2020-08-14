@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { LinearProgress } from '@material-ui/core'
@@ -8,62 +8,62 @@ import { BaseBlock } from '@gmod/jbrowse-core/util/blockTypes'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { DotplotViewModel } from '../model'
 
+const useStyles = makeStyles(theme => {
+  return {
+    root: {
+      position: 'relative',
+      marginBottom: theme.spacing(1),
+      overflow: 'hidden',
+    },
+    viewContainer: {
+      marginTop: '3px',
+    },
+    container: {
+      display: 'grid',
+      padding: 5,
+      position: 'relative',
+    },
+    overlay: {
+      pointerEvents: 'none',
+      overflow: 'hidden',
+      display: 'flex',
+      width: '100%',
+      gridRow: '1/2',
+      gridColumn: '2/2',
+      zIndex: 100, // needs to be below controls
+      '& path': {
+        cursor: 'crosshair',
+        fill: 'none',
+      },
+    },
+    vtext: {
+      gridColumn: '1/2',
+      gridRow: '1/2',
+    },
+    content: {
+      gridColumn: '2/2',
+      gridRow: '1/2',
+    },
+    spacer: {
+      gridColumn: '1/2',
+      gridRow: '2/2',
+    },
+    htext: {
+      gridColumn: '2/2',
+      gridRow: '2/2',
+    },
+    error: {
+      color: 'red',
+    },
+  }
+})
+
+type Coord = [number, number] | undefined
+
 export default (pluginManager: PluginManager) => {
   const { jbrequire } = pluginManager
   const ImportForm = jbrequire(require('./ImportForm'))
   const Controls = jbrequire(require('./Controls'))
-
-  const useStyles = makeStyles(theme => {
-    return {
-      root: {
-        position: 'relative',
-        marginBottom: theme.spacing(1),
-        overflow: 'hidden',
-      },
-      viewContainer: {
-        marginTop: '3px',
-      },
-      container: {
-        display: 'grid',
-        padding: 5,
-        position: 'relative',
-      },
-      overlay: {
-        pointerEvents: 'none',
-        overflow: 'hidden',
-        display: 'flex',
-        width: '100%',
-        gridRow: '1/2',
-        gridColumn: '2/2',
-        zIndex: 100, // needs to be below controls
-        '& path': {
-          cursor: 'crosshair',
-          fill: 'none',
-        },
-      },
-      vtext: {
-        gridColumn: '1/2',
-        gridRow: '1/2',
-      },
-      content: {
-        gridColumn: '2/2',
-        gridRow: '1/2',
-      },
-      spacer: {
-        gridColumn: '1/2',
-        gridRow: '2/2',
-      },
-      htext: {
-        gridColumn: '2/2',
-        gridRow: '2/2',
-      },
-      error: {
-        color: 'red',
-      },
-    }
-  })
-
-  type Coord = [number, number] | undefined
 
   function getBlockLabelKeysToHide(
     blocks: BaseBlock[],
@@ -96,12 +96,6 @@ export default (pluginManager: PluginManager) => {
   }
 
   const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
-    const classes = useStyles()
-    const [mousecurr, setMouseCurr] = useState([0, 0])
-    const [mousedown, setMouseDown] = useState<Coord>()
-    const [mouseup, setMouseUp] = useState<Coord>()
-    const [tracking, setTracking] = useState(false)
-
     const {
       initialized,
       loading,
@@ -115,6 +109,27 @@ export default (pluginManager: PluginManager) => {
       htextRotation,
       vtextRotation,
     } = model
+    const classes = useStyles()
+    const [mousecurr, setMouseCurr] = useState([0, 0])
+    const [mousedown, setMouseDown] = useState<Coord>()
+    const [mouseup, setMouseUp] = useState<Coord>()
+    const [tracking, setTracking] = useState(false)
+    const ref = useRef<SVGSVGElement>(null)
+
+    // require non-react wheel handler to properly prevent body scrolling
+    useEffect(() => {
+      function wheel(event: WheelEvent) {
+        model.hview.scroll(event.deltaX)
+        model.vview.scroll(-event.deltaY)
+        event.preventDefault()
+      }
+      if (ref.current) {
+        const curr = ref.current
+        curr.addEventListener('wheel', wheel)
+        return () => curr.removeEventListener('wheel', wheel)
+      }
+      return () => {}
+    })
 
     if (!initialized && !loading) {
       return <ImportForm model={model} />
@@ -131,7 +146,6 @@ export default (pluginManager: PluginManager) => {
         </div>
       )
     }
-
     const tickSize = 0
     const verticalBlockLabelKeysToHide = getBlockLabelKeysToHide(
       vview.dynamicBlocks.blocks,
@@ -176,14 +190,10 @@ export default (pluginManager: PluginManager) => {
             </svg>
 
             <svg
+              ref={ref}
               className={classes.content}
               width={viewWidth}
               height={viewHeight}
-              onWheel={event => {
-                model.hview.scroll(event.deltaX)
-                model.vview.scroll(-event.deltaY)
-                event.preventDefault()
-              }}
               onMouseMove={event => {
                 if (tracking) {
                   setMouseCurr([
@@ -193,13 +203,14 @@ export default (pluginManager: PluginManager) => {
                 }
               }}
               onMouseUp={event => {
-                if (mousedown) {
-                  setMouseUp([
-                    event.nativeEvent.offsetX,
-                    event.nativeEvent.offsetY,
-                  ])
-                  setTracking(false)
+                if (
+                  mousedown &&
+                  Math.abs(mousedown[0] - mousecurr[0]) > 3 &&
+                  Math.abs(mousedown[1] - mousecurr[1]) > 3
+                ) {
+                  setMouseUp([event.pageX, event.pageY])
                 }
+                setTracking(false)
               }}
               onMouseDown={event => {
                 if (event.button === 0) {
@@ -267,7 +278,7 @@ export default (pluginManager: PluginManager) => {
                       region.refName &&
                       !horizontalBlockLabelKeysToHide.includes(region.key),
                   )
-                  .map((region, index, array) => {
+                  .map(region => {
                     const x = region.offsetPx
                     const y = tickSize
                     return (

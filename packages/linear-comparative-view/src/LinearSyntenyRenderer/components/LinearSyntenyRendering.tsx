@@ -99,6 +99,7 @@ function LinearSyntenyRendering(props: {
     ctx.clearRect(0, 0, width, height)
     ctx.scale(highResolutionScaling, highResolutionScaling)
     ctx.fillStyle = getConf(trackModel, ['renderer', 'color'])
+    ctx.strokeStyle = getConf(trackModel, ['renderer', 'color'])
     const showIntraviewLinks = false
     const middle = true
     const hideTiny = false
@@ -143,13 +144,22 @@ function LinearSyntenyRendering(props: {
             // @ts-ignore
             overlayYPos(trackIds[1], l2, views, c2, l2 < l1)
 
-        ctx.beginPath()
-        ctx.moveTo(x11, y1)
-        ctx.lineTo(x12, y1)
-        ctx.lineTo(x22, y2)
-        ctx.lineTo(x21, y2)
-        ctx.closePath()
-        ctx.fill()
+        // drawing a line if the results are thin results in much less pixellation than
+        // filling in a thin polygon
+        if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
+          ctx.beginPath()
+          ctx.moveTo(x11, y1)
+          ctx.lineTo(x21, y2)
+          ctx.stroke()
+        } else {
+          ctx.beginPath()
+          ctx.moveTo(x11, y1)
+          ctx.lineTo(x12, y1)
+          ctx.lineTo(x22, y2)
+          ctx.lineTo(x21, y2)
+          ctx.closePath()
+          ctx.fill()
+        }
       }
     })
   })
