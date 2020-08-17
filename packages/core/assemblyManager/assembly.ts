@@ -133,9 +133,20 @@ interface CacheData {
 export default function assemblyFactory(assemblyConfigType: IAnyType) {
   const adapterLoads = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 1000 }),
-    async fill(args: CacheData, abortSignal?: AbortSignal) {
+    async fill(
+      args: CacheData,
+      abortSignal?: AbortSignal,
+      statusCallback?: Function,
+    ) {
+      console.log({ statusCallback })
       const { adapterConf, adapterId, self, options } = args
-      return loadRefNameMap(self, adapterId, adapterConf, options, abortSignal)
+      return loadRefNameMap(
+        self,
+        adapterId,
+        adapterConf,
+        { ...options, statusCallback },
+        abortSignal,
+      )
     },
   })
 
@@ -249,7 +260,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
     }))
     .views(self => ({
       getAdapterMapEntry(adapterConf: unknown, options: BaseOptions) {
-        const { signal, ...rest } = options
+        const { signal, statusCallback, ...rest } = options
         if (!options.sessionId) {
           throw new Error('sessionId is required')
         }
@@ -263,6 +274,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
             options: rest,
           } as CacheData,
           signal,
+          options.statusCallback,
         )
       },
 

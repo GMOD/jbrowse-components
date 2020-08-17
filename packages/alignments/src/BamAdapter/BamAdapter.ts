@@ -81,6 +81,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       if (idToName.length) {
         this.samHeader = { idToName, nameToId }
       }
+
+      statusCallback('')
     }
   }
 
