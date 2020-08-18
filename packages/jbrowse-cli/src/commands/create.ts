@@ -86,7 +86,7 @@ export default class Create extends JBrowseCommand {
 
     const response = await fetch(locationUrl)
     if (!response.ok) {
-      this.error(`Failed to fetch: ${response.statusText}`, { exit: 50 })
+      this.error(`Failed to fetch: ${response.statusText}`, { exit: 100 })
     }
 
     const type = response.headers.get('content-type')
@@ -109,12 +109,12 @@ export default class Create extends JBrowseCommand {
     try {
       allFiles = await fsPromises.readdir(userPath)
     } catch (error) {
-      this.error('Directory does not exist', { exit: 20 })
+      this.error('Directory does not exist', { exit: 110 })
     }
     if (allFiles.length > 0)
       this.error(
         `${userPath} This directory has existing files and could cause conflicts with create. Please choose another directory or use the force flag to overwrite existing files`,
-        { exit: 10 },
+        { exit: 120 },
       )
   }
 
@@ -150,7 +150,7 @@ export default class Create extends JBrowseCommand {
       ? versions.assets[0].browser_download_url
       : this.error(
           'Could not find version specified. Use --listVersions to see all available versions',
-          { exit: 40 },
+          { exit: 130 },
         )
   }
 
