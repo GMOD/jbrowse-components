@@ -194,12 +194,12 @@ custom         Either a JSON file location or inline JSON that defines a custom
     if (this.needLoadData(argsSequence) && !runFlags.load)
       this.error(
         `Please specify the loading operation for this file with --load copy|symlink|move|trust`,
-        { exit: 25 },
+        { exit: 110 },
       )
     else if (!this.needLoadData(argsSequence) && runFlags.load)
       this.error(
         `URL detected with --load flag. Please rerun the function without the --load flag`,
-        { exit: 35 },
+        { exit: 120 },
       )
 
     let { name } = runFlags
@@ -385,7 +385,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
           if (isValidJSON(argsSequence)) {
             this.error(
               'Must provide --name when using custom inline JSON sequence',
-              { exit: 10 },
+              { exit: 130 },
             )
           } else {
             name = path.basename(argsSequence, '.json')
@@ -397,7 +397,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
             `No "type" specified in sequence adapter "${JSON.stringify(
               adapter,
             )}"`,
-            { exit: 20 },
+            { exit: 140 },
           )
         }
         sequence = {
@@ -448,7 +448,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
             `No "type" specified in refNameAliases adapter "${JSON.stringify(
               refNameAliasesConfig,
             )}"`,
-            { exit: 30 },
+            { exit: 150 },
           )
         }
         this.debug(
@@ -516,7 +516,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
       } else {
         this.error(
           `Cannot add assembly with name ${assembly.name}, an assembly with that name already exists`,
-          { exit: 40 },
+          { exit: 160 },
         )
       }
     } else {
@@ -559,7 +559,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     if (isValidJSON(sequence)) {
       return 'custom'
     }
-    return this.error('Could not determine sequence type', { exit: 80 })
+    return this.error('Could not determine sequence type', { exit: 170 })
   }
 
   needLoadData(location: string) {
@@ -592,7 +592,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
             try {
               await fsPromises.copyFile(filePath, dataLocation)
             } catch (error) {
-              this.error(error, { exit: 20 })
+              this.error(error, { exit: 180 })
             }
           }),
         )
@@ -607,7 +607,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
             try {
               await fsPromises.symlink(filePath, dataLocation)
             } catch (error) {
-              this.error(error, { exit: 20 })
+              this.error(error, { exit: 180 })
             }
           }),
         )
@@ -622,7 +622,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
             try {
               await fsPromises.rename(filePath, dataLocation)
             } catch (error) {
-              this.error(error, { exit: 20 })
+              this.error(error, { exit: 180 })
             }
           }),
         )

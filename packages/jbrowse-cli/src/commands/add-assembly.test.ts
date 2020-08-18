@@ -29,17 +29,17 @@ const baseSequence = {
 describe('add-assembly', () => {
   setup
     .command(['add-assembly', '{}'])
-    .exit(25)
+    .exit(110)
     .it('fails if no load flag is passed')
 
   setup
     .command(['add-assembly', '{}', '--load', 'copy'])
-    .exit(10)
+    .exit(130)
     .it('fails if using inline JSON sequence custom with no --name')
 
   setup
     .command(['add-assembly', '{}', '--name', 'simple', '--load', 'copy'])
-    .exit(20)
+    .exit(140)
     .it('fails if custom sequence adapter has no type')
 
   setup
@@ -55,7 +55,7 @@ describe('add-assembly', () => {
       '--load',
       'copy',
     ])
-    .exit(30)
+    .exit(150)
     .it('fails if custom refNameAliases adapter has no type')
 
   setup
@@ -75,7 +75,7 @@ describe('add-assembly', () => {
     })
     .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
     .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
-    .exit(40)
+    .exit(160)
     .it('fails if trying to add an assembly with a name that already exists')
 
   setup
@@ -104,7 +104,7 @@ describe('add-assembly', () => {
 
   setup
     .command(['add-assembly', 'simple.unusual.extension.xyz', '--load', 'copy'])
-    .exit(80)
+    .exit(170)
     .it('fails if it cannot guess the sequence type')
 
   setup
@@ -134,7 +134,7 @@ describe('add-assembly', () => {
       '--load',
       'copy',
     ])
-    .exit(35)
+    .exit(120)
     .it('fails if load flag is passed with a URL')
 
   setup
