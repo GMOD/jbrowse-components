@@ -584,7 +584,7 @@ describe('add-assembly', () => {
         { encoding: 'utf8' },
       )
       expect(ctx.stdoutWrite).toHaveBeenCalledWith(
-        'Added assembly "customName" to ./config.json\n',
+        'Added assembly "customName" to config.json\n',
       )
       expect(JSON.parse(contents)).toEqual({
         ...defaultConfig,

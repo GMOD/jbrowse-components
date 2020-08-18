@@ -25,19 +25,18 @@ interface Config {
 export default class SetDefaultSession extends JBrowseCommand {
   static description = 'Set a default session with views and tracks'
 
-  static examples = []
+  static examples = [
+    '$ jbrowse set-default-session /path/to/default/session',
+    '$ jbrowse set-default-session --out /path/to/jb2/installation --view LinearGenomeView --tracks track1, track2, track3',
+    '$ jbrowse set-default-session --view LinearGenomeView, --name newName --viewId view-no-tracks',
+    '$ jbrowse set-default-session --currentSession',
+  ]
 
   static args = [
     {
       name: 'defaultSession',
       required: false,
       description: 'path to a default session setup',
-    },
-    {
-      name: 'location',
-      required: false,
-      description: 'path to JB2 installation',
-      default: '.',
     },
   ]
 
@@ -66,7 +65,13 @@ export default class SetDefaultSession extends JBrowseCommand {
     }),
     configLocation: flags.string({
       description:
-        'Write to a certain config.json file. Defaults to location/config.json if not specified',
+        'Write to a certain config.json file. Defaults to out/config.json if not specified',
+    }),
+    out: flags.string({
+      char: 'o',
+      description:
+        'path to JB2 installation. Will write out to out/config.json unless another file is specificed with configLocation flag',
+      default: '.',
     }),
     help: flags.help({
       char: 'h',
@@ -75,7 +80,7 @@ export default class SetDefaultSession extends JBrowseCommand {
 
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(SetDefaultSession)
-    const { defaultSession, location } = runArgs
+    const { defaultSession } = runArgs
     const {
       name,
       configLocation,
@@ -83,11 +88,12 @@ export default class SetDefaultSession extends JBrowseCommand {
       currentSession,
       view,
       viewId,
+      out,
     } = runFlags
 
-    const configPath = configLocation || path.join(location, 'config.json')
+    const configPath = configLocation || path.join(out, 'config.json')
 
-    await this.checkLocation(location)
+    await this.checkLocation(out)
 
     let configContentsJson
     try {

@@ -31,7 +31,7 @@ export default class AddTrack extends JBrowseCommand {
 
   static examples = [
     '$ jbrowse add-track /path/to/my.bam --load copy',
-    '$ jbrowse add-track /path/to/my.bam /path/to/jbrowse2/installation --load symlink',
+    '$ jbrowse add-track /path/to/my.bam --out /path/to/jbrowse2/installation --load symlink',
     '$ jbrowse add-track https://mywebsite.com/my.bam',
     `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' -- load move`,
     `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite`,
@@ -44,12 +44,6 @@ export default class AddTrack extends JBrowseCommand {
       name: 'track',
       required: true,
       description: `Track file or URL`,
-    },
-    {
-      name: 'location',
-      required: false,
-      description: `Location of JBrowse 2 installation. Defaults to .`,
-      default: '.',
     },
   ]
 
@@ -81,7 +75,13 @@ export default class AddTrack extends JBrowseCommand {
     }),
     configLocation: flags.string({
       description:
-        'Write to a certain config.json file. Defaults to location/config.json if not specified',
+        'Write to a certain config.json file. Defaults to out/config.json if not specified',
+    }),
+    out: flags.string({
+      char: 'o',
+      description:
+        'path to JB2 installation, writes out to out/config.json unless configLocation flag specified',
+      default: '.',
     }),
     help: flags.help({ char: 'h' }),
     trackId: flags.string({
@@ -118,11 +118,12 @@ export default class AddTrack extends JBrowseCommand {
       category,
       description,
       load,
+      out,
     } = runFlags
     let { type, trackId, name, assemblyNames } = runFlags
 
     if (!(skipCheck || force)) {
-      await this.checkLocation(runArgs.location)
+      await this.checkLocation(out)
     }
     const {
       location,
@@ -132,8 +133,7 @@ export default class AddTrack extends JBrowseCommand {
       argsTrack,
       !(skipCheck || force),
     )
-    const configPath =
-      configLocation || path.join(runArgs.location, 'config.json')
+    const configPath = configLocation || path.join(out, 'config.json')
 
     let trackLocation
     if (load) {
@@ -144,9 +144,7 @@ export default class AddTrack extends JBrowseCommand {
         )
 
       trackLocation =
-        load === 'trust'
-          ? location
-          : path.join(runArgs.location, path.basename(location))
+        load === 'trust' ? location : path.join(out, path.basename(location))
     } else if (local)
       this.error(
         'Local file detected. Please select a load option for the track with the --load flag',
@@ -293,10 +291,7 @@ export default class AddTrack extends JBrowseCommand {
         await Promise.all(
           filePaths.map(async filePath => {
             if (!filePath) return
-            const dataLocation = path.join(
-              runArgs.location,
-              path.basename(filePath),
-            )
+            const dataLocation = path.join(out, path.basename(filePath))
 
             try {
               await fsPromises.copyFile(filePath, dataLocation)
@@ -311,10 +306,7 @@ export default class AddTrack extends JBrowseCommand {
         await Promise.all(
           filePaths.map(async filePath => {
             if (!filePath) return
-            const dataLocation = path.join(
-              runArgs.location,
-              path.basename(filePath),
-            )
+            const dataLocation = path.join(out, path.basename(filePath))
 
             try {
               await fsPromises.symlink(filePath, dataLocation)
@@ -329,10 +321,7 @@ export default class AddTrack extends JBrowseCommand {
         await Promise.all(
           filePaths.map(async filePath => {
             if (!filePath) return
-            const dataLocation = path.join(
-              runArgs.location,
-              path.basename(filePath),
-            )
+            const dataLocation = path.join(out, path.basename(filePath))
 
             try {
               await fsPromises.rename(filePath, dataLocation)

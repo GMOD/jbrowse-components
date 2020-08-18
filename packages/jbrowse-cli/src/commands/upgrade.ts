@@ -27,7 +27,8 @@ export default class Upgrade extends JBrowseCommand {
     {
       name: 'localPath',
       required: false,
-      description: `Location where JBrowse 2 is installed. Defaults to .`,
+      description: `Location where JBrowse 2 is installed`,
+      default: '.',
     },
     {
       name: 'placeholder',
@@ -71,10 +72,9 @@ export default class Upgrade extends JBrowseCommand {
         this.error(error)
       }
     }
-    const upgradePath = argsPath || '.'
-    this.debug(`Want to upgrade at: ${upgradePath}`)
+    this.debug(`Want to upgrade at: ${argsPath}`)
 
-    await this.checkLocation(upgradePath)
+    await this.checkLocation(argsPath)
 
     const locationUrl = url || (await this.getTagOrLatest(tag))
 
@@ -94,7 +94,7 @@ export default class Upgrade extends JBrowseCommand {
       )
     }
 
-    await response.body.pipe(unzip.Extract({ path: upgradePath })).promise()
+    await response.body.pipe(unzip.Extract({ path: argsPath })).promise()
     this.log('Upgrade finished')
   }
 

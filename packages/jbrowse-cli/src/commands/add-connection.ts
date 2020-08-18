@@ -27,7 +27,7 @@ export default class AddConnection extends JBrowseCommand {
     '$ jbrowse add-connection http://mysite.com/path/to/hub.txt --assemblyName hg19',
     '$ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection --assemblyName hg19',
     `$ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}}' --assemblyName hg19`,
-    '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName',
+    '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --out /path/to/jb2/installation',
   ]
 
   // if not JBrowse1 or UCSC, they must provide the the config object
@@ -37,12 +37,6 @@ export default class AddConnection extends JBrowseCommand {
       name: 'dataDirectory',
       required: true,
       description: `URL of data directory\nFor hub file, usually called hub.txt\nFor JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/ `,
-    },
-    {
-      name: 'location',
-      required: false,
-      description: 'Location of JBrowse installation.',
-      default: '.',
     },
   ]
 
@@ -63,7 +57,7 @@ export default class AddConnection extends JBrowseCommand {
     }),
     configLocation: flags.string({
       description:
-        'Write to a certain config.json file. Defaults to location/config.json if not specified',
+        'Write to a certain config.json file. Defaults to out/config.json if not specified',
     }),
     connectionId: flags.string({
       description: `Id for the connection that must be unique to JBrowse.  Defaults to 'connectionType-assemblyName-currentTime'`,
@@ -72,6 +66,12 @@ export default class AddConnection extends JBrowseCommand {
       char: 'n',
       description:
         'Name of the connection. Defaults to connectionId if not provided',
+    }),
+    out: flags.string({
+      char: 'o',
+      description:
+        'path to JB2 installation, writes out to out/config.json unless configLocation flag specified',
+      default: '.',
     }),
     help: flags.help({ char: 'h' }),
     skipCheck: flags.boolean({
@@ -90,14 +90,13 @@ export default class AddConnection extends JBrowseCommand {
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddConnection)
     const { dataDirectory: argsPath } = runArgs as { dataDirectory: string }
-    const { config, configLocation } = runFlags
+    const { config, configLocation, out } = runFlags
     let { type, name, connectionId, assemblyName } = runFlags
 
-    const configPath =
-      configLocation || path.join(runArgs.location, 'config.json')
+    const configPath = configLocation || path.join(out, 'config.json')
 
     if (!(runFlags.skipCheck || runFlags.force)) {
-      await this.checkLocation(runArgs.location)
+      await this.checkLocation(out)
     }
 
     const url = await this.resolveURL(

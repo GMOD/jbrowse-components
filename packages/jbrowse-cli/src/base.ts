@@ -6,7 +6,7 @@ import fetch from 'node-fetch'
 export default abstract class JBrowseCommand extends Command {
   async init() {}
 
-  async checkLocation(location = '.') {
+  async checkLocation(location: string) {
     let manifestJson: string
     try {
       manifestJson = await fsPromises.readFile(

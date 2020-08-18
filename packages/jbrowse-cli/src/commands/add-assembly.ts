@@ -88,10 +88,11 @@ export default class AddAssembly extends JBrowseCommand {
     '$ jbrowse add-assembly GRCh38.fa --load copy',
     '$ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta --load move',
     '$ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load trust',
-    '$ jbrowse add-assembly GRCh38.2bit --config path/to/config.json --load copy',
+    '$ jbrowse add-assembly GRCh38.2bit --configLocation path/to/config.json --load copy',
     '$ jbrowse add-assembly GRCh38.chrom.sizes --load trust',
     '$ jbrowse add-assembly GRCh38.config.json --load copy',
     '$ jbrowse add-assembly https://example.com/data/sample.2bit',
+    '$ jbrowse add-assembly GRCh38.fa --out /path/to/jb2/installation --load copy',
   ]
 
   static args = [
@@ -127,11 +128,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
       options: ['indexedFasta', 'bgzipFasta', 'twoBit', 'chromSizes', 'custom'],
     }),
-    config: flags.string({
+    configLocation: flags.string({
       char: 'c',
-      description:
-        'Config file; if the file does not exist, it will be created',
-      default: './config.json',
+      description: 'Write to a certain config.json file. Defaults to out/config.json if not specified',
     }),
     name: flags.string({
       char: 'n',
@@ -164,6 +163,12 @@ custom         Either a JSON file location or inline JSON that defines a custom
     refNameColors: flags.string({
       description:
         'A comma-separated list of color strings for the reference sequence names; will cycle\nthrough colors if there are fewer colors than sequences',
+    }),
+    out: flags.string({
+      char: 'o',
+      description:
+        'path to JB2 installation, writes out to out/config.json unless configLocation flag specified.\nCreates out/config.json if nonexistent',
+      default: '.',
     }),
     help: flags.help({ char: 'h' }),
     load: flags.string({
@@ -414,8 +419,11 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
+    const configPath =
+      runFlags.configLocation || path.join(runFlags.out, 'config.json')
+
     if (!(runFlags.skipCheck || runFlags.force)) {
-      await this.checkLocation()
+      await this.checkLocation(runFlags.out)
     }
     const { sequence: argsSequence } = runArgs as { sequence: string }
     this.debug(`Sequence location is: ${argsSequence}`)
@@ -488,8 +496,8 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
     let configContentsJson
     try {
-      configContentsJson = await this.readJsonConfig(runFlags.config)
-      this.debug(`Found existing config file ${runFlags.config}`)
+      configContentsJson = await this.readJsonConfig(configPath)
+      this.debug(`Found existing config file ${configPath}`)
     } catch (error) {
       this.debug('No existing config file found, using default config')
       configContentsJson = JSON.stringify(defaultConfig)
@@ -523,16 +531,16 @@ custom         Either a JSON file location or inline JSON that defines a custom
       configContents.assemblies.push(assembly)
     }
 
-    this.debug(`Writing configuration to file ${runFlags.config}`)
+    this.debug(`Writing configuration to file ${configPath}`)
     await fsPromises.writeFile(
-      runFlags.config,
+      configPath,
       JSON.stringify(configContents, undefined, 2),
     )
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} assembly "${assembly.name}" ${
         idx !== -1 ? 'in' : 'to'
-      } ${runFlags.config}`,
+      } ${configPath}`,
     )
   }
 
