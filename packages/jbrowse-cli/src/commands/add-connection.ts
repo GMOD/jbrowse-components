@@ -110,19 +110,19 @@ export default class AddConnection extends JBrowseCommand {
       configContentsJson = await this.readJsonConfig(configPath)
       this.debug(`Found existing config file ${configPath}`)
     } catch (error) {
-      this.error('No existing config file found', { exit: 10 })
+      this.error('No existing config file found', { exit: 100 })
     }
     let configContents: Config
     try {
       configContents = { ...JSON.parse(configContentsJson) }
     } catch (error) {
-      this.error('Could not parse existing config file', { exit: 20 })
+      this.error('Could not parse existing config file', { exit: 110 })
     }
     if (!configContents.assemblies || !configContents.assemblies.length) {
       this.error(
         'No assemblies found. Please add one before adding connections',
         {
-          exit: 30,
+          exit: 120,
         },
       )
     } else if (configContents.assemblies.length > 1 && !assemblyName) {
@@ -139,7 +139,7 @@ export default class AddConnection extends JBrowseCommand {
             `Assembly name provided does not match any in config. Valid assembly names are ${configContents.assemblies.map(
               assembly => assembly.name,
             )}`,
-            { exit: 40 },
+            { exit: 130 },
           )
         : this.debug(`Assembly name(s) is :${assemblyName}`)
     else {
@@ -189,7 +189,7 @@ export default class AddConnection extends JBrowseCommand {
         if (!config || !this.isValidJSON(config))
           this.error(
             'When type is not UCSCTrackHubConnection or JBrowse1Connection, config object must be provided.\nPlease enter a config object using --config',
-            { exit: 110 },
+            { exit: 140 },
           )
 
         break
@@ -211,7 +211,7 @@ export default class AddConnection extends JBrowseCommand {
       } else
         this.error(
           `Cannot add connection with id ${connectionId}, a connection with that id already exists.\nUse --overwrite if you would like to replace the existing connection`,
-          { exit: 40 },
+          { exit: 150 },
         )
     } else configContents.connections.push(connectionConfig)
 
@@ -233,7 +233,7 @@ export default class AddConnection extends JBrowseCommand {
     try {
       locationUrl = new URL(location)
     } catch (error) {
-      this.error('The location provided is not a valid URL', { exit: 80 })
+      this.error('The location provided is not a valid URL', { exit: 160 })
     }
     if (locationUrl) {
       let response
@@ -245,7 +245,7 @@ export default class AddConnection extends JBrowseCommand {
         this.error(`Response returned with code ${response.status}`)
       } catch (error) {
         // ignore
-        this.error(`Unable to fetch from URL, ${error}`, { exit: 90 })
+        this.error(`Unable to fetch from URL, ${error}`, { exit: 170 })
       }
     }
     return this.error(`Could not resolve to a URL: "${location}"`, {

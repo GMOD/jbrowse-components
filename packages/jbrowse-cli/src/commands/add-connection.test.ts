@@ -55,16 +55,16 @@ const setupWithDateMock = setup
 describe('add-connection', () => {
   setup
     .command(['add-connection', 'https://example.com'])
-    .exit(10)
+    .exit(100)
     .it('fails if no config file')
   setup
     .command(['add-connection', '.'])
-    .exit(80)
+    .exit(160)
     .it('fails if data directory is not an url')
   setup
     .nock('https://mysite.com', site => site.head('/notafile.txt').reply(500))
     .command(['add-connection', 'https://mysite.com/notafile.txt'])
-    .exit(90)
+    .exit(170)
     .it('fails when fetching from url fails')
   setup
     .do(async ctx => {
@@ -84,7 +84,7 @@ describe('add-connection', () => {
       '--assemblyName',
       'nonexistAssembly',
     ])
-    .exit(40)
+    .exit(130)
     .it('fails if not a matching assembly name')
   setup
     .do(async () => {
@@ -200,7 +200,7 @@ describe('add-connection', () => {
       '--name',
       'newName',
     ])
-    .exit(110)
+    .exit(140)
     .it('fails if custom without a config object')
   setup
     .nock('https://mysite.com', site => site.head('/custom').reply(200))
@@ -279,7 +279,7 @@ describe('add-connection', () => {
       '--config',
       '{"url":{"uri":"https://mysite.com/custom"}}',
     ])
-    .exit(40)
+    .exit(150)
     .it('Fails to add a duplicate connection Id')
   setup
     .do(async ctx => {
