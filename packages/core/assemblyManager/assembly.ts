@@ -138,7 +138,6 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       abortSignal?: AbortSignal,
       statusCallback?: Function,
     ) {
-      console.log({ statusCallback })
       const { adapterConf, adapterId, self, options } = args
       return loadRefNameMap(
         self,
