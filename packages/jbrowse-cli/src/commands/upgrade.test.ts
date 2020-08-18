@@ -119,7 +119,7 @@ describe('upgrade', () => {
   setup
     .nock('https://api.github.com', mockReleases)
     .command(['upgrade', '--tag', '@gmod/jbrowse-web@v999.999.999'])
-    .exit(40)
+    .exit(110)
     .it('fails to upgrade if version does not exist')
   setup
     .nock('https://example.com', mockWrongSite)

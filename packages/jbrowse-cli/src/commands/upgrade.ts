@@ -80,7 +80,7 @@ export default class Upgrade extends JBrowseCommand {
 
     const response = await fetch(locationUrl)
     if (!response.ok) {
-      this.error(`Failed to fetch: ${response.statusText}`, { exit: 10 })
+      this.error(`Failed to fetch: ${response.statusText}`, { exit: 100 })
     }
 
     const type = response.headers.get('content-type')
@@ -130,7 +130,7 @@ export default class Upgrade extends JBrowseCommand {
       ? versions.assets[0].browser_download_url
       : this.error(
           'Could not find version specified. Use --listVersions to see all available versions',
-          { exit: 40 },
+          { exit: 110 },
         )
   }
 }
