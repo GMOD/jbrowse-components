@@ -4,10 +4,7 @@ import * as path from 'path'
 import fetch from 'node-fetch'
 
 export default abstract class JBrowseCommand extends Command {
-  async init() {
-    // const { flags } = this.parse(JBrowseCommand)
-    // this.flags = flags
-  }
+  async init() {}
 
   async checkLocation(location = '.') {
     let manifestJson: string

@@ -52,7 +52,7 @@ export default class SetDefaultSession extends JBrowseCommand {
       description:
         'View type in config to be added as default session, i.e LinearGenomeView, CircularView, DotplotView.\nMust be provided if no default session file provided',
     }),
-    viewid: flags.string({
+    viewId: flags.string({
       description: 'Identifier for the view. Will be generated on default',
     }),
     tracks: flags.string({
@@ -82,7 +82,7 @@ export default class SetDefaultSession extends JBrowseCommand {
       tracks,
       currentSession,
       view,
-      viewid,
+      viewId,
     } = runFlags
 
     const configPath = configLocation || path.join(location, 'config.json')
@@ -166,7 +166,7 @@ export default class SetDefaultSession extends JBrowseCommand {
         name,
         views: [
           {
-            id: viewid || `${view}-${foundTracks.length}`,
+            id: viewId || `${view}-${foundTracks.length}`,
             type: view,
             tracks: foundTracks,
           },

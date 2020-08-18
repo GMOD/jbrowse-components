@@ -325,7 +325,7 @@ OPTIONS
   --configLocation=configLocation  Write to a certain config.json file. Defaults to location/config.json if not
                                    specified
 
-  --viewid=viewid                  Identifier for the view. Will be generated on default
+  --viewId=viewId                  Identifier for the view. Will be generated on default
 ```
 
 ## `jbrowse upgrade [LOCALPATH]`
