@@ -130,7 +130,8 @@ custom         Either a JSON file location or inline JSON that defines a custom
     }),
     configLocation: flags.string({
       char: 'c',
-      description: 'Write to a certain config.json file. Defaults to out/config.json if not specified',
+      description:
+        'Write to a certain config.json file. Defaults to out/config.json if not specified',
     }),
     name: flags.string({
       char: 'n',
