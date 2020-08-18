@@ -37,6 +37,7 @@ function TracksContainer({
   // refs are to store these variables to avoid repeated rerenders associated with useState/setState
   const delta = useRef(0)
   const scheduled = useRef(false)
+  const timeout = useRef<ReturnType<typeof setTimeout>>()
   const ref = useRef<HTMLDivElement>(null)
 
   const [mouseDragging, setMouseDragging] = useState(false)
@@ -112,17 +113,25 @@ function TracksContainer({
       const { deltaX, deltaY, deltaMode } = event
       if (event.ctrlKey === true) {
         event.preventDefault()
-        delta.current += deltaY / 10
+        delta.current += deltaY / 500
         if (!scheduled.current) {
           scheduled.current = true
           window.requestAnimationFrame(() => {
-            model.zoom(
-              delta.current > 1
-                ? model.bpPerPx * (1 + delta.current)
-                : model.bpPerPx / (1 - delta.current),
-            )
-            delta.current = 0
+            const scale = -delta.current
+            model.setScaleFactor(scale > 1 ? 1 + scale : 1 / (1 - scale))
             scheduled.current = false
+            if (timeout.current) {
+              clearTimeout(timeout.current)
+            }
+            timeout.current = setTimeout(() => {
+              model.setScaleFactor(1)
+              model.zoomTo(
+                delta.current > 1
+                  ? model.bpPerPx * (1 + delta.current)
+                  : model.bpPerPx / (1 - delta.current),
+              )
+              delta.current = 0
+            }, 500)
           })
         }
       }
