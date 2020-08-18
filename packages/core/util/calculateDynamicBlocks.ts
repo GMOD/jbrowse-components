@@ -31,18 +31,15 @@ export default function calculateDynamicBlocks(
   model: Base1DViewModel,
   padding = true,
   elision = true,
+  width = 800,
 ) {
   const {
     offsetPx,
-    width,
     displayedRegions,
     bpPerPx,
     minimumBlockWidth,
     interRegionPaddingWidth,
   } = model
-  if (!width) {
-    throw new Error('view has no width, cannot calculate displayed blocks')
-  }
   const blocks = new BlockSet()
   let displayedRegionLeftPx = 0
   const windowLeftPx = offsetPx
