@@ -140,7 +140,7 @@ export default class AddTrack extends JBrowseCommand {
       if (!local)
         this.error(
           `URL detected with --load flag. Please rerun the function without the --load flag`,
-          { exit: 25 },
+          { exit: 100 },
         )
 
       trackLocation =
@@ -150,16 +150,16 @@ export default class AddTrack extends JBrowseCommand {
     } else if (local)
       this.error(
         'Local file detected. Please select a load option for the track with the --load flag',
-        { exit: 10 },
+        { exit: 110 },
       )
     else trackLocation = location
 
     const adapter = this.guessAdapter(trackLocation, protocol)
     if (adapter.type === 'UNKNOWN') {
-      this.error('Track type is not recognized', { exit: 110 })
+      this.error('Track type is not recognized', { exit: 120 })
     }
     if (adapter.type === 'UNSUPPORTED') {
-      this.error('Track type is not supported', { exit: 115 })
+      this.error('Track type is not supported', { exit: 130 })
     }
 
     // only add track if there is an existing config.json
@@ -179,11 +179,11 @@ export default class AddTrack extends JBrowseCommand {
     try {
       configContents = { ...JSON.parse(configContentsJson) }
     } catch (error) {
-      this.error('Could not parse existing config file', { exit: 35 })
+      this.error('Could not parse existing config file', { exit: 140 })
     }
     if (!configContents.assemblies || !configContents.assemblies.length) {
       this.error('No assemblies found. Please add one before adding tracks', {
-        exit: 100,
+        exit: 150,
       })
     } else if (configContents.assemblies.length > 1 && !assemblyNames) {
       this.error(
@@ -282,7 +282,7 @@ export default class AddTrack extends JBrowseCommand {
       } else
         this.error(
           `Cannot add track with id ${trackId}, a track with that id already exists.`,
-          { exit: 40 },
+          { exit: 160 },
         )
     } else configContents.tracks.push(trackConfig)
 
@@ -301,7 +301,7 @@ export default class AddTrack extends JBrowseCommand {
             try {
               await fsPromises.copyFile(filePath, dataLocation)
             } catch (error) {
-              this.error(error, { exit: 20 })
+              this.error(error, { exit: 170 })
             }
           }),
         )
@@ -319,7 +319,7 @@ export default class AddTrack extends JBrowseCommand {
             try {
               await fsPromises.symlink(filePath, dataLocation)
             } catch (error) {
-              this.error(error, { exit: 20 })
+              this.error(error, { exit: 170 })
             }
           }),
         )
@@ -337,7 +337,7 @@ export default class AddTrack extends JBrowseCommand {
             try {
               await fsPromises.rename(filePath, dataLocation)
             } catch (error) {
-              this.error(error, { exit: 20 })
+              this.error(error, { exit: 170 })
             }
           }),
         )
@@ -409,7 +409,7 @@ export default class AddTrack extends JBrowseCommand {
       return locationObj
     }
     return this.error(`Could not resolve to a file or a URL: "${location}"`, {
-      exit: 90,
+      exit: 180,
     })
   }
 

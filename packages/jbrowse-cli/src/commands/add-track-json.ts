@@ -55,7 +55,7 @@ export default class AddTrackJson extends JBrowseCommand {
       } else {
         this.error(
           `Cannot add track ${track.name}, a track with that trackId already exists: ${existing}`,
-          { exit: 40 },
+          { exit: 160 },
         )
       }
     } else {

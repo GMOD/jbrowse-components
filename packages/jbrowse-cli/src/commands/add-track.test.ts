@@ -22,11 +22,11 @@ const testConfig = path.join(
 describe('add-track', () => {
   setup
     .command(['add-track', '{}'])
-    .exit(90)
+    .exit(180)
     .it('fails if no data directory is specified')
   setup
     .command(['add-track', simpleBam])
-    .exit(10)
+    .exit(110)
     .it('fails if load flag isnt passed')
   setup
     .nock('https://mysite.com', site =>
@@ -38,7 +38,7 @@ describe('add-track', () => {
       '--load',
       'trust',
     ])
-    .exit(25)
+    .exit(100)
     .it('fails if URL with load flag is passed')
   setup
     .do(async () => {
@@ -76,7 +76,7 @@ describe('add-track', () => {
     })
     .command(['add-track', simpleBam, '--load', 'copy'])
     .command(['add-track', simpleBam, '--load', 'copy'])
-    .exit(40)
+    .exit(160)
     .it('Cannot add a track with the same track id')
   setup
     .command(['add-track', simpleBam, '--load', 'copy'])
@@ -99,7 +99,7 @@ describe('add-track', () => {
       )
     })
     .command(['add-track', simpleBam, '--load', 'copy'])
-    .exit(100)
+    .exit(150)
     .it('fails if it cannot assume the assemblyname')
 
   setup
