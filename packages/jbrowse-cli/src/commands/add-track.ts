@@ -33,10 +33,10 @@ export default class AddTrack extends JBrowseCommand {
     '$ jbrowse add-track /path/to/my.bam --load copy',
     '$ jbrowse add-track /path/to/my.bam --out /path/to/jbrowse2/installation --load symlink',
     '$ jbrowse add-track https://mywebsite.com/my.bam',
-    `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' -- load move`,
+    `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move`,
     `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite`,
     `$ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'`,
-    `$ jbrowse add-track config.json' `,
+    `$ jbrowse add-track /path/to/my/bam --configLocation config.json --load copy`,
   ]
 
   static args = [
