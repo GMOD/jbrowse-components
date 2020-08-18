@@ -59,7 +59,7 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
         onClose={() => {
           setAnchorEl(undefined)
         }}
-        menuOptions={model.menuOptions}
+        menuItems={model.menuItems}
       />
     </>
   )
