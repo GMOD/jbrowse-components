@@ -273,7 +273,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
             options: rest,
           } as CacheData,
           signal,
-          options.statusCallback,
+          statusCallback,
         )
       },
 
