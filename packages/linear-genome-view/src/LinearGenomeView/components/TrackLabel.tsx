@@ -110,15 +110,15 @@ const TrackLabel = React.forwardRef(
       handleClose()
     }
 
-    const menuItems: MenuItem[] = track.canConfigure
+    const trackMenuItems: MenuItem[] = track.canConfigure
       ? [{ label: 'Settings', onClick: onConfigureClick, icon: SettingsIcon }]
       : []
 
-    if (track.menuItems.length) {
-      if (menuItems.length) {
-        menuItems.push({ type: 'divider' })
+    if (track.trackMenuItems.length) {
+      if (trackMenuItems.length) {
+        trackMenuItems.push({ type: 'divider' })
       }
-      menuItems.push(...track.menuItems)
+      trackMenuItems.push(...track.trackMenuItems)
     }
 
     return (
@@ -155,7 +155,7 @@ const TrackLabel = React.forwardRef(
             className={classes.iconButton}
             color="secondary"
             data-testid="track_menu_icon"
-            disabled={!menuItems.length}
+            disabled={!trackMenuItems.length}
           >
             <MoreVertIcon fontSize="small" />
           </IconButton>
@@ -165,7 +165,7 @@ const TrackLabel = React.forwardRef(
           onMenuItemClick={handleMenuItemClick}
           open={Boolean(anchorEl)}
           onClose={handleClose}
-          menuItems={menuItems}
+          menuItems={trackMenuItems}
         />
       </>
     )

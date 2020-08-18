@@ -175,10 +175,6 @@ const BaseTrack = types
       return undefined as undefined | React.FC<any>
     },
 
-    get menuItems(): MenuItem[] {
-      return []
-    },
-
     get viewMenuActions(): MenuItem[] {
       return []
     },
@@ -215,12 +211,11 @@ const BaseTrack = types
       self.showAbout = show
     },
 
-    reload() {
-      // base reload does nothing, see specialized tracks for details
-    },
+    // base track reload does nothing, see specialized tracks for details
+    reload() {},
   }))
   .views(self => ({
-    get menuItems(): MenuItem[] {
+    get trackMenuItems(): MenuItem[] {
       return [
         {
           label: 'About this track',
@@ -232,7 +227,7 @@ const BaseTrack = types
       ]
     },
 
-    get trackMenuItems(): MenuItem[] {
+    get _trackMenuItems(): MenuItem[] {
       return []
     },
   }))

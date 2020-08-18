@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import {
   getConf,
   ConfigurationReference,
@@ -48,7 +49,7 @@ const stateModelFactory = (
       },
     }))
     .views(self => {
-      const { menuItems } = self
+      const { trackMenuItems } = self
       return {
         get pileupTrackConfig() {
           return {
@@ -94,9 +95,9 @@ const stateModelFactory = (
           }
         },
 
-        get menuItems(): MenuItem[] {
+        get trackMenuItems(): MenuItem[] {
           return [
-            ...menuItems,
+            ...trackMenuItems,
             {
               label: 'Show coverage track',
               icon: VisibilityIcon,
@@ -111,8 +112,8 @@ const stateModelFactory = (
               checked: self.showPileup,
               onClick: self.togglePileup,
             },
-            ...self.PileupTrack.trackMenuItems,
-            ...self.SNPCoverageTrack.trackMenuItems,
+            ...self.PileupTrack._trackMenuItems,
+            ...self.SNPCoverageTrack._trackMenuItems,
           ]
         },
       }

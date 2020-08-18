@@ -155,7 +155,7 @@ const stateModelFactory = (
       }
     })
     .views(self => {
-      const { menuItems } = self
+      const { trackMenuItems } = self
       return {
         get rendererTypeName() {
           const viewName = getConf(self, 'defaultRendering')
@@ -221,7 +221,7 @@ const stateModelFactory = (
           }
         },
 
-        get trackMenuItems() {
+        get _trackMenuItems() {
           return [
             {
               label: 'Show soft clipping',
@@ -254,8 +254,8 @@ const stateModelFactory = (
           ]
         },
 
-        get menuItems() {
-          return [...menuItems, ...this.trackMenuItems]
+        get trackMenuItems() {
+          return [...trackMenuItems, ...this._trackMenuItems]
         },
       }
     })
