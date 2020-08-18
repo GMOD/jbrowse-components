@@ -255,11 +255,14 @@ export default class ServerSideRenderer extends RendererType {
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out
     // as the result of renderRegionWithWorker.
-    return this.serializeResultsInWorker(
+    statusCallback('Serializing results')
+    const serialized = this.serializeResultsInWorker(
       { ...results, html },
       features,
       deserializedArgs,
     )
+    statusCallback('')
+    return serialized
   }
 
   freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {

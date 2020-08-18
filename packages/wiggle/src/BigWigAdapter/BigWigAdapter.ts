@@ -34,7 +34,9 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter
   private getHeader(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
     statusCallback('Downloading bigwig header')
-    return this.bigwig.getHeader(opts)
+    const result = this.bigwig.getHeader(opts)
+    statusCallback('')
+    return result
   }
 
   public async getRefNames(opts?: BaseOptions) {
