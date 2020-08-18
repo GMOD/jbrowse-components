@@ -103,7 +103,7 @@ describe('set-default-session', () => {
       )
     })
     .command(['set-default-session'])
-    .exit(15)
+    .exit(120)
     .it('fails when no necessary default session information is provided')
   setup
     .do(async ctx => {
@@ -118,7 +118,7 @@ describe('set-default-session', () => {
       )
     })
     .command(['set-default-session', '{}'])
-    .exit(10)
+    .exit(150)
     .it('fails when default session is not readable')
   setup
     .do(async ctx => {
@@ -136,7 +136,7 @@ describe('set-default-session', () => {
       'set-default-session',
       path.join(simpleDefaultSession, 'nonexist.json'),
     ])
-    .exit(10)
+    .exit(150)
     .it('fails when file does not exist')
   setup
     .do(async ctx => {
@@ -151,7 +151,7 @@ describe('set-default-session', () => {
       )
     })
     .command(['set-default-session', simpleBam])
-    .exit(20)
+    .exit(160)
     .it('fails when file is does not have a default session to read')
   setup
     .do(async () => {
@@ -188,7 +188,7 @@ describe('set-default-session', () => {
       )
     })
     .command(['set-default-session', '--tracks', 'simple'])
-    .exit(80)
+    .exit(130)
     .it('fails when specifying a track without specifying a view')
   setupWithAddTrack
     .command([
@@ -198,7 +198,7 @@ describe('set-default-session', () => {
       '--tracks',
       'track-non-exist',
     ])
-    .exit(90)
+    .exit(140)
     .it('fails when specifying a track that does not exist')
   setup
     .do(async ctx => {

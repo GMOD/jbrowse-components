@@ -97,7 +97,7 @@ export default class SetDefaultSession extends JBrowseCommand {
       this.error(
         'No existing config file found, run add-assembly first to bootstrap config',
         {
-          exit: 30,
+          exit: 100,
         },
       )
     }
@@ -106,7 +106,7 @@ export default class SetDefaultSession extends JBrowseCommand {
     try {
       configContents = { ...JSON.parse(configContentsJson) }
     } catch (error) {
-      this.error('Could not parse existing config file', { exit: 35 })
+      this.error('Could not parse existing config file', { exit: 110 })
     }
 
     if (!configContents.defaultSession) configContents.defaultSession = {}
@@ -128,7 +128,7 @@ export default class SetDefaultSession extends JBrowseCommand {
     if (!defaultSession && !view && !tracks) {
       this.error(
         `No default session information provided, Please either provide a default session file or enter information to build a default session`,
-        { exit: 15 },
+        { exit: 120 },
       )
     } else if (defaultSession) {
       // if user provides a file, process and set as default session and exit
@@ -141,7 +141,7 @@ export default class SetDefaultSession extends JBrowseCommand {
         if (!view)
           this.error(
             'Tracks must have a view type specified. Please rerun using the --view flag',
-            { exit: 80 },
+            { exit: 130 },
           )
         trackIds = tracks.split(',').map(c => c.trim())
         trackIds.forEach(trackId => {
@@ -152,7 +152,7 @@ export default class SetDefaultSession extends JBrowseCommand {
           if (!matchingTrack)
             this.error(
               `Track ${trackId} has not been added to config yet.\nPlease add the track with the add-track command before adding to the default session`,
-              { exit: 90 },
+              { exit: 140 },
             )
           else
             foundTracks.push({
@@ -195,7 +195,7 @@ export default class SetDefaultSession extends JBrowseCommand {
         encoding: 'utf8',
       })
     } catch (error) {
-      return this.error('Could not read the provided file', { exit: 10 })
+      return this.error('Could not read the provided file', { exit: 150 })
     }
 
     try {
@@ -203,7 +203,7 @@ export default class SetDefaultSession extends JBrowseCommand {
       return defaultSession
     } catch (error) {
       return this.error('Could not parse the given default session file', {
-        exit: 20,
+        exit: 160,
       })
     }
   }
