@@ -61,6 +61,7 @@ describe('BreakpointSplitView genome view component', () => {
       configuration: {},
     })
     const model = session.views[0]
+    model.setWidth(800)
     const SplitView = new BreakpointSplitView(session.pluginManager)
     const { findAllByText } = render(<SplitView model={model} />)
     await findAllByText('No tracks active.')

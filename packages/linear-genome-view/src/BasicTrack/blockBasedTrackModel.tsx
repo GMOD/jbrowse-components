@@ -184,16 +184,19 @@ const blockBasedTrack = types
       const blockWatchDisposer = autorun(() => {
         // create any blocks that we need to create
         const blocksPresent: { [key: string]: boolean } = {}
-        self.blockDefinitions.contentBlocks.forEach(block => {
-          blocksPresent[block.key] = true
-          if (!self.blockState.has(block.key)) {
-            this.addBlock(block.key, block)
-          }
-        })
-        // delete any blocks we need go delete
-        self.blockState.forEach((value, key) => {
-          if (!blocksPresent[key]) this.deleteBlock(key)
-        })
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (view.initialized) {
+          self.blockDefinitions.contentBlocks.forEach(block => {
+            blocksPresent[block.key] = true
+            if (!self.blockState.has(block.key)) {
+              this.addBlock(block.key, block)
+            }
+          })
+          // delete any blocks we need go delete
+          self.blockState.forEach((value, key) => {
+            if (!blocksPresent[key]) this.deleteBlock(key)
+          })
+        }
       })
 
       addDisposer(self, blockWatchDisposer)
@@ -296,7 +299,7 @@ const blockBasedTrack = types
   }))
 
   .views(self => ({
-    get contextMenuOptions() {
+    get contextMenuItems() {
       return self.contextMenuFeature
         ? [
             {

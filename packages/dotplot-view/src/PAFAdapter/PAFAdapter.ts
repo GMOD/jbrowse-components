@@ -125,22 +125,16 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       if (index !== -1) {
         for (let i = 0; i < pafRecords.length; i++) {
           const { extra, records } = pafRecords[i]
+          const { start, end, refName } = records[index]
           if (records[index].refName === region.refName) {
-            if (
-              doesIntersect2(
-                region.start,
-                region.end,
-                records[index].start,
-                records[index].end,
-              )
-            ) {
+            if (doesIntersect2(region.start, region.end, start, end)) {
               observer.next(
                 new SimpleFeature({
                   uniqueId: `row_${i}`,
+                  start,
+                  end,
+                  refName,
                   syntenyId: i,
-                  start: records[index].start,
-                  end: records[index].end,
-                  refName: records[index].refName,
                   mate: {
                     start: records[+!index].start,
                     end: records[+!index].end,

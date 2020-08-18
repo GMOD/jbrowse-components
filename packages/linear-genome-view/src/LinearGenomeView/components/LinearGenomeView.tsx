@@ -17,6 +17,7 @@ import Header from './Header'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
 import ImportForm from './ImportForm'
+import MiniControls from './MiniControls'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -37,8 +38,20 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   return !initialized ? (
     <ImportForm model={model} />
   ) : (
-    <div>
-      {!hideHeader ? <Header model={model} /> : null}
+    <div style={{ position: 'relative' }}>
+      {!hideHeader ? (
+        <Header model={model} />
+      ) : (
+        <div
+          style={{
+            position: 'absolute',
+            right: 0,
+            zIndex: 100000,
+          }}
+        >
+          <MiniControls model={model} />
+        </div>
+      )}
       {error ? (
         <Paper variant="outlined" className={classes.errorMessage}>
           <Typography color="error">{error.message}</Typography>

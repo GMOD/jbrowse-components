@@ -189,7 +189,7 @@ function RubberBand({
     handleClose()
   }
 
-  const menuOptions = [
+  const menuItems = [
     {
       label: 'Zoom to region',
       icon: ZoomInIcon,
@@ -306,7 +306,7 @@ function RubberBand({
           onMenuItemClick={handleMenuItemClick}
           open={open}
           onClose={handleClose}
-          menuOptions={menuOptions}
+          menuItems={menuItems}
         />
       ) : null}
     </>

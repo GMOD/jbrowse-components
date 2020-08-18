@@ -9,7 +9,7 @@ import PluginManager from '../../PluginManager'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
 import assemblyManager from '../../assemblyManager'
-import { MenuOption } from '../../ui'
+import { MenuItem } from '../../ui'
 import {
   NoAssemblyRegion as MUNoAssemblyRegion,
   Region as MUIRegion,
@@ -131,12 +131,12 @@ export interface AbstractRootModel {
 export interface AbstractMenuManager {
   appendMenu(menuName: string): void
   insertMenu(menuName: string, position: number): number
-  insertInMenu(menuName: string, menuItem: MenuOption, position: number): number
-  appendToMenu(menuName: string, menuItem: MenuOption): number
-  appendToSubMenu(menuPath: string[], menuItem: MenuOption): number
+  insertInMenu(menuName: string, menuItem: MenuItem, position: number): number
+  appendToMenu(menuName: string, menuItem: MenuItem): number
+  appendToSubMenu(menuPath: string[], menuItem: MenuItem): number
   insertInSubMenu(
     menuPath: string[],
-    menuItem: MenuOption,
+    menuItem: MenuItem,
     position: number,
   ): number
 }

@@ -10,7 +10,7 @@ import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configur
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
 import VisibilityIcon from '@material-ui/icons/Visibility'
-import { MenuOption } from '@gmod/jbrowse-core/ui'
+import { MenuItem } from '@gmod/jbrowse-core/ui'
 import AlignmentsTrackComponent from './components/AlignmentsTrack'
 import { AlignmentsConfigModel } from './configSchema'
 
@@ -93,7 +93,7 @@ const stateModelFactory = (
         }
       },
 
-      get menuOptions(): MenuOption[] {
+      get menuItems(): MenuItem[] {
         return [
           {
             label: 'Show coverage track',
@@ -109,8 +109,8 @@ const stateModelFactory = (
             checked: self.showPileup,
             onClick: self.togglePileup,
           },
-          ...self.PileupTrack.menuOptions,
-          ...self.SNPCoverageTrack.menuOptions,
+          ...self.PileupTrack.menuItems,
+          ...self.SNPCoverageTrack.menuItems,
         ]
       },
     }))

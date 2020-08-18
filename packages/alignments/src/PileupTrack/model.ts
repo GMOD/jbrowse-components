@@ -164,7 +164,7 @@ const stateModelFactory = (
         return rendererType
       },
 
-      get contextMenuOptions() {
+      get contextMenuItems() {
         const feat = self.contextMenuFeature
         return feat
           ? [
@@ -219,7 +219,7 @@ const stateModelFactory = (
         }
       },
 
-      get menuOptions() {
+      get menuItems() {
         return [
           {
             label: 'Show soft clipping',

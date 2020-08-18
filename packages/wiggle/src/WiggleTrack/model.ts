@@ -22,7 +22,7 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import React from 'react'
-import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { getNiceDomain } from '../util'
 
 import WiggleTrackComponent from './components/WiggleTrackComponent'
@@ -43,6 +43,8 @@ function logb(x: number, y: number) {
 function round(v: number, b = 1.5) {
   return (v >= 0 ? 1 : -1) * Math.pow(b, 1 + Math.floor(logb(b, Math.abs(v))))
 }
+
+type LGV = LinearGenomeViewModel
 
 const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
   types
@@ -188,9 +190,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             : results
         }
         if (autoscaleType === 'local' || autoscaleType === 'localsd') {
-          const { dynamicBlocks, bpPerPx } = getContainingView(
-            self,
-          ) as Instance<LinearGenomeViewStateModel>
+          const { dynamicBlocks, bpPerPx } = getContainingView(self) as LGV
           const sessionId = getRpcSessionId(self)
           const results = (await rpcManager.call(
             sessionId,
@@ -267,10 +267,8 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
                   const aborter = new AbortController()
                   self.setLoading(aborter)
 
-                  const { dynamicBlocks } = getContainingView(self) as Instance<
-                    LinearGenomeViewStateModel
-                  >
-                  if (!dynamicBlocks.contentBlocks.length && !self.ready) {
+                  const view = getContainingView(self) as LGV
+                  if (!view.initialized && !self.ready) {
                     return
                   }
 
