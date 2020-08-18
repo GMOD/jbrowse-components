@@ -158,14 +158,14 @@ describe('set-default-session', () => {
       await fsPromises.unlink('manifest.json')
     })
     .command(['set-default-session', simpleDefaultSession])
-    .exit(50)
+    .exit(10)
     .it('fails if no manifest.json found in cwd')
   setup
     .do(async () => {
       await fsPromises.writeFile('manifest.json', 'This Is Invalid JSON')
     })
     .command(['set-default-session', simpleDefaultSession])
-    .exit(60)
+    .exit(20)
     .it("fails if it can't parse manifest.json")
 
   setup
@@ -173,7 +173,7 @@ describe('set-default-session', () => {
       await fsPromises.writeFile('manifest.json', '{"name":"NotJBrowse"}')
     })
     .command(['set-default-session', simpleDefaultSession])
-    .exit(70)
+    .exit(30)
     .it('fails if "name" in manifest.json is not "JBrowse"')
   setupWithAddTrack
     .do(async ctx => {

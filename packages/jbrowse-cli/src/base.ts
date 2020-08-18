@@ -18,7 +18,7 @@ export default abstract class JBrowseCommand extends Command {
     } catch (error) {
       this.error(
         'Could not find the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 50 },
+        { exit: 10 },
       )
     }
     let manifest: { name?: string } = {}
@@ -27,13 +27,13 @@ export default abstract class JBrowseCommand extends Command {
     } catch (error) {
       this.error(
         'Could not parse the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 60 },
+        { exit: 20 },
       )
     }
     if (manifest.name !== 'JBrowse') {
       this.error(
         '"name" in file "manifest.json" is not "JBrowse". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 70 },
+        { exit: 30 },
       )
     }
   }
@@ -94,7 +94,7 @@ export default abstract class JBrowseCommand extends Command {
       return filePath
     }
     return this.error(`Could not resolve to a file or a URL: "${location}"`, {
-      exit: 90,
+      exit: 40,
     })
   }
 
@@ -111,7 +111,7 @@ export default abstract class JBrowseCommand extends Command {
         result = JSON.parse(resultJSON)
       } catch (err) {
         this.error(`Not valid inline JSON or JSON file ${inlineOrFileName}`, {
-          exit: 100,
+          exit: 50,
         })
       }
     }

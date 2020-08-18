@@ -91,14 +91,14 @@ describe('add-connection', () => {
       await fsPromises.unlink('manifest.json')
     })
     .command(['add-connection', 'https://example.com'])
-    .exit(50)
+    .exit(10)
     .it('fails if no manifest.json found in cwd')
   setup
     .do(async () => {
       await fsPromises.writeFile('manifest.json', 'This Is Invalid JSON')
     })
     .command(['add-connection', 'https://example.com'])
-    .exit(60)
+    .exit(20)
     .it("fails if it can't parse manifest.json")
 
   setup
@@ -106,7 +106,7 @@ describe('add-connection', () => {
       await fsPromises.writeFile('manifest.json', '{"name":"NotJBrowse"}')
     })
     .command(['add-connection', 'https://example.com'])
-    .exit(70)
+    .exit(30)
     .it('fails if "name" in manifest.json is not "JBrowse"')
 
   setupWithDateMock

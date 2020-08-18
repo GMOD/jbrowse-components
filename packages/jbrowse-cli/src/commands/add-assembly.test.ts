@@ -83,7 +83,7 @@ describe('add-assembly', () => {
       await fsPromises.unlink('manifest.json')
     })
     .command(['add-assembly', 'simple.fasta'])
-    .exit(50)
+    .exit(10)
     .it('fails if no manifest.json found in cwd')
 
   setup
@@ -91,7 +91,7 @@ describe('add-assembly', () => {
       await fsPromises.writeFile('manifest.json', 'This Is Invalid JSON')
     })
     .command(['add-assembly', 'simple.fasta'])
-    .exit(60)
+    .exit(20)
     .it("fails if it can't parse manifest.json")
 
   setup
@@ -99,7 +99,7 @@ describe('add-assembly', () => {
       await fsPromises.writeFile('manifest.json', '{"name":"NotJBrowse"}')
     })
     .command(['add-assembly', 'simple.fasta'])
-    .exit(70)
+    .exit(30)
     .it('fails if "name" in manifest.json is not "JBrowse"')
 
   setup
@@ -109,7 +109,7 @@ describe('add-assembly', () => {
 
   setup
     .command(['add-assembly', 'simple.doesNotExist.fasta', '--load', 'copy'])
-    .exit(90)
+    .exit(40)
     .it('fails if it cannot find a file')
 
   setup
@@ -125,7 +125,7 @@ describe('add-assembly', () => {
       '--load',
       'copy',
     ])
-    .exit(100)
+    .exit(50)
     .it('fails if using invalid inline JSON')
   setup
     .command([

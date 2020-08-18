@@ -45,14 +45,14 @@ describe('add-track', () => {
       await fsPromises.unlink('manifest.json')
     })
     .command(['add-track', simpleBam])
-    .exit(50)
+    .exit(10)
     .it('fails if no manifest.json found in cwd')
   setup
     .do(async () => {
       await fsPromises.writeFile('manifest.json', 'This Is Invalid JSON')
     })
     .command(['add-track', simpleBam])
-    .exit(60)
+    .exit(20)
     .it("fails if it can't parse manifest.json")
 
   setup
@@ -60,7 +60,7 @@ describe('add-track', () => {
       await fsPromises.writeFile('manifest.json', '{"name":"NotJBrowse"}')
     })
     .command(['add-track', simpleBam])
-    .exit(70)
+    .exit(30)
     .it('fails if "name" in manifest.json is not "JBrowse"')
   setup
     .do(async ctx => {
