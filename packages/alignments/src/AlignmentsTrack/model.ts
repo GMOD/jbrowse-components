@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import {
   getConf,
   ConfigurationReference,
@@ -112,8 +111,8 @@ const stateModelFactory = (
               checked: self.showPileup,
               onClick: self.togglePileup,
             },
-            ...self.PileupTrack._trackMenuItems,
-            ...self.SNPCoverageTrack._trackMenuItems,
+            ...self.PileupTrack.myTrackMenuItems,
+            ...self.SNPCoverageTrack.myTrackMenuItems,
           ]
         },
       }

@@ -227,7 +227,13 @@ const BaseTrack = types
       ]
     },
 
-    get _trackMenuItems(): MenuItem[] {
+    // distinct set of track items that are particular to this track type for
+    // base, there are none
+    //
+    // note: this attribute is helpful when composing together multiple
+    // subtracks so that you don't repeat the "about this track" from each
+    // child track
+    get myTrackMenuItems(): MenuItem[] {
       return []
     },
   }))

@@ -221,7 +221,7 @@ const stateModelFactory = (
           }
         },
 
-        get _trackMenuItems() {
+        get myTrackMenuItems() {
           return [
             {
               label: 'Show soft clipping',
@@ -255,7 +255,7 @@ const stateModelFactory = (
         },
 
         get trackMenuItems() {
-          return [...trackMenuItems, ...this._trackMenuItems]
+          return [...trackMenuItems, ...this.myTrackMenuItems]
         },
       }
     })
