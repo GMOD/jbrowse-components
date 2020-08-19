@@ -114,43 +114,40 @@ function TracksContainer({
 
   useEffect(() => {
     const curr = ref.current
+    // if ctrl is held down, zoom in with y-scroll
+    // else scroll horizontally with x-scroll
     function onWheel(origEvent: WheelEvent) {
       const event = normalizeWheel(origEvent)
       if (origEvent.ctrlKey === true) {
         origEvent.preventDefault()
         delta.current += event.pixelY / 500
+        model.setScaleFactor(
+          delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
+        )
+        if (timeout.current) {
+          clearTimeout(timeout.current)
+        }
+        timeout.current = setTimeout(() => {
+          model.setScaleFactor(1)
+          model.zoomTo(
+            delta.current > 0
+              ? model.bpPerPx * (1 + delta.current)
+              : model.bpPerPx / (1 - delta.current),
+          )
+          delta.current = 0
+        }, 300)
+      } else {
+        delta.current += event.pixelX
         if (!scheduled.current) {
+          // use rAF to make it so multiple event handlers aren't fired per-frame
+          // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
           scheduled.current = true
           window.requestAnimationFrame(() => {
-            const scale = -delta.current
-            model.setScaleFactor(scale > 0 ? 2 * (1 + scale) : 1 / (1 - scale))
+            model.horizontalScroll(delta.current)
+            delta.current = 0
             scheduled.current = false
-            if (timeout.current) {
-              clearTimeout(timeout.current)
-            }
-            timeout.current = setTimeout(() => {
-              model.setScaleFactor(1)
-              model.zoomTo(
-                delta.current > 0
-                  ? model.bpPerPx * (1 + delta.current)
-                  : model.bpPerPx / (1 - delta.current),
-              )
-              delta.current = 0
-            }, 500)
           })
         }
-      }
-
-      delta.current += event.pixelX
-      if (!scheduled.current) {
-        // use rAF to make it so multiple event handlers aren't fired per-frame
-        // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-        scheduled.current = true
-        window.requestAnimationFrame(() => {
-          model.horizontalScroll(delta.current)
-          delta.current = 0
-          scheduled.current = false
-        })
       }
     }
     if (curr) {
