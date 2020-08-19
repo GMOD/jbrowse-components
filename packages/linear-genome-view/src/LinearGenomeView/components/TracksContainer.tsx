@@ -2,6 +2,8 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useEffect, useRef, useState } from 'react'
+import normalizeWheel from 'normalize-wheel'
+
 import {
   LinearGenomeViewStateModel,
   RESIZE_HANDLE_HEIGHT,
@@ -25,6 +27,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 type LGV = Instance<LinearGenomeViewStateModel>
+type Timer = ReturnType<typeof setTimeout>
 
 function TracksContainer({
   children,
@@ -34,14 +37,15 @@ function TracksContainer({
   model: LGV
 }) {
   const classes = useStyles()
-  // refs are to store these variables to avoid repeated rerenders associated with useState/setState
+  // refs are to store these variables to avoid repeated rerenders associated
+  // with useState/setState
   const delta = useRef(0)
   const scheduled = useRef(false)
-  const timeout = useRef<ReturnType<typeof setTimeout>>()
+  const timeout = useRef<Timer>()
   const ref = useRef<HTMLDivElement>(null)
+  const prevX = useRef<number>(0)
 
   const [mouseDragging, setMouseDragging] = useState(false)
-  const prevX = useRef<number>(0)
 
   useEffect(() => {
     let cleanup = () => {}
@@ -83,12 +87,13 @@ function TracksContainer({
   }, [model, mouseDragging, prevX])
 
   function mouseDown(event: React.MouseEvent) {
-    if ((event.target as HTMLElement).draggable) return
+    // check if clicking a draggable element or a resize handle
     const target = event.target as HTMLElement
     if (target.draggable || target.dataset.resizer) {
-      // either a track label draggable element or a resize handle
       return
     }
+
+    // otherwise do click and drag scroll
     if (event.button === 0) {
       event.preventDefault()
       prevX.current = event.clientX
@@ -109,11 +114,11 @@ function TracksContainer({
 
   useEffect(() => {
     const curr = ref.current
-    function onWheel(event: WheelEvent) {
-      const { deltaX, deltaY, deltaMode } = event
-      if (event.ctrlKey === true) {
-        event.preventDefault()
-        delta.current += deltaY / 500
+    function onWheel(origEvent: WheelEvent) {
+      const event = normalizeWheel(origEvent)
+      if (origEvent.ctrlKey === true) {
+        origEvent.preventDefault()
+        delta.current += event.pixelY / 500
         if (!scheduled.current) {
           scheduled.current = true
           window.requestAnimationFrame(() => {
@@ -136,13 +141,13 @@ function TracksContainer({
         }
       }
 
-      delta.current += deltaX
+      delta.current += event.pixelX
       if (!scheduled.current) {
         // use rAF to make it so multiple event handlers aren't fired per-frame
         // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
         scheduled.current = true
         window.requestAnimationFrame(() => {
-          model.horizontalScroll(delta.current * (1 + 50 * deltaMode))
+          model.horizontalScroll(delta.current)
           delta.current = 0
           scheduled.current = false
         })
