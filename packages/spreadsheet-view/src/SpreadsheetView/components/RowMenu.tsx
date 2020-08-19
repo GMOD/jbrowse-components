@@ -1,5 +1,5 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { Menu, MenuOption } from '@gmod/jbrowse-core/ui'
+import { Menu, MenuItem } from '@gmod/jbrowse-core/ui'
 import { InstanceOfModelReturnedBy } from '@gmod/jbrowse-core/util'
 
 import SpreadsheetModelF from '../models/Spreadsheet'
@@ -38,7 +38,7 @@ export default (pluginManager: PluginManager) => {
     }
 
     // got through and evaluate all the `disabled` callbacks of the menu items
-    const menuItems: MenuOption[] = viewModel.rowMenuItems.map(item => {
+    const menuItems: MenuItem[] = viewModel.rowMenuItems.map(item => {
       if (typeof item.disabled === 'function') {
         const disabled = item.disabled(
           viewModel,
@@ -57,7 +57,7 @@ export default (pluginManager: PluginManager) => {
         open={Boolean(currentRowMenu)}
         onMenuItemClick={handleMenuItemClick}
         onClose={rowMenuClose}
-        menuOptions={menuItems}
+        menuItems={menuItems}
         anchorOrigin={{
           vertical: 'bottom',
           horizontal: 'right',

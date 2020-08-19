@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
@@ -27,15 +27,8 @@ const useStyles = makeStyles(theme => {
       display: 'grid',
     },
     overlay: {
-      display: 'flex',
-      width: '100%',
-      gridArea: '1/1',
       zIndex: 100,
-      pointerEvents: 'none',
-      '& path': {
-        cursor: 'crosshair',
-        fill: 'none',
-      },
+      gridArea: '1/1',
     },
     content: {
       gridArea: '1/1',
@@ -47,12 +40,17 @@ interface Props {
   model: LinearComparativeViewModel
 }
 const Overlays = observer(({ model }: Props) => {
+  const classes = useStyles()
   return (
     <>
       {model.tracks.map(track => {
         const { ReactComponent } = track
         return ReactComponent ? (
-          <div key={getConf(track, 'trackId')} style={{ height: track.height }}>
+          <div
+            className={classes.overlay}
+            key={getConf(track, 'trackId')}
+            style={{ height: track.height }}
+          >
             <ReactComponent model={track} />
           </div>
         ) : null
@@ -75,17 +73,11 @@ const MiddleComparativeView = observer(({ model }: Props) => {
     <div>
       <Header model={model} />
       <div className={classes.container}>
-        <div className={classes.content}>
-          <div style={{ position: 'relative' }}>
-            <div className={classes.viewContainer}>
-              <ReactComponent model={views[0]} />
-            </div>
-            <Overlays model={model} />
-            <div className={classes.viewContainer}>
-              <ReactComponent model={views[1]} />
-            </div>
-          </div>
+        <ReactComponent model={views[0]} />
+        <div style={{ display: 'grid' }}>
+          <Overlays model={model} />
         </div>
+        <ReactComponent model={views[1]} />
       </div>
     </div>
   )
@@ -94,26 +86,19 @@ const OverlayComparativeView = observer(({ model }: Props) => {
   const classes = useStyles()
   const { views } = model
   const { pluginManager } = getSession(model)
-  const ref = useRef(null)
   return (
     <div>
       <Header model={model} />
-      <div className={classes.container} ref={ref}>
+      <div className={classes.container}>
         <div className={classes.content}>
           <div style={{ position: 'relative' }}>
             {views.map(view => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const viewType = pluginManager.getViewType(view.type) as any
               const { ReactComponent } = viewType
-              return (
-                <div key={view.id} className={classes.viewContainer}>
-                  <ReactComponent model={view} />
-                </div>
-              )
+              return <ReactComponent key={view.id} model={view} />
             })}
           </div>
-        </div>
-        <div className={classes.overlay}>
           <Overlays model={model} />
         </div>
       </div>

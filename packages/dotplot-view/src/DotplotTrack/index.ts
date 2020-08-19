@@ -5,12 +5,16 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
-import { types, getParent, getSnapshot, Instance } from 'mobx-state-tree'
+import { types, getSnapshot, Instance } from 'mobx-state-tree'
 import {
   BaseTrackConfig,
   BaseTrack,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { getSession, makeAbortableReaction } from '@gmod/jbrowse-core/util'
+import {
+  getContainingView,
+  getSession,
+  makeAbortableReaction,
+} from '@gmod/jbrowse-core/util'
 import { getRpcSessionId } from '@gmod/jbrowse-core/util/tracks'
 import DotplotTrackComponent from './components/DotplotTrack'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
@@ -22,7 +26,10 @@ export function configSchemaFactory(pluginManager: any) {
     {
       viewType: 'DotplotView',
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
-      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
+      renderer: types.optional(
+        pluginManager.pluggableConfigSchemaType('renderer'),
+        { type: 'DotplotRenderer' },
+      ),
     },
     {
       baseConfiguration: BaseTrackConfig,
@@ -139,7 +146,8 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       }
     })
 }
-function renderBlockData(self: DotplotTrack) {
+
+function renderBlockData(self: DotplotTrackModel) {
   const { rpcManager } = getSession(self)
   const track = self
 
@@ -151,9 +159,9 @@ function renderBlockData(self: DotplotTrack) {
   readConfObject(self.configuration)
 
   const { adapterConfig } = self
-  const parent = getParent<DotplotViewModel>(self, 2)
+  const parent = getContainingView(self) as DotplotViewModel
   getSnapshot(parent)
-  const { views, viewWidth, viewHeight, borderSize, borderX, borderY } = parent
+  const { viewWidth, viewHeight, borderSize, borderX, borderY } = parent
 
   return {
     rendererType,
@@ -164,8 +172,7 @@ function renderBlockData(self: DotplotTrack) {
       rendererType: rendererType.name,
       renderProps: {
         ...renderProps,
-        parentView: getSnapshot(parent),
-        views: views.map(view => getSnapshot(view)),
+        view: getSnapshot(parent),
         width: viewWidth,
         height: viewHeight,
         borderSize,
@@ -195,5 +202,5 @@ async function renderBlockEffect(
   return { html, data, renderingComponent: rendererType.ReactComponent }
 }
 
-export type DotplotTrackModel = ReturnType<typeof stateModelFactory>
-export type DotplotTrack = Instance<DotplotTrackModel>
+export type DotplotTrackStateModel = ReturnType<typeof stateModelFactory>
+export type DotplotTrackModel = Instance<DotplotTrackStateModel>

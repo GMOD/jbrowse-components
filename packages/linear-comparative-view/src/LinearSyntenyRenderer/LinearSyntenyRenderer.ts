@@ -1,5 +1,4 @@
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import { getSnapshot } from 'mobx-state-tree'
 import Base1DView, {
   Base1DViewModel,
 } from '@gmod/jbrowse-core/util/Base1DViewModel'
@@ -8,33 +7,36 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
   async render(renderProps: {
     height: number
     width: number
-    views: Base1DViewModel[]
+    view: { views: Base1DViewModel[] }
   }) {
-    const { height, width, views: serializedViews } = renderProps
-    const realizedViews = serializedViews.map(snap => {
+    const {
+      width,
+      view: { views },
+    } = renderProps
+    const realizedViews = views.map(snap => {
       const view = Base1DView.create(snap)
       view.setVolatileWidth(width)
       return view
     })
-    await Promise.all(
-      realizedViews.map(async view => {
-        view.setFeatures(
-          await this.getFeatures({
-            ...renderProps,
-            regions: view.staticBlocks.contentBlocks,
-          }),
-        )
-      }),
+    const features = await Promise.all(
+      realizedViews.map(view =>
+        this.getFeatures({
+          ...renderProps,
+          regions: view.staticBlocks.contentBlocks,
+        }),
+      ),
     )
-    const views = realizedViews.map(r => ({
-      ...getSnapshot(r),
-      features: (r.features || []).map(f => f.toJSON()),
-    }))
+
+    const serializedFeatures = JSON.parse(JSON.stringify(features))
+    for (let i = 0; i < serializedFeatures.length; i++) {
+      for (let j = 0; j < serializedFeatures[i].length; j++) {
+        // eslint-disable-next-line no-underscore-dangle
+        serializedFeatures[i][j]._level = i
+      }
+    }
+
     return {
-      offsets: views.map(view => view.offsetPx),
-      views,
-      height,
-      width,
+      features: serializedFeatures,
     }
   }
 

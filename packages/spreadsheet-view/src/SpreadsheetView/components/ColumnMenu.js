@@ -89,7 +89,7 @@ export default pluginManager => {
         spreadsheetModel.setSortColumns([])
       }
 
-      const menuOptions = [
+      const menuItems = [
         // top-level column menu
         {
           label: 'Sort ascending',
@@ -162,7 +162,7 @@ export default pluginManager => {
       // don't display the filter item if this data type doesn't have filtering
       // implemented
       if (dataType && dataType.hasFilter) {
-        menuOptions.push({
+        menuItems.push({
           label: 'Create filter',
           icon: FilterListIcon,
           onClick: filterMenuClick.bind(null, true),
@@ -175,7 +175,7 @@ export default pluginManager => {
           open={Boolean(currentColumnMenu)}
           onMenuItemClick={handleMenuItemClick}
           onClose={columnMenuClose}
-          menuOptions={menuOptions}
+          menuItems={menuItems}
           anchorOrigin={{
             vertical: 'bottom',
             horizontal: 'right',

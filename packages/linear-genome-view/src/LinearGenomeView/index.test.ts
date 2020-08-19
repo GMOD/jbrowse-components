@@ -100,6 +100,7 @@ test('can instantiate a model that lets you navigate', () => {
   model.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
   ])
+  model.setWidth(800)
   expect(model.maxBpPerPx).toEqual(10)
   model.setNewView(0.02, 0)
 
@@ -141,6 +142,7 @@ test('can instantiate a model that has multiple displayed regions', () => {
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
   ])
+  model.setWidth(800)
   expect(model.maxBpPerPx).toEqual(20)
   model.setNewView(0.02, 0)
 

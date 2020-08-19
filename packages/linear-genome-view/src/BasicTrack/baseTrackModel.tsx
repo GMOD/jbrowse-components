@@ -2,7 +2,7 @@
 import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
 import { isSessionModelWithConfigEditing } from '@gmod/jbrowse-core/util/types'
 import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
-import { MenuOption } from '@gmod/jbrowse-core/ui'
+import { MenuItem } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { types, Instance } from 'mobx-state-tree'
@@ -168,11 +168,11 @@ const BaseTrack = types
       return undefined as undefined | React.FC<any>
     },
 
-    get menuOptions(): MenuOption[] {
+    get menuItems(): MenuItem[] {
       return []
     },
 
-    get viewMenuActions(): MenuOption[] {
+    get viewMenuActions(): MenuItem[] {
       return []
     },
 

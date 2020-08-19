@@ -2,7 +2,7 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { getContainingView } from '@gmod/jbrowse-core/util'
-import { DotplotTrack as DotplotTrackModel } from '..'
+import { DotplotTrackModel } from '..'
 
 const DotplotTrack: React.FC<{
   model: DotplotTrackModel

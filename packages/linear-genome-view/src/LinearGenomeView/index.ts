@@ -5,7 +5,7 @@ import {
   ElementId,
   Region as MUIRegion,
 } from '@gmod/jbrowse-core/util/types/mst'
-import { MenuOption } from '@gmod/jbrowse-core/ui'
+import { MenuItem } from '@gmod/jbrowse-core/ui'
 import {
   assembleLocString,
   clamp,
@@ -34,13 +34,6 @@ import clone from 'clone'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
-export interface LGVMenuOption {
-  title: string
-  key: string
-  callback: Function
-  checked?: boolean
-  isCheckbox: boolean
-}
 interface BpOffset {
   refName?: string
   index: number
@@ -85,7 +78,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       showCenterLine: false,
     })
     .volatile(() => ({
-      width: 800,
+      volatileWidth: undefined as number | undefined,
       minimumBlockWidth: 20,
       draggingTrackId: undefined as undefined | string,
       error: undefined as undefined | Error,
@@ -96,8 +89,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
       scaleFactor: 1,
     }))
     .views(self => ({
+      get width(): number {
+        if (self.volatileWidth === undefined) {
+          throw new Error(
+            'width undefined, make sure to check for model.initialized',
+          )
+        }
+        return self.volatileWidth
+      },
+    }))
+    .views(self => ({
       get initialized() {
-        return self.displayedRegions.length > 0
+        return (
+          self.volatileWidth !== undefined && self.displayedRegions.length > 0
+        )
       },
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
@@ -277,8 +282,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       // modifies view menu action onClick to apply to all tracks of same type
-      rewriteOnClicks(trackType: string, viewMenuActions: MenuOption[]) {
-        viewMenuActions.forEach((action: MenuOption) => {
+      rewriteOnClicks(trackType: string, viewMenuActions: MenuItem[]) {
+        viewMenuActions.forEach((action: MenuItem) => {
           // go to lowest level menu
           if ('subMenu' in action) {
             // @ts-ignore
@@ -299,7 +304,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       get trackTypeActions() {
-        const allActions: Map<string, MenuOption[]> = new Map()
+        const allActions: Map<string, MenuItem[]> = new Map()
         self.tracks.forEach(track => {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
@@ -322,7 +327,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       setWidth(newWidth: number) {
-        self.width = newWidth
+        self.volatileWidth = newWidth
       },
 
       setError(error: Error | undefined) {
@@ -351,11 +356,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const oldBpPerPx = self.bpPerPx
         self.bpPerPx = newBpPerPx
 
+        if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
+          console.warn('zoomTo bpPerPx rounding error')
+          return oldBpPerPx
+        }
+
         // tweak the offset so that the center of the view remains at the same coordinate
         const viewWidth = self.width
         this.scrollTo(
           Math.round(
-            ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
+            ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / newBpPerPx -
               viewWidth / 2,
           ),
         )
@@ -942,9 +952,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
-        get menuOptions(): MenuOption[] {
+        get menuItems(): MenuItem[] {
           const session = getSession(self)
-          const menuOptions: MenuOption[] = [
+          const menuItems: MenuItem[] = [
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
@@ -1000,17 +1010,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
           // add track's view level menu options
           for (const [key, value] of self.trackTypeActions.entries()) {
             if (value.length) {
-              menuOptions.push(
+              menuItems.push(
                 { type: 'divider' },
                 { type: 'subHeader', label: key },
               )
               value.forEach(action => {
-                menuOptions.push(action)
+                menuItems.push(action)
               })
             }
           }
 
-          return menuOptions
+          return menuItems
         },
 
         get staticBlocks() {

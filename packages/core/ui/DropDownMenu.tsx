@@ -5,7 +5,7 @@ import ArrowDropDown from '@material-ui/icons/ArrowDropDown'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useRef, useState } from 'react'
-import Menu, { MenuOption } from './Menu'
+import Menu, { MenuItem } from './Menu'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -32,7 +32,7 @@ function DropDownMenu({
   menuTitle: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   session: any
-  menuItems: MenuOption[]
+  menuItems: MenuItem[]
 }) {
   const [open, setOpen] = useState(false)
   const anchorEl = useRef(null)
@@ -72,7 +72,7 @@ function DropDownMenu({
         onMenuItemClick={handleMenuItemClick}
         open={open}
         onClose={handleClose}
-        menuOptions={menuItems}
+        menuItems={menuItems}
       />
     </div>
   )

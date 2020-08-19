@@ -55,7 +55,7 @@ function BlockBasedTrack(props: {
   const {
     TooltipComponent,
     TrackMessageComponent,
-    contextMenuOptions,
+    contextMenuItems,
     height,
     setContextMenuFeature,
   } = model
@@ -90,7 +90,7 @@ function BlockBasedTrack(props: {
       <TooltipComponent model={model} height={height} mouseCoord={mouseCoord} />
 
       <Menu
-        open={Boolean(contextCoord) && Boolean(contextMenuOptions.length)}
+        open={Boolean(contextCoord) && Boolean(contextMenuItems.length)}
         onMenuItemClick={(event, callback) => {
           callback()
           setContextCoord(undefined)
@@ -110,7 +110,7 @@ function BlockBasedTrack(props: {
             : undefined
         }
         style={{ zIndex: theme.zIndex.tooltip }}
-        menuOptions={contextMenuOptions}
+        menuItems={contextMenuItems}
         data-testid="block_based_track_context_menu"
       />
     </div>

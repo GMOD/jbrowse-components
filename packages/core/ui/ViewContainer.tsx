@@ -84,7 +84,7 @@ const ViewMenu = observer(
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()
 
-    if (!(model.menuOptions && model.menuOptions.length)) {
+    if (!(model.menuItems && model.menuItems.length)) {
       return null
     }
 
@@ -112,7 +112,7 @@ const ViewMenu = observer(
           onClose={() => {
             setAnchorEl(undefined)
           }}
-          menuOptions={model.menuOptions}
+          menuItems={model.menuItems}
         />
       </>
     )
