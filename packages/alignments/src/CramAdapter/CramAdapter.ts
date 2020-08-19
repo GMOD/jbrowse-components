@@ -151,6 +151,7 @@ export default (pluginManager: PluginManager) => {
         if (idToName.length) {
           this.samHeader = { idToName, nameToId }
         }
+        statusCallback('')
       }
     }
 
@@ -223,6 +224,7 @@ export default (pluginManager: PluginManager) => {
             observer.next(this.cramRecordToFeature(record))
           })
         }
+        statusCallback('')
         observer.complete()
       }, signal)
     }

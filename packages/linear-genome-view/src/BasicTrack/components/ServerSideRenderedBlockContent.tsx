@@ -77,10 +77,12 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
     return () => clearTimeout(timeout)
   }, [])
 
-  const { message } = getParent(model, 2)
+  const { status: blockStatus } = model
+  const { message: trackStatus } = getParent(model, 2)
+  const status = trackStatus || blockStatus
   return shown ? (
     <div className={classes.loading}>
-      <div className={classes.dots}>{message ? `${message}` : 'Loading'}</div>
+      <div className={classes.dots}>{status ? `${status}` : 'Loading'}</div>
     </div>
   ) : null
 })
