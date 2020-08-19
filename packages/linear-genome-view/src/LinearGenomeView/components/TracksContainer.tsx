@@ -123,7 +123,7 @@ function TracksContainer({
           scheduled.current = true
           window.requestAnimationFrame(() => {
             const scale = -delta.current
-            model.setScaleFactor(scale > 0 ? 1 + scale : 1 / (1 - scale))
+            model.setScaleFactor(scale > 0 ? 2 * (1 + scale) : 1 / (1 - scale))
             scheduled.current = false
             if (timeout.current) {
               clearTimeout(timeout.current)
