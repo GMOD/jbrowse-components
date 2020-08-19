@@ -88,7 +88,7 @@ export default abstract class BaseRpcDriver {
 
   private workerPool?: LazyWorker[]
 
-  maxPingTime = 3000 // 30000
+  maxPingTime = 3000 // 30000 TODO reminder to change back when done with task
 
   workerCheckFrequency = 5000
 
