@@ -4,26 +4,22 @@ import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterC
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import BamAdapter from '../BamAdapter/BamAdapter'
 
-interface HeaderLine {
-  tag: string
-  value: string
-}
-interface Header {
-  idToName?: string[]
-  nameToId?: Record<string, number>
-}
-
-export default class HtsgetAdapter extends BamAdapter {
-  public constructor(
+export default class HtsgetBamAdapter extends BamAdapter {
+  protected setupArgs(
     config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
   ) {
-    super(config, getSubAdapter)
     const htsgetBase = readConfObject(config, 'htsgetBase')
     const htsgetTrackId = readConfObject(config, 'htsgetTrackId')
     this.bam = new HtsgetFile({
       baseUrl: htsgetBase,
       trackId: htsgetTrackId,
     })
+
+    const adapterConfig = readConfObject(config, 'sequenceAdapter')
+    if (adapterConfig && getSubAdapter) {
+      const { dataAdapter } = getSubAdapter(adapterConfig)
+      this.sequenceAdapter = dataAdapter as BaseFeatureDataAdapter
+    }
   }
 }

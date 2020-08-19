@@ -30,7 +30,7 @@ import SNPCoverageRenderer, {
 } from './SNPCoverageRenderer'
 
 import BamAdapterF from './BamAdapter'
-import HtsgetAdapterF from './HtsgetAdapter'
+import HtsgetBamAdapterF from './HtsgetBamAdapter'
 import CramAdapterF from './CramAdapter'
 import SNPCoverageAdapterF from './SNPCoverageAdapter'
 
@@ -99,8 +99,8 @@ export default class AlignmentsPlugin extends Plugin {
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
-          name: 'HtsgetAdapter',
-          ...pluginManager.load(HtsgetAdapterF),
+          name: 'HtsgetBamAdapter',
+          ...pluginManager.load(HtsgetBamAdapterF),
         }),
     )
     pluginManager.addRendererType(

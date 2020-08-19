@@ -3,7 +3,7 @@ import { types } from 'mobx-state-tree'
 
 export default types.late(() =>
   ConfigurationSchema(
-    'HtsgetAdapter',
+    'HtsgetBamAdapter',
     {
       htsgetBase: {
         type: 'string',
