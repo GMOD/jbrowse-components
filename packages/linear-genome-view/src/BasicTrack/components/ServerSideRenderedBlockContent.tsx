@@ -2,6 +2,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import Button from '@material-ui/core/Button'
@@ -35,6 +36,9 @@ const useStyles = makeStyles(theme => ({
   blockError: {
     padding: theme.spacing(2),
     width: '100%',
+    whiteSpace: 'initial',
+    color: theme.palette.error.main,
+    overflowY: 'auto',
   },
   dots: {
     '&::after': {
@@ -99,23 +103,35 @@ BlockMessage.propTypes = {
   messageText: PropTypes.string.isRequired,
 }
 
-function BlockError({ error, reload }: { error: Error; reload: () => void }) {
+function BlockError({
+  error,
+  reload,
+  trackHeight,
+}: {
+  error: Error
+  reload: () => void
+  trackHeight: number
+}) {
   const classes = useStyles()
   return (
-    <div className={classes.blockError}>
+    <div className={classes.blockError} style={{ height: trackHeight }}>
       {reload ? (
-        <Button
-          data-testid="reload_button"
-          onClick={reload}
-          size="small"
-          startIcon={<RefreshIcon />}
-        >
-          Reload
-        </Button>
-      ) : null}
-      <Typography color="error" variant="body2">
-        {error.message}
-      </Typography>
+        <>
+          <Button
+            data-testid="reload_button"
+            onClick={reload}
+            size="small"
+            startIcon={<RefreshIcon />}
+          >
+            Reload
+          </Button>
+          {error.message}
+        </>
+      ) : (
+        <Typography color="error" variant="body2">
+          {error.message}
+        </Typography>
+      )}
     </div>
   )
 }
@@ -137,7 +153,11 @@ const ServerSideRenderedBlockContent = observer(
     if (model.error) {
       return (
         <Repeater>
-          <BlockError error={model.error} reload={model.reload} />
+          <BlockError
+            error={model.error}
+            reload={model.reload}
+            trackHeight={getParentRenderProps(model).trackModel.height}
+          />
         </Repeater>
       )
     }
