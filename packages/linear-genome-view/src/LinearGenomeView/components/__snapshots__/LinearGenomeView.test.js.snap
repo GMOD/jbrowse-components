@@ -1,7 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<LinearGenomeView /> renders one track, one region 1`] = `
-<div>
+<div
+  style="position: relative;"
+>
   <div>
     <div
       style="position: relative;"
@@ -827,7 +829,9 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
 `;
 
 exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
-<div>
+<div
+  style="position: relative;"
+>
   <div>
     <div
       style="position: relative;"

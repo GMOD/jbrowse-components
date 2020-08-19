@@ -81,6 +81,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       if (idToName.length) {
         this.samHeader = { idToName, nameToId }
       }
+      statusCallback('')
     }
   }
 
@@ -162,6 +163,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         }
         observer.next(new BamSlightlyLazyFeature(record, this, ref))
       }
+      statusCallback('')
       observer.complete()
     }, signal)
   }
