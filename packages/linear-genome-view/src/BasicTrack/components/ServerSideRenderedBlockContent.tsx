@@ -35,6 +35,8 @@ const useStyles = makeStyles(theme => ({
   blockError: {
     padding: theme.spacing(2),
     width: '100%',
+    whiteSpace: 'initial',
+    color: theme.palette.error.main,
   },
   dots: {
     '&::after': {
@@ -102,18 +104,22 @@ function BlockError({ error, reload }: { error: Error; reload: () => void }) {
   return (
     <div className={classes.blockError}>
       {reload ? (
-        <Button
-          data-testid="reload_button"
-          onClick={reload}
-          size="small"
-          startIcon={<RefreshIcon />}
-        >
-          Reload
-        </Button>
-      ) : null}
-      <Typography color="error" variant="body2">
-        {error.message}
-      </Typography>
+        <>
+          <Button
+            data-testid="reload_button"
+            onClick={reload}
+            size="small"
+            startIcon={<RefreshIcon />}
+          >
+            Reload
+          </Button>
+          {error.message}
+        </>
+      ) : (
+        <Typography color="error" variant="body2">
+          {error.message}
+        </Typography>
+      )}
     </div>
   )
 }
