@@ -16,11 +16,11 @@ export default class Upgrade extends JBrowseCommand {
   static description = 'Upgrades JBrowse 2 to latest version'
 
   static examples = [
-    '$ jbrowse upgrade',
+    '$ jbrowse upgrade # Upgrades current directory to latest jbrowse release',
     '$ jbrowse upgrade /path/to/jbrowse2/installation',
     '$ jbrowse upgrade /path/to/jbrowse2/installation --tag @gmod/jbrowse-web@0.0.1',
-    '$ jbrowse upgrade --listVersions',
-    '$ jbrowse upgrade https://sample.com/jbrowse2.zip',
+    '$ jbrowse upgrade --listVersions # Lists out all available versions of Jbrowse 2',
+    '$ jbrowse upgrade --url https://sample.com/jbrowse2.zip',
   ]
 
   static args = [
@@ -40,6 +40,7 @@ export default class Upgrade extends JBrowseCommand {
 
   static flags = {
     help: flags.help({ char: 'h' }),
+    // will need to account for pagenation once there is a lot of releases
     listVersions: flags.boolean({
       char: 'l',
       description: 'Lists out all versions of JBrowse 2',

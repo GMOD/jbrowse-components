@@ -25,15 +25,10 @@ export default class AddTrackJson extends JBrowseCommand {
       char: 'u',
       description: `update the contents of an existing track, matched based on trackId`,
     }),
-    configLocation: flags.string({
-      char: 'c',
-      description:
-        'Write to a certain config.json file. Defaults to out/config.json if not specified',
-    }),
     out: flags.string({
       char: 'o',
       description:
-        'path to JB2 installation, writes out to out/config.json unless configLocation flag specified.\nCreates out/config.json if nonexistent',
+        'path to JB2 installation, writes out to out/config.json.\nCreates out/config.json if nonexistent',
       default: '.',
     }),
   }
@@ -43,10 +38,10 @@ export default class AddTrackJson extends JBrowseCommand {
     const { track: inputtedTrack } = args as { track: string }
 
     this.debug(`Sequence location is: ${inputtedTrack}`)
-    const { update, configLocation: inputtedConfig, out } = runFlags
+    const { update, out } = runFlags
     await this.checkLocation(runFlags.out)
 
-    const configPath = inputtedConfig || path.join(out, 'config.json')
+    const configPath = path.join(out, 'config.json')
     const config = JSON.parse(await this.readJsonConfig(configPath))
     this.debug(`Found existing config file ${config}`)
 

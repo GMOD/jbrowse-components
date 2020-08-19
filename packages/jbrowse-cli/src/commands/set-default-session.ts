@@ -26,21 +26,19 @@ export default class SetDefaultSession extends JBrowseCommand {
   static description = 'Set a default session with views and tracks'
 
   static examples = [
-    '$ jbrowse set-default-session /path/to/default/session',
+    '$ jbrowse set-default-session --session /path/to/default/session.json',
     '$ jbrowse set-default-session --out /path/to/jb2/installation --view LinearGenomeView --tracks track1, track2, track3',
     '$ jbrowse set-default-session --view LinearGenomeView, --name newName --viewId view-no-tracks',
-    '$ jbrowse set-default-session --currentSession',
+    '$ jbrowse set-default-session --currentSession # Prints out current default session',
   ]
 
-  static args = [
-    {
-      name: 'defaultSession',
-      required: false,
-      description: 'path to a default session setup',
-    },
-  ]
+  static args = []
 
   static flags = {
+    session: flags.string({
+      char: 's',
+      description: 'set path to a file containing session in json format',
+    }),
     name: flags.string({
       char: 'n',
       description: 'Give a name for the default session',
@@ -63,14 +61,9 @@ export default class SetDefaultSession extends JBrowseCommand {
       char: 'c',
       description: 'List out the current default session',
     }),
-    configLocation: flags.string({
-      description:
-        'Write to a certain config.json file. Defaults to out/config.json if not specified',
-    }),
     out: flags.string({
       char: 'o',
-      description:
-        'path to JB2 installation. Will write out to out/config.json unless another file is specificed with configLocation flag',
+      description: 'path to JB2 installation. writes out to out/config.json',
       default: '.',
     }),
     help: flags.help({
@@ -79,11 +72,10 @@ export default class SetDefaultSession extends JBrowseCommand {
   }
 
   async run() {
-    const { args: runArgs, flags: runFlags } = this.parse(SetDefaultSession)
-    const { defaultSession } = runArgs
+    const { flags: runFlags } = this.parse(SetDefaultSession)
     const {
+      session,
       name,
-      configLocation,
       tracks,
       currentSession,
       view,
@@ -91,7 +83,7 @@ export default class SetDefaultSession extends JBrowseCommand {
       out,
     } = runFlags
 
-    const configPath = configLocation || path.join(out, 'config.json')
+    const configPath = path.join(out, 'config.json')
 
     await this.checkLocation(out)
 
@@ -131,14 +123,14 @@ export default class SetDefaultSession extends JBrowseCommand {
     const existingDefaultSession = configContents.defaultSession.length > 0
 
     // must provide default session, or view, or tracks + view
-    if (!defaultSession && !view && !tracks) {
+    if (!session && !view && !tracks) {
       this.error(
         `No default session information provided, Please either provide a default session file or enter information to build a default session`,
         { exit: 120 },
       )
-    } else if (defaultSession) {
+    } else if (session) {
       // if user provides a file, process and set as default session and exit
-      const defaultJson = await this.readDefaultSessionFile(defaultSession)
+      const defaultJson = await this.readDefaultSessionFile(session)
       configContents.defaultSession = defaultJson
     } else {
       // use trackids if any to match to tracks in the config

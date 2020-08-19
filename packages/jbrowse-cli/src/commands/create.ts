@@ -21,7 +21,7 @@ export default class Create extends JBrowseCommand {
     '$ jbrowse create /path/to/new/installation --force',
     '$ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip',
     '$ jbrowse create /path/to/new/installation --tag @gmod/jbrowse-web@0.0.1',
-    '$ jbrowse create --listVersion',
+    '$ jbrowse create --listVersions # Lists out all available versions of Jbrowse 2',
   ]
 
   static args = [
@@ -39,6 +39,7 @@ export default class Create extends JBrowseCommand {
       description:
         'Overwrites existing JBrowse 2 installation if present in path',
     }),
+    // will need to account for pagenation once there is a lot of releases
     listVersions: flags.boolean({
       char: 'l',
       description: 'Lists out all versions of JBrowse 2',

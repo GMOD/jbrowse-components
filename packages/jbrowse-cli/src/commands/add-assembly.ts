@@ -88,7 +88,6 @@ export default class AddAssembly extends JBrowseCommand {
     '$ jbrowse add-assembly GRCh38.fa --load copy',
     '$ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta --load move',
     '$ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load trust',
-    '$ jbrowse add-assembly GRCh38.2bit --configLocation path/to/config.json --load copy',
     '$ jbrowse add-assembly GRCh38.chrom.sizes --load trust',
     '$ jbrowse add-assembly GRCh38.config.json --load copy',
     '$ jbrowse add-assembly https://example.com/data/sample.2bit',
@@ -128,11 +127,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
       options: ['indexedFasta', 'bgzipFasta', 'twoBit', 'chromSizes', 'custom'],
     }),
-    configLocation: flags.string({
-      char: 'c',
-      description:
-        'Write to a certain config.json file. Defaults to out/config.json if not specified',
-    }),
     name: flags.string({
       char: 'n',
       description:
@@ -168,7 +162,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     out: flags.string({
       char: 'o',
       description:
-        'path to JB2 installation, writes out to out/config.json unless configLocation flag specified.\nCreates out/config.json if nonexistent',
+        'path to JB2 installation, writes out to out/config.json.\nCreates out/config.json if nonexistent',
       default: '.',
     }),
     help: flags.help({ char: 'h' }),
@@ -420,8 +414,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
-    const configPath =
-      runFlags.configLocation || path.join(runFlags.out, 'config.json')
+    const configPath = path.join(runFlags.out, 'config.json')
 
     if (!(runFlags.skipCheck || runFlags.force)) {
       await this.checkLocation(runFlags.out)

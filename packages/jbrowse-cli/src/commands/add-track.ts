@@ -36,7 +36,6 @@ export default class AddTrack extends JBrowseCommand {
     `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move`,
     `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite`,
     `$ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'`,
-    `$ jbrowse add-track /path/to/my/bam --configLocation config.json --load copy`,
   ]
 
   static args = [
@@ -73,14 +72,9 @@ export default class AddTrack extends JBrowseCommand {
     config: flags.string({
       description: `Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'`,
     }),
-    configLocation: flags.string({
-      description:
-        'Write to a certain config.json file. Defaults to out/config.json if not specified',
-    }),
     out: flags.string({
       char: 'o',
-      description:
-        'path to JB2 installation, writes out to out/config.json unless configLocation flag specified',
+      description: 'path to JB2 installation, writes out to out/config.json',
       default: '.',
     }),
     help: flags.help({ char: 'h' }),
@@ -114,7 +108,6 @@ export default class AddTrack extends JBrowseCommand {
       config,
       skipCheck,
       force,
-      configLocation,
       category,
       description,
       load,
@@ -133,7 +126,7 @@ export default class AddTrack extends JBrowseCommand {
       argsTrack,
       !(skipCheck || force),
     )
-    const configPath = configLocation || path.join(out, 'config.json')
+    const configPath = path.join(out, 'config.json')
 
     let trackLocation
     if (load) {

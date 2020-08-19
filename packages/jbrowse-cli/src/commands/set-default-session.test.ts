@@ -117,7 +117,7 @@ describe('set-default-session', () => {
         path.join(ctx.dir, 'config.json'),
       )
     })
-    .command(['set-default-session', '{}'])
+    .command(['set-default-session', '--session', '{}'])
     .exit(150)
     .it('fails when default session is not readable')
   setup
@@ -134,6 +134,7 @@ describe('set-default-session', () => {
     })
     .command([
       'set-default-session',
+      '--session',
       path.join(simpleDefaultSession, 'nonexist.json'),
     ])
     .exit(150)
@@ -150,21 +151,21 @@ describe('set-default-session', () => {
         path.join(ctx.dir, 'config.json'),
       )
     })
-    .command(['set-default-session', simpleBam])
+    .command(['set-default-session', '--session', simpleBam])
     .exit(160)
     .it('fails when file is does not have a default session to read')
   setup
     .do(async () => {
       await fsPromises.unlink('manifest.json')
     })
-    .command(['set-default-session', simpleDefaultSession])
+    .command(['set-default-session', '--session', simpleDefaultSession])
     .exit(10)
     .it('fails if no manifest.json found in cwd')
   setup
     .do(async () => {
       await fsPromises.writeFile('manifest.json', 'This Is Invalid JSON')
     })
-    .command(['set-default-session', simpleDefaultSession])
+    .command(['set-default-session', '--session', simpleDefaultSession])
     .exit(20)
     .it("fails if it can't parse manifest.json")
 
@@ -172,7 +173,7 @@ describe('set-default-session', () => {
     .do(async () => {
       await fsPromises.writeFile('manifest.json', '{"name":"NotJBrowse"}')
     })
-    .command(['set-default-session', simpleDefaultSession])
+    .command(['set-default-session', '--session', simpleDefaultSession])
     .exit(30)
     .it('fails if "name" in manifest.json is not "JBrowse"')
   setupWithAddTrack
@@ -212,7 +213,7 @@ describe('set-default-session', () => {
         path.join(ctx.dir, 'config.json'),
       )
     })
-    .command(['set-default-session', simpleDefaultSession])
+    .command(['set-default-session', '--session', simpleDefaultSession])
     .it('adds a default session from a file', async ctx => {
       const contents = await fsPromises.readFile(
         path.join(ctx.dir, 'config.json'),
