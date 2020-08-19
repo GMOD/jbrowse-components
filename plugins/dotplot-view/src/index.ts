@@ -1,6 +1,7 @@
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
+import { autorun } from 'mobx'
 
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
@@ -72,5 +73,59 @@ export default class DotplotPlugin extends Plugin {
         },
       })
     }
+
+    const session: any = pluginManager.rootModel?.session || {}
+    const tracksAlreadyAddedTo: any[] = []
+    autorun(() => {
+      let views = []
+      if (session.views) {
+        views = session.views
+      } else if (session.view) {
+        views = [session.view]
+      }
+
+      views.forEach(view => {
+        if (view.type === 'LinearGenomeView') {
+          const { tracks } = view
+          tracks.forEach(track => {
+            const { type } = track
+            if (!tracksAlreadyAddedTo.includes(track.id)) {
+              if (type === 'PileupTrack') {
+                tracksAlreadyAddedTo.push(track.id)
+                track.addAdditionalContextMenuItemCallback(
+                  (feature: any, track: any, pluginManager: any) => {
+                    const menuItem = {
+                      label: 'Some menu item',
+                      icon: SomeIcon,
+                      onClick: session => {
+                        console.log('wow cicl here')
+                        // do some stuff
+                      },
+                    }
+                    return [menuItem]
+                  },
+                )
+              } else if (type === 'AlignmentsTrack') {
+                tracksAlreadyAddedTo.push(track.id)
+                track.PileupTrack.addAdditionalContextMenuItemCallback(
+                  (feature: any, track: any, pluginManager: any) => {
+                    console.log('wtf')
+                    const menuItem = {
+                      label: 'Some menu item',
+                      icon: SomeIcon,
+                      onClick: session => {
+                        console.log('here')
+                        // do some stuff
+                      },
+                    }
+                    return [menuItem]
+                  },
+                )
+              }
+            }
+          })
+        }
+      })
+    })
   }
 }
