@@ -7,6 +7,7 @@ import { getConf } from '@gmod/jbrowse-core/configuration'
 import { Menu } from '@gmod/jbrowse-core/ui'
 import { BaseBlock } from '@gmod/jbrowse-core/util/blockTypes'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import normalizeWheel from 'normalize-wheel'
 import { DotplotViewModel, Dotplot1DViewModel } from '../model'
 
 const useStyles = makeStyles(theme => {
@@ -134,11 +135,18 @@ export default (pluginManager: PluginManager) => {
 
       // require non-react wheel handler to properly prevent body scrolling
       useEffect(() => {
-        function onWheel(event: WheelEvent) {
-          event.preventDefault()
-
-          distanceX.current += event.deltaX
-          distanceY.current -= event.deltaY
+        function onWheel(origEvent: WheelEvent) {
+          const event = normalizeWheel(origEvent)
+          origEvent.preventDefault()
+          if (origEvent.ctrlKey === true) {
+            const { pixelY } = event
+            const { offsetX, offsetY } = origEvent
+            const factor = 1 + pixelY/500
+            model.vview.zoomTo(model.vview.bpPerPx * factor, offsetY)
+            model.hview.zoomTo(model.hview.bpPerPx * factor, offsetX)
+          } else {
+          distanceX.current += event.pixelX
+          distanceY.current -= event.pixelY
           if (!scheduled.current) {
             scheduled.current = true
 
@@ -152,6 +160,7 @@ export default (pluginManager: PluginManager) => {
               distanceY.current = 0
             })
           }
+}
         }
         if (ref.current) {
           const curr = ref.current
