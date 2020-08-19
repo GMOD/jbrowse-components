@@ -36,13 +36,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     getSubAdapter?: getSubAdapterType,
   ) {
     super(config)
-    this.setupArgs(config, getSubAdapter)
-  }
-
-  protected setupArgs(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-  ) {
     const bamLocation = readConfObject(config, 'bamLocation')
     const location = readConfObject(config, ['index', 'location'])
     const indexType = readConfObject(config, ['index', 'indexType'])
