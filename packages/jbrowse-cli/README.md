@@ -76,8 +76,8 @@ OPTIONS
       Name of the assembly; if not specified, will be guessed using the sequence file name
 
   -o, --out=out
-      [default: .] path to JB2 installation, writes out to out/config.json.
-      Creates out/config.json if nonexistent
+      [default: ./config.json] path to config file in JB2 installation directory to write out to.
+      Creates ./config.json if nonexistent
 
   -t, --type=indexedFasta|bgzipFasta|twoBit|chromSizes|custom
       type of sequence, by default inferred from sequence file
@@ -126,7 +126,7 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.chrom.sizes --load trust
   $ jbrowse add-assembly GRCh38.config.json --load copy
   $ jbrowse add-assembly https://example.com/data/sample.2bit
-  $ jbrowse add-assembly GRCh38.fa --out /path/to/jb2/installation --load copy
+  $ jbrowse add-assembly GRCh38.fa --out /path/to/jb2/installation/customconfig.json --load copy
 ```
 
 ## `jbrowse add-connection CONNECTIONURLORPATH`
@@ -155,7 +155,8 @@ OPTIONS
 
   -n, --name=name                  Name of the connection. Defaults to connectionId if not provided
 
-  -o, --out=out                    [default: .] path to JB2 installation, writes out to out/config.json
+  -o, --out=out                    [default: ./config.json] path to config file in JB2 installation directory to write
+                                   out to.
 
   -t, --type=type                  type of connection, ex. JBrowse1Connection, UCSCTrackHubConnection, custom
 
@@ -176,7 +177,7 @@ EXAMPLES
   $ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config
   '{"uri":{"url":"https://mysite.com/path/to/custom"}}' --assemblyName hg19
   $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --out
-  /path/to/jb2/installation
+  /path/to/jb2/installation/config.json
 ```
 
 ## `jbrowse add-track TRACK`
@@ -205,7 +206,7 @@ OPTIONS
 
   -n, --name=name                     Name of the track. Will be defaulted to the trackId if none specified
 
-  -o, --out=out                       [default: .] path to JB2 installation, writes out to out/config.json
+  -o, --out=out                       [default: ./config.json] path to config file in JB2 installation to write out to.
 
   -t, --type=type                     Type of track, by default inferred from track file
 
@@ -223,7 +224,7 @@ OPTIONS
 
 EXAMPLES
   $ jbrowse add-track /path/to/my.bam --load copy
-  $ jbrowse add-track /path/to/my.bam --out /path/to/jbrowse2/installation --load symlink
+  $ jbrowse add-track /path/to/my.bam --out /path/to/jbrowse2/installation/config.json --load symlink
   $ jbrowse add-track https://mywebsite.com/my.bam
   $ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move
   $ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite
@@ -242,8 +243,8 @@ ARGUMENTS
   TRACK  track JSON file or command line arg blob
 
 OPTIONS
-  -o, --out=out  [default: .] path to JB2 installation, writes out to out/config.json.
-                 Creates out/config.json if nonexistent
+  -o, --out=out  [default: ./config.json] path to config file in JB2 installation directory to write out to.
+                 Creates ./config.json if nonexistent
 
   -u, --update   update the contents of an existing track, matched based on trackId
 
@@ -310,7 +311,7 @@ OPTIONS
   -c, --currentSession   List out the current default session
   -h, --help             show CLI help
   -n, --name=name        [default: New Default Session] Give a name for the default session
-  -o, --out=out          [default: .] path to JB2 installation. writes out to out/config.json
+  -o, --out=out          [default: ./config.json] path to config file in JB2 installation directory to write out to
   -s, --session=session  set path to a file containing session in json format
   -t, --tracks=tracks    Track id or track ids as comma separated string to put into default session
 
@@ -322,7 +323,8 @@ OPTIONS
 
 EXAMPLES
   $ jbrowse set-default-session --session /path/to/default/session.json
-  $ jbrowse set-default-session --out /path/to/jb2/installation --view LinearGenomeView --tracks track1, track2, track3
+  $ jbrowse set-default-session --out /path/to/jb2/installation/config.json --view LinearGenomeView --tracks track1,
+  track2, track3
   $ jbrowse set-default-session --view LinearGenomeView, --name newName --viewId view-no-tracks
   $ jbrowse set-default-session --currentSession # Prints out current default session
 ```

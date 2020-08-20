@@ -28,8 +28,8 @@ export default class AddTrackJson extends JBrowseCommand {
     out: flags.string({
       char: 'o',
       description:
-        'path to JB2 installation, writes out to out/config.json.\nCreates out/config.json if nonexistent',
-      default: '.',
+        'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
+      default: './config.json',
     }),
   }
 
@@ -39,10 +39,9 @@ export default class AddTrackJson extends JBrowseCommand {
 
     this.debug(`Sequence location is: ${inputtedTrack}`)
     const { update, out } = runFlags
-    await this.checkLocation(runFlags.out)
+    await this.checkLocation(path.dirname(out))
 
-    const configPath = path.join(out, 'config.json')
-    const config = JSON.parse(await this.readJsonConfig(configPath))
+    const config = JSON.parse(await this.readJsonConfig(out))
     this.debug(`Found existing config file ${config}`)
 
     const track = await this.readInlineOrFileJson(inputtedTrack)
@@ -64,12 +63,12 @@ export default class AddTrackJson extends JBrowseCommand {
     } else {
       config.tracks.push(track)
     }
-    this.debug(`Writing configuration to file ${configPath}`)
-    await fsPromises.writeFile(configPath, JSON.stringify(config, undefined, 2))
+    this.debug(`Writing configuration to file ${out}`)
+    await fsPromises.writeFile(out, JSON.stringify(config, undefined, 2))
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} assembly "${track.name}" ${
         idx !== -1 ? 'in' : 'to'
-      } ${configPath}`,
+      } ${out}`,
     )
   }
 

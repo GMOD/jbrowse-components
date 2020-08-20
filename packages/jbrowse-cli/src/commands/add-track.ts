@@ -31,7 +31,7 @@ export default class AddTrack extends JBrowseCommand {
 
   static examples = [
     '$ jbrowse add-track /path/to/my.bam --load copy',
-    '$ jbrowse add-track /path/to/my.bam --out /path/to/jbrowse2/installation --load symlink',
+    '$ jbrowse add-track /path/to/my.bam --out /path/to/jbrowse2/installation/config.json --load symlink',
     '$ jbrowse add-track https://mywebsite.com/my.bam',
     `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move`,
     `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite`,
@@ -74,8 +74,8 @@ export default class AddTrack extends JBrowseCommand {
     }),
     out: flags.string({
       char: 'o',
-      description: 'path to JB2 installation, writes out to out/config.json',
-      default: '.',
+      description: 'path to config file in JB2 installation to write out to.',
+      default: './config.json',
     }),
     help: flags.help({ char: 'h' }),
     trackId: flags.string({
@@ -115,8 +115,9 @@ export default class AddTrack extends JBrowseCommand {
     } = runFlags
     let { type, trackId, name, assemblyNames } = runFlags
 
+    const configDirectory = path.dirname(out)
     if (!(skipCheck || force)) {
-      await this.checkLocation(out)
+      await this.checkLocation(configDirectory)
     }
     const {
       location,
@@ -126,7 +127,6 @@ export default class AddTrack extends JBrowseCommand {
       argsTrack,
       !(skipCheck || force),
     )
-    const configPath = path.join(out, 'config.json')
 
     let trackLocation
     if (load) {
@@ -137,7 +137,9 @@ export default class AddTrack extends JBrowseCommand {
         )
 
       trackLocation =
-        load === 'trust' ? location : path.join(out, path.basename(location))
+        load === 'trust'
+          ? location
+          : path.join(configDirectory, path.basename(location))
     } else if (local)
       this.error(
         'Local file detected. Please select a load option for the track with the --load flag',
@@ -156,8 +158,8 @@ export default class AddTrack extends JBrowseCommand {
     // only add track if there is an existing config.json
     let configContentsJson
     try {
-      configContentsJson = await this.readJsonConfig(configPath)
-      this.debug(`Found existing config file ${configPath}`)
+      configContentsJson = await this.readJsonConfig(out)
+      this.debug(`Found existing config file ${out}`)
     } catch (error) {
       this.error(
         'No existing config file found, run add-assembly first to bootstrap config',
@@ -284,7 +286,10 @@ export default class AddTrack extends JBrowseCommand {
         await Promise.all(
           filePaths.map(async filePath => {
             if (!filePath) return
-            const dataLocation = path.join(out, path.basename(filePath))
+            const dataLocation = path.join(
+              configDirectory,
+              path.basename(filePath),
+            )
 
             try {
               await fsPromises.copyFile(filePath, dataLocation)
@@ -299,7 +304,10 @@ export default class AddTrack extends JBrowseCommand {
         await Promise.all(
           filePaths.map(async filePath => {
             if (!filePath) return
-            const dataLocation = path.join(out, path.basename(filePath))
+            const dataLocation = path.join(
+              configDirectory,
+              path.basename(filePath),
+            )
 
             try {
               await fsPromises.symlink(filePath, dataLocation)
@@ -314,7 +322,10 @@ export default class AddTrack extends JBrowseCommand {
         await Promise.all(
           filePaths.map(async filePath => {
             if (!filePath) return
-            const dataLocation = path.join(out, path.basename(filePath))
+            const dataLocation = path.join(
+              configDirectory,
+              path.basename(filePath),
+            )
 
             try {
               await fsPromises.rename(filePath, dataLocation)
@@ -327,16 +338,16 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
-    this.debug(`Writing configuration to file ${configPath}`)
+    this.debug(`Writing configuration to file ${out}`)
     await fsPromises.writeFile(
-      configPath,
+      out,
       JSON.stringify(configContents, undefined, 2),
     )
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} track "${name}" ${
         idx !== -1 ? 'in' : 'to'
-      } ${configPath}`,
+      } ${out}`,
     )
   }
 
