@@ -75,7 +75,7 @@ export default function AboutDialog({
     >
       <DialogTitle id="alert-dialog-title">{trackName}</DialogTitle>
       <DialogContent>
-        {Object.entries(data).map(([key, value]) => (
+        {Object.entries(data || {}).map(([key, value]) => (
           <div key={`${key}_${String(value)}`} className={classes.field}>
             <div className={classes.fieldName}>{key}</div>
             <div className={classes.fieldValue}>

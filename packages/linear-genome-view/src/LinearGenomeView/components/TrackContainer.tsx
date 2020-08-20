@@ -14,12 +14,9 @@ import { makeStyles } from '@material-ui/core/styles'
 import { LinearGenomeViewModel, RESIZE_HANDLE_HEIGHT } from '..'
 import { BaseTrackModel } from '../../BasicTrack/baseTrackModel'
 import TrackLabel from './TrackLabel'
-import AboutDialog from './AboutDialog'
 
 const useStyles = makeStyles(theme => ({
-  root: {
-    position: 'relative',
-  },
+  root: {},
   resizeHandle: {
     height: RESIZE_HANDLE_HEIGHT,
     boxSizing: 'border-box',
@@ -79,15 +76,8 @@ function TrackContainer(props: {
   const view = getContainingView(track)
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== track.id
 
-  const handleClose = () => {
-    track.setShowAbout(false)
-  }
-
   return (
     <div className={classes.root}>
-      {track.showAbout ? (
-        <AboutDialog model={track} handleClose={handleClose} />
-      ) : null}
       <Slide direction="right" in={model.showTrackLabels}>
         <TrackLabel track={track} className={classes.trackLabel} />
       </Slide>
