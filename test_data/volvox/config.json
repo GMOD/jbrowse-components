@@ -6,6 +6,9 @@
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "volvox_refseq",
+        "metadata": {
+          "date": "2020-08-20"
+        },
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {

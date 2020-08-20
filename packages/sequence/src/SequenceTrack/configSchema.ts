@@ -24,6 +24,10 @@ export default (pluginManager: PluginManager, trackType: string) => {
         viewType: 'LinearGenomeView',
         adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         rendering: DivSequenceRendererConfigurationSchema,
+        metadata: {
+          type: 'frozen',
+          defaultValue: {},
+        },
       },
       { explicitIdentifier: 'trackId', explicitlyTyped: true },
     )

@@ -1,5 +1,6 @@
 import React from 'react'
-import { getConf } from '@gmod/jbrowse-core/configuration'
+import { readConfObject, getConf } from '@gmod/jbrowse-core/configuration'
+import { getSession } from '@gmod/jbrowse-core/util'
 import { makeStyles } from '@material-ui/core/styles'
 import Dialog from '@material-ui/core/Dialog'
 import DialogContent from '@material-ui/core/DialogContent'
@@ -55,6 +56,16 @@ export default function AboutDialog({
 }) {
   const data = getConf(model, 'metadata') as Record<string, string>
   const classes = useStyles()
+  let trackName = getConf(model, 'name')
+  const session = getSession(model)
+  if (getConf(model, 'type') === 'ReferenceSequenceTrack') {
+    trackName = 'Reference Sequence'
+    session.assemblies.forEach(assembly => {
+      if (assembly.sequence === model.configuration) {
+        trackName = `Reference Sequence (${readConfObject(assembly, 'name')})`
+      }
+    })
+  }
   return (
     <Dialog
       open
@@ -62,9 +73,7 @@ export default function AboutDialog({
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
-      <DialogTitle id="alert-dialog-title">
-        {getConf(model, 'name')}
-      </DialogTitle>
+      <DialogTitle id="alert-dialog-title">{trackName}</DialogTitle>
       <DialogContent>
         {Object.entries(data).map(([key, value]) => (
           <div key={`${key}_${String(value)}`} className={classes.field}>
