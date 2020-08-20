@@ -138,7 +138,7 @@ interface AttributeProps {
   descriptions?: Record<string, React.ReactNode>
 }
 
-const Attributes: FunctionComponent<AttributeProps> = props => {
+export const Attributes: FunctionComponent<AttributeProps> = props => {
   const classes = useStyles()
   const {
     attributes,
