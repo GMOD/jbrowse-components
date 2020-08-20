@@ -1,6 +1,7 @@
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
+import SomeIcon from '@material-ui/icons/Add'
 import { autorun } from 'mobx'
 
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
@@ -95,10 +96,9 @@ export default class DotplotPlugin extends Plugin {
                 track.addAdditionalContextMenuItemCallback(
                   (feature: any, track: any, pluginManager: any) => {
                     const menuItem = {
-                      label: 'Some menu item',
+                      label: 'Dotplot of read vs ref',
                       icon: SomeIcon,
                       onClick: session => {
-                        console.log('wow cicl here')
                         // do some stuff
                       },
                     }
@@ -109,12 +109,10 @@ export default class DotplotPlugin extends Plugin {
                 tracksAlreadyAddedTo.push(track.id)
                 track.PileupTrack.addAdditionalContextMenuItemCallback(
                   (feature: any, track: any, pluginManager: any) => {
-                    console.log('wtf')
                     const menuItem = {
-                      label: 'Some menu item',
+                      label: 'Dotplot of read vs ref',
                       icon: SomeIcon,
                       onClick: session => {
-                        console.log('here')
                         // do some stuff
                       },
                     }
