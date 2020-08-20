@@ -9,6 +9,7 @@ import {
   AbstractSessionModel,
   isAbstractMenuManager,
 } from '@gmod/jbrowse-core/util'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import TimelineIcon from '@material-ui/icons/Timeline'
 import {
   configSchemaFactory as dotplotTrackConfigSchemaFactory,
@@ -75,55 +76,67 @@ export default class DotplotPlugin extends Plugin {
       })
     }
 
-    const session: any = pluginManager.rootModel?.session || {}
-    const tracksAlreadyAddedTo: any[] = []
-    autorun(() => {
-      let views = []
-      if (session.views) {
-        views = session.views
-      } else if (session.view) {
-        views = [session.view]
-      }
-
-      views.forEach(view => {
-        if (view.type === 'LinearGenomeView') {
-          const { tracks } = view
-          tracks.forEach(track => {
-            const { type } = track
-            if (!tracksAlreadyAddedTo.includes(track.id)) {
-              if (type === 'PileupTrack') {
-                tracksAlreadyAddedTo.push(track.id)
-                track.addAdditionalContextMenuItemCallback(
-                  (feature: any, track: any, pluginManager: any) => {
-                    const menuItem = {
-                      label: 'Dotplot of read vs ref',
-                      icon: SomeIcon,
-                      onClick: session => {
-                        // do some stuff
-                      },
-                    }
-                    return [menuItem]
-                  },
-                )
-              } else if (type === 'AlignmentsTrack') {
-                tracksAlreadyAddedTo.push(track.id)
-                track.PileupTrack.addAdditionalContextMenuItemCallback(
-                  (feature: any, track: any, pluginManager: any) => {
-                    const menuItem = {
-                      label: 'Dotplot of read vs ref',
-                      icon: SomeIcon,
-                      onClick: session => {
-                        // do some stuff
-                      },
-                    }
-                    return [menuItem]
-                  },
-                )
+    interface Track {
+      addAdditionalContextMenuItemCallback: Function
+      id: string
+      type: string
+    }
+    interface View {
+      tracks: Track[]
+      type: string
+    }
+    interface Session {
+      views: View[]
+    }
+    const { rootModel: { session } = {} } = pluginManager
+    if (session) {
+      const tracksAlreadyAddedTo: string[] = []
+      autorun(() => {
+        const { views } = (session as unknown) as Session
+        views.forEach(view => {
+          if (view.type === 'LinearGenomeView') {
+            const { tracks } = view
+            tracks.forEach(track => {
+              const { type } = track
+              if (!tracksAlreadyAddedTo.includes(track.id)) {
+                if (type === 'PileupTrack') {
+                  tracksAlreadyAddedTo.push(track.id)
+                  track.addAdditionalContextMenuItemCallback(
+                    (feature: Feature, track: any, pluginManager: any) => {
+                      const menuItem = {
+                        label: 'Dotplot of read vs ref',
+                        icon: SomeIcon,
+                        onClick: session => {
+                          const start = feature.get('start')
+                          const end = feature.get('end')
+                          const cigar = feature.get('cigar')
+                          const supp = feature.get('SA')
+                          // do some stuff
+                        },
+                      }
+                      return [menuItem]
+                    },
+                  )
+                } else if (type === 'AlignmentsTrack') {
+                  tracksAlreadyAddedTo.push(track.id)
+                  track.PileupTrack.addAdditionalContextMenuItemCallback(
+                    (feature: any, track: any, pluginManager: any) => {
+                      const menuItem = {
+                        label: 'Dotplot of read vs ref',
+                        icon: SomeIcon,
+                        onClick: session => {
+                          // do some stuff
+                        },
+                      }
+                      return [menuItem]
+                    },
+                  )
+                }
               }
-            }
-          })
-        }
+            })
+          }
+        })
       })
-    })
+    }
   }
 }
