@@ -8,6 +8,8 @@ import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAda
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Instance } from 'mobx-state-tree'
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { parseCigar } from '@gmod/jbrowse-plugin-alignments/src/BamAdapter/MismatchParser'
 import { Dotplot1DView } from '../DotplotView/model'
 import MyConfig from './configSchema'
 
@@ -56,7 +58,12 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const b20 = hview.bpToPx({ refName, coord: end })
       const e10 = vview.bpToPx({ refName: mateRef, coord: mate.start })
       const e20 = vview.bpToPx({ refName: mateRef, coord: mate.end })
-      if ((b10 && b20 && e10 && e20) !== undefined) {
+      if (
+        b10 !== undefined &&
+        b20 !== undefined &&
+        e10 !== undefined &&
+        e20 !== undefined
+      ) {
         const b1 = b10 - db1
         const b2 = b20 - db1
         const e1 = e10 - db2
@@ -66,30 +73,29 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         } else {
           let currX = b1
           let currY = e1
-          let cigar = feature.get('cg')
+          const cigar = feature.get('cg') || feature.get('CIGAR')
           if (cigar) {
-            cigar = (cigar.toUpperCase().match(/\d+\D/g) || [])
-              .map((op: string) => {
-                // @ts-ignore
-                return [op.match(/\D/)[0], parseInt(op, 10)]
-              })
-              .forEach(([op, val]: [string, number]) => {
-                const prevX = currX
-                const prevY = currY
+            const cigarOps = parseCigar(cigar)
+            for (let i = 0; i < cigarOps.length; i += 2) {
+              const val = +cigarOps[i]
+              const op = cigarOps[i + 1]
 
-                if (op === 'M') {
-                  currX += val / hview.bpPerPx - 0.01
-                  currY += val / vview.bpPerPx - 0.01
-                } else if (op === 'D') {
-                  currX += val / hview.bpPerPx
-                } else if (op === 'I') {
-                  currY += val / vview.bpPerPx
-                }
-                ctx.beginPath()
-                ctx.moveTo(prevX, height - prevY)
-                ctx.lineTo(currX, height - currY)
-                ctx.stroke()
-              })
+              const prevX = currX
+              const prevY = currY
+
+              if (op === 'M') {
+                currX += val / hview.bpPerPx - 0.01
+                currY += val / vview.bpPerPx - 0.01
+              } else if (op === 'D') {
+                currX += val / hview.bpPerPx
+              } else if (op === 'I') {
+                currY += val / vview.bpPerPx
+              }
+              ctx.beginPath()
+              ctx.moveTo(prevX, height - prevY)
+              ctx.lineTo(currX, height - currY)
+              ctx.stroke()
+            }
           } else {
             ctx.beginPath()
             ctx.moveTo(b1, height - e1)
