@@ -52,10 +52,12 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       // const identity = feature.get('numMatches') / feature.get('blockLen')
       // ctx.fillStyle = `hsl(${identity * 150},50%,50%)`
       ctx.fillStyle = 'black'
-      const b10 = hview.bpToPx({ refName, coord: start }) || 0
-      const b20 = hview.bpToPx({ refName, coord: end }) || 0
-      const e10 = vview.bpToPx({ refName: mateRef, coord: mate.start }) || 0
-      const e20 = vview.bpToPx({ refName: mateRef, coord: mate.end }) || 0
+      const b10 = hview.bpToPx({ refName, coord: start })
+      const b20 = hview.bpToPx({ refName, coord: end })
+      const e10 = vview.bpToPx({ refName: mateRef, coord: mate.start })
+      const e20 = vview.bpToPx({ refName: mateRef, coord: mate.end })
+
+      console.log({ b10, b20, e10, e20, mateRef, s: mate.start, e: mate.end })
 
       const b1 = b10 - db1[0].offsetPx
       const b2 = b20 - db1[0].offsetPx

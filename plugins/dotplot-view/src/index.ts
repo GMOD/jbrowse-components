@@ -43,6 +43,24 @@ interface View {
 interface Session {
   views: View[]
 }
+function getLengthOnRef(cigar: string) {
+  const cigarOps = parseCigar(cigar)
+  let lengthOnRef = 0
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+    if (op !== 'H' && op !== 'S' && op !== 'I') {
+      lengthOnRef += len
+    }
+  }
+  return lengthOnRef
+}
+
+function getClip(cigar: string, strand: number) {
+  return strand === -1
+    ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
+    : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
+}
 
 export default class DotplotPlugin extends Plugin {
   name = 'DotplotPlugin'
@@ -105,6 +123,7 @@ export default class DotplotPlugin extends Plugin {
                 const start = feature.get('start')
                 const end = feature.get('end')
                 const cigar = feature.get('CIGAR')
+                const lengthOnRef = getLengthOnRef(cigar)
                 const SA: string =
                   (feature.get('tags')
                     ? feature.get('tags').SA
@@ -119,38 +138,41 @@ export default class DotplotPlugin extends Plugin {
                   .filter(aln => !!aln)
                   .map(aln => {
                     const [saRef, saStart, saStrand, saCigar] = aln.split(',')
-
-                    const cigarOps = parseCigar(saCigar)
-                    let lengthOnRef = 0
-                    for (let i = 0; i < cigarOps.length; i += 2) {
-                      const len = +cigarOps[i]
-                      const op = cigarOps[i + 1]
-                      if (op !== 'H' && op !== 'S' && op !== 'I') {
-                        lengthOnRef += len
-                      }
-                    }
-
-                    const clipLen =
-                      cigarOps[1] === 'H' || cigarOps[1] === 'S'
-                        ? +cigarOps[0]
-                        : 0
-
-                    const realStart = +saStart - 1 + clipLen
+                    const saLengthOnRef = getLengthOnRef(saCigar)
+                    const saClipLen = getClip(
+                      saCigar,
+                      saStrand === '-' ? -1 : 1,
+                    )
+                    const saRealStart = +saStart - 1 + saClipLen
+                    console.log({ saClipLen, saLengthOnRef })
 
                     return {
                       refName: saRef,
-                      start: realStart,
-                      end: realStart + lengthOnRef,
+                      start: saRealStart,
+                      end: saRealStart + saLengthOnRef,
                       assemblyName: trackAssembly,
                       strand: saStrand,
                       uniqueId: Math.random(),
                       mate: {
-                        start: clipLen,
-                        end: clipLen + lengthOnRef,
+                        start: saClipLen,
+                        end: saClipLen + saLengthOnRef,
                         refName: readName,
                       },
                     }
                   })
+
+                const feat = feature.toJSON()
+                feat.mate = {
+                  refName: readName,
+                  start: 0,
+                  end: end - start,
+                }
+                const features = [feat, ...supplementaryAlignments]
+                const totalLength = features.reduce(
+                  (accum, f) => accum + f.end - f.start,
+                  0,
+                )
+                console.log({ totalLength })
 
                 // @ts-ignore
                 session.addAssemblyConf({
@@ -180,24 +202,17 @@ export default class DotplotPlugin extends Plugin {
                 })
                 const d2 = Base1DView.create({
                   offsetPx: 0,
-                  bpPerPx: (end - start) / 800,
+                  bpPerPx: totalLength / 800,
                   displayedRegions: [
                     {
                       assemblyName: readAssembly,
                       start: 0,
-                      end: end - start,
+                      end: totalLength + 1000, // todo properly calculate seq length by enumerating all CIGARs
                       refName: readName,
                     },
                   ],
                 })
 
-                const feat = feature.toJSON()
-                feat.mate = {
-                  refName: readName,
-                  start: 0,
-                  end: end - start,
-                }
-                const features = [feat, ...supplementaryAlignments]
                 console.log({ features })
                 // @ts-ignore
                 session.addTrackConf({
