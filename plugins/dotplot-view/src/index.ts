@@ -147,7 +147,7 @@ export default class DotplotPlugin extends Plugin {
                       mate: {
                         start: clipLen,
                         end: clipLen + lengthOnRef,
-                        refName: name,
+                        refName: readName,
                       },
                     }
                   })
@@ -186,25 +186,26 @@ export default class DotplotPlugin extends Plugin {
                       assemblyName: readAssembly,
                       start: 0,
                       end: end - start,
-                      refName: name,
+                      refName: readName,
                     },
                   ],
                 })
 
                 const feat = feature.toJSON()
                 feat.mate = {
-                  refName: name,
+                  refName: readName,
                   start: 0,
                   end: end - start,
                 }
-
+                const features = [feat, ...supplementaryAlignments]
+                console.log({ features })
                 // @ts-ignore
                 session.addTrackConf({
                   type: 'DotplotTrack',
                   assemblyNames,
                   adapter: {
                     type: 'FromConfigAdapter',
-                    features: [feat, ...supplementaryAlignments],
+                    features,
                   },
                   trackId: trackName,
                 })
@@ -220,7 +221,7 @@ export default class DotplotPlugin extends Plugin {
                       type: 'DotplotTrack',
                     },
                   ],
-                  displayName: `${name} vs ${trackAssembly}`,
+                  displayName: `${readName} vs ${trackAssembly}`,
                 })
               },
             },
