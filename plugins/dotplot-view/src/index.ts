@@ -123,6 +123,7 @@ export default class DotplotPlugin extends Plugin {
               onClick: () => {
                 const session = getSession(track)
                 const start = feature.get('start')
+                const clipPos = feature.get('clipPos')
                 const end = feature.get('end')
                 const SA: string =
                   (feature.get('tags')
@@ -139,22 +140,23 @@ export default class DotplotPlugin extends Plugin {
                   .map(aln => {
                     const [saRef, saStart, saStrand, saCigar] = aln.split(',')
                     const saLengthOnRef = getLengthOnRef(saCigar)
-                    const saClipLen = getClip(
+                    const saClipPos = getClip(
                       saCigar,
                       saStrand === '-' ? -1 : 1,
                     )
-                    const saRealStart = +saStart - 1 + saClipLen
+                    const saRealStart = +saStart - 1 + saClipPos
 
                     return {
                       refName: saRef,
                       start: saRealStart,
                       end: saRealStart + saLengthOnRef,
+                      clipPos: saClipPos,
                       assemblyName: trackAssembly,
                       strand: saStrand,
                       uniqueId: Math.random(),
                       mate: {
-                        start: saClipLen,
-                        end: saClipLen + saLengthOnRef,
+                        start: saClipPos,
+                        end: saClipPos + saLengthOnRef,
                         refName: readName,
                       },
                     }
@@ -163,14 +165,17 @@ export default class DotplotPlugin extends Plugin {
                 const feat = feature.toJSON()
                 feat.mate = {
                   refName: readName,
-                  start: 0,
-                  end: end - start,
+                  start: clipPos,
+                  end: end - start + clipPos,
                 }
                 const features = [feat, ...supplementaryAlignments] as {
                   refName: string
                   start: number
+                  clipPos: number
                   end: number
                 }[]
+
+                features.sort((a, b) => a.clipPos - b.clipPos)
                 const totalLength = features.reduce(
                   (accum, f: { end: number; start: number }) =>
                     accum + f.end - f.start,
