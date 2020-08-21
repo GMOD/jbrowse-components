@@ -29,17 +29,17 @@ const baseSequence = {
 describe('add-assembly', () => {
   setup
     .command(['add-assembly', '{}'])
-    .exit(25)
+    .exit(110)
     .it('fails if no load flag is passed')
 
   setup
     .command(['add-assembly', '{}', '--load', 'copy'])
-    .exit(10)
+    .exit(130)
     .it('fails if using inline JSON sequence custom with no --name')
 
   setup
     .command(['add-assembly', '{}', '--name', 'simple', '--load', 'copy'])
-    .exit(20)
+    .exit(140)
     .it('fails if custom sequence adapter has no type')
 
   setup
@@ -55,7 +55,7 @@ describe('add-assembly', () => {
       '--load',
       'copy',
     ])
-    .exit(30)
+    .exit(150)
     .it('fails if custom refNameAliases adapter has no type')
 
   setup
@@ -75,7 +75,7 @@ describe('add-assembly', () => {
     })
     .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
     .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
-    .exit(40)
+    .exit(160)
     .it('fails if trying to add an assembly with a name that already exists')
 
   setup
@@ -83,7 +83,7 @@ describe('add-assembly', () => {
       await fsPromises.unlink('manifest.json')
     })
     .command(['add-assembly', 'simple.fasta'])
-    .exit(50)
+    .exit(10)
     .it('fails if no manifest.json found in cwd')
 
   setup
@@ -91,7 +91,7 @@ describe('add-assembly', () => {
       await fsPromises.writeFile('manifest.json', 'This Is Invalid JSON')
     })
     .command(['add-assembly', 'simple.fasta'])
-    .exit(60)
+    .exit(20)
     .it("fails if it can't parse manifest.json")
 
   setup
@@ -99,17 +99,17 @@ describe('add-assembly', () => {
       await fsPromises.writeFile('manifest.json', '{"name":"NotJBrowse"}')
     })
     .command(['add-assembly', 'simple.fasta'])
-    .exit(70)
+    .exit(30)
     .it('fails if "name" in manifest.json is not "JBrowse"')
 
   setup
     .command(['add-assembly', 'simple.unusual.extension.xyz', '--load', 'copy'])
-    .exit(80)
+    .exit(170)
     .it('fails if it cannot guess the sequence type')
 
   setup
     .command(['add-assembly', 'simple.doesNotExist.fasta', '--load', 'copy'])
-    .exit(90)
+    .exit(40)
     .it('fails if it cannot find a file')
 
   setup
@@ -125,7 +125,7 @@ describe('add-assembly', () => {
       '--load',
       'copy',
     ])
-    .exit(100)
+    .exit(50)
     .it('fails if using invalid inline JSON')
   setup
     .command([
@@ -134,7 +134,7 @@ describe('add-assembly', () => {
       '--load',
       'copy',
     ])
-    .exit(35)
+    .exit(120)
     .it('fails if load flag is passed with a URL')
 
   setup

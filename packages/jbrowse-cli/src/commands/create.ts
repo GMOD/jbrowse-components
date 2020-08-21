@@ -1,7 +1,8 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import fetch from 'node-fetch'
 import * as unzip from 'unzipper'
+import JBrowseCommand from '../base'
 
 interface GithubRelease {
   tag_name: string
@@ -12,7 +13,7 @@ interface GithubRelease {
     },
   ]
 }
-export default class Create extends Command {
+export default class Create extends JBrowseCommand {
   static description = 'Downloads and installs the latest JBrowse 2 release'
 
   static examples = [
@@ -20,7 +21,7 @@ export default class Create extends Command {
     '$ jbrowse create /path/to/new/installation --force',
     '$ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip',
     '$ jbrowse create /path/to/new/installation --tag @gmod/jbrowse-web@0.0.1',
-    '$ jbrowse create --listVersion',
+    '$ jbrowse create --listVersions # Lists out all available versions of Jbrowse 2',
   ]
 
   static args = [
@@ -38,6 +39,7 @@ export default class Create extends Command {
       description:
         'Overwrites existing JBrowse 2 installation if present in path',
     }),
+    // will need to account for pagenation once there is a lot of releases
     listVersions: flags.boolean({
       char: 'l',
       description: 'Lists out all versions of JBrowse 2',
@@ -85,7 +87,7 @@ export default class Create extends Command {
 
     const response = await fetch(locationUrl)
     if (!response.ok) {
-      this.error(`Failed to fetch: ${response.statusText}`, { exit: 50 })
+      this.error(`Failed to fetch: ${response.statusText}`, { exit: 100 })
     }
 
     const type = response.headers.get('content-type')
@@ -108,12 +110,12 @@ export default class Create extends Command {
     try {
       allFiles = await fsPromises.readdir(userPath)
     } catch (error) {
-      this.error('Directory does not exist', { exit: 20 })
+      this.error('Directory does not exist', { exit: 110 })
     }
     if (allFiles.length > 0)
       this.error(
         `${userPath} This directory has existing files and could cause conflicts with create. Please choose another directory or use the force flag to overwrite existing files`,
-        { exit: 10 },
+        { exit: 120 },
       )
   }
 
@@ -149,7 +151,7 @@ export default class Create extends Command {
       ? versions.assets[0].browser_download_url
       : this.error(
           'Could not find version specified. Use --listVersions to see all available versions',
-          { exit: 40 },
+          { exit: 130 },
         )
   }
 

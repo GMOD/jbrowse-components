@@ -1,7 +1,8 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
+import JBrowseCommand from '../base'
 
 interface Connection {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -17,7 +18,7 @@ interface Config {
   tracks?: unknown[]
 }
 
-export default class AddConnection extends Command {
+export default class AddConnection extends JBrowseCommand {
   static description = 'Add a connection to a JBrowse 2 configuration'
 
   static examples = [
@@ -26,22 +27,14 @@ export default class AddConnection extends Command {
     '$ jbrowse add-connection http://mysite.com/path/to/hub.txt --assemblyName hg19',
     '$ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection --assemblyName hg19',
     `$ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}}' --assemblyName hg19`,
-    '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName',
+    '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json',
   ]
-
-  // if not JBrowse1 or UCSC, they must provide the the config object
 
   static args = [
     {
-      name: 'dataDirectory',
+      name: 'connectionUrlOrPath',
       required: true,
       description: `URL of data directory\nFor hub file, usually called hub.txt\nFor JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/ `,
-    },
-    {
-      name: 'location',
-      required: false,
-      description: 'Location of JBrowse installation.',
-      default: '.',
     },
   ]
 
@@ -60,10 +53,6 @@ export default class AddConnection extends Command {
       char: 'c',
       description: `Any extra config settings to add to connection in JSON object format, such as '{"uri":"url":"https://sample.com"}}'`,
     }),
-    configLocation: flags.string({
-      description:
-        'Write to a certain config.json file. Defaults to location/config.json if not specified',
-    }),
     connectionId: flags.string({
       description: `Id for the connection that must be unique to JBrowse.  Defaults to 'connectionType-assemblyName-currentTime'`,
     }),
@@ -71,6 +60,11 @@ export default class AddConnection extends Command {
       char: 'n',
       description:
         'Name of the connection. Defaults to connectionId if not provided',
+    }),
+    target: flags.string({
+      description:
+        'path to config file in JB2 installation directory to write out to.',
+      default: './config.json',
     }),
     help: flags.help({ char: 'h' }),
     skipCheck: flags.boolean({
@@ -88,15 +82,14 @@ export default class AddConnection extends Command {
 
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddConnection)
-    const { dataDirectory: argsPath } = runArgs as { dataDirectory: string }
-    const { config, configLocation } = runFlags
+    const { connectionUrlOrPath: argsPath } = runArgs as {
+      connectionUrlOrPath: string
+    }
+    const { config, target } = runFlags
     let { type, name, connectionId, assemblyName } = runFlags
 
-    const configPath =
-      configLocation || path.join(runArgs.location, 'config.json')
-
     if (!(runFlags.skipCheck || runFlags.force)) {
-      await this.checkLocation(runArgs.location)
+      await this.checkLocation(path.dirname(target))
     }
 
     const url = await this.resolveURL(
@@ -106,22 +99,22 @@ export default class AddConnection extends Command {
 
     let configContentsJson
     try {
-      configContentsJson = await this.readJsonConfig(configPath)
-      this.debug(`Found existing config file ${configPath}`)
+      configContentsJson = await this.readJsonConfig(target)
+      this.debug(`Found existing config file ${target}`)
     } catch (error) {
-      this.error('No existing config file found', { exit: 10 })
+      this.error('No existing config file found', { exit: 100 })
     }
     let configContents: Config
     try {
       configContents = { ...JSON.parse(configContentsJson) }
     } catch (error) {
-      this.error('Could not parse existing config file', { exit: 20 })
+      this.error('Could not parse existing config file', { exit: 110 })
     }
     if (!configContents.assemblies || !configContents.assemblies.length) {
       this.error(
         'No assemblies found. Please add one before adding connections',
         {
-          exit: 30,
+          exit: 120,
         },
       )
     } else if (configContents.assemblies.length > 1 && !assemblyName) {
@@ -138,7 +131,7 @@ export default class AddConnection extends Command {
             `Assembly name provided does not match any in config. Valid assembly names are ${configContents.assemblies.map(
               assembly => assembly.name,
             )}`,
-            { exit: 40 },
+            { exit: 130 },
           )
         : this.debug(`Assembly name(s) is :${assemblyName}`)
     else {
@@ -188,7 +181,7 @@ export default class AddConnection extends Command {
         if (!config || !this.isValidJSON(config))
           this.error(
             'When type is not UCSCTrackHubConnection or JBrowse1Connection, config object must be provided.\nPlease enter a config object using --config',
-            { exit: 110 },
+            { exit: 140 },
           )
 
         break
@@ -210,53 +203,21 @@ export default class AddConnection extends Command {
       } else
         this.error(
           `Cannot add connection with id ${connectionId}, a connection with that id already exists.\nUse --overwrite if you would like to replace the existing connection`,
-          { exit: 40 },
+          { exit: 150 },
         )
     } else configContents.connections.push(connectionConfig)
 
-    this.debug(`Writing configuration to file ${configPath}`)
+    this.debug(`Writing configuration to file ${target}`)
     await fsPromises.writeFile(
-      configPath,
+      target,
       JSON.stringify(configContents, undefined, 2),
     )
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} connection "${name}" ${
         idx !== -1 ? 'in' : 'to'
-      } ${configPath}`,
+      } ${target}`,
     )
-  }
-
-  async checkLocation(location: string) {
-    let manifestJson: string
-    try {
-      manifestJson = await fsPromises.readFile(
-        path.join(location, 'manifest.json'),
-        {
-          encoding: 'utf8',
-        },
-      )
-    } catch (error) {
-      this.error(
-        'Could not find the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 50 },
-      )
-    }
-    let manifest: { name?: string } = {}
-    try {
-      manifest = JSON.parse(manifestJson)
-    } catch (error) {
-      this.error(
-        'Could not parse the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 60 },
-      )
-    }
-    if (manifest.name !== 'JBrowse') {
-      this.error(
-        '"name" in file "manifest.json" is not "JBrowse". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 70 },
-      )
-    }
   }
 
   async resolveURL(location: string, check = true) {
@@ -264,7 +225,7 @@ export default class AddConnection extends Command {
     try {
       locationUrl = new URL(location)
     } catch (error) {
-      this.error('The location provided is not a valid URL', { exit: 80 })
+      this.error('The location provided is not a valid URL', { exit: 160 })
     }
     if (locationUrl) {
       let response
@@ -276,26 +237,12 @@ export default class AddConnection extends Command {
         this.error(`Response returned with code ${response.status}`)
       } catch (error) {
         // ignore
-        this.error(`Unable to fetch from URL, ${error}`, { exit: 90 })
+        this.error(`Unable to fetch from URL, ${error}`, { exit: 170 })
       }
     }
     return this.error(`Could not resolve to a URL: "${location}"`, {
       exit: 100,
     })
-  }
-
-  async readJsonConfig(location: string) {
-    let locationUrl: URL | undefined
-    try {
-      locationUrl = new URL(location)
-    } catch (error) {
-      // ignore
-    }
-    if (locationUrl) {
-      const response = await fetch(locationUrl)
-      return response.json()
-    }
-    return fsPromises.readFile(location, { encoding: 'utf8' })
   }
 
   determineConnectionType(url: string, config: string | undefined) {

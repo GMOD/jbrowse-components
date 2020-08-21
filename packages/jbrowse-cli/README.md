@@ -32,11 +32,12 @@ It is likely preferable in most cases to install the tools first however
 <!-- commands -->
 
 - [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
-- [`jbrowse add-connection DATADIRECTORY [LOCATION]`](#jbrowse-add-connection-datadirectory-location)
-- [`jbrowse add-track TRACK [LOCATION]`](#jbrowse-add-track-track-location)
+- [`jbrowse add-connection CONNECTIONURLORPATH`](#jbrowse-add-connection-connectionurlorpath)
+- [`jbrowse add-track TRACK`](#jbrowse-add-track-track)
 - [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
+- [`jbrowse set-default-session`](#jbrowse-set-default-session)
 - [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
 ## `jbrowse add-assembly SEQUENCE`
@@ -60,9 +61,6 @@ OPTIONS
   -a, --alias=alias
       An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38");
       can be specified multiple times
-
-  -c, --config=config
-      [default: ./config.json] Config file; if the file does not exist, it will be created
 
   -f, --force
       Equivalent to `--skipCheck --overwrite`
@@ -117,30 +115,32 @@ OPTIONS
   --skipCheck
       Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory
 
+  --target=target
+      [default: ./config.json] path to config file in JB2 installation directory to write out to.
+      Creates ./config.json if nonexistent
+
 EXAMPLES
   $ jbrowse add-assembly GRCh38.fa --load copy
   $ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta --load move
   $ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load trust
-  $ jbrowse add-assembly GRCh38.2bit --config path/to/config.json --load copy
   $ jbrowse add-assembly GRCh38.chrom.sizes --load trust
   $ jbrowse add-assembly GRCh38.config.json --load copy
   $ jbrowse add-assembly https://example.com/data/sample.2bit
+  $ jbrowse add-assembly GRCh38.fa --target /path/to/jb2/installation/customconfig.json --load copy
 ```
 
-## `jbrowse add-connection DATADIRECTORY [LOCATION]`
+## `jbrowse add-connection CONNECTIONURLORPATH`
 
 Add a connection to a JBrowse 2 configuration
 
 ```
 USAGE
-  $ jbrowse add-connection DATADIRECTORY [LOCATION]
+  $ jbrowse add-connection CONNECTIONURLORPATH
 
 ARGUMENTS
-  DATADIRECTORY  URL of data directory
-                 For hub file, usually called hub.txt
-                 For JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/
-
-  LOCATION       [default: .] Location of JBrowse installation.
+  CONNECTIONURLORPATH  URL of data directory
+                       For hub file, usually called hub.txt
+                       For JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/
 
 OPTIONS
   -a, --assemblyName=assemblyName  Assembly name of the connection If none, will default to the assembly in your config
@@ -157,9 +157,6 @@ OPTIONS
 
   -t, --type=type                  type of connection, ex. JBrowse1Connection, UCSCTrackHubConnection, custom
 
-  --configLocation=configLocation  Write to a certain config.json file. Defaults to location/config.json if not
-                                   specified
-
   --connectionId=connectionId      Id for the connection that must be unique to JBrowse.  Defaults to
                                    'connectionType-assemblyName-currentTime'
 
@@ -167,6 +164,9 @@ OPTIONS
 
   --skipCheck                      Don't check whether or not the data directory URL exists or if you are in a JBrowse
                                    directory
+
+  --target=target                  [default: ./config.json] path to config file in JB2 installation directory to write
+                                   out to.
 
 EXAMPLES
   $ jbrowse add-connection http://mysite.com/jbrowse/data/
@@ -176,20 +176,20 @@ EXAMPLES
   hg19
   $ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config
   '{"uri":{"url":"https://mysite.com/path/to/custom"}}' --assemblyName hg19
-  $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName
+  $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target
+  /path/to/jb2/installation/config.json
 ```
 
-## `jbrowse add-track TRACK [LOCATION]`
+## `jbrowse add-track TRACK`
 
 Add a track to a JBrowse 2 configuration
 
 ```
 USAGE
-  $ jbrowse add-track TRACK [LOCATION]
+  $ jbrowse add-track TRACK
 
 ARGUMENTS
-  TRACK     Track file or URL
-  LOCATION  [default: .] Location of JBrowse 2 installation. Defaults to .
+  TRACK  Track file or URL
 
 OPTIONS
   -a, --assemblyNames=assemblyNames   Assembly name or names for track as comma separated string. If none, will default
@@ -212,25 +212,23 @@ OPTIONS
 
   --config=config                     Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'
 
-  --configLocation=configLocation     Write to a certain config.json file. Defaults to location/config.json if not
-                                      specified
-
   --overwrite                         Overwrites existing track if it shares the same trackId
 
   --skipCheck                         Skip check for whether or not the file or URL exists or if you are in a JBrowse
                                       directory
+
+  --target=target                     [default: ./config.json] path to config file in JB2 installation to write out to.
 
   --trackId=trackId                   trackId for the track, by default inferred from filename, must be unique
                                       throughout config
 
 EXAMPLES
   $ jbrowse add-track /path/to/my.bam --load copy
-  $ jbrowse add-track /path/to/my.bam /path/to/jbrowse2/installation --load symlink
+  $ jbrowse add-track /path/to/my.bam --target /path/to/jbrowse2/installation/config.json --load symlink
   $ jbrowse add-track https://mywebsite.com/my.bam
-  $ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' -- load move
+  $ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move
   $ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite
   $ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'
-  $ jbrowse add-track config.json'
 ```
 
 ## `jbrowse add-track-json TRACK`
@@ -245,8 +243,10 @@ ARGUMENTS
   TRACK  track JSON file or command line arg blob
 
 OPTIONS
-  -c, --config=config  [default: ./config.json] Config file; if the file does not exist, it will be created
-  -u, --update         update the contents of an existing track, matched based on trackId
+  -u, --update     update the contents of an existing track, matched based on trackId
+
+  --target=target  [default: ./config.json] path to config file in JB2 installation directory to write out to.
+                   Creates ./config.json if nonexistent
 
 EXAMPLES
   $ jbrowse add-track-json track.json
@@ -279,7 +279,7 @@ EXAMPLES
   $ jbrowse create /path/to/new/installation --force
   $ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip
   $ jbrowse create /path/to/new/installation --tag @gmod/jbrowse-web@0.0.1
-  $ jbrowse create --listVersion
+  $ jbrowse create --listVersions # Lists out all available versions of Jbrowse 2
 ```
 
 ## `jbrowse help [COMMAND]`
@@ -299,6 +299,37 @@ OPTIONS
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.1.0/src/commands/help.ts)_
 
+## `jbrowse set-default-session`
+
+Set a default session with views and tracks
+
+```
+USAGE
+  $ jbrowse set-default-session
+
+OPTIONS
+  -c, --currentSession   List out the current default session
+  -h, --help             show CLI help
+  -n, --name=name        [default: New Default Session] Give a name for the default session
+  -s, --session=session  set path to a file containing session in json format
+  -t, --tracks=tracks    Track id or track ids as comma separated string to put into default session
+
+  -v, --view=view        View type in config to be added as default session, i.e LinearGenomeView, CircularView,
+                         DotplotView.
+                         Must be provided if no default session file provided
+
+  --target=target        [default: ./config.json] path to config file in JB2 installation directory to write out to
+
+  --viewId=viewId        Identifier for the view. Will be generated on default
+
+EXAMPLES
+  $ jbrowse set-default-session --session /path/to/default/session.json
+  $ jbrowse set-default-session --target /path/to/jb2/installation/config.json --view LinearGenomeView --tracks track1,
+  track2, track3
+  $ jbrowse set-default-session --view LinearGenomeView, --name newName --viewId view-no-tracks
+  $ jbrowse set-default-session --currentSession # Prints out current default session
+```
+
 ## `jbrowse upgrade [LOCALPATH]`
 
 Upgrades JBrowse 2 to latest version
@@ -308,7 +339,7 @@ USAGE
   $ jbrowse upgrade [LOCALPATH]
 
 ARGUMENTS
-  LOCALPATH  Location where JBrowse 2 is installed. Defaults to .
+  LOCALPATH  [default: .] Location where JBrowse 2 is installed
 
 OPTIONS
   -h, --help          show CLI help
@@ -320,11 +351,11 @@ OPTIONS
   -u, --url=url       A direct URL to a JBrowse 2 release
 
 EXAMPLES
-  $ jbrowse upgrade
+  $ jbrowse upgrade # Upgrades current directory to latest jbrowse release
   $ jbrowse upgrade /path/to/jbrowse2/installation
   $ jbrowse upgrade /path/to/jbrowse2/installation --tag @gmod/jbrowse-web@0.0.1
-  $ jbrowse upgrade --listVersions
-  $ jbrowse upgrade https://sample.com/jbrowse2.zip
+  $ jbrowse upgrade --listVersions # Lists out all available versions of Jbrowse 2
+  $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 ```
 
 <!-- commandsstop -->
