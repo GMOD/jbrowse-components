@@ -56,53 +56,52 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const b20 = hview.bpToPx({ refName, coord: end })
       const e10 = vview.bpToPx({ refName: mateRef, coord: mate.start })
       const e20 = vview.bpToPx({ refName: mateRef, coord: mate.end })
-
-      console.log({ b10, b20, e10, e20, mateRef, s: mate.start, e: mate.end })
-
-      const b1 = b10 - db1[0].offsetPx
-      const b2 = b20 - db1[0].offsetPx
-      const e1 = e10 - db2[0].offsetPx
-      const e2 = e20 - db2[0].offsetPx
-      if (
-        b1 !== undefined &&
-        b2 !== undefined &&
-        e1 !== undefined &&
-        e2 !== undefined
-      ) {
-        if (Math.abs(b1 - b2) < 3 && Math.abs(e1 - e2) < 3) {
-          ctx.fillRect(b1 - 0.5, height - e1 - 0.5, 1.5, 1.5)
-        } else {
-          let currX = b1
-          let currY = e1
-          let cigar = feature.get('cg')
-          if (cigar) {
-            cigar = (cigar.toUpperCase().match(/\d+\D/g) || [])
-              .map((op: string) => {
-                // @ts-ignore
-                return [op.match(/\D/)[0], parseInt(op, 10)]
-              })
-              .forEach(([op, val]: [string, number]) => {
-                const prevX = currX
-                const prevY = currY
-
-                if (op === 'M') {
-                  currX += val / hview.bpPerPx - 0.01
-                  currY += val / vview.bpPerPx - 0.01
-                } else if (op === 'D') {
-                  currX += val / hview.bpPerPx
-                } else if (op === 'I') {
-                  currY += val / vview.bpPerPx
-                }
-                ctx.beginPath()
-                ctx.moveTo(prevX, height - prevY)
-                ctx.lineTo(currX, height - currY)
-                ctx.stroke()
-              })
+      if (b10 && b20 && e10 && e20 !== undefined) {
+        const b1 = b10 - db1[0].offsetPx
+        const b2 = b20 - db1[0].offsetPx
+        const e1 = e10 - db2[0].offsetPx
+        const e2 = e20 - db2[0].offsetPx
+        if (
+          b1 !== undefined &&
+          b2 !== undefined &&
+          e1 !== undefined &&
+          e2 !== undefined
+        ) {
+          if (Math.abs(b1 - b2) < 3 && Math.abs(e1 - e2) < 3) {
+            ctx.fillRect(b1 - 0.5, height - e1 - 0.5, 1.5, 1.5)
           } else {
-            ctx.beginPath()
-            ctx.moveTo(b1, height - e1)
-            ctx.lineTo(b2, height - e2)
-            ctx.stroke()
+            let currX = b1
+            let currY = e1
+            let cigar = feature.get('cg')
+            if (cigar) {
+              cigar = (cigar.toUpperCase().match(/\d+\D/g) || [])
+                .map((op: string) => {
+                  // @ts-ignore
+                  return [op.match(/\D/)[0], parseInt(op, 10)]
+                })
+                .forEach(([op, val]: [string, number]) => {
+                  const prevX = currX
+                  const prevY = currY
+
+                  if (op === 'M') {
+                    currX += val / hview.bpPerPx - 0.01
+                    currY += val / vview.bpPerPx - 0.01
+                  } else if (op === 'D') {
+                    currX += val / hview.bpPerPx
+                  } else if (op === 'I') {
+                    currY += val / vview.bpPerPx
+                  }
+                  ctx.beginPath()
+                  ctx.moveTo(prevX, height - prevY)
+                  ctx.lineTo(currX, height - currY)
+                  ctx.stroke()
+                })
+            } else {
+              ctx.beginPath()
+              ctx.moveTo(b1, height - e1)
+              ctx.lineTo(b2, height - e2)
+              ctx.stroke()
+            }
           }
         }
       }

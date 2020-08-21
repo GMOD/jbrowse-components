@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
@@ -14,6 +15,7 @@ import {
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import TimelineIcon from '@material-ui/icons/Timeline'
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { parseCigar } from '@gmod/jbrowse-plugin-alignments/src/BamAdapter/MismatchParser'
 import {
   configSchemaFactory as dotplotTrackConfigSchemaFactory,
@@ -122,8 +124,6 @@ export default class DotplotPlugin extends Plugin {
                 const session = getSession(track)
                 const start = feature.get('start')
                 const end = feature.get('end')
-                const cigar = feature.get('CIGAR')
-                const lengthOnRef = getLengthOnRef(cigar)
                 const SA: string =
                   (feature.get('tags')
                     ? feature.get('tags').SA
@@ -144,7 +144,6 @@ export default class DotplotPlugin extends Plugin {
                       saStrand === '-' ? -1 : 1,
                     )
                     const saRealStart = +saStart - 1 + saClipLen
-                    console.log({ saClipLen, saLengthOnRef })
 
                     return {
                       refName: saRef,
@@ -167,12 +166,16 @@ export default class DotplotPlugin extends Plugin {
                   start: 0,
                   end: end - start,
                 }
-                const features = [feat, ...supplementaryAlignments]
+                const features = [feat, ...supplementaryAlignments] as {
+                  refName: string
+                  start: number
+                  end: number
+                }[]
                 const totalLength = features.reduce(
-                  (accum, f) => accum + f.end - f.start,
+                  (accum, f: { end: number; start: number }) =>
+                    accum + f.end - f.start,
                   0,
                 )
-                console.log({ totalLength })
 
                 // @ts-ignore
                 session.addAssemblyConf({
@@ -213,7 +216,6 @@ export default class DotplotPlugin extends Plugin {
                   ],
                 })
 
-                console.log({ features })
                 // @ts-ignore
                 session.addTrackConf({
                   type: 'DotplotTrack',
