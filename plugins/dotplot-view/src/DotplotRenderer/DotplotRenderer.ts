@@ -43,10 +43,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks
     const db2 = vview.dynamicBlocks.contentBlocks
-    console.log(hview.features)
-    console.log(vview.features)
     ;(hview.features || []).forEach(feature => {
-      console.log('wtf')
       const start = feature.get('start')
       const end = feature.get('end')
       const refName = feature.get('refName')
@@ -57,10 +54,8 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       ctx.fillStyle = 'black'
       const b10 = hview.bpToPx({ refName, coord: start }) || 0
       const b20 = hview.bpToPx({ refName, coord: end }) || 0
-      const e10 = vview.bpToPx({ refName: mateRef, coord: mate.start })
-      const e20 = vview.bpToPx({ refName: mateRef, coord: mate.end })
-      console.log(start, end, mate.start, mate.end)
-      console.log({ b10, b20, e10, e20 })
+      const e10 = vview.bpToPx({ refName: mateRef, coord: mate.start }) || 0
+      const e20 = vview.bpToPx({ refName: mateRef, coord: mate.end }) || 0
 
       const b1 = b10 - db1[0].offsetPx
       const b2 = b20 - db1[0].offsetPx
