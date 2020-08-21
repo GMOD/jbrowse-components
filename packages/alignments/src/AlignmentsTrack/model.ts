@@ -111,8 +111,8 @@ const stateModelFactory = (
               checked: self.showPileup,
               onClick: self.togglePileup,
             },
-            ...self.PileupTrack.myTrackMenuItems,
-            ...self.SNPCoverageTrack.myTrackMenuItems,
+            ...self.PileupTrack.composedTrackMenuItems,
+            ...self.SNPCoverageTrack.composedTrackMenuItems,
           ]
         },
       }

@@ -233,7 +233,7 @@ const BaseTrack = types
     // note: this attribute is helpful when composing together multiple
     // subtracks so that you don't repeat the "about this track" from each
     // child track
-    get myTrackMenuItems(): MenuItem[] {
+    get composedTrackMenuItems(): MenuItem[] {
       return []
     },
   }))
