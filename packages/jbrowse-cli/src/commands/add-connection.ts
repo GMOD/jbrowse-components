@@ -27,7 +27,7 @@ export default class AddConnection extends JBrowseCommand {
     '$ jbrowse add-connection http://mysite.com/path/to/hub.txt --assemblyName hg19',
     '$ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection --assemblyName hg19',
     `$ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}}' --assemblyName hg19`,
-    '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --out /path/to/jb2/installation/config.json',
+    '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json',
   ]
 
   static args = [
@@ -61,8 +61,7 @@ export default class AddConnection extends JBrowseCommand {
       description:
         'Name of the connection. Defaults to connectionId if not provided',
     }),
-    out: flags.string({
-      char: 'o',
+    target: flags.string({
       description:
         'path to config file in JB2 installation directory to write out to.',
       default: './config.json',
@@ -86,11 +85,11 @@ export default class AddConnection extends JBrowseCommand {
     const { connectionUrlOrPath: argsPath } = runArgs as {
       connectionUrlOrPath: string
     }
-    const { config, out } = runFlags
+    const { config, target } = runFlags
     let { type, name, connectionId, assemblyName } = runFlags
 
     if (!(runFlags.skipCheck || runFlags.force)) {
-      await this.checkLocation(path.dirname(out))
+      await this.checkLocation(path.dirname(target))
     }
 
     const url = await this.resolveURL(
@@ -100,8 +99,8 @@ export default class AddConnection extends JBrowseCommand {
 
     let configContentsJson
     try {
-      configContentsJson = await this.readJsonConfig(out)
-      this.debug(`Found existing config file ${out}`)
+      configContentsJson = await this.readJsonConfig(target)
+      this.debug(`Found existing config file ${target}`)
     } catch (error) {
       this.error('No existing config file found', { exit: 100 })
     }
@@ -208,16 +207,16 @@ export default class AddConnection extends JBrowseCommand {
         )
     } else configContents.connections.push(connectionConfig)
 
-    this.debug(`Writing configuration to file ${out}`)
+    this.debug(`Writing configuration to file ${target}`)
     await fsPromises.writeFile(
-      out,
+      target,
       JSON.stringify(configContents, undefined, 2),
     )
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} connection "${name}" ${
         idx !== -1 ? 'in' : 'to'
-      } ${out}`,
+      } ${target}`,
     )
   }
 

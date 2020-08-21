@@ -31,7 +31,7 @@ export default class AddTrack extends JBrowseCommand {
 
   static examples = [
     '$ jbrowse add-track /path/to/my.bam --load copy',
-    '$ jbrowse add-track /path/to/my.bam --out /path/to/jbrowse2/installation/config.json --load symlink',
+    '$ jbrowse add-track /path/to/my.bam --target /path/to/jbrowse2/installation/config.json --load symlink',
     '$ jbrowse add-track https://mywebsite.com/my.bam',
     `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move`,
     `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite`,
@@ -72,8 +72,7 @@ export default class AddTrack extends JBrowseCommand {
     config: flags.string({
       description: `Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'`,
     }),
-    out: flags.string({
-      char: 'o',
+    target: flags.string({
       description: 'path to config file in JB2 installation to write out to.',
       default: './config.json',
     }),
@@ -111,11 +110,11 @@ export default class AddTrack extends JBrowseCommand {
       category,
       description,
       load,
-      out,
+      target,
     } = runFlags
     let { type, trackId, name, assemblyNames } = runFlags
 
-    const configDirectory = path.dirname(out)
+    const configDirectory = path.dirname(target)
     if (!(skipCheck || force)) {
       await this.checkLocation(configDirectory)
     }
@@ -158,8 +157,8 @@ export default class AddTrack extends JBrowseCommand {
     // only add track if there is an existing config.json
     let configContentsJson
     try {
-      configContentsJson = await this.readJsonConfig(out)
-      this.debug(`Found existing config file ${out}`)
+      configContentsJson = await this.readJsonConfig(target)
+      this.debug(`Found existing config file ${target}`)
     } catch (error) {
       this.error(
         'No existing config file found, run add-assembly first to bootstrap config',
@@ -338,16 +337,16 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
-    this.debug(`Writing configuration to file ${out}`)
+    this.debug(`Writing configuration to file ${target}`)
     await fsPromises.writeFile(
-      out,
+      target,
       JSON.stringify(configContents, undefined, 2),
     )
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} track "${name}" ${
         idx !== -1 ? 'in' : 'to'
-      } ${out}`,
+      } ${target}`,
     )
   }
 

@@ -91,7 +91,7 @@ export default class AddAssembly extends JBrowseCommand {
     '$ jbrowse add-assembly GRCh38.chrom.sizes --load trust',
     '$ jbrowse add-assembly GRCh38.config.json --load copy',
     '$ jbrowse add-assembly https://example.com/data/sample.2bit',
-    '$ jbrowse add-assembly GRCh38.fa --out /path/to/jb2/installation/customconfig.json --load copy',
+    '$ jbrowse add-assembly GRCh38.fa --target /path/to/jb2/installation/customconfig.json --load copy',
   ]
 
   static args = [
@@ -159,8 +159,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
       description:
         'A comma-separated list of color strings for the reference sequence names; will cycle\nthrough colors if there are fewer colors than sequences',
     }),
-    out: flags.string({
-      char: 'o',
+    target: flags.string({
       description:
         'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
       default: './config.json',
@@ -416,7 +415,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
 
     if (!(runFlags.skipCheck || runFlags.force)) {
-      await this.checkLocation(path.dirname(runFlags.out))
+      await this.checkLocation(path.dirname(runFlags.target))
     }
     const { sequence: argsSequence } = runArgs as { sequence: string }
     this.debug(`Sequence location is: ${argsSequence}`)
@@ -489,8 +488,8 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
     let configContentsJson
     try {
-      configContentsJson = await this.readJsonConfig(runFlags.out)
-      this.debug(`Found existing config file ${runFlags.out}`)
+      configContentsJson = await this.readJsonConfig(runFlags.target)
+      this.debug(`Found existing config file ${runFlags.target}`)
     } catch (error) {
       this.debug('No existing config file found, using default config')
       configContentsJson = JSON.stringify(defaultConfig)
@@ -524,16 +523,16 @@ custom         Either a JSON file location or inline JSON that defines a custom
       configContents.assemblies.push(assembly)
     }
 
-    this.debug(`Writing configuration to file ${runFlags.out}`)
+    this.debug(`Writing configuration to file ${runFlags.target}`)
     await fsPromises.writeFile(
-      runFlags.out,
+      runFlags.target,
       JSON.stringify(configContents, undefined, 2),
     )
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} assembly "${assembly.name}" ${
         idx !== -1 ? 'in' : 'to'
-      } ${runFlags.out}`,
+      } ${runFlags.target}`,
     )
   }
 

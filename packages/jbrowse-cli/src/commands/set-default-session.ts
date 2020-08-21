@@ -27,7 +27,7 @@ export default class SetDefaultSession extends JBrowseCommand {
 
   static examples = [
     '$ jbrowse set-default-session --session /path/to/default/session.json',
-    '$ jbrowse set-default-session --out /path/to/jb2/installation/config.json --view LinearGenomeView --tracks track1, track2, track3',
+    '$ jbrowse set-default-session --target /path/to/jb2/installation/config.json --view LinearGenomeView --tracks track1, track2, track3',
     '$ jbrowse set-default-session --view LinearGenomeView, --name newName --viewId view-no-tracks',
     '$ jbrowse set-default-session --currentSession # Prints out current default session',
   ]
@@ -61,8 +61,7 @@ export default class SetDefaultSession extends JBrowseCommand {
       char: 'c',
       description: 'List out the current default session',
     }),
-    out: flags.string({
-      char: 'o',
+    target: flags.string({
       description:
         'path to config file in JB2 installation directory to write out to',
       default: './config.json',
@@ -81,15 +80,15 @@ export default class SetDefaultSession extends JBrowseCommand {
       currentSession,
       view,
       viewId,
-      out,
+      target,
     } = runFlags
 
-    await this.checkLocation(path.dirname(out))
+    await this.checkLocation(path.dirname(target))
 
     let configContentsJson
     try {
-      configContentsJson = await this.readJsonConfig(out)
-      this.debug(`Found existing config file ${out}`)
+      configContentsJson = await this.readJsonConfig(target)
+      this.debug(`Found existing config file ${target}`)
     } catch (error) {
       this.error(
         'No existing config file found, run add-assembly first to bootstrap config',
@@ -170,9 +169,9 @@ export default class SetDefaultSession extends JBrowseCommand {
         ],
       }
     }
-    this.debug(`Writing configuration to file ${out}`)
+    this.debug(`Writing configuration to file ${target}`)
     await fsPromises.writeFile(
-      out,
+      target,
       JSON.stringify(configContents, undefined, 2),
     )
 
@@ -181,7 +180,7 @@ export default class SetDefaultSession extends JBrowseCommand {
         existingDefaultSession ? 'Overwrote' : 'Added'
       } defaultSession "${name}" ${
         existingDefaultSession ? 'in' : 'to'
-      } ${out}`,
+      } ${target}`,
     )
   }
 
