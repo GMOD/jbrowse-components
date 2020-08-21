@@ -4,9 +4,7 @@ import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import SomeIcon from '@material-ui/icons/Add'
 import { autorun } from 'mobx'
 import { getSnapshot } from 'mobx-state-tree'
-import Base1DView, {
-  Base1DViewModel,
-} from '@gmod/jbrowse-core/util/Base1DViewModel'
+import Base1DView from '@gmod/jbrowse-core/util/Base1DViewModel'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
   AbstractSessionModel,
@@ -16,6 +14,7 @@ import {
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import TimelineIcon from '@material-ui/icons/Timeline'
+import { parseCigar } from '@gmod/jbrowse-plugin-alignments/src/BamAdapter/MismatchParser'
 import {
   configSchemaFactory as dotplotTrackConfigSchemaFactory,
   stateModelFactory as dotplotTrackStateModelFactory,
@@ -101,19 +100,50 @@ export default class DotplotPlugin extends Plugin {
             {
               label: 'Dotplot of read vs ref',
               icon: SomeIcon,
-              onClick: (...args) => {
+              onClick: () => {
+                const session = getSession(track)
                 const start = feature.get('start')
                 const end = feature.get('end')
                 const cigar = feature.get('CIGAR')
-                const supp = feature.get('SA')
+                const SA = feature.get('tags')
+                  ? feature.get('tags').SA
+                  : feature.get('SA')
                 const refName = feature.get('refName')
                 const name = feature.get('name')
-                const session = getSession(track) as any
                 const readAssembly = `${feature.get('name')}_assembly`
                 const trackAssembly = getConf(track, 'assemblyNames')[0]
                 const assemblyNames = [trackAssembly, readAssembly]
                 const trackName = `read_vs_ref_${name}`
+                const supplementaryAlignments = SA
+                  ? SA.split(';')
+                      .filter(aln => !!aln)
+                      .map(aln => {
+                        if (aln) {
+                          const [ref, alnStart, alnStrand, cigar] = aln.split(
+                            ',',
+                          )
 
+                          const cigarOps = parseCigar(cigar)
+                          let lref = 0
+                          for (let i = 0; i < cigarOps.length; i += 2) {
+                            const len = +cigarOps[i]
+                            const op = cigarOps[i + 1]
+                            if (op !== 'H' && op !== 'S' && op !== 'I') {
+                              lref += len
+                            }
+                          }
+                          return {
+                            refName,
+                            start: +alnStart,
+                            end: +alnStart + lref,
+                            assemblyName: trackAssembly,
+                            strand: alnStrand,
+                          }
+                        }
+                      })
+                  : []
+
+                // @ts-ignore
                 session.addAssemblyConf({
                   name: readAssembly,
                   sequence: {
@@ -136,6 +166,7 @@ export default class DotplotPlugin extends Plugin {
                       refName,
                       assemblyName: trackAssembly,
                     },
+                    ...supplementaryAlignments,
                   ],
                 })
                 const d2 = Base1DView.create({
@@ -158,6 +189,7 @@ export default class DotplotPlugin extends Plugin {
                   end: end - start,
                 }
 
+                // @ts-ignore
                 session.addTrackConf({
                   type: 'DotplotTrack',
                   assemblyNames,

@@ -116,7 +116,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get initialized() {
-        console.log(self.hview, self.vview)
         return (
           self.volatileWidth !== undefined &&
           self.hview.displayedRegions.length > 0 &&
@@ -180,14 +179,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               this.setBorderY(
                 self.hview.dynamicBlocks.contentBlocks.reduce(
                   (a, b) =>
-                    Math.max(a, approxPixelStringLen(b.refName.slice(0, 10))),
+                    Math.max(a, approxPixelStringLen(b.refName.slice(0, 30))),
                   0,
                 ) + padding,
               )
               this.setBorderX(
                 self.vview.dynamicBlocks.contentBlocks.reduce(
                   (a, b) =>
-                    Math.max(a, approxPixelStringLen(b.refName.slice(0, 10))),
+                    Math.max(a, approxPixelStringLen(b.refName.slice(0, 30))),
                   0,
                 ) + padding,
               )
