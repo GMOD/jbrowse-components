@@ -3,12 +3,17 @@ import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import SomeIcon from '@material-ui/icons/Add'
 import { autorun } from 'mobx'
-
+import { getSnapshot } from 'mobx-state-tree'
+import Base1DView, {
+  Base1DViewModel,
+} from '@gmod/jbrowse-core/util/Base1DViewModel'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
   AbstractSessionModel,
   isAbstractMenuManager,
+  getSession,
 } from '@gmod/jbrowse-core/util'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import TimelineIcon from '@material-ui/icons/Timeline'
 import {
@@ -25,6 +30,20 @@ import {
   AdapterClass as PAFAdapter,
 } from './PAFAdapter'
 import ComparativeRender from './DotplotRenderer/ComparativeRenderRpc'
+
+interface Track {
+  addAdditionalContextMenuItemCallback: Function
+  id: string
+  type: string
+  PileupTrack: any
+}
+interface View {
+  tracks: Track[]
+  type: string
+}
+interface Session {
+  views: View[]
+}
 
 export default class DotplotPlugin extends Plugin {
   name = 'DotplotPlugin'
@@ -76,17 +95,96 @@ export default class DotplotPlugin extends Plugin {
       })
     }
 
-    interface Track {
-      addAdditionalContextMenuItemCallback: Function
-      id: string
-      type: string
-    }
-    interface View {
-      tracks: Track[]
-      type: string
-    }
-    interface Session {
-      views: View[]
+    const menuItems = (feature: Feature, track: any) => {
+      return feature
+        ? [
+            {
+              label: 'Dotplot of read vs ref',
+              icon: SomeIcon,
+              onClick: (...args) => {
+                const start = feature.get('start')
+                const end = feature.get('end')
+                const cigar = feature.get('CIGAR')
+                const supp = feature.get('SA')
+                const refName = feature.get('refName')
+                const name = feature.get('name')
+                const session = getSession(track) as any
+                const readAssembly = `${feature.get('name')}_assembly`
+                const trackAssembly = getConf(track, 'assemblyNames')[0]
+                const assemblyNames = [trackAssembly, readAssembly]
+                const trackName = `read_vs_ref_${name}`
+
+                session.addAssemblyConf({
+                  name: readAssembly,
+                  sequence: {
+                    type: 'ReferenceSequenceTrack',
+                    trackId: `${feature.get('name')}_track`,
+                    adapter: {
+                      type: 'FromConfigSequenceAdapter',
+                      features: [feature.toJSON()],
+                    },
+                  },
+                })
+
+                const d1 = Base1DView.create({
+                  offsetPx: 0,
+                  bpPerPx: (end - start) / 800,
+                  displayedRegions: [
+                    {
+                      start,
+                      end,
+                      refName,
+                      assemblyName: trackAssembly,
+                    },
+                  ],
+                })
+                const d2 = Base1DView.create({
+                  offsetPx: 0,
+                  bpPerPx: (end - start) / 800,
+                  displayedRegions: [
+                    {
+                      assemblyName: readAssembly,
+                      start: 0,
+                      end: end - start,
+                      refName: name,
+                    },
+                  ],
+                })
+
+                const feat = feature.toJSON()
+                feat.mate = {
+                  refName: name,
+                  start: 0,
+                  end: end - start,
+                }
+
+                session.addTrackConf({
+                  type: 'DotplotTrack',
+                  assemblyNames,
+                  adapter: {
+                    type: 'FromConfigAdapter',
+                    features: [feat],
+                  },
+                  trackId: trackName,
+                })
+
+                session.addView('DotplotView', {
+                  type: 'DotplotView',
+                  hview: getSnapshot(d1),
+                  vview: getSnapshot(d2),
+                  assemblyNames,
+                  tracks: [
+                    {
+                      configuration: trackName,
+                      type: 'DotplotTrack',
+                    },
+                  ],
+                  displayName: `${name} vs ${trackAssembly}`,
+                })
+              },
+            },
+          ]
+        : []
     }
     const { rootModel: { session } = {} } = pluginManager
     if (session) {
@@ -101,35 +199,11 @@ export default class DotplotPlugin extends Plugin {
               if (!tracksAlreadyAddedTo.includes(track.id)) {
                 if (type === 'PileupTrack') {
                   tracksAlreadyAddedTo.push(track.id)
-                  track.addAdditionalContextMenuItemCallback(
-                    (feature: Feature, track: any, pluginManager: any) => {
-                      const menuItem = {
-                        label: 'Dotplot of read vs ref',
-                        icon: SomeIcon,
-                        onClick: session => {
-                          const start = feature.get('start')
-                          const end = feature.get('end')
-                          const cigar = feature.get('cigar')
-                          const supp = feature.get('SA')
-                          // do some stuff
-                        },
-                      }
-                      return [menuItem]
-                    },
-                  )
+                  track.addAdditionalContextMenuItemCallback(menuItems)
                 } else if (type === 'AlignmentsTrack') {
                   tracksAlreadyAddedTo.push(track.id)
                   track.PileupTrack.addAdditionalContextMenuItemCallback(
-                    (feature: any, track: any, pluginManager: any) => {
-                      const menuItem = {
-                        label: 'Dotplot of read vs ref',
-                        icon: SomeIcon,
-                        onClick: session => {
-                          // do some stuff
-                        },
-                      }
-                      return [menuItem]
-                    },
+                    menuItems,
                   )
                 }
               }

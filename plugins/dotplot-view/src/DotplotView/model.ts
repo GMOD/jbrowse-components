@@ -116,6 +116,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get initialized() {
+        console.log(self.hview, self.vview)
         return (
           self.volatileWidth !== undefined &&
           self.hview.displayedRegions.length > 0 &&
