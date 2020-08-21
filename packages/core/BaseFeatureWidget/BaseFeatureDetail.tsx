@@ -24,6 +24,9 @@ export const useStyles = makeStyles(theme => ({
   paperRoot: {
     background: theme.palette.grey[100],
   },
+  field: {
+    display: 'flex',
+  },
   fieldName: {
     wordBreak: 'break-all',
     minWidth: '90px',
@@ -105,7 +108,7 @@ export const BaseCoreDetails = (props: BaseProps) => {
         const value = displayedDetails[key.toLowerCase()]
         const strValue = String(value)
         return value ? (
-          <div key={key} style={{ display: 'flex' }}>
+          <div className={classes.field} key={key}>
             <div className={classes.fieldName}>{key}</div>
             <div className={classes.fieldValue}>
               <SanitizedHTML html={strValue} />

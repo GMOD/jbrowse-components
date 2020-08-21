@@ -6,6 +6,9 @@
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "volvox_refseq",
+        "metadata": {
+          "date": "2020-08-20"
+        },
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
@@ -115,6 +118,9 @@
       "trackId": "volvox_cram_pileup",
       "name": "volvox-sorted.cram (contigA, PileupTrack)",
       "category": ["Integration test"],
+      "metadata": {
+        "source": "We generated 150bp paired end reads from a <i>Volvox mythicus</i>, an imaginary species, for this jbrowse demo"
+      },
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "CramAdapter",

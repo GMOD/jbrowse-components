@@ -1,3 +1,6 @@
+import React from 'react'
+import { observer } from 'mobx-react'
+import { isAlive } from 'mobx-state-tree'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { ResizeHandle } from '@gmod/jbrowse-core/ui'
 import {
@@ -7,19 +10,13 @@ import {
 import Paper from '@material-ui/core/Paper'
 import Slide from '@material-ui/core/Slide'
 import { makeStyles } from '@material-ui/core/styles'
-import { observer } from 'mobx-react'
-import { Instance, isAlive } from 'mobx-state-tree'
-import React from 'react'
-import { LinearGenomeViewStateModel, RESIZE_HANDLE_HEIGHT } from '..'
-import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
+
+import { LinearGenomeViewModel, RESIZE_HANDLE_HEIGHT } from '..'
+import { BaseTrackModel } from '../../BasicTrack/baseTrackModel'
 import TrackLabel from './TrackLabel'
 
-type LGV = Instance<LinearGenomeViewStateModel>
-
 const useStyles = makeStyles(theme => ({
-  root: {
-    position: 'relative',
-  },
+  root: {},
   resizeHandle: {
     height: RESIZE_HANDLE_HEIGHT,
     boxSizing: 'border-box',
@@ -59,8 +56,8 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function TrackContainer(props: {
-  model: LGV
-  track: Instance<BaseTrackStateModel>
+  model: LinearGenomeViewModel
+  track: BaseTrackModel
 }) {
   const classes = useStyles()
   const { model, track } = props
@@ -78,11 +75,13 @@ function TrackContainer(props: {
   const { RenderingComponent, TrackBlurb } = track
   const view = getContainingView(track)
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== track.id
+
   return (
     <div className={classes.root}>
       <Slide direction="right" in={model.showTrackLabels}>
         <TrackLabel track={track} className={classes.trackLabel} />
       </Slide>
+
       <Paper
         variant="outlined"
         className={classes.trackRenderingContainer}
