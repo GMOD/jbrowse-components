@@ -105,50 +105,59 @@ export default class DotplotPlugin extends Plugin {
                 const start = feature.get('start')
                 const end = feature.get('end')
                 const cigar = feature.get('CIGAR')
-                const SA = feature.get('tags')
-                  ? feature.get('tags').SA
-                  : feature.get('SA')
+                const SA: string =
+                  (feature.get('tags')
+                    ? feature.get('tags').SA
+                    : feature.get('SA')) || ''
                 const refName = feature.get('refName')
-                const name = feature.get('name')
-                const readAssembly = `${feature.get('name')}_assembly`
+                const readName = feature.get('name')
+                const readAssembly = `${readName}_assembly`
                 const trackAssembly = getConf(track, 'assemblyNames')[0]
                 const assemblyNames = [trackAssembly, readAssembly]
-                const trackName = `read_vs_ref_${name}`
-                const supplementaryAlignments = SA
-                  ? SA.split(';')
-                      .filter(aln => !!aln)
-                      .map(aln => {
-                        if (aln) {
-                          const [ref, alnStart, alnStrand, cigar] = aln.split(
-                            ',',
-                          )
+                const trackName = `${readName}_vs_${trackAssembly}`
+                const supplementaryAlignments = SA.split(';')
+                  .filter(aln => !!aln)
+                  .map(aln => {
+                    const [saRef, saStart, saStrand, saCigar] = aln.split(',')
 
-                          const cigarOps = parseCigar(cigar)
-                          let lref = 0
-                          for (let i = 0; i < cigarOps.length; i += 2) {
-                            const len = +cigarOps[i]
-                            const op = cigarOps[i + 1]
-                            if (op !== 'H' && op !== 'S' && op !== 'I') {
-                              lref += len
-                            }
-                          }
-                          return {
-                            refName,
-                            start: +alnStart,
-                            end: +alnStart + lref,
-                            assemblyName: trackAssembly,
-                            strand: alnStrand,
-                          }
-                        }
-                      })
-                  : []
+                    const cigarOps = parseCigar(saCigar)
+                    let lengthOnRef = 0
+                    for (let i = 0; i < cigarOps.length; i += 2) {
+                      const len = +cigarOps[i]
+                      const op = cigarOps[i + 1]
+                      if (op !== 'H' && op !== 'S' && op !== 'I') {
+                        lengthOnRef += len
+                      }
+                    }
+
+                    const clipLen =
+                      cigarOps[1] === 'H' || cigarOps[1] === 'S'
+                        ? +cigarOps[0]
+                        : 0
+
+                    const realStart = +saStart - 1 + clipLen
+
+                    return {
+                      refName: saRef,
+                      start: realStart,
+                      end: realStart + lengthOnRef,
+                      assemblyName: trackAssembly,
+                      strand: saStrand,
+                      uniqueId: Math.random(),
+                      mate: {
+                        start: clipLen,
+                        end: clipLen + lengthOnRef,
+                        refName: name,
+                      },
+                    }
+                  })
 
                 // @ts-ignore
                 session.addAssemblyConf({
                   name: readAssembly,
                   sequence: {
                     type: 'ReferenceSequenceTrack',
-                    trackId: `${feature.get('name')}_track`,
+                    trackId: `${readName}_track`,
                     adapter: {
                       type: 'FromConfigSequenceAdapter',
                       features: [feature.toJSON()],
@@ -195,7 +204,7 @@ export default class DotplotPlugin extends Plugin {
                   assemblyNames,
                   adapter: {
                     type: 'FromConfigAdapter',
-                    features: [feat],
+                    features: [feat, ...supplementaryAlignments],
                   },
                   trackId: trackName,
                 })

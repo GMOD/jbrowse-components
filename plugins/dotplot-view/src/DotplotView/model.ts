@@ -176,13 +176,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             if (self.volatileWidth !== undefined) {
               const padding = 4
               // these are set via autorun to avoid dependency cycle
-              this.setBorderY(
-                self.hview.dynamicBlocks.contentBlocks.reduce(
-                  (a, b) =>
-                    Math.max(a, approxPixelStringLen(b.refName.slice(0, 30))),
-                  0,
-                ) + padding,
-              )
+              // this.setBorderY(
+              //   self.hview.dynamicBlocks.contentBlocks.reduce(
+              //     (a, b) =>
+              //       Math.max(a, approxPixelStringLen(b.refName.slice(0, 30))),
+              //     0,
+              //   ) + padding,
+              // )
               this.setBorderX(
                 self.vview.dynamicBlocks.contentBlocks.reduce(
                   (a, b) =>
