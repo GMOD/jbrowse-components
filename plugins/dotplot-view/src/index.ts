@@ -250,10 +250,10 @@ export default class DotplotPlugin extends Plugin {
           ]
         : []
     }
-    const { rootModel: { session } = {} } = pluginManager
-    if (session) {
-      const tracksAlreadyAddedTo: string[] = []
-      autorun(() => {
+    autorun(() => {
+      const { rootModel: { session } = {} } = pluginManager
+      if (session) {
+        const tracksAlreadyAddedTo: string[] = []
         const { views } = (session as unknown) as Session
         views.forEach(view => {
           if (view.type === 'LinearGenomeView') {
@@ -274,7 +274,7 @@ export default class DotplotPlugin extends Plugin {
             })
           }
         })
-      })
-    }
+      }
+    })
   }
 }
