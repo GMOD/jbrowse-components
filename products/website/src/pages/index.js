@@ -72,45 +72,36 @@ function Home() {
             <img alt="screenshot of jbrowse 2" src="img/screenshot.png" />
           </div>
         </div>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <StyledTableCell>JBrowse 2</StyledTableCell>
-              <StyledTableCell>JBrowse 1</StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            <TableRow>
-              <TableCell>Runs on desktop or web</TableCell>
-              <TableCell>Runs on desktop or web</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Supports many different view types</TableCell>
-              <TableCell>Traditional linear view only</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Configure graphically</TableCell>
-              <TableCell>Configure with files or scripts</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Many plugins in development</TableCell>
-              <TableCell>Established plugin ecosystem</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>
-                <Button className={classes.button} variant="outlined">
-                  Learn more
-                </Button>
-              </TableCell>
+        <div className={classes.section}>
+          <Typography variant="h4">Features</Typography>
+          <hr />
 
-              <TableCell>
-                <Button className={classes.button} variant="outlined">
-                  Learn more
-                </Button>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+          <p>
+            In addition to a classic "linear genome view" with many jbrowse 1
+            features carried over, jbrowse 2 also offers
+          </p>
+          <ul>
+            <li>
+              New additional views such as circular, dotplot, and synteny views,
+              with the ability to add new view types via plugins also
+            </li>
+            <li>
+              Ability to display multiple chromosomes or discontinuous regions
+              on a single linear genome view
+            </li>
+            <li>
+              Status updates while track is loading (e.g. Downloading BAM
+              index...)
+            </li>
+            <li>Hi-C visualization from .hic format files</li>
+            <li>
+              Additional alignments track features including breakpoint split
+              view, read pileup sorting, show soft clipping, and combined pileup
+              and coverage track
+            </li>
+          </ul>
+        </div>
+
         <div className={classes.section}>
           <Typography variant="h4">Citation</Typography>
           <hr />
