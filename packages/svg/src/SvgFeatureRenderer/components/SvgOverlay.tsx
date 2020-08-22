@@ -15,6 +15,48 @@ interface SvgOverlayProps {
   }
   bpPerPx: number
   blockKey: string
+  movedDuringLastMouseDown: boolean
+  onFeatureMouseDown?(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+    featureId: string,
+  ): {}
+  onFeatureMouseEnter?(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+    featureId: string,
+  ): {}
+  onFeatureMouseOut?(
+    event:
+      | React.MouseEvent<SVGRectElement, MouseEvent>
+      | React.FocusEvent<SVGRectElement>,
+    featureId: string,
+  ): {}
+  onFeatureMouseOver?(
+    event:
+      | React.MouseEvent<SVGRectElement, MouseEvent>
+      | React.FocusEvent<SVGRectElement>,
+    featureId: string,
+  ): {}
+  onFeatureMouseUp?(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+    featureId: string,
+  ): {}
+  onFeatureMouseLeave?(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+    featureId: string,
+  ): {}
+  onFeatureMouseMove?(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+    featureId: string,
+  ): {}
+  // synthesized from mouseup and mousedown
+  onFeatureClick?(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+    featureId: string,
+  ): {}
+  onFeatureContextMenu?(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+    featureId: string,
+  ): {}
 }
 
 interface OverlayRectProps extends React.SVGProps<SVGRectElement> {
@@ -48,7 +90,6 @@ function OverlayRect({
 
   return (
     <rect
-      style={{ pointerEvents: 'none' }}
       x={leftWithinBlock - 2}
       y={rectTop - 2}
       width={widthWithinBlock + 4}
@@ -68,36 +109,144 @@ function SvgOverlay({
   blockKey,
   region,
   bpPerPx,
+  movedDuringLastMouseDown,
+  ...handlers
 }: SvgOverlayProps) {
-  if (blockLayoutFeatures) {
-    const blockLayout = blockLayoutFeatures.get(blockKey)
-    if (blockLayout) {
-      const mouseoverFeatureId = featureIdUnderMouse || contextMenuFeature?.id()
-      return (
-        <>
-          {mouseoverFeatureId ? (
-            <OverlayRect
-              rect={blockLayout.get(mouseoverFeatureId)}
-              region={region}
-              bpPerPx={bpPerPx}
-              fill="#000"
-              fillOpacity="0.2"
-            />
-          ) : null}
-          {selectedFeatureId ? (
-            <OverlayRect
-              rect={blockLayout.get(selectedFeatureId)}
-              region={region}
-              bpPerPx={bpPerPx}
-              stroke="#00b8ff"
-              fill="none"
-            />
-          ) : null}
-        </>
-      )
-    }
+  const blockLayout = blockLayoutFeatures?.get(blockKey)
+  if (!blockLayout) {
+    return null
   }
-  return null
+  const mouseoverFeatureId = featureIdUnderMouse || contextMenuFeature?.id()
+
+  function onFeatureMouseDown(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+  ) {
+    const { onFeatureMouseDown: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureMouseEnter(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+  ) {
+    const { onFeatureMouseEnter: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureMouseOut(
+    event:
+      | React.MouseEvent<SVGRectElement, MouseEvent>
+      | React.FocusEvent<SVGRectElement>,
+  ) {
+    const { onFeatureMouseOut: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureMouseOver(
+    event:
+      | React.MouseEvent<SVGRectElement, MouseEvent>
+      | React.FocusEvent<SVGRectElement>,
+  ) {
+    const { onFeatureMouseOver: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureMouseUp(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+  ) {
+    const { onFeatureMouseUp: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureMouseLeave(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+  ) {
+    const { onFeatureMouseLeave: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureMouseMove(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+  ) {
+    const { onFeatureMouseMove: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureClick(event: React.MouseEvent<SVGRectElement, MouseEvent>) {
+    if (movedDuringLastMouseDown) return undefined
+    const { onFeatureClick: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    event.stopPropagation()
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureContextMenu(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+  ) {
+    const { onFeatureContextMenu: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    event.stopPropagation()
+    return handler(event, mouseoverFeatureId)
+  }
+
+  return (
+    <>
+      {mouseoverFeatureId ? (
+        <OverlayRect
+          rect={blockLayout.get(mouseoverFeatureId)}
+          region={region}
+          bpPerPx={bpPerPx}
+          fill="#000"
+          fillOpacity="0.2"
+          onMouseDown={onFeatureMouseDown}
+          onMouseEnter={onFeatureMouseEnter}
+          onMouseOut={onFeatureMouseOut}
+          onMouseOver={onFeatureMouseOver}
+          onMouseUp={onFeatureMouseUp}
+          onMouseLeave={onFeatureMouseLeave}
+          onMouseMove={onFeatureMouseMove}
+          onClick={onFeatureClick}
+          onContextMenu={onFeatureContextMenu}
+          onFocus={onFeatureMouseOver}
+          onBlur={onFeatureMouseOut}
+          data-testid={mouseoverFeatureId}
+        />
+      ) : null}
+      {selectedFeatureId ? (
+        <OverlayRect
+          rect={blockLayout.get(selectedFeatureId)}
+          region={region}
+          bpPerPx={bpPerPx}
+          stroke="#00b8ff"
+          fill="none"
+        />
+      ) : null}
+    </>
+  )
 }
 
 export default observer(SvgOverlay)
