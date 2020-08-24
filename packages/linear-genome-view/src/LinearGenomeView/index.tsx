@@ -34,7 +34,7 @@ import LineStyleIcon from '@material-ui/icons/LineStyle'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import clone from 'clone'
-import Ruler from './components/Ruler'
+import { renderToSvg } from './components/LinearGenomeView'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -1064,44 +1064,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     })
     .actions(self => ({
       async exportSvg() {
-        let offset = 20
-        const { width } = self
-        const html = renderToStaticMarkup(
-          <svg
-            width={width}
-            height={1000}
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox={[0, 0, width, 1000].toString()}
-          >
-            {self.dynamicBlocks.map(block => {
-              const offsetLeft = block.offsetPx - self.offsetPx
-              return (
-                <g key={block.key} transform={`translate(${offsetLeft} 0)`}>
-                  <Ruler
-                    start={block.start}
-                    end={block.end}
-                    bpPerPx={self.bpPerPx}
-                    reversed={block.reversed}
-                  />
-                </g>
-              )
-            })}
-            {
-              await Promise.all(
-                self.tracks.map(async track => {
-                  const current = offset
-                  offset += track.height + 20
-                  const trackId = getConf(track, 'trackId')
-                  return (
-                    <g key={trackId} transform={`translate(0 ${current})`}>
-                      {await track.renderSvg()}
-                    </g>
-                  )
-                }),
-              )
-            }
-          </svg>,
-        )
+        const html = await renderToSvg(self)
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, 'image.svg')
       },

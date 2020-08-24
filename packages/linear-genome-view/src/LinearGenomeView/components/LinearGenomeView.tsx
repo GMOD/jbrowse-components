@@ -1,4 +1,5 @@
 import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
+import { renderToStaticMarkup } from 'react-dom/server'
 
 // material ui things
 import Button from '@material-ui/core/Button'
@@ -10,6 +11,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 
 // locals
 import { LinearGenomeViewStateModel } from '..'
@@ -19,6 +21,7 @@ import TracksContainer from './TracksContainer'
 import ImportForm from './ImportForm'
 import MiniControls from './MiniControls'
 import AboutDialog from './AboutDialog'
+import Ruler from './Ruler'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -30,7 +33,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const LinearGenomeView = observer((props: { model: LGV }) => {
+export default observer((props: { model: LGV }) => {
   const { model } = props
   const { tracks, error, hideHeader, initialized } = model
   const classes = useStyles()
@@ -98,4 +101,43 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   )
 })
 
-export default LinearGenomeView
+export async function renderToSvg(model: LGV) {
+  let offset = 20
+  const { width } = model
+  return renderToStaticMarkup(
+    <svg
+      width={width}
+      height={1000}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox={[0, 0, width, 1000].toString()}
+    >
+      {model.dynamicBlocks.map(block => {
+        const offsetLeft = block.offsetPx - model.offsetPx
+        return (
+          <g key={block.key} transform={`translate(${offsetLeft} 0)`}>
+            <Ruler
+              start={block.start}
+              end={block.end}
+              bpPerPx={model.bpPerPx}
+              reversed={block.reversed}
+            />
+          </g>
+        )
+      })}
+      {
+        await Promise.all(
+          model.tracks.map(async track => {
+            const current = offset
+            offset += track.height + 20
+            const trackId = getConf(track, 'trackId')
+            return (
+              <g key={trackId} transform={`translate(0 ${current})`}>
+                {await track.renderSvg()}
+              </g>
+            )
+          }),
+        )
+      }
+    </svg>,
+  )
+}
