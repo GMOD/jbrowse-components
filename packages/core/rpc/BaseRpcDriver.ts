@@ -88,9 +88,7 @@ export default abstract class BaseRpcDriver {
 
   private workerPool?: LazyWorker[]
 
-  maxPingTime = 3000 // 30000 TODO reminder to change back when done with task
-
-  workerCheckFrequency = 5000
+  maxPingTime = 30000
 
   // filter the given object and just remove any non-clonable things from it
   filterArgs<THING_TYPE>(
