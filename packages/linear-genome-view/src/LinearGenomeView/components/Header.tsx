@@ -73,7 +73,9 @@ const Controls = observer(({ model }: { model: LGV }) => {
         <TrackSelectorIcon fontSize="small" />
       </ToggleButton>
       <Button
-        onClick={() => model.exportSvg()}
+        onClick={() => {
+          model.exportSvg()
+        }}
         variant="contained"
         color="primary"
       >

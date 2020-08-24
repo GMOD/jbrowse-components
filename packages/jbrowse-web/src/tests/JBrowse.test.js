@@ -9,10 +9,18 @@ import ErrorBoundary from 'react-error-boundary'
 // locals
 import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
+import FileSaver from 'file-saver'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
 import JBrowse from '../JBrowse'
 import { setup, getPluginManager, readBuffer } from './util'
 
+// mock from https://stackoverflow.com/questions/44686077
+jest.mock('file-saver', () => ({ saveAs: jest.fn() }))
+global.Blob = function (content, options) {
+  return { content, options }
+}
+
+// allow image snapshot
 expect.extend({ toMatchImageSnapshot })
 
 setup()
@@ -134,4 +142,25 @@ test('404 sequence file', async () => {
       exact: false,
     }),
   ).toBeTruthy()
+})
+
+test('export svg', async () => {
+  console.error = jest.fn()
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByTestId, findByText } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+  state.session.views[0].setNewView(5, 100)
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+  )
+
+  fireEvent.click(await findByText(/Export SVG/))
+
+  await wait(async () => {
+    expect(FileSaver.saveAs).toHaveBeenCalled()
+  })
+  expect(FileSaver.saveAs).toMatchSnapshot()
 })
