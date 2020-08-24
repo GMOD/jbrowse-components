@@ -65,8 +65,8 @@ function Home() {
           <hr />
 
           <p>
-            In addition to a classic "linear genome view" with many jbrowse 1
-            features carried over, jbrowse 2 also offers
+            In addition to a classic &quot;linear genome view&quot; with many
+            jbrowse 1 features carried over, jbrowse 2 also offers
           </p>
           <ul>
             <li>
@@ -86,6 +86,10 @@ function Home() {
               Additional alignments track features including breakpoint split
               view, read pileup sorting, show soft clipping, and combined pileup
               and coverage track
+            </li>
+            <li>
+              Graphical editing of the configuration in the app and command line
+              loading scripts
             </li>
           </ul>
         </div>
