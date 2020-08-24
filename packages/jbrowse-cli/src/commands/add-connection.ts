@@ -241,7 +241,7 @@ export default class AddConnection extends JBrowseCommand {
       }
     }
     return this.error(`Could not resolve to a URL: "${location}"`, {
-      exit: 100,
+      exit: 180,
     })
   }
 
