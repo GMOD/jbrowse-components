@@ -66,7 +66,7 @@ describe('create', () => {
     .it('fails if no path is provided to the command even with force')
   setup
     .command(['create', '.'])
-    .exit(10)
+    .exit(120)
     .it(
       'fails if user selects a directory that already has existing files, no force flag',
     )
@@ -129,14 +129,14 @@ describe('create', () => {
       '@gmod/jbrowse-web@v999.999.999',
       '--force',
     ])
-    .exit(40)
+    .exit(130)
     .it('fails to download a version that does not exist')
   setup
     .nock('https://api.github.com', mockReleases)
     .nock('https://example.com', mockZip)
     .command(['create', 'jbrowse'])
     .command(['create', 'jbrowse'])
-    .exit(10)
+    .exit(120)
     .it('fails because this directory is already set up')
   setup
     .nock('https://api.github.com', mockReleases)

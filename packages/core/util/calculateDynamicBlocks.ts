@@ -34,12 +34,13 @@ export default function calculateDynamicBlocks(
 ) {
   const {
     offsetPx,
-    width,
     displayedRegions,
     bpPerPx,
+    width,
     minimumBlockWidth,
     interRegionPaddingWidth,
   } = model
+
   if (!width) {
     throw new Error('view has no width, cannot calculate displayed blocks')
   }

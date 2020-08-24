@@ -13,6 +13,7 @@
     "clone": "^2.1.2",
     "clsx": "^1.0.4",
     "json-stable-stringify": "^1.0.1",
+    "normalize-wheel": "^1.0.1",
     "rbush": "^3.0.1",
     "react-sizeme": "^2.6.7",
     "react-window": "^1.8.5"

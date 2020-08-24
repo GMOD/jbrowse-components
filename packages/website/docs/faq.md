@@ -8,27 +8,40 @@ toplevel: true
 
 #### What technologies does JBrowse 2 use
 
-- JBrowse uses React, mostly functional components and React hooks
-- Uses mobx-state-tree to handle state
-- Uses web-workers to parse data and render images
-- Uses Typescript to check types
-- For JBrowse 2 desktop specifically, uses Electron
+- React
+- mobx-state-tree
+- web-workers
+- Typescript
+- Electron (for desktop specifically)
 
 #### What is special about JBrowse 2
 
 One thing that makes JBrowse 2 special is that we can create new view
-types via our plugin system. For example, we have already developed
-
-- Circos-style whole genome overview
-- Dotplot comparative view
-- Linear synteny view
+types via our plugin system, e.g. circular, dotplot, etc. Anything you want can
+be added as a view, and can be shown alongside our other views
 
 This makes JBrowse 2 more than just a genome browser-- it is really a platform
 that can be built on.
 
-#### Can the linear genome view be reverse complemented?
+#### What are new features in jbrowse 2
 
-Yes! See [here](user navigation)
+- Uses webworkers for data parsing and rendering tracks
+- Use ctrl+scroll to zoom in and out quickly
+- Status updates while track is loading (e.g. Downloading BAM index...)
+- Hi-C visualization from .hic format files
+- Can display multiple chromosomes or discontinuous regions on a single linear
+  genome view
+- Can connect to UCSC trackhubs
+- Alignments track has both coverage and pileup display integrated in a single track
+- Read pileups can be sorted by various attributes
+- Has ability to show soft clipped bases on reads
+- Interactively edit the configuration using the GUI
+- Circular, dotplot, stacked synteny views
+- SV inspector, that gives spreadsheet and circos overview of data in a single view
+
+#### Can the linear genome view be reverse complemented
+
+Yes! See [here](user_navigation)
 
 ### Setup
 

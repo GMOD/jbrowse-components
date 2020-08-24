@@ -14,8 +14,15 @@ import Base1DView, {
   Base1DViewModel,
 } from '@gmod/jbrowse-core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@gmod/jbrowse-core/util/calculateDynamicBlocks'
+import {
+  getSession,
+  minmax,
+  isSessionModelWithWidgets,
+} from '@gmod/jbrowse-core/util'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 
 function approxPixelStringLen(str: string) {
   return str.length * 0.7 * 12
@@ -57,13 +64,6 @@ const DotplotVView = Dotplot1DView.extend(self => ({
 }))
 
 export default function stateModelFactory(pluginManager: PluginManager) {
-  const { lib } = pluginManager
-  const { ElementId } = lib['@gmod/jbrowse-core/util/types/mst']
-  const { readConfObject } = lib['@gmod/jbrowse-core/configuration']
-  const { getSession, minmax, isSessionModelWithWidgets } = lib[
-    '@gmod/jbrowse-core/util'
-  ]
-
   return types
     .model('DotplotView', {
       id: ElementId,
@@ -95,6 +95,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       borderY: 100,
     }))
     .views(self => ({
+      get width(): number {
+        if (!self.volatileWidth) {
+          throw new Error('width not initialized')
+        }
+        return self.volatileWidth
+      },
+    }))
+    .views(self => ({
       get initialized() {
         return (
           self.volatileWidth !== undefined &&
@@ -102,19 +110,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           self.vview.displayedRegions.length > 0
         )
       },
-
-      get width(): number {
-        if (!self.volatileWidth) {
-          throw new Error('width not initialized')
-        }
-        return self.volatileWidth
-      },
-
       get loading() {
         return self.assemblyNames.length > 0 && !this.initialized
       },
       get viewWidth() {
-        return this.width - self.borderX
+        return self.width - self.borderX
       },
       get viewHeight() {
         return self.height - self.borderY
@@ -173,7 +173,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               )
               this.setBorderX(
                 self.vview.dynamicBlocks.contentBlocks.reduce(
-                  (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
+                  (a, b) =>
+                    Math.max(a, approxPixelStringLen(b.refName.slice(0, 10))),
                   0,
                 ) + padding,
               )

@@ -1,7 +1,7 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
-import fetch from 'node-fetch'
+import JBrowseCommand from '../base'
 
 interface UriLocation {
   uri: string
@@ -81,17 +81,17 @@ function isValidJSON(string: string) {
   }
 }
 
-export default class AddAssembly extends Command {
+export default class AddAssembly extends JBrowseCommand {
   static description = 'Add an assembly to a JBrowse 2 configuration'
 
   static examples = [
     '$ jbrowse add-assembly GRCh38.fa --load copy',
     '$ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta --load move',
     '$ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load trust',
-    '$ jbrowse add-assembly GRCh38.2bit --config path/to/config.json --load copy',
     '$ jbrowse add-assembly GRCh38.chrom.sizes --load trust',
     '$ jbrowse add-assembly GRCh38.config.json --load copy',
     '$ jbrowse add-assembly https://example.com/data/sample.2bit',
+    '$ jbrowse add-assembly GRCh38.fa --target /path/to/jb2/installation/customconfig.json --load copy',
   ]
 
   static args = [
@@ -127,12 +127,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
       options: ['indexedFasta', 'bgzipFasta', 'twoBit', 'chromSizes', 'custom'],
     }),
-    config: flags.string({
-      char: 'c',
-      description:
-        'Config file; if the file does not exist, it will be created',
-      default: './config.json',
-    }),
     name: flags.string({
       char: 'n',
       description:
@@ -165,6 +159,11 @@ custom         Either a JSON file location or inline JSON that defines a custom
       description:
         'A comma-separated list of color strings for the reference sequence names; will cycle\nthrough colors if there are fewer colors than sequences',
     }),
+    target: flags.string({
+      description:
+        'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
+      default: './config.json',
+    }),
     help: flags.help({ char: 'h' }),
     load: flags.string({
       char: 'l',
@@ -194,12 +193,12 @@ custom         Either a JSON file location or inline JSON that defines a custom
     if (this.needLoadData(argsSequence) && !runFlags.load)
       this.error(
         `Please specify the loading operation for this file with --load copy|symlink|move|trust`,
-        { exit: 25 },
+        { exit: 110 },
       )
     else if (!this.needLoadData(argsSequence) && runFlags.load)
       this.error(
         `URL detected with --load flag. Please rerun the function without the --load flag`,
-        { exit: 35 },
+        { exit: 120 },
       )
 
     let { name } = runFlags
@@ -385,7 +384,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
           if (isValidJSON(argsSequence)) {
             this.error(
               'Must provide --name when using custom inline JSON sequence',
-              { exit: 10 },
+              { exit: 130 },
             )
           } else {
             name = path.basename(argsSequence, '.json')
@@ -397,7 +396,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
             `No "type" specified in sequence adapter "${JSON.stringify(
               adapter,
             )}"`,
-            { exit: 20 },
+            { exit: 140 },
           )
         }
         sequence = {
@@ -414,8 +413,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
+
     if (!(runFlags.skipCheck || runFlags.force)) {
-      await this.checkLocation()
+      await this.checkLocation(path.dirname(runFlags.target))
     }
     const { sequence: argsSequence } = runArgs as { sequence: string }
     this.debug(`Sequence location is: ${argsSequence}`)
@@ -448,7 +448,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
             `No "type" specified in refNameAliases adapter "${JSON.stringify(
               refNameAliasesConfig,
             )}"`,
-            { exit: 30 },
+            { exit: 150 },
           )
         }
         this.debug(
@@ -488,8 +488,8 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
     let configContentsJson
     try {
-      configContentsJson = await this.readJsonConfig(runFlags.config)
-      this.debug(`Found existing config file ${runFlags.config}`)
+      configContentsJson = await this.readJsonConfig(runFlags.target)
+      this.debug(`Found existing config file ${runFlags.target}`)
     } catch (error) {
       this.debug('No existing config file found, using default config')
       configContentsJson = JSON.stringify(defaultConfig)
@@ -516,53 +516,24 @@ custom         Either a JSON file location or inline JSON that defines a custom
       } else {
         this.error(
           `Cannot add assembly with name ${assembly.name}, an assembly with that name already exists`,
-          { exit: 40 },
+          { exit: 160 },
         )
       }
     } else {
       configContents.assemblies.push(assembly)
     }
 
-    this.debug(`Writing configuration to file ${runFlags.config}`)
+    this.debug(`Writing configuration to file ${runFlags.target}`)
     await fsPromises.writeFile(
-      runFlags.config,
+      runFlags.target,
       JSON.stringify(configContents, undefined, 2),
     )
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} assembly "${assembly.name}" ${
         idx !== -1 ? 'in' : 'to'
-      } ${runFlags.config}`,
+      } ${runFlags.target}`,
     )
-  }
-
-  async checkLocation() {
-    let manifestJson: string
-    try {
-      manifestJson = await fsPromises.readFile('manifest.json', {
-        encoding: 'utf8',
-      })
-    } catch (error) {
-      this.error(
-        'Could not find the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 50 },
-      )
-    }
-    let manifest: { name?: string } = {}
-    try {
-      manifest = JSON.parse(manifestJson)
-    } catch (error) {
-      this.error(
-        'Could not parse the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 60 },
-      )
-    }
-    if (manifest.name !== 'JBrowse') {
-      this.error(
-        '"name" in file "manifest.json" is not "JBrowse". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 70 },
-      )
-    }
   }
 
   guessSequenceType(sequence: string) {
@@ -588,82 +559,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     if (isValidJSON(sequence)) {
       return 'custom'
     }
-    return this.error('Could not determine sequence type', { exit: 80 })
-  }
-
-  async resolveFileLocation(location: string, check = true) {
-    let locationUrl: URL | undefined
-    let locationPath: string | undefined
-    try {
-      locationUrl = new URL(location)
-    } catch (error) {
-      // ignore
-    }
-    if (locationUrl) {
-      let response
-      try {
-        if (check) {
-          response = await fetch(locationUrl, { method: 'HEAD' })
-          if (response.ok) {
-            return locationUrl.href
-          }
-        } else {
-          return locationUrl.href
-        }
-      } catch (error) {
-        // ignore
-      }
-    }
-    try {
-      if (check) {
-        locationPath = await fsPromises.realpath(location)
-      } else {
-        locationPath = location
-      }
-    } catch (e) {
-      // ignore
-    }
-    if (locationPath) {
-      const filePath = path.relative(process.cwd(), locationPath)
-      return filePath
-    }
-    return this.error(`Could not resolve to a file or a URL: "${location}"`, {
-      exit: 90,
-    })
-  }
-
-  async readInlineOrFileJson(inlineOrFileName: string) {
-    let result
-    // see if it's inline JSON
-    try {
-      result = JSON.parse(inlineOrFileName)
-    } catch (error) {
-      // not inline JSON, must be location of a JSON file
-      try {
-        const fileLocation = await this.resolveFileLocation(inlineOrFileName)
-        const resultJSON = await this.readJsonConfig(fileLocation)
-        result = JSON.parse(resultJSON)
-      } catch (err) {
-        this.error(`Not valid inline JSON or JSON file ${inlineOrFileName}`, {
-          exit: 100,
-        })
-      }
-    }
-    return result
-  }
-
-  async readJsonConfig(location: string) {
-    let locationUrl: URL | undefined
-    try {
-      locationUrl = new URL(location)
-    } catch (error) {
-      // ignore
-    }
-    if (locationUrl) {
-      const response = await fetch(locationUrl)
-      return response.json()
-    }
-    return fsPromises.readFile(location, { encoding: 'utf8' })
+    return this.error('Could not determine sequence type', { exit: 170 })
   }
 
   needLoadData(location: string) {
@@ -696,7 +592,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
             try {
               await fsPromises.copyFile(filePath, dataLocation)
             } catch (error) {
-              this.error(error, { exit: 20 })
+              this.error(error, { exit: 180 })
             }
           }),
         )
@@ -711,7 +607,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
             try {
               await fsPromises.symlink(filePath, dataLocation)
             } catch (error) {
-              this.error(error, { exit: 20 })
+              this.error(error, { exit: 180 })
             }
           }),
         )
@@ -726,7 +622,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
             try {
               await fsPromises.rename(filePath, dataLocation)
             } catch (error) {
-              this.error(error, { exit: 20 })
+              this.error(error, { exit: 180 })
             }
           }),
         )
