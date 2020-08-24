@@ -1,4 +1,3 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import * as d3 from 'd3'
 import { getScale } from '../util'
@@ -6,7 +5,7 @@ import WiggleBaseRenderer from '../WiggleBaseRenderer'
 
 export default class extends WiggleBaseRenderer {
   draw(context, props) {
-    const { features, regions, bpPerPx, scaleOpts, height, config } = props
+    const { features, regions, bpPerPx, scaleOpts, height } = props
     const region = regions[0]
     const scale = getScale({ ...scaleOpts, range: [height, 0] })
     const line = d3

@@ -19,6 +19,7 @@
     "abortable-promise-cache": "^1.1.3",
     "color": "^3.1.2",
     "copy-to-clipboard": "^3.3.1",
+    "d3": "^5.16.0",
     "d3-scale": "^3.2.1",
     "deep-equal": "^2.0.3",
     "generic-filehandle": "^2.0.0",

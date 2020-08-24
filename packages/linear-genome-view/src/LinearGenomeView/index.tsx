@@ -1,5 +1,3 @@
-import React from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
 import { Region } from '@gmod/jbrowse-core/util/types'
@@ -1064,7 +1062,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
     })
     .actions(self => ({
       async exportSvg() {
-        const html = await renderToSvg(self)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const html = await renderToSvg(self as any)
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, 'image.svg')
       },

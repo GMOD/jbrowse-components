@@ -1,7 +1,3 @@
-import {
-  createCanvas,
-  createImageBitmap,
-} from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'

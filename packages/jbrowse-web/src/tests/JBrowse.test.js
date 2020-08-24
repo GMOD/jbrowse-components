@@ -16,9 +16,7 @@ import { setup, getPluginManager, readBuffer } from './util'
 
 // mock from https://stackoverflow.com/questions/44686077
 jest.mock('file-saver', () => ({ saveAs: jest.fn() }))
-global.Blob = function (content, options) {
-  return { content, options }
-}
+global.Blob = (content, options) => ({ content, options })
 
 // allow image snapshot
 expect.extend({ toMatchImageSnapshot })
