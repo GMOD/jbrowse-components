@@ -90,6 +90,8 @@ export default abstract class BaseRpcDriver {
 
   maxPingTime = 30000
 
+  workerCheckFrequency = 5000
+
   // filter the given object and just remove any non-clonable things from it
   filterArgs<THING_TYPE>(
     thing: THING_TYPE,
