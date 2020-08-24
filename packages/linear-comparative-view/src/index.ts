@@ -81,11 +81,7 @@ export default class extends Plugin {
         label: 'Linear synteny view',
         icon: CalendarIcon,
         onClick: (session: AbstractSessionModel) => {
-          if ('addView' in session) {
-            session.addView('CircularView', {})
-          } else {
-            session.notify('Adding views not supported')
-          }
+          session.addView('LinearSyntenyView', {})
         },
       })
     }

@@ -68,11 +68,7 @@ export default class DotplotPlugin extends Plugin {
         label: 'Dotplot view',
         icon: TimelineIcon,
         onClick: (session: AbstractSessionModel) => {
-          if ('addView' in session) {
-            session.addView('CircularView', {})
-          } else {
-            session.notify('Adding views not supported')
-          }
+          session.addView('DotplotView', {})
         },
       })
     }

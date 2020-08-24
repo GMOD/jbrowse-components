@@ -15,7 +15,6 @@ import Base1DView, {
   Base1DViewModel,
 } from '@gmod/jbrowse-core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@gmod/jbrowse-core/util/calculateDynamicBlocks'
-import { AbstractMultipleViewContainer } from '@gmod/jbrowse-core/util/types'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
 function approxPixelStringLen(str: string) {
@@ -293,7 +292,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const result = this.getCoords(mousedown, mouseup)
         if (result) {
           const [x1, x2, y1, y2] = result
-          const session = getSession(self) as AbstractMultipleViewContainer
+          const session = getSession(self)
 
           const d1 = Base1DView.create(getSnapshot(self.hview))
           const d2 = Base1DView.create(getSnapshot(self.vview))

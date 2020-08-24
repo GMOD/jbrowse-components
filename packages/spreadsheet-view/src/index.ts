@@ -21,11 +21,7 @@ export default class SpreadsheetViewPlugin extends Plugin {
         label: 'Tabular data',
         icon: ViewComfyIcon,
         onClick: (session: AbstractSessionModel) => {
-          if ('addView' in session) {
-            session.addView('CircularView', {})
-          } else {
-            session.notify('Adding views not supported')
-          }
+          session.addView('SpreadsheetView', {})
         },
       })
     }

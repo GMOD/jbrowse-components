@@ -22,36 +22,15 @@ import { Feature } from '../simpleFeature'
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
-export interface AbstractSingleViewContainer {
-  view: AbstractViewModel
-}
-export function isSingleViewContainer(
-  thing: unknown,
-): thing is AbstractSingleViewContainer {
-  return isStateTreeNode(thing) && 'view' in thing
-}
-export interface AbstractMultipleViewContainer {
+export interface AbstractViewContainer {
   views: AbstractViewModel[]
-  removeView(view: AbstractViewModel): void
+  removeView?(view: AbstractViewModel): void
   addView(typeName: string, initialState: Record<string, unknown>): void
 }
-export function isMultipleViewContainer(
-  thing: unknown,
-): thing is AbstractMultipleViewContainer {
-  return (
-    isStateTreeNode(thing) &&
-    'views' in thing &&
-    'addView' in thing &&
-    'removeView' in thing
-  )
-}
-export type AbstractViewContainer =
-  | AbstractSingleViewContainer
-  | AbstractMultipleViewContainer
 export function isViewContainer(
   thing: unknown,
 ): thing is AbstractViewContainer {
-  return isStateTreeNode(thing) && ('view' in thing || 'views' in thing)
+  return isStateTreeNode(thing) && 'removeView' in thing
 }
 
 export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
@@ -59,7 +38,7 @@ export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
 export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
 
 /** minimum interface that all session state models must implement */
-export type AbstractSessionModel = AbstractViewContainer & {
+export interface AbstractSessionModel extends AbstractViewContainer {
   setSelection(feature: Feature): void
   clearSelection(): void
   configuration: AnyConfigurationModel
@@ -83,7 +62,7 @@ export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
 }
 
 /** abstract interface for a session allows editing configurations */
-export type SessionWithConfigEditing = AbstractSessionModel & {
+export interface SessionWithConfigEditing extends AbstractSessionModel {
   editConfiguration(configuration: AnyConfigurationModel): void
 }
 export function isSessionModelWithConfigEditing(
@@ -93,7 +72,7 @@ export function isSessionModelWithConfigEditing(
 }
 
 /** abstract interface for a session that manages widgets */
-export type SessionWithWidgets = AbstractSessionModel & {
+export interface SessionWithWidgets extends AbstractSessionModel {
   visibleWidget?: { id: string }
   widgets?: unknown[]
   addWidget(
@@ -111,7 +90,7 @@ export function isSessionModelWithWidgets(
 }
 
 /** abstract interface for a session that manages a global selection */
-export type SelectionContainer = AbstractSessionModel & {
+export interface SelectionContainer extends AbstractSessionModel {
   selection?: unknown
   setSelection(thing: unknown): void
 }

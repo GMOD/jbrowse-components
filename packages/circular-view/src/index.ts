@@ -29,11 +29,7 @@ export default class CircularViewPlugin extends Plugin {
         label: 'Circular view',
         icon: DataUsageIcon,
         onClick: (session: AbstractSessionModel) => {
-          if ('addView' in session) {
-            session.addView('CircularView', {})
-          } else {
-            session.notify('Adding views not supported')
-          }
+          session.addView('CircularView', {})
         },
       })
     }

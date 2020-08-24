@@ -21,11 +21,7 @@ export default class SvInspectorViewPlugin extends Plugin {
         label: 'SV inspector',
         icon: TableChartIcon,
         onClick: (session: AbstractSessionModel) => {
-          if ('addView' in session) {
-            session.addView('CircularView', {})
-          } else {
-            session.notify('Adding views not supported')
-          }
+          session.addView('SvInspectorView', {})
         },
       })
     }

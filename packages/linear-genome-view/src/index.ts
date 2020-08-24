@@ -90,11 +90,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
         label: 'Linear genome view',
         icon: LineStyleIcon,
         onClick: (session: AbstractSessionModel) => {
-          if ('addView' in session) {
-            session.addView('CircularView', {})
-          } else {
-            session.notify('Adding views not supported')
-          }
+          session.addView('LinearGenomeView', {})
         },
       })
     }
