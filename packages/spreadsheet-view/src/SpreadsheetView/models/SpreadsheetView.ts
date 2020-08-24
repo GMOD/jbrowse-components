@@ -1,6 +1,6 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { MenuOption } from '@gmod/jbrowse-core/ui'
+import { MenuItem } from '@gmod/jbrowse-core/ui'
 import { SnapshotIn, Instance } from 'mobx-state-tree'
 import { InstanceOfModelReturnedBy } from '@gmod/jbrowse-core/util'
 import DoneIcon from '@material-ui/icons/Done'
@@ -8,7 +8,7 @@ import Spreadsheet from './Spreadsheet'
 import ImportWizard from './ImportWizard'
 import FilterControls from './FilterControls'
 
-export type MenuOptionWithDisabledCallback = MenuOption & {
+export type MenuItemWithDisabledCallback = MenuItem & {
   disabled?:
     | boolean
     | ((
@@ -19,7 +19,7 @@ export type MenuOptionWithDisabledCallback = MenuOption & {
       ) => boolean)
 }
 
-const defaultRowMenuItems: MenuOptionWithDisabledCallback[] = [
+const defaultRowMenuItems: MenuItemWithDisabledCallback[] = [
   {
     label: 'Toggle select',
     icon: DoneIcon,
@@ -116,7 +116,7 @@ export default (pluginManager: PluginManager) => {
       },
     }))
     .actions(self => ({
-      setRowMenuItems(newItems: MenuOption[]) {
+      setRowMenuItems(newItems: MenuItem[]) {
         self.rowMenuItems.replace(newItems)
       },
       setWidth(newWidth: number) {

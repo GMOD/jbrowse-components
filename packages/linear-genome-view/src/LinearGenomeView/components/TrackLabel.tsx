@@ -1,5 +1,5 @@
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import { Menu, MenuOption } from '@gmod/jbrowse-core/ui'
+import { Menu, MenuItem } from '@gmod/jbrowse-core/ui'
 import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
 import IconButton from '@material-ui/core/IconButton'
 import Paper from '@material-ui/core/Paper'
@@ -110,15 +110,15 @@ const TrackLabel = React.forwardRef(
       handleClose()
     }
 
-    const menuItems: MenuOption[] = track.canConfigure
+    const trackMenuItems: MenuItem[] = track.canConfigure
       ? [{ label: 'Settings', onClick: onConfigureClick, icon: SettingsIcon }]
       : []
 
-    if (track.menuOptions.length) {
-      if (menuItems.length) {
-        menuItems.push({ type: 'divider' })
+    if (track.trackMenuItems.length) {
+      if (trackMenuItems.length) {
+        trackMenuItems.push({ type: 'divider' })
       }
-      menuItems.push(...track.menuOptions)
+      trackMenuItems.push(...track.trackMenuItems)
     }
 
     return (
@@ -155,7 +155,7 @@ const TrackLabel = React.forwardRef(
             className={classes.iconButton}
             color="secondary"
             data-testid="track_menu_icon"
-            disabled={!menuItems.length}
+            disabled={!trackMenuItems.length}
           >
             <MoreVertIcon fontSize="small" />
           </IconButton>
@@ -165,7 +165,7 @@ const TrackLabel = React.forwardRef(
           onMenuItemClick={handleMenuItemClick}
           open={Boolean(anchorEl)}
           onClose={handleClose}
-          menuOptions={menuItems}
+          menuItems={trackMenuItems}
         />
       </>
     )

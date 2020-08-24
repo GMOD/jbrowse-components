@@ -1,22 +1,16 @@
-import { types, Instance, getParent } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import {
   getConf,
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { getContainingView } from '@gmod/jbrowse-core/util'
 import {
   configSchemaFactory as baseConfigFactory,
   stateModelFactory as baseModelFactory,
 } from '../LinearComparativeTrack'
-
-interface Block {
-  start: number
-  end: number
-  refName: string
-  assemblyName: string
-  key: string
-}
+import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 
 export function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
@@ -53,23 +47,16 @@ export function stateModelFactory(
     )
 
     .views(self => ({
-      // see link, can't have colliding name `width` so renamed to `effectiveWidth`
-      // https://spectrum.chat/mobx-state-tree/general/types-compose-error~484a5bbe-a280-4fae-8ba7-eb14afc1257d
-      get effectiveWidth() {
-        return getParent(self, 2).width
-      },
-      get effectiveHeight() {
-        return 100
-      },
       get highResolutionScaling() {
         return 1
       },
       get renderProps() {
+        const parentView = getContainingView(self) as LinearSyntenyViewModel
         return {
           trackModel: self,
           config: getConf(self, 'renderer'),
-          height: this.effectiveHeight,
-          width: this.effectiveWidth,
+          width: parentView.width,
+          height: 100,
         }
       },
       get rendererTypeName() {
@@ -90,7 +77,5 @@ export function stateModelFactory(
     }))
 }
 
-type SyntenyTrackModel = ReturnType<typeof stateModelFactory>
-type SyntenyTrack = Instance<SyntenyTrackModel>
-
 export type LinearSyntenyTrackStateModel = ReturnType<typeof stateModelFactory>
+export type LinearSyntenyTrackModel = Instance<LinearSyntenyTrackStateModel>

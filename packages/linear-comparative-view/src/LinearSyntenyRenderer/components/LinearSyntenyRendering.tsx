@@ -1,75 +1,55 @@
 /* eslint-disable no-continue */
-
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useMemo, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import { getParent } from 'mobx-state-tree'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import SimpleFeature, {
+  SimpleFeatureSerialized,
+  Feature,
+} from '@gmod/jbrowse-core/util/simpleFeature'
 import { getConf } from '@gmod/jbrowse-core/configuration'
-import Base1DView, {
-  Base1DViewModel,
-} from '@gmod/jbrowse-core/util/Base1DViewModel'
-import { interstitialYPos, overlayYPos } from '../../util'
+import { getContainingView } from '@gmod/jbrowse-core/util'
+import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
+import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
+import { LinearSyntenyTrackModel } from '../../LinearSyntenyTrack'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const [LEFT, TOP, RIGHT, BOTTOM] = [0, 1, 2, 3]
-export type LayoutTuple = [number, number, number, number]
-interface LayoutMatch {
-  level: number
-  layout: LayoutTuple
-  feature: Feature
-  refName: string
+const [LEFT, , RIGHT] = [0, 1, 2, 3]
+
+type RectTuple = [number, number, number, number]
+
+function px(
+  view: LinearGenomeViewModel,
+  arg: { refName: string; coord: number },
+) {
+  return (view.bpToPx(arg) || {}).offsetPx || 0
 }
 
-function* generateMatches(l1: Feature[] = [], l2: Feature[] = []) {
-  let i = 0
-  let j = 0
-  while (i < l1.length && j < l2.length) {
-    const a = l1[i].get('syntenyId')
-    const b = l2[j].get('syntenyId')
-    if (a < b) {
-      i++
-    } else if (b < a) {
-      j++
-    } else {
-      yield [l1[i], l2[j]]
-      i++
-      j++
-    }
-  }
-}
-
-function layoutMatchesFromViews(views: Base1DViewModel[]) {
-  const layoutMatches = []
-  for (let i = 0; i < views.length; i++) {
-    for (let j = i; j < views.length; j++) {
+function layoutMatches(features: Feature[][]) {
+  const matches = []
+  for (let i = 0; i < features.length; i++) {
+    for (let j = i; j < features.length; j++) {
       if (i !== j) {
-        // NOTE: we might need intra-view "synteny" e.g. ortholog?
-        // similar to breakpoint squiggles in a single LGV, so may not want
-        // the check for i != j
-        for (const match of generateMatches(
-          views[i].features,
-          views[j].features,
+        for (const [f1, f2] of generateMatches(features[i], features[j], feat =>
+          feat.get('syntenyId'),
         )) {
-          const [l1, l2] = match
-          layoutMatches.push([
+          matches.push([
             {
-              feature: l1,
+              feature: f1,
               level: i,
-              refName: l1.get('refName'),
-              layout: [l1.get('start'), 0, l1.get('end'), 10] as LayoutTuple,
+              refName: f1.get('refName'),
+              layout: [f1.get('start'), 0, f1.get('end'), 10] as RectTuple,
             },
             {
-              feature: l2,
+              feature: f2,
               level: j,
-              refName: l2.get('refName'),
-              layout: [l2.get('start'), 0, l2.get('end'), 10] as LayoutTuple,
+              refName: f2.get('refName'),
+              layout: [f2.get('start'), 0, f2.get('end'), 10] as RectTuple,
             },
           ])
         }
       }
     }
   }
-  return layoutMatches
+  return matches
 }
 
 /**
@@ -79,10 +59,9 @@ function layoutMatchesFromViews(views: Base1DViewModel[]) {
 function LinearSyntenyRendering(props: {
   width: number
   height: number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  trackModel: any
+  trackModel: LinearSyntenyTrackModel
   highResolutionScaling: number
-  views: Base1DViewModel[]
+  features: SimpleFeatureSerialized[][]
   trackIds: string[]
 }) {
   const ref = useRef<HTMLCanvasElement>(null)
@@ -91,28 +70,23 @@ function LinearSyntenyRendering(props: {
     width,
     trackModel = {},
     highResolutionScaling = 1,
-    views: serializedViews,
+    features,
     trackIds,
   } = props
-
-  const v1p = getParent(trackModel, 2).views[0].offsetPx
-  const v2p = getParent(trackModel, 2).views[1].offsetPx
-
-  const views = serializedViews.map(view => {
-    const newView = Base1DView.create(view)
-    newView.setVolatileWidth(width)
-    if (view.features) {
-      newView.setFeatures(
-        view.features
-          // @ts-ignore this is deserializing the features
+  const deserializedFeatures = useMemo(
+    () =>
+      features.map(level => {
+        return level
           .map(f => new SimpleFeature(f))
-          .sort((a, b) => a.get('syntenyId') - b.get('syntenyId')),
-      )
-    }
-    return newView
-  })
+          .sort((a, b) => a.get('syntenyId') - b.get('syntenyId'))
+      }),
+    [features],
+  )
 
-  const layoutMatches = layoutMatchesFromViews(views)
+  const parentView = getContainingView(trackModel) as LinearSyntenyViewModel
+  const { views } = parentView
+  const matches = layoutMatches(deserializedFeatures)
+  const offsets = views.map(view => view.offsetPx)
 
   useEffect(() => {
     if (!ref.current) {
@@ -125,21 +99,18 @@ function LinearSyntenyRendering(props: {
     ctx.clearRect(0, 0, width, height)
     ctx.scale(highResolutionScaling, highResolutionScaling)
     ctx.fillStyle = getConf(trackModel, ['renderer', 'color'])
+    ctx.strokeStyle = getConf(trackModel, ['renderer', 'color'])
     const showIntraviewLinks = false
     const middle = true
     const hideTiny = false
-    layoutMatches.forEach(chunk => {
+    matches.forEach(m => {
       // we follow a path in the list of chunks, not from top to bottom, just in series
       // following x1,y1 -> x2,y2
-      for (let i = 0; i < chunk.length - 1; i += 1) {
-        const { layout: c1, feature: f1, level: level1, refName: ref1 } = chunk[
-          i
-        ]
-        const { layout: c2, feature: f2, level: level2, refName: ref2 } = chunk[
-          i + 1
-        ]
-        const v1 = views[level1]
-        const v2 = views[level2]
+      for (let i = 0; i < m.length - 1; i += 1) {
+        const { layout: c1, feature: f1, level: l1, refName: ref1 } = m[i]
+        const { layout: c2, feature: f2, level: l2, refName: ref2 } = m[i + 1]
+        const v1 = views[l1]
+        const v2 = views[l2]
 
         if (!c1 || !c2) {
           console.warn('received null layout for a overlay feature')
@@ -147,7 +118,7 @@ function LinearSyntenyRendering(props: {
         }
 
         // disable rendering connections in a single level
-        if (!showIntraviewLinks && level1 === level2) {
+        if (!showIntraviewLinks && l1 === l2) {
           continue
         }
         const length1 = f1.get('end') - f1.get('start')
@@ -157,29 +128,38 @@ function LinearSyntenyRendering(props: {
           continue
         }
 
-        const x11 = (v1.bpToPx({ refName: ref1, coord: c1[LEFT] }) || 0) - v1p
-        const x12 = (v1.bpToPx({ refName: ref1, coord: c1[RIGHT] }) || 0) - v1p
-        const x21 = (v2.bpToPx({ refName: ref2, coord: c2[LEFT] }) || 0) - v2p
-        const x22 = (v2.bpToPx({ refName: ref2, coord: c2[RIGHT] }) || 0) - v2p
+        const x11 = px(v1, { refName: ref1, coord: c1[LEFT] }) - offsets[l1]
+        const x12 = px(v1, { refName: ref1, coord: c1[RIGHT] }) - offsets[l1]
+        const x21 = px(v2, { refName: ref2, coord: c2[LEFT] }) - offsets[l2]
+        const x22 = px(v2, { refName: ref2, coord: c2[RIGHT] }) - offsets[l2]
 
         const y1 = middle
-          ? interstitialYPos(level1 < level2, height)
+          ? interstitialYPos(l1 < l2, height)
           : // prettier-ignore
             // @ts-ignore
-            overlayYPos(trackIds[0], level1, views, c1, level1 < level2)
+            overlayYPos(trackIds[0], l1, views, c1, l1 < l2)
         const y2 = middle
-          ? interstitialYPos(level2 < level1, height)
+          ? interstitialYPos(l2 < l1, height)
           : // prettier-ignore
             // @ts-ignore
-            overlayYPos(trackIds[1], level2, views, c2, level2 < level1)
+            overlayYPos(trackIds[1], l2, views, c2, l2 < l1)
 
-        ctx.beginPath()
-        ctx.moveTo(x11, y1)
-        ctx.lineTo(x12, y1)
-        ctx.lineTo(x22, y2)
-        ctx.lineTo(x21, y2)
-        ctx.closePath()
-        ctx.fill()
+        // drawing a line if the results are thin results in much less pixellation than
+        // filling in a thin polygon
+        if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
+          ctx.beginPath()
+          ctx.moveTo(x11, y1)
+          ctx.lineTo(x21, y2)
+          ctx.stroke()
+        } else {
+          ctx.beginPath()
+          ctx.moveTo(x11, y1)
+          ctx.lineTo(x12, y1)
+          ctx.lineTo(x22, y2)
+          ctx.lineTo(x21, y2)
+          ctx.closePath()
+          ctx.fill()
+        }
       }
     })
   })

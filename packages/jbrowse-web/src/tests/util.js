@@ -28,6 +28,7 @@ export function getPluginManager(initialState, adminMode = false) {
   } else {
     rootModel.setDefaultSession()
   }
+  rootModel.session.views.map(view => view.setWidth(800))
   pluginManager.setRootModel(rootModel)
 
   pluginManager.configure()

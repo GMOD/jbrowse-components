@@ -54,7 +54,7 @@ class MockWorkerHandle {
       await timeout(500)
       this.busy = false
     }
-    if (name === 'MockRender') {
+    if (name === 'MockRenderTimeout') {
       this.busy = true
       await timeout(10000)
       this.busy = false
@@ -106,6 +106,7 @@ export class MockRendererShort extends RpcMethodType {
 
 test('test RPC driver operation timeout and worker replace', async () => {
   console.warn = jest.fn()
+  expect.assertions(1)
   const driver = new MockRpcDriver()
   const pluginManager = new PluginManager()
 

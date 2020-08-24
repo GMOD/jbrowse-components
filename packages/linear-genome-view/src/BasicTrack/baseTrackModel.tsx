@@ -2,10 +2,11 @@
 import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
 import { isSessionModelWithConfigEditing } from '@gmod/jbrowse-core/util/types'
 import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
-import { MenuOption } from '@gmod/jbrowse-core/ui'
+import { MenuItem } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { types, Instance } from 'mobx-state-tree'
+import InfoIcon from '@material-ui/icons/Info'
 import React from 'react'
 
 // these MST models only exist for tracks that are *shown*.
@@ -37,6 +38,11 @@ const generateBaseTrackConfig = (base: any) =>
         description: 'the category and sub-categories of a track',
         type: 'stringArray',
         defaultValue: [],
+      },
+      metadata: {
+        type: 'frozen',
+        description: 'anything to add about this track',
+        defaultValue: {},
       },
 
       mouseover: {
@@ -80,6 +86,7 @@ const BaseTrack = types
     ReactComponent: undefined as any,
     rendererTypeName: '',
     scrollTop: 0,
+    showAbout: false,
     error: '',
   }))
   .views(self => ({
@@ -168,11 +175,7 @@ const BaseTrack = types
       return undefined as undefined | React.FC<any>
     },
 
-    get menuOptions(): MenuOption[] {
-      return []
-    },
-
-    get viewMenuActions(): MenuOption[] {
+    get viewMenuActions(): MenuItem[] {
       return []
     },
 
@@ -204,8 +207,34 @@ const BaseTrack = types
       self.scrollTop = scrollTop
     },
 
-    reload() {
-      // base reload does nothing, see specialized tracks for details
+    setShowAbout(show: boolean) {
+      self.showAbout = show
+    },
+
+    // base track reload does nothing, see specialized tracks for details
+    reload() {},
+  }))
+  .views(self => ({
+    get trackMenuItems(): MenuItem[] {
+      return [
+        {
+          label: 'About this track',
+          icon: InfoIcon,
+          onClick: () => {
+            self.setShowAbout(true)
+          },
+        },
+      ]
+    },
+
+    // distinct set of track items that are particular to this track type for
+    // base, there are none
+    //
+    // note: this attribute is helpful when composing together multiple
+    // subtracks so that you don't repeat the "about this track" from each
+    // child track
+    get composedTrackMenuItems(): MenuItem[] {
+      return []
     },
   }))
 

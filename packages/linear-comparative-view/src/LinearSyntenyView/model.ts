@@ -1,5 +1,6 @@
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+
 import baseModel from '../LinearComparativeView/model'
 
 export default function stateModelFactory(pluginManager: PluginManager) {
@@ -10,5 +11,5 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }),
   )
 }
-export type LinearSyntenyView = ReturnType<typeof stateModelFactory>
-export type LinearSyntenyViewModel = Instance<LinearSyntenyView>
+export type LinearSyntenyViewStateModel = ReturnType<typeof stateModelFactory>
+export type LinearSyntenyViewModel = Instance<LinearSyntenyViewStateModel>

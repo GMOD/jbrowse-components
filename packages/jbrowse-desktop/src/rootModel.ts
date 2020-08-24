@@ -3,7 +3,7 @@ import assemblyManagerFactory, {
 } from '@gmod/jbrowse-core/assemblyManager'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
-import { MenuOption } from '@gmod/jbrowse-core/ui'
+import { MenuItem } from '@gmod/jbrowse-core/ui'
 import AddIcon from '@material-ui/icons/Add'
 import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
@@ -17,7 +17,7 @@ const ipcRenderer = (electronBetterIpc && electronBetterIpc.ipcRenderer) || {
 }
 interface Menu {
   label: string
-  menuItems: MenuOption[]
+  menuItems: MenuItem[]
 }
 
 export default function RootModel(pluginManager: PluginManager) {
@@ -152,7 +152,7 @@ export default function RootModel(pluginManager: PluginManager) {
        * @param menuItem - Menu item to append.
        * @returns The new length of the menu
        */
-      appendToMenu(menuName: string, menuItem: MenuOption) {
+      appendToMenu(menuName: string, menuItem: MenuItem) {
         const menu = self.menus.find(m => m.label === menuName)
         if (!menu) {
           self.menus.push({ label: menuName, menuItems: [menuItem] })
@@ -169,7 +169,7 @@ export default function RootModel(pluginManager: PluginManager) {
        * the second-to-last one.
        * @returns The new length of the menu
        */
-      insertInMenu(menuName: string, menuItem: MenuOption, position: number) {
+      insertInMenu(menuName: string, menuItem: MenuItem, position: number) {
         const menu = self.menus.find(m => m.label === menuName)
         if (!menu) {
           self.menus.push({ label: menuName, menuItems: [menuItem] })
@@ -187,7 +187,7 @@ export default function RootModel(pluginManager: PluginManager) {
        * @param menuItem - Menu item to append.
        * @returns The new length of the sub-menu
        */
-      appendToSubMenu(menuPath: string[], menuItem: MenuOption) {
+      appendToSubMenu(menuPath: string[], menuItem: MenuItem) {
         let topMenu = self.menus.find(m => m.label === menuPath[0])
         if (!topMenu) {
           const idx = this.appendMenu(menuPath[0])
@@ -223,7 +223,7 @@ export default function RootModel(pluginManager: PluginManager) {
        */
       insertInSubMenu(
         menuPath: string[],
-        menuItem: MenuOption,
+        menuItem: MenuItem,
         position: number,
       ) {
         let topMenu = self.menus.find(m => m.label === menuPath[0])

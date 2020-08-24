@@ -2,6 +2,8 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useEffect, useRef, useState } from 'react'
+import normalizeWheel from 'normalize-wheel'
+
 import {
   LinearGenomeViewStateModel,
   RESIZE_HANDLE_HEIGHT,
@@ -25,6 +27,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 type LGV = Instance<LinearGenomeViewStateModel>
+type Timer = ReturnType<typeof setTimeout>
 
 function TracksContainer({
   children,
@@ -34,20 +37,23 @@ function TracksContainer({
   model: LGV
 }) {
   const classes = useStyles()
-  // refs are to store these variables to avoid repeated rerenders associated with useState/setState
+  // refs are to store these variables to avoid repeated rerenders associated
+  // with useState/setState
   const delta = useRef(0)
   const scheduled = useRef(false)
+  const timeout = useRef<Timer>()
+  const ref = useRef<HTMLDivElement>(null)
+  const prevX = useRef<number>(0)
 
   const [mouseDragging, setMouseDragging] = useState(false)
-  const prevX = useRef<number | null>(null)
 
   useEffect(() => {
     let cleanup = () => {}
 
     function globalMouseMove(event: MouseEvent) {
       event.preventDefault()
-      const distance =
-        prevX.current !== null ? event.clientX - prevX.current : event.clientX
+      const currX = event.clientX
+      const distance = currX - prevX.current
       if (distance) {
         // use rAF to make it so multiple event handlers aren't fired per-frame
         // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
@@ -63,7 +69,7 @@ function TracksContainer({
     }
 
     function globalMouseUp() {
-      prevX.current = null
+      prevX.current = 0
       if (mouseDragging) {
         setMouseDragging(false)
       }
@@ -80,28 +86,14 @@ function TracksContainer({
     return cleanup
   }, [model, mouseDragging, prevX])
 
-  function onWheel(event: React.WheelEvent) {
-    const { deltaX, deltaMode } = event
-    delta.current += deltaX
-    if (!scheduled.current) {
-      // use rAF to make it so multiple event handlers aren't fired per-frame
-      // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-      scheduled.current = true
-      window.requestAnimationFrame(() => {
-        model.horizontalScroll(delta.current * (1 + 50 * deltaMode))
-        delta.current = 0
-        scheduled.current = false
-      })
-    }
-  }
-
   function mouseDown(event: React.MouseEvent) {
-    if ((event.target as HTMLElement).draggable) return
+    // check if clicking a draggable element or a resize handle
     const target = event.target as HTMLElement
     if (target.draggable || target.dataset.resizer) {
-      // either a track label draggable element or a resize handle
       return
     }
+
+    // otherwise do click and drag scroll
     if (event.button === 0) {
       event.preventDefault()
       prevX.current = event.clientX
@@ -120,11 +112,58 @@ function TracksContainer({
     event.preventDefault()
   }
 
+  useEffect(() => {
+    const curr = ref.current
+    // if ctrl is held down, zoom in with y-scroll
+    // else scroll horizontally with x-scroll
+    function onWheel(origEvent: WheelEvent) {
+      const event = normalizeWheel(origEvent)
+      if (origEvent.ctrlKey === true) {
+        origEvent.preventDefault()
+        delta.current += event.pixelY / 500
+        model.setScaleFactor(
+          delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
+        )
+        if (timeout.current) {
+          clearTimeout(timeout.current)
+        }
+        timeout.current = setTimeout(() => {
+          model.setScaleFactor(1)
+          model.zoomTo(
+            delta.current > 0
+              ? model.bpPerPx * (1 + delta.current)
+              : model.bpPerPx / (1 - delta.current),
+          )
+          delta.current = 0
+        }, 300)
+      } else {
+        delta.current += event.pixelX
+        if (!scheduled.current) {
+          // use rAF to make it so multiple event handlers aren't fired per-frame
+          // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
+          scheduled.current = true
+          window.requestAnimationFrame(() => {
+            model.horizontalScroll(delta.current)
+            delta.current = 0
+            scheduled.current = false
+          })
+        }
+      }
+    }
+    if (curr) {
+      curr.addEventListener('wheel', onWheel)
+      return () => {
+        curr.removeEventListener('wheel', onWheel)
+      }
+    }
+    return () => {}
+  }, [model])
+
   return (
     <div
+      ref={ref}
       role="presentation"
       className={classes.tracksContainer}
-      onWheel={onWheel}
       onMouseDown={mouseDown}
       onMouseUp={mouseUp}
       onMouseLeave={mouseLeave}

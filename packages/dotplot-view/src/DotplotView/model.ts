@@ -1,4 +1,3 @@
-// typescript only imports, runtime imports below loaded via pluginManager
 import {
   Instance,
   SnapshotIn,
@@ -15,7 +14,15 @@ import Base1DView, {
   Base1DViewModel,
 } from '@gmod/jbrowse-core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@gmod/jbrowse-core/util/calculateDynamicBlocks'
+import {
+  getSession,
+  minmax,
+  isSessionModelWithWidgets,
+} from '@gmod/jbrowse-core/util'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 
 function approxPixelStringLen(str: string) {
   return str.length * 0.7 * 12
@@ -57,13 +64,6 @@ const DotplotVView = Dotplot1DView.extend(self => ({
 }))
 
 export default function stateModelFactory(pluginManager: PluginManager) {
-  const { lib } = pluginManager
-  const { ElementId } = lib['@gmod/jbrowse-core/util/types/mst']
-  const { readConfObject } = lib['@gmod/jbrowse-core/configuration']
-  const { getSession, minmax, isSessionModelWithWidgets } = lib[
-    '@gmod/jbrowse-core/util'
-  ]
-
   return types
     .model('DotplotView', {
       id: ElementId,
@@ -89,19 +89,27 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       ),
     })
     .volatile(() => ({
-      width: 800,
+      volatileWidth: undefined as number | undefined,
       error: undefined as Error | undefined,
       borderX: 100,
       borderY: 100,
     }))
     .views(self => ({
+      get width(): number {
+        if (!self.volatileWidth) {
+          throw new Error('width not initialized')
+        }
+        return self.volatileWidth
+      },
+    }))
+    .views(self => ({
       get initialized() {
         return (
+          self.volatileWidth !== undefined &&
           self.hview.displayedRegions.length > 0 &&
           self.vview.displayedRegions.length > 0
         )
       },
-
       get loading() {
         return self.assemblyNames.length > 0 && !this.initialized
       },
@@ -109,7 +117,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return self.width - self.borderX
       },
       get viewHeight() {
-        // console.log('height', self.height, 'borderY', self.borderY)
         return self.height - self.borderY
       },
       get views() {
@@ -123,26 +130,28 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(
             () => {
-              const axis = [self.viewWidth, self.viewHeight]
-              const views = [self.hview, self.vview]
-              if (!self.initialized) {
-                self.assemblyNames.forEach((name, index) => {
-                  const assembly = session.assemblyManager.get(name)
-                  if (assembly) {
-                    const { regions } = assembly
-                    if (regions && regions.length) {
-                      const regionsSnapshot = getSnapshot(regions)
-                      if (regionsSnapshot) {
-                        transaction(() => {
-                          views[index].setDisplayedRegions(regionsSnapshot)
-                          views[index].setBpPerPx(
-                            views[index].totalBp / axis[index],
-                          )
-                        })
+              if (self.volatileWidth !== undefined) {
+                const axis = [self.viewWidth, self.viewHeight]
+                const views = [self.hview, self.vview]
+                if (!self.initialized) {
+                  self.assemblyNames.forEach((name, index) => {
+                    const assembly = session.assemblyManager.get(name)
+                    if (assembly) {
+                      const { regions } = assembly
+                      if (regions && regions.length) {
+                        const regionsSnapshot = getSnapshot(regions)
+                        if (regionsSnapshot) {
+                          transaction(() => {
+                            views[index].setDisplayedRegions(regionsSnapshot)
+                            views[index].setBpPerPx(
+                              views[index].totalBp / axis[index],
+                            )
+                          })
+                        }
                       }
                     }
-                  }
-                })
+                  })
+                }
               }
             },
             { delay: 1000 },
@@ -151,21 +160,25 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(() => {
-            const padding = 4
-            // these are set via autorun to avoid dependency cycle
-            this.setBorderY(
-              self.hview.dynamicBlocks.contentBlocks.reduce(
-                (a, b) =>
-                  Math.max(a, approxPixelStringLen(b.refName.slice(0, 10))),
-                0,
-              ) + padding,
-            )
-            this.setBorderX(
-              self.vview.dynamicBlocks.contentBlocks.reduce(
-                (a, b) => Math.max(a, approxPixelStringLen(b.refName)),
-                0,
-              ) + padding,
-            )
+            // make sure we have a width on the view before trying to load
+            if (self.volatileWidth !== undefined) {
+              const padding = 4
+              // these are set via autorun to avoid dependency cycle
+              this.setBorderY(
+                self.hview.dynamicBlocks.contentBlocks.reduce(
+                  (a, b) =>
+                    Math.max(a, approxPixelStringLen(b.refName.slice(0, 10))),
+                  0,
+                ) + padding,
+              )
+              this.setBorderX(
+                self.vview.dynamicBlocks.contentBlocks.reduce(
+                  (a, b) =>
+                    Math.max(a, approxPixelStringLen(b.refName.slice(0, 10))),
+                  0,
+                ) + padding,
+              )
+            }
           }),
         )
       },
@@ -180,7 +193,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       setWidth(newWidth: number) {
-        self.width = newWidth
+        self.volatileWidth = newWidth
       },
       setHeight(newHeight: number) {
         self.height = newHeight
@@ -221,16 +234,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      toggleTrack(configuration: any) {
-        // if we have any tracks with that configuration, turn them off
+      // if we have any tracks with that configuration, turn them off
+      // if none had that configuration, turn one on
+      toggleTrack(configuration: AnyConfigurationModel) {
         const hiddenCount = this.hideTrack(configuration)
-        // if none had that configuration, turn one on
-        if (!hiddenCount) this.showTrack(configuration)
+        if (!hiddenCount) {
+          this.showTrack(configuration)
+        }
       },
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      showTrack(configuration: any, initialSnapshot = {}) {
+      showTrack(configuration: AnyConfigurationModel, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) {
           throw new Error('track configuration has no `type` listed')
@@ -250,8 +263,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         })
       },
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      hideTrack(configuration: any) {
+      hideTrack(configuration: AnyConfigurationModel) {
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(
           t => t.configuration === configuration,
@@ -332,7 +344,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
-      get menuOptions() {
+      get menuItems() {
         const session = getSession(self)
         if (isSessionModelWithWidgets(session)) {
           return [
@@ -342,8 +354,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               disabled:
                 session.visibleWidget &&
                 session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-                // @ts-ignore
-                session.visibleWidget.view &&
                 // @ts-ignore
                 session.visibleWidget.view.id === self.id,
             },
