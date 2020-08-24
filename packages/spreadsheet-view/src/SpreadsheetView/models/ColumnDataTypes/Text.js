@@ -15,8 +15,10 @@ export default pluginManager => {
   )
 
   const OPERATIONS = [
+    'equals',
     'contains',
     'does not contain',
+    'does not equal',
     'starts with',
     'ends with',
   ]
@@ -25,6 +27,9 @@ export default pluginManager => {
   const OPERATION_PREDICATES = {
     contains: (textInCell, stringToFind) => {
       return textInCell.toLowerCase().indexOf(stringToFind) !== -1
+    },
+    equals: (textInCell, stringToFind) => {
+      return textInCell.toLowerCase() === stringToFind
     },
     'starts with': (textInCell, stringToFind) => {
       return textInCell.toLowerCase().indexOf(stringToFind) === 0
@@ -37,6 +42,9 @@ export default pluginManager => {
   }
   OPERATION_PREDICATES['does not contain'] = (textInCell, stringToFind) => {
     return !OPERATION_PREDICATES.contains(textInCell, stringToFind)
+  }
+  OPERATION_PREDICATES['does not equal'] = (textInCell, stringToFind) => {
+    return !OPERATION_PREDICATES.equals(textInCell, stringToFind)
   }
 
   const { makeStyles } = jbrequire('@material-ui/core/styles')
