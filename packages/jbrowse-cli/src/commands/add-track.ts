@@ -1,7 +1,8 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
+import JBrowseCommand from '../base'
 
 interface Track {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,17 +26,16 @@ interface LocalPathLocation {
   localPath: string
 }
 
-export default class AddTrack extends Command {
+export default class AddTrack extends JBrowseCommand {
   static description = 'Add a track to a JBrowse 2 configuration'
 
   static examples = [
     '$ jbrowse add-track /path/to/my.bam --load copy',
-    '$ jbrowse add-track /path/to/my.bam /path/to/jbrowse2/installation --load symlink',
+    '$ jbrowse add-track /path/to/my.bam --target /path/to/jbrowse2/installation/config.json --load symlink',
     '$ jbrowse add-track https://mywebsite.com/my.bam',
-    `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' -- load move`,
+    `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move`,
     `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite`,
     `$ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'`,
-    `$ jbrowse add-track config.json' `,
   ]
 
   static args = [
@@ -43,12 +43,6 @@ export default class AddTrack extends Command {
       name: 'track',
       required: true,
       description: `Track file or URL`,
-    },
-    {
-      name: 'location',
-      required: false,
-      description: `Location of JBrowse 2 installation. Defaults to .`,
-      default: '.',
     },
   ]
 
@@ -78,9 +72,9 @@ export default class AddTrack extends Command {
     config: flags.string({
       description: `Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'`,
     }),
-    configLocation: flags.string({
-      description:
-        'Write to a certain config.json file. Defaults to location/config.json if not specified',
+    target: flags.string({
+      description: 'path to config file in JB2 installation to write out to.',
+      default: './config.json',
     }),
     help: flags.help({ char: 'h' }),
     trackId: flags.string({
@@ -113,55 +107,58 @@ export default class AddTrack extends Command {
       config,
       skipCheck,
       force,
-      configLocation,
       category,
       description,
       load,
+      target,
     } = runFlags
     let { type, trackId, name, assemblyNames } = runFlags
 
+    const configDirectory = path.dirname(target)
     if (!(skipCheck || force)) {
-      await this.checkLocation(runArgs.location)
+      await this.checkLocation(configDirectory)
     }
-    const { location, protocol, local } = await this.resolveFileLocation(
+    const {
+      location,
+      protocol,
+      local,
+    } = await this.resolveFileLocationWithProtocol(
       argsTrack,
       !(skipCheck || force),
     )
-    const configPath =
-      configLocation || path.join(runArgs.location, 'config.json')
 
     let trackLocation
     if (load) {
       if (!local)
         this.error(
           `URL detected with --load flag. Please rerun the function without the --load flag`,
-          { exit: 25 },
+          { exit: 100 },
         )
 
       trackLocation =
         load === 'trust'
           ? location
-          : path.join(runArgs.location, path.basename(location))
+          : path.join(configDirectory, path.basename(location))
     } else if (local)
       this.error(
         'Local file detected. Please select a load option for the track with the --load flag',
-        { exit: 10 },
+        { exit: 110 },
       )
     else trackLocation = location
 
     const adapter = this.guessAdapter(trackLocation, protocol)
     if (adapter.type === 'UNKNOWN') {
-      this.error('Track type is not recognized', { exit: 110 })
+      this.error('Track type is not recognized', { exit: 120 })
     }
     if (adapter.type === 'UNSUPPORTED') {
-      this.error('Track type is not supported', { exit: 115 })
+      this.error('Track type is not supported', { exit: 130 })
     }
 
     // only add track if there is an existing config.json
     let configContentsJson
     try {
-      configContentsJson = await this.readJsonConfig(configPath)
-      this.debug(`Found existing config file ${configPath}`)
+      configContentsJson = await this.readJsonConfig(target)
+      this.debug(`Found existing config file ${target}`)
     } catch (error) {
       this.error(
         'No existing config file found, run add-assembly first to bootstrap config',
@@ -174,11 +171,11 @@ export default class AddTrack extends Command {
     try {
       configContents = { ...JSON.parse(configContentsJson) }
     } catch (error) {
-      this.error('Could not parse existing config file', { exit: 35 })
+      this.error('Could not parse existing config file', { exit: 140 })
     }
     if (!configContents.assemblies || !configContents.assemblies.length) {
       this.error('No assemblies found. Please add one before adding tracks', {
-        exit: 100,
+        exit: 150,
       })
     } else if (configContents.assemblies.length > 1 && !assemblyNames) {
       this.error(
@@ -277,7 +274,7 @@ export default class AddTrack extends Command {
       } else
         this.error(
           `Cannot add track with id ${trackId}, a track with that id already exists.`,
-          { exit: 40 },
+          { exit: 160 },
         )
     } else configContents.tracks.push(trackConfig)
 
@@ -289,14 +286,14 @@ export default class AddTrack extends Command {
           filePaths.map(async filePath => {
             if (!filePath) return
             const dataLocation = path.join(
-              runArgs.location,
+              configDirectory,
               path.basename(filePath),
             )
 
             try {
               await fsPromises.copyFile(filePath, dataLocation)
             } catch (error) {
-              this.error(error, { exit: 20 })
+              this.error(error, { exit: 170 })
             }
           }),
         )
@@ -307,14 +304,14 @@ export default class AddTrack extends Command {
           filePaths.map(async filePath => {
             if (!filePath) return
             const dataLocation = path.join(
-              runArgs.location,
+              configDirectory,
               path.basename(filePath),
             )
 
             try {
               await fsPromises.symlink(filePath, dataLocation)
             } catch (error) {
-              this.error(error, { exit: 20 })
+              this.error(error, { exit: 170 })
             }
           }),
         )
@@ -325,14 +322,14 @@ export default class AddTrack extends Command {
           filePaths.map(async filePath => {
             if (!filePath) return
             const dataLocation = path.join(
-              runArgs.location,
+              configDirectory,
               path.basename(filePath),
             )
 
             try {
               await fsPromises.rename(filePath, dataLocation)
             } catch (error) {
-              this.error(error, { exit: 20 })
+              this.error(error, { exit: 170 })
             }
           }),
         )
@@ -340,34 +337,20 @@ export default class AddTrack extends Command {
       }
     }
 
-    this.debug(`Writing configuration to file ${configPath}`)
+    this.debug(`Writing configuration to file ${target}`)
     await fsPromises.writeFile(
-      configPath,
+      target,
       JSON.stringify(configContents, undefined, 2),
     )
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} track "${name}" ${
         idx !== -1 ? 'in' : 'to'
-      } ${configPath}`,
+      } ${target}`,
     )
   }
 
-  async readJsonConfig(location: string) {
-    let locationUrl: URL | undefined
-    try {
-      locationUrl = new URL(location)
-    } catch (error) {
-      // ignore
-    }
-    if (locationUrl) {
-      const response = await fetch(locationUrl)
-      return response.json()
-    }
-    return fsPromises.readFile(location, { encoding: 'utf8' })
-  }
-
-  async resolveFileLocation(location: string, check = true) {
+  async resolveFileLocationWithProtocol(location: string, check = true) {
     let locationUrl: URL | undefined
     let locationPath: string | undefined
     let locationObj: {
@@ -418,40 +401,8 @@ export default class AddTrack extends Command {
       return locationObj
     }
     return this.error(`Could not resolve to a file or a URL: "${location}"`, {
-      exit: 90,
+      exit: 180,
     })
-  }
-
-  async checkLocation(location: string) {
-    let manifestJson: string
-    try {
-      manifestJson = await fsPromises.readFile(
-        path.join(location, 'manifest.json'),
-        {
-          encoding: 'utf8',
-        },
-      )
-    } catch (error) {
-      this.error(
-        'Could not find the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 50 },
-      )
-    }
-    let manifest: { name?: string } = {}
-    try {
-      manifest = JSON.parse(manifestJson)
-    } catch (error) {
-      this.error(
-        'Could not parse the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 60 },
-      )
-    }
-    if (manifest.name !== 'JBrowse') {
-      this.error(
-        '"name" in file "manifest.json" is not "JBrowse". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 70 },
-      )
-    }
   }
 
   guessFileNames(fileName: string) {

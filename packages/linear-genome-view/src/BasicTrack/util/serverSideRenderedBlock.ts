@@ -30,6 +30,7 @@ const blockState = types
     filled: false,
     data: undefined as any,
     html: '',
+    status: '',
     error: undefined as Error | undefined,
     message: undefined as string | undefined,
     maxHeightReached: false,
@@ -55,6 +56,9 @@ const blockState = types
           this.setRendered,
           this.setError,
         )
+      },
+      setStatus(message: string) {
+        self.status = message
       },
       setLoading(abortController: AbortController) {
         if (renderInProgress !== undefined) {
@@ -222,8 +226,8 @@ export function renderBlockData(
       trackError: track.error,
       renderArgs: {
         statusCallback: (message: string) => {
-          if (isAlive(track)) {
-            track.setMessage(message)
+          if (isAlive(self)) {
+            self.setStatus(message)
           }
         },
         assemblyName: self.region.assemblyName,

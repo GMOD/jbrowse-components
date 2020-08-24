@@ -154,104 +154,111 @@ const stateModelFactory = (
         },
       }
     })
-    .views(self => ({
-      get rendererTypeName() {
-        const viewName = getConf(self, 'defaultRendering')
-        const rendererType = rendererTypes.get(viewName)
-        if (!rendererType) {
-          throw new Error(`unknown alignments view name ${viewName}`)
-        }
-        return rendererType
-      },
+    .views(self => {
+      const { trackMenuItems } = self
+      return {
+        get rendererTypeName() {
+          const viewName = getConf(self, 'defaultRendering')
+          const rendererType = rendererTypes.get(viewName)
+          if (!rendererType) {
+            throw new Error(`unknown alignments view name ${viewName}`)
+          }
+          return rendererType
+        },
 
-      get contextMenuItems() {
-        const feat = self.contextMenuFeature
-        return feat
-          ? [
-              {
-                label: 'Open feature details',
-                icon: MenuOpenIcon,
-                onClick: () => {
-                  self.clearFeatureSelection()
-                  if (feat) {
-                    self.selectFeature(feat)
-                  }
+        get contextMenuItems() {
+          const feat = self.contextMenuFeature
+          return feat
+            ? [
+                {
+                  label: 'Open feature details',
+                  icon: MenuOpenIcon,
+                  onClick: () => {
+                    self.clearFeatureSelection()
+                    if (feat) {
+                      self.selectFeature(feat)
+                    }
+                  },
                 },
-              },
-              {
-                label: 'Copy info to clipboard',
-                icon: ContentCopyIcon,
-                onClick: () => {
-                  if (feat) {
-                    self.copyFeatureToClipboard(feat)
-                  }
+                {
+                  label: 'Copy info to clipboard',
+                  icon: ContentCopyIcon,
+                  onClick: () => {
+                    if (feat) {
+                      self.copyFeatureToClipboard(feat)
+                    }
+                  },
                 },
+              ]
+            : []
+        },
+
+        get sortObject() {
+          return {
+            position: self.sortedByPosition,
+            by: self.sortedBy,
+          }
+        },
+        get sortOptions() {
+          return ['Start location', 'Read strand', 'Base pair', 'Clear sort']
+        },
+
+        get TrackBlurb() {
+          return PileupTrackBlurb
+        },
+
+        get renderProps() {
+          const config = self.rendererType.configSchema.create(
+            getConf(self, ['renderers', self.rendererTypeName]) || {},
+          )
+          return {
+            ...self.composedRenderProps,
+            ...getParentRenderProps(self),
+            trackModel: self,
+            sortObject: this.sortObject,
+            showSoftClip: self.showSoftClipping,
+            config,
+          }
+        },
+
+        get composedTrackMenuItems() {
+          return [
+            {
+              label: 'Show soft clipping',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.showSoftClipping,
+              onClick: () => {
+                self.toggleSoftClipping()
+                // if toggling from off to on, will break sort for this track so clear it
+                if (self.showSoftClipping) {
+                  self.clearSelected()
+                }
               },
-            ]
-          : []
-      },
-
-      get sortObject() {
-        return {
-          position: self.sortedByPosition,
-          by: self.sortedBy,
-        }
-      },
-      get sortOptions() {
-        return ['Start location', 'Read strand', 'Base pair', 'Clear sort']
-      },
-
-      get TrackBlurb() {
-        return PileupTrackBlurb
-      },
-
-      get renderProps() {
-        const config = self.rendererType.configSchema.create(
-          getConf(self, ['renderers', self.rendererTypeName]) || {},
-        )
-        return {
-          ...self.composedRenderProps,
-          ...getParentRenderProps(self),
-          trackModel: self,
-          sortObject: this.sortObject,
-          showSoftClip: self.showSoftClipping,
-          config,
-        }
-      },
-
-      get menuItems() {
-        return [
-          {
-            label: 'Show soft clipping',
-            icon: VisibilityIcon,
-            type: 'checkbox',
-            checked: self.showSoftClipping,
-            onClick: () => {
-              self.toggleSoftClipping()
-              // if toggling from off to on, will break sort for this track so clear it
-              if (self.showSoftClipping) {
-                self.clearSelected()
-              }
             },
-          },
-          {
-            label: 'Sort by',
-            icon: SortIcon,
-            disabled: self.showSoftClipping,
-            subMenu: this.sortOptions.map((option: string) => {
-              return {
-                label: option,
-                onClick() {
-                  option === 'Clear sort'
-                    ? self.clearSelected()
-                    : self.sortSelected(option)
-                },
-              }
-            }),
-          },
-        ]
-      },
-    }))
+            {
+              label: 'Sort by',
+              icon: SortIcon,
+              disabled: self.showSoftClipping,
+              subMenu: this.sortOptions.map((option: string) => {
+                return {
+                  label: option,
+                  onClick() {
+                    option === 'Clear sort'
+                      ? self.clearSelected()
+                      : self.sortSelected(option)
+                  },
+                }
+              }),
+            },
+          ]
+        },
+
+        get trackMenuItems() {
+          return [...trackMenuItems, ...this.composedTrackMenuItems]
+        },
+      }
+    })
 
 export type PileupTrackStateModel = ReturnType<typeof stateModelFactory>
 export type PileupTrackModel = Instance<PileupTrackStateModel>

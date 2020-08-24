@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
+import { transaction } from 'mobx'
 import { LinearProgress } from '@material-ui/core'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { Menu } from '@gmod/jbrowse-core/ui'
@@ -110,18 +111,37 @@ export default (pluginManager: PluginManager) => {
       const [mouseup, setMouseUp] = useState<Coord>()
       const [tracking, setTracking] = useState(false)
       const ref = useRef<SVGSVGElement>(null)
+      const distanceX = useRef(0)
+      const distanceY = useRef(0)
+      const scheduled = useRef(false)
 
       // require non-react wheel handler to properly prevent body scrolling
       useEffect(() => {
-        function wheel(event: WheelEvent) {
-          model.hview.scroll(event.deltaX)
-          model.vview.scroll(-event.deltaY)
+        function onWheel(event: WheelEvent) {
           event.preventDefault()
+
+          distanceX.current += event.deltaX
+          distanceY.current -= event.deltaY
+          if (!scheduled.current) {
+            scheduled.current = true
+
+            window.requestAnimationFrame(() => {
+              transaction(() => {
+                model.hview.scroll(distanceX.current)
+                model.vview.scroll(distanceY.current)
+              })
+              scheduled.current = false
+              distanceX.current = 0
+              distanceY.current = 0
+            })
+          }
         }
         if (ref.current) {
           const curr = ref.current
-          curr.addEventListener('wheel', wheel)
-          return () => curr.removeEventListener('wheel', wheel)
+          curr.addEventListener('wheel', onWheel)
+          return () => {
+            curr.removeEventListener('wheel', onWheel)
+          }
         }
         return () => {}
       })
@@ -270,7 +290,7 @@ export default (pluginManager: PluginManager) => {
                           transform={`rotate(${htextRotation},${
                             x - hview.offsetPx
                           },${y})`}
-                          key={region.refName}
+                          key={JSON.stringify(region)}
                           x={x - hview.offsetPx}
                           y={y + 1}
                           fill="#000000"

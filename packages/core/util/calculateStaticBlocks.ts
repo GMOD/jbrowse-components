@@ -21,18 +21,16 @@ export default function calculateStaticBlocks(
   padding = true,
   elision = true,
   extra = 0,
+  width = 800,
 ) {
   const {
     offsetPx,
-    width,
     displayedRegions,
     bpPerPx,
     minimumBlockWidth,
     interRegionPaddingWidth,
   } = model
-  if (!width) {
-    throw new Error('view has no width, cannot calculate displayed blocks')
-  }
+
   const windowLeftBp = offsetPx * bpPerPx
   const windowRightBp = (offsetPx + width) * bpPerPx
   const blockSizePx = Math.ceil(width / 200) * 200
