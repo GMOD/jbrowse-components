@@ -14,8 +14,19 @@ Object {
     7,
     8,
     9,
+    10,
   ],
   "columns": Array [
+    Object {
+      "dataType": Object {
+        "type": "LocString",
+      },
+      "derivationFunctionText": "function deriveLocationColumn(row, column) {
+      return {text:row.extendedData.simple.refName+':'+row.extendedData.simple.start+'..'+row.extendedData.simple.end}
+    }",
+      "isDerived": true,
+      "name": "Location",
+    },
     Object {
       "dataType": Object {
         "type": "Text",
@@ -125,6 +136,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 156845493,
+            "refName": "1",
+            "start": 156845492,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "AGTGT",
@@ -242,6 +258,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 156848996,
+            "refName": "1",
+            "start": 156848995,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "T",
@@ -410,6 +431,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 47601107,
+            "refName": "2",
+            "start": 47601106,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -584,6 +610,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 47630551,
+            "refName": "2",
+            "start": 47630550,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -752,6 +783,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 47641565,
+            "refName": "2",
+            "start": 47641559,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "T",
@@ -880,6 +916,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 47693960,
+            "refName": "2",
+            "start": 47693959,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -1054,6 +1095,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 48010559,
+            "refName": "2",
+            "start": 48010558,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -1228,6 +1274,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 48010655,
+            "refName": "2",
+            "start": 48010654,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -1396,6 +1447,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 48018031,
+            "refName": "2",
+            "start": 48018030,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -1564,6 +1620,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 48018082,
+            "refName": "2",
+            "start": 48018081,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -1738,6 +1799,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 48023116,
+            "refName": "2",
+            "start": 48023115,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -1912,6 +1978,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 48030839,
+            "refName": "2",
+            "start": 48030838,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "T",
@@ -2074,6 +2145,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 48032879,
+            "refName": "2",
+            "start": 48032874,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -2245,6 +2321,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 48033552,
+            "refName": "2",
+            "start": 48033551,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -2401,6 +2482,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 48033891,
+            "refName": "2",
+            "start": 48033890,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "CT",
@@ -2524,6 +2610,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 215632257,
+            "refName": "2",
+            "start": 215632256,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -2686,6 +2777,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 215645546,
+            "refName": "2",
+            "start": 215645545,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -2854,6 +2950,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 215657184,
+            "refName": "2",
+            "start": 215657182,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "T",
@@ -2977,6 +3078,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 215674091,
+            "refName": "2",
+            "start": 215674090,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -3139,6 +3245,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 215674324,
+            "refName": "2",
+            "start": 215674323,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -3301,6 +3412,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 215674342,
+            "refName": "2",
+            "start": 215674341,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -3463,6 +3579,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 10191524,
+            "refName": "3",
+            "start": 10191523,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -3585,6 +3706,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 37083741,
+            "refName": "3",
+            "start": 37083740,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -3753,6 +3879,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 112103136,
+            "refName": "5",
+            "start": 112103135,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -3912,6 +4043,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 112162855,
+            "refName": "5",
+            "start": 112162854,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -4080,6 +4216,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 112164562,
+            "refName": "5",
+            "start": 112164561,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -4248,6 +4389,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 112175771,
+            "refName": "5",
+            "start": 112175770,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -4416,6 +4562,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 112176326,
+            "refName": "5",
+            "start": 112176325,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -4584,6 +4735,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 112176560,
+            "refName": "5",
+            "start": 112176559,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -4752,6 +4908,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 112176757,
+            "refName": "5",
+            "start": 112176756,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -4932,6 +5093,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 112177172,
+            "refName": "5",
+            "start": 112177171,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -5106,6 +5272,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 112178796,
+            "refName": "5",
+            "start": 112178795,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -5286,6 +5457,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 131892980,
+            "refName": "5",
+            "start": 131892979,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -5442,6 +5618,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 6022627,
+            "refName": "7",
+            "start": 6022626,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "T",
@@ -5612,6 +5793,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 6026776,
+            "refName": "7",
+            "start": 6026775,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -5786,6 +5972,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 6026989,
+            "refName": "7",
+            "start": 6026988,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -5960,6 +6151,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 6036981,
+            "refName": "7",
+            "start": 6036980,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -6128,6 +6324,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 6037059,
+            "refName": "7",
+            "start": 6037057,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -6251,6 +6452,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 6038723,
+            "refName": "7",
+            "start": 6038722,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -6419,6 +6625,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 116381123,
+            "refName": "7",
+            "start": 116381121,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -6542,6 +6753,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 116409678,
+            "refName": "7",
+            "start": 116409675,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -6670,6 +6886,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 21968200,
+            "refName": "9",
+            "start": 21968199,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -6832,6 +7053,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 97873958,
+            "refName": "9",
+            "start": 97873957,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -6994,6 +7220,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 98221862,
+            "refName": "9",
+            "start": 98221861,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -7156,6 +7387,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 98229390,
+            "refName": "9",
+            "start": 98229389,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -7318,6 +7554,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 98238359,
+            "refName": "9",
+            "start": 98238358,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -7486,6 +7727,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 98270647,
+            "refName": "9",
+            "start": 98270646,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "TGCC",
@@ -7615,6 +7861,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 43595969,
+            "refName": "10",
+            "start": 43595968,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -7789,6 +8040,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 43606688,
+            "refName": "10",
+            "start": 43606687,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -7969,6 +8225,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 43612227,
+            "refName": "10",
+            "start": 43612226,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "T",
@@ -8137,6 +8398,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 43613844,
+            "refName": "10",
+            "start": 43613843,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "T",
@@ -8317,6 +8583,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 43622218,
+            "refName": "10",
+            "start": 43622217,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -8491,6 +8762,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 89720635,
+            "refName": "10",
+            "start": 89720633,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -8614,6 +8890,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 89720908,
+            "refName": "10",
+            "start": 89720907,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -8782,6 +9063,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 64572019,
+            "refName": "11",
+            "start": 64572018,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -8956,6 +9242,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 64572558,
+            "refName": "11",
+            "start": 64572557,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -9124,6 +9415,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 64572603,
+            "refName": "11",
+            "start": 64572602,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -9298,6 +9594,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 64577621,
+            "refName": "11",
+            "start": 64577620,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -9460,6 +9761,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 94197261,
+            "refName": "11",
+            "start": 94197260,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -9628,6 +9934,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 94225921,
+            "refName": "11",
+            "start": 94225920,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "T",
@@ -9790,6 +10101,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 108098462,
+            "refName": "11",
+            "start": 108098459,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "T",
@@ -9949,6 +10265,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 108114663,
+            "refName": "11",
+            "start": 108114661,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -10072,6 +10393,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 108121411,
+            "refName": "11",
+            "start": 108121410,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "CT",
@@ -10195,6 +10521,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 108141957,
+            "refName": "11",
+            "start": 108141955,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -10318,6 +10649,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 108151708,
+            "refName": "11",
+            "start": 108151707,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "TA",
@@ -10435,6 +10771,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 108183168,
+            "refName": "11",
+            "start": 108183167,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -10597,6 +10938,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 58144666,
+            "refName": "12",
+            "start": 58144665,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "T",
@@ -10759,6 +11105,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 32890573,
+            "refName": "13",
+            "start": 32890572,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -10927,6 +11278,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 32906730,
+            "refName": "13",
+            "start": 32906729,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -11107,6 +11463,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 32911889,
+            "refName": "13",
+            "start": 32911888,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -11281,6 +11642,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 32913056,
+            "refName": "13",
+            "start": 32913055,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -11449,6 +11815,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 32915006,
+            "refName": "13",
+            "start": 32915005,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -11611,6 +11982,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 32929388,
+            "refName": "13",
+            "start": 32929387,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -11785,6 +12161,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 68771373,
+            "refName": "16",
+            "start": 68771372,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "T",
@@ -11947,6 +12328,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 68855967,
+            "refName": "16",
+            "start": 68855966,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -12121,6 +12507,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 7579473,
+            "refName": "17",
+            "start": 7579472,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -12289,6 +12680,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 7579802,
+            "refName": "17",
+            "start": 7579801,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -12463,6 +12859,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 29508821,
+            "refName": "17",
+            "start": 29508819,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -12586,6 +12987,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 29553486,
+            "refName": "17",
+            "start": 29553485,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -12748,6 +13154,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 29559933,
+            "refName": "17",
+            "start": 29559932,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -12904,6 +13315,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 29563077,
+            "refName": "17",
+            "start": 29563076,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "TG",
@@ -13060,6 +13476,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 29563086,
+            "refName": "17",
+            "start": 29563085,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "TG",
@@ -13219,6 +13640,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 29663626,
+            "refName": "17",
+            "start": 29663625,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "TA",
@@ -13378,6 +13804,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 29670191,
+            "refName": "17",
+            "start": 29670190,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -13534,6 +13965,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 41223095,
+            "refName": "17",
+            "start": 41223094,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -13714,6 +14150,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 41234471,
+            "refName": "17",
+            "start": 41234470,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -13888,6 +14329,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 41244001,
+            "refName": "17",
+            "start": 41244000,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -14068,6 +14514,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 41244436,
+            "refName": "17",
+            "start": 41244435,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -14248,6 +14699,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 41244937,
+            "refName": "17",
+            "start": 41244936,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -14428,6 +14884,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 41245238,
+            "refName": "17",
+            "start": 41245237,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -14602,6 +15063,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 41245467,
+            "refName": "17",
+            "start": 41245466,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -14776,6 +15242,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 41245472,
+            "refName": "17",
+            "start": 41245471,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "T",
@@ -14956,6 +15427,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 41256104,
+            "refName": "17",
+            "start": 41256089,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -15079,6 +15555,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 56798208,
+            "refName": "17",
+            "start": 56798207,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -15241,6 +15722,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 59760997,
+            "refName": "17",
+            "start": 59760996,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -15403,6 +15889,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 59763348,
+            "refName": "17",
+            "start": 59763347,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -15571,6 +16062,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 59763466,
+            "refName": "17",
+            "start": 59763465,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
@@ -15733,6 +16229,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 59857810,
+            "refName": "17",
+            "start": 59857809,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "G",
@@ -15895,6 +16396,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 48584856,
+            "refName": "18",
+            "start": 48584855,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "ATT",
@@ -16018,6 +16524,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 1219275,
+            "refName": "19",
+            "start": 1219274,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "A",
@@ -16186,6 +16697,11 @@ Object {
           },
         ],
         "extendedData": Object {
+          "simple": Object {
+            "end": 1222013,
+            "refName": "19",
+            "start": 1222012,
+          },
           "vcfFeature": Object {
             "ALT": Array [
               "C",
