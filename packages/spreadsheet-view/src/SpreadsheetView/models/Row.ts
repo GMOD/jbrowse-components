@@ -26,7 +26,7 @@ export default (pluginManager: PluginManager) => {
       select() {
         self.isSelected = true
       },
-      setExtendedData(data: any) {
+      setExtendedData(data: unknown) {
         self.extendedData = data
       },
     }))

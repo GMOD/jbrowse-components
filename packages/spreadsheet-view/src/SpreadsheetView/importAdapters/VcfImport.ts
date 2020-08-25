@@ -36,22 +36,7 @@ function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
     parser: vcfParser,
     id: `vcf-${lineNumber}`,
   })
-  // if (!record) console.log(`no parse for "${line}"`)
-  // const cells = [
-  //   ...vcfCoreColumns.map((colName, columnNumber) => {
-  //     const text = formatters[colName]
-  //       ? formatters[colName](record[colName])
-  //       : String(record[colName])
-  //     return { columnNumber, text, dataType: 'text' }
-  //   }),
-  //   ...vcfParser.samples.map((sampleName: string, sampleNumber: number) => {
-  //     return {
-  //       columnNumber: vcfCoreColumns.length + sampleNumber,
-  //       text: record.SAMPLES[sampleName],
-  //       dataType: 'text',
-  //     }
-  //   }),
-  // ]
+
   const data = line.split('\t').map(d => (d === '.' ? '' : d))
   const row: Row = {
     id: String(lineNumber + 1),
@@ -119,7 +104,7 @@ export function parseVcfBuffer(
           ? Number(variant.INFO.END[0])
           : start + variant.REF.length,
     }
-    row.extendedData = featureData
+    row.extendedData.simple = featureData
   })
 
   // TODO: synthesize a linkable location column after the POS column
@@ -129,11 +114,10 @@ export function parseVcfBuffer(
     dataType: { type: 'LocString' },
     isDerived: true,
     derivationFunctionText: `function deriveLocationColumn(row, column) {
-      return {text:row.extendedData.refName+':'+row.extendedData.start+'..'+row.extendedData.end}
+      return {text:row.extendedData.simple.refName+':'+row.extendedData.simple.start+'..'+row.extendedData.simple.end}
     }`,
   })
 
-  console.log({ rowSet: JSON.stringify(rowSet) })
   return {
     rowSet,
     columnDisplayOrder,

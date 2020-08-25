@@ -7,7 +7,7 @@ import { when } from '@gmod/jbrowse-core/util'
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { types, getType, getParent } = jbrequire('mobx-state-tree')
+  const { types, getType } = jbrequire('mobx-state-tree')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
 
@@ -18,8 +18,6 @@ export default pluginManager => {
   const { compareLocStrings, getSession, parseLocString } = jbrequire(
     '@gmod/jbrowse-core/util',
   )
-
-  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
 
   const MakeSpreadsheetColumnType = jbrequire(
     require('./MakeSpreadsheetColumnType'),
