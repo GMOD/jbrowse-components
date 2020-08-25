@@ -3,6 +3,7 @@ import {
   isContainedWithin,
 } from '@gmod/jbrowse-core/util/range'
 import ClearIcon from '@material-ui/icons/Clear'
+import { when } from '@gmod/jbrowse-core/util'
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
@@ -240,25 +241,28 @@ export default pluginManager => {
     .volatile(() => ({ ReactComponent: FilterReactComponent }))
 
   // opens a new LGV at the location described in the locString in the cell text
-  function locationLinkClick(spreadsheet, columnNumber, cell) {
+  async function locationLinkClick(spreadsheet, columnNumber, cell) {
     const session = getSession(spreadsheet)
+    const { assemblyManager } = session
+    const { assemblyName } = spreadsheet
+    await when(() => assemblyManager.get(assemblyName))
     const loc = parseLocString(
       cell.text,
       session.assemblyManager.isValidRefName,
     )
     if (loc) {
-      const { dataset } = getParent(spreadsheet)
-      const assembly = session.assemblyManager.get(
-        readConfObject(dataset.assembly, 'name'),
+      const { refName } = loc
+      const assembly = assemblyManager.get(assemblyName)
+      const canonicalRefName = assembly.getCanonicalRefName(refName)
+      const newDisplayedRegion = assembly.regions.find(
+        region => region.refName === canonicalRefName,
       )
-      loc.refName = assembly.getCanonicalRefName(loc.refName)
-      const initialState = { displayName: cell.text }
-      const view = session.addViewOfDataset(
-        'LinearGenomeView',
-        readConfObject(dataset, 'name'),
-        initialState,
-      )
-      view.afterDisplayedRegionsSet(() => view.navTo(loc))
+      const view = session.addView('LinearGenomeView', {
+        displayName: cell.text,
+      })
+      view.setDisplayedRegions([JSON.parse(JSON.stringify(newDisplayedRegion))])
+      await when(() => view.initialized)
+      view.navToLocString(cell.text)
     }
   }
 
