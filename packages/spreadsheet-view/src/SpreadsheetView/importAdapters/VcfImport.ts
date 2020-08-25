@@ -8,6 +8,14 @@ import {
   ParseOptions,
 } from './ImportUtils'
 
+interface Breakend {
+  MateDirection: string
+  Replacement: string
+  MatePosition: string
+  Join: string
+}
+type Alt = string | Breakend
+
 const vcfCoreColumns: { name: string; type: string }[] = [
   { name: 'CHROM', type: 'Text' }, // 0
   { name: 'POS', type: 'Number' }, // 1
@@ -95,18 +103,37 @@ export function parseVcfBuffer(
     columns[oi] = { name: vcfParser.samples[i], dataType: { type: 'Text' } }
   }
 
-  // TODO: synthesize a linkable location column after the POS column
-  // columnDisplayOrder.push(columnDisplayOrder.length)
-  // columns.splice(2, 0, {
-  //   name: 'Location',
-  //   dataType: { type: 'LocationPoint' },
-  //   isDerived: true,
-  //   derivationFunction: function deriveLocationColumn(column, cell) {},
-  // })
-  // rowSet.rows.forEach(row => {
-  //   row.cells.splice(2, 0, {})
-  // })
+  rowSet.rows.forEach(row => {
+    const line = row.cells.map(r => r.text).join('\t')
+    const variant = vcfParser.parseLine(line)
+    const isTRA = variant.ALT.some((f: Alt) => f === '<TRA>')
+    const isSymbolic = variant.ALT.some(
+      (f: Alt) => typeof f === 'string' && f.indexOf('<') !== -1,
+    )
+    const start = variant.POS
+    const featureData = {
+      refName: variant.CHROM,
+      start,
+      end:
+        isSymbolic && variant.INFO.END && !isTRA
+          ? Number(variant.INFO.END[0])
+          : start + variant.REF.length,
+    }
+    row.extendedData = featureData
+  })
 
+  // TODO: synthesize a linkable location column after the POS column
+  columnDisplayOrder.push(columnDisplayOrder.length)
+  columns.unshift({
+    name: 'Location',
+    dataType: { type: 'LocString' },
+    isDerived: true,
+    derivationFunctionText: `function deriveLocationColumn(row, column) {
+      return {text:row.extendedData.refName+':'+row.extendedData.start+'..'+row.extendedData.end}
+    }`,
+  })
+
+  console.log({ rowSet: JSON.stringify(rowSet) })
   return {
     rowSet,
     columnDisplayOrder,

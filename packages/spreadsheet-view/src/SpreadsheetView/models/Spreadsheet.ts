@@ -90,8 +90,8 @@ export default (pluginManager: PluginManager) => {
           const { columnNumber, descending } = self.sortColumns[i]
           const { dataType } = self.columns[columnNumber]
           const result = dataType.compare(
-            rowA.cells[columnNumber],
-            rowB.cells[columnNumber],
+            rowA.cellsWithDerived[columnNumber],
+            rowB.cellsWithDerived[columnNumber],
           )
           if (result) return descending ? -result : result
         }

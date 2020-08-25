@@ -54,6 +54,16 @@ export async function parseBedBuffer(buffer: Buffer, options: ParseOptions) {
   data.hasColumnNames = true
   data.assemblyName = options.selectedAssemblyName
 
+  data.columnDisplayOrder.push(data.columnDisplayOrder.length)
+  data.columns.unshift({
+    name: 'Location',
+    dataType: { type: 'LocString' },
+    isDerived: true,
+    derivationFunctionText: `function deriveLocationColumn(row, column) {
+      var cells = row.cells
+      return {text:cells[0].text+':'+cells[1].text+'..'+cells[2].text}
+    }`,
+  })
   return data
 }
 
