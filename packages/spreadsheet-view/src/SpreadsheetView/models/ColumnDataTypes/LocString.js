@@ -244,13 +244,14 @@ export default pluginManager => {
     const { assemblyManager } = session
     const { assemblyName } = spreadsheet
     await when(() => assemblyManager.get(assemblyName))
-    const loc = parseLocString(
-      cell.text,
-      session.assemblyManager.isValidRefName,
+    const assembly = assemblyManager.get(assemblyName)
+    await when(() => Boolean(assembly.regions && assembly.refNameAliases))
+    const loc = parseLocString(cell.text, name =>
+      assemblyManager.isValidRefName(name, assemblyName),
     )
     if (loc) {
       const { refName } = loc
-      const assembly = assemblyManager.get(assemblyName)
+
       const canonicalRefName = assembly.getCanonicalRefName(refName)
       const newDisplayedRegion = assembly.regions.find(
         region => region.refName === canonicalRefName,
