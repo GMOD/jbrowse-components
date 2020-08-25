@@ -107,7 +107,6 @@ export function parseVcfBuffer(
     row.extendedData.simple = featureData
   })
 
-  // TODO: synthesize a linkable location column after the POS column
   columnDisplayOrder.push(columnDisplayOrder.length)
   columns.unshift({
     name: 'Location',
