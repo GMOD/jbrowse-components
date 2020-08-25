@@ -264,6 +264,16 @@ const stateModelFactory = (
         get trackMenuItems() {
           return [...trackMenuItems, ...this.composedTrackMenuItems]
         },
+
+        // // TODOSTAT sample hardcode limit
+        // regionCannotBeRendered() {
+        //   const view = getContainingView(self)
+        //   // @ts-ignore
+        //   if (view && view.bpPerPx >= 16) {
+        //     return 'Zoom in to see more'
+        //   }
+        //   return undefined
+        // },
       }
     })
 

@@ -38,14 +38,6 @@ export default (configSchema: AnyConfigurationSchemaType, trackType: string) =>
           if (view && view.bpPerPx >= 1) {
             return 'Zoom in to see sequence'
           }
-          // TODOSTATS: above is the example of bpPerPx limit. notes will be here
-          // Could have hardcoded limit in basetrack that limits all tracks to be a certain bpPerPx
-          // and then tracks themselves can override that limit if need a higher/lower number
-          // stats estimation would be in something similar to stats until, calculate a certain
-          // stat like feature limit and then if it exceeds a certain amount also return the
-          // 'zoom in to see sequence' message when limit is hit. possibly allow users
-          // to adjust the limit or remove it if they really want to but should give a warning/suggestion
-          // that removing the limit may cause the track to fail rendering due to massive data load
           return undefined
         },
       }))
