@@ -68,6 +68,7 @@ function BlockBasedTrack(props: {
       onContextMenu={event => {
         event.preventDefault()
         if (contextCoord) {
+          // There's already a context menu open, so close it
           setContextCoord(undefined)
         } else if (ref.current) {
           setContextCoord([event.clientX, event.clientY])
