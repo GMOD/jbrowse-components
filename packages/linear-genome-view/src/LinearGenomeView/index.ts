@@ -432,10 +432,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const parent = getContainingView(self)
         if (parent) {
           // I am embedded in a some other view
-          if (isViewContainer(parent)) parent.removeView?.(self)
+          if (isViewContainer(parent)) parent.removeView(self)
         } else {
           // I am part of a session
-          getSession(self).removeView?.(self)
+          getSession(self).removeView(self)
         }
       },
 

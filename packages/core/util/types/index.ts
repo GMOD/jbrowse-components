@@ -24,13 +24,18 @@ export * from './util'
 /** abstract type for a model that contains multiple views */
 export interface AbstractViewContainer {
   views: AbstractViewModel[]
-  removeView?(view: AbstractViewModel): void
+  removeView(view: AbstractViewModel): void
   addView(typeName: string, initialState: Record<string, unknown>): void
 }
 export function isViewContainer(
   thing: unknown,
 ): thing is AbstractViewContainer {
-  return isStateTreeNode(thing) && 'removeView' in thing
+  return (
+    isStateTreeNode(thing) &&
+    'removeView' in thing &&
+    'addView' in thing &&
+    'views' in thing
+  )
 }
 
 export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
