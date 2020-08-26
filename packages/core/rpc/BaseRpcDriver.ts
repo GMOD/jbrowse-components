@@ -88,7 +88,7 @@ export default abstract class BaseRpcDriver {
 
   private workerPool?: LazyWorker[]
 
-  maxPingTime = 30000
+  maxPingTime = 3000
 
   workerCheckFrequency = 5000
 

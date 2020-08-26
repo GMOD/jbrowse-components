@@ -7,7 +7,6 @@ import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import Button from '@material-ui/core/Button'
 import RefreshIcon from '@material-ui/icons/Refresh'
-import { fade } from '@material-ui/core/styles/colorManipulator'
 import ServerSideRenderedContent from '../../LinearGenomeView/components/ServerSideRenderedContent'
 
 const useStyles = makeStyles(theme => ({
@@ -40,7 +39,6 @@ const useStyles = makeStyles(theme => ({
     whiteSpace: 'initial',
     color: theme.palette.error.main,
     overflowY: 'auto',
-    backgroundColor: fade(theme.palette.error.light, 0.3),
   },
   dots: {
     '&::after': {
