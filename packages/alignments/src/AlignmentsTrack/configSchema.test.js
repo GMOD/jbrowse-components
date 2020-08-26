@@ -2,9 +2,9 @@ import Plugin from '@gmod/jbrowse-core/Plugin'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import BoxRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
 import {
-  configSchema as svgFeatureRendererConfigSchema,
-  ReactComponent as SvgFeatureRendererReactComponent,
-} from '@gmod/jbrowse-plugin-svg/src/SvgFeatureRenderer'
+  svgFeatureRendererConfigSchema,
+  SvgFeatureRendererReactComponent,
+} from '@gmod/jbrowse-plugin-svg'
 import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
   ReactComponent as PileupRendererReactComponent,

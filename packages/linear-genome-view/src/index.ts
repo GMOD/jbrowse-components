@@ -25,10 +25,17 @@ import {
 import {
   ReactComponent as LinearGenomeViewReactComponent,
   stateModelFactory as linearGenomeViewStateModelFactory,
+  LinearGenomeViewModel,
+  LinearGenomeViewStateModel,
 } from './LinearGenomeView'
 
-import BaseTrack, { BaseTrackConfig } from './BasicTrack/baseTrackModel'
-import blockBasedTrackModel from './BasicTrack/blockBasedTrackModel'
+import BaseTrack, {
+  BaseTrackConfig,
+  BaseTrackStateModel,
+} from './BasicTrack/baseTrackModel'
+import blockBasedTrackModel, {
+  BlockBasedTrackModel,
+} from './BasicTrack/blockBasedTrackModel'
 import BlockBasedTrack from './BasicTrack/components/BlockBasedTrack'
 
 export default class LinearGenomeViewPlugin extends Plugin {
@@ -104,4 +111,11 @@ export {
   BlockBasedTrack,
   basicTrackConfigSchemaFactory,
   basicTrackStateModelFactory,
+}
+
+export type {
+  BaseTrackStateModel,
+  BlockBasedTrackModel,
+  LinearGenomeViewModel,
+  LinearGenomeViewStateModel,
 }

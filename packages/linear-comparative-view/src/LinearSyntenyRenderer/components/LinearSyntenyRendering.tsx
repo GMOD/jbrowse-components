@@ -7,7 +7,7 @@ import SimpleFeature, {
 } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { getContainingView } from '@gmod/jbrowse-core/util'
-import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import { LinearSyntenyTrackModel } from '../../LinearSyntenyTrack'

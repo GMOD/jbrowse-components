@@ -1,6 +1,6 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { Assembly } from '@gmod/jbrowse-core/assemblyManager/assembly'
 import BreakpointSplitViewComponent from './components/BreakpointSplitView'
 import BreakpointSplitViewModel from './model'
