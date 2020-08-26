@@ -34,6 +34,7 @@ import ComparativeRender from './DotplotRenderer/ComparativeRenderRpc'
 
 interface Track {
   addAdditionalContextMenuItemCallback: Function
+  additionalContextMenuItemCallbacks: Function[]
   id: string
   type: string
   PileupTrack: any
@@ -114,7 +115,7 @@ export default class DotplotPlugin extends Plugin {
       })
     }
 
-    const menuItems = (feature: Feature, track: any) => {
+    const cb = (feature: Feature, track: any) => {
       return feature
         ? [
             {
@@ -250,26 +251,21 @@ export default class DotplotPlugin extends Plugin {
           ]
         : []
     }
+
     autorun(() => {
-      const { rootModel: { session } = {} } = pluginManager
+      const session = pluginManager.rootModel?.session as Session | undefined
       if (session) {
-        const tracksAlreadyAddedTo: string[] = []
-        const { views } = (session as unknown) as Session
-        views.forEach(view => {
+        session.views.forEach(view => {
           if (view.type === 'LinearGenomeView') {
-            const { tracks } = view
-            tracks.forEach(track => {
-              const { type } = track
-              if (!tracksAlreadyAddedTo.includes(track.id)) {
-                if (type === 'PileupTrack') {
-                  tracksAlreadyAddedTo.push(track.id)
-                  track.addAdditionalContextMenuItemCallback(menuItems)
-                } else if (type === 'AlignmentsTrack') {
-                  tracksAlreadyAddedTo.push(track.id)
-                  track.PileupTrack.addAdditionalContextMenuItemCallback(
-                    menuItems,
-                  )
-                }
+            view.tracks.forEach(track => {
+              const {
+                type,
+                additionalContextMenuItemCallbacks: cbs = [],
+              } = track
+              if (type === 'PileupTrack' && !cbs.includes(cb)) {
+                track.addAdditionalContextMenuItemCallback(cb)
+              } else if (type === 'AlignmentsTrack' && !cbs.includes(cb)) {
+                track.PileupTrack.addAdditionalContextMenuItemCallback(cb)
               }
             })
           }
