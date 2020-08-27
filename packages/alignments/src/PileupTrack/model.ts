@@ -265,15 +265,29 @@ const stateModelFactory = (
           return [...trackMenuItems, ...this.composedTrackMenuItems]
         },
 
+        // button to rerender if you ignore the warning, do a self.reload call with a flag that skips the below check
         // // TODOSTAT sample hardcode limit
-        // regionCannotBeRendered() {
-        //   const view = getContainingView(self)
-        //   // @ts-ignore
-        //   if (view && view.bpPerPx >= 16) {
-        //     return 'Zoom in to see more'
-        //   }
-        //   return undefined
-        // },
+        // warning that this region very large, give them the option to actually show
+        // warn that if you decide to show it may error out and fail
+
+        // defaultZoomLimit=16
+        // Click button for force render, it self.setDefaultZoomLimit(currBpPerPx)
+        // use 100 as the production bpPerPx limit
+
+        // TODOSTAT sample hardcode limit, decide whether to put in higher level (blockBasedModel)
+        // or individually in each track so users can customize each specific track limit
+        // or just the overall track limit
+        // for customization, along the lines of
+        // add a field to config called bpPerPx limit
+        // then getConf(self, 'bpPerPxLimit'), if exist, view.bpPerPx >= the getConf
+        // and set a default value that makes sense like 200
+        regionCannotBeRendered() {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          if (view && view.bpPerPx >= 16) {
+            return 'Zoom in to see more'
+          }
+          return undefined
+        },
       }
     })
 

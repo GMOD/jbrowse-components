@@ -1,6 +1,11 @@
 import { types } from 'mobx-state-tree'
 import wiggleStateModelFactory from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/model'
 import WiggleTrackComponent from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
+import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+import { getContainingView } from '@gmod/jbrowse-core/util'
+import React from 'react'
+import Button from '@material-ui/core/Button'
+import RefreshIcon from '@material-ui/icons/Refresh'
 import Tooltip from './Tooltip'
 
 // using a map because it preserves order
@@ -14,10 +19,16 @@ const stateModelFactory = (configSchema: any) =>
       wiggleStateModelFactory(configSchema),
       types.model({ type: types.literal('SNPCoverageTrack') }),
     )
-    .volatile(() => ({
+    .volatile(self => ({
       ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
+      defaultZoomLimit: 16,
     }))
-    .views(() => ({
+    .actions(self => ({
+      setDefaultZoomLimit(newLimit: number) {
+        self.defaultZoomLimit = newLimit
+      },
+    }))
+    .views(self => ({
       get TooltipComponent() {
         return Tooltip
       },
@@ -32,6 +43,26 @@ const stateModelFactory = (configSchema: any) =>
 
       get contextMenuItems() {
         return []
+      },
+      regionCannotBeRendered() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const warning = 'Warning: Hit max feature limit'
+        if (view && view.bpPerPx >= self.defaultZoomLimit) {
+          return (
+            <Button
+              data-testid="reload_button"
+              onClick={() => {
+                self.setDefaultZoomLimit(view.bpPerPx)
+                self.reload()
+              }}
+              size="small"
+              startIcon={<RefreshIcon />}
+            >
+              {warning}
+            </Button>
+          )
+        }
+        return undefined
       },
     }))
 

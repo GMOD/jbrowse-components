@@ -150,22 +150,6 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             height: self.height,
           }
         },
-        // TODOSTAT sample hardcode limit, decide whether to put in higher level (blockBasedModel)
-        // or individually in each track so users can customize each specific track limit
-        // or just the overall track limit
-        // for customization, along the lines of
-        // add a field to config called bpPerPx limit
-        // then getConf(self, 'bpPerPxLimit'), if exist, view.bpPerPx >= the getConf
-        // and set a default value that makes sense like 200
-        regionCannotBeRendered() {
-          console.log('from wiggle')
-          const view = getContainingView(self)
-          // @ts-ignore
-          if (view && view.bpPerPx >= 16) {
-            return 'Zoom in to see more'
-          }
-          return undefined
-        },
       }
     })
     .actions(self => {
@@ -265,7 +249,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         // re-runs stats and refresh whole track on reload
         async reload() {
           self.setError('')
-
+          console.log('wiggle load')
           const aborter = new AbortController()
           const stats = await getStats({
             signal: aborter.signal,

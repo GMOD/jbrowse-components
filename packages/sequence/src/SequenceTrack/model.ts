@@ -7,6 +7,7 @@ import {
 import { types } from 'mobx-state-tree'
 import { AnyConfigurationSchemaType } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { getContainingView } from '@gmod/jbrowse-core/util'
+import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 
 export default (configSchema: AnyConfigurationSchemaType, trackType: string) =>
   types.compose(
@@ -33,8 +34,7 @@ export default (configSchema: AnyConfigurationSchemaType, trackType: string) =>
          *  return a string of text saying why the region can't be rendered.
          */
         regionCannotBeRendered(/* region */) {
-          const view = getContainingView(self)
-          // @ts-ignore
+          const view = getContainingView(self) as LinearGenomeViewModel
           if (view && view.bpPerPx >= 1) {
             return 'Zoom in to see sequence'
           }

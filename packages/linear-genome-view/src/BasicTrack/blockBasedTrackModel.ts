@@ -178,16 +178,6 @@ const blockBasedTrack = types
         }
         return undefined
       },
-      // TODOSTAT sample hardcode limit
-      regionCannotBeRendered() {
-        console.log('from blockbased')
-        const view = getContainingView(self)
-        // @ts-ignore
-        if (view && view.bpPerPx >= 16) {
-          return 'Zoom in to see more'
-        }
-        return undefined
-      },
     }
   })
 
@@ -256,6 +246,7 @@ const blockBasedTrack = types
       self.featureIdUnderMouse = feature
     },
     reload() {
+      console.log('reloading')
       const temp = JSON.parse(JSON.stringify(self.blockState))
       Object.keys(temp).forEach(blockState => {
         temp[blockState].key += '-reload'
