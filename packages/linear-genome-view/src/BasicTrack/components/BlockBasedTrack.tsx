@@ -57,6 +57,7 @@ function BlockBasedTrack(props: {
     TrackMessageComponent,
     contextMenuItems,
     height,
+    setContextMenuFeature,
   } = model
 
   return (
@@ -66,7 +67,10 @@ function BlockBasedTrack(props: {
       className={classes.track}
       onContextMenu={event => {
         event.preventDefault()
-        if (ref.current) {
+        if (contextCoord) {
+          // There's already a context menu open, so close it
+          setContextCoord(undefined)
+        } else if (ref.current) {
           setContextCoord([event.clientX, event.clientY])
         }
       }}
@@ -94,6 +98,11 @@ function BlockBasedTrack(props: {
         }}
         onClose={() => {
           setContextCoord(undefined)
+          setContextMenuFeature(undefined)
+        }}
+        onExit={() => {
+          setContextCoord(undefined)
+          setContextMenuFeature(undefined)
         }}
         anchorReference="anchorPosition"
         anchorPosition={

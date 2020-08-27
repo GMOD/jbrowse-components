@@ -29,7 +29,7 @@ function Box(props) {
 
   return (
     <rect
-      data-testid={feature.id()}
+      data-testid={`box-${feature.id()}`}
       x={leftWithinBlock}
       y={top}
       width={widthWithinBlock}
