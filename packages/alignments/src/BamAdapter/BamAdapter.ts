@@ -25,11 +25,11 @@ interface Header {
 }
 
 export default class BamAdapter extends BaseFeatureDataAdapter {
-  private bam: BamFile
+  protected bam: BamFile
+
+  protected sequenceAdapter?: BaseFeatureDataAdapter
 
   private samHeader: Header = {}
-
-  private sequenceAdapter?: BaseFeatureDataAdapter
 
   public constructor(
     config: AnyConfigurationModel,
@@ -61,7 +61,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     const { statusCallback = () => {} } = opts || {}
     if (Object.keys(this.samHeader).length === 0) {
       statusCallback('Downloading index file')
-      const samHeader = await this.bam.getHeader(opts?.signal)
+      const samHeader = await this.bam.getHeader(opts)
 
       // use the @SQ lines in the header to figure out the
       // mapping between ref ref ID numbers and names

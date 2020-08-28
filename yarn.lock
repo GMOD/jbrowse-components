@@ -2516,22 +2516,22 @@
   resolved "https://registry.yarnpkg.com/@francoischalifour/autocomplete-preset-algolia/-/autocomplete-preset-algolia-1.0.0-alpha.26.tgz#3e20315d43dfef6c676cab4267974de70c2f6ec2"
   integrity sha512-RrayxZgvTzpwq+RqEIpVn2UOEFLwa+HADCr2I3UI05o/OGU7Wc6LltpQy54scR+FlAIk6qTJwp5Nw/ecJn6xXg==
 
-"@gmod/bam@^1.0.40":
-  version "1.0.40"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.40.tgz#a29b1288f29c93b364f1f5dbbadf1580802bf6b3"
-  integrity sha512-NbkfCLVL/H8DagHWUOHfNERau3gury4NNDlK1/K74CK8NrbzTmZdl0vYTUn1mQVX5g+GtkQcPdUjcV4bT7slYQ==
+"@gmod/bam@^1.0.42":
+  version "1.0.42"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.42.tgz#8bbfbddde3c412ea8cb3382ee8507fa3df3e0ee4"
+  integrity sha512-mw4KL5UaataMaf/EppHSFHqFFYzt9lJs4wtQV3rIMr8X/cn/3NwyMtPbpuizIGW7oiTN8T57j0qWNdEeKia3QQ==
   dependencies:
     "@babel/runtime-corejs3" "^7.5.5"
     "@gmod/bgzf-filehandle" "^1.3.3"
-    "@types/long" "^4.0.0"
-    "@types/node" "^12.7.8"
     abortable-promise-cache "^1.2.0"
+    buffer-crc32 "^0.2.13"
     cross-fetch "^3.0.2"
     es6-promisify "^6.0.1"
     generic-filehandle "^2.0.0"
     long "^4.0.0"
     object.entries-ponyfill "^1.0.1"
     quick-lru "^2.0.0"
+    range-parser "^1.2.1"
 
 "@gmod/bbi@^1.0.30":
   version "1.0.30"
@@ -4544,7 +4544,7 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.0.13.tgz#ee1128e881b874c371374c1f72201893616417c9"
   integrity sha512-rouEWBImiRaSJsVA+ITTFM6ZxibuAlTuNOCyxVbwreu6k6+ujs7DfnU9o+PShFhET78pMBl3eH+AGSI5eOTkPA==
 
-"@types/node@^12.0.12", "@types/node@^12.7.8":
+"@types/node@^12.0.12":
   version "12.12.42"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.42.tgz#d0d1149336bd07540dd1ea576692829d575dec34"
   integrity sha512-R/9QdYFLL9dE9l5cWWzWIZByVGFd7lk7JVOJ7KD+E1SJ4gni7XJRLz9QTjyYQiHIqEAgku9VgxdLjMlhhUaAFg==
