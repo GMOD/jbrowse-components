@@ -19,13 +19,6 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
     pointerEvents: 'none',
   },
-  error: {
-    display: 'block',
-    color: theme.palette.error.main,
-    width: '30em',
-    wordWrap: 'normal',
-    whiteSpace: 'normal',
-  },
   blockMessage: {
     width: '100%',
     background: theme.palette.action.disabledBackground,
@@ -36,7 +29,7 @@ const useStyles = makeStyles(theme => ({
   blockError: {
     padding: theme.spacing(2),
     width: '100%',
-    whiteSpace: 'initial',
+    whiteSpace: 'normal',
     color: theme.palette.error.main,
     overflowY: 'auto',
   },
