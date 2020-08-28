@@ -33,6 +33,11 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.error.main,
     overflowY: 'auto',
   },
+  blockLimitMessage: {
+    background: theme.palette.action.disabledBackground,
+    padding: theme.spacing(2),
+    textAlign: 'center',
+  },
   dots: {
     '&::after': {
       display: 'inline-block',
@@ -92,7 +97,7 @@ function BlockMessage({ messageContent }: { messageContent: string | {} }) {
       {messageContent}
     </Typography>
   ) : (
-    <div>{messageContent}</div>
+    <div className={classes.blockLimitMessage}>{messageContent}</div>
   )
 }
 BlockMessage.propTypes = {

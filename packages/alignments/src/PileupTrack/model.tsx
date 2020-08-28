@@ -15,15 +15,18 @@ import {
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import { ContentCopy as ContentCopyIcon } from '@gmod/jbrowse-core/ui/Icons'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { types, Instance } from 'mobx-state-tree'
+import { types, Instance, getParent } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
 import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
-import { PileupConfigModel } from './configSchema'
+import React from 'react'
+import Button from '@material-ui/core/Button'
+import RefreshIcon from '@material-ui/icons/Refresh'
 import PileupTrackBlurb from './components/PileupTrackBlurb'
+import { PileupConfigModel } from './configSchema'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -266,12 +269,6 @@ const stateModelFactory = (
         },
 
         // button to rerender if you ignore the warning, do a self.reload call with a flag that skips the below check
-        // // TODOSTAT sample hardcode limit
-        // warning that this region very large, give them the option to actually show
-        // warn that if you decide to show it may error out and fail
-
-        // defaultZoomLimit=16
-        // Click button for force render, it self.setDefaultZoomLimit(currBpPerPx)
         // use 100 as the production bpPerPx limit
 
         // TODOSTAT sample hardcode limit, decide whether to put in higher level (blockBasedModel)
@@ -282,9 +279,24 @@ const stateModelFactory = (
         // then getConf(self, 'bpPerPxLimit'), if exist, view.bpPerPx >= the getConf
         // and set a default value that makes sense like 200
         regionCannotBeRendered() {
+          const mainTrack = getParent(self)
           const view = getContainingView(self) as LinearGenomeViewModel
-          if (view && view.bpPerPx >= 16) {
-            return 'Zoom in to see more'
+          const warning =
+            'Hit max feature limit. Zoom in or reload(reload may fail)'
+          if (view && view.bpPerPx > mainTrack.defaultZoomLimit) {
+            return (
+              <Button
+                data-testid="reload_button"
+                onClick={() => {
+                  mainTrack.setDefaultZoomLimit(view.bpPerPx)
+                  self.reload()
+                }}
+                size="small"
+                startIcon={<RefreshIcon />}
+              >
+                {warning}
+              </Button>
+            )
           }
           return undefined
         },

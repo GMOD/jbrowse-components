@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree'
+import { types, getParent } from 'mobx-state-tree'
 import wiggleStateModelFactory from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/model'
 import WiggleTrackComponent from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
 import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
@@ -45,14 +45,16 @@ const stateModelFactory = (configSchema: any) =>
         return []
       },
       regionCannotBeRendered() {
+        const mainTrack = getParent(self)
         const view = getContainingView(self) as LinearGenomeViewModel
-        const warning = 'Warning: Hit max feature limit'
-        if (view && view.bpPerPx >= self.defaultZoomLimit) {
+        const warning =
+          'Hit max feature limit. Zoom in or reload(reload may fail)'
+        if (view && view.bpPerPx > mainTrack.defaultZoomLimit) {
           return (
             <Button
               data-testid="reload_button"
               onClick={() => {
-                self.setDefaultZoomLimit(view.bpPerPx)
+                mainTrack.setDefaultZoomLimit(view.bpPerPx)
                 self.reload()
               }}
               size="small"

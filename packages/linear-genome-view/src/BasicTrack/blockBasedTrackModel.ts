@@ -246,7 +246,6 @@ const blockBasedTrack = types
       self.featureIdUnderMouse = feature
     },
     reload() {
-      console.log('reloading')
       const temp = JSON.parse(JSON.stringify(self.blockState))
       Object.keys(temp).forEach(blockState => {
         temp[blockState].key += '-reload'

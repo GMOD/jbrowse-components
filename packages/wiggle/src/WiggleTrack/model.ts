@@ -249,7 +249,6 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         // re-runs stats and refresh whole track on reload
         async reload() {
           self.setError('')
-          console.log('wiggle load')
           const aborter = new AbortController()
           const stats = await getStats({
             signal: aborter.signal,

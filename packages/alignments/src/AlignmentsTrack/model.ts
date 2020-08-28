@@ -34,6 +34,7 @@ const stateModelFactory = (
           height: 250,
           showCoverage: true,
           showPileup: true,
+          defaultZoomLimit: 16,
         })
         .volatile(() => ({
           ReactComponent: (AlignmentsTrackComponent as unknown) as React.FC,
@@ -45,6 +46,9 @@ const stateModelFactory = (
       },
       togglePileup() {
         self.showPileup = !self.showPileup
+      },
+      setDefaultZoomLimit(limit: number) {
+        self.defaultZoomLimit = limit
       },
     }))
     .views(self => {
