@@ -2516,10 +2516,10 @@
   resolved "https://registry.yarnpkg.com/@francoischalifour/autocomplete-preset-algolia/-/autocomplete-preset-algolia-1.0.0-alpha.26.tgz#3e20315d43dfef6c676cab4267974de70c2f6ec2"
   integrity sha512-RrayxZgvTzpwq+RqEIpVn2UOEFLwa+HADCr2I3UI05o/OGU7Wc6LltpQy54scR+FlAIk6qTJwp5Nw/ecJn6xXg==
 
-"@gmod/bam@^1.0.42":
-  version "1.0.42"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.42.tgz#8bbfbddde3c412ea8cb3382ee8507fa3df3e0ee4"
-  integrity sha512-mw4KL5UaataMaf/EppHSFHqFFYzt9lJs4wtQV3rIMr8X/cn/3NwyMtPbpuizIGW7oiTN8T57j0qWNdEeKia3QQ==
+"@gmod/bam@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.0.tgz#f7f07f32a886fd6a9f78ba846f30bc66bd2d535d"
+  integrity sha512-CWXFdoyui3AcQsxIrnOlStL5TBG6rMEH8babXmnZbjfJLIAXKM9NMLVMBiuqHDo0JzHrjBoXUaDAc9pfh88t0g==
   dependencies:
     "@babel/runtime-corejs3" "^7.5.5"
     "@gmod/bgzf-filehandle" "^1.3.3"
