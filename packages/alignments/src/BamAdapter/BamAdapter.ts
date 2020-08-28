@@ -25,7 +25,6 @@ interface Header {
 }
 
 export default class BamAdapter extends BaseFeatureDataAdapter {
-
   // @ts-ignore  -- the configure method assigns this essentially via the constructor
   protected bam: BamFile
 
