@@ -6,11 +6,7 @@ import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAda
 import BamAdapter from '../BamAdapter/BamAdapter'
 
 export default class HtsgetBamAdapter extends BamAdapter {
-  constructor(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-  ) {
-    super(config, getSubAdapter)
+  configure(config: AnyConfigurationModel, getSubAdapter?: getSubAdapterType) {
     const htsgetBase = readConfObject(config, 'htsgetBase')
     const htsgetTrackId = readConfObject(config, 'htsgetTrackId')
     this.bam = new HtsgetFile({
