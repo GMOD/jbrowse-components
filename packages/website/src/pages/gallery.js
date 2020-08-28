@@ -87,11 +87,21 @@ function Home() {
               indexed VCF, GFF, BED, BigBed, BigWig, and several specialized
               formats including PAF
             </li>
-            <li>And more!</li>
+            <li>
+              Status updates while track is loading (e.g. Downloading BAM
+              index...)
+            </li>
+            <li>Hi-C visualization from .hic format files</li>
+            <li>
+              Additional alignments track features including breakpoint split
+              view, read pileup sorting, show soft clipping, and combined pileup
+              and coverage track
+            </li>
+            <li>
+              Graphical editing of the configuration in the app and command line
+              loading scripts
+            </li>
           </ul>
-          <a href="features">
-            See a summary of features and comparison to JBrowse 1 here
-          </a>
         </div>
 
         <div className={classes.section}>
