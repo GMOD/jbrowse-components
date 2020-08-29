@@ -123,6 +123,7 @@ export default (pluginManager: PluginManager) => {
       const [mousedown, setMouseDown] = useState<Coord>()
       const [mousedownClient, setMouseDownClient] = useState<Coord>()
       const [mouseup, setMouseUp] = useState<Coord>()
+      const [mouseupClient, setMouseUpClient] = useState<Coord>()
       const ref = useRef<SVGSVGElement>(null)
       const root = useRef<HTMLDivElement>(null)
       const distanceX = useRef(0)
@@ -274,6 +275,7 @@ export default (pluginManager: PluginManager) => {
                       event.nativeEvent.offsetX,
                       event.nativeEvent.offsetY,
                     ])
+                    setMouseUpClient([event.clientX, event.clientY])
                   }
                 }}
                 onMouseDown={event => {
@@ -389,7 +391,12 @@ export default (pluginManager: PluginManager) => {
                 }}
                 anchorReference="anchorPosition"
                 anchorPosition={
-                  mouseup ? { top: mouseup[1], left: mouseup[0] } : undefined
+                  mouseupClient
+                    ? {
+                        top: mouseupClient[1] + 30,
+                        left: mouseupClient[0] + 30,
+                      }
+                    : undefined
                 }
                 style={{ zIndex: 1000 }}
                 menuItems={[
