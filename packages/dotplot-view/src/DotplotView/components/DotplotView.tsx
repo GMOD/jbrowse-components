@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react'
-import Popper from '@material-ui/core/Popper'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
