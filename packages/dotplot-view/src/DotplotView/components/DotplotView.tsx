@@ -261,6 +261,8 @@ export default (pluginManager: PluginManager) => {
                   // the mouseleave is called on mouseup when the menu appears
                   // so disable leave for this, but otherwise make cursor/zoombox go away
                   if (!mouseup) {
+                    setMouseDown(undefined)
+                    setMouseDownClient(undefined)
                     setMouseCurr(undefined)
                     setMouseCurrClient(undefined)
                   }
