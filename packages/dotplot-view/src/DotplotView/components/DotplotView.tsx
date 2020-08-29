@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import Popper from '@material-ui/core/Popper'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
@@ -7,7 +8,7 @@ import { getConf } from '@gmod/jbrowse-core/configuration'
 import { Menu } from '@gmod/jbrowse-core/ui'
 import { BaseBlock } from '@gmod/jbrowse-core/util/blockTypes'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { DotplotViewModel } from '../model'
+import { DotplotViewModel, Dotplot1DView } from '../model'
 
 const useStyles = makeStyles(theme => {
   return {
@@ -56,10 +57,22 @@ const useStyles = makeStyles(theme => {
     error: {
       color: 'red',
     },
+    popover: {
+      background: '#fff',
+      zIndex: 1000,
+      border: '1px solid black',
+      pointerEvents: 'none',
+      position: 'absolute',
+    },
   }
 })
 
 type Coord = [number, number] | undefined
+
+function locstr(px: number, view: typeof Dotplot1DView) {
+  const obj = view.pxToBp(px)
+  return `${obj.refName}:${Math.floor(obj.offset).toLocaleString('en-US')}`
+}
 
 export default (pluginManager: PluginManager) => {
   const { jbrequire } = pluginManager
@@ -106,11 +119,14 @@ export default (pluginManager: PluginManager) => {
         vtextRotation,
       } = model
       const classes = useStyles()
-      const [mousecurr, setMouseCurr] = useState([0, 0])
+      const [mousecurr, setMouseCurr] = useState<Coord>()
+      const [mousecurrClient, setMouseCurrClient] = useState<Coord>()
       const [mousedown, setMouseDown] = useState<Coord>()
+      const [mousedownClient, setMouseDownClient] = useState<Coord>()
       const [mouseup, setMouseUp] = useState<Coord>()
       const [tracking, setTracking] = useState(false)
       const ref = useRef<SVGSVGElement>(null)
+      const root = useRef<HTMLDivElement>(null)
       const distanceX = useRef(0)
       const distanceY = useRef(0)
       const scheduled = useRef(false)
@@ -157,9 +173,52 @@ export default (pluginManager: PluginManager) => {
         viewWidth,
         hview.offsetPx,
       )
+      const rect = root.current?.getBoundingClientRect() || { left: 0, top: 0 }
       return (
-        <div style={{ position: 'relative' }}>
+        <div ref={root} className={classes.root}>
           <Controls model={model} />
+          {mousecurr && mousecurrClient ? (
+            <div
+              className={classes.popover}
+              style={{
+                left:
+                  mousecurrClient[0] -
+                  rect.left +
+                  (mousedown && mousecurr[0] - mousedown[0] < 0 ? -120 : 20),
+                top:
+                  mousecurrClient[1] -
+                  rect.top +
+                  (mousedown && mousecurr[1] - mousedown[1] < 0 ? -40 : 0),
+              }}
+            >
+              {`x-${locstr(mousecurr[0], hview)}`}
+              <br />
+              {`y-${locstr(viewHeight - mousecurr[1], vview)}`}
+            </div>
+          ) : null}
+          {mousedown &&
+          mousecurr &&
+          mousedownClient &&
+          Math.abs(mousedown[0] - mousecurr[0]) > 3 &&
+          Math.abs(mousedown[1] - mousecurr[1]) > 3 ? (
+            <div
+              className={classes.popover}
+              style={{
+                left:
+                  mousedownClient[0] -
+                  rect.left -
+                  (mousecurr[0] - mousedown[0] < 0 ? 0 : 120),
+                top:
+                  mousedownClient[1] -
+                  rect.top -
+                  (mousecurr[1] - mousedown[1] < 0 ? 0 : 40),
+              }}
+            >
+              {`x-${locstr(mousedown[0], hview)}`}
+              <br />
+              {`y-${locstr(viewHeight - mousedown[1], vview)}`}
+            </div>
+          ) : null}
           <div className={classes.container}>
             <div style={{ display: 'grid' }}>
               <svg
@@ -198,17 +257,18 @@ export default (pluginManager: PluginManager) => {
                 className={classes.content}
                 width={viewWidth}
                 height={viewHeight}
+                style={{ cursor: 'crosshair' }}
                 onMouseMove={event => {
-                  if (tracking) {
-                    setMouseCurr([
-                      event.nativeEvent.offsetX,
-                      event.nativeEvent.offsetY,
-                    ])
-                  }
+                  setMouseCurr([
+                    event.nativeEvent.offsetX,
+                    event.nativeEvent.offsetY,
+                  ])
+                  setMouseCurrClient([event.clientX, event.clientY])
                 }}
                 onMouseUp={event => {
                   if (
                     mousedown &&
+                    mousecurr &&
                     Math.abs(mousedown[0] - mousecurr[0]) > 3 &&
                     Math.abs(mousedown[1] - mousecurr[1]) > 3
                   ) {
@@ -222,6 +282,7 @@ export default (pluginManager: PluginManager) => {
                       event.nativeEvent.offsetX,
                       event.nativeEvent.offsetY,
                     ])
+                    setMouseDownClient([event.clientX, event.clientY])
                     setMouseCurr([
                       event.nativeEvent.offsetX,
                       event.nativeEvent.offsetY,
@@ -263,7 +324,7 @@ export default (pluginManager: PluginManager) => {
                       )
                     })}
                 </g>
-                {mousedown ? (
+                {mousedown && mousecurr ? (
                   <rect
                     fill="rgba(255,0,0,0.3)"
                     x={Math.min(mousecurr[0], mousedown[0])}
