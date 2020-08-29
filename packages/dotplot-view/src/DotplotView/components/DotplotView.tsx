@@ -257,6 +257,14 @@ export default (pluginManager: PluginManager) => {
                 width={viewWidth}
                 height={viewHeight}
                 style={{ cursor: 'crosshair' }}
+                onMouseLeave={() => {
+                  // the mouseleave is called on mouseup when the menu appears
+                  // so disable leave for this, but otherwise make cursor/zoombox go away
+                  if (!mouseup) {
+                    setMouseCurr(undefined)
+                    setMouseCurrClient(undefined)
+                  }
+                }}
                 onMouseMove={event => {
                   setMouseCurr([
                     event.nativeEvent.offsetX,
