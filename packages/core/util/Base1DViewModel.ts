@@ -182,19 +182,15 @@ const Base1DView = types
     zoomIn() {
       this.zoomTo(self.bpPerPx / 2)
     },
-    zoomTo(newBpPerPx: number) {
+    zoomTo(newBpPerPx: number, offset = self.width / 2) {
       const bpPerPx = newBpPerPx
       if (bpPerPx === self.bpPerPx) return
       const oldBpPerPx = self.bpPerPx
       self.bpPerPx = bpPerPx
 
       // tweak the offset so that the center of the view remains at the same coordinate
-      const viewWidth = self.width
       self.offsetPx = clamp(
-        Math.round(
-          ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
-            viewWidth / 2,
-        ),
+        Math.round(((self.offsetPx + offset) * oldBpPerPx) / bpPerPx - offset),
         self.minOffset,
         self.maxOffset,
       )

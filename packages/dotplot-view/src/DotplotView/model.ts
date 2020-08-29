@@ -306,16 +306,21 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const result = this.getCoords(mousedown, mouseup)
         if (result) {
           const [x1, x2, y1, y2] = result
+          console.log({ x1, x2, y1, y2 })
           const session = getSession(self)
 
-          const d1 = Base1DView.create(getSnapshot(self.hview))
-          const d2 = Base1DView.create(getSnapshot(self.vview))
+          const d1 = Dotplot1DView.create(getSnapshot(self.hview))
+          const d2 = Dotplot1DView.create(getSnapshot(self.vview))
           d1.setVolatileWidth(self.hview.width)
-          d2.setVolatileWidth(self.hview.width)
+          d2.setVolatileWidth(self.vview.width)
           d1.moveTo(x1, x2)
           d2.moveTo(y2, y1)
+          d1.zoomTo(d1.bpPerPx / (self.width / self.hview.width), 0)
+          d2.zoomTo(d2.bpPerPx / (self.width / self.vview.width), 0)
 
           // add the specific evidence tracks to the LGVs in the split view
+          // note: scales the bpPerPx by scaling proportional of the dotplot
+          // width to the eventual lgv width
           const viewSnapshot = {
             type: 'LinearSyntenyView',
             views: [
