@@ -47,6 +47,8 @@ export const Dotplot1DView = Base1DView.extend(self => {
   }
 })
 
+export type Dotplot1DViewModel = Instance<typeof Dotplot1DView>
+
 const DotplotHView = Dotplot1DView.extend(self => ({
   views: {
     get width() {

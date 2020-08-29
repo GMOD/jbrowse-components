@@ -8,7 +8,7 @@ import { getConf } from '@gmod/jbrowse-core/configuration'
 import { Menu } from '@gmod/jbrowse-core/ui'
 import { BaseBlock } from '@gmod/jbrowse-core/util/blockTypes'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { DotplotViewModel, Dotplot1DView } from '../model'
+import { DotplotViewModel, Dotplot1DViewModel } from '../model'
 
 const useStyles = makeStyles(theme => {
   return {
@@ -69,7 +69,7 @@ const useStyles = makeStyles(theme => {
 
 type Coord = [number, number] | undefined
 
-function locstr(px: number, view: typeof Dotplot1DView) {
+function locstr(px: number, view: Dotplot1DViewModel) {
   const obj = view.pxToBp(px)
   return `${obj.refName}:${Math.floor(obj.offset).toLocaleString('en-US')}`
 }
@@ -124,7 +124,6 @@ export default (pluginManager: PluginManager) => {
       const [mousedown, setMouseDown] = useState<Coord>()
       const [mousedownClient, setMouseDownClient] = useState<Coord>()
       const [mouseup, setMouseUp] = useState<Coord>()
-      const [tracking, setTracking] = useState(false)
       const ref = useRef<SVGSVGElement>(null)
       const root = useRef<HTMLDivElement>(null)
       const distanceX = useRef(0)
@@ -272,9 +271,11 @@ export default (pluginManager: PluginManager) => {
                     Math.abs(mousedown[0] - mousecurr[0]) > 3 &&
                     Math.abs(mousedown[1] - mousecurr[1]) > 3
                   ) {
-                    setMouseUp([event.pageX, event.pageY])
+                    setMouseUp([
+                      event.nativeEvent.offsetX,
+                      event.nativeEvent.offsetY,
+                    ])
                   }
-                  setTracking(false)
                 }}
                 onMouseDown={event => {
                   if (event.button === 0) {
@@ -282,12 +283,11 @@ export default (pluginManager: PluginManager) => {
                       event.nativeEvent.offsetX,
                       event.nativeEvent.offsetY,
                     ])
-                    setMouseDownClient([event.clientX, event.clientY])
                     setMouseCurr([
                       event.nativeEvent.offsetX,
                       event.nativeEvent.offsetY,
                     ])
-                    setTracking(true)
+                    setMouseDownClient([event.clientX, event.clientY])
                   }
                 }}
               >
