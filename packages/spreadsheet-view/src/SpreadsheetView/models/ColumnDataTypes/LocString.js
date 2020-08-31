@@ -242,23 +242,23 @@ export default pluginManager => {
   async function locationLinkClick(spreadsheet, columnNumber, cell) {
     const session = getSession(spreadsheet)
     const { assemblyManager } = session
-    const { assemblyName } = spreadsheet
-    await when(() => assemblyManager.get(assemblyName))
-    const assembly = assemblyManager.get(assemblyName)
-    await when(() => Boolean(assembly.regions && assembly.refNameAliases))
+    const assembly = await assemblyManager.loadAssembly(
+      spreadsheet.assemblyName,
+    )
     const loc = parseLocString(cell.text, name =>
-      assemblyManager.isValidRefName(name, assemblyName),
+      assemblyManager.isValidRefName(name, spreadsheet.assemblyName),
     )
     if (loc) {
-      const { refName } = loc
-
-      const canonicalRefName = assembly.getCanonicalRefName(refName)
+      const canonicalRefName = assembly.getCanonicalRefName(loc.refName)
       const newDisplayedRegion = assembly.regions.find(
         region => region.refName === canonicalRefName,
       )
       const view = session.addView('LinearGenomeView', {
         displayName: cell.text,
       })
+
+      // note that we have to clone this because otherwise it adds "same object
+      // twice to the mst tree"
       view.setDisplayedRegions([JSON.parse(JSON.stringify(newDisplayedRegion))])
       await when(() => view.initialized)
       view.navToLocString(cell.text)

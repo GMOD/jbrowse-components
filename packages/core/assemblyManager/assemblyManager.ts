@@ -55,6 +55,18 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       },
     }))
     .views(self => ({
+      async loadAssembly(assemblyName: string) {
+        const canonicalName = self.aliasMap.get(assemblyName)
+        const assembly = self.assemblies.find(
+          asm => asm.name === (canonicalName || assemblyName),
+        )
+        if (assembly) {
+          await when(() => Boolean(assembly.regions && assembly.refNameAliases))
+          return assembly
+        }
+        return undefined
+      },
+
       async getRefNameMapForAdapter(
         adapterConf: unknown,
         assemblyName: string,
