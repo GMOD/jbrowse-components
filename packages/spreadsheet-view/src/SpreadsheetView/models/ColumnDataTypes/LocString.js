@@ -7,7 +7,7 @@ import { when } from '@gmod/jbrowse-core/util'
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { types, getType } = jbrequire('mobx-state-tree')
+  const { types, getType, getParent } = jbrequire('mobx-state-tree')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
 
@@ -101,7 +101,6 @@ export default pluginManager => {
     'overlaps with',
     'contained within',
     'fully contains',
-
     'does not overlap',
     'not contained within',
     'does not contain',
@@ -242,6 +241,8 @@ export default pluginManager => {
   async function locationLinkClick(spreadsheet, columnNumber, cell) {
     const session = getSession(spreadsheet)
     const { assemblyManager } = session
+    const { assemblyName } = spreadsheet
+    const { id: viewId } = getParent(spreadsheet)
     const assembly = await assemblyManager.loadAssembly(
       spreadsheet.assemblyName,
     )
@@ -249,18 +250,27 @@ export default pluginManager => {
       assemblyManager.isValidRefName(name, spreadsheet.assemblyName),
     )
     if (loc) {
-      const canonicalRefName = assembly.getCanonicalRefName(loc.refName)
+      const { refName } = loc
+      const canonicalRefName = assembly.getCanonicalRefName(refName)
       const newDisplayedRegion = assembly.regions.find(
         region => region.refName === canonicalRefName,
       )
-      const view = session.addView('LinearGenomeView', {
-        displayName: cell.text,
-      })
 
-      // note that we have to clone this because otherwise it adds "same object
-      // twice to the mst tree"
-      view.setDisplayedRegions([JSON.parse(JSON.stringify(newDisplayedRegion))])
-      await when(() => view.initialized)
+      const newViewId = `${viewId}_${assemblyName}`
+      let view = session.views.find(v => v.id === newViewId)
+      if (!view) {
+        view = session.addView('LinearGenomeView', {
+          displayName: cell.text,
+          id: newViewId,
+        })
+
+        // note that we have to clone this because otherwise it adds "same object
+        // twice to the mst tree"
+        view.setDisplayedRegions([
+          JSON.parse(JSON.stringify(newDisplayedRegion)),
+        ])
+        await when(() => view.initialized)
+      }
       view.navToLocString(cell.text)
     }
   }
