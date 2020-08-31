@@ -306,7 +306,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const result = this.getCoords(mousedown, mouseup)
         if (result) {
           const [x1, x2, y1, y2] = result
-          console.log({ x1, x2, y1, y2 })
           const session = getSession(self)
 
           const d1 = Dotplot1DView.create(getSnapshot(self.hview))
