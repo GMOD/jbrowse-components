@@ -106,6 +106,7 @@ export default (pluginManager: PluginManager) => {
     return blockLabelKeysToHide
   }
 
+  // produces offsetX/offsetY coordinates from a clientX and an element's getBoundingClientRect
   function getOffset(coord: Coord, rect: { left: number; top: number }) {
     return coord && ([coord[0] - rect.left, coord[1] - rect.top] as Coord)
   }
