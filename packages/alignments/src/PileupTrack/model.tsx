@@ -268,16 +268,6 @@ const stateModelFactory = (
           return [...trackMenuItems, ...this.composedTrackMenuItems]
         },
 
-        // button to rerender if you ignore the warning, do a self.reload call with a flag that skips the below check
-        // use 100 as the production bpPerPx limit
-
-        // TODOSTAT sample hardcode limit, decide whether to put in higher level (blockBasedModel)
-        // or individually in each track so users can customize each specific track limit
-        // or just the overall track limit
-        // for customization, along the lines of
-        // add a field to config called bpPerPx limit
-        // then getConf(self, 'bpPerPxLimit'), if exist, view.bpPerPx >= the getConf
-        // and set a default value that makes sense like 200
         regionCannotBeRendered() {
           const mainTrack = getParent(self)
           const view = getContainingView(self) as LinearGenomeViewModel

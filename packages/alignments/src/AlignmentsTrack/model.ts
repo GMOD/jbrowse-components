@@ -36,7 +36,7 @@ const stateModelFactory = (
           showPileup: true,
         })
         .volatile(() => ({
-          userBpPerPxLimit: undefined as undefined | number,
+          userSetBpPerPxLimit: undefined as undefined | number,
           ReactComponent: (AlignmentsTrackComponent as unknown) as React.FC,
         })),
     )
