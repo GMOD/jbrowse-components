@@ -283,12 +283,12 @@ const stateModelFactory = (
           const view = getContainingView(self) as LinearGenomeViewModel
           const warning =
             'Hit max feature limit. Zoom in or reload(reload may fail)'
-          if (view && view.bpPerPx > mainTrack.defaultZoomLimit) {
+          if (view && view.bpPerPx > mainTrack.maxViewBpPerPx) {
             return (
               <Button
                 data-testid="reload_button"
                 onClick={() => {
-                  mainTrack.setDefaultZoomLimit(view.bpPerPx)
+                  mainTrack.setUserBpPerPxLimit(view.bpPerPx)
                   self.reload()
                 }}
                 size="small"

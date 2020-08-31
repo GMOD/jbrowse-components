@@ -19,20 +19,13 @@ const stateModelFactory = (configSchema: any) =>
       wiggleStateModelFactory(configSchema),
       types.model({ type: types.literal('SNPCoverageTrack') }),
     )
-    .volatile(self => ({
+    .volatile(() => ({
       ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
-      defaultZoomLimit: 16,
-    }))
-    .actions(self => ({
-      setDefaultZoomLimit(newLimit: number) {
-        self.defaultZoomLimit = newLimit
-      },
     }))
     .views(self => ({
       get TooltipComponent() {
         return Tooltip
       },
-
       get rendererTypeName() {
         return rendererTypes.get('snpcoverage')
       },
@@ -49,12 +42,13 @@ const stateModelFactory = (configSchema: any) =>
         const view = getContainingView(self) as LinearGenomeViewModel
         const warning =
           'Hit max feature limit. Zoom in or reload(reload may fail)'
-        if (view && view.bpPerPx > mainTrack.defaultZoomLimit) {
+        console.log(view.bpPerPx, mainTrack.maxViewBpPerPx)
+        if (view && view.bpPerPx > mainTrack.maxViewBpPerPx) {
           return (
             <Button
               data-testid="reload_button"
               onClick={() => {
-                mainTrack.setDefaultZoomLimit(view.bpPerPx)
+                mainTrack.setUserBpPerPxLimit(view.bpPerPx)
                 self.reload()
               }}
               size="small"
