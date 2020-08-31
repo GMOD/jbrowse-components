@@ -105,6 +105,10 @@ export default (pluginManager: PluginManager) => {
     })
     return blockLabelKeysToHide
   }
+
+  function getOffset(coord: Coord, rect: { left: number; top: number }) {
+    return coord && ([coord[0] - rect.left, coord[1] - rect.top] as Coord)
+  }
   const DotplotViewInternal = observer(
     ({ model }: { model: DotplotViewModel }) => {
       const {
@@ -118,11 +122,8 @@ export default (pluginManager: PluginManager) => {
         vtextRotation,
       } = model
       const classes = useStyles()
-      const [mousecurr, setMouseCurr] = useState<Coord>()
       const [mousecurrClient, setMouseCurrClient] = useState<Coord>()
-      const [mousedown, setMouseDown] = useState<Coord>()
       const [mousedownClient, setMouseDownClient] = useState<Coord>()
-      const [mouseup, setMouseUp] = useState<Coord>()
       const [mouseupClient, setMouseUpClient] = useState<Coord>()
       const ref = useRef<SVGSVGElement>(null)
       const root = useRef<HTMLDivElement>(null)
@@ -173,6 +174,10 @@ export default (pluginManager: PluginManager) => {
         hview.offsetPx,
       )
       const rect = root.current?.getBoundingClientRect() || { left: 0, top: 0 }
+      const svg = ref.current?.getBoundingClientRect() || { left: 0, top: 0 }
+      const mousedown = getOffset(mousedownClient, svg)
+      const mousecurr = getOffset(mousecurrClient, svg)
+      const mouseup = getOffset(mouseupClient, svg)
       return (
         <div ref={root} className={classes.root}>
           <Controls model={model} />
@@ -261,17 +266,11 @@ export default (pluginManager: PluginManager) => {
                   // the mouseleave is called on mouseup when the menu appears
                   // so disable leave for this, but otherwise make cursor/zoombox go away
                   if (!mouseup) {
-                    setMouseDown(undefined)
                     setMouseDownClient(undefined)
-                    setMouseCurr(undefined)
                     setMouseCurrClient(undefined)
                   }
                 }}
                 onMouseMove={event => {
-                  setMouseCurr([
-                    event.nativeEvent.offsetX,
-                    event.nativeEvent.offsetY,
-                  ])
                   setMouseCurrClient([event.clientX, event.clientY])
                 }}
                 onMouseUp={event => {
@@ -281,24 +280,13 @@ export default (pluginManager: PluginManager) => {
                     Math.abs(mousedown[0] - mousecurr[0]) > 3 &&
                     Math.abs(mousedown[1] - mousecurr[1]) > 3
                   ) {
-                    setMouseUp([
-                      event.nativeEvent.offsetX,
-                      event.nativeEvent.offsetY,
-                    ])
                     setMouseUpClient([event.clientX, event.clientY])
                   }
                 }}
                 onMouseDown={event => {
                   if (event.button === 0) {
-                    setMouseDown([
-                      event.nativeEvent.offsetX,
-                      event.nativeEvent.offsetY,
-                    ])
-                    setMouseCurr([
-                      event.nativeEvent.offsetX,
-                      event.nativeEvent.offsetY,
-                    ])
                     setMouseDownClient([event.clientX, event.clientY])
+                    setMouseCurrClient([event.clientX, event.clientY])
                   }
                 }}
               >
@@ -392,12 +380,12 @@ export default (pluginManager: PluginManager) => {
                 open={Boolean(mouseup)}
                 onMenuItemClick={(event, callback) => {
                   callback()
-                  setMouseUp(undefined)
-                  setMouseDown(undefined)
+                  setMouseUpClient(undefined)
+                  setMouseDownClient(undefined)
                 }}
                 onClose={() => {
-                  setMouseUp(undefined)
-                  setMouseDown(undefined)
+                  setMouseUpClient(undefined)
+                  setMouseDownClient(undefined)
                 }}
                 anchorReference="anchorPosition"
                 anchorPosition={
