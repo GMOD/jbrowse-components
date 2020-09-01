@@ -384,7 +384,7 @@ describe('Zoom to selected displayed regions', () => {
         refName: 'ctgA',
       },
     )
-    expect(model.offsetPx).toBe(1202)
+    expect(model.offsetPx).toBe(802)
     expect(model.bpPerPx).toBe(12.5)
     expect(model.bpPerPx).toBeLessThan(largestBpPerPx)
   })

@@ -883,61 +883,6 @@ Object {
     },
     Object {
       "adapter": Object {
-        "features": Array [
-          Object {
-            "end": 191,
-            "name": "Boris",
-            "refName": "ctgA",
-            "score": 200,
-            "start": 190,
-            "type": "foo",
-            "uniqueId": "one",
-          },
-          Object {
-            "end": 192,
-            "name": "Theresa",
-            "refName": "ctgA",
-            "score": 20,
-            "start": 191,
-            "type": "bar",
-            "uniqueId": "two",
-          },
-          Object {
-            "end": 211,
-            "name": "Nigel",
-            "refName": "ctgA",
-            "score": 300,
-            "start": 210,
-            "type": "baz",
-            "uniqueId": "three",
-          },
-          Object {
-            "end": 221,
-            "name": "Geoffray",
-            "refName": "ctgA",
-            "score": 2,
-            "start": 220,
-            "type": "quux",
-            "uniqueId": "four",
-          },
-        ],
-        "type": "FromConfigAdapter",
-      },
-      "assemblyNames": Array [
-        "volvox",
-      ],
-      "category": Array [
-        "Miscellaneous",
-      ],
-      "name": "Lollipop track",
-      "renderer": Object {
-        "type": "LollipopRenderer",
-      },
-      "trackId": "FDN0zpD_B6",
-      "type": "DynamicTrack",
-    },
-    Object {
-      "adapter": Object {
         "bamLocation": Object {
           "uri": "test_data/volvox/volvox-long-reads-sv.bam",
         },

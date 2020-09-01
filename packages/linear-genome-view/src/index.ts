@@ -11,7 +11,7 @@ import {
   stateModel as baseFeatureWidgetStateModel,
 } from '@gmod/jbrowse-core/BaseFeatureWidget'
 import {
-  AbstractViewContainer,
+  AbstractSessionModel,
   isAbstractMenuManager,
 } from '@gmod/jbrowse-core/util'
 import {
@@ -89,7 +89,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
       pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
         label: 'Linear genome view',
         icon: LineStyleIcon,
-        onClick: (session: AbstractViewContainer) => {
+        onClick: (session: AbstractSessionModel) => {
           session.addView('LinearGenomeView', {})
         },
       })

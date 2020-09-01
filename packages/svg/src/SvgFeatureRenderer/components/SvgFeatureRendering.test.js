@@ -4,7 +4,8 @@ import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import React from 'react'
 import { render } from '@testing-library/react'
 import SvgRendererConfigSchema from '../configSchema'
-import Rendering, { SvgMouseover, SvgSelected } from './SvgFeatureRendering'
+import Rendering from './SvgFeatureRendering'
+import SvgOverlay from './SvgOverlay'
 
 test('no features', () => {
   const { container } = render(
@@ -389,21 +390,16 @@ test('svg selected', () => {
 
   const { container } = render(
     <svg>
-      <SvgMouseover
+      <SvgOverlay
         width={500}
         height={500}
         blockKey="block1"
         region={{ refName: 'zonk', start: 0, end: 1000 }}
-        trackModel={{ blockLayoutFeatures, featureIdUnderMouse: 'one' }}
-        config={SvgRendererConfigSchema.create({})}
-        bpPerPx={3}
-      />
-      <SvgSelected
-        width={500}
-        height={500}
-        blockKey="block1"
-        region={{ refName: 'zonk', start: 0, end: 1000 }}
-        trackModel={{ blockLayoutFeatures, selectedFeatureId: 'one' }}
+        trackModel={{
+          blockLayoutFeatures,
+          featureIdUnderMouse: 'one',
+          selectedFeatureId: 'one',
+        }}
         config={SvgRendererConfigSchema.create({})}
         bpPerPx={3}
       />

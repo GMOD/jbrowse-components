@@ -1,5 +1,5 @@
 import {
-  AbstractViewContainer,
+  AbstractSessionModel,
   isAbstractMenuManager,
 } from '@gmod/jbrowse-core/util'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
@@ -20,7 +20,7 @@ export default class SpreadsheetViewPlugin extends Plugin {
       pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
         label: 'Tabular data',
         icon: ViewComfyIcon,
-        onClick: (session: AbstractViewContainer) => {
+        onClick: (session: AbstractSessionModel) => {
           session.addView('SpreadsheetView', {})
         },
       })

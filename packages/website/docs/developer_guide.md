@@ -4,5 +4,24 @@ title: Developer guide
 toplevel: true
 ---
 
-We will introduce JBrowse 2 from the developers point of view. We'll look at
-the core concepts, and then review how to create custom data adapter types
+In this Developer Guide, will introduce the JBrowse 2 ecosystem from the developer's point of view. We'll examine the core concepts of how code is packaged and structured, and then go over how to create new plugins and pluggable elements.
+
+## Products and plugins
+
+The JBrowse 2 ecosystem has two main type of top-level artifacts that are published on their own: products and plugins.
+
+A "product" is an application of some kind that are published on its own (web app, electron app, CLI app, etc). jbrowse-web, jbrowse-desktop, and jbrowse-cli are products.
+
+A "plugin" is a package of functionality that is designed to "plug in" to a product **at runtime** to add functionality. These can be written and published by anyone, not just the JBrowse core team. Not all of the products use plugins, but most of them do.
+
+Most of the products are also pretty standard in the way they are constructed. For example, jbrowse-web is a React web application that is made with [Create React App (CRA)](https://create-react-app.dev/), and jbrowse-cli is a command-line tool implemented with [OCLIF](https://oclif.io/).
+
+## What's in a plugin
+
+A plugin is an independently distributed package of code that is designed to "plug in" to a JBrowse application.
+
+It's implemented as a class that extends `@gmod/jbrowse-core/Plugin`. It gets instantiated by the application that it plugs into, and it has an `install` method and a `configure` method that the application calls. This class is distributed as a
+
+It's common for a plugin to use have its `configure` method set up [mobx autoruns or reactions](https://mobx.js.org/refguide/autorun.html) that react to changes in the application's state to modify its behavior.
+
+Plugins often also have their `install` method add "pluggable elements" into the host JBrowse application. This is how plugins can add new kinds of views, tracks, renderers, and so forth.

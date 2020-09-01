@@ -1,109 +1,18 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
-import { bpToPx, bpSpanPx } from '@gmod/jbrowse-core/util'
+import { bpToPx } from '@gmod/jbrowse-core/util'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import FeatureGlyph from './FeatureGlyph'
+import SvgOverlay from './SvgOverlay'
 import { chooseGlyphComponent, layOut } from './util'
 
 const fontWidthScaleFactor = 0.6
 const renderingStyle = {
   position: 'relative',
 }
-
-export const SvgSelected = observer(
-  ({
-    region,
-    trackModel: { blockLayoutFeatures, selectedFeatureId },
-    bpPerPx,
-    blockKey,
-  }) => {
-    if (selectedFeatureId && blockLayoutFeatures) {
-      const blockLayout = blockLayoutFeatures.get(blockKey)
-      if (blockLayout) {
-        const rect = blockLayout.get(selectedFeatureId)
-        if (rect) {
-          const [leftBp, topPx, rightBp, bottomPx] = rect
-          const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
-          const rectTop = Math.round(topPx)
-          const screenWidth = (region.end - region.start) / bpPerPx
-          const rectHeight = Math.round(bottomPx - topPx)
-          const width = rightPx - leftPx
-
-          if (leftPx + width < 0) {
-            return null
-          }
-          const leftWithinBlock = Math.max(leftPx, 0)
-          const diff = leftWithinBlock - leftPx
-          const widthWithinBlock = Math.max(
-            1,
-            Math.min(width - diff, screenWidth),
-          )
-
-          return (
-            <rect
-              x={leftWithinBlock - 2}
-              y={rectTop - 2}
-              width={widthWithinBlock + 4}
-              height={rectHeight + 4}
-              stroke="#00b8ff"
-              fill="none"
-            />
-          )
-        }
-      }
-    }
-    return null
-  },
-)
-
-export const SvgMouseover = observer(
-  ({
-    trackModel: { blockLayoutFeatures, featureIdUnderMouse },
-    region,
-    bpPerPx,
-    blockKey,
-  }) => {
-    if (featureIdUnderMouse && blockLayoutFeatures) {
-      const blockLayout = blockLayoutFeatures.get(blockKey)
-      if (blockLayout) {
-        const rect = blockLayout.get(featureIdUnderMouse)
-        if (rect) {
-          const [leftBp, topPx, rightBp, bottomPx] = rect
-          const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
-          const screenWidth = (region.end - region.start) / bpPerPx
-          const rectTop = Math.round(topPx)
-          const rectHeight = Math.round(bottomPx - topPx)
-          const width = rightPx - leftPx
-
-          if (leftPx + width < 0) {
-            return null
-          }
-          const leftWithinBlock = Math.max(leftPx, 0)
-          const diff = leftWithinBlock - leftPx
-          const widthWithinBlock = Math.max(
-            1,
-            Math.min(width - diff, screenWidth),
-          )
-
-          return (
-            <rect
-              x={leftWithinBlock - 2}
-              y={rectTop - 2}
-              width={widthWithinBlock + 4}
-              height={rectHeight + 4}
-              fill="#000"
-              fillOpacity="0.2"
-            />
-          )
-        }
-      }
-    }
-    return null
-  },
-)
 
 function RenderedFeatureGlyph(props) {
   const { feature, bpPerPx, region, config, displayMode, layout } = props
@@ -271,8 +180,8 @@ function SvgFeatureRendering(props) {
     onMouseOver,
     onMouseMove,
     onMouseUp,
-    onFeatureClick,
-    onFeatureContextMenu,
+    onClick,
+    onContextMenu,
   } = props
 
   const mouseDown = useCallback(
@@ -379,11 +288,11 @@ function SvgFeatureRendering(props) {
       if (movedDuringLastMouseDown) {
         return
       }
-      if (onFeatureClick) {
-        onFeatureClick(event)
+      if (onClick) {
+        onClick(event)
       }
     },
-    [movedDuringLastMouseDown, onFeatureClick],
+    [movedDuringLastMouseDown, onClick],
   )
 
   const contextMenu = useCallback(
@@ -391,11 +300,11 @@ function SvgFeatureRendering(props) {
       if (movedDuringLastMouseDown) {
         return
       }
-      if (onFeatureContextMenu) {
-        onFeatureContextMenu(event)
+      if (onContextMenu) {
+        onContextMenu(event)
       }
     },
-    [movedDuringLastMouseDown, onFeatureContextMenu],
+    [movedDuringLastMouseDown, onContextMenu],
   )
 
   useEffect(() => {
@@ -427,9 +336,9 @@ function SvgFeatureRendering(props) {
           displayMode={displayMode}
           {...props}
           region={region}
+          movedDuringLastMouseDown={movedDuringLastMouseDown}
         />
-        <SvgSelected {...props} region={region} />
-        <SvgMouseover {...props} region={region} />
+        <SvgOverlay {...props} region={region} />
       </svg>
     </div>
   )
