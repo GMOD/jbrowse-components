@@ -41,7 +41,7 @@ const Tooltip = observer(
 )
 
 type Coord = [number, number]
-function BlockBasedTrack(props: {
+export function BlockBasedTrackC(props: {
   model: BlockBasedTrackModel
   children: React.ReactNode
 }) {
@@ -88,7 +88,7 @@ function BlockBasedTrack(props: {
 
       <Menu
         open={Boolean(contextCoord) && Boolean(contextMenuItems.length)}
-        onMenuItemClick={(event, callback) => {
+        onMenuItemClick={(_, callback) => {
           callback()
           setContextCoord(undefined)
         }}
@@ -109,14 +109,14 @@ function BlockBasedTrack(props: {
   )
 }
 
-BlockBasedTrack.propTypes = {
+BlockBasedTrackC.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
   children: PropTypes.node,
 }
 
-BlockBasedTrack.defaultProps = {
+BlockBasedTrackC.defaultProps = {
   children: null,
 }
 
-export default observer(BlockBasedTrack)
+export default observer(BlockBasedTrackC)
 export { Tooltip }

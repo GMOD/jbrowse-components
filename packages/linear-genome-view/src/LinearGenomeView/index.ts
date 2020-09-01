@@ -34,7 +34,7 @@ import clone from 'clone'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
-interface BpOffset {
+export interface BpOffset {
   refName?: string
   index: number
   offset: number
@@ -42,7 +42,7 @@ interface BpOffset {
   end?: number
 }
 
-interface NavLocation {
+export interface NavLocation {
   refName: string
   start?: number
   end?: number
@@ -243,7 +243,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       pxToBp(px: number) {
         const bp = (self.offsetPx + px) * self.bpPerPx
         let bpSoFar = 0
-        let r = self.displayedRegions[0]
+        let r = getSnapshot(self.displayedRegions[0])
         if (bp < 0) {
           return {
             ...r,

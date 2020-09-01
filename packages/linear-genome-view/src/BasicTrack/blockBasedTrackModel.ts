@@ -195,7 +195,7 @@ const blockBasedTrack = types
             }
           })
           // delete any blocks we need go delete
-          self.blockState.forEach((value, key) => {
+          self.blockState.forEach((_, key) => {
             if (!blocksPresent[key]) this.deleteBlock(key)
           })
         }
@@ -281,7 +281,7 @@ const blockBasedTrack = types
       return {
         ...getParentRenderProps(self),
         trackModel: self,
-        onFeatureClick(event: unknown, featureId: string | undefined) {
+        onFeatureClick(_: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
             self.clearFeatureSelection()
@@ -294,7 +294,7 @@ const blockBasedTrack = types
           self.clearFeatureSelection()
         },
         // similar to click but opens a menu with further options
-        onFeatureContextMenu(event: unknown, featureId: string | undefined) {
+        onFeatureContextMenu(_: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
             self.clearFeatureSelection()
@@ -304,11 +304,11 @@ const blockBasedTrack = types
           }
         },
 
-        onMouseMove(event: unknown, featureId: string | undefined) {
+        onMouseMove(_: unknown, featureId: string | undefined) {
           self.setFeatureIdUnderMouse(featureId)
         },
 
-        onMouseLeave(event: unknown) {
+        onMouseLeave(_: unknown) {
           self.setFeatureIdUnderMouse(undefined)
         },
 

@@ -52,7 +52,7 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
-        onMenuItemClick={(event, callback) => {
+        onMenuItemClick={(_, callback) => {
           callback()
           setAnchorEl(undefined)
         }}

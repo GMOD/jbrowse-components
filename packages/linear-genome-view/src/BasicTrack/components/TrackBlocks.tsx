@@ -44,7 +44,7 @@ const RenderedBlocks = observer((props: { model: BlockBasedTrackModel }) => {
   const { blockDefinitions, blockState } = model
   return (
     <>
-      {blockDefinitions.map((block: BaseBlock, idx: number) => {
+      {blockDefinitions.map((block: BaseBlock) => {
         if (block instanceof ContentBlock) {
           const state = blockState.get(block.key)
           return (
