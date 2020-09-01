@@ -24,13 +24,15 @@ export function generateHierarchy(model, trackConfigurations) {
         hierarchy.push(currLevel)
       }
     }
-    currLevel.children.push({
+    const l = currLevel.children || currLevel
+    l.push({
       id: trackConf.trackId,
       name: readConfObject(trackConf, 'name'),
       conf: trackConf,
       state: {
         selected: model.view.tracks.find(f => f.configuration === trackConf),
       },
+      children: [],
     })
   })
   return hierarchy
@@ -94,7 +96,32 @@ export default pluginManager =>
       },
 
       hierarchy(assemblyName) {
-        return generateHierarchy(self, self.trackConfigurations(assemblyName))
+        const hier = generateHierarchy(
+          self,
+          self.trackConfigurations(assemblyName),
+        )
+
+        const session = getSession(self)
+        const conns = (session.connectionInstances.get(assemblyName) || []).map(
+          (conn, index) => {
+            const c = session.connections[index]
+            return {
+              id: c.connectionId,
+              name: readConfObject(c, 'name'),
+              children: this.connectionHierarchy(conn),
+              state: {
+                expanded: true,
+              },
+            }
+          },
+        )
+
+        console.log({ hier, conns })
+        conns.forEach(conn => {
+          hier.push(conn)
+        })
+
+        return hier
       },
 
       connectionHierarchy(connection) {

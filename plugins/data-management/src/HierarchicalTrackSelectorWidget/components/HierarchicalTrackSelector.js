@@ -105,7 +105,6 @@ function HierarchicalTrackSelector({ model }) {
   const [anchorEl, setAnchorEl] = useState(null)
   const [assemblyIdx, setAssemblyIdx] = useState(0)
   const [modalInfo, setModalInfo] = useState()
-  const nodes = model.hierarchy('volvox')
   const classes = useStyles()
 
   const session = getSession(model)
@@ -185,6 +184,7 @@ function HierarchicalTrackSelector({ model }) {
   const filterError =
     model.trackConfigurations(assemblyName) > 0 &&
     model.trackConfigurations(assemblyName).filter(filter).length === 0
+  const nodes = model.hierarchy(assemblyNames[assemblyIdx])
 
   return (
     <div
@@ -274,27 +274,6 @@ function HierarchicalTrackSelector({ model }) {
             />
           ))}
       </FormGroup>
-      {session.connectionInstances.has(assemblyName) ? (
-        <>
-          <Typography variant="h5">Connections</Typography>
-          {session.connectionInstances.get(assemblyName).map(connection => (
-            <Paper
-              key={connection.name}
-              className={classes.connectionsPaper}
-              elevation={8}
-            >
-              <Typography variant="h6">{connection.name}</Typography>
-              <Contents
-                model={model}
-                filterPredicate={filter}
-                connection={connection}
-                assemblyName={assemblyName}
-                top
-              />
-            </Paper>
-          ))}
-        </>
-      ) : null}
 
       {session.editConfiguration ? (
         <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
