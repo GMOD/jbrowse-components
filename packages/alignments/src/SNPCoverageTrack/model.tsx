@@ -5,7 +5,6 @@ import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/s
 import { getContainingView } from '@gmod/jbrowse-core/util'
 import React from 'react'
 import Button from '@material-ui/core/Button'
-import RefreshIcon from '@material-ui/icons/Refresh'
 import Typography from '@material-ui/core/Typography'
 import Tooltip from './Tooltip'
 
