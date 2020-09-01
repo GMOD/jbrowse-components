@@ -5,9 +5,8 @@ title: Configuration model concepts
 
 ### Configuration slot types
 
-Our configuration system is "typed" unlike the jbrowse 1 system, which
-faciliates GUI editing of the config in a more intelligent way. Here is a list
-of configuration slot types that you assign to your given config entry
+Our configuration system is "typed" to facilitate graphical editing of the configuration.
+Each configuration has a "schema" that lists what "configuration slots" it has. Each configuration slot has a name, description, a type, and a value.
 
 Here is a mostly comprehensive list of config types
 
@@ -27,8 +26,7 @@ Here is a mostly comprehensive list of config types
   editor in the GUI where you can add or delete things
 - stringArrayMap - allows entering a list of key-value entries
 
-Let's look at the pileup renderer config as an example of several types of
-features
+Let's examine the PileupRenderer configuration as an example.
 
 ### Example config with multiple slot types
 
