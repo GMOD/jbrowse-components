@@ -258,13 +258,17 @@ export default class DotplotPlugin extends Plugin {
         session.views.forEach(view => {
           if (view.type === 'LinearGenomeView') {
             view.tracks.forEach(track => {
-              const {
-                type,
-                additionalContextMenuItemCallbacks: cbs = [],
-              } = track
-              if (type === 'PileupTrack' && !cbs.includes(cb)) {
+              if (
+                track.type === 'PileupTrack' &&
+                !track.additionalContextMenuItemCallbacks.includes(cb)
+              ) {
                 track.addAdditionalContextMenuItemCallback(cb)
-              } else if (type === 'AlignmentsTrack' && !cbs.includes(cb)) {
+              } else if (
+                track.type === 'AlignmentsTrack' &&
+                !track.PileupTrack.additionalContextMenuItemCallbacks.includes(
+                  cb,
+                )
+              ) {
                 track.PileupTrack.addAdditionalContextMenuItemCallback(cb)
               }
             })
