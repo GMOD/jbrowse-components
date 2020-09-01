@@ -3,10 +3,8 @@ id: developer_creating_plugin
 title: Creating a new plugin
 ---
 
-JBrowse 2 plugins can be used to add track types, view types, data adapter. For
-a full list, see the [pluggable
-elements](developer_pluggable_elements) page. The plugins can also
-extend logic in many arbitary ways beyond even adding these elements too.
+JBrowse 2 plugins can be used to add new pluggable elements (views, tracks, data adapters, etc), and to modify behavior of the application by adding code that watches the application's state. For the full list of what kinds of pluggable element types plugins can add, see the [pluggable
+elements](developer_pluggable_elements) page.
 
 We will go over creating an example plugin. The first thing that we have is a
 `src/index.js` which exports a default class containing the plugin registration
