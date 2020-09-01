@@ -152,6 +152,7 @@ export default class DotplotPlugin extends Plugin {
                       start: saRealStart,
                       end: saRealStart + saLengthOnRef,
                       clipPos: saClipPos,
+                      CIGAR: saCigar,
                       assemblyName: trackAssembly,
                       strand: saStrand,
                       uniqueId: Math.random(),
