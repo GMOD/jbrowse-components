@@ -26,7 +26,11 @@ import ClearIcon from '@material-ui/icons/Clear'
 import AddIcon from '@material-ui/icons/Add'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState } from 'react'
+import Tree, { renderers } from 'react-virtualized-tree'
+
 import Contents from './Contents'
+
+const { Expandable } = renderers
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -56,6 +60,7 @@ function HierarchicalTrackSelector({ model }) {
   const [anchorEl, setAnchorEl] = useState(null)
   const [assemblyIdx, setAssemblyIdx] = useState(0)
   const [modalInfo, setModalInfo] = useState()
+  const [nodes, setNodes] = useState(model.hierarchy('volvox'))
   const classes = useStyles()
 
   const session = getSession(model)
@@ -171,12 +176,30 @@ function HierarchicalTrackSelector({ model }) {
           ),
         }}
       />
-      <Contents
-        model={model}
-        filterPredicate={filter}
-        assemblyName={assemblyName}
-        top
-      />
+      <div style={{ height: 900 }}>
+        <Tree
+          nodes={nodes}
+          onChange={nodes => {
+            setNodes(nodes)
+          }}
+        >
+          {({ style, node, ...rest }) => {
+            return (
+              <div style={style}>
+                <Expandable node={node} {...rest}>
+                  <span
+                    style={{
+                      marginLeft: 7,
+                    }}
+                  >
+                    {node.id}
+                  </span>
+                </Expandable>
+              </div>
+            )
+          }}
+        </Tree>
+      </div>
       <FormGroup>
         {session.connections
           .filter(

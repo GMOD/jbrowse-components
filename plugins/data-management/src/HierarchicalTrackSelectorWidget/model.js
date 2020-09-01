@@ -2,22 +2,31 @@ import { types } from 'mobx-state-tree'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
+import 'react-virtualized/styles.css'
+import 'react-virtualized-tree/lib/main.css'
+import 'material-icons/css/material-icons.css'
 
 export function generateHierarchy(trackConfigurations) {
-  const hierarchy = new Map()
+  const hierarchy = []
 
   trackConfigurations.forEach(trackConf => {
-    const categories = [...(readConfObject(trackConf, 'category') || [])]
-
+    const categories = readConfObject(trackConf, 'category') || []
     let currLevel = hierarchy
-    for (let i = 0; i < categories.length; i += 1) {
+    for (let i = 0; i < categories.length; i++) {
       const category = categories[i]
-      if (!currLevel.has(category)) {
-        currLevel.set(category, new Map())
+      const f = hierarchy.find(elt => elt.id === category)
+      if (f) {
+        currLevel = f
+      } else {
+        currLevel = {
+          id: category,
+          expanded: true,
+          children: [],
+        }
+        hierarchy.push(currLevel)
       }
-      currLevel = currLevel.get(category)
     }
-    currLevel.set(trackConf.trackId, trackConf)
+    currLevel.children.push({ id: trackConf.trackId, children: [] })
   })
   return hierarchy
 }
@@ -49,15 +58,19 @@ export default pluginManager =>
     }))
     .views(self => ({
       trackConfigurations(assemblyName) {
-        if (!self.view) return []
+        if (!self.view) {
+          return []
+        }
         const session = getSession(self)
         const trackConfigurations = session.tracks
 
-        const relevantTrackConfigurations = trackConfigurations.filter(
-          conf =>
+        const relevantTrackConfigurations = trackConfigurations.filter(conf => {
+          const assemblies = readConfObject(conf, 'assemblyNames')
+          return (
             conf.viewType === self.view.type &&
-            readConfObject(conf, 'assemblyNames').includes(assemblyName),
-        )
+            assemblies.includes(assemblyName)
+          )
+        })
         return relevantTrackConfigurations
       },
 
@@ -76,7 +89,11 @@ export default pluginManager =>
       },
 
       hierarchy(assemblyName) {
-        return generateHierarchy(self.trackConfigurations(assemblyName))
+        const hierarchy = generateHierarchy(
+          self.trackConfigurations(assemblyName),
+        )
+        console.log({ hierarchy })
+        return hierarchy
       },
 
       connectionHierarchy(connection) {
