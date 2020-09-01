@@ -82,7 +82,7 @@ const Expandable = ({ onChange, node, children, index }) => {
         <input
           type="checkbox"
           checked={!!selected}
-          onClick={() => {
+          onChange={() => {
             onChange({
               node: {
                 ...node,
