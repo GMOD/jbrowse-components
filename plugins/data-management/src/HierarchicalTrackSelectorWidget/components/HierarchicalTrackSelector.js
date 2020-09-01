@@ -224,6 +224,7 @@ function HierarchicalTrackSelector({ model }) {
       <div style={{ height: 900 }}>
         <Tree
           nodes={nodes}
+          onChange={() => {}}
           extensions={{
             updateTypeHandlers: {
               [SELECT]: (n, updatedNode) => {
