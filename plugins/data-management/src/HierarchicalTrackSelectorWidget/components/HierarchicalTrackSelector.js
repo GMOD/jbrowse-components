@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
@@ -56,10 +57,13 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(1),
   },
 }))
+const SELECT = 3
 
 // this is copied from the react-virtualized-tree Expandable renderer
 const Expandable = ({ onChange, node, children, index }) => {
   const { hasChildren, isExpanded } = getNodeRenderOptions(node)
+  const { state = {} } = node
+  const { selected } = state
   const handleChange = () =>
     onChange({
       ...updateNode(node, { expanded: !isExpanded }),
@@ -67,12 +71,30 @@ const Expandable = ({ onChange, node, children, index }) => {
     })
 
   return (
-    <span onDoubleClick={handleChange}>
+    <span>
       {hasChildren && isExpanded ? (
-        <ArrowDropDownIcon onClick={handleChange} />
+        <ArrowDropDownIcon style={{ height: 16 }} onClick={handleChange} />
       ) : null}
       {hasChildren && !isExpanded ? (
-        <ArrowRightIcon onClick={handleChange} />
+        <ArrowRightIcon style={{ height: 16 }} onClick={handleChange} />
+      ) : null}
+      {!hasChildren ? (
+        <input
+          type="checkbox"
+          checked={!!selected}
+          onClick={() => {
+            onChange({
+              node: {
+                ...node,
+                state: {
+                  ...state,
+                  selected: !selected,
+                },
+              },
+              type: SELECT,
+            })
+          }}
+        />
       ) : null}
       {children}
     </span>
@@ -83,7 +105,7 @@ function HierarchicalTrackSelector({ model }) {
   const [anchorEl, setAnchorEl] = useState(null)
   const [assemblyIdx, setAssemblyIdx] = useState(0)
   const [modalInfo, setModalInfo] = useState()
-  const [nodes, setNodes] = useState(model.hierarchy('volvox'))
+  const nodes = model.hierarchy('volvox')
   const classes = useStyles()
 
   const session = getSession(model)
@@ -202,17 +224,22 @@ function HierarchicalTrackSelector({ model }) {
       <div style={{ height: 900 }}>
         <Tree
           nodes={nodes}
-          onChange={nodes => {
-            setNodes(nodes)
+          extensions={{
+            updateTypeHandlers: {
+              [SELECT]: (n, updatedNode) => {
+                model.view.toggleTrack(updatedNode.conf)
+                return n
+              },
+            },
           }}
         >
           {({ style, node, ...rest }) => {
             return (
-              <div style={style}>
+              <span style={style}>
                 <Expandable node={node} {...rest}>
                   {node.name}
                 </Expandable>
-              </div>
+              </span>
             )
           }}
         </Tree>

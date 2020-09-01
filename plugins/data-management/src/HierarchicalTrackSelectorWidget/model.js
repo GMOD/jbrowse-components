@@ -3,7 +3,7 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 
-export function generateHierarchy(trackConfigurations) {
+export function generateHierarchy(model, trackConfigurations) {
   const hierarchy = []
 
   trackConfigurations.forEach(trackConf => {
@@ -18,7 +18,7 @@ export function generateHierarchy(trackConfigurations) {
         currLevel = {
           id: category,
           name: category,
-          expanded: true,
+          state: { expanded: true },
           children: [],
         }
         hierarchy.push(currLevel)
@@ -27,7 +27,10 @@ export function generateHierarchy(trackConfigurations) {
     currLevel.children.push({
       id: trackConf.trackId,
       name: readConfObject(trackConf, 'name'),
-      children: [],
+      conf: trackConf,
+      state: {
+        selected: model.view.tracks.find(f => f.configuration === trackConf),
+      },
     })
   })
   return hierarchy
@@ -91,15 +94,14 @@ export default pluginManager =>
       },
 
       hierarchy(assemblyName) {
-        const hierarchy = generateHierarchy(
-          self.trackConfigurations(assemblyName),
-        )
-        console.log({ hierarchy })
-        return hierarchy
+        return generateHierarchy(self, self.trackConfigurations(assemblyName))
       },
 
       connectionHierarchy(connection) {
-        return generateHierarchy(self.connectionTrackConfigurations(connection))
+        return generateHierarchy(
+          self,
+          self.connectionTrackConfigurations(connection),
+        )
       },
 
       // This recursively gets tracks from lower paths
