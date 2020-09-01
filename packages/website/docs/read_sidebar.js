@@ -13,7 +13,7 @@ function readTree(tree) {
         'Command line guide',
         'User guide',
         'Configuration guide',
-        'Developer guide',
+        'Introduction and Overview',
       ].includes(f.label),
     )
     .forEach(subtree => {
