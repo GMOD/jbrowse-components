@@ -25,6 +25,7 @@ import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/s
 import React from 'react'
 import Button from '@material-ui/core/Button'
 import RefreshIcon from '@material-ui/icons/Refresh'
+import Typography from '@material-ui/core/Typography'
 import PileupTrackBlurb from './components/PileupTrackBlurb'
 import { PileupConfigModel } from './configSchema'
 
@@ -271,21 +272,27 @@ const stateModelFactory = (
         regionCannotBeRendered() {
           const mainTrack = getParent(self)
           const view = getContainingView(self) as LinearGenomeViewModel
-          const warning =
-            'Hit max feature limit. Zoom in or reload(reload may fail)'
           if (view && view.bpPerPx > mainTrack.maxViewBpPerPx) {
             return (
-              <Button
-                data-testid="reload_button"
-                onClick={() => {
-                  mainTrack.setUserBpPerPxLimit(view.bpPerPx)
-                  self.reload()
-                }}
-                size="small"
-                startIcon={<RefreshIcon />}
-              >
-                {warning}
-              </Button>
+              <>
+                <Typography component="span" variant="body2">
+                  Zoom in to see features or{' '}
+                </Typography>
+                <Button
+                  data-testid="reload_button"
+                  onClick={() => {
+                    mainTrack.setUserBpPerPxLimit(view.bpPerPx)
+                    self.reload()
+                  }}
+                  size="small"
+                  variant="outlined"
+                >
+                  Force Load
+                </Button>
+                <Typography component="span" variant="body2">
+                  (force load may be slow)
+                </Typography>
+              </>
             )
           }
           return undefined

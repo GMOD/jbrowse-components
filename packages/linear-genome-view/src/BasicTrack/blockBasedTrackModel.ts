@@ -247,6 +247,7 @@ const blockBasedTrack = types
     },
     reload() {
       const temp = JSON.parse(JSON.stringify(self.blockState))
+      this.setMessage(undefined)
       Object.keys(temp).forEach(blockState => {
         temp[blockState].key += '-reload'
       })

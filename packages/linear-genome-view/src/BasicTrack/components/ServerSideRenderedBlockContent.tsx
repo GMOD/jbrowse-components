@@ -34,6 +34,7 @@ const useStyles = makeStyles(theme => ({
     overflowY: 'auto',
   },
   blockLimitMessage: {
+    width: '100%',
     background: theme.palette.action.disabledBackground,
     padding: theme.spacing(2),
     textAlign: 'center',
