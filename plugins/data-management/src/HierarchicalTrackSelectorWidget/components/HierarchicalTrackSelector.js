@@ -24,13 +24,14 @@ import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import ClearIcon from '@material-ui/icons/Clear'
 import AddIcon from '@material-ui/icons/Add'
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
+import ArrowRightIcon from '@material-ui/icons/ArrowRight'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState } from 'react'
-import Tree, { renderers } from 'react-virtualized-tree'
-
+import Tree, { selectors } from 'react-virtualized-tree'
 import Contents from './Contents'
 
-const { Expandable } = renderers
+const { getNodeRenderOptions, updateNode } = selectors
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -55,6 +56,28 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(1),
   },
 }))
+
+// this is copied from the react-virtualized-tree Expandable renderer
+const Expandable = ({ onChange, node, children, index }) => {
+  const { hasChildren, isExpanded } = getNodeRenderOptions(node)
+  const handleChange = () =>
+    onChange({
+      ...updateNode(node, { expanded: !isExpanded }),
+      index,
+    })
+
+  return (
+    <span onDoubleClick={handleChange}>
+      {hasChildren && isExpanded ? (
+        <ArrowDropDownIcon onClick={handleChange} />
+      ) : null}
+      {hasChildren && !isExpanded ? (
+        <ArrowRightIcon onClick={handleChange} />
+      ) : null}
+      {children}
+    </span>
+  )
+}
 
 function HierarchicalTrackSelector({ model }) {
   const [anchorEl, setAnchorEl] = useState(null)
@@ -187,13 +210,7 @@ function HierarchicalTrackSelector({ model }) {
             return (
               <div style={style}>
                 <Expandable node={node} {...rest}>
-                  <span
-                    style={{
-                      marginLeft: 7,
-                    }}
-                  >
-                    {node.id}
-                  </span>
+                  {node.name}
                 </Expandable>
               </div>
             )

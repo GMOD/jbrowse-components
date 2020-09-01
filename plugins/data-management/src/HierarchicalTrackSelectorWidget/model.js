@@ -2,9 +2,6 @@ import { types } from 'mobx-state-tree'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
-import 'react-virtualized/styles.css'
-import 'react-virtualized-tree/lib/main.css'
-import 'material-icons/css/material-icons.css'
 
 export function generateHierarchy(trackConfigurations) {
   const hierarchy = []
@@ -20,13 +17,18 @@ export function generateHierarchy(trackConfigurations) {
       } else {
         currLevel = {
           id: category,
+          name: category,
           expanded: true,
           children: [],
         }
         hierarchy.push(currLevel)
       }
     }
-    currLevel.children.push({ id: trackConf.trackId, children: [] })
+    currLevel.children.push({
+      id: trackConf.trackId,
+      name: readConfObject(trackConf, 'name'),
+      children: [],
+    })
   })
   return hierarchy
 }

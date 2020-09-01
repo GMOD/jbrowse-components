@@ -36,8 +36,6 @@ function Contents({
     hierarchy = hierarchy.get(pathEntry) || new Map()
   })
 
-  console.log(hierarchy)
-
   const initialTrackConfigurations = []
   const initialCategories = []
   Array.from(hierarchy)
