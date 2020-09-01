@@ -54,14 +54,25 @@
       "type": "category",
       "label": "Developer guide",
       "items": [
-        "developer_guide",
-        "developer_creating_plugin",
-        "developer_code_organization",
-        "developer_pluggable_elements",
-        "developer_creating_data_adapters",
-        "developer_creating_track_types",
-        "developer_creating_renderers",
-        "developer_config_model"
+        "developer_overview",
+        "developer_config_model",
+        { "type": "category",
+          "label": "Plugin Development",
+          "items": [
+            "developer_creating_plugin",
+            "developer_pluggable_elements",
+            "developer_creating_data_adapters",
+            "developer_creating_track_types",
+            "developer_creating_renderers"
+          ]
+        },
+        { "type": "category",
+          "label": "Product and Core Development",
+          "items": [
+            "developer_code_organization",
+            "developer_products_jbrowse_heavy"
+          ]
+        }
       ]
     },
     "faq",
