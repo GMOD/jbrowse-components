@@ -1,5 +1,5 @@
 ---
-id: bcc2020_embedding_jbrowse_creating_the_view
+id: bcc2020_embedding_jbrowse_07_creating_the_view
 title: Creating the view
 ---
 

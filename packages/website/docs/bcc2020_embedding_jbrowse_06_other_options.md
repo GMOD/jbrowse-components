@@ -1,5 +1,5 @@
 ---
-id: bcc2020_embedding_jbrowse_other_options
+id: bcc2020_embedding_jbrowse_06_other_options
 title: Other options
 ---
 
