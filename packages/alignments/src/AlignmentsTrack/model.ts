@@ -64,7 +64,7 @@ const stateModelFactory = (
         },
 
         get maxViewBpPerPx() {
-          return self.userBpPerPxLimit || getConf(self, 'maxViewBpPerPx')
+          return self.userBpPerPxLimit || getConf(self, 'maxDisplayedBpPerPx')
         },
 
         get layoutFeatures() {

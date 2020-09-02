@@ -33,7 +33,7 @@ const configModelFactory = (pluginManager: PluginManager) => {
         description: 'maximum value for the SNP coverage y-scale',
         defaultValue: Number.MAX_VALUE,
       },
-      maxViewBpPerPx: {
+      maxDisplayedBpPerPx: {
         type: 'number',
         description: 'maximum bpPerPx that is displayed in the view',
         defaultValue: 100,

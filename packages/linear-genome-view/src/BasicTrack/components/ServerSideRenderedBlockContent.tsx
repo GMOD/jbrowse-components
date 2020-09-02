@@ -33,7 +33,7 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.error.main,
     overflowY: 'auto',
   },
-  blockLimitMessage: {
+  blockReactNodeMessage: {
     width: '100%',
     background: theme.palette.action.disabledBackground,
     padding: theme.spacing(2),
@@ -90,7 +90,11 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
   ) : null
 })
 
-function BlockMessage({ messageContent }: { messageContent: string | {} }) {
+function BlockMessage({
+  messageContent,
+}: {
+  messageContent: string | React.ReactNode
+}) {
   const classes = useStyles()
 
   return typeof messageContent === 'string' ? (
@@ -98,11 +102,11 @@ function BlockMessage({ messageContent }: { messageContent: string | {} }) {
       {messageContent}
     </Typography>
   ) : (
-    <div className={classes.blockLimitMessage}>{messageContent}</div>
+    <div className={classes.blockReactNodeMessage}>{messageContent}</div>
   )
 }
 BlockMessage.propTypes = {
-  messageContent: PropTypes.oneOfType([PropTypes.string, PropTypes.object])
+  messageContent: PropTypes.oneOfType([PropTypes.string, PropTypes.node])
     .isRequired,
 }
 
