@@ -103,6 +103,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
             ctx.stroke()
           }
         }
+      } else {
+        console.warn(
+          `feature at ${refName}:${start}-${end} ${mateRef}:${mate.start}-${mate.end} not plotted, fell outside of range`,
+        )
       }
     })
     return createImageBitmap(canvas)

@@ -59,10 +59,31 @@ function getLengthOnRef(cigar: string) {
   return lengthOnRef
 }
 
+function getLength(cigar: string) {
+  const cigarOps = parseCigar(cigar)
+  let length = 0
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+    if (op !== 'D') {
+      length += len
+    }
+  }
+  return length
+}
+
 function getClip(cigar: string, strand: number) {
   return strand === -1
     ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
     : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
+}
+
+interface ReducedFeature {
+  refName: string
+  start: number
+  clipPos: number
+  end: number
+  seqLength: number
 }
 
 export default class DotplotPlugin extends Plugin {
@@ -130,7 +151,6 @@ export default class DotplotPlugin extends Plugin {
                   (feature.get('tags')
                     ? feature.get('tags').SA
                     : feature.get('SA')) || ''
-                const refName = feature.get('refName')
                 const readName = feature.get('name')
                 const readAssembly = `${readName}_assembly`
                 const trackAssembly = getConf(track, 'assemblyNames')[0]
@@ -141,6 +161,8 @@ export default class DotplotPlugin extends Plugin {
                   .map(aln => {
                     const [saRef, saStart, saStrand, saCigar] = aln.split(',')
                     const saLengthOnRef = getLengthOnRef(saCigar)
+                    // infer sequence length from SA tag's CIGAR
+                    const saLength = getLength(saCigar)
                     const saClipPos = getClip(
                       saCigar,
                       saStrand === '-' ? -1 : 1,
@@ -151,6 +173,7 @@ export default class DotplotPlugin extends Plugin {
                       refName: saRef,
                       start: saRealStart,
                       end: saRealStart + saLengthOnRef,
+                      seqLength: saLength,
                       clipPos: saClipPos,
                       CIGAR: saCigar,
                       assemblyName: trackAssembly,
@@ -170,17 +193,15 @@ export default class DotplotPlugin extends Plugin {
                   start: clipPos,
                   end: end - start + clipPos,
                 }
-                const features = [feat, ...supplementaryAlignments] as {
-                  refName: string
-                  start: number
-                  clipPos: number
-                  end: number
-                }[]
+                feat.seqLength = (feat.seq as string).length
+                const features = [
+                  feat,
+                  ...supplementaryAlignments,
+                ] as ReducedFeature[]
 
                 features.sort((a, b) => a.clipPos - b.clipPos)
                 const totalLength = features.reduce(
-                  (accum, f: { end: number; start: number }) =>
-                    accum + f.end - f.start,
+                  (accum, f) => accum + f.seqLength,
                   0,
                 )
 
