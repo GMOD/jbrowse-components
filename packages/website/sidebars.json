@@ -60,6 +60,7 @@
           "label": "Plugin Development",
           "items": [
             "developer_creating_plugin",
+            "developer_adding_menus",
             "developer_pluggable_elements",
             "developer_creating_data_adapters",
             "developer_creating_track_types",
