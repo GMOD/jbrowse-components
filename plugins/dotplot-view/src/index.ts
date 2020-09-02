@@ -208,11 +208,11 @@ export default class DotplotPlugin extends Plugin {
                 const d1 = Base1DView.create({
                   offsetPx: 0,
                   bpPerPx: (end - start) / 800,
-                  displayedRegions: features.map(feat => {
+                  displayedRegions: features.map(f => {
                     return {
-                      start: feat.start,
-                      end: feat.end,
-                      refName: feat.refName,
+                      start: f.start,
+                      end: f.end,
+                      refName: f.refName,
                       assemblyName: trackAssembly,
                     }
                   }),
