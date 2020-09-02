@@ -205,19 +205,6 @@ export default class DotplotPlugin extends Plugin {
                   0,
                 )
 
-                // @ts-ignore
-                session.addAssemblyConf({
-                  name: readAssembly,
-                  sequence: {
-                    type: 'ReferenceSequenceTrack',
-                    trackId: `${readName}_track`,
-                    adapter: {
-                      type: 'FromConfigSequenceAdapter',
-                      features: [feature.toJSON()],
-                    },
-                  },
-                })
-
                 const d1 = Base1DView.create({
                   offsetPx: 0,
                   bpPerPx: (end - start) / 800,
@@ -243,21 +230,34 @@ export default class DotplotPlugin extends Plugin {
                   ],
                 })
 
-                // @ts-ignore
-                session.addTrackConf({
-                  type: 'DotplotTrack',
-                  assemblyNames,
-                  adapter: {
-                    type: 'FromConfigAdapter',
-                    features,
-                  },
-                  trackId: trackName,
-                })
-
                 session.addView('DotplotView', {
                   type: 'DotplotView',
                   hview: getSnapshot(d1),
                   vview: getSnapshot(d2),
+                  viewTrackConfigs: [
+                    {
+                      type: 'DotplotTrack',
+                      assemblyNames,
+                      adapter: {
+                        type: 'FromConfigAdapter',
+                        features,
+                      },
+                      trackId: trackName,
+                    },
+                  ],
+                  viewAssemblyConfigs: [
+                    {
+                      name: readAssembly,
+                      sequence: {
+                        type: 'ReferenceSequenceTrack',
+                        trackId: `${readName}_track`,
+                        adapter: {
+                          type: 'FromConfigSequenceAdapter',
+                          features: [feature.toJSON()],
+                        },
+                      },
+                    },
+                  ],
                   assemblyNames,
                   tracks: [
                     {
