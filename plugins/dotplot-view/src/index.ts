@@ -2,7 +2,7 @@
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import SomeIcon from '@material-ui/icons/Add'
+import AddIcon from '@material-ui/icons/Add'
 import { autorun } from 'mobx'
 import { getSnapshot } from 'mobx-state-tree'
 import Base1DView from '@gmod/jbrowse-core/util/Base1DViewModel'
@@ -141,7 +141,7 @@ export default class DotplotPlugin extends Plugin {
         ? [
             {
               label: 'Dotplot of read vs ref',
-              icon: SomeIcon,
+              icon: AddIcon,
               onClick: () => {
                 const session = getSession(track)
                 const start = feature.get('start')
