@@ -3,8 +3,8 @@ import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import CalendarIcon from '@material-ui/icons/CalendarViewDay'
-import {autorun} from 'mobx'
-import {getSnapshot} from 'mobx-state-tree'
+import { autorun } from 'mobx'
+import { getSnapshot } from 'mobx-state-tree'
 import Base1DView from '@gmod/jbrowse-core/util/Base1DViewModel'
 import AddIcon from '@material-ui/icons/Add'
 import {
@@ -32,7 +32,6 @@ import LinearSyntenyRenderer, {
   configSchema as linearSyntenyRendererConfigSchema,
   ReactComponent as LinearSyntenyRendererReactComponent,
 } from './LinearSyntenyRenderer'
-
 
 interface Track {
   addAdditionalContextMenuItemCallback: Function
@@ -149,7 +148,6 @@ export default class extends Plugin {
       })
     }
 
-
     const cb = (feature: Feature, track: any) => {
       return feature
         ? [
@@ -219,35 +217,38 @@ export default class extends Plugin {
                   0,
                 )
 
-                const d1 = Base1DView.create({
-                  offsetPx: 0,
-                  bpPerPx: (end - start) / 800,
-                  displayedRegions: features.map(f => {
-                    return {
-                      start: f.start,
-                      end: f.end,
-                      refName: f.refName,
-                      assemblyName: trackAssembly,
-                    }
-                  }),
-                })
-                const d2 = Base1DView.create({
-                  offsetPx: 0,
-                  bpPerPx: totalLength / 800,
-                  displayedRegions: [
-                    {
-                      assemblyName: readAssembly,
-                      start: 0,
-                      end: totalLength + 1000, // todo properly calculate seq length by enumerating all CIGARs
-                      refName: readName,
-                    },
-                  ],
-                })
-
                 session.addView('LinearSyntenyView', {
                   type: 'LinearSyntenyView',
-                  hview: getSnapshot(d1),
-                  vview: getSnapshot(d2),
+                  views: [
+                    {
+                      type: 'LinearGenomeView',
+                      hideHeader: true,
+                      offsetPx: 0,
+                      bpPerPx: (end - start) / 800,
+                      displayedRegions: features.map(f => {
+                        return {
+                          start: f.start,
+                          end: f.end,
+                          refName: f.refName,
+                          assemblyName: trackAssembly,
+                        }
+                      }),
+                    },
+                    {
+                      type: 'LinearGenomeView',
+                      hideHeader: true,
+                      offsetPx: 0,
+                      bpPerPx: totalLength / 800,
+                      displayedRegions: [
+                        {
+                          assemblyName: readAssembly,
+                          start: 0,
+                          end: totalLength + 1000, // todo properly calculate seq length by enumerating all CIGARs
+                          refName: readName,
+                        },
+                      ],
+                    },
+                  ],
                   viewTrackConfigs: [
                     {
                       type: 'LinearSyntenyTrack',
@@ -256,28 +257,14 @@ export default class extends Plugin {
                         type: 'FromConfigAdapter',
                         features,
                       },
+                      renderer: {
+                        type: 'LinearSyntenyRenderer',
+                      },
                       trackId: trackName,
                     },
                   ],
-                  viewAssemblyConfigs: [
-                    {
-                      name: readAssembly,
-                      sequence: {
-                        type: 'ReferenceSequenceTrack',
-                        trackId: `${readName}_track`,
-                        adapter: {
-                          type: 'FromConfigSequenceAdapter',
-                          features: [feature.toJSON()],
-                        },
-                      },
-                    },
-                  ],
-                  assemblyNames,
                   tracks: [
-                    {
-                      configuration: trackName,
-                      type: 'LinearSyntenyTrack',
-                    },
+                    { configuration: trackName, type: 'LinearSyntenyTrack' },
                   ],
                   displayName: `${readName} vs ${trackAssembly}`,
                 })

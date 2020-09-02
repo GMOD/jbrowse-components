@@ -205,35 +205,32 @@ export default class DotplotPlugin extends Plugin {
                   0,
                 )
 
-                const d1 = Base1DView.create({
-                  offsetPx: 0,
-                  bpPerPx: (end - start) / 800,
-                  displayedRegions: features.map(f => {
-                    return {
-                      start: f.start,
-                      end: f.end,
-                      refName: f.refName,
-                      assemblyName: trackAssembly,
-                    }
-                  }),
-                })
-                const d2 = Base1DView.create({
-                  offsetPx: 0,
-                  bpPerPx: totalLength / 800,
-                  displayedRegions: [
-                    {
-                      assemblyName: readAssembly,
-                      start: 0,
-                      end: totalLength + 1000, // todo properly calculate seq length by enumerating all CIGARs
-                      refName: readName,
-                    },
-                  ],
-                })
-
                 session.addView('DotplotView', {
                   type: 'DotplotView',
-                  hview: getSnapshot(d1),
-                  vview: getSnapshot(d2),
+                  hview: {
+                    offsetPx: 0,
+                    bpPerPx: (end - start) / 800,
+                    displayedRegions: features.map(f => {
+                      return {
+                        start: f.start,
+                        end: f.end,
+                        refName: f.refName,
+                        assemblyName: trackAssembly,
+                      }
+                    }),
+                  },
+                  vview: {
+                    offsetPx: 0,
+                    bpPerPx: totalLength / 800,
+                    displayedRegions: [
+                      {
+                        assemblyName: readAssembly,
+                        start: 0,
+                        end: totalLength + 1000, // todo properly calculate seq length by enumerating all CIGARs
+                        refName: readName,
+                      },
+                    ],
+                  },
                   viewTrackConfigs: [
                     {
                       type: 'DotplotTrack',

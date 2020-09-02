@@ -51,6 +51,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         pluginManager.getViewType('LinearGenomeView')
           .stateModel as LinearGenomeViewStateModel,
       ),
+
+      // this represents tracks specific to this view
+      // specifically used for read vs ref dotplots where
+      // this track would not really apply elsewhere
+      viewTrackConfigs: types.array(
+        pluginManager.pluggableConfigSchemaType('track'),
+      ),
+
+      // this represents assemblies in the specialized
+      // read vs ref dotplot view
+      viewAssemblyConfigs: types.array(types.frozen()),
     })
     .volatile(() => ({
       headerHeight: 0,
