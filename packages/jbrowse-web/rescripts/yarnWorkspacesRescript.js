@@ -1,7 +1,9 @@
+/* eslint-disable no-console */
 /**
  * based on https://github.com/Negan1911/rescripts-use-yarn-workspaces, but with
  * custom resolving of babel-plugin-named-asset-import
  */
+const fs = require('fs')
 const path = require('path')
 // eslint-disable-next-line import/no-extraneous-dependencies
 const spawn = require('cross-spawn')
@@ -12,7 +14,34 @@ const pgks = spawn.sync('yarn', ['--json', 'workspaces', 'info'])
 const output = JSON.parse(pgks.output[1].toString())
 const packages = JSON.parse(output.data)
 
+function pkgJsonUsesDist(location) {
+  const pkgJsonLocation = path.join(root, location, 'package.json')
+  let pkgJsonText
+  try {
+    pkgJsonText = fs.readFileSync(pkgJsonLocation)
+  } catch (error) {
+    console.error(error)
+    console.log('package.json not found:', pkgJsonLocation)
+    process.exit(1)
+  }
+  let pkgJson
+  try {
+    pkgJson = JSON.parse(pkgJsonText)
+  } catch (error) {
+    console.log('Syntax error in package.json')
+    process.exit(2)
+  }
+  return Boolean(pkgJson.main) && pkgJson.main.startsWith('dist')
+}
+
 module.exports = config => {
+  if (config.mode === 'production') {
+    Object.entries(packages).forEach(([package, info]) => {
+      if (pkgJsonUsesDist(info.location)) {
+        delete packages[package]
+      }
+    })
+  }
   return {
     ...config,
     module: {
