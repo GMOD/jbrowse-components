@@ -73,6 +73,7 @@ function LinearSyntenyRendering(props: {
     features,
     trackIds,
   } = props
+
   const deserializedFeatures = useMemo(
     () =>
       features.map(level => {

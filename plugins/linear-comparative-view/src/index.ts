@@ -86,11 +86,13 @@ interface ReducedFeature {
   end: number
   seqLength: number
   syntenyId?: number
+  uniqueId: string
   mate: {
     refName: string
     start: number
     end: number
     syntenyId?: number
+    uniqueId?: string
   }
 }
 
@@ -166,6 +168,8 @@ export default class extends Plugin {
                 const start = feature.get('start')
                 const clipPos = feature.get('clipPos')
                 const end = feature.get('end')
+                const seq = feature.get('seq')
+                const cigar = feature.get('CIGAR')
                 const SA: string =
                   (feature.get('tags')
                     ? feature.get('tags').SA
@@ -180,14 +184,10 @@ export default class extends Plugin {
                   .map((aln, index) => {
                     const [saRef, saStart, saStrand, saCigar] = aln.split(',')
                     const saLengthOnRef = getLengthOnRef(saCigar)
-                    // infer sequence length from SA tag's CIGAR
                     const saLength = getLength(saCigar)
-                    const saClipPos = getClip(
-                      saCigar,
-                      saStrand === '-' ? -1 : 1,
-                    )
+                    const saStrandNormalized = saStrand === '-' ? -1 : 1
+                    const saClipPos = getClip(saCigar, saStrandNormalized)
                     const saRealStart = +saStart - 1 + saClipPos
-
                     return {
                       refName: saRef,
                       start: saRealStart,
@@ -196,8 +196,8 @@ export default class extends Plugin {
                       clipPos: saClipPos,
                       CIGAR: saCigar,
                       assemblyName: trackAssembly,
-                      strand: saStrand,
-                      uniqueId: Math.random(),
+                      strand: saStrandNormalized,
+                      uniqueId: `${feature.id()}_SA${index}`,
                       mate: {
                         start: saClipPos,
                         end: saClipPos + saLengthOnRef,
@@ -207,12 +207,27 @@ export default class extends Plugin {
                   })
 
                 const feat = feature.toJSON()
+
                 feat.mate = {
                   refName: readName,
                   start: clipPos,
                   end: end - start + clipPos,
                 }
-                feat.seqLength = (feat.seq as string).length
+
+                // first in supplementaryAlignments is primary if this read
+                // itself is not primary
+                const totalLength = feat.secondary_alignment
+                  ? getLength(supplementaryAlignments[0].CIGAR)
+                  : getLength(cigar as string)
+
+                // sanity check
+                if (!feat.secondary_alignment && totalLength !== seq.length) {
+                  console.warn(
+                    `CIGAR calculation does not match feature seq on the
+                    primary alignment ${seq.length} !== ${totalLength}`,
+                  )
+                }
+
                 const features = [
                   feat,
                   ...supplementaryAlignments,
@@ -220,18 +235,15 @@ export default class extends Plugin {
                 features.forEach((f, index) => {
                   f.syntenyId = index
                   f.mate.syntenyId = index
+                  f.mate.uniqueId = `${f.uniqueId}_mate`
                 })
-                features.concat(
-                  // @ts-ignore
-                  features.map(f => {
-                    return f.mate
-                  }),
-                )
-
                 features.sort((a, b) => a.clipPos - b.clipPos)
-                const totalLength = features.reduce(
-                  (accum, f) => accum + f.seqLength,
-                  0,
+
+                // the config feature store includes synthetic mate features
+                // mapped to the read assembly
+                const configFeatureStore = features.concat(
+                  // @ts-ignore
+                  features.map(f => f.mate),
                 )
 
                 session.addView('LinearSyntenyView', {
@@ -260,7 +272,7 @@ export default class extends Plugin {
                         {
                           assemblyName: readAssembly,
                           start: 0,
-                          end: totalLength + 1000, // todo properly calculate seq length by enumerating all CIGARs
+                          end: totalLength + 1000,
                           refName: readName,
                         },
                       ],
@@ -272,7 +284,7 @@ export default class extends Plugin {
                       assemblyNames,
                       adapter: {
                         type: 'FromConfigAdapter',
-                        features,
+                        features: configFeatureStore,
                       },
                       renderer: {
                         type: 'LinearSyntenyRenderer',
