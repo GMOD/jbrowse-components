@@ -60,7 +60,5 @@ jobs:
     - name: Install deps and build (with cache)
       uses: bahmutov/npm-install@v1
     - name: Build codebase
-      run: yarn build
-    - name: Build web
-      run: yarn build:web
+      run: NODE_OPTIONS='--max-old-space-size=6500' yarn build
     - run: yarn jest --ci packages/integration-tests
