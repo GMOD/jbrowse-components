@@ -266,17 +266,10 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
                   const aborter = new AbortController()
                   self.setLoading(aborter)
                   const view = getContainingView(self) as LGV
-                  console.log(
-                    !view.initialized,
-                    !self.ready,
-                    view.bpPerPx,
-                    self.maxViewBpPerPx,
-                  )
                   if (
                     (!view.initialized && !self.ready) ||
                     view.bpPerPx > self.maxViewBpPerPx
                   ) {
-                    console.log('in new return statement')
                     return
                   }
 
