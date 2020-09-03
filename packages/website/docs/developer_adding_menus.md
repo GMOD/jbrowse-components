@@ -21,28 +21,16 @@ Types of MenuItems:
   section of a menu
 - **SubMenu**: contains menu items, for making nested menus
 
-| Name     | Description                                                        |
-| -------- | ------------------------------------------------------------------ |
-| type     | Options are 'normal', 'radio', 'checkbox', 'subMenu', 'subHeader', |
-|          | or 'divider'. If not provided, defaults to 'normal', unless a      |
-|          | `subMenu` attribute is present, in which case it defaults to       |
-|          | 'subMenu'.                                                         |
-| label    | The text for the menu item. Not applicable to 'divider', required  |
-|          | for all others.                                                    |
-| subLabel | Additional descriptive text for the menu item. Not applicable to   |
-|          | 'divider' or 'subHeader', optional for all others.                 |
-| icon     | An icon for the menu item. Must be compatible with Material-UI's   |
-|          | [Icons](https://material-ui.com/components/icons/). Not applicable |
-|          | to 'divider' or 'subHeader', optional for all others.              |
-| disabled | Whether or not the menu item is disabled (meaning grayed out and   |
-|          | not clickable). Not applicable to 'divider' or 'subHeader',        |
-|          | optional for all others.                                           |
-| checked  | Whether or not the checkbox or radio button are selected. Only     |
-|          | applicable to 'radio' and 'checkbox'                               |
-| onClick  | Callback of action to perform on click. Function signature is      |
-|          | `(session) => undefined`. Required for 'normal', 'radio', and      |
-|          | 'checkbox', not applicable to any others.                          |
-| subMenu  | An array of menu items. Applicable only to 'subMenu'.              |
+| Name     | Description                                                                                                                                                                                              |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| type     | Options are 'normal', 'radio', 'checkbox', 'subMenu', 'subHeader', or 'divider'. If not provided, defaults to 'normal', unless a `subMenu` attribute is present, in which case it defaults to 'subMenu'. |
+| label    | The text for the menu item. Not applicable to 'divider', required for all others.                                                                                                                        |
+| subLabel | Additional descriptive text for the menu item. Not applicable to 'divider' or 'subHeader', optional for all others.                                                                                      |
+| icon     | An icon for the menu item. Must be compatible with Material-UI's [Icons](https://material-ui.com/components/icons/). Not applicable to 'divider' or 'subHeader', optional for all others.                |
+| disabled | Whether or not the menu item is disabled (meaning grayed out and not clickable). Not applicable to 'divider' or 'subHeader', optional for all others.                                                    |
+| checked  | Whether or not the checkbox or radio button are selected. Only applicable to 'radio' and 'checkbox'                                                                                                      |
+| onClick  | Callback of action to perform on click. Function signature is `(session) => undefined`. Required for 'normal', 'radio', and 'checkbox', not applicable to any others.                                    |
+| subMenu  | An array of menu items. Applicable only to 'subMenu'.                                                                                                                                                    |
 
 As an example, the here is an array of MenuItems and the resulting menu:
 
@@ -117,8 +105,9 @@ Desktop. By default there are `File` and `Help` menus. You can add your own menu
 or you can add menu items or sub-menus to the existing menus and sub-menus.
 
 ![File menu with submenu](./img/top_level_menus.png)
-The `File` menu has several items and an `Add` sub-menu, which has more items.
-You can have arbitrarily deep sub-menus.
+
+In the above screenshot, the `File` menu has several items and an `Add`
+sub-menu, which has more items. You can have arbitrarily deep sub-menus.
 
 You add menus in the `configure` method of your plugin. Not all JBrowse products
 will have to-level menus, though. JBrowse Web and JBrowse Desktop have them, but
@@ -177,12 +166,10 @@ Insert a top-level menu
 
 ##### Parameters
 
-| Name     | Description                                                     |
-| -------- | --------------------------------------------------------------- |
-| menuName | Name of the menu to insert.                                     |
-| position | Position to insert menu. If negative, counts from the end, e.g. |
-|          | `insertMenu('My Menu', -1)` will insert the menu as the         |
-|          | second-to-last one.                                             |
+| Name     | Description                                                                                                                                 |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| menuName | Name of the menu to insert.                                                                                                                 |
+| position | Position to insert menu. If negative, counts from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the second-to-last one. |
 
 ##### Return Value
 
@@ -209,13 +196,11 @@ Insert a menu item into a top-level menu
 
 ##### Parameters
 
-| Name     | Description                                            |
-| -------- | ------------------------------------------------------ |
-| menuName | Name of the top-level menu to insert into.             |
-| menuItem | Menu item to insert.                                   |
-| position | Position to insert menu item. If negative, counts from |
-|          | the end, e.g. `insertMenu('My Menu', -1)` will insert  |
-|          | the menu as the second-to-last one.                    |
+| Name     | Description                                                                                                                                      |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| menuName | Name of the top-level menu to insert into.                                                                                                       |
+| menuItem | Menu item to insert.                                                                                                                             |
+| position | Position to insert menu item. If negative, counts from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the second-to-last one. |
 
 ##### Return Value
 
@@ -227,11 +212,10 @@ Add a menu item to a sub-menu
 
 ##### Parameters
 
-| Name     | Description                                                      |
-| -------- | ---------------------------------------------------------------- |
-| menuPath | Path to the sub-menu to add to, starting with the top-level menu |
-|          | (e.g. `['File', 'Insert']`).                                     |
-| menuItem | Menu item to append.                                             |
+| Name     | Description                                                                                   |
+| -------- | --------------------------------------------------------------------------------------------- |
+| menuPath | Path to the sub-menu to add to, starting with the top-level menu (e.g. `['File', 'Insert']`). |
+| menuItem | Menu item to append.                                                                          |
 
 ##### Return Value
 
@@ -243,14 +227,11 @@ Insert a menu item into a sub-menu
 
 ##### Parameters
 
-| Name     | Description                                                      |
-| -------- | ---------------------------------------------------------------- |
-| menuPath | Path to the sub-menu to add to, starting with the top-level menu |
-|          | (e.g. `['File', 'Insert']`).                                     |
-| menuItem | Menu item to insert.                                             |
-| position | Position to insert menu item. If negative, counts from the end,  |
-|          | e.g. `insertMenu('My Menu', -1)` will insert the menu as the     |
-|          | second-to-last one.                                              |
+| Name     | Description                                                                                                                                      |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| menuPath | Path to the sub-menu to add to, starting with the top-level menu (e.g. `['File', 'Insert']`).                                                    |
+| menuItem | Menu item to insert.                                                                                                                             |
+| position | Position to insert menu item. If negative, counts from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the second-to-last one. |
 
 ##### Return Value
 
