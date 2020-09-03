@@ -57,7 +57,7 @@ const generateBaseTrackConfig = (base: any) =>
       },
       maxDisplayedBpPerPx: {
         type: 'number',
-        description: 'Max allowed bpPerPx to be displayed in the view',
+        description: 'maximum bpPerPx that is displayed in the view',
         defaultValue: Number.MAX_VALUE,
       },
 
