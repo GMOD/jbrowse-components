@@ -1,6 +1,7 @@
 language: node_js
 node_js: 10
-sudo: false
+os: linux
+dist: xenial
 cache:
 - node_modules
 - yarn
@@ -34,13 +35,13 @@ deploy:
   access_key_id: $AWS_ACCESS_KEY
   secret_access_key: $AWS_SECRET
   bucket: "jbrowse.org"
-  local-dir: packages/jbrowse-web/build
-  upload-dir: code/jb2/alpha/$TRAVIS_BRANCH
+  local_dir: packages/jbrowse-web/build
+  upload_dir: code/jb2/alpha/$TRAVIS_BRANCH
   on:
     repo: GMOD/jbrowse-components
     all_branches: true
 - provider: releases
-  api_key: $GITHUB_TOKEN
+  token: $GITHUB_TOKEN
   file: packages/jbrowse-web/build/jbrowse-web-*.zip
   file_glob: true
   skip_cleanup: true
