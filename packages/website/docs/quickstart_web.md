@@ -82,7 +82,7 @@ jbrowse add-assembly ~/hg19.fa --load copy
 ```
 
 This will copy the hg19.fa to the current folder, and initialize a file called
-config.json with the hg19 assembly. Note that other options include
+config.json with the hg19 assembly.
 
 See [configuring assemblies](config_assembly) for more info on formats
 supported for the sequence file.
