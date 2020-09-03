@@ -5,7 +5,6 @@
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "typings": "dist/index.d.ts",
   "module": "dist/jbrowse-plugin-linear-genome-view.esm.js",
   "files": [
     "dist",
