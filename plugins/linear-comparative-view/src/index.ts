@@ -85,6 +85,13 @@ interface ReducedFeature {
   clipPos: number
   end: number
   seqLength: number
+  syntenyId?: number
+  mate: {
+    refName: string
+    start: number
+    end: number
+    syntenyId?: number
+  }
 }
 
 export default class extends Plugin {
@@ -170,7 +177,7 @@ export default class extends Plugin {
                 const trackName = `${readName}_vs_${trackAssembly}`
                 const supplementaryAlignments = SA.split(';')
                   .filter(aln => !!aln)
-                  .map(aln => {
+                  .map((aln, index) => {
                     const [saRef, saStart, saStrand, saCigar] = aln.split(',')
                     const saLengthOnRef = getLengthOnRef(saCigar)
                     // infer sequence length from SA tag's CIGAR
@@ -210,6 +217,16 @@ export default class extends Plugin {
                   feat,
                   ...supplementaryAlignments,
                 ] as ReducedFeature[]
+                features.forEach((f, index) => {
+                  f.syntenyId = index
+                  f.mate.syntenyId = index
+                })
+                features.concat(
+                  // @ts-ignore
+                  features.map(f => {
+                    return f.mate
+                  }),
+                )
 
                 features.sort((a, b) => a.clipPos - b.clipPos)
                 const totalLength = features.reduce(
