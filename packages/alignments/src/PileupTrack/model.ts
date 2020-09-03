@@ -15,18 +15,15 @@ import {
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import { ContentCopy as ContentCopyIcon } from '@gmod/jbrowse-core/ui/Icons'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { types, Instance, getParent } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
 import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
-import React from 'react'
-import Button from '@material-ui/core/Button'
-import Typography from '@material-ui/core/Typography'
-import PileupTrackBlurb from './components/PileupTrackBlurb'
 import { PileupConfigModel } from './configSchema'
+import PileupTrackBlurb from './components/PileupTrackBlurb'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -266,35 +263,6 @@ const stateModelFactory = (
 
         get trackMenuItems() {
           return [...trackMenuItems, ...this.composedTrackMenuItems]
-        },
-
-        regionCannotBeRendered() {
-          const mainTrack = getParent(self)
-          const view = getContainingView(self) as LinearGenomeViewModel
-          if (view && view.bpPerPx > mainTrack.maxViewBpPerPx) {
-            return (
-              <>
-                <Typography component="span" variant="body2">
-                  Zoom in to see features or{' '}
-                </Typography>
-                <Button
-                  data-testid="reload_button"
-                  onClick={() => {
-                    mainTrack.setUserBpPerPxLimit(view.bpPerPx)
-                    self.reload()
-                  }}
-                  size="small"
-                  variant="outlined"
-                >
-                  Force Load
-                </Button>
-                <Typography component="span" variant="body2">
-                  (force load may be slow)
-                </Typography>
-              </>
-            )
-          }
-          return undefined
         },
       }
     })

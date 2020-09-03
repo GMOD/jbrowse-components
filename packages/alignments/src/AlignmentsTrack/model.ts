@@ -36,7 +36,6 @@ const stateModelFactory = (
           showPileup: true,
         })
         .volatile(() => ({
-          userBpPerPxLimit: undefined as undefined | number,
           ReactComponent: (AlignmentsTrackComponent as unknown) as React.FC,
         })),
     )
@@ -46,9 +45,6 @@ const stateModelFactory = (
       },
       togglePileup() {
         self.showPileup = !self.showPileup
-      },
-      setUserBpPerPxLimit(limit: number) {
-        self.userBpPerPxLimit = limit
       },
     }))
     .views(self => {
@@ -61,10 +57,6 @@ const stateModelFactory = (
             name: `${getConf(self, 'name')} pileup`,
             trackId: `${self.configuration.trackId}_pileup_xyz`, // xyz to avoid someone accidentally namign the trackId similar to this
           }
-        },
-
-        get maxViewBpPerPx() {
-          return self.userBpPerPxLimit || getConf(self, 'maxDisplayedBpPerPx')
         },
 
         get layoutFeatures() {
