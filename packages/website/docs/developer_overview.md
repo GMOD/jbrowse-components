@@ -12,11 +12,10 @@ published on their own: products and plugins.
 
 ![](./img/products_and_plugins.png)
 
-Architecture diagram of JBrowse 2, showing how plugins encapsulate
-views (e.g. LinearGenomeView, DotplotView etc.), tracks
-(AlignmentsTrack, VariantTrack, etc.), data adapters (BamAdapter,
-VcfTabixAdapter, etc.) and other logic like mobx state tree
-autoruns that add logic to other parts of the app (e.g. adding
+Architecture diagram of JBrowse 2, showing how plugins encapsulate views (e.g.
+LinearGenomeView, DotplotView etc.), tracks (AlignmentsTrack, VariantTrack,
+etc.), data adapters (BamAdapter, VcfTabixAdapter, etc.) and other logic like
+mobx state tree autoruns that add logic to other parts of the app (e.g. adding
 context menus)
 
 A "product" is an application of some kind that is published on its own (a web
@@ -52,7 +51,4 @@ Plugins often also have their `install` method add "pluggable elements" into
 the host JBrowse application. This is how plugins can add new kinds of views,
 tracks, renderers, and so forth.
 
-[^1]:
-  This means it's only possible to have one version of a particular plugin
-  loaded on any given webpage, even if multiple products are loaded and using
-  it on the same page.
+[^1]: This means it's only possible to have one version of a particular plugin loaded on any given webpage, even if multiple products are loaded and using it on the same page.
