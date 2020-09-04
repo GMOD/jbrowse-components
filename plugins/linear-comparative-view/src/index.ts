@@ -246,6 +246,11 @@ export default class extends Plugin {
                   features.map(f => f.mate),
                 )
 
+                const refLength = features.reduce(
+                  (a, f) => a + f.end - f.start,
+                  0,
+                )
+
                 session.addView('LinearSyntenyView', {
                   type: 'LinearSyntenyView',
                   views: [
@@ -253,7 +258,7 @@ export default class extends Plugin {
                       type: 'LinearGenomeView',
                       hideHeader: true,
                       offsetPx: 0,
-                      bpPerPx: (end - start) / 800,
+                      bpPerPx: refLength / 800,
                       displayedRegions: features.map(f => {
                         return {
                           start: f.start,

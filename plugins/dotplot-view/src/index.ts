@@ -146,6 +146,8 @@ export default class DotplotPlugin extends Plugin {
                 const start = feature.get('start')
                 const clipPos = feature.get('clipPos')
                 const end = feature.get('end')
+                const seq = feature.get('seq')
+                const cigar = feature.get('CIGAR')
                 const SA: string =
                   (feature.get('tags')
                     ? feature.get('tags').SA
@@ -160,14 +162,10 @@ export default class DotplotPlugin extends Plugin {
                   .map(aln => {
                     const [saRef, saStart, saStrand, saCigar] = aln.split(',')
                     const saLengthOnRef = getLengthOnRef(saCigar)
-                    // infer sequence length from SA tag's CIGAR
                     const saLength = getLength(saCigar)
-                    const saClipPos = getClip(
-                      saCigar,
-                      saStrand === '-' ? -1 : 1,
-                    )
+                    const saStrandNormalized = saStrand === '-' ? -1 : 1
+                    const saClipPos = getClip(saCigar, saStrandNormalized)
                     const saRealStart = +saStart - 1 + saClipPos
-
                     return {
                       refName: saRef,
                       start: saRealStart,
@@ -176,7 +174,7 @@ export default class DotplotPlugin extends Plugin {
                       clipPos: saClipPos,
                       CIGAR: saCigar,
                       assemblyName: trackAssembly,
-                      strand: saStrand,
+                      strand: saStrandNormalized,
                       uniqueId: Math.random(),
                       mate: {
                         start: saClipPos,
@@ -192,15 +190,30 @@ export default class DotplotPlugin extends Plugin {
                   start: clipPos,
                   end: end - start + clipPos,
                 }
-                feat.seqLength = (feat.seq as string).length
+
+                // first in supplementaryAlignments is primary if this read
+                // itself is not primary
+                const totalLength = feat.secondary_alignment
+                  ? getLength(supplementaryAlignments[0].CIGAR)
+                  : getLength(cigar as string)
+
+                // sanity check
+                if (!feat.secondary_alignment && totalLength !== seq.length) {
+                  console.warn(
+                    `CIGAR calculation does not match feature seq on the
+                    primary alignment ${seq.length} !== ${totalLength}`,
+                  )
+                }
+
                 const features = [
                   feat,
                   ...supplementaryAlignments,
                 ] as ReducedFeature[]
 
                 features.sort((a, b) => a.clipPos - b.clipPos)
-                const totalLength = features.reduce(
-                  (accum, f) => accum + f.seqLength,
+
+                const refLength = features.reduce(
+                  (a, f) => a + f.end - f.start,
                   0,
                 )
 
@@ -208,7 +221,7 @@ export default class DotplotPlugin extends Plugin {
                   type: 'DotplotView',
                   hview: {
                     offsetPx: 0,
-                    bpPerPx: (end - start) / 800,
+                    bpPerPx: refLength / 800,
                     displayedRegions: features.map(f => {
                       return {
                         start: f.start,
@@ -220,7 +233,7 @@ export default class DotplotPlugin extends Plugin {
                   },
                   vview: {
                     offsetPx: 0,
-                    bpPerPx: totalLength / 800,
+                    bpPerPx: totalLength / 400,
                     displayedRegions: [
                       {
                         assemblyName: readAssembly,
