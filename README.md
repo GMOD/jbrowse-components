@@ -45,7 +45,7 @@ yarn
 
 ## Quick start
 
-Either cd to packages/jbrowse-web or packages/jbrowse-desktop and run `yarn start`
+Either cd to packages/jbrowse-web or packages/jbrowse-desktop and run `yarn start`.
 
 ## Developers
 
@@ -56,4 +56,4 @@ yarn run lerna-publish
 ```
 
 This will analyze which packages have changed, and prompt you to publish each
-package in the monorepo individually
+package in the monorepo individually.

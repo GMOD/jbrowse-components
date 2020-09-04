@@ -23,7 +23,7 @@ class MockWorkerHandle {
     const start = Date.now()
     if (name === 'ping') {
       while (this.busy) {
-        if (opts.timeout > Date.now() - start) {
+        if (opts.timeout < Date.now() - start) {
           throw new Error('timeout')
         }
 

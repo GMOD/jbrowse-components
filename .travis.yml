@@ -1,7 +1,5 @@
 language: node_js
-node_js:
-  - 10
-  - 14
+node_js: 10
 sudo: false
 cache:
 - node_modules
@@ -48,5 +46,4 @@ deploy:
   skip_cleanup: true
   on:
     repo: GMOD/jbrowse-components
-    node_js: 14
     tags: true

@@ -80,7 +80,7 @@
     "devtron": "^1.4.0",
     "electron": "^9.0.0",
     "electron-builder": "^22.1.0",
-    "electron-mock-ipc": "^0.3.1",
+    "electron-mock-ipc": "^0.3.8",
     "eslint-config-airbnb-typescript": "^7.0.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-monorepo": "^0.2.1",

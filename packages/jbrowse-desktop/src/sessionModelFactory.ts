@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { Region, NotificationLevel } from '@gmod/jbrowse-core/util/types'
+import {
+  Region,
+  NotificationLevel,
+  TrackViewModel,
+} from '@gmod/jbrowse-core/util/types'
 import { getContainingView } from '@gmod/jbrowse-core/util'
 import { observable } from 'mobx'
 import {
@@ -177,7 +181,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
               // If a view is referring to the track config, remove the track
               // from the view
               const type = 'open track(s)'
-              const view = getContainingView(node)
+              const view = getContainingView(node) as TrackViewModel
               callbacksToDereferenceTrack.push(() => view.hideTrack(track))
               dereferenced = true
               if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0

@@ -867,6 +867,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
           Math.round(bpToStart / self.bpPerPx) +
             self.interRegionPaddingWidth * start.index,
         )
+
+        // centerAtBase logic
+        if (start.index === end.index) {
+          const { offsetPx } = self.bpToPx({
+            coord: (end.offset - start.offset) / 2,
+            refName: self.displayedRegions[start.index].refName,
+          }) || { offsetPx: 0 }
+
+          this.horizontalScroll(offsetPx - self.width / 2)
+        }
       },
 
       horizontalScroll(distance: number) {
