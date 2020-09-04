@@ -4,8 +4,7 @@ import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import CalendarIcon from '@material-ui/icons/CalendarViewDay'
 import { autorun } from 'mobx'
-import { getSnapshot } from 'mobx-state-tree'
-import Base1DView from '@gmod/jbrowse-core/util/Base1DViewModel'
+import { IAnyStateTreeNode } from 'mobx-state-tree'
 import AddIcon from '@material-ui/icons/Add'
 import {
   AbstractSessionModel,
@@ -38,6 +37,7 @@ interface Track {
   additionalContextMenuItemCallbacks: Function[]
   id: string
   type: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   PileupTrack: any
 }
 interface View {
@@ -157,7 +157,7 @@ export default class extends Plugin {
       })
     }
 
-    const cb = (feature: Feature, track: any) => {
+    const cb = (feature: Feature, track: IAnyStateTreeNode) => {
       return feature
         ? [
             {

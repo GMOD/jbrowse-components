@@ -1,11 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import AddIcon from '@material-ui/icons/Add'
 import { autorun } from 'mobx'
-import { getSnapshot } from 'mobx-state-tree'
-import Base1DView from '@gmod/jbrowse-core/util/Base1DViewModel'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import {
   AbstractSessionModel,
@@ -17,6 +14,7 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import TimelineIcon from '@material-ui/icons/Timeline'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { parseCigar } from '@gmod/jbrowse-plugin-alignments/src/BamAdapter/MismatchParser'
+import { IAnyStateTreeNode } from 'mobx-state-tree'
 import {
   configSchemaFactory as dotplotTrackConfigSchemaFactory,
   stateModelFactory as dotplotTrackStateModelFactory,
@@ -37,6 +35,7 @@ interface Track {
   additionalContextMenuItemCallbacks: Function[]
   id: string
   type: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   PileupTrack: any
 }
 interface View {
@@ -136,7 +135,7 @@ export default class DotplotPlugin extends Plugin {
       })
     }
 
-    const cb = (feature: Feature, track: any) => {
+    const cb = (feature: Feature, track: IAnyStateTreeNode) => {
       return feature
         ? [
             {
