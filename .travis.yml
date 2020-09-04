@@ -11,7 +11,6 @@ script:
   - set -e
   # dev tools need to be built first cause they are written in TS but used in webpack configs
   - (cd packages/development-tools && NODE_ENV=development yarn build)
-  - if [[ "x$TRAVIS_PULL_REQUEST_BRANCH" == "x" ]]; then yarn eslint --config .eslintrc.base.json --no-eslintrc --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .; fi;
   - yarn test-ci
   - yarn tsc --noEmit
   - travis_wait 30 yarn build
