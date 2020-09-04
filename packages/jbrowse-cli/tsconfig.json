@@ -7,13 +7,8 @@
     "outDir": "lib",
     "rootDir": "src",
     "strict": true,
-    "target": "es2017",
+    "target": "es2017"
   },
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "**/*.test.ts",
-    "**/testUtil.ts"
-  ]
+  "include": ["src"],
+  "exclude": ["**/*.test.ts", "**/testUtil.ts"]
 }

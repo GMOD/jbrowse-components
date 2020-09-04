@@ -1,9 +1,7 @@
 {
   "head": {
     "link": [],
-    "vars": [
-      "refName"
-    ]
+    "vars": ["refName"]
   },
   "results": {
     "distinct": false,
