@@ -169,7 +169,7 @@ export default class extends Plugin {
                 const clipPos = feature.get('clipPos')
                 const end = feature.get('end')
                 const seq = feature.get('seq')
-                const cigar = feature.get('CIGAR')
+                const flags = feature.get('flags')
                 const SA: string =
                   (feature.get('tags')
                     ? feature.get('tags').SA
@@ -214,24 +214,20 @@ export default class extends Plugin {
                   end: end - start + clipPos,
                 }
 
-                // first in supplementaryAlignments is primary if this read
-                // itself is not primary
-                const totalLength = feat.secondary_alignment
-                  ? getLength(supplementaryAlignments[0].CIGAR)
-                  : getLength(cigar as string)
-
-                // sanity check
-                if (!feat.secondary_alignment && totalLength !== seq.length) {
-                  console.warn(
-                    `CIGAR calculation does not match feature seq on the
-                    primary alignment ${seq.length} !== ${totalLength}`,
-                  )
-                }
+                // if secondary alignment, calculate length from SA[0]'s CIGAR
+                // which is the primary alignments. otherwise just use
+                // seq.length if primary alignment
+                const totalLength =
+                  // eslint-disable-next-line no-bitwise
+                  flags & 2
+                    ? getLength(supplementaryAlignments[0].CIGAR)
+                    : seq.length
 
                 const features = [
                   feat,
                   ...supplementaryAlignments,
                 ] as ReducedFeature[]
+
                 features.forEach((f, index) => {
                   f.syntenyId = index
                   f.mate.syntenyId = index
