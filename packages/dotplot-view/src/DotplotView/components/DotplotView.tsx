@@ -7,6 +7,7 @@ import { getConf } from '@gmod/jbrowse-core/configuration'
 import { Menu } from '@gmod/jbrowse-core/ui'
 import { BaseBlock } from '@gmod/jbrowse-core/util/blockTypes'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import normalizeWheel from 'normalize-wheel'
 import { DotplotViewModel, Dotplot1DViewModel } from '../model'
 
 const useStyles = makeStyles(theme => {
@@ -67,6 +68,7 @@ const useStyles = makeStyles(theme => {
 })
 
 type Coord = [number, number] | undefined
+type Timer = ReturnType<typeof setTimeout>
 
 function locstr(px: number, view: Dotplot1DViewModel) {
   const obj = view.pxToBp(px)
@@ -130,27 +132,59 @@ export default (pluginManager: PluginManager) => {
       const root = useRef<HTMLDivElement>(null)
       const distanceX = useRef(0)
       const distanceY = useRef(0)
+      const timeout = useRef<Timer>()
+      const delta = useRef(0)
       const scheduled = useRef(false)
 
       // require non-react wheel handler to properly prevent body scrolling
       useEffect(() => {
-        function onWheel(event: WheelEvent) {
-          event.preventDefault()
-
-          distanceX.current += event.deltaX
-          distanceY.current -= event.deltaY
-          if (!scheduled.current) {
-            scheduled.current = true
-
-            window.requestAnimationFrame(() => {
+        function onWheel(origEvent: WheelEvent) {
+          const event = normalizeWheel(origEvent)
+          origEvent.preventDefault()
+          if (origEvent.ctrlKey === true) {
+            delta.current += event.pixelY / 500
+            model.vview.setScaleFactor(
+              delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
+            )
+            model.hview.setScaleFactor(
+              delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
+            )
+            if (timeout.current) {
+              clearTimeout(timeout.current)
+            }
+            timeout.current = setTimeout(() => {
               transaction(() => {
-                model.hview.scroll(distanceX.current)
-                model.vview.scroll(distanceY.current)
+                model.hview.setScaleFactor(1)
+                model.vview.setScaleFactor(1)
+                model.hview.zoomTo(
+                  delta.current > 0
+                    ? model.hview.bpPerPx * (1 + delta.current)
+                    : model.hview.bpPerPx / (1 - delta.current),
+                )
+                model.vview.zoomTo(
+                  delta.current > 0
+                    ? model.vview.bpPerPx * (1 + delta.current)
+                    : model.vview.bpPerPx / (1 - delta.current),
+                )
               })
-              scheduled.current = false
-              distanceX.current = 0
-              distanceY.current = 0
-            })
+              delta.current = 0
+            }, 300)
+          } else {
+            distanceX.current += event.pixelX
+            distanceY.current -= event.pixelY
+            if (!scheduled.current) {
+              scheduled.current = true
+
+              window.requestAnimationFrame(() => {
+                transaction(() => {
+                  model.hview.scroll(distanceX.current)
+                  model.vview.scroll(distanceY.current)
+                })
+                scheduled.current = false
+                distanceX.current = 0
+                distanceY.current = 0
+              })
+            }
           }
         }
         if (ref.current) {
@@ -225,7 +259,12 @@ export default (pluginManager: PluginManager) => {
             </div>
           ) : null}
           <div className={classes.container}>
-            <div style={{ display: 'grid' }}>
+            <div
+              style={{
+                display: 'grid',
+                transform: `scaleX(${model.hview.scaleFactor}) scaleY(${model.vview.scaleFactor})`,
+              }}
+            >
               <svg
                 className={classes.vtext}
                 width={borderX}
