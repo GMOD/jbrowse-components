@@ -272,7 +272,7 @@ export default class extends Plugin {
                         {
                           assemblyName: readAssembly,
                           start: 0,
-                          end: totalLength + 1000,
+                          end: totalLength,
                           refName: readName,
                         },
                       ],
