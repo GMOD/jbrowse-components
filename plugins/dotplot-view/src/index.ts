@@ -146,7 +146,7 @@ export default class DotplotPlugin extends Plugin {
                 const start = feature.get('start')
                 const clipPos = feature.get('clipPos')
                 const end = feature.get('end')
-                const seq = feature.get('seq')
+                const cigar = feature.get('CIGAR')
                 const flags = feature.get('flags')
                 const SA: string =
                   (feature.get('tags')
@@ -196,9 +196,9 @@ export default class DotplotPlugin extends Plugin {
                 // seq.length if primary alignment
                 const totalLength =
                   // eslint-disable-next-line no-bitwise
-                  flags & 2
+                  flags & 2048
                     ? getLength(supplementaryAlignments[0].CIGAR)
-                    : seq.length
+                    : getLength(cigar)
 
                 const features = [
                   feat,
@@ -206,6 +206,7 @@ export default class DotplotPlugin extends Plugin {
                 ] as ReducedFeature[]
 
                 features.sort((a, b) => a.clipPos - b.clipPos)
+                console.log({ features })
 
                 const refLength = features.reduce(
                   (a, f) => a + f.end - f.start,
