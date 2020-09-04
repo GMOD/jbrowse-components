@@ -8,7 +8,7 @@ import {
   addDisposer,
 } from 'mobx-state-tree'
 
-import { autorun, transaction } from 'mobx'
+import { observable, autorun, transaction } from 'mobx'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 import Base1DView, {
   Base1DViewModel,
@@ -31,7 +31,9 @@ function approxPixelStringLen(str: string) {
 type Coord = [number, number]
 
 // Used in the renderer
+// ref https://mobx-state-tree.js.org/concepts/volatiles on volatile state used here
 export const Dotplot1DView = Base1DView.extend(self => {
+  const scaleFactor = observable.box(1)
   return {
     views: {
       get interRegionPaddingWidth() {
@@ -42,6 +44,14 @@ export const Dotplot1DView = Base1DView.extend(self => {
       },
       get dynamicBlocks() {
         return calculateDynamicBlocks(self, false, false)
+      },
+      get scaleFactor() {
+        return scaleFactor.get()
+      },
+    },
+    actions: {
+      setScaleFactor(n: number) {
+        scaleFactor.set(n)
       },
     },
   }
