@@ -8,6 +8,8 @@ import SimpleFeature, {
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { getContainingView } from '@gmod/jbrowse-core/util'
 import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { parseCigar } from '@gmod/jbrowse-plugin-alignments/src/BamAdapter/MismatchParser'
 import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import { LinearSyntenyTrackModel } from '../../LinearSyntenyTrack'
@@ -153,13 +155,46 @@ function LinearSyntenyRendering(props: {
           ctx.lineTo(x21, y2)
           ctx.stroke()
         } else {
-          ctx.beginPath()
-          ctx.moveTo(x11, y1)
-          ctx.lineTo(x12, y1)
-          ctx.lineTo(x22, y2)
-          ctx.lineTo(x21, y2)
-          ctx.closePath()
-          ctx.fill()
+          let currX1 = x11
+          let currX2 = x21
+          const cigar = f1.get('cg') || f1.get('CIGAR')
+          if (cigar) {
+            const cigarOps = parseCigar(cigar)
+            for (let j = 0; j < cigarOps.length; j += 2) {
+              const val = +cigarOps[j]
+              const op = cigarOps[j + 1]
+
+              const prevX1 = currX1
+              const prevX2 = currX2
+
+              if (op === 'M') {
+                ctx.fillStyle = '#f003'
+                currX1 += val / views[0].bpPerPx
+                currX2 += val / views[1].bpPerPx
+              } else if (op === 'D') {
+                ctx.fillStyle = '#00f3'
+                currX1 += val / views[0].bpPerPx
+              } else if (op === 'I') {
+                ctx.fillStyle = '#ff03'
+                currX2 += val / views[1].bpPerPx
+              }
+              ctx.beginPath()
+              ctx.moveTo(prevX1, y1)
+              ctx.lineTo(currX1, y1)
+              ctx.lineTo(currX2, y2)
+              ctx.lineTo(prevX2, y2)
+              ctx.closePath()
+              ctx.fill()
+            }
+          } else {
+            ctx.beginPath()
+            ctx.moveTo(x11, y1)
+            ctx.lineTo(x12, y1)
+            ctx.lineTo(x22, y2)
+            ctx.lineTo(x21, y2)
+            ctx.closePath()
+            ctx.fill()
+          }
         }
       }
     })
