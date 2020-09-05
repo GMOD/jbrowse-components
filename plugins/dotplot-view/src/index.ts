@@ -206,7 +206,6 @@ export default class DotplotPlugin extends Plugin {
                 ] as ReducedFeature[]
 
                 features.sort((a, b) => a.clipPos - b.clipPos)
-                console.log({ features })
 
                 const refLength = features.reduce(
                   (a, f) => a + f.end - f.start,
