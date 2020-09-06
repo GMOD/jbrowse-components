@@ -72,7 +72,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   private async setup(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
     if (Object.keys(this.samHeader).length === 0) {
-      statusCallback('Downloading header')
+      statusCallback('Downloading BAM index')
       const samHeader = await this.bam.getHeader(opts)
 
       // use the @SQ lines in the header to figure out the
