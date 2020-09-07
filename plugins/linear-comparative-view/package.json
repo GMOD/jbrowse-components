@@ -28,7 +28,6 @@
     "generic-filehandle": "^2.0.1",
     "json-stable-stringify": "^1.0.1",
     "mobx-run-in-reactive-context": "^1.0.1",
-    "paths-js": "^0.4.11",
     "react-sizeme": "^2.6.12"
   },
   "private": true
