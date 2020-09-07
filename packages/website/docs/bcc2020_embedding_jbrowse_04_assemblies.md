@@ -1,5 +1,5 @@
 ---
-id: bcc2020_embedding_jbrowse_assemblies
+id: bcc2020_embedding_jbrowse_04_assemblies
 title: About assemblies
 ---
 

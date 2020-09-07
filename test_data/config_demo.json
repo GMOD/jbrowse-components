@@ -1390,6 +1390,17 @@
       "renderer": {
         "type": "HicRenderer"
       }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "htsget_demo",
+      "name": "Htsget DNANexus",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "HtsgetBamAdapter",
+        "htsgetBase": "http://htsnexus.rnd.dnanex.us/v1/reads",
+        "htsgetTrackId": "BroadHiSeqX_b37/NA12878"
+      }
     }
   ],
   "connections": [],

@@ -185,7 +185,7 @@ function HierarchicalTrackSelector({ model }) {
           )
           .map(connectionConf => (
             <FormControlLabel
-              key={readConfObject(connectionConf, 'name')}
+              key={connectionConf.connectionId}
               control={
                 <Switch
                   checked={

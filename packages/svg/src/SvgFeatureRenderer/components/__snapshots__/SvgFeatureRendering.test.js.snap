@@ -116,7 +116,7 @@ exports[`one feature 1`] = `
   >
     <g>
       <rect
-        data-testid="one"
+        data-testid="box-one"
         fill="goldenrod"
         height="10"
         width="1"
@@ -252,6 +252,7 @@ exports[`processed transcript 1`] = `
 exports[`svg selected 1`] = `
 <svg>
   <rect
+    data-testid="one"
     fill="#000"
     fill-opacity="0.2"
     height="14"

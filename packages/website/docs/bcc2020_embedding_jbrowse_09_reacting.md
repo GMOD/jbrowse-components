@@ -1,5 +1,5 @@
 ---
-id: bcc2020_embedding_jbrowse_reacting
+id: bcc2020_embedding_jbrowse_09_reacting
 title: Reacting to the view
 ---
 

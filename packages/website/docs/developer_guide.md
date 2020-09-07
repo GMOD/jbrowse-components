@@ -4,5 +4,4 @@ title: Developer guide
 toplevel: true
 ---
 
-We will introduce JBrowse 2 from the developers point of view. We'll look at
-the core concepts, and then review how to create custom data adapter types
+In this Developer Guide, will introduce the JBrowse 2 ecosystem from the developer's point of view. We'll examine the core concepts of how code is packaged and structured, and then go over how to create new plugins and pluggable elements.

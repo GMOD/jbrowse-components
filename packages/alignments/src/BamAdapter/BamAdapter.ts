@@ -25,23 +25,35 @@ interface Header {
 }
 
 export default class BamAdapter extends BaseFeatureDataAdapter {
-  private bam: BamFile
+  // @ts-ignore  -- the configure method assigns this essentially via the constructor
+  protected bam: BamFile
+
+  protected sequenceAdapter?: BaseFeatureDataAdapter
 
   private samHeader: Header = {}
-
-  private sequenceAdapter?: BaseFeatureDataAdapter
 
   public constructor(
     config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
   ) {
     super(config)
+
+    // note that derived classes may not provide a BAM directly
+    // so this is conditional
+    this.configure(config, getSubAdapter)
+  }
+
+  // derived classes may not use the same configuration so a custom
+  // configure method allows derived classes to override this behavior
+  protected configure(
+    config: AnyConfigurationModel,
+    getSubAdapter?: getSubAdapterType,
+  ) {
     const bamLocation = readConfObject(config, 'bamLocation')
     const location = readConfObject(config, ['index', 'location'])
     const indexType = readConfObject(config, ['index', 'indexType'])
     const chunkSizeLimit = readConfObject(config, 'chunkSizeLimit')
     const fetchSizeLimit = readConfObject(config, 'fetchSizeLimit')
-
     this.bam = new BamFile({
       bamFilehandle: openLocation(bamLocation),
       csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
@@ -60,8 +72,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   private async setup(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
     if (Object.keys(this.samHeader).length === 0) {
-      statusCallback('Downloading index file')
-      const samHeader = await this.bam.getHeader(opts?.signal)
+      statusCallback('Downloading BAM index')
+      const samHeader = await this.bam.getHeader(opts)
 
       // use the @SQ lines in the header to figure out the
       // mapping between ref ref ID numbers and names
