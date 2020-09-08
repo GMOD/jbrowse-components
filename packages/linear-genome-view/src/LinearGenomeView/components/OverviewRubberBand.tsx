@@ -81,7 +81,6 @@ function OverviewRubberBand({
 
   useEffect(() => {
     function globalMouseMove(event: MouseEvent) {
-      console.log("globalMouseMove")
       if (controlsRef.current && mouseDragging) {
         const relativeX =
           event.clientX - controlsRef.current.getBoundingClientRect().left
@@ -90,39 +89,27 @@ function OverviewRubberBand({
     }
 
     function globalMouseUp(event: MouseEvent) {
-      console.log("globalMouseUp")
-      console.log(startX)
-      console.log(currentX)
-      // console.log(controlsRef.current)
       if (
         controlsRef.current &&
         startX !== undefined &&
         currentX !== undefined
       ) {
         if (Math.abs(currentX - startX) > 3) {
-          console.log(Math.abs(currentX - startX))
           model.zoomToDisplayedRegions(
             overview.pxToBp(startX),
             overview.pxToBp(currentX),
           )
         }
       }
-
+      /* handling clicking and centering at a specific Bp */
       if (
         controlsRef.current &&
         startX !== undefined &&
         currentX === undefined
       ) {
-        // const center_left = startX - 488 > 0 ? startX - 488 : 0
-        // const center_right = startX + 487 < 976 ? startX + 487 : 976
-        // model.zoomToDisplayedRegions(
-        //   overview.pxToBp(center_left),
-        //   overview.pxToBp(center_right),
-        // )
-        console.log(overview)
-        console.log(model)
-        console.log("I clicked")
-        model.centerAt(leftCount, leftBpOffset.refName)
+        const clickedAt = overview.pxToBp(startX)
+        console.log("I clicked: ", clickedAt)
+        model.centerAt(Math.round(clickedAt.offset), clickedAt.refName)
       }
       setStartX(undefined)
       setCurrentX(undefined)
@@ -133,7 +120,6 @@ function OverviewRubberBand({
     }
 
     function globalKeyDown(event: KeyboardEvent) {
-      console.log("globalKeyDown")
       if (event.keyCode === 27) {
         setStartX(undefined)
         setCurrentX(undefined)
@@ -154,13 +140,9 @@ function OverviewRubberBand({
   }, [mouseDragging, currentX, startX, model, overview])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
-    console.log("mouseDown")
     event.preventDefault()
     event.stopPropagation()
-    console.log("controlsRef.current", controlsRef.current)
     if (controlsRef.current) {
-      console.log(event.clientX)
-      console.log(controlsRef.current.getBoundingClientRect().left)
       setStartX(
         event.clientX - controlsRef.current.getBoundingClientRect().left,
       )
@@ -177,12 +159,6 @@ function OverviewRubberBand({
   function mouseOut() {
     setGuideX(undefined)
   }
-
-  // function handleClick(event: React.MouseEvent<HTMLDivElement>) {
-  //   event.preventDefault();
-  //   console.log(event)
-  //   console.log('Hello World')
-  // }
 
   if (startX === undefined) {
     return (
@@ -213,7 +189,6 @@ function OverviewRubberBand({
           onMouseDown={mouseDown}
           onMouseOut={mouseOut}
           onMouseMove={mouseMove}
-          // onClick={handleClick}
         >
           {ControlComponent}
         </div>
@@ -222,25 +197,17 @@ function OverviewRubberBand({
   }
 
   let left = startX || 0
-  console.log("LEFT", left)
   let width = 0
-  console.log("WIDTH", width)
   if (startX !== undefined && currentX !== undefined) {
     left = currentX < startX ? currentX : startX
     width = currentX - startX
-    console.log(left)
-    console.log(width)
   }
 
   // calculate the start and end bp of drag
   const leftBpOffset = overview.pxToBp(startX)
-  console.log(leftBpOffset)
   const rightBpOffset = overview.pxToBp(startX + width)
-  console.log(rightBpOffset)
   let leftCount = Math.max(0, Math.round(leftBpOffset.offset))
   let rightCount = Math.max(0, Math.round(rightBpOffset.offset))
-  console.log(leftCount)
-  console.log(rightCount)
 
   if (
     (leftBpOffset.refName === rightBpOffset.refName &&

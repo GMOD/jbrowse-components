@@ -343,7 +343,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       scrollTo(offsetPx: number) {
-        console.log(offsetPx)
         const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
         self.offsetPx = newOffsetPx
         return newOffsetPx
