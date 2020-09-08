@@ -55,7 +55,9 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       },
     }))
     .views(self => ({
-      async loadAssembly(assemblyName: string) {
+      // use this method instead of assemblyManager.get(assemblyName)
+      // get an assembly with regions loaded
+      async waitForAssembly(assemblyName: string) {
         const canonicalName = self.aliasMap.get(assemblyName)
         const assembly = self.assemblies.find(
           asm => asm.name === (canonicalName || assemblyName),

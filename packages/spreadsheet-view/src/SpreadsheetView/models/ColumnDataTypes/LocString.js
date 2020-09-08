@@ -243,9 +243,7 @@ export default pluginManager => {
     const { assemblyManager } = session
     const { assemblyName } = spreadsheet
     const { id: viewId } = getParent(spreadsheet)
-    const assembly = await assemblyManager.loadAssembly(
-      spreadsheet.assemblyName,
-    )
+    const assembly = await assemblyManager.waitForAssembly(assemblyName)
     const loc = parseLocString(cell.text, name =>
       assemblyManager.isValidRefName(name, spreadsheet.assemblyName),
     )
