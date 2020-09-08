@@ -85,11 +85,7 @@ export function parseVcfBuffer(
   columnDisplayOrder.push(columnDisplayOrder.length)
   columns.unshift({
     name: 'Location',
-    dataType: { type: 'LocString' },
-    isDerived: true,
-    derivationFunctionText: `function deriveLocationColumn(row, column) {
-      return {text:row.extendedData.vcfFeature.refName+':'+row.extendedData.vcfFeature.start+'..'+row.extendedData.vcfFeature.end}
-    }`,
+    dataType: { type: 'VcfLocString' },
   })
 
   return {

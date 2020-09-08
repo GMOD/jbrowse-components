@@ -4,16 +4,24 @@ export default (pluginManager: PluginManager) => {
   const { jbrequire } = pluginManager
   const { types } = jbrequire('mobx-state-tree')
 
+  // these types export the filter model and the column type so that they can
+  // be subclasses
   const { NumberColumn: Number } = jbrequire(require('./Number'))
   const { TextColumn: Text } = jbrequire(require('./Text'))
+  const { LocStringColumnType: LocString } = jbrequire(require('./LocString'))
 
+  console.log({ LocString })
+
+  // the rest that are jbrequired are not currently derivable from since they
+  // don't export the filter model
   const ColumnTypes = {
     Number,
     Text,
-    LocString: jbrequire(require('./LocString')),
+    LocString,
     LocRef: jbrequire(require('./LocRef')),
     LocStart: jbrequire(require('./LocStart')),
     LocEnd: jbrequire(require('./LocEnd')),
+    VcfLocString: jbrequire(require('./VcfLocString')),
   }
 
   const allColumnTypes = Object.values(ColumnTypes)

@@ -35,6 +35,7 @@ export default (pluginManager: PluginManager) => {
         const { columns } = getParent(self, 3)
         let i = 0
         return columns.map((column: { isDerived: boolean; func: Function }) => {
+          console.log({ column, der: column.isDerived })
           if (column.isDerived) {
             return column.func(self, column)
           }

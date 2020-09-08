@@ -22,13 +22,15 @@ export default (pluginManager: PluginManager) => {
       dataType: types.optional(AnyColumnType, () => ({
         type: 'Text',
       })),
+      isDerived: false,
+      derivationFunctionText: types.maybe(types.string),
+    })
+    .volatile(() => ({
       // set to true if column is derived from other columns
       // if the column is derived, each cell will have a
       // `derivationFunction` that is called to get its value
-      isDerived: false,
       // if this cell is derived from other cells, execute this function to get the value
-      derivationFunctionText: types.maybe(types.string),
-    })
+    }))
     .views(self => ({
       get func() {
         if (self.isDerived) {

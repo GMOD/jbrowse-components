@@ -314,5 +314,5 @@ export default pluginManager => {
     DataCellReactComponent,
   })
 
-  return LocStringColumnType
+  return { LocStringColumnType, FilterModelType, DataCellReactComponent }
 }

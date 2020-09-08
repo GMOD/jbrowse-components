@@ -138,9 +138,8 @@ export default pluginManager => {
         }
         const s = stringToFind.toLowerCase() // case insensitive match
         return function stringPredicate(sheet, row) {
-          const { cells } = row
+          const { cellsWithDerived: cells } = row
           const cell = cells[columnNumber]
-          // TODO: add support for derived cells
           if (!cell || !cell.text) return false
           const predicate = OPERATION_PREDICATES[operation]
           if (!predicate)
