@@ -64,25 +64,22 @@ function Home() {
           <Typography variant="h4">Features</Typography>
           <hr />
 
-          <p>
-            JBrowse 2 retains many features found in JBrowse 1 but also offers
-            many new features
-          </p>
           <ul>
             <li>
-              New additional views that can be displayed alongside classic the
-              &quot;linear genome view&quot; including Circos-style circular
-              views, dotplot, and synteny views
-            </li>
-            <li>
-              Plugins can add additional view types, track types, data adapters,
-              and more, allowing nearly endless extensibility
+              Linear, circular, dotplot, and synteny views for improved
+              structural variant and comparative genomics visualization
             </li>
             <li>
               Support for many common data types including BAM, CRAM, tabix
               indexed VCF, GFF, BED, BigBed, BigWig, and several specialized
               formats
             </li>
+            <li>
+              New plugin ecosystem which can add additional view types, track
+              types, data adapters, and more, allowing nearly endless
+              extensibility
+            </li>
+
             <li>And more!</li>
           </ul>
           <a href="features">

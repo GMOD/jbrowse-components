@@ -19,6 +19,7 @@ such as new view types that can be displayed alongside our linear genome view.
 | Show soft clipping in alignments tracks                                      | :heavy_check_mark: | :x:       |
 | Supports new view types such as circular, dotplot, etc.                      | :heavy_check_mark: | :x:       |
 | Connect to UCSC trackHubs                                                    | :heavy_check_mark: | :x:       |
+| Built in spreadsheet for flipping through variant datasets                   | :heavy_check_mark: | :x:       |
 
 ## New view types
 
