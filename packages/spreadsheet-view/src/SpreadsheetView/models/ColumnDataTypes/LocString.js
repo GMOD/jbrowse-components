@@ -193,35 +193,40 @@ export default pluginManager => {
       },
       get parsedLocString() {
         const session = getSession(self)
-        return parseLocString(
-          self.locString,
-          session.assemblyManager.isValidRefName,
+        const model = getParent(self, 3).spreadsheet
+        const { assemblyName } = model
+        return parseLocString(self.locString, refName =>
+          session.assemblyManager.isValidRefName(refName, assemblyName),
         )
       },
       // returns a function that tests the given row
       get predicate() {
         const session = getSession(self)
-        if (!self.locString || self.locStringIsInvalid)
+        if (!self.locString || self.locStringIsInvalid) {
           return function alwaysTrue() {
             return true
           }
+        }
 
         const { parsedLocString, operation, columnNumber } = self // avoid closing over self
         return function stringPredicate(sheet, row) {
           const { cells } = row
           const cell = cells[columnNumber]
 
-          if (!cell || !cell.text) return false
-
-          const parsedCellText = parseLocString(
-            cell.text,
-            session.assemblyManager.isValidRefName,
+          if (!cell || !cell.text) {
+            return false
+          }
+          const parsedCellText = parseLocString(cell.text, refName =>
+            session.assemblyManager.isValidRefName(refName, sheet.assemblyName),
           )
-          if (!parsedCellText.refName) return false
+          if (!parsedCellText.refName) {
+            return false
+          }
 
           const predicate = OPERATION_PREDICATES[operation]
-          if (!predicate)
+          if (!predicate) {
             throw new Error(`"${operation}" not implemented in location filter`)
+          }
 
           return predicate(parsedCellText, parsedLocString)
         }
@@ -242,7 +247,7 @@ export default pluginManager => {
     const session = getSession(spreadsheet)
     const { assemblyManager } = session
     const { assemblyName } = spreadsheet
-    const { id: viewId } = getParent(spreadsheet)
+    const { id } = getParent(spreadsheet)
     const assembly = await assemblyManager.waitForAssembly(assemblyName)
     try {
       const loc = parseLocString(cell.text, name =>
@@ -254,7 +259,7 @@ export default pluginManager => {
         region => region.refName === canonicalRefName,
       )
 
-      const newViewId = `${viewId}_${assemblyName}`
+      const newViewId = `${id}_${assemblyName}`
       let view = session.views.find(v => v.id === newViewId)
       if (!view) {
         view = session.addView('LinearGenomeView', {
@@ -271,7 +276,7 @@ export default pluginManager => {
       }
       view.navToLocString(cell.text)
     } catch (e) {
-      session.pushSnackbarMessage(`${e}`)
+      session.notify(`${e}`, 'error')
     }
   }
 
