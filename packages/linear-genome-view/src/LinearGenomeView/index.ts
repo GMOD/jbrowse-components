@@ -343,6 +343,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       scrollTo(offsetPx: number) {
+        console.log(offsetPx)
         const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
         self.offsetPx = newOffsetPx
         return newOffsetPx
@@ -890,8 +891,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param bp -
        * @param refName -
        */
-      centerAt(/* bp, refName */) {
+      centerAt(bp: number, refName: string) {
         /* TODO */
+        // console.log(self.bpToPx({ refName, coord: bp }))
+        // console.log(refName)
+        // console.log(bp)
+        const centerPx = self.bpToPx({ refName, coord: bp })? self.bpToPx({refName, coord: bp }).offsetPx : 0
+        // console.log(centerPx)
+        // const test = Math.round(centerPx - self.width / 2)
+        self.scrollTo(Math.round(centerPx - self.width / 2))
       },
 
       center() {
