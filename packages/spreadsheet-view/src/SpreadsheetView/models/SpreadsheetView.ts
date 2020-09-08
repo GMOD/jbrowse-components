@@ -84,7 +84,7 @@ export default (pluginManager: PluginManager) => {
     }))
     .views(self => ({
       get readyToDisplay() {
-        return !!self.spreadsheet
+        return !!self.spreadsheet && self.spreadsheet.isLoaded
       },
 
       get hideRowSelection() {

@@ -28,22 +28,7 @@ function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
     parser: vcfParser,
     id: `vcf-${lineNumber}`,
   })
-  // if (!record) console.log(`no parse for "${line}"`)
-  // const cells = [
-  //   ...vcfCoreColumns.map((colName, columnNumber) => {
-  //     const text = formatters[colName]
-  //       ? formatters[colName](record[colName])
-  //       : String(record[colName])
-  //     return { columnNumber, text, dataType: 'text' }
-  //   }),
-  //   ...vcfParser.samples.map((sampleName: string, sampleNumber: number) => {
-  //     return {
-  //       columnNumber: vcfCoreColumns.length + sampleNumber,
-  //       text: record.SAMPLES[sampleName],
-  //       dataType: 'text',
-  //     }
-  //   }),
-  // ]
+
   const data = line.split('\t').map(d => (d === '.' ? '' : d))
   const row: Row = {
     id: String(lineNumber + 1),
@@ -71,7 +56,9 @@ export function parseVcfBuffer(
   const vcfParser = new VCF({ header })
   header = '' // garbage collect
   body.split('\n').forEach((line: string, lineNumber) => {
-    if (/\S/.test(line)) rows.push(vcfRecordToRow(vcfParser, line, lineNumber))
+    if (/\S/.test(line)) {
+      rows.push(vcfRecordToRow(vcfParser, line, lineNumber))
+    }
   })
   body = '' // garbage collect
 
@@ -95,17 +82,15 @@ export function parseVcfBuffer(
     columns[oi] = { name: vcfParser.samples[i], dataType: { type: 'Text' } }
   }
 
-  // TODO: synthesize a linkable location column after the POS column
-  // columnDisplayOrder.push(columnDisplayOrder.length)
-  // columns.splice(2, 0, {
-  //   name: 'Location',
-  //   dataType: { type: 'LocationPoint' },
-  //   isDerived: true,
-  //   derivationFunction: function deriveLocationColumn(column, cell) {},
-  // })
-  // rowSet.rows.forEach(row => {
-  //   row.cells.splice(2, 0, {})
-  // })
+  columnDisplayOrder.push(columnDisplayOrder.length)
+  columns.unshift({
+    name: 'Location',
+    dataType: { type: 'LocString' },
+    isDerived: true,
+    derivationFunctionText: `function deriveLocationColumn(row, column) {
+      return {text:row.extendedData.vcfFeature.refName+':'+row.extendedData.vcfFeature.start+'..'+row.extendedData.vcfFeature.end}
+    }`,
+  })
 
   return {
     rowSet,
