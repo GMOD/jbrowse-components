@@ -244,10 +244,10 @@ export default pluginManager => {
     const { assemblyName } = spreadsheet
     const { id: viewId } = getParent(spreadsheet)
     const assembly = await assemblyManager.waitForAssembly(assemblyName)
-    const loc = parseLocString(cell.text, name =>
-      assemblyManager.isValidRefName(name, spreadsheet.assemblyName),
-    )
-    if (loc) {
+    try {
+      const loc = parseLocString(cell.text, name =>
+        assemblyManager.isValidRefName(name, spreadsheet.assemblyName),
+      )
       const { refName } = loc
       const canonicalRefName = assembly.getCanonicalRefName(refName)
       const newDisplayedRegion = assembly.regions.find(
@@ -258,7 +258,7 @@ export default pluginManager => {
       let view = session.views.find(v => v.id === newViewId)
       if (!view) {
         view = session.addView('LinearGenomeView', {
-          displayName: cell.text,
+          displayName: assemblyName,
           id: newViewId,
         })
 
@@ -270,6 +270,8 @@ export default pluginManager => {
         await when(() => view.initialized)
       }
       view.navToLocString(cell.text)
+    } catch (e) {
+      session.pushSnackbarMessage(`${e}`)
     }
   }
 
