@@ -30,7 +30,7 @@ export default () => {
       border: '1px solid #a2a2a2',
       right: 0,
       top: 0,
-      zIndex: 10000, // needs to be above overlay
+      zIndex: 1001, // needs to be above overlay
     },
   })
 
