@@ -58,6 +58,9 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       // use this method instead of assemblyManager.get(assemblyName)
       // get an assembly with regions loaded
       async waitForAssembly(assemblyName: string) {
+        if (!assemblyName) {
+          throw new Error('no assembly name supplied to waitForAssembly')
+        }
         const canonicalName = self.aliasMap.get(assemblyName)
         const assembly = self.assemblies.find(
           asm => asm.name === (canonicalName || assemblyName),
@@ -106,6 +109,9 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
           if (assembly) {
             return assembly.isValidRefName(refName)
           }
+          throw new Error(
+            `isValidRefName for ${assemblyName} failed, assembly does not exist`,
+          )
         }
         if (!self.allPossibleRefNames) {
           throw new Error(
