@@ -183,6 +183,7 @@ export default pluginManager => {
         if (self.locString) {
           const parsed = self.parsedLocString
           return (
+            !parsed ||
             parsed.refName === '' ||
             typeof parsed.start !== 'number' ||
             typeof parsed.end !== 'number' ||
@@ -195,9 +196,13 @@ export default pluginManager => {
         const session = getSession(self)
         const model = getParent(self, 3).spreadsheet
         const { assemblyName } = model
-        return parseLocString(self.locString, refName =>
-          session.assemblyManager.isValidRefName(refName, assemblyName),
-        )
+        try {
+          return parseLocString(self.locString, refName =>
+            session.assemblyManager.isValidRefName(refName, assemblyName),
+          )
+        } catch (e) {
+          return undefined
+        }
       },
       // returns a function that tests the given row
       get predicate() {
@@ -210,7 +215,7 @@ export default pluginManager => {
 
         const { parsedLocString, operation, columnNumber } = self // avoid closing over self
         return function stringPredicate(sheet, row) {
-          const { cells } = row
+          const { cellsWithDerived: cells } = row
           const cell = cells[columnNumber]
 
           if (!cell || !cell.text) {
@@ -219,6 +224,7 @@ export default pluginManager => {
           const parsedCellText = parseLocString(cell.text, refName =>
             session.assemblyManager.isValidRefName(refName, sheet.assemblyName),
           )
+
           if (!parsedCellText.refName) {
             return false
           }
