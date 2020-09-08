@@ -71,21 +71,17 @@ function Home() {
           <ul>
             <li>
               New additional views that can be displayed alongside classic the
-              "linear genome view" including Circos-style circular views,
-              dotplot, and synteny views
+              &quot;linear genome view&quot; including Circos-style circular
+              views, dotplot, and synteny views
             </li>
             <li>
               Plugins can add additional view types, track types, data adapters,
               and more, allowing nearly endless extensibility
             </li>
             <li>
-              The linear genome view can display multiple chromosomes or
-              discontinuous regions on a single linear genome view
-            </li>
-            <li>
               Support for many common data types including BAM, CRAM, tabix
               indexed VCF, GFF, BED, BigBed, BigWig, and several specialized
-              formats including PAF
+              formats
             </li>
             <li>And more!</li>
           </ul>
