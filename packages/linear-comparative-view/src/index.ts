@@ -5,7 +5,7 @@ import Plugin from '@gmod/jbrowse-core/Plugin'
 import CalendarIcon from '@material-ui/icons/CalendarViewDay'
 
 import {
-  AbstractViewContainer,
+  AbstractSessionModel,
   isAbstractMenuManager,
 } from '@gmod/jbrowse-core/util'
 import {
@@ -80,7 +80,7 @@ export default class extends Plugin {
       pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
         label: 'Linear synteny view',
         icon: CalendarIcon,
-        onClick: (session: AbstractViewContainer) => {
+        onClick: (session: AbstractSessionModel) => {
           session.addView('LinearSyntenyView', {})
         },
       })

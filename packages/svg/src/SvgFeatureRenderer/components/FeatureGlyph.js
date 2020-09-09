@@ -20,62 +20,6 @@ function FeatureGlyph(props) {
     reversed,
   } = props
 
-  function onFeatureMouseDown(event) {
-    const { onFeatureMouseDown: handler } = props
-    if (!handler) return undefined
-    return handler(event, feature.id())
-  }
-
-  function onFeatureMouseEnter(event) {
-    const { onFeatureMouseEnter: handler } = props
-    if (!handler) return undefined
-    return handler(event, feature.id())
-  }
-
-  function onFeatureMouseOut(event) {
-    const { onFeatureMouseOut: handler } = props
-    if (!handler) return undefined
-    return handler(event, feature.id())
-  }
-
-  function onFeatureMouseOver(event) {
-    const { onFeatureMouseOver: handler } = props
-    if (!handler) return undefined
-    return handler(event, feature.id())
-  }
-
-  function onFeatureMouseUp(event) {
-    const { onFeatureMouseUp: handler } = props
-    if (!handler) return undefined
-    return handler(event, feature.id())
-  }
-
-  function onFeatureMouseLeave(event) {
-    const { onFeatureMouseLeave: handler } = props
-    if (!handler) return undefined
-    return handler(event, feature.id())
-  }
-
-  function onFeatureMouseMove(event) {
-    const { onFeatureMouseMove: handler } = props
-    if (!handler) return undefined
-    return handler(event, feature.id())
-  }
-
-  function onFeatureClick(event) {
-    const { onFeatureClick: handler } = props
-    if (!handler) return undefined
-    event.stopPropagation()
-    return handler(event, feature.id())
-  }
-
-  function onFeatureContextMenu(event) {
-    const { onFeatureContextMenu: handler } = props
-    if (!handler) return undefined
-    event.stopPropagation()
-    return handler(event, feature.id())
-  }
-
   const featureLayout = rootLayout.getSubRecord(String(feature.id()))
   const { GlyphComponent } = featureLayout.data
 
@@ -125,23 +69,7 @@ function FeatureGlyph(props) {
     )
   }
 
-  return (
-    <g
-      onMouseDown={onFeatureMouseDown}
-      onMouseEnter={onFeatureMouseEnter}
-      onMouseOut={onFeatureMouseOut}
-      onMouseOver={onFeatureMouseOver}
-      onMouseUp={onFeatureMouseUp}
-      onMouseLeave={onFeatureMouseLeave}
-      onMouseMove={onFeatureMouseMove}
-      onClick={onFeatureClick}
-      onContextMenu={onFeatureContextMenu}
-      onFocus={onFeatureMouseOver}
-      onBlur={onFeatureMouseOut}
-    >
-      {glyphComponents}
-    </g>
-  )
+  return <g>{glyphComponents}</g>
 }
 
 FeatureGlyph.propTypes = {
@@ -168,18 +96,7 @@ FeatureGlyph.propTypes = {
   shouldShowDescription: PropTypes.bool,
   fontHeight: PropTypes.number,
   allowedWidthExpansion: PropTypes.number,
-
-  onFeatureMouseDown: PropTypes.func,
-  onFeatureMouseEnter: PropTypes.func,
-  onFeatureMouseOut: PropTypes.func,
-  onFeatureMouseOver: PropTypes.func,
-  onFeatureMouseUp: PropTypes.func,
-  onFeatureMouseLeave: PropTypes.func,
-  onFeatureMouseMove: PropTypes.func,
-
-  // synthesized from mouseup and mousedown
-  onFeatureClick: PropTypes.func,
-  onFeatureContextMenu: PropTypes.func,
+  movedDuringLastMouseDown: PropTypes.bool.isRequired,
 }
 
 FeatureGlyph.defaultProps = {
@@ -189,17 +106,6 @@ FeatureGlyph.defaultProps = {
   shouldShowName: false,
   description: '',
   shouldShowDescription: false,
-
-  onFeatureMouseDown: undefined,
-  onFeatureMouseEnter: undefined,
-  onFeatureMouseOut: undefined,
-  onFeatureMouseOver: undefined,
-  onFeatureMouseUp: undefined,
-  onFeatureMouseLeave: undefined,
-  onFeatureMouseMove: undefined,
-  onFeatureContextMenu: undefined,
-
-  onFeatureClick: undefined,
   fontHeight: undefined,
   allowedWidthExpansion: undefined,
 }

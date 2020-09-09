@@ -1,5 +1,5 @@
 ---
-id: bcc2020_embedding_jbrowse_getting_started
+id: bcc2020_embedding_jbrowse_01_getting_started
 title: Getting started
 ---
 

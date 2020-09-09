@@ -3170,22 +3170,22 @@
   resolved "https://registry.yarnpkg.com/@francoischalifour/autocomplete-preset-algolia/-/autocomplete-preset-algolia-1.0.0-alpha.26.tgz#3e20315d43dfef6c676cab4267974de70c2f6ec2"
   integrity sha512-RrayxZgvTzpwq+RqEIpVn2UOEFLwa+HADCr2I3UI05o/OGU7Wc6LltpQy54scR+FlAIk6qTJwp5Nw/ecJn6xXg==
 
-"@gmod/bam@^1.0.40":
-  version "1.0.40"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.40.tgz#a29b1288f29c93b364f1f5dbbadf1580802bf6b3"
-  integrity sha512-NbkfCLVL/H8DagHWUOHfNERau3gury4NNDlK1/K74CK8NrbzTmZdl0vYTUn1mQVX5g+GtkQcPdUjcV4bT7slYQ==
+"@gmod/bam@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.0.tgz#f7f07f32a886fd6a9f78ba846f30bc66bd2d535d"
+  integrity sha512-CWXFdoyui3AcQsxIrnOlStL5TBG6rMEH8babXmnZbjfJLIAXKM9NMLVMBiuqHDo0JzHrjBoXUaDAc9pfh88t0g==
   dependencies:
     "@babel/runtime-corejs3" "^7.5.5"
     "@gmod/bgzf-filehandle" "^1.3.3"
-    "@types/long" "^4.0.0"
-    "@types/node" "^12.7.8"
     abortable-promise-cache "^1.2.0"
+    buffer-crc32 "^0.2.13"
     cross-fetch "^3.0.2"
     es6-promisify "^6.0.1"
     generic-filehandle "^2.0.0"
     long "^4.0.0"
     object.entries-ponyfill "^1.0.1"
     quick-lru "^2.0.0"
+    range-parser "^1.2.1"
 
 "@gmod/bbi@^1.0.30":
   version "1.0.30"
@@ -5268,7 +5268,7 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.0.13.tgz#ee1128e881b874c371374c1f72201893616417c9"
   integrity sha512-rouEWBImiRaSJsVA+ITTFM6ZxibuAlTuNOCyxVbwreu6k6+ujs7DfnU9o+PShFhET78pMBl3eH+AGSI5eOTkPA==
 
-"@types/node@^12.0.12", "@types/node@^12.7.8":
+"@types/node@^12.0.12":
   version "12.12.42"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.42.tgz#d0d1149336bd07540dd1ea576692829d575dec34"
   integrity sha512-R/9QdYFLL9dE9l5cWWzWIZByVGFd7lk7JVOJ7KD+E1SJ4gni7XJRLz9QTjyYQiHIqEAgku9VgxdLjMlhhUaAFg==
@@ -9892,12 +9892,10 @@ electron-localshortcut@^3.1.0:
     keyboardevent-from-electron-accelerator "^2.0.0"
     keyboardevents-areequal "^0.2.1"
 
-electron-mock-ipc@^0.3.1:
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/electron-mock-ipc/-/electron-mock-ipc-0.3.5.tgz#59aedadf7e4b31e7bc3c5877bde60a3ad2228cf3"
-  integrity sha512-FNweG7RqXeV1LMVjpMiX+QiKK51f707xpzsImyZYzdwvf6H2Rh8jCL8R3OA4cjy8a6U40GCbGipLYZ7IE50BDQ==
-  dependencies:
-    electron ">=6.0.0"
+electron-mock-ipc@^0.3.8:
+  version "0.3.8"
+  resolved "https://registry.yarnpkg.com/electron-mock-ipc/-/electron-mock-ipc-0.3.8.tgz#96aaf48b229e7b7e6d5366bc08f8a320c2e55c00"
+  integrity sha512-MqjZQtAzb7BNb6GB89v+CWZlt7uQsVa5zgq23FMtpmQw272nzFqqC0mvyB1ikW4Z5fcwsnSvAxAcZg9jbvbxJQ==
 
 electron-publish@22.7.0:
   version "22.7.0"
@@ -9922,15 +9920,6 @@ electron-to-chromium@^1.3.488:
   version "1.3.488"
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.488.tgz#9226229f5fbc825959210e81e0bb3e63035d1c06"
   integrity sha512-NReBdOugu1yl8ly+0VDtiQ6Yw/1sLjnvflWq0gvY1nfUXU2PbA+1XAVuEb7ModnwL/MfUPjby7e4pAFnSHiy6Q==
-
-electron@>=6.0.0:
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-9.0.0.tgz#335cd426a8a542ad8d4c96c0c40a8668ab5527b8"
-  integrity sha512-JsaSQNPh+XDYkLj8APtVKTtvpb86KIG57W5OOss4TNrn8L3isC9LsCITwfnVmGIXHhvX6oY/weCtN5hAAytjVg==
-  dependencies:
-    "@electron/get" "^1.0.1"
-    "@types/node" "^12.0.12"
-    extract-zip "^1.0.3"
 
 electron@^9.0.0:
   version "9.1.1"

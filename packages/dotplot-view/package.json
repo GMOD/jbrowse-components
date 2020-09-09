@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-dotplot-view",
-  "version": "0.0.1-beta.11",
+  "version": "0.0.1-beta.12",
   "description": "JBrowse 2 dotplot view",
   "main": "src/index.ts",
   "scripts": {
@@ -27,6 +27,7 @@
     "clsx": "^1.0.0",
     "generic-filehandle": "^2.0.0",
     "json-stable-stringify": "^1.0.1",
+    "normalize-wheel": "^1.0.1",
     "react-sizeme": "^2.0.0"
   },
   "private": true

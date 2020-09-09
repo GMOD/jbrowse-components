@@ -37,6 +37,7 @@ export interface Column {
   name: string
   dataType: { type: string }
   isDerived?: boolean
+  derivationFunctionText?: string
 }
 
 function guessColumnType(

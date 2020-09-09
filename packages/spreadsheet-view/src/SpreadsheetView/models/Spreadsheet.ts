@@ -1,6 +1,8 @@
 import { stringToFunction } from '@gmod/jbrowse-core/util/functionStrings'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { SnapshotIn, Instance } from 'mobx-state-tree'
+import { getSession } from '@gmod/jbrowse-core/util'
+import { SnapshotIn, Instance, addDisposer } from 'mobx-state-tree'
+import { autorun } from 'mobx'
 import ColumnDataTypes from './ColumnDataTypes'
 import StaticRowSetF from './StaticRowSet'
 import RowF from './Row'
@@ -65,6 +67,7 @@ export default (pluginManager: PluginManager) => {
     .volatile(() => ({
       defaultDataType: ColumnTypes.Text,
       rowMenuPosition: null as RowMenuPosition,
+      isLoaded: false,
     }))
     .views(self => ({
       get hideRowSelection() {
@@ -90,8 +93,8 @@ export default (pluginManager: PluginManager) => {
           const { columnNumber, descending } = self.sortColumns[i]
           const { dataType } = self.columns[columnNumber]
           const result = dataType.compare(
-            rowA.cells[columnNumber],
-            rowB.cells[columnNumber],
+            rowA.cellsWithDerived[columnNumber],
+            rowB.cellsWithDerived[columnNumber],
           )
           if (result) return descending ? -result : result
         }
@@ -99,6 +102,31 @@ export default (pluginManager: PluginManager) => {
       },
     }))
     .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(async () => {
+            const session = getSession(self)
+            const { assemblyManager } = session
+            try {
+              if (self.assemblyName) {
+                await assemblyManager.waitForAssembly(self.assemblyName)
+                this.setLoaded(true)
+              }
+            } catch (error) {
+              session.notify(
+                `failed to load assembly ${self.assemblyName} ${error}`,
+                'error',
+              )
+            }
+          }),
+        )
+      },
+
+      setLoaded(flag: boolean) {
+        self.isLoaded = true
+      },
+
       setRowMenuPosition(newPosition: RowMenuPosition) {
         self.rowMenuPosition = newPosition
       },

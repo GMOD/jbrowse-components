@@ -3,6 +3,7 @@ import {
   isContainedWithin,
 } from '@gmod/jbrowse-core/util/range'
 import ClearIcon from '@material-ui/icons/Clear'
+import { when } from '@gmod/jbrowse-core/util'
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
@@ -17,8 +18,6 @@ export default pluginManager => {
   const { compareLocStrings, getSession, parseLocString } = jbrequire(
     '@gmod/jbrowse-core/util',
   )
-
-  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
 
   const MakeSpreadsheetColumnType = jbrequire(
     require('./MakeSpreadsheetColumnType'),
@@ -102,7 +101,6 @@ export default pluginManager => {
     'overlaps with',
     'contained within',
     'fully contains',
-
     'does not overlap',
     'not contained within',
     'does not contain',
@@ -185,6 +183,7 @@ export default pluginManager => {
         if (self.locString) {
           const parsed = self.parsedLocString
           return (
+            !parsed ||
             parsed.refName === '' ||
             typeof parsed.start !== 'number' ||
             typeof parsed.end !== 'number' ||
@@ -195,35 +194,45 @@ export default pluginManager => {
       },
       get parsedLocString() {
         const session = getSession(self)
-        return parseLocString(
-          self.locString,
-          session.assemblyManager.isValidRefName,
-        )
+        const model = getParent(self, 3).spreadsheet
+        const { assemblyName } = model
+        try {
+          return parseLocString(self.locString, refName =>
+            session.assemblyManager.isValidRefName(refName, assemblyName),
+          )
+        } catch (e) {
+          return undefined
+        }
       },
       // returns a function that tests the given row
       get predicate() {
         const session = getSession(self)
-        if (!self.locString || self.locStringIsInvalid)
+        if (!self.locString || self.locStringIsInvalid) {
           return function alwaysTrue() {
             return true
           }
+        }
 
         const { parsedLocString, operation, columnNumber } = self // avoid closing over self
         return function stringPredicate(sheet, row) {
-          const { cells } = row
+          const { cellsWithDerived: cells } = row
           const cell = cells[columnNumber]
 
-          if (!cell || !cell.text) return false
-
-          const parsedCellText = parseLocString(
-            cell.text,
-            session.assemblyManager.isValidRefName,
+          if (!cell || !cell.text) {
+            return false
+          }
+          const parsedCellText = parseLocString(cell.text, refName =>
+            session.assemblyManager.isValidRefName(refName, sheet.assemblyName),
           )
-          if (!parsedCellText.refName) return false
+
+          if (!parsedCellText.refName) {
+            return false
+          }
 
           const predicate = OPERATION_PREDICATES[operation]
-          if (!predicate)
+          if (!predicate) {
             throw new Error(`"${operation}" not implemented in location filter`)
+          }
 
           return predicate(parsedCellText, parsedLocString)
         }
@@ -240,25 +249,40 @@ export default pluginManager => {
     .volatile(() => ({ ReactComponent: FilterReactComponent }))
 
   // opens a new LGV at the location described in the locString in the cell text
-  function locationLinkClick(spreadsheet, columnNumber, cell) {
+  async function locationLinkClick(spreadsheet, columnNumber, cell) {
     const session = getSession(spreadsheet)
-    const loc = parseLocString(
-      cell.text,
-      session.assemblyManager.isValidRefName,
-    )
-    if (loc) {
-      const { dataset } = getParent(spreadsheet)
-      const assembly = session.assemblyManager.get(
-        readConfObject(dataset.assembly, 'name'),
+    const { assemblyManager } = session
+    const { assemblyName } = spreadsheet
+    const { id } = getParent(spreadsheet)
+    const assembly = await assemblyManager.waitForAssembly(assemblyName)
+    try {
+      const loc = parseLocString(cell.text, name =>
+        assemblyManager.isValidRefName(name, spreadsheet.assemblyName),
       )
-      loc.refName = assembly.getCanonicalRefName(loc.refName)
-      const initialState = { displayName: cell.text }
-      const view = session.addViewOfDataset(
-        'LinearGenomeView',
-        readConfObject(dataset, 'name'),
-        initialState,
+      const { refName } = loc
+      const canonicalRefName = assembly.getCanonicalRefName(refName)
+      const newDisplayedRegion = assembly.regions.find(
+        region => region.refName === canonicalRefName,
       )
-      view.afterDisplayedRegionsSet(() => view.navTo(loc))
+
+      const newViewId = `${id}_${assemblyName}`
+      let view = session.views.find(v => v.id === newViewId)
+      if (!view) {
+        view = session.addView('LinearGenomeView', {
+          displayName: assemblyName,
+          id: newViewId,
+        })
+
+        // note that we have to clone this because otherwise it adds "same object
+        // twice to the mst tree"
+        view.setDisplayedRegions([
+          JSON.parse(JSON.stringify(newDisplayedRegion)),
+        ])
+        await when(() => view.initialized)
+      }
+      view.navToLocString(cell.text)
+    } catch (e) {
+      session.notify(`${e}`, 'error')
     }
   }
 

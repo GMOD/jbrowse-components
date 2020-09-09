@@ -7,7 +7,8 @@ import { getConf } from '@gmod/jbrowse-core/configuration'
 import { Menu } from '@gmod/jbrowse-core/ui'
 import { BaseBlock } from '@gmod/jbrowse-core/util/blockTypes'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { DotplotViewModel } from '../model'
+import normalizeWheel from 'normalize-wheel'
+import { DotplotViewModel, Dotplot1DViewModel } from '../model'
 
 const useStyles = makeStyles(theme => {
   return {
@@ -56,10 +57,23 @@ const useStyles = makeStyles(theme => {
     error: {
       color: 'red',
     },
+    popover: {
+      background: '#fff',
+      zIndex: 1000,
+      border: '1px solid black',
+      pointerEvents: 'none',
+      position: 'absolute',
+    },
   }
 })
 
 type Coord = [number, number] | undefined
+type Timer = ReturnType<typeof setTimeout>
+
+function locstr(px: number, view: Dotplot1DViewModel) {
+  const obj = view.pxToBp(px)
+  return `${obj.refName}:${Math.floor(obj.offset).toLocaleString('en-US')}`
+}
 
 export default (pluginManager: PluginManager) => {
   const { jbrequire } = pluginManager
@@ -93,6 +107,11 @@ export default (pluginManager: PluginManager) => {
     })
     return blockLabelKeysToHide
   }
+
+  // produces offsetX/offsetY coordinates from a clientX and an element's getBoundingClientRect
+  function getOffset(coord: Coord, rect: { left: number; top: number }) {
+    return coord && ([coord[0] - rect.left, coord[1] - rect.top] as Coord)
+  }
   const DotplotViewInternal = observer(
     ({ model }: { model: DotplotViewModel }) => {
       const {
@@ -106,34 +125,66 @@ export default (pluginManager: PluginManager) => {
         vtextRotation,
       } = model
       const classes = useStyles()
-      const [mousecurr, setMouseCurr] = useState([0, 0])
-      const [mousedown, setMouseDown] = useState<Coord>()
-      const [mouseup, setMouseUp] = useState<Coord>()
-      const [tracking, setTracking] = useState(false)
+      const [mousecurrClient, setMouseCurrClient] = useState<Coord>()
+      const [mousedownClient, setMouseDownClient] = useState<Coord>()
+      const [mouseupClient, setMouseUpClient] = useState<Coord>()
       const ref = useRef<SVGSVGElement>(null)
+      const root = useRef<HTMLDivElement>(null)
       const distanceX = useRef(0)
       const distanceY = useRef(0)
+      const timeout = useRef<Timer>()
+      const delta = useRef(0)
       const scheduled = useRef(false)
 
       // require non-react wheel handler to properly prevent body scrolling
       useEffect(() => {
-        function onWheel(event: WheelEvent) {
-          event.preventDefault()
-
-          distanceX.current += event.deltaX
-          distanceY.current -= event.deltaY
-          if (!scheduled.current) {
-            scheduled.current = true
-
-            window.requestAnimationFrame(() => {
+        function onWheel(origEvent: WheelEvent) {
+          const event = normalizeWheel(origEvent)
+          origEvent.preventDefault()
+          if (origEvent.ctrlKey === true) {
+            delta.current += event.pixelY / 500
+            model.vview.setScaleFactor(
+              delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
+            )
+            model.hview.setScaleFactor(
+              delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
+            )
+            if (timeout.current) {
+              clearTimeout(timeout.current)
+            }
+            timeout.current = setTimeout(() => {
               transaction(() => {
-                model.hview.scroll(distanceX.current)
-                model.vview.scroll(distanceY.current)
+                model.hview.setScaleFactor(1)
+                model.vview.setScaleFactor(1)
+                model.hview.zoomTo(
+                  delta.current > 0
+                    ? model.hview.bpPerPx * (1 + delta.current)
+                    : model.hview.bpPerPx / (1 - delta.current),
+                )
+                model.vview.zoomTo(
+                  delta.current > 0
+                    ? model.vview.bpPerPx * (1 + delta.current)
+                    : model.vview.bpPerPx / (1 - delta.current),
+                )
               })
-              scheduled.current = false
-              distanceX.current = 0
-              distanceY.current = 0
-            })
+              delta.current = 0
+            }, 300)
+          } else {
+            distanceX.current += event.pixelX
+            distanceY.current -= event.pixelY
+            if (!scheduled.current) {
+              scheduled.current = true
+
+              window.requestAnimationFrame(() => {
+                transaction(() => {
+                  model.hview.scroll(distanceX.current)
+                  model.vview.scroll(distanceY.current)
+                })
+                scheduled.current = false
+                distanceX.current = 0
+                distanceY.current = 0
+              })
+            }
           }
         }
         if (ref.current) {
@@ -157,11 +208,63 @@ export default (pluginManager: PluginManager) => {
         viewWidth,
         hview.offsetPx,
       )
+      const rect = root.current?.getBoundingClientRect() || { left: 0, top: 0 }
+      const svg = ref.current?.getBoundingClientRect() || { left: 0, top: 0 }
+      const mousedown = getOffset(mousedownClient, svg)
+      const mousecurr = getOffset(mousecurrClient, svg)
+      const mouseup = getOffset(mouseupClient, svg)
       return (
-        <div style={{ position: 'relative' }}>
+        <div ref={root} className={classes.root}>
           <Controls model={model} />
+          {mousecurr && mousecurrClient ? (
+            <div
+              className={classes.popover}
+              style={{
+                left:
+                  mousecurrClient[0] -
+                  rect.left +
+                  (mousedown && mousecurr[0] - mousedown[0] < 0 ? -120 : 20),
+                top:
+                  mousecurrClient[1] -
+                  rect.top +
+                  (mousedown && mousecurr[1] - mousedown[1] < 0 ? -40 : 0),
+              }}
+            >
+              {`x-${locstr(mousecurr[0], hview)}`}
+              <br />
+              {`y-${locstr(viewHeight - mousecurr[1], vview)}`}
+            </div>
+          ) : null}
+          {mousedown &&
+          mousecurr &&
+          mousedownClient &&
+          Math.abs(mousedown[0] - mousecurr[0]) > 3 &&
+          Math.abs(mousedown[1] - mousecurr[1]) > 3 ? (
+            <div
+              className={classes.popover}
+              style={{
+                left:
+                  mousedownClient[0] -
+                  rect.left -
+                  (mousecurr[0] - mousedown[0] < 0 ? 0 : 120),
+                top:
+                  mousedownClient[1] -
+                  rect.top -
+                  (mousecurr[1] - mousedown[1] < 0 ? 0 : 40),
+              }}
+            >
+              {`x-${locstr(mousedown[0], hview)}`}
+              <br />
+              {`y-${locstr(viewHeight - mousedown[1], vview)}`}
+            </div>
+          ) : null}
           <div className={classes.container}>
-            <div style={{ display: 'grid' }}>
+            <div
+              style={{
+                display: 'grid',
+                transform: `scaleX(${model.hview.scaleFactor}) scaleY(${model.vview.scaleFactor})`,
+              }}
+            >
               <svg
                 className={classes.vtext}
                 width={borderX}
@@ -198,35 +301,32 @@ export default (pluginManager: PluginManager) => {
                 className={classes.content}
                 width={viewWidth}
                 height={viewHeight}
-                onMouseMove={event => {
-                  if (tracking) {
-                    setMouseCurr([
-                      event.nativeEvent.offsetX,
-                      event.nativeEvent.offsetY,
-                    ])
+                style={{ cursor: 'crosshair' }}
+                onMouseLeave={() => {
+                  // the mouseleave is called on mouseup when the menu appears
+                  // so disable leave for this, but otherwise make cursor/zoombox go away
+                  if (!mouseup) {
+                    setMouseDownClient(undefined)
+                    setMouseCurrClient(undefined)
                   }
+                }}
+                onMouseMove={event => {
+                  setMouseCurrClient([event.clientX, event.clientY])
                 }}
                 onMouseUp={event => {
                   if (
                     mousedown &&
+                    mousecurr &&
                     Math.abs(mousedown[0] - mousecurr[0]) > 3 &&
                     Math.abs(mousedown[1] - mousecurr[1]) > 3
                   ) {
-                    setMouseUp([event.pageX, event.pageY])
+                    setMouseUpClient([event.clientX, event.clientY])
                   }
-                  setTracking(false)
                 }}
                 onMouseDown={event => {
                   if (event.button === 0) {
-                    setMouseDown([
-                      event.nativeEvent.offsetX,
-                      event.nativeEvent.offsetY,
-                    ])
-                    setMouseCurr([
-                      event.nativeEvent.offsetX,
-                      event.nativeEvent.offsetY,
-                    ])
-                    setTracking(true)
+                    setMouseDownClient([event.clientX, event.clientY])
+                    setMouseCurrClient([event.clientX, event.clientY])
                   }
                 }}
               >
@@ -263,7 +363,7 @@ export default (pluginManager: PluginManager) => {
                       )
                     })}
                 </g>
-                {mousedown ? (
+                {mousedown && mousecurr ? (
                   <rect
                     fill="rgba(255,0,0,0.3)"
                     x={Math.min(mousecurr[0], mousedown[0])}
@@ -320,16 +420,21 @@ export default (pluginManager: PluginManager) => {
                 open={Boolean(mouseup)}
                 onMenuItemClick={(event, callback) => {
                   callback()
-                  setMouseUp(undefined)
-                  setMouseDown(undefined)
+                  setMouseUpClient(undefined)
+                  setMouseDownClient(undefined)
                 }}
                 onClose={() => {
-                  setMouseUp(undefined)
-                  setMouseDown(undefined)
+                  setMouseUpClient(undefined)
+                  setMouseDownClient(undefined)
                 }}
                 anchorReference="anchorPosition"
                 anchorPosition={
-                  mouseup ? { top: mouseup[1], left: mouseup[0] } : undefined
+                  mouseupClient
+                    ? {
+                        top: mouseupClient[1] + 30,
+                        left: mouseupClient[0] + 30,
+                      }
+                    : undefined
                 }
                 style={{ zIndex: 1000 }}
                 menuItems={[

@@ -14,8 +14,19 @@ Object {
     7,
     8,
     9,
+    10,
   ],
   "columns": Array [
+    Object {
+      "dataType": Object {
+        "type": "LocString",
+      },
+      "derivationFunctionText": "function deriveLocationColumn(row, column) {
+      return {text:row.extendedData.vcfFeature.refName+':'+row.extendedData.vcfFeature.start+'..'+row.extendedData.vcfFeature.end}
+    }",
+      "isDerived": true,
+      "name": "Location",
+    },
     Object {
       "dataType": Object {
         "type": "Text",

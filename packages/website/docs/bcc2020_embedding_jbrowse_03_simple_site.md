@@ -1,5 +1,5 @@
 ---
-id: bcc2020_embedding_jbrowse_simple_site
+id: bcc2020_embedding_jbrowse_03_simple_site
 title: Beginnings of a simple site
 ---
 

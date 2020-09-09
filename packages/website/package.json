@@ -1,6 +1,6 @@
 {
   "name": "website",
-  "version": "0.0.1-beta.12",
+  "version": "0.0.1-beta.13",
   "private": true,
   "scripts": {
     "copycli": "cp ../jbrowse-cli/README.md docs/cli.md",
@@ -11,6 +11,7 @@
     "swizzle": "docusaurus swizzle",
     "predeploy": "npm run build",
     "deploy": "aws s3 sync --delete build s3://jbrowse.org/jb2/ && aws s3 cp docs/jbrowse2.pdf s3://jbrowse.org/jb2/",
+    "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/jb2/*\"",
     "make": "npm run copycli && cd docs; make; cd -"
   },
   "dependencies": {

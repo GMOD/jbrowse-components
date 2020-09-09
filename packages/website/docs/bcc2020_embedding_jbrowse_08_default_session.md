@@ -1,5 +1,5 @@
 ---
-id: bcc2020_embedding_jbrowse_default_session
+id: bcc2020_embedding_jbrowse_08_default_session
 title: Creating a default session
 ---
 

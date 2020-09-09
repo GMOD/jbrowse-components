@@ -8,7 +8,7 @@ import {
   addDisposer,
 } from 'mobx-state-tree'
 
-import { autorun, transaction } from 'mobx'
+import { observable, autorun, transaction } from 'mobx'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import Base1DView, {
   Base1DViewModel,
@@ -31,7 +31,9 @@ function approxPixelStringLen(str: string) {
 type Coord = [number, number]
 
 // Used in the renderer
+// ref https://mobx-state-tree.js.org/concepts/volatiles on volatile state used here
 export const Dotplot1DView = Base1DView.extend(self => {
+  const scaleFactor = observable.box(1)
   return {
     views: {
       get interRegionPaddingWidth() {
@@ -43,9 +45,19 @@ export const Dotplot1DView = Base1DView.extend(self => {
       get dynamicBlocks() {
         return calculateDynamicBlocks(self, false, false)
       },
+      get scaleFactor() {
+        return scaleFactor.get()
+      },
+    },
+    actions: {
+      setScaleFactor(n: number) {
+        scaleFactor.set(n)
+      },
     },
   }
 })
+
+export type Dotplot1DViewModel = Instance<typeof Dotplot1DView>
 
 const DotplotHView = Dotplot1DView.extend(self => ({
   views: {
@@ -306,14 +318,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           const [x1, x2, y1, y2] = result
           const session = getSession(self)
 
-          const d1 = Base1DView.create(getSnapshot(self.hview))
-          const d2 = Base1DView.create(getSnapshot(self.vview))
+          const d1 = Dotplot1DView.create(getSnapshot(self.hview))
+          const d2 = Dotplot1DView.create(getSnapshot(self.vview))
           d1.setVolatileWidth(self.hview.width)
-          d2.setVolatileWidth(self.hview.width)
+          d2.setVolatileWidth(self.vview.width)
           d1.moveTo(x1, x2)
           d2.moveTo(y2, y1)
+          d1.zoomTo(d1.bpPerPx / (self.width / self.hview.width), 0)
+          d2.zoomTo(d2.bpPerPx / (self.width / self.vview.width), 0)
 
           // add the specific evidence tracks to the LGVs in the split view
+          // note: scales the bpPerPx by scaling proportional of the dotplot
+          // width to the eventual lgv width
           const viewSnapshot = {
             type: 'LinearSyntenyView',
             views: [

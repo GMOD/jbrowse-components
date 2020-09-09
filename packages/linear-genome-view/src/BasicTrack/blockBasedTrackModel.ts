@@ -32,6 +32,7 @@ const blockBasedTrack = types
         featureIdUnderMouse: undefined as undefined | string,
         ReactComponent: (BlockBasedTrack as unknown) as React.FC, // avoid circular reference
         contextMenuFeature: undefined as undefined | Feature,
+        additionalContextMenuItemCallbacks: [] as Function[],
       })),
   )
   .views(self => {
@@ -251,6 +252,9 @@ const blockBasedTrack = types
       })
       self.blockState = temp
     },
+    addAdditionalContextMenuItemCallback(callback: Function) {
+      self.additionalContextMenuItemCallbacks.push(callback)
+    },
   }))
   .actions(self => ({
     setContextMenuFeature(feature?: Feature) {
@@ -260,7 +264,8 @@ const blockBasedTrack = types
 
   .views(self => ({
     get contextMenuItems() {
-      return self.contextMenuFeature
+      const { pluginManager } = getSession(self)
+      const contextMenuItems = self.contextMenuFeature
         ? [
             {
               label: 'Open feature details',
@@ -273,6 +278,11 @@ const blockBasedTrack = types
             },
           ]
         : []
+      self.additionalContextMenuItemCallbacks.forEach(callback => {
+        const menuItems = callback(self.contextMenuFeature, self, pluginManager)
+        contextMenuItems.push(...menuItems)
+      })
+      return contextMenuItems
     },
   }))
 

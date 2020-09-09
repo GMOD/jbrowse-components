@@ -170,7 +170,7 @@ const stateModelFactory = (
 
         get contextMenuItems() {
           const feat = self.contextMenuFeature
-          return feat
+          const contextMenuItems = feat
             ? [
                 {
                   label: 'Open feature details',
@@ -193,6 +193,13 @@ const stateModelFactory = (
                 },
               ]
             : []
+          self.additionalContextMenuItemCallbacks.forEach(
+            (callback: Function) => {
+              const menuItems = callback(feat, self, pluginManager)
+              contextMenuItems.push(...menuItems)
+            },
+          )
+          return contextMenuItems
         },
 
         get sortObject() {
