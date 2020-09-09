@@ -34,6 +34,9 @@ function checkPkgJson(pkgJson) {
 
 function modifyPkgJson(pkgJson) {
   pkgJson.main = pkgJson.srcMain
+  if (pkgJson.module) {
+    pkgJson.module = ''
+  }
   fs.writeFileSync(
     './package.json',
     `${JSON.stringify(pkgJson, undefined, 2)}\n`,
