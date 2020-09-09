@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-development-tools",
-  "version": "0.0.1-beta.24",
+  "version": "0.0.1-beta.25",
   "description": "Tools to help with developing and building JBrowse 2 plugins",
   "scripts": {
     "test": "jest",
@@ -25,7 +25,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.19",
+    "@gmod/jbrowse-core": "^0.0.1-beta.20",
     "@types/copy-webpack-plugin": "^6.0.0",
     "@types/webpack": "^4.41.18",
     "change-case": "^4.1.1",
