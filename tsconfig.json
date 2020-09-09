@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -20,11 +16,5 @@
     "jsx": "react",
     "downlevelIteration": true
   },
-  "exclude": [
-    "**/build/",
-    "**/dist/",
-    "**/lib/",
-    "**/umd/",
-    "**/tmp/",
-  ]
+  "exclude": ["**/build/", "**/dist/", "**/lib/", "**/umd/", "**/tmp/"]
 }

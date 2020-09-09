@@ -1,0 +1,30 @@
+{
+  "head": {
+    "vars": [
+      "uniqueId",
+      "type",
+      "start",
+      "end",
+      "sub_uniqueId",
+      "sub_type",
+      "sub_start",
+      "sub_end",
+      "sub_sub_uniqueId",
+      "sub_sub_type",
+      "sub_sub_start",
+      "sub_sub_end",
+      "faldo_type",
+      "strand",
+      "sub_strand",
+      "sub_sub_strand",
+      "name",
+      "description",
+      "sub_name",
+      "sub_description",
+      "sub_class"
+    ]
+  },
+  "results": {
+    "bindings": []
+  }
+}

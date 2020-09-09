@@ -2,7 +2,9 @@
   "name": "root",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "products/*",
+    "plugins/*"
   ],
   "scripts": {
     "build": "yarn useDist && yarn build:plugins && yarn build:other && yarn useSrc",
@@ -12,16 +14,16 @@
     "useSrc": "lerna run useSrc --scope \"@gmod/jbrowse-plugin*\"",
     "lerna-publish": "cross-env lerna publish",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
-    "runprettier": "prettier --write \"./**/*.{css,scss,md}\"",
-    "checkprettier": "prettier --check \"./**/*.{css,scss,md}\"",
+    "format": "prettier --write .",
+    "check-format": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "test-ci": "jest --ci --coverage",
-    "built-test-ci": "jest --ci packages/integration-tests",
+    "built-test-ci": "jest --ci integration.test.js",
     "test": "jest"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "git diff --cached --name-only | if grep --quiet \"jbrowse-cli\"; then lerna run --scope \"@gmod/jbrowse-cli\" docs; git add packages/jbrowse-cli/README.md; fi;"
+      "pre-commit": "git diff --cached --name-only | if grep --quiet \"jbrowse-cli\"; then lerna run --scope \"@gmod/jbrowse-cli\" docs; git add products/jbrowse-cli/README.md; fi;"
     }
   },
   "devDependencies": {
