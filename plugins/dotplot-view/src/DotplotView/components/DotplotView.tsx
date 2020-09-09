@@ -41,6 +41,7 @@ const useStyles = makeStyles(theme => {
     vtext: {
       gridColumn: '1/2',
       gridRow: '1/2',
+      pointerEvents: 'none',
     },
     content: {
       gridColumn: '2/2',
@@ -53,12 +54,15 @@ const useStyles = makeStyles(theme => {
     htext: {
       gridColumn: '2/2',
       gridRow: '2/2',
+      pointerEvents: 'none',
     },
     error: {
       color: 'red',
     },
     popover: {
       background: '#fff',
+      maxWidth: 400,
+      wordBreak: 'break-all',
       zIndex: 1000,
       border: '1px solid black',
       pointerEvents: 'none',
@@ -69,74 +73,201 @@ const useStyles = makeStyles(theme => {
 
 type Coord = [number, number] | undefined
 type Timer = ReturnType<typeof setTimeout>
+type Rect = { left: number; top: number }
 
 function locstr(px: number, view: Dotplot1DViewModel) {
-  const obj = view.pxToBp(px)
-  return `${obj.refName}:${Math.floor(obj.offset).toLocaleString('en-US')}`
+  const { refName, start, offset, oob } = view.pxToBp(px)
+  const coord = Math.floor(start + offset)
+  return oob ? 'out of bounds' : `${refName}:${coord.toLocaleString('en-US')}`
 }
+
+function getBlockLabelKeysToHide(
+  blocks: BaseBlock[],
+  length: number,
+  viewOffsetPx: number,
+) {
+  const blockLabelKeysToHide: string[] = []
+  const sortedBlocks = blocks.slice(0).sort((a, b) => {
+    const alen = a.end - a.start
+    const blen = b.end - b.start
+    return blen - alen
+  })
+  const positions = new Array(Math.round(length))
+  sortedBlocks.forEach(({ key, offsetPx }) => {
+    const y = Math.round(length - offsetPx + viewOffsetPx)
+    const labelBounds = [Math.max(y - 12, 0), y]
+    if (y === 0 || positions.slice(...labelBounds).some(Boolean)) {
+      blockLabelKeysToHide.push(key)
+    } else {
+      positions.fill(true, ...labelBounds)
+    }
+  })
+  return blockLabelKeysToHide
+}
+const HorizontalAxis = observer(({ model }: { model: DotplotViewModel }) => {
+  const classes = useStyles()
+  const { viewWidth, borderY, hview, htextRotation } = model
+  const hide = getBlockLabelKeysToHide(
+    hview.dynamicBlocks.contentBlocks,
+    viewWidth,
+    hview.offsetPx,
+  )
+  return (
+    <svg width={viewWidth} height={borderY} className={classes.htext}>
+      <g>
+        {hview.dynamicBlocks.contentBlocks
+          .filter(region => !hide.includes(region.key))
+          .map(region => {
+            const x = region.offsetPx
+            const y = 0
+            return (
+              <text
+                transform={`rotate(${htextRotation},${
+                  x - hview.offsetPx
+                },${y})`}
+                key={JSON.stringify(region)}
+                x={x - hview.offsetPx}
+                y={y + 1}
+                fill="#000000"
+                dominantBaseline="hanging"
+                textAnchor="end"
+              >
+                {region.refName}
+              </text>
+            )
+          })}
+      </g>
+    </svg>
+  )
+})
+const VerticalAxis = observer(({ model }: { model: DotplotViewModel }) => {
+  const classes = useStyles()
+  const { borderX, viewHeight, vview, vtextRotation } = model
+  const hide = getBlockLabelKeysToHide(
+    vview.dynamicBlocks.contentBlocks,
+    viewHeight,
+    vview.offsetPx,
+  )
+  return (
+    <svg className={classes.vtext} width={borderX} height={viewHeight}>
+      <g>
+        {vview.dynamicBlocks.contentBlocks
+          .filter(region => !hide.includes(region.key))
+          .map(region => {
+            const y = region.offsetPx
+            const x = borderX
+            return (
+              <text
+                transform={`rotate(${vtextRotation},${x},${y})`}
+                key={JSON.stringify(region)}
+                x={borderX}
+                y={viewHeight - y + vview.offsetPx}
+                fill="#000000"
+                textAnchor="end"
+              >
+                {region.refName}
+              </text>
+            )
+          })}
+      </g>
+    </svg>
+  )
+})
+
+const Grid = observer(
+  ({
+    model,
+    children,
+    stroke = '#000a',
+  }: {
+    model: DotplotViewModel
+    children: React.ReactNode
+    stroke?: string
+  }) => {
+    const { viewWidth, viewHeight, hview, vview } = model
+    const hblocks = hview.dynamicBlocks.contentBlocks
+    const vblocks = vview.dynamicBlocks.contentBlocks
+    const htop = hview.displayedRegionsTotalPx - hview.offsetPx
+    const vtop = vview.displayedRegionsTotalPx - vview.offsetPx
+    return (
+      <svg width={viewWidth} height={viewHeight}>
+        <g>
+          {hblocks.map(region => {
+            const x = region.offsetPx - hview.offsetPx
+            return (
+              <line
+                key={JSON.stringify(region)}
+                x1={x}
+                y1={0}
+                x2={x}
+                y2={viewHeight}
+                stroke={stroke}
+              />
+            )
+          })}
+          {vblocks.map(region => {
+            const y = viewHeight - (region.offsetPx - vview.offsetPx)
+            return (
+              <line
+                key={JSON.stringify(region)}
+                x1={0}
+                y1={y}
+                x2={viewWidth}
+                y2={y}
+                stroke={stroke}
+              />
+            )
+          })}
+          <line x1={htop} y1={0} x2={htop} y2={viewHeight} stroke={stroke} />
+          <line
+            x1={0}
+            y1={viewHeight - vtop}
+            x2={viewWidth}
+            y2={viewHeight - vtop}
+            stroke={stroke}
+          />
+        </g>
+        {children}
+      </svg>
+    )
+  },
+)
 
 export default (pluginManager: PluginManager) => {
   const { jbrequire } = pluginManager
   const ImportForm = jbrequire(require('./ImportForm'))
   const Controls = jbrequire(require('./Controls'))
 
-  function getBlockLabelKeysToHide(
-    blocks: BaseBlock[],
-    length: number,
-    viewOffsetPx: number,
-  ) {
-    const blockLabelKeysToHide: string[] = []
-    const sortedBlocks = blocks
-      .filter(block => block.refName)
-      .map(({ start, end, key, offsetPx }) => ({
-        start,
-        end,
-        key,
-        offsetPx,
-      }))
-      .sort((a, b) => b.end - b.start - (a.end - a.start))
-    const positions = new Array(Math.round(length))
-    sortedBlocks.forEach(({ key, offsetPx }) => {
-      const y = Math.round(length - offsetPx + viewOffsetPx)
-      const labelBounds = [Math.max(y - 12, 0), y]
-      if (y === 0 || positions.slice(...labelBounds).some(Boolean)) {
-        blockLabelKeysToHide.push(key)
-      } else {
-        positions.fill(true, ...labelBounds)
-      }
-    })
-    return blockLabelKeysToHide
-  }
-
   // produces offsetX/offsetY coordinates from a clientX and an element's getBoundingClientRect
-  function getOffset(coord: Coord, rect: { left: number; top: number }) {
+  function getOffset(coord: Coord, rect: Rect) {
     return coord && ([coord[0] - rect.left, coord[1] - rect.top] as Coord)
   }
   const DotplotViewInternal = observer(
     ({ model }: { model: DotplotViewModel }) => {
-      const {
-        hview,
-        vview,
-        borderY,
-        borderX,
-        viewHeight,
-        viewWidth,
-        htextRotation,
-        vtextRotation,
-      } = model
+      const { hview, vview, viewHeight } = model
       const classes = useStyles()
       const [mousecurrClient, setMouseCurrClient] = useState<Coord>()
       const [mousedownClient, setMouseDownClient] = useState<Coord>()
       const [mouseupClient, setMouseUpClient] = useState<Coord>()
-      const ref = useRef<SVGSVGElement>(null)
+      const ref = useRef<HTMLDivElement>(null)
       const root = useRef<HTMLDivElement>(null)
       const distanceX = useRef(0)
       const distanceY = useRef(0)
+      const lref = useRef<HTMLDivElement>(null)
+      const rref = useRef<HTMLDivElement>(null)
       const timeout = useRef<Timer>()
       const delta = useRef(0)
       const scheduled = useRef(false)
+      const blank = { left: 0, top: 0, width: 0, height: 0 }
+      const svg = ref.current?.getBoundingClientRect() || blank
+      const rrect = rref.current?.getBoundingClientRect() || blank
+      const lrect = lref.current?.getBoundingClientRect() || blank
+      const mousedown = getOffset(mousedownClient, svg)
+      const mousecurr = getOffset(mousecurrClient, svg)
+      const mouseup = getOffset(mouseupClient, svg)
+      const mouserect = mouseup || mousecurr
 
-      // require non-react wheel handler to properly prevent body scrolling
+      // use non-React wheel handler to properly prevent body scrolling
       useEffect(() => {
         function onWheel(origEvent: WheelEvent) {
           const event = normalizeWheel(origEvent)
@@ -195,69 +326,49 @@ export default (pluginManager: PluginManager) => {
           }
         }
         return () => {}
-      })
+      }, [model.hview, model.vview])
 
-      const tickSize = 0
-      const verticalBlockLabelKeysToHide = getBlockLabelKeysToHide(
-        vview.dynamicBlocks.blocks,
-        viewHeight,
-        vview.offsetPx,
-      )
-      const horizontalBlockLabelKeysToHide = getBlockLabelKeysToHide(
-        hview.dynamicBlocks.blocks,
-        viewWidth,
-        hview.offsetPx,
-      )
-      const rect = root.current?.getBoundingClientRect() || { left: 0, top: 0 }
-      const svg = ref.current?.getBoundingClientRect() || { left: 0, top: 0 }
-      const mousedown = getOffset(mousedownClient, svg)
-      const mousecurr = getOffset(mousecurrClient, svg)
-      const mouseup = getOffset(mouseupClient, svg)
+      useEffect(() => {
+        function globalMouseMove(event: MouseEvent) {
+          setMouseCurrClient([event.clientX, event.clientY])
+        }
+        window.addEventListener('mousemove', globalMouseMove)
+        return () => {
+          window.removeEventListener('mousemove', globalMouseMove)
+        }
+      }, [])
+
+      // detect a mouseup after a mousedown was submitted, autoremoves mouseup
+      // once that single mouseup is set
+      useEffect(() => {
+        let cleanup = () => {}
+
+        function globalMouseUp(event: MouseEvent) {
+          if (
+            mousedown &&
+            mousecurr &&
+            Math.abs(mousedown[0] - mousecurr[0]) > 3 &&
+            Math.abs(mousedown[1] - mousecurr[1]) > 3
+          ) {
+            setMouseUpClient([event.clientX, event.clientY])
+          } else {
+            setMouseDownClient(undefined)
+          }
+        }
+
+        if (mousedown && !mouseup) {
+          window.addEventListener('mouseup', globalMouseUp, true)
+          cleanup = () => {
+            window.removeEventListener('mouseup', globalMouseUp, true)
+          }
+        }
+        return cleanup
+      }, [mousedown, mousecurr, mouseup])
+
       return (
         <div ref={root} className={classes.root}>
           <Controls model={model} />
-          {mousecurr && mousecurrClient ? (
-            <div
-              className={classes.popover}
-              style={{
-                left:
-                  mousecurrClient[0] -
-                  rect.left +
-                  (mousedown && mousecurr[0] - mousedown[0] < 0 ? -120 : 20),
-                top:
-                  mousecurrClient[1] -
-                  rect.top +
-                  (mousedown && mousecurr[1] - mousedown[1] < 0 ? -40 : 0),
-              }}
-            >
-              {`x-${locstr(mousecurr[0], hview)}`}
-              <br />
-              {`y-${locstr(viewHeight - mousecurr[1], vview)}`}
-            </div>
-          ) : null}
-          {mousedown &&
-          mousecurr &&
-          mousedownClient &&
-          Math.abs(mousedown[0] - mousecurr[0]) > 3 &&
-          Math.abs(mousedown[1] - mousecurr[1]) > 3 ? (
-            <div
-              className={classes.popover}
-              style={{
-                left:
-                  mousedownClient[0] -
-                  rect.left -
-                  (mousecurr[0] - mousedown[0] < 0 ? 0 : 120),
-                top:
-                  mousedownClient[1] -
-                  rect.top -
-                  (mousecurr[1] - mousedown[1] < 0 ? 0 : 40),
-              }}
-            >
-              {`x-${locstr(mousedown[0], hview)}`}
-              <br />
-              {`y-${locstr(viewHeight - mousedown[1], vview)}`}
-            </div>
-          ) : null}
+
           <div className={classes.container}>
             <div
               style={{
@@ -265,144 +376,81 @@ export default (pluginManager: PluginManager) => {
                 transform: `scaleX(${model.hview.scaleFactor}) scaleY(${model.vview.scaleFactor})`,
               }}
             >
-              <svg
-                className={classes.vtext}
-                width={borderX}
-                height={viewHeight}
-              >
-                <g>
-                  {vview.dynamicBlocks.blocks
-                    .filter(
-                      region =>
-                        region.refName &&
-                        !verticalBlockLabelKeysToHide.includes(region.key),
-                    )
-                    .map(region => {
-                      const y = region.offsetPx
-                      const x = borderX
-                      return (
-                        <text
-                          transform={`rotate(${vtextRotation},${x},${y})`}
-                          key={JSON.stringify(region)}
-                          x={borderX}
-                          y={viewHeight - y + vview.offsetPx}
-                          fill="#000000"
-                          textAnchor="end"
-                        >
-                          {region.refName}
-                        </text>
-                      )
-                    })}
-                </g>
-              </svg>
-
-              <svg
+              <VerticalAxis model={model} />
+              <HorizontalAxis model={model} />
+              <div
                 ref={ref}
+                style={{ position: 'relative' }}
                 className={classes.content}
-                width={viewWidth}
-                height={viewHeight}
-                style={{ cursor: 'crosshair' }}
-                onMouseLeave={() => {
-                  // the mouseleave is called on mouseup when the menu appears
-                  // so disable leave for this, but otherwise make cursor/zoombox go away
-                  if (!mouseup) {
-                    setMouseDownClient(undefined)
-                    setMouseCurrClient(undefined)
-                  }
-                }}
-                onMouseMove={event => {
-                  setMouseCurrClient([event.clientX, event.clientY])
-                }}
-                onMouseUp={event => {
-                  if (
-                    mousedown &&
-                    mousecurr &&
-                    Math.abs(mousedown[0] - mousecurr[0]) > 3 &&
-                    Math.abs(mousedown[1] - mousecurr[1]) > 3
-                  ) {
-                    setMouseUpClient([event.clientX, event.clientY])
-                  }
-                }}
-                onMouseDown={event => {
-                  if (event.button === 0) {
-                    setMouseDownClient([event.clientX, event.clientY])
-                    setMouseCurrClient([event.clientX, event.clientY])
-                  }
-                }}
               >
-                <g>
-                  {hview.dynamicBlocks.blocks
-                    .filter(region => region.refName)
-                    .map(region => {
-                      const x = region.offsetPx - hview.offsetPx
-                      return (
-                        <line
-                          key={JSON.stringify(region)}
-                          x1={x}
-                          y1={0}
-                          x2={x}
-                          y2={viewHeight}
-                          stroke="#000000"
-                        />
-                      )
-                    })}
-                  {vview.dynamicBlocks.blocks
-                    .filter(region => region.refName)
-                    .map(region => {
-                      const y = viewHeight - (region.offsetPx - vview.offsetPx)
-
-                      return (
-                        <line
-                          key={JSON.stringify(region)}
-                          x1={0}
-                          y1={y}
-                          x2={viewWidth}
-                          y2={y}
-                          stroke="#000000"
-                        />
-                      )
-                    })}
-                </g>
-                {mousedown && mousecurr ? (
-                  <rect
-                    fill="rgba(255,0,0,0.3)"
-                    x={Math.min(mousecurr[0], mousedown[0])}
-                    y={Math.min(mousecurr[1], mousedown[1])}
-                    width={Math.abs(mousecurr[0] - mousedown[0])}
-                    height={Math.abs(mousecurr[1] - mousedown[1])}
-                  />
+                {mouserect ? (
+                  <div
+                    ref={lref}
+                    className={classes.popover}
+                    style={{
+                      left:
+                        mouserect[0] -
+                        (mousedown && mouserect[0] - mousedown[0] < 0
+                          ? lrect.width
+                          : 0),
+                      top:
+                        mouserect[1] -
+                        (mousedown && mouserect[1] - mousedown[1] < 0
+                          ? lrect.height
+                          : 0),
+                    }}
+                  >
+                    {`x-${locstr(mouserect[0], hview)}`}
+                    <br />
+                    {`y-${locstr(viewHeight - mouserect[1], vview)}`}
+                  </div>
                 ) : null}
-              </svg>
-              <div className={classes.spacer} />
-              <svg width={viewWidth} height={borderY} className={classes.htext}>
-                <g>
-                  {hview.dynamicBlocks.blocks
-                    .filter(
-                      region =>
-                        region.refName &&
-                        !horizontalBlockLabelKeysToHide.includes(region.key),
-                    )
-                    .map(region => {
-                      const x = region.offsetPx
-                      const y = tickSize
-                      return (
-                        <text
-                          transform={`rotate(${htextRotation},${
-                            x - hview.offsetPx
-                          },${y})`}
-                          key={JSON.stringify(region)}
-                          x={x - hview.offsetPx}
-                          y={y + 1}
-                          fill="#000000"
-                          dominantBaseline="hanging"
-                          textAnchor="end"
-                        >
-                          {region.refName}
-                        </text>
-                      )
-                    })}
-                </g>
-              </svg>
+                {mousedown &&
+                mouserect &&
+                Math.abs(mousedown[0] - mouserect[0]) > 3 &&
+                Math.abs(mousedown[1] - mouserect[1]) > 3 ? (
+                  <div
+                    ref={rref}
+                    className={classes.popover}
+                    style={{
+                      left:
+                        mousedown[0] -
+                        (mouserect[0] - mousedown[0] < 0 ? 0 : rrect.width),
+                      top:
+                        mousedown[1] -
+                        (mouserect[1] - mousedown[1] < 0 ? 0 : rrect.height),
+                    }}
+                  >
+                    {`x-${locstr(mousedown[0], hview)}`}
+                    <br />
+                    {`y-${locstr(viewHeight - mousedown[1], vview)}`}
+                  </div>
+                ) : null}
+
+                <div
+                  role="presentation"
+                  style={{ cursor: 'crosshair' }}
+                  onMouseDown={event => {
+                    if (event.button === 0) {
+                      setMouseDownClient([event.clientX, event.clientY])
+                      setMouseCurrClient([event.clientX, event.clientY])
+                    }
+                  }}
+                >
+                  <Grid model={model}>
+                    {mousedown && mouserect ? (
+                      <rect
+                        fill="rgba(255,0,0,0.3)"
+                        x={Math.min(mouserect[0], mousedown[0])}
+                        y={Math.min(mouserect[1], mousedown[1])}
+                        width={Math.abs(mouserect[0] - mousedown[0])}
+                        height={Math.abs(mouserect[1] - mousedown[1])}
+                      />
+                    ) : null}
+                  </Grid>
+                </div>
+                <div className={classes.spacer} />
+              </div>
               <div className={classes.overlay}>
                 {model.tracks.map(track => {
                   const { ReactComponent } = track
