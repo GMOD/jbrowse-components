@@ -487,7 +487,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return
         }
         const displayedRegion = self.displayedRegions[0]
-        let assembly = assemblyManager.get(displayedRegion.assemblyName)
+        const { assemblyName } = displayedRegion
+        let assembly = assemblyManager.get(assemblyName)
         if (!assembly) {
           throw new Error(
             `Could not find assembly ${displayedRegion.assemblyName}`,
@@ -511,7 +512,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
               'Navigating to multiple locations is not allowed when viewing a whole chromosome',
             )
           }
-          const parsedLocString = parseLocString(locStrings[0], isValidRefName)
+          const parsedLocString = parseLocString(locStrings[0], refName =>
+            isValidRefName(refName, assemblyName),
+          )
           let changedAssembly = false
           if (
             parsedLocString.assemblyName &&

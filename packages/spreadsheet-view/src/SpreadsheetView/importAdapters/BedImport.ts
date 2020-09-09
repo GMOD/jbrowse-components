@@ -37,9 +37,9 @@ export async function parseBedBuffer(buffer: Buffer, options: ParseOptions) {
   const b = removeBedHeaders(buffer)
   const data = await parseTsvBuffer(b)
   const bedColumns = [
-    { name: 'chrom', dataType: { type: 'Text' } },
-    { name: 'chromStart', dataType: { type: 'Number' } },
-    { name: 'chromEnd', dataType: { type: 'Number' } },
+    { name: 'chrom', dataType: { type: 'LocRef' } },
+    { name: 'chromStart', dataType: { type: 'LocStart' } },
+    { name: 'chromEnd', dataType: { type: 'LocEnd' } },
     { name: 'name', dataType: { type: 'Text' } },
     { name: 'score', dataType: { type: 'Number' } },
     { name: 'strand', dataType: { type: 'Text' } },
@@ -54,6 +54,16 @@ export async function parseBedBuffer(buffer: Buffer, options: ParseOptions) {
   data.hasColumnNames = true
   data.assemblyName = options.selectedAssemblyName
 
+  data.columnDisplayOrder.push(data.columnDisplayOrder.length)
+  data.columns.unshift({
+    name: 'Location',
+    dataType: { type: 'LocString' },
+    isDerived: true,
+    derivationFunctionText: `function deriveLocationColumn(row, column) {
+      var cells = row.cells
+      return {text:cells[0].text+':'+cells[1].text+'..'+cells[2].text}
+    }`,
+  })
   return data
 }
 

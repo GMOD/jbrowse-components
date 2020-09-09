@@ -2,7 +2,7 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
 export default (pluginManager: PluginManager) => {
   const { lib } = pluginManager
-  const { types } = lib['mobx-state-tree']
+  const { types, getParent } = lib['mobx-state-tree']
 
   const CellModel = types.model('SpreadsheetCell', {
     text: types.string,
@@ -25,6 +25,21 @@ export default (pluginManager: PluginManager) => {
       },
       select() {
         self.isSelected = true
+      },
+      setExtendedData(data: unknown) {
+        self.extendedData = data
+      },
+    }))
+    .views(self => ({
+      get cellsWithDerived() {
+        const { columns } = getParent(self, 3)
+        let i = 0
+        return columns.map((column: { isDerived: boolean; func: Function }) => {
+          if (column.isDerived) {
+            return column.func(self, column)
+          }
+          return self.cells[i++]
+        })
       },
     }))
 
