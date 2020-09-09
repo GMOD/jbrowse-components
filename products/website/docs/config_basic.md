@@ -80,7 +80,7 @@ Here is a complete config.json file containing only a hg19
 
 ## Adding an assembly with the CLI
 
-See https://github.com/GMOD/jbrowse-components/tree/master/packages/jbrowse-cli#jbrowse-add-assembly-sequence
+See https://github.com/GMOD/jbrowse-components/tree/master/products/jbrowse-cli#jbrowse-add-assembly-sequence
 
 ## Track configurations
 

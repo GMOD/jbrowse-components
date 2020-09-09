@@ -23,26 +23,26 @@ after_success:
 - bash <(curl -s https://codecov.io/bash)
 # build release
 - if [[ "$TRAVIS_TAG"  =~ ^@gmod/jbrowse-web ]]; then
-     (cd packages/jbrowse-web/build; zip -r "jbrowse-web-${TRAVIS_TAG//[!0-9.]/}.zip" .);
+     (cd products/jbrowse-web/build; zip -r "jbrowse-web-${TRAVIS_TAG//[!0-9.]/}.zip" .);
   else
-     (cd packages/jbrowse-web/build; zip -r "jbrowse-web-${TRAVIS_BRANCH}.zip" .);
+     (cd products/jbrowse-web/build; zip -r "jbrowse-web-${TRAVIS_BRANCH}.zip" .);
   fi;
 # copy config, used for having a default config in our online demos
-- cp ${TRAVIS_BUILD_DIR}/packages/jbrowse-web/build/test_data/config.json ${TRAVIS_BUILD_DIR}/packages/jbrowse-web/build/config.json
+- cp ${TRAVIS_BUILD_DIR}/products/jbrowse-web/build/test_data/config.json ${TRAVIS_BUILD_DIR}/products/jbrowse-web/build/config.json
 deploy:
 - provider: s3
   skip_cleanup: true
   access_key_id: $AWS_ACCESS_KEY
   secret_access_key: $AWS_SECRET
   bucket: "jbrowse.org"
-  local_dir: packages/jbrowse-web/build
+  local_dir: products/jbrowse-web/build
   upload_dir: code/jb2/alpha/$TRAVIS_BRANCH
   on:
     repo: GMOD/jbrowse-components
     all_branches: true
 - provider: releases
   token: $GITHUB_TOKEN
-  file: packages/jbrowse-web/build/jbrowse-web-*.zip
+  file: products/jbrowse-web/build/jbrowse-web-*.zip
   file_glob: true
   skip_cleanup: true
   on:

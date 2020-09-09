@@ -69,7 +69,7 @@
     "test": "rescripts test",
     "eject": "rescripts eject",
     "checktypes": "tsc --noEmit",
-    "jtest": "jest --config ../../jest.config.js --roots packages/jbrowse-web/",
+    "jtest": "jest --config ../../jest.config.js --roots products/jbrowse-web/",
     "lint": "eslint --ext .js,.ts,.jsx,.tsx src"
   },
   "homepage": ".",

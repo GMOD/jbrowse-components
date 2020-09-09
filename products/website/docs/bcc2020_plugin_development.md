@@ -70,7 +70,7 @@ We can then load our in-development plugin with our production version of
 jbrowse
 http://localhost/myfolder/?config=http://localhost:9001/config_ucsc_api.json
 
-If you had a github clone of jbrowse-components, with the packages/jbrowse-web
+If you had a github clone of jbrowse-components, with the products/jbrowse-web
 started, you could do this with
 http://localhost:3000/?config=http://localhost:9001/config_ucsc_api.json
 instead
@@ -149,7 +149,7 @@ run off a dev version of jbrowse 2 e.g. follow the steps below
 git clone https://github.com/gmod/jbrowse-components
 cd jbrowse-components
 yarn
-cd packages/jbrowse-web
+cd products/jbrowse-web
 yarn start
 ```
 
