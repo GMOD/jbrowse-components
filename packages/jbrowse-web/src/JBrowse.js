@@ -48,12 +48,16 @@ const JBrowse = observer(({ pluginManager }) => {
     : false
 
   // Set session URL on first render only, before `onSnapshot` has fired
+  // TODOSESSION: session is generated here. for the url update, need to switch to a session uuid
+  // that gets put in the url and not updated unless they switch
+  // when selecting share, the share code will do the fetch/POST
   useEffect(() => {
     if (useUpdateUrl) {
       const json = JSON.stringify(getSnapshot(session))
       const sess =
         json.length < MAX_SESSION_SIZE_IN_URL ? toUrlSafeB64(json) : undefined
-      setSession(sess)
+      setSession(sess) // this is setting the URL
+      // if you file->open session, then you switch the sessionId
     }
   }, [session, setSession, useUpdateUrl])
 
@@ -67,6 +71,7 @@ const JBrowse = observer(({ pluginManager }) => {
       if (rootModel && rootModel.session) {
         rootModel.jbrowse.updateSavedSession(snapshot)
       }
+      // TODOSESSION will always be in localstorage
       if (useLocalStorage) {
         localStorage.setItem('jbrowse-web-session', JSON.stringify(snapshot))
       }

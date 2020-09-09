@@ -208,6 +208,12 @@ export function Loader() {
     throw new Error('could not instantiate root model')
   }
   try {
+    // TODOSESSION: here is where the new session logic will be
+    // on load, if there is a sessionQuery Param, use fetch and POST
+    // to the read-session lambda function
+    // on fail, send them to root directory (their default session setup)
+    // on success, download and load everything as a session, save to localStorage and assign it a uuid
+    // put new session uuid into the URL using useQueryParam like JBrowse.js does
     if (sessionQueryParam) {
       const savedSessionIndex = rootModel.jbrowse.savedSessionNames.indexOf(
         sessionQueryParam,
