@@ -73,7 +73,6 @@ function OverviewRubberBand({
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
   const [guideX, setGuideX] = useState<number | undefined>()
-  // const [clicked, setClicked] = useState(false)
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
   const classes = useStyles()
@@ -108,7 +107,7 @@ function OverviewRubberBand({
         currentX === undefined
       ) {
         const clickedAt = overview.pxToBp(startX)
-        console.log("I clicked: ", clickedAt)
+        // console.log("I clicked: ", clickedAt)
         model.centerAt(Math.round(clickedAt.offset), clickedAt.refName)
       }
       setStartX(undefined)
