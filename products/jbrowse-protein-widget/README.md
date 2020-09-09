@@ -11,7 +11,7 @@ can be re-mixed and integrated to make different things.
 ```bash
 cd jbrowse-components
 yarn
-cd packages/protein-widget
+cd products/jbrowse-protein-widget
 yarn
 yarn start
 ```

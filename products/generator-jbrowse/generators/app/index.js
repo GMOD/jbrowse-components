@@ -18,7 +18,7 @@ module.exports = class extends Generator {
         type: 'confirm',
         name: 'correctDir',
         message:
-          'Are you in the JBrowse plugins directory?\n(e.g. ~/jbrowse-components/packages/jbrowse-web/src/plugins)',
+          'Are you in the JBrowse plugins directory?\n(e.g. ~/jbrowse-components/products/jbrowse-web/src/plugins)',
       },
     ])
 
