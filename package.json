@@ -2,7 +2,9 @@
   "name": "root",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "products/*",
+    "plugins/*"
   ],
   "scripts": {
     "build": "cross-env NODE_ENV=production lerna run build",
@@ -12,12 +14,12 @@
     "check-format": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "test-ci": "jest --ci --coverage",
-    "built-test-ci": "jest --ci packages/integration-tests",
+    "built-test-ci": "jest --ci integration.test.js",
     "test": "jest"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "git diff --cached --name-only | if grep --quiet \"jbrowse-cli\"; then lerna run --scope \"@gmod/jbrowse-cli\" docs; git add packages/jbrowse-cli/README.md; fi;"
+      "pre-commit": "git diff --cached --name-only | if grep --quiet \"jbrowse-cli\"; then lerna run --scope \"@gmod/jbrowse-cli\" docs; git add products/jbrowse-cli/README.md; fi;"
     }
   },
   "devDependencies": {

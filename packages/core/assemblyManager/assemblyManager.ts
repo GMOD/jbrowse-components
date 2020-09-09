@@ -55,6 +55,23 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       },
     }))
     .views(self => ({
+      // use this method instead of assemblyManager.get(assemblyName)
+      // get an assembly with regions loaded
+      async waitForAssembly(assemblyName: string) {
+        if (!assemblyName) {
+          throw new Error('no assembly name supplied to waitForAssembly')
+        }
+        const canonicalName = self.aliasMap.get(assemblyName)
+        const assembly = self.assemblies.find(
+          asm => asm.name === (canonicalName || assemblyName),
+        )
+        if (assembly) {
+          await when(() => Boolean(assembly.regions && assembly.refNameAliases))
+          return assembly
+        }
+        return undefined
+      },
+
       async getRefNameMapForAdapter(
         adapterConf: unknown,
         assemblyName: string,
@@ -92,10 +109,13 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
           if (assembly) {
             return assembly.isValidRefName(refName)
           }
+          throw new Error(
+            `isValidRefName for ${assemblyName} failed, assembly does not exist`,
+          )
         }
         if (!self.allPossibleRefNames) {
           throw new Error(
-            `isValidRefName not available, assemblyManager has not yet finished loading`,
+            `isValidRefName not available, assemblyManager has not yet finished loading. If you are looking for a refname in a specific assembly, pass assembly argument`,
           )
         }
         return self.allPossibleRefNames.includes(refName)

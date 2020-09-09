@@ -42,7 +42,7 @@ yarn
 
 ## Quick start
 
-Either cd to packages/jbrowse-web or packages/jbrowse-desktop and run `yarn start`.
+Either cd to products/jbrowse-web or products/jbrowse-desktop and run `yarn start`.
 
 ## Developers
 
