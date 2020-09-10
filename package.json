@@ -19,7 +19,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "git diff --cached --name-only | if grep --quiet \"jbrowse-cli\"; then lerna run --scope \"@gmod/jbrowse-cli\" docs; git add products/jbrowse-cli/README.md; fi;"
+      "pre-commit": "node scripts/pre-commit.js"
     }
   },
   "devDependencies": {
