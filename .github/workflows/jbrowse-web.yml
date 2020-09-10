@@ -16,9 +16,9 @@ jobs:
       - name: Install deps
         run: yarn
       - name: Build project
-        run: cd products/jbrowse-web && NODE_OPTIONS='--max-old-space-size=6500' yarn build
+        run: cd products/jbrowse-web && NODE_OPTIONS='--max-old-space-size=6500' yarn build && cd ../../
       - name: Make zip
-        run: cd packages/jbrowse-web/build && zip -r jbrowse-web.zip .
+        run: cd packages/jbrowse-web/build &&  zip -r jbrowse-web.zip . && cd ../../
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
