@@ -59,7 +59,6 @@ export default class Create extends JBrowseCommand {
     const { args: runArgs, flags: runFlags } = this.parse(Create)
     const { localPath: argsPath } = runArgs as { localPath: string }
     this.debug(`Want to install path at: ${argsPath}`)
-    console.log('wow')
 
     const { force, url, listVersions, tag } = runFlags
 
