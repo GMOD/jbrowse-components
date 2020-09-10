@@ -56,6 +56,7 @@ const JBrowse = observer(({ pluginManager }) => {
       const json = JSON.stringify(getSnapshot(session))
       const sess =
         json.length < MAX_SESSION_SIZE_IN_URL ? toUrlSafeB64(json) : undefined
+      // generate uuid and set session to that
       setSession(sess) // this is setting the URL
       // if you file->open session, then you switch the sessionId
     }

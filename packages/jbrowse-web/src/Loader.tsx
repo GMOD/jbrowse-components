@@ -214,6 +214,9 @@ export function Loader() {
     // on fail, send them to root directory (their default session setup)
     // on success, download and load everything as a session, save to localStorage and assign it a uuid
     // put new session uuid into the URL using useQueryParam like JBrowse.js does
+    // add substring remote and local to the sessionid
+    // ?session=remote:SESSIONID (this is the hashed one)
+    // ?session=local:SESSIONID (this is the uuid one)
     if (sessionQueryParam) {
       const savedSessionIndex = rootModel.jbrowse.savedSessionNames.indexOf(
         sessionQueryParam,

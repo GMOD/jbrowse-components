@@ -76,6 +76,7 @@ function App({ session }) {
   }
 
   // TODOSESSION: share ui elemtn here, have some flag to only show on web
+  // try to add it as a prop, could check env variables
   return (
     <div
       className={classes.root}

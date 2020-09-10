@@ -23,6 +23,9 @@
 // write to dynamoDB
 // -when navigating to a URL and parsing the session, JB2 POSTS to the api endpoint with the session URL entered
 // if it's found also in the database, load the current session into local storage
+// should be done, small nodejs version bookmarker of this, if they wanted to run themselves outside of AWS they could
+// local:${uuid}
+// jbsession_${uuid}
 
 function Share() {}
 export default Share
