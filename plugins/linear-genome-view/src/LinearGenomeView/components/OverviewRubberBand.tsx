@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import Popover from '@material-ui/core/Popover'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -200,7 +199,6 @@ function OverviewRubberBand({
     left = currentX < startX ? currentX : startX
     width = currentX - startX
   }
-
   // calculate the start and end bp of drag
   const leftBpOffset = overview.pxToBp(startX)
   const rightBpOffset = overview.pxToBp(startX + width)
@@ -277,7 +275,6 @@ function OverviewRubberBand({
         onMouseDown={mouseDown}
         onMouseOut={mouseOut}
         onMouseMove={mouseMove}
-        // onClick={handleClick}
       >
         {ControlComponent}
       </div>
