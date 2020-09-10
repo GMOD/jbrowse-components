@@ -894,14 +894,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param refName -
        */
       centerAt(bp: number, refName: string) {
-        /* TODO */
-        // console.log(self.bpToPx({ refName, coord: bp }))
-        // console.log(refName)
-        // console.log(bp)
-        const centerPx = self.bpToPx({ refName, coord: bp })? self.bpToPx({refName, coord: bp }).offsetPx : 0
-        // console.log(centerPx)
-        // const test = Math.round(centerPx - self.width / 2)
-        self.scrollTo(Math.round(centerPx - self.width / 2))
+        const centerPx = self.bpToPx({ refName, coord: bp })
+        if (centerPx) {
+          const centerPxOffset = centerPx.offsetPx
+          self.scrollTo(Math.round(centerPxOffset - self.width / 2))
+        }
+        /* TODO: Handle displayed regions */
       },
 
       center() {

@@ -107,7 +107,6 @@ function OverviewRubberBand({
         currentX === undefined
       ) {
         const clickedAt = overview.pxToBp(startX)
-        // console.log("I clicked: ", clickedAt)
         model.centerAt(Math.round(clickedAt.offset), clickedAt.refName)
       }
       setStartX(undefined)
