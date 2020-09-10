@@ -214,20 +214,31 @@ export function Loader() {
     // on fail, send them to root directory (their default session setup)
     // on success, download and load everything as a session, save to localStorage and assign it a uuid
     // put new session uuid into the URL using useQueryParam like JBrowse.js does
+
+    console.log(rootModel.jbrowse.savedSessionNames)
     if (sessionQueryParam) {
-      const savedSessionIndex = rootModel.jbrowse.savedSessionNames.indexOf(
-        sessionQueryParam,
-      )
+      // const savedSessionIndex = rootModel.jbrowse.savedSessionNames.indexOf(
+      //   sessionQueryParam,
+      // )
+      // if (getConf(rootModel.jbrowse, 'useUrlSession')) {
+      //   if (savedSessionIndex !== -1) {
+      //     rootModel.setSession(
+      //       rootModel.jbrowse.savedSessions[savedSessionIndex],
+      //     )
+      //   } else {
+      //     rootModel.setSession(JSON.parse(fromUrlSafeB64(sessionQueryParam)))
+      //   }
+      // }
+
+      // TODOSESSION: below is logic if uuid is in query
+      const savedUuidSession = localStorage.getItem(sessionQueryParam)
       if (getConf(rootModel.jbrowse, 'useUrlSession')) {
-        if (savedSessionIndex !== -1) {
-          rootModel.setSession(
-            rootModel.jbrowse.savedSessions[savedSessionIndex],
-          )
-        } else {
-          rootModel.setSession(JSON.parse(fromUrlSafeB64(sessionQueryParam)))
-        }
+        if (savedUuidSession) {
+          rootModel.setSession(JSON.parse(savedUuidSession))
+        } else rootModel.setDefaultSession()
       }
     } else {
+      // TODO: ask how this logic should be used
       const localStorageSession = localStorage.getItem('jbrowse-web-session')
       if (localStorageSession) {
         if (getConf(rootModel.jbrowse, 'useLocalStorage')) {

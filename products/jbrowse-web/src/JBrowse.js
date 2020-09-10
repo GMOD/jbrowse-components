@@ -7,6 +7,7 @@ import { observer } from 'mobx-react'
 import { getSnapshot, onSnapshot } from 'mobx-state-tree'
 import { StringParam, useQueryParam } from 'use-query-params'
 import React, { useEffect } from 'react'
+import * as uuid from 'uuid'
 
 const MAX_SESSION_SIZE_IN_URL = 100000
 
@@ -35,7 +36,7 @@ function debounce(func, wait) {
 }
 
 const JBrowse = observer(({ pluginManager }) => {
-  const [, setSession] = useQueryParam('session', StringParam)
+  const [currSession, setSession] = useQueryParam('session', StringParam)
 
   const { rootModel } = pluginManager
   const { session, jbrowse, error } = rootModel || {}
@@ -47,31 +48,30 @@ const JBrowse = observer(({ pluginManager }) => {
     ? readConfObject(jbrowse.configuration, 'useUrlSession')
     : false
 
-  // Set session URL on first render only, before `onSnapshot` has fired
-  // TODOSESSION: session is generated here. for the url update, need to switch to a session uuid
-  // that gets put in the url and not updated unless they switch
-  // when selecting share, the share code will do the fetch/POST
+  const sessString = currSession || `local:${uuid.v4()}`
   useEffect(() => {
     if (useUpdateUrl) {
-      const json = JSON.stringify(getSnapshot(session))
-      const sess =
-        json.length < MAX_SESSION_SIZE_IN_URL ? toUrlSafeB64(json) : undefined
-      setSession(sess) // this is setting the URL
+      // const json = JSON.stringify(getSnapshot(session))
+      // const sess =
+      //   json.length < MAX_SESSION_SIZE_IN_URL ? toUrlSafeB64(json) : undefined
+      setSession(sessString) // this is setting the URL
       // if you file->open session, then you switch the sessionId
     }
-  }, [session, setSession, useUpdateUrl])
+  }, [session, setSession, sessString, useUpdateUrl])
 
   useEffect(() => {
     function updateUrl(snapshot) {
-      const json = JSON.stringify(snapshot)
-      const sess =
-        json.length < MAX_SESSION_SIZE_IN_URL ? toUrlSafeB64(json) : undefined
+      // const json = JSON.stringify(snapshot)
+      // const sess =
+      //   json.length < MAX_SESSION_SIZE_IN_URL ? toUrlSafeB64(json) : undefined
 
-      setSession(sess)
+      setSession(sessString)
       if (rootModel && rootModel.session) {
         rootModel.jbrowse.updateSavedSession(snapshot)
       }
       // TODOSESSION will always be in localstorage
+      console.log('updating-local-storage')
+      localStorage.setItem(sessString, JSON.stringify(snapshot))
       if (useLocalStorage) {
         localStorage.setItem('jbrowse-web-session', JSON.stringify(snapshot))
       }
@@ -87,7 +87,14 @@ const JBrowse = observer(({ pluginManager }) => {
       }
     }
     return disposer
-  }, [rootModel, setSession, useLocalStorage, useUpdateUrl, session])
+  }, [
+    rootModel,
+    setSession,
+    useLocalStorage,
+    useUpdateUrl,
+    sessString,
+    session,
+  ])
 
   if (error) {
     throw new Error(error)
