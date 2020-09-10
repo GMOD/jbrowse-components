@@ -438,14 +438,7 @@ export function parseLocString(
   return parsed
 }
 
-export function compareLocStrings(
-  a: string,
-  b: string,
-  isValidRefName: (refName: string, assemblyName?: string) => boolean,
-) {
-  const locA = parseLocString(a, isValidRefName)
-  const locB = parseLocString(b, isValidRefName)
-
+export function compareLocs(locA: ParsedLocString, locB: ParsedLocString) {
   const assemblyComp =
     locA.assemblyName || locB.assemblyName
       ? (locA.assemblyName || '').localeCompare(locB.assemblyName || '')
@@ -467,6 +460,16 @@ export function compareLocStrings(
     if (endComp) return endComp
   }
   return 0
+}
+
+export function compareLocStrings(
+  a: string,
+  b: string,
+  isValidRefName: (refName: string, assemblyName?: string) => boolean,
+) {
+  const locA = parseLocString(a, isValidRefName)
+  const locB = parseLocString(b, isValidRefName)
+  return compareLocs(locA, locB)
 }
 
 /**

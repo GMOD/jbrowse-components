@@ -15,7 +15,7 @@ export default pluginManager => {
     '@gmod/jbrowse-core/util/mst-reflection',
   )
 
-  const { compareLocStrings, getSession, parseLocString } = jbrequire(
+  const { compareLocs, getSession, parseLocString } = jbrequire(
     '@gmod/jbrowse-core/util',
   )
 
@@ -308,7 +308,7 @@ export default pluginManager => {
     categoryName: 'Location',
     displayName: 'Full location',
     compare(cellA, cellB) {
-      return compareLocStrings(cellA.text, cellB.text)
+      return compareLocs(cellA.extendedData, cellB.extendedData)
     },
     FilterModelType,
     DataCellReactComponent,
