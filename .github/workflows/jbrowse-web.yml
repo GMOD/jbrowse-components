@@ -2,7 +2,7 @@
 on:
   push:
     tags:
-    - '@gmod/jbrowse-web*'
+      - '@gmod/jbrowse-web*'
 
 name: Upload jbrowse-web artifacts
 
