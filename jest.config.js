@@ -1,6 +1,7 @@
-// NOTE: this jest config should be used by projects in packages/* dirs
+// NOTE: this jest config should be used by projects in packages/*, products/*,
+// and plugins/* dirs
 module.exports = {
-  roots: ['packages/'],
+  roots: ['.', 'packages/', 'products/', 'plugins/'],
   moduleFileExtensions: ['js', 'ts', 'tsx', 'jsx', 'json', 'node'],
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.js',
@@ -19,6 +20,8 @@ module.exports = {
   testPathIgnorePatterns: ['/dist/'],
   collectCoverageFrom: [
     'packages/*/src/**/*.{js,jsx,ts,tsx}',
+    'products/*/src/**/*.{js,jsx,ts,tsx}',
+    'plugins/*/src/**/*.{js,jsx,ts,tsx}',
     // most packages have their src in src/, except for jbrowse-core
     'packages/core/**/*.{js,jsx,ts,tsx}',
   ],
