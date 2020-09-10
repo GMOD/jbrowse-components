@@ -13,14 +13,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
+      - name: Set env
+        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/@gmod/jbrowse-web@} }
       - name: Install deps
         run: yarn
       - name: Build project
         run: |
+          echo $RELEASE_VERSION
           cd products/jbrowse-web/
           NODE_OPTIONS='--max-old-space-size=6500' yarn build
           cd build
-          zip -r jbrowse-web.zip .
+          zip -r "jbrowse-web-${RELEASE_VERSION}.zip" .
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -38,6 +41,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./products/jbrowse-web/build/jbrowse-web.zip
-          asset_name: jbrowse-web.zip
+          asset_path: ./products/jbrowse-web/build/jbrowse-web-${{env.RELEASE_VERSION}}.zip
+          asset_name: jbrowse-web-${{env.RELEASE_VERSION}}.zip
           asset_content_type: application/zip
