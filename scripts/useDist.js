@@ -1,3 +1,8 @@
+/**
+ * Makes a package.json's "main" field match the "distMain" field and "module"
+ * field match the "distModule" field.
+ */
+
 /* eslint-disable no-console */
 const fs = require('fs')
 

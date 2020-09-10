@@ -1,3 +1,8 @@
+/**
+ * Makes a package.json's "main" field match the "srcMain" field and "module"
+ * field into an empty string.
+ */
+
 /* eslint-disable no-console */
 const fs = require('fs')
 
