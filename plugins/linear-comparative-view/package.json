@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-linear-comparative-view",
-  "version": "0.0.1-beta.12",
+  "version": "0.0.1-beta.13",
   "description": "JBrowse 2 linear comparative view",
   "main": "src/index.ts",
   "scripts": {

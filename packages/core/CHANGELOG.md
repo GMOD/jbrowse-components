@@ -1,3 +1,13 @@
+## [0.0.1-beta.21](https://github.com/GMOD/jbrowse-components/compare/v0.0.1-beta.14...v0.0.1-beta.21) (2020-09-10)
+
+
+### Reverts
+
+* Revert "Allow touchscreen using pointer events (#1112)" the pointer ([404546e](https://github.com/GMOD/jbrowse-components/commit/404546e5a1c71510a90a777957d32cd2c8f71ed1)), closes [#1112](https://github.com/GMOD/jbrowse-components/issues/1112)
+* Revert "Simplify command unzip (#1075)" ([9c0b975](https://github.com/GMOD/jbrowse-components/commit/9c0b97504b7a423a9c356ac3ffffc2754224c65a)), closes [#1075](https://github.com/GMOD/jbrowse-components/issues/1075)
+
+
+
 ## [0.0.1-beta.20](https://github.com/GMOD/jbrowse-components/compare/v0.0.1-beta.14...v0.0.1-beta.20) (2020-09-09)
 
 ### Reverts
