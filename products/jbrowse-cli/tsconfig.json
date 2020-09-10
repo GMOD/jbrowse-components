@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "importHelpers": true,
+    "module": "commonjs",
+    "outDir": "lib",
+    "rootDir": "src",
+    "strict": true,
+    "noEmit": false,
+    "target": "es2017"
+  },
+  "include": ["src"],
+  "exclude": ["**/*.test.ts", "**/testUtil.ts"]
+}

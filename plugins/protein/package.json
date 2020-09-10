@@ -1,0 +1,18 @@
+{
+  "name": "@gmod/jbrowse-plugin-protein",
+  "version": "0.0.1-beta.11",
+  "description": "JBrowse 2 protein-specific renderers, etc.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "cd ../..; jest packages/protein"
+  },
+  "author": "Garrett Stevens",
+  "license": "MIT",
+  "peerDependencies": {
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "mobx-react": "^6.0.0",
+    "prop-types": "^15.0.0",
+    "react": "^16.8.0"
+  },
+  "private": true
+}

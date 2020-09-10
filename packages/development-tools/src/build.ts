@@ -147,7 +147,12 @@ export function baseJBrowsePluginWebpackConfig(
                       },
                     ],
                   ],
-                  ignore: ['./node_modules', './packages/*/node_modules'],
+                  ignore: [
+                    './node_modules',
+                    './packages/*/node_modules',
+                    './products/*/node_modules',
+                    './plugins/*/node_modules',
+                  ],
                   plugins: [
                     '@babel/plugin-syntax-dynamic-import',
                     '@babel/plugin-proposal-class-properties',

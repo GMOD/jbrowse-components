@@ -1,0 +1,26 @@
+{
+  "name": "@gmod/jbrowse-plugin-sequence",
+  "version": "0.0.1-beta.12",
+  "description": "JBrowse 2 sequence adapters, tracks, etc.",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "cd ../..; jest packages/sequence"
+  },
+  "author": "Garrett Stevens",
+  "license": "MIT",
+  "dependencies": {
+    "@gmod/indexedfasta": "^1.0.13",
+    "@gmod/twobit": "^1.1.10",
+    "generic-filehandle": "^2.0.1"
+  },
+  "peerDependencies": {
+    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@gmod/jbrowse-plugin-linear-genome-view": "^0.0.1-beta.1",
+    "mobx-react": "^6.0.0",
+    "mobx-state-tree": "3.14.1",
+    "prop-types": "^15.0.0",
+    "react": "^16.8.0",
+    "rxjs": "^6.0.0"
+  },
+  "private": true
+}
