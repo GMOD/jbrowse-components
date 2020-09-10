@@ -15,6 +15,7 @@ interface GithubRelease {
 }
 export default class Create extends JBrowseCommand {
   static description = 'Downloads and installs the latest JBrowse 2 release'
+  console.log('test')
 
   static examples = [
     '$ jbrowse create /path/to/new/installation',

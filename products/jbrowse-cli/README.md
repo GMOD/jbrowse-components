@@ -35,7 +35,6 @@ It is likely preferable in most cases to install the tools first however
 - [`jbrowse add-connection CONNECTIONURLORPATH`](#jbrowse-add-connection-connectionurlorpath)
 - [`jbrowse add-track TRACK`](#jbrowse-add-track-track)
 - [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
-- [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
 - [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
@@ -251,35 +250,6 @@ OPTIONS
 EXAMPLES
   $ jbrowse add-track-json track.json
   $ jbrowse add-track-json track.json --update
-```
-
-## `jbrowse create LOCALPATH`
-
-Downloads and installs the latest JBrowse 2 release
-
-```
-USAGE
-  $ jbrowse create LOCALPATH
-
-ARGUMENTS
-  LOCALPATH  Location where JBrowse 2 will be installed
-
-OPTIONS
-  -f, --force         Overwrites existing JBrowse 2 installation if present in path
-  -h, --help          show CLI help
-  -l, --listVersions  Lists out all versions of JBrowse 2
-
-  -t, --tag=tag       Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@0.0.1.
-                      Defaults to latest
-
-  -u, --url=url       A direct URL to a JBrowse 2 release
-
-EXAMPLES
-  $ jbrowse create /path/to/new/installation
-  $ jbrowse create /path/to/new/installation --force
-  $ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip
-  $ jbrowse create /path/to/new/installation --tag @gmod/jbrowse-web@0.0.1
-  $ jbrowse create --listVersions # Lists out all available versions of Jbrowse 2
 ```
 
 ## `jbrowse help [COMMAND]`
