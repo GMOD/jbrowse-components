@@ -75,6 +75,7 @@ function App({ session }) {
     }
   }
 
+  // TODOSESSION: share ui elemtn here, have some flag to only show on web
   return (
     <div
       className={classes.root}
