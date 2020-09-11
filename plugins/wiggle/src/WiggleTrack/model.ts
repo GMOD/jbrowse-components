@@ -215,7 +215,9 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
               ),
               sessionId,
               statusCallback: (message: string) => {
-                self.setMessage(message)
+                if (isAlive(self)) {
+                  self.setMessage(message)
+                }
               },
               bpPerPx,
               ...opts,
@@ -240,7 +242,9 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             {
               adapterConfig: getSnapshot(adapter),
               statusCallback: (message: string) => {
-                self.setMessage(message)
+                if (isAlive(self)) {
+                  self.setMessage(message)
+                }
               },
               ...opts,
             },
@@ -257,8 +261,10 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             signal: aborter.signal,
             headers: { cache: 'no-store,no-cache' },
           })
-          self.updateStats(stats)
-          superReload()
+          if (isAlive(self)) {
+            self.updateStats(stats)
+            superReload()
+          }
         },
         afterAttach() {
           addDisposer(

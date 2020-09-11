@@ -88,17 +88,23 @@ export default function JBrowseWeb(
       },
       addAssemblyConf(assemblyConf) {
         const { name } = assemblyConf
-        if (!name) throw new Error('Can\'t add assembly with no "name"')
-        if (self.assemblyNames.includes(name))
-          throw new Error(
-            `Can't add assembly with name "${name}", an assembly with that name already exists`,
-          )
+        if (!name) {
+          throw new Error('Can\'t add assembly with no "name"')
+        }
+        const assembly = self.assemblies.find(asm => asm.name === name)
+        if (assembly) {
+          return assembly
+        }
         const length = self.assemblies.push(assemblyConf)
         return self.assemblies[length - 1]
       },
       addTrackConf(trackConf) {
         const { type } = trackConf
         if (!type) throw new Error(`unknown track type ${type}`)
+        const track = self.tracks.find(t => t.trackId === trackConf.trackId)
+        if (track) {
+          return track
+        }
         const length = self.tracks.push(trackConf)
         return self.tracks[length - 1]
       },

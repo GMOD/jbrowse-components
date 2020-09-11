@@ -8,7 +8,7 @@ import { getSnapshot, onSnapshot } from 'mobx-state-tree'
 import { StringParam, useQueryParam } from 'use-query-params'
 import React, { useEffect } from 'react'
 
-const MAX_SESSION_SIZE_IN_URL = 100000
+const MAX_SESSION_SIZE_IN_URL = 1000000
 
 // adapted from https://github.com/jashkenas/underscore/blob/5d8ab5e37c9724f6f1181c5f95d0020815e4cb77/underscore.js#L894-L925
 function debounce(func, wait) {
