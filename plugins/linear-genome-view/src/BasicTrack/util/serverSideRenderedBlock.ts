@@ -252,7 +252,7 @@ interface ErrorProps {
 
 async function renderBlockEffect(
   props: RenderProps | ErrorProps,
-  signal: AbortSignal,
+  _: unknown,
   self: Instance<BlockStateModel>,
 ) {
   const {

@@ -86,7 +86,7 @@ function OverviewRubberBand({
       }
     }
 
-    function globalMouseUp(event: MouseEvent) {
+    function globalMouseUp() {
       if (
         controlsRef.current &&
         startX !== undefined &&

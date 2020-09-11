@@ -38,7 +38,7 @@ const Session = types
       return view
     },
   }))
-  .volatile(self => ({
+  .volatile((/* self */) => ({
     assemblyManager: new Map([
       [
         'volvox',

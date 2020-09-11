@@ -132,10 +132,7 @@ function RefNameAutocomplete({
 
   const regionNames = regions.map(region => region.refName)
 
-  function onChange(
-    event: React.ChangeEvent<{}>,
-    newRegionName: string | null,
-  ) {
+  function onChange(_: unknown, newRegionName: string | null) {
     if (newRegionName) {
       setSelectedRegionName(newRegionName)
       const newRegion = regions.find(region => region.refName === newRegionName)

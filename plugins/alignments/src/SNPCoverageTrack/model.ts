@@ -1,6 +1,8 @@
 import { types } from 'mobx-state-tree'
-import wiggleStateModelFactory from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/model'
-import WiggleTrackComponent from '@gmod/jbrowse-plugin-wiggle/src/WiggleTrack/components/WiggleTrackComponent'
+import {
+  wiggleTrackModelFactory,
+  WiggleTrackComponent,
+} from '@gmod/jbrowse-plugin-wiggle'
 import Tooltip from './Tooltip'
 
 // using a map because it preserves order
@@ -11,7 +13,7 @@ const stateModelFactory = (configSchema: any) =>
   types
     .compose(
       'SNPCoverageTrack',
-      wiggleStateModelFactory(configSchema),
+      wiggleTrackModelFactory(configSchema),
       types.model({ type: types.literal('SNPCoverageTrack') }),
     )
     .volatile(() => ({

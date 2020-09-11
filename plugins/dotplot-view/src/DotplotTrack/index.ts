@@ -54,7 +54,6 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           filled: false,
           data: undefined as any,
           html: '',
-          error: undefined as Error | undefined,
           message: undefined as string | undefined,
           renderingComponent: undefined as any,
           ReactComponent: (DotplotTrackComponent as unknown) as React.FC,
@@ -88,9 +87,9 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
               delay: 1000,
               fireImmediately: true,
             },
-            self.setLoading,
-            self.setRendered,
-            self.setError,
+            this.setLoading,
+            this.setRendered,
+            this.setError,
           )
         },
 
