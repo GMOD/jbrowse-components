@@ -117,7 +117,7 @@ function OverviewRubberBand({
     }
 
     function globalKeyDown(event: KeyboardEvent) {
-      if (event.keyCode === 27) {
+      if (event.key === 'Escape') {
         setStartX(undefined)
         setCurrentX(undefined)
       }

@@ -848,13 +848,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
           bpSoFar += end.offset
         }
-        self.zoomTo(
+        const targetBpPerPx =
           bpSoFar /
-            (self.width -
-              self.interRegionPaddingWidth * (end.index - start.index)),
-        )
+          (self.width -
+            self.interRegionPaddingWidth * (end.index - start.index))
+        const newBpPerPx = self.zoomTo(targetBpPerPx)
+        // If our target bpPerPx was smaller than the allowed minBpPerPx, adjust
+        // the scroll so the requested range is in the middle of the screen
+        let extraBp = 0
+        if (targetBpPerPx < newBpPerPx) {
+          extraBp = ((newBpPerPx - targetBpPerPx) * self.width) / 2
+        }
 
-        let bpToStart = 0
+        let bpToStart = -extraBp
         for (let i = 0; i < self.displayedRegions.length; i += 1) {
           const region = self.displayedRegions[i]
           if (start.index === i) {
@@ -868,16 +874,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           Math.round(bpToStart / self.bpPerPx) +
             self.interRegionPaddingWidth * start.index,
         )
-
-        // centerAtBase logic
-        if (start.index === end.index) {
-          const { offsetPx } = self.bpToPx({
-            coord: (end.offset - start.offset) / 2,
-            refName: self.displayedRegions[start.index].refName,
-          }) || { offsetPx: 0 }
-
-          this.horizontalScroll(offsetPx - self.width / 2)
-        }
       },
 
       horizontalScroll(distance: number) {
