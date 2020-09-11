@@ -1,5 +1,5 @@
 import { getConf } from '@gmod/jbrowse-core/configuration'
-import BlockBasedTrack from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/BlockBasedTrack'
+import { BlockBasedTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React from 'react'
 import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'

@@ -11,7 +11,7 @@ const stateModel = types
     featureData: types.frozen({}),
   })
   .actions(self => ({
-    setFeatureData(data) {
+    setFeatureData(data: Record<string, unknown>) {
       self.featureData = data
     },
     clearFeatureData() {

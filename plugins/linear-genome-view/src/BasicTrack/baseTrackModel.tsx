@@ -87,7 +87,7 @@ const BaseTrack = types
     rendererTypeName: '',
     scrollTop: 0,
     showAbout: false,
-    error: '',
+    error: undefined as Error | string | undefined,
   }))
   .views(self => ({
     get rpcSessionId() {

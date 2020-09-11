@@ -52,3 +52,5 @@ export default class VariantsPlugin extends Plugin {
     )
   }
 }
+
+export { default as VcfFeature } from './VcfTabixAdapter/VcfFeature'

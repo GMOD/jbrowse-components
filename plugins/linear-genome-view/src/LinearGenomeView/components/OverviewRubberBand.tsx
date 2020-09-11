@@ -59,6 +59,7 @@ const useStyles = makeStyles(theme => {
   }
 })
 
+// functional component for OverviewRubberBand
 function OverviewRubberBand({
   model,
   overview,
@@ -85,17 +86,27 @@ function OverviewRubberBand({
       }
     }
 
-    function globalMouseUp(event: MouseEvent) {
+    function globalMouseUp() {
       if (
         controlsRef.current &&
         startX !== undefined &&
         currentX !== undefined
       ) {
-        if (Math.abs(currentX - startX) > 3)
+        if (Math.abs(currentX - startX) > 3) {
           model.zoomToDisplayedRegions(
             overview.pxToBp(startX),
             overview.pxToBp(currentX),
           )
+        }
+      }
+      /* handling clicking and centering at a specific Bp */
+      if (
+        controlsRef.current &&
+        startX !== undefined &&
+        currentX === undefined
+      ) {
+        const clickedAt = overview.pxToBp(startX)
+        model.centerAt(Math.round(clickedAt.offset), clickedAt.refName)
       }
       setStartX(undefined)
       setCurrentX(undefined)
@@ -106,7 +117,7 @@ function OverviewRubberBand({
     }
 
     function globalKeyDown(event: KeyboardEvent) {
-      if (event.keyCode === 27) {
+      if (event.key === 'Escape') {
         setStartX(undefined)
         setCurrentX(undefined)
       }
@@ -128,10 +139,11 @@ function OverviewRubberBand({
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
     event.stopPropagation()
-    if (controlsRef.current)
+    if (controlsRef.current) {
       setStartX(
         event.clientX - controlsRef.current.getBoundingClientRect().left,
       )
+    }
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
@@ -187,7 +199,6 @@ function OverviewRubberBand({
     left = currentX < startX ? currentX : startX
     width = currentX - startX
   }
-
   // calculate the start and end bp of drag
   const leftBpOffset = overview.pxToBp(startX)
   const rightBpOffset = overview.pxToBp(startX + width)

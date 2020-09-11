@@ -12,7 +12,10 @@ import {
   getRpcSessionId,
   getTrackAssemblyNames,
 } from '@gmod/jbrowse-core/util/tracks'
-import blockBasedTrackModel from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
+import {
+  blockBasedTrackModel,
+  LinearGenomeViewModel,
+} from '@gmod/jbrowse-plugin-linear-genome-view'
 import { autorun, observable } from 'mobx'
 import {
   addDisposer,
@@ -22,7 +25,7 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import React from 'react'
-import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+
 import { getNiceDomain } from '../util'
 
 import WiggleTrackComponent from './components/WiggleTrackComponent'

@@ -6,11 +6,11 @@ import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
 import {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
-} from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+  BaseTrackStateModel,
+} from '@gmod/jbrowse-plugin-linear-genome-view'
 import { transaction } from 'mobx'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 import {
