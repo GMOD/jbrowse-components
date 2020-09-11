@@ -214,12 +214,12 @@ export default class extends Plugin {
                   end: end - start + clipPos,
                 }
 
-                // if secondary alignment, calculate length from SA[0]'s CIGAR
-                // which is the primary alignments. otherwise just use
+                // if secondary alignment or supplementary, calculate length from SA[0]'s CIGAR
+                // which is the primary alignments. otherwise it is the primary alignment just use
                 // seq.length if primary alignment
                 const totalLength =
                   // eslint-disable-next-line no-bitwise
-                  flags & 2
+                  flags & 2048 || flags & 2
                     ? getLength(supplementaryAlignments[0].CIGAR)
                     : seq.length
 

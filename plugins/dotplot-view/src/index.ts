@@ -156,6 +156,7 @@ export default class DotplotPlugin extends Plugin {
                 const readAssembly = `${readName}_assembly`
                 const trackAssembly = getConf(track, 'assemblyNames')[0]
                 const assemblyNames = [trackAssembly, readAssembly]
+                const trackId = `track-${Date.now()}`
                 const trackName = `${readName}_vs_${trackAssembly}`
                 const supplementaryAlignments = SA.split(';')
                   .filter(aln => !!aln)
@@ -191,12 +192,12 @@ export default class DotplotPlugin extends Plugin {
                   end: end - start + clipPos,
                 }
 
-                // if secondary alignment, calculate length from SA[0]'s CIGAR
-                // which is the primary alignments. otherwise just use
+                // if secondary alignment or supplementary, calculate length from SA[0]'s CIGAR
+                // which is the primary alignments. otherwise it is the primary alignment just use
                 // seq.length if primary alignment
                 const totalLength =
                   // eslint-disable-next-line no-bitwise
-                  flags & 2
+                  flags & 2048 || flags & 2
                     ? getLength(supplementaryAlignments[0].CIGAR)
                     : seq.length
 
@@ -246,7 +247,8 @@ export default class DotplotPlugin extends Plugin {
                         type: 'FromConfigAdapter',
                         features,
                       },
-                      trackId: trackName,
+                      trackId,
+                      name: trackName,
                     },
                   ],
                   viewAssemblyConfigs: [
@@ -254,7 +256,7 @@ export default class DotplotPlugin extends Plugin {
                       name: readAssembly,
                       sequence: {
                         type: 'ReferenceSequenceTrack',
-                        trackId: `${readName}_track`,
+                        trackId: `${readName}_${Date.now()}`,
                         adapter: {
                           type: 'FromConfigSequenceAdapter',
                           features: [feature.toJSON()],
@@ -265,7 +267,7 @@ export default class DotplotPlugin extends Plugin {
                   assemblyNames,
                   tracks: [
                     {
-                      configuration: trackName,
+                      configuration: trackId,
                       type: 'DotplotTrack',
                     },
                   ],
