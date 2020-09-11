@@ -3,13 +3,8 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useRef } from 'react'
 import { Instance } from 'mobx-state-tree'
 import { LinearGenomeViewStateModel } from '..'
-import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
 
 type LGV = Instance<LinearGenomeViewStateModel>
-
-interface BaseTrackWithSort extends Instance<BaseTrackStateModel> {
-  centerLinePosition: number
-}
 
 const useStyles = makeStyles(() => ({
   centerLineContainer: {

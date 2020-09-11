@@ -15,7 +15,7 @@ export default pluginManager => {
     '@gmod/jbrowse-core/util/mst-reflection',
   )
 
-  const { compareLocStrings, getSession, parseLocString } = jbrequire(
+  const { compareLocs, getSession, parseLocString } = jbrequire(
     '@gmod/jbrowse-core/util',
   )
 
@@ -206,7 +206,6 @@ export default pluginManager => {
       },
       // returns a function that tests the given row
       get predicate() {
-        const session = getSession(self)
         if (!self.locString || self.locStringIsInvalid) {
           return function alwaysTrue() {
             return true
@@ -218,13 +217,10 @@ export default pluginManager => {
           const { cellsWithDerived: cells } = row
           const cell = cells[columnNumber]
 
-          if (!cell || !cell.text) {
+          if (!cell || !cell.text || !cell.extendedData) {
             return false
           }
-          const parsedCellText = parseLocString(cell.text, refName =>
-            session.assemblyManager.isValidRefName(refName, sheet.assemblyName),
-          )
-
+          const parsedCellText = cell.extendedData
           if (!parsedCellText.refName) {
             return false
           }
@@ -308,7 +304,7 @@ export default pluginManager => {
     categoryName: 'Location',
     displayName: 'Full location',
     compare(cellA, cellB) {
-      return compareLocStrings(cellA.text, cellB.text)
+      return compareLocs(cellA.extendedData, cellB.extendedData)
     },
     FilterModelType,
     DataCellReactComponent,

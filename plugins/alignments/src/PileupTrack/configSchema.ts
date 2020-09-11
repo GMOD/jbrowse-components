@@ -15,6 +15,11 @@ function PileupConfigFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'PileupTrack',
     {
+      maxDisplayedBpPerPx: {
+        type: 'number',
+        description: 'maximum bpPerPx that is displayed in the view',
+        defaultValue: 100,
+      },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       defaultRendering: {
         type: 'stringEnum',

@@ -83,3 +83,11 @@ export default class extends Plugin {
     )
   }
 }
+
+export * from './statsUtil'
+export * from './util'
+
+export { wiggleTrackModelFactory }
+export { default as WiggleRendering } from './WiggleRendering'
+export { default as WiggleBaseRenderer } from './WiggleBaseRenderer'
+export { default as WiggleTrackComponent } from './WiggleTrack/components/WiggleTrackComponent'

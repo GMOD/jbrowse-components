@@ -12,7 +12,10 @@ import {
   getRpcSessionId,
   getTrackAssemblyNames,
 } from '@gmod/jbrowse-core/util/tracks'
-import blockBasedTrackModel from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
+import {
+  blockBasedTrackModel,
+  LinearGenomeViewModel,
+} from '@gmod/jbrowse-plugin-linear-genome-view'
 import { autorun, observable } from 'mobx'
 import {
   addDisposer,
@@ -22,7 +25,7 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import React from 'react'
-import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+
 import { getNiceDomain } from '../util'
 
 import WiggleTrackComponent from './components/WiggleTrackComponent'
@@ -249,7 +252,6 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         // re-runs stats and refresh whole track on reload
         async reload() {
           self.setError('')
-
           const aborter = new AbortController()
           const stats = await getStats({
             signal: aborter.signal,
@@ -266,9 +268,11 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
                 try {
                   const aborter = new AbortController()
                   self.setLoading(aborter)
-
                   const view = getContainingView(self) as LGV
-                  if (!view.initialized && !self.ready) {
+                  if (
+                    (!view.initialized && !self.ready) ||
+                    view.bpPerPx > self.maxViewBpPerPx
+                  ) {
                     return
                   }
 

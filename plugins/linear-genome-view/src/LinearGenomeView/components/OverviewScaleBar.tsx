@@ -77,11 +77,9 @@ const Polygon = observer(
   ({
     model,
     overview,
-    scale,
   }: {
     model: LGV
     overview: Instance<Base1DViewModel>
-    scale: number
   }) => {
     const theme = useTheme()
     const classes = useStyles()
@@ -284,7 +282,7 @@ function OverviewScaleBar({
         ControlComponent={<ScaleBar model={model} scale={scale} />}
       />
       <div className={classes.overview}>
-        <Polygon model={model} overview={overview} scale={scale} />
+        <Polygon model={model} overview={overview} />
         {children}
       </div>
     </div>

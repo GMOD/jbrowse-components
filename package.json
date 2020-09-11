@@ -7,7 +7,11 @@
     "plugins/*"
   ],
   "scripts": {
-    "build": "cross-env NODE_ENV=production lerna run build",
+    "build": "yarn useDist && yarn build:plugins && yarn build:other && yarn useSrc",
+    "build:plugins": "cross-env NODE_ENV=production lerna run build --scope \"@gmod/jbrowse-plugin*\"",
+    "build:other": "cross-env NODE_ENV=production lerna run build --ignore \"@gmod/jbrowse-plugin*\"",
+    "useDist": "lerna run useDist --scope \"@gmod/jbrowse-plugin*\"",
+    "useSrc": "lerna run useSrc --scope \"@gmod/jbrowse-plugin*\"",
     "lerna-publish": "cross-env lerna publish",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
     "format": "prettier --write .",
@@ -19,7 +23,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "git diff --cached --name-only | if grep --quiet \"jbrowse-cli\"; then lerna run --scope \"@gmod/jbrowse-cli\" docs; git add products/jbrowse-cli/README.md; fi;"
+      "pre-commit": "node scripts/pre-commit.js"
     }
   },
   "devDependencies": {
@@ -116,6 +120,8 @@
     "rxjs": "^6.0.0",
     "standard-changelog": "^2.0.7",
     "ts-node": "^8",
+    "tsdx": "^0.13.3",
+    "tslib": "^2.0.1",
     "typescript": "^3.7.2",
     "wait-on": "^5.0.0",
     "webpack-cli": "^3.3.11",

@@ -4,7 +4,7 @@ import { bpSpanPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import React, { MouseEvent, useRef, useState, useEffect } from 'react'
 import runner from 'mobx-run-in-reactive-context'
-import { BlockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/blockBasedTrackModel'
+import type { BlockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 
 function PileupRendering(props: {
   blockKey: string

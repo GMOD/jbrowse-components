@@ -9,7 +9,7 @@ import {
 } from 'mobx-state-tree'
 
 import { observable, autorun, transaction } from 'mobx'
-import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
+import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import Base1DView, {
   Base1DViewModel,
 } from '@gmod/jbrowse-core/util/Base1DViewModel'

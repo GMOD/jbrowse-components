@@ -7,6 +7,7 @@
     "outDir": "lib",
     "rootDir": "src",
     "strict": true,
+    "noEmit": false,
     "target": "es2017"
   },
   "include": ["src"],

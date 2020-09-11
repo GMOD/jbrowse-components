@@ -102,10 +102,7 @@ const TrackLabel = React.forwardRef(
       })
     }
 
-    function handleMenuItemClick(
-      event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-      callback: Function,
-    ) {
+    function handleMenuItemClick(_: unknown, callback: Function) {
       callback()
       handleClose()
     }
