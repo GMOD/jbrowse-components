@@ -1,10 +1,11 @@
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import adhocFeatureUtilsFactory from './adhocFeatureUtils'
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
 
-  const { makeAdHocSvFeature } = jbrequire(require('./adhocFeatureUtils'))
+  const { makeAdHocSvFeature } = jbrequire(adhocFeatureUtilsFactory)
 
   function getSerializedFeatureForRow(
     session,
