@@ -3,11 +3,14 @@ import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
 import { isSessionModelWithConfigEditing } from '@gmod/jbrowse-core/util/types'
 import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 import { MenuItem } from '@gmod/jbrowse-core/ui'
-import { getSession } from '@gmod/jbrowse-core/util'
+import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { types, Instance } from 'mobx-state-tree'
 import InfoIcon from '@material-ui/icons/Info'
 import React from 'react'
+import Button from '@material-ui/core/Button'
+import Typography from '@material-ui/core/Typography'
+import { LinearGenomeViewModel } from '../LinearGenomeView'
 
 // these MST models only exist for tracks that are *shown*.
 // they should contain only UI state for the track, and have
@@ -44,7 +47,6 @@ const generateBaseTrackConfig = (base: any) =>
         description: 'anything to add about this track',
         defaultValue: {},
       },
-
       mouseover: {
         type: 'string',
         description: 'what to display in a given mouseover',
@@ -52,6 +54,11 @@ const generateBaseTrackConfig = (base: any) =>
       return feature.get('name')
       }`,
         functionSignature: ['feature'],
+      },
+      maxDisplayedBpPerPx: {
+        type: 'number',
+        description: 'maximum bpPerPx that is displayed in the view',
+        defaultValue: Number.MAX_VALUE,
       },
 
       // see corresponding entry in circular-view ChordTrack
@@ -88,6 +95,7 @@ const BaseTrack = types
     scrollTop: 0,
     showAbout: false,
     error: undefined as Error | string | undefined,
+    userBpPerPxLimit: undefined as undefined | number,
   }))
   .views(self => ({
     get rpcSessionId() {
@@ -180,12 +188,10 @@ const BaseTrack = types
     },
 
     /**
-     * @param region -
-     * @returns falsy if the region is fine to try rendering. Otherwise,
-     *  return a string of text saying why the region can't be rendered.
+     * set limit to config amount, or user amount if they force load,
      */
-    regionCannotBeRendered() {
-      return undefined
+    get maxViewBpPerPx() {
+      return self.userBpPerPxLimit || getConf(self, 'maxDisplayedBpPerPx')
     },
   }))
   .actions(self => ({
@@ -210,7 +216,10 @@ const BaseTrack = types
     setShowAbout(show: boolean) {
       self.showAbout = show
     },
-
+    // sets the new bpPerPxLimit if user chooses to force load
+    setUserBpPerPxLimit(limit: number) {
+      self.userBpPerPxLimit = limit
+    },
     // base track reload does nothing, see specialized tracks for details
     reload() {},
   }))
@@ -225,6 +234,41 @@ const BaseTrack = types
           },
         },
       ]
+    },
+
+    /**
+     * @param region -
+     * @returns falsy if the region is fine to try rendering. Otherwise,
+     *  return a react node + string of text.
+     *  string of text describes why it cannot be rendered
+     *  react node allows user to force load at current setting
+     */
+    regionCannotBeRendered(/* region */) {
+      const view = getContainingView(self) as LinearGenomeViewModel
+      if (view && view.bpPerPx > self.maxViewBpPerPx) {
+        return (
+          <>
+            <Typography component="span" variant="body2">
+              Zoom in to see features or{' '}
+            </Typography>
+            <Button
+              data-testid="reload_button"
+              onClick={() => {
+                self.setUserBpPerPxLimit(view.bpPerPx)
+                self.reload()
+              }}
+              size="small"
+              variant="outlined"
+            >
+              Force Load
+            </Button>
+            <Typography component="span" variant="body2">
+              (force load may be slow)
+            </Typography>
+          </>
+        )
+      }
+      return undefined
     },
 
     // distinct set of track items that are particular to this track type for

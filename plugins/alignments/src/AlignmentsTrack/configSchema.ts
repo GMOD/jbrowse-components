@@ -33,6 +33,11 @@ const configModelFactory = (pluginManager: PluginManager) => {
         description: 'maximum value for the SNP coverage y-scale',
         defaultValue: Number.MAX_VALUE,
       },
+      maxDisplayedBpPerPx: {
+        type: 'number',
+        description: 'maximum bpPerPx that is displayed in the view',
+        defaultValue: 100,
+      },
       scaleType: {
         type: 'stringEnum',
         model: types.enumeration('Scale type', ['linear', 'log']),
