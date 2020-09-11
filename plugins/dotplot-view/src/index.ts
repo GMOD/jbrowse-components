@@ -146,7 +146,7 @@ export default class DotplotPlugin extends Plugin {
                 const start = feature.get('start')
                 const clipPos = feature.get('clipPos')
                 const end = feature.get('end')
-                const cigar = feature.get('CIGAR')
+                const seq = feature.get('seq')
                 const flags = feature.get('flags')
                 const SA: string =
                   (feature.get('tags')
@@ -159,7 +159,7 @@ export default class DotplotPlugin extends Plugin {
                 const trackName = `${readName}_vs_${trackAssembly}`
                 const supplementaryAlignments = SA.split(';')
                   .filter(aln => !!aln)
-                  .map(aln => {
+                  .map((aln, index) => {
                     const [saRef, saStart, saStrand, saCigar] = aln.split(',')
                     const saLengthOnRef = getLengthOnRef(saCigar)
                     const saLength = getLength(saCigar)
@@ -175,7 +175,7 @@ export default class DotplotPlugin extends Plugin {
                       CIGAR: saCigar,
                       assemblyName: trackAssembly,
                       strand: saStrandNormalized,
-                      uniqueId: Math.random(),
+                      uniqueId: `${feature.id()}_SA${index}`,
                       mate: {
                         start: saClipPos,
                         end: saClipPos + saLengthOnRef,
@@ -196,9 +196,9 @@ export default class DotplotPlugin extends Plugin {
                 // seq.length if primary alignment
                 const totalLength =
                   // eslint-disable-next-line no-bitwise
-                  flags & 2048
+                  flags & 2
                     ? getLength(supplementaryAlignments[0].CIGAR)
-                    : getLength(cigar)
+                    : seq.length
 
                 const features = [
                   feat,
