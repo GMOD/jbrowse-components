@@ -10,6 +10,7 @@ import EditableTypography from './EditableTypography'
 import LogoFull from './LogoFull'
 import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
+import Share from './Share'
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -115,6 +116,7 @@ function App({ session }) {
                 <LogoFull variant="white" />
               </div>
             </Toolbar>
+            <Share session={session} />
           </AppBar>
         </div>
         <div className={classes.components}>

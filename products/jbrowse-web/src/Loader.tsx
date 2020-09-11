@@ -231,6 +231,10 @@ export function Loader() {
       // }
 
       // TODOSESSION: below is logic if uuid is in query
+      // need logic to see if it a session from a remote shared
+      // or just local
+      // if (remote)
+      // rootModel.setSession(JSON.parse(fromUrlSafeB64(sessionQueryParamWithoutRemoteTag)))
       const savedUuidSession = localStorage.getItem(sessionQueryParam)
       if (getConf(rootModel.jbrowse, 'useUrlSession')) {
         if (savedUuidSession) {
