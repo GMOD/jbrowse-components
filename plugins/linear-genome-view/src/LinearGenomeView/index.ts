@@ -893,8 +893,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param bp -
        * @param refName -
        */
-      centerAt(/* bp, refName */) {
-        /* TODO */
+      centerAt(bp: number, refName: string) {
+        const centerPx = self.bpToPx({ refName, coord: bp })
+        if (centerPx) {
+          const centerPxOffset = centerPx.offsetPx
+          self.scrollTo(Math.round(centerPxOffset - self.width / 2))
+        }
+        /* TODO: Handle displayed regions */
       },
 
       center() {
