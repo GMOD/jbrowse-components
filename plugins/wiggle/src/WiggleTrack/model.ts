@@ -252,7 +252,6 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         // re-runs stats and refresh whole track on reload
         async reload() {
           self.setError('')
-
           const aborter = new AbortController()
           const stats = await getStats({
             signal: aborter.signal,
@@ -269,9 +268,11 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
                 try {
                   const aborter = new AbortController()
                   self.setLoading(aborter)
-
                   const view = getContainingView(self) as LGV
-                  if (!view.initialized && !self.ready) {
+                  if (
+                    (!view.initialized && !self.ready) ||
+                    view.bpPerPx > self.maxViewBpPerPx
+                  ) {
                     return
                   }
 

@@ -33,6 +33,12 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.error.main,
     overflowY: 'auto',
   },
+  blockReactNodeMessage: {
+    width: '100%',
+    background: theme.palette.action.disabledBackground,
+    padding: theme.spacing(2),
+    textAlign: 'center',
+  },
   dots: {
     '&::after': {
       display: 'inline-block',
@@ -84,16 +90,24 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
   ) : null
 })
 
-function BlockMessage({ messageText }: { messageText: string }) {
+function BlockMessage({
+  messageContent,
+}: {
+  messageContent: string | React.ReactNode
+}) {
   const classes = useStyles()
-  return (
+
+  return typeof messageContent === 'string' ? (
     <Typography variant="body2" className={classes.blockMessage}>
-      {messageText}
+      {messageContent}
     </Typography>
+  ) : (
+    <div className={classes.blockReactNodeMessage}>{messageContent}</div>
   )
 }
 BlockMessage.propTypes = {
-  messageText: PropTypes.string.isRequired,
+  messageContent: PropTypes.oneOfType([PropTypes.string, PropTypes.node])
+    .isRequired,
 }
 
 function BlockError({
@@ -157,7 +171,7 @@ const ServerSideRenderedBlockContent = observer(
     if (model.message) {
       return (
         <Repeater>
-          <BlockMessage messageText={model.message} />
+          <BlockMessage messageContent={model.message} />
         </Repeater>
       )
     }

@@ -39,7 +39,11 @@ export default (pluginManager: PluginManager) => {
         description: 'draw upside down',
         defaultValue: false,
       },
-
+      maxDisplayedBpPerPx: {
+        type: 'number',
+        description: 'maximum bpPerPx that is displayed in the view',
+        defaultValue: 100,
+      },
       headroom: {
         type: 'number',
         description:
