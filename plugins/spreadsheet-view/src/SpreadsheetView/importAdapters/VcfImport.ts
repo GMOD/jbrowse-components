@@ -1,5 +1,5 @@
 import VCF from '@gmod/vcf'
-import VcfFeature from '@gmod/jbrowse-plugin-variants/src/VcfTabixAdapter/VcfFeature'
+import { VcfFeature } from '@gmod/jbrowse-plugin-variants'
 import {
   bufferToString,
   Row,
@@ -88,7 +88,11 @@ export function parseVcfBuffer(
     dataType: { type: 'LocString' },
     isDerived: true,
     derivationFunctionText: `function deriveLocationColumn(row, column) {
-      return {text:row.extendedData.vcfFeature.refName+':'+row.extendedData.vcfFeature.start+'..'+row.extendedData.vcfFeature.end}
+      const feat = row.extendedData.vcfFeature
+      const refName = feat.refName
+      const start = feat.start
+      const end = feat.end
+      return {text:refName+':'+start+'..'+end, extendedData: {refName:refName,start:start,end:end} }
     }`,
   })
 

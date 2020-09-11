@@ -10,7 +10,7 @@ import {
   blankStats,
   rectifyStats,
   scoresToStats,
-} from '@gmod/jbrowse-plugin-wiggle/src/statsUtil'
+} from '@gmod/jbrowse-plugin-wiggle'
 import { Instance, getSnapshot } from 'mobx-state-tree'
 import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'

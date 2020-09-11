@@ -1,0 +1,46 @@
+/**
+ * Pre-commit hook to format changed non-JS/TS files
+ * JS/TS files ignored since ESLint provides formatting feedback for those
+ */
+
+// eslint-disable-next-line import/no-extraneous-dependencies
+const spawn = require('cross-spawn')
+
+function main() {
+  // Get names of files that were changed
+  const changedFiles = spawn
+    .sync('git', ['diff', '--cached', '--name-only'], { encoding: 'utf8' })
+    .stdout.trim()
+    .split(/[\r\n]+/)
+  // If anything in the CLI code changed, re-generate the README docs and format
+  if (changedFiles.some(fileName => fileName.includes('jbrowse-cli'))) {
+    spawn.sync(
+      'yarn',
+      ['lerna', 'run', '--scope', '@gmod/jbrowse-cli', 'docs'],
+      { stdio: 'inherit' },
+    )
+    if (!changedFiles.includes('products/jbrowse-cli/README.md')) {
+      changedFiles.push('products/jbrowse-cli/README.md')
+    }
+  }
+  // Filter out JS/TS files
+  const filesToFormat = changedFiles.filter(fileName => !isJSOrTSFile(fileName))
+  // Run prettier formatting on non-JS/TS files
+  if (filesToFormat.length) {
+    spawn.sync('yarn', ['prettier', '--write', ...filesToFormat], {
+      stdio: 'inherit',
+    })
+    spawn.sync('git', ['add', ...filesToFormat], { stdio: 'inherit' })
+  }
+}
+
+function isJSOrTSFile(fileName) {
+  return (
+    fileName.endsWith('.js') ||
+    fileName.endsWith('.jsx') ||
+    fileName.endsWith('.ts') ||
+    fileName.endsWith('tsx')
+  )
+}
+
+main()

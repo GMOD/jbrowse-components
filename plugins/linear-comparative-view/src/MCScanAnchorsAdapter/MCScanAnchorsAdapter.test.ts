@@ -8,6 +8,7 @@ import {
   BaseOptions,
 } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import Adapter from './MCScanAnchorsAdapter'
+import configSchema from './configSchema'
 
 class CustomAdapter extends BaseFeatureDataAdapter {
   async getRefNames() {
@@ -55,13 +56,13 @@ const getSubAdapter: getSubAdapterType = () => {
 }
 test('adapter can fetch features from volvox.bam', async () => {
   const adapter = new Adapter(
-    {
+    configSchema.create({
       mcscanAnchorsLocation: {
         localPath: require.resolve('./test_data/grape.peach.anchors'),
       },
       subadapters: [new CustomAdapter(), new CustomAdapter()],
       assemblyNames: ['grape', 'peach'],
-    },
+    }),
     getSubAdapter,
   )
 

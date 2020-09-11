@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { MenuItem } from '@gmod/jbrowse-core/ui'
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
-import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types, Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import intersection from 'array-intersection'

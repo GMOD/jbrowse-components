@@ -5,5 +5,5 @@
     "noEmit": false,
     "declaration": true,
     "outDir": "dist/"
-  },
+  }
 }

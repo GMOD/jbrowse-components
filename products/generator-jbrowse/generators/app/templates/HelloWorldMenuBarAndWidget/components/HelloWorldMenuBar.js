@@ -17,10 +17,7 @@ const useStyles = makeStyles({
 })
 
 function onClick(session) {
-  const widget = session.addWidget(
-    'HelloWorldWidget',
-    'id-helloworldwidget',
-  )
+  const widget = session.addWidget('HelloWorldWidget', 'id-helloworldwidget')
   session.showWidget(widget)
 }
 

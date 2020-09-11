@@ -40,8 +40,8 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
         value={value}
         min={-Math.log2(maxBpPerPx) * 100}
         max={-Math.log2(minBpPerPx) * 100}
-        onChange={(event, val) => setValue(val as number)}
-        onChangeCommitted={event => model.zoomTo(2 ** (-value / 100))}
+        onChange={(_, val) => setValue(val as number)}
+        onChangeCommitted={() => model.zoomTo(2 ** (-value / 100))}
       />
       <IconButton
         data-testid="zoom_in"

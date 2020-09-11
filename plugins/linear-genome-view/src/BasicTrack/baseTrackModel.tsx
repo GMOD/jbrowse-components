@@ -94,7 +94,7 @@ const BaseTrack = types
     rendererTypeName: '',
     scrollTop: 0,
     showAbout: false,
-    error: '',
+    error: undefined as Error | string | undefined,
     userBpPerPxLimit: undefined as undefined | number,
   }))
   .views(self => ({

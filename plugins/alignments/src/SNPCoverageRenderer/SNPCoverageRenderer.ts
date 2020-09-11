@@ -6,8 +6,8 @@ import {
   getOrigin,
   getScale,
   ScaleOpts,
-} from '@gmod/jbrowse-plugin-wiggle/src/util'
-import WiggleBaseRenderer from '@gmod/jbrowse-plugin-wiggle/src/WiggleBaseRenderer'
+  WiggleBaseRenderer,
+} from '@gmod/jbrowse-plugin-wiggle'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
 interface SNPCoverageRendererProps {
