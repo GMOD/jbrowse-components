@@ -67,10 +67,6 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this.record.flags
   }
 
-  _get_cramFlags() {
-    return `0x${this.record.cramFlags.toString(16)}`
-  }
-
   _get_strand() {
     return this.record.isReverseComplemented() ? -1 : 1
   }

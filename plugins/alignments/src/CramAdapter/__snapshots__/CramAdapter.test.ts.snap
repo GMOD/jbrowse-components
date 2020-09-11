@@ -5,7 +5,6 @@ Array [
   Object {
     "CIGAR": "100M",
     "clipPos": 0,
-    "cramFlags": "0x3",
     "duplicate": false,
     "end": 5540,
     "flags": 16,
@@ -52,7 +51,6 @@ Array [
   Object {
     "CIGAR": "100M",
     "clipPos": 0,
-    "cramFlags": "0x3",
     "duplicate": false,
     "end": 5541,
     "flags": 16,
@@ -99,7 +97,6 @@ Array [
   Object {
     "CIGAR": "100M",
     "clipPos": 0,
-    "cramFlags": "0x3",
     "duplicate": false,
     "end": 5544,
     "flags": 0,
@@ -146,7 +143,6 @@ Array [
   Object {
     "CIGAR": "100M",
     "clipPos": 0,
-    "cramFlags": "0x3",
     "duplicate": false,
     "end": 5553,
     "flags": 0,
@@ -193,7 +189,6 @@ Array [
   Object {
     "CIGAR": "100M",
     "clipPos": 0,
-    "cramFlags": "0x3",
     "duplicate": false,
     "end": 5554,
     "flags": 0,
@@ -240,7 +235,6 @@ Array [
   Object {
     "CIGAR": "100M",
     "clipPos": 0,
-    "cramFlags": "0x3",
     "duplicate": false,
     "end": 5559,
     "flags": 16,
@@ -287,7 +281,6 @@ Array [
   Object {
     "CIGAR": "100M",
     "clipPos": 0,
-    "cramFlags": "0x3",
     "duplicate": false,
     "end": 5560,
     "flags": 0,
@@ -334,7 +327,6 @@ Array [
   Object {
     "CIGAR": "100M",
     "clipPos": 0,
-    "cramFlags": "0x3",
     "duplicate": false,
     "end": 5568,
     "flags": 0,
@@ -381,7 +373,6 @@ Array [
   Object {
     "CIGAR": "100M",
     "clipPos": 0,
-    "cramFlags": "0x3",
     "duplicate": false,
     "end": 5594,
     "flags": 16,
@@ -428,7 +419,6 @@ Array [
   Object {
     "CIGAR": "100M",
     "clipPos": 0,
-    "cramFlags": "0x3",
     "duplicate": false,
     "end": 5596,
     "flags": 0,
