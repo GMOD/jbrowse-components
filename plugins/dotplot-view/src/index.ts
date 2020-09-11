@@ -201,6 +201,8 @@ export default class DotplotPlugin extends Plugin {
                     ? getLength(supplementaryAlignments[0].CIGAR)
                     : seq.length
 
+                console.log({ totalLength })
+
                 const features = [
                   feat,
                   ...supplementaryAlignments,
@@ -234,7 +236,7 @@ export default class DotplotPlugin extends Plugin {
                       {
                         assemblyName: readAssembly,
                         start: 0,
-                        end: totalLength + 1000, // todo properly calculate seq length by enumerating all CIGARs
+                        end: totalLength,
                         refName: readName,
                       },
                     ],
