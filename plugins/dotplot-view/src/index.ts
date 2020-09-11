@@ -71,6 +71,19 @@ function getLength(cigar: string) {
   return length
 }
 
+function getLengthSansClipping(cigar: string) {
+  const cigarOps = parseCigar(cigar)
+  let length = 0
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+    if (op !== 'H' && op !== 'S' && op !== 'D') {
+      length += len
+    }
+  }
+  return length
+}
+
 function getClip(cigar: string, strand: number) {
   return strand === -1
     ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
@@ -164,6 +177,7 @@ export default class DotplotPlugin extends Plugin {
                     const [saRef, saStart, saStrand, saCigar] = aln.split(',')
                     const saLengthOnRef = getLengthOnRef(saCigar)
                     const saLength = getLength(saCigar)
+                    const saLengthSansClipping = getLengthSansClipping(saCigar)
                     const saStrandNormalized = saStrand === '-' ? -1 : 1
                     const saClipPos = getClip(saCigar, saStrandNormalized)
                     const saRealStart = +saStart - 1 + saClipPos
@@ -179,7 +193,7 @@ export default class DotplotPlugin extends Plugin {
                       uniqueId: `${feature.id()}_SA${index}`,
                       mate: {
                         start: saClipPos,
-                        end: saClipPos + saLengthOnRef,
+                        end: saClipPos + saLengthSansClipping,
                         refName: readName,
                       },
                     }

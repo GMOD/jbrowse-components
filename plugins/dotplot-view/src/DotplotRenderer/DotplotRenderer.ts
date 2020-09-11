@@ -105,7 +105,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         }
       } else {
         console.warn(
-          `feature at ${refName}:${start}-${end} ${mateRef}:${mate.start}-${mate.end} not plotted, fell outside of range`,
+          `feature at ${refName}:${start}-${end} ${mateRef}:${mate.start}-${mate.end} not plotted, fell outside of range ${b10} ${b20} ${e10} ${e20}`,
         )
       }
     })
