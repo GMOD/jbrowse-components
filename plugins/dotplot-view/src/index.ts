@@ -156,10 +156,8 @@ export default class DotplotPlugin extends Plugin {
               icon: AddIcon,
               onClick: () => {
                 const session = getSession(track)
-                const start = feature.get('start')
                 const clipPos = feature.get('clipPos')
-                const end = feature.get('end')
-                const seq = feature.get('seq')
+                const cigar = feature.get('CIGAR')
                 const flags = feature.get('flags')
                 const SA: string =
                   (feature.get('tags')
@@ -203,7 +201,7 @@ export default class DotplotPlugin extends Plugin {
                 feat.mate = {
                   refName: readName,
                   start: clipPos,
-                  end: end - start + clipPos,
+                  end: clipPos + getLengthSansClipping(cigar),
                 }
 
                 // if secondary alignment or supplementary, calculate length from SA[0]'s CIGAR
@@ -211,11 +209,9 @@ export default class DotplotPlugin extends Plugin {
                 // seq.length if primary alignment
                 const totalLength =
                   // eslint-disable-next-line no-bitwise
-                  flags & 2048 || flags & 2
+                  flags & 2048
                     ? getLength(supplementaryAlignments[0].CIGAR)
-                    : seq.length
-
-                console.log({ totalLength })
+                    : getLength(cigar)
 
                 const features = [
                   feat,

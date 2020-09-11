@@ -73,6 +73,18 @@ function getLength(cigar: string) {
   return length
 }
 
+function getLengthSansClipping(cigar: string) {
+  const cigarOps = parseCigar(cigar)
+  let length = 0
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+    if (op !== 'H' && op !== 'S' && op !== 'D') {
+      length += len
+    }
+  }
+  return length
+}
 function getClip(cigar: string, strand: number) {
   return strand === -1
     ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
@@ -165,10 +177,8 @@ export default class extends Plugin {
               icon: AddIcon,
               onClick: () => {
                 const session = getSession(track)
-                const start = feature.get('start')
                 const clipPos = feature.get('clipPos')
-                const end = feature.get('end')
-                const seq = feature.get('seq')
+                const cigar = feature.get('CIGAR')
                 const flags = feature.get('flags')
                 const SA: string =
                   (feature.get('tags')
@@ -178,6 +188,7 @@ export default class extends Plugin {
                 const readAssembly = `${readName}_assembly`
                 const trackAssembly = getConf(track, 'assemblyNames')[0]
                 const assemblyNames = [trackAssembly, readAssembly]
+                const trackId = `track-${Date.now()}`
                 const trackName = `${readName}_vs_${trackAssembly}`
                 const supplementaryAlignments = SA.split(';')
                   .filter(aln => !!aln)
@@ -185,6 +196,7 @@ export default class extends Plugin {
                     const [saRef, saStart, saStrand, saCigar] = aln.split(',')
                     const saLengthOnRef = getLengthOnRef(saCigar)
                     const saLength = getLength(saCigar)
+                    const saLengthSansClipping = getLengthSansClipping(saCigar)
                     const saStrandNormalized = saStrand === '-' ? -1 : 1
                     const saClipPos = getClip(saCigar, saStrandNormalized)
                     const saRealStart = +saStart - 1 + saClipPos
@@ -200,7 +212,7 @@ export default class extends Plugin {
                       uniqueId: `${feature.id()}_SA${index}`,
                       mate: {
                         start: saClipPos,
-                        end: saClipPos + saLengthOnRef,
+                        end: saClipPos + saLengthSansClipping,
                         refName: readName,
                       },
                     }
@@ -211,7 +223,7 @@ export default class extends Plugin {
                 feat.mate = {
                   refName: readName,
                   start: clipPos,
-                  end: end - start + clipPos,
+                  end: clipPos + getLengthSansClipping(cigar),
                 }
 
                 // if secondary alignment or supplementary, calculate length from SA[0]'s CIGAR
@@ -219,9 +231,9 @@ export default class extends Plugin {
                 // seq.length if primary alignment
                 const totalLength =
                   // eslint-disable-next-line no-bitwise
-                  flags & 2048 || flags & 2
+                  flags & 2048
                     ? getLength(supplementaryAlignments[0].CIGAR)
-                    : seq.length
+                    : getLength(cigar)
 
                 const features = [
                   feat,
@@ -290,11 +302,15 @@ export default class extends Plugin {
                       renderer: {
                         type: 'LinearSyntenyRenderer',
                       },
-                      trackId: trackName,
+                      trackId,
+                      name: trackName,
                     },
                   ],
                   tracks: [
-                    { configuration: trackName, type: 'LinearSyntenyTrack' },
+                    {
+                      configuration: trackId,
+                      type: 'LinearSyntenyTrack',
+                    },
                   ],
                   displayName: `${readName} vs ${trackAssembly}`,
                 })
