@@ -17,7 +17,9 @@ export interface Row {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   extendedData?: any
   cells: {
-    text?: string
+    text: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    extendedData?: any
   }[]
 }
 
@@ -111,10 +113,24 @@ function dataToSpreadsheetSnapshot(
   const columnDisplayOrder = []
   for (let columnNumber = 0; columnNumber < maxCols; columnNumber += 1) {
     columnDisplayOrder.push(columnNumber)
+    const guessedType = guessColumnType(
+      rowSet,
+      columnNumber,
+      options.isValidRefName,
+    )
+
+    // store extendeddata for LocString column
+    if (guessedType === 'LocString') {
+      rowSet.rows.forEach(row => {
+        const cell = row.cells[columnNumber]
+        cell.extendedData = parseLocString(cell.text, options.isValidRefName)
+      })
+    }
+
     columns[columnNumber] = {
       name: columnNames[columnNumber],
       dataType: {
-        type: guessColumnType(rowSet, columnNumber, options.isValidRefName),
+        type: guessedType,
       },
     }
   }
