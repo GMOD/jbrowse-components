@@ -9,7 +9,7 @@
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {
-    "@gmod/ucsc-hub": "^0.1.2",
+    "@gmod/ucsc-hub": "^0.1.3",
     "@material-ui/icons": "^4.9.1",
     "object-hash": "^1.3.1"
   },
