@@ -1401,6 +1401,64 @@
         "htsgetBase": "http://htsnexus.rnd.dnanex.us/v1/reads",
         "htsgetTrackId": "BroadHiSeqX_b37/NA12878"
       }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "hg_isoforms.fasta_bam",
+      "name": "hg_isoforms.fasta_bam",
+      "assemblyNames": ["hg19"],
+      "category": ["Iso-Seq"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam.bai"
+          }
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "hg_isoforms.fasta_cram",
+      "name": "hg_isoforms.fasta_cram",
+      "assemblyNames": ["hg19"],
+      "category": ["Iso-Seq"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.cram"
+        },
+        "craiLocation": {
+          "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
     }
   ],
   "connections": [],
