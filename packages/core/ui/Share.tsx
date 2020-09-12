@@ -4,6 +4,12 @@ import ShareIcon from '@material-ui/icons/Share'
 import { observer, PropTypes } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
 import { getSnapshot } from 'mobx-state-tree'
+import Dialog from '@material-ui/core/Dialog'
+import DialogActions from '@material-ui/core/DialogActions'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogContentText from '@material-ui/core/DialogContentText'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import copy from 'copy-to-clipboard'
 import { toUrlSafeB64 } from '../util'
 
 // all notes for session sharing go here
@@ -47,6 +53,19 @@ const Share = observer((props: { session: any }) => {
   const classes = useStyles()
   const url =
     'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/share'
+
+  const [open, setOpen] = React.useState(false)
+  const [shareUrl, setShareUrl] = React.useState('')
+
+  const handleClickOpen = (urlLink: string) => {
+    setShareUrl(`?session=share:${urlLink}`)
+    console.log(shareUrl)
+    setOpen(true)
+  }
+
+  const handleClose = () => {
+    setOpen(false)
+  }
   return (
     <div className={classes.shareButton}>
       <Button
@@ -72,7 +91,8 @@ const Share = observer((props: { session: any }) => {
           }
 
           if (response && response.ok) {
-            console.log(await response.json())
+            const json = await response.json()
+            handleClickOpen(json.sessionId)
             // then on success, open a message box with share link and can copy to clipboard
           } else {
             // on fail, say failed to generate sharelink
@@ -84,6 +104,34 @@ const Share = observer((props: { session: any }) => {
       >
         Share
       </Button>
+      <Dialog
+        maxWidth="xl"
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">JB2 Shareable Link</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {shareUrl}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              copy(shareUrl)
+              session.notify('Copied to clipboard', 'success')
+            }}
+            color="primary"
+          >
+            Copy to Clipboard
+          </Button>
+          <Button onClick={handleClose} color="primary" autoFocus>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   )
 })
