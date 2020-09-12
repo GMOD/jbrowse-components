@@ -10,6 +10,7 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import copy from 'copy-to-clipboard'
+import { ContentCopy as ContentCopyIcon } from './Icons'
 import { toUrlSafeB64 } from '../util'
 
 // all notes for session sharing go here
@@ -124,6 +125,7 @@ const Share = observer((props: { session: any }) => {
               session.notify('Copied to clipboard', 'success')
             }}
             color="primary"
+            startIcon={<ContentCopyIcon />}
           >
             Copy to Clipboard
           </Button>
