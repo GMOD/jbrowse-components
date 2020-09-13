@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-web",
-  "version": "0.0.1-beta.24",
+  "version": "0.0.1-beta.25",
   "main": "build",
   "dir": "src",
   "browserslist": {
@@ -27,7 +27,7 @@
     "@gmod/jbrowse-plugin-hic": "^0.0.1-beta.12",
     "@gmod/jbrowse-plugin-legacy-jbrowse": "^0.0.1-beta.12",
     "@gmod/jbrowse-plugin-linear-comparative-view": "^0.0.1-beta.14",
-    "@gmod/jbrowse-plugin-linear-genome-view": "^0.0.1-beta.14",
+    "@gmod/jbrowse-plugin-linear-genome-view": "^0.0.1-beta.15",
     "@gmod/jbrowse-plugin-lollipop": "^0.0.1-beta.12",
     "@gmod/jbrowse-plugin-menus": "^0.0.1-beta.13",
     "@gmod/jbrowse-plugin-rdf": "^0.0.1-beta.12",

@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-protein-widget",
-  "version": "0.0.1-beta.19",
+  "version": "0.0.1-beta.20",
   "description": "an embeddable protein viewer widget",
   "main": "umd/jbrowse-protein-viewer.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "@gmod/jbrowse-plugin-config": "^0.0.1-beta.14",
     "@gmod/jbrowse-plugin-filtering": "^0.0.1-beta.12",
     "@gmod/jbrowse-plugin-legacy-jbrowse": "^0.0.1-beta.12",
-    "@gmod/jbrowse-plugin-linear-genome-view": "^0.0.1-beta.14",
+    "@gmod/jbrowse-plugin-linear-genome-view": "^0.0.1-beta.15",
     "@gmod/jbrowse-plugin-lollipop": "^0.0.1-beta.12",
     "@gmod/jbrowse-plugin-protein": "^0.0.1-beta.12",
     "@gmod/jbrowse-plugin-svg": "^0.0.1-beta.13",
