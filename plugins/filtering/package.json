@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-filtering",
-  "version": "0.0.1-beta.11",
+  "version": "0.0.1-beta.12",
   "description": "JBrowse 2 filtering tracks, etc.",
   "main": "src/index.ts",
   "scripts": {
