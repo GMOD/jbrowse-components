@@ -96,7 +96,7 @@ export default class Upgrade extends JBrowseCommand {
     }
 
     await response.body.pipe(unzip.Extract({ path: argsPath })).promise()
-    this.log('Upgrade finished')
+    this.log(`Unpacked ${locationUrl} at ${argsPath}`)
   }
 
   async fetchGithubVersions() {

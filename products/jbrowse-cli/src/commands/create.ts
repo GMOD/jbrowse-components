@@ -102,7 +102,7 @@ export default class Create extends JBrowseCommand {
     }
 
     await response.body.pipe(unzip.Extract({ path: argsPath })).promise()
-    this.log('Finished')
+    this.log(`Unpacked ${locationUrl} at ${argsPath}`)
   }
 
   async checkPath(userPath: string) {
