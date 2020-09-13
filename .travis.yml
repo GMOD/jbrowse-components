@@ -38,11 +38,3 @@ deploy:
     on:
       repo: GMOD/jbrowse-components
       all_branches: true
-  - provider: releases
-    token: $GITHUB_TOKEN
-    file: products/jbrowse-web/build/jbrowse-web-*.zip
-    file_glob: true
-    skip_cleanup: true
-    on:
-      repo: GMOD/jbrowse-components
-      tags: true
