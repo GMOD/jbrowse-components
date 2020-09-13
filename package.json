@@ -12,7 +12,7 @@
     "build:other": "cross-env NODE_ENV=production lerna run build --ignore \"@gmod/jbrowse-plugin*\"",
     "useDist": "lerna run useDist --scope \"@gmod/jbrowse-plugin*\"",
     "useSrc": "lerna run useSrc --scope \"@gmod/jbrowse-plugin*\"",
-    "lerna-publish": "cross-env lerna publish",
+    "lerna-publish": "lerna publish --no-push && git push origin tag \"@gmod/jbrowse-web*\" && git push --follow-tags",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
