@@ -14,7 +14,7 @@
   "scripts": {
     "start": "tsdx watch --verbose --noClean",
     "build": "tsdx build",
-    "test": "cd ../..; jest packages/linear-genome-view",
+    "test": "cd ../..; jest plugins/linear-genome-view",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",

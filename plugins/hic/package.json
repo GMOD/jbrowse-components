@@ -4,7 +4,7 @@
   "description": "JBrowse 2 hic adapters, tracks, etc.",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/hic"
+    "test": "cd ../..; jest plugins/hic"
   },
   "author": "Colin Diesh",
   "license": "MIT",

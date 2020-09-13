@@ -4,7 +4,7 @@
   "description": "JBrowse 2 circular view",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/circular-view"
+    "test": "cd ../..; jest plugins/circular-view"
   },
   "author": "Robert Buels",
   "license": "MIT",

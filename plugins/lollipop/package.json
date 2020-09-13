@@ -4,7 +4,7 @@
   "description": "JBrowse 2 plugin for lollipops",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/lollipop"
+    "test": "cd ../..; jest plugins/lollipop"
   },
   "author": "Garrett Stevens",
   "license": "MIT",

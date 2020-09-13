@@ -4,7 +4,7 @@
   "description": "JBrowse 2 track and assembly data management",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/data-management"
+    "test": "cd ../..; jest plugins/data-management"
   },
   "author": "Garrett Stevens",
   "license": "MIT",

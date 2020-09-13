@@ -4,7 +4,7 @@
   "description": "JBrowse 2 filtering tracks, etc.",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/filtering"
+    "test": "cd ../..; jest plugins/filtering"
   },
   "author": "Garrett Stevens",
   "license": "MIT",
