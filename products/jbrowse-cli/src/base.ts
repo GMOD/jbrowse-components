@@ -3,6 +3,16 @@ import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
 
+interface GithubRelease {
+  tag_name: string
+  prerelease: boolean
+  assets?: [
+    {
+      browser_download_url: string
+    },
+  ]
+}
+
 export default abstract class JBrowseCommand extends Command {
   async init() {}
 
@@ -116,5 +126,42 @@ export default abstract class JBrowseCommand extends Command {
       }
     }
     return result
+  }
+
+  async fetchGithubVersions() {
+    const response = await fetch(
+      'https://api.github.com/repos/GMOD/jbrowse-components/releases',
+    )
+    this.log(`${response}`)
+
+    if (!response.ok) {
+      this.error('Failed to fetch version from server')
+    }
+
+    // use all release only if there are only pre-release in repo
+    const jb2releases: GithubRelease[] = await response.json()
+    const versions = jb2releases.filter(release =>
+      release.tag_name.startsWith('@gmod/jbrowse-web'),
+    )
+
+    const nonprereleases = versions.filter(
+      release => release.prerelease === false,
+    )
+
+    return nonprereleases.length === 0 ? jb2releases : nonprereleases
+  }
+
+  async getTagOrLatest(tag?: string) {
+    const response = await this.fetchGithubVersions()
+    const versions = tag
+      ? response.find(version => version.tag_name === tag)
+      : response[0]
+
+    return versions && versions.assets
+      ? versions.assets[0].browser_download_url
+      : this.error(
+          'Could not find version specified. Use --listVersions to see all available versions',
+          { exit: 110 },
+        )
   }
 }
