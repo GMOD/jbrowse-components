@@ -10,6 +10,7 @@ import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect, useState } from 'react'
 import { LinearGenomeViewStateModel } from '..'
+import configSchema from '@gmod/jbrowse-plugin-wiggle/src/LinePlotRenderer/configSchema'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -63,11 +64,13 @@ const useStyles = makeStyles(theme => {
 const VerticalGuide = observer(
   ({ model, coordX }: { model: LGV; coordX: number }) => {
     const classes = useStyles()
+    const guideInfo = model.pxToBp(coordX)
     return (
       <Tooltip
         open
         placement="top"
-        title={Math.ceil(model.pxToBp(coordX).offset).toLocaleString()}
+        title={`${guideInfo.refName}
+        ${Math.ceil(guideInfo.start + guideInfo.offset).toLocaleString()}`}
         arrow
       >
         <div
