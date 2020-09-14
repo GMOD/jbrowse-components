@@ -1,10 +1,10 @@
 {
   "name": "@gmod/jbrowse-plugin-dotplot-view",
-  "version": "0.0.1-beta.13",
+  "version": "0.0.1-beta.14",
   "description": "JBrowse 2 dotplot view",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/dotplot-view"
+    "test": "cd ../..; jest plugins/dotplot-view"
   },
   "author": "Colin Diesh",
   "license": "MIT",

@@ -1,10 +1,10 @@
 {
   "name": "@gmod/jbrowse-plugin-sequence",
-  "version": "0.0.1-beta.12",
+  "version": "0.0.1-beta.13",
   "description": "JBrowse 2 sequence adapters, tracks, etc.",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/sequence"
+    "test": "cd ../..; jest plugins/sequence"
   },
   "author": "Garrett Stevens",
   "license": "MIT",

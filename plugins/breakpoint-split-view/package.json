@@ -1,10 +1,10 @@
 {
   "name": "@gmod/jbrowse-plugin-breakpoint-split-view",
-  "version": "0.0.1-beta.13",
+  "version": "0.0.1-beta.14",
   "description": "JBrowse 2 breakpoint detail split view",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/breakpoint-split-view"
+    "test": "cd ../..; jest plugins/breakpoint-split-view"
   },
   "author": "Robert Buels",
   "license": "MIT",

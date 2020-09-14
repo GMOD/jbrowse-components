@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-rdf",
-  "version": "0.0.1-beta.11",
+  "version": "0.0.1-beta.12",
   "description": "JBrowse 2 RDF resources",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",

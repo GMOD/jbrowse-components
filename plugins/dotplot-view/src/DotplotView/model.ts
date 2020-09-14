@@ -99,6 +99,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           'stateModel',
         ) as BaseTrackStateModel,
       ),
+
+      // this represents tracks specific to this view
+      // specifically used for read vs ref dotplots where
+      // this track would not really apply elsewhere
+      viewTrackConfigs: types.array(
+        pluginManager.pluggableConfigSchemaType('track'),
+      ),
+
+      // this represents assemblies in the specialized
+      // read vs ref dotplot view
+      viewAssemblyConfigs: types.array(types.frozen()),
     })
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
@@ -174,21 +185,27 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           autorun(() => {
             // make sure we have a width on the view before trying to load
             if (self.volatileWidth !== undefined) {
-              const padding = 4
+              const padding = 10
               // these are set via autorun to avoid dependency cycle
               this.setBorderY(
-                self.hview.dynamicBlocks.contentBlocks.reduce(
-                  (a, b) =>
-                    Math.max(a, approxPixelStringLen(b.refName.slice(0, 10))),
-                  0,
-                ) + padding,
+                Math.max(
+                  self.hview.dynamicBlocks.contentBlocks.reduce(
+                    (a, b) =>
+                      Math.max(a, approxPixelStringLen(b.refName.slice(0, 30))),
+                    0,
+                  ) + padding,
+                  100,
+                ),
               )
               this.setBorderX(
-                self.vview.dynamicBlocks.contentBlocks.reduce(
-                  (a, b) =>
-                    Math.max(a, approxPixelStringLen(b.refName.slice(0, 10))),
-                  0,
-                ) + padding,
+                Math.max(
+                  self.vview.dynamicBlocks.contentBlocks.reduce(
+                    (a, b) =>
+                      Math.max(a, approxPixelStringLen(b.refName.slice(0, 30))),
+                    0,
+                  ) + padding,
+                  100,
+                ),
               )
             }
           }),
