@@ -79,12 +79,9 @@ const EditableTypography = React.forwardRef(
     }
 
     function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-      // "Enter"
-      if (event.keyCode === 13) {
+      if (event.key === 'Enter') {
         inputNode && inputNode.blur()
-      }
-      // "Esc"
-      else if (event.keyCode === 27) {
+      } else if (event.key === 'Escape') {
         setEditedValue(undefined)
         setBlur(true)
       }

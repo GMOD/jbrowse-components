@@ -7,6 +7,6 @@
 **/lib/**
 **/tmp/**
 # TODO: decide whether or not to bring these up to eslint standards
-packages/jbrowse-web/scripts/**
+products/jbrowse-web/scripts/**
 /config/
-/packages/jbrowse-web/config/
+/products/jbrowse-web/config/

@@ -81,33 +81,48 @@ const Base1DView = types
       if (foundRegion) {
         return Math.round(offsetBp / self.bpPerPx)
       }
+
       return undefined
     },
 
     pxToBp(px: number) {
-      const bp = (self.offsetPx + px) * self.bpPerPx
       let bpSoFar = 0
-      let r = getSnapshot(self.displayedRegions[0])
+      const bp = (self.offsetPx + px) * self.bpPerPx
+      const n = self.displayedRegions.length
       if (bp < 0) {
+        const region = self.displayedRegions[0]
         return {
-          ...r,
+          ...getSnapshot(region),
+          oob: true,
           offset: bp,
           index: 0,
         }
       }
-      for (let index = 0; index < self.displayedRegions.length; index += 1) {
-        r = self.displayedRegions[index]
-        if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
-          return { ...r, offset: bp - bpSoFar, index }
+      if (bp >= this.totalBp) {
+        const region = self.displayedRegions[n - 1]
+        const len = region.end - region.start
+        return {
+          ...getSnapshot(region),
+          oob: true,
+          offset: bp - this.totalBp + len,
+          index: n - 1,
         }
-        bpSoFar += r.end - r.start
+      }
+      for (let index = 0; index < self.displayedRegions.length; index += 1) {
+        const region = self.displayedRegions[index]
+        const len = region.end - region.start
+        if (len + bpSoFar > bp && bpSoFar <= bp) {
+          return {
+            ...getSnapshot(region),
+            oob: false,
+            offset: bp - bpSoFar,
+            index,
+          }
+        }
+        bpSoFar += len
       }
 
-      return {
-        ...r,
-        offset: bp - bpSoFar,
-        index: self.displayedRegions.length - 1,
-      }
+      throw new Error('pxToBp failed to map to a region')
     },
   }))
   .views(self => ({
@@ -144,11 +159,12 @@ const Base1DView = types
     moveTo(start: BpOffset, end: BpOffset) {
       // find locations in the modellist
       let bpSoFar = 0
+
       if (start.index === end.index) {
         bpSoFar += end.offset - start.offset
       } else {
         const s = self.displayedRegions[start.index]
-        bpSoFar += (s.reversed ? s.start : s.end) - start.offset
+        bpSoFar += s.end - s.start - start.offset
         if (end.index - start.index >= 2) {
           for (let i = start.index + 1; i < end.index; i += 1) {
             bpSoFar +=
@@ -157,6 +173,12 @@ const Base1DView = types
         }
         bpSoFar += end.offset
       }
+      this.zoomTo(
+        bpSoFar /
+          (self.width -
+            self.interRegionPaddingWidth * (end.index - start.index)),
+      )
+
       let bpToStart = 0
       for (let i = 0; i < self.displayedRegions.length; i += 1) {
         const region = self.displayedRegions[i]
@@ -167,21 +189,19 @@ const Base1DView = types
           bpToStart += region.end - region.start
         }
       }
-      self.bpPerPx = bpSoFar / self.width
-      if (self.width > bpSoFar / self.bpPerPx) {
-        self.offsetPx = Math.round(
-          bpToStart / self.bpPerPx - (self.width - bpSoFar / self.bpPerPx) / 2,
-        )
-      } else {
-        self.offsetPx = Math.round(bpToStart / self.bpPerPx)
-      }
+      self.offsetPx =
+        Math.round(bpToStart / self.bpPerPx) +
+        self.interRegionPaddingWidth * start.index
     },
+
     zoomOut() {
       this.zoomTo(self.bpPerPx * 2)
     },
+
     zoomIn() {
       this.zoomTo(self.bpPerPx / 2)
     },
+
     zoomTo(newBpPerPx: number, offset = self.width / 2) {
       const bpPerPx = newBpPerPx
       if (bpPerPx === self.bpPerPx) return
@@ -195,6 +215,7 @@ const Base1DView = types
         self.maxOffset,
       )
     },
+
     scroll(distance: number) {
       const oldOffsetPx = self.offsetPx
       // the scroll is clamped to keep the linear genome on the main screen
