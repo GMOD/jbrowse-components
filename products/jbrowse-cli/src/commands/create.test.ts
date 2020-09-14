@@ -21,7 +21,29 @@ const releaseArray = [
   },
 ]
 
+function mockTagFail(gitHubApi: Scope) {
+  return gitHubApi
+    .get(
+      '/repos/GMOD/jbrowse-components/releases/tags/@gmod/jbrowse-web@v999.999.999',
+    )
+    .reply(404, {})
+}
+
+function mockTagSuccess(gitHubApi: Scope) {
+  return gitHubApi
+    .get(
+      '/repos/GMOD/jbrowse-components/releases/tags/@gmod/jbrowse-web@v0.0.1',
+    )
+    .reply(200, releaseArray[0])
+}
+
 function mockReleases(gitHubApi: Scope) {
+  return gitHubApi
+    .get('/repos/GMOD/jbrowse-components/releases?page=0')
+    .reply(200, releaseArray)
+}
+
+function mockReleasesListVersions(gitHubApi: Scope) {
   return gitHubApi
     .get('/repos/GMOD/jbrowse-components/releases?page=0')
     .reply(200, releaseArray)
@@ -105,7 +127,7 @@ describe('create', () => {
       )
     })
   setup
-    .nock('https://api.github.com', mockReleases)
+    .nock('https://api.github.com', mockTagSuccess)
     .nock('https://example.com', mockZip)
     .command([
       'create',
@@ -123,7 +145,7 @@ describe('create', () => {
       },
     )
   setup
-    .nock('https://api.github.com', mockReleases)
+    .nock('https://api.github.com', mockTagFail)
     .command([
       'create',
       'jbrowse',
@@ -141,7 +163,7 @@ describe('create', () => {
     .exit(120)
     .it('fails because this directory is already set up')
   setup
-    .nock('https://api.github.com', mockReleases)
+    .nock('https://api.github.com', mockReleasesListVersions)
     .command(['create', '--listVersions'])
     .catch(/0/)
     .it('lists versions', ctx => {
