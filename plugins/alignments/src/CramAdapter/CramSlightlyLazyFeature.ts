@@ -345,7 +345,6 @@ export default class CramSlightlyLazyFeature implements Feature {
       name: this.get('name'),
       type: this.get('type'),
       uniqueId: this.id(),
-      clipPos: this._get_clipPos(),
     }
   }
 
