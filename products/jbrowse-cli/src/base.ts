@@ -147,14 +147,15 @@ export default abstract class JBrowseCommand extends Command {
         release.tag_name.startsWith('@gmod/jbrowse-web'),
       )
 
-      const nonprereleases = jb2webreleases.filter(
-        release => release.prerelease === false,
-      )
-      if (nonprereleases.length === 0 && jb2webreleases.length !== 0) {
+      // if a release was just uploaded, or an erroneous build was made
+      // then it might have no build asset
+      const nonprereleases = jb2webreleases
+        .filter(release => release.prerelease === false)
+        .filter(release => release.assets && release.assets.length > 0)
+
+      if (nonprereleases.length !== 0) {
+        // @ts-ignore
         return nonprereleases[0].assets[0].browser_download_url
-      }
-      if (jb2webreleases.length !== 0) {
-        return jb2webreleases[0].assets[0].browser_download_url
       }
     }
 
