@@ -132,18 +132,31 @@ export default abstract class JBrowseCommand extends Command {
     return result
   }
 
+  async fetchVersions() {
+    let versions: GithubRelease[] = []
+    let page = 0
+    let result
+
+    do {
+      // eslint-disable-next-line no-await-in-loop
+      const response = await fetch(
+        `https://api.github.com/repos/GMOD/jbrowse-components/releases?page=${page}`,
+      )
+      if (response.ok) {
+        // eslint-disable-next-line no-await-in-loop
+        result = await response.json()
+        versions = versions.concat(result)
+        page++
+      } else {
+        throw new Error(`${result.statusText}`)
+      }
+    } while (result && result.length > 0)
+    return versions
+  }
+
   async fetchGithubVersions() {
-    const response = await fetch(
-      'https://api.github.com/repos/GMOD/jbrowse-components/releases',
-    )
-    this.log(`${response}`)
+    const jb2releases = await this.fetchVersions()
 
-    if (!response.ok) {
-      this.error('Failed to fetch version from server')
-    }
-
-    // use all release only if there are only pre-release in repo
-    const jb2releases: GithubRelease[] = await response.json()
     const versions = jb2releases.filter(release =>
       release.tag_name.startsWith('@gmod/jbrowse-web'),
     )

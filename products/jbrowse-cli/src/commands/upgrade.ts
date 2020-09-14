@@ -58,7 +58,7 @@ export default class Upgrade extends JBrowseCommand {
         const versions = (await this.fetchGithubVersions()).map(
           version => version.tag_name,
         )
-        this.log(`All JBrowse versions: ${versions.join(', ')}`)
+        this.log(`All JBrowse versions\n${versions.join('\n')}`)
         this.exit()
       } catch (error) {
         this.error(error)
