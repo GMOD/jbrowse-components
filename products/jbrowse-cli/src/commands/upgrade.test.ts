@@ -32,8 +32,10 @@ const releaseArray = [
 
 function mockReleases(gitHubApi: Scope) {
   return gitHubApi
-    .get('/repos/GMOD/jbrowse-components/releases')
+    .get('/repos/GMOD/jbrowse-components/releases?page=0')
     .reply(200, releaseArray)
+    .get('/repos/GMOD/jbrowse-components/releases?page=1')
+    .reply(200, [])
 }
 
 function mockWrongSite(exampleSite: Scope) {
@@ -119,7 +121,7 @@ describe('upgrade', () => {
   setup
     .nock('https://api.github.com', mockReleases)
     .command(['upgrade', '--tag', '@gmod/jbrowse-web@v999.999.999'])
-    .exit(110)
+    .exit(130)
     .it('fails to upgrade if version does not exist')
   setup
     .nock('https://example.com', mockWrongSite)

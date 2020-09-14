@@ -3,6 +3,16 @@ import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
 
+interface GithubRelease {
+  tag_name: string
+  prerelease: boolean
+  assets?: [
+    {
+      browser_download_url: string
+    },
+  ]
+}
+
 export default abstract class JBrowseCommand extends Command {
   async init() {}
 
@@ -47,7 +57,10 @@ export default abstract class JBrowseCommand extends Command {
     }
     if (locationUrl) {
       const response = await fetch(locationUrl)
-      return response.json()
+      if (response.ok) {
+        return response.json()
+      }
+      throw new Error(`${response.statusText}`)
     }
     return fsPromises.readFile(location, { encoding: 'utf8' })
   }
@@ -68,6 +81,7 @@ export default abstract class JBrowseCommand extends Command {
           if (response.ok) {
             return locationUrl.href
           }
+          throw new Error(`${response.statusText}`)
         } else {
           return locationUrl.href
         }
@@ -116,5 +130,55 @@ export default abstract class JBrowseCommand extends Command {
       }
     }
     return result
+  }
+
+  async fetchVersions() {
+    let versions: GithubRelease[] = []
+    let page = 0
+    let result
+
+    do {
+      // eslint-disable-next-line no-await-in-loop
+      const response = await fetch(
+        `https://api.github.com/repos/GMOD/jbrowse-components/releases?page=${page}`,
+      )
+      if (response.ok) {
+        // eslint-disable-next-line no-await-in-loop
+        result = await response.json()
+        versions = versions.concat(result)
+        page++
+      } else {
+        throw new Error(`${result.statusText}`)
+      }
+    } while (result && result.length > 0)
+    return versions
+  }
+
+  async fetchGithubVersions() {
+    const jb2releases = await this.fetchVersions()
+
+    const versions = jb2releases.filter(release =>
+      release.tag_name.startsWith('@gmod/jbrowse-web'),
+    )
+
+    const nonprereleases = versions.filter(
+      release => release.prerelease === false,
+    )
+
+    return nonprereleases.length === 0 ? jb2releases : nonprereleases
+  }
+
+  async getTagOrLatest(tag?: string) {
+    const response = await this.fetchGithubVersions()
+    const versions = tag
+      ? response.find(version => version.tag_name === tag)
+      : response[0]
+
+    return versions && versions.assets
+      ? versions.assets[0].browser_download_url
+      : this.error(
+          'Could not find version specified. Use --listVersions to see all available versions',
+          { exit: 130 },
+        )
   }
 }

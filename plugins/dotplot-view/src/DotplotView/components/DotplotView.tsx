@@ -218,7 +218,9 @@ const HorizontalAxis = observer(({ model }: { model: DotplotViewModel }) => {
                 dominantBaseline="hanging"
                 textAnchor="end"
               >
-                {`${region.refName}:${region.start !== 0 ? region.start : ''}`}
+                {`${region.refName}:${
+                  region.start !== 0 ? Math.floor(region.start) : ''
+                }`}
               </text>
             )
           })}
@@ -294,7 +296,9 @@ const VerticalAxis = observer(({ model }: { model: DotplotViewModel }) => {
                 fill="#000000"
                 textAnchor="end"
               >
-                {`${region.refName}:${region.start !== 0 ? region.start : ''}`}
+                {`${region.refName}:${
+                  region.start !== 0 ? Math.floor(region.start) : ''
+                }`}
               </text>
             )
           })}
