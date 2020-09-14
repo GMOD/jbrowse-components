@@ -77,27 +77,25 @@ export default class extends Plugin {
 
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
-      if (pluginManager.rootModel.adminMode) {
-        pluginManager.rootModel.appendToMenu('File', {
-          label: 'Open new track',
-          icon: NoteAddIcon,
-          onClick: (session: SessionWithWidgets) => {
-            const widget = session.addWidget('AddTrackWidget', 'addTrackWidget')
-            session.showWidget(widget)
-          },
-        })
-        pluginManager.rootModel.appendToMenu('File', {
-          label: 'Open new connection',
-          icon: InputIcon,
-          onClick: (session: SessionWithWidgets) => {
-            const widget = session.addWidget(
-              'AddConnectionWidget',
-              'addConnectionWidget',
-            )
-            session.showWidget(widget)
-          },
-        })
-      }
+      pluginManager.rootModel.appendToMenu('File', {
+        label: 'Open new track',
+        icon: NoteAddIcon,
+        onClick: (session: SessionWithWidgets) => {
+          const widget = session.addWidget('AddTrackWidget', 'addTrackWidget')
+          session.showWidget(widget)
+        },
+      })
+      pluginManager.rootModel.appendToMenu('File', {
+        label: 'Open new connection',
+        icon: InputIcon,
+        onClick: (session: SessionWithWidgets) => {
+          const widget = session.addWidget(
+            'AddConnectionWidget',
+            'addConnectionWidget',
+          )
+          session.showWidget(widget)
+        },
+      })
     }
   }
 }

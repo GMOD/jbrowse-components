@@ -35,10 +35,7 @@ declare interface ReferringNode {
   key: string
 }
 
-export default function sessionModelFactory(
-  pluginManager: PluginManager,
-  editableConfigs = false,
-) {
+export default function sessionModelFactory(pluginManager: PluginManager) {
   const minDrawerWidth = 128
   const session = types
     .model('JBrowseWebSessionModel', {
@@ -59,6 +56,10 @@ export default function sessionModelFactory(
       ),
       connectionInstances: types.map(
         types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
+      ),
+
+      sessionTracks: types.array(
+        pluginManager.pluggableConfigSchemaType('track'),
       ),
     })
     .volatile((/* self */) => ({
@@ -273,7 +274,19 @@ export default function sessionModelFactory(
       },
 
       addTrackConf(trackConf: any) {
-        return getParent(self).jbrowse.addTrackConf(trackConf)
+        if (getParent(self).adminMode) {
+          return getParent(self).jbrowse.addTrackConf(trackConf)
+        }
+        const { trackId, type } = trackConf
+        if (!type) {
+          throw new Error(`unknown track type ${type}`)
+        }
+        const track = self.sessionTracks.find((t: any) => t.trackId === trackId)
+        if (track) {
+          return track
+        }
+        const length = self.sessionTracks.push(trackConf)
+        return self.sessionTracks[length - 1]
       },
 
       addConnectionConf(connectionConf: any) {
@@ -422,15 +435,7 @@ export default function sessionModelFactory(
         },
       }
     })
-
-  if (!editableConfigs) {
-    return session
-  }
-
-  return types.compose(
-    'EditableConfigSession',
-    session,
-    types.model().actions(self => ({
+    .actions(self => ({
       /**
        * opens a configuration editor to configure the given thing,
        * and sets the current task to be configuring it
@@ -442,7 +447,7 @@ export default function sessionModelFactory(
             'must pass a configuration model to editConfiguration',
           )
         }
-        const editableConfigSession = self as SessionWithWidgets
+        const editableConfigSession = self
         const editor = editableConfigSession.addWidget(
           'ConfigurationEditorWidget',
           'configEditor',
@@ -450,8 +455,7 @@ export default function sessionModelFactory(
         )
         editableConfigSession.showWidget(editor)
       },
-    })),
-  )
+    }))
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
