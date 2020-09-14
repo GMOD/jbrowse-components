@@ -178,7 +178,7 @@ export default abstract class JBrowseCommand extends Command {
       ? versions.assets[0].browser_download_url
       : this.error(
           'Could not find version specified. Use --listVersions to see all available versions',
-          { exit: 110 },
+          { exit: 130 },
         )
   }
 }

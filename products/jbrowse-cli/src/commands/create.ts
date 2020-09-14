@@ -67,7 +67,7 @@ export default class Create extends JBrowseCommand {
         const versions = (await this.fetchGithubVersions()).map(
           version => version.tag_name,
         )
-        this.log(`All JBrowse versions:\n ${versions.join('\n')}`)
+        this.log(`All JBrowse versions:\n${versions.join('\n')}`)
         this.exit()
       } catch (error) {
         this.error(error)
@@ -125,7 +125,7 @@ export default class Create extends JBrowseCommand {
       const versions = (await this.fetchGithubVersions()).map(
         version => version.tag_name,
       )
-      this.log(`All JBrowse versions\n${versions.join('\n')}`)
+      this.log(`All JBrowse versions:\n${versions.join('\n')}`)
       this.exit()
     }
     throw error
