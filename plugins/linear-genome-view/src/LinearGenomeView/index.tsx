@@ -1,6 +1,7 @@
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
 import { Region } from '@gmod/jbrowse-core/util/types'
+import { saveAs } from 'file-saver'
 import {
   ElementId,
   Region as MUIRegion,
@@ -31,6 +32,7 @@ import LineStyleIcon from '@material-ui/icons/LineStyle'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import clone from 'clone'
+import { renderToSvg } from './components/LinearGenomeView'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -1072,6 +1074,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         },
       }
     })
+    .actions(self => ({
+      async exportSvg() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const html = await renderToSvg(self as any)
+        const blob = new Blob([html], { type: 'image/svg+xml' })
+        saveAs(blob, 'image.svg')
+      },
+    }))
 
   return types.compose(BaseViewModel, model)
 }
