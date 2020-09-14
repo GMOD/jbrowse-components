@@ -23,8 +23,10 @@ const releaseArray = [
 
 function mockReleases(gitHubApi: Scope) {
   return gitHubApi
-    .get('/repos/GMOD/jbrowse-components/releases')
+    .get('/repos/GMOD/jbrowse-components/releases?page=0')
     .reply(200, releaseArray)
+    .get('/repos/GMOD/jbrowse-components/releases?page=1')
+    .reply(200, [])
 }
 
 function mockZip(exampleSite: Scope) {
@@ -144,7 +146,7 @@ describe('create', () => {
     .catch(/0/)
     .it('lists versions', ctx => {
       expect(ctx.stdoutWrite).toHaveBeenCalledWith(
-        'All JBrowse versions: @gmod/jbrowse-web@v0.0.1\n',
+        'All JBrowse versions:\n@gmod/jbrowse-web@v0.0.1\n',
       )
     })
 })

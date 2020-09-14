@@ -67,7 +67,7 @@ export default class Create extends JBrowseCommand {
         const versions = (await this.fetchGithubVersions()).map(
           version => version.tag_name,
         )
-        this.log(`All JBrowse versions: ${versions.join(', ')}`)
+        this.log(`All JBrowse versions:\n${versions.join('\n')}`)
         this.exit()
       } catch (error) {
         this.error(error)
@@ -119,49 +119,13 @@ export default class Create extends JBrowseCommand {
       )
   }
 
-  async fetchGithubVersions() {
-    const response = await fetch(
-      'https://api.github.com/repos/GMOD/jbrowse-components/releases',
-    )
-
-    if (!response.ok) {
-      this.error('Failed to fetch version from server')
-    }
-
-    // use all release only if there are only pre-release in repo
-    const jb2releases: GithubRelease[] = await response.json()
-    const versions = jb2releases.filter(release =>
-      release.tag_name.startsWith('@gmod/jbrowse-web'),
-    )
-
-    const nonprereleases = versions.filter(
-      release => release.prerelease === false,
-    )
-
-    return nonprereleases.length === 0 ? jb2releases : nonprereleases
-  }
-
-  async getTagOrLatest(tag?: string) {
-    const response = await this.fetchGithubVersions()
-    const versions = tag
-      ? response.find(version => version.tag_name === tag)
-      : response[0]
-
-    return versions
-      ? versions.assets[0].browser_download_url
-      : this.error(
-          'Could not find version specified. Use --listVersions to see all available versions',
-          { exit: 130 },
-        )
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async catch(error: any) {
     if (error.parse && error.parse.output.flags.listVersions) {
       const versions = (await this.fetchGithubVersions()).map(
         version => version.tag_name,
       )
-      this.log(`All JBrowse versions: ${versions.join(', ')}`)
+      this.log(`All JBrowse versions:\n${versions.join('\n')}`)
       this.exit()
     }
     throw error
