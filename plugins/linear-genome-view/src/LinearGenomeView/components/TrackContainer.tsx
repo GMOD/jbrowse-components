@@ -1,14 +1,15 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import { getConf } from '@gmod/jbrowse-core/configuration'
+import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ResizeHandle } from '@gmod/jbrowse-core/ui'
 import {
   useDebouncedCallback,
   getContainingView,
+  getSession,
 } from '@gmod/jbrowse-core/util'
+import clsx from 'clsx'
 import Paper from '@material-ui/core/Paper'
-import Slide from '@material-ui/core/Slide'
 import { makeStyles } from '@material-ui/core/styles'
 
 import { LinearGenomeViewModel, RESIZE_HANDLE_HEIGHT } from '..'
@@ -40,9 +41,15 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
   },
   trackLabel: {
-    position: 'absolute',
     zIndex: 3,
     margin: theme.spacing(1),
+  },
+  trackLabelInline: {
+    position: 'relative',
+    display: 'inline-block',
+  },
+  trackLabelOverlay: {
+    position: 'absolute',
   },
   trackRenderingContainer: {
     overflowY: 'auto',
@@ -62,6 +69,8 @@ function TrackContainer(props: {
   const classes = useStyles()
   const { model, track } = props
   const { horizontalScroll, draggingTrackId, moveTrack } = model
+  const { height } = track
+  const session = getSession(model)
   function onDragEnter() {
     if (
       draggingTrackId !== undefined &&
@@ -78,14 +87,20 @@ function TrackContainer(props: {
 
   return (
     <div className={classes.root}>
-      <Slide direction="right" in={model.showTrackLabels}>
-        <TrackLabel track={track} className={classes.trackLabel} />
-      </Slide>
+      <TrackLabel
+        track={track}
+        className={clsx(
+          classes.trackLabel,
+          readConfObject(session.sessionConfig, 'trackLabels') === 'overlay'
+            ? classes.trackLabelOverlay
+            : classes.trackLabelInline,
+        )}
+      />
 
       <Paper
         variant="outlined"
         className={classes.trackRenderingContainer}
-        style={{ height: track.height }}
+        style={{ height }}
         onScroll={event => {
           const target = event.target as HTMLDivElement
           track.setScrollTop(target.scrollTop)
