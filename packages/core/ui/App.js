@@ -59,7 +59,6 @@ const useStyles = makeStyles(theme => ({
 function App({ session }) {
   const classes = useStyles()
   const { pluginManager } = session
-
   const { visibleWidget, drawerWidth } = session
 
   function handleNameChange(newName) {
@@ -111,12 +110,12 @@ function App({ session }) {
                   }}
                 />
               </Tooltip>
+              <Share session={session} />
               <div className={classes.grow} />
               <div style={{ width: 150, maxHeight: 48 }}>
                 <LogoFull variant="white" />
               </div>
             </Toolbar>
-            <Share session={session} />
           </AppBar>
         </div>
         <div className={classes.components}>

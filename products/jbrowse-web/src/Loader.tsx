@@ -20,7 +20,6 @@ import 'typeface-roboto'
 import 'requestidlecallback-polyfill'
 import 'mobx-react/batchingForReactDom'
 import 'core-js/stable'
-
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
@@ -34,6 +33,9 @@ if (!window.TextDecoder) {
   window.TextDecoder = TextDecoder
 }
 
+interface DynamoDbSession {
+  session?: string
+}
 function NoConfigMessage() {
   // TODO: Link to docs for how to configure JBrowse
   return (
@@ -175,7 +177,9 @@ export function Loader() {
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)
-  let rootModel
+  // ask what this should be
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let rootModel: any
   try {
     if (configSnapshot) {
       rootModel = JBrowseRootModel.create({
@@ -208,14 +212,6 @@ export function Loader() {
     throw new Error('could not instantiate root model')
   }
   try {
-    // TODOSESSION: here is where the new session logic will be
-    // on load, if there is a sessionQuery Param, use fetch and POST
-    // to the read-session lambda function
-    // on fail, send them to root directory (their default session setup)
-    // on success, download and load everything as a session, save to localStorage and assign it a uuid
-    // put new session uuid into the URL using useQueryParam like JBrowse.js does
-
-    console.log(rootModel.jbrowse.savedSessionNames)
     if (sessionQueryParam) {
       // const savedSessionIndex = rootModel.jbrowse.savedSessionNames.indexOf(
       //   sessionQueryParam,
@@ -231,14 +227,19 @@ export function Loader() {
       // }
 
       // TODOSESSION: below is logic if uuid is in query
-      // need logic to see if it a session from a remote shared
-      // or just local
-      // if (remote)
-      // rootModel.setSession(JSON.parse(fromUrlSafeB64(sessionQueryParamWithoutRemoteTag)))
-      const savedUuidSession = localStorage.getItem(sessionQueryParam)
+      const localSession = localStorage.getItem(sessionQueryParam)
       if (getConf(rootModel.jbrowse, 'useUrlSession')) {
-        if (savedUuidSession) {
-          rootModel.setSession(JSON.parse(savedUuidSession))
+        if (localSession) {
+          rootModel.setSession(JSON.parse(localSession))
+        } else if (sessionQueryParam.includes('share:')) {
+          readSessionFromDynamo(sessionQueryParam).then(json => {
+            json.session
+              ? rootModel.setSession(JSON.parse(fromUrlSafeB64(json.session)))
+              : rootModel.setDefaultSession()
+
+            // share session successfully grabbed IF correct config
+            // need to set a uuid, save session to the uuid, and put in url
+          })
         } else rootModel.setDefaultSession()
       }
     } else {
@@ -281,6 +282,34 @@ export function Loader() {
   pluginManager.configure()
 
   return <JBrowse pluginManager={pluginManager} />
+}
+
+const readSessionFromDynamo = async (sessionQueryParam: string) => {
+  const url =
+    'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/load'
+  const sessionId = sessionQueryParam.split('share:')[1]
+  const data = new FormData()
+  data.append('sessionId', sessionId)
+
+  let response
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      },
+      body: data,
+    })
+  } catch (error) {
+    // ignore
+  }
+
+  if (response && response.ok) {
+    const json = await response.json()
+    return json
+  }
+  return {}
 }
 
 function factoryReset() {

@@ -10,6 +10,7 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import copy from 'copy-to-clipboard'
+import { fade } from '@material-ui/core/styles/colorManipulator'
 import { ContentCopy as ContentCopyIcon } from './Icons'
 import { toUrlSafeB64 } from '../util'
 
@@ -43,8 +44,19 @@ import { toUrlSafeB64 } from '../util'
 // jbsession_${uuid}
 
 const useStyles = makeStyles(theme => ({
-  shareButton: {
+  shareDiv: {
     textAlign: 'center',
+  },
+  shareButton: {
+    '&:hover': {
+      backgroundColor: fade(
+        theme.palette.primary.contrastText,
+        theme.palette.action.hoverOpacity,
+      ),
+      '@media (hover: none)': {
+        backgroundColor: 'transparent',
+      },
+    },
   },
 }))
 
@@ -59,49 +71,53 @@ const Share = observer((props: { session: any }) => {
   const [shareUrl, setShareUrl] = React.useState('')
 
   const handleClickOpen = (urlLink: string) => {
-    setShareUrl(`?session=share:${urlLink}`)
-    console.log(shareUrl)
+    // ask how share url should really look
+    setShareUrl(`session=share:${urlLink}`)
     setOpen(true)
   }
 
   const handleClose = () => {
     setOpen(false)
   }
+
+  const shareSessionToDynamo = async () => {
+    const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
+
+    const data = new FormData()
+    data.append('session', sess)
+
+    let response
+    try {
+      response = await fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
+        body: data,
+      })
+    } catch (error) {
+      // ignore
+    }
+
+    if (response && response.ok) {
+      const json = await response.json()
+      handleClickOpen(json.sessionId)
+    } else {
+      // on fail, say failed to generate sharelink
+    }
+  }
   return (
-    <div className={classes.shareButton}>
+    <div className={classes.shareDiv}>
       <Button
         data-testid="share_button"
-        onClick={async () => {
-          const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
-
-          const data = new FormData()
-          data.append('session', sess)
-
-          let response
-          try {
-            response = await fetch(url, {
-              method: 'POST',
-              mode: 'cors',
-              headers: {
-                'Access-Control-Allow-Origin': '*',
-              },
-              body: data,
-            })
-          } catch (error) {
-            // ignore
-          }
-
-          if (response && response.ok) {
-            const json = await response.json()
-            handleClickOpen(json.sessionId)
-            // then on success, open a message box with share link and can copy to clipboard
-          } else {
-            // on fail, say failed to generate sharelink
-          }
+        onClick={() => {
+          shareSessionToDynamo()
         }}
         size="small"
         color="inherit"
         startIcon={<ShareIcon />}
+        classes={{ root: classes.shareButton }}
       >
         Share
       </Button>
