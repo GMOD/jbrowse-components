@@ -1,10 +1,10 @@
 {
   "name": "@gmod/jbrowse-plugin-gff3tabix",
-  "version": "0.0.1-beta.12",
+  "version": "0.0.1-beta.13",
   "description": "JBrowse 2 gff3tabix.",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/gff3tabix"
+    "test": "cd ../..; jest plugins/gff3tabix"
   },
   "author": "Colin Diesh",
   "license": "MIT",

@@ -81,7 +81,6 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
               )
 
               const { blockCount, blockSizes, blockStarts, chromStarts } = data
-
               if (blockCount) {
                 const starts = chromStarts || blockStarts || []
                 const sizes = blockSizes
@@ -99,8 +98,10 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                   })
                 }
               }
-              if (r.uniqueId === undefined)
+              if (r.uniqueId === undefined) {
                 throw new Error('invalid bbi feature')
+              }
+
               const f = new SimpleFeature({
                 id: `${this.id}-${r.uniqueId}`,
                 data: {
@@ -110,7 +111,9 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                   refName,
                 },
               })
-              return f.get('thickStart') ? ucscProcessedTranscript(f) : f
+              return f.get('thickStart') && f.get('blockCount')
+                ? ucscProcessedTranscript(f)
+                : f
             },
           ),
         ).subscribe(observer)

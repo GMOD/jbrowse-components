@@ -1,10 +1,10 @@
 {
   "name": "@gmod/jbrowse-plugin-protein",
-  "version": "0.0.1-beta.11",
+  "version": "0.0.1-beta.12",
   "description": "JBrowse 2 protein-specific renderers, etc.",
   "main": "src/index.js",
   "scripts": {
-    "test": "cd ../..; jest packages/protein"
+    "test": "cd ../..; jest plugins/protein"
   },
   "author": "Garrett Stevens",
   "license": "MIT",

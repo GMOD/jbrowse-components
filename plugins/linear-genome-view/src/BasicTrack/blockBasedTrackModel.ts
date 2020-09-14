@@ -278,6 +278,7 @@ const blockBasedTrack = types
             },
           ]
         : []
+
       self.additionalContextMenuItemCallbacks.forEach(callback => {
         const menuItems = callback(self.contextMenuFeature, self, pluginManager)
         contextMenuItems.push(...menuItems)

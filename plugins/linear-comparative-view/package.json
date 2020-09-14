@@ -1,10 +1,10 @@
 {
   "name": "@gmod/jbrowse-plugin-linear-comparative-view",
-  "version": "0.0.1-beta.13",
+  "version": "0.0.1-beta.14",
   "description": "JBrowse 2 linear comparative view",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/linear-comparative-view"
+    "test": "cd ../..; jest plugins/linear-comparative-view"
   },
   "author": "Colin Diesh",
   "license": "MIT",

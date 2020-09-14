@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-linear-genome-view",
-  "version": "0.0.1-beta.13",
+  "version": "0.0.1-beta.15",
   "description": "JBrowse 2 linear genome view",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
@@ -14,7 +14,7 @@
   "scripts": {
     "start": "tsdx watch --verbose --noClean",
     "build": "tsdx build",
-    "test": "cd ../..; jest packages/linear-genome-view",
+    "test": "cd ../..; jest plugins/linear-genome-view",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
@@ -43,5 +43,8 @@
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

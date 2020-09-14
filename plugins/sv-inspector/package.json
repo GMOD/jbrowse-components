@@ -1,10 +1,10 @@
 {
   "name": "@gmod/jbrowse-plugin-sv-inspector",
-  "version": "0.0.1-beta.12",
+  "version": "0.0.1-beta.13",
   "description": "JBrowse 2 SV inspector view",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/sv-inspector"
+    "test": "cd ../..; jest plugins/sv-inspector"
   },
   "author": "Robert Buels",
   "license": "MIT",

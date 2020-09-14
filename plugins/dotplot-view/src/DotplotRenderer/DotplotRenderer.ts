@@ -8,6 +8,8 @@ import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAda
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Instance } from 'mobx-state-tree'
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { parseCigar } from '@gmod/jbrowse-plugin-alignments/src/BamAdapter/MismatchParser'
 import { Dotplot1DView } from '../DotplotView/model'
 import MyConfig from './configSchema'
 
@@ -38,68 +40,62 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d')
     ctx.scale(scale, scale)
-
-    ctx.fillStyle = 'black'
-
     ctx.lineWidth = 3
     ctx.fillStyle = readConfObject(config, 'color')
     const [hview, vview] = views
-    const db1 = hview.dynamicBlocks.contentBlocks
-    const db2 = vview.dynamicBlocks.contentBlocks
+    const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
+    const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx
     ;(hview.features || []).forEach(feature => {
       const start = feature.get('start')
       const end = feature.get('end')
       const refName = feature.get('refName')
       const mate = feature.get('mate')
+      const mateRef = mate.refName
       // const identity = feature.get('numMatches') / feature.get('blockLen')
       // ctx.fillStyle = `hsl(${identity * 150},50%,50%)`
       ctx.fillStyle = 'black'
-      const b10 = hview.bpToPx({ refName, coord: start }) || 0
-      const b20 = hview.bpToPx({ refName, coord: end }) || 0
-
-      const { refName: mateRef } = mate
-      const e10 = vview.bpToPx({ refName: mateRef, coord: mate.start }) || 0
-      const e20 = vview.bpToPx({ refName: mateRef, coord: mate.end }) || 0
-
-      const b1 = b10 - db1[0].offsetPx
-      const b2 = b20 - db1[0].offsetPx
-      const e1 = e10 - db2[0].offsetPx
-      const e2 = e20 - db2[0].offsetPx
+      const b10 = hview.bpToPx({ refName, coord: start })
+      const b20 = hview.bpToPx({ refName, coord: end })
+      const e10 = vview.bpToPx({ refName: mateRef, coord: mate.start })
+      const e20 = vview.bpToPx({ refName: mateRef, coord: mate.end })
       if (
-        b1 !== undefined &&
-        b2 !== undefined &&
-        e1 !== undefined &&
-        e2 !== undefined
+        b10 !== undefined &&
+        b20 !== undefined &&
+        e10 !== undefined &&
+        e20 !== undefined
       ) {
+        const b1 = b10 - db1
+        const b2 = b20 - db1
+        const e1 = e10 - db2
+        const e2 = e20 - db2
         if (Math.abs(b1 - b2) < 3 && Math.abs(e1 - e2) < 3) {
           ctx.fillRect(b1 - 0.5, height - e1 - 0.5, 1.5, 1.5)
         } else {
           let currX = b1
           let currY = e1
-          let cigar = feature.get('cg')
+          const cigar = feature.get('cg') || feature.get('CIGAR')
           if (cigar) {
-            cigar = (cigar.toUpperCase().match(/\d+\D/g) || [])
-              .map((op: string) => {
-                // @ts-ignore
-                return [op.match(/\D/)[0], parseInt(op, 10)]
-              })
-              .forEach(([op, val]: [string, number]) => {
-                const prevX = currX
-                const prevY = currY
+            const cigarOps = parseCigar(cigar)
+            for (let i = 0; i < cigarOps.length; i += 2) {
+              const val = +cigarOps[i]
+              const op = cigarOps[i + 1]
 
-                if (op === 'M') {
-                  currX += val / hview.bpPerPx - 0.01
-                  currY += val / vview.bpPerPx - 0.01
-                } else if (op === 'D') {
-                  currX += val / hview.bpPerPx
-                } else if (op === 'I') {
-                  currY += val / vview.bpPerPx
-                }
-                ctx.beginPath()
-                ctx.moveTo(prevX, height - prevY)
-                ctx.lineTo(currX, height - currY)
-                ctx.stroke()
-              })
+              const prevX = currX
+              const prevY = currY
+
+              if (op === 'M') {
+                currX += val / hview.bpPerPx
+                currY += val / vview.bpPerPx
+              } else if (op === 'D') {
+                currX += val / hview.bpPerPx
+              } else if (op === 'I') {
+                currY += val / vview.bpPerPx
+              }
+              ctx.beginPath()
+              ctx.moveTo(prevX, height - prevY)
+              ctx.lineTo(currX, height - currY)
+              ctx.stroke()
+            }
           } else {
             ctx.beginPath()
             ctx.moveTo(b1, height - e1)
@@ -107,6 +103,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
             ctx.stroke()
           }
         }
+      } else {
+        console.warn(
+          `feature at ${refName}:${start}-${end} ${mateRef}:${mate.start}-${mate.end} not plotted, fell outside of range ${b10} ${b20} ${e10} ${e20}`,
+        )
       }
     })
     return createImageBitmap(canvas)

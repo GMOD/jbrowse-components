@@ -1,10 +1,10 @@
 {
   "name": "@gmod/jbrowse-plugin-menus",
-  "version": "0.0.1-beta.12",
+  "version": "0.0.1-beta.13",
   "description": "JBrowse 2 basic menus",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/menus"
+    "test": "cd ../..; jest plugins/menus"
   },
   "author": "Garrett Stevens",
   "license": "MIT",

@@ -1,10 +1,10 @@
 {
   "name": "@gmod/jbrowse-plugin-bed",
-  "version": "0.0.1-beta.11",
+  "version": "0.0.1-beta.12",
   "description": "JBrowse 2 bed adapters, tracks, etc.",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/bed"
+    "test": "cd ../..; jest plugins/bed"
   },
   "author": "Garrett Stevens",
   "license": "MIT",

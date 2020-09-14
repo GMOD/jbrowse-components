@@ -1,10 +1,10 @@
 {
   "name": "@gmod/jbrowse-plugin-wiggle",
-  "version": "0.0.1-beta.12",
+  "version": "0.0.1-beta.13",
   "description": "JBrowse 2 wiggle adapters, tracks, etc.",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/wiggle"
+    "test": "cd ../..; jest plugins/wiggle"
   },
   "author": "Garrett Stevens",
   "license": "MIT",

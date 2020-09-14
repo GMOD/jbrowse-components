@@ -67,10 +67,6 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this.record.flags
   }
 
-  _get_cramFlags() {
-    return `0x${this.record.cramFlags.toString(16)}`
-  }
-
   _get_strand() {
     return this.record.isReverseComplemented() ? -1 : 1
   }
@@ -179,6 +175,100 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this.record.getReadBases()
   }
 
+  // generate a CIGAR, based on code from jkbonfield
+  _get_CIGAR() {
+    let seq = ''
+    let cigar = ''
+    let op = 'M'
+    let oplen = 0
+
+    // not sure I should access these, but...
+    const ref = this.record._refRegion.seq
+    const refStart = this.record._refRegion.start
+    let last_pos = this.record.alignmentStart
+    let sublen = 0
+    if (typeof this.record.readFeatures !== 'undefined') {
+      // @ts-ignore
+      this.record.readFeatures.forEach(({ code, refPos, sub, data }) => {
+        sublen = refPos - last_pos
+        seq += ref.substring(last_pos - refStart, refPos - refStart)
+        last_pos = refPos
+
+        if (oplen && op !== 'M') {
+          cigar += oplen + op
+          oplen = 0
+        }
+        if (sublen) {
+          op = 'M'
+          oplen += sublen
+        }
+
+        if (code === 'b') {
+          // An array of bases stored verbatim
+          const ret = data.split(',')
+          const added = String.fromCharCode(...ret)
+          seq += added
+          last_pos += added.length
+          oplen += added.length
+        } else if (code === 'B') {
+          // Single base (+ qual score)
+          seq += sub
+          last_pos++
+          oplen++
+        } else if (code === 'X') {
+          // Substitution
+          seq += sub
+          last_pos++
+          oplen++
+        } else if (code === 'D' || code === 'N') {
+          // Deletion or Ref Skip
+          last_pos += data
+          if (oplen) cigar += oplen + op
+          cigar += data + code
+          oplen = 0
+        } else if (code === 'I' || code === 'S') {
+          // Insertion or soft-clip
+          seq += data
+          if (oplen) cigar += oplen + op
+          cigar += data.length + code
+          oplen = 0
+        } else if (code === 'i') {
+          // Single base insertion
+          seq += data
+          if (oplen) cigar += oplen + op
+          cigar += `${1}I`
+          oplen = 0
+        } else if (code === 'P') {
+          // Padding
+          if (oplen) cigar += oplen + op
+          cigar += `${data}P`
+        } else if (code === 'H') {
+          // Hard clip
+          if (oplen) cigar += oplen + op
+          cigar += `${data}H`
+          oplen = 0
+        } // else q or Q
+      })
+    } else {
+      sublen = this.record.readLength - seq.length
+    }
+    if (seq.length !== this.record.readLength) {
+      sublen = this.record.readLength - seq.length
+      seq += ref.substring(last_pos - refStart, last_pos - refStart + sublen)
+
+      if (oplen && op !== 'M') {
+        cigar += oplen + op
+        oplen = 0
+      }
+      op = 'M'
+      oplen += sublen
+    }
+    if (oplen) {
+      cigar += oplen + op
+    }
+    return cigar
+  }
+
   tags() {
     const properties = Object.getOwnPropertyNames(
       CramSlightlyLazyFeature.prototype,
@@ -246,8 +336,9 @@ export default class CramSlightlyLazyFeature implements Feature {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tags: Record<string, any> = {}
     this.tags().forEach((t: string) => {
-      tags[t] = this.get(t)
+      tags[t] = this._get(t)
     })
+
     return {
       ...tags,
       refName: this.get('refName'),

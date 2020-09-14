@@ -21,7 +21,7 @@ export default class Create extends JBrowseCommand {
     '$ jbrowse create /path/to/new/installation --force',
     '$ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip',
     '$ jbrowse create /path/to/new/installation --tag @gmod/jbrowse-web@0.0.1',
-    '$ jbrowse create --listVersions # Lists out all available versions of Jbrowse 2',
+    '$ jbrowse create --listVersions # Lists out all available versions of JBrowse 2',
   ]
 
   static args = [
@@ -102,7 +102,7 @@ export default class Create extends JBrowseCommand {
     }
 
     await response.body.pipe(unzip.Extract({ path: argsPath })).promise()
-    this.log('Finished')
+    this.log(`Unpacked ${locationUrl} at ${argsPath}`)
   }
 
   async checkPath(userPath: string) {

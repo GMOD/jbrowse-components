@@ -1,10 +1,10 @@
 {
   "name": "@gmod/jbrowse-plugin-trackhub-registry",
-  "version": "0.0.1-beta.11",
+  "version": "0.0.1-beta.12",
   "description": "Add a connection to The Track Hub Registry",
   "main": "src/index.ts",
   "scripts": {
-    "test": "cd ../..; jest packages/trackhub-registry"
+    "test": "cd ../..; jest plugins/trackhub-registry"
   },
   "author": "Garrett Stevens",
   "license": "MIT",
