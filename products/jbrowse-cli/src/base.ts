@@ -57,7 +57,10 @@ export default abstract class JBrowseCommand extends Command {
     }
     if (locationUrl) {
       const response = await fetch(locationUrl)
-      return response.json()
+      if (response.ok) {
+        return response.json()
+      }
+      throw new Error(`${response.statusText}`)
     }
     return fsPromises.readFile(location, { encoding: 'utf8' })
   }
@@ -78,6 +81,7 @@ export default abstract class JBrowseCommand extends Command {
           if (response.ok) {
             return locationUrl.href
           }
+          throw new Error(`${response.statusText}`)
         } else {
           return locationUrl.href
         }
