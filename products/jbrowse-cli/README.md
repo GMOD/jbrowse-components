@@ -35,6 +35,7 @@ It is likely preferable in most cases to install the tools first however
 - [`jbrowse add-connection CONNECTIONURLORPATH`](#jbrowse-add-connection-connectionurlorpath)
 - [`jbrowse add-track TRACK`](#jbrowse-add-track-track)
 - [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
+- [`jbrowse admin-server`](#jbrowse-admin-server)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
@@ -251,6 +252,25 @@ OPTIONS
 EXAMPLES
   $ jbrowse add-track-json track.json
   $ jbrowse add-track-json track.json --update
+```
+
+## `jbrowse admin-server`
+
+Start up a small admin server for JBrowse configuration
+
+```
+USAGE
+  $ jbrowse admin-server
+
+OPTIONS
+  -h, --help       show CLI help
+
+  -p, --port=port  Specifified port to start the server on;
+                   Default is 9090.
+
+EXAMPLES
+  $ jbrowse admin-server
+  $ jbrowse admin-server -p 8888
 ```
 
 ## `jbrowse create LOCALPATH`
