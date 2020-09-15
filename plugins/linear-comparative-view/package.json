@@ -35,6 +35,7 @@
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@gmod/jbrowse-plugin-alignments": "^0.0.1-beta.18",
     "@gmod/jbrowse-plugin-linear-genome-view": "^0.0.1-beta.1",
     "@material-ui/core": "^4.9.13",
     "mobx": "^5.0.0",

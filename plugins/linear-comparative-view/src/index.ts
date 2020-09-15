@@ -13,8 +13,7 @@ import {
 } from '@gmod/jbrowse-core/util'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { parseCigar } from '@gmod/jbrowse-plugin-alignments/src/BamAdapter/MismatchParser'
+import { MismatchParser } from '@gmod/jbrowse-plugin-alignments'
 import {
   configSchemaFactory as comparativeTrackConfigSchemaFactory,
   stateModelFactory as comparativeTrackStateModelFactory,
@@ -33,6 +32,8 @@ import LinearSyntenyRenderer, {
 } from './LinearSyntenyRenderer'
 import LinearComparativeViewFactory from './LinearComparativeView'
 import LinearSyntenyViewFactory from './LinearSyntenyView'
+
+const { parseCigar } = MismatchParser
 
 interface Track {
   addAdditionalContextMenuItemCallback: Function

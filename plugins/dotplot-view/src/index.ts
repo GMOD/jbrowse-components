@@ -12,8 +12,7 @@ import {
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import TimelineIcon from '@material-ui/icons/Timeline'
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { parseCigar } from '@gmod/jbrowse-plugin-alignments/src/BamAdapter/MismatchParser'
+import { MismatchParser } from '@gmod/jbrowse-plugin-alignments'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import {
   configSchemaFactory as dotplotTrackConfigSchemaFactory,
@@ -30,6 +29,8 @@ import {
 } from './PAFAdapter'
 import ComparativeRender from './DotplotRenderer/ComparativeRenderRpc'
 import DotplotViewFactory from './DotplotView'
+
+const { parseCigar } = MismatchParser
 
 interface Track {
   addAdditionalContextMenuItemCallback: Function

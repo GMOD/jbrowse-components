@@ -29,10 +29,13 @@ import SNPCoverageRenderer, {
   ReactComponent as SNPCoverageRendererReactComponent,
 } from './SNPCoverageRenderer'
 
+import * as MismatchParser from './BamAdapter/MismatchParser'
 import BamAdapterF from './BamAdapter'
 import HtsgetBamAdapterF from './HtsgetBamAdapter'
 import CramAdapterF from './CramAdapter'
 import SNPCoverageAdapterF from './SNPCoverageAdapter'
+
+export { MismatchParser }
 
 export default class AlignmentsPlugin extends Plugin {
   name = 'AlignmentsPlugin'

@@ -7,9 +7,8 @@ import SimpleFeature, {
 } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { getContainingView } from '@gmod/jbrowse-core/util'
-import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { parseCigar } from '@gmod/jbrowse-plugin-alignments/src/BamAdapter/MismatchParser'
+import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { MismatchParser } from '@gmod/jbrowse-plugin-alignments'
 import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import { LinearSyntenyTrackModel } from '../../LinearSyntenyTrack'
@@ -17,6 +16,8 @@ import { LinearSyntenyTrackModel } from '../../LinearSyntenyTrack'
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
 type RectTuple = [number, number, number, number]
+
+const { parseCigar } = MismatchParser
 
 function px(
   view: LinearGenomeViewModel,
