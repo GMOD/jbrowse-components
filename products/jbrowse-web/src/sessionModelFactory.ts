@@ -458,6 +458,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         const root = getParent(self)
         if (
           !root.adminMode &&
+          self.sessionTracks.indexOf(configuration) === -1 &&
           // eslint-disable-next-line no-restricted-globals
           confirm(
             'To edit the track configuration, you must clone ' +
@@ -468,6 +469,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             JSON.stringify(getSnapshot(configuration)),
           )
           trackSnapshot.trackId += `-${Date.now()}`
+          trackSnapshot.name += ' (copy)'
           trackSnapshot.category = [' Session tracks']
           const newTrackConf = self.addTrackConf(trackSnapshot)
           setTimeout(() => {
