@@ -1,5 +1,9 @@
 import { makeStyles } from '@material-ui/core/styles'
-import { BreakpointViewModel } from '../model'
+import { BreakpointViewModel, VIEW_DIVIDER_HEIGHT } from '../model'
+import AlignmentConnectionsFactory from './AlignmentConnections'
+import BreakendsFactory from './Breakends'
+import HeaderFactory from './Header'
+import TranslocationsFactory from './Translocations'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
@@ -9,12 +13,11 @@ export default (pluginManager: any) => {
     '@material-ui/core/styles',
   )
 
-  const { VIEW_DIVIDER_HEIGHT } = require('../model')
-  const AlignmentConnections = jbrequire(require('./AlignmentConnections'))
-  const Breakends = jbrequire(require('./Breakends'))
-  const Translocations = jbrequire(require('./Translocations'))
+  const AlignmentConnections = jbrequire(AlignmentConnectionsFactory)
+  const Breakends = jbrequire(BreakendsFactory)
+  const Translocations = jbrequire(TranslocationsFactory)
 
-  const Header = jbrequire(require('./Header'))
+  const Header = jbrequire(HeaderFactory)
 
   const useStyles = (jbrequiredMakeStyles as typeof makeStyles)(theme => {
     return {
