@@ -71,7 +71,7 @@ export default function sessionModelFactory(
       connectionInstances: types.map(
         types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
       ),
-      sessionConfig,
+      sessionConfig: types.optional(sessionConfig, {}),
     })
     .volatile((/* self */) => ({
       pluginManager,

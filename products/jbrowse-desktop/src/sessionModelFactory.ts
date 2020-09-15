@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import {
+  ConfigurationSchema,
+  readConfObject,
+  isConfigurationModel,
+} from '@gmod/jbrowse-core/configuration'
+import {
   Region,
   NotificationLevel,
   TrackViewModel,
@@ -21,15 +26,20 @@ import {
   walk,
 } from 'mobx-state-tree'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import {
-  readConfObject,
-  isConfigurationModel,
-} from '@gmod/jbrowse-core/configuration'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
   key: string
 }
+
+const sessionConfig = ConfigurationSchema('Session', {
+  trackLabels: {
+    type: 'stringEnum',
+    defaultValue: 'overlay',
+    model: types.enumeration('trackLabels', ['overlay', 'inline-block']),
+    description: 'behavior for the track label positioning',
+  },
+})
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const minDrawerWidth = 128
@@ -53,6 +63,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       connectionInstances: types.map(
         types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
       ),
+      sessionConfig,
     })
     .volatile((/* self */) => ({
       pluginManager,
