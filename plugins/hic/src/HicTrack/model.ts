@@ -31,11 +31,10 @@ export default (configSchema: AnyConfigurationSchemaType) =>
        * is rendered in this track
        */
       get renderProps() {
-        // view -> [tracks] -> [blocks]
-        const config = getConf(self, 'renderer')
-        // rendererType.configSchema.create(
-        //   getConf(self, ['renderers', self.rendererTypeName]) || {},
-        // )
+        const config = self.rendererType.configSchema.create(
+          getConf(self, 'renderer') || {},
+        )
+
         return {
           ...self.composedRenderProps,
           ...getParentRenderProps(self),

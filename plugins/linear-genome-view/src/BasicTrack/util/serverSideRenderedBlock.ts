@@ -269,6 +269,7 @@ async function renderBlockEffect(
 
   if (trackError) {
     self.setError(trackError)
+    return undefined
   }
   if (cannotBeRenderedReason) {
     self.setMessage(cannotBeRenderedReason)

@@ -292,7 +292,7 @@ export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
   if (/\.hic/i.test(fileName)) {
     return {
       type: 'HicAdapter',
-      endpoint: fileName,
+      hicLocation: makeLocation(fileName),
     }
   }
 
