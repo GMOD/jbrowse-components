@@ -80,7 +80,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
             className={classes.configureButton}
             onClick={() => {
               const newTrackConf = session.editTrackConfiguration(trackConf)
-              if (newTrackConf !== trackConf) {
+              if (newTrackConf && newTrackConf !== trackConf) {
                 model.view.hideTrack(trackConf)
                 model.view.showTrack(newTrackConf)
               }

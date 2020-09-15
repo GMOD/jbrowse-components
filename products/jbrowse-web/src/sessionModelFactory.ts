@@ -458,24 +458,28 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         const root = getParent(self)
         if (
           !root.adminMode &&
-          self.sessionTracks.indexOf(configuration) === -1 &&
-          // eslint-disable-next-line no-restricted-globals,no-alert
-          confirm(
-            'To edit the track configuration, you must clone ' +
-              'the track. Press OK to clone the track',
-          )
+          self.sessionTracks.indexOf(configuration) === -1
         ) {
-          const trackSnapshot = JSON.parse(
-            JSON.stringify(getSnapshot(configuration)),
-          )
-          trackSnapshot.trackId += `-${Date.now()}`
-          trackSnapshot.name += ' (copy)'
-          trackSnapshot.category = [' Session tracks']
-          const newTrackConf = self.addTrackConf(trackSnapshot)
-          setTimeout(() => {
-            this.editConfiguration(newTrackConf)
-          }, 500)
-          return newTrackConf
+          if (
+            // eslint-disable-next-line no-restricted-globals,no-alert
+            confirm(
+              'To edit the track configuration, you must clone ' +
+                'the track. Press OK to clone the track',
+            )
+          ) {
+            const trackSnapshot = JSON.parse(
+              JSON.stringify(getSnapshot(configuration)),
+            )
+            trackSnapshot.trackId += `-${Date.now()}`
+            trackSnapshot.name += ' (copy)'
+            trackSnapshot.category = [' Session tracks']
+            const newTrackConf = self.addTrackConf(trackSnapshot)
+            setTimeout(() => {
+              this.editConfiguration(newTrackConf)
+            }, 500)
+            return newTrackConf
+          }
+          return undefined
         }
 
         this.editConfiguration(configuration)

@@ -298,7 +298,7 @@ const BaseTrackWithReferences = types
       if (isSessionModelWithConfigEditing(session)) {
         // @ts-ignore
         const newTrackConf = session.editTrackConfiguration(self.configuration)
-        if (newTrackConf !== self.configuration) {
+        if (newTrackConf && newTrackConf !== self.configuration) {
           // @ts-ignore
           view.hideTrack(self.configuration)
           // @ts-ignore
