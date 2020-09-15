@@ -18,25 +18,25 @@ import NestedFrequencyTable from '../NestedFrequencyTable'
 
 import MyConfigSchemaF from './configSchema'
 
+interface Mismatch {
+  start: number
+  length: number
+  type: string
+  base: string
+  altbase?: string
+  seq?: string
+  cliplen?: number
+}
+
+export interface StatsRegion {
+  refName: string
+  start: number
+  end: number
+  bpPerPx?: number
+}
+
 export default (pluginManager: PluginManager) => {
   const MyConfigSchema = MyConfigSchemaF(pluginManager)
-
-  interface Mismatch {
-    start: number
-    length: number
-    type: string
-    base: string
-    altbase?: string
-    seq?: string
-    cliplen?: number
-  }
-
-  interface StatsRegion {
-    refName: string
-    start: number
-    end: number
-    bpPerPx?: number
-  }
 
   function generateInfoList(table: NestedFrequencyTable) {
     const infoList = []
