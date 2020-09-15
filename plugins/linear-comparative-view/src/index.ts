@@ -31,6 +31,8 @@ import LinearSyntenyRenderer, {
   configSchema as linearSyntenyRendererConfigSchema,
   ReactComponent as LinearSyntenyRendererReactComponent,
 } from './LinearSyntenyRenderer'
+import LinearComparativeViewFactory from './LinearComparativeView'
+import LinearSyntenyViewFactory from './LinearSyntenyView'
 
 interface Track {
   addAdditionalContextMenuItemCallback: Function
@@ -113,10 +115,10 @@ export default class extends Plugin {
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
-      pluginManager.jbrequire(require('./LinearComparativeView')),
+      pluginManager.jbrequire(LinearComparativeViewFactory),
     )
     pluginManager.addViewType(() =>
-      pluginManager.jbrequire(require('./LinearSyntenyView')),
+      pluginManager.jbrequire(LinearSyntenyViewFactory),
     )
 
     pluginManager.addTrackType(() => {
@@ -125,10 +127,7 @@ export default class extends Plugin {
         compatibleView: 'LinearComparativeView',
         name: 'LinearComparativeTrack',
         configSchema,
-        stateModel: comparativeTrackStateModelFactory(
-          pluginManager,
-          configSchema,
-        ),
+        stateModel: comparativeTrackStateModelFactory(configSchema),
       })
     })
     pluginManager.addTrackType(() => {
@@ -137,7 +136,7 @@ export default class extends Plugin {
         compatibleView: 'LinearSyntenyView',
         name: 'LinearSyntenyTrack',
         configSchema,
-        stateModel: syntenyTrackStateModelFactory(pluginManager, configSchema),
+        stateModel: syntenyTrackStateModelFactory(configSchema),
       })
     })
     pluginManager.addAdapterType(
