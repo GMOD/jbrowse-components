@@ -10,6 +10,7 @@ import {
 
 import { observable, autorun, transaction } from 'mobx'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import Base1DView, {
   Base1DViewModel,
 } from '@gmod/jbrowse-core/util/Base1DViewModel'
@@ -19,7 +20,7 @@ import {
   minmax,
   isSessionModelWithWidgets,
 } from '@gmod/jbrowse-core/util'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject, getConf } from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
@@ -144,6 +145,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       get views() {
         return [self.hview, self.vview]
+      },
+
+      get renderProps() {
+        return {
+          ...getParentRenderProps(self),
+          highResolutionScaling: getConf(
+            getSession(self),
+            'highResolutionScaling',
+          ),
+        }
       },
     }))
     .actions(self => ({
