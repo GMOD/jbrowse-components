@@ -459,7 +459,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         if (
           !root.adminMode &&
           self.sessionTracks.indexOf(configuration) === -1 &&
-          // eslint-disable-next-line no-restricted-globals
+          // eslint-disable-next-line no-restricted-globals,no-alert
           confirm(
             'To edit the track configuration, you must clone ' +
               'the track. Press OK to clone the track',

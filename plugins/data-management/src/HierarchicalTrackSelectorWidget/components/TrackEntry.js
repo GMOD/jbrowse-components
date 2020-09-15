@@ -9,7 +9,6 @@ import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import SettingsIcon from '@material-ui/icons/Settings'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React from 'react'
 
