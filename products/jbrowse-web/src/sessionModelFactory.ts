@@ -454,6 +454,31 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         )
         editableConfigSession.showWidget(editor)
       },
+      editTrackConfiguration(configuration: AnyConfigurationModel) {
+        const root = getParent(self)
+        if (
+          !root.adminMode &&
+          // eslint-disable-next-line no-restricted-globals
+          confirm(
+            'To edit the track configuration, you must clone ' +
+              'the track. Press OK to clone the track',
+          )
+        ) {
+          const trackSnapshot = JSON.parse(
+            JSON.stringify(getSnapshot(configuration)),
+          )
+          trackSnapshot.trackId += `-${Date.now()}`
+          trackSnapshot.category = [' Session tracks']
+          const newTrackConf = self.addTrackConf(trackSnapshot)
+          setTimeout(() => {
+            this.editConfiguration(newTrackConf)
+          }, 500)
+          return newTrackConf
+        }
+
+        this.editConfiguration(configuration)
+        return configuration
+      },
     }))
 }
 

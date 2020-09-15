@@ -80,22 +80,10 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
           <IconButton
             className={classes.configureButton}
             onClick={() => {
-              if (
-                !session.adminMode &&
-                confirm(
-                  'To edit the track configuration currently, you must clone ' +
-                    'the track. Press OK to clone the track',
-                )
-              ) {
-                const trackSnapshot = JSON.parse(
-                  JSON.stringify(getSnapshot(trackConf)),
-                )
-                trackSnapshot.trackId += `-${Date.now()}`
-                trackSnapshot.category = [' Session tracks']
-                const newTrackConf = session.addTrackConf(trackSnapshot)
-                setTimeout(() => {
-                  session.editConfiguration(newTrackConf)
-                }, 500)
+              const newTrackConf = session.editTrackConfiguration(trackConf)
+              if (newTrackConf !== trackConf) {
+                model.view.hideTrack(trackConf)
+                model.view.showTrack(newTrackConf)
               }
             }}
             color="secondary"

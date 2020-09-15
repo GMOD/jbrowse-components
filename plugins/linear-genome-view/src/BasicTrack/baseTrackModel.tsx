@@ -294,8 +294,16 @@ const BaseTrackWithReferences = types
   .actions(self => ({
     activateConfigurationUI() {
       const session = getSession(self)
+      const view = getContainingView(self)
       if (isSessionModelWithConfigEditing(session)) {
-        session.editConfiguration(self.configuration)
+        // @ts-ignore
+        const newTrackConf = session.editTrackConfiguration(self.configuration)
+        if (newTrackConf !== self.configuration) {
+          // @ts-ignore
+          view.hideTrack(self.configuration)
+          // @ts-ignore
+          view.showTrack(newTrackConf)
+        }
       }
     },
   }))
