@@ -38,7 +38,7 @@ export function configSchemaFactory(pluginManager: any) {
   )
 }
 
-export function stateModelFactory(pluginManager: any, configSchema: any) {
+export function stateModelFactory(configSchema: any) {
   return types
     .compose(
       'DotplotTrack',

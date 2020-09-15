@@ -29,6 +29,7 @@ import {
   AdapterClass as PAFAdapter,
 } from './PAFAdapter'
 import ComparativeRender from './DotplotRenderer/ComparativeRenderRpc'
+import DotplotViewFactory from './DotplotView'
 
 interface Track {
   addAdditionalContextMenuItemCallback: Function
@@ -102,16 +103,14 @@ export default class DotplotPlugin extends Plugin {
   name = 'DotplotPlugin'
 
   install(pluginManager: PluginManager) {
-    pluginManager.addViewType(() =>
-      pluginManager.jbrequire(require('./DotplotView')),
-    )
+    pluginManager.addViewType(() => pluginManager.jbrequire(DotplotViewFactory))
     pluginManager.addTrackType(() => {
       const configSchema = dotplotTrackConfigSchemaFactory(pluginManager)
       return new TrackType({
         name: 'DotplotTrack',
         compatibleView: 'DotplotView',
         configSchema,
-        stateModel: dotplotTrackStateModelFactory(pluginManager, configSchema),
+        stateModel: dotplotTrackStateModelFactory(configSchema),
       })
     })
 
