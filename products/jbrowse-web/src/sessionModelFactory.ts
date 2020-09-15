@@ -2,7 +2,6 @@
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import {
   Region,
-  SessionWithWidgets,
   NotificationLevel,
   AbstractSessionModel,
   TrackViewModel,

@@ -133,8 +133,9 @@ function HierarchicalTrackSelector({ model }) {
     return null
   }
   const filterError =
-    model.trackConfigurations(assemblyName) > 0 &&
-    model.trackConfigurations(assemblyName).filter(filter).length === 0
+    model.trackConfigurations(assemblyName, session.tracks) > 0 &&
+    model.trackConfigurations(assemblyName, session.tracks).filter(filter)
+      .length === 0
 
   return (
     <div
