@@ -37,7 +37,7 @@ declare interface ReferringNode {
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const minDrawerWidth = 128
-  const session = types
+  return types
     .model('JBrowseWebSessionModel', {
       name: types.identifier,
       margin: 0,
