@@ -119,7 +119,7 @@ function Contents({
         })}
       </FormGroup>
       {doneLoading ? null : <CircularProgress />}
-      {categories.map(([name]) => (
+      {categories.sort().map(([name]) => (
         <Category
           key={name}
           model={model}

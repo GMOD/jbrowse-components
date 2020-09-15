@@ -9,6 +9,7 @@ import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import SettingsIcon from '@material-ui/icons/Settings'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { getSnapshot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React from 'react'
 
@@ -78,7 +79,25 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
         {session.editConfiguration && !assemblyName ? (
           <IconButton
             className={classes.configureButton}
-            onClick={() => session.editConfiguration(trackConf)}
+            onClick={() => {
+              if (
+                !session.adminMode &&
+                confirm(
+                  'To edit the track configuration currently, you must clone ' +
+                    'the track. Press OK to clone the track',
+                )
+              ) {
+                const trackSnapshot = JSON.parse(
+                  JSON.stringify(getSnapshot(trackConf)),
+                )
+                trackSnapshot.trackId += `-${Date.now()}`
+                trackSnapshot.category = [' Session tracks']
+                const newTrackConf = session.addTrackConf(trackSnapshot)
+                setTimeout(() => {
+                  session.editConfiguration(newTrackConf)
+                }, 500)
+              }
+            }}
             color="secondary"
             data-testid={`htsTrackEntryConfigure-${trackConfigId}`}
           >
