@@ -5,6 +5,7 @@ import RotateRight from '@material-ui/icons/RotateRight'
 import LockOutline from '@material-ui/icons/LockOutlined'
 import LockOpen from '@material-ui/icons/LockOpen'
 import LineStyle from '@material-ui/icons/LineStyle'
+import RulerFactory from './Ruler'
 
 const dragHandleHeight = 3
 
@@ -28,7 +29,7 @@ export default pluginManager => {
 
   const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
   const { assembleLocString, getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const Ruler = jbrequire(require('./Ruler'))
+  const Ruler = jbrequire(RulerFactory)
 
   const useStyles = makeStyles(theme => {
     return {
