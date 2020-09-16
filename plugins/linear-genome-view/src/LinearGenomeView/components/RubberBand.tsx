@@ -65,12 +65,22 @@ const VerticalGuide = observer(
   ({ model, coordX }: { model: LGV; coordX: number }) => {
     const classes = useStyles()
     const guideInfo = model.pxToBp(coordX)
+    let guideBp = 0
+    if (guideInfo && guideInfo.offset) {
+      guideBp = guideInfo.reversed
+        ? guideInfo.end - guideInfo.offset
+        : guideInfo.start + guideInfo.offset
+    }
     return (
       <Tooltip
         open
         placement="top"
-        title={`${guideInfo.refName}
-        ${Math.ceil(guideInfo.start + guideInfo.offset).toLocaleString()}`}
+        title={
+          guideInfo
+            ? `${guideInfo.refName}
+        ${Math.ceil(guideBp).toLocaleString()}`
+            : `${''}`
+        }
         arrow
       >
         <div
@@ -156,6 +166,16 @@ function RubberBand({
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
     const target = event.target as HTMLDivElement
     setGuideX(event.clientX - target.getBoundingClientRect().left)
+    console.log(model.pxToBp(guideX))
+    if (model.pxToBp(guideX)) {
+      if (model.pxToBp(guideX).offset) {
+        console.log("*********")
+        console.log(event.clientX -
+          (event.target as HTMLDivElement).getBoundingClientRect().left)
+        console.log(model.pxToBp(guideX).offset)
+        console.log("*********")
+      }
+    }
   }
 
   function mouseOut() {
@@ -171,6 +191,9 @@ function RubberBand({
     if (rightPx < leftPx) {
       ;[leftPx, rightPx] = [rightPx, leftPx]
     }
+    // we need to handle undefined regions and reverse for horizontal flip
+    console.log("leftPx" ,leftPx)
+    console.log("rightPx", rightPx)
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
     model.moveTo(leftOffset, rightOffset)
@@ -203,7 +226,7 @@ function RubberBand({
   if (startX === undefined) {
     return (
       <>
-        {guideX !== undefined ? (
+        {guideX !== undefined && model.pxToBp(guideX).offset ? (
           <VerticalGuide model={model} coordX={guideX} />
         ) : null}
         <div
@@ -221,19 +244,31 @@ function RubberBand({
     )
   }
 
+  /* Calculating Pixels for Mouse Dragging */
   let left = 0
   let width = 0
-  const right = anchorPosition ? anchorPosition.left : currentX || 0
+  let right = 0
+  right = anchorPosition ? anchorPosition.left : currentX || 0
   left = right < startX ? right : startX
   width = Math.abs(right - startX)
-  const leftBpOffset = model.pxToBp(left)
-  const leftBp = (
-    Math.round(leftBpOffset.start + leftBpOffset.offset) + 1
-  ).toLocaleString()
-  const rightBpOffset = model.pxToBp(left + width)
-  const rightBp = (
-    Math.round(rightBpOffset.start + rightBpOffset.offset) + 1
-  ).toLocaleString()
+  right = left + width
+  let leftBpOffset = model.pxToBp(left)
+  let rightBpOffset = model.pxToBp(left + width)
+  // setting boundaries
+  if (!leftBpOffset.offset && rightBpOffset.offset) {
+    left += (width * model.bpPerPx - rightBpOffset.offset) / model.bpPerPx
+    leftBpOffset = model.pxToBp(left)
+  }
+  if (!rightBpOffset.offset && leftBpOffset.offset) {
+    right -=
+      (width * model.bpPerPx -
+        (leftBpOffset.end - leftBpOffset.start - leftBpOffset.offset)) /
+      model.bpPerPx
+    rightBpOffset = model.pxToBp(right)
+  }
+  width = Math.abs(left - right)
+  const leftBp = leftBpOffset.reversed? (Math.round(leftBpOffset.end - leftBpOffset.offset)).toLocaleString(): (Math.round(leftBpOffset.start + leftBpOffset.offset)).toLocaleString()
+  const rightBp = rightBpOffset.reversed? (Math.round(rightBpOffset.start - rightBpOffset.offset)).toLocaleString(): (Math.round(rightBpOffset.start + rightBpOffset.offset)).toLocaleString()
 
   return (
     <>

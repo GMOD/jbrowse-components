@@ -241,24 +241,43 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @returns BpOffset of the displayed region that it lands in
        */
       pxToBp(px: number) {
-        const bp = (self.offsetPx + px) * self.bpPerPx
         let bpSoFar = 0
         let r = getSnapshot(self.displayedRegions[0])
+        const bp = (self.offsetPx + px) * self.bpPerPx
+        console.log("+++++++++++++++")
+        console.log(px)
+        console.log(self.offsetPx)
+        console.log(bp)
+        console.log("+++++++++++++++")
+
         if (bp < 0) {
           return {
             ...r,
-            offset: bp,
+            offset: undefined,
             index: 0,
           }
         }
-        for (let index = 0; index < self.displayedRegions.length; index += 1) {
-          r = self.displayedRegions[index]
-          if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
-            return { ...r, offset: bp - bpSoFar, index }
+        // need to handle reverse
+        for (let index = 0; index <= self.displayedRegions.length; index += 1) {
+          if (index !== self.displayedRegions.length) {
+            r = getSnapshot(self.displayedRegions[index])
+            console.log(r)
+            console.log(r.end - r.start)
+            console.log("before if", bpSoFar)
+            console.log(bp)
+            console.log(bpSoFar <= bp)
+            if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
+              console.log("inside if")
+              return { ...r, offset: bp - bpSoFar, index }
+            }
+            bpSoFar += r.end - r.start
+            console.log("after if", bpSoFar)
+          } else if (index === self.displayedRegions.length) {
+            if (bp - bpSoFar > 0) {
+              return { ...r, offset: undefined, index }
+            }
           }
-          bpSoFar += r.end - r.start
         }
-
         return {
           ...r,
           offset: bp - bpSoFar,
