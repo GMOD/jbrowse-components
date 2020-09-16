@@ -1,6 +1,6 @@
 {
-  "name": "jbrowse-desktop",
-  "productName": "JBrowse 2",
+  "name": "@gmod/jbrowse-desktop",
+  "productName": "jbrowse-desktop",
   "version": "0.0.1-beta.24",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "author": {
