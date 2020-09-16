@@ -42,7 +42,7 @@ interface Track {
 }
 interface View {
   tracks: Track[]
-  views?: View
+  views?: View[]
   type: string
 }
 interface Session {
