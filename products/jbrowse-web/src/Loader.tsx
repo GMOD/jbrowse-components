@@ -11,7 +11,6 @@ import {
   QueryParamProvider,
 } from 'use-query-params'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { getConf } from '@gmod/jbrowse-core/configuration'
 import { SnapshotOut } from 'mobx-state-tree'
 import { PluginConstructor } from '@gmod/jbrowse-core/Plugin'
 import { FatalErrorDialog } from '@gmod/jbrowse-core/ui'
@@ -20,6 +19,7 @@ import 'typeface-roboto'
 import 'requestidlecallback-polyfill'
 import 'mobx-react/batchingForReactDom'
 import 'core-js/stable'
+import * as uuid from 'uuid'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
@@ -108,9 +108,68 @@ export function Loader() {
   const [plugins, setPlugins] = useState<PluginConstructor[]>()
 
   const [configQueryParam] = useQueryParam('config', StringParam)
-  const [sessionQueryParam] = useQueryParam('session', StringParam)
+  const [sessionQueryParam, setSessionQueryParam] = useQueryParam(
+    'session',
+    StringParam,
+  )
+  const [sessString, setSessString] = useState('')
   const [adminQueryParam] = useQueryParam('admin', StringParam)
   const adminMode = adminQueryParam === '1' || adminQueryParam === 'true'
+  const loadingSharedSession = sessionQueryParam?.startsWith('share:')
+
+  useEffect(() => {
+    const controller = new AbortController()
+    const { signal } = controller
+    async function readSessionFromDynamo() {
+      if (loadingSharedSession && sessionQueryParam) {
+        const url =
+          'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/load'
+        const sessionId = sessionQueryParam.split('share:')[1]
+        const data = new FormData()
+        data.append('sessionId', sessionId)
+
+        let response
+        try {
+          response = await fetch(url, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+              'Access-Control-Allow-Origin': '*',
+            },
+            body: data,
+            signal,
+          })
+        } catch (error) {
+          if (!signal.aborted) {
+            // eslint-disable-next-line no-alert
+            alert('Failed to reach session saving API')
+            setSessionQueryParam(undefined)
+          }
+        }
+
+        if (response && response.ok) {
+          const json = await response.json()
+          const localId = `local:${uuid.v4()}`
+          localStorage.setItem(localId, fromUrlSafeB64(json.session))
+          setSessionQueryParam(localId)
+          setSessString(localId)
+        } else {
+          // eslint-disable-next-line no-alert
+          alert('Failed to find session')
+          setSessionQueryParam(undefined)
+        }
+      }
+    }
+    readSessionFromDynamo()
+    return () => {
+      controller.abort()
+    }
+  }, [
+    loadingSharedSession,
+    sessionQueryParam,
+    setSessionQueryParam,
+    sessString,
+  ])
 
   useEffect(() => {
     async function fetchConfig() {
@@ -177,9 +236,8 @@ export function Loader() {
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)
-  // ask what this should be
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let rootModel: any
+
+  let rootModel
   try {
     if (configSnapshot) {
       rootModel = JBrowseRootModel.create({
@@ -213,53 +271,23 @@ export function Loader() {
   }
   try {
     if (sessionQueryParam) {
-      // const savedSessionIndex = rootModel.jbrowse.savedSessionNames.indexOf(
-      //   sessionQueryParam,
-      // )
-      // if (getConf(rootModel.jbrowse, 'useUrlSession')) {
-      //   if (savedSessionIndex !== -1) {
-      //     rootModel.setSession(
-      //       rootModel.jbrowse.savedSessions[savedSessionIndex],
-      //     )
-      //   } else {
-      //     rootModel.setSession(JSON.parse(fromUrlSafeB64(sessionQueryParam)))
-      //   }
-      // }
-
-      // TODOSESSION: below is logic if uuid is in query
-      const localSession = localStorage.getItem(sessionQueryParam)
-      if (getConf(rootModel.jbrowse, 'useUrlSession')) {
-        if (localSession) {
-          rootModel.setSession(JSON.parse(localSession))
-        } else if (sessionQueryParam.includes('share:')) {
-          readSessionFromDynamo(sessionQueryParam).then(json => {
-            json.session
-              ? rootModel.setSession(JSON.parse(fromUrlSafeB64(json.session)))
-              : rootModel.setDefaultSession()
-
-            // share session successfully grabbed IF correct config
-            // need to set a uuid, save session to the uuid, and put in url
-          })
-        } else rootModel.setDefaultSession()
+      const foundLocalSession = localStorage.getItem(sessionQueryParam)
+      if (foundLocalSession) {
+        rootModel.setSession(JSON.parse(foundLocalSession))
+      } else if (!loadingSharedSession) {
+        // eslint-disable-next-line no-alert
+        alert('No matching local session found')
+        setSessionQueryParam(undefined)
       }
     } else {
-      // TODO: ask how this logic should be used
-      const localStorageSession = localStorage.getItem('jbrowse-web-session')
-      if (localStorageSession) {
-        if (getConf(rootModel.jbrowse, 'useLocalStorage')) {
-          rootModel.setSession(JSON.parse(localStorageSession))
-        }
-      }
-    }
-    if (!rootModel.session) {
-      if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
-        const { name } = rootModel.jbrowse.savedSessions[0]
-        rootModel.activateSession(name)
-      } else {
-        rootModel.setDefaultSession()
-      }
+      rootModel.setDefaultSession()
+      const localId = `local:${uuid.v4()}`
+      localStorage.setItem(localId, JSON.stringify(rootModel.session))
+      setSessionQueryParam(localId)
+      setSessString(localId)
     }
 
+    if (!rootModel.session) return null
     rootModel.setHistory(
       UndoManager.create({}, { targetStore: rootModel.session }),
     )
@@ -282,34 +310,6 @@ export function Loader() {
   pluginManager.configure()
 
   return <JBrowse pluginManager={pluginManager} />
-}
-
-const readSessionFromDynamo = async (sessionQueryParam: string) => {
-  const url =
-    'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/load'
-  const sessionId = sessionQueryParam.split('share:')[1]
-  const data = new FormData()
-  data.append('sessionId', sessionId)
-
-  let response
-  try {
-    response = await fetch(url, {
-      method: 'POST',
-      mode: 'cors',
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-      },
-      body: data,
-    })
-  } catch (error) {
-    // ignore
-  }
-
-  if (response && response.ok) {
-    const json = await response.json()
-    return json
-  }
-  return {}
 }
 
 function factoryReset() {

@@ -1,7 +1,7 @@
 import React from 'react'
 import Button from '@material-ui/core/Button'
 import ShareIcon from '@material-ui/icons/Share'
-import { observer, PropTypes } from 'mobx-react'
+import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
 import { getSnapshot } from 'mobx-state-tree'
 import Dialog from '@material-ui/core/Dialog'
@@ -13,35 +13,6 @@ import copy from 'copy-to-clipboard'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import { ContentCopy as ContentCopyIcon } from './Icons'
 import { toUrlSafeB64 } from '../util'
-
-// all notes for session sharing go here
-// shared sessionid is hash of session
-// in url, there is a uuid sessionid, this is diff than the hash
-// when user pastes a hashed sessionid url, it downloads the session into localstorage, then assigns a new sessionid
-
-// AWS side
-// API Gateway
-// - APIgateway with two endpoints
-// - should be 2 POSTS, one to write a saved session and one to look up a saved session
-// DONE
-
-// Lambda
-// code in save-session and read-session
-// DONE
-
-// DynamoDB
-// -table created, has sessionId which is a primary key, sha-256 hash of the session contents
-// and session, a string provided by JBrowse
-
-// JB2 side
-// -create a share UI button
-// -onClick(), it uses fetchPOSTS to the api endpoint with the session URL and the sessionId which is a hash of the url, which triggers the lambda to
-// write to dynamoDB
-// -when navigating to a URL and parsing the session, JB2 POSTS to the api endpoint with the session URL entered
-// if it's found also in the database, load the current session into local storage
-// should be done, small nodejs version bookmarker of this, if they wanted to run themselves outside of AWS they could
-// local:${uuid}
-// jbsession_${uuid}
 
 const useStyles = makeStyles(theme => ({
   shareDiv: {
@@ -71,8 +42,12 @@ const Share = observer((props: { session: any }) => {
   const [shareUrl, setShareUrl] = React.useState('')
 
   const handleClickOpen = (urlLink: string) => {
-    // ask how share url should really look
-    setShareUrl(`session=share:${urlLink}`)
+    const locationUrl = new URL(window.location.href)
+    const params = new URLSearchParams(locationUrl.search)
+
+    params.set('session', `share:${urlLink}`)
+    locationUrl.search = params.toString()
+    setShareUrl(locationUrl.href)
     setOpen(true)
   }
 
@@ -128,7 +103,9 @@ const Share = observer((props: { session: any }) => {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">JB2 Shareable Link</DialogTitle>
+        <DialogTitle id="alert-dialog-title">
+          JBrowse Shareable Link
+        </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
             {shareUrl}
