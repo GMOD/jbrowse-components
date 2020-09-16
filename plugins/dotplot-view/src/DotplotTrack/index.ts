@@ -5,6 +5,10 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
+import {
+  getParentRenderProps,
+  getRpcSessionId,
+} from '@gmod/jbrowse-core/util/tracks'
 import { types, getSnapshot, Instance } from 'mobx-state-tree'
 import {
   BaseTrackConfig,
@@ -15,7 +19,7 @@ import {
   getSession,
   makeAbortableReaction,
 } from '@gmod/jbrowse-core/util'
-import { getRpcSessionId } from '@gmod/jbrowse-core/util/tracks'
+
 import DotplotTrackComponent from './components/DotplotTrack'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { DotplotViewModel } from '../DotplotView/model'
@@ -69,6 +73,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
       },
       get renderProps() {
         return {
+          ...getParentRenderProps(self),
           trackModel: self,
         }
       },
