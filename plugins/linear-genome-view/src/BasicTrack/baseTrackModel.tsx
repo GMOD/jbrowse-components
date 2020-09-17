@@ -175,6 +175,8 @@ const BaseTrack = types
       return (
         isSessionModelWithConfigEditing(session) &&
         // @ts-ignore
+        session.adminMode &&
+        // @ts-ignore
         session.sessionTracks.findIndex(track => {
           // @ts-ignore
           return track.trackId === self.configuration.trackId

@@ -95,6 +95,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       get connections() {
         return getParent(self).jbrowse.connections
       },
+      get adminMode() {
+        return getParent(self).adminMode
+      },
       get savedSessions() {
         return getParent(self).jbrowse.savedSessions
       },
@@ -273,7 +276,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       addTrackConf(trackConf: any) {
-        if (getParent(self).adminMode) {
+        if (self.adminMode) {
           return getParent(self).jbrowse.addTrackConf(trackConf)
         }
         const { trackId, type } = trackConf
@@ -455,8 +458,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         editableConfigSession.showWidget(editor)
       },
       editTrackConfiguration(configuration: AnyConfigurationModel) {
-        const { adminMode } = getParent(self)
-        if (!adminMode && self.sessionTracks.indexOf(configuration) === -1) {
+        if (
+          !self.adminMode &&
+          self.sessionTracks.indexOf(configuration) === -1
+        ) {
           throw new Error("Can't edit the configuration of a non-session track")
         }
         this.editConfiguration(configuration)

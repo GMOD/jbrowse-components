@@ -79,7 +79,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
         </Tooltip>
         {/* eslint-disable-next-line no-nested-ternary */}
         {session.editConfiguration && !assemblyName ? (
-          !trackConf.sessionTrack ? (
+          !trackConf.sessionTrack && !session.adminMode ? (
             <IconButton
               className={classes.configureButton}
               onClick={() => {
@@ -105,7 +105,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
               color="secondary"
               data-testid={`htsTrackEntryConfigure-${trackConfigId}`}
             >
-              <SettingsIcon />
+              <SettingsIcon fontSize="small" />
             </IconButton>
           )
         ) : null}
