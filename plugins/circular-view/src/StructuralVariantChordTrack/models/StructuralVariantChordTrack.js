@@ -108,20 +108,23 @@ export default pluginManager => {
             assemblyManager: getSession(self).assemblyManager,
           }),
           async ({ assemblyNames, adapter, assemblyManager }, signal) => {
-            const m = assemblyManager.getRefNameMapForAdapter(
+            return assemblyManager.getRefNameMapForAdapter(
               adapter,
               assemblyNames[0],
               { signal, sessionId: getRpcSessionId(self) },
             )
-            m.then(r => self.setRefNameMap(r))
           },
           {
             name: `${self.type} ${self.id} getting refNames`,
             fireImmediately: true,
           },
           () => {},
-          () => {},
-          () => {},
+          refNameMap => {
+            self.setRefNameMap(refNameMap)
+          },
+          error => {
+            self.setError(String(error))
+          },
         )
       },
       renderStarted() {
@@ -165,6 +168,9 @@ export default pluginManager => {
       },
       setRefNameMap(refNameMap) {
         self.refNameMap = refNameMap
+      },
+      setError(error) {
+        self.error = error
       },
     }))
 
