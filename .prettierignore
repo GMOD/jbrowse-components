@@ -2,6 +2,7 @@
 **/coverage/
 **/umd
 **/dist/
+**/build/
 
 # JSON files we don't want to format
 **/*nclist*/**/*.json

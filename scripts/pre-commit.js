@@ -27,9 +27,11 @@ function main() {
   const filesToFormat = changedFiles.filter(fileName => !isJSOrTSFile(fileName))
   // Run prettier formatting on non-JS/TS files
   if (filesToFormat.length) {
-    spawn.sync('yarn', ['prettier', '--write', ...filesToFormat], {
-      stdio: 'inherit',
-    })
+    spawn.sync(
+      'yarn',
+      ['prettier', ...filesToFormat, '--write', '--ignore-unknown'],
+      { stdio: 'inherit' },
+    )
     spawn.sync('git', ['add', ...filesToFormat], { stdio: 'inherit' })
   }
 }
