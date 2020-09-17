@@ -268,6 +268,11 @@ OPTIONS
   -p, --port=port  Specifified port to start the server on;
                    Default is 9090.
 
+  --skipCheck      Don't check whether or not you are in a JBrowse directory
+
+  --target=target  [default: ./config.json] path to config file in JB2 installation directory to write out to.
+                   Creates ./config.json if nonexistent
+
 EXAMPLES
   $ jbrowse admin-server
   $ jbrowse admin-server -p 8888
