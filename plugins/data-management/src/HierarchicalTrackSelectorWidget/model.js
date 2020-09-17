@@ -79,8 +79,14 @@ export default pluginManager =>
 
       hierarchy(assemblyName) {
         const session = getSession(self)
-        const tracks = session.tracks.concat(session.sessionTracks)
-        return generateHierarchy(self.trackConfigurations(assemblyName, tracks))
+        const sessionTracks = session.sessionTracks.slice(0)
+        sessionTracks.forEach(t => {
+          t.sessionTrack = true
+        })
+        const allTracks = session.tracks.concat(sessionTracks)
+        return generateHierarchy(
+          self.trackConfigurations(assemblyName, allTracks),
+        )
       },
 
       connectionHierarchy(connection) {

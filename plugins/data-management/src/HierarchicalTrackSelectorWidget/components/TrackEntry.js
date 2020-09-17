@@ -7,8 +7,10 @@ import IconButton from '@material-ui/core/IconButton'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
+import CallSplitIcon from '@material-ui/icons/CallSplit'
 import SettingsIcon from '@material-ui/icons/Settings'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { getSnapshot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React from 'react'
 
@@ -75,21 +77,37 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
             disabled={disabled || unsupported}
           />
         </Tooltip>
+        {/* eslint-disable-next-line no-nested-ternary */}
         {session.editConfiguration && !assemblyName ? (
-          <IconButton
-            className={classes.configureButton}
-            onClick={() => {
-              const newTrackConf = session.editTrackConfiguration(trackConf)
-              if (newTrackConf && newTrackConf !== trackConf) {
-                model.view.hideTrack(trackConf)
-                model.view.showTrack(newTrackConf)
-              }
-            }}
-            color="secondary"
-            data-testid={`htsTrackEntryConfigure-${trackConfigId}`}
-          >
-            <SettingsIcon fontSize="small" />
-          </IconButton>
+          !trackConf.sessionTrack ? (
+            <IconButton
+              className={classes.configureButton}
+              onClick={() => {
+                const trackSnapshot = JSON.parse(
+                  JSON.stringify(getSnapshot(trackConf)),
+                )
+                trackSnapshot.trackId += `-${Date.now()}`
+                trackSnapshot.name += ' (copy)'
+                trackSnapshot.category = [' Session tracks']
+                session.addTrackConf(trackSnapshot)
+              }}
+              color="secondary"
+              data-testid={`htsTrackEntryFork-${trackConfigId}`}
+            >
+              <CallSplitIcon fontSize="small" />
+            </IconButton>
+          ) : (
+            <IconButton
+              className={classes.configureButton}
+              onClick={() => {
+                session.editTrackConfiguration(trackConf)
+              }}
+              color="secondary"
+              data-testid={`htsTrackEntryConfigure-${trackConfigId}`}
+            >
+              <SettingsIcon />
+            </IconButton>
+          )
         ) : null}
       </div>
     </Fade>

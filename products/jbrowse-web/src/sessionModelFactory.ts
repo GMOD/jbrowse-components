@@ -455,35 +455,11 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         editableConfigSession.showWidget(editor)
       },
       editTrackConfiguration(configuration: AnyConfigurationModel) {
-        const root = getParent(self)
-        if (
-          !root.adminMode &&
-          self.sessionTracks.indexOf(configuration) === -1
-        ) {
-          if (
-            // eslint-disable-next-line no-restricted-globals,no-alert
-            confirm(
-              'To edit the track configuration, you must clone ' +
-                'the track. Press OK to clone the track',
-            )
-          ) {
-            const trackSnapshot = JSON.parse(
-              JSON.stringify(getSnapshot(configuration)),
-            )
-            trackSnapshot.trackId += `-${Date.now()}`
-            trackSnapshot.name += ' (copy)'
-            trackSnapshot.category = [' Session tracks']
-            const newTrackConf = self.addTrackConf(trackSnapshot)
-            setTimeout(() => {
-              this.editConfiguration(newTrackConf)
-            }, 500)
-            return newTrackConf
-          }
-          return undefined
+        const { adminMode } = getParent(self)
+        if (!adminMode && self.sessionTracks.indexOf(configuration) === -1) {
+          throw new Error("Can't edit the configuration of a non-session track")
         }
-
         this.editConfiguration(configuration)
-        return configuration
       },
     }))
 }
