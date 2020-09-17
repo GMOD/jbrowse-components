@@ -289,6 +289,13 @@ export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
     }
   }
 
+  if (/\.hic/i.test(fileName)) {
+    return {
+      type: 'HicAdapter',
+      hicLocation: makeLocation(fileName),
+    }
+  }
+
   return {
     type: UNKNOWN,
   }
@@ -364,6 +371,7 @@ export function guessTrackType(adapterType: string): string {
     IndexedFastaAdapter: 'SequenceTrack',
     TwoBitAdapter: 'SequenceTrack',
     VcfTabixAdapter: 'VariantTrack',
+    HicAdapter: 'HicTrack',
   }
   return known[adapterType] || 'BasicTrack'
 }

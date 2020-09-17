@@ -733,6 +733,12 @@ export default class AddTrack extends JBrowseCommand {
         endpoint: fileName,
       }
 
+    if (/\.hic/i.test(fileName))
+      return {
+        type: 'HicTrack',
+        hicLocation: makeLocation(fileName),
+      }
+
     return {
       type: 'UNKNOWN',
     }

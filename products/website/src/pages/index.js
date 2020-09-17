@@ -4,22 +4,10 @@ import Layout from '@theme/Layout'
 
 // eslint-disable-next-line import/no-unresolved
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
-import { withStyles, makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
-import Table from '@material-ui/core/Table'
-import TableBody from '@material-ui/core/TableBody'
-import TableCell from '@material-ui/core/TableCell'
-import TableHead from '@material-ui/core/TableHead'
-import TableRow from '@material-ui/core/TableRow'
-
-const StyledTableCell = withStyles(theme => ({
-  head: {
-    backgroundColor: theme.palette.action.selected,
-    color: theme.palette.text.primary,
-  },
-}))(TableCell)
 
 const useStyles = makeStyles(theme => ({
   button: {
@@ -72,45 +60,33 @@ function Home() {
             <img alt="screenshot of jbrowse 2" src="img/screenshot.png" />
           </div>
         </div>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <StyledTableCell>JBrowse 2</StyledTableCell>
-              <StyledTableCell>JBrowse 1</StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            <TableRow>
-              <TableCell>Runs on desktop or web</TableCell>
-              <TableCell>Runs on desktop or web</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Supports many different view types</TableCell>
-              <TableCell>Traditional linear view only</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Configure graphically</TableCell>
-              <TableCell>Configure with files or scripts</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Many plugins in development</TableCell>
-              <TableCell>Established plugin ecosystem</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>
-                <Button className={classes.button} variant="outlined">
-                  Learn more
-                </Button>
-              </TableCell>
+        <div className={classes.section}>
+          <Typography variant="h4">Features</Typography>
+          <hr />
 
-              <TableCell>
-                <Button className={classes.button} variant="outlined">
-                  Learn more
-                </Button>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+          <ul>
+            <li>
+              Linear, circular, dotplot, and synteny views for improved
+              structural variant and comparative genomics visualization
+            </li>
+            <li>
+              Support for many common data types including BAM, CRAM, tabix
+              indexed VCF, GFF, BED, BigBed, BigWig, and several specialized
+              formats
+            </li>
+            <li>
+              New plugin ecosystem which can add additional view types, track
+              types, data adapters, and more, allowing nearly endless
+              extensibility
+            </li>
+
+            <li>And more!</li>
+          </ul>
+          <a href="features">
+            See a summary of features and comparison to JBrowse 1 here
+          </a>
+        </div>
+
         <div className={classes.section}>
           <Typography variant="h4">Citation</Typography>
           <hr />

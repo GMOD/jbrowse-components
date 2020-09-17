@@ -13,19 +13,25 @@ module.exports = {
     navbar: {
       title: 'JBrowse',
       logo: {
-        alt: 'My Site Logo',
+        alt: 'JBrowse',
         src: 'img/logo.svg',
       },
       items: [
         {
-          to: 'docs/',
+          to: 'docs',
           activeBasePath: 'docs',
           label: 'Docs',
           position: 'left',
         },
+
         {
           to: 'blog',
           label: 'Blog',
+          position: 'left',
+        },
+        {
+          to: 'features',
+          label: 'Features',
           position: 'left',
         },
         {
