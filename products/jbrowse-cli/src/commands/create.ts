@@ -4,15 +4,6 @@ import fetch from 'node-fetch'
 import * as unzip from 'unzipper'
 import JBrowseCommand from '../base'
 
-interface GithubRelease {
-  tag_name: string
-  prerelease: boolean
-  assets: [
-    {
-      browser_download_url: string
-    },
-  ]
-}
 export default class Create extends JBrowseCommand {
   static description = 'Downloads and installs the latest JBrowse 2 release'
 

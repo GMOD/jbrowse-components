@@ -69,7 +69,7 @@ export default class RpcManager {
     return newDriver
   }
 
-  getDriverForCall(sessionId: string, functionName: string, args: unknown) {
+  getDriverForCall(_sessionId: string, _functionName: string, _args: unknown) {
     // TODO: add logic here so different sessions can have
     // different RPC backends configured
 

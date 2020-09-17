@@ -14,7 +14,7 @@ import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 // must import BaseOptions for inferred type declaration to be outputted properly
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import assemblyFactory, { BaseOptions } from './assembly'
+import assemblyFactory from './assembly'
 
 export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
   const Assembly = assemblyFactory(assemblyConfigType)

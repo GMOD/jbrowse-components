@@ -56,7 +56,7 @@ function getPluginManager(initialState?: SnapshotIn<JBrowseRootModel>) {
 
 test('basic test of electron-mock-ipc', () => {
   const testMessage = 'test'
-  ipcMain.once('test-event', (ev: Event, obj: string) => {
+  ipcMain.once('test-event', (_ev: unknown, obj: string) => {
     expect(obj).toEqual(testMessage)
   })
 
@@ -66,11 +66,11 @@ test('basic test of electron-mock-ipc', () => {
 describe('main jbrowse app render', () => {
   it('renders empty', async () => {
     // we use preload script to load onto the window global
-    ipcMain.handle('loadConfig', (ev: Event, obj: string) => {
+    ipcMain.handle('loadConfig', () => {
       const config = fs.readFileSync('test_data/volvox/config.json', 'utf8')
       return JSON.parse(config)
     })
-    ipcMain.handle('listSessions', (ev: Event, obj: string) => {
+    ipcMain.handle('listSessions', () => {
       return {}
     })
 

@@ -105,7 +105,7 @@ const ViewMenu = observer(
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
-          onMenuItemClick={(event, callback) => {
+          onMenuItemClick={(_event, callback) => {
             callback()
             setAnchorEl(undefined)
           }}

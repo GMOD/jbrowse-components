@@ -17,7 +17,7 @@ class MockWorkerHandle {
 
   async call(
     name: string,
-    args = [],
+    _args = [],
     opts: { timeout: number } = { timeout: 3000 },
   ) {
     const start = Date.now()
