@@ -36,6 +36,8 @@ function debounce(func, wait) {
 
 const JBrowse = observer(({ pluginManager }) => {
   const [, setSession] = useQueryParam('session', StringParam)
+  const [adminKeyParam] = useQueryParam('adminKey', StringParam)
+  const adminMode = adminKeyParam !== undefined
 
   const { rootModel } = pluginManager
   const { session, jbrowse, error } = rootModel || {}
@@ -83,6 +85,18 @@ const JBrowse = observer(({ pluginManager }) => {
     }
     return disposer
   }, [rootModel, setSession, useLocalStorage, useUpdateUrl, session])
+
+  useEffect(() => {
+    onSnapshot(rootModel, snapshot => {
+      if (adminMode) {
+        fetch('/updateConfig', {
+          method: 'POST',
+          newConfig: snapshot.jbrowse,
+          adminKey: adminKeyParam,
+        })
+      }
+    })
+  }, [rootModel, adminMode, adminKeyParam])
 
   if (error) {
     throw new Error(error)
