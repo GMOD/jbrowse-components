@@ -10,7 +10,6 @@ import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect, useState } from 'react'
 import { LinearGenomeViewStateModel } from '..'
-import configSchema from '@gmod/jbrowse-plugin-wiggle/src/LinePlotRenderer/configSchema'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -140,7 +139,7 @@ function RubberBand({
       }
     }
     return () => {}
-  }, [startX, mouseDragging])
+  }, [startX, mouseDragging, anchorPosition])
 
   useEffect(() => {
     if (
@@ -166,16 +165,6 @@ function RubberBand({
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
     const target = event.target as HTMLDivElement
     setGuideX(event.clientX - target.getBoundingClientRect().left)
-    console.log(model.pxToBp(guideX))
-    if (model.pxToBp(guideX)) {
-      if (model.pxToBp(guideX).offset) {
-        console.log("*********")
-        console.log(event.clientX -
-          (event.target as HTMLDivElement).getBoundingClientRect().left)
-        console.log(model.pxToBp(guideX).offset)
-        console.log("*********")
-      }
-    }
   }
 
   function mouseOut() {
@@ -191,9 +180,6 @@ function RubberBand({
     if (rightPx < leftPx) {
       ;[leftPx, rightPx] = [rightPx, leftPx]
     }
-    // we need to handle undefined regions and reverse for horizontal flip
-    console.log("leftPx" ,leftPx)
-    console.log("rightPx", rightPx)
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
     model.moveTo(leftOffset, rightOffset)
@@ -252,23 +238,23 @@ function RubberBand({
   left = right < startX ? right : startX
   width = Math.abs(right - startX)
   right = left + width
-  let leftBpOffset = model.pxToBp(left)
-  let rightBpOffset = model.pxToBp(left + width)
-  // setting boundaries
-  if (!leftBpOffset.offset && rightBpOffset.offset) {
-    left += (width * model.bpPerPx - rightBpOffset.offset) / model.bpPerPx
-    leftBpOffset = model.pxToBp(left)
-  }
-  if (!rightBpOffset.offset && leftBpOffset.offset) {
-    right -=
-      (width * model.bpPerPx -
-        (leftBpOffset.end - leftBpOffset.start - leftBpOffset.offset)) /
-      model.bpPerPx
-    rightBpOffset = model.pxToBp(right)
-  }
-  width = Math.abs(left - right)
-  const leftBp = leftBpOffset.reversed? (Math.round(leftBpOffset.end - leftBpOffset.offset)).toLocaleString(): (Math.round(leftBpOffset.start + leftBpOffset.offset)).toLocaleString()
-  const rightBp = rightBpOffset.reversed? (Math.round(rightBpOffset.start - rightBpOffset.offset)).toLocaleString(): (Math.round(rightBpOffset.start + rightBpOffset.offset)).toLocaleString()
+  const leftBpOffset = model.pxToBp(left)
+  const rightBpOffset = model.pxToBp(right)
+  const leftBp = (leftBpOffset.reversed
+    ? Math.round(leftBpOffset.end - (leftBpOffset.offset || 0))
+    : Math.round(leftBpOffset.start + (leftBpOffset.offset || 0))
+  ).toLocaleString()
+  const rightBp = (rightBpOffset.reversed
+    ? Math.round(
+        rightBpOffset.end -
+          (rightBpOffset.offset || rightBpOffset.end - rightBpOffset.start),
+      )
+    : Math.round(
+        rightBpOffset.start +
+          (rightBpOffset.offset || rightBpOffset.end - rightBpOffset.start),
+      )
+  ).toLocaleString()
+  const numOfBpSelected = Math.round(width * model.bpPerPx)
 
   return (
     <>
@@ -291,7 +277,9 @@ function RubberBand({
             }}
             keepMounted
           >
-            <Typography>{leftBp}</Typography>
+            <Typography>
+              {leftBpOffset.refName.toLocaleString()} {leftBp}
+            </Typography>
           </Popover>
           <Popover
             className={classes.popover}
@@ -310,7 +298,9 @@ function RubberBand({
             }}
             keepMounted
           >
-            <Typography>{rightBp}</Typography>
+            <Typography>
+              {rightBpOffset.refName.toLocaleString()} {rightBp}
+            </Typography>
           </Popover>
         </>
       ) : null}
@@ -320,7 +310,7 @@ function RubberBand({
         style={{ left, width }}
       >
         <Typography variant="h6" className={classes.rubberBandText}>
-          {Math.round(width * model.bpPerPx).toLocaleString()} bp{' '}
+          {numOfBpSelected.toLocaleString()} bp{' '}
         </Typography>
       </div>
       <div
