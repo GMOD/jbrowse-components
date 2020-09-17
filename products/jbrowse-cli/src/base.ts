@@ -2,6 +2,7 @@ import Command from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
+import { Config } from '@oclif/config'
 
 export default abstract class JBrowseCommand extends Command {
   async init() {}
@@ -50,6 +51,14 @@ export default abstract class JBrowseCommand extends Command {
       return response.json()
     }
     return fsPromises.readFile(location, { encoding: 'utf8' })
+  }
+
+  async writeJsonConfig(config: string) {
+    try {
+      fsPromises.writeFile('./config.json', config)
+    } catch {
+      this.error('Could not write config file')
+    }
   }
 
   async resolveFileLocation(location: string, check = true, warning = false) {
