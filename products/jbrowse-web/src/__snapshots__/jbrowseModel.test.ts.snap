@@ -164,6 +164,28 @@ Object {
     },
     Object {
       "adapter": Object {
+        "index": Object {
+          "location": Object {
+            "uri": "test_data/volvox/volvox.dup.renamed.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": Object {
+          "uri": "test_data/volvox/volvox.dup.renamed.vcf.gz",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "name": "volvox chord test renamed refs",
+      "renderer": Object {
+        "type": "StructuralVariantChordRenderer",
+      },
+      "trackId": "volvox_chord_test_renamed",
+      "type": "StructuralVariantChordTrack",
+    },
+    Object {
+      "adapter": Object {
         "craiLocation": Object {
           "uri": "test_data/volvox/volvox-sorted-altname.cram.crai",
         },

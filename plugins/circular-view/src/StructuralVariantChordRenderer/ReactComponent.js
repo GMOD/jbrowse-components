@@ -81,6 +81,7 @@ export default ({ jbrequire }) => {
       ])
       return (
         <path
+          data-testid={feature.id()}
           d={['M', ...startXY, 'Q', ...controlXY, ...endXY].join(' ')}
           style={{ stroke: strokeColor }}
           onClick={evt =>
