@@ -172,7 +172,14 @@ const BaseTrack = types
 
     get canConfigure() {
       const session = getSession(self)
-      return isSessionModelWithConfigEditing(session)
+      return (
+        isSessionModelWithConfigEditing(session) &&
+        // @ts-ignore
+        session.sessionTracks.findIndex(track => {
+          // @ts-ignore
+          return track.trackId === self.configuration.trackId
+        }) !== -1
+      )
     },
 
     /**

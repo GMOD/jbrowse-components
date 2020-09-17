@@ -10,10 +10,11 @@ import MoreVertIcon from '@material-ui/icons/MoreVert'
 import DragIcon from '@material-ui/icons/DragIndicator'
 import CloseIcon from '@material-ui/icons/Close'
 import SettingsIcon from '@material-ui/icons/Settings'
+import ForkIcon from '@material-ui/icons/CallSplit'
 
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
+import { getSnapshot, Instance } from 'mobx-state-tree'
 import React from 'react'
 import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
 import { LinearGenomeViewStateModel } from '..'
@@ -48,6 +49,8 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+type LGV = Instance<LinearGenomeViewStateModel>
+
 const TrackLabel = React.forwardRef(
   (
     props: {
@@ -59,9 +62,8 @@ const TrackLabel = React.forwardRef(
     const classes = useStyles()
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
     const { track, className } = props
-    const view = (getContainingView(track) as unknown) as Instance<
-      LinearGenomeViewStateModel
-    >
+    const view = (getContainingView(track) as unknown) as LGV
+    const session = getSession(track)
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       setAnchorEl(event.currentTarget)
@@ -69,6 +71,18 @@ const TrackLabel = React.forwardRef(
 
     const handleClose = () => {
       setAnchorEl(null)
+    }
+
+    const onFork = () => {
+      const trackSnapshot = JSON.parse(
+        JSON.stringify(getSnapshot(track.configuration)),
+      )
+      trackSnapshot.trackId += `-${Date.now()}`
+      trackSnapshot.name += ' (copy)'
+      trackSnapshot.category = [' Session tracks']
+      // @ts-ignore
+      session.addTrackConf(trackSnapshot)
+      handleClose()
     }
 
     const onConfigureClick = () => {
@@ -92,7 +106,6 @@ const TrackLabel = React.forwardRef(
       view.setDraggingTrackId(undefined)
     }
 
-    const session = getSession(view)
     let trackName = getConf(track, 'name')
     if (getConf(track, 'type') === 'ReferenceSequenceTrack') {
       trackName = 'Reference Sequence'
@@ -109,7 +122,7 @@ const TrackLabel = React.forwardRef(
 
     const trackMenuItems: MenuItem[] = track.canConfigure
       ? [{ label: 'Settings', onClick: onConfigureClick, icon: SettingsIcon }]
-      : []
+      : [{ label: 'Fork', onClick: onFork, icon: ForkIcon }]
 
     if (track.trackMenuItems.length) {
       if (trackMenuItems.length) {

@@ -7,7 +7,7 @@ import IconButton from '@material-ui/core/IconButton'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
-import CallSplitIcon from '@material-ui/icons/CallSplit'
+import ForkIcon from '@material-ui/icons/CallSplit'
 import SettingsIcon from '@material-ui/icons/Settings'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
@@ -94,7 +94,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
               color="secondary"
               data-testid={`htsTrackEntryFork-${trackConfigId}`}
             >
-              <CallSplitIcon fontSize="small" />
+              <ForkIcon fontSize="small" />
             </IconButton>
           ) : (
             <IconButton
