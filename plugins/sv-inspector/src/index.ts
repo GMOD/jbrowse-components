@@ -5,13 +5,14 @@ import {
   isAbstractMenuManager,
 } from '@gmod/jbrowse-core/util/types'
 import TableChartIcon from '@material-ui/icons/TableChart'
+import SvInspectorViewTypeFactory from './SvInspectorView/SvInspectorViewType'
 
 export default class SvInspectorViewPlugin extends Plugin {
   name = 'SvInspectorViewPlugin'
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
-      pluginManager.jbrequire(require('./SvInspectorView/SvInspectorViewType')),
+      pluginManager.jbrequire(SvInspectorViewTypeFactory),
     )
   }
 

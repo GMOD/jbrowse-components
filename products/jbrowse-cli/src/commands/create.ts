@@ -83,7 +83,8 @@ export default class Create extends JBrowseCommand {
 
     if (!force) await this.checkPath(argsPath)
 
-    const locationUrl = url || (await this.getTagOrLatest(tag))
+    const locationUrl =
+      url || (tag ? await this.getTag(tag) : await this.getLatest())
 
     const response = await fetch(locationUrl)
     if (!response.ok) {

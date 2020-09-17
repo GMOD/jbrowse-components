@@ -9,8 +9,20 @@ This will cover, starting from scratch, how we can develop a JBrowse 2 plugin
 
 Here is a video recording of the presentation that we made
 
-<iframe src="https://player.vimeo.com/video/454450171" width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
-<p><a href="https://vimeo.com/454450171">How to write a JBrowse 2 plugin. BCC2020 West Training</a> from <a href="https://vimeo.com/user119241161">Jennifer Vessio</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
+<iframe
+  src="https://player.vimeo.com/video/454450171"
+  width="640"
+  height="360"
+  frameborder="0"
+  allow="autoplay; fullscreen"
+  allowfullscreen
+></iframe>
+<p>
+  <a href="https://vimeo.com/454450171"
+    >How to write a JBrowse 2 plugin. BCC2020 West Training </a
+  > from <a href="https://vimeo.com/user119241161">Jennifer Vessio</a> on
+  <a href="https://vimeo.com">Vimeo</a>.
+</p>
 
 You can also follow along with the text presented below
 

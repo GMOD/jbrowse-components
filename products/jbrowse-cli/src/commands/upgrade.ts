@@ -68,7 +68,8 @@ export default class Upgrade extends JBrowseCommand {
 
     await this.checkLocation(argsPath)
 
-    const locationUrl = url || (await this.getTagOrLatest(tag))
+    const locationUrl =
+      url || (tag ? await this.getTag(tag) : await this.getLatest())
 
     const response = await fetch(locationUrl)
     if (!response.ok) {

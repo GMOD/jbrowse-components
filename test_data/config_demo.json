@@ -1566,6 +1566,148 @@
           }
         }
       }
+    },
+    {
+      "type": "WiggleTrack",
+      "category": ["Mappability"],
+      "trackId": "wgEncodeCrgMapabilityAlign100mer",
+      "name": "wgEncodeCrgMapabilityAlign100mer",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign100mer.bigWig"
+        }
+      }
+    },
+    {
+      "type": "WiggleTrack",
+      "category": ["Mappability"],
+      "trackId": "wgEncodeCrgMapabilityAlign24mer",
+      "name": "wgEncodeCrgMapabilityAlign24mer",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign24mer.bigWig"
+        }
+      }
+    },
+    {
+      "type": "WiggleTrack",
+      "category": ["Mappability"],
+      "trackId": "wgEncodeCrgMapabilityAlign36mer",
+      "name": "wgEncodeCrgMapabilityAlign36mer",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign36mer.bigWig"
+        }
+      }
+    },
+    {
+      "type": "WiggleTrack",
+      "category": ["Mappability"],
+      "trackId": "wgEncodeCrgMapabilityAlign40mer",
+      "name": "wgEncodeCrgMapabilityAlign40mer",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign40mer.bigWig"
+        }
+      }
+    },
+    {
+      "type": "WiggleTrack",
+      "category": ["Mappability"],
+      "trackId": "wgEncodeCrgMapabilityAlign50mer",
+      "name": "wgEncodeCrgMapabilityAlign50mer",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign50mer.bigWig"
+        }
+      }
+    },
+    {
+      "type": "WiggleTrack",
+      "category": ["Mappability"],
+      "trackId": "wgEncodeCrgMapabilityAlign75mer",
+      "name": "wgEncodeCrgMapabilityAlign75mer",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign75mer.bigWig"
+        }
+      }
+    },
+    {
+      "type": "WiggleTrack",
+      "category": ["Mappability"],
+      "trackId": "wgEncodeDukeMapabilityUniqueness20bp",
+      "name": "wgEncodeDukeMapabilityUniqueness20bp",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeDukeMapabilityUniqueness20bp.bigWig"
+        }
+      }
+    },
+    {
+      "type": "WiggleTrack",
+      "category": ["Mappability"],
+      "trackId": "wgEncodeDukeMapabilityUniqueness35bp",
+      "name": "wgEncodeDukeMapabilityUniqueness35bp",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeDukeMapabilityUniqueness35bp.bigWig"
+        }
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "category": ["Mappability"],
+      "trackId": "wgEncodeDukeMapabilityRegionsExcludable.bed",
+      "name": "wgEncodeDukeMapabilityRegionsExcludable.bed",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/mappability/wgEncodeDukeMapabilityRegionsExcludable.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/mappability/wgEncodeDukeMapabilityRegionsExcludable.bed.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "BasicTrack",
+      "trackId": "wgEncodeDacMapabilityConsensusExcludable.bed",
+      "name": "wgEncodeDacMapabilityConsensusExcludable.bed",
+      "category": ["Mappability"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/mappability/wgEncodeDacMapabilityConsensusExcludable.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/mappability/wgEncodeDacMapabilityConsensusExcludable.bed.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
     }
   ],
   "connections": [],

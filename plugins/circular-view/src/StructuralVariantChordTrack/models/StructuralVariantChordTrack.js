@@ -1,3 +1,7 @@
+import ChordTrackFactory from '../../ChordTrack/models/ChordTrack'
+import componentsFactory from '../components'
+import renderReactionFactory from './renderReaction'
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
 
@@ -13,14 +17,14 @@ export default pluginManager => {
   )
 
   const { renderReactionData, renderReactionEffect } = jbrequire(
-    require('./renderReaction'),
+    renderReactionFactory,
   )
-  const mainReactComponent = jbrequire(require('../components'))
+  const mainReactComponent = jbrequire(componentsFactory)
 
   const {
     configSchema: ChordTrackConfigSchema,
     stateModel: ChordTrackStateModel,
-  } = jbrequire(require('../../ChordTrack/models/ChordTrack'))
+  } = jbrequire(ChordTrackFactory)
 
   const configSchema = ConfigurationSchema(
     'StructuralVariantChordTrack',

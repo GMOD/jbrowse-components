@@ -42,6 +42,7 @@ interface Track {
 }
 interface View {
   tracks: Track[]
+  views?: View[]
   type: string
 }
 interface Session {
@@ -319,27 +320,31 @@ export default class extends Plugin {
           ]
         : []
     }
-
+    function addContextMenu(view: View) {
+      if (view.type === 'LinearGenomeView') {
+        view.tracks.forEach(track => {
+          if (
+            track.type === 'PileupTrack' &&
+            !track.additionalContextMenuItemCallbacks.includes(cb)
+          ) {
+            track.addAdditionalContextMenuItemCallback(cb)
+          } else if (
+            track.type === 'AlignmentsTrack' &&
+            !track.PileupTrack.additionalContextMenuItemCallbacks.includes(cb)
+          ) {
+            track.PileupTrack.addAdditionalContextMenuItemCallback(cb)
+          }
+        })
+      }
+    }
     autorun(() => {
       const session = pluginManager.rootModel?.session as Session | undefined
       if (session) {
         session.views.forEach(view => {
-          if (view.type === 'LinearGenomeView') {
-            view.tracks.forEach(track => {
-              if (
-                track.type === 'PileupTrack' &&
-                !track.additionalContextMenuItemCallbacks.includes(cb)
-              ) {
-                track.addAdditionalContextMenuItemCallback(cb)
-              } else if (
-                track.type === 'AlignmentsTrack' &&
-                !track.PileupTrack.additionalContextMenuItemCallbacks.includes(
-                  cb,
-                )
-              ) {
-                track.PileupTrack.addAdditionalContextMenuItemCallback(cb)
-              }
-            })
+          if (view.views) {
+            view.views.forEach(v => addContextMenu(v))
+          } else {
+            addContextMenu(view)
           }
         })
       }

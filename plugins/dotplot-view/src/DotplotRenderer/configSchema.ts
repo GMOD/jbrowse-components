@@ -14,6 +14,12 @@ export default ConfigurationSchema(
       type: 'color',
       description: 'the color of each feature in a synteny',
       defaultValue: 'black',
+      functionSignature: ['feature'],
+    },
+    lineWidth: {
+      type: 'number',
+      description: 'width of the lines to be drawn',
+      defaultValue: 1.5,
     },
   },
   { explicitlyTyped: true },

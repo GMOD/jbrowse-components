@@ -1,4 +1,5 @@
 import { viewportVisibleSection } from './viewportVisibleRegion'
+import slicesFactory from './slices'
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
@@ -9,9 +10,7 @@ export default pluginManager => {
   const { clamp, getSession } = jbrequire('@gmod/jbrowse-core/util')
   const BaseViewModel = jbrequire('@gmod/jbrowse-core/BaseViewModel')
 
-  const { calculateStaticSlices, sliceIsVisible } = jbrequire(
-    require('./slices'),
-  )
+  const { calculateStaticSlices, sliceIsVisible } = jbrequire(slicesFactory)
 
   const minHeight = 40
   const minWidth = 100

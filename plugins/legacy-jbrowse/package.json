@@ -2,9 +2,24 @@
   "name": "@gmod/jbrowse-plugin-legacy-jbrowse",
   "version": "0.0.1-beta.12",
   "description": "JBrowse 2 plugin for connecting to and reading JBrowse 1 data",
+  "distMain": "dist/index.js",
+  "srcMain": "src/index.ts",
   "main": "src/index.ts",
+  "distModule": "jbrowse-plugin-legacy-jbrowse.esm.js",
+  "module": "",
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
-    "test": "cd ../..; jest plugins/legacy-jbrowse"
+    "start": "tsdx watch --verbose --noClean",
+    "build": "tsdx build",
+    "test": "cd ../..; jest plugins/legacy-jbrowse",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build; yarn useDist",
+    "postpack": "yarn useSrc",
+    "useDist": "node ../../scripts/useDist.js",
+    "useSrc": "node ../../scripts/useSrc.js"
   },
   "author": "Robert Buels",
   "license": "MIT",
@@ -18,6 +33,5 @@
     "@gmod/jbrowse-core": "^0.0.1-beta.1",
     "mobx-state-tree": "3.14.1",
     "rxjs": "^6.0.0"
-  },
-  "private": true
+  }
 }
