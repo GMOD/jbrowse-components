@@ -62,21 +62,9 @@ export default pluginManager => {
       message: '',
       error: undefined,
       renderingComponent: undefined,
+      refNameMap: undefined,
     }))
     .views(self => ({
-      get refNameMap() {
-        const assemblyName = getTrackAssemblyNames(self)[0]
-        const adapter = getConf(self, 'adapter')
-        const assembly = getSession(self).assemblyManager.get(assemblyName)
-        if (!assembly) return new Map()
-        return (
-          assembly &&
-          assembly.getRefNameMapForAdapter(adapter, {
-            sessionId: getRpcSessionId(self),
-          })
-        )
-      },
-
       get blockDefinitions() {
         const origSlices = getContainingView(self).staticSlices
         if (!self.refNameMap) return origSlices
@@ -111,6 +99,29 @@ export default pluginManager => {
           self.renderStarted,
           self.renderSuccess,
           self.renderError,
+        )
+        makeAbortableReaction(
+          self,
+          () => ({
+            assemblyNames: getTrackAssemblyNames(self),
+            adapter: getConf(self, 'adapter'),
+            assemblyManager: getSession(self).assemblyManager,
+          }),
+          async ({ assemblyNames, adapter, assemblyManager }, signal) => {
+            const m = assemblyManager.getRefNameMapForAdapter(
+              adapter,
+              assemblyNames[0],
+              { signal, sessionId: getRpcSessionId(self) },
+            )
+            m.then(r => self.setRefNameMap(r))
+          },
+          {
+            name: `${self.type} ${self.id} getting refNames`,
+            fireImmediately: true,
+          },
+          () => {},
+          () => {},
+          () => {},
         )
       },
       renderStarted() {
@@ -151,6 +162,9 @@ export default pluginManager => {
 
       onChordClick(feature) {
         getConf(self, 'onChordClick', [feature, self, pluginManager])
+      },
+      setRefNameMap(refNameMap) {
+        self.refNameMap = refNameMap
       },
     }))
 
