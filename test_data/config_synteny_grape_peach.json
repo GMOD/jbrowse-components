@@ -220,8 +220,5 @@
       }
     }
   ],
-  "configuration": {
-    "useUrlSession": true,
-    "useLocalStorage": false
-  }
+  "configuration": {}
 }

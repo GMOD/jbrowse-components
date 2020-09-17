@@ -393,7 +393,9 @@ export default function sessionModelFactory(
       activateSession(sessionName: any) {
         return getParent(self).activateSession(sessionName)
       },
-
+      activateLocalSession(key: string, sessionName: string){
+        return getParent(self).activateLocalSession(key, sessionName)
+      },
       setDefaultSession() {
         return getParent(self).setDefaultSession()
       },

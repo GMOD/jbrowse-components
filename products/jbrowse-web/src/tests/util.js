@@ -10,7 +10,6 @@ configSnapshot.configuration = {
   rpc: {
     defaultDriver: 'MainThreadRpcDriver',
   },
-  useUrlSession: false,
 }
 
 export function getPluginManager(initialState, adminMode = false) {

@@ -89,7 +89,6 @@
   "configuration": {
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"
-    },
-    "useUrlSession": false
+    }
   }
 }

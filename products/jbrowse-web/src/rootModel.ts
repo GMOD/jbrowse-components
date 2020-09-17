@@ -91,6 +91,16 @@ export default function RootModel(
           )
         this.setSession(newSessionSnapshot)
       },
+      activateLocalSession(key: string, name: string) {
+        const newSessionSnapshot = localStorage.getItem(key)
+
+        if (!newSessionSnapshot)
+          throw new Error(
+            `Can't activate session ${name} with key ${key}, it is not in your localstorage`,
+          )
+
+        this.setSession(JSON.parse(newSessionSnapshot))
+      },
       setError(errorMessage: string) {
         self.error = errorMessage
       },

@@ -276,6 +276,7 @@ export function Loader() {
   }
   try {
     if (sessionQueryParam) {
+      // eslint-disable-next-line guard-for-in
       const foundLocalSession = localStorage.getItem(sessionQueryParam)
       if (foundLocalSession) {
         rootModel.setSession(JSON.parse(foundLocalSession))

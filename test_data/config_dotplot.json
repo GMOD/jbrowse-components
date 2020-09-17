@@ -2,8 +2,7 @@
   "configuration": {
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"
-    },
-    "useUrlSession": true
+    }
   },
   "assemblies": [
     {
