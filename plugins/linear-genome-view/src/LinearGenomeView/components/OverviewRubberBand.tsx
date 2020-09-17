@@ -164,10 +164,12 @@ function OverviewRubberBand({
           <Tooltip
             open={!mouseDragging}
             placement="top"
-            title={Math.max(
+            title={`${overview
+              .pxToBp(guideX)
+              .refName.toLocaleString()} ${Math.max(
               0,
               Math.round(overview.pxToBp(guideX).offset),
-            ).toLocaleString()}
+            ).toLocaleString()}`}
             arrow
           >
             <div
@@ -204,6 +206,8 @@ function OverviewRubberBand({
   const rightBpOffset = overview.pxToBp(startX + width)
   let leftCount = Math.max(0, Math.round(leftBpOffset.offset))
   let rightCount = Math.max(0, Math.round(rightBpOffset.offset))
+  let leftName = leftBpOffset.refName
+  let rightName = rightBpOffset.refName
   if (
     (leftBpOffset.refName === rightBpOffset.refName &&
       leftCount > rightCount) ||
@@ -211,6 +215,7 @@ function OverviewRubberBand({
       model.idxInParentRegion(rightBpOffset.refName)
   ) {
     ;[leftCount, rightCount] = [rightCount, leftCount]
+    ;[leftName, rightName] = [rightName, leftName]
   }
 
   return (
@@ -234,7 +239,7 @@ function OverviewRubberBand({
             }}
             keepMounted
           >
-            <Typography>{leftCount.toLocaleString()}</Typography>
+            <Typography>{leftName.toLocaleString()} {leftCount.toLocaleString()}</Typography>
           </Popover>
           <Popover
             className={classes.popover}
@@ -253,7 +258,7 @@ function OverviewRubberBand({
             }}
             keepMounted
           >
-            <Typography>{rightCount.toLocaleString()}</Typography>
+            <Typography>{rightName.toLocaleString()} {rightCount.toLocaleString()}</Typography>
           </Popover>
         </>
       ) : null}
