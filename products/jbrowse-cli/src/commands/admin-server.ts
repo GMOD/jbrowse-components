@@ -1,9 +1,10 @@
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
+import * as express from 'express'
 import JBrowseCommand, { Config } from '../base'
 
-import express = require('express')
+// import express = require('express')
 
 function isValidPort(port: number) {
   // potentially throw error here
@@ -69,6 +70,7 @@ export default class AdminServer extends JBrowseCommand {
     if (runFlags.port && isValidPort(parseInt(runFlags.port, 10))) {
       port = parseInt(runFlags.port, 10)
     }
+    // @ts-ignore
     const app = express()
     app.use(express.static('.'))
 
