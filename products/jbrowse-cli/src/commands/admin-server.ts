@@ -2,76 +2,7 @@ import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import * as express from 'express'
-import JBrowseCommand from '../base'
-
-interface UriLocation {
-  uri: string
-}
-
-interface IndexedFastaAdapter {
-  type: 'IndexedFastaAdapter'
-  fastaLocation: UriLocation
-  faiLocation: UriLocation
-}
-
-interface BgzipFastaAdapter {
-  type: 'BgzipFastaAdapter'
-  fastaLocation: UriLocation
-  faiLocation: UriLocation
-  gziLocation: UriLocation
-}
-
-interface TwoBitAdapter {
-  type: 'TwoBitAdapter'
-  twoBitLocation: UriLocation
-}
-
-interface ChromeSizesAdapter {
-  type: 'ChromSizesAdapter'
-  chromSizesLocation: UriLocation
-}
-
-interface CustomSequenceAdapter {
-  type: string
-}
-
-interface RefNameAliasAdapter {
-  type: 'RefNameAliasAdapter'
-  location: UriLocation
-}
-
-interface CustomRefNameAliasAdapter {
-  type: string
-}
-
-interface Sequence {
-  type: 'ReferenceSequenceTrack'
-  trackId: string
-  adapter:
-    | IndexedFastaAdapter
-    | BgzipFastaAdapter
-    | TwoBitAdapter
-    | ChromeSizesAdapter
-    | CustomSequenceAdapter
-}
-
-interface Assembly {
-  name: string
-  aliases?: string[]
-  sequence: Sequence
-  refNameAliases?: {
-    adapter: RefNameAliasAdapter | CustomRefNameAliasAdapter
-  }
-  refNameColors?: string[]
-}
-
-interface Config {
-  assemblies?: Assembly[]
-  configuration?: {}
-  connections?: unknown[]
-  defaultSession?: {}
-  tracks?: unknown[]
-}
+import JBrowseCommand, { Config } from '../base'
 
 function isValidPort(port: number) {
   // potentially throw error here
@@ -112,7 +43,6 @@ export default class AdminServer extends JBrowseCommand {
     }
 
     // check if the config file exists, if none exists write default
-    // not sure about type here
     const defaultConfig: Config = {
       assemblies: [],
       configuration: {},
