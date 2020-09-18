@@ -2,7 +2,6 @@ import Command from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
-import { Config } from '@oclif/config'
 
 export default abstract class JBrowseCommand extends Command {
   async init() {}
