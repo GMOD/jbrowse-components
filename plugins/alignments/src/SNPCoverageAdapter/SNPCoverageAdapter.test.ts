@@ -63,7 +63,7 @@ test('SNP adapter can fetch features from volvox.bam using bam subadapter', asyn
   expect(featuresArray[0].get('snpinfo')).toBeTruthy()
 
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
-  expect(featuresJsonArray.length).toEqual(20000)
+  expect(featuresJsonArray.length).toEqual(19998)
   expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
 
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
