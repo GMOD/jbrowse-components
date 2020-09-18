@@ -144,18 +144,20 @@ export default (pluginManager: PluginManager) => {
           opts.bpPerPx || 1,
         )
         coverageBins.forEach((bin, index) => {
-          observer.next(
-            new SimpleFeature({
-              id: `pos_${region.start}${index}`,
-              data: {
-                score: bin.total(),
-                snpinfo: generateInfoList(bin), // info needed to draw snps
-                start: region.start + index,
-                end: region.start + index + 1,
-                refName: region.refName,
-              },
-            }),
-          )
+          if (bin.total()) {
+            observer.next(
+              new SimpleFeature({
+                id: `pos_${region.start}${index}`,
+                data: {
+                  score: bin.total(),
+                  snpinfo: generateInfoList(bin), // info needed to draw snps
+                  start: region.start + index,
+                  end: region.start + index + 1,
+                  refName: region.refName,
+                },
+              }),
+            )
+          }
         })
 
         observer.complete()
