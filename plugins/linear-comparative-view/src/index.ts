@@ -330,6 +330,7 @@ export default class extends Plugin {
             track.addAdditionalContextMenuItemCallback(cb)
           } else if (
             track.type === 'AlignmentsTrack' &&
+            track.PileupTrack &&
             !track.PileupTrack.additionalContextMenuItemCallbacks.includes(cb)
           ) {
             track.PileupTrack.addAdditionalContextMenuItemCallback(cb)

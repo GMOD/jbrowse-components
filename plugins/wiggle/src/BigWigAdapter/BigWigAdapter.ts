@@ -20,7 +20,8 @@ import {
 
 import configSchema from './configSchema'
 
-export default class BigWigAdapter extends BaseFeatureDataAdapter
+export default class BigWigAdapter
+  extends BaseFeatureDataAdapter
   implements DataAdapterWithGlobalStats {
   private bigwig: BigWig
 
