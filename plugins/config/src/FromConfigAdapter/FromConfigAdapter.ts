@@ -18,7 +18,8 @@ import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
  *   `"features": [ { "refName": "ctgA", "start":1, "end":20 }, ... ]`
  */
 
-export default class FromConfigAdapter extends BaseFeatureDataAdapter
+export default class FromConfigAdapter
+  extends BaseFeatureDataAdapter
   implements RegionsAdapter {
   private features: Map<string, Feature[]>
 

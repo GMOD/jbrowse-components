@@ -15,6 +15,8 @@ export default ({ jbrequire }) => {
       rpcManager,
       renderProps,
       renderArgs: {
+        // TODO: Figure this out for multiple assembly names
+        assemblyName: view.displayedRegions[0]?.assemblyName,
         adapterConfig: JSON.parse(JSON.stringify(getConf(track, 'adapter'))),
         rendererType: rendererType.name,
         renderProps,

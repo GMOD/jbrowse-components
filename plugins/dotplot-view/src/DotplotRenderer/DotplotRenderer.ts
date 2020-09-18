@@ -40,8 +40,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
 
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d')
+    const lineWidth = readConfObject(config, 'lineWidth')
+    ctx.lineWidth = lineWidth
     ctx.scale(scale, scale)
-    ctx.lineWidth = 3
     ctx.fillStyle = readConfObject(config, 'color')
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
@@ -54,7 +55,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const mateRef = mate.refName
       // const identity = feature.get('numMatches') / feature.get('blockLen')
       // ctx.fillStyle = `hsl(${identity * 150},50%,50%)`
-      ctx.fillStyle = 'black'
+      const color = readConfObject(config, 'color', [feature])
+      ctx.fillStyle = color
+      ctx.strokeStyle = color
       const b10 = hview.bpToPx({ refName, coord: start })
       const b20 = hview.bpToPx({ refName, coord: end })
       const e10 = vview.bpToPx({ refName: mateRef, coord: mate.start })
@@ -70,13 +73,19 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         const e1 = e10 - db2
         const e2 = e20 - db2
         if (Math.abs(b1 - b2) < 3 && Math.abs(e1 - e2) < 3) {
-          ctx.fillRect(b1 - 0.5, height - e1 - 0.5, 1.5, 1.5)
+          ctx.fillRect(
+            b1 - lineWidth / 2,
+            height - e1 - lineWidth / 2,
+            lineWidth,
+            lineWidth,
+          )
         } else {
           let currX = b1
           let currY = e1
           const cigar = feature.get('cg') || feature.get('CIGAR')
           if (cigar) {
             const cigarOps = parseCigar(cigar)
+            ctx.beginPath()
             for (let i = 0; i < cigarOps.length; i += 2) {
               const val = +cigarOps[i]
               const op = cigarOps[i + 1]
@@ -87,16 +96,15 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               if (op === 'M') {
                 currX += val / hview.bpPerPx
                 currY += val / vview.bpPerPx
-              } else if (op === 'D') {
+              } else if (op === 'D' || op === 'N') {
                 currX += val / hview.bpPerPx
               } else if (op === 'I') {
                 currY += val / vview.bpPerPx
               }
-              ctx.beginPath()
               ctx.moveTo(prevX, height - prevY)
               ctx.lineTo(currX, height - currY)
-              ctx.stroke()
             }
+            ctx.stroke()
           } else {
             ctx.beginPath()
             ctx.moveTo(b1, height - e1)

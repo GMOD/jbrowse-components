@@ -221,7 +221,9 @@ const HorizontalAxis = observer(({ model }: { model: DotplotViewModel }) => {
                 textAnchor="end"
               >
                 {`${region.refName}:${
-                  region.start !== 0 ? Math.floor(region.start) : ''
+                  region.start !== 0
+                    ? Math.floor(region.start).toLocaleString('en-US')
+                    : ''
                 }`}
               </text>
             )

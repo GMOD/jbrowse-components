@@ -88,7 +88,11 @@ export default (pluginManager: PluginManager) => {
           if (name) {
             const match = fileTypesRegexp.exec(name)
             if (match && match[1]) {
-              self.fileType = match[1].toUpperCase()
+              if (match[1] === 'tsv' && name.includes('star-fusion')) {
+                self.fileType = 'STAR-Fusion'
+              } else {
+                self.fileType = match[1].toUpperCase()
+              }
             }
           }
         }
