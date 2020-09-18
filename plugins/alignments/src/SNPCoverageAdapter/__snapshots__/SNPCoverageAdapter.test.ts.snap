@@ -253,48 +253,6 @@ Array [
 exports[`SNP adapter can fetch features from volvox.cram using cram subadapter 1`] = `
 Array [
   Object {
-    "end": 1001,
-    "refName": "ctgA",
-    "score": 18,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 18,
-        "strands": Object {
-          "+": 10,
-          "-": 8,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 18,
-      },
-    ],
-    "start": 1000,
-    "uniqueId": "pos_01000",
-  },
-  Object {
-    "end": 1002,
-    "refName": "ctgA",
-    "score": 18,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 18,
-        "strands": Object {
-          "+": 10,
-          "-": 8,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 18,
-      },
-    ],
-    "start": 1001,
-    "uniqueId": "pos_01001",
-  },
-  Object {
     "end": 1003,
     "refName": "ctgA",
     "score": 18,
@@ -496,6 +454,48 @@ Array [
     ],
     "start": 1009,
     "uniqueId": "pos_01009",
+  },
+  Object {
+    "end": 1011,
+    "refName": "ctgA",
+    "score": 20,
+    "snpinfo": Array [
+      Object {
+        "base": "reference",
+        "score": 20,
+        "strands": Object {
+          "+": 11,
+          "-": 9,
+        },
+      },
+      Object {
+        "base": "total",
+        "score": 20,
+      },
+    ],
+    "start": 1010,
+    "uniqueId": "pos_01010",
+  },
+  Object {
+    "end": 1012,
+    "refName": "ctgA",
+    "score": 19,
+    "snpinfo": Array [
+      Object {
+        "base": "reference",
+        "score": 19,
+        "strands": Object {
+          "+": 10,
+          "-": 9,
+        },
+      },
+      Object {
+        "base": "total",
+        "score": 19,
+      },
+    ],
+    "start": 1011,
+    "uniqueId": "pos_01011",
   },
 ]
 `;

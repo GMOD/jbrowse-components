@@ -215,7 +215,7 @@ test('test usage of CramSlightlyLazyFeature toJSON in a SNP adapter', async () =
 
   expect(f.refName).toBe('ctgA')
   expect(f.start).toBe(2)
-  expect(f.end).toBe(1)
+  expect(f.end).toBe(3)
   expect(f.snpinfo).toBeTruthy()
 })
 
