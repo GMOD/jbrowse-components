@@ -93,8 +93,8 @@ test('test usage of BamSlightlyLazyFeature toJSON in a SNP adapter', async () =>
   const f = featuresArray[0].toJSON()
 
   expect(f.refName).toBe('ctgA')
-  expect(f.start).toBe(0)
-  expect(f.end).toBe(1)
+  expect(f.start).toBe(2)
+  expect(f.end).toBe(3)
   expect(f.snpinfo).toBeTruthy()
 })
 
@@ -133,7 +133,7 @@ test('test usage of getMultiRegion stats, SNP adapter can generate a domain from
   )
 
   expect(Object.keys(stats).length).toEqual(9)
-  expect(stats.scoreMin).toEqual(0)
+  expect(stats.scoreMin).toEqual(1)
   expect(stats.scoreMax).toEqual(13)
 })
 
@@ -185,7 +185,7 @@ test('SNP adapter can fetch features from volvox.cram using cram subadapter', as
   expect(featuresArray[0].get('snpinfo')).toBeTruthy()
 
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
-  expect(featuresJsonArray.length).toEqual(20000)
+  expect(featuresJsonArray.length).toEqual(19998)
   expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
 })
@@ -214,8 +214,8 @@ test('test usage of CramSlightlyLazyFeature toJSON in a SNP adapter', async () =
   const f = featuresArray[0].toJSON()
 
   expect(f.refName).toBe('ctgA')
-  expect(f.start).toBe(0)
-  expect(f.end).toBe(1)
+  expect(f.start).toBe(2)
+  expect(f.end).toBe(3)
   expect(f.snpinfo).toBeTruthy()
 })
 
@@ -254,6 +254,6 @@ test('test usage of getMultiRegion stats, SNP adapter can generate a domain from
   )
 
   expect(Object.keys(stats).length).toEqual(9)
-  expect(stats.scoreMin).toEqual(0)
+  expect(stats.scoreMin).toEqual(1)
   expect(stats.scoreMax).toEqual(13)
 })
