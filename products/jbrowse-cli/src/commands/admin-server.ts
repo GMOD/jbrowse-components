@@ -1,8 +1,9 @@
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
-import * as express from 'express'
 import JBrowseCommand, { Config } from '../base'
+
+import express = require('express')
 
 function isValidPort(port: number) {
   // potentially throw error here
