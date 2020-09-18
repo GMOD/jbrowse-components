@@ -89,10 +89,13 @@ const JBrowse = observer(({ pluginManager }) => {
   useEffect(() => {
     onSnapshot(rootModel, snapshot => {
       if (adminMode) {
+        const payload = { adminKey: adminKeyParam, config: snapshot.jbrowse }
         fetch('/updateConfig', {
           method: 'POST',
-          newConfig: snapshot.jbrowse,
-          adminKey: adminKeyParam,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
         })
       }
     })
