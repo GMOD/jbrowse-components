@@ -1,6 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
 const AWS = require('aws-sdk')
-const multipart = require('./multipart')
 
 const { AWS_REGION: region, sessionTable } = process.env
 
@@ -18,7 +17,7 @@ async function readSession(sessionId) {
 }
 
 exports.handler = async event => {
-  const data = multipart.parse(event)
+  const data = event.queryStringParameters
   const { sessionId } = data
   let tableData
   try {

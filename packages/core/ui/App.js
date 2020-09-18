@@ -60,6 +60,7 @@ function App({ session }) {
   const classes = useStyles()
   const { pluginManager } = session
   const { visibleWidget, drawerWidth } = session
+  const isElectron = typeof window !== 'undefined' && Boolean(window.electron)
 
   function handleNameChange(newName) {
     if (
@@ -75,7 +76,6 @@ function App({ session }) {
     }
   }
 
-  // TODOSESSION: share ui elemtn here, have some flag to only show on web
   return (
     <div
       className={classes.root}
@@ -110,7 +110,7 @@ function App({ session }) {
                   }}
                 />
               </Tooltip>
-              <Share session={session} />
+              {!isElectron && <Share session={session} />}
               <div className={classes.grow} />
               <div style={{ width: 150, maxHeight: 48 }}>
                 <LogoFull variant="white" />

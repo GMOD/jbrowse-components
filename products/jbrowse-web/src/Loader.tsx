@@ -15,6 +15,7 @@ import { SnapshotOut } from 'mobx-state-tree'
 import { PluginConstructor } from '@gmod/jbrowse-core/Plugin'
 import { FatalErrorDialog } from '@gmod/jbrowse-core/ui'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
+import CircularProgress from '@material-ui/core/CircularProgress'
 import 'typeface-roboto'
 import 'requestidlecallback-polyfill'
 import 'mobx-react/batchingForReactDom'
@@ -119,42 +120,41 @@ export function Loader() {
   )
   const [sessString, setSessString] = useState('')
   const [adminQueryParam] = useQueryParam('admin', StringParam)
+  const [loadingState, setLoadingState] = useState(false)
   const adminMode = adminQueryParam === '1' || adminQueryParam === 'true'
-  const loadingSharedSession = sessionQueryParam?.startsWith('share:')
+  const loadingSharedSession = sessionQueryParam?.startsWith('share-')
 
   useEffect(() => {
     const controller = new AbortController()
     const { signal } = controller
     async function readSessionFromDynamo() {
       if (loadingSharedSession && sessionQueryParam) {
-        const url =
-          'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/load'
-        const sessionId = sessionQueryParam.split('share:')[1]
-        const data = new FormData()
-        data.append('sessionId', sessionId)
+        const sessionId = sessionQueryParam.split('share-')[1]
+        const url = new URL(
+          'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/load',
+        )
+        const params = new URLSearchParams(url.search)
+        params.set('sessionId', sessionId)
+        url.search = params.toString()
 
+        // TODOSESSION remove all references to savedSessions
+        setLoadingState(true)
         let response
         try {
-          response = await fetch(url, {
-            method: 'POST',
+          response = await fetch(url.href, {
+            method: 'GET',
             mode: 'cors',
-            headers: {
-              'Access-Control-Allow-Origin': '*',
-            },
-            body: data,
             signal,
           })
         } catch (error) {
           if (!signal.aborted) {
-            // eslint-disable-next-line no-alert
-            alert('Failed to reach session saving API')
-            setSessionQueryParam(undefined)
+            // ignore
           }
         }
 
         if (response && response.ok) {
           const json = await response.json()
-          const localId = `local:${uuid.v4()}`
+          const localId = `local-${uuid.v4()}`
           localStorage.setItem(localId, fromUrlSafeB64(json.session))
           setSessionQueryParam(localId)
           setSessString(localId)
@@ -162,12 +162,14 @@ export function Loader() {
           // eslint-disable-next-line no-alert
           alert('Failed to find session')
           setSessionQueryParam(undefined)
+          setSessString('')
         }
       }
     }
     readSessionFromDynamo()
     return () => {
       controller.abort()
+      setLoadingState(false)
     }
   }, [
     loadingSharedSession,
@@ -284,10 +286,11 @@ export function Loader() {
         // eslint-disable-next-line no-alert
         alert('No matching local session found')
         setSessionQueryParam(undefined)
+        setSessString('')
       }
     } else {
       rootModel.setDefaultSession()
-      const localId = `local:${uuid.v4()}`
+      const localId = `local-${uuid.v4()}`
       localStorage.setItem(localId, JSON.stringify(rootModel.session))
       setSessionQueryParam(localId)
       setSessString(localId)
@@ -327,6 +330,7 @@ function factoryReset() {
 const PlatformSpecificFatalErrorDialog = (props: unknown) => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
 }
+// if(loadingState) { return <CircularProgress /> } put in render return
 export default () => {
   return (
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>

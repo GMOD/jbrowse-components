@@ -35,7 +35,7 @@ export default observer(({ session }) => {
   }
 
   // TODOSESSION: change logic to remove from local storage
-  // saved sessions will just consist of everything with local: tag in local storage
+  // saved sessions will just consist of everything with local- tag in local storage
   function handleDialogClose(deleteSession = false) {
     if (deleteSession) localStorage.removeItem(sessionUuidToDelete)
     setSessionUuidToDelete(null)
@@ -52,7 +52,7 @@ export default observer(({ session }) => {
           subheader={<ListSubheader>Choose a session to open</ListSubheader>}
         >
           {Object.entries(localStorage)
-            .filter(obj => obj[0].startsWith('local:'))
+            .filter(obj => obj[0].startsWith('local-'))
             .map(localStorageSession => {
               const [key, value] = localStorageSession
               let sessionSnapshot

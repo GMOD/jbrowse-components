@@ -64,6 +64,7 @@ NewSessionCard.defaultProps = {
   style: {},
 }
 
+// TODOSESSION make date string more readable
 const emptySessionSnapshot = {
   name: `New Session ${new Date(Date.now()).toISOString()}`,
   connections: {},

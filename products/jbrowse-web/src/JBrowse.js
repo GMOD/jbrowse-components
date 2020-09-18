@@ -38,9 +38,9 @@ const JBrowse = observer(({ pluginManager }) => {
 
   useEffect(() => {
     function updateLocalSession(snapshot) {
-      // TODOSESSION will always be in localstorage
+      // TODOSESSION localstorage is limited, need to handle errors
       console.log('updating-local-storage', sessionId)
-      if (sessionId?.startsWith('local:'))
+      if (sessionId?.startsWith('local-'))
         localStorage.setItem(sessionId, JSON.stringify(snapshot))
     }
 

@@ -9,6 +9,8 @@ import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
+import Divider from '@material-ui/core/Divider'
+import TextField from '@material-ui/core/TextField'
 import copy from 'copy-to-clipboard'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import { ContentCopy as ContentCopyIcon } from './Icons'
@@ -18,6 +20,7 @@ import { toUrlSafeB64 } from '../util'
 const useStyles = makeStyles(theme => ({
   shareDiv: {
     textAlign: 'center',
+    paddingLeft: '2px',
   },
   shareButton: {
     '&:hover': {
@@ -41,12 +44,16 @@ const Share = observer((props: { session: any }) => {
 
   const [open, setOpen] = React.useState(false)
   const [shareUrl, setShareUrl] = React.useState('')
+  const locationUrl = new URL(window.location.href)
+
+  const localHostMessage = locationUrl.href.includes('localhost')
+    ? 'Warning: Domain contains localhost, sharing link with others may be unsuccessful'
+    : ''
 
   const handleClickOpen = (urlLink: string) => {
-    const locationUrl = new URL(window.location.href)
     const params = new URLSearchParams(locationUrl.search)
 
-    params.set('session', `share:${urlLink}`)
+    params.set('session', `share-${urlLink}`)
     locationUrl.search = params.toString()
     setShareUrl(locationUrl.href)
     setOpen(true)
@@ -67,9 +74,6 @@ const Share = observer((props: { session: any }) => {
       response = await fetch(url, {
         method: 'POST',
         mode: 'cors',
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-        },
         body: data,
       })
     } catch (error) {
@@ -107,10 +111,32 @@ const Share = observer((props: { session: any }) => {
         <DialogTitle id="alert-dialog-title">
           JBrowse Shareable Link
         </DialogTitle>
+        <Divider />
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {shareUrl}
+            Share the below URL to let others see what you see on screen.
+            <br />
+            {localHostMessage}
           </DialogContentText>
+        </DialogContent>
+        <DialogContent>
+          {/* <DialogContentText id="alert-dialog-description">
+            {shareUrl}
+          </DialogContentText> */}
+          <TextField
+            id="filled-read-only-input"
+            label="URL"
+            defaultValue={shareUrl}
+            InputProps={{
+              readOnly: true,
+            }}
+            variant="filled"
+            style={{ width: '100%' }}
+            onClick={event => {
+              const target = event.target as HTMLTextAreaElement
+              target.select()
+            }}
+          />
         </DialogContent>
         <DialogActions>
           <Button
