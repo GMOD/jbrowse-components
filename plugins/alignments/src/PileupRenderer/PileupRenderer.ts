@@ -23,7 +23,6 @@ import { lighten } from '@material-ui/core/styles/colorManipulator'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { Mismatch } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
-import BamSlightlyLazyFeature from '../BamAdapter/BamSlightlyLazyFeature'
 
 export interface PileupRenderProps {
   features: Map<string, Feature>
@@ -94,9 +93,9 @@ function canBePaired(alignment: Feature) {
 }
 
 class PairedRead {
-  public read1: any
+  public read1: Feature
 
-  public read2: any
+  public read2: Feature
 
   id() {
     return `${this.read1.id()}-${this.read2.id()}`
@@ -131,6 +130,7 @@ class PairedRead {
     if (field === 'refname') {
       return this.read1.get('refName')
     }
+    return undefined
   }
 
   pairedFeature() {
@@ -270,7 +270,11 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  *pairFeatures(query: Region, config: any, records: Feature[]) {
+  *pairFeatures(
+    query: Region,
+    config: AnyConfigurationModel,
+    records: Feature[],
+  ) {
     const maxInsertSize = readConfObject(config, 'maxInsertSize')
     const pairCache: { [key: string]: PairedRead } = {}
     const features: { [key: string]: PairedRead } = {}
@@ -286,8 +290,6 @@ export default class PileupRenderer extends BoxRendererType {
             feat.read1 = rec
           } else if (rec.get('multi_segment_last')) {
             feat.read2 = rec
-          } else {
-            console.log('unable to pair read', rec)
           }
           if (feat.read1 && feat.read2) {
             delete pairCache[name]
@@ -299,8 +301,6 @@ export default class PileupRenderer extends BoxRendererType {
             feat.read1 = rec
           } else if (rec.get('multi_segment_last')) {
             feat.read2 = rec
-          } else {
-            console.log('unable to pair read', rec)
           }
           pairCache[name] = feat
         }
@@ -357,8 +357,6 @@ export default class PileupRenderer extends BoxRendererType {
     feat: {
       heightPx: number
       topPx: number
-      leftPx: number
-      rightPx: number
       feature: Feature
     },
     mismatches: Mismatch[],
@@ -502,61 +500,100 @@ export default class PileupRenderer extends BoxRendererType {
         return
       }
 
-      const { feature, leftPx, rightPx, topPx, heightPx } = feat
-      ctx.fillStyle = readConfObject(config, 'color', [feature])
-      ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
-      const mismatches: Mismatch[] = feature.get('mismatches')
+      const { feature, topPx, heightPx } = feat
+      const drawRect = f => {
+        ctx.fillStyle = readConfObject(config, 'color', [f])
+        const [leftPx, rightPx] = bpSpanPx(
+          f.get('start'),
+          f.get('end'),
+          region,
+          bpPerPx,
+        )
+        ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
+      }
+      if (feature.get('is_paired')) {
+        const { read1, read2 } = (feature as unknown) as PairedRead
+        const [leftPx, rightPx] = bpSpanPx(
+          feature.get('start'),
+          feature.get('end'),
+          region,
+          bpPerPx,
+        )
+        ctx.strokeStyle = 'black'
+        ctx.beginPath()
+        ctx.moveTo(leftPx, topPx + heightPx / 2)
+        ctx.lineTo(rightPx, topPx + heightPx / 2)
+        ctx.stroke()
+        drawRect(read1)
+        drawRect(read2)
+        this.drawMismatches(
+          ctx,
+          { feature: read1, heightPx, topPx },
+          read1.get('mismatches'),
+          props,
+        )
+        this.drawMismatches(
+          ctx,
+          { feature: read2, heightPx, topPx },
+          read2.get('mismatches'),
+          props,
+        )
+      } else {
+        ctx.fillStyle = readConfObject(config, 'color', [feature])
+        drawRect(feature)
+        const mismatches: Mismatch[] = feature.get('mismatches')
 
-      if (mismatches) {
-        this.drawMismatches(ctx, feat, mismatches, props)
-        // Display all bases softclipped off in lightened colors
-        if (showSoftClip) {
-          const seq = feature.get('seq')
-          if (!seq) {
-            return
-          }
-          for (let j = 0; j < mismatches.length; j += 1) {
-            const mismatch = mismatches[j]
-            if (mismatch.type === 'softclip') {
-              const softClipLength = mismatch.cliplen || 0
-              const softClipStart =
-                mismatch.start === 0
-                  ? feature.get('start') - softClipLength
-                  : feature.get('start') + mismatch.start
-              for (let k = 0; k < softClipLength; k += 1) {
-                const base = seq.charAt(k + mismatch.start)
-                // If softclip length+start is longer than sequence, no need to
-                // continue showing base
-                if (!base) {
-                  return
-                }
+        if (mismatches) {
+          this.drawMismatches(ctx, feat, mismatches, props)
+          // Display all bases softclipped off in lightened colors
+          if (showSoftClip) {
+            const seq = feature.get('seq')
+            if (!seq) {
+              return
+            }
+            for (let j = 0; j < mismatches.length; j += 1) {
+              const mismatch = mismatches[j]
+              if (mismatch.type === 'softclip') {
+                const softClipLength = mismatch.cliplen || 0
+                const softClipStart =
+                  mismatch.start === 0
+                    ? feature.get('start') - softClipLength
+                    : feature.get('start') + mismatch.start
+                for (let k = 0; k < softClipLength; k += 1) {
+                  const base = seq.charAt(k + mismatch.start)
+                  // If softclip length+start is longer than sequence, no need to
+                  // continue showing base
+                  if (!base) {
+                    return
+                  }
 
-                const [softClipLeftPx, softClipRightPx] = bpSpanPx(
-                  softClipStart + k,
-                  softClipStart + k + 1,
-                  region,
-                  bpPerPx,
-                )
-                const softClipWidthPx = Math.max(
-                  minFeatWidth,
-                  Math.abs(softClipLeftPx - softClipRightPx),
-                )
-
-                // Black accounts for IUPAC ambiguity code bases such as N that
-                // show in soft clipping
-                ctx.fillStyle = lighten(colorForBase[base] || '#000000', 0.3)
-                ctx.fillRect(softClipLeftPx, topPx, softClipWidthPx, heightPx)
-
-                if (
-                  softClipWidthPx >= charWidth &&
-                  heightPx >= charHeight - 5
-                ) {
-                  ctx.fillStyle = 'black'
-                  ctx.fillText(
-                    base,
-                    softClipLeftPx + (softClipWidthPx - charWidth) / 2 + 1,
-                    topPx + heightPx,
+                  const [softClipLeftPx, softClipRightPx] = bpSpanPx(
+                    softClipStart + k,
+                    softClipStart + k + 1,
+                    region,
+                    bpPerPx,
                   )
+                  const softClipWidthPx = Math.max(
+                    minFeatWidth,
+                    Math.abs(softClipLeftPx - softClipRightPx),
+                  )
+
+                  // Black accounts for IUPAC ambiguity code bases such as N that
+                  // show in soft clipping
+                  ctx.fillStyle = lighten(colorForBase[base] || '#000000', 0.3)
+                  ctx.fillRect(softClipLeftPx, topPx, softClipWidthPx, heightPx)
+
+                  if (
+                    softClipWidthPx >= charWidth &&
+                    heightPx >= charHeight - 5
+                  ) {
+                    ctx.fillStyle = 'black'
+                    ctx.fillText(
+                      base,
+                      softClipLeftPx + (softClipWidthPx - charWidth) / 2 + 1,
+                      topPx + heightPx,
+                    )
+                  }
                 }
               }
             }
