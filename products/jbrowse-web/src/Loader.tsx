@@ -137,20 +137,31 @@ export function Loader() {
     // adapted decrypt from https://gist.github.com/vlucas/2bd40f62d20c1d49237a109d491974eb
     function decrypt(text: string) {
       if (!passwordQueryParam) return ''
-      const iv = Buffer.from(passwordQueryParam, 'hex')
-      const encryptedText = Buffer.from(text, 'hex')
-      const decipher = crypto.createDecipheriv(
-        'aes-256-cbc',
-        Buffer.from(key),
-        iv,
-      )
-      let decrypted = decipher.update(encryptedText)
-      decrypted = Buffer.concat([decrypted, decipher.final()])
-      return decrypted.toString()
+      try {
+        const iv = Buffer.from(passwordQueryParam, 'hex')
+        const encryptedText = Buffer.from(text, 'hex')
+        const decipher = crypto.createDecipheriv(
+          'aes-256-cbc',
+          Buffer.from(key),
+          iv,
+        )
+        let decrypted = decipher.update(encryptedText)
+        decrypted = Buffer.concat([decrypted, decipher.final()])
+        return decrypted.toString()
+      } catch (e) {
+        // error
+        return ''
+      }
+    }
+
+    function setData(data?: string) {
+      setSessionQueryParam(data || undefined)
+      setPasswordQueryParam(undefined)
+      setSessString(data || '') // setting querys do not count for change rerender
     }
 
     async function readSessionFromDynamo() {
-      if (loadingSharedSession && sessionQueryParam && passwordQueryParam) {
+      if (loadingSharedSession && sessionQueryParam) {
         const sessionId = sessionQueryParam.split('share-')[1]
         const url = new URL(
           'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/load',
@@ -174,20 +185,22 @@ export function Loader() {
           }
         }
 
+        let localId
         if (response && response.ok) {
           const json = await response.json()
-          const localId = `local-${uuid.v4()}`
           const decryptedSession = decrypt(json.session)
-          localStorage.setItem(localId, fromUrlSafeB64(decryptedSession))
-          setSessionQueryParam(localId)
-          setPasswordQueryParam(undefined)
-          setSessString(localId) // setting querys do not count for change rerender
+          if (decryptedSession) {
+            localId = `local-${uuid.v4()}`
+            localStorage.setItem(localId, fromUrlSafeB64(decryptedSession))
+          } else {
+            // eslint-disable-next-line no-alert
+            alert('Session could not be decrypted with given password')
+            setData()
+          }
         } else {
           // eslint-disable-next-line no-alert
-          alert('Failed to find session')
-          setSessionQueryParam(undefined)
-          setPasswordQueryParam(undefined)
-          setSessString('') // setting querys do not count for change rerender
+          alert('Failed to find given session in database')
+          setData()
         }
       }
     }
