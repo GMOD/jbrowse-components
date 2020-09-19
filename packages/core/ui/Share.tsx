@@ -13,6 +13,7 @@ import Divider from '@material-ui/core/Divider'
 import TextField from '@material-ui/core/TextField'
 import copy from 'copy-to-clipboard'
 import { fade } from '@material-ui/core/styles/colorManipulator'
+import * as crypto from 'crypto'
 import { ContentCopy as ContentCopyIcon } from './Icons'
 import { toUrlSafeB64 } from '../util'
 
@@ -46,14 +47,27 @@ const Share = observer((props: { session: any }) => {
   const [shareUrl, setShareUrl] = React.useState('')
   const locationUrl = new URL(window.location.href)
 
+  const key = crypto.createHash('sha256').update('JBrowse').digest()
+  const iv = crypto.randomBytes(16)
+
+  // adapted encrypt from https://gist.github.com/vlucas/2bd40f62d20c1d49237a109d491974eb
+  const encrypt = (text: string) => {
+    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv)
+    let encrypted = cipher.update(text)
+    encrypted = Buffer.concat([encrypted, cipher.final()])
+    return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') }
+  }
+
+  // make warning message yellow
   const localHostMessage = locationUrl.href.includes('localhost')
     ? 'Warning: Domain contains localhost, sharing link with others may be unsuccessful'
     : ''
 
   const handleClickOpen = (urlLink: string) => {
     const params = new URLSearchParams(locationUrl.search)
-
-    params.set('session', `share-${urlLink}`)
+    const encrypted = encrypt(urlLink)
+    params.set('session', `share-${encrypted.encryptedData}`)
+    params.set('password', encrypted.iv)
     locationUrl.search = params.toString()
     setShareUrl(locationUrl.href)
     setOpen(true)
@@ -63,6 +77,8 @@ const Share = observer((props: { session: any }) => {
     setOpen(false)
   }
 
+  // add node-crypto to final shared url, and need to decode using same before reading
+  // from db also
   const shareSessionToDynamo = async () => {
     const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
 

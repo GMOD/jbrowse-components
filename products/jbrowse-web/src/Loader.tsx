@@ -16,6 +16,7 @@ import { PluginConstructor } from '@gmod/jbrowse-core/Plugin'
 import { FatalErrorDialog } from '@gmod/jbrowse-core/ui'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import CircularProgress from '@material-ui/core/CircularProgress'
+import * as crypto from 'crypto'
 import 'typeface-roboto'
 import 'requestidlecallback-polyfill'
 import 'mobx-react/batchingForReactDom'
@@ -118,18 +119,40 @@ export function Loader() {
     'session',
     StringParam,
   )
+  const [passwordQueryParam, setPasswordQueryParam] = useQueryParam(
+    'password',
+    StringParam,
+  )
   const [sessString, setSessString] = useState('')
   const [adminQueryParam] = useQueryParam('admin', StringParam)
   const [loadingState, setLoadingState] = useState(false)
+  const [key] = useState(crypto.createHash('sha256').update('JBrowse').digest())
   const adminMode = adminQueryParam === '1' || adminQueryParam === 'true'
   const loadingSharedSession = sessionQueryParam?.startsWith('share-')
 
   useEffect(() => {
     const controller = new AbortController()
     const { signal } = controller
+
+    // adapted decrypt from https://gist.github.com/vlucas/2bd40f62d20c1d49237a109d491974eb
+    function decrypt(text: string) {
+      if (!passwordQueryParam) return ''
+      const iv = Buffer.from(passwordQueryParam, 'hex')
+      const encryptedText = Buffer.from(text, 'hex')
+      const decipher = crypto.createDecipheriv(
+        'aes-256-cbc',
+        Buffer.from(key),
+        iv,
+      )
+      let decrypted = decipher.update(encryptedText)
+      decrypted = Buffer.concat([decrypted, decipher.final()])
+      return decrypted.toString()
+    }
+
     async function readSessionFromDynamo() {
-      if (loadingSharedSession && sessionQueryParam) {
-        const sessionId = sessionQueryParam.split('share-')[1]
+      if (loadingSharedSession && sessionQueryParam && passwordQueryParam) {
+        const encryptedSessionId = sessionQueryParam.split('share-')[1]
+        const sessionId = decrypt(encryptedSessionId)
         const url = new URL(
           'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/load',
         )
@@ -137,8 +160,8 @@ export function Loader() {
         params.set('sessionId', sessionId)
         url.search = params.toString()
 
-        // TODOSESSION remove all references to savedSessions
         setLoadingState(true)
+        // TODOSESSION remove all references to savedSessions
         let response
         try {
           response = await fetch(url.href, {
@@ -157,12 +180,14 @@ export function Loader() {
           const localId = `local-${uuid.v4()}`
           localStorage.setItem(localId, fromUrlSafeB64(json.session))
           setSessionQueryParam(localId)
-          setSessString(localId)
+          setPasswordQueryParam(undefined)
+          setSessString(localId) // setting querys do not count for change rerender
         } else {
           // eslint-disable-next-line no-alert
           alert('Failed to find session')
           setSessionQueryParam(undefined)
-          setSessString('')
+          setPasswordQueryParam(undefined)
+          setSessString('') // setting querys do not count for change rerender
         }
       }
     }
@@ -175,7 +200,10 @@ export function Loader() {
     loadingSharedSession,
     sessionQueryParam,
     setSessionQueryParam,
+    passwordQueryParam,
+    setPasswordQueryParam,
     sessString,
+    key,
   ])
 
   useEffect(() => {
@@ -286,6 +314,7 @@ export function Loader() {
         // eslint-disable-next-line no-alert
         alert('No matching local session found')
         setSessionQueryParam(undefined)
+        setPasswordQueryParam(undefined)
         setSessString('')
       }
     } else {
@@ -293,6 +322,7 @@ export function Loader() {
       const localId = `local-${uuid.v4()}`
       localStorage.setItem(localId, JSON.stringify(rootModel.session))
       setSessionQueryParam(localId)
+      setPasswordQueryParam(undefined)
       setSessString(localId)
     }
 
@@ -318,7 +348,11 @@ export function Loader() {
 
   pluginManager.configure()
 
-  return <JBrowse pluginManager={pluginManager} />
+  return loadingState ? (
+    <CircularProgress />
+  ) : (
+    <JBrowse pluginManager={pluginManager} />
+  )
 }
 
 function factoryReset() {
