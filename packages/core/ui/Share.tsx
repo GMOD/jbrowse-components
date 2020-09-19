@@ -82,8 +82,8 @@ const Share = observer((props: { session: any }) => {
     const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
 
     const data = new FormData()
-    const encrypted = encrypt(sess)
-    data.append('session', encrypted.encryptedData)
+    const encryptedSession = encrypt(sess)
+    data.append('session', encryptedSession.encryptedData)
 
     let response
     try {
@@ -98,7 +98,7 @@ const Share = observer((props: { session: any }) => {
 
     if (response && response.ok) {
       const json = await response.json()
-      handleClickOpen(json.sessionId, encrypted.iv)
+      handleClickOpen(json.sessionId, encryptedSession.iv)
     } else {
       // on fail, say failed to generate sharelink
     }
