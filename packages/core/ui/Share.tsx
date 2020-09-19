@@ -63,11 +63,10 @@ const Share = observer((props: { session: any }) => {
     ? 'Warning: Domain contains localhost, sharing link with others may be unsuccessful'
     : ''
 
-  const handleClickOpen = (urlLink: string) => {
+  const handleClickOpen = (urlLink: string, password: string) => {
     const params = new URLSearchParams(locationUrl.search)
-    const encrypted = encrypt(urlLink)
-    params.set('session', `share-${encrypted.encryptedData}`)
-    params.set('password', encrypted.iv)
+    params.set('session', `share-${urlLink}`)
+    params.set('password', password)
     locationUrl.search = params.toString()
     setShareUrl(locationUrl.href)
     setOpen(true)
@@ -83,7 +82,8 @@ const Share = observer((props: { session: any }) => {
     const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
 
     const data = new FormData()
-    data.append('session', sess)
+    const encrypted = encrypt(sess)
+    data.append('session', encrypted.encryptedData)
 
     let response
     try {
@@ -98,7 +98,7 @@ const Share = observer((props: { session: any }) => {
 
     if (response && response.ok) {
       const json = await response.json()
-      handleClickOpen(json.sessionId)
+      handleClickOpen(json.sessionId, encrypted.iv)
     } else {
       // on fail, say failed to generate sharelink
     }

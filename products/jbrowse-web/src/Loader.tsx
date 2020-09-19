@@ -151,8 +151,7 @@ export function Loader() {
 
     async function readSessionFromDynamo() {
       if (loadingSharedSession && sessionQueryParam && passwordQueryParam) {
-        const encryptedSessionId = sessionQueryParam.split('share-')[1]
-        const sessionId = decrypt(encryptedSessionId)
+        const sessionId = sessionQueryParam.split('share-')[1]
         const url = new URL(
           'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/load',
         )
@@ -178,7 +177,8 @@ export function Loader() {
         if (response && response.ok) {
           const json = await response.json()
           const localId = `local-${uuid.v4()}`
-          localStorage.setItem(localId, fromUrlSafeB64(json.session))
+          const decryptedSession = decrypt(json.session)
+          localStorage.setItem(localId, fromUrlSafeB64(decryptedSession))
           setSessionQueryParam(localId)
           setPasswordQueryParam(undefined)
           setSessString(localId) // setting querys do not count for change rerender
