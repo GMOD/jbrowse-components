@@ -174,6 +174,9 @@ function LinearSyntenyRendering(props: {
               } else if (op === 'D') {
                 ctx.fillStyle = '#00f3'
                 currX1 += val / views[0].bpPerPx
+              } else if (op === 'N') {
+                ctx.fillStyle = '#0a03'
+                currX1 += val / views[0].bpPerPx
               } else if (op === 'I') {
                 ctx.fillStyle = '#ff03'
                 currX2 += val / views[1].bpPerPx
