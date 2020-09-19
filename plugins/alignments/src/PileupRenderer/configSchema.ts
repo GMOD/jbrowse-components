@@ -13,6 +13,11 @@ export default ConfigurationSchema(
 }`,
       functionSignature: ['feature'],
     },
+    maxInsertSize: {
+      type: 'number',
+      defaultValue: 5000,
+      description: 'size to expand for insert size',
+    },
     displayMode: {
       type: 'stringEnum',
       model: types.enumeration('displayMode', [

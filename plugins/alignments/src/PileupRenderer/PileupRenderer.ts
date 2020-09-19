@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import deepEqual from 'deep-equal'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import BoxRendererType, {
@@ -19,8 +20,10 @@ import { BaseLayout } from '@gmod/jbrowse-core/util/layouts/BaseLayout'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { RenderArgsDeserialized } from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { lighten } from '@material-ui/core/styles/colorManipulator'
+import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { Mismatch } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
+import BamSlightlyLazyFeature from '../BamAdapter/BamSlightlyLazyFeature'
 
 export interface PileupRenderProps {
   features: Map<string, Feature>
@@ -46,8 +49,9 @@ interface LayoutRecord {
   heightPx: number
 }
 
-interface RenderArgsSoftClip extends RenderArgsDeserialized {
+interface RenderArgsAugmented extends RenderArgsDeserialized {
   showSoftClip?: boolean
+  viewAsPairs?: boolean
 }
 
 interface PileupLayoutSessionProps {
@@ -65,6 +69,87 @@ interface CachedPileupLayout {
   filters: SerializableFilterChain
   sortObject: unknown
   showSoftClip: unknown
+}
+
+const colorForBase: { [key: string]: string } = {
+  A: '#00bf00',
+  C: '#4747ff',
+  G: '#ffa500',
+  T: '#f00',
+  deletion: 'grey',
+}
+
+function canBePaired(alignment: Feature) {
+  return (
+    alignment.get('multi_segment_template') &&
+    !alignment.get('multi_segment_next_segment_unmapped') &&
+    alignment.get('seq_id') === alignment.get('next_seq_id') &&
+    (alignment.get('multi_segment_first') ||
+      alignment.get('multi_segment_last')) &&
+    !(
+      alignment.get('secondary_alignment') ||
+      alignment.get('supplementary_alignment')
+    )
+  )
+}
+
+class PairedRead {
+  public read1: any
+
+  public read2: any
+
+  id() {
+    return `${this.read1.id()}-${this.read2.id()}`
+  }
+
+  get(field: string) {
+    return this._get(field.toLowerCase())
+  }
+
+  _get(field: string) {
+    if (field === 'start') {
+      return Math.min(this.read1.get('start'), this.read2.get('start'))
+    }
+    if (field === 'end') {
+      return Math.max(this.read1.get('end'), this.read2.get('end'))
+    }
+    if (field === 'name') {
+      return this.read1.get('name')
+    }
+    if (field === 'pair_orientation') {
+      return this.read1.get('pair_orientation')
+    }
+    if (field === 'template_length') {
+      return this.read1.get('template_length')
+    }
+    if (field === 'is_paired') {
+      return true // simply comes from paired end reads
+    }
+    if (field === 'paired_feature') {
+      return true // it is a combination of two reads
+    }
+    if (field === 'refname') {
+      return this.read1.get('refName')
+    }
+  }
+
+  pairedFeature() {
+    return true
+  }
+
+  children() {}
+
+  toJSON() {
+    return {
+      start: this._get('start'),
+      end: this._get('end'),
+      refName: this._get('refName'),
+      is_paired: this._get('is_paired'),
+      paired_feature: this._get('paired_feature'),
+      read1: this.read1.toJSON(),
+      read2: this.read2.toJSON(),
+    }
+  }
 }
 
 // Sorting and revealing soft clip changes the layout of Pileup renderer
@@ -136,7 +221,9 @@ export default class PileupRenderer extends BoxRendererType {
 
     let heightPx = readConfObject(config, 'height', [feature])
     const displayMode = readConfObject(config, 'displayMode', [feature])
-    if (displayMode === 'compact') heightPx /= 3
+    if (displayMode === 'compact') {
+      heightPx /= 3
+    }
     if (feature.get('refName') !== region.refName) {
       throw new Error(
         `feature ${feature.id()} is not on the current region's reference sequence ${
@@ -166,17 +253,188 @@ export default class PileupRenderer extends BoxRendererType {
   // expands region for clipping to use
   // In future when stats are improved, look for average read size in renderArg stats
   // and set that as the maxClippingSize/expand region by average read size
-  getExpandedRegion(region: Region, renderArgs: RenderArgsSoftClip) {
-    if (!region) return region
-    const { config, showSoftClip } = renderArgs
-    const maxClippingSize =
-      config === undefined ? 0 : readConfObject(config, 'maxClippingSize')
-    if (!maxClippingSize || !showSoftClip) return region
-    const bpExpansion = Math.round(maxClippingSize)
+  getExpandedRegion(region: Region, renderArgs: RenderArgsAugmented) {
+    const { config, showSoftClip, viewAsPairs = true } = renderArgs
+
+    const maxClippingSize = readConfObject(config, 'maxClippingSize')
+    const maxInsertSize = readConfObject(config, 'maxInsertSize')
+
+    const bpExpansion = Math.max(
+      showSoftClip ? Math.round(maxClippingSize) : 0,
+      viewAsPairs ? Math.round(maxInsertSize) : 0,
+    )
     return {
       ...region,
       start: Math.floor(Math.max(region.start - bpExpansion, 0)),
       end: Math.ceil(region.end + bpExpansion),
+    }
+  }
+
+  *pairFeatures(query: Region, config: any, records: Feature[]) {
+    const maxInsertSize = readConfObject(config, 'maxInsertSize')
+    const pairCache: { [key: string]: PairedRead } = {}
+    const features: { [key: string]: PairedRead } = {}
+    for (let i = 0; i < records.length; i++) {
+      let feat
+      const rec = records[i]
+      const tlen = rec.get('template_length')
+      if (canBePaired(rec) && Math.abs(tlen) < maxInsertSize) {
+        const name = rec.get('name')
+        feat = pairCache[name]
+        if (feat) {
+          if (rec.get('multi_segment_first')) {
+            feat.read1 = rec
+          } else if (rec.get('multi_segment_last')) {
+            feat.read2 = rec
+          } else {
+            console.log('unable to pair read', rec)
+          }
+          if (feat.read1 && feat.read2) {
+            delete pairCache[name]
+            features[name] = feat
+          }
+        } else {
+          feat = new PairedRead()
+          if (rec.get('multi_segment_first')) {
+            feat.read1 = rec
+          } else if (rec.get('multi_segment_last')) {
+            feat.read2 = rec
+          } else {
+            console.log('unable to pair read', rec)
+          }
+          pairCache[name] = feat
+        }
+      } else if (
+        doesIntersect2(rec.get('start'), rec.get('end'), query.start, query.end)
+      ) {
+        yield rec
+      }
+    }
+
+    // dump paired features
+    for (const feat of Object.values(features)) {
+      if (
+        doesIntersect2(
+          feat.get('start'),
+          feat.get('end'),
+          query.start,
+          query.end,
+        )
+      ) {
+        yield feat
+      }
+    }
+    // dump unpaired features from the paircache
+    for (const feat of Object.values(pairCache)) {
+      if (feat.read1) {
+        if (
+          doesIntersect2(
+            feat.read1.get('start'),
+            feat.read1.get('end'),
+            query.start,
+            query.end,
+          )
+        ) {
+          yield feat.read1
+        }
+      } else if (feat.read2) {
+        if (
+          doesIntersect2(
+            feat.read2.get('start'),
+            feat.read2.get('end'),
+            query.start,
+            query.end,
+          )
+        ) {
+          yield feat.read2
+        }
+      }
+    }
+  }
+
+  drawMismatches(
+    ctx: CanvasRenderingContext2D,
+    feat: {
+      heightPx: number
+      topPx: number
+      leftPx: number
+      rightPx: number
+      feature: Feature
+    },
+    mismatches: Mismatch[],
+    props: PileupRenderProps,
+  ) {
+    const { config, bpPerPx, regions, showSoftClip } = props
+    const [region] = regions
+    const { heightPx, topPx, feature } = feat
+    const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
+    const charWidth = ctx.measureText('A').width
+    const charHeight = ctx.measureText('M').width
+    const pxPerBp = Math.min(1 / bpPerPx, 2)
+    const w = Math.max(minFeatWidth, pxPerBp)
+
+    for (let i = 0; i < mismatches.length; i += 1) {
+      const mismatch = mismatches[i]
+      const [mismatchLeftPx, mismatchRightPx] = bpSpanPx(
+        feature.get('start') + mismatch.start,
+        feature.get('start') + mismatch.start + mismatch.length,
+        region,
+        bpPerPx,
+      )
+      const mismatchWidthPx = Math.max(
+        minFeatWidth,
+        Math.abs(mismatchLeftPx - mismatchRightPx),
+      )
+
+      if (mismatch.type === 'mismatch' || mismatch.type === 'deletion') {
+        ctx.fillStyle =
+          colorForBase[
+            mismatch.type === 'deletion' ? 'deletion' : mismatch.base
+          ] || '#888'
+        ctx.fillRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
+
+        if (mismatchWidthPx >= charWidth && heightPx >= charHeight - 5) {
+          ctx.fillStyle = mismatch.type === 'deletion' ? 'white' : 'black'
+          ctx.fillText(
+            mismatch.base,
+            mismatchLeftPx + (mismatchWidthPx - charWidth) / 2 + 1,
+            topPx + heightPx,
+          )
+        }
+      } else if (mismatch.type === 'insertion') {
+        ctx.fillStyle = 'purple'
+        const pos = mismatchLeftPx - 1
+        ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
+        ctx.fillRect(pos - w, topPx, w * 3, 1)
+        ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
+        if (mismatchWidthPx >= charWidth && heightPx >= charHeight - 2) {
+          ctx.fillText(
+            `(${mismatch.base})`,
+            mismatchLeftPx + 2,
+            topPx + heightPx,
+          )
+        }
+      } else if (
+        mismatch.type === 'hardclip' ||
+        (!showSoftClip && mismatch.type === 'softclip')
+      ) {
+        ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
+        const pos = mismatchLeftPx - 1
+        ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
+        ctx.fillRect(pos - w, topPx, w * 3, 1)
+        ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
+        if (mismatchWidthPx >= charWidth && heightPx >= charHeight - 2) {
+          ctx.fillText(
+            `(${mismatch.base})`,
+            mismatchLeftPx + 2,
+            topPx + heightPx,
+          )
+        }
+      } else if (mismatch.type === 'skip') {
+        ctx.clearRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
+        ctx.fillStyle = '#333'
+        ctx.fillRect(mismatchLeftPx, topPx + heightPx / 2, mismatchWidthPx, 2)
+      }
     }
   }
 
@@ -198,16 +456,21 @@ export default class PileupRenderer extends BoxRendererType {
     if (!layout.addRect) {
       throw new Error('invalid layout object')
     }
-    const pxPerBp = Math.min(1 / bpPerPx, 2)
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
-    const w = Math.max(minFeatWidth, pxPerBp)
+    const maxInsertSize = readConfObject(config, 'maxInsertSize')
 
     const sortedFeatures =
       sortObject && sortObject.by && region.start === sortObject.position
         ? sortFeature(features, sortObject)
         : null
-
-    const featureMap = sortedFeatures || features
+    const pairs = new Map(
+      [...this.pairFeatures(region, config, [...features.values()])].map(
+        feat => {
+          return [feat.id(), feat]
+        },
+      ),
+    )
+    const featureMap = maxInsertSize ? pairs : sortedFeatures || features
     const layoutRecords = iterMap(
       featureMap.values(),
       feature =>
@@ -232,9 +495,8 @@ export default class PileupRenderer extends BoxRendererType {
     const ctx = canvas.getContext('2d')
     ctx.scale(highResolutionScaling, highResolutionScaling)
     ctx.font = 'bold 10px Courier New,monospace'
-    const charSize = ctx.measureText('A')
-    charSize.height = 7
-
+    const charWidth = ctx.measureText('A').width
+    const charHeight = ctx.measureText('M').width
     layoutRecords.forEach(feat => {
       if (feat === null) {
         return
@@ -246,100 +508,13 @@ export default class PileupRenderer extends BoxRendererType {
       const mismatches: Mismatch[] = feature.get('mismatches')
 
       if (mismatches) {
-        const colorForBase: { [key: string]: string } = {
-          A: '#00bf00',
-          C: '#4747ff',
-          G: '#ffa500',
-          T: '#f00',
-          deletion: 'grey',
-        }
-        for (let i = 0; i < mismatches.length; i += 1) {
-          const mismatch = mismatches[i]
-          const [mismatchLeftPx, mismatchRightPx] = bpSpanPx(
-            feature.get('start') + mismatch.start,
-            feature.get('start') + mismatch.start + mismatch.length,
-            region,
-            bpPerPx,
-          )
-
-          const mismatchWidthPx = Math.max(
-            minFeatWidth,
-            Math.abs(mismatchLeftPx - mismatchRightPx),
-          )
-
-          if (mismatch.type === 'mismatch' || mismatch.type === 'deletion') {
-            ctx.fillStyle =
-              colorForBase[
-                mismatch.type === 'deletion' ? 'deletion' : mismatch.base
-              ] || '#888'
-            ctx.fillRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
-
-            if (
-              mismatchWidthPx >= charSize.width &&
-              heightPx >= charSize.height - 5
-            ) {
-              ctx.fillStyle = mismatch.type === 'deletion' ? 'white' : 'black'
-              ctx.fillText(
-                mismatch.base,
-                mismatchLeftPx + (mismatchWidthPx - charSize.width) / 2 + 1,
-                topPx + heightPx,
-              )
-            }
-          } else if (mismatch.type === 'insertion') {
-            ctx.fillStyle = 'purple'
-            const pos = mismatchLeftPx - 1
-            ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
-            ctx.fillRect(pos - w, topPx, w * 3, 1)
-            ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-            if (
-              1 / bpPerPx >= charSize.width &&
-              heightPx >= charSize.height - 2
-            ) {
-              ctx.fillText(
-                `(${mismatch.base})`,
-                mismatchLeftPx + 2,
-                topPx + heightPx,
-              )
-            }
-          } else if (
-            mismatch.type === 'hardclip' ||
-            (!showSoftClip && mismatch.type === 'softclip')
-          ) {
-            ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
-            const pos = mismatchLeftPx - 1
-            ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
-            ctx.fillRect(pos - w, topPx, w * 3, 1)
-            ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-            if (
-              mismatchWidthPx >= charSize.width &&
-              heightPx >= charSize.height - 2
-            ) {
-              ctx.fillText(
-                `(${mismatch.base})`,
-                mismatchLeftPx + 2,
-                topPx + heightPx,
-              )
-            }
-          } else if (mismatch.type === 'skip') {
-            // fix to avoid bad rendering
-            // note that this was also related to chrome bug https://bugs.chromium.org/p/chromium/issues/detail?id=1131528
-            // ref #1236
-            if (mismatchLeftPx + mismatchWidthPx > 0) {
-              ctx.clearRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
-            }
-            ctx.fillStyle = '#333'
-            ctx.fillRect(
-              mismatchLeftPx,
-              topPx + heightPx / 2,
-              mismatchWidthPx,
-              2,
-            )
-          }
-        }
+        this.drawMismatches(ctx, feat, mismatches, props)
         // Display all bases softclipped off in lightened colors
         if (showSoftClip) {
           const seq = feature.get('seq')
-          if (!seq) return
+          if (!seq) {
+            return
+          }
           for (let j = 0; j < mismatches.length; j += 1) {
             const mismatch = mismatches[j]
             if (mismatch.type === 'softclip') {
@@ -350,8 +525,11 @@ export default class PileupRenderer extends BoxRendererType {
                   : feature.get('start') + mismatch.start
               for (let k = 0; k < softClipLength; k += 1) {
                 const base = seq.charAt(k + mismatch.start)
-                // If softclip length+start is longer than sequence, no need to continue showing base
-                if (!base) return
+                // If softclip length+start is longer than sequence, no need to
+                // continue showing base
+                if (!base) {
+                  return
+                }
 
                 const [softClipLeftPx, softClipRightPx] = bpSpanPx(
                   softClipStart + k,
@@ -364,18 +542,19 @@ export default class PileupRenderer extends BoxRendererType {
                   Math.abs(softClipLeftPx - softClipRightPx),
                 )
 
-                // Black accounts for IUPAC ambiguity code bases such as N that show in soft clipping
+                // Black accounts for IUPAC ambiguity code bases such as N that
+                // show in soft clipping
                 ctx.fillStyle = lighten(colorForBase[base] || '#000000', 0.3)
                 ctx.fillRect(softClipLeftPx, topPx, softClipWidthPx, heightPx)
 
                 if (
-                  softClipWidthPx >= charSize.width &&
-                  heightPx >= charSize.height - 5
+                  softClipWidthPx >= charWidth &&
+                  heightPx >= charHeight - 5
                 ) {
                   ctx.fillStyle = 'black'
                   ctx.fillText(
                     base,
-                    softClipLeftPx + (softClipWidthPx - charSize.width) / 2 + 1,
+                    softClipLeftPx + (softClipWidthPx - charWidth) / 2 + 1,
                     topPx + heightPx,
                   )
                 }

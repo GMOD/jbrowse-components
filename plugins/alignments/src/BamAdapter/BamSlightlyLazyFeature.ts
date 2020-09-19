@@ -78,6 +78,15 @@ export default class implements Feature {
     return this.adapter.refIdToName(this.record.seq_id())
   }
 
+  _get_next_seq_id() {
+    return this.record._next_refid()
+  }
+
+  _get_seq_id() {
+    // @ts-ignore
+    return this.record._refID
+  }
+
   _get_qc_failed(): boolean {
     return this.record.isFailedQc()
   }
