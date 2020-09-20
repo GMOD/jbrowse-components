@@ -17,6 +17,13 @@ export default ConfigurationSchema(
       defaultValue: 5000,
       description: 'size to expand for insert size',
     },
+    orientationType: {
+      type: 'stringEnum',
+      model: types.enumeration('orientationType', ['fr', 'rf', 'ff']),
+      defaultValue: 'fr',
+      description:
+        'read sequencer orienation. fr is normal "reads pointing at each other ---> <--- while some other sequencers can use other options',
+    },
     displayMode: {
       type: 'stringEnum',
       model: types.enumeration('displayMode', [

@@ -104,6 +104,70 @@ function canBePaired(alignment: Feature) {
   )
 }
 
+// orientation definitions from igv.js, see also https://software.broadinstitute.org/software/igv/interpreting_pair_orientations
+const orientationTypes = {
+  fr: {
+    F1R2: 'LR',
+    F2R1: 'LR',
+
+    F1F2: 'LL',
+    F2F1: 'LL',
+
+    R1R2: 'RR',
+    R2R1: 'RR',
+
+    R1F2: 'RL',
+    R2F1: 'RL',
+  } as { [key: string]: string },
+
+  rf: {
+    R1F2: 'LR',
+    R2F1: 'LR',
+
+    R1R2: 'LL',
+    R2R1: 'LL',
+
+    F1F2: 'RR',
+    F2F1: 'RR',
+
+    F1R2: 'RL',
+    F2R1: 'RL',
+  } as { [key: string]: string },
+
+  ff: {
+    F2F1: 'LR',
+    R1R2: 'LR',
+
+    F2R1: 'LL',
+    R1F2: 'LL',
+
+    R2F1: 'RR',
+    F1R2: 'RR',
+
+    R2R1: 'RL',
+    F1F2: 'RL',
+  } as { [key: string]: string },
+}
+
+const alignmentColoring: { [key: string]: string } = {
+  color_fwd_strand_not_proper: '#ECC8C8',
+  color_rev_strand_not_proper: '#BEBED8',
+  color_fwd_strand: '#EC8B8B',
+  color_rev_strand: '#8F8FD8',
+  color_fwd_missing_mate: '#D11919',
+  color_rev_missing_mate: '#1919D1',
+  color_fwd_diff_chr: '#000000',
+  color_rev_diff_chr: '#969696',
+  color_pair_lr: 'grey',
+  color_pair_rr: 'navy',
+  color_pair_rl: 'teal',
+  color_pair_ll: 'green',
+  color_nostrand: '#999999',
+  color_interchrom: 'orange',
+  color_longinsert: 'red',
+  color_shortinsert: 'pink',
+}
+
 class PairedRead implements Feature {
   public read1: Feature
 
@@ -383,6 +447,28 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
+  colorByOrientation(feature: Feature, config: AnyConfigurationModel) {
+    return alignmentColoring[
+      this.getOrientation(feature, config) || 'color_nostrand'
+    ]
+  }
+
+  getOrientation(feature: Feature, config: AnyConfigurationModel) {
+    const orientationType = readConfObject(config, 'orientationType') as
+      | 'fr'
+      | 'ff'
+      | 'rf'
+    const type = orientationTypes[orientationType]
+    const orientation = type[feature.get('pair_orientation') as string]
+    const map = {
+      LR: 'color_pair_lr',
+      RR: 'color_pair_rr',
+      RL: 'color_pair_rl',
+      LL: 'color_pair_ll',
+    }
+    return map[orientation]
+  }
+
   drawRect(
     ctx: CanvasRenderingContext2D,
     feat: {
@@ -405,6 +491,13 @@ export default class PileupRenderer extends BoxRendererType {
         break
       case 'mappingQuality':
         ctx.fillStyle = `hsl(${feature.get('mq')},50%,50%)`
+        break
+      case 'insertSize':
+        break
+      case 'pairOrientation':
+        ctx.fillStyle = this.colorByOrientation(feature, config)
+        break
+      case 'insertSizeAndPairOrientation':
         break
       case 'normal':
       default:

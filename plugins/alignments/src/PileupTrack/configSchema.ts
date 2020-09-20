@@ -28,6 +28,7 @@ function PileupConfigFactory(pluginManager: PluginManager) {
           'insertSize',
           'insertSizeAndOrientation',
           'mappingQuality',
+          'tag',
         ]),
         description: 'color scheme to use',
         defaultValue: 'normal',

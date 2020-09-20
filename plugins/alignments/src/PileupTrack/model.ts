@@ -287,6 +287,12 @@ const stateModelFactory = (
                     self.setColorScheme('strand')
                   },
                 },
+                {
+                  label: 'Pair orientation',
+                  onClick: () => {
+                    self.setColorScheme('pairOrientation')
+                  },
+                },
               ],
             },
           ]

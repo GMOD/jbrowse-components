@@ -77,6 +77,10 @@ export default class implements Feature {
     return this.adapter.refIdToName(this.record.seq_id())
   }
 
+  _get_pair_orientation() {
+    return this.record.getPairOrientation()
+  }
+
   _get_next_seq_id() {
     return this.record._next_refid()
   }
