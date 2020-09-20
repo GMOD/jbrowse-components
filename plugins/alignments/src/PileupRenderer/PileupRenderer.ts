@@ -460,13 +460,20 @@ export default class PileupRenderer extends BoxRendererType {
       | 'rf'
     const type = orientationTypes[orientationType]
     const orientation = type[feature.get('pair_orientation') as string]
-    const map = {
+    const map: { [key: string]: string } = {
       LR: 'color_pair_lr',
       RR: 'color_pair_rr',
       RL: 'color_pair_rl',
       LL: 'color_pair_ll',
     }
     return map[orientation]
+  }
+
+  colorByInsertSize(feature: Feature, _config: AnyConfigurationModel) {
+    return feature.get('is_paired') &&
+      feature.get('seq_id') !== feature.get('next_seq_id')
+      ? '#555'
+      : `hsl(${Math.abs(feature.get('template_length')) / 10},50%,50%)`
   }
 
   drawRect(
@@ -484,7 +491,7 @@ export default class PileupRenderer extends BoxRendererType {
 
     switch (colorScheme) {
       case 'insertSize':
-        ctx.fillStyle = `hsl(${feature.get('template_length') / 1000},50%,50%)`
+        ctx.fillStyle = this.colorByInsertSize(feature, config)
         break
       case 'strand':
         ctx.fillStyle = feature.get('strand') === -1 ? '#8F8FD8' : '#EC8B8B'

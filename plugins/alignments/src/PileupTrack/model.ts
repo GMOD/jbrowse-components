@@ -293,6 +293,12 @@ const stateModelFactory = (
                     self.setColorScheme('pairOrientation')
                   },
                 },
+                {
+                  label: 'Insert size',
+                  onClick: () => {
+                    self.setColorScheme('insertSize')
+                  },
+                },
               ],
             },
           ]
