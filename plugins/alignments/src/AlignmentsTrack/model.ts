@@ -53,8 +53,13 @@ const stateModelFactory = (
       const { trackMenuItems } = self
       return {
         get pileupTrackConfig() {
+          const conf = getConf(self)
+          const { SNPCoverageRenderer, ...rest } = conf.renderers
           return {
-            ...getConf(self),
+            ...conf,
+            renderers: {
+              ...rest,
+            },
             type: 'PileupTrack',
             name: `${getConf(self, 'name')} pileup`,
             trackId: `${self.configuration.trackId}_pileup_xyz`, // xyz to avoid someone accidentally namign the trackId similar to this
@@ -84,8 +89,13 @@ const stateModelFactory = (
         },
 
         get snpCoverageTrackConfig() {
+          const conf = getConf(self)
+          const { SNPCoverageRenderer } = conf.renderers
           return {
-            ...getConf(self),
+            ...conf,
+            renderers: {
+              SNPCoverageRenderer,
+            },
             type: 'SNPCoverageTrack',
             name: `${getConf(self, 'name')} snpcoverage`,
             trackId: `${self.configuration.trackId}_snpcoverage_xyz`, // xyz to avoid someone accidentally namign the trackId similar to this
@@ -127,7 +137,7 @@ const stateModelFactory = (
             if (
               !self.SNPCoverageTrack ||
               !deepEqual(
-                getSnapshot(self.snpCoverageTrackConfig),
+                self.snpCoverageTrackConfig,
                 getSnapshot(self.SNPCoverageTrack.configuration),
               )
             ) {
@@ -136,8 +146,8 @@ const stateModelFactory = (
             if (
               !self.PileupTrack ||
               !deepEqual(
-                getSnapshot(self.snpCoverageTrackConfig),
-                getSnapshot(self.SNPCoverageTrack.configuration),
+                self.pileupTrackConfig,
+                getSnapshot(self.PileupTrack.configuration),
               )
             ) {
               this.setPileupTrack(self.pileupTrackConfig)
