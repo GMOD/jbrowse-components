@@ -18,13 +18,14 @@ import {
   blockBasedTrackModel,
   LinearGenomeViewModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { types, Instance } from 'mobx-state-tree'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
 import PaletteIcon from '@material-ui/icons/Palette'
+import { autorun } from 'mobx'
 import { PileupConfigModel } from './configSchema'
 import PileupTrackBlurb from './components/PileupTrackBlurb'
 
@@ -33,6 +34,8 @@ const rendererTypes = new Map([
   ['pileup', 'PileupRenderer'],
   ['svg', 'SvgFeatureRenderer'],
 ])
+
+type LGV = LinearGenomeViewModel
 
 const stateModelFactory = (
   pluginManager: PluginManager,
@@ -45,16 +48,67 @@ const stateModelFactory = (
       types.model({
         type: types.literal('PileupTrack'),
         configuration: ConfigurationReference(configSchema),
+        colorScheme: '',
+        showSoftClipping: false,
+        sortedBy: types.maybe(
+          types.model({
+            type: types.string,
+            pos: types.number,
+            refName: types.string,
+            assemblyName: types.string,
+          }),
+        ),
       }),
     )
     .volatile(() => ({
-      showSoftClipping: false,
-      sortedBy: '',
-      sortedByPosition: 0,
-      sortedByRefName: '',
-      colorScheme: '',
+      ready: false,
+    }))
+
+    .actions(self => ({
+      setReady(flag: boolean) {
+        self.ready = flag
+      },
     }))
     .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(
+            async () => {
+              try {
+                const { rpcManager } = getSession(self)
+                const { sortedBy, renderProps } = self
+                if (sortedBy) {
+                  const { pos, refName, assemblyName } = sortedBy
+                  const region = {
+                    start: pos,
+                    end: pos + 1,
+                    refName,
+                    assemblyName,
+                  }
+
+                  // render just the sorted region first
+                  await self.rendererType.renderInClient(rpcManager, {
+                    assemblyName,
+                    regions: [region],
+                    adapterConfig: getConf(self, 'adapter'),
+                    rendererType: self.rendererType.name,
+                    renderProps,
+                    sessionId: getRpcSessionId(self),
+                    timeout: 1000000,
+                  })
+                  self.setReady(true)
+                } else {
+                  self.setReady(true)
+                }
+              } catch (error) {
+                self.setError(error.message)
+              }
+            },
+            { delay: 1000 },
+          ),
+        )
+      },
       selectFeature(feature: Feature) {
         const session = getSession(self)
         if (isSessionModelWithWidgets(session)) {
@@ -69,9 +123,7 @@ const stateModelFactory = (
       },
 
       clearSelected() {
-        self.sortedBy = ''
-        self.sortedByPosition = 0
-        self.sortedByRefName = ''
+        self.sortedBy = undefined
       },
 
       // uses copy-to-clipboard and generates notification
@@ -87,64 +139,34 @@ const stateModelFactory = (
         self.showSoftClipping = !self.showSoftClipping
       },
 
-      async sortSelected(selected: string) {
-        const { rpcManager } = getSession(self)
-        const { centerLineInfo } = getContainingView(
-          self,
-        ) as LinearGenomeViewModel
+      async sortSelected(type: string) {
+        const { centerLineInfo } = getContainingView(self) as LGV
         if (!centerLineInfo) {
           return
         }
-
-        const centerBp = Math.round(centerLineInfo.offset) + 1
-        const centerRefName = centerLineInfo.refName
+        const { refName, assemblyName, offset } = centerLineInfo
+        const centerBp = Math.round(offset) + 1
+        const centerRefName = refName
 
         if (centerBp < 0) {
           return
         }
 
-        const regions = [
-          {
-            refName: centerLineInfo.refName,
-            start: centerBp,
-            end: centerBp + 1,
-            assemblyName: centerLineInfo.assemblyName,
-          },
-        ]
-
-        // render just the sorted region first
-        self.rendererType
-          .renderInClient(rpcManager, {
-            assemblyName: regions[0].assemblyName,
-            regions,
-            adapterConfig: getConf(self, 'adapter'),
-            rendererType: self.rendererType.name,
-            renderProps: {
-              ...self.renderProps,
-              sortObject: {
-                position: centerBp,
-                by: selected,
-              },
-            },
-            sessionId: getRpcSessionId(self),
-            timeout: 1000000,
-          })
-          .then(() => {
-            this.applySortSelected(selected, centerBp, centerRefName)
-          })
-          .catch((error: Error) => {
-            console.error(error)
-            self.setError(error.message)
-          })
+        this.setSortedBy({
+          type,
+          pos: centerBp,
+          refName: centerRefName,
+          assemblyName,
+        })
       },
-      applySortSelected(
-        selected: string,
-        centerBp: number,
-        centerRefName: string,
-      ) {
-        self.sortedBy = selected
-        self.sortedByPosition = centerBp
-        self.sortedByRefName = centerRefName
+      setSortedBy(sort: {
+        type: string
+        pos: number
+        refName: string
+        assemblyName: string
+      }) {
+        self.sortedBy = sort
+        self.ready = false
       },
       setColorScheme(colorScheme: string) {
         self.colorScheme = colorScheme
@@ -206,12 +228,6 @@ const stateModelFactory = (
           return contextMenuItems
         },
 
-        get sortObject() {
-          return {
-            position: self.sortedByPosition,
-            by: self.sortedBy,
-          }
-        },
         get sortOptions() {
           return ['Start location', 'Read strand', 'Base pair', 'Clear sort']
         },
@@ -227,8 +243,9 @@ const stateModelFactory = (
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
+            notReady: !self.ready,
             trackModel: self,
-            sortObject: this.sortObject,
+            sortedBy: self.sortedBy,
             colorScheme: self.colorScheme,
             showSoftClip: self.showSoftClipping,
             config,

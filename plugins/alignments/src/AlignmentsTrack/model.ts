@@ -2,8 +2,10 @@ import {
   getConf,
   ConfigurationReference,
 } from '@gmod/jbrowse-core/configuration'
+
+import deepEqual from 'deep-equal'
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { types, addDisposer, Instance } from 'mobx-state-tree'
+import { types, addDisposer, getSnapshot, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
@@ -122,8 +124,24 @@ const stateModelFactory = (
         addDisposer(
           self,
           autorun(() => {
-            this.setSNPCoverageTrack(self.snpCoverageTrackConfig)
-            this.setPileupTrack(self.pileupTrackConfig)
+            if (
+              !self.SNPCoverageTrack ||
+              !deepEqual(
+                getSnapshot(self.snpCoverageTrackConfig),
+                getSnapshot(self.SNPCoverageTrack.configuration),
+              )
+            ) {
+              this.setSNPCoverageTrack(self.snpCoverageTrackConfig)
+            }
+            if (
+              !self.PileupTrack ||
+              !deepEqual(
+                getSnapshot(self.snpCoverageTrackConfig),
+                getSnapshot(self.SNPCoverageTrack.configuration),
+              )
+            ) {
+              this.setPileupTrack(self.pileupTrackConfig)
+            }
           }),
         )
       },

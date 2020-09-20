@@ -4,27 +4,30 @@ import Typography from '@material-ui/core/Typography'
 
 interface TrackBlurbProps {
   model: {
-    sortedBy?: string
-    sortedByRefName?: string
-    sortedByPosition?: number
+    sortedBy?: {
+      pos: number
+      refName: number
+      type: string
+    }
   }
 }
 
 function TrackBlurb(props: TrackBlurbProps) {
   const { model } = props
-  return (
+  const { sortedBy } = model
+  return sortedBy ? (
     <div
       data-testid={`blurb-${model.sortedBy}`}
       style={{ backgroundColor: 'white' }}
     >
       <Typography color="secondary" variant="caption">
         {model.sortedBy
-          ? `Sorted by ${model.sortedBy.toLowerCase()} at ${
-              model.sortedByRefName
-            }:${model.sortedByPosition}`
+          ? `Sorted by ${sortedBy.type.toLowerCase()} at ${sortedBy.refName}:${
+              sortedBy.pos
+            }`
           : null}
       </Typography>
     </div>
-  )
+  ) : null
 }
 export default observer(TrackBlurb)
