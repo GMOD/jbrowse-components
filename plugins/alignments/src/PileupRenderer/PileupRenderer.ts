@@ -1,4 +1,4 @@
-/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-underscore-dangle,no-bitwise */
 import deepEqual from 'deep-equal'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import BoxRendererType, {
@@ -491,8 +491,6 @@ export default class PileupRenderer extends BoxRendererType {
         break
       case 'mappingQuality':
         ctx.fillStyle = `hsl(${feature.get('mq')},50%,50%)`
-        break
-      case 'insertSize':
         break
       case 'pairOrientation':
         ctx.fillStyle = this.colorByOrientation(feature, config)
