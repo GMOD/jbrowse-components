@@ -268,7 +268,11 @@ export default (pluginManager: PluginManager) => {
           if (mismatches) {
             for (let i = 0; i < mismatches.length; i++) {
               const mismatch = mismatches[i]
-              if (mismatch.type !== 'insertion') {
+              if (
+                mismatch.type !== 'insertion' &&
+                mismatch.type !== 'softclip' &&
+                mismatch.type !== 'hardclip'
+              ) {
                 forEachBin(
                   start + mismatch.start,
                   start + mismatch.start + mismatch.length,
