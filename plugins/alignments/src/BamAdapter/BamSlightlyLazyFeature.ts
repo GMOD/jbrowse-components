@@ -86,54 +86,6 @@ export default class implements Feature {
     return this.record._refID
   }
 
-  _get_qc_failed(): boolean {
-    return this.record.isFailedQc()
-  }
-
-  _get_duplicate(): boolean {
-    return this.record.isDuplicate()
-  }
-
-  _get_secondary_alignment(): boolean {
-    return this.record.isSecondary()
-  }
-
-  _get_supplementary_alignment(): boolean {
-    return this.record.isSupplementary()
-  }
-
-  _get_multi_segment_template(): boolean {
-    return this.record.isPaired()
-  }
-
-  _get_multi_segment_all_correctly_aligned(): boolean {
-    return this.record.isProperlyPaired()
-  }
-
-  _get_multi_segment_all_aligned(): boolean {
-    return this.record.isProperlyPaired()
-  }
-
-  _get_multi_segment_next_segment_unmapped(): boolean {
-    return this.record.isMateUnmapped()
-  }
-
-  _get_multi_segment_first(): boolean {
-    return this.record.isRead1()
-  }
-
-  _get_multi_segment_last(): boolean {
-    return this.record.isRead2()
-  }
-
-  _get_multi_segment_next_segment_reversed(): boolean {
-    return this.record.isMateReverseComplemented()
-  }
-
-  _get_unmapped(): boolean {
-    return this.record.isSegmentUnmapped()
-  }
-
   _get_next_refname(): string | undefined {
     return this.adapter.refIdToName(this.record._next_refid())
   }
@@ -197,11 +149,11 @@ export default class implements Feature {
   }
 
   toJSON(): SimpleFeatureSerialized {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tags: Record<string, any> = {}
-    this.tags().forEach((t: string) => {
-      tags[t] = this.get(t)
-    })
+    const tags = Object.fromEntries(
+      this.tags().map(t => {
+        return [t, this.get(t)]
+      }),
+    )
     return {
       ...tags,
       refName: this.get('refName'),

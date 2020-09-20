@@ -79,17 +79,28 @@ const colorForBase: { [key: string]: string } = {
   deletion: 'grey',
 }
 
+enum Flags {
+  PAIRED = 1,
+  PROPER_PAIR = 2,
+  READ_UNMAPPED = 4,
+  MATE_UNMAPPED = 8,
+  READ_REVERSE = 16,
+  MATE_REVERSE = 32,
+  FIRST_IN_PAIR = 64,
+  SECOND_IN_PAIR = 128,
+  SECONDARY = 256,
+  FAIL_QC = 512,
+  PCR_DUP = 1024,
+  SUPPLEMENTARY = 2048,
+}
 function canBePaired(alignment: Feature) {
+  const flags = alignment.get('flags')
   return (
-    alignment.get('multi_segment_template') &&
-    !alignment.get('multi_segment_next_segment_unmapped') &&
+    flags & Flags.PAIRED &&
+    !(flags & Flags.READ_UNMAPPED) &&
     alignment.get('seq_id') === alignment.get('next_seq_id') &&
-    (alignment.get('multi_segment_first') ||
-      alignment.get('multi_segment_last')) &&
-    !(
-      alignment.get('secondary_alignment') ||
-      alignment.get('supplementary_alignment')
-    )
+    (flags & Flags.FIRST_IN_PAIR || flags & Flags.SECOND_IN_PAIR) &&
+    !(flags & Flags.SECONDARY || flags & Flags.SUPPLEMENTARY)
   )
 }
 
@@ -304,10 +315,11 @@ export default class PileupRenderer extends BoxRendererType {
       if (canBePaired(rec) && Math.abs(tlen) < maxInsertSize) {
         const name = rec.get('name')
         feat = pairCache[name]
+        const flags = rec.get('flags')
         if (feat) {
-          if (rec.get('multi_segment_first')) {
+          if (flags & Flags.FIRST_IN_PAIR) {
             feat.read1 = rec
-          } else if (rec.get('multi_segment_last')) {
+          } else if (flags & Flags.SECOND_IN_PAIR) {
             feat.read2 = rec
           }
           if (feat.read1 && feat.read2) {
@@ -316,9 +328,9 @@ export default class PileupRenderer extends BoxRendererType {
           }
         } else {
           const f: { [key: string]: Feature } = {}
-          if (rec.get('multi_segment_first')) {
+          if (flags & Flags.FIRST_IN_PAIR) {
             f.read1 = rec
-          } else if (rec.get('multi_segment_last')) {
+          } else if (flags & Flags.SECOND_IN_PAIR) {
             f.read2 = rec
           }
           pairCache[name] = f
