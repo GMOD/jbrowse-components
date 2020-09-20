@@ -799,7 +799,8 @@
       },
       "renderers": {
         "PileupRenderer": {
-          "type": "PileupRenderer"
+          "type": "PileupRenderer",
+          "colorScheme": "mappingQuality"
         },
         "SvgFeatureRenderer": {
           "type": "SvgFeatureRenderer"

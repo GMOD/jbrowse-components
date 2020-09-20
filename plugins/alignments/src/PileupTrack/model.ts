@@ -24,6 +24,7 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
+import PaletteIcon from '@material-ui/icons/Palette'
 import { PileupConfigModel } from './configSchema'
 import PileupTrackBlurb from './components/PileupTrackBlurb'
 
@@ -31,7 +32,6 @@ import PileupTrackBlurb from './components/PileupTrackBlurb'
 const rendererTypes = new Map([
   ['pileup', 'PileupRenderer'],
   ['svg', 'SvgFeatureRenderer'],
-  ['snpcoverage', 'SNPCoverageRenderer'],
 ])
 
 const stateModelFactory = (
@@ -47,11 +47,12 @@ const stateModelFactory = (
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .volatile(() => ({
+    .volatile(self => ({
       showSoftClipping: false,
       sortedBy: '',
       sortedByPosition: 0,
       sortedByRefName: '',
+      colorScheme: getConf(self, 'colorScheme'),
     }))
     .actions(self => ({
       selectFeature(feature: Feature) {
@@ -145,6 +146,9 @@ const stateModelFactory = (
         self.sortedByPosition = centerBp
         self.sortedByRefName = centerRefName
       },
+      setColorScheme(colorScheme: string) {
+        self.colorScheme = colorScheme
+      },
     }))
     .actions(self => {
       // reset the sort object and refresh whole track on reload
@@ -225,6 +229,7 @@ const stateModelFactory = (
             ...getParentRenderProps(self),
             trackModel: self,
             sortObject: this.sortObject,
+            colorScheme: self.colorScheme,
             showSoftClip: self.showSoftClipping,
             config,
           }
@@ -259,6 +264,30 @@ const stateModelFactory = (
                   },
                 }
               }),
+            },
+            {
+              label: 'Color scheme',
+              icon: PaletteIcon,
+              subMenu: [
+                {
+                  label: 'Normal',
+                  onClick: () => {
+                    self.setColorScheme('normal')
+                  },
+                },
+                {
+                  label: 'Mapping quality',
+                  onClick: () => {
+                    self.setColorScheme('mappingQuality')
+                  },
+                },
+                {
+                  label: 'Strand',
+                  onClick: () => {
+                    self.setColorScheme('strand')
+                  },
+                },
+              ],
             },
           ]
         },

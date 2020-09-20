@@ -48,8 +48,7 @@ export default class implements Feature {
   }
 
   _get_mapping_quality(): number {
-    // @ts-ignore
-    return this.record.mappingQuality
+    return this.record.get('mq')
   }
 
   _get_flags(): string {

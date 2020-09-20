@@ -30,6 +30,7 @@ export interface PileupRenderProps {
   config: AnyConfigurationModel
   regions: Region[]
   bpPerPx: number
+  colorScheme: string
   height: number
   width: number
   highResolutionScaling: number
@@ -92,10 +93,15 @@ function canBePaired(alignment: Feature) {
   )
 }
 
-class PairedRead {
+class PairedRead implements Feature {
   public read1: Feature
 
   public read2: Feature
+
+  constructor(read1: Feature, read2: Feature) {
+    this.read1 = read1
+    this.read2 = read2
+  }
 
   id() {
     return `${this.read1.id()}-${this.read2.id()}`
@@ -137,10 +143,23 @@ class PairedRead {
     return true
   }
 
-  children() {}
+  children() {
+    return undefined
+  }
+
+  parent() {
+    return undefined
+  }
+
+  set() {}
+
+  tags() {
+    return []
+  }
 
   toJSON() {
     return {
+      uniqueId: this.id(),
       start: this._get('start'),
       end: this._get('end'),
       refName: this._get('refName'),
@@ -276,7 +295,7 @@ export default class PileupRenderer extends BoxRendererType {
     records: Feature[],
   ) {
     const maxInsertSize = readConfObject(config, 'maxInsertSize')
-    const pairCache: { [key: string]: PairedRead } = {}
+    const pairCache: { [key: string]: { [key: string]: Feature } } = {}
     const features: { [key: string]: PairedRead } = {}
     for (let i = 0; i < records.length; i++) {
       let feat
@@ -293,16 +312,16 @@ export default class PileupRenderer extends BoxRendererType {
           }
           if (feat.read1 && feat.read2) {
             delete pairCache[name]
-            features[name] = feat
+            features[name] = new PairedRead(feat.read1, feat.read2)
           }
         } else {
-          feat = new PairedRead()
+          const f: { [key: string]: Feature } = {}
           if (rec.get('multi_segment_first')) {
-            feat.read1 = rec
+            f.read1 = rec
           } else if (rec.get('multi_segment_last')) {
-            feat.read2 = rec
+            f.read2 = rec
           }
-          pairCache[name] = feat
+          pairCache[name] = f
         }
       } else if (
         doesIntersect2(rec.get('start'), rec.get('end'), query.start, query.end)
@@ -350,6 +369,44 @@ export default class PileupRenderer extends BoxRendererType {
         }
       }
     }
+  }
+
+  drawRect(
+    ctx: CanvasRenderingContext2D,
+    feat: {
+      heightPx: number
+      topPx: number
+      feature: Feature
+    },
+    props: PileupRenderProps,
+  ) {
+    const { config, bpPerPx, regions, colorScheme } = props
+    const { heightPx, topPx, feature } = feat
+    const region = regions[0]
+
+    switch (colorScheme) {
+      case 'insertSize':
+        ctx.fillStyle = `hsl(${feature.get('template_length') / 1000},50%,50%)`
+        break
+      case 'strand':
+        ctx.fillStyle = feature.get('strand') === -1 ? '#8F8FD8' : '#EC8B8B'
+        break
+      case 'mappingQuality':
+        ctx.fillStyle = `hsl(${feature.get('mq')},50%,50%)`
+        break
+      case 'normal':
+      default:
+        ctx.fillStyle = readConfObject(config, 'color', [feature])
+        break
+    }
+
+    const [leftPx, rightPx] = bpSpanPx(
+      feature.get('start'),
+      feature.get('end'),
+      region,
+      bpPerPx,
+    )
+    ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
   }
 
   drawMismatches(
@@ -501,16 +558,6 @@ export default class PileupRenderer extends BoxRendererType {
       }
 
       const { feature, topPx, heightPx } = feat
-      const drawRect = f => {
-        ctx.fillStyle = readConfObject(config, 'color', [f])
-        const [leftPx, rightPx] = bpSpanPx(
-          f.get('start'),
-          f.get('end'),
-          region,
-          bpPerPx,
-        )
-        ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
-      }
       if (feature.get('is_paired')) {
         const { read1, read2 } = (feature as unknown) as PairedRead
         const [leftPx, rightPx] = bpSpanPx(
@@ -524,8 +571,8 @@ export default class PileupRenderer extends BoxRendererType {
         ctx.moveTo(leftPx, topPx + heightPx / 2)
         ctx.lineTo(rightPx, topPx + heightPx / 2)
         ctx.stroke()
-        drawRect(read1)
-        drawRect(read2)
+        this.drawRect(ctx, { feature: read1, topPx, heightPx }, props)
+        this.drawRect(ctx, { feature: read2, topPx, heightPx }, props)
         this.drawMismatches(
           ctx,
           { feature: read1, heightPx, topPx },
@@ -540,7 +587,7 @@ export default class PileupRenderer extends BoxRendererType {
         )
       } else {
         ctx.fillStyle = readConfObject(config, 'color', [feature])
-        drawRect(feature)
+        this.drawRect(ctx, { feature, topPx, heightPx }, props)
         const mismatches: Mismatch[] = feature.get('mismatches')
 
         if (mismatches) {
