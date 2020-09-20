@@ -663,7 +663,7 @@ export default class PileupRenderer extends BoxRendererType {
       }
 
       const { feature, topPx, heightPx } = feat
-      if (feature.get('is_paired')) {
+      if (feature.get('paired_feature')) {
         const { read1, read2 } = (feature as unknown) as PairedRead
         const [leftPx, rightPx] = bpSpanPx(
           feature.get('start'),
