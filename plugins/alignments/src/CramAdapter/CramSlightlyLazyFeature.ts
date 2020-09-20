@@ -93,60 +93,8 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this._get_seq_id()
   }
 
-  _get_qc_failed() {
-    return this.record.isFailedQc()
-  }
-
-  _get_secondary_alignment() {
-    return this.record.isSecondary()
-  }
-
-  _get_duplicate() {
-    return this.record.isDuplicate()
-  }
-
-  _get_supplementary_alignment() {
-    return this.record.isSupplementary()
-  }
-
-  _get_pair_orientation() {
-    return this.record.getPairOrientation()
-  }
-
-  _get_multi_segment_template() {
-    return this.record.isPaired()
-  }
-
-  _get_multi_segment_all_correctly_aligned() {
-    return this.record.isProperlyPaired()
-  }
-
-  _get_multi_segment_all_aligned() {
-    return this.record.isProperlyPaired()
-  }
-
-  _get_multi_segment_next_segment_unmapped() {
-    return this.record.isMateUnmapped()
-  }
-
-  _get_multi_segment_first() {
-    return this.record.isRead1()
-  }
-
-  _get_multi_segment_last() {
-    return this.record.isRead2()
-  }
-
-  _get_multi_segment_next_segment_reversed() {
-    return this.record.isMateReverseComplemented()
-  }
-
   _get_is_paired() {
     return !!this.record.mate
-  }
-
-  _get_unmapped() {
-    return this.record.isSegmentUnmapped()
   }
 
   _get_template_length() {

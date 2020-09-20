@@ -47,12 +47,12 @@ const stateModelFactory = (
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .volatile(self => ({
+    .volatile(() => ({
       showSoftClipping: false,
       sortedBy: '',
       sortedByPosition: 0,
       sortedByRefName: '',
-      colorScheme: getConf(self, 'colorScheme'),
+      colorScheme: '',
     }))
     .actions(self => ({
       selectFeature(feature: Feature) {
