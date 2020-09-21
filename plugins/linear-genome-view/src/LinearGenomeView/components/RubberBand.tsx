@@ -64,22 +64,16 @@ const VerticalGuide = observer(
   ({ model, coordX }: { model: LGV; coordX: number }) => {
     const classes = useStyles()
     const guideInfo = model.pxToBp(coordX)
-    let guideBp = 0
-    if (guideInfo && guideInfo.offset) {
-      guideBp = guideInfo.reversed
-        ? guideInfo.end - guideInfo.offset
-        : guideInfo.start + guideInfo.offset
-    }
+    const guideBp = guideInfo.reversed
+      ? guideInfo.end - guideInfo.offset
+      : guideInfo.start + guideInfo.offset
     return (
       <Tooltip
         open
         placement="top"
-        title={
-          guideInfo
-            ? `${guideInfo.refName}
-        ${Math.ceil(guideBp).toLocaleString()}`
-            : `${''}`
-        }
+        title={`${guideInfo.refName}: ${Math.ceil(guideBp).toLocaleString(
+          'en-US',
+        )}`}
         arrow
       >
         <div
@@ -212,7 +206,7 @@ function RubberBand({
   if (startX === undefined) {
     return (
       <>
-        {guideX !== undefined && model.pxToBp(guideX).offset ? (
+        {guideX !== undefined ? (
           <VerticalGuide model={model} coordX={guideX} />
         ) : null}
         <div
@@ -243,7 +237,7 @@ function RubberBand({
   const leftBp = (leftBpOffset.reversed
     ? Math.round(leftBpOffset.end - (leftBpOffset.offset || 0))
     : Math.round(leftBpOffset.start + (leftBpOffset.offset || 0))
-  ).toLocaleString()
+  ).toLocaleString('en-US')
   const rightBp = (rightBpOffset.reversed
     ? Math.round(
         rightBpOffset.end -
@@ -253,7 +247,7 @@ function RubberBand({
         rightBpOffset.start +
           (rightBpOffset.offset || rightBpOffset.end - rightBpOffset.start),
       )
-  ).toLocaleString()
+  ).toLocaleString('en-US')
   const numOfBpSelected = Math.round(width * model.bpPerPx)
 
   return (
@@ -277,9 +271,7 @@ function RubberBand({
             }}
             keepMounted
           >
-            <Typography>
-              {leftBpOffset.refName.toLocaleString()} {leftBp}
-            </Typography>
+            <Typography>{`${leftBpOffset.refName}: ${leftBp}`}</Typography>
           </Popover>
           <Popover
             className={classes.popover}
@@ -298,9 +290,7 @@ function RubberBand({
             }}
             keepMounted
           >
-            <Typography>
-              {rightBpOffset.refName.toLocaleString()} {rightBp}
-            </Typography>
+            <Typography>{`${rightBpOffset.refName}: ${rightBp}`}</Typography>
           </Popover>
         </>
       ) : null}
@@ -310,7 +300,7 @@ function RubberBand({
         style={{ left, width }}
       >
         <Typography variant="h6" className={classes.rubberBandText}>
-          {numOfBpSelected.toLocaleString()} bp{' '}
+          {numOfBpSelected.toLocaleString('en-US')} bp{' '}
         </Typography>
       </div>
       <div
