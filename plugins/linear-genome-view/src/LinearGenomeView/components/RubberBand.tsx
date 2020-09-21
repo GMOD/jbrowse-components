@@ -234,6 +234,7 @@ function RubberBand({
   right = left + width
   const leftBpOffset = model.pxToBp(left)
   const rightBpOffset = model.pxToBp(right)
+  /* Accounting for Horizontal Flip */
   const leftBp = (leftBpOffset.reversed
     ? Math.round(leftBpOffset.end - (leftBpOffset.offset || 0))
     : Math.round(leftBpOffset.start + (leftBpOffset.offset || 0))
