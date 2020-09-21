@@ -9,11 +9,6 @@ test('open up a widget', () => {
   model.setFeatureData({
     seq:
       'TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG',
-    unmapped: false,
-    qc_failed: false,
-    duplicate: false,
-    secondary_alignment: false,
-    supplementary_alignment: false,
     start: 2,
     end: 102,
     strand: 1,
