@@ -65,7 +65,7 @@ function getLength(cigar: string) {
   for (let i = 0; i < cigarOps.length; i += 2) {
     const len = +cigarOps[i]
     const op = cigarOps[i + 1]
-    if (op !== 'D') {
+    if (op !== 'D' && op !== 'N') {
       length += len
     }
   }
@@ -78,7 +78,7 @@ function getLengthSansClipping(cigar: string) {
   for (let i = 0; i < cigarOps.length; i += 2) {
     const len = +cigarOps[i]
     const op = cigarOps[i + 1]
-    if (op !== 'H' && op !== 'S' && op !== 'D') {
+    if (op !== 'H' && op !== 'S' && op !== 'D' && op !== 'N') {
       length += len
     }
   }
