@@ -515,5 +515,3 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
 
   expect(model.bpToPx({ refName: 'ctgA', coord: 500 })).toBe(undefined)
 })
-
-
