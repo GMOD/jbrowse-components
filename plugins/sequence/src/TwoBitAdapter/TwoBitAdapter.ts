@@ -12,7 +12,8 @@ import { Instance } from 'mobx-state-tree'
 
 import configSchema from './configSchema'
 
-export default class TwoBitAdapter extends BaseFeatureDataAdapter
+export default class TwoBitAdapter
+  extends BaseFeatureDataAdapter
   implements RegionsAdapter {
   private twobit: typeof TwoBitFile
 

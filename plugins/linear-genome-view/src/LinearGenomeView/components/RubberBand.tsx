@@ -234,12 +234,12 @@ function RubberBand({
   const leftBpOffset = model.pxToBp(left)
   const rightBpOffset = model.pxToBp(right)
   const leftBp = (leftBpOffset.reversed
-    ? Math.round(leftBpOffset.end - leftBpOffset.offset)
-    : Math.round(leftBpOffset.start + leftBpOffset.offset)
+    ? Math.round(leftBpOffset.end - leftBpOffset.offset) + 1
+    : Math.round(leftBpOffset.start + leftBpOffset.offset) + 1
   ).toLocaleString('en-US')
   const rightBp = (rightBpOffset.reversed
-    ? Math.round(rightBpOffset.end - rightBpOffset.offset)
-    : Math.round(rightBpOffset.start + rightBpOffset.offset)
+    ? Math.round(rightBpOffset.end - rightBpOffset.offset) + 1
+    : Math.round(rightBpOffset.start + rightBpOffset.offset) + 1
   ).toLocaleString('en-US')
   const numOfBpSelected = Math.round(width * model.bpPerPx)
 
