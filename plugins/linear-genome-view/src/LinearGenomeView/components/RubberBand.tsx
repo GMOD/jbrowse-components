@@ -64,16 +64,15 @@ const VerticalGuide = observer(
   ({ model, coordX }: { model: LGV; coordX: number }) => {
     const classes = useStyles()
     const guideInfo = model.pxToBp(coordX)
-    const guideBp = guideInfo.reversed
-      ? guideInfo.end - guideInfo.offset
-      : guideInfo.start + guideInfo.offset
     return (
       <Tooltip
         open
         placement="top"
-        title={`${guideInfo.refName}: ${Math.ceil(guideBp).toLocaleString(
-          'en-US',
-        )}`}
+        title={`${guideInfo.refName}: ${Math.ceil(
+          guideInfo.reversed
+            ? guideInfo.end - guideInfo.offset
+            : guideInfo.start + guideInfo.offset,
+        ).toLocaleString('en-US')}`}
         arrow
       >
         <div
@@ -234,20 +233,13 @@ function RubberBand({
   right = left + width
   const leftBpOffset = model.pxToBp(left)
   const rightBpOffset = model.pxToBp(right)
-  /* Accounting for Horizontal Flip */
   const leftBp = (leftBpOffset.reversed
-    ? Math.round(leftBpOffset.end - (leftBpOffset.offset || 0))
-    : Math.round(leftBpOffset.start + (leftBpOffset.offset || 0))
+    ? Math.round(leftBpOffset.end - leftBpOffset.offset)
+    : Math.round(leftBpOffset.start + leftBpOffset.offset)
   ).toLocaleString('en-US')
   const rightBp = (rightBpOffset.reversed
-    ? Math.round(
-        rightBpOffset.end -
-          (rightBpOffset.offset || rightBpOffset.end - rightBpOffset.start),
-      )
-    : Math.round(
-        rightBpOffset.start +
-          (rightBpOffset.offset || rightBpOffset.end - rightBpOffset.start),
-      )
+    ? Math.round(rightBpOffset.end - rightBpOffset.offset)
+    : Math.round(rightBpOffset.start + rightBpOffset.offset)
   ).toLocaleString('en-US')
   const numOfBpSelected = Math.round(width * model.bpPerPx)
 
