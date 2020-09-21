@@ -27,6 +27,10 @@ export default class BamSlightlyLazyFeature implements Feature {
     this.ref = ref
   }
 
+  _get_name() {
+    return this.record.get('name')
+  }
+
   _get_type(): string {
     return 'match'
   }
