@@ -14,7 +14,7 @@ import {
 
 import BamAdapter from './BamAdapter'
 
-export default class implements Feature {
+export default class BamSlightlyLazyFeature implements Feature {
   private record: BamRecord
 
   private adapter: BamAdapter
@@ -25,18 +25,6 @@ export default class implements Feature {
     this.record = record
     this.adapter = adapter
     this.ref = ref
-  }
-
-  _get_name(): string {
-    return this.record.get('name')
-  }
-
-  _get_start(): number {
-    return this.record.get('start')
-  }
-
-  _get_end(): number {
-    return this.record.get('end')
   }
 
   _get_type(): string {
@@ -65,20 +53,8 @@ export default class implements Feature {
     return this.record.readGroupId
   }
 
-  _get_qual(): string {
-    return this.record.get('qual')
-  }
-
-  _get_cigar(): string {
-    return this.record.get('cigar')
-  }
-
-  _get_refname(): string | undefined {
-    return this.adapter.refIdToName(this.record.seq_id())
-  }
-
   _get_pair_orientation() {
-    return this.record.getPairOrientation()
+    return this.record.isPaired() ? this.record.getPairOrientation() : undefined
   }
 
   _get_next_seq_id() {
@@ -90,7 +66,7 @@ export default class implements Feature {
     return this.record._refID
   }
 
-  _get_next_refname(): string | undefined {
+  _get_next_refName(): string | undefined {
     return this.adapter.refIdToName(this.record._next_refid())
   }
 
@@ -110,19 +86,37 @@ export default class implements Feature {
     return this.record.getReadBases()
   }
 
-  _get_md(): string | undefined {
-    const md = this.record.get('md')
+  _get_MD(): string | undefined {
+    const md = this.record.get('MD')
     const seq = this.get('seq')
     if (!md && seq && this.ref) {
-      return generateMD(this.ref, this.record.getReadBases(), this.get('cigar'))
+      return generateMD(this.ref, this.record.getReadBases(), this.get('CIGAR'))
     }
     return md
   }
 
   set(): void {}
 
-  tags(): string[] {
-    return this._get_tags()
+  tags() {
+    const properties = Object.getOwnPropertyNames(
+      BamSlightlyLazyFeature.prototype,
+    )
+
+    return [
+      ...new Set(
+        properties
+          .filter(
+            prop =>
+              prop.startsWith('_get_') &&
+              prop !== '_get_mismatches' &&
+              prop !== '_get_skips_and_dels' &&
+              prop !== '_get_cram_read_features' &&
+              prop !== '_get_tags',
+          )
+          .map(methodName => methodName.replace('_get_', ''))
+          .concat(this._get_tags()),
+      ),
+    ]
   }
 
   id(): string {
@@ -131,13 +125,17 @@ export default class implements Feature {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(field: string): any {
-    const methodName = `_get_${field.toLowerCase()}`
+    const methodName = `_get_${field}`
     // @ts-ignore
     if (this[methodName]) {
       // @ts-ignore
       return this[methodName]()
     }
     return this.record.get(field)
+  }
+
+  _get_refName(): string | undefined {
+    return this.adapter.refIdToName(this.record.seq_id())
   }
 
   parent(): undefined {
@@ -154,18 +152,16 @@ export default class implements Feature {
 
   toJSON(): SimpleFeatureSerialized {
     const tags = Object.fromEntries(
-      this.tags().map(t => {
-        return [t, this.get(t)]
-      }),
+      this.tags()
+        .map(t => {
+          return [t, this.get(t)]
+        })
+        .filter(elt => elt[1] !== undefined),
     )
+
     return {
       ...tags,
-      refName: this.get('refName'),
-      name: this.get('name'),
-      type: this.get('type'),
       uniqueId: this.id(),
-      flags: this.get('flags'),
-      clipPos: this._get_clippos(),
     }
   }
 
@@ -173,7 +169,7 @@ export default class implements Feature {
     opts: {
       cigarAttributeName: string
     } = {
-      cigarAttributeName: 'cigar',
+      cigarAttributeName: 'CIGAR',
     },
   ): Mismatch[] {
     const { cigarAttributeName } = opts
@@ -191,16 +187,13 @@ export default class implements Feature {
     return mismatches
   }
 
-  _get_mismatches(
-    opts: {
-      cigarAttributeName: string
-      mdAttributeName: string
-    } = {
-      cigarAttributeName: 'cigar',
-      mdAttributeName: 'md',
-    },
-  ): Mismatch[] {
-    const { cigarAttributeName, mdAttributeName } = opts
+  _get_mismatches({
+    cigarAttributeName = 'CIGAR',
+    mdAttributeName = 'MD',
+  }: {
+    cigarAttributeName?: string
+    mdAttributeName?: string
+  } = {}): Mismatch[] {
     let mismatches: Mismatch[] = []
     let cigarOps: string[] = []
 
@@ -231,8 +224,8 @@ export default class implements Feature {
     })
   }
 
-  _get_clippos() {
-    const cigar = this.get('cigar') || ''
+  _get_clipPos() {
+    const cigar = this.get('CIGAR') || ''
     return this.get('strand') === -1
       ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
       : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
