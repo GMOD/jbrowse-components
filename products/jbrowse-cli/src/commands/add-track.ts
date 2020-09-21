@@ -382,19 +382,15 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
     try {
-      locationPath = await fsPromises.realpath(location)
+      locationPath = check
+        ? path.relative(process.cwd(), await fsPromises.realpath(location))
+        : location
     } catch (e) {
       // ignore
     }
     if (locationPath) {
-      const filePath = path.relative(process.cwd(), locationPath)
-      //   if (filePath.startsWith('..')) {
-      //     this.warn(
-      //       `Location ${filePath} is not in the JBrowse directory. Make sure it is still in your server directory.`,
-      //     )
-      //   }
       locationObj = {
-        location: filePath,
+        location: locationPath,
         protocol: 'uri',
         local: true,
       }
