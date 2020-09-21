@@ -89,7 +89,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this._store.refIdToName(this.record.sequenceId)
   }
 
-  _get_refname() {
+  _get_refName() {
     return this._get_seq_id()
   }
 
@@ -240,16 +240,8 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this.record.uniqueId + 1
   }
 
-  _get(field: string) {
-    const methodName = `_get_${field}`
-
-    // @ts-ignore
-    if (this[methodName]) return this[methodName]()
-    return undefined
-  }
-
   get(field: string) {
-    const methodName = `_get_${field.toLowerCase()}`
+    const methodName = `_get_${field}`
     // @ts-ignore
     if (this[methodName]) return this[methodName]()
     return undefined
@@ -288,12 +280,11 @@ export default class CramSlightlyLazyFeature implements Feature {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tags: Record<string, any> = {}
     this.tags().forEach((t: string) => {
-      tags[t] = this._get(t)
+      tags[t] = this.get(t)
     })
 
     return {
       ...tags,
-      refName: this.get('refName'),
       name: this.get('name'),
       type: this.get('type'),
       uniqueId: this.id(),
