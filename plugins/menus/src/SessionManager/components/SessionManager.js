@@ -26,22 +26,25 @@ const useStyles = makeStyles(theme => ({
 
 export default observer(({ session }) => {
   const classes = useStyles()
-  const [sessionUuidToDelete, setSessionUuidToDelete] = useState('')
+  const [sessionIndexToDelete, setSessionIndexToDelete] = useState(null)
   const [open, setOpen] = useState(false)
 
-  function handleDialogOpen(key) {
-    setSessionUuidToDelete(key)
+  function handleDialogOpen(idx) {
+    setSessionIndexToDelete(idx)
     setOpen(true)
   }
 
   function handleDialogClose(deleteSession = false) {
-    if (deleteSession) localStorage.removeItem(sessionUuidToDelete)
-    setSessionUuidToDelete(null)
+    if (deleteSession)
+      session.removeSavedSession(session.savedSessions[sessionIndexToDelete])
+    setSessionIndexToDelete(null)
     setOpen(false)
   }
 
   const sessionNameToDelete =
-    JSON.parse(localStorage.getItem(sessionUuidToDelete))?.name || ''
+    sessionIndexToDelete !== null
+      ? session.savedSessions[sessionIndexToDelete].name
+      : ''
 
   return (
     <>
@@ -49,79 +52,65 @@ export default observer(({ session }) => {
         <List
           subheader={<ListSubheader>Choose a session to open</ListSubheader>}
         >
-          {Object.entries(localStorage)
-            .filter(obj => obj[0].startsWith('local-'))
-            .map(localStorageSession => {
-              const [key, value] = localStorageSession
-              let sessionSnapshot
-              try {
-                sessionSnapshot = JSON.parse(value)
-              } catch (e) {
-                return undefined
+          {session.savedSessions.map((sessionSnapshot, idx) => {
+            const { views = [] } = sessionSnapshot
+            const openTrackCount = views.map(view => (view.tracks || []).length)
+            let viewDetails
+            switch (views.length) {
+              case 0: {
+                viewDetails = '0 views'
+                break
               }
-
-              const { views = [] } = sessionSnapshot
-              const openTrackCount = views.map(
-                view => (view.tracks || []).length,
-              )
-              let viewDetails
-              switch (views.length) {
-                case 0: {
-                  viewDetails = '0 views'
-                  break
-                }
-                case 1: {
-                  viewDetails = `1 view, ${openTrackCount[0]} open track${
-                    openTrackCount[0] === 1 ? '' : 's'
-                  }`
-                  break
-                }
-                case 2: {
-                  viewDetails = `2 views; ${openTrackCount[0]} and ${openTrackCount[1]} open tracks`
-                  break
-                }
-                default: {
-                  viewDetails = `${views.length} views; ${openTrackCount
-                    .slice(0, views.length - 1)
-                    .join(', ')}, and ${
-                    openTrackCount[views.length - 1]
-                  } open tracks`
-                  break
-                }
+              case 1: {
+                viewDetails = `1 view, ${openTrackCount[0]} open track${
+                  openTrackCount[0] === 1 ? '' : 's'
+                }`
+                break
               }
-              return (
-                <ListItem
-                  button
-                  disabled={session.name === sessionSnapshot.name}
-                  onClick={() =>
-                    session.activateLocalSession(key, sessionSnapshot.name)
+              case 2: {
+                viewDetails = `2 views; ${openTrackCount[0]} and ${openTrackCount[1]} open tracks`
+                break
+              }
+              default: {
+                viewDetails = `${views.length} views; ${openTrackCount
+                  .slice(0, views.length - 1)
+                  .join(', ')}, and ${
+                  openTrackCount[views.length - 1]
+                } open tracks`
+                break
+              }
+            }
+            return (
+              <ListItem
+                button
+                disabled={session.name === sessionSnapshot.name}
+                onClick={() => session.activateSession(sessionSnapshot.name)}
+                key={sessionSnapshot.name}
+              >
+                <ListItemIcon>
+                  <ViewListIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary={sessionSnapshot.name}
+                  secondary={
+                    session.name === sessionSnapshot.name
+                      ? 'Currently open'
+                      : viewDetails
                   }
-                  key={key}
-                >
-                  <ListItemIcon>
-                    <ViewListIcon />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={sessionSnapshot.name}
-                    secondary={
-                      session.name === sessionSnapshot.name
-                        ? 'Currently open'
-                        : viewDetails
-                    }
-                  />
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      edge="end"
-                      disabled={session.name === sessionSnapshot.name}
-                      aria-label="Delete"
-                      onClick={() => handleDialogOpen(key)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              )
-            })}
+                />
+                <ListItemSecondaryAction>
+                  <IconButton
+                    edge="end"
+                    disabled={session.name === sessionSnapshot.name}
+                    aria-label="Delete"
+                    onClick={() => handleDialogOpen(idx)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+            )
+          })}
         </List>
       </Paper>
       <Dialog
@@ -134,7 +123,7 @@ export default observer(({ session }) => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            This action cannot be undone{`\n(id: ${sessionUuidToDelete})`}
+            This action cannot be undone
           </DialogContentText>
         </DialogContent>
         <DialogActions>

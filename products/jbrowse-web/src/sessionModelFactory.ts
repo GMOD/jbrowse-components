@@ -29,6 +29,7 @@ import {
   isConfigurationModel,
 } from '@gmod/jbrowse-core/configuration'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
+import * as uuid from 'uuid'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -96,10 +97,10 @@ export default function sessionModelFactory(
         return getParent(self).jbrowse.connections
       },
       get savedSessions() {
-        return getParent(self).jbrowse.savedSessions
+        return getParent(self).savedSessions
       },
       get savedSessionNames() {
-        return getParent(self).jbrowse.savedSessionNames
+        return getParent(self).savedSessionNames
       },
       get history() {
         return getParent(self).history
@@ -375,11 +376,23 @@ export default function sessionModelFactory(
       },
 
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        return getParent(self).jbrowse.addSavedSession(sessionSnapshot)
+        // do local id here
+        // add the object of {localId, sessionSnap} to local storage
+        // return the object
+        const localId = `local-${uuid.v4()}`
+        localStorage.setItem(localId, JSON.stringify(sessionSnapshot))
+        return localId
       },
 
       removeSavedSession(sessionSnapshot: any) {
-        return getParent(self).jbrowse.removeSavedSession(sessionSnapshot)
+        // return getParent(self).jbrowse.removeSavedSession(sessionSnapshot)
+
+        for (const [key, value] of Object.entries(localStorage)) {
+          if (value === sessionSnapshot) {
+            localStorage.removeItem(key)
+            break
+          }
+        }
       },
 
       renameCurrentSession(sessionName: string) {
@@ -392,9 +405,6 @@ export default function sessionModelFactory(
 
       activateSession(sessionName: any) {
         return getParent(self).activateSession(sessionName)
-      },
-      activateLocalSession(key: string, sessionName: string){
-        return getParent(self).activateLocalSession(key, sessionName)
       },
       setDefaultSession() {
         return getParent(self).setDefaultSession()

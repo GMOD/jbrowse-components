@@ -48,7 +48,6 @@ export default function JBrowseWeb(
       defaultSession: types.optional(types.frozen(Session), {
         name: `New Session`,
       }),
-      savedSessions: types.array(types.frozen(Session)),
     })
     .actions(self => ({
       afterCreate() {
@@ -65,26 +64,6 @@ export default function JBrowseWeb(
             seen.push(assemblyName)
           }
         })
-      },
-      addSavedSession(sessionSnapshot) {
-        const length = self.savedSessions.push(sessionSnapshot)
-        return self.savedSessions[length - 1]
-      },
-      removeSavedSession(sessionSnapshot) {
-        self.savedSessions.remove(sessionSnapshot)
-      },
-      replaceSavedSession(oldName, snapshot) {
-        const savedSessionIndex = self.savedSessions.findIndex(
-          savedSession => savedSession.name === oldName,
-        )
-        self.savedSessions[savedSessionIndex] = snapshot
-      },
-      updateSavedSession(sessionSnapshot) {
-        const sessionIndex = self.savedSessions.findIndex(
-          savedSession => savedSession.name === sessionSnapshot.name,
-        )
-        if (sessionIndex === -1) self.savedSessions.push(sessionSnapshot)
-        else self.savedSessions[sessionIndex] = sessionSnapshot
       },
       addAssemblyConf(assemblyConf) {
         const { name } = assemblyConf
@@ -116,9 +95,6 @@ export default function JBrowseWeb(
       },
     }))
     .views(self => ({
-      get savedSessionNames() {
-        return self.savedSessions.map(sessionSnap => sessionSnap.name)
-      },
       get assemblyNames() {
         return self.assemblies.map(assembly => readConfObject(assembly, 'name'))
       },

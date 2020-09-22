@@ -8,6 +8,7 @@ import { AbstractSessionModel } from '@gmod/jbrowse-core/util'
 import AddIcon from '@material-ui/icons/Add'
 import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
+import * as uuid from 'uuid'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 // @ts-ignore
@@ -44,13 +45,23 @@ export default function RootModel(
       error: types.maybe(types.string),
       version: types.maybe(types.string),
     })
+    .views(() => ({
+      get savedSessions() {
+        // return getParent(self).jbrowse.savedSessions
+        return Object.entries(localStorage)
+          .filter(obj => obj[0].startsWith('local-'))
+          .map(entry => JSON.parse(entry[1]))
+      },
+      get savedSessionNames() {
+        return this.savedSessions.map(savedSession => savedSession.name)
+      },
+    }))
     .actions(self => ({
-      setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
+      setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
-        self.jbrowse.updateSavedSession(sessionSnapshot)
       },
       setDefaultSession() {
-        this.setSession({
+        const newSession = {
           ...self.jbrowse.defaultSession,
           name: `${self.jbrowse.defaultSession.name} ${new Date(
             Date.now() - new Date().getTimezoneOffset() * 60000,
@@ -61,14 +72,24 @@ export default function RootModel(
           )
             .toISOString()
             .substring(11, 19)}`,
-        })
+        }
+
+        const localId = `local-${uuid.v4()}`
+        localStorage.setItem(localId, JSON.stringify(newSession))
+        this.activateSession(newSession.name)
+
+        return localId
       },
       renameCurrentSession(sessionName: string) {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          const oldName = snapshot.name
+          const oldname = snapshot.name
+          const snapInLocal = Object.entries(localStorage)
+            .filter(obj => obj[0].startsWith('local-'))
+            .find(sessionSnap => JSON.parse(sessionSnap[1]).name === oldname)
           snapshot.name = sessionName
-          self.jbrowse.replaceSavedSession(oldName, snapshot)
+          if (snapInLocal)
+            localStorage.setItem(snapInLocal[0], JSON.stringify(snapshot))
           this.setSession(snapshot)
         }
       },
@@ -76,36 +97,39 @@ export default function RootModel(
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
           let newSnapshotName = `${self.session.name} (copy)`
-          if (self.jbrowse.savedSessionNames.includes(newSnapshotName)) {
+          if (self.savedSessionNames.includes(newSnapshotName)) {
             let newSnapshotCopyNumber = 2
             do {
               newSnapshotName = `${self.session.name} (copy ${newSnapshotCopyNumber})`
               newSnapshotCopyNumber += 1
-            } while (self.jbrowse.savedSessionNames.includes(newSnapshotName))
+            } while (self.savedSessionNames.includes(newSnapshotName))
           }
           snapshot.name = newSnapshotName
-          this.setSession(snapshot)
+          const localId = `local-${uuid.v4()}`
+          localStorage.setItem(localId, JSON.stringify(snapshot))
+          this.activateSession(snapshot.name)
         }
       },
       activateSession(name: string) {
-        const newSessionSnapshot = self.jbrowse.savedSessions.find(
-          sessionSnap => sessionSnap.name === name,
-        )
+        const newSessionSnapshot = Object.entries(localStorage)
+          .filter(obj => obj[0].startsWith('local-'))
+          .find(sessionSnap => JSON.parse(sessionSnap[1]).name === name)
+
         if (!newSessionSnapshot)
           throw new Error(
             `Can't activate session ${name}, it is not in the savedSessions`,
           )
-        this.setSession(newSessionSnapshot)
+
+        const [localId, snapshot] = newSessionSnapshot
+        this.setSessionUuidInUrl(localId)
+        this.setSession(JSON.parse(snapshot))
       },
-      activateLocalSession(key: string, name: string) {
-        const newSessionSnapshot = localStorage.getItem(key)
-
-        if (!newSessionSnapshot)
-          throw new Error(
-            `Can't activate session ${name} with key ${key}, it is not in your localstorage`,
-          )
-
-        this.setSession(JSON.parse(newSessionSnapshot))
+      setSessionUuidInUrl(localId: string) {
+        const locationUrl = new URL(window.location.href)
+        const params = new URLSearchParams(locationUrl.search)
+        params.set('session', `${localId}`)
+        locationUrl.search = params.toString()
+        window.history.replaceState({}, '', locationUrl.href)
       },
       setError(errorMessage: string) {
         self.error = errorMessage

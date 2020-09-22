@@ -191,7 +191,12 @@ export function Loader() {
           const decryptedSession = decrypt(json.session)
           if (decryptedSession) {
             localId = `local-${uuid.v4()}`
-            localStorage.setItem(localId, fromUrlSafeB64(decryptedSession))
+            const fromShared = JSON.parse(fromUrlSafeB64(decryptedSession))
+            fromShared.name = `${fromShared.name}-${new Date(
+              Date.now(),
+            ).toISOString()}`
+            localStorage.setItem(localId, JSON.stringify(fromShared))
+            setData(localId)
           } else {
             // eslint-disable-next-line no-alert
             alert('Session could not be decrypted with given password')
@@ -303,7 +308,7 @@ export function Loader() {
         'deleting saved sessions and re-trying after receiving the above error',
       )
       rootModel = JBrowseRootModel.create({
-        jbrowse: { ...configSnapshot, savedSessions: [] },
+        jbrowse: { ...configSnapshot },
         assemblyManager: {},
         version: packagedef.version,
       })
@@ -331,9 +336,7 @@ export function Loader() {
         setSessString('')
       }
     } else {
-      rootModel.setDefaultSession()
-      const localId = `local-${uuid.v4()}`
-      localStorage.setItem(localId, JSON.stringify(rootModel.session))
+      const localId = rootModel.setDefaultSession()
       setSessionQueryParam(localId)
       setPasswordQueryParam(undefined)
       setSessString(localId)

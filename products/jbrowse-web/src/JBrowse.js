@@ -42,6 +42,8 @@ const JBrowse = observer(({ pluginManager }) => {
       // add date.now() to end of local uuid, and when adding,
       // first see how long the Object.keys of localstorage is,
       // if too long, sort by date and remove the x oldest ones
+
+      // have warning when reaching full local storage, have them manually delete instead of auto delete
       console.log('updating-local-storage', sessionId)
       if (sessionId?.startsWith('local-'))
         localStorage.setItem(sessionId, JSON.stringify(snapshot))
