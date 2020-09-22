@@ -13,6 +13,8 @@ describe('Root MST model', () => {
     rootModel = rootModelFactory(pluginManager)
   })
 
+  afterEach(() => localStorage.clear())
+
   it('creates with defaults', () => {
     const root = rootModel.create({
       jbrowse: {
@@ -21,10 +23,10 @@ describe('Root MST model', () => {
       assemblyManager: {},
     })
     expect(root.session).toBeUndefined()
-    expect(root.jbrowse.savedSessions.length).toBe(0)
+    expect(localStorage.length).toBe(0)
     root.setDefaultSession()
     expect(root.session).toBeTruthy()
-    expect(root.jbrowse.savedSessions.length).toBe(1)
+    expect(localStorage.length).toBe(1)
     expect(root.jbrowse.assemblies.length).toBe(0)
     expect(getSnapshot(root.jbrowse.configuration)).toMatchSnapshot()
   })
@@ -41,15 +43,16 @@ describe('Root MST model', () => {
   })
 
   it('activates a session snapshot', () => {
+    const session = { name: 'testSession' }
+    localStorage.setItem(123, JSON.stringify(session))
     const root = rootModel.create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
-        savedSessions: [{ name: 'testSession' }],
       },
       assemblyManager: {},
     })
     expect(root.session).toBeUndefined()
-    root.setSession(root.jbrowse.savedSessions[0])
+    root.setSession(session)
     expect(root.session).toBeTruthy()
   })
 
@@ -98,14 +101,8 @@ describe('Root MST model', () => {
   })
 
   it('adds a session snapshot', () => {
-    const root = rootModel.create({
-      jbrowse: {
-        configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
-      },
-      assemblyManager: {},
-    })
-    root.jbrowse.addSavedSession({ name: 'testSession' })
-    expect(root.jbrowse.savedSessions.length).toBe(1)
+    localStorage.setItem(1, { name: 'testSession' })
+    expect(localStorage.length).toBe(1)
   })
 
   it('throws if session is invalid', () => {
@@ -121,15 +118,13 @@ describe('Root MST model', () => {
   })
 
   it('throws if session snapshot is invalid', () => {
-    expect(() =>
-      rootModel.create({
-        jbrowse: {
-          configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
-          savedSessions: [{}],
-        },
-        assemblyManager: {},
-      }),
-    ).toThrow()
+    const root = rootModel.create({
+      jbrowse: {
+        configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+      },
+      assemblyManager: {},
+    })
+    expect(() => root.setSession({})).toThrow()
   })
 
   it('adds menus', () => {

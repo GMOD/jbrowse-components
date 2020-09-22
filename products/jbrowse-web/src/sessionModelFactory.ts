@@ -376,9 +376,6 @@ export default function sessionModelFactory(
       },
 
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        // do local id here
-        // add the object of {localId, sessionSnap} to local storage
-        // return the object
         const localId = `local-${uuid.v4()}`
         localStorage.setItem(localId, JSON.stringify(sessionSnapshot))
         return localId

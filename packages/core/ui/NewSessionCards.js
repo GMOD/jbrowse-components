@@ -72,7 +72,6 @@ const dateString = `${new Date(Date.now() - tzOffset)
   .toISOString()
   .substring(11, 19)}`
 
-console.log(`New Session ${dateString}`)
 const emptySessionSnapshot = {
   name: `New session ${dateString}`,
   connections: {},
