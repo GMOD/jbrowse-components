@@ -13,6 +13,10 @@ import { LinearGenomeViewStateModel } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
+function stringify(offset: { coord: number; refName: string }) {
+  return `${offset.refName}:${offset.coord.toLocaleString('en-US')}`
+}
+
 const useStyles = makeStyles(theme => {
   // @ts-ignore
   const background = theme.palette.tertiary
@@ -65,16 +69,7 @@ const VerticalGuide = observer(
     const classes = useStyles()
     const guideInfo = model.pxToBp(coordX)
     return (
-      <Tooltip
-        open
-        placement="top"
-        title={`${guideInfo.refName}:${Math.ceil(
-          guideInfo.reversed
-            ? guideInfo.end - guideInfo.offset
-            : guideInfo.start + guideInfo.offset,
-        ).toLocaleString('en-US')}`}
-        arrow
-      >
+      <Tooltip open placement="top" title={stringify(guideInfo)} arrow>
         <div
           className={classes.guide}
           style={{
@@ -229,8 +224,6 @@ function RubberBand({
   const width = Math.abs(right - startX)
   const leftBpOffset = model.pxToBp(left)
   const rightBpOffset = model.pxToBp(left + width)
-  const leftBp = leftBpOffset.coord.toLocaleString('en-US')
-  const rightBp = rightBpOffset.coord.toLocaleString('en-US')
   const numOfBpSelected = Math.round(width * model.bpPerPx)
 
   return (
@@ -254,7 +247,7 @@ function RubberBand({
             }}
             keepMounted
           >
-            <Typography>{`${leftBpOffset.refName}:${leftBp}`}</Typography>
+            <Typography>{stringify(leftBpOffset)}</Typography>
           </Popover>
           <Popover
             className={classes.popover}
@@ -273,7 +266,7 @@ function RubberBand({
             }}
             keepMounted
           >
-            <Typography>{`${rightBpOffset.refName}:${rightBp}`}</Typography>
+            <Typography>{stringify(rightBpOffset)}</Typography>
           </Popover>
         </>
       ) : null}

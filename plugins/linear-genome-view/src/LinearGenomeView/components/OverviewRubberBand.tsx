@@ -59,6 +59,10 @@ const useStyles = makeStyles(theme => {
   }
 })
 
+function stringify(offset: { coord: number; refName: string }) {
+  return `${offset.refName}:${offset.coord.toLocaleString('en-US')}`
+}
+
 // functional component for OverviewRubberBand
 function OverviewRubberBand({
   model,
@@ -158,29 +162,23 @@ function OverviewRubberBand({
   }
 
   if (startX === undefined) {
-    let guideBp
-    if (guideX !== undefined) {
-      guideBp = overview.pxToBp(guideX)
-    }
     return (
       <div style={{ position: 'relative' }}>
-        <Tooltip
-          open={!mouseDragging}
-          placement="top"
-          title={
-            guideBp
-              ? `${guideBp.refName}:${guideBp.coord.toLocaleString('en-US')}`
-              : ''
-          }
-          arrow
-        >
-          <div
-            className={classes.guide}
-            style={{
-              left: guideX,
-            }}
-          />
-        </Tooltip>
+        {guideX !== undefined ? (
+          <Tooltip
+            open={!mouseDragging}
+            placement="top"
+            title={stringify(overview.pxToBp(guideX))}
+            arrow
+          >
+            <div
+              className={classes.guide}
+              style={{
+                left: guideX,
+              }}
+            />
+          </Tooltip>
+        ) : null}
         <div
           data-testid="rubberBand_controls"
           className={classes.rubberBandControl}
@@ -235,11 +233,7 @@ function OverviewRubberBand({
             keepMounted
           >
             <Typography>
-              {leftBpOffset
-                ? `${leftBpOffset.refName}:${leftBpOffset.coord.toLocaleString(
-                    'en-US',
-                  )}`
-                : ''}
+              {leftBpOffset ? stringify(leftBpOffset) : ''}
             </Typography>
           </Popover>
           <Popover
@@ -260,11 +254,7 @@ function OverviewRubberBand({
             keepMounted
           >
             <Typography>
-              {rightBpOffset
-                ? `${
-                    rightBpOffset.refName
-                  }:${rightBpOffset.coord.toLocaleString('en-US')}`
-                : ''}
+              {rightBpOffset ? stringify(rightBpOffset) : ''}
             </Typography>
           </Popover>
         </>
