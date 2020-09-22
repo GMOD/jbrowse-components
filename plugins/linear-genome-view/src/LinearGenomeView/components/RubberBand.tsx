@@ -68,7 +68,7 @@ const VerticalGuide = observer(
       <Tooltip
         open
         placement="top"
-        title={`${guideInfo.refName}: ${Math.ceil(
+        title={`${guideInfo.refName}:${Math.ceil(
           guideInfo.reversed
             ? guideInfo.end - guideInfo.offset
             : guideInfo.start + guideInfo.offset,
@@ -264,7 +264,7 @@ function RubberBand({
             }}
             keepMounted
           >
-            <Typography>{`${leftBpOffset.refName}: ${leftBp}`}</Typography>
+            <Typography>{`${leftBpOffset.refName}:${leftBp}`}</Typography>
           </Popover>
           <Popover
             className={classes.popover}
@@ -283,7 +283,7 @@ function RubberBand({
             }}
             keepMounted
           >
-            <Typography>{`${rightBpOffset.refName}: ${rightBp}`}</Typography>
+            <Typography>{`${rightBpOffset.refName}:${rightBp}`}</Typography>
           </Popover>
         </>
       ) : null}

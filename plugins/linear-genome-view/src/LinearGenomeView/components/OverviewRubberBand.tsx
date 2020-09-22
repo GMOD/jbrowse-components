@@ -164,7 +164,7 @@ function OverviewRubberBand({
           <Tooltip
             open={!mouseDragging}
             placement="top"
-            title={`${`${overview.pxToBp(guideX).refName}: `} ${Math.max(
+            title={`${overview.pxToBp(guideX).refName}:${Math.max(
               0,
               Math.round(overview.pxToBp(guideX).offset),
             ).toLocaleString('en-US')}`}
@@ -238,7 +238,7 @@ function OverviewRubberBand({
             keepMounted
           >
             <Typography>
-              {`${leftName}: ${leftCount.toLocaleString('en-US')}`}
+              {`${leftName}:${leftCount.toLocaleString('en-US')}`}
             </Typography>
           </Popover>
           <Popover
@@ -259,7 +259,7 @@ function OverviewRubberBand({
             keepMounted
           >
             <Typography>
-              {`${rightName}: ${rightCount.toLocaleString('en-US')}`}
+              {`${rightName}:${rightCount.toLocaleString('en-US')}`}
             </Typography>
           </Popover>
         </>
