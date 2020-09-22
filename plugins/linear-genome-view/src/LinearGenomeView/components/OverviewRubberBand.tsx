@@ -158,26 +158,29 @@ function OverviewRubberBand({
   }
 
   if (startX === undefined) {
+    let guideBp
+    if (guideX !== undefined) {
+      guideBp = overview.pxToBp(guideX)
+    }
     return (
       <div style={{ position: 'relative' }}>
-        {guideX !== undefined ? (
-          <Tooltip
-            open={!mouseDragging}
-            placement="top"
-            title={`${overview.pxToBp(guideX).refName}:${Math.max(
-              0,
-              Math.round(overview.pxToBp(guideX).offset),
-            ).toLocaleString('en-US')}`}
-            arrow
-          >
-            <div
-              className={classes.guide}
-              style={{
-                left: guideX,
-              }}
-            />
-          </Tooltip>
-        ) : null}
+        <Tooltip
+          open={!mouseDragging}
+          placement="top"
+          title={
+            guideBp
+              ? `${guideBp.refName}:${guideBp.coord.toLocaleString('en-US')}`
+              : ''
+          }
+          arrow
+        >
+          <div
+            className={classes.guide}
+            style={{
+              left: guideX,
+            }}
+          />
+        </Tooltip>
         <div
           data-testid="rubberBand_controls"
           className={classes.rubberBandControl}
@@ -200,15 +203,14 @@ function OverviewRubberBand({
     width = currentX - startX
   }
   // calculate the start and end bp of drag
-  const leftBpOffset = overview.pxToBp(startX)
-  const rightBpOffset = overview.pxToBp(startX + width)
-  let leftCount = leftBpOffset.coord.toLocaleString('en-US')
-  let rightCount = rightBpOffset.coord.toLocaleString('en-US')
-  let leftName = leftBpOffset.refName
-  let rightName = rightBpOffset.refName
-  if (currentX && currentX < startX) {
-    ;[leftCount, rightCount] = [rightCount, leftCount]
-    ;[leftName, rightName] = [rightName, leftName]
+  let leftBpOffset
+  let rightBpOffset
+  if (startX) {
+    leftBpOffset = overview.pxToBp(startX)
+    rightBpOffset = overview.pxToBp(startX + width)
+    if (currentX && currentX < startX) {
+      ;[leftBpOffset, rightBpOffset] = [rightBpOffset, leftBpOffset]
+    }
   }
 
   return (
@@ -233,7 +235,11 @@ function OverviewRubberBand({
             keepMounted
           >
             <Typography>
-              {`${leftName}:${leftCount.toLocaleString('en-US')}`}
+              {leftBpOffset
+                ? `${leftBpOffset.refName}:${leftBpOffset.coord.toLocaleString(
+                    'en-US',
+                  )}`
+                : ''}
             </Typography>
           </Popover>
           <Popover
@@ -254,7 +260,11 @@ function OverviewRubberBand({
             keepMounted
           >
             <Typography>
-              {`${rightName}:${rightCount.toLocaleString('en-US')}`}
+              {rightBpOffset
+                ? `${
+                    rightBpOffset.refName
+                  }:${rightBpOffset.coord.toLocaleString('en-US')}`
+                : ''}
             </Typography>
           </Popover>
         </>
