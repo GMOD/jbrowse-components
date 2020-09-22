@@ -512,8 +512,16 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
   )
   model.setWidth(width)
   model.setDisplayedRegions([
-    { assemblyName: 'volvox', start: 1000, end: 2000, refName: 'ctgA' },
+    {
+      assemblyName: 'volvox',
+      start: 1000,
+      end: 2000,
+      refName: 'ctgA',
+      reversed: true,
+    },
   ])
 
   expect(model.bpToPx({ refName: 'ctgA', coord: 500 })).toBe(undefined)
+  expect(model.pxToBp(100).offset).toEqual(100)
+  expect(model.pxToBp(100).coord).toEqual(1901)
 })
