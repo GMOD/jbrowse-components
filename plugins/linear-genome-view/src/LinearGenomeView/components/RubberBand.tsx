@@ -224,15 +224,11 @@ function RubberBand({
   }
 
   /* Calculating Pixels for Mouse Dragging */
-  let left = 0
-  let width = 0
-  let right = 0
-  right = anchorPosition ? anchorPosition.left : currentX || 0
-  left = right < startX ? right : startX
-  width = Math.abs(right - startX)
-  right = left + width
+  const right = anchorPosition ? anchorPosition.left : currentX || 0
+  const left = right < startX ? right : startX
+  const width = Math.abs(right - startX)
   const leftBpOffset = model.pxToBp(left)
-  const rightBpOffset = model.pxToBp(right)
+  const rightBpOffset = model.pxToBp(left + width)
   const leftBp = (leftBpOffset.reversed
     ? Math.round(leftBpOffset.end - leftBpOffset.offset) + 1
     : Math.round(leftBpOffset.start + leftBpOffset.offset) + 1
