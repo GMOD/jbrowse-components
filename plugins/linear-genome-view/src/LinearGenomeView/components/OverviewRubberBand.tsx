@@ -202,16 +202,11 @@ function OverviewRubberBand({
   // calculate the start and end bp of drag
   const leftBpOffset = overview.pxToBp(startX)
   const rightBpOffset = overview.pxToBp(startX + width)
-  let leftCount = Math.max(0, Math.round(leftBpOffset.offset))
-  let rightCount = Math.max(0, Math.round(rightBpOffset.offset))
+  let leftCount = leftBpOffset.coord.toLocaleString('en-US')
+  let rightCount = rightBpOffset.coord.toLocaleString('en-US')
   let leftName = leftBpOffset.refName
   let rightName = rightBpOffset.refName
-  if (
-    (leftBpOffset.refName === rightBpOffset.refName &&
-      leftCount > rightCount) ||
-    model.idxInParentRegion(leftBpOffset.refName) >
-      model.idxInParentRegion(rightBpOffset.refName)
-  ) {
+  if (currentX && currentX < startX) {
     ;[leftCount, rightCount] = [rightCount, leftCount]
     ;[leftName, rightName] = [rightName, leftName]
   }

@@ -229,14 +229,8 @@ function RubberBand({
   const width = Math.abs(right - startX)
   const leftBpOffset = model.pxToBp(left)
   const rightBpOffset = model.pxToBp(left + width)
-  const leftBp = (leftBpOffset.reversed
-    ? Math.round(leftBpOffset.end - leftBpOffset.offset) + 1
-    : Math.round(leftBpOffset.start + leftBpOffset.offset) + 1
-  ).toLocaleString('en-US')
-  const rightBp = (rightBpOffset.reversed
-    ? Math.round(rightBpOffset.end - rightBpOffset.offset) + 1
-    : Math.round(rightBpOffset.start + rightBpOffset.offset) + 1
-  ).toLocaleString('en-US')
+  const leftBp = leftBpOffset.coord.toLocaleString('en-US')
+  const rightBp = rightBpOffset.coord.toLocaleString('en-US')
   const numOfBpSelected = Math.round(width * model.bpPerPx)
 
   return (
@@ -289,7 +283,7 @@ function RubberBand({
         style={{ left, width }}
       >
         <Typography variant="h6" className={classes.rubberBandText}>
-          {numOfBpSelected.toLocaleString('en-US')} bp{' '}
+          {numOfBpSelected.toLocaleString('en-US')} bp
         </Typography>
       </div>
       <div
