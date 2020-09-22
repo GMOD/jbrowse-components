@@ -62,6 +62,7 @@ function App({ session }) {
   const { visibleWidget, drawerWidth } = session
   const isElectron = typeof window !== 'undefined' && Boolean(window.electron)
 
+  // TODOSESSION ask what to do about savedSessionNames
   function handleNameChange(newName) {
     if (
       session.savedSessionNames &&

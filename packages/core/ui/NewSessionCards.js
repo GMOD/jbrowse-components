@@ -65,8 +65,16 @@ NewSessionCard.defaultProps = {
 }
 
 // TODOSESSION make date string more readable
+const tzOffset = new Date().getTimezoneOffset() * 60000 // tz in ms
+const dateString = `${new Date(Date.now() - tzOffset)
+  .toISOString()
+  .substring(0, 10)} ${new Date(Date.now() - tzOffset)
+  .toISOString()
+  .substring(11, 19)}`
+
+console.log(`New Session ${dateString}`)
 const emptySessionSnapshot = {
-  name: `New Session ${new Date(Date.now()).toISOString()}`,
+  name: `New session ${dateString}`,
   connections: {},
 }
 
@@ -85,9 +93,7 @@ export function NewLinearGenomeViewSession({ root }) {
   const launchLGVSession = () => {
     const snapshot = {
       ...emptySessionSnapshot,
-      name: `New Linear Genome View Session ${new Date(
-        Date.now(),
-      ).toISOString()}`,
+      name: `New Linear Genome View Session ${dateString}`,
       views: [{ type: 'LinearGenomeView' }],
     }
     root.activateSession(snapshot)
@@ -110,7 +116,7 @@ export function NewSVInspectorSession({ root }) {
   const launchSVSession = () => {
     const snapshot = {
       ...emptySessionSnapshot,
-      name: `New SV Inspector Session ${new Date(Date.now()).toISOString()}`,
+      name: `New SV Inspector Session ${dateString}`,
       views: [
         {
           type: 'SvInspectorView',

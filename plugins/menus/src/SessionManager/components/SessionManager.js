@@ -34,8 +34,6 @@ export default observer(({ session }) => {
     setOpen(true)
   }
 
-  // TODOSESSION: change logic to remove from local storage
-  // saved sessions will just consist of everything with local- tag in local storage
   function handleDialogClose(deleteSession = false) {
     if (deleteSession) localStorage.removeItem(sessionUuidToDelete)
     setSessionUuidToDelete(null)

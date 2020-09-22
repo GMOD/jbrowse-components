@@ -39,6 +39,9 @@ const JBrowse = observer(({ pluginManager }) => {
   useEffect(() => {
     function updateLocalSession(snapshot) {
       // TODOSESSION localstorage is limited, need to handle errors
+      // add date.now() to end of local uuid, and when adding,
+      // first see how long the Object.keys of localstorage is,
+      // if too long, sort by date and remove the x oldest ones
       console.log('updating-local-storage', sessionId)
       if (sessionId?.startsWith('local-'))
         localStorage.setItem(sessionId, JSON.stringify(snapshot))
