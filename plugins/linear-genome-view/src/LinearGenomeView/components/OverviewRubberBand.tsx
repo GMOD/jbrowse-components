@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
+import { stringify } from '@gmod/jbrowse-core/util'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
@@ -164,10 +165,7 @@ function OverviewRubberBand({
           <Tooltip
             open={!mouseDragging}
             placement="top"
-            title={Math.max(
-              0,
-              Math.round(overview.pxToBp(guideX).offset),
-            ).toLocaleString()}
+            title={stringify(overview.pxToBp(guideX))}
             arrow
           >
             <div
@@ -200,17 +198,14 @@ function OverviewRubberBand({
     width = currentX - startX
   }
   // calculate the start and end bp of drag
-  const leftBpOffset = overview.pxToBp(startX)
-  const rightBpOffset = overview.pxToBp(startX + width)
-  let leftCount = Math.max(0, Math.round(leftBpOffset.offset))
-  let rightCount = Math.max(0, Math.round(rightBpOffset.offset))
-  if (
-    (leftBpOffset.refName === rightBpOffset.refName &&
-      leftCount > rightCount) ||
-    model.idxInParentRegion(leftBpOffset.refName) >
-      model.idxInParentRegion(rightBpOffset.refName)
-  ) {
-    ;[leftCount, rightCount] = [rightCount, leftCount]
+  let leftBpOffset
+  let rightBpOffset
+  if (startX) {
+    leftBpOffset = overview.pxToBp(startX)
+    rightBpOffset = overview.pxToBp(startX + width)
+    if (currentX && currentX < startX) {
+      ;[leftBpOffset, rightBpOffset] = [rightBpOffset, leftBpOffset]
+    }
   }
 
   return (
@@ -234,7 +229,9 @@ function OverviewRubberBand({
             }}
             keepMounted
           >
-            <Typography>{leftCount.toLocaleString()}</Typography>
+            <Typography>
+              {leftBpOffset ? stringify(leftBpOffset) : ''}
+            </Typography>
           </Popover>
           <Popover
             className={classes.popover}
@@ -253,7 +250,9 @@ function OverviewRubberBand({
             }}
             keepMounted
           >
-            <Typography>{rightCount.toLocaleString()}</Typography>
+            <Typography>
+              {rightBpOffset ? stringify(rightBpOffset) : ''}
+            </Typography>
           </Popover>
         </>
       ) : null}
