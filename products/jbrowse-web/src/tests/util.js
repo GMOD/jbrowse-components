@@ -12,7 +12,7 @@ configSnapshot.configuration = {
   },
 }
 
-export function getPluginManager(initialState, adminMode = false) {
+export function getPluginManager(initialState, adminMode = false, sessionName) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
