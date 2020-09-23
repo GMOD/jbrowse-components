@@ -340,6 +340,7 @@ export function Loader() {
       setSessionQueryParam(localId)
       setPasswordQueryParam(undefined)
       setSessString(localId)
+      console.log(localId)
     }
 
     if (!rootModel.session) return null
@@ -372,8 +373,6 @@ export function Loader() {
 }
 
 function factoryReset() {
-  localStorage.removeItem('jbrowse-web-data')
-  localStorage.removeItem('jbrowse-web-session')
   // @ts-ignore
   window.location = window.location.pathname
 }
