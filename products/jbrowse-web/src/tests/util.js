@@ -21,12 +21,11 @@ export function getPluginManager(initialState, adminMode = false) {
     jbrowse: initialState || configSnapshot,
     assemblyManager: {},
   })
-  if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
-    const { name } = rootModel.jbrowse.savedSessions[0]
+  if (rootModel && rootModel.jbrowse.defaultSession.length) {
+    const { name } = rootModel.jbrowse.defaultSession
+    localStorage.setItem(1, JSON.stringify(rootModel.jbrowse.defaultSession))
     rootModel.activateSession(name)
-  } else {
-    rootModel.setDefaultSession()
-  }
+  } else rootModel.setDefaultSession()
   rootModel.session.views.map(view => view.setWidth(800))
   pluginManager.setRootModel(rootModel)
 

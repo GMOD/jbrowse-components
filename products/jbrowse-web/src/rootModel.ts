@@ -76,8 +76,8 @@ export default function RootModel(
 
         const localId = `local-${uuid.v4()}`
         localStorage.setItem(localId, JSON.stringify(newSession))
-        this.activateSession(newSession.name)
-
+        this.setSessionUuidInUrl(localId)
+        this.setSession(newSession)
         return localId
       },
       renameCurrentSession(sessionName: string) {
