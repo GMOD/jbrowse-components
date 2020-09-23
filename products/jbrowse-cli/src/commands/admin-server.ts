@@ -4,10 +4,7 @@ import * as path from 'path'
 import * as express from 'express'
 import JBrowseCommand, { Config } from '../base'
 
-// import express = require('express')
-
 function isValidPort(port: number) {
-  // potentially throw error here
   return port > 0 && port < 65535
 }
 
@@ -67,35 +64,41 @@ export default class AdminServer extends JBrowseCommand {
 
     // start server with admin key in URL query string
     let port = 9090
-    if (runFlags.port && isValidPort(parseInt(runFlags.port, 10))) {
-      port = parseInt(runFlags.port, 10)
+    if (runFlags.port) {
+      if (!isValidPort(parseInt(runFlags.port, 10))) {
+        this.error(`${runFlags.port} is not a valid port`)
+      } else {
+        port = parseInt(runFlags.port, 10)
+      }
     }
     // @ts-ignore
-    const app = express()
+    const app = express.default ? express.default() : express()
     app.use(express.static('.'))
 
-    // write POST route to save config
+    // POST route to save config
     app.use(express.json())
-    app.post('/updateConfig', (req: express.Request, res: express.Response) => {
-      this.debug('Req body: ', req.body)
+    app.post(
+      '/updateConfig',
+      async (req: express.Request, res: express.Response) => {
+        this.debug('Req body: ', req.body)
 
-      if (req.body.adminKey === adminKey) {
-        this.debug('Admin key matches')
-        try {
-          fsPromises.writeFile(
-            runFlags.target,
-            JSON.stringify(req.body.config, null, 4),
-          )
-          res.send('Config written to disk')
-        } catch {
-          this.error('Could not write config file')
+        if (req.body.adminKey === adminKey) {
+          this.debug('Admin key matches')
+          try {
+            await fsPromises.writeFile(
+              runFlags.target,
+              JSON.stringify(req.body.config, null, 4),
+            )
+            res.send('Config written to disk')
+          } catch {
+            res.status(500).send('Could not write config file')
+          }
+        } else {
+          res.status(403).send('Admin key does not match')
         }
-      } else {
-        this.error('Admin key does not match')
-      }
-    })
+      },
+    )
 
-    // start listening, print URL to console
     const adminKey = generateKey()
     app.listen(port)
     this.log(
