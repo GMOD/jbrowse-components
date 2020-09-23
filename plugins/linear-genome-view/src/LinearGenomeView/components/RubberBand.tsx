@@ -1,4 +1,5 @@
 import { Menu } from '@gmod/jbrowse-core/ui'
+import { stringify } from '@gmod/jbrowse-core/util'
 import Popover from '@material-ui/core/Popover'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -12,10 +13,6 @@ import React, { useRef, useEffect, useState } from 'react'
 import { LinearGenomeViewStateModel } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
-
-function stringify(offset: { coord: number; refName: string }) {
-  return `${offset.refName}:${offset.coord.toLocaleString('en-US')}`
-}
 
 const useStyles = makeStyles(theme => {
   // @ts-ignore

@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
+import { stringify } from '@gmod/jbrowse-core/util'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
@@ -58,10 +59,6 @@ const useStyles = makeStyles(theme => {
     },
   }
 })
-
-function stringify(offset: { coord: number; refName: string }) {
-  return `${offset.refName}:${offset.coord.toLocaleString('en-US')}`
-}
 
 // functional component for OverviewRubberBand
 function OverviewRubberBand({
