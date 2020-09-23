@@ -160,7 +160,7 @@ export default class AddTrack extends JBrowseCommand {
 
     // only add track if there is an existing config.json
     const configContentsJson = await this.readJsonConfig(target)
-    const configContents = JSON.parse(configContentsJson)
+    const configContents:Config = JSON.parse(configContentsJson)
     if (!configContents.assemblies || !configContents.assemblies.length) {
       this.error('No assemblies found. Please add one before adding tracks', {
         exit: 150,

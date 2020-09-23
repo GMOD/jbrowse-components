@@ -519,12 +519,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
           filePaths.map(async filePath => {
             if (!filePath) return
             const dataLocation = path.join('.', path.basename(filePath))
-
-            try {
-              await fsPromises.copyFile(filePath, dataLocation)
-            } catch (error) {
-              this.error(error, { exit: 180 })
-            }
+            return fsPromises.copyFile(filePath, dataLocation)
           }),
         )
         return true
@@ -534,12 +529,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
           filePaths.map(async filePath => {
             if (!filePath) return
             const dataLocation = path.join('.', path.basename(filePath))
-
-            try {
-              await fsPromises.symlink(filePath, dataLocation)
-            } catch (error) {
-              this.error(error, { exit: 180 })
-            }
+            return fsPromises.symlink(filePath, dataLocation)
           }),
         )
         return true
@@ -549,12 +539,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
           filePaths.map(async filePath => {
             if (!filePath) return
             const dataLocation = path.join('.', path.basename(filePath))
-
-            try {
-              await fsPromises.rename(filePath, dataLocation)
-            } catch (error) {
-              this.error(error, { exit: 180 })
-            }
+            return fsPromises.rename(filePath, dataLocation)
           }),
         )
         return true
