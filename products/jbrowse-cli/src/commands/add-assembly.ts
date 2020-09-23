@@ -517,7 +517,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
       case 'copy': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) return
+            if (!filePath) return undefined
             const dataLocation = path.join('.', path.basename(filePath))
             return fsPromises.copyFile(filePath, dataLocation)
           }),
@@ -527,7 +527,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
       case 'symlink': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) return
+            if (!filePath) return undefined
             const dataLocation = path.join('.', path.basename(filePath))
             return fsPromises.symlink(filePath, dataLocation)
           }),
@@ -537,7 +537,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
       case 'move': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) return
+            if (!filePath) return undefined
             const dataLocation = path.join('.', path.basename(filePath))
             return fsPromises.rename(filePath, dataLocation)
           }),

@@ -55,15 +55,11 @@ export default class Create extends JBrowseCommand {
     const { force, url, listVersions, tag } = runFlags
 
     if (listVersions) {
-      try {
-        const versions = (await this.fetchGithubVersions()).map(
-          version => version.tag_name,
-        )
-        this.log(`All JBrowse versions:\n${versions.join('\n')}`)
-        this.exit()
-      } catch (error) {
-        this.error(error)
-      }
+      const versions = (await this.fetchGithubVersions()).map(
+        version => version.tag_name,
+      )
+      this.log(`All JBrowse versions:\n${versions.join('\n')}`)
+      this.exit()
     }
 
     // mkdir will do nothing if dir exists

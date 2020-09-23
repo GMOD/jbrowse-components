@@ -160,7 +160,7 @@ export default class AddTrack extends JBrowseCommand {
 
     // only add track if there is an existing config.json
     const configContentsJson = await this.readJsonConfig(target)
-    const configContents:Config = JSON.parse(configContentsJson)
+    const configContents: Config = JSON.parse(configContentsJson)
     if (!configContents.assemblies || !configContents.assemblies.length) {
       this.error('No assemblies found. Please add one before adding tracks', {
         exit: 150,
@@ -275,7 +275,7 @@ export default class AddTrack extends JBrowseCommand {
         await Promise.all(
           filePaths.map(async filePath => {
             if (!filePath) {
-              return
+              return undefined
             }
             const dataLocation = path.join(
               configDirectory,
@@ -290,18 +290,13 @@ export default class AddTrack extends JBrowseCommand {
         await Promise.all(
           filePaths.map(async filePath => {
             if (!filePath) {
-              return
+              return undefined
             }
             const dataLocation = path.join(
               configDirectory,
               path.basename(filePath),
             )
-
-            try {
-              await fsPromises.symlink(filePath, dataLocation)
-            } catch (error) {
-              this.error(error, { exit: 170 })
-            }
+            return fsPromises.symlink(filePath, dataLocation)
           }),
         )
         break
@@ -310,18 +305,13 @@ export default class AddTrack extends JBrowseCommand {
         await Promise.all(
           filePaths.map(async filePath => {
             if (!filePath) {
-              return
+              return undefined
             }
             const dataLocation = path.join(
               configDirectory,
               path.basename(filePath),
             )
-
-            try {
-              await fsPromises.rename(filePath, dataLocation)
-            } catch (error) {
-              this.error(error, { exit: 170 })
-            }
+            return fsPromises.rename(filePath, dataLocation)
           }),
         )
         break

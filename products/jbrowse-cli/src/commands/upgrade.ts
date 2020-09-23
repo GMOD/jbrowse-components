@@ -54,15 +54,11 @@ export default class Upgrade extends JBrowseCommand {
     const { listVersions, tag, url } = runFlags
 
     if (listVersions) {
-      try {
-        const versions = (await this.fetchGithubVersions()).map(
-          version => version.tag_name,
-        )
-        this.log(`All JBrowse versions:\n${versions.join('\n')}`)
-        this.exit()
-      } catch (error) {
-        this.error(error)
-      }
+      const versions = (await this.fetchGithubVersions()).map(
+        version => version.tag_name,
+      )
+      this.log(`All JBrowse versions:\n${versions.join('\n')}`)
+      this.exit()
     }
     this.debug(`Want to upgrade at: ${argsPath}`)
 
