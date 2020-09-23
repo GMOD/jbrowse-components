@@ -1,18 +1,10 @@
+/* eslint curly:error */
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import fetch from 'node-fetch'
 import * as unzip from 'unzipper'
 import JBrowseCommand from '../base'
 
-interface GithubRelease {
-  tag_name: string
-  prerelease: boolean
-  assets: [
-    {
-      browser_download_url: string
-    },
-  ]
-}
 export default class Create extends JBrowseCommand {
   static description = 'Downloads and installs the latest JBrowse 2 release'
 
@@ -75,13 +67,11 @@ export default class Create extends JBrowseCommand {
     }
 
     // mkdir will do nothing if dir exists
-    try {
-      await fsPromises.mkdir(argsPath, { recursive: true })
-    } catch (error) {
-      this.error(error)
-    }
+    await fsPromises.mkdir(argsPath, { recursive: true })
 
-    if (!force) await this.checkPath(argsPath)
+    if (!force) {
+      await this.checkPath(argsPath)
+    }
 
     const locationUrl =
       url || (tag ? await this.getTag(tag) : await this.getLatest())
@@ -107,17 +97,13 @@ export default class Create extends JBrowseCommand {
   }
 
   async checkPath(userPath: string) {
-    let allFiles
-    try {
-      allFiles = await fsPromises.readdir(userPath)
-    } catch (error) {
-      this.error('Directory does not exist', { exit: 110 })
-    }
-    if (allFiles.length > 0)
+    const allFiles = await fsPromises.readdir(userPath)
+    if (allFiles.length > 0) {
       this.error(
         `${userPath} This directory has existing files and could cause conflicts with create. Please choose another directory or use the force flag to overwrite existing files`,
         { exit: 120 },
       )
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
