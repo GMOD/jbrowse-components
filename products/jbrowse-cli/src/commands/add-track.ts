@@ -129,22 +129,23 @@ export default class AddTrack extends JBrowseCommand {
 
     let trackLocation
     if (load) {
-      if (!local)
+      if (!local) {
         this.error(
           `URL detected with --load flag. Please rerun the function without the --load flag`,
           { exit: 100 },
         )
+      }
 
       trackLocation =
         load === 'trust'
           ? location
           : path.join(configDirectory, path.basename(location))
-    } else if (local)
+    } else if (local) {
       this.error(
         'Local file detected. Please select a load option for the track with the --load flag',
         { exit: 110 },
       )
-    else trackLocation = location
+    } else trackLocation = location
 
     const adapter = this.guessAdapter(trackLocation, protocol)
     if (adapter.type === 'UNKNOWN') {
@@ -271,11 +272,12 @@ export default class AddTrack extends JBrowseCommand {
       if (runFlags.force || runFlags.overwrite) {
         this.debug(`Overwriting track ${trackId} in configuration`)
         configContents.tracks[idx] = trackConfig
-      } else
+      } else {
         this.error(
           `Cannot add track with id ${trackId}, a track with that id already exists.`,
           { exit: 160 },
         )
+      }
     } else configContents.tracks.push(trackConfig)
 
     // copy/symlinks/moves the track into the jbrowse installation directory
@@ -406,70 +408,81 @@ export default class AddTrack extends JBrowseCommand {
   }
 
   guessFileNames(fileName: string) {
-    if (/\.bam$/i.test(fileName))
+    if (/\.bam$/i.test(fileName)) {
       return {
         file: fileName,
         index: `${fileName}.bai`,
       }
-    if (/\.bai$/i.test(fileName))
+    }
+    if (/\.bai$/i.test(fileName)) {
       return {
         file: fileName.replace(/\.bai$/i, ''),
         index: fileName,
       }
-    if (/\.bam.csi$/i.test(fileName))
+    }
+    if (/\.bam.csi$/i.test(fileName)) {
       return {
         file: fileName.replace(/\.csi$/i, ''),
         index: fileName,
       }
+    }
 
-    if (/\.cram$/i.test(fileName))
+    if (/\.cram$/i.test(fileName)) {
       return {
         file: fileName,
         index: `${fileName}.crai`,
       }
-    if (/\.crai$/i.test(fileName))
+    }
+    if (/\.crai$/i.test(fileName)) {
       return {
         file: fileName.replace(/\.crai$/i, ''),
         index: fileName,
       }
+    }
 
     if (/\.gff3?$/i.test(fileName)) return {}
 
-    if (/\.gff3?\.b?gz$/i.test(fileName))
+    if (/\.gff3?\.b?gz$/i.test(fileName)) {
       return {
         file: fileName,
         index: `${fileName}.tbi`,
       }
-    if (/\.gff3?\.b?gz.tbi$/i.test(fileName))
+    }
+    if (/\.gff3?\.b?gz.tbi$/i.test(fileName)) {
       return {
         file: fileName.replace(/\.tbi$/i, ''),
         index: fileName,
       }
-    if (/\.gff3?\.b?gz.csi$/i.test(fileName))
+    }
+    if (/\.gff3?\.b?gz.csi$/i.test(fileName)) {
       return {
         file: fileName.replace(/\.csi$/i, ''),
         index: fileName,
       }
+    }
 
     if (/\.gtf?$/i.test(fileName)) return {}
 
     if (/\.vcf$/i.test(fileName)) return {}
 
-    if (/\.vcf\.b?gz$/i.test(fileName))
+    if (/\.vcf\.b?gz$/i.test(fileName)) {
       return {
         file: fileName,
         index: `${fileName}.tbi`,
       }
-    if (/\.vcf\.b?gz\.tbi$/i.test(fileName))
+    }
+    if (/\.vcf\.b?gz\.tbi$/i.test(fileName)) {
       return {
         file: fileName.replace(/\.tbi$/i, ''),
         index: fileName,
       }
-    if (/\.vcf\.b?gz\.csi$/i.test(fileName))
+    }
+    if (/\.vcf\.b?gz\.csi$/i.test(fileName)) {
       return {
         file: fileName.replace(/\.csi$/i, ''),
         index: fileName,
       }
+    }
 
     if (/\.vcf\.idx$/i.test(fileName)) return {}
 
@@ -481,64 +494,74 @@ export default class AddTrack extends JBrowseCommand {
 
     if (/\.bed\.idx$/i.test(fileName)) return {}
 
-    if (/\.(bb|bigbed)$/i.test(fileName))
+    if (/\.(bb|bigbed)$/i.test(fileName)) {
       return {
         file: fileName,
         index: undefined,
       }
+    }
 
-    if (/\.(bw|bigwig)$/i.test(fileName))
+    if (/\.(bw|bigwig)$/i.test(fileName)) {
       return {
         file: fileName,
         index: undefined,
       }
+    }
 
-    if (/\.(fa|fasta|fna|mfa)$/i.test(fileName))
+    if (/\.(fa|fasta|fna|mfa)$/i.test(fileName)) {
       return {
         file: fileName,
         index: `${fileName}.fai`,
       }
-    if (/\.(fa|fasta|fna|mfa)\.fai$/i.test(fileName))
+    }
+    if (/\.(fa|fasta|fna|mfa)\.fai$/i.test(fileName)) {
       return {
         file: fileName.replace(/\.fai$/i, ''),
         index: fileName,
       }
+    }
 
-    if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(fileName))
+    if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(fileName)) {
       return {
         file: fileName,
         index: `${fileName}.fai`,
         index2: `${fileName}.gzi`,
       }
-    if (/\.(fa|fasta|fna|mfa)\.b?gz\.fai$/i.test(fileName))
+    }
+    if (/\.(fa|fasta|fna|mfa)\.b?gz\.fai$/i.test(fileName)) {
       return {
         file: fileName.replace(/\.fai$/i, ''),
         index: fileName,
         index2: `${fileName.replace(/\.fai$/i, '')}.gzi`,
       }
-    if (/\.(fa|fasta|fna|mfa)\.b?gz\.gzi$/i.test(fileName))
+    }
+    if (/\.(fa|fasta|fna|mfa)\.b?gz\.gzi$/i.test(fileName)) {
       return {
         file: fileName.replace(/\.gzi$/i, ''),
         index: `${fileName.replace(/\.gzi$/i, '')}.fai`,
         index2: fileName,
       }
+    }
 
-    if (/\.2bit$/i.test(fileName))
+    if (/\.2bit$/i.test(fileName)) {
       return {
         file: fileName,
       }
+    }
 
     if (/\.sizes$/i.test(fileName)) return {}
 
-    if (/\/trackData.jsonz?$/i.test(fileName))
+    if (/\/trackData.jsonz?$/i.test(fileName)) {
       return {
         file: fileName,
       }
+    }
 
-    if (/\/sparql$/i.test(fileName))
+    if (/\/sparql$/i.test(fileName)) {
       return {
         file: fileName,
       }
+    }
 
     return {}
   }
@@ -550,194 +573,226 @@ export default class AddTrack extends JBrowseCommand {
       if (protocol === 'localPath') return { localPath: location }
       throw new Error(`invalid protocol ${protocol}`)
     }
-    if (/\.bam$/i.test(fileName))
+    if (/\.bam$/i.test(fileName)) {
       return {
         type: 'BamAdapter',
         bamLocation: makeLocation(fileName),
         index: { location: makeLocation(`${fileName}.bai`) },
       }
-    if (/\.bai$/i.test(fileName))
+    }
+    if (/\.bai$/i.test(fileName)) {
       return {
         type: 'BamAdapter',
         bamLocation: makeLocation(fileName.replace(/\.bai$/i, '')),
         index: { location: makeLocation(fileName) },
       }
-    if (/\.bam.csi$/i.test(fileName))
+    }
+    if (/\.bam.csi$/i.test(fileName)) {
       return {
         type: 'BamAdapter',
         bamLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
         index: { location: makeLocation(fileName), indexType: 'CSI' },
       }
+    }
 
-    if (/\.cram$/i.test(fileName))
+    if (/\.cram$/i.test(fileName)) {
       return {
         type: 'CramAdapter',
         cramLocation: makeLocation(fileName),
         craiLocation: makeLocation(`${fileName}.crai`),
       }
-    if (/\.crai$/i.test(fileName))
+    }
+    if (/\.crai$/i.test(fileName)) {
       return {
         type: 'CramAdapter',
         cramLocation: makeLocation(fileName.replace(/\.crai$/i, '')),
         craiLocation: makeLocation(fileName),
       }
+    }
 
-    if (/\.gff3?$/i.test(fileName))
+    if (/\.gff3?$/i.test(fileName)) {
       return {
         type: 'UNSUPPORTED',
       }
+    }
 
-    if (/\.gff3?\.b?gz$/i.test(fileName))
+    if (/\.gff3?\.b?gz$/i.test(fileName)) {
       return {
         type: 'Gff3TabixAdapter',
         gffGzLocation: makeLocation(fileName),
         index: { location: makeLocation(`${fileName}.tbi`), indexType: 'TBI' },
       }
-    if (/\.gff3?\.b?gz.tbi$/i.test(fileName))
+    }
+    if (/\.gff3?\.b?gz.tbi$/i.test(fileName)) {
       return {
         type: 'Gff3TabixAdapter',
         gffGzLocation: makeLocation(fileName.replace(/\.tbi$/i, '')),
         index: { location: makeLocation(fileName), indexType: 'TBI' },
       }
-    if (/\.gff3?\.b?gz.csi$/i.test(fileName))
+    }
+    if (/\.gff3?\.b?gz.csi$/i.test(fileName)) {
       return {
         type: 'Gff3TabixAdapter',
         gffGzLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
         index: { location: makeLocation(fileName), indexType: 'CSI' },
       }
+    }
 
-    if (/\.gtf?$/i.test(fileName))
+    if (/\.gtf?$/i.test(fileName)) {
       return {
         type: 'UNSUPPORTED',
       }
+    }
 
-    if (/\.vcf$/i.test(fileName))
+    if (/\.vcf$/i.test(fileName)) {
       return {
         type: 'UNSUPPORTED',
       }
+    }
 
-    if (/\.vcf\.b?gz$/i.test(fileName))
+    if (/\.vcf\.b?gz$/i.test(fileName)) {
       return {
         type: 'VcfTabixAdapter',
         vcfGzLocation: makeLocation(fileName),
         index: { location: makeLocation(`${fileName}.tbi`), indexType: 'TBI' },
       }
-    if (/\.vcf\.b?gz\.tbi$/i.test(fileName))
+    }
+    if (/\.vcf\.b?gz\.tbi$/i.test(fileName)) {
       return {
         type: 'VcfTabixAdapter',
         vcfGzLocation: makeLocation(fileName.replace(/\.tbi$/i, '')),
         index: { location: makeLocation(fileName), indexType: 'TBI' },
       }
-    if (/\.vcf\.b?gz\.csi$/i.test(fileName))
+    }
+    if (/\.vcf\.b?gz\.csi$/i.test(fileName)) {
       return {
         type: 'VcfTabixAdapter',
         vcfGzLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
         index: { location: makeLocation(fileName), indexType: 'CSI' },
       }
+    }
 
-    if (/\.vcf\.idx$/i.test(fileName))
+    if (/\.vcf\.idx$/i.test(fileName)) {
       return {
         type: 'UNSUPPORTED',
       }
+    }
 
-    if (/\.bed$/i.test(fileName))
+    if (/\.bed$/i.test(fileName)) {
       return {
         type: 'UNSUPPORTED',
       }
+    }
 
-    if (/\.bed\.b?gz$/i.test(fileName))
+    if (/\.bed\.b?gz$/i.test(fileName)) {
       return {
         type: 'UNSUPPORTED',
       }
-    if (/\.bed.b?gz.tbi$/i.test(fileName))
+    }
+    if (/\.bed.b?gz.tbi$/i.test(fileName)) {
       return {
         type: 'UNSUPPORTED',
       }
-    if (/\.bed.b?gz.csi/i.test(fileName))
+    }
+    if (/\.bed.b?gz.csi/i.test(fileName)) {
       return {
         type: 'UNSUPPORTED',
       }
+    }
 
-    if (/\.bed\.idx$/i.test(fileName))
+    if (/\.bed\.idx$/i.test(fileName)) {
       return {
         type: 'UNSUPPORTED',
       }
+    }
 
-    if (/\.(bb|bigbed)$/i.test(fileName))
+    if (/\.(bb|bigbed)$/i.test(fileName)) {
       return {
         type: 'BigBedAdapter',
         bigBedLocation: makeLocation(fileName),
       }
+    }
 
-    if (/\.(bw|bigwig)$/i.test(fileName))
+    if (/\.(bw|bigwig)$/i.test(fileName)) {
       return {
         type: 'BigWigAdapter',
         bigWigLocation: makeLocation(fileName),
       }
+    }
 
-    if (/\.(fa|fasta|fna|mfa)$/i.test(fileName))
+    if (/\.(fa|fasta|fna|mfa)$/i.test(fileName)) {
       return {
         type: 'IndexedFastaAdapter',
         fastaLocation: makeLocation(fileName),
         faiLocation: makeLocation(`${fileName}.fai`),
       }
-    if (/\.(fa|fasta|fna|mfa)\.fai$/i.test(fileName))
+    }
+    if (/\.(fa|fasta|fna|mfa)\.fai$/i.test(fileName)) {
       return {
         type: 'IndexedFastaAdapter',
         fastaLocation: makeLocation(fileName.replace(/\.fai$/i, '')),
         faiLocation: makeLocation(fileName),
       }
+    }
 
-    if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(fileName))
+    if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(fileName)) {
       return {
         type: 'BgzipFastaAdapter',
         fastaLocation: makeLocation(fileName),
         faiLocation: makeLocation(`${fileName}.fai`),
         gziLocation: makeLocation(`${fileName}.gzi`),
       }
-    if (/\.(fa|fasta|fna|mfa)\.b?gz\.fai$/i.test(fileName))
+    }
+    if (/\.(fa|fasta|fna|mfa)\.b?gz\.fai$/i.test(fileName)) {
       return {
         type: 'BgzipFastaAdapter',
         fastaLocation: makeLocation(fileName.replace(/\.fai$/i, '')),
         faiLocation: makeLocation(fileName),
         gziLocation: makeLocation(`${fileName.replace(/\.fai$/i, '')}.gzi`),
       }
-    if (/\.(fa|fasta|fna|mfa)\.b?gz\.gzi$/i.test(fileName))
+    }
+    if (/\.(fa|fasta|fna|mfa)\.b?gz\.gzi$/i.test(fileName)) {
       return {
         type: 'BgzipFastaAdapter',
         fastaLocation: makeLocation(fileName.replace(/\.gzi$/i, '')),
         faiLocation: makeLocation(`${fileName.replace(/\.gzi$/i, '')}.fai`),
         gziLocation: makeLocation(fileName),
       }
+    }
 
-    if (/\.2bit$/i.test(fileName))
+    if (/\.2bit$/i.test(fileName)) {
       return {
         type: 'TwoBitAdapter',
         twoBitLocation: makeLocation(fileName),
       }
+    }
 
-    if (/\.sizes$/i.test(fileName))
+    if (/\.sizes$/i.test(fileName)) {
       return {
         type: 'UNSUPPORTED',
       }
+    }
 
-    if (/\/trackData.jsonz?$/i.test(fileName))
+    if (/\/trackData.jsonz?$/i.test(fileName)) {
       return {
         type: 'NCListAdapter',
         rootUrlTemplate: fileName,
       }
+    }
 
-    if (/\/sparql$/i.test(fileName))
+    if (/\/sparql$/i.test(fileName)) {
       return {
         type: 'SPARQLAdapter',
         endpoint: fileName,
       }
+    }
 
-    if (/\.hic/i.test(fileName))
+    if (/\.hic/i.test(fileName)) {
       return {
         type: 'HicTrack',
         hicLocation: makeLocation(fileName),
       }
+    }
 
     return {
       type: 'UNKNOWN',
@@ -745,7 +800,7 @@ export default class AddTrack extends JBrowseCommand {
   }
 
   guessSubadapter(fileName: string, protocol: string, mainAdapter: string) {
-    if (/\.bam$/i.test(fileName))
+    if (/\.bam$/i.test(fileName)) {
       return {
         type: mainAdapter,
         subadapter: {
@@ -754,7 +809,8 @@ export default class AddTrack extends JBrowseCommand {
           index: { location: { [protocol]: `${fileName}.bai` } },
         },
       }
-    if (/\.bai$/i.test(fileName))
+    }
+    if (/\.bai$/i.test(fileName)) {
       return {
         type: mainAdapter,
         subadapter: {
@@ -763,7 +819,8 @@ export default class AddTrack extends JBrowseCommand {
           index: { location: { [protocol]: fileName } },
         },
       }
-    if (/\.bam.csi$/i.test(fileName))
+    }
+    if (/\.bam.csi$/i.test(fileName)) {
       return {
         type: mainAdapter,
         subadapter: {
@@ -772,8 +829,9 @@ export default class AddTrack extends JBrowseCommand {
           index: { location: { [protocol]: fileName }, indexType: 'CSI' },
         },
       }
+    }
 
-    if (/\.cram$/i.test(fileName))
+    if (/\.cram$/i.test(fileName)) {
       return {
         type: mainAdapter,
         subadapter: {
@@ -782,7 +840,8 @@ export default class AddTrack extends JBrowseCommand {
           craiLocation: { [protocol]: `${fileName}.crai` },
         },
       }
-    if (/\.crai$/i.test(fileName))
+    }
+    if (/\.crai$/i.test(fileName)) {
       return {
         type: mainAdapter,
         subadapter: {
@@ -791,6 +850,7 @@ export default class AddTrack extends JBrowseCommand {
           craiLocation: { [protocol]: fileName },
         },
       }
+    }
     return {
       type: 'UNSUPPORTED',
     }

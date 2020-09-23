@@ -134,27 +134,29 @@ export default class SetDefaultSession extends JBrowseCommand {
       // use trackids if any to match to tracks in the config
       let trackIds = []
       if (tracks && configContents.tracks) {
-        if (!view)
+        if (!view) {
           this.error(
             'Tracks must have a view type specified. Please rerun using the --view flag',
             { exit: 130 },
           )
+        }
         trackIds = tracks.split(',').map(c => c.trim())
         trackIds.forEach(trackId => {
           this.log(trackId)
           const matchingTrack = configContents.tracks.find(
             track => trackId === track.trackId,
           )
-          if (!matchingTrack)
+          if (!matchingTrack) {
             this.error(
               `Track ${trackId} has not been added to config yet.\nPlease add the track with the add-track command before adding to the default session`,
               { exit: 140 },
             )
-          else
+          } else {
             foundTracks.push({
               type: matchingTrack.type,
               configuration: matchingTrack.trackId,
             })
+          }
         })
       }
 
