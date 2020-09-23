@@ -1433,11 +1433,11 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam"
         },
         "index": {
           "location": {
-            "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam.bai"
           }
         },
         "sequenceAdapter": {
@@ -1463,10 +1463,10 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.cram"
         },
         "craiLocation": {
-          "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.cram.crai"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
