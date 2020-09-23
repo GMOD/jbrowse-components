@@ -118,19 +118,6 @@ export default abstract class JBrowseCommand extends Command {
   }
 
   async readJsonConfig(location: string) {
-    let locationUrl: URL | undefined
-    try {
-      locationUrl = new URL(location)
-    } catch (error) {
-      // ignore
-    }
-    if (locationUrl) {
-      const response = await fetch(locationUrl)
-      if (response.ok) {
-        return response.json()
-      }
-      throw new Error(`${response.statusText}`)
-    }
     return fsPromises.readFile(location, { encoding: 'utf8' })
   }
 
