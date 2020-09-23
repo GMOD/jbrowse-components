@@ -522,6 +522,7 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
   ])
 
   expect(model.bpToPx({ refName: 'ctgA', coord: 500 })).toBe(undefined)
+  expect(model.pxToBp(-1).coord).toEqual(2002)
   expect(model.pxToBp(100).offset).toEqual(100)
   expect(model.pxToBp(100).coord).toEqual(1901)
 })

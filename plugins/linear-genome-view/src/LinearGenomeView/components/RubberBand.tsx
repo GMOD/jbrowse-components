@@ -64,9 +64,13 @@ const useStyles = makeStyles(theme => {
 const VerticalGuide = observer(
   ({ model, coordX }: { model: LGV; coordX: number }) => {
     const classes = useStyles()
-    const guideInfo = model.pxToBp(coordX)
     return (
-      <Tooltip open placement="top" title={stringify(guideInfo)} arrow>
+      <Tooltip
+        open
+        placement="top"
+        title={stringify(model.pxToBp(coordX))}
+        arrow
+      >
         <div
           className={classes.guide}
           style={{
