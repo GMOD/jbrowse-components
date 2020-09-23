@@ -24,7 +24,11 @@ beforeEach(() => {
 
 describe('dotplot view', () => {
   it('open a dotplot view', async () => {
-    const pluginManager = getPluginManager(dotplotConfig)
+    const pluginManager = getPluginManager(
+      dotplotConfig,
+      false,
+      'Grape vs Peach (small)',
+    )
     const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
 
     const canvas = await findByTestId('prerendered_canvas')
@@ -35,7 +39,7 @@ describe('dotplot view', () => {
     // this is needed to do a fuzzy image comparison because
     // the travis-ci was 2 pixels different for some reason, see PR #710
     expect(buf).toMatchImageSnapshot({
-      failureThreshold: 0.05,
+      failureThreshold: 0.01,
       failureThresholdType: 'percent',
     })
   })
