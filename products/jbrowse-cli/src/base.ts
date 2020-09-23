@@ -124,8 +124,8 @@ export default abstract class JBrowseCommand extends Command {
   async writeJsonConfig(config: string) {
     try {
       fsPromises.writeFile('./config.json', config)
-    } catch {
-      this.error('Could not write config file')
+    } catch (error) {
+      this.error(`${error}`)
     }
   }
 
