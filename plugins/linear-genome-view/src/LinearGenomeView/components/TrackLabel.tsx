@@ -62,6 +62,7 @@ const TrackLabel = React.forwardRef(
     const { track, className } = props
     const view = (getContainingView(track) as unknown) as LGV
     const session = getSession(track)
+    const trackConf = track.configuration
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       setAnchorEl(event.currentTarget)
@@ -91,8 +92,9 @@ const TrackLabel = React.forwardRef(
     if (getConf(track, 'type') === 'ReferenceSequenceTrack') {
       trackName = 'Reference Sequence'
       session.assemblies.forEach(assembly => {
-        if (assembly.sequence === track.configuration)
+        if (assembly.sequence === trackConf) {
           trackName = `Reference Sequence (${readConfObject(assembly, 'name')})`
+        }
       })
     }
 
@@ -114,7 +116,7 @@ const TrackLabel = React.forwardRef(
             <DragIcon fontSize="small" className={classes.dragHandleIcon} />
           </span>
           <IconButton
-            onClick={() => view.hideTrack(track.configuration)}
+            onClick={() => view.hideTrack(trackConf)}
             className={classes.iconButton}
             title="close this track"
             color="secondary"
@@ -146,7 +148,7 @@ const TrackLabel = React.forwardRef(
           open={Boolean(anchorEl)}
           onClose={handleClose}
           menuItems={[
-            ...track.configuration.fileMenuItems,
+            ...(trackConf.fileMenuItems || []),
             ...track.trackMenuItems,
           ]}
         />
