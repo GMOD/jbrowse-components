@@ -95,8 +95,9 @@ const generateBaseTrackConfig = (base: any) =>
             session = getSession(config)
           } catch (e) {
             // TODO likely want a better way to do this
-            session = getRoot(config)
+            session = getRoot(config).session
           }
+
           const canEdit =
             session.adminMode ||
             session.sessionTracks.find((track: AnyConfigurationModel) => {
@@ -341,7 +342,6 @@ const BaseTrack = types
   }))
 
 export const BaseTrackConfig = generateBaseTrackConfig(BaseTrack)
-console.log(getDefaultValue(BaseTrackConfig))
 
 const BaseTrackWithReferences = types
   .compose(
@@ -384,46 +384,3 @@ const BaseTrackWithReferences = types
 export type BaseTrackStateModel = typeof BaseTrackWithReferences
 export type BaseTrackModel = Instance<BaseTrackStateModel>
 export default BaseTrackWithReferences
-
-// generate file config options given a track config and a model
-// note that model.configuration is not used and this is not in a model because
-// this is derived directly from the configuration, not an instance of a track
-// export function getFileConfigOptions(
-//   model: BaseTrackModel,
-//   trackConf: AnyConfigurationModel,
-// ) {
-//   const session = getSession(model)
-// const canEdit = session.adminMode||session.sessionTracks.find(track => {
-
-//             return track.trackId === self.configuration.trackId
-//           })
-//   return [
-//     {
-//       label: 'Settings',
-//       disabled: !(session.adminMode || trackConf.sessionTrack),
-//       onClick: () => {
-//         session.editTrackConfiguration(trackConf)
-//       },
-//       icon: SettingsIcon,
-//     },
-//     {
-//       label: 'Delete track',
-//       disabled: !(session.adminMode || trackConf.sessionTrack),
-//       onClick: () => {
-//         session.deleteTrackConf(trackConf)
-//       },
-//       icon: DeleteIcon,
-//     },
-//     {
-//       label: 'Copy track',
-//       onClick: () => {
-//         const trackSnapshot = JSON.parse(JSON.stringify(getSnapshot(trackConf)))
-//         trackSnapshot.trackId += `-${Date.now()}`
-//         trackSnapshot.name += ' (copy)'
-//         trackSnapshot.category = [' Session tracks']
-//         session.addTrackConf(trackSnapshot)
-//       },
-//       icon: CopyIcon,
-//     },
-//   ]
-// }

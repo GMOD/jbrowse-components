@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { Menu } from '@gmod/jbrowse-core/ui'
-import { getSession } from '@gmod/jbrowse-core/util'
 import Checkbox from '@material-ui/core/Checkbox'
 import Fade from '@material-ui/core/Fade'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
@@ -11,7 +10,6 @@ import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import HorizontalDots from '@material-ui/icons/MoreHoriz'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 
 const useStyles = makeStyles(theme => ({
@@ -45,7 +43,6 @@ const useStyles = makeStyles(theme => ({
 function TrackEntry({ model, disabled, trackConf, assemblyName }) {
   const classes = useStyles()
   const [anchorEl, setAnchorEl] = useState(null)
-  const session = getSession(model)
   const titleText = assemblyName
     ? `The reference sequence for ${assemblyName}`
     : readConfObject(trackConf, 'description')
