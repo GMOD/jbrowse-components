@@ -136,37 +136,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
     </Fade>
   )
 }
-// {session.editConfiguration && !assemblyName ? (
-//   !trackConf.sessionTrack && !session.adminMode ? (
-//     <IconButton
-//       className={classes.configureButton}
-//       onClick={() => {
-//         const trackSnapshot = JSON.parse(
-//           JSON.stringify(getSnapshot(trackConf)),
-//         )
-//         trackSnapshot.trackId += `-${Date.now()}`
-//         trackSnapshot.name += ' (copy)'
-//         trackSnapshot.category = [' Session tracks']
-//         session.addTrackConf(trackSnapshot)
-//       }}
-//       color="secondary"
-//       data-testid={`htsTrackEntryFork-${trackConfigId}`}
-//     >
-//       <ForkIcon fontSize="small" />
-//     </IconButton>
-//   ) : (
-//     <IconButton
-//       className={classes.configureButton}
-//       onClick={() => {
-//         session.editTrackConfiguration(trackConf)
-//       }}
-//       color="secondary"
-//       data-testid={`htsTrackEntryConfigure-${trackConfigId}`}
-//     >
-//       <SettingsIcon fontSize="small" />
-//     </IconButton>
-//   )
-// ) : null}
+
 TrackEntry.propTypes = {
   model: MobxPropTypes.observableObject.isRequired,
   disabled: propTypes.bool,

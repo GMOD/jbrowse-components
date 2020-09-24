@@ -1,12 +1,11 @@
 import { getSession } from '@gmod/jbrowse-core/util'
 import { getConf } from '@gmod/jbrowse-core/configuration'
-import CircularProgress from '@material-ui/core/CircularProgress'
 import Divider from '@material-ui/core/Divider'
 import FormGroup from '@material-ui/core/FormGroup'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import propTypes from 'prop-types'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import Category from './Category'
 import TrackEntry from './TrackEntry'
 

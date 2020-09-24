@@ -316,7 +316,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         const callbacksToDereferenceTrack: Function[] = []
         const dereferenceTypeCount: Record<string, number> = {}
         const referring = self.getReferring(trackConf)
-        console.log({ referring })
         this.removeReferring(
           referring,
           trackConf,

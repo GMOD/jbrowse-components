@@ -119,7 +119,9 @@ const TrackLabel = React.forwardRef(
       {
         label: 'Delete',
         onClick: () => {
+          // @ts-ignore
           session.deleteTrackConf(track.configuration)
+          handleClose()
         },
         disabled: !track.canConfigure,
         icon: DeleteIcon,
