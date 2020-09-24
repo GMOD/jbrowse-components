@@ -5,6 +5,7 @@
 import fs from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
+import { Context } from 'vm'
 import { setup } from '../testUtil'
 
 const fsPromises = fs.promises
@@ -68,6 +69,20 @@ const setupWithCreate = setup.do(async ctx => {
   )
 })
 
+async function killExpress(ctx: Context, port: number) {
+  const adminKey = ctx.stdoutWrite.mock.calls[0][0].match(
+    /adminKey=([a-zA-Z0-9]{10,12}) /,
+  )[1]
+  const payload = { adminKey }
+  await fetch(`http://localhost:${port}/shutdown`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+}
+
 // need to use --forceExit if running just this test suite to kill express servers
 // (doesn't seem to be an issue when running entire test suite)
 describe('admin-server', () => {
@@ -80,6 +95,9 @@ describe('admin-server', () => {
     .it('fails if no manifest.json found in cwd')
   setupWithCreate
     .command(['admin-server', '--port', '9091'])
+    .finally(async ctx => {
+      await killExpress(ctx, 9091)
+    })
     .it('creates a default config', async ctx => {
       const contents = await fsPromises.readFile(
         path.join(ctx.dir, 'config.json'),
@@ -100,6 +118,9 @@ describe('admin-server', () => {
       )
     })
     .command(['admin-server', '--port', '9092'])
+    .finally(async ctx => {
+      await killExpress(ctx, 9092)
+    })
     .it('does not overwrite an existing config', async ctx => {
       const contents = await fsPromises.readFile(
         path.join(ctx.dir, 'config.json'),
@@ -109,6 +130,9 @@ describe('admin-server', () => {
     })
   setupWithCreate
     .command(['admin-server'])
+    .finally(async ctx => {
+      await killExpress(ctx, 9090)
+    })
     .it('uses port 9090 if not specified', async ctx => {
       expect(ctx.stdoutWrite.mock.calls[0][0]).toMatch(
         /Navigate to http:\/\/localhost:9090\?adminKey=[a-zA-Z0-9]{10,12} to configure your JBrowse installation graphically\./,
@@ -124,6 +148,9 @@ describe('admin-server', () => {
     .it('throws an error with a port greater than 65535')
   setupWithCreate
     .command(['admin-server', '--port', '9093'])
+    .finally(async ctx => {
+      await killExpress(ctx, 9093)
+    })
     .it('notifies the user if adminKey is incorrect', async () => {
       const payload = { adminKey: 'badKey' }
       const response = await fetch('http://localhost:9093/updateConfig', {
@@ -138,6 +165,9 @@ describe('admin-server', () => {
     })
   setupWithCreate
     .command(['admin-server', '--port', '9094'])
+    .finally(async ctx => {
+      await killExpress(ctx, 9094)
+    })
     .it('writes the config to disk if adminKey is valid', async ctx => {
       // grab the correct admin key from URL
       const adminKey = ctx.stdoutWrite.mock.calls[0][0].match(
@@ -163,6 +193,9 @@ describe('admin-server', () => {
     .command(['admin-server', '--port', '9095'])
     .do(async () => {
       await fsPromises.chmod('config.json', '444')
+    })
+    .finally(async ctx => {
+      await killExpress(ctx, 9095)
     })
     .it('throws an error if unable to write to config.json', async ctx => {
       const adminKey = ctx.stdoutWrite.mock.calls[0][0].match(

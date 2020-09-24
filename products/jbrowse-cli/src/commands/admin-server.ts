@@ -99,8 +99,22 @@ export default class AdminServer extends JBrowseCommand {
       },
     )
 
+    app.post(
+      '/shutdown',
+      async (req: express.Request, res: express.Response) => {
+        this.debug('Req body: ', req.body)
+        if (req.body.adminKey === adminKey) {
+          this.debug('Admin key matches')
+          res.send('Exiting')
+          server.close()
+        } else {
+          res.status(403).send('Admin key does not match')
+        }
+      },
+    )
+
     const adminKey = generateKey()
-    app.listen(port)
+    const server = app.listen(port)
     this.log(
       `Navigate to http://localhost:${port}?adminKey=${adminKey} to configure your JBrowse installation graphically.`,
     )
