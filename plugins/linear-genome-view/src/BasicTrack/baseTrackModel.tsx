@@ -6,7 +6,13 @@ import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 import { MenuItem } from '@gmod/jbrowse-core/ui'
 import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { types, getSnapshot, getRoot, Instance } from 'mobx-state-tree'
+import {
+  types,
+  getSnapshot,
+  getRoot,
+  Instance,
+  IAnyStateTreeNode,
+} from 'mobx-state-tree'
 import InfoIcon from '@material-ui/icons/Info'
 import React from 'react'
 import Button from '@material-ui/core/Button'
@@ -81,29 +87,29 @@ const generateBaseTrackConfig = (base: any) =>
     },
     {
       explicitIdentifier: 'trackId',
-      views: self => ({
+      views: (self: unknown) => ({
         get fileOptions() {
-          console.log({ self })
-          let session
+          let session: any
+          const config = self as IAnyStateTreeNode
           try {
-            session = getSession(self)
+            session = getSession(config)
           } catch (e) {
-            session = getRoot(self).session
+            // TODO likely want a better way to do this
+            session = getRoot(config)
           }
-          console.log({ session, root: getRoot(self) })
           const canEdit =
             session.adminMode ||
-            session.sessionTracks.find(track => {
-              return track.trackId === self.configuration.trackId
+            session.sessionTracks.find((track: AnyConfigurationModel) => {
+              // @ts-ignore
+              return track.trackId === config.trackId
             })
 
-          console.log(self)
           return [
             {
               label: 'Settings',
               disabled: !canEdit,
               onClick: () => {
-                session.editTrackConfiguration(self)
+                session.editTrackConfiguration(config)
               },
               icon: SettingsIcon,
             },
@@ -111,7 +117,7 @@ const generateBaseTrackConfig = (base: any) =>
               label: 'Delete track',
               disabled: !canEdit,
               onClick: () => {
-                session.deleteTrackConf(self)
+                session.deleteTrackConf(config)
               },
               icon: DeleteIcon,
             },
@@ -119,7 +125,7 @@ const generateBaseTrackConfig = (base: any) =>
               label: 'Copy track',
               onClick: () => {
                 const trackSnapshot = JSON.parse(
-                  JSON.stringify(getSnapshot(self)),
+                  JSON.stringify(getSnapshot(config)),
                 )
                 trackSnapshot.trackId += `-${Date.now()}`
                 trackSnapshot.name += ' (copy)'

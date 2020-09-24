@@ -41,9 +41,9 @@ interface ConfigurationSchemaOptions {
   explicitIdentifier?: string
   implicitIdentifier?: string
   baseConfiguration?: AnyConfigurationSchemaType
-  actions?: (self: unknown) => Record<string, Function>
-  views?: (self: unknown) => Record<string, Function>
-  extend?: (self: unknown) => Record<string, Function>
+  actions?: (self: unknown) => any
+  views?: (self: unknown) => any
+  extend?: (self: unknown) => any
 }
 
 function preprocessConfigurationSchemaArguments(
@@ -174,11 +174,6 @@ function makeConfigurationSchemaModel<
         return newSchema
       },
     }))
-
-  // add computed members to the configuration itself
-  if (options.views) {
-    completeModel = completeModel.views(options.views)
-  }
 
   if (Object.keys(volatileConstants).length) {
     completeModel = completeModel.volatile((/* self */) => volatileConstants)
