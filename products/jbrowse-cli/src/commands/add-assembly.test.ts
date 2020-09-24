@@ -109,7 +109,7 @@ describe('add-assembly', () => {
 
   setup
     .command(['add-assembly', 'simple.doesNotExist.fasta', '--load', 'copy'])
-    .exit(40)
+    .catch(/no such file/)
     .it('fails if it cannot find a file')
 
   setup

@@ -131,49 +131,24 @@ export default abstract class JBrowseCommand extends Command {
 
   async resolveFileLocation(location: string, check = true, warning = false) {
     let locationUrl: URL | undefined
-    let locationPath: string | undefined
     try {
       locationUrl = new URL(location)
     } catch (error) {
       // ignore
     }
     if (locationUrl) {
-      let response
-      try {
-        if (check) {
-          response = await fetch(locationUrl, { method: 'HEAD' })
-          if (response.ok) {
-            return locationUrl.href
-          }
-          throw new Error(`${response.statusText}`)
-        } else {
-          return locationUrl.href
-        }
-      } catch (error) {
-        // ignore
-      }
-    }
-    try {
       if (check) {
-        locationPath = await fsPromises.realpath(location)
-      } else {
-        locationPath = location
+        const response = await fetch(locationUrl, { method: 'HEAD' })
+        if (!response.ok) {
+          throw new Error(`${response.statusText}`)
+        }
+        return locationUrl.href
       }
-    } catch (e) {
-      // ignore
+      return locationUrl.href
     }
-    if (locationPath) {
-      const filePath = path.relative(process.cwd(), locationPath)
-      if (warning && filePath.startsWith('..')) {
-        this.warn(
-          `Location ${filePath} is not in the JBrowse directory. Make sure it is still in your server directory.`,
-        )
-      }
-      return filePath
-    }
-    return this.error(`Could not resolve to a file or a URL: "${location}"`, {
-      exit: 40,
-    })
+    return check
+      ? path.relative(process.cwd(), await fsPromises.realpath(location))
+      : location
   }
 
   async readInlineOrFileJson(inlineOrFileName: string) {

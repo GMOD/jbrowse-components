@@ -48,5 +48,8 @@
   "types": "lib/index.d.ts",
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@oclif/test": "^1"
   }
 }
