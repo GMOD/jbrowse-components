@@ -80,7 +80,7 @@ describe('add-track', () => {
     .it('Cannot add a track with the same track id')
   setup
     .command(['add-track', simpleBam, '--load', 'copy'])
-    .catch(error => expect(error.message).toMatch(/no such/))
+    .catch(/no such file/)
     .it('Cannot add a track if there is no config file')
   setup
     .do(async ctx => {
