@@ -125,7 +125,7 @@ const TrackLabel = React.forwardRef(
       {
         label: 'Settings',
         onClick: onConfigureClick,
-        disabled: track.canConfigure,
+        disabled: !track.canConfigure,
         icon: SettingsIcon,
       },
       {
@@ -133,7 +133,7 @@ const TrackLabel = React.forwardRef(
         onClick: () => {
           session.deleteTrackConf(track.configuration)
         },
-        disabled: track.canConfigure,
+        disabled: !track.canConfigure,
         icon: DeleteIcon,
       },
       { label: 'Copy', onClick: onFork, icon: CopyIcon },

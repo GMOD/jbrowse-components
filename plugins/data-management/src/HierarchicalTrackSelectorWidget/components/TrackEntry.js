@@ -102,6 +102,22 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
           }}
           menuItems={[
             {
+              label: 'Settings',
+              disabled: !(session.adminMode || trackConf.sessionTrack),
+              onClick: () => {
+                session.editTrackConfiguration(trackConf)
+              },
+              icon: SettingsIcon,
+            },
+            {
+              label: 'Delete track',
+              disabled: !(session.adminMode || trackConf.sessionTrack),
+              onClick: () => {
+                session.deleteTrackConf(trackConf)
+              },
+              icon: SettingsIcon,
+            },
+            {
               label: 'Copy track',
               onClick: () => {
                 const trackSnapshot = JSON.parse(
@@ -113,14 +129,6 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
                 session.addTrackConf(trackSnapshot)
               },
               icon: CopyIcon,
-            },
-            {
-              label: 'Settings',
-              disabled: !(session.adminMode || trackConf.sessionTrack),
-              onClick: () => {
-                session.editTrackConfiguration(trackConf)
-              },
-              icon: SettingsIcon,
             },
           ]}
         />

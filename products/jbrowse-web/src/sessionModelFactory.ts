@@ -20,7 +20,6 @@ import {
   SnapshotIn,
   types,
   walk,
-  cast,
   Instance,
 } from 'mobx-state-tree'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
@@ -288,11 +287,11 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         self.views.remove(view)
       },
 
-      addAssemblyConf(assemblyConf: any) {
+      addAssemblyConf(assemblyConf: AnyConfigurationModel) {
         return getParent(self).jbrowse.addAssemblyConf(assemblyConf)
       },
 
-      addTrackConf(trackConf: any) {
+      addTrackConf(trackConf: AnyConfigurationModel) {
         if (self.adminMode) {
           return getParent(self).jbrowse.addTrackConf(trackConf)
         }
@@ -308,13 +307,16 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return self.sessionTracks[length - 1]
       },
 
-      deleteTrackConf(trackConf: any) {
+      deleteTrackConf(trackConf: AnyConfigurationModel) {
         const { trackId } = trackConf
         const idx = self.sessionTracks.findIndex(t => t.trackId === trackId)
-        console.log({ idx })
+        if (idx === -1) {
+          return undefined
+        }
         const callbacksToDereferenceTrack: Function[] = []
         const dereferenceTypeCount: Record<string, number> = {}
         const referring = self.getReferring(trackConf)
+        console.log({ referring })
         this.removeReferring(
           referring,
           trackConf,

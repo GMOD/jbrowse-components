@@ -170,20 +170,6 @@ const BaseTrack = types
       return adapterType
     },
 
-    get canConfigure() {
-      const session = getSession(self)
-      return (
-        isSessionModelWithConfigEditing(session) &&
-        // @ts-ignore
-        session.adminMode &&
-        // @ts-ignore
-        session.sessionTracks.findIndex(track => {
-          // @ts-ignore
-          return track.trackId === self.configuration.trackId
-        }) !== -1
-      )
-    },
-
     /**
      * if a track-level message should be displayed instead of the blocks,
      * make this return a react component
@@ -318,8 +304,17 @@ const BaseTrackWithReferences = types
     },
   }))
   .views(self => ({
-    get hello() {
-      return 'world'
+    get canConfigure() {
+      const session = getSession(self)
+      return (
+        isSessionModelWithConfigEditing(session) &&
+        // @ts-ignore
+        (session.adminMode ||
+          // @ts-ignore
+          session.sessionTracks.find(track => {
+            return track.trackId === self.configuration.trackId
+          })
+      )
     },
   }))
 

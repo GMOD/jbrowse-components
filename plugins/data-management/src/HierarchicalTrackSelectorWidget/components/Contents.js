@@ -36,54 +36,19 @@ function Contents({
     hierarchy = hierarchy.get(pathEntry) || new Map()
   })
 
-  const initialTrackConfigurations = []
-  const initialCategories = []
+  const trackConfigurations = []
+  const categories = []
   Array.from(hierarchy)
-    .slice(0, 50)
+    .slice(0)
     .forEach(([name, contents]) => {
       if (contents.trackId) {
-        initialTrackConfigurations.push(contents)
+        trackConfigurations.push(contents)
       } else {
-        initialCategories.push([name, contents])
+        categories.push([name, contents])
       }
     })
-  const [categories, setCategories] = useState(initialCategories)
-  const [trackConfigurations, setTrackConfigurations] = useState(
-    initialTrackConfigurations,
-  )
-
-  useEffect(() => {
-    function loadMoreTracks() {
-      const numLoaded = categories.length + trackConfigurations.length
-      const loadedTrackConfigurations = []
-      const loadedCategories = []
-      Array.from(hierarchy)
-        .slice(numLoaded, numLoaded + 10)
-        .forEach(([name, contents]) => {
-          if (contents.trackId) {
-            loadedTrackConfigurations.push(contents)
-          } else {
-            loadedCategories.push([name, contents])
-          }
-        })
-      setCategories(categories.concat(loadedCategories))
-      setTrackConfigurations(
-        trackConfigurations.concat(loadedTrackConfigurations),
-      )
-    }
-
-    const handle = requestIdleCallback(loadMoreTracks)
-
-    return function cleanup() {
-      cancelIdleCallback(handle)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hierarchy.size, categories.length, trackConfigurations.length])
-
   const { assemblyManager } = getSession(model)
   const assembly = assemblyManager.get(assemblyName)
-  const doneLoading =
-    categories.length + trackConfigurations.length === hierarchy.size
 
   const showRefSeqTrack =
     top &&
@@ -118,7 +83,6 @@ function Contents({
           )
         })}
       </FormGroup>
-      {doneLoading ? null : <CircularProgress />}
       {categories.sort().map(([name]) => (
         <Category
           key={name}
