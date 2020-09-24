@@ -88,7 +88,7 @@ const generateBaseTrackConfig = (base: any) =>
     {
       explicitIdentifier: 'trackId',
       views: (self: unknown) => ({
-        get fileOptions() {
+        get fileMenuItems() {
           let session: any
           const config = self as IAnyStateTreeNode
           try {
@@ -283,18 +283,6 @@ const BaseTrack = types
     reload() {},
   }))
   .views(self => ({
-    get trackMenuItems(): MenuItem[] {
-      return [
-        {
-          label: 'About this track',
-          icon: InfoIcon,
-          onClick: () => {
-            self.setShowAbout(true)
-          },
-        },
-      ]
-    },
-
     /**
      * @param region -
      * @returns falsy if the region is fine to try rendering. Otherwise,
@@ -378,6 +366,17 @@ const BaseTrackWithReferences = types
             return track.trackId === self.configuration.trackId
           }))
       )
+    },
+    get trackMenuItems(): MenuItem[] {
+      return [
+        {
+          label: 'About this track',
+          icon: InfoIcon,
+          onClick: () => {
+            self.setShowAbout(true)
+          },
+        },
+      ]
     },
   }))
 

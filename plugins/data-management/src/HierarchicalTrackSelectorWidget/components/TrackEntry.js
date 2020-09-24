@@ -93,7 +93,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
           onClose={() => {
             setAnchorEl(null)
           }}
-          menuItems={trackConf.fileOptions}
+          menuItems={trackConf.fileMenuItems}
         />
       </div>
     </Fade>

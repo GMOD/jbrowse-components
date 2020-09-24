@@ -109,41 +109,6 @@ const TrackLabel = React.forwardRef(
       handleClose()
     }
 
-    const trackOptions: MenuItem[] = [
-      {
-        label: 'Settings',
-        onClick: onConfigureClick,
-        disabled: !track.canConfigure,
-        icon: SettingsIcon,
-      },
-      {
-        label: 'Delete',
-        onClick: () => {
-          // @ts-ignore
-          session.deleteTrackConf(track.configuration)
-          handleClose()
-        },
-        disabled: !track.canConfigure,
-        icon: DeleteIcon,
-      },
-      {
-        label: 'Copy',
-        onClick: () => {
-          const trackSnapshot = JSON.parse(
-            JSON.stringify(getSnapshot(track.configuration)),
-          )
-          trackSnapshot.trackId += `-${Date.now()}`
-          trackSnapshot.name += ' (copy)'
-          trackSnapshot.category = [' Session tracks']
-          // @ts-ignore
-          session.addTrackConf(trackSnapshot)
-          handleClose()
-        },
-        icon: CopyIcon,
-      },
-    ]
-
-    const trackMenuItems = [...trackOptions, ...track.trackMenuItems]
     return (
       <>
         <Paper ref={ref} className={clsx(className, classes.root)}>
@@ -178,7 +143,7 @@ const TrackLabel = React.forwardRef(
             className={classes.iconButton}
             color="secondary"
             data-testid="track_menu_icon"
-            disabled={!trackMenuItems.length}
+            disabled={!track.trackMenuItems.length}
           >
             <MoreVertIcon fontSize="small" />
           </IconButton>
@@ -188,7 +153,10 @@ const TrackLabel = React.forwardRef(
           onMenuItemClick={handleMenuItemClick}
           open={Boolean(anchorEl)}
           onClose={handleClose}
-          menuItems={trackMenuItems}
+          menuItems={[
+            ...track.configuration.fileMenuItems,
+            ...track.trackMenuItems,
+          ]}
         />
       </>
     )
