@@ -5,7 +5,6 @@
 import fs from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
-import { Context } from 'vm'
 import { setup } from '../testUtil'
 
 const fsPromises = fs.promises
@@ -83,8 +82,6 @@ async function killExpress(ctx: { stdoutWrite: jest.Mock }, port: number) {
   })
 }
 
-// need to use --forceExit if running just this test suite to kill express servers
-// (doesn't seem to be an issue when running entire test suite)
 describe('admin-server', () => {
   setupWithCreate
     .do(async () => {
