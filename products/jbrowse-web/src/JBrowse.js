@@ -87,16 +87,22 @@ const JBrowse = observer(({ pluginManager }) => {
   }, [rootModel, setSession, useLocalStorage, useUpdateUrl, session])
 
   useEffect(() => {
-    onSnapshot(rootModel, snapshot => {
+    onSnapshot(rootModel, async snapshot => {
       if (adminMode) {
         const payload = { adminKey: adminKeyParam, config: snapshot.jbrowse }
-        fetch('/updateConfig', {
+        const response = await fetch('/updateConfig', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(payload),
         })
+        if (!response.ok) {
+          const message = await response.text()
+          rootModel.session.notify(
+            `got ${response.status} (${response.statusText}) ${message || ''}`,
+          )
+        }
       }
     })
   }, [rootModel, adminMode, adminKeyParam])
