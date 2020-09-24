@@ -3,7 +3,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 import Checkbox from '@material-ui/core/Checkbox'
-import Fade from '@material-ui/core/Fade'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import IconButton from '@material-ui/core/IconButton'
 import { makeStyles } from '@material-ui/core/styles'
@@ -59,7 +58,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
     : []
 
   return (
-    <Fade in>
+
       <div className={classes.track}>
         <Tooltip title={titleText} placement="left" enterDelay={500}>
           <FormControlLabel
@@ -105,7 +104,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
           menuItems={menuItems}
         />
       </div>
-    </Fade>
+
   )
 }
 

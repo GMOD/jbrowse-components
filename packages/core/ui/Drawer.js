@@ -22,26 +22,23 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function Drawer({ children, open, session }) {
+function Drawer({ children, session }) {
   const classes = useStyles()
 
   return (
-    <Slide in={open} direction="left">
-      <Paper className={classes.paper} elevation={16} square>
-        <ResizeHandle
-          onDrag={session.resizeDrawer}
-          className={classes.resizeHandle}
-          vertical
-        />
-        {children}
-      </Paper>
-    </Slide>
+    <Paper className={classes.paper} elevation={16} square>
+      <ResizeHandle
+        onDrag={session.resizeDrawer}
+        className={classes.resizeHandle}
+        vertical
+      />
+      {children}
+    </Paper>
   )
 }
 
 Drawer.propTypes = {
   children: PropTypes.node,
-  open: PropTypes.bool.isRequired,
   session: MobxPropTypes.observableObject.isRequired,
 }
 

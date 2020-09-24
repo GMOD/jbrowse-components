@@ -1,5 +1,4 @@
 import Divider from '@material-ui/core/Divider'
-import Grow from '@material-ui/core/Grow'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
 import ListSubheader from '@material-ui/core/ListSubheader'
@@ -179,7 +178,7 @@ function findPreviousValidIdx(menuItems: MenuItem[], currentIdx: number) {
   )
 }
 
-const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
+const MenuPage = (props: MenuPageProps) => {
   const [subMenuAnchorEl, setSubMenuAnchorEl] = useState<null | HTMLElement>(
     null,
   )
@@ -385,18 +384,20 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
   }
 
   return (
-    <Grow in={open} style={{ transformOrigin: '0 0 0' }} ref={ref}>
-      <Paper
-        elevation={8}
-        ref={paperRef}
-        className={classes.paper}
-        style={{ ...position }}
-      >
-        {ListContents}
-      </Paper>
-    </Grow>
+    <>
+      {open ? (
+        <Paper
+          elevation={8}
+          ref={paperRef}
+          className={classes.paper}
+          style={{ ...position }}
+        >
+          {ListContents}
+        </Paper>
+      ) : null}
+    </>
   )
-})
+}
 
 interface MenuProps extends PopoverProps {
   menuItems: MenuItem[]
@@ -410,6 +411,7 @@ function Menu(props: MenuProps) {
   const { open, onClose, menuItems, onMenuItemClick, ...other } = props
   return (
     <Popover
+      transitionDuration={0}
       open={open}
       onClose={onClose}
       BackdropProps={{ invisible: true }}
