@@ -1,15 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
 import { isSessionModelWithConfigEditing } from '@gmod/jbrowse-core/util/types'
+import { getDefaultValue } from '@gmod/jbrowse-core/util/mst-reflection'
 import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 import { MenuItem } from '@gmod/jbrowse-core/ui'
 import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { types, Instance } from 'mobx-state-tree'
+import { types, getSnapshot, getRoot, Instance } from 'mobx-state-tree'
 import InfoIcon from '@material-ui/icons/Info'
 import React from 'react'
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
+import SettingsIcon from '@material-ui/icons/Settings'
+import CopyIcon from '@material-ui/icons/FileCopy'
+import DeleteIcon from '@material-ui/icons/Delete'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { LinearGenomeViewModel } from '../LinearGenomeView'
 
 // these MST models only exist for tracks that are *shown*.
@@ -74,7 +79,59 @@ const generateBaseTrackConfig = (base: any) =>
         defaultValue: [],
       },
     },
-    { explicitIdentifier: 'trackId' },
+    {
+      explicitIdentifier: 'trackId',
+      views: self => ({
+        get fileOptions() {
+          console.log({ self })
+          let session
+          try {
+            session = getSession(self)
+          } catch (e) {
+            session = getRoot(self).session
+          }
+          console.log({ session, root: getRoot(self) })
+          const canEdit =
+            session.adminMode ||
+            session.sessionTracks.find(track => {
+              return track.trackId === self.configuration.trackId
+            })
+
+          console.log(self)
+          return [
+            {
+              label: 'Settings',
+              disabled: !canEdit,
+              onClick: () => {
+                session.editTrackConfiguration(self)
+              },
+              icon: SettingsIcon,
+            },
+            {
+              label: 'Delete track',
+              disabled: !canEdit,
+              onClick: () => {
+                session.deleteTrackConf(self)
+              },
+              icon: DeleteIcon,
+            },
+            {
+              label: 'Copy track',
+              onClick: () => {
+                const trackSnapshot = JSON.parse(
+                  JSON.stringify(getSnapshot(self)),
+                )
+                trackSnapshot.trackId += `-${Date.now()}`
+                trackSnapshot.name += ' (copy)'
+                trackSnapshot.category = [' Session tracks']
+                session.addTrackConf(trackSnapshot)
+              },
+              icon: CopyIcon,
+            },
+          ]
+        },
+      }),
+    },
   )
 
 // note that multiple displayed tracks could use the same configuration.
@@ -278,6 +335,7 @@ const BaseTrack = types
   }))
 
 export const BaseTrackConfig = generateBaseTrackConfig(BaseTrack)
+console.log(getDefaultValue(BaseTrackConfig))
 
 const BaseTrackWithReferences = types
   .compose(
@@ -320,3 +378,46 @@ const BaseTrackWithReferences = types
 export type BaseTrackStateModel = typeof BaseTrackWithReferences
 export type BaseTrackModel = Instance<BaseTrackStateModel>
 export default BaseTrackWithReferences
+
+// generate file config options given a track config and a model
+// note that model.configuration is not used and this is not in a model because
+// this is derived directly from the configuration, not an instance of a track
+// export function getFileConfigOptions(
+//   model: BaseTrackModel,
+//   trackConf: AnyConfigurationModel,
+// ) {
+//   const session = getSession(model)
+// const canEdit = session.adminMode||session.sessionTracks.find(track => {
+
+//             return track.trackId === self.configuration.trackId
+//           })
+//   return [
+//     {
+//       label: 'Settings',
+//       disabled: !(session.adminMode || trackConf.sessionTrack),
+//       onClick: () => {
+//         session.editTrackConfiguration(trackConf)
+//       },
+//       icon: SettingsIcon,
+//     },
+//     {
+//       label: 'Delete track',
+//       disabled: !(session.adminMode || trackConf.sessionTrack),
+//       onClick: () => {
+//         session.deleteTrackConf(trackConf)
+//       },
+//       icon: DeleteIcon,
+//     },
+//     {
+//       label: 'Copy track',
+//       onClick: () => {
+//         const trackSnapshot = JSON.parse(JSON.stringify(getSnapshot(trackConf)))
+//         trackSnapshot.trackId += `-${Date.now()}`
+//         trackSnapshot.name += ' (copy)'
+//         trackSnapshot.category = [' Session tracks']
+//         session.addTrackConf(trackSnapshot)
+//       },
+//       icon: CopyIcon,
+//     },
+//   ]
+// }

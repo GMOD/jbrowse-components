@@ -174,6 +174,12 @@ function makeConfigurationSchemaModel<
         return newSchema
       },
     }))
+
+  // add computed members to the configuration itself
+  if (options.views) {
+    completeModel = completeModel.views(options.views)
+  }
+
   if (Object.keys(volatileConstants).length) {
     completeModel = completeModel.volatile((/* self */) => volatileConstants)
   }

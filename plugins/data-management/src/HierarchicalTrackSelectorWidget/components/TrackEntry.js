@@ -9,9 +9,7 @@ import IconButton from '@material-ui/core/IconButton'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
-import SettingsIcon from '@material-ui/icons/Settings'
 import HorizontalDots from '@material-ui/icons/MoreHoriz'
-import CopyIcon from '@material-ui/icons/FileCopy'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
@@ -51,11 +49,11 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
   const titleText = assemblyName
     ? `The reference sequence for ${assemblyName}`
     : readConfObject(trackConf, 'description')
+  const trackName = readConfObject(trackConf, 'name')
+  const trackId = readConfObject(trackConf, 'trackId')
   const unsupported =
-    readConfObject(trackConf, 'name') &&
-    (readConfObject(trackConf, 'name').endsWith('(Unsupported)') ||
-      readConfObject(trackConf, 'name').endsWith('(Unknown)'))
-  const trackConfigId = readConfObject(trackConf, 'trackId')
+    trackName &&
+    (trackName.endsWith('(Unsupported)') || trackName.endsWith('(Unknown)'))
   return (
     <Fade in>
       <div className={classes.track}>
@@ -65,15 +63,13 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
             control={
               <Checkbox
                 inputProps={{
-                  'data-testid': `htsTrackEntry-${trackConfigId}`,
+                  'data-testid': `htsTrackEntry-${trackId}`,
                 }}
                 className={classes.checkbox}
               />
             }
             label={
-              assemblyName
-                ? `Reference Sequence (${assemblyName})`
-                : readConfObject(trackConf, 'name')
+              assemblyName ? `Reference Sequence (${assemblyName})` : trackName
             }
             checked={model.view.tracks.some(t => t.configuration === trackConf)}
             onChange={() => model.view.toggleTrack(trackConf)}
@@ -86,7 +82,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
             setAnchorEl(event.currentTarget)
           }}
           color="secondary"
-          data-testid={`htsTrackEntryMenu-${trackConfigId}`}
+          data-testid={`htsTrackEntryMenu-${trackId}`}
         >
           <HorizontalDots fontSize="small" />
         </IconButton>
@@ -100,37 +96,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
           onClose={() => {
             setAnchorEl(null)
           }}
-          menuItems={[
-            {
-              label: 'Settings',
-              disabled: !(session.adminMode || trackConf.sessionTrack),
-              onClick: () => {
-                session.editTrackConfiguration(trackConf)
-              },
-              icon: SettingsIcon,
-            },
-            {
-              label: 'Delete track',
-              disabled: !(session.adminMode || trackConf.sessionTrack),
-              onClick: () => {
-                session.deleteTrackConf(trackConf)
-              },
-              icon: SettingsIcon,
-            },
-            {
-              label: 'Copy track',
-              onClick: () => {
-                const trackSnapshot = JSON.parse(
-                  JSON.stringify(getSnapshot(trackConf)),
-                )
-                trackSnapshot.trackId += `-${Date.now()}`
-                trackSnapshot.name += ' (copy)'
-                trackSnapshot.category = [' Session tracks']
-                session.addTrackConf(trackSnapshot)
-              },
-              icon: CopyIcon,
-            },
-          ]}
+          menuItems={trackConf.fileOptions}
         />
       </div>
     </Fade>
