@@ -74,18 +74,6 @@ const TrackLabel = React.forwardRef(
       setAnchorEl(null)
     }
 
-    const onFork = () => {
-      const trackSnapshot = JSON.parse(
-        JSON.stringify(getSnapshot(track.configuration)),
-      )
-      trackSnapshot.trackId += `-${Date.now()}`
-      trackSnapshot.name += ' (copy)'
-      trackSnapshot.category = [' Session tracks']
-      // @ts-ignore
-      session.addTrackConf(trackSnapshot)
-      handleClose()
-    }
-
     const onConfigureClick = () => {
       track.activateConfigurationUI()
       handleClose()
@@ -136,7 +124,21 @@ const TrackLabel = React.forwardRef(
         disabled: !track.canConfigure,
         icon: DeleteIcon,
       },
-      { label: 'Copy', onClick: onFork, icon: CopyIcon },
+      {
+        label: 'Copy',
+        onClick: () => {
+          const trackSnapshot = JSON.parse(
+            JSON.stringify(getSnapshot(track.configuration)),
+          )
+          trackSnapshot.trackId += `-${Date.now()}`
+          trackSnapshot.name += ' (copy)'
+          trackSnapshot.category = [' Session tracks']
+          // @ts-ignore
+          session.addTrackConf(trackSnapshot)
+          handleClose()
+        },
+        icon: CopyIcon,
+      },
     ]
 
     const trackMenuItems = [...trackOptions, ...track.trackMenuItems]

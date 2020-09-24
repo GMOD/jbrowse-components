@@ -278,7 +278,6 @@ const BaseTrack = types
   }))
 
 export const BaseTrackConfig = generateBaseTrackConfig(BaseTrack)
-console.log({ BaseTrackConfig })
 
 const BaseTrackWithReferences = types
   .compose(
@@ -313,7 +312,7 @@ const BaseTrackWithReferences = types
           // @ts-ignore
           session.sessionTracks.find(track => {
             return track.trackId === self.configuration.trackId
-          })
+          }))
       )
     },
   }))
