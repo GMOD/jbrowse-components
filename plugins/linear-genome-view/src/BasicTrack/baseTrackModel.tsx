@@ -292,6 +292,7 @@ const BaseTrack = types
   }))
 
 export const BaseTrackConfig = generateBaseTrackConfig(BaseTrack)
+console.log({ BaseTrackConfig })
 
 const BaseTrackWithReferences = types
   .compose(
@@ -314,6 +315,11 @@ const BaseTrackWithReferences = types
           view.showTrack(newTrackConf)
         }
       }
+    },
+  }))
+  .views(self => ({
+    get hello() {
+      return 'world'
     },
   }))
 

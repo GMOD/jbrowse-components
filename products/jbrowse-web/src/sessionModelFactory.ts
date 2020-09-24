@@ -20,6 +20,7 @@ import {
   SnapshotIn,
   types,
   walk,
+  cast,
   Instance,
 } from 'mobx-state-tree'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
@@ -175,46 +176,62 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return assemblyConnections[length - 1]
       },
 
+      removeReferring(
+        referring: any,
+        track: any,
+        callbacks: Function[],
+        dereferenceTypeCount: Record<string, number>,
+      ) {
+        referring.forEach(({ node }: ReferringNode) => {
+          let dereferenced = false
+          try {
+            // If a view is referring to the track config, remove the track
+            // from the view
+            const type = 'open track(s)'
+            const view = getContainingView(node) as TrackViewModel
+            callbacks.push(() => view.hideTrack(track))
+            dereferenced = true
+            if (!dereferenceTypeCount[type]) {
+              dereferenceTypeCount[type] = 0
+            }
+            dereferenceTypeCount[type] += 1
+          } catch (err1) {
+            // ignore
+          }
+          if (this.hasWidget(node)) {
+            // If a configuration editor widget has the track config
+            // open, close the widget
+            const type = 'configuration editor widget(s)'
+            callbacks.push(() => this.hideWidget(node))
+            dereferenced = true
+            if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
+            dereferenceTypeCount[type] += 1
+          }
+          if (!dereferenced)
+            throw new Error(
+              `Error when closing this connection, the following node is still referring to a track configuration: ${JSON.stringify(
+                getSnapshot(node),
+              )}`,
+            )
+        })
+      },
+
       prepareToBreakConnection(configuration: AnyConfigurationModel) {
+        const callbacksToDereferenceTrack: Function[] = []
+        const dereferenceTypeCount: Record<string, number> = {}
         const name = readConfObject(configuration, 'name')
         const assemblyName = readConfObject(configuration, 'assemblyName')
         const assemblyConnections =
           self.connectionInstances.get(assemblyName) || []
         const connection = assemblyConnections.find(c => c.name === name)
-        const callbacksToDereferenceTrack: Function[] = []
-        const dereferenceTypeCount: Record<string, number> = {}
         connection.tracks.forEach((track: any) => {
           const referring = self.getReferring(track)
-          referring.forEach(({ node }: ReferringNode) => {
-            let dereferenced = false
-            try {
-              // If a view is referring to the track config, remove the track
-              // from the view
-              const type = 'open track(s)'
-              const view = getContainingView(node) as TrackViewModel
-              callbacksToDereferenceTrack.push(() => view.hideTrack(track))
-              dereferenced = true
-              if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
-              dereferenceTypeCount[type] += 1
-            } catch (err1) {
-              // ignore
-            }
-            if (this.hasWidget(node)) {
-              // If a configuration editor widget has the track config
-              // open, close the widget
-              const type = 'configuration editor widget(s)'
-              callbacksToDereferenceTrack.push(() => this.hideWidget(node))
-              dereferenced = true
-              if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
-              dereferenceTypeCount[type] += 1
-            }
-            if (!dereferenced)
-              throw new Error(
-                `Error when closing this connection, the following node is still referring to a track configuration: ${JSON.stringify(
-                  getSnapshot(node),
-                )}`,
-              )
-          })
+          this.removeReferring(
+            referring,
+            track,
+            callbacksToDereferenceTrack,
+            dereferenceTypeCount,
+          )
         })
         const safelyBreakConnection = () => {
           callbacksToDereferenceTrack.forEach(cb => cb())
@@ -289,6 +306,23 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         }
         const length = self.sessionTracks.push(trackConf)
         return self.sessionTracks[length - 1]
+      },
+
+      deleteTrackConf(trackConf: any) {
+        const { trackId } = trackConf
+        const idx = self.sessionTracks.findIndex(t => t.trackId === trackId)
+        console.log({ idx })
+        const callbacksToDereferenceTrack: Function[] = []
+        const dereferenceTypeCount: Record<string, number> = {}
+        const referring = self.getReferring(trackConf)
+        this.removeReferring(
+          referring,
+          trackConf,
+          callbacksToDereferenceTrack,
+          dereferenceTypeCount,
+        )
+        callbacksToDereferenceTrack.forEach(cb => cb())
+        return self.sessionTracks.splice(idx, 1)
       },
 
       addConnectionConf(connectionConf: any) {

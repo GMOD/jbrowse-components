@@ -1,4 +1,6 @@
+import React, { useState } from 'react'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { Menu } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
 import Checkbox from '@material-ui/core/Checkbox'
 import Fade from '@material-ui/core/Fade'
@@ -7,12 +9,12 @@ import IconButton from '@material-ui/core/IconButton'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
-import ForkIcon from '@material-ui/icons/CallSplit'
 import SettingsIcon from '@material-ui/icons/Settings'
+import HorizontalDots from '@material-ui/icons/MoreHoriz'
+import CopyIcon from '@material-ui/icons/FileCopy'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
-import React from 'react'
 
 const useStyles = makeStyles(theme => ({
   formControlLabel: {
@@ -44,6 +46,7 @@ const useStyles = makeStyles(theme => ({
 
 function TrackEntry({ model, disabled, trackConf, assemblyName }) {
   const classes = useStyles()
+  const [anchorEl, setAnchorEl] = useState(null)
   const session = getSession(model)
   const titleText = assemblyName
     ? `The reference sequence for ${assemblyName}`
@@ -77,12 +80,30 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
             disabled={disabled || unsupported}
           />
         </Tooltip>
-        {/* eslint-disable-next-line no-nested-ternary */}
-        {session.editConfiguration && !assemblyName ? (
-          !trackConf.sessionTrack && !session.adminMode ? (
-            <IconButton
-              className={classes.configureButton}
-              onClick={() => {
+        <IconButton
+          className={classes.configureButton}
+          onClick={event => {
+            setAnchorEl(event.currentTarget)
+          }}
+          color="secondary"
+          data-testid={`htsTrackEntryFork-${trackConfigId}`}
+        >
+          <HorizontalDots fontSize="small" />
+        </IconButton>
+        <Menu
+          anchorEl={anchorEl}
+          onMenuItemClick={(_, callback) => {
+            callback()
+            setAnchorEl(null)
+          }}
+          open={Boolean(anchorEl)}
+          onClose={() => {
+            setAnchorEl(null)
+          }}
+          menuItems={[
+            {
+              label: 'Copy track',
+              onClick: () => {
                 const trackSnapshot = JSON.parse(
                   JSON.stringify(getSnapshot(trackConf)),
                 )
@@ -90,30 +111,54 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
                 trackSnapshot.name += ' (copy)'
                 trackSnapshot.category = [' Session tracks']
                 session.addTrackConf(trackSnapshot)
-              }}
-              color="secondary"
-              data-testid={`htsTrackEntryFork-${trackConfigId}`}
-            >
-              <ForkIcon fontSize="small" />
-            </IconButton>
-          ) : (
-            <IconButton
-              className={classes.configureButton}
-              onClick={() => {
+              },
+              icon: CopyIcon,
+            },
+            {
+              label: 'Settings',
+              disabled: !(session.adminMode || trackConf.sessionTrack),
+              onClick: () => {
                 session.editTrackConfiguration(trackConf)
-              }}
-              color="secondary"
-              data-testid={`htsTrackEntryConfigure-${trackConfigId}`}
-            >
-              <SettingsIcon fontSize="small" />
-            </IconButton>
-          )
-        ) : null}
+              },
+              icon: SettingsIcon,
+            },
+          ]}
+        />
       </div>
     </Fade>
   )
 }
-
+// {session.editConfiguration && !assemblyName ? (
+//   !trackConf.sessionTrack && !session.adminMode ? (
+//     <IconButton
+//       className={classes.configureButton}
+//       onClick={() => {
+//         const trackSnapshot = JSON.parse(
+//           JSON.stringify(getSnapshot(trackConf)),
+//         )
+//         trackSnapshot.trackId += `-${Date.now()}`
+//         trackSnapshot.name += ' (copy)'
+//         trackSnapshot.category = [' Session tracks']
+//         session.addTrackConf(trackSnapshot)
+//       }}
+//       color="secondary"
+//       data-testid={`htsTrackEntryFork-${trackConfigId}`}
+//     >
+//       <ForkIcon fontSize="small" />
+//     </IconButton>
+//   ) : (
+//     <IconButton
+//       className={classes.configureButton}
+//       onClick={() => {
+//         session.editTrackConfiguration(trackConf)
+//       }}
+//       color="secondary"
+//       data-testid={`htsTrackEntryConfigure-${trackConfigId}`}
+//     >
+//       <SettingsIcon fontSize="small" />
+//     </IconButton>
+//   )
+// ) : null}
 TrackEntry.propTypes = {
   model: MobxPropTypes.observableObject.isRequired,
   disabled: propTypes.bool,

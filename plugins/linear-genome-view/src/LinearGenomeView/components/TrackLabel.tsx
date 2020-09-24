@@ -10,7 +10,8 @@ import MoreVertIcon from '@material-ui/icons/MoreVert'
 import DragIcon from '@material-ui/icons/DragIndicator'
 import CloseIcon from '@material-ui/icons/Close'
 import SettingsIcon from '@material-ui/icons/Settings'
-import ForkIcon from '@material-ui/icons/CallSplit'
+import DeleteIcon from '@material-ui/icons/Delete'
+import CopyIcon from '@material-ui/icons/FileCopy'
 
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
@@ -120,17 +121,25 @@ const TrackLabel = React.forwardRef(
       handleClose()
     }
 
-    const trackMenuItems: MenuItem[] = track.canConfigure
-      ? [{ label: 'Settings', onClick: onConfigureClick, icon: SettingsIcon }]
-      : [{ label: 'Fork', onClick: onFork, icon: ForkIcon }]
+    const trackOptions: MenuItem[] = [
+      {
+        label: 'Settings',
+        onClick: onConfigureClick,
+        disabled: track.canConfigure,
+        icon: SettingsIcon,
+      },
+      {
+        label: 'Delete',
+        onClick: () => {
+          session.deleteTrackConf(track.configuration)
+        },
+        disabled: track.canConfigure,
+        icon: DeleteIcon,
+      },
+      { label: 'Copy', onClick: onFork, icon: CopyIcon },
+    ]
 
-    if (track.trackMenuItems.length) {
-      if (trackMenuItems.length) {
-        trackMenuItems.push({ type: 'divider' })
-      }
-      trackMenuItems.push(...track.trackMenuItems)
-    }
-
+    const trackMenuItems = [...trackOptions, ...track.trackMenuItems]
     return (
       <>
         <Paper ref={ref} className={clsx(className, classes.root)}>
