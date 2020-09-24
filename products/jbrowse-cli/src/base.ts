@@ -70,6 +70,7 @@ export interface Config {
   connections?: unknown[]
   defaultSession?: {}
   tracks?: unknown[]
+}
 
 interface GithubRelease {
   tag_name: string
