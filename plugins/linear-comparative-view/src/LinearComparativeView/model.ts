@@ -97,7 +97,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           onAction(self, (param: ISerializedActionCall) => {
             if (self.linkViews) {
               const { name, path, args } = param
-              if (['horizontalScroll', 'zoomTo'].includes(name) && path) {
+              const actions = ['horizontalScroll', 'zoomTo', 'setScaleFactor']
+              if (actions.includes(name) && path) {
                 this.onSubviewAction(name, path, args)
               }
             }

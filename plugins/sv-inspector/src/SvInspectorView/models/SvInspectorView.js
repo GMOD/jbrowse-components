@@ -1,4 +1,5 @@
 import OpenInNewIcon from '@material-ui/icons/OpenInNew'
+import breakpointSplitViewFromTableRowFactory from './breakpointSplitViewFromTableRow'
 
 function defaultOnChordClick(feature, chordTrack, pluginManager) {
   const { jbrequire } = pluginManager
@@ -60,7 +61,7 @@ export default pluginManager => {
     canOpenBreakpointSplitViewFromTableRow,
     openBreakpointSplitViewFromTableRow,
     getSerializedFeatureForRow,
-  } = jbrequire(require('./breakpointSplitViewFromTableRow'))
+  } = jbrequire(breakpointSplitViewFromTableRowFactory)
 
   const model = types
     .model('SvInspectorView', {

@@ -70,6 +70,15 @@ export interface Config {
   connections?: unknown[]
   defaultSession?: {}
   tracks?: unknown[]
+
+interface GithubRelease {
+  tag_name: string
+  prerelease: boolean
+  assets?: [
+    {
+      browser_download_url: string
+    },
+  ]
 }
 
 export default abstract class JBrowseCommand extends Command {
@@ -116,7 +125,10 @@ export default abstract class JBrowseCommand extends Command {
     }
     if (locationUrl) {
       const response = await fetch(locationUrl)
-      return response.json()
+      if (response.ok) {
+        return response.json()
+      }
+      throw new Error(`${response.statusText}`)
     }
     return fsPromises.readFile(location, { encoding: 'utf8' })
   }
@@ -145,6 +157,7 @@ export default abstract class JBrowseCommand extends Command {
           if (response.ok) {
             return locationUrl.href
           }
+          throw new Error(`${response.statusText}`)
         } else {
           return locationUrl.href
         }
@@ -193,5 +206,73 @@ export default abstract class JBrowseCommand extends Command {
       }
     }
     return result
+  }
+
+  async fetchGithubVersions() {
+    let versions: GithubRelease[] = []
+    for await (const iter of this.fetchVersions()) {
+      versions = versions.concat(iter)
+    }
+
+    return versions
+  }
+
+  async getLatest() {
+    for await (const versions of this.fetchVersions()) {
+      const jb2webreleases = versions.filter(release =>
+        release.tag_name.startsWith('@gmod/jbrowse-web'),
+      )
+
+      // if a release was just uploaded, or an erroneous build was made
+      // then it might have no build asset
+      const nonprereleases = jb2webreleases
+        .filter(release => release.prerelease === false)
+        .filter(release => release.assets && release.assets.length > 0)
+
+      if (nonprereleases.length !== 0) {
+        // @ts-ignore
+        return nonprereleases[0].assets[0].browser_download_url
+      }
+    }
+
+    throw new Error('no @gmod/jbrowse-web tags found')
+  }
+
+  async *fetchVersions() {
+    let page = 0
+    let result
+
+    do {
+      // eslint-disable-next-line no-await-in-loop
+      const response = await fetch(
+        `https://api.github.com/repos/GMOD/jbrowse-components/releases?page=${page}`,
+      )
+      if (response.ok) {
+        // eslint-disable-next-line no-await-in-loop
+        result = await response.json()
+        yield result as GithubRelease[]
+        page++
+      } else {
+        throw new Error(`${result.statusText}`)
+      }
+    } while (result && result.length > 0)
+  }
+
+  async getTag(tag: string) {
+    const response = await fetch(
+      `https://api.github.com/repos/GMOD/jbrowse-components/releases/tags/${tag}`,
+    )
+    if (response.ok) {
+      const result = await response.json()
+      return result && result.assets
+        ? result.assets[0].browser_download_url
+        : this.error(
+            'Could not find version specified. Use --listVersions to see all available versions',
+            { exit: 130 },
+          )
+    }
+    return this.error(`Error: Could not find version: ${response.statusText}`, {
+      exit: 130,
+    })
   }
 }

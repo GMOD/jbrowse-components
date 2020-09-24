@@ -92,6 +92,26 @@
       }
     },
     {
+      "type": "StructuralVariantChordTrack",
+      "trackId": "volvox_chord_test_renamed",
+      "name": "volvox chord test renamed refs",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "test_data/volvox/volvox.dup.renamed.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/volvox/volvox.dup.renamed.vcf.gz.tbi"
+          }
+        }
+      },
+      "renderer": {
+        "type": "StructuralVariantChordRenderer"
+      }
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram_alignments",
       "name": "volvox-sorted.cram (contigA, AlignmentsTrack)",

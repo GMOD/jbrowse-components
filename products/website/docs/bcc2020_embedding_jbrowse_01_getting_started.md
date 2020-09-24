@@ -10,6 +10,28 @@ it with all of you. We're still in development, so what we use today should be
 considered "beta" software. The up-side for you, though, is that an suggestions
 you make are more likely to get quickly integrated into JBrowse 2.
 
+## Follow along
+
+This tutorial was used as the basis for a training session at the
+[Bioinformatics Community Conference 2020](https://bcc2020.github.io/). If you'd
+like, you can follow along with the tutorial using the recording below.
+
+<iframe
+  src="https://player.vimeo.com/video/454059086"
+  width="640"
+  height="360"
+  frameborder="0"
+  allow="autoplay; fullscreen"
+  allowfullscreen
+></iframe>
+<p>
+  <a href="https://vimeo.com/454059086"
+    >Embedding JBrowse 2 in your website, BCC2020 West Training </a
+  >
+  from <a href="https://vimeo.com/user119241161">Jennifer Vessio</a> on
+  <a href="https://vimeo.com">Vimeo</a>.
+</p>
+
 ## What you need
 
 If you use our provided virtual machine (VM) (download

@@ -241,31 +241,55 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @returns BpOffset of the displayed region that it lands in
        */
       pxToBp(px: number) {
-        const bp = (self.offsetPx + px) * self.bpPerPx
         let bpSoFar = 0
-        let r = getSnapshot(self.displayedRegions[0])
+        const bp = (self.offsetPx + px) * self.bpPerPx
+        const n = self.displayedRegions.length
         if (bp < 0) {
+          const region = self.displayedRegions[0]
+          const offset = bp
           return {
-            ...r,
-            offset: bp,
+            ...getSnapshot(region),
+            oob: true,
+            coord: region.reversed
+              ? Math.round(region.end - offset) + 1
+              : Math.round(region.start + offset) + 1,
+            offset,
             index: 0,
           }
         }
-        for (let index = 0; index < self.displayedRegions.length; index += 1) {
-          r = self.displayedRegions[index]
-          if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
-            return { ...r, offset: bp - bpSoFar, index }
+        if (bp >= this.totalBp) {
+          const region = self.displayedRegions[n - 1]
+          const len = region.end - region.start
+          const offset = bp - this.totalBp + len
+          return {
+            ...getSnapshot(region),
+            oob: true,
+            offset,
+            coord: region.reversed
+              ? Math.round(region.end - offset) + 1
+              : Math.round(region.start + offset) + 1,
+            index: n - 1,
           }
-          bpSoFar += r.end - r.start
         }
-
-        return {
-          ...r,
-          offset: bp - bpSoFar,
-          index: self.displayedRegions.length,
+        for (let index = 0; index < self.displayedRegions.length; index += 1) {
+          const region = self.displayedRegions[index]
+          const len = region.end - region.start
+          if (len + bpSoFar > bp && bpSoFar <= bp) {
+            const offset = bp - bpSoFar
+            return {
+              ...getSnapshot(region),
+              oob: false,
+              offset,
+              coord: region.reversed
+                ? Math.round(region.end - offset) + 1
+                : Math.round(region.start + offset) + 1,
+              index,
+            }
+          }
+          bpSoFar += len
         }
+        throw new Error('pxToBp failed to map to a region')
       },
-
       getTrack(id: string) {
         return self.tracks.find(t => t.configuration.trackId === id)
       },

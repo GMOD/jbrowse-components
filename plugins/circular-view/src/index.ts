@@ -5,21 +5,24 @@ import {
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import DataUsageIcon from '@material-ui/icons/DataUsage'
+import CircularViewFactory from './CircularView'
+import StructuralVariantChordRendererFactory from './StructuralVariantChordRenderer'
+import StructuralVariantChordTrackFactory from './StructuralVariantChordTrack'
 
 export default class CircularViewPlugin extends Plugin {
   name = 'CircularViewPlugin'
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
-      pluginManager.jbrequire(require('./CircularView')),
+      pluginManager.jbrequire(CircularViewFactory),
     )
 
     pluginManager.addTrackType(() =>
-      pluginManager.jbrequire(require('./StructuralVariantChordTrack')),
+      pluginManager.jbrequire(StructuralVariantChordTrackFactory),
     )
 
     pluginManager.addRendererType(() =>
-      pluginManager.jbrequire(require('./StructuralVariantChordRenderer')),
+      pluginManager.jbrequire(StructuralVariantChordRendererFactory),
     )
   }
 

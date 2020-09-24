@@ -1,3 +1,7 @@
+import ChordTrackFactory from '../../ChordTrack/models/ChordTrack'
+import componentsFactory from '../components'
+import renderReactionFactory from './renderReaction'
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
 
@@ -13,14 +17,14 @@ export default pluginManager => {
   )
 
   const { renderReactionData, renderReactionEffect } = jbrequire(
-    require('./renderReaction'),
+    renderReactionFactory,
   )
-  const mainReactComponent = jbrequire(require('../components'))
+  const mainReactComponent = jbrequire(componentsFactory)
 
   const {
     configSchema: ChordTrackConfigSchema,
     stateModel: ChordTrackStateModel,
-  } = jbrequire(require('../../ChordTrack/models/ChordTrack'))
+  } = jbrequire(ChordTrackFactory)
 
   const configSchema = ConfigurationSchema(
     'StructuralVariantChordTrack',
@@ -58,21 +62,9 @@ export default pluginManager => {
       message: '',
       error: undefined,
       renderingComponent: undefined,
+      refNameMap: undefined,
     }))
     .views(self => ({
-      get refNameMap() {
-        const assemblyName = getTrackAssemblyNames(self)[0]
-        const adapter = getConf(self, 'adapter')
-        const assembly = getSession(self).assemblyManager.get(assemblyName)
-        if (!assembly) return new Map()
-        return (
-          assembly &&
-          assembly.getRefNameMapForAdapter(adapter, {
-            sessionId: getRpcSessionId(self),
-          })
-        )
-      },
-
       get blockDefinitions() {
         const origSlices = getContainingView(self).staticSlices
         if (!self.refNameMap) return origSlices
@@ -107,6 +99,32 @@ export default pluginManager => {
           self.renderStarted,
           self.renderSuccess,
           self.renderError,
+        )
+        makeAbortableReaction(
+          self,
+          () => ({
+            assemblyNames: getTrackAssemblyNames(self),
+            adapter: getConf(self, 'adapter'),
+            assemblyManager: getSession(self).assemblyManager,
+          }),
+          async ({ assemblyNames, adapter, assemblyManager }, signal) => {
+            return assemblyManager.getRefNameMapForAdapter(
+              adapter,
+              assemblyNames[0],
+              { signal, sessionId: getRpcSessionId(self) },
+            )
+          },
+          {
+            name: `${self.type} ${self.id} getting refNames`,
+            fireImmediately: true,
+          },
+          () => {},
+          refNameMap => {
+            self.setRefNameMap(refNameMap)
+          },
+          error => {
+            self.setError(String(error))
+          },
         )
       },
       renderStarted() {
@@ -147,6 +165,12 @@ export default pluginManager => {
 
       onChordClick(feature) {
         getConf(self, 'onChordClick', [feature, self, pluginManager])
+      },
+      setRefNameMap(refNameMap) {
+        self.refNameMap = refNameMap
+      },
+      setError(error) {
+        self.error = error
       },
     }))
 

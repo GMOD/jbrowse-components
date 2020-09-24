@@ -57,7 +57,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
           style={{
             position: 'absolute',
             right: 0,
-            zIndex: 100000,
+            zIndex: 1001,
           }}
         >
           <MiniControls model={model} />

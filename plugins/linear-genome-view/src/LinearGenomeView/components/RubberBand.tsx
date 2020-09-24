@@ -1,4 +1,5 @@
 import { Menu } from '@gmod/jbrowse-core/ui'
+import { stringify } from '@gmod/jbrowse-core/util'
 import Popover from '@material-ui/core/Popover'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -67,7 +68,7 @@ const VerticalGuide = observer(
       <Tooltip
         open
         placement="top"
-        title={Math.ceil(model.pxToBp(coordX).offset).toLocaleString()}
+        title={stringify(model.pxToBp(coordX))}
         arrow
       >
         <div
@@ -127,7 +128,7 @@ function RubberBand({
       }
     }
     return () => {}
-  }, [startX, mouseDragging])
+  }, [startX, mouseDragging, anchorPosition])
 
   useEffect(() => {
     if (
@@ -218,19 +219,13 @@ function RubberBand({
     )
   }
 
-  let left = 0
-  let width = 0
+  /* Calculating Pixels for Mouse Dragging */
   const right = anchorPosition ? anchorPosition.left : currentX || 0
-  left = right < startX ? right : startX
-  width = Math.abs(right - startX)
+  const left = right < startX ? right : startX
+  const width = Math.abs(right - startX)
   const leftBpOffset = model.pxToBp(left)
-  const leftBp = (
-    Math.round(leftBpOffset.start + leftBpOffset.offset) + 1
-  ).toLocaleString()
   const rightBpOffset = model.pxToBp(left + width)
-  const rightBp = (
-    Math.round(rightBpOffset.start + rightBpOffset.offset) + 1
-  ).toLocaleString()
+  const numOfBpSelected = Math.round(width * model.bpPerPx)
 
   return (
     <>
@@ -253,7 +248,7 @@ function RubberBand({
             }}
             keepMounted
           >
-            <Typography>{leftBp}</Typography>
+            <Typography>{stringify(leftBpOffset)}</Typography>
           </Popover>
           <Popover
             className={classes.popover}
@@ -272,7 +267,7 @@ function RubberBand({
             }}
             keepMounted
           >
-            <Typography>{rightBp}</Typography>
+            <Typography>{stringify(rightBpOffset)}</Typography>
           </Popover>
         </>
       ) : null}
@@ -282,7 +277,7 @@ function RubberBand({
         style={{ left, width }}
       >
         <Typography variant="h6" className={classes.rubberBandText}>
-          {Math.round(width * model.bpPerPx).toLocaleString()} bp{' '}
+          {numOfBpSelected.toLocaleString('en-US')} bp
         </Typography>
       </div>
       <div
