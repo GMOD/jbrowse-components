@@ -69,7 +69,7 @@ const setupWithCreate = setup.do(async ctx => {
   )
 })
 
-async function killExpress(ctx: Context, port: number) {
+async function killExpress(ctx: { stdoutWrite: jest.Mock }, port: number) {
   const adminKey = ctx.stdoutWrite.mock.calls[0][0].match(
     /adminKey=([a-zA-Z0-9]{10,12}) /,
   )[1]
