@@ -1,5 +1,5 @@
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import { Menu, MenuItem } from '@gmod/jbrowse-core/ui'
+import { Menu } from '@gmod/jbrowse-core/ui'
 import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
 import IconButton from '@material-ui/core/IconButton'
 import Paper from '@material-ui/core/Paper'
@@ -9,13 +9,10 @@ import Typography from '@material-ui/core/Typography'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import DragIcon from '@material-ui/icons/DragIndicator'
 import CloseIcon from '@material-ui/icons/Close'
-import SettingsIcon from '@material-ui/icons/Settings'
-import DeleteIcon from '@material-ui/icons/Delete'
-import CopyIcon from '@material-ui/icons/FileCopy'
 
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
-import { getSnapshot, Instance } from 'mobx-state-tree'
+import { Instance } from 'mobx-state-tree'
 import React from 'react'
 import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
 import { LinearGenomeViewStateModel } from '..'
@@ -72,11 +69,6 @@ const TrackLabel = React.forwardRef(
 
     const handleClose = () => {
       setAnchorEl(null)
-    }
-
-    const onConfigureClick = () => {
-      track.activateConfigurationUI()
-      handleClose()
     }
 
     const onDragStart = (event: React.DragEvent<HTMLSpanElement>) => {

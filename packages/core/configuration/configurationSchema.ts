@@ -41,9 +41,10 @@ interface ConfigurationSchemaOptions {
   explicitIdentifier?: string
   implicitIdentifier?: string
   baseConfiguration?: AnyConfigurationSchemaType
-  actions?: (self: unknown) => any
-  views?: (self: unknown) => any
-  extend?: (self: unknown) => any
+
+  actions?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  views?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  extend?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 function preprocessConfigurationSchemaArguments(

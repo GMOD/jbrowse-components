@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
 import { isSessionModelWithConfigEditing } from '@gmod/jbrowse-core/util/types'
-import { getDefaultValue } from '@gmod/jbrowse-core/util/mst-reflection'
 import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 import { MenuItem } from '@gmod/jbrowse-core/ui'
 import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
