@@ -164,22 +164,19 @@ export default class AddTrack extends JBrowseCommand {
       const configContentsJson = await this.readJsonConfig(target)
       configContents = JSON.parse(configContentsJson) as Config
     } catch (error) {
-      return this.error(error.message, {
+      this.error(error.message, {
         suggestions: [
           'Could not parse existing config file, make sure it is valid JSON',
         ],
       })
     }
     if (!configContents.assemblies || !configContents.assemblies.length) {
-      return this.error(
-        'No assemblies found. Please add one before adding tracks',
-        {
-          exit: 150,
-        },
-      )
+      this.error('No assemblies found. Please add one before adding tracks', {
+        exit: 150,
+      })
     }
     if (configContents.assemblies.length > 1 && !assemblyNames) {
-      return this.error(
+      this.error(
         'Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
       )
     }
