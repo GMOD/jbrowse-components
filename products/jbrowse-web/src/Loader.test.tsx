@@ -72,7 +72,7 @@ describe('<Loader />', () => {
   })
 
   // TODO SESSION this one infinite loops
-  xit('can use config from a url', async () => {
+  xit('can use config from a url with no session param local uuid', async () => {
     console.error = jest.fn()
     // onaction warning from linear-comparative-view
     console.warn = jest.fn()
@@ -87,5 +87,83 @@ describe('<Loader />', () => {
       </QueryParamProvider>,
     )
     expect(await findByText('Help')).toBeTruthy()
+  })
+
+  // need tests for local host stuff
+  it('can use config from a url with share session param ', async () => {
+    console.error = jest.fn()
+    // onaction warning from linear-comparative-view
+    console.warn = jest.fn()
+
+    jest
+      // @ts-ignore
+      .spyOn(global as Global, 'fetch')
+      .mockImplementationOnce(() =>
+        Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              session:
+                '0ade8afd4be19961053b49a166ed849aa659149c2e291bd86c926c00d0aae5fd506866bd083a3a767fbe5d1a5604c9d9fec62156d891bf45bbb5b8314544b3f4b52a630af77e22dd998dd4a8dd4354f3bc0c7017233969766f82f1bd1f862ae70a09bca8bc6c358e450842a0bb3c471f9641841a575e9643e5eaae9e9b7ba31df35677372ee5d1bd084d55402c0a7adb2f46a4280234015210128ffef67457ab',
+            }),
+        }),
+      )
+    const { findByText } = render(
+      <QueryParamProvider
+        // @ts-ignore
+        location={{
+          search:
+            '?config=test_data/volvox/config_main_thread.json&session=share-test&password=384ddcb2950f2a2c699cd9d8bc90a9f3',
+        }}
+      >
+        <Loader />
+      </QueryParamProvider>,
+    )
+    expect(await findByText('integration test session')).toBeTruthy()
+  })
+
+  it('can use config from a url with nonexistent share param ', async () => {
+    console.error = jest.fn()
+    // onaction warning from linear-comparative-view
+    console.warn = jest.fn()
+    jest
+      // @ts-ignore
+      .spyOn(global as Global, 'fetch')
+      .mockImplementationOnce(() => Promise.reject(new Error('error')))
+    const { findByText } = render(
+      <QueryParamProvider
+        // @ts-ignore
+        location={{
+          search:
+            '?config=test_data/volvox/config_main_thread.json&session=share-nonexist',
+        }}
+      >
+        <Loader />
+      </QueryParamProvider>,
+    )
+    expect(
+      await findByText('Failed to find given session in database'),
+    ).toBeTruthy()
+  })
+
+  // session: { name: 'testSession' }
+  it('can use localstorage to load local session ', async () => {
+    console.error = jest.fn()
+    // onaction warning from linear-comparative-view
+    console.warn = jest.fn()
+
+    localStorage.setItem('local-1', `session: { name: 'testSession' }`)
+    expect(localStorage.length).toBe(1)
+    const { findByText } = render(
+      <QueryParamProvider
+        // @ts-ignore
+        location={{
+          search:
+            '?config=test_data/volvox/config_main_thread.json&session=local-1',
+        }}
+      >
+        <Loader />
+      </QueryParamProvider>,
+    )
+    expect(await findByText('testSession')).toBeTruthy()
   })
 })

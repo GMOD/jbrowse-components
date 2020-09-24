@@ -44,7 +44,7 @@ describe('Root MST model', () => {
 
   it('activates a session snapshot', () => {
     const session = { name: 'testSession' }
-    localStorage.setItem(123, JSON.stringify(session))
+    localStorage.setItem(`local-123`, JSON.stringify(session))
     const root = rootModel.create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
@@ -101,7 +101,7 @@ describe('Root MST model', () => {
   })
 
   it('adds a session snapshot', () => {
-    localStorage.setItem(1, { name: 'testSession' })
+    localStorage.setItem(`local-1`, `{ name: 'testSession' }`)
     expect(localStorage.length).toBe(1)
   })
 

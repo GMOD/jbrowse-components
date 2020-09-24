@@ -23,7 +23,10 @@ export function getPluginManager(initialState, adminMode = false, sessionName) {
   })
   if (rootModel && rootModel.jbrowse.defaultSession.length) {
     const { name } = rootModel.jbrowse.defaultSession
-    localStorage.setItem(1, JSON.stringify(rootModel.jbrowse.defaultSession))
+    localStorage.setItem(
+      `local-1`,
+      JSON.stringify(rootModel.jbrowse.defaultSession),
+    )
     rootModel.activateSession(name)
   } else rootModel.setDefaultSession()
   rootModel.session.views.map(view => view.setWidth(800))
