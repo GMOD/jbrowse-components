@@ -35,6 +35,9 @@ It is likely preferable in most cases to install the tools first however
 - [`jbrowse add-connection CONNECTIONURLORPATH`](#jbrowse-add-connection-connectionurlorpath)
 - [`jbrowse add-track TRACK`](#jbrowse-add-track-track)
 - [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
+- [`jbrowse add-track_BASE_1763226 TRACK`](#jbrowse-add-track_base_1763226-track)
+- [`jbrowse add-track_LOCAL_1763226 TRACK`](#jbrowse-add-track_local_1763226-track)
+- [`jbrowse add-track_REMOTE_1763226 TRACK`](#jbrowse-add-track_remote_1763226-track)
 - [`jbrowse admin-server`](#jbrowse-admin-server)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
@@ -252,6 +255,159 @@ OPTIONS
 EXAMPLES
   $ jbrowse add-track-json track.json
   $ jbrowse add-track-json track.json --update
+```
+
+## `jbrowse add-track_BASE_1763226 TRACK`
+
+Add a track to a JBrowse 2 configuration
+
+```
+USAGE
+  $ jbrowse add-track_BASE_1763226 TRACK
+
+ARGUMENTS
+  TRACK  Track file or URL
+
+OPTIONS
+  -a, --assemblyNames=assemblyNames   Assembly name or names for track as comma separated string. If none, will default
+                                      to the assembly in your config file
+
+  -d, --description=description       Optional description of the track
+
+  -f, --force                         Equivalent to `--skipCheck --overwrite`
+
+  -h, --help                          show CLI help
+
+  -l, --load=copy|symlink|move|trust  Required flag when using a local file. Choose how to manage the track. Copy,
+                                      symlink, or move the track to the JBrowse directory. Or trust to leave track alone
+
+  -n, --name=name                     Name of the track. Will be defaulted to the trackId if none specified
+
+  -t, --type=type                     Type of track, by default inferred from track file
+
+  --category=category                 Optional Comma separated string of categories to group tracks
+
+  --config=config                     Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'
+
+  --overwrite                         Overwrites existing track if it shares the same trackId
+
+  --skipCheck                         Skip check for whether or not the file or URL exists or if you are in a JBrowse
+                                      directory
+
+  --target=target                     [default: ./config.json] path to config file in JB2 installation to write out to.
+
+  --trackId=trackId                   trackId for the track, by default inferred from filename, must be unique
+                                      throughout config
+
+EXAMPLES
+  $ jbrowse add-track /path/to/my.bam --load copy
+  $ jbrowse add-track /path/to/my.bam --target /path/to/jbrowse2/installation/config.json --load symlink
+  $ jbrowse add-track https://mywebsite.com/my.bam
+  $ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move
+  $ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite
+  $ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'
+```
+
+## `jbrowse add-track_LOCAL_1763226 TRACK`
+
+Add a track to a JBrowse 2 configuration
+
+```
+USAGE
+  $ jbrowse add-track_LOCAL_1763226 TRACK
+
+ARGUMENTS
+  TRACK  Track file or URL
+
+OPTIONS
+  -a, --assemblyNames=assemblyNames   Assembly name or names for track as comma separated string. If none, will default
+                                      to the assembly in your config file
+
+  -d, --description=description       Optional description of the track
+
+  -f, --force                         Equivalent to `--skipCheck --overwrite`
+
+  -h, --help                          show CLI help
+
+  -l, --load=copy|symlink|move|trust  Required flag when using a local file. Choose how to manage the track. Copy,
+                                      symlink, or move the track to the JBrowse directory. Or trust to leave track alone
+
+  -n, --name=name                     Name of the track. Will be defaulted to the trackId if none specified
+
+  -t, --type=type                     Type of track, by default inferred from track file
+
+  --category=category                 Optional Comma separated string of categories to group tracks
+
+  --config=config                     Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'
+
+  --overwrite                         Overwrites existing track if it shares the same trackId
+
+  --skipCheck                         Skip check for whether or not the file or URL exists or if you are in a JBrowse
+                                      directory
+
+  --target=target                     [default: ./config.json] path to config file in JB2 installation to write out to.
+
+  --trackId=trackId                   trackId for the track, by default inferred from filename, must be unique
+                                      throughout config
+
+EXAMPLES
+  $ jbrowse add-track /path/to/my.bam --load copy
+  $ jbrowse add-track /path/to/my.bam --target /path/to/jbrowse2/installation/config.json --load symlink
+  $ jbrowse add-track https://mywebsite.com/my.bam
+  $ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move
+  $ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite
+  $ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'
+```
+
+## `jbrowse add-track_REMOTE_1763226 TRACK`
+
+Add a track to a JBrowse 2 configuration
+
+```
+USAGE
+  $ jbrowse add-track_REMOTE_1763226 TRACK
+
+ARGUMENTS
+  TRACK  Track file or URL
+
+OPTIONS
+  -a, --assemblyNames=assemblyNames   Assembly name or names for track as comma separated string. If none, will default
+                                      to the assembly in your config file
+
+  -d, --description=description       Optional description of the track
+
+  -f, --force                         Equivalent to `--skipCheck --overwrite`
+
+  -h, --help                          show CLI help
+
+  -l, --load=copy|symlink|move|trust  Required flag when using a local file. Choose how to manage the track. Copy,
+                                      symlink, or move the track to the JBrowse directory. Or trust to leave track alone
+
+  -n, --name=name                     Name of the track. Will be defaulted to the trackId if none specified
+
+  -t, --type=type                     Type of track, by default inferred from track file
+
+  --category=category                 Optional Comma separated string of categories to group tracks
+
+  --config=config                     Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'
+
+  --overwrite                         Overwrites existing track if it shares the same trackId
+
+  --skipCheck                         Skip check for whether or not the file or URL exists or if you are in a JBrowse
+                                      directory
+
+  --target=target                     [default: ./config.json] path to config file in JB2 installation to write out to.
+
+  --trackId=trackId                   trackId for the track, by default inferred from filename, must be unique
+                                      throughout config
+
+EXAMPLES
+  $ jbrowse add-track /path/to/my.bam --load copy
+  $ jbrowse add-track /path/to/my.bam --target /path/to/jbrowse2/installation/config.json --load symlink
+  $ jbrowse add-track https://mywebsite.com/my.bam
+  $ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move
+  $ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite
+  $ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'
 ```
 
 ## `jbrowse admin-server`

@@ -121,16 +121,17 @@ custom         Either a JSON file location or inline JSON that defines a custom
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
     const { sequence: argsSequence } = runArgs as { sequence: string }
 
-    if (this.needLoadData(argsSequence) && !runFlags.load)
+    if (this.needLoadData(argsSequence) && !runFlags.load) {
       this.error(
         `Please specify the loading operation for this file with --load copy|symlink|move|trust`,
         { exit: 110 },
       )
-    else if (!this.needLoadData(argsSequence) && runFlags.load)
+    } else if (!this.needLoadData(argsSequence) && runFlags.load) {
       this.error(
         `URL detected with --load flag. Please rerun the function without the --load flag`,
         { exit: 120 },
       )
+    }
 
     let { name } = runFlags
     let { type } = runFlags as {

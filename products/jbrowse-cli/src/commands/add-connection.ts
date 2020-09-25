@@ -123,7 +123,7 @@ export default class AddConnection extends JBrowseCommand {
       )
     }
 
-    if (assemblyName)
+    if (assemblyName) {
       configContents.assemblies.findIndex(
         assemblies => assemblies.name === assemblyName,
       ) === -1
@@ -134,7 +134,7 @@ export default class AddConnection extends JBrowseCommand {
             { exit: 130 },
           )
         : this.debug(`Assembly name(s) is :${assemblyName}`)
-    else {
+    } else {
       assemblyName = configContents.assemblies[0].name
       this.log(`Inferred default assembly name ${assemblyName}`)
     }
@@ -178,11 +178,12 @@ export default class AddConnection extends JBrowseCommand {
         break
       }
       default: {
-        if (!config || !this.isValidJSON(config))
+        if (!config || !this.isValidJSON(config)) {
           this.error(
             'When type is not UCSCTrackHubConnection or JBrowse1Connection, config object must be provided.\nPlease enter a config object using --config',
             { exit: 140 },
           )
+        }
 
         break
       }
@@ -200,11 +201,12 @@ export default class AddConnection extends JBrowseCommand {
       if (runFlags.force || runFlags.overwrite) {
         this.debug(`Overwriting connection ${connectionId} in configuration`)
         configContents.connections[idx] = connectionConfig
-      } else
+      } else {
         this.error(
           `Cannot add connection with id ${connectionId}, a connection with that id already exists.\nUse --overwrite if you would like to replace the existing connection`,
           { exit: 150 },
         )
+      }
     } else configContents.connections.push(connectionConfig)
 
     this.debug(`Writing configuration to file ${target}`)

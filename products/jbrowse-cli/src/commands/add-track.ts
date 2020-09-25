@@ -158,10 +158,23 @@ export default class AddTrack extends JBrowseCommand {
       this.error('Track type is not supported', { exit: 130 })
     }
 
-    let configContents
+    // only add track if there is an existing config.json
+    let configContentsJson
+    try {
+      configContentsJson = await this.readJsonConfig(target)
+      this.debug(`Found existing config file ${target}`)
+    } catch (error) {
+      this.error(
+        'No existing config file found, run add-assembly first to bootstrap config',
+        {
+          exit: 30,
+        },
+      )
+    }
+
+    let configContents: Config
     try {
       // only add track if there is an existing config.json
-      const configContentsJson = await this.readJsonConfig(target)
       configContents = JSON.parse(configContentsJson) as Config
     } catch (error) {
       this.error(error.message, {
@@ -175,6 +188,7 @@ export default class AddTrack extends JBrowseCommand {
         exit: 150,
       })
     }
+    
     if (configContents.assemblies.length > 1 && !assemblyNames) {
       this.error(
         'Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
