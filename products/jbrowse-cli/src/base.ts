@@ -141,7 +141,7 @@ export default abstract class JBrowseCommand extends Command {
       if (check) {
         const response = await fetch(locationUrl, { method: 'HEAD' })
         if (!response.ok) {
-          throw new Error(`${response.statusText}`)
+          throw new Error(`${locationUrl} result ${response.statusText}`)
         }
         return locationUrl.href
       }
