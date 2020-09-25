@@ -48,6 +48,7 @@
     "@types/deep-equal": "^1.0.1",
     "@types/dompurify": "^2.0.2",
     "@types/escape-html": "^0.0.20",
+    "@types/express": "^4.17.8",
     "@types/get-value": "^3.0.1",
     "@types/is-object": "^1.0.0",
     "@types/jest": "^25.2.1",
