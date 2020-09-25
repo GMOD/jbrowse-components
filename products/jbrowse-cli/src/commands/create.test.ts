@@ -3,7 +3,7 @@
  */
 
 import fs from 'fs'
-import * as path from 'path'
+import path from 'path'
 import { Scope } from 'nock'
 import { setup } from '../testUtil'
 

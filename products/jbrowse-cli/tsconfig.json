@@ -7,9 +7,9 @@
     "outDir": "lib",
     "rootDir": "src",
     "strict": true,
-    "allowSyntheticDefaultImports": true,
     "noEmit": false,
-    "target": "es2017"
+    "target": "es2017",
+    "esModuleInterop": true
   },
   "include": ["src"],
   "exclude": ["**/*.test.ts", "**/testUtil.ts"]

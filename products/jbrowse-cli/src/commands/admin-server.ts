@@ -1,7 +1,7 @@
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
-import * as path from 'path'
-import * as express from 'express'
+import path from 'path'
+import express from 'express'
 import JBrowseCommand, { Config } from '../base'
 
 function isValidPort(port: number) {
@@ -72,7 +72,7 @@ export default class AdminServer extends JBrowseCommand {
       }
     }
     // @ts-ignore
-    const app = express.default ? express.default() : express()
+    const app = express()
     app.use(express.static('.'))
 
     // POST route to save config

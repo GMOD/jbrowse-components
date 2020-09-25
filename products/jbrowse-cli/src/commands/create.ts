@@ -2,7 +2,7 @@
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import fetch from 'node-fetch'
-import * as unzip from 'unzipper'
+import unzip from 'unzipper'
 import JBrowseCommand from '../base'
 
 export default class Create extends JBrowseCommand {

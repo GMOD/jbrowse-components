@@ -1,6 +1,6 @@
 import { flags } from '@oclif/command'
 import fetch from 'node-fetch'
-import * as unzip from 'unzipper'
+import unzip from 'unzipper'
 import JBrowseCommand from '../base'
 
 export default class Upgrade extends JBrowseCommand {
