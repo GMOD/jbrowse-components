@@ -98,6 +98,9 @@ OPTIONS
   --gziLocation=gziLocation
       [default: <fastaLocation>.gzi] FASTA gzip index file or URL
 
+  --out=out
+      synonym for target
+
   --overwrite
       Overwrite existing assembly if one with the same name exists
 
@@ -117,7 +120,7 @@ OPTIONS
       Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory
 
   --target=target
-      [default: ./config.json] path to config file in JB2 installation directory to write out to.
+      path to config file in JB2 installation directory to write out to.
       Creates ./config.json if nonexistent
 
 EXAMPLES
