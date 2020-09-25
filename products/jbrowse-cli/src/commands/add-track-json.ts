@@ -1,6 +1,7 @@
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
+import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
 export default class AddTrackJson extends JBrowseCommand {
@@ -40,7 +41,7 @@ export default class AddTrackJson extends JBrowseCommand {
     const { update, target } = runFlags
     await this.checkLocation(path.dirname(target))
 
-    const config = JSON.parse(await this.readJsonConfig(target))
+    const config = parseJSON(await this.readJsonConfig(target))
     this.debug(`Found existing config file ${config}`)
 
     const track = await this.readInlineOrFileJson(inputtedTrack)

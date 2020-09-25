@@ -3,6 +3,7 @@ import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
+import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
 interface Track {
@@ -175,7 +176,7 @@ export default class AddTrack extends JBrowseCommand {
     let configContents: Config
     try {
       // only add track if there is an existing config.json
-      configContents = JSON.parse(configContentsJson) as Config
+      configContents = parseJSON(configContentsJson) as Config
     } catch (error) {
       this.error(error.message, {
         suggestions: [
@@ -188,7 +189,6 @@ export default class AddTrack extends JBrowseCommand {
         exit: 150,
       })
     }
-    
     if (configContents.assemblies.length > 1 && !assemblyNames) {
       this.error(
         'Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
@@ -221,7 +221,7 @@ export default class AddTrack extends JBrowseCommand {
       this.log(`Inferred default assembly name ${assemblyNames}`)
     }
 
-    const configObj = config ? JSON.parse(config) : {}
+    const configObj = config ? parseJSON(config) : {}
     const trackConfig: Track = {
       type,
       trackId,

@@ -1,6 +1,7 @@
 import Command from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
+import parseJSON from 'json-parse-better-errors'
 import fetch from 'node-fetch'
 
 export interface UriLocation {
@@ -102,7 +103,7 @@ export default abstract class JBrowseCommand extends Command {
     }
     let manifest: { name?: string } = {}
     try {
-      manifest = JSON.parse(manifestJson)
+      manifest = parseJSON(manifestJson)
     } catch (error) {
       this.error(
         'Could not parse the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
@@ -155,13 +156,13 @@ export default abstract class JBrowseCommand extends Command {
     let result
     // see if it's inline JSON
     try {
-      result = JSON.parse(inlineOrFileName)
+      result = parseJSON(inlineOrFileName)
     } catch (error) {
       // not inline JSON, must be location of a JSON file
       try {
         const fileLocation = await this.resolveFileLocation(inlineOrFileName)
         const resultJSON = await this.readJsonConfig(fileLocation)
-        result = JSON.parse(resultJSON)
+        result = parseJSON(resultJSON)
       } catch (err) {
         this.error(`Not valid inline JSON or JSON file ${inlineOrFileName}`, {
           exit: 50,

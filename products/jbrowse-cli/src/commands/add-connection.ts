@@ -2,6 +2,7 @@ import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
+import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
 interface Connection {
@@ -106,7 +107,7 @@ export default class AddConnection extends JBrowseCommand {
     }
     let configContents: Config
     try {
-      configContents = { ...JSON.parse(configContentsJson) }
+      configContents = parseJSON(configContentsJson)
     } catch (error) {
       this.error('Could not parse existing config file', { exit: 110 })
     }
@@ -155,7 +156,7 @@ export default class AddConnection extends JBrowseCommand {
     let configObj = {}
     if (config) {
       try {
-        configObj = JSON.parse(config)
+        configObj = parseJSON(config)
       } catch (error) {
         this.error('Could not parse provided JSON object')
       }
@@ -256,9 +257,9 @@ export default class AddConnection extends JBrowseCommand {
     )
   }
 
-  isValidJSON(string: string) {
+  isValidJSON(str: string) {
     try {
-      JSON.parse(string)
+      JSON.parse(str)
       return true
     } catch (error) {
       return false

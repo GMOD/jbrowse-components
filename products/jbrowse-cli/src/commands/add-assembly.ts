@@ -1,6 +1,7 @@
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
+import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand, { Assembly, Sequence, Config } from '../base'
 
 function isValidJSON(string: string) {
@@ -427,11 +428,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
       configContentsJson = JSON.stringify(defaultConfig)
     }
 
-    let configContents: Config
-    try {
-      configContents = { ...defaultConfig, ...JSON.parse(configContentsJson) }
-    } catch (error) {
-      this.error('Could not parse existing config file')
+    const configContents: Config = {
+      ...defaultConfig,
+      ...parseJSON(configContentsJson),
     }
 
     if (!configContents.assemblies) {

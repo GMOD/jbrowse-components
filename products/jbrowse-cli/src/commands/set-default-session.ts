@@ -1,6 +1,7 @@
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
+import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
 interface DefaultSession {
@@ -98,14 +99,10 @@ export default class SetDefaultSession extends JBrowseCommand {
       )
     }
 
-    let configContents: Config
-    try {
-      configContents = { ...JSON.parse(configContentsJson) }
-    } catch (error) {
-      this.error('Could not parse existing config file', { exit: 110 })
+    const configContents: Config = parseJSON(configContentsJson)
+    if (!configContents.defaultSession) {
+      configContents.defaultSession = {}
     }
-
-    if (!configContents.defaultSession) configContents.defaultSession = {}
 
     // if user passes current session flag, print out and exit
     if (currentSession) {
@@ -197,7 +194,7 @@ export default class SetDefaultSession extends JBrowseCommand {
     }
 
     try {
-      const { defaultSession } = JSON.parse(defaultSessionJson)
+      const { defaultSession } = parseJSON(defaultSessionJson)
       return defaultSession
     } catch (error) {
       return this.error('Could not parse the given default session file', {
