@@ -514,7 +514,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
         await Promise.all(
           filePaths.map(async filePath => {
             if (!filePath) return undefined
-            return fsPromises.copyFile(filePath, destination)
+            return fsPromises.copyFile(
+              filePath,
+              path.join(path.dirname(destination), path.basename(filePath)),
+            )
           }),
         )
         return true
@@ -523,7 +526,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
         await Promise.all(
           filePaths.map(async filePath => {
             if (!filePath) return undefined
-            return fsPromises.symlink(filePath, destination)
+            return fsPromises.symlink(
+              filePath,
+              path.join(path.dirname(destination), path.basename(filePath)),
+            )
           }),
         )
         return true
@@ -532,7 +538,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
         await Promise.all(
           filePaths.map(async filePath => {
             if (!filePath) return undefined
-            return fsPromises.rename(filePath, destination)
+            return fsPromises.rename(
+              filePath,
+              path.join(path.dirname(destination), path.basename(filePath)),
+            )
           }),
         )
         return true
