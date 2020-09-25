@@ -72,6 +72,7 @@ export default class Create extends JBrowseCommand {
     const locationUrl =
       url || (tag ? await this.getTag(tag) : await this.getLatest())
 
+    this.log(`Fetching ${locationUrl}...`)
     const response = await fetch(locationUrl)
     if (!response.ok) {
       this.error(`Failed to fetch: ${response.statusText}`, { exit: 100 })
