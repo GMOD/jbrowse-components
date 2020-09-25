@@ -178,7 +178,7 @@ export default class AddTrack extends JBrowseCommand {
       // only add track if there is an existing config.json
       configContents = parseJSON(configContentsJson) as Config
     } catch (error) {
-      this.error(error.message, {
+      this.error(error instanceof Error ? error : error.message, {
         suggestions: [
           'Could not parse existing config file, make sure it is valid JSON',
         ],
