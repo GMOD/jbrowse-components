@@ -1,6 +1,6 @@
 import Command from '@oclif/command'
 import { promises as fsPromises } from 'fs'
-import * as path from 'path'
+import path from 'path'
 import parseJSON from 'json-parse-better-errors'
 import fetch from 'node-fetch'
 
@@ -118,16 +118,12 @@ export default abstract class JBrowseCommand extends Command {
     }
   }
 
-  async readJsonConfig(location: string) {
+  readJsonConfig(location: string) {
     return fsPromises.readFile(location, { encoding: 'utf8' })
   }
 
-  async writeJsonConfig(config: string) {
-    try {
-      fsPromises.writeFile('./config.json', config)
-    } catch (error) {
-      this.error(`${error}`)
-    }
+  writeJsonConfig(config: string) {
+    return fsPromises.writeFile('./config.json', config)
   }
 
   async resolveFileLocation(location: string, check = true, warning = false) {
