@@ -123,7 +123,7 @@ function FallbackComponent({ error }) {
 }
 
 // TODOSESSION - broken
-xtest('404 sequence file', async () => {
+test('404 sequence file', async () => {
   console.error = jest.fn()
   const pluginManager = getPluginManager(chromeSizesConfig)
   const { findByText } = render(

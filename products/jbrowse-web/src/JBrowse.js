@@ -39,6 +39,8 @@ const JBrowse = observer(({ pluginManager }) => {
   useEffect(() => {
     function updateLocalSession(snapshot) {
       // TODOSESSION have warning when reaching full local storage, have them manually delete instead of auto delete
+      // sessionstorage over local storage, make save button that just transfers from session to local
+      // autosave one in localstorage called local-autosaved that continuously updates on the most recent change
       console.log('updating-local-storage', sessionId)
       if (sessionId?.startsWith('local-'))
         localStorage.setItem(sessionId, JSON.stringify(snapshot))

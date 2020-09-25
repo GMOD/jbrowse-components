@@ -322,6 +322,8 @@ export function Loader() {
   if (!rootModel) {
     throw new Error('could not instantiate root model')
   }
+  // wrap below in useeffect, maybe set an error state
+  // in the use effect callback, setState(() => throw new Error('My error'))
   try {
     if (sessionQueryParam) {
       // eslint-disable-next-line guard-for-in

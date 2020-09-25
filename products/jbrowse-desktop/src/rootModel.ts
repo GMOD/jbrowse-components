@@ -54,8 +54,10 @@ export default function RootModel(pluginManager: PluginManager) {
         this.setSession({
           ...self.jbrowse.defaultSession,
           name: `${self.jbrowse.defaultSession.name} ${new Date(
-            Date.now(),
-          ).toISOString()}`,
+            Date.now() - new Date().getTimezoneOffset() * 60000,
+          )
+            .toISOString()
+            .substring(0, 10)} ${new Date(Date.now()).toLocaleTimeString()}`,
         })
       },
       renameCurrentSession(sessionName: string) {

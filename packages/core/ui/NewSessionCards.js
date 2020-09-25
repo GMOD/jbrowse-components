@@ -68,10 +68,7 @@ NewSessionCard.defaultProps = {
 const tzOffset = new Date().getTimezoneOffset() * 60000 // tz in ms
 const dateString = `${new Date(Date.now() - tzOffset)
   .toISOString()
-  .substring(0, 10)} ${new Date(Date.now() - tzOffset)
-  .toISOString()
-  .substring(11, 19)}`
-
+  .substring(0, 10)} ${new Date(Date.now()).toLocaleTimeString()}`
 const emptySessionSnapshot = {
   name: `New session ${dateString}`,
   connections: {},

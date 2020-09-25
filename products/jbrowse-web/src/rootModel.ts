@@ -67,11 +67,7 @@ export default function RootModel(
             Date.now() - new Date().getTimezoneOffset() * 60000,
           )
             .toISOString()
-            .substring(0, 10)} ${new Date(
-            Date.now() - new Date().getTimezoneOffset() * 60000,
-          )
-            .toISOString()
-            .substring(11, 19)}`,
+            .substring(0, 10)} ${new Date(Date.now()).toLocaleTimeString()}`,
         }
 
         const localId = `local-${uuid.v4()}`

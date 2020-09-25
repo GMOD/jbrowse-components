@@ -90,7 +90,7 @@ describe('<Loader />', () => {
   })
 
   // need tests for local host stuff
-  it('can use config from a url with share session param ', async () => {
+  xit('can use config from a url with share session param ', async () => {
     console.error = jest.fn()
     // onaction warning from linear-comparative-view
     console.warn = jest.fn()
@@ -121,7 +121,7 @@ describe('<Loader />', () => {
     expect(await findByText('integration test session')).toBeTruthy()
   })
 
-  it('can use config from a url with nonexistent share param ', async () => {
+  xit('can use config from a url with nonexistent share param ', async () => {
     console.error = jest.fn()
     // onaction warning from linear-comparative-view
     console.warn = jest.fn()
@@ -146,7 +146,7 @@ describe('<Loader />', () => {
   })
 
   // session: { name: 'testSession' }
-  it('can use localstorage to load local session ', async () => {
+  xit('can use localstorage to load local session ', async () => {
     console.error = jest.fn()
     // onaction warning from linear-comparative-view
     console.warn = jest.fn()
