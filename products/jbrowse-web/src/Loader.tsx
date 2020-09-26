@@ -190,12 +190,12 @@ export function Loader() {
           const json = await response.json()
           const decryptedSession = decrypt(json.session)
           if (decryptedSession) {
-            localId = `local-${uuid.v4()}`
+            localId = `localSession-${uuid.v4()}`
             const fromShared = JSON.parse(fromUrlSafeB64(decryptedSession))
             fromShared.name = `${fromShared.name}-${new Date(
               Date.now(),
             ).toISOString()}`
-            localStorage.setItem(localId, JSON.stringify(fromShared))
+            sessionStorage.setItem(localId, JSON.stringify(fromShared))
             setData(localId)
           } else {
             // eslint-disable-next-line no-alert
@@ -327,7 +327,9 @@ export function Loader() {
   try {
     if (sessionQueryParam) {
       // eslint-disable-next-line guard-for-in
-      const foundLocalSession = localStorage.getItem(sessionQueryParam)
+      const foundLocalSession =
+        localStorage.getItem(sessionQueryParam) ||
+        sessionStorage.getItem(sessionQueryParam)
       if (foundLocalSession) {
         rootModel.setSession(JSON.parse(foundLocalSession))
       } else if (!loadingSharedSession) {

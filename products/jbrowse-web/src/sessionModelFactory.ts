@@ -406,6 +406,9 @@ export default function sessionModelFactory(
       setDefaultSession() {
         return getParent(self).setDefaultSession()
       },
+      saveSessionToLocalStorage() {
+        return getParent(self).saveSessionToLocalStorage()
+      },
     }))
     .extend(() => {
       const snackbarMessages = observable.array()

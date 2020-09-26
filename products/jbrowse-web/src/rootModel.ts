@@ -70,8 +70,8 @@ export default function RootModel(
             .substring(0, 10)} ${new Date(Date.now()).toLocaleTimeString()}`,
         }
 
-        const localId = `local-${uuid.v4()}`
-        localStorage.setItem(localId, JSON.stringify(newSession))
+        const localId = `localSession-${uuid.v4()}`
+        sessionStorage.setItem(localId, JSON.stringify(newSession))
         this.setSessionUuidInUrl(localId)
         this.setSession(newSession)
         return localId
@@ -83,9 +83,15 @@ export default function RootModel(
           const snapInLocal = Object.entries(localStorage)
             .filter(obj => obj[0].startsWith('local-'))
             .find(sessionSnap => JSON.parse(sessionSnap[1]).name === oldname)
+
+          const snapInSession = Object.entries(sessionStorage)
+            .filter(obj => obj[0].startsWith('localSession-'))
+            .find(sessionSnap => JSON.parse(sessionSnap[1]).name === oldname)
           snapshot.name = sessionName
           if (snapInLocal)
             localStorage.setItem(snapInLocal[0], JSON.stringify(snapshot))
+          else if (snapInSession)
+            sessionStorage.setItem(snapInSession[0], JSON.stringify(snapshot))
           this.setSession(snapshot)
         }
       },
@@ -101,9 +107,10 @@ export default function RootModel(
             } while (self.savedSessionNames.includes(newSnapshotName))
           }
           snapshot.name = newSnapshotName
-          const localId = `local-${uuid.v4()}`
-          localStorage.setItem(localId, JSON.stringify(snapshot))
-          this.activateSession(snapshot.name)
+          const localId = `localSession-${uuid.v4()}`
+          sessionStorage.setItem(localId, JSON.stringify(snapshot))
+          this.setSessionUuidInUrl(localId)
+          this.setSession(snapshot)
         }
       },
       activateSession(name: string) {
@@ -119,6 +126,25 @@ export default function RootModel(
         const [localId, snapshot] = newSessionSnapshot
         this.setSessionUuidInUrl(localId)
         this.setSession(JSON.parse(snapshot))
+      },
+      saveSessionToLocalStorage() {
+        if (self.session) {
+          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+          snapshot.name = `${snapshot.name}-saved`
+          const localId = `local-${uuid.v4()}`
+          try {
+            localStorage.setItem(localId, JSON.stringify(snapshot))
+          } catch (e) {
+            if (e.code === '22' || e.code === '1024') {
+              // eslint-disable-next-line no-alert
+              alert(
+                'Local storage is full! Please open sessions and remove some before saving',
+              )
+            }
+          }
+          this.setSessionUuidInUrl(localId)
+          this.setSession(snapshot)
+        }
       },
       setSessionUuidInUrl(localId: string) {
         const locationUrl = new URL(window.location.href)
