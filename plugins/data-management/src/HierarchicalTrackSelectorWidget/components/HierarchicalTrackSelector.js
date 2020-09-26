@@ -70,6 +70,8 @@ const Expandable = ({ onChange, node, children, index }) => {
       index,
     })
 
+  console.log({ children })
+
   return (
     <span>
       {hasChildren && isExpanded ? (
@@ -79,24 +81,29 @@ const Expandable = ({ onChange, node, children, index }) => {
         <ArrowRightIcon style={{ height: 16 }} onClick={handleChange} />
       ) : null}
       {!hasChildren ? (
-        <input
-          type="checkbox"
-          checked={!!selected}
-          onChange={() => {
-            onChange({
-              node: {
-                ...node,
-                state: {
-                  ...state,
-                  selected: !selected,
+        <>
+          <input
+            id={children}
+            type="checkbox"
+            checked={!!selected}
+            onChange={() => {
+              onChange({
+                node: {
+                  ...node,
+                  state: {
+                    ...state,
+                    selected: !selected,
+                  },
                 },
-              },
-              type: SELECT,
-            })
-          }}
-        />
-      ) : null}
-      {children}
+                type: SELECT,
+              })
+            }}
+          />
+          <label htmlFor={children}>{children}</label>
+        </>
+      ) : (
+        <>{children}</>
+      )}
     </span>
   )
 }
