@@ -116,7 +116,6 @@ export default pluginManager =>
           },
         )
 
-        console.log({ hier, conns })
         conns.forEach(conn => {
           hier.push(conn)
         })

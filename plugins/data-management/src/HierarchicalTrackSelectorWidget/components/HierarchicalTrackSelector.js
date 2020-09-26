@@ -28,7 +28,7 @@ import AddIcon from '@material-ui/icons/Add'
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
 import ArrowRightIcon from '@material-ui/icons/ArrowRight'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React, { useState } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import Tree, { selectors } from 'react-virtualized-tree'
 import Contents from './Contents'
 
@@ -105,9 +105,25 @@ function HierarchicalTrackSelector({ model }) {
   const [anchorEl, setAnchorEl] = useState(null)
   const [assemblyIdx, setAssemblyIdx] = useState(0)
   const [modalInfo, setModalInfo] = useState()
+  const [height, setHeight] = useState(0)
+  const ref = useRef(null)
   const classes = useStyles()
-
   const session = getSession(model)
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight)
+  useEffect(() => {
+    if (ref.current) {
+      const h = windowHeight - ref.current.getBoundingClientRect().top
+      setHeight(h - 10) // little fudge factor to avoid an outer scroll (only the virtualized container gets a scroll)
+    }
+  }, [windowHeight])
+
+  useEffect(() => {
+    const watcher = () => setWindowHeight(window.innerHeight)
+    window.addEventListener('resize', watcher)
+    return () => {
+      window.removeEventListener('resize', watcher)
+    }
+  }, [])
 
   function handleTabChange(event, newIdx) {
     setAssemblyIdx(newIdx)
@@ -221,7 +237,7 @@ function HierarchicalTrackSelector({ model }) {
           ),
         }}
       />
-      <div style={{ height: 900 }}>
+      <div ref={ref} style={{ height }}>
         <Tree
           nodes={nodes}
           onChange={() => {}}
