@@ -110,6 +110,8 @@ function NoConfigMessage() {
 type Config = SnapshotOut<AnyConfigurationModel>
 
 export function Loader() {
+  const bc1 = new BroadcastChannel('request_session')
+  const bc2 = new BroadcastChannel('respond_session')
   const [configSnapshot, setConfigSnapshot] = useState<Config>()
   const [noDefaultConfig, setNoDefaultConfig] = useState(false)
   const [plugins, setPlugins] = useState<PluginConstructor[]>()
@@ -155,7 +157,7 @@ export function Loader() {
     }
 
     function setData(data?: string) {
-      setSessionQueryParam(data || undefined)
+      setSessionQueryParam(data)
       setPasswordQueryParam(undefined)
       setSessString(data || '') // setting querys do not count for change rerender
     }
@@ -223,6 +225,36 @@ export function Loader() {
     sessString,
     key,
   ])
+
+  useEffect(() => {
+    function setData(data?: string) {
+      setSessionQueryParam(data)
+      setPasswordQueryParam(undefined)
+      setSessString(data || '') // setting querys do not count for change rerender
+    }
+    ;(async () => {
+      if (sessionQueryParam) {
+        const foundLocalSession =
+          localStorage.getItem(sessionQueryParam) ||
+          sessionStorage.getItem(sessionQueryParam)
+
+        if (!foundLocalSession) {
+          bc1.postMessage(sessionQueryParam)
+          const result = await new Promise((resolve, reject) => {
+            bc2.onmessage = msg => {
+              resolve(msg.data)
+            }
+            setTimeout(() => {
+              reject()
+            }, 1000)
+          })
+          const localId = `localSession-${uuid.v4()}`
+          sessionStorage.setItem(localId, result as string)
+          setData(localId)
+        }
+      }
+    })()
+  }, [])
 
   useEffect(() => {
     async function fetchConfig() {
@@ -344,7 +376,6 @@ export function Loader() {
       setSessionQueryParam(localId)
       setPasswordQueryParam(undefined)
       setSessString(localId)
-      console.log(localId)
     }
 
     if (!rootModel.session) return null
@@ -368,6 +399,13 @@ export function Loader() {
   pluginManager.setRootModel(rootModel)
 
   pluginManager.configure()
+
+  bc1.onmessage = msg => {
+    const ret = sessionStorage.getItem(msg.data)
+    if (ret) {
+      bc2.postMessage(ret)
+    }
+  }
 
   return loadingState ? (
     <CircularProgress />
