@@ -54,6 +54,7 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(1),
   },
 }))
+
 const SELECT = 3
 const EXPAND = 4
 
@@ -122,7 +123,9 @@ function HierarchicalTrackSelector({ model }) {
   useEffect(() => {
     if (ref.current) {
       const h = windowHeight - ref.current.getBoundingClientRect().top
-      setHeight(h - 10) // little fudge factor to avoid an outer scroll (only the virtualized container gets a scroll)
+      // little fudge factor to avoid an outer scroll (only the virtualized
+      // container gets a scroll)
+      setHeight(h - 10)
     }
   }, [windowHeight])
 

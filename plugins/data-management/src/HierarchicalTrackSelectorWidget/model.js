@@ -4,29 +4,30 @@ import { getSession } from '@gmod/jbrowse-core/util'
 import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 
 export function generateHierarchy(model, trackConfigurations, collapsed) {
-  const hierarchy = []
+  const hierarchy = { children: [] }
 
   trackConfigurations.forEach(trackConf => {
     const categories = readConfObject(trackConf, 'category') || []
     let currLevel = hierarchy
     for (let i = 0; i < categories.length; i++) {
       const category = categories[i]
+      const ret = currLevel.children.find(c => c.name === category)
       const id = categories.slice(0, i + 1).join(',')
-      const f = hierarchy.find(elt => elt.id === id)
-      if (f) {
-        currLevel = f
-      } else {
-        currLevel = {
-          id,
-          name: category,
-          state: { expanded: !collapsed.get(id) },
+      if (!ret) {
+        const n = {
           children: [],
+          name: category,
+          id,
+          state: { expanded: !collapsed.get(id) },
         }
-        hierarchy.push(currLevel)
+        currLevel.children.push(n)
+        currLevel = n
+      } else {
+        currLevel = ret
       }
     }
-    const l = currLevel.children || currLevel
-    l.push({
+
+    currLevel.children.push({
       id: trackConf.trackId,
       name: readConfObject(trackConf, 'name'),
       conf: trackConf,
@@ -36,7 +37,8 @@ export function generateHierarchy(model, trackConfigurations, collapsed) {
       children: [],
     })
   })
-  return hierarchy
+
+  return hierarchy.children
 }
 
 export default pluginManager =>
