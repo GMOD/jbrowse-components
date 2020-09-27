@@ -12,7 +12,7 @@ script:
   - set -e
   # dev tools need to be built first cause they are written in TS but used in webpack configs
   - (cd packages/development-tools && NODE_ENV=development yarn build)
-  - yarn test-ci
+  # - yarn test-ci
   - yarn tsc --noEmit
   - NODE_OPTIONS='--max-old-space-size=7000' yarn build
   - BUILT_TESTS=1 yarn built-test-ci

@@ -718,6 +718,7 @@ Object {
       ],
       "category": Array [
         "Integration test",
+        "Wiggle",
       ],
       "name": "wiggle_track 404",
       "renderers": Object {
@@ -746,6 +747,7 @@ Object {
       ],
       "category": Array [
         "Integration test",
+        "Wiggle",
       ],
       "name": "wiggle_track xyplot",
       "renderers": Object {
@@ -774,6 +776,7 @@ Object {
       ],
       "category": Array [
         "Integration test",
+        "Wiggle",
       ],
       "defaultRendering": "line",
       "name": "wiggle_track lineplot",
@@ -803,6 +806,7 @@ Object {
       ],
       "category": Array [
         "Integration test",
+        "Wiggle",
       ],
       "defaultRendering": "density",
       "name": "wiggle_track density",
@@ -832,6 +836,7 @@ Object {
       ],
       "category": Array [
         "Integration test",
+        "Wiggle",
       ],
       "name": "wiggle_track density (altname)",
       "renderers": Object {
