@@ -3,7 +3,7 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 
-export function generateHierarchy(model, trackConfigurations) {
+export function generateHierarchy(model, trackConfigurations, collapsed) {
   const hierarchy = []
 
   trackConfigurations.forEach(trackConf => {
@@ -11,14 +11,15 @@ export function generateHierarchy(model, trackConfigurations) {
     let currLevel = hierarchy
     for (let i = 0; i < categories.length; i++) {
       const category = categories[i]
-      const f = hierarchy.find(elt => elt.id === category)
+      const id = categories.slice(0, i + 1).join(',')
+      const f = hierarchy.find(elt => elt.id === id)
       if (f) {
         currLevel = f
       } else {
         currLevel = {
-          id: category,
+          id,
           name: category,
-          state: { expanded: true },
+          state: { expanded: !collapsed.get(id) },
           children: [],
         }
         hierarchy.push(currLevel)
@@ -43,11 +44,12 @@ export default pluginManager =>
     .model('HierarchicalTrackSelectorWidget', {
       id: ElementId,
       type: types.literal('HierarchicalTrackSelectorWidget'),
-      collapsed: types.map(types.boolean), // map of category path -> boolean of whether it is collapsed
+      collapsed: types.map(types.boolean),
       filterText: '',
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
+      collapsedCategories: types.map(types.string, types.boolean),
     })
     .actions(self => ({
       setView(view) {
@@ -70,13 +72,11 @@ export default pluginManager =>
         }
         const session = getSession(self)
         const trackConfigurations = session.tracks
+        const viewType = self.view.type
 
         const relevantTrackConfigurations = trackConfigurations.filter(conf => {
           const assemblies = readConfObject(conf, 'assemblyNames')
-          return (
-            conf.viewType === self.view.type &&
-            assemblies.includes(assemblyName)
-          )
+          return conf.viewType === viewType && assemblies.includes(assemblyName)
         })
         return relevantTrackConfigurations
       },
@@ -99,6 +99,7 @@ export default pluginManager =>
         const hier = generateHierarchy(
           self,
           self.trackConfigurations(assemblyName),
+          self.collapsed,
         )
 
         const session = getSession(self)

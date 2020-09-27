@@ -16,13 +16,11 @@ import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
-import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 import Switch from '@material-ui/core/Switch'
 import Tab from '@material-ui/core/Tab'
 import Tabs from '@material-ui/core/Tabs'
 import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
 import ClearIcon from '@material-ui/icons/Clear'
 import AddIcon from '@material-ui/icons/Add'
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
@@ -30,7 +28,6 @@ import ArrowRightIcon from '@material-ui/icons/ArrowRight'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useRef, useEffect, useState } from 'react'
 import Tree, { selectors } from 'react-virtualized-tree'
-import Contents from './Contents'
 
 const { getNodeRenderOptions, updateNode } = selectors
 
@@ -58,27 +55,34 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 const SELECT = 3
+const EXPAND = 4
 
 // this is copied from the react-virtualized-tree Expandable renderer
 const Expandable = ({ onChange, node, children, index }) => {
   const { hasChildren, isExpanded } = getNodeRenderOptions(node)
   const { state = {} } = node
   const { selected } = state
-  const handleChange = () =>
+  const handleChange = () => {
     onChange({
       ...updateNode(node, { expanded: !isExpanded }),
       index,
+      type: EXPAND,
     })
-
-  console.log({ children })
+  }
 
   return (
     <span>
       {hasChildren && isExpanded ? (
-        <ArrowDropDownIcon style={{ height: 16 }} onClick={handleChange} />
+        <div onClick={handleChange} role="presentation">
+          <ArrowDropDownIcon style={{ height: 16 }} />
+          {children}
+        </div>
       ) : null}
       {hasChildren && !isExpanded ? (
-        <ArrowRightIcon style={{ height: 16 }} onClick={handleChange} />
+        <div onClick={handleChange} role="presentation">
+          <ArrowRightIcon style={{ height: 16 }} />
+          {children}
+        </div>
       ) : null}
       {!hasChildren ? (
         <>
@@ -101,9 +105,7 @@ const Expandable = ({ onChange, node, children, index }) => {
           />
           <label htmlFor={children}>{children}</label>
         </>
-      ) : (
-        <>{children}</>
-      )}
+      ) : null}
     </span>
   )
 }
@@ -252,6 +254,10 @@ function HierarchicalTrackSelector({ model }) {
             updateTypeHandlers: {
               [SELECT]: (n, updatedNode) => {
                 model.view.toggleTrack(updatedNode.conf)
+                return n
+              },
+              [EXPAND]: (n, updatedNode) => {
+                model.toggleCategory(updatedNode.id, updatedNode.state.expanded)
                 return n
               },
             },
