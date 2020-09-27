@@ -89,6 +89,7 @@ const Expandable = ({ onChange, node, children, index }) => {
         <>
           <input
             id={node.id}
+            data-testid={`htsTrackEntry-${node.id}`}
             type="checkbox"
             checked={!!selected}
             onChange={() => {
