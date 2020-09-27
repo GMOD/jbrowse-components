@@ -88,7 +88,7 @@ const Expandable = ({ onChange, node, children, index }) => {
       {!hasChildren ? (
         <>
           <input
-            id={children}
+            id={node.id}
             type="checkbox"
             checked={!!selected}
             onChange={() => {
@@ -104,7 +104,7 @@ const Expandable = ({ onChange, node, children, index }) => {
               })
             }}
           />
-          <label htmlFor={children}>{children}</label>
+          <label htmlFor={node.id}>{children}</label>
         </>
       ) : null}
     </span>
