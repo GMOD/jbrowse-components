@@ -144,14 +144,9 @@ export function findParentThat(
 ) {
   let currentNode: IAnyStateTreeNode | undefined = node
   while (currentNode && isAlive(currentNode)) {
-    if (predicate(currentNode)) {
-      return currentNode
-    }
-    if (hasParent(currentNode)) {
-      currentNode = getParent(currentNode)
-    } else {
-      break
-    }
+    if (predicate(currentNode)) return currentNode
+    if (hasParent(currentNode)) currentNode = getParent(currentNode)
+    else break
   }
   throw new Error('no matching node found')
 }
@@ -236,10 +231,6 @@ export function findParentThatIs<
 /** get the current JBrowse session model, starting at any node in the state tree */
 export function getSession(node: IAnyStateTreeNode) {
   try {
-    if (isSessionModel(node)) {
-      return node
-    }
-
     return findParentThatIs(node, isSessionModel)
   } catch (e) {
     throw new Error('no session model found!')
