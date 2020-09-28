@@ -255,10 +255,9 @@ export default class PileupRenderer extends BoxRendererType {
         }
         for (let i = 0; i < mismatches.length; i += 1) {
           const mismatch = mismatches[i]
-          const len = mismatch.type === 'insertion' ? 0 : mismatch.length
           const [mismatchLeftPx, mismatchRightPx] = bpSpanPx(
             feature.get('start') + mismatch.start,
-            feature.get('start') + mismatch.start + len,
+            feature.get('start') + mismatch.start + mismatch.length,
             region,
             bpPerPx,
           )
