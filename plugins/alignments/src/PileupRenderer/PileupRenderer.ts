@@ -320,7 +320,12 @@ export default class PileupRenderer extends BoxRendererType {
               )
             }
           } else if (mismatch.type === 'skip') {
-            ctx.clearRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
+            // fix to avoid bad rendering
+            // note that this was also related to chrome bug https://bugs.chromium.org/p/chromium/issues/detail?id=1131528
+            // ref #1236
+            if (mismatchLeftPx + mismatchWidthPx > 0) {
+              ctx.clearRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
+            }
             ctx.fillStyle = '#333'
             ctx.fillRect(
               mismatchLeftPx,
