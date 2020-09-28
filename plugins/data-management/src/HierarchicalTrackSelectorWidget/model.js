@@ -130,6 +130,7 @@ export default pluginManager =>
         return generateHierarchy(
           self,
           self.connectionTrackConfigurations(connection),
+          self.collapsed,
         )
       },
 
