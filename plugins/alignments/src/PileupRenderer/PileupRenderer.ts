@@ -291,7 +291,10 @@ export default class PileupRenderer extends BoxRendererType {
             ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
             ctx.fillRect(pos - w, topPx, w * 3, 1)
             ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-            if (heightPx >= charSize.height - 2) {
+            if (
+              1 / bpPerPx >= charSize.width &&
+              heightPx >= charSize.height - 2
+            ) {
               ctx.fillText(
                 `(${mismatch.base})`,
                 mismatchLeftPx + 2,
