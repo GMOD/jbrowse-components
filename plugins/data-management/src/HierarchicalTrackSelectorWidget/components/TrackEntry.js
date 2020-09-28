@@ -27,6 +27,7 @@ const useStyles = makeStyles(theme => ({
       },
     },
     flexGrow: 1,
+    wordBreak: 'break-all',
   },
   checkbox: {
     padding: 0,
