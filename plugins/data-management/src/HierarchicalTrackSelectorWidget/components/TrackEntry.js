@@ -96,7 +96,10 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
           onClose={() => {
             setAnchorEl(null)
           }}
-          menuItems={session.getTrackActionMenuItems(trackConf)}
+          menuItems={
+            session.getTrackActionMenuItems &&
+            session.getTrackActionMenuItems(trackConf)
+          }
         />
       </div>
     </Fade>

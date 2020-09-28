@@ -5,19 +5,12 @@ import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 import { MenuItem } from '@gmod/jbrowse-core/ui'
 import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import {
-  types,
-  getSnapshot,
-  getRoot,
-  Instance,
-  IAnyStateTreeNode,
-} from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import InfoIcon from '@material-ui/icons/Info'
 import React from 'react'
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { LinearGenomeViewModel } from '../LinearGenomeView'
 
 // these MST models only exist for tracks that are *shown*.
