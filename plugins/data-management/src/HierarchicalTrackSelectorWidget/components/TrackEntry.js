@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { getSession } from '@gmod/jbrowse-core/util'
 import { Menu } from '@gmod/jbrowse-core/ui'
 import Checkbox from '@material-ui/core/Checkbox'
 import Fade from '@material-ui/core/Fade'
@@ -44,6 +45,7 @@ const useStyles = makeStyles(theme => ({
 function TrackEntry({ model, disabled, trackConf, assemblyName }) {
   const classes = useStyles()
   const [anchorEl, setAnchorEl] = useState(null)
+  const session = getSession(model)
   const titleText = assemblyName
     ? `The reference sequence for ${assemblyName}`
     : readConfObject(trackConf, 'description')
@@ -94,7 +96,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
           onClose={() => {
             setAnchorEl(null)
           }}
-          menuItems={trackConf.fileMenuItems}
+          menuItems={session.getTrackActionMenuItems(trackConf)}
         />
       </div>
     </Fade>

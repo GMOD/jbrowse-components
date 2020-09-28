@@ -16,9 +16,7 @@ import InfoIcon from '@material-ui/icons/Info'
 import React from 'react'
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
-import SettingsIcon from '@material-ui/icons/Settings'
-import CopyIcon from '@material-ui/icons/FileCopy'
-import DeleteIcon from '@material-ui/icons/Delete'
+
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { LinearGenomeViewModel } from '../LinearGenomeView'
 
@@ -86,57 +84,6 @@ const generateBaseTrackConfig = (base: any) =>
     },
     {
       explicitIdentifier: 'trackId',
-      views: (self: unknown) => ({
-        get fileMenuItems() {
-          let session: any
-          const config = self as IAnyStateTreeNode
-          try {
-            session = getSession(config)
-          } catch (e) {
-            // TODO likely want a better way to do this
-            session = getRoot(config).session
-          }
-
-          const canEdit =
-            session.adminMode ||
-            session.sessionTracks.find((track: AnyConfigurationModel) => {
-              // @ts-ignore
-              return track.trackId === config.trackId
-            })
-
-          return [
-            {
-              label: 'Settings',
-              disabled: !canEdit,
-              onClick: () => {
-                session.editTrackConfiguration(config)
-              },
-              icon: SettingsIcon,
-            },
-            {
-              label: 'Delete track',
-              disabled: !canEdit,
-              onClick: () => {
-                session.deleteTrackConf(config)
-              },
-              icon: DeleteIcon,
-            },
-            {
-              label: 'Copy track',
-              onClick: () => {
-                const trackSnapshot = JSON.parse(
-                  JSON.stringify(getSnapshot(config)),
-                )
-                trackSnapshot.trackId += `-${Date.now()}`
-                trackSnapshot.name += ' (copy)'
-                trackSnapshot.category = [' Session tracks']
-                session.addTrackConf(trackSnapshot)
-              },
-              icon: CopyIcon,
-            },
-          ]
-        },
-      }),
     },
   )
 

@@ -148,7 +148,7 @@ const TrackLabel = React.forwardRef(
           open={Boolean(anchorEl)}
           onClose={handleClose}
           menuItems={[
-            ...(trackConf.fileMenuItems || []),
+            ...session.getTrackActionMenuItems(trackConf),
             ...track.trackMenuItems,
           ]}
         />

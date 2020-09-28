@@ -28,6 +28,9 @@ import {
   isConfigurationModel,
 } from '@gmod/jbrowse-core/configuration'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
+import SettingsIcon from '@material-ui/icons/Settings'
+import CopyIcon from '@material-ui/icons/FileCopy'
+import DeleteIcon from '@material-ui/icons/Delete'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -500,6 +503,49 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           throw new Error("Can't edit the configuration of a non-session track")
         }
         this.editConfiguration(configuration)
+      },
+    }))
+    .views(self => ({
+      getTrackActionMenuItems(config: any) {
+        const session = self
+        const canEdit =
+          session.adminMode ||
+          session.sessionTracks.find((track: AnyConfigurationModel) => {
+            // @ts-ignore
+            return track.trackId === config.trackId
+          })
+
+        return [
+          {
+            label: 'Settings',
+            disabled: !canEdit,
+            onClick: () => {
+              session.editTrackConfiguration(config)
+            },
+            icon: SettingsIcon,
+          },
+          {
+            label: 'Delete track',
+            disabled: !canEdit,
+            onClick: () => {
+              session.deleteTrackConf(config)
+            },
+            icon: DeleteIcon,
+          },
+          {
+            label: 'Copy track',
+            onClick: () => {
+              const trackSnapshot = JSON.parse(
+                JSON.stringify(getSnapshot(config)),
+              )
+              trackSnapshot.trackId += `-${Date.now()}`
+              trackSnapshot.name += ' (copy)'
+              trackSnapshot.category = [' Session tracks']
+              session.addTrackConf(trackSnapshot)
+            },
+            icon: CopyIcon,
+          },
+        ]
       },
     }))
 }
