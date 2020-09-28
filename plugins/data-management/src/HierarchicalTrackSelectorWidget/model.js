@@ -8,6 +8,9 @@ export function generateHierarchy(trackConfigurations) {
 
   trackConfigurations.forEach(trackConf => {
     const categories = [...(readConfObject(trackConf, 'category') || [])]
+    if (trackConf.sessionTrack) {
+      categories.unshift(' Session tracks')
+    }
 
     let currLevel = hierarchy
     for (let i = 0; i < categories.length; i += 1) {

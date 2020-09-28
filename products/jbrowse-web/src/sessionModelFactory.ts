@@ -540,7 +540,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
               )
               trackSnapshot.trackId += `-${Date.now()}`
               trackSnapshot.name += ' (copy)'
-              trackSnapshot.category = [' Session tracks']
+              trackSnapshot.category = undefined
               session.addTrackConf(trackSnapshot)
             },
             icon: CopyIcon,
