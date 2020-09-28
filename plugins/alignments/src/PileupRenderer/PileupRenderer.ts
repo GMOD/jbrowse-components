@@ -255,12 +255,14 @@ export default class PileupRenderer extends BoxRendererType {
         }
         for (let i = 0; i < mismatches.length; i += 1) {
           const mismatch = mismatches[i]
+          const len = mismatch.type === 'insertion' ? 0 : mismatch.length
           const [mismatchLeftPx, mismatchRightPx] = bpSpanPx(
             feature.get('start') + mismatch.start,
-            feature.get('start') + mismatch.start + mismatch.length,
+            feature.get('start') + mismatch.start + len,
             region,
             bpPerPx,
           )
+
           const mismatchWidthPx = Math.max(
             minFeatWidth,
             Math.abs(mismatchLeftPx - mismatchRightPx),
@@ -290,10 +292,7 @@ export default class PileupRenderer extends BoxRendererType {
             ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
             ctx.fillRect(pos - w, topPx, w * 3, 1)
             ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-            if (
-              mismatchWidthPx >= charSize.width &&
-              heightPx >= charSize.height - 2
-            ) {
+            if (heightPx >= charSize.height - 2) {
               ctx.fillText(
                 `(${mismatch.base})`,
                 mismatchLeftPx + 2,
