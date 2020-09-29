@@ -1,5 +1,4 @@
 import { flags } from '@oclif/command'
-import { promises as fsPromises } from 'fs'
 import fetch from 'node-fetch'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'
@@ -98,25 +97,13 @@ export default class AddConnection extends JBrowseCommand {
       !(runFlags.skipCheck || runFlags.force),
     )
 
-    let configContentsJson
-    try {
-      configContentsJson = await this.readJsonConfig(target)
-      this.debug(`Found existing config file ${target}`)
-    } catch (error) {
-      this.error('No existing config file found', { exit: 100 })
-    }
-    let configContents: Config
-    try {
-      configContents = parseJSON(configContentsJson)
-    } catch (error) {
-      this.error('Could not parse existing config file', { exit: 110 })
-    }
+    const configContents: Config = await this.readJsonFile(target)
+    this.debug(`Using config file ${target}`)
+
     if (!configContents.assemblies || !configContents.assemblies.length) {
       this.error(
         'No assemblies found. Please add one before adding connections',
-        {
-          exit: 120,
-        },
+        { exit: 120 },
       )
     } else if (configContents.assemblies.length > 1 && !assemblyName) {
       this.error(
@@ -211,10 +198,7 @@ export default class AddConnection extends JBrowseCommand {
     } else configContents.connections.push(connectionConfig)
 
     this.debug(`Writing configuration to file ${target}`)
-    await fsPromises.writeFile(
-      target,
-      JSON.stringify(configContents, undefined, 2),
-    )
+    await this.writeJsonFile(target, configContents)
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} connection "${name}" ${

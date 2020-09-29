@@ -1,3 +1,7 @@
+/**
+ * By convention, exit codes in this base class are below 100
+ */
+
 import Command from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import path from 'path'
@@ -65,12 +69,17 @@ export interface Assembly {
   refNameColors?: string[]
 }
 
+export interface Track {
+  trackId: string
+  name: string
+}
+
 export interface Config {
   assemblies?: Assembly[]
   configuration?: {}
   connections?: unknown[]
   defaultSession?: {}
-  tracks?: unknown[]
+  tracks?: Track[]
 }
 
 interface GithubRelease {
@@ -118,12 +127,42 @@ export default abstract class JBrowseCommand extends Command {
     }
   }
 
-  readJsonConfig(location: string) {
+  async readFile(location: string) {
     return fsPromises.readFile(location, { encoding: 'utf8' })
   }
 
-  writeJsonConfig(config: string) {
-    return fsPromises.writeFile('./config.json', config)
+  async readJsonFile(location: string) {
+    let contents
+    try {
+      contents = await fsPromises.readFile(location, { encoding: 'utf8' })
+    } catch (error) {
+      this.error(error instanceof Error ? error : error.message, {
+        suggestions: [
+          `Make sure the file "${location}" exists`,
+          'Run `jbrowse add-assembly` to create a config file',
+        ],
+        exit: 40,
+      })
+    }
+    let result
+    try {
+      result = parseJSON(contents)
+    } catch (error) {
+      this.error(error instanceof Error ? error : error.message, {
+        suggestions: [`Make sure "${location}" is a valid JSON file`],
+        exit: 50,
+      })
+    }
+    return result
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async writeJsonFile(location: string, contents: any) {
+    this.debug(`Writing JSON file to ${process.cwd()} ${location}`)
+    return fsPromises.writeFile(
+      location,
+      JSON.stringify(contents, undefined, 2),
+    )
   }
 
   async resolveFileLocation(location: string, check = true, warning = false) {
@@ -154,16 +193,11 @@ export default abstract class JBrowseCommand extends Command {
     try {
       result = parseJSON(inlineOrFileName)
     } catch (error) {
+      this.debug(
+        `Not valid inline JSON, attempting to parse as filename: '${inlineOrFileName}'`,
+      )
       // not inline JSON, must be location of a JSON file
-      try {
-        const fileLocation = await this.resolveFileLocation(inlineOrFileName)
-        const resultJSON = await this.readJsonConfig(fileLocation)
-        result = parseJSON(resultJSON)
-      } catch (err) {
-        this.error(`Not valid inline JSON or JSON file ${inlineOrFileName}`, {
-          exit: 50,
-        })
-      }
+      result = await this.readJsonFile(inlineOrFileName)
     }
     return result
   }
@@ -228,11 +262,11 @@ export default abstract class JBrowseCommand extends Command {
         ? result.assets[0].browser_download_url
         : this.error(
             'Could not find version specified. Use --listVersions to see all available versions',
-            { exit: 130 },
+            { exit: 90 },
           )
     }
     return this.error(`Error: Could not find version: ${response.statusText}`, {
-      exit: 130,
+      exit: 90,
     })
   }
 }

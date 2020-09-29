@@ -153,7 +153,7 @@ describe('create', () => {
       '@gmod/jbrowse-web@v999.999.999',
       '--force',
     ])
-    .exit(130)
+    .catch(/Could not find version/)
     .it('fails to download a version that does not exist')
   setup
     .nock('https://api.github.com', mockReleases)

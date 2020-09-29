@@ -1,5 +1,5 @@
 import { flags } from '@oclif/command'
-import { promises as fsPromises } from 'fs'
+import fs from 'fs'
 import path from 'path'
 import express from 'express'
 import JBrowseCommand, { Config } from '../base'
@@ -52,14 +52,11 @@ export default class AdminServer extends JBrowseCommand {
       tracks: [],
     }
 
-    let configContentsJson
-    try {
-      configContentsJson = await this.readJsonConfig(runFlags.target)
+    if (fs.existsSync(runFlags.target)) {
       this.debug(`Found existing config file ${runFlags.target}`)
-    } catch (error) {
-      this.debug('No existing config file found, creating default empty config')
-      configContentsJson = JSON.stringify(defaultConfig, null, 4)
-      await this.writeJsonConfig(configContentsJson)
+    } else {
+      this.debug(`Creating config file ${runFlags.target}`)
+      await this.writeJsonFile('./config.json', defaultConfig)
     }
 
     // start server with admin key in URL query string
@@ -85,10 +82,7 @@ export default class AdminServer extends JBrowseCommand {
         if (req.body.adminKey === adminKey) {
           this.debug('Admin key matches')
           try {
-            await fsPromises.writeFile(
-              runFlags.target,
-              JSON.stringify(req.body.config, null, 4),
-            )
+            await this.writeJsonFile(runFlags.target, req.body.config)
             res.send('Config written to disk')
           } catch {
             res.status(500).send('Could not write config file')

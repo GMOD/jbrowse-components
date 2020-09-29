@@ -34,7 +34,7 @@ describe('add-assembly', () => {
 
   setup
     .command(['add-assembly', '{}', '--load', 'copy'])
-    .exit(130)
+    .catch('Must provide --name when using custom inline JSON sequence')
     .it('fails if using inline JSON sequence custom with no --name')
 
   setup
@@ -125,7 +125,7 @@ describe('add-assembly', () => {
       '--load',
       'copy',
     ])
-    .exit(50)
+    .exit(40)
     .it('fails if using invalid inline JSON')
   setup
     .command([

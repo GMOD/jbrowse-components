@@ -160,30 +160,8 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // only add track if there is an existing config.json
-    let configContentsJson
-    try {
-      configContentsJson = await this.readJsonConfig(target)
-      this.debug(`Found existing config file ${target}`)
-    } catch (error) {
-      this.error(
-        'No existing config file found, run add-assembly first to bootstrap config',
-        {
-          exit: 30,
-        },
-      )
-    }
+    const configContents: Config = await this.readJsonFile(target)
 
-    let configContents: Config
-    try {
-      // only add track if there is an existing config.json
-      configContents = parseJSON(configContentsJson) as Config
-    } catch (error) {
-      this.error(error instanceof Error ? error : error.message, {
-        suggestions: [
-          'Could not parse existing config file, make sure it is valid JSON',
-        ],
-      })
-    }
     if (!configContents.assemblies || !configContents.assemblies.length) {
       this.error('No assemblies found. Please add one before adding tracks', {
         exit: 150,
@@ -343,10 +321,7 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     this.debug(`Writing configuration to file ${target}`)
-    await fsPromises.writeFile(
-      target,
-      JSON.stringify(configContents, undefined, 2),
-    )
+    await this.writeJsonFile(target, configContents)
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} track "${name}" ${

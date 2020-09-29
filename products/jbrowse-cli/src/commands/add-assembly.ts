@@ -1,7 +1,6 @@
 import { flags } from '@oclif/command'
-import { promises as fsPromises } from 'fs'
+import fs, { promises as fsPromises } from 'fs'
 import path from 'path'
-import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand, { Assembly, Sequence, Config } from '../base'
 
 function isValidJSON(string: string) {
@@ -419,18 +418,17 @@ custom         Either a JSON file location or inline JSON that defines a custom
       tracks: [],
     }
 
-    let configContentsJson
-    try {
-      configContentsJson = await this.readJsonConfig(runFlags.target)
-      this.debug(`Found existing config file ${runFlags.target}`)
-    } catch (error) {
-      this.debug('No existing config file found, using default config')
-      configContentsJson = JSON.stringify(defaultConfig)
-    }
+    let configContents: Config
 
-    const configContents: Config = {
-      ...defaultConfig,
-      ...parseJSON(configContentsJson),
+    if (fs.existsSync(runFlags.target)) {
+      this.debug(`Found existing config file ${runFlags.target}`)
+      configContents = {
+        ...defaultConfig,
+        ...(await this.readJsonFile(runFlags.target)),
+      }
+    } else {
+      this.debug(`Creating config file ${runFlags.target}`)
+      configContents = { ...defaultConfig }
     }
 
     if (!configContents.assemblies) {
@@ -455,10 +453,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     }
 
     this.debug(`Writing configuration to file ${runFlags.target}`)
-    await fsPromises.writeFile(
-      runFlags.target,
-      JSON.stringify(configContents, undefined, 2),
-    )
+    await this.writeJsonFile(runFlags.target, configContents)
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} assembly "${assembly.name}" ${
