@@ -17,7 +17,7 @@ export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useState } = jbrequire('react')
+  const { useState, useEffect } = jbrequire('react')
 
   return observer(
     ({
@@ -37,6 +37,11 @@ export default (pluginManager: any) => {
         features,
       )
       const [mouseoverElt, setMouseoverElt] = useState()
+      const trackLabels = views.map(view => view.trackLabelOverlap).join(',')
+      const [overlaps, setOverlaps] = useState()
+      useEffect(() => {
+        setOverlaps(trackLabels)
+      }, [trackLabels])
 
       let yOffset = 0
       if (ref.current) {

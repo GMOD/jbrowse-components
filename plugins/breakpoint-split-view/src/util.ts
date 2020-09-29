@@ -13,7 +13,7 @@ function heightFromSpecificLevel(
   trackConfigId: string,
   level: number,
 ) {
-  return views[level].trackYCoords[trackConfigId]
+  return views[level].trackRefs[trackConfigId].getBoundingClientRect().top
 }
 
 export function getPxFromCoordinate(

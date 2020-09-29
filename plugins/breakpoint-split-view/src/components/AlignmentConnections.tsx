@@ -10,7 +10,7 @@ export default (pluginManager: any) => {
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useState } = jbrequire('react')
+  const { useState, useEffect } = jbrequire('react')
 
   return observer(
     ({
@@ -25,6 +25,11 @@ export default (pluginManager: any) => {
     }) => {
       const { views, showIntraviewLinks } = model
       const session = getSession(model)
+      const trackLabels = views.map(view => view.trackLabelOverlap).join(',')
+      const [overlaps, setOverlaps] = useState()
+      useEffect(() => {
+        setOverlaps(trackLabels)
+      }, [trackLabels])
       const totalFeatures = model.getTrackFeatures(trackConfigId)
       const features = model.hasPairedReads(trackConfigId)
         ? model.getBadlyPairedAlignments(trackConfigId)

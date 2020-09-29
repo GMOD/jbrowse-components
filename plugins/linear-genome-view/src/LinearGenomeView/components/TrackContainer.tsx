@@ -74,12 +74,12 @@ function TrackContainer(props: {
 
   useEffect(() => {
     if (ref.current) {
-      model.trackYCoords[trackId] = ref.current.getBoundingClientRect().top
+      model.trackRefs[trackId] = ref.current
     }
     return () => {
       delete model.trackRefs[trackId]
     }
-  }, [model.trackYCoords, trackId])
+  }, [model.trackRefs, model.trackYCoords, trackId])
   function onDragEnter() {
     if (
       draggingTrackId !== undefined &&
