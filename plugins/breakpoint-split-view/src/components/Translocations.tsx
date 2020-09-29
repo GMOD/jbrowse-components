@@ -16,10 +16,12 @@ export default (pluginManager: any) => {
     ({
       model,
       trackConfigId,
+      yOffset,
     }: {
       model: BreakpointViewModel
       height: number
       trackConfigId: string
+      yOffset: number
     }) => {
       const { views } = model
       const session = getSession(model)
@@ -77,8 +79,10 @@ export default (pluginManager: any) => {
                 const reversed2 = views[level2].pxToBp(x2).reversed
 
                 const tracks = views.map(v => v.getTrack(trackConfigId))
-                const y1 = yPos(trackConfigId, level1, views, tracks, c1)
-                const y2 = yPos(trackConfigId, level2, views, tracks, c2)
+                const y1 =
+                  yPos(trackConfigId, level1, views, tracks, c1) - yOffset
+                const y2 =
+                  yPos(trackConfigId, level2, views, tracks, c2) - yOffset
 
                 const path = Path()
                   .moveTo(

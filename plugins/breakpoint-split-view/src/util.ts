@@ -13,19 +13,7 @@ function heightFromSpecificLevel(
   trackConfigId: string,
   level: number,
 ) {
-  const heightUpUntilThisPoint =
-    views
-      .slice(0, level)
-      .map(v => v.height + VIEW_DIVIDER_HEIGHT)
-      .reduce((a, b) => a + b, 0) +
-    level * 3
-  return (
-    heightUpUntilThisPoint +
-    views[level].headerHeight +
-    views[level].scaleBarHeight +
-    views[level].getTrackPos(trackConfigId) +
-    1
-  )
+  return views[level].trackYCoords[trackConfigId]
 }
 
 export function getPxFromCoordinate(
@@ -52,6 +40,8 @@ export function yPos(
   const max = tracks[level].height
 
   let offset = 0
+
+  console.log(tracks[level].SNPCoverageTrack)
   const subtrack = tracks[level].SNPCoverageTrack
   if (subtrack) {
     offset = subtrack.height + 5
@@ -61,6 +51,8 @@ export function yPos(
       c[TOP] - tracks[level].scrollTop + cheight(c) / 2 + offset,
       min,
       max,
-    ) + heightFromSpecificLevel(views, trackConfigId, level)
+    ) +
+    heightFromSpecificLevel(views, trackConfigId, level) -
+    offset
   )
 }

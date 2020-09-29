@@ -16,10 +16,12 @@ export default (pluginManager: any) => {
     ({
       model,
       trackConfigId,
+      yOffset,
     }: {
       model: BreakpointViewModel
       height: number
       trackConfigId: string
+      yOffset: number
     }) => {
       const { views, showIntraviewLinks } = model
       const session = getSession(model)
@@ -76,8 +78,10 @@ export default (pluginManager: any) => {
 
               const tracks = views.map(v => v.getTrack(trackConfigId))
 
-              const y1 = yPos(trackConfigId, level1, views, tracks, c1)
-              const y2 = yPos(trackConfigId, level2, views, tracks, c2)
+              const y1 =
+                yPos(trackConfigId, level1, views, tracks, c1) - yOffset
+              const y2 =
+                yPos(trackConfigId, level2, views, tracks, c2) - yOffset
 
               // possible todo: use totalCurveHeight to possibly make alternative squiggle if the S is too small
               const path = Path()

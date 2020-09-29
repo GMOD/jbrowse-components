@@ -88,6 +88,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // which is basically like an onLoad
       afterDisplayedRegionsSetCallbacks: [] as Function[],
       scaleFactor: 1,
+      trackYCoords: {} as { [key: string]: any },
     }))
     .views(self => ({
       get width(): number {
@@ -296,12 +297,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       getTrackPos(trackId: string) {
+        const overlap = !self.trackLabelOverlap ? 36 : 0
         const idx = self.tracks.findIndex(
           t => t.configuration.trackId === trackId,
         )
-        let accum = 0
+        let accum = overlap
         for (let i = 0; i < idx; i += 1) {
-          accum += self.tracks[i].height + RESIZE_HANDLE_HEIGHT
+          accum += self.tracks[i].height + RESIZE_HANDLE_HEIGHT + overlap
         }
         return accum
       },

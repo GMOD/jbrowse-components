@@ -1,12 +1,11 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 import { ResizeHandle } from '@gmod/jbrowse-core/ui'
 import {
   useDebouncedCallback,
   getContainingView,
-  getSession,
 } from '@gmod/jbrowse-core/util'
 import clsx from 'clsx'
 import Paper from '@material-ui/core/Paper'
@@ -67,9 +66,20 @@ function TrackContainer(props: {
   track: BaseTrackModel
 }) {
   const classes = useStyles()
+  const ref = useRef(null)
   const { model, track } = props
   const { horizontalScroll, draggingTrackId, moveTrack } = model
   const { height } = track
+  const trackId = getConf(track, 'trackId')
+
+  useEffect(() => {
+    if (ref.current) {
+      model.trackYCoords[trackId] = ref.current.getBoundingClientRect().top
+    }
+    return () => {
+      delete model.trackRefs[trackId]
+    }
+  }, [model.trackYCoords, trackId])
   function onDragEnter() {
     if (
       draggingTrackId !== undefined &&
@@ -112,6 +122,7 @@ function TrackContainer(props: {
         role="presentation"
       >
         <div
+          ref={ref}
           className={classes.renderingComponentContainer}
           style={{ transform: `scaleX(${model.scaleFactor})` }}
         >

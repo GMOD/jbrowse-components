@@ -5,6 +5,7 @@ export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
+  const { useState, useRef, useEffect } = React
   const { makeStyles: jbrequiredMakeStyles } = jbrequire(
     '@material-ui/core/styles',
   )
@@ -77,6 +78,17 @@ export default (pluginManager: any) => {
     ({ model }: { model: BreakpointViewModel }) => {
       const classes = useStyles()
       const { views } = model
+      const [yCoord, setYCoord] = useState(0)
+      const ref = useRef(null)
+
+      useEffect(() => {
+        if (ref.current) {
+          const rect = ref.current.getBoundingClientRect()
+          setYCoord(rect.top)
+          console.log({ yCoord })
+        }
+      }, [])
+
       return (
         <div>
           <Header model={model} />
@@ -105,6 +117,7 @@ export default (pluginManager: any) => {
             </div>
             <div className={classes.overlay}>
               <svg
+                ref={ref}
                 style={{
                   width: '100%',
                   zIndex: 10,
@@ -112,7 +125,12 @@ export default (pluginManager: any) => {
                 }}
               >
                 {model.matchedTracks.map(id => (
-                  <Overlay key={id} model={model} trackConfigId={id} />
+                  <Overlay
+                    yOffset={yCoord}
+                    key={id}
+                    model={model}
+                    trackConfigId={id}
+                  />
                 ))}
               </svg>
             </div>
