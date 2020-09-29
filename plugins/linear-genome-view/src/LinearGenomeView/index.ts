@@ -76,7 +76,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       ),
       showTrackLabels: true,
       showCenterLine: false,
-      trackLabelOverlap: false,
+      trackLabelOverlap: true,
     })
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
