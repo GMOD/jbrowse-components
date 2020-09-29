@@ -7,7 +7,6 @@ Object {
   "drawerWidth": 384,
   "margin": 0,
   "name": "testSession",
-  "sessionConfig": Object {},
   "views": Array [],
   "widgets": Object {},
 }

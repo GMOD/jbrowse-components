@@ -79,7 +79,7 @@ function TrackContainer(props: {
     return () => {
       delete model.trackRefs[trackId]
     }
-  }, [model.trackRefs, model.trackYCoords, trackId])
+  }, [model.trackRefs, trackId])
   function onDragEnter() {
     if (
       draggingTrackId !== undefined &&

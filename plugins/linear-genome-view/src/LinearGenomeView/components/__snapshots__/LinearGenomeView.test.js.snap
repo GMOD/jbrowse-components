@@ -480,7 +480,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       class="makeStyles-root"
     >
       <div
-        class="MuiPaper-root makeStyles-trackLabel makeStyles-trackLabelOverlay makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
+        class="MuiPaper-root makeStyles-trackLabel makeStyles-trackLabelInline makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
       >
         <span
           class="makeStyles-dragHandle"
@@ -1632,7 +1632,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       class="makeStyles-root"
     >
       <div
-        class="MuiPaper-root makeStyles-trackLabel makeStyles-trackLabelOverlay makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
+        class="MuiPaper-root makeStyles-trackLabel makeStyles-trackLabelInline makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
       >
         <span
           class="makeStyles-dragHandle"
@@ -1855,7 +1855,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       class="makeStyles-root"
     >
       <div
-        class="MuiPaper-root makeStyles-trackLabel makeStyles-trackLabelOverlay makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
+        class="MuiPaper-root makeStyles-trackLabel makeStyles-trackLabelInline makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
       >
         <span
           class="makeStyles-dragHandle"

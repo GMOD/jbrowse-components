@@ -88,7 +88,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // which is basically like an onLoad
       afterDisplayedRegionsSetCallbacks: [] as Function[],
       scaleFactor: 1,
-      trackRefs: {} as { [key: string]: React.RefObject<HTMLDivElement> },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      trackRefs: {} as { [key: string]: any },
     }))
     .views(self => ({
       get width(): number {
@@ -1016,10 +1017,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
               onClick: self.toggleHeader,
             },
             {
-              label: 'Track labels overlap track',
+              label: 'Labels overlap track',
               icon: VisibilityIcon,
               type: 'checkbox',
-              checked: !self.trackLabelOverlap,
+              checked: self.trackLabelOverlap,
               onClick: self.toggleTrackLabelOverlap,
             },
             {
