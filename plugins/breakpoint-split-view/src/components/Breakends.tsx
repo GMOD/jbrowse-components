@@ -23,12 +23,12 @@ export default (pluginManager: any) => {
     ({
       model,
       trackConfigId,
-      yOffset,
+      parentRef: ref,
     }: {
       model: BreakpointViewModel
       height: number
       trackConfigId: string
-      yOffset: number
+      parentRef: React.RefObject<SVGSVGElement>
     }) => {
       const { views } = model
       const features = model.getMatchedBreakendFeatures(trackConfigId)
@@ -37,6 +37,12 @@ export default (pluginManager: any) => {
         features,
       )
       const [mouseoverElt, setMouseoverElt] = useState()
+
+      let yOffset = 0
+      if (ref.current) {
+        const rect = ref.current.getBoundingClientRect()
+        yOffset = rect.top
+      }
       return (
         <g
           stroke="green"

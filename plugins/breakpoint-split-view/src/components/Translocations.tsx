@@ -16,12 +16,12 @@ export default (pluginManager: any) => {
     ({
       model,
       trackConfigId,
-      yOffset,
+      parentRef: ref,
     }: {
       model: BreakpointViewModel
       height: number
       trackConfigId: string
-      yOffset: number
+      parentRef: React.RefObject<SVGSVGElement>
     }) => {
       const { views } = model
       const session = getSession(model)
@@ -32,6 +32,12 @@ export default (pluginManager: any) => {
         features,
       )
       const [mouseoverElt, setMouseoverElt] = useState()
+
+      let yOffset = 0
+      if (ref.current) {
+        const rect = ref.current.getBoundingClientRect()
+        yOffset = rect.top
+      }
 
       // we hardcode the TRA to go to the "other view" and
       // if there is none, we just return null here

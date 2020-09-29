@@ -38,10 +38,7 @@ export function yPos(
 ) {
   const min = 0
   const max = tracks[level].height
-
   let offset = 0
-
-  console.log(tracks[level].SNPCoverageTrack)
   const subtrack = tracks[level].SNPCoverageTrack
   if (subtrack) {
     offset = subtrack.height + 5
@@ -51,8 +48,6 @@ export function yPos(
       c[TOP] - tracks[level].scrollTop + cheight(c) / 2 + offset,
       min,
       max,
-    ) +
-    heightFromSpecificLevel(views, trackConfigId, level) -
-    offset
+    ) + heightFromSpecificLevel(views, trackConfigId, level)
   )
 }

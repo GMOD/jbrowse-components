@@ -78,16 +78,7 @@ export default (pluginManager: any) => {
     ({ model }: { model: BreakpointViewModel }) => {
       const classes = useStyles()
       const { views } = model
-      const [yCoord, setYCoord] = useState(0)
       const ref = useRef(null)
-
-      useEffect(() => {
-        if (ref.current) {
-          const rect = ref.current.getBoundingClientRect()
-          setYCoord(rect.top)
-          console.log({ yCoord })
-        }
-      }, [])
 
       return (
         <div>
@@ -124,14 +115,22 @@ export default (pluginManager: any) => {
                   pointerEvents: model.interactToggled ? undefined : 'none',
                 }}
               >
-                {model.matchedTracks.map(id => (
-                  <Overlay
-                    yOffset={yCoord}
-                    key={id}
-                    model={model}
-                    trackConfigId={id}
-                  />
-                ))}
+                {model.matchedTracks.map(id => {
+                  // note: we must pass ref down, because the child component
+                  // needs to getBoundingClientRect on the this components SVG,
+                  // and we cannot rely on using getBoundingClientRect in this
+                  // component to make sure this works because if it gets
+                  // shifted around by another element, this will not re-render
+                  // necessarily
+                  return (
+                    <Overlay
+                      parentRef={ref}
+                      key={id}
+                      model={model}
+                      trackConfigId={id}
+                    />
+                  )
+                })}
               </svg>
             </div>
           </div>

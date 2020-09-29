@@ -296,18 +296,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return self.tracks.find(t => t.configuration.trackId === id)
       },
 
-      getTrackPos(trackId: string) {
-        const overlap = !self.trackLabelOverlap ? 36 : 0
-        const idx = self.tracks.findIndex(
-          t => t.configuration.trackId === trackId,
-        )
-        let accum = overlap
-        for (let i = 0; i < idx; i += 1) {
-          accum += self.tracks[i].height + RESIZE_HANDLE_HEIGHT + overlap
-        }
-        return accum
-      },
-
       // modifies view menu action onClick to apply to all tracks of same type
       rewriteOnClicks(trackType: string, viewMenuActions: MenuItem[]) {
         viewMenuActions.forEach((action: MenuItem) => {

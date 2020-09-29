@@ -16,12 +16,12 @@ export default (pluginManager: any) => {
     ({
       model,
       trackConfigId,
-      yOffset,
+      parentRef: ref,
     }: {
       model: BreakpointViewModel
       height: number
       trackConfigId: string
-      yOffset: number
+      parentRef: React.RefObject<SVGSVGElement>
     }) => {
       const { views, showIntraviewLinks } = model
       const session = getSession(model)
@@ -37,6 +37,12 @@ export default (pluginManager: any) => {
         m.sort((a, b) => a.feature.get('clipPos') - b.feature.get('clipPos'))
       })
       const [mouseoverElt, setMouseoverElt] = useState()
+
+      let yOffset = 0
+      if (ref.current) {
+        const rect = ref.current.getBoundingClientRect()
+        yOffset = rect.top
+      }
       return (
         <g
           stroke="#333"
