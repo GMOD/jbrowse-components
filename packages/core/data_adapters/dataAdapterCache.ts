@@ -31,6 +31,7 @@ export function getAdapter(
   pluginManager: PluginManager,
   sessionId: string,
   adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
+  sequenceAdapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
 ) {
   // cache the adapter object
   const cacheKey = adapterConfigCacheKey(adapterConfigSnapshot)
@@ -47,9 +48,10 @@ export function getAdapter(
 
     // instantiate the data adapter's config schema so it gets its defaults,
     // callbacks, etc
-    const adapterConfig = dataAdapterType.configSchema.create(
-      adapterConfigSnapshot,
-    )
+    const adapterConfig = dataAdapterType.configSchema.create({
+      ...adapterConfigSnapshot,
+      sequenceAdapter: sequenceAdapterConfigSnapshot,
+    })
 
     const getSubAdapter: getSubAdapterType = getAdapter.bind(
       null,

@@ -6,6 +6,8 @@ import {
   getParent,
   getSnapshot,
   addDisposer,
+  resolveIdentifier,
+  getRoot,
 } from 'mobx-state-tree'
 
 import { observable, autorun, transaction } from 'mobx'
@@ -22,7 +24,6 @@ import {
 } from '@gmod/jbrowse-core/util'
 import { readConfObject, getConf } from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
 
 function approxPixelStringLen(str: string) {
@@ -274,42 +275,40 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
-      // if we have any tracks with that configuration, turn them off
-      // if none had that configuration, turn one on
-      toggleTrack(configuration: AnyConfigurationModel) {
-        const hiddenCount = this.hideTrack(configuration)
-        if (!hiddenCount) {
-          this.showTrack(configuration)
-        }
-      },
-
-      showTrack(configuration: AnyConfigurationModel, initialSnapshot = {}) {
-        const { type } = configuration
-        if (!type) {
-          throw new Error('track configuration has no `type` listed')
-        }
-
+      showTrack(trackId: string, initialSnapshot = {}) {
+        const IT = pluginManager.pluggableConfigSchemaType('track')
+        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
         const name = readConfObject(configuration, 'name')
-        const trackType = pluginManager.getTrackType(type)
-
-        if (!trackType) {
-          throw new Error(`unknown track type ${type}`)
-        }
-        self.tracks.push({
+        const trackType = pluginManager.getTrackType(configuration.type)
+        if (!trackType)
+          throw new Error(`unknown track type ${configuration.type}`)
+        const track = trackType.stateModel.create({
           ...initialSnapshot,
           name,
-          type,
+          type: configuration.type,
           configuration,
         })
+        self.tracks.push(track)
       },
 
-      hideTrack(configuration: AnyConfigurationModel) {
+      hideTrack(trackId: string) {
+        const IT = pluginManager.pluggableConfigSchemaType('track')
+        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(
           t => t.configuration === configuration,
         )
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
+      },
+
+      toggleTrack(trackId: string) {
+        // if we have any tracks with that configuration, turn them off
+        const hiddenCount = this.hideTrack(trackId)
+        // if none had that configuration, turn one on
+        if (!hiddenCount) {
+          this.showTrack(trackId)
+        }
       },
       setAssemblyNames(assemblyNames: string[]) {
         self.assemblyNames = cast(assemblyNames)

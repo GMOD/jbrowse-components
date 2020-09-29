@@ -22,6 +22,7 @@ export class CoreGetRegions extends RpcMethodType {
     sessionId: string
     signal: RemoteAbortSignal
     adapterConfig: {}
+    sequenceAdapterConfig: {}
   }) {
     const deserializedArgs = await this.deserializeArguments(args)
     const { sessionId, adapterConfig } = deserializedArgs
@@ -29,6 +30,7 @@ export class CoreGetRegions extends RpcMethodType {
       this.pluginManager,
       sessionId,
       adapterConfig,
+      sequenceAdapterConfig,
     )
     if (
       dataAdapter instanceof BaseFeatureDataAdapter &&
@@ -47,6 +49,7 @@ export class CoreGetRefNames extends RpcMethodType {
     sessionId: string
     signal: RemoteAbortSignal
     adapterConfig: {}
+    sequenceAdapterConfig: {}
   }) {
     const deserializedArgs = await this.deserializeArguments(args)
     const { sessionId, adapterConfig } = deserializedArgs
@@ -54,6 +57,7 @@ export class CoreGetRefNames extends RpcMethodType {
       this.pluginManager,
       sessionId,
       adapterConfig,
+      sequenceAdapterConfig,
     )
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       return dataAdapter.getRefNames(deserializedArgs)
@@ -69,6 +73,7 @@ export class CoreGetRefNameAliases extends RpcMethodType {
     sessionId: string
     signal: RemoteAbortSignal
     adapterConfig: {}
+    sequenceAdapterConfig: {}
   }) {
     const deserializedArgs = await this.deserializeArguments(args)
     const { sessionId, adapterConfig } = deserializedArgs
@@ -76,6 +81,7 @@ export class CoreGetRefNameAliases extends RpcMethodType {
       this.pluginManager,
       sessionId,
       adapterConfig,
+      sequenceAdapterConfig,
     )
     if (isRefNameAliasAdapter(dataAdapter)) {
       return dataAdapter.getRefNameAliases(deserializedArgs)
@@ -113,6 +119,7 @@ export interface RenderArgs {
   regions: Region[]
   sessionId: string
   adapterConfig: {}
+  sequenceAdapterConfig: {}
   rendererType: string
   renderProps: RendererTypeRenderArgsSerialized
 }
@@ -140,6 +147,7 @@ export class CoreRender extends RpcMethodType {
     const {
       sessionId,
       adapterConfig,
+      sequenceAdapterConfig,
       rendererType,
       renderProps,
       signal,
@@ -154,6 +162,7 @@ export class CoreRender extends RpcMethodType {
       this.pluginManager,
       sessionId,
       adapterConfig,
+      sequenceAdapterConfig,
     )
     if (!(dataAdapter instanceof BaseFeatureDataAdapter))
       throw new Error(
