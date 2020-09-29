@@ -63,6 +63,7 @@ const TrackLabel = React.forwardRef(
     const view = (getContainingView(track) as unknown) as LGV
     const session = getSession(track)
     const trackConf = track.configuration
+    const trackId = getConf(track, 'trackId')
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       setAnchorEl(event.currentTarget)
@@ -111,7 +112,7 @@ const TrackLabel = React.forwardRef(
             className={classes.dragHandle}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
-            data-testid={`dragHandle-${view.id}-${getConf(track, 'trackId')}`}
+            data-testid={`dragHandle-${view.id}-${trackId}`}
           >
             <DragIcon fontSize="small" className={classes.dragHandleIcon} />
           </span>

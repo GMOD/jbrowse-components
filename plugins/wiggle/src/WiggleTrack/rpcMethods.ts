@@ -17,18 +17,16 @@ export class WiggleGetGlobalStats extends RpcMethodType {
 
   async execute(args: {
     adapterConfig: {}
-    sequenceAdapterConfig: {}
     signal?: RemoteAbortSignal
     headers?: Record<string, string>
     sessionId: string
   }): Promise<FeatureStats> {
     const deserializedArgs = await this.deserializeArguments(args)
-    const { adapterConfig, sequenceAdapterConfig, sessionId } = deserializedArgs
+    const { adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
-      sequenceAdapterConfig,
     )
     if (
       dataAdapter instanceof BaseFeatureDataAdapter &&
