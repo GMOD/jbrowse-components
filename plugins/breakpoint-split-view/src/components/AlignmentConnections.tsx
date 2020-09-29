@@ -26,6 +26,7 @@ export default (pluginManager: any) => {
       const { views, showIntraviewLinks } = model
       const session = getSession(model)
       const trackLabels = views.map(view => view.trackLabelOverlap).join(',')
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [overlaps, setOverlaps] = useState()
       useEffect(() => {
         setOverlaps(trackLabels)

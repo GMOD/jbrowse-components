@@ -88,7 +88,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // which is basically like an onLoad
       afterDisplayedRegionsSetCallbacks: [] as Function[],
       scaleFactor: 1,
-      trackRefs: {} as { [key: string]: any },
+      trackRefs: {} as { [key: string]: React.RefObject<HTMLDivElement> },
     }))
     .views(self => ({
       get width(): number {
@@ -650,8 +650,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
             if (e === undefined) {
               throw new Error(
-                `could not find a region with refName "${refName}" that contained a start position ${s +
-                  1}`,
+                `could not find a region with refName "${refName}" that contained a start position ${
+                  s + 1
+                }`,
               )
             }
             if (index === -1) {

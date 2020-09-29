@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import {
-  ConfigurationSchema,
   readConfObject,
   isConfigurationModel,
 } from '@gmod/jbrowse-core/configuration'

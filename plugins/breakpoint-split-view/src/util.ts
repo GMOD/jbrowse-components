@@ -1,7 +1,7 @@
 import { Instance } from 'mobx-state-tree'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { clamp } from '@gmod/jbrowse-core/util'
-import { LayoutRecord, VIEW_DIVIDER_HEIGHT } from './model'
+import { LayoutRecord } from './model'
 
 const [, TOP, , BOTTOM] = [0, 1, 2, 3]
 

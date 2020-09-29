@@ -32,6 +32,7 @@ export default (pluginManager: any) => {
         features,
       )
       const [mouseoverElt, setMouseoverElt] = useState()
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [overlaps, setOverlaps] = useState([])
       const trackLabels = views.map(view => view.trackLabelOverlap).join(',')
       useEffect(() => {
