@@ -33,15 +33,16 @@ export function yPos(
     height: number
     scrollTop: number
     SNPCoverageTrack?: { height: number }
+    showCoverage?: boolean
   }[], // basic track requirements
   c: LayoutRecord,
 ) {
   const min = 0
   const max = tracks[level].height
   let offset = 0
-  const subtrack = tracks[level].SNPCoverageTrack
-  if (subtrack) {
-    offset = subtrack.height + 5
+  const { showCoverage, SNPCoverageTrack } = tracks[level]
+  if (SNPCoverageTrack && showCoverage) {
+    offset = SNPCoverageTrack.height + 5
   }
   return (
     clamp(
