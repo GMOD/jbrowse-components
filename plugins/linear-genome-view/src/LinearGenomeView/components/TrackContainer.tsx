@@ -48,7 +48,7 @@ const useStyles = makeStyles(theme => ({
     position: 'relative',
     display: 'inline-block',
   },
-  trackLabelOverlay: {
+  trackLabelOverlap: {
     position: 'absolute',
   },
   trackRenderingContainer: {
@@ -90,8 +90,8 @@ function TrackContainer(props: {
         track={track}
         className={clsx(
           classes.trackLabel,
-          view.trackLabelMode === 'overlay'
-            ? classes.trackLabelOverlay
+          view.trackLabelOverlap
+            ? classes.trackLabelOverlap
             : classes.trackLabelInline,
         )}
       />

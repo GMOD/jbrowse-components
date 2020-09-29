@@ -76,7 +76,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       ),
       showTrackLabels: true,
       showCenterLine: false,
-      trackLabelMode: 'inline-block',
+      trackLabelOverlap: false,
     })
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
@@ -361,6 +361,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       toggleHeader() {
         self.hideHeader = !self.hideHeader
+      },
+      toggleTrackLabelOverlap() {
+        self.trackLabelOverlap = !self.trackLabelOverlap
       },
 
       toggleHeaderOverview() {
@@ -1021,6 +1024,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
               type: 'checkbox',
               checked: !self.hideHeader,
               onClick: self.toggleHeader,
+            },
+            {
+              label: 'Track labels overlap track',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: !self.trackLabelOverlap,
+              onClick: self.toggleTrackLabelOverlap,
             },
             {
               label: 'Show header overview',
