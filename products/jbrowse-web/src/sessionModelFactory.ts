@@ -37,15 +37,6 @@ declare interface ReferringNode {
   key: string
 }
 
-const sessionConfig = ConfigurationSchema('Session', {
-  trackLabels: {
-    type: 'stringEnum',
-    defaultValue: 'overlay',
-    model: types.enumeration('trackLabels', ['overlay', 'inline-block']),
-    description: 'behavior for the track label positioning',
-  },
-})
-
 export default function sessionModelFactory(
   pluginManager: PluginManager,
   editableConfigs = false,
@@ -71,7 +62,6 @@ export default function sessionModelFactory(
       connectionInstances: types.map(
         types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
       ),
-      sessionConfig: types.optional(sessionConfig, {}),
     })
     .volatile((/* self */) => ({
       pluginManager,

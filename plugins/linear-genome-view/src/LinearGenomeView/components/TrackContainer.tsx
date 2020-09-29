@@ -70,7 +70,6 @@ function TrackContainer(props: {
   const { model, track } = props
   const { horizontalScroll, draggingTrackId, moveTrack } = model
   const { height } = track
-  const session = getSession(model)
   function onDragEnter() {
     if (
       draggingTrackId !== undefined &&
@@ -82,7 +81,7 @@ function TrackContainer(props: {
   }
   const debouncedOnDragEnter = useDebouncedCallback(onDragEnter, 100)
   const { RenderingComponent, TrackBlurb } = track
-  const view = getContainingView(track)
+  const view = getContainingView(track) as LinearGenomeViewModel
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== track.id
 
   return (
@@ -91,7 +90,7 @@ function TrackContainer(props: {
         track={track}
         className={clsx(
           classes.trackLabel,
-          readConfObject(session.sessionConfig, 'trackLabels') === 'overlay'
+          view.trackLabelMode === 'overlay'
             ? classes.trackLabelOverlay
             : classes.trackLabelInline,
         )}

@@ -76,6 +76,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       ),
       showTrackLabels: true,
       showCenterLine: false,
+      trackLabelMode: 'inline-block',
     })
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
