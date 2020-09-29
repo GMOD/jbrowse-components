@@ -32,7 +32,6 @@ import {
   resolveIdentifier,
 } from 'mobx-state-tree'
 
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
@@ -435,7 +434,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       hideTrack(trackId: string) {
-const IT = pluginManager.pluggableConfigSchemaType('track')
+        const IT = pluginManager.pluggableConfigSchemaType('track')
         const configuration = resolveIdentifier(IT, getRoot(self), trackId)
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(

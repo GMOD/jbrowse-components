@@ -116,7 +116,7 @@ const TrackLabel = React.forwardRef(
             <DragIcon fontSize="small" className={classes.dragHandleIcon} />
           </span>
           <IconButton
-            onClick={() => view.hideTrack(trackConf)}
+            onClick={() => view.hideTrack(trackId)}
             className={classes.iconButton}
             title="close this track"
             color="secondary"
