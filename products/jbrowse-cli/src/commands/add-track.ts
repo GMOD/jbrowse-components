@@ -36,7 +36,7 @@ export default class AddTrack extends JBrowseCommand {
     '$ jbrowse add-track /path/to/my.bam --target /path/to/jbrowse2/installation/config.json --load symlink',
     '$ jbrowse add-track https://mywebsite.com/my.bam',
     `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move`,
-    `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite`,
+    `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load inPlace --overwrite`,
     `$ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'`,
   ]
 
@@ -86,8 +86,8 @@ export default class AddTrack extends JBrowseCommand {
     load: flags.string({
       char: 'l',
       description:
-        'Required flag when using a local file. Choose how to manage the track. Copy, symlink, or move the track to the JBrowse directory. Or trust to leave track alone',
-      options: ['copy', 'symlink', 'move', 'trust'],
+        'Required flag when using a local file. Choose how to manage the track. Copy, symlink, or move the track to the JBrowse directory. Or inPlace to leave track alone',
+      options: ['copy', 'symlink', 'move', 'inPlace'],
     }),
     skipCheck: flags.boolean({
       description:
@@ -127,6 +127,7 @@ export default class AddTrack extends JBrowseCommand {
     } = await this.resolveFileLocationWithProtocol(
       argsTrack,
       !(skipCheck || force),
+      load === 'inPlace',
     )
 
     let trackLocation
@@ -139,7 +140,7 @@ export default class AddTrack extends JBrowseCommand {
       }
 
       trackLocation =
-        load === 'trust'
+        load === 'inPlace'
           ? location
           : path.join(configDirectory, path.basename(location))
     } else if (local) {
@@ -330,7 +331,11 @@ export default class AddTrack extends JBrowseCommand {
     )
   }
 
-  async resolveFileLocationWithProtocol(location: string, check = true) {
+  async resolveFileLocationWithProtocol(
+    location: string,
+    check = true,
+    warn = false,
+  ) {
     let locationUrl: URL | undefined
     let locationPath: string | undefined
     let locationObj: {
@@ -368,11 +373,11 @@ export default class AddTrack extends JBrowseCommand {
     }
     if (locationPath) {
       const filePath = path.relative(process.cwd(), locationPath)
-      //   if (filePath.startsWith('..')) {
-      //     this.warn(
-      //       `Location ${filePath} is not in the JBrowse directory. Make sure it is still in your server directory.`,
-      //     )
-      //   }
+      if (warn && filePath.startsWith('..')) {
+        this.warn(
+          `Location ${filePath} is not in the JBrowse directory. Make sure it is still in your server directory.`,
+        )
+      }
       locationObj = {
         location: filePath,
         protocol: 'uri',

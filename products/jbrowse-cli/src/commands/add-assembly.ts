@@ -18,8 +18,8 @@ export default class AddAssembly extends JBrowseCommand {
   static examples = [
     '$ jbrowse add-assembly GRCh38.fa --load copy',
     '$ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta --load move',
-    '$ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load trust',
-    '$ jbrowse add-assembly GRCh38.chrom.sizes --load trust',
+    '$ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load inPlace',
+    '$ jbrowse add-assembly GRCh38.chrom.sizes --load inPlace',
     '$ jbrowse add-assembly GRCh38.config.json --load copy',
     '$ jbrowse add-assembly https://example.com/data/sample.2bit',
     '$ jbrowse add-assembly GRCh38.fa --target /path/to/jb2/installation/customconfig.json --load copy',
@@ -99,8 +99,8 @@ custom         Either a JSON file location or inline JSON that defines a custom
     load: flags.string({
       char: 'l',
       description:
-        'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use trust to modify the config without doing any file operations',
-      options: ['copy', 'symlink', 'move', 'trust'],
+        'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations',
+      options: ['copy', 'symlink', 'move', 'inPlace'],
     }),
     skipCheck: flags.boolean({
       description:
@@ -123,7 +123,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
     if (this.needLoadData(argsSequence) && !runFlags.load) {
       this.error(
-        `Please specify the loading operation for this file with --load copy|symlink|move|trust`,
+        `Please specify the loading operation for this file with --load copy|symlink|move|inPlace`,
         { exit: 110 },
       )
     } else if (!this.needLoadData(argsSequence) && runFlags.load) {
@@ -157,11 +157,13 @@ custom         Either a JSON file location or inline JSON that defines a custom
         let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
         this.debug(`FASTA location resolved to: ${sequenceLocation}`)
         let indexLocation = await this.resolveFileLocation(
           runFlags.faiLocation || `${argsSequence}.fai`,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
         this.debug(`FASTA index location resolved to: ${indexLocation}`)
         if (!name) {
@@ -201,11 +203,13 @@ custom         Either a JSON file location or inline JSON that defines a custom
         let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
         this.debug(`compressed FASTA location resolved to: ${sequenceLocation}`)
         let indexLocation = await this.resolveFileLocation(
           runFlags.faiLocation || `${sequenceLocation}.fai`,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
         this.debug(
           `compressed FASTA index location resolved to: ${indexLocation}`,
@@ -213,6 +217,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
         let bgzipIndexLocation = await this.resolveFileLocation(
           runFlags.gziLocation || `${sequenceLocation}.gzi`,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
         this.debug(`bgzip index location resolved to: ${bgzipIndexLocation}`)
         if (!name) {
@@ -257,6 +262,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
         let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
         this.debug(`2bit location resolved to: ${sequenceLocation}`)
         if (!name) {
@@ -285,6 +291,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
         let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
         this.debug(`chrome.sizes location resolved to: ${sequenceLocation}`)
         if (!name) {
@@ -395,6 +402,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
         const refNameAliasesLocation = await this.resolveFileLocation(
           runFlags.refNameAliases,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
         this.debug(
           `refName aliases file location resolved to: ${refNameAliasesLocation}`,
@@ -539,7 +547,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
         )
         return true
       }
-      case 'trust': {
+      case 'inPlace': {
         return false
       }
     }

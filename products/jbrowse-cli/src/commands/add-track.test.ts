@@ -36,7 +36,7 @@ describe('add-track', () => {
       'add-track',
       'https://mysite.com/data/simple.bam',
       '--load',
-      'trust',
+      'inPlace',
     ])
     .exit(100)
     .it('fails if URL with load flag is passed')

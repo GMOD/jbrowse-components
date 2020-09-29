@@ -109,7 +109,7 @@ describe('add-assembly', () => {
 
   setup
     .command(['add-assembly', 'simple.doesNotExist.fasta', '--load', 'copy'])
-    .catch(/no such file/)
+    .catch(/Could not resolve/)
     .it('fails if it cannot find a file')
 
   setup
@@ -862,7 +862,7 @@ describe('add-assembly', () => {
       'add-assembly',
       path.join('..', 'simple.2bit'),
       '--load',
-      'trust',
+      'inPlace',
     ])
 
   setup
