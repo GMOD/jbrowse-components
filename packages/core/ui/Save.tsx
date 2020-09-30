@@ -26,6 +26,9 @@ const useStyles = makeStyles(theme => ({
     '@media (hover: none)': {
       backgroundColor: 'transparent',
     },
+    '&:disabled': {
+      color: 'inherit',
+    },
   },
 }))
 
@@ -36,6 +39,7 @@ const Save = observer((props: { session: any }) => {
   const locationUrl = new URL(window.location.href)
   const params = new URLSearchParams(locationUrl.search)
 
+  // TODOSESSION: save button doesnt reset on new session
   const [saved, setSaved] = useState(
     params?.get('session')?.startsWith('localSaved-'),
   )

@@ -254,7 +254,7 @@ export function Loader() {
         }
       }
     })()
-  }, [])
+  }, [bc1, bc2, sessionQueryParam, setPasswordQueryParam, setSessionQueryParam])
 
   useEffect(() => {
     async function fetchConfig() {
