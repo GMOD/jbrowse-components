@@ -26,7 +26,7 @@ export default (pluginManager: any) => {
     }) => {
       const { views, showIntraviewLinks } = model
       const session = getSession(model)
-      const snap = getSnapshot(views)
+      const snap = getSnapshot(model)
       useNextFrame(snap)
 
       const totalFeatures = model.getTrackFeatures(trackConfigId)

@@ -33,7 +33,7 @@ export default (pluginManager: any) => {
         features,
       )
       const [mouseoverElt, setMouseoverElt] = useState()
-      const snap = getSnapshot(views)
+      const snap = getSnapshot(model)
       useNextFrame(snap)
 
       let yOffset = 0
