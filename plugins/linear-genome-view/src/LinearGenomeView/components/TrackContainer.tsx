@@ -61,16 +61,19 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+type LGV = LinearGenomeViewModel
+
 function TrackContainer(props: {
   model: LinearGenomeViewModel
   track: BaseTrackModel
 }) {
   const classes = useStyles()
-  const ref = useRef(null)
   const { model, track } = props
   const { horizontalScroll, draggingTrackId, moveTrack } = model
   const { height } = track
+  const view = getContainingView(track) as LGV
   const trackId = getConf(track, 'trackId')
+  const ref = useRef(null)
 
   useEffect(() => {
     if (ref.current) {
@@ -91,20 +94,21 @@ function TrackContainer(props: {
   }
   const debouncedOnDragEnter = useDebouncedCallback(onDragEnter, 100)
   const { RenderingComponent, TrackBlurb } = track
-  const view = getContainingView(track) as LinearGenomeViewModel
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== track.id
 
   return (
     <div className={classes.root}>
-      <TrackLabel
-        track={track}
-        className={clsx(
-          classes.trackLabel,
-          view.trackLabelOverlap
-            ? classes.trackLabelOverlap
-            : classes.trackLabelInline,
-        )}
-      />
+      {view.trackLabels !== 'hidden' ? (
+        <TrackLabel
+          track={track}
+          className={clsx(
+            classes.trackLabel,
+            view.trackLabels === 'overlapping'
+              ? classes.trackLabelOverlap
+              : classes.trackLabelInline,
+          )}
+        />
+      ) : null}
 
       <Paper
         variant="outlined"

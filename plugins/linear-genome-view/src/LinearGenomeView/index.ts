@@ -74,9 +74,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         types.enumeration(['hierarchical']),
         'hierarchical',
       ),
-      showTrackLabels: true,
+      trackLabels: 'overlapping' as 'overlapping' | 'hidden' | 'offset',
       showCenterLine: false,
-      trackLabelOverlap: true,
     })
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
@@ -353,9 +352,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       toggleHeader() {
         self.hideHeader = !self.hideHeader
       },
-      toggleTrackLabelOverlap() {
-        self.trackLabelOverlap = !self.trackLabelOverlap
-      },
 
       toggleHeaderOverview() {
         self.hideHeaderOverview = !self.hideHeaderOverview
@@ -465,8 +461,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (!hiddenCount) self.showTrack(configuration)
       },
 
-      toggleTrackLabels() {
-        self.showTrackLabels = !self.showTrackLabels
+      setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
+        self.trackLabels = setting
       },
 
       toggleCenterLine() {
@@ -1010,18 +1006,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
               onClick: self.showAllRegions,
             },
             {
+              label: 'Show center line',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.showCenterLine,
+              onClick: self.toggleCenterLine,
+            },
+            { type: 'divider' },
+            {
               label: 'Show header',
               icon: VisibilityIcon,
               type: 'checkbox',
               checked: !self.hideHeader,
               onClick: self.toggleHeader,
-            },
-            {
-              label: 'Labels overlap track',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.trackLabelOverlap,
-              onClick: self.toggleTrackLabelOverlap,
             },
             {
               label: 'Show header overview',
@@ -1031,19 +1028,28 @@ export function stateModelFactory(pluginManager: PluginManager) {
               onClick: self.toggleHeaderOverview,
               disabled: self.hideHeader,
             },
+            { type: 'divider' },
+            { type: 'subHeader', label: 'Track Labels' },
             {
-              label: 'Show track labels',
+              label: 'Overlapping',
               icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showTrackLabels,
-              onClick: self.toggleTrackLabels,
+              type: 'radio',
+              checked: self.trackLabels === 'overlapping',
+              onClick: () => self.setTrackLabels('overlapping'),
             },
             {
-              label: 'Show center line',
+              label: 'Offset',
               icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showCenterLine,
-              onClick: self.toggleCenterLine,
+              type: 'radio',
+              checked: self.trackLabels === 'offset',
+              onClick: () => self.setTrackLabels('offset'),
+            },
+            {
+              label: 'Hidden',
+              icon: VisibilityIcon,
+              type: 'radio',
+              checked: self.trackLabels === 'hidden',
+              onClick: () => self.setTrackLabels('hidden'),
             },
           ]
 
