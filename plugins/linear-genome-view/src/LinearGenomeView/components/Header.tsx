@@ -20,6 +20,8 @@ import ZoomControls from './ZoomControls'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
+const WIDGET_HEIGHTS = 35
+
 const useStyles = makeStyles(theme => ({
   headerBar: {
     height: HEADER_BAR_HEIGHT,
@@ -30,19 +32,18 @@ const useStyles = makeStyles(theme => ({
   },
   input: {
     width: 300,
-    padding: theme.spacing(0, 1),
   },
   headerRefName: {
     minWidth: 100,
-    margin: theme.spacing(2, 0, 1),
   },
   panButton: {
-    margin: theme.spacing(2),
     background: fade(theme.palette.background.paper, 0.8),
+    height: WIDGET_HEIGHTS,
   },
   bp: {
     display: 'flex',
     alignItems: 'center',
+    marginLeft: 5,
   },
   toggleButton: {
     height: 44,
@@ -107,71 +108,32 @@ const Search = observer(({ model }: { model: LGV }) => {
 
   const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
   return (
-    <>
-      <RefNameAutocomplete
-        model={model}
-        onSelect={setDisplayedRegion}
-        assemblyName={assemblyName}
-        defaultRegionName={displayedRegions.length > 1 ? '' : refName}
-        TextFieldProps={{
-          variant: 'outlined',
-          margin: 'dense',
-          size: 'small',
-          className: classes.headerRefName,
-          InputProps: {
-            style: {
-              paddingTop: 2,
-              paddingBottom: 2,
-              background: fade(theme.palette.background.paper, 0.8),
-            },
+    <form
+      style={{ display: 'inline' }}
+      onSubmit={event => {
+        event.preventDefault()
+        inputRef && inputRef.current && inputRef.current.blur()
+        value && navTo(value)
+      }}
+    >
+      <TextField
+        inputRef={inputRef}
+        onFocus={() => setValue(visibleLocStrings)}
+        onBlur={() => setValue(undefined)}
+        onChange={event => setValue(event.target.value)}
+        className={classes.input}
+        variant="outlined"
+        size="small"
+        value={value === undefined ? visibleLocStrings : value}
+        InputProps={{
+          startAdornment: <SearchIcon fontSize="small" />,
+          style: {
+            background: fade(theme.palette.background.paper, 0.8),
+            height: WIDGET_HEIGHTS,
           },
         }}
       />
-      <form
-        onSubmit={event => {
-          event.preventDefault()
-          inputRef && inputRef.current && inputRef.current.blur()
-          value && navTo(value)
-        }}
-      >
-        <TextField
-          inputRef={inputRef}
-          onFocus={() => setValue(visibleLocStrings)}
-          onBlur={() => setValue(undefined)}
-          onChange={event => setValue(event.target.value)}
-          className={classes.input}
-          variant="outlined"
-          margin="dense"
-          size="small"
-          value={value === undefined ? visibleLocStrings : value}
-          InputProps={{
-            startAdornment: <SearchIcon fontSize="small" />,
-            style: {
-              background: fade(theme.palette.background.paper, 0.8),
-              height: 32,
-            },
-          }}
-          // eslint-disable-next-line react/jsx-no-duplicate-props
-          inputProps={{ style: { padding: theme.spacing() } }}
-        />
-      </form>
-      <div className={classes.bp}>
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          className={classes.bp}
-        >
-          {`${Math.round(
-            contentBlocks
-              .map(block => block.end - block.start)
-              .reduce(
-                (previousValue, currentValue) => previousValue + currentValue,
-                0,
-              ),
-          ).toLocaleString('en-US')} bp`}
-        </Typography>
-      </div>
-    </>
+    </form>
   )
 })
 
@@ -206,9 +168,14 @@ export default observer(({ model }: { model: LGV }) => {
     <div className={classes.headerBar}>
       <Controls model={model} />
       <div className={classes.spacer} />
-      <PanControls model={model} />
-      <Search model={model} />
-      <ZoomControls model={model} />
+      <div style={{ display: 'flex' }}>
+        <div style={{ margin: 'auto' }}>
+          <PanControls model={model} />
+          <Search model={model} />
+        </div>
+        <RegionWidth model={model} />
+        <ZoomControls model={model} />
+      </div>
       <div className={classes.spacer} />
     </div>
   )
@@ -218,4 +185,14 @@ export default observer(({ model }: { model: LGV }) => {
   }
 
   return <OverviewScaleBar model={model}>{controls}</OverviewScaleBar>
+})
+
+const RegionWidth = observer(({ model }: { model: LGV }) => {
+  const classes = useStyles()
+  const { dynamicBlocks } = model
+  return (
+    <Typography variant="body2" color="textSecondary" className={classes.bp}>
+      {`${Math.round(dynamicBlocks.totalBp).toLocaleString('en-US')} bp`}
+    </Typography>
+  )
 })

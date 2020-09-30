@@ -16,14 +16,11 @@ import React, { useEffect, useState } from 'react'
 import { ListChildComponentProps, VariableSizeList } from 'react-window'
 import { LinearGenomeViewModel } from '..'
 
-const LISTBOX_PADDING = 8 // px
-
 function renderRow(props: ListChildComponentProps) {
   const { data, index, style } = props
   return React.cloneElement(data[index], {
     style: {
       ...style,
-      top: (style.top as number) + LISTBOX_PADDING,
     },
   })
 }
@@ -64,7 +61,7 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
         <OuterElementContext.Provider value={other}>
           <VariableSizeList
             itemData={itemData}
-            height={getHeight() + 2 * LISTBOX_PADDING}
+            height={getHeight()}
             width="100%"
             key={itemCount}
             outerElementType={OuterElementType}
