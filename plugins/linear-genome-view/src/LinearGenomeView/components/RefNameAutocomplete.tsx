@@ -6,7 +6,6 @@ import { Region as MSTRegion } from '@gmod/jbrowse-core/util/types/mst'
 import { getSession } from '@gmod/jbrowse-core/util'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import ListSubheader from '@material-ui/core/ListSubheader'
-import { makeStyles } from '@material-ui/core/styles'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import Autocomplete from '@material-ui/lab/Autocomplete'
@@ -77,15 +76,6 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
     )
   },
 )
-
-const useStyles = makeStyles({
-  listbox: {
-    '& ul': {
-      padding: 0,
-      margin: 0,
-    },
-  },
-})
 
 function RefNameAutocomplete({
   model,
