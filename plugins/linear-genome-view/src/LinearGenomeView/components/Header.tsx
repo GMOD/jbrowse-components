@@ -96,17 +96,6 @@ const Search = observer(({ model }: { model: LGV }) => {
     }
   }
 
-  const setDisplayedRegion = useCallback(
-    (region: Region | undefined) => {
-      if (region) {
-        model.setDisplayedRegions([region])
-        model.showAllRegions()
-      }
-    },
-    [model],
-  )
-
-  const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
   return (
     <form
       style={{ display: 'inline' }}
