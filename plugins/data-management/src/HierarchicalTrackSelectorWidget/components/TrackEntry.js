@@ -1,5 +1,7 @@
+import React, { useState } from 'react'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
+import { Menu } from '@gmod/jbrowse-core/ui'
 import Checkbox from '@material-ui/core/Checkbox'
 import Fade from '@material-ui/core/Fade'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
@@ -7,10 +9,9 @@ import IconButton from '@material-ui/core/IconButton'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
-import SettingsIcon from '@material-ui/icons/Settings'
+import HorizontalDots from '@material-ui/icons/MoreHoriz'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import propTypes from 'prop-types'
-import React from 'react'
 
 const useStyles = makeStyles(theme => ({
   formControlLabel: {
@@ -27,6 +28,7 @@ const useStyles = makeStyles(theme => ({
       },
     },
     flexGrow: 1,
+    wordBreak: 'break-all',
   },
   checkbox: {
     padding: 0,
@@ -42,15 +44,16 @@ const useStyles = makeStyles(theme => ({
 
 function TrackEntry({ model, disabled, trackConf, assemblyName }) {
   const classes = useStyles()
+  const [anchorEl, setAnchorEl] = useState(null)
   const session = getSession(model)
   const titleText = assemblyName
     ? `The reference sequence for ${assemblyName}`
     : readConfObject(trackConf, 'description')
+  const trackName = readConfObject(trackConf, 'name')
+  const trackId = readConfObject(trackConf, 'trackId')
   const unsupported =
-    readConfObject(trackConf, 'name') &&
-    (readConfObject(trackConf, 'name').endsWith('(Unsupported)') ||
-      readConfObject(trackConf, 'name').endsWith('(Unknown)'))
-  const trackConfigId = readConfObject(trackConf, 'trackId')
+    trackName &&
+    (trackName.endsWith('(Unsupported)') || trackName.endsWith('(Unknown)'))
   return (
     <Fade in>
       <div className={classes.track}>
@@ -60,31 +63,44 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
             control={
               <Checkbox
                 inputProps={{
-                  'data-testid': `htsTrackEntry-${trackConfigId}`,
+                  'data-testid': `htsTrackEntry-${trackId}`,
                 }}
                 className={classes.checkbox}
               />
             }
             label={
-              assemblyName
-                ? `Reference Sequence (${assemblyName})`
-                : readConfObject(trackConf, 'name')
+              assemblyName ? `Reference Sequence (${assemblyName})` : trackName
             }
             checked={model.view.tracks.some(t => t.configuration === trackConf)}
             onChange={() => model.view.toggleTrack(trackConf)}
             disabled={disabled || unsupported}
           />
         </Tooltip>
-        {session.editConfiguration && !assemblyName ? (
-          <IconButton
-            className={classes.configureButton}
-            onClick={() => session.editConfiguration(trackConf)}
-            color="secondary"
-            data-testid={`htsTrackEntryConfigure-${trackConfigId}`}
-          >
-            <SettingsIcon fontSize="small" />
-          </IconButton>
-        ) : null}
+        <IconButton
+          className={classes.configureButton}
+          onClick={event => {
+            setAnchorEl(event.currentTarget)
+          }}
+          color="secondary"
+          data-testid={`htsTrackEntryMenu-${trackId}`}
+        >
+          <HorizontalDots fontSize="small" />
+        </IconButton>
+        <Menu
+          anchorEl={anchorEl}
+          onMenuItemClick={(_, callback) => {
+            callback()
+            setAnchorEl(null)
+          }}
+          open={Boolean(anchorEl)}
+          onClose={() => {
+            setAnchorEl(null)
+          }}
+          menuItems={
+            session.getTrackActionMenuItems &&
+            session.getTrackActionMenuItems(trackConf)
+          }
+        />
       </div>
     </Fade>
   )
