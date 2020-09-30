@@ -85,6 +85,9 @@ const useStyles = makeStyles({
       margin: 0,
     },
   },
+  autocomplete: {
+    display: 'inline',
+  },
 })
 
 function RefNameAutocomplete({
@@ -92,12 +95,14 @@ function RefNameAutocomplete({
   onSelect,
   assemblyName,
   defaultRegionName,
+  style,
   TextFieldProps = {},
 }: {
   model: LinearGenomeViewModel
   onSelect: (region: Region | undefined) => void
   assemblyName?: string
   defaultRegionName?: string
+  style: unknown
   TextFieldProps?: TFP
 }) {
   const [selectedRegionName, setSelectedRegionName] = useState<
@@ -141,9 +146,9 @@ function RefNameAutocomplete({
 
   return (
     <Autocomplete
+      classes={{ root: classes.autocomplete }}
       id={`refNameAutocomplete-${model.id}`}
       disableListWrap
-      classes={classes}
       ListboxComponent={
         ListboxComponent as React.ComponentType<
           React.HTMLAttributes<HTMLElement>
@@ -156,6 +161,7 @@ function RefNameAutocomplete({
           : selectedRegionName
       }
       disabled={!assemblyName || loading}
+      style={style}
       onChange={onChange}
       renderInput={params => {
         const { helperText, InputProps = {} } = TextFieldProps

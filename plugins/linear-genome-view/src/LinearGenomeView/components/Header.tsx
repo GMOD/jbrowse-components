@@ -6,6 +6,7 @@ import { fade } from '@material-ui/core/styles/colorManipulator'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import ToggleButton from '@material-ui/lab/ToggleButton'
+import Autocomplete from '@material-ui/lab/Autocomplete'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useCallback, useRef, useState } from 'react'
@@ -20,7 +21,7 @@ import ZoomControls from './ZoomControls'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
-const WIDGET_HEIGHTS = 35
+const WIDGET_HEIGHT = 27
 
 const useStyles = makeStyles(theme => ({
   headerBar: {
@@ -38,7 +39,7 @@ const useStyles = makeStyles(theme => ({
   },
   panButton: {
     background: fade(theme.palette.background.paper, 0.8),
-    height: WIDGET_HEIGHTS,
+    height: WIDGET_HEIGHT,
   },
   bp: {
     display: 'flex',
@@ -80,11 +81,7 @@ const Search = observer(({ model }: { model: LGV }) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const classes = useStyles()
   const theme = useTheme()
-  const {
-    dynamicBlocks: { contentBlocks },
-    displayedRegions,
-    visibleLocStrings,
-  } = model
+  const { visibleLocStrings } = model
   const session = getSession(model)
 
   function navTo(locString: string) {
@@ -118,7 +115,7 @@ const Search = observer(({ model }: { model: LGV }) => {
           startAdornment: <SearchIcon fontSize="small" />,
           style: {
             background: fade(theme.palette.background.paper, 0.8),
-            height: WIDGET_HEIGHTS,
+            height: WIDGET_HEIGHT,
           },
         }}
       />
@@ -152,7 +149,23 @@ function PanControls({ model }: { model: LGV }) {
 
 export default observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
+  const theme = useTheme()
+  const {
+    dynamicBlocks: { contentBlocks },
+    displayedRegions,
+  } = model
 
+  const setDisplayedRegion = useCallback(
+    (region: Region | undefined) => {
+      if (region) {
+        model.setDisplayedRegions([region])
+        model.showAllRegions()
+      }
+    },
+    [model],
+  )
+
+  const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
   const controls = (
     <div className={classes.headerBar}>
       <Controls model={model} />
@@ -160,6 +173,33 @@ export default observer(({ model }: { model: LGV }) => {
       <div style={{ display: 'flex' }}>
         <div style={{ margin: 'auto' }}>
           <PanControls model={model} />
+          <RefNameAutocomplete
+            style={{
+              display: 'inline-flex',
+              height: WIDGET_HEIGHT,
+            }}
+            onSelect={setDisplayedRegion}
+            assemblyName={assemblyName}
+            defaultRegionName={displayedRegions.length > 1 ? '' : refName}
+            model={model}
+            ListboxProps={{
+              style: {
+                maxHeight: WIDGET_HEIGHT,
+              },
+            }}
+            TextFieldProps={{
+              variant: 'outlined',
+              size: 'small',
+              className: classes.headerRefName,
+              InputProps: {
+                style: {
+                  padding: 0,
+                  height: WIDGET_HEIGHT,
+                  background: fade(theme.palette.background.paper, 0.8),
+                },
+              },
+            }}
+          />
           <Search model={model} />
         </div>
         <RegionWidth model={model} />
