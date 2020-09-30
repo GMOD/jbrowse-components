@@ -1,6 +1,6 @@
 import Path from 'svg-path-generator'
 import { BreakpointViewModel } from '../model'
-import { yPos, getPxFromCoordinate } from '../util'
+import { yPos, useNextFrame, getPxFromCoordinate } from '../util'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
@@ -10,7 +10,7 @@ export default (pluginManager: any) => {
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useState, useEffect } = jbrequire('react')
+  const { useState } = jbrequire('react')
   const { getSnapshot } = jbrequire('mobx-state-tree')
 
   return observer(
@@ -26,13 +26,9 @@ export default (pluginManager: any) => {
     }) => {
       const { views, showIntraviewLinks } = model
       const session = getSession(model)
-
       const snap = getSnapshot(views)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [overlaps, setOverlaps] = useState()
-      useEffect(() => {
-        setOverlaps(snap)
-      }, [snap])
+      useNextFrame(snap)
+
       const totalFeatures = model.getTrackFeatures(trackConfigId)
       const features = model.hasPairedReads(trackConfigId)
         ? model.getBadlyPairedAlignments(trackConfigId)

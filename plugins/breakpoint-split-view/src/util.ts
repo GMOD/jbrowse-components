@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Instance } from 'mobx-state-tree'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { clamp } from '@gmod/jbrowse-core/util'
@@ -53,4 +54,15 @@ export function yPos(
     heightFromSpecificLevel(views, trackConfigId, level) +
     tracks[level].scrollTop
   )
+}
+
+// we combo a useEffect and useState combo to force rerender on snap
+// changing. the setup of this being a useEffect+useState makes it
+// re-render once the useEffect is called, which is generally the
+// "next frame". If we removed the below use
+export const useNextFrame = (variable: unknown) => {
+  const [, setNextFrameState] = useState()
+  useEffect(() => {
+    setNextFrameState(variable)
+  }, [variable])
 }
