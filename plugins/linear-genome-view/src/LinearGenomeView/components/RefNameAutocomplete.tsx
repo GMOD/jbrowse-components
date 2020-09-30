@@ -85,9 +85,6 @@ const useStyles = makeStyles({
       margin: 0,
     },
   },
-  autocomplete: {
-    display: 'inline',
-  },
 })
 
 function RefNameAutocomplete({

@@ -21,7 +21,7 @@ import ZoomControls from './ZoomControls'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
-const WIDGET_HEIGHT = 27
+const WIDGET_HEIGHT = 32
 const SPACING = 7
 
 const useStyles = makeStyles(theme => ({
@@ -95,7 +95,6 @@ const Search = observer(({ model }: { model: LGV }) => {
 
   return (
     <form
-      style={{ display: 'inline' }}
       onSubmit={event => {
         event.preventDefault()
         inputRef && inputRef.current && inputRef.current.blur()
@@ -175,7 +174,6 @@ export default observer(({ model }: { model: LGV }) => {
         <PanControls model={model} />
         <RefNameAutocomplete
           style={{
-            display: 'inline-flex',
             margin: SPACING,
           }}
           onSelect={setDisplayedRegion}

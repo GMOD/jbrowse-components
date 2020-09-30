@@ -143,16 +143,16 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           </button>
           <div
             aria-expanded="false"
-            class="MuiAutocomplete-root makeStyles-autocomplete MuiAutocomplete-hasPopupIcon"
+            class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
             role="combobox"
-            style="display: inline-flex; margin: 7px;"
+            style="margin: 7px;"
           >
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
             >
               <div
                 class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                style="padding: 0px; height: 27px; background: rgba(255, 255, 255, 0.8);"
+                style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
               >
                 <input
                   aria-autocomplete="list"
@@ -211,15 +211,13 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               </div>
             </div>
           </div>
-          <form
-            style="display: inline;"
-          >
+          <form>
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-input"
             >
               <div
                 class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                style="background: rgba(255, 255, 255, 0.8); margin: 7px; height: 27px;"
+                style="background: rgba(255, 255, 255, 0.8); margin: 7px; height: 32px;"
               >
                 <svg
                   aria-hidden="true"
@@ -680,7 +678,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
     >
       <div
         aria-expanded="false"
-        class="MuiAutocomplete-root makeStyles-autocomplete MuiAutocomplete-hasPopupIcon"
+        class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
         role="combobox"
       >
         <div
@@ -925,16 +923,16 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           </button>
           <div
             aria-expanded="false"
-            class="MuiAutocomplete-root makeStyles-autocomplete MuiAutocomplete-hasPopupIcon"
+            class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
             role="combobox"
-            style="display: inline-flex; margin: 7px;"
+            style="margin: 7px;"
           >
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
             >
               <div
                 class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                style="padding: 0px; height: 27px; background: rgba(255, 255, 255, 0.8);"
+                style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
               >
                 <input
                   aria-autocomplete="list"
@@ -993,15 +991,13 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               </div>
             </div>
           </div>
-          <form
-            style="display: inline;"
-          >
+          <form>
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-input"
             >
               <div
                 class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                style="background: rgba(255, 255, 255, 0.8); margin: 7px; height: 27px;"
+                style="background: rgba(255, 255, 255, 0.8); margin: 7px; height: 32px;"
               >
                 <svg
                   aria-hidden="true"
