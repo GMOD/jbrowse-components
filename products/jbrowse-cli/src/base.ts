@@ -3,6 +3,75 @@ import { promises as fsPromises } from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
 
+export interface UriLocation {
+  uri: string
+}
+
+export interface IndexedFastaAdapter {
+  type: 'IndexedFastaAdapter'
+  fastaLocation: UriLocation
+  faiLocation: UriLocation
+}
+
+export interface BgzipFastaAdapter {
+  type: 'BgzipFastaAdapter'
+  fastaLocation: UriLocation
+  faiLocation: UriLocation
+  gziLocation: UriLocation
+}
+
+export interface TwoBitAdapter {
+  type: 'TwoBitAdapter'
+  twoBitLocation: UriLocation
+}
+
+export interface ChromeSizesAdapter {
+  type: 'ChromSizesAdapter'
+  chromSizesLocation: UriLocation
+}
+
+export interface CustomSequenceAdapter {
+  type: string
+}
+
+export interface RefNameAliasAdapter {
+  type: 'RefNameAliasAdapter'
+  location: UriLocation
+}
+
+export interface CustomRefNameAliasAdapter {
+  type: string
+}
+
+export interface Sequence {
+  type: 'ReferenceSequenceTrack'
+  trackId: string
+  adapter:
+    | IndexedFastaAdapter
+    | BgzipFastaAdapter
+    | TwoBitAdapter
+    | ChromeSizesAdapter
+    | CustomSequenceAdapter
+}
+
+export interface Assembly {
+  name: string
+  aliases?: string[]
+  sequence: Sequence
+  refNameAliases?: {
+    adapter: RefNameAliasAdapter | CustomRefNameAliasAdapter
+  }
+  refNameColors?: string[]
+}
+
+export interface Config {
+  assemblies?: Assembly[]
+  configuration?: {}
+  connections?: unknown[]
+  defaultSession?: {}
+  tracks?: unknown[]
+}
+
 interface GithubRelease {
   tag_name: string
   prerelease: boolean
@@ -63,6 +132,14 @@ export default abstract class JBrowseCommand extends Command {
       throw new Error(`${response.statusText}`)
     }
     return fsPromises.readFile(location, { encoding: 'utf8' })
+  }
+
+  async writeJsonConfig(config: string) {
+    try {
+      fsPromises.writeFile('./config.json', config)
+    } catch (error) {
+      this.error(`${error}`)
+    }
   }
 
   async resolveFileLocation(location: string, check = true, warning = false) {

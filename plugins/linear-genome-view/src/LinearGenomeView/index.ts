@@ -251,8 +251,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
             ...getSnapshot(region),
             oob: true,
             coord: region.reversed
-              ? Math.round(region.end - offset) + 1
-              : Math.round(region.start + offset) + 1,
+              ? Math.floor(region.end - offset) + 1
+              : Math.floor(region.start + offset) + 1,
             offset,
             index: 0,
           }
@@ -266,8 +266,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
             oob: true,
             offset,
             coord: region.reversed
-              ? Math.round(region.end - offset) + 1
-              : Math.round(region.start + offset) + 1,
+              ? Math.floor(region.end - offset) + 1
+              : Math.floor(region.start + offset) + 1,
             index: n - 1,
           }
         }
@@ -281,8 +281,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
               oob: false,
               offset,
               coord: region.reversed
-                ? Math.round(region.end - offset) + 1
-                : Math.round(region.start + offset) + 1,
+                ? Math.floor(region.end - offset) + 1
+                : Math.floor(region.start + offset) + 1,
               index,
             }
           }

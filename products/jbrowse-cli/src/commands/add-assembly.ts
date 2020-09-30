@@ -1,76 +1,7 @@
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import * as path from 'path'
-import JBrowseCommand from '../base'
-
-interface UriLocation {
-  uri: string
-}
-
-interface IndexedFastaAdapter {
-  type: 'IndexedFastaAdapter'
-  fastaLocation: UriLocation
-  faiLocation: UriLocation
-}
-
-interface BgzipFastaAdapter {
-  type: 'BgzipFastaAdapter'
-  fastaLocation: UriLocation
-  faiLocation: UriLocation
-  gziLocation: UriLocation
-}
-
-interface TwoBitAdapter {
-  type: 'TwoBitAdapter'
-  twoBitLocation: UriLocation
-}
-
-interface ChromeSizesAdapter {
-  type: 'ChromSizesAdapter'
-  chromSizesLocation: UriLocation
-}
-
-interface CustomSequenceAdapter {
-  type: string
-}
-
-interface RefNameAliasAdapter {
-  type: 'RefNameAliasAdapter'
-  location: UriLocation
-}
-
-interface CustomRefNameAliasAdapter {
-  type: string
-}
-
-interface Sequence {
-  type: 'ReferenceSequenceTrack'
-  trackId: string
-  adapter:
-    | IndexedFastaAdapter
-    | BgzipFastaAdapter
-    | TwoBitAdapter
-    | ChromeSizesAdapter
-    | CustomSequenceAdapter
-}
-
-interface Assembly {
-  name: string
-  aliases?: string[]
-  sequence: Sequence
-  refNameAliases?: {
-    adapter: RefNameAliasAdapter | CustomRefNameAliasAdapter
-  }
-  refNameColors?: string[]
-}
-
-interface Config {
-  assemblies?: Assembly[]
-  configuration?: {}
-  connections?: unknown[]
-  defaultSession?: {}
-  tracks?: unknown[]
-}
+import JBrowseCommand, { Assembly, Sequence, Config } from '../base'
 
 function isValidJSON(string: string) {
   try {
@@ -190,16 +121,17 @@ custom         Either a JSON file location or inline JSON that defines a custom
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
     const { sequence: argsSequence } = runArgs as { sequence: string }
 
-    if (this.needLoadData(argsSequence) && !runFlags.load)
+    if (this.needLoadData(argsSequence) && !runFlags.load) {
       this.error(
         `Please specify the loading operation for this file with --load copy|symlink|move|trust`,
         { exit: 110 },
       )
-    else if (!this.needLoadData(argsSequence) && runFlags.load)
+    } else if (!this.needLoadData(argsSequence) && runFlags.load) {
       this.error(
         `URL detected with --load flag. Please rerun the function without the --load flag`,
         { exit: 120 },
       )
+    }
 
     let { name } = runFlags
     let { type } = runFlags as {

@@ -113,11 +113,12 @@ export default class Create extends JBrowseCommand {
     } catch (error) {
       this.error('Directory does not exist', { exit: 110 })
     }
-    if (allFiles.length > 0)
+    if (allFiles.length > 0) {
       this.error(
         `${userPath} This directory has existing files and could cause conflicts with create. Please choose another directory or use the force flag to overwrite existing files`,
         { exit: 120 },
       )
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

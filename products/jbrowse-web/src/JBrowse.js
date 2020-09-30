@@ -31,7 +31,9 @@ function debounce(func, wait) {
 }
 
 const JBrowse = observer(({ pluginManager }) => {
-  const [sessionId] = useQueryParam('session', StringParam)
+  const [sessionId, setSession] = useQueryParam('session', StringParam)
+  const [adminKeyParam] = useQueryParam('adminKey', StringParam)
+  const adminMode = adminKeyParam !== undefined
 
   const { rootModel } = pluginManager
   const { session, error } = rootModel || {}
@@ -62,6 +64,29 @@ const JBrowse = observer(({ pluginManager }) => {
     }
     return disposer
   }, [session, sessionId])
+
+  useEffect(() => {
+    onSnapshot(rootModel, async snapshot => {
+      if (adminMode) {
+        const payload = { adminKey: adminKeyParam, config: snapshot.jbrowse }
+        const response = await fetch('/updateConfig', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        })
+        if (!response.ok) {
+          const message = await response.text()
+          rootModel.session.notify(
+            `Admin server error: ${response.status} (${response.statusText}) ${
+              message || ''
+            }`,
+          )
+        }
+      }
+    })
+  }, [rootModel, adminMode, adminKeyParam])
 
   if (error) {
     throw new Error(error)

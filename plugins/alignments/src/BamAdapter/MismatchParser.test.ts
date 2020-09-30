@@ -40,7 +40,7 @@ test('get mismatches', () => {
       '100',
       'AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTTA',
     ),
-  ).toEqual([{ start: 89, type: 'insertion', base: '1', length: 1 }])
+  ).toEqual([{ start: 89, type: 'insertion', base: '1', length: 0 }])
 
   // contains a deletion and a SNP
   // read GGGGG--ATTTTTT
@@ -88,7 +88,7 @@ test('vsbuffalo', () => {
       '100',
       'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
     ),
-  ).toEqual([{ base: '1', length: 1, start: 89, type: 'insertion' }])
+  ).toEqual([{ base: '1', length: 0, start: 89, type: 'insertion' }])
 
   // https://github.com/vsbuffalo/devnotes/wiki/The-MD-Tag-in-BAM-Files
   // example 2
@@ -99,7 +99,7 @@ test('vsbuffalo', () => {
       'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
     ),
   ).toEqual([
-    { base: '1', length: 1, start: 9, type: 'insertion' },
+    { base: '1', length: 0, start: 9, type: 'insertion' },
     {
       altbase: 'T',
       base: 'A',
@@ -145,7 +145,7 @@ test('more skip', () => {
       },
       Object {
         "base": "1",
-        "length": 1,
+        "length": 0,
         "start": 31,
         "type": "insertion",
       },
