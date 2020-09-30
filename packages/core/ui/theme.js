@@ -15,6 +15,7 @@ export default createMuiTheme({
   typography: {
     fontSize: 12,
   },
+  spacing: 4,
   palette: {
     // type: 'dark',
     primary: { main: midnight },
