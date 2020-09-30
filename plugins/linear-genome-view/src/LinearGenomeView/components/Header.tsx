@@ -3,6 +3,7 @@ import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
+import FormGroup from '@material-ui/core/FormGroup'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import ToggleButton from '@material-ui/lab/ToggleButton'
@@ -169,37 +170,35 @@ export default observer(({ model }: { model: LGV }) => {
     <div className={classes.headerBar}>
       <Controls model={model} />
       <div className={classes.spacer} />
-      <div style={{ display: 'flex' }}>
-        <div style={{ margin: 'auto' }}>
-          <PanControls model={model} />
-          <RefNameAutocomplete
-            style={{
-              display: 'inline-flex',
-              height: WIDGET_HEIGHT,
-              margin: 7,
-            }}
-            onSelect={setDisplayedRegion}
-            assemblyName={assemblyName}
-            defaultRegionName={displayedRegions.length > 1 ? '' : refName}
-            model={model}
-            TextFieldProps={{
-              variant: 'outlined',
-              size: 'small',
-              className: classes.headerRefName,
-              InputProps: {
-                style: {
-                  padding: 0,
-                  height: WIDGET_HEIGHT,
-                  background: fade(theme.palette.background.paper, 0.8),
-                },
+      <FormGroup row>
+        <PanControls model={model} />
+        <RefNameAutocomplete
+          style={{
+            display: 'inline-flex',
+            height: WIDGET_HEIGHT,
+            margin: 7,
+          }}
+          onSelect={setDisplayedRegion}
+          assemblyName={assemblyName}
+          defaultRegionName={displayedRegions.length > 1 ? '' : refName}
+          model={model}
+          TextFieldProps={{
+            variant: 'outlined',
+            size: 'small',
+            className: classes.headerRefName,
+            InputProps: {
+              style: {
+                padding: 0,
+                height: WIDGET_HEIGHT,
+                background: fade(theme.palette.background.paper, 0.8),
               },
-            }}
-          />
-          <Search model={model} />
-        </div>
-        <RegionWidth model={model} />
-        <ZoomControls model={model} />
-      </div>
+            },
+          }}
+        />
+        <Search model={model} />
+      </FormGroup>
+      <RegionWidth model={model} />
+      <ZoomControls model={model} />
       <div className={classes.spacer} />
     </div>
   )
