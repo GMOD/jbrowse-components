@@ -91,6 +91,11 @@ const Polygon = observer(
       displayedParentRegions,
     } = model
 
+    /* TODO:
+      1) model and overview?
+      2) Need to modify the points of the SVG polygon to account for reversed regions so that there are hourglass figures
+      3) while iterating through the visible regions, we need to remove the parent regions lines 122-124
+    */
     overview.setVolatileWidth(width)
     overview.showAllRegions()
 
@@ -159,6 +164,13 @@ type LGV = Instance<LinearGenomeViewStateModel>
 const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
   const classes = useStyles()
 
+  /* TODO:
+    1) instead of the displayedParentRegions it will be just the displayed regions
+      For example if you had the small pieces then the parent one would be the entire cfgA
+    2) the return is iterating over the parent regions, we need to modify to get the displayed regions instead
+    3) so we are passing the model, what does it mean to get the session?
+    4) what is the difference between dynamic/visible and static blocks?
+  */
   const { displayedParentRegions, dynamicBlocks: visibleRegions } = model
   const { assemblyManager } = getSession(model)
 
@@ -166,6 +178,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
 
   return (
     <div className={classes.scaleBar}>
+      {/* this is the entire scale bar */}
       {displayedParentRegions.map((seq, idx) => {
         const assembly = assemblyManager.get(seq.assemblyName)
         let refNameColor: string | undefined
@@ -174,6 +187,10 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         }
         const regionLength = seq.end - seq.start
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
+        /* TODO:
+          1) Account for reversed so that we change the order of the labels
+          2) Each Paper is the region or rectangle representing the displayed Region
+        */
         const labels = []
         for (let index = 0; index < numLabels; index++) {
           labels.push((index + 1) * gridPitch.majorPitch)
@@ -256,6 +273,12 @@ function OverviewScaleBar({
     displayedRegions: JSON.parse(JSON.stringify(displayedParentRegions)),
   })
 
+  /* TODO:
+    1) modify the scale to adapt to the displayed regions instead of the displayed Parent regions
+    2) what is the model here
+    3) what is the overview, what is the Base1DView doing with create?
+    4) what are the children variable being passed?
+  */
   const scale =
     displayedParentRegionsLength /
     (width - (displayedParentRegions.length - 1) * wholeSeqSpacer)
