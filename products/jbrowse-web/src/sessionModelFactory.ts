@@ -376,7 +376,7 @@ export default function sessionModelFactory(
       },
 
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        const localId = `local-${uuid.v4()}`
+        const localId = `localSaved-${uuid.v4()}`
         localStorage.setItem(localId, JSON.stringify(sessionSnapshot))
         return localId
       },
@@ -406,8 +406,8 @@ export default function sessionModelFactory(
       setDefaultSession() {
         return getParent(self).setDefaultSession()
       },
-      saveSessionToLocalStorage() {
-        return getParent(self).saveSessionToLocalStorage()
+      saveSessionToLocalStorage(load = false) {
+        return getParent(self).saveSessionToLocalStorage(load)
       },
     }))
     .extend(() => {

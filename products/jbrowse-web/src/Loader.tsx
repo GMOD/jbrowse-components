@@ -190,7 +190,7 @@ export function Loader() {
           const json = await response.json()
           const decryptedSession = decrypt(json.session)
           if (decryptedSession) {
-            localId = `localSession-${uuid.v4()}`
+            localId = `localUnsaved-${uuid.v4()}`
             const fromShared = JSON.parse(fromUrlSafeB64(decryptedSession))
             fromShared.name = `${fromShared.name}-${new Date(
               Date.now(),
@@ -325,6 +325,11 @@ export function Loader() {
   // wrap below in useeffect, maybe set an error state
   // in the use effect callback, setState(() => throw new Error('My error'))
   try {
+    // if statement, if there is an autosave with a session pop up a dialog box
+    // window.confirm ask if they want to load autosave or not
+    // if they load autosave, skip the rest of this try, or just continue on if they click no
+    // only do if there is no specific sessionQueryParam in url when pasted (so this doesnt happen on refresh)
+
     if (sessionQueryParam) {
       // eslint-disable-next-line guard-for-in
       const foundLocalSession =
@@ -340,11 +345,19 @@ export function Loader() {
         setSessString('')
       }
     } else {
-      const localId = rootModel.setDefaultSession()
+      let result
+      if (localStorage.getItem('autosave')) {
+        // eslint-disable-next-line no-alert
+        result = window.confirm(
+          'An unsaved session was located in autosave. Would you like to load this session?',
+        )
+      }
+      const localId = result
+        ? rootModel.loadAutosaveSession()
+        : rootModel.setDefaultSession()
       setSessionQueryParam(localId)
       setPasswordQueryParam(undefined)
       setSessString(localId)
-      console.log(localId)
     }
 
     if (!rootModel.session) return null

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import Button from '@material-ui/core/Button'
 import SaveAltIcon from '@material-ui/icons/SaveAlt'
 import DoneIcon from '@material-ui/icons/Done'
@@ -33,14 +33,20 @@ const useStyles = makeStyles(theme => ({
 const Save = observer((props: { session: any }) => {
   const { session } = props
   const classes = useStyles()
+  const locationUrl = new URL(window.location.href)
+  const params = new URLSearchParams(locationUrl.search)
 
-  const [saved, setSaved] = useState(false)
+  const [saved, setSaved] = useState(
+    params?.get('session')?.startsWith('localSaved-'),
+  )
 
-  // TODOSESSION: if sessionStorage used, this can be improved
-  useEffect(() => {
-    if (!session.name.endsWith('-saved')) setSaved(false)
-  }, [session.name])
+  // on new session or tab exit, if they are on an unsaved session, have some dialog saying
+  // are you sure, this is unsaved and give them an action button to save
 
+  // for autosave: generate autosave everytime someone is working on an unsaved session
+  // and makes changes. clear when they click save or they start working on a saved session 'localSaved in url'
+  // autosave is only if they close their tab and they had unsaved
+  // call button or link Recover last unsaved session
   return (
     <div className={classes.saveDiv}>
       {saved ? (
@@ -50,6 +56,7 @@ const Save = observer((props: { session: any }) => {
           color="inherit"
           startIcon={<DoneIcon />}
           classes={{ root: classes.savedButton }}
+          disabled
         >
           Saved
         </Button>
@@ -57,8 +64,10 @@ const Save = observer((props: { session: any }) => {
         <Button
           data-testid="save_button"
           onClick={() => {
-            session.saveSessionToLocalStorage()
+            session.saveSessionToLocalStorage(true)
             setSaved(true)
+            if (localStorage.getItem('autosave'))
+              localStorage.removeItem('autosave')
           }}
           size="small"
           color="inherit"

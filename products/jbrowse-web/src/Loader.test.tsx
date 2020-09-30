@@ -8,7 +8,6 @@ import rangeParser from 'range-parser'
 import ErrorBoundary, { FallbackProps } from 'react-error-boundary'
 import { QueryParamProvider } from 'use-query-params'
 
-import { timeout } from 'rxjs/operators'
 import { Loader } from './Loader'
 
 if (!window.TextEncoder) window.TextEncoder = TextEncoder

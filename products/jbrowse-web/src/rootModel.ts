@@ -49,7 +49,7 @@ export default function RootModel(
       get savedSessions() {
         // return getParent(self).jbrowse.savedSessions
         return Object.entries(localStorage)
-          .filter(obj => obj[0].startsWith('local-'))
+          .filter(obj => obj[0].startsWith('localSaved-'))
           .map(entry => JSON.parse(entry[1]))
       },
       get savedSessionNames() {
@@ -57,6 +57,11 @@ export default function RootModel(
       },
     }))
     .actions(self => ({
+      isUnsavedSession() {
+        const locationUrl = new URL(window.location.href)
+        const params = new URLSearchParams(locationUrl.search)
+        return params?.get('session')?.startsWith('localUnsaved-')
+      },
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
       },
@@ -70,7 +75,7 @@ export default function RootModel(
             .substring(0, 10)} ${new Date(Date.now()).toLocaleTimeString()}`,
         }
 
-        const localId = `localSession-${uuid.v4()}`
+        const localId = `localUnsaved-${uuid.v4()}`
         sessionStorage.setItem(localId, JSON.stringify(newSession))
         this.setSessionUuidInUrl(localId)
         this.setSession(newSession)
@@ -81,11 +86,11 @@ export default function RootModel(
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
           const oldname = snapshot.name
           const snapInLocal = Object.entries(localStorage)
-            .filter(obj => obj[0].startsWith('local-'))
+            .filter(obj => obj[0].startsWith('localSaved-'))
             .find(sessionSnap => JSON.parse(sessionSnap[1]).name === oldname)
 
           const snapInSession = Object.entries(sessionStorage)
-            .filter(obj => obj[0].startsWith('localSession-'))
+            .filter(obj => obj[0].startsWith('localUnsaved-'))
             .find(sessionSnap => JSON.parse(sessionSnap[1]).name === oldname)
           snapshot.name = sessionName
           if (snapInLocal)
@@ -107,7 +112,7 @@ export default function RootModel(
             } while (self.savedSessionNames.includes(newSnapshotName))
           }
           snapshot.name = newSnapshotName
-          const localId = `localSession-${uuid.v4()}`
+          const localId = `localUnsaved-${uuid.v4()}`
           sessionStorage.setItem(localId, JSON.stringify(snapshot))
           this.setSessionUuidInUrl(localId)
           this.setSession(snapshot)
@@ -115,7 +120,7 @@ export default function RootModel(
       },
       activateSession(name: string) {
         const newSessionSnapshot = Object.entries(localStorage)
-          .filter(obj => obj[0].startsWith('local-'))
+          .filter(obj => obj[0].startsWith('localSaved-'))
           .find(sessionSnap => JSON.parse(sessionSnap[1]).name === name)
 
         if (!newSessionSnapshot)
@@ -127,11 +132,14 @@ export default function RootModel(
         this.setSessionUuidInUrl(localId)
         this.setSession(JSON.parse(snapshot))
       },
-      saveSessionToLocalStorage() {
+      saveSessionToLocalStorage(load?: boolean) {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+          // TODOSESSION: the problem is without updating something in the snapshot
+          // there is no change that registers so set session doesnt change from
+          // the localunsaved to the local saved, thats why i appended something to the name
           snapshot.name = `${snapshot.name}-saved`
-          const localId = `local-${uuid.v4()}`
+          const localId = `localSaved-${uuid.v4()}`
           try {
             localStorage.setItem(localId, JSON.stringify(snapshot))
           } catch (e) {
@@ -140,11 +148,24 @@ export default function RootModel(
               alert(
                 'Local storage is full! Please open sessions and remove some before saving',
               )
+              return
             }
           }
-          this.setSessionUuidInUrl(localId)
-          this.setSession(snapshot)
+          if (load) {
+            this.setSessionUuidInUrl(localId)
+            this.setSession(snapshot)
+          }
         }
+      },
+      loadAutosaveSession() {
+        const autosavedSession = JSON.parse(
+          localStorage.getItem('autosave') || '',
+        )
+        const localId = `localUnsaved-${uuid.v4()}`
+        sessionStorage.setItem(localId, JSON.stringify(autosavedSession))
+        this.setSessionUuidInUrl(localId)
+        this.setSession(autosavedSession)
+        return localId
       },
       setSessionUuidInUrl(localId: string) {
         const locationUrl = new URL(window.location.href)
@@ -168,6 +189,13 @@ export default function RootModel(
               icon: AddIcon,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
+                let result
+                if (self.isUnsavedSession())
+                  // eslint-disable-next-line no-alert
+                  result = window.confirm(
+                    'You have unsaved changes. Click OK if you would like to save before continuing',
+                  )
+                if (result) session.saveSessionToLocalStorage()
                 session.setDefaultSession()
               },
             },
