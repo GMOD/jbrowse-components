@@ -12,6 +12,9 @@ const forest = '#135560'
 const mandarin = '#FFB11D'
 
 export default createMuiTheme({
+  typography: {
+    fontSize: 12,
+  },
   palette: {
     // type: 'dark',
     primary: { main: midnight },
@@ -27,8 +30,36 @@ export default createMuiTheme({
       mainApp: grey[700],
     },
   },
-  spacing: 4,
+  props: {
+    MuiMenuItem: {
+      root: {
+        padding: 0,
+      },
+    },
+    MuiButtonBase: {
+      disableRipple: true,
+    },
+  },
   overrides: {
+    // makes menus more compact
+    MuiMenuItem: {
+      root: {
+        paddingTop: 3,
+        paddingBottom: 3,
+      },
+    },
+
+    // the below two are linked to make menus more compact
+    MuiListItemIcon: {
+      root: {
+        minWidth: 32,
+      },
+    },
+    MuiListItemText: {
+      inset: {
+        paddingLeft: 32,
+      },
+    },
     MuiIconButton: {
       colorSecondary: {
         color: forest,
