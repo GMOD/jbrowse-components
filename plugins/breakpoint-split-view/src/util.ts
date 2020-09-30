@@ -49,6 +49,8 @@ export function yPos(
       c[TOP] - tracks[level].scrollTop + cheight(c) / 2 + offset,
       min,
       max,
-    ) + heightFromSpecificLevel(views, trackConfigId, level)
+    ) +
+    heightFromSpecificLevel(views, trackConfigId, level) +
+    tracks[level].scrollTop
   )
 }
